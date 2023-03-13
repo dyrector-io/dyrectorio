@@ -20,6 +20,7 @@ import DyoNodeService from './node-service'
 import DyoNotifcationService from './notification-service'
 import DyoProductService from './product-service'
 import DyoRegistryService from './registry-service'
+import DyoStorageService from './storage-service'
 import DyoTeamService from './team-service'
 import DyoTemplateService from './template-service'
 import DyoTokenService from './token-service'
@@ -47,6 +48,8 @@ export class Crux {
   private _templates: DyoTemplateService
 
   private _tokens: DyoTokenService
+
+  private _storage: DyoStorageService
 
   private constructor(
     private clients: CruxClients,
@@ -97,6 +100,10 @@ export class Crux {
 
   get tokens() {
     return this._tokens ?? new DyoTokenService(this.clients.tokens, this.cookie)
+  }
+
+  get storage() {
+    return this._storage ?? new DyoStorageService(this.clients.storage, this.cookie)
   }
 
   get registryConnectionsServices(): CruxRegistryConnectionsServices {

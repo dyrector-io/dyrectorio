@@ -122,16 +122,11 @@ describe('DeployMapper', () => {
       readinessProbe: 'healthCheckConf',
       startupProbe: 'healthCheckConf',
     },
-    importContainer: {
-      command: 'importContCmd',
-      environment: [
-        {
-          id: 'importContEnv1',
-          key: 'importContEnv1',
-          value: 'importContEnv1',
-        },
-      ],
-      volume: 'importContVol',
+    storageSet: true,
+    storageId: 'storageId',
+    storageConfig: {
+      bucket: 'storageBucket',
+      path: 'storagePath',
     },
     ingress: {
       host: 'ingress',
@@ -345,16 +340,11 @@ describe('DeployMapper', () => {
       readinessProbe: 'instance.healthCheckConf',
       startupProbe: 'instance.healthCheckConf',
     },
-    importContainer: {
-      command: 'instance.importContCmd',
-      environment: [
-        {
-          id: 'instance.importContEnv1',
-          key: 'instance.importContEnv1',
-          value: 'instance.importContEnv1',
-        },
-      ],
-      volume: 'instance.importContVol',
+    storageSet: true,
+    storageId: 'instance.storageId',
+    storageConfig: {
+      bucket: 'instance.storageBucket',
+      path: 'instance.storagePath',
     },
     ingress: {
       host: 'instance.ingress',

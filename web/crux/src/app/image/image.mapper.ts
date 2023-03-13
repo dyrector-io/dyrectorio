@@ -41,6 +41,8 @@ import {
   ContainerConfigLog,
   ContainerConfigVolume,
   ContainerLogDriverType,
+  CONTAINER_CONFIG_COMPOSITE_FIELDS,
+  CONTAINER_CONFIG_DEFAULT_VALUES,
   CONTAINER_CONFIG_JSON_FIELDS,
   UniqueSecretKey,
   VolumeType,
@@ -85,12 +87,14 @@ export default class ImageMapper {
       args: !config.args ? null : { data: config.args },
       TTY: config.tty,
       configContainer: config.configContainer,
-      importContainer: config.importContainer,
       ingress: config.ingress,
       initContainers: !config.initContainers ? null : { data: config.initContainers },
       portRanges: !config.portRanges ? null : { data: config.portRanges },
       ports: !config.ports ? null : { data: config.ports },
       user: config.user,
+      storage: config.storageSet
+        ? { storageId: config.storageId, path: config.storageConfig?.path, bucket: config.storageConfig?.bucket }
+        : null,
       volumes: !config.volumes
         ? null
         : {
@@ -143,26 +147,29 @@ export default class ImageMapper {
   }
 
   configSectionResetToDb(config: Partial<ContainerConfigData>, section: string) {
-    if (CONTAINER_CONFIG_JSON_FIELDS.includes(section)) {
-      config[section] = Prisma.JsonNull
-    } else {
-      config[section] = null
-    }
+    const fields = CONTAINER_CONFIG_COMPOSITE_FIELDS[section] ?? [section]
+    fields.forEach(field => {
+      if (CONTAINER_CONFIG_JSON_FIELDS.includes(field)) {
+        config[field] = Prisma.JsonNull
+      } else {
+        config[field] = CONTAINER_CONFIG_DEFAULT_VALUES[field] ?? null
+      }
+    })
 
     return config
   }
 
   configProtoToContainerConfigData(
-    currentConfig: Pick<ContainerConfigData, 'annotations' | 'labels'>,
+    currentConfig: Pick<ContainerConfigData, 'annotations' | 'labels' | 'storageSet'>,
     config: ProtoImageContainerConfig,
   ): Partial<ContainerConfigData> {
+    const patchHasStorage = config.common?.storage && config.common?.storage.storageId
     return {
       // common
       name: config.common?.name,
       expose: this.exposeStrategyToDb(config.common?.expose),
       ingress: config.common?.ingress,
       configContainer: config.common?.configContainer,
-      importContainer: config.common?.importContainer,
       user: config.common?.user,
       tty: this.toUndefinedAwareBoolean(config.common?.TTY),
       ports: config.common?.ports?.data,
@@ -173,6 +180,14 @@ export default class ImageMapper {
       environment: config.common?.environment?.data,
       secrets: config?.secrets?.data?.map(it => this.secretToDb(it)),
       initContainers: config.common?.initContainers?.data,
+      storageSet: config.common?.storage ? true : currentConfig.storageSet,
+      storageId: patchHasStorage ? config.common?.storage?.storageId : undefined,
+      storageConfig: patchHasStorage
+        ? {
+            path: config.common.storage.path,
+            bucket: config.common.storage.bucket,
+          }
+        : undefined,
 
       // dagent
       logConfig: this.logConfigToDb(config.dagent?.logConfig),
@@ -211,7 +226,6 @@ export default class ImageMapper {
       expose: config.expose,
       ingress: toPrismaJson(config.ingress),
       configContainer: toPrismaJson(config.configContainer),
-      importContainer: toPrismaJson(config.importContainer),
       user: config.user ? config.user : null,
       tty: config.tty,
       ports: toPrismaJson(config.ports),
@@ -223,6 +237,9 @@ export default class ImageMapper {
       secrets: toPrismaJson(config.secrets),
       initContainers: toPrismaJson(config.initContainers),
       logConfig: toPrismaJson(config.logConfig),
+      storageSet: config.storageSet,
+      storageId: config.storageId,
+      storageConfig: toPrismaJson(config.storageConfig),
 
       // dagent
       restartPolicy: config.restartPolicy,
@@ -253,7 +270,6 @@ export default class ImageMapper {
       expose: config.expose,
       ingress: toPrismaJson(config.ingress),
       configContainer: toPrismaJson(config.configContainer),
-      importContainer: toPrismaJson(config.importContainer),
       user: config.user ? config.user : null,
       tty: config.tty ?? false,
       ports: toPrismaJson(config.ports),
@@ -265,6 +281,9 @@ export default class ImageMapper {
       secrets: toPrismaJson(config.secrets),
       initContainers: toPrismaJson(config.initContainers),
       logConfig: toPrismaJson(config.logConfig),
+      storageSet: config.storageSet,
+      storageId: config.storageId,
+      storageConfig: toPrismaJson(config.storageConfig),
 
       // dagent
       restartPolicy: config.restartPolicy,

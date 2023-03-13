@@ -177,6 +177,12 @@ export type Marker = {
   ingress?: UniqueKeyValue[]
 }
 
+export type ContainerStorage = {
+  storageId?: string
+  path?: string
+  bucket?: string
+}
+
 export type ContainerConfigData = {
   // common
   name: string
@@ -195,6 +201,7 @@ export type ContainerConfigData = {
   args?: UniqueKey[]
   initContainers?: InitContainer[]
   capabilities: UniqueKeyValue[]
+  storage?: ContainerStorage
 
   // dagent
   logConfig?: ContainerConfigLog
@@ -289,6 +296,7 @@ export type JsonContainerConfig = {
   args?: string[]
   initContainers?: JsonInitContainer[]
   capabilities?: JsonKeyValue
+  storage?: ContainerStorage
 
   // dagent
   logConfig?: JsonContainerConfigLog
@@ -371,6 +379,7 @@ export const mergeConfigs = (
     importContainer: instance.importContainer ?? image.importContainer,
     initContainers: instance.initContainers ?? image.initContainers,
     capabilities: null,
+    storage: instance.storage ?? image.storage,
 
     // crane
     customHeaders: instance.customHeaders ?? image.customHeaders,
@@ -416,6 +425,7 @@ export const imageConfigToJsonContainerConfig = (config: Partial<ContainerConfig
   secrets: config.secrets?.map(it => ({ key: it.key, required: it.required })),
   portRanges: config.portRanges?.map(it => removeId(it)),
   ports: config.ports?.map(it => removeId(it)),
+  storage: config.storage,
   logConfig: config.logConfig
     ? {
         ...config.logConfig,

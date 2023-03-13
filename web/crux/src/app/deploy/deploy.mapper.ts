@@ -8,6 +8,7 @@ import {
   Instance,
   InstanceContainerConfig,
   Node,
+  Storage,
   VersionTypeEnum,
 } from '@prisma/client'
 import { toTimestamp } from 'src/domain/utils'
@@ -16,6 +17,7 @@ import {
   CommonContainerConfig,
   CraneContainerConfig,
   DagentContainerConfig,
+  ImportContainer,
   InitContainer as AgentInitContainer,
   InstanceConfig,
 } from 'src/grpc/protobuf/proto/agent'
@@ -254,7 +256,7 @@ export default class DeployMapper {
     return state ? (containerStateToJSON(state).toLowerCase() as ContainerStateEnum) : null
   }
 
-  commonConfigToAgentProto(config: MergedContainerConfigData): CommonContainerConfig {
+  commonConfigToAgentProto(config: MergedContainerConfigData, storage?: Storage): CommonContainerConfig {
     return {
       name: config.name,
       environment: this.jsonToPipedFormat(config.environment),
@@ -264,12 +266,7 @@ export default class DeployMapper {
       args: this.mapUniqueKeyToStringArray(config.args),
       TTY: config.tty,
       configContainer: config.configContainer,
-      importContainer: config.importContainer
-        ? {
-            ...config.importContainer,
-            environment: this.mapKeyValueToMap(config.importContainer?.environment),
-          }
-        : null,
+      importContainer: config.storageId ? this.storageToImportContainer(config, storage) : null,
       ingress: config.ingress,
       initContainers: this.mapInitContainerToAgent(config.initContainers),
       portRanges: config.portRanges,
@@ -368,6 +365,27 @@ export default class DeployMapper {
     }
 
     return environment.map(it => `${it.key}|${it.value}`)
+  }
+
+  private storageToImportContainer(config: MergedContainerConfigData, storage: Storage): ImportContainer {
+    let environment: { [key: string]: string } = {
+      RCLONE_CONFIG_S3_TYPE: 's3',
+      RCLONE_CONFIG_S3_PROVIDER: 'Other',
+      RCLONE_CONFIG_S3_ENDPOINT: storage.url,
+    }
+    if (storage.accessKey && storage.secretKey) {
+      environment = {
+        ...environment,
+        RCLONE_CONFIG_S3_ACCESS_KEY_ID: storage.accessKey,
+        RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: storage.secretKey,
+      }
+    }
+
+    return {
+      volume: config.storageConfig?.path ?? '',
+      command: `sync s3:${config.storageConfig?.bucket ?? ''} /data/output`,
+      environment,
+    }
   }
 }
 

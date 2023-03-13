@@ -45,10 +45,12 @@ export default class ContainerMapper {
       configContainer: instance.configContainer ?? image.configContainer,
       ingress: instance.ingress ?? image.ingress,
       volumes: instance.volumes ?? image.volumes,
-      importContainer: instance.importContainer ?? image.importContainer,
       initContainers: instance.initContainers ?? image.initContainers,
       capabilities: [], // TODO (@m8vago, @nandor-magyar): caps
       ports: instance.ports ?? image.ports,
+      storageSet: instance.storageSet || image.storageSet,
+      storageId: instance.storageSet ? instance.storageId : image.storageId,
+      storageConfig: instance.storageSet ? instance.storageConfig : image.storageConfig,
 
       // crane
       customHeaders: instance.customHeaders ?? image.customHeaders,

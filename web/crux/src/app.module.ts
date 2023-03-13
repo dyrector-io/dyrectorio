@@ -19,6 +19,7 @@ import ShutdownService from './application.shutdown.service'
 import InterceptorGrpcHelperProvider from './interceptors/helper.interceptor'
 import EmailModule from './mailer/email.module'
 import PrismaService from './services/prisma.service'
+import StorageModule from './app/storage/storage.module'
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import PrismaService from './services/prisma.service'
     NotificationModule,
     TemplateModule,
     DashboardModule,
+    StorageModule,
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,

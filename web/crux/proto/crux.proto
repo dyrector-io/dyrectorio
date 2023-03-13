@@ -152,6 +152,16 @@ service CruxToken {
   rpc DeleteToken(IdRequest) returns (common.Empty);
 }
 
+service CruxStorage {
+  // CRUD
+  rpc GetStorages(common.Empty) returns (StorageListResponse);
+  rpc CreateStorage(CreateStorageRequest) returns (CreateEntityResponse);
+  rpc UpdateStorage(UpdateStorageRequest) returns (UpdateEntityResponse);
+  rpc DeleteStorage(IdRequest) returns (common.Empty);
+  rpc GetStorageDetails(IdRequest) returns (StorageDetailsResponse);
+  rpc GetStorageOptions(common.Empty) returns (StorageOptionListResponse);
+}
+
 /**
  *
  * Common messages
@@ -590,13 +600,6 @@ message InitContainer {
 
 message InitContainerList { repeated InitContainer data = 1000; }
 
-message ImportContainer {
-  string volume = 100;
-  string command = 101;
-
-  repeated UniqueKeyValue environment = 1000;
-}
-
 message LogConfig {
   common.DriverType driver = 100;
   repeated UniqueKeyValue options = 1000;
@@ -669,6 +672,12 @@ message Marker {
   repeated UniqueKeyValue ingress = 1002;
 }
 
+message ContainerStorage {
+  optional string storageId = 100;
+  optional string path = 101;
+  optional string bucket = 102;
+}
+
 message DagentContainerConfig {
   optional LogConfig logConfig = 100;
   optional common.RestartPolicy restartPolicy = 101;
@@ -696,9 +705,9 @@ message CommonContainerConfig {
   optional common.ExposeStrategy expose = 102;
   optional common.Ingress ingress = 103;
   optional common.ConfigContainer configContainer = 104;
-  optional ImportContainer importContainer = 105;
-  optional int64 user = 106;
-  optional bool TTY = 107;
+  optional int64 user = 105;
+  optional bool TTY = 106;
+  optional ContainerStorage storage = 107;
 
   optional PortList ports = 1000;
   optional PortRangeBindingList portRanges = 1001;
@@ -1169,3 +1178,59 @@ message DashboardResponse {
   repeated DashboardDeployment latestDeployments = 1001;
   repeated AuditLogResponse auditLog = 1002;
 }
+
+
+// STORAGES
+
+message StorageResponse {
+  string id = 1;
+  AuditResponse audit = 2;
+
+  string name = 100;
+  optional string description = 101;
+  optional string icon = 102;
+  string url = 103;
+}
+
+message StorageListResponse { repeated StorageResponse data = 1000; }
+
+message CreateStorageRequest {
+  string name = 100;
+  optional string description = 101;
+  optional string icon = 102;
+  string url = 103;
+  optional string accessKey = 104;
+  optional string secretKey = 105;
+}
+
+message UpdateStorageRequest {
+  string id = 1;
+
+  string name = 100;
+  optional string description = 101;
+  optional string icon = 102;
+  string url = 103;
+  optional string accessKey = 104;
+  optional string secretKey = 105;
+}
+
+message StorageDetailsResponse {
+  string id = 1;
+  AuditResponse audit = 2;
+
+  string name = 100;
+  optional string description = 101;
+  optional string icon = 102;
+  string url = 103;
+  optional string accessKey = 104;
+  optional string secretKey = 105;
+  bool inUse = 106;
+}
+
+message StorageOptionResponse {
+  string id = 1;
+
+  string name = 100;
+}
+
+message StorageOptionListResponse { repeated StorageOptionResponse data = 1000; }

@@ -165,14 +165,21 @@ const resourceConfigRule = yup
   .nullable()
   .optional()
 
-const baseImportContainerRule = yup.object().shape({
-  volume: yup.string().required(),
-  command: yup.string(),
-})
+const storageFieldRule = yup
+  .string()
+  .when('storageId', {
+    is: (storageId: string) => !!storageId,
+    then: schema => schema.required(),
+    otherwise: schema => schema.nullable(),
+  })
+  .nullable()
 
-const importContainerRule = baseImportContainerRule
+const storageRule = yup
+  .object()
   .shape({
-    environments: uniqueKeyValuesSchema.default([]).nullable(),
+    storageId: yup.string(),
+    bucket: storageFieldRule,
+    path: storageFieldRule,
   })
   .default({})
   .nullable()
@@ -279,7 +286,6 @@ const containerConfigBaseSchema = yup.object().shape({
   expose: exposeRule,
   user: yup.number().default(null).nullable(),
   tty: yup.boolean().default(false).required(),
-  importContainer: importContainerRule,
   configContainer: configContainerRule,
   ports: portConfigRule,
   portRanges: portRangeConfigRule,
@@ -288,6 +294,7 @@ const containerConfigBaseSchema = yup.object().shape({
   args: shellCommandSchema.default([]).nullable(),
   initContainers: initContainerRule,
   capabilities: uniqueKeyValuesSchema.default([]).nullable(),
+  storage: storageRule,
 
   // dagent:
   logConfig: logConfigRule,

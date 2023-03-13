@@ -31,7 +31,9 @@ If ( -not (Test-Path $PERSISTENCE_FOLDER -PathType Container) ) {
   New-Item -ItemType Directory -Path $PERSISTENCE_FOLDER
 }
 
-docker pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:stable
+If ( -not ${{disableForcePull}} ) {
+  docker pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+}
 
 docker run `
   --restart on-failure `
