@@ -1,0 +1,51 @@
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
+import { Observable } from 'rxjs'
+import { PreconditionFailedException } from 'src/exception/errors'
+import PrismaService from 'src/services/prisma.service'
+import { UpdateRegistry } from '../registry.dto'
+import RegistryMapper from '../registry.mapper'
+
+@Injectable()
+export default class UpdateRegistryInterceptor implements NestInterceptor {
+  constructor(private prisma: PrismaService, private mapper: RegistryMapper) {}
+
+  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+    const request = context.switchToHttp().getRequest()
+
+    const body = request.body as UpdateRegistry
+    const { id } = request.params
+
+    const used = await this.prisma.image.count({
+      where: {
+        registryId: id,
+      },
+      take: 1,
+    })
+
+    if (used === 0) {
+      return next.handle()
+    }
+
+    const registry = await this.prisma.registry.findUniqueOrThrow({
+      where: {
+        id,
+      },
+    })
+
+    const details = this.mapper.detailsToDb(body)
+
+    const blackList = ['url', 'user', 'type', 'namespace', 'imageNamePrefix', 'apiUrl']
+
+    blackList.forEach(it => {
+      if (details[it] !== registry[it]) {
+        throw new PreconditionFailedException({
+          property: 'id',
+          value: id,
+          message: 'Registry is already in use.',
+        })
+      }
+    })
+
+    return next.handle()
+  }
+}

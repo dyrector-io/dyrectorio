@@ -11,12 +11,14 @@ import LoadingIndicator from '@app/elements/loading-indicator'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
+  BasicRegistry,
   DyoApiError,
   FindImageMessage,
   FindImageResult,
   FindImageResultMessage,
   Registry,
   RegistryImages,
+  RegistryListDto,
   WS_TYPE_DYO_ERROR,
   WS_TYPE_FIND_IMAGE,
   WS_TYPE_FIND_IMAGE_RESULT,
@@ -39,9 +41,11 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
 
   const { t } = useTranslation('images')
 
-  const { data: registries, error: fetchRegistriesError } = useSWR<Registry[]>(API_REGISTRIES, fetcher)
+  const { data: registries, error: fetchRegistriesError } = useSWR<BasicRegistry[]>(API_REGISTRIES, init =>
+    fetcher(init).then(it => (it as RegistryListDto).data),
+  )
   const [searching, setSearching] = useState(false)
-  const [registry, setRegistry] = useState<Registry>(registries?.length > 0 ? registries[0] : null)
+  const [registry, setRegistry] = useState<BasicRegistry>(registries?.length > 0 ? registries[0] : null)
   const [selected, setSelected] = useState<SelectableImage[]>([])
   const [images, setImages] = useState<SelectableImage[]>([])
   const [filterOrName, setFilterOrName] = useState('')

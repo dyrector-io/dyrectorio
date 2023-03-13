@@ -32,14 +32,6 @@ import {
   VersionResponse,
   ProductReponse,
   RegistryType,
-  RegistryResponse,
-  RegistryNamespace,
-  HubRegistryDetails,
-  V2RegistryDetails,
-  GitlabRegistryDetails,
-  GithubRegistryDetails,
-  GoogleRegistryDetails,
-  UncheckedRegistryDetails,
   VersionType,
   ImageResponse,
   DeploymentByVersionResponse,
@@ -86,8 +78,6 @@ import {
   CreateEntityResponse,
   UpdateEntityResponse,
   ProductDetailsReponse,
-  RegistryListResponse,
-  RegistryDetailsResponse,
   NodeListResponse,
   NodeDetailsResponse,
   NodeEventMessage,
@@ -306,18 +296,6 @@ export class UpdateProductRequestDto {
   description: string | undefined
   changelog: string | undefined
 }
-export class RegistryResponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  description: string | undefined
-  icon: string | undefined
-  url: string
-  type: RegistryType
-}
-export class RegistryListResponseDto {
-  data: RegistryResponse[]
-}
 export class HubRegistryDetailsDto {
   imageNamePrefix: string
 }
@@ -325,20 +303,6 @@ export class V2RegistryDetailsDto {
   url: string
   user: string | undefined
   token: string | undefined
-}
-export class GitlabRegistryDetailsDto {
-  user: string
-  token: string
-  imageNamePrefix: string
-  url: string | undefined
-  apiUrl: string | undefined
-  namespace: RegistryNamespace
-}
-export class GithubRegistryDetailsDto {
-  user: string
-  token: string
-  imageNamePrefix: string
-  namespace: RegistryNamespace
 }
 export class GoogleRegistryDetailsDto {
   url: string
@@ -348,45 +312,6 @@ export class GoogleRegistryDetailsDto {
 }
 export class UncheckedRegistryDetailsDto {
   url: string
-}
-export class CreateRegistryRequestDto {
-  accessedBy: string
-  name: string
-  description: string | undefined
-  icon: string | undefined
-  hub: HubRegistryDetails | undefined
-  v2: V2RegistryDetails | undefined
-  gitlab: GitlabRegistryDetails | undefined
-  github: GithubRegistryDetails | undefined
-  google: GoogleRegistryDetails | undefined
-  unchecked: UncheckedRegistryDetails | undefined
-}
-export class UpdateRegistryRequestDto {
-  id: string
-  accessedBy: string
-  name: string
-  description: string | undefined
-  icon: string | undefined
-  hub: HubRegistryDetails | undefined
-  v2: V2RegistryDetails | undefined
-  gitlab: GitlabRegistryDetails | undefined
-  github: GithubRegistryDetails | undefined
-  google: GoogleRegistryDetails | undefined
-  unchecked: UncheckedRegistryDetails | undefined
-}
-export class RegistryDetailsResponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  description: string | undefined
-  icon: string | undefined
-  inUse: boolean
-  hub: HubRegistryDetails | undefined
-  v2: V2RegistryDetails | undefined
-  gitlab: GitlabRegistryDetails | undefined
-  github: GithubRegistryDetails | undefined
-  google: GoogleRegistryDetails | undefined
-  unchecked: UncheckedRegistryDetails | undefined
 }
 export class CreateVersionRequestDto {
   accessedBy: string
@@ -913,20 +838,6 @@ export class CruxProductControllerDto {
   updateProduct: Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
   deleteProduct: any
   getProductDetails: Promise<ProductDetailsReponse> | Observable<ProductDetailsReponse> | ProductDetailsReponse
-}
-export class CruxRegistryClientDto {
-  getRegistries: Observable<RegistryListResponse>
-  createRegistry: Observable<CreateEntityResponse>
-  updateRegistry: Observable<UpdateEntityResponse>
-  deleteRegistry: any
-  getRegistryDetails: Observable<RegistryDetailsResponse>
-}
-export class CruxRegistryControllerDto {
-  getRegistries: Promise<RegistryListResponse> | Observable<RegistryListResponse> | RegistryListResponse
-  createRegistry: Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-  updateRegistry: Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-  deleteRegistry: any
-  getRegistryDetails: Promise<RegistryDetailsResponse> | Observable<RegistryDetailsResponse> | RegistryDetailsResponse
 }
 export class CruxNodeClientDto {
   getNodes: Observable<NodeListResponse>

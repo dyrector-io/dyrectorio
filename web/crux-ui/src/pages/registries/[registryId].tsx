@@ -5,10 +5,9 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import { defaultApiErrorHandler } from '@app/errors'
-import { RegistryDetails, registryDetailsToRegistry } from '@app/models'
+import { registryDetailDtoToUI, RegistryDetails, RegistryDetailsDto, registryDetailsToRegistry } from '@app/models'
 import { registryApiUrl, registryUrl, ROUTE_REGISTRIES } from '@app/routes'
-import { toastWarning, withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { fetchCrux, toastWarning, withContextAuthorization } from '@app/utils'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -97,9 +96,13 @@ export default RegistryDetailsPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const registryId = context.query.registryId as string
 
+  const res = await fetchCrux(context, registryApiUrl(registryId))
+  const dto = (await res.json()) as RegistryDetailsDto
+  const details = registryDetailDtoToUI(dto)
+
   return {
     props: {
-      registry: await cruxFromContext(context).registries.getRegistryDetails(registryId),
+      registry: details,
     },
   }
 }
