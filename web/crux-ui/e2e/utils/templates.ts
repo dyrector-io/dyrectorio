@@ -23,9 +23,8 @@ export const createProductFromTemplate = async (
   await page.locator('input[name=name]').fill(productName)
   await page.locator(`form >> text=${productType}`).click()
 
-  const navigation = page.waitForNavigation({ url: `${ROUTE_PRODUCTS}/**` })
   await page.locator('text=Add >> nth=0').click()
-  await navigation
+  await page.waitForURL(`${ROUTE_PRODUCTS}/**`)
 
   return page.url().split('/').pop()
 }

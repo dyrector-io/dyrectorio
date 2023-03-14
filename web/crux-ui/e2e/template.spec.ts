@@ -29,9 +29,8 @@ const testComplexTemplate = async (
 
   await expect(page).toHaveURL(productUrl(productId))
 
-  const navigation = page.waitForNavigation({ url: `**${productUrl(productId)}/versions/**` })
   await page.locator('text="Images"').click()
-  await navigation
+  await page.waitForURL(`**${productUrl(productId)}/versions/**`)
 
   const imageTableBody = await page.locator('.table-row-group')
   const imageRows = await imageTableBody.locator('.table-row')
