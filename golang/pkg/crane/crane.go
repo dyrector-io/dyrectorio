@@ -39,6 +39,7 @@ func Serve(cfg *config.Configuration) {
 		Deploy:           k8s.Deploy,
 		Watch:            crux.GetDeployments,
 		Delete:           k8s.Delete,
+		ContainerCommand: crux.DeploymentCommand,
 		DeleteContainers: k8s.DeleteMultiple,
 		SecretList:       crux.GetSecretsList,
 		ContainerLog:     k8s.PodLog,

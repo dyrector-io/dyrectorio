@@ -134,14 +134,10 @@ func (d *Deployment) GetDeployments(ctx context.Context, namespace string, cfg *
 	deploymentsClient := clientset.AppsV1().Deployments(util.Fallback(namespace, coreV1.NamespaceAll))
 
 	list, err := deploymentsClient.List(ctx, metaV1.ListOptions{})
-	if err != nil {
-		return nil, err
-	}
-	return list, nil
+	return list, err
 }
 
-//nolint:unused
-func (d *Deployment) restart(namespace, name string) error {
+func (d *Deployment) Restart(namespace, name string) error {
 	client := getDeploymentsClient(namespace, d.appConfig)
 
 	datePatch := map[string]interface{}{
@@ -164,10 +160,36 @@ func (d *Deployment) restart(namespace, name string) error {
 	_, err = client.Patch(d.ctx, name, types.MergePatchType, marshaled,
 		metaV1.PatchOptions{})
 
+	return err
+}
+
+func (d *Deployment) Scale(namespace, name string, target int) error {
+	client := getDeploymentsClient(namespace, d.appConfig)
+
+	scalePatch := map[string]interface{}{
+		"spec": map[string]interface{}{
+			// replicaCount
+			"replicas": target,
+			// updatedAt bump
+			"template": map[string]interface{}{
+				"metadata": map[string]interface{}{
+					"annotations": map[string]interface{}{
+						CraneUpdatedAnnotation: time.Now().Format(time.RFC3339),
+					},
+				},
+			},
+		},
+	}
+
+	marshaled, err := json.Marshal(scalePatch)
 	if err != nil {
 		return err
 	}
-	return nil
+
+	_, err = client.Patch(d.ctx, name, types.MergePatchType, marshaled,
+		metaV1.PatchOptions{})
+
+	return err
 }
 
 // builds the container using the builder interface, with healthchecks, volumes, configs, ports...
