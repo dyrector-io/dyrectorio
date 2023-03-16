@@ -42,8 +42,21 @@ func GetSecretsList(ctx context.Context, prefix, name string) ([]string, error) 
 }
 
 func DeploymentCommand(ctx context.Context, command *common.ContainerCommandRequest) error {
-	// TODO(@m8vago): implement container (deployment?) start, stop, restart for kube
-	// operation := command.Operation
-	// prefixName := command.GetPrefixAndName()
-	return errors.New("deployment commands are not implemented")
+	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
+	id := command.GetContainer()
+
+	deployment := k8s.NewDeployment(ctx, cfg)
+	switch command.Operation {
+	case common.ContainerOperation_START_CONTAINER:
+		return deployment.Scale(id.Prefix, id.Name, 1)
+	case common.ContainerOperation_RESTART_CONTAINER:
+		return deployment.Restart(id.Prefix, id.Name)
+	case common.ContainerOperation_STOP_CONTAINER:
+		// do scale down
+		return deployment.Scale(id.Prefix, id.Name, 0)
+	case common.ContainerOperation_CONTAINER_OPERATION_UNSPECIFIED:
+		return errors.New("unspecified deployment command")
+	default:
+		return errors.New("unknown deployment command")
+	}
 }
