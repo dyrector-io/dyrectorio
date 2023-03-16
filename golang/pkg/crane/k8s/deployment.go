@@ -140,8 +140,7 @@ func (d *Deployment) GetDeployments(ctx context.Context, namespace string, cfg *
 	return list, nil
 }
 
-//nolint:unused
-func (d *Deployment) restart(namespace, name string) error {
+func (d *Deployment) Restart(namespace, name string) error {
 	client := getDeploymentsClient(namespace, d.appConfig)
 
 	datePatch := map[string]interface{}{
@@ -157,6 +156,38 @@ func (d *Deployment) restart(namespace, name string) error {
 	}
 
 	marshaled, err := json.Marshal(datePatch)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.Patch(d.ctx, name, types.MergePatchType, marshaled,
+		metaV1.PatchOptions{})
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *Deployment) Scale(namespace, name string, target int) error {
+	client := getDeploymentsClient(namespace, d.appConfig)
+
+	scalePatch := map[string]interface{}{
+		"spec": map[string]interface{}{
+			// replicaCount
+			"replicas": target,
+			// updatedAt bump
+			"template": map[string]interface{}{
+				"metadata": map[string]interface{}{
+					"annotations": map[string]interface{}{
+						CraneUpdatedAnnotation: time.Now().Format(time.RFC3339),
+					},
+				},
+			},
+		},
+	}
+
+	marshaled, err := json.Marshal(scalePatch)
 	if err != nil {
 		return err
 	}
