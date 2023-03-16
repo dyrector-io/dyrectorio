@@ -134,10 +134,7 @@ func (d *Deployment) GetDeployments(ctx context.Context, namespace string, cfg *
 	deploymentsClient := clientset.AppsV1().Deployments(util.Fallback(namespace, coreV1.NamespaceAll))
 
 	list, err := deploymentsClient.List(ctx, metaV1.ListOptions{})
-	if err != nil {
-		return nil, err
-	}
-	return list, nil
+	return list, err
 }
 
 func (d *Deployment) Restart(namespace, name string) error {
@@ -163,10 +160,7 @@ func (d *Deployment) Restart(namespace, name string) error {
 	_, err = client.Patch(d.ctx, name, types.MergePatchType, marshaled,
 		metaV1.PatchOptions{})
 
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (d *Deployment) Scale(namespace, name string, target int) error {
@@ -195,10 +189,7 @@ func (d *Deployment) Scale(namespace, name string, target int) error {
 	_, err = client.Patch(d.ctx, name, types.MergePatchType, marshaled,
 		metaV1.PatchOptions{})
 
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 // builds the container using the builder interface, with healthchecks, volumes, configs, ports...
