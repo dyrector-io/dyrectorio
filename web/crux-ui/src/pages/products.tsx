@@ -10,7 +10,7 @@ import ViewModeToggle, { ViewMode } from '@app/components/shared/view-mode-toggl
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { Product, ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
+import { BasicProduct, ProductListDto, ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
 import { API_PRODUCTS, ROUTE_PRODUCTS } from '@app/routes'
 
 import { fetchCrux, utcDateToLocale, withContextAuthorization } from '@app/utils'
@@ -22,7 +22,7 @@ type ProductFilter = TextFilter & {
   type?: ProductType | 'all'
 }
 
-const productTypeFilter = (items: Product[], filter: ProductFilter) => {
+const productTypeFilter = (items: BasicProduct[], filter: ProductFilter) => {
   if (!filter?.type || filter.type === 'all') {
     return items
   }
@@ -30,7 +30,7 @@ const productTypeFilter = (items: Product[], filter: ProductFilter) => {
 }
 
 interface ProductsPageProps {
-  products: Product[]
+  products: BasicProduct[]
 }
 
 const ProductsPage = (props: ProductsPageProps) => {
@@ -38,10 +38,10 @@ const ProductsPage = (props: ProductsPageProps) => {
 
   const { t } = useTranslation('products')
 
-  const filters = useFilters<Product, ProductFilter>({
+  const filters = useFilters<BasicProduct, ProductFilter>({
     initialData: products,
     filters: [
-      textFilterFor<Product>(it => [it.name, it.description, it.type, utcDateToLocale(it.updatedAt)]),
+      textFilterFor<BasicProduct>(it => [it.name, it.description, it.type, utcDateToLocale(it.updatedAt)]),
       productTypeFilter,
     ],
   })
@@ -51,7 +51,7 @@ const ProductsPage = (props: ProductsPageProps) => {
 
   const [viewMode, setViewMode] = useState<ViewMode>('tile')
 
-  const onCreated = (product: Product) => {
+  const onCreated = (product: BasicProduct) => {
     setCreating(false)
     filters.setItems([...filters.items, product])
   }
@@ -107,10 +107,11 @@ export default ProductsPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const res = await fetchCrux(context, API_PRODUCTS)
+  const { data } = (await res.json()) as ProductListDto
 
   return {
     props: {
-      products: (await res.json()).data,
+      products: data,
     },
   }
 }

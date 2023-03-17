@@ -1,12 +1,13 @@
-import { IsEnum, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
 import DateAuditProperties from 'src/shared/dtos/audit-dates'
+import { VersionDto } from '../version/version.dto'
 
 export enum ProductTypeDto {
   simple = 'simple',
   complex = 'complex',
 }
 
-export class ProductsDto extends DateAuditProperties {
+export class BasicProductDto extends DateAuditProperties {
   @IsUUID()
   id: string
 
@@ -19,19 +20,24 @@ export class ProductsDto extends DateAuditProperties {
 
   @IsEnum(ProductTypeDto)
   type: ProductTypeDto
-}
 
-export class ProductListDetailsDto extends ProductsDto {
   @IsNumber()
   @IsOptional()
-  versionCount: number
+  versionCount?: number
+}
+
+export class ProductDetailsDto extends BasicProductDto {
+  @IsBoolean()
+  deletable: boolean
+
+  versions: VersionDto[]
 }
 
 export class ProductListDto {
-  data: ProductListDetailsDto[]
+  data: BasicProductDto[]
 }
 
-export class CreateProductDto {
+export class UpdateProductDto {
   @IsString()
   name: string
 
@@ -39,11 +45,12 @@ export class CreateProductDto {
   @IsOptional()
   description?: string
 
-  @IsEnum(ProductTypeDto)
-  type: ProductTypeDto
+  @IsString()
+  @IsOptional()
+  changelog?: string
 }
 
-export class UpdateProductDto extends CreateProductDto {
-  @IsUUID()
-  id: string
+export class CreateProductDto extends UpdateProductDto {
+  @IsEnum(ProductTypeDto)
+  type: ProductTypeDto
 }

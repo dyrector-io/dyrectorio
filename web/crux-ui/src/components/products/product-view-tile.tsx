@@ -1,10 +1,10 @@
 import DyoWrap from '@app/elements/dyo-wrap'
-import { Product } from '@app/models'
+import { BasicProduct } from '@app/models'
 import { productUrl } from '@app/routes'
 import ProductCard from './product-card'
 
 export interface ProductViewTileProps {
-  products: Product[]
+  products: BasicProduct[]
 }
 
 const ProductViewTile = (props: ProductViewTileProps) => {

@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common'
-import { ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
-import { IdRequest, ProductDetailsReponse, UpdateEntityResponse } from 'src/grpc/protobuf/proto/crux'
+import { Product, ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
 import PrismaService from 'src/services/prisma.service'
 import { Identity } from '@ory/kratos-client'
 import TeamRepository from '../team/team.repository'
 import ProductMapper from './product.mapper'
-import { CreateProductDto, ProductListDto, ProductsDto, ProductTypeDto } from './product.dto'
+import {
+  CreateProductDto,
+  ProductListDto,
+  ProductTypeDto,
+  BasicProductDto,
+  ProductDetailsDto,
+  UpdateProductDto,
+} from './product.dto'
 
 @Injectable()
 export default class ProductService {
@@ -36,7 +42,39 @@ export default class ProductService {
     return this.mapper.listItemToDto(products)
   }
 
-  async createProduct(request: CreateProductDto, identity: Identity): Promise<ProductsDto> {
+  async getProductDetails(id: string): Promise<ProductDetailsDto> {
+    const product = await this.prisma.product.findUniqueOrThrow({
+      where: {
+        id,
+      },
+      include: {
+        versions: {
+          include: {
+            children: true,
+          },
+        },
+      },
+    })
+
+    const productInProgressDeployments = await this.prisma.product.count({
+      where: {
+        id,
+        versions: {
+          some: {
+            deployments: {
+              some: {
+                status: 'inProgress',
+              },
+            },
+          },
+        },
+      },
+    })
+
+    return this.mapper.detailsToDto({ ...product, deletable: productInProgressDeployments === 0 })
+  }
+
+  async createProduct(request: CreateProductDto, identity: Identity): Promise<BasicProductDto> {
     const type = ProductTypeDto[request.type]
     const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
 
@@ -61,20 +99,18 @@ export default class ProductService {
       },
     })
 
-    console.log(product)
-
     return this.mapper.productToDto(product)
   }
 
-  async updateProduct(id: string, req: CreateProductDto, identity: Identity): Promise<UpdateEntityResponse> {
-    let product = await this.prisma.product.findUnique({
+  async updateProduct(id: string, req: UpdateProductDto, identity: Identity): Promise<BasicProductDto> {
+    let product = (await this.prisma.product.findUnique({
       select: {
         type: true,
       },
       where: {
         id,
       },
-    })
+    })) as Product
 
     product = await this.prisma.product.update({
       where: {
@@ -89,7 +125,7 @@ export default class ProductService {
             ? {
                 updateMany: {
                   data: {
-                    changelog: req.changelog, // TODO!!
+                    changelog: req.changelog,
                   },
                   where: {
                     productId: id,
@@ -100,46 +136,16 @@ export default class ProductService {
       },
     })
 
-    return UpdateEntityResponse.fromJSON(product)
+    return this.mapper.productToDto(product)
   }
 
-  async deleteProduct(request: IdRequest): Promise<void> {
+  async deleteProduct(id: string): Promise<void> {
     // TODO Have to delete all releations regarding to this product eg.: versions, deployments, images
     // @Levente: We should check cascades for this
     await this.prisma.product.delete({
       where: {
-        id: request.id,
+        id,
       },
     })
-  }
-
-  async getProductDetails(request: IdRequest): Promise<ProductDetailsReponse> {
-    const product = await this.prisma.product.findUniqueOrThrow({
-      where: { id: request.id },
-      include: {
-        versions: {
-          include: {
-            children: true,
-          },
-        },
-      },
-    })
-
-    const productInProgressDeployments = await this.prisma.product.count({
-      where: {
-        id: request.id,
-        versions: {
-          some: {
-            deployments: {
-              some: {
-                status: 'inProgress',
-              },
-            },
-          },
-        },
-      },
-    })
-
-    return this.mapper.detailsToProto({ ...product, deletable: productInProgressDeployments === 0 })
   }
 }

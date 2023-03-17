@@ -146,8 +146,8 @@ export const verificationUrl = (email: string) => `${ROUTE_VERIFICATION}?email=$
 
 // product
 export const productUrl = (id: string, params?: VersionUrlParams) => appendUrlParams(`${ROUTE_PRODUCTS}/${id}`, params)
-export const productApiUrl = (id: string) => `/api${productUrl(id)}`
-export const productVersionsApiUrl = (productId: string) => `${productApiUrl(productId)}/versions`
+export const productApiUrl = (id: string) => `${API_PRODUCTS}/${id}`
+export const productVersionsApiUrl = (productId: string) => `/api${ROUTE_PRODUCTS}/${productId}/versions`
 
 // registry
 export const registryUrl = (id: string) => `${ROUTE_REGISTRIES}/${id}`
