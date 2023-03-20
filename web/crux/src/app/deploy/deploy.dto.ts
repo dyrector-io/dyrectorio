@@ -1,13 +1,26 @@
-/* eslint-disable @typescript-eslint/lines-between-class-members */
-import { DeploymentStatus } from 'src/shared/models'
+import { IsEnum } from 'class-validator'
 import { BasicNodeDto } from '../node/node.dto'
 
-// eslint-disable-next-line import/prefer-default-export
-export class BasicDeploymentWithNodeDto {
+export enum DeploymentStatusDto {
+  preparing = 'preparing',
+  inProgress = 'in-progress',
+  successful = 'successful',
+  failed = 'failed',
+  obsolete = 'obsolete',
+  downgrade = 'downgrade',
+}
+
+export default class BasicDeploymentWithNodeDto {
   id: string
+
   prefix: string
-  status: DeploymentStatus
+
+  @IsEnum(DeploymentStatusDto)
+  status: DeploymentStatusDto
+
   note?: string | null
+
   updatedAt: Date
+
   node: BasicNodeDto
 }

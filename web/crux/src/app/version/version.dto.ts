@@ -1,40 +1,64 @@
-/* eslint-disable @typescript-eslint/lines-between-class-members */
-/* eslint-disable max-classes-per-file */
-import { AuditDto } from 'src/shared/dto'
-import { VersionType } from 'src/shared/models/version'
-// eslint-disable-next-line import/no-cycle
-import { BasicDeploymentWithNodeDto } from '../deploy/deploy.dto'
-import { ImageDto } from '../image/image.dto'
+import { Type } from 'class-transformer'
+import { IsBoolean, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator'
+import { AuditDto } from 'src/shared/dtos/audit'
+import BasicDeploymentWithNodeDto from '../deploy/deploy.dto'
+import ImageDto from '../image/image.dto'
 
-// eslint-disable-next-line max-classes-per-file
+export enum VersionTypeDto {
+  incremental = 'incremental',
+  rolling = 'rolling',
+}
 
 export class BasicVersionDto {
+  @IsUUID()
   id: string
+
+  @IsString()
   name: string
-  type: VersionType
+
+  @IsEnum(VersionTypeDto)
+  type: VersionTypeDto
 }
 
 export class VersionDto extends BasicVersionDto {
+  @Type(() => AuditDto)
   audit: AuditDto
+
+  @IsString()
   changelog: string
+
+  @IsBoolean()
   default: boolean
+
+  @IsBoolean()
   increasable: boolean
 }
 
 export class UpdateVersionDto {
+  @IsString()
   name: string
+
+  @IsString()
+  @IsOptional()
   changelog?: string
 }
 
 export class CreateVersionDto extends UpdateVersionDto {
-  type: VersionType
+  @IsEnum(VersionTypeDto)
+  type: VersionTypeDto
 }
 
 export class IncreaseVersionDto extends UpdateVersionDto {}
 
 export class VersionDetailsDto extends VersionDto {
+  @IsBoolean()
   mutable: boolean
+
+  @IsBoolean()
   deletable: boolean
+
+  @Type(() => ImageDto)
   images: ImageDto[]
+
   deployments: BasicDeploymentWithNodeDto[]
 }

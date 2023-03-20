@@ -22,13 +22,15 @@ import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-loc
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
 import { CreateProductDto, ProductDetailsDto, ProductDto, ProductListDto, UpdateProductDto } from './product.dto'
 import ProductUpdateValidationInterceptor from './interceptors/product.update.interceptor'
+import ProductTeamAccessGuard from './guards/product.team-access.guard'
+import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 
-const ProductId = () => Param(':productId')
+const ProductId = () => Param('productId')
 
 @Controller('products')
 @ApiTags('products')
-@UseGuards(JwtAuthGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
+@UseGuards(JwtAuthGuard, ProductTeamAccessGuard)
+@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
 @UseFilters(HttpExceptionFilter)
 export default class ProductHttpController {
   constructor(private service: ProductService) {}

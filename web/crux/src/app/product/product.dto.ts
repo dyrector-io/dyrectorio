@@ -1,5 +1,6 @@
+import { Type } from 'class-transformer'
 import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
-import DateAuditProperties from 'src/shared/dtos/audit-dates'
+import { AuditDto } from 'src/shared/dtos/audit'
 import { VersionDto } from '../version/version.dto'
 
 export enum ProductTypeDto {
@@ -7,7 +8,7 @@ export enum ProductTypeDto {
   complex = 'complex',
 }
 
-export class ProductDto extends DateAuditProperties {
+export class ProductDto extends AuditDto {
   @IsUUID()
   id: string
 
@@ -30,6 +31,7 @@ export class ProductDetailsDto extends ProductDto {
   @IsBoolean()
   deletable: boolean
 
+  @Type(() => VersionDto)
   versions: VersionDto[]
 }
 

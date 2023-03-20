@@ -1,10 +1,21 @@
-/* eslint-disable import/prefer-default-export */
-/* eslint-disable @typescript-eslint/lines-between-class-members */
+import { Type } from 'class-transformer'
+import { IsDate, IsOptional, IsUUID } from 'class-validator'
+
 export class AuditDto {
-  createdBy: string
+  @Type(() => Date)
+  @IsDate()
   createdAt: Date
-  updatedBy?: string
+
+  @IsUUID()
+  createdBy: string
+
+  @Type(() => Date)
+  @IsDate()
   updatedAt: Date
+
+  @IsUUID()
+  @IsOptional()
+  updatedBy?: string
 }
 
 type Audit = {

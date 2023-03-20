@@ -1,13 +1,14 @@
-import { DeploymentStatusEnum, Version, VersionTypeEnum } from '.prisma/client'
+import { Version, VersionTypeEnum } from '.prisma/client'
 import { Injectable } from '@nestjs/common'
 import { ProductTypeEnum } from '@prisma/client'
 import { versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/domain/version'
 import { VersionType, versionTypeToJSON } from 'src/grpc/protobuf/proto/crux'
-import { toAuditDto } from 'src/shared/dto'
-import { ContainerConfigData, DeploymentStatus } from 'src/shared/models'
+import { toAuditDto } from 'src/shared/dtos/audit'
+import { ContainerConfigData } from 'src/shared/models'
+import { DeploymentStatusDto } from '../deploy/deploy.dto'
 import DeployMapper, { DeploymentWithNode } from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
-import { VersionDetailsDto, VersionDto } from './version.dto'
+import { VersionDetailsDto, VersionDto, VersionTypeDto } from './version.dto'
 
 @Injectable()
 export default class VersionMapper {
@@ -18,7 +19,7 @@ export default class VersionMapper {
       id: it.id,
       audit: toAuditDto(it),
       name: it.name,
-      type: it.type,
+      type: VersionTypeDto[it.type],
       changelog: it.changelog,
       default: it.default,
       increasable: versionIsIncreasable(it),
@@ -28,21 +29,13 @@ export default class VersionMapper {
   detailsToDto(version: VersionDetails): VersionDetailsDto {
     // TODO(@m8vago): move the image and deployment mapping to their respective mapper
 
-    const deploymentStatusToDto = (it: DeploymentStatusEnum): DeploymentStatus => {
-      if (it === 'inProgress') {
-        return 'in-progress'
-      }
-
-      return it as DeploymentStatus
-    }
-
     return {
       id: version.id,
       name: version.name,
       changelog: version.changelog,
       default: version.default,
       audit: toAuditDto(version),
-      type: version.type,
+      type: VersionTypeDto[version.type],
       mutable: versionIsMutable(version),
       deletable: versionIsDeletable(version),
       increasable: versionIsIncreasable(version),
@@ -62,7 +55,7 @@ export default class VersionMapper {
       deployments: version.deployments.map(it => ({
         id: it.id,
         prefix: it.prefix,
-        status: deploymentStatusToDto(it.status),
+        status: DeploymentStatusDto[it.status],
         updatedAt: it.updatedAt ?? it.createdAt,
         node: {
           id: it.node.id,

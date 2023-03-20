@@ -18,7 +18,7 @@ import ImageMapper from '../image/image.mapper'
 import { CreateProductDto, ProductDto, ProductTypeDto } from '../product/product.dto'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
-import { CreateVersionDto } from '../version/version.dto'
+import { CreateVersionDto, VersionTypeDto } from '../version/version.dto'
 import VersionService from '../version/version.service'
 
 const VERSION_NAME = '1.0.0'
@@ -168,7 +168,7 @@ export default class TemplateService {
     if (version === null) {
       const createReq: CreateVersionDto = {
         name: VERSION_NAME,
-        type: 'incremental',
+        type: VersionTypeDto.incremental,
         changelog: null,
       }
 

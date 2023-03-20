@@ -13,7 +13,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest() as ExtendedHttpRequest
 
-    if (req.headers.cookie) {
+    if (req.headers.cookie?.includes('ory_kratos_session=')) {
       try {
         // check the cookie for a valid session
         const session = await this.kratos.getSessionByCookie(req.headers.cookie)
@@ -24,7 +24,8 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
       }
     }
 
-    const activated = super.canActivate(context) as boolean
+    const activated = await (super.canActivate(context) as Promise<boolean>)
+
     if (activated) {
       const userId = req.user.data.sub
       try {

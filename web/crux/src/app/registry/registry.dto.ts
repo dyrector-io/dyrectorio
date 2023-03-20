@@ -2,13 +2,17 @@ import { ApiProperty, getSchemaPath } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsBoolean, IsDate, IsIn, IsOptional, IsString, IsUrl, IsUUID } from 'class-validator'
 
-/* eslint-disable @typescript-eslint/lines-between-class-members */
 export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github', 'google', 'unchecked'] as const
 export type RegistryType = (typeof REGISTRY_TYPE_VALUES)[number]
 
 export class BasicRegistryDto {
+  @IsUUID()
   id: string
+
+  @IsString()
   name: string
+
+  // TODO (@polaroi8d): Missing the enum and the validator
   type: RegistryType
 }
 

@@ -13,7 +13,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
@@ -32,6 +32,7 @@ const ProductId = () => Param('productId')
 const VersionId = () => Param('versionId')
 
 @Controller('products/:productId/versions')
+@ApiTags('products')
 @UseGuards(JwtAuthGuard)
 @UsePipes(
   new ValidationPipe({
@@ -45,13 +46,13 @@ export default class VersionHttpController {
   constructor(private service: VersionService) {}
 
   @Get()
-  @ApiOkResponse({ type: Array<VersionDto> })
+  @ApiOkResponse({ type: VersionDto, isArray: true })
   async getVersions(@ProductId() productId: string, @IdentityFromRequest() identity: Identity): Promise<VersionDto[]> {
     return await this.service.getVersionsByProductId(productId, identity)
   }
 
   @Get(':versionId')
-  @ApiOkResponse({ type: Array<VersionDto> })
+  @ApiOkResponse({ type: VersionDetailsDto })
   async getVersion(@VersionId() versionId: string): Promise<VersionDetailsDto> {
     return await this.service.getVersionDetails(versionId)
   }
@@ -103,7 +104,7 @@ export default class VersionHttpController {
   @Post('/:versionId/increase')
   @CreatedWithLocation()
   @UseInterceptors(VersionIncreaseValidationInterceptor)
-  @ApiBody({ type: CreateVersionDto })
+  @ApiBody({ type: IncreaseVersionDto })
   @ApiCreatedResponse({ type: VersionDto })
   async increaseVersion(
     @ProductId() productId: string,
