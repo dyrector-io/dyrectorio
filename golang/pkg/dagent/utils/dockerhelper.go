@@ -10,6 +10,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/rs/zerolog/log"
 
+	"github.com/dyrector-io/dyrectorio/golang/internal/label"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
@@ -23,7 +24,7 @@ func GetContainersByPrefix(ctx context.Context, prefix string) []*common.Contain
 	if prefix == "" {
 		containers, err = dockerHelper.GetAllContainers(ctx)
 	} else {
-		containers, err = dockerHelper.GetAllContainersByLabel(ctx, getPrefixLabelFilter(prefix))
+		containers, err = dockerHelper.GetAllContainersByLabel(ctx, label.GetPrefixLabelFilter(prefix))
 	}
 
 	if err != nil {
@@ -38,7 +39,7 @@ func GetContainerByPrefixAndName(ctx context.Context, prefix, name string) (*typ
 		return dockerHelper.GetContainerByName(ctx, name)
 	}
 
-	containers, err := dockerHelper.GetAllContainersByLabel(ctx, getPrefixLabelFilter(prefix))
+	containers, err := dockerHelper.GetAllContainersByLabel(ctx, label.GetPrefixLabelFilter(prefix))
 	if err != nil {
 		return nil, err
 	}
@@ -66,8 +67,4 @@ func DeleteContainerByPrefixAndName(ctx context.Context, prefix, name string) er
 	}
 
 	return dockerHelper.DeleteContainer(ctx, container)
-}
-
-func getPrefixLabelFilter(prefix string) string {
-	return util.JoinV("=", LabelDyrectorioOrg+LabelContainerPrefix, prefix)
 }

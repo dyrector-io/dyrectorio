@@ -84,6 +84,12 @@
             "request": "launch",
             "mode": "debug",
             "args": [
+                // main
+                // "--prefix", "dyo-stable",
+                // non-containarized develop
+                "--disable-crux", "--disable-crux-ui","--prefix", "dyo-latest",
+                // containerized develop
+                // "--imagetag",  "latest", "--prefix","dyo-latest",
                 "up"
             ],
             "program": "${workspaceFolder}/golang/cmd/dyo",

@@ -432,13 +432,14 @@ jobs:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
         env:
           # DEBUG: pw:api
+          PREFIX: dyo-e2e
           HUB_PROXY_URL: ${{ secrets.HUB_PROXY_URL }}
           HUB_PROXY_TOKEN: ${{ secrets.HUB_PROXY_TOKEN }}
-          E2E_BASE_URL: "http://dyrectorio-stack_traefik:8000"
-          MAILSLURPER_URL: "http://dyrectorio-stack_mailslurper:4437"
-          CRUX_URL: "dyrectorio-stack_crux:5001"
-          KRATOS_URL: "http://dyrectorio-stack_kratos:4433"
-          KRATOS_ADMIN_URL: "http://dyrectorio-stack_kratos:4434"
+          E2E_BASE_URL: "http://dyo-e2e_traefik:8000"
+          MAILSLURPER_URL: "http://dyo-e2e_mailslurper:4437"
+          CRUX_URL: "dyo-e2e_crux:5001"
+          KRATOS_URL: "http://dyo-e2e_kratos:4433"
+          KRATOS_ADMIN_URL: "http://dyo-e2e_kratos:4434"
           CI: true
         run: |
           npm ci --include=dev
@@ -448,9 +449,9 @@ jobs:
         if: always()
         run: |
           mkdir logs
-          docker logs dyrectorio-stack_crux-ui > logs/e2e-crux-ui.log
-          docker logs dyrectorio-stack_crux > logs/e2e-crux.log
-          docker logs dyrectorio-stack_kratos > logs/e2e-kratos.log
+          docker logs dyo-e2e_crux-ui > logs/e2e-crux-ui.log
+          docker logs dyo-e2e_crux > logs/e2e-crux.log
+          docker logs dyo-e2e_kratos > logs/e2e-kratos.log
       - uses: actions/upload-artifact@v3
         if: always()
         with:
