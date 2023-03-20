@@ -1,6 +1,6 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { Product } from '@app/models'
+import { BasicProduct } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -10,7 +10,7 @@ import ProductTypeTag from './product-type-tag'
 
 interface ProductCardProps {
   className?: string
-  product: Product
+  product: BasicProduct
   titleHref?: string
 }
 

@@ -1,4 +1,4 @@
-import { CreateProduct, Product, ProductDetails, UpdateProduct, Version } from '@app/models'
+import { BasicProduct, CreateProduct, ProductDetails, UpdateProduct, Version } from '@app/models'
 import { Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
@@ -18,7 +18,7 @@ import { versionTypeToDyo } from './mappers/version-mappers'
 class DyoProductService {
   constructor(private client: CruxProductClient, private cookie: string) {}
 
-  async getAll(): Promise<Product[]> {
+  async getAll(): Promise<BasicProduct[]> {
     const products = await protomisify<Empty, ProductListResponse>(
       this.client,
       this.client.getProducts,
@@ -59,7 +59,7 @@ class DyoProductService {
     }
   }
 
-  async create(dto: CreateProduct): Promise<Product> {
+  async create(dto: CreateProduct): Promise<BasicProduct> {
     const req: CreateProductRequest = {
       ...dto,
       type: typeToProto(dto.type),

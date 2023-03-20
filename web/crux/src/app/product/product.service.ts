@@ -1,26 +1,24 @@
 import { Injectable } from '@nestjs/common'
-import { ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
-import { Empty } from 'src/grpc/protobuf/proto/common'
-import {
-  CreateEntityResponse,
-  CreateProductRequest,
-  IdRequest,
-  ProductDetailsReponse,
-  ProductListResponse,
-  UpdateEntityResponse,
-  UpdateProductRequest,
-} from 'src/grpc/protobuf/proto/crux'
+import { Product, ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
 import PrismaService from 'src/services/prisma.service'
 import { Identity } from '@ory/kratos-client'
 import TeamRepository from '../team/team.repository'
 import ProductMapper from './product.mapper'
+import {
+  CreateProductDto,
+  ProductListDto,
+  ProductTypeDto,
+  BasicProductDto,
+  ProductDetailsDto,
+  UpdateProductDto,
+} from './product.dto'
 
 @Injectable()
 export default class ProductService {
   constructor(private teamRepository: TeamRepository, private prisma: PrismaService, private mapper: ProductMapper) {}
 
-  async getProducts(identity: Identity): Promise<ProductListResponse> {
+  async getProducts(identity: Identity): Promise<ProductListDto> {
     const products = await this.prisma.product.findMany({
       where: {
         team: {
@@ -41,13 +39,43 @@ export default class ProductService {
       },
     })
 
-    return {
-      data: products.map(it => this.mapper.listItemToProto(it)),
-    }
+    return this.mapper.listItemToDto(products)
   }
 
-  async createProduct(request: CreateProductRequest, identity: Identity): Promise<CreateEntityResponse> {
-    const type = this.mapper.typeToDb(request.type)
+  async getProductDetails(id: string): Promise<ProductDetailsDto> {
+    const product = await this.prisma.product.findUniqueOrThrow({
+      where: {
+        id,
+      },
+      include: {
+        versions: {
+          include: {
+            children: true,
+          },
+        },
+      },
+    })
+
+    const productInProgressDeployments = await this.prisma.product.count({
+      where: {
+        id,
+        versions: {
+          some: {
+            deployments: {
+              some: {
+                status: 'inProgress',
+              },
+            },
+          },
+        },
+      },
+    })
+
+    return this.mapper.detailsToDto({ ...product, deletable: productInProgressDeployments === 0 })
+  }
+
+  async createProduct(request: CreateProductDto, identity: Identity): Promise<BasicProductDto> {
+    const type = ProductTypeDto[request.type]
     const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
 
     const product = await this.prisma.product.create({
@@ -71,22 +99,22 @@ export default class ProductService {
       },
     })
 
-    return CreateEntityResponse.fromJSON(product)
+    return this.mapper.productToDto(product)
   }
 
-  async updateProduct(req: UpdateProductRequest, identity: Identity): Promise<UpdateEntityResponse> {
-    let product = await this.prisma.product.findUnique({
+  async updateProduct(id: string, req: UpdateProductDto, identity: Identity): Promise<BasicProductDto> {
+    let product = (await this.prisma.product.findUnique({
       select: {
         type: true,
       },
       where: {
-        id: req.id,
+        id,
       },
-    })
+    })) as Product
 
     product = await this.prisma.product.update({
       where: {
-        id: req.id,
+        id,
       },
       data: {
         name: req.name,
@@ -100,7 +128,7 @@ export default class ProductService {
                     changelog: req.changelog,
                   },
                   where: {
-                    productId: req.id,
+                    productId: id,
                   },
                 },
               }
@@ -108,48 +136,16 @@ export default class ProductService {
       },
     })
 
-    return UpdateEntityResponse.fromJSON(product)
+    return this.mapper.productToDto(product)
   }
 
-  async deleteProduct(request: IdRequest): Promise<Empty> {
+  async deleteProduct(id: string): Promise<void> {
     // TODO Have to delete all releations regarding to this product eg.: versions, deployments, images
     // @Levente: We should check cascades for this
     await this.prisma.product.delete({
       where: {
-        id: request.id,
+        id,
       },
     })
-
-    return Empty
-  }
-
-  async getProductDetails(request: IdRequest): Promise<ProductDetailsReponse> {
-    const product = await this.prisma.product.findUniqueOrThrow({
-      where: { id: request.id },
-      include: {
-        versions: {
-          include: {
-            children: true,
-          },
-        },
-      },
-    })
-
-    const productInProgressDeployments = await this.prisma.product.count({
-      where: {
-        id: request.id,
-        versions: {
-          some: {
-            deployments: {
-              some: {
-                status: 'inProgress',
-              },
-            },
-          },
-        },
-      },
-    })
-
-    return this.mapper.detailsToProto({ ...product, deletable: productInProgressDeployments === 0 })
   }
 }

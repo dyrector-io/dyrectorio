@@ -11,10 +11,19 @@ import { versionTypeToProto } from 'src/shared/mapper'
 import { Version, VersionTypeEnum } from '.prisma/client'
 import DeployMapper, { DeploymentWithNode } from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
+import { VersionDto } from './version.dto'
 
 @Injectable()
 export default class VersionMapper {
   constructor(private deployMapper: DeployMapper, private imageMapper: ImageMapper) {}
+
+  listItemToDto(version: VersionWithChildren): VersionDto {
+    return {
+      ...version,
+      type: VersionType[version.type],
+      increasable: versionIsIncreasable(version),
+    }
+  }
 
   listItemToProto(version: VersionWithChildren): VersionResponse {
     return {

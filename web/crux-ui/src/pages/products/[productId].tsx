@@ -20,7 +20,7 @@ import {
   VersionDetails,
 } from '@app/models'
 import { productApiUrl, productUrl, ROUTE_PRODUCTS, versionSetDefaultApiUrl, versionUrl } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
+import { fetchCrux, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
@@ -204,7 +204,8 @@ export default ProductDetailsPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const productId = context.query.productId as string
 
-  const product = await cruxFromContext(context).products.getById(productId)
+  const res = await fetchCrux(context, productApiUrl(productId))
+  const product = (await res.json()) as ProductDetails
 
   const props: ProductDetailsPageProps = {
     product,
