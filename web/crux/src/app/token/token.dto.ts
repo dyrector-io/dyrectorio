@@ -1,11 +1,18 @@
+import { Type } from 'class-transformer'
+import { IsDate } from 'class-validator'
+
 export class SimpleToken {
   id: string
 
   name: string
 
-  expiresAt: string
+  @Type(() => Date)
+  @IsDate()
+  expiresAt: Date
 
-  createdAt: string
+  @Type(() => Date)
+  @IsDate()
+  createdAt: Date
 }
 
 export class TokenList {

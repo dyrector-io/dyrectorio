@@ -7,9 +7,9 @@ import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import PrismaService from 'src/services/prisma.service'
 import TokenService from './token.service'
 import JwtStrategy from './jwt.strategy'
-import AuthController from './token.controller'
 import TokenMapper from './token.mapper'
 import TeamModule from '../team/team.module'
+import TokenHttpController from './token.http.controller'
 
 @Module({
   imports: [
@@ -27,7 +27,7 @@ import TeamModule from '../team/team.module'
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController],
+  controllers: [TokenHttpController],
   providers: [InterceptorGrpcHelperProvider, TokenService, JwtStrategy, KratosService, PrismaService, TokenMapper],
   exports: [],
 })

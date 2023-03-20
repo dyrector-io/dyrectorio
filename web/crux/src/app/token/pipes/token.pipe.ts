@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common'
-import BodyPipeTransform from 'src/pipes/body.pipe'
+import { Injectable, PipeTransform } from '@nestjs/common'
 import { InvalidArgumentException } from 'src/exception/errors'
-import { GenerateTokenRequest } from 'src/grpc/protobuf/proto/crux'
+import { GenerateToken } from '../token.dto'
 
 @Injectable()
-export default class TokenValidationPipe extends BodyPipeTransform<GenerateTokenRequest> {
-  async transformBody(req: GenerateTokenRequest): Promise<GenerateTokenRequest> {
+export default class TokenValidationPipe implements PipeTransform {
+  async transform(req: GenerateToken) {
     if (req.expirationInDays <= 0) {
       throw new InvalidArgumentException({
         property: 'expirationInDays',

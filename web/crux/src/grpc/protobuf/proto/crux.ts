@@ -672,31 +672,6 @@ export interface UpdateEntityResponse {
   updatedAt: Timestamp | undefined
 }
 
-/** AUTHENTICATION */
-export interface GenerateTokenRequest {
-  name: string
-  expirationInDays: number
-}
-
-export interface GenerateTokenResponse {
-  id: string
-  name: string
-  expiresAt: Timestamp | undefined
-  createdAt: Timestamp | undefined
-  token: string
-}
-
-export interface TokenResponse {
-  id: string
-  name: string
-  expiresAt: Timestamp | undefined
-  createdAt: Timestamp | undefined
-}
-
-export interface TokenListResponse {
-  data: TokenResponse[]
-}
-
 /** AUDIT */
 export interface AuditLogListRequest {
   pageSize: number
@@ -1659,96 +1634,6 @@ export const UpdateEntityResponse = {
   toJSON(message: UpdateEntityResponse): unknown {
     const obj: any = {}
     message.updatedAt !== undefined && (obj.updatedAt = fromTimestamp(message.updatedAt).toISOString())
-    return obj
-  },
-}
-
-function createBaseGenerateTokenRequest(): GenerateTokenRequest {
-  return { name: '', expirationInDays: 0 }
-}
-
-export const GenerateTokenRequest = {
-  fromJSON(object: any): GenerateTokenRequest {
-    return {
-      name: isSet(object.name) ? String(object.name) : '',
-      expirationInDays: isSet(object.expirationInDays) ? Number(object.expirationInDays) : 0,
-    }
-  },
-
-  toJSON(message: GenerateTokenRequest): unknown {
-    const obj: any = {}
-    message.name !== undefined && (obj.name = message.name)
-    message.expirationInDays !== undefined && (obj.expirationInDays = Math.round(message.expirationInDays))
-    return obj
-  },
-}
-
-function createBaseGenerateTokenResponse(): GenerateTokenResponse {
-  return { id: '', name: '', expiresAt: undefined, createdAt: undefined, token: '' }
-}
-
-export const GenerateTokenResponse = {
-  fromJSON(object: any): GenerateTokenResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      expiresAt: isSet(object.expiresAt) ? fromJsonTimestamp(object.expiresAt) : undefined,
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-      token: isSet(object.token) ? String(object.token) : '',
-    }
-  },
-
-  toJSON(message: GenerateTokenResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
-    message.expiresAt !== undefined && (obj.expiresAt = fromTimestamp(message.expiresAt).toISOString())
-    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
-    message.token !== undefined && (obj.token = message.token)
-    return obj
-  },
-}
-
-function createBaseTokenResponse(): TokenResponse {
-  return { id: '', name: '', expiresAt: undefined, createdAt: undefined }
-}
-
-export const TokenResponse = {
-  fromJSON(object: any): TokenResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      expiresAt: isSet(object.expiresAt) ? fromJsonTimestamp(object.expiresAt) : undefined,
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-    }
-  },
-
-  toJSON(message: TokenResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
-    message.expiresAt !== undefined && (obj.expiresAt = fromTimestamp(message.expiresAt).toISOString())
-    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
-    return obj
-  },
-}
-
-function createBaseTokenListResponse(): TokenListResponse {
-  return { data: [] }
-}
-
-export const TokenListResponse = {
-  fromJSON(object: any): TokenListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => TokenResponse.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: TokenListResponse): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? TokenResponse.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
     return obj
   },
 }
@@ -5962,47 +5847,6 @@ export function CruxDashboardControllerMethods() {
 }
 
 export const CRUX_DASHBOARD_SERVICE_NAME = 'CruxDashboard'
-
-export interface CruxTokenClient {
-  generateToken(request: GenerateTokenRequest, metadata: Metadata, ...rest: any): Observable<GenerateTokenResponse>
-
-  getTokenList(request: Empty, metadata: Metadata, ...rest: any): Observable<TokenListResponse>
-
-  deleteToken(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
-}
-
-export interface CruxTokenController {
-  generateToken(
-    request: GenerateTokenRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<GenerateTokenResponse> | Observable<GenerateTokenResponse> | GenerateTokenResponse
-
-  getTokenList(
-    request: Empty,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<TokenListResponse> | Observable<TokenListResponse> | TokenListResponse
-
-  deleteToken(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
-}
-
-export function CruxTokenControllerMethods() {
-  return function (constructor: Function) {
-    const grpcMethods: string[] = ['generateToken', 'getTokenList', 'deleteToken']
-    for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcMethod('CruxToken', method)(constructor.prototype[method], method, descriptor)
-    }
-    const grpcStreamMethods: string[] = []
-    for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcStreamMethod('CruxToken', method)(constructor.prototype[method], method, descriptor)
-    }
-  }
-}
-
-export const CRUX_TOKEN_SERVICE_NAME = 'CruxToken'
 
 export interface CruxStorageClient {
   /** CRUD */

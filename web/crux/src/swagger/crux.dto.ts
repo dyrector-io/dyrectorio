@@ -113,9 +113,6 @@ import {
   TemplateListResponse,
   TemplateImageResponse,
   DashboardResponse,
-  GenerateTokenResponse,
-  TokenListResponse,
-  TokenResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import {
   UniqueKey,
@@ -147,27 +144,6 @@ export class CreateEntityResponseDto {
 }
 export class UpdateEntityResponseDto {
   updatedAt: any
-}
-export class GenerateTokenRequestDto {
-  accessedBy: string
-  name: string
-  expirationInDays: number
-}
-export class GenerateTokenResponseDto {
-  id: string
-  name: string
-  expiresAt: any
-  createdAt: any
-  token: string
-}
-export class TokenResponseDto {
-  id: string
-  name: string
-  expiresAt: any
-  createdAt: any
-}
-export class TokenListResponseDto {
-  data: TokenResponse[]
 }
 export class AuditLogListRequestDto {
   accessedBy: string
@@ -1146,16 +1122,6 @@ export class CruxDashboardClientDto {
 }
 export class CruxDashboardControllerDto {
   getDashboard: Promise<DashboardResponse> | Observable<DashboardResponse> | DashboardResponse
-}
-export class CruxTokenClientDto {
-  generateToken: Observable<GenerateTokenResponse>
-  getTokenList: Observable<TokenListResponse>
-  deleteToken: any
-}
-export class CruxTokenControllerDto {
-  generateToken: Promise<GenerateTokenResponse> | Observable<GenerateTokenResponse> | GenerateTokenResponse
-  getTokenList: Promise<TokenListResponse> | Observable<TokenListResponse> | TokenListResponse
-  deleteToken: any
 }
 
 // Not generated:

@@ -146,12 +146,6 @@ service CruxDashboard {
   rpc GetDashboard(common.Empty) returns (DashboardResponse);
 }
 
-service CruxToken {
-  rpc GenerateToken(GenerateTokenRequest) returns (GenerateTokenResponse);
-  rpc GetTokenList(common.Empty) returns (TokenListResponse);
-  rpc DeleteToken(IdRequest) returns (common.Empty);
-}
-
 service CruxStorage {
   // CRUD
   rpc GetStorages(common.Empty) returns (StorageListResponse);
@@ -194,32 +188,6 @@ message UpdateEntityResponse { google.protobuf.Timestamp updatedAt = 100; }
  * Custom messages, please use comment if you add a new entity
  *
  */
-
-// AUTHENTICATION
-message GenerateTokenRequest {
-  string name = 100;
-  int32 expirationInDays = 101;
-}
-
-message GenerateTokenResponse {
-  string id = 1;
-
-  string name = 100;
-  google.protobuf.Timestamp expiresAt = 101;
-  google.protobuf.Timestamp createdAt = 102;
-
-  string token = 103;
-}
-
-message TokenResponse {
-  string id = 1;
-
-  string name = 100;
-  google.protobuf.Timestamp expiresAt = 101;
-  google.protobuf.Timestamp createdAt = 102;
-}
-
-message TokenListResponse { repeated TokenResponse data = 1000; }
 
 // AUDIT
 message AuditLogListRequest {
