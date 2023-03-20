@@ -6,7 +6,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
-import { GenerateToken, Token } from '@app/models'
+import { GeneratedToken, GenerateToken } from '@app/models'
 import { API_TOKENS } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { generateTokenSchema } from '@app/validations/token'
@@ -19,7 +19,7 @@ const EXPIRATION_VALUES = [30, 60, 90]
 interface CreateTokenCardProps {
   className?: string
   submitRef?: MutableRefObject<() => Promise<any>>
-  onTokenCreated: (token: Token) => void
+  onTokenCreated: (token: GeneratedToken) => void
 }
 
 const CreateTokenCard = (props: CreateTokenCardProps) => {
@@ -42,7 +42,7 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
 
       if (res.ok) {
         const json = await res.json()
-        const result = json as Token
+        const result = json as GeneratedToken
 
         setSubmitting(false)
         onTokenCreated(result)

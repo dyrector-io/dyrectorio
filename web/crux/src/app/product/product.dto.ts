@@ -16,7 +16,7 @@ export class ProductDto extends DateAuditProperties {
 
   @IsString()
   @IsOptional()
-  description?: string | undefined
+  description?: string
 
   @IsEnum(ProductTypeDto)
   type: ProductTypeDto

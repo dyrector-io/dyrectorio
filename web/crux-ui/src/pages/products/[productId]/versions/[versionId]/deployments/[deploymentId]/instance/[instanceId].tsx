@@ -31,7 +31,15 @@ import {
   VersionDetails,
   ViewState,
 } from '@app/models'
-import { deploymentUrl, instanceConfigUrl, productApiUrl, productUrl, ROUTE_PRODUCTS, versionApiUrl, versionUrl } from '@app/routes'
+import {
+  deploymentUrl,
+  instanceConfigUrl,
+  productApiUrl,
+  productUrl,
+  ROUTE_PRODUCTS,
+  versionApiUrl,
+  versionUrl,
+} from '@app/routes'
 import { fetchCrux, withContextAuthorization } from '@app/utils'
 import { jsonErrorOf } from '@app/validations/image'
 import { getMergedContainerConfigFieldErrors } from '@app/validations/instance'

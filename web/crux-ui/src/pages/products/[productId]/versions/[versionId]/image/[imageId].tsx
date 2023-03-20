@@ -35,8 +35,16 @@ import {
   WS_TYPE_IMAGE_UPDATED,
   WS_TYPE_PATCH_IMAGE,
 } from '@app/models'
-import { imageConfigUrl, productApiUrl, productUrl, ROUTE_PRODUCTS, versionApiUrl, versionUrl, versionWsUrl } from '@app/routes'
-import { fetchCrux, fetchCruxFromRequest, withContextAuthorization } from '@app/utils'
+import {
+  imageConfigUrl,
+  productApiUrl,
+  productUrl,
+  ROUTE_PRODUCTS,
+  versionApiUrl,
+  versionUrl,
+  versionWsUrl,
+} from '@app/routes'
+import { fetchCrux, withContextAuthorization } from '@app/utils'
 import { getContainerConfigFieldErrors, jsonErrorOf } from '@app/validations/image'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'

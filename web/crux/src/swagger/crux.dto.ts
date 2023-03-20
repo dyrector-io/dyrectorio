@@ -15,7 +15,7 @@ import {
   HealthCheckConfig,
   InstanceDeploymentItem,
   ListSecretsResponse,
-  ResourceConfig
+  ResourceConfig,
 } from 'src/grpc/protobuf/proto/common'
 import {
   ActiveTeamDetailsResponse,
@@ -92,7 +92,7 @@ import {
   VersionType,
   Volume,
   VolumeLink,
-  VolumeList
+  VolumeList,
 } from 'src/grpc/protobuf/proto/crux'
 import {
   InitContainer,
@@ -102,7 +102,7 @@ import {
   UniqueKeyValue,
   UniqueSecretKey,
   UniqueSecretKeyValue,
-  VolumeType
+  VolumeType,
 } from 'src/shared/models'
 
 export class ServiceIdRequestDto {

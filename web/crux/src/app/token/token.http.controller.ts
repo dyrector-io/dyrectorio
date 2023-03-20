@@ -15,15 +15,16 @@ import {
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
-import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { Response as ExpressResponse } from 'express'
-import JwtAuthGuard from './jwt-auth.guard'
-import { GenerateToken, BasicToken, Token, TokenList } from './token.dto'
+import JwtAuthGuard, { IdentityFromRequest } from './jwt-auth.guard'
+import { GenerateToken, Token, GeneratedToken } from './token.dto'
 import TokenService from './token.service'
 import TokenValidationPipe from './pipes/token.pipe'
 import TokenAccessGuard from './guards/token.access.guard'
+
+const TokenId = () => Param(':tokenId')
 
 @Controller('tokens')
 @ApiTags('tokens')
@@ -32,27 +33,30 @@ import TokenAccessGuard from './guards/token.access.guard'
     transform: true,
   }),
 )
-@UseInterceptors(HttpLoggerInterceptor, HttpIdentityInterceptor, PrismaErrorInterceptor)
+@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
 @UseGuards(JwtAuthGuard, TokenAccessGuard)
 export default class TokenHttpController {
   constructor(private service: TokenService) {}
 
   @Get()
-  @ApiOkResponse({ type: TokenList })
-  async getTokens(@IdentityFromRequest() identity: Identity): Promise<TokenList> {
+  @ApiOkResponse({
+    type: Token,
+    isArray: true,
+  })
+  async getTokens(@IdentityFromRequest() identity: Identity): Promise<Token[]> {
     return this.service.getTokenList(identity)
   }
 
-  @Get(':id')
-  @ApiOkResponse({ type: BasicToken })
-  async getToken(@Param('id') id: string, @IdentityFromRequest() identity: Identity): Promise<BasicToken> {
+  @Get(':tokenId')
+  @ApiOkResponse({ type: Token })
+  async getToken(@TokenId() id: string, @IdentityFromRequest() identity: Identity): Promise<Token> {
     return this.service.getToken(id, identity)
   }
 
   @Post()
   @ApiBody({ type: GenerateToken })
   @ApiCreatedResponse({
-    type: Token,
+    type: GeneratedToken,
     headers: {
       Location: {
         description: 'URL of the created object.',
@@ -73,10 +77,10 @@ export default class TokenHttpController {
     res.location(`/tokens/${token.id}`).json(token)
   }
 
-  @Delete(':id')
+  @Delete(':tokenId')
   @AuditLogLevel('disabled')
   @HttpCode(204)
-  async deleteToken(@Param('id') id: string, @Response() res: ExpressResponse): Promise<void> {
+  async deleteToken(@TokenId() id: string, @Response() res: ExpressResponse): Promise<void> {
     await this.service.deleteToken(id)
     res.end()
   }

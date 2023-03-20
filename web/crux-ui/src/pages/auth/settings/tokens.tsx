@@ -11,7 +11,7 @@ import { DyoList } from '@app/elements/dyo-list'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { SimpleToken, Token, TokenList } from '@app/models'
+import { GeneratedToken, Token } from '@app/models'
 import { API_TOKENS, ROUTE_SETTINGS_EDIT_PROFILE, ROUTE_SETTINGS_TOKENS, tokensApiUrl } from '@app/routes'
 import { fetchCrux, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import clsx from 'clsx'
@@ -22,7 +22,7 @@ import { useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
 
 interface TokensPageProps {
-  tokens: SimpleToken[]
+  tokens: Token[]
 }
 
 const TokensPage = (props: TokensPageProps) => {
@@ -30,24 +30,26 @@ const TokensPage = (props: TokensPageProps) => {
 
   const { t } = useTranslation('settings')
 
-  const [showToken, setShowToken] = useState<Token>(null)
+  const [showToken, setShowToken] = useState<GeneratedToken>(null)
   const [creating, setCreating] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
   const [deleteModalConfig, confirmDelete] = useConfirmation()
 
-  const filters = useFilters<SimpleToken, TextFilter>({
+  const filters = useFilters<Token, TextFilter>({
     initialData: tokens,
-    filters: [textFilterFor<Token>(it => [it.name, utcDateToLocale(it.createdAt), utcDateToLocale(it.expiresAt)])],
+    filters: [
+      textFilterFor<GeneratedToken>(it => [it.name, utcDateToLocale(it.createdAt), utcDateToLocale(it.expiresAt)]),
+    ],
   })
 
-  const onCreated = (token: Token) => {
+  const onCreated = (token: GeneratedToken) => {
     setCreating(false)
     setShowToken(token)
     filters.setItems([...filters.items, token])
   }
 
-  const onDelete = async (token: Token) => {
+  const onDelete = async (token: GeneratedToken) => {
     const res = await fetch(tokensApiUrl(token.id), {
       method: 'DELETE',
     })
@@ -81,7 +83,7 @@ const TokensPage = (props: TokensPageProps) => {
     clsx('pr-4', defaultItemClass),
   ]
 
-  const itemTemplate = (item: Token) => [
+  const itemTemplate = (item: GeneratedToken) => [
     <a>{item.name}</a>,
     <a>{utcDateToLocale(item.createdAt)}</a>,
     <a>{utcDateToLocale(item.expiresAt)}</a>,
@@ -181,7 +183,7 @@ export default TokensPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const res = await fetchCrux(context, API_TOKENS)
-  const { data: tokens } = (await res.json()) as TokenList
+  const tokens = (await res.json()) as Token[]
 
   return {
     props: {

@@ -1,9 +1,11 @@
 import { Type } from 'class-transformer'
-import { IsDate } from 'class-validator'
+import { IsDate, IsInt, IsJWT, IsString, IsUUID, Min } from 'class-validator'
 
-export class BasicToken {
+export class Token {
+  @IsUUID()
   id: string
 
+  @IsString()
   name: string
 
   @Type(() => Date)
@@ -15,16 +17,16 @@ export class BasicToken {
   createdAt: Date
 }
 
-export class TokenList {
-  data: BasicToken[]
-}
-
 export class GenerateToken {
+  @IsString()
   name: string
 
+  @IsInt()
+  @Min(1)
   expirationInDays: number
 }
 
-export class Token extends BasicToken {
+export class GeneratedToken extends Token {
+  @IsJWT()
   token: string
 }
