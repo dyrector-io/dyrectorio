@@ -38,21 +38,18 @@ export default class TokenHttpController {
   constructor(private service: TokenService) {}
 
   @Get()
-  @AuditLogLevel('disabled')
   @ApiOkResponse({ type: TokenList })
   async getTokens(@IdentityFromRequest() identity: Identity): Promise<TokenList> {
     return this.service.getTokenList(identity)
   }
 
   @Get(':id')
-  @AuditLogLevel('disabled')
   @ApiOkResponse({ type: BasicToken })
   async getToken(@Param('id') id: string, @IdentityFromRequest() identity: Identity): Promise<BasicToken> {
     return this.service.getToken(id, identity)
   }
 
   @Post()
-  @AuditLogLevel('disabled')
   @ApiBody({ type: GenerateToken })
   @ApiCreatedResponse({
     type: Token,

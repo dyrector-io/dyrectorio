@@ -15,7 +15,6 @@ import {
 } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -46,14 +45,12 @@ export default class VersionHttpController {
   constructor(private service: VersionService) {}
 
   @Get()
-  @AuditLogLevel('disabled')
   @ApiOkResponse({ type: Array<VersionDto> })
   async getVersions(@ProductId() productId: string, @IdentityFromRequest() identity: Identity): Promise<VersionDto[]> {
     return await this.service.getVersionsByProductId(productId, identity)
   }
 
   @Get(':versionId')
-  @AuditLogLevel('disabled')
   @ApiOkResponse({ type: Array<VersionDto> })
   async getVersion(@VersionId() versionId: string): Promise<VersionDetailsDto> {
     return await this.service.getVersionDetails(versionId)
@@ -62,7 +59,6 @@ export default class VersionHttpController {
   @Post()
   @CreatedWithLocation()
   @UseInterceptors(VersionCreateValidationInterceptor)
-  @AuditLogLevel('disabled')
   @ApiBody({ type: CreateVersionDto })
   @ApiCreatedResponse({ type: VersionDto })
   async createVersion(
@@ -81,7 +77,6 @@ export default class VersionHttpController {
   @Put(':versionId')
   @HttpCode(204)
   @UseInterceptors(VersionUpdateValidationInterceptor)
-  @AuditLogLevel('disabled')
   @ApiBody({ type: UpdateVersionDto })
   async updateVersion(
     @VersionId() versionId: string,
@@ -94,7 +89,6 @@ export default class VersionHttpController {
   @Delete(':versionId')
   @HttpCode(204)
   @UseInterceptors(VersionDeleteValidationInterceptor)
-  @AuditLogLevel('disabled')
   @ApiBody({ type: UpdateVersionDto })
   async deleteVersion(@VersionId() versionId: string): Promise<void> {
     return await this.service.deleteVersion(versionId)
@@ -102,7 +96,6 @@ export default class VersionHttpController {
 
   @Put(':versionId/default')
   @HttpCode(204)
-  @AuditLogLevel('disabled')
   async setDefaultVersion(@ProductId() productId: string, @VersionId() versionId: string): Promise<void> {
     return await this.service.setDefaultVersion(productId, versionId)
   }
@@ -110,7 +103,6 @@ export default class VersionHttpController {
   @Post('/:versionId/increase')
   @CreatedWithLocation()
   @UseInterceptors(VersionIncreaseValidationInterceptor)
-  @AuditLogLevel('disabled')
   @ApiBody({ type: CreateVersionDto })
   @ApiCreatedResponse({ type: VersionDto })
   async increaseVersion(

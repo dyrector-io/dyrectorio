@@ -1,7 +1,6 @@
 import { Controller, Get, Query, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common'
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -23,7 +22,6 @@ export default class AuditController {
 
   @Get()
   @ApiOkResponse()
-  @AuditLogLevel('disabled') // TODO(@polaroi8d): Refactor the auditlog after removing gRPC
   async getAuditLog(
     @Query() query: AuditLogQueryDto,
     @IdentityFromRequest() identity: Identity,

@@ -1,28 +1,28 @@
 import {
-  Controller,
-  Post,
   Body,
+  Controller,
+  Delete,
   Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  UseFilters,
   UseGuards,
   UseInterceptors,
-  UseFilters,
-  Delete,
-  Param,
-  Res,
-  Put,
-  HttpCode,
 } from '@nestjs/common'
-import { Response } from 'express'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
-import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
-import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import { Identity } from '@ory/kratos-client'
+import HttpExceptionFilter from 'src/filters/http-exception.filter'
+import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import ProductService from './product.service'
 
+import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
-import { ProductDto, CreateProductDto, ProductDetailsDto, ProductListDto, UpdateProductDto } from './product.dto'
+import { CreateProductDto, ProductDetailsDto, ProductDto, ProductListDto, UpdateProductDto } from './product.dto'
+
+const ProductId = () => Param(':productId')
 
 @Controller('products')
 @ApiTags('products')
@@ -34,50 +34,46 @@ export default class ProductHttpController {
 
   @Get()
   @ApiOkResponse({ type: ProductListDto })
-  @AuditLogLevel('disabled') // TODO(@polaroi8d): Refactor after removing the gRPC
   async getProducts(@IdentityFromRequest() identity: Identity): Promise<ProductListDto> {
     return this.service.getProducts(identity)
   }
 
-  @Get(':id')
+  @Get(':productId')
   @ApiOkResponse({ type: ProductDetailsDto })
-  @AuditLogLevel('disabled') // TODO(@polaroi8d): Refactor after removing the gRPC
-  async getProductDetails(@Param('id') id: string): Promise<ProductDetailsDto> {
+  async getProductDetails(@ProductId() id: string): Promise<ProductDetailsDto> {
     return this.service.getProductDetails(id)
   }
 
   @Post()
+  @CreatedWithLocation()
   @ApiBody({ type: CreateProductDto })
   @ApiCreatedResponse({ type: ProductDto })
-  @AuditLogLevel('disabled') // TODO(@polaroi8d): Refactor after removing the gRPC
-  @HttpCode(201)
   async createProduct(
     @Body() request: CreateProductDto,
     @IdentityFromRequest() identity: Identity,
-    @Res() res: Response,
-  ): Promise<void> {
+  ): Promise<CreatedResponse<ProductDto>> {
     const product = await this.service.createProduct(request, identity)
-    res.location(`/products/${product.id}`).json(product)
+
+    return {
+      url: `/products/${product.id}`,
+      body: product,
+    }
   }
 
-  @Put(':id')
+  @Put(':productId')
   @HttpCode(204)
   @ApiNoContentResponse({ type: ProductDto })
-  @AuditLogLevel('disabled') // TODO(@polaroi8d): Refactor after removing the gRPC
   async updateProduct(
-    @Param('id') id: string,
+    @ProductId() id: string,
     @Body() request: UpdateProductDto,
     @IdentityFromRequest() identity: Identity,
-    @Res() res: Response,
   ): Promise<void> {
     await this.service.updateProduct(id, request, identity)
-    res.end()
   }
 
-  @Delete(':id')
-  @AuditLogLevel('disabled') // TODO(@polaroi8d): Refactor after removing the gRPC
+  @Delete(':productId')
   @HttpCode(204)
-  async deleteProduct(@Param('id') id: string): Promise<void> {
+  async deleteProduct(@ProductId() id: string): Promise<void> {
     return this.service.deleteProduct(id)
     // TODO(@polaroi8d): exception if there is no product with the given Id
   }
