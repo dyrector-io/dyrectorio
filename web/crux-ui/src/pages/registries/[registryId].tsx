@@ -5,7 +5,7 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import { defaultApiErrorHandler } from '@app/errors'
-import { registryDetailDtoToUI, RegistryDetails, RegistryDetailsDto, registryDetailsToRegistry } from '@app/models'
+import { registryDetailsDtoToUI, RegistryDetails, RegistryDetailsDto, registryDetailsToRegistry } from '@app/models'
 import { registryApiUrl, registryUrl, ROUTE_REGISTRIES } from '@app/routes'
 import { fetchCrux, toastWarning, withContextAuthorization } from '@app/utils'
 import { NextPageContext } from 'next'
@@ -98,7 +98,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 
   const res = await fetchCrux(context, registryApiUrl(registryId))
   const dto = (await res.json()) as RegistryDetailsDto
-  const details = registryDetailDtoToUI(dto)
+  const details = registryDetailsDtoToUI(dto)
 
   return {
     props: {

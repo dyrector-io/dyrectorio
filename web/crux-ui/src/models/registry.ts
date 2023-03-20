@@ -227,7 +227,7 @@ export const registryDetailsToRegistry = (it: RegistryDetails): Registry => ({
   url: registryUrlOf(it),
 })
 
-export const registryDetailDtoToUI = (dto: RegistryDetailsDto): RegistryDetails => ({
+export const registryDetailsDtoToUI = (dto: RegistryDetailsDto): RegistryDetails => ({
   id: dto.id,
   inUse: dto.inUse,
   name: dto.name,
