@@ -4,7 +4,7 @@ import { Identity } from '@ory/kratos-client'
 import PrismaService from 'src/services/prisma.service'
 import { AuthPayload } from 'src/shared/models'
 import { v4 as uuid } from 'uuid'
-import { GenerateToken, SimpleToken, Token, TokenList } from './token.dto'
+import { GenerateToken, BasicToken, Token, TokenList } from './token.dto'
 import TokenMapper from './token.mapper'
 
 @Injectable()
@@ -50,7 +50,7 @@ export default class TokenService {
     }
   }
 
-  async getToken(id: string, identity: Identity): Promise<SimpleToken> {
+  async getToken(id: string, identity: Identity): Promise<BasicToken> {
     const response = await this.prisma.token.findFirst({
       where: {
         userId: identity.id,

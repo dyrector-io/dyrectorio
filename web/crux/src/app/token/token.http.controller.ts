@@ -20,7 +20,7 @@ import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { Response as ExpressResponse } from 'express'
 import JwtAuthGuard from './jwt-auth.guard'
-import { GenerateToken, SimpleToken, Token, TokenList } from './token.dto'
+import { GenerateToken, BasicToken, Token, TokenList } from './token.dto'
 import TokenService from './token.service'
 import TokenValidationPipe from './pipes/token.pipe'
 import TokenAccessGuard from './guards/token.access.guard'
@@ -46,8 +46,8 @@ export default class TokenHttpController {
 
   @Get(':id')
   @AuditLogLevel('disabled')
-  @ApiOkResponse({ type: SimpleToken })
-  async getToken(@Param('id') id: string, @IdentityFromRequest() identity: Identity): Promise<SimpleToken> {
+  @ApiOkResponse({ type: BasicToken })
+  async getToken(@Param('id') id: string, @IdentityFromRequest() identity: Identity): Promise<BasicToken> {
     return this.service.getToken(id, identity)
   }
 

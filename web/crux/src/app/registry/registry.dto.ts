@@ -11,7 +11,7 @@ export type GitlabNamespace = (typeof GITLAB_NAMESPACE_VALUES)[number]
 export type GithubNamespace = (typeof GITHUB_NAMESPACE_VALUES)[number]
 export type RegistryNamespace = GitlabNamespace | GithubNamespace
 
-export class SimpleRegistry {
+export class BasicRegistry {
   id: string
 
   name: string
@@ -29,7 +29,7 @@ export class SimpleRegistry {
 }
 
 export class RegistryList {
-  data: SimpleRegistry[]
+  data: BasicRegistry[]
 }
 
 export class HubRegistryDetails {

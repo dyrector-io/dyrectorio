@@ -3,14 +3,14 @@ import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
-import { GenerateTokenResponse } from '@app/models'
+import { Token } from '@app/models'
 import { writeToClipboard } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 
 interface ShowTokenCardProps {
   className?: string
-  token: GenerateTokenResponse
+  token: Token
 }
 
 const ShowTokenCard = (props: ShowTokenCardProps) => {

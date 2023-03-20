@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer'
 import { IsDate } from 'class-validator'
 
-export class SimpleToken {
+export class BasicToken {
   id: string
 
   name: string
@@ -16,7 +16,7 @@ export class SimpleToken {
 }
 
 export class TokenList {
-  data: SimpleToken[]
+  data: BasicToken[]
 }
 
 export class GenerateToken {
@@ -25,6 +25,6 @@ export class GenerateToken {
   expirationInDays: number
 }
 
-export class Token extends SimpleToken {
+export class Token extends BasicToken {
   token: string
 }
