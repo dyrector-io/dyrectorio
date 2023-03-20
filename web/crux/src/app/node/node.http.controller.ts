@@ -15,7 +15,6 @@ import NodeService from './node.service'
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
 @UseFilters(HttpExceptionFilter)
-@AuditLogLevel('disabled')
 export default class NodeHttpController {
   constructor(private service: NodeService) {}
 
@@ -32,7 +31,6 @@ export default class NodeHttpController {
   @Get('status')
   @ApiBody({ type: WatchContainerStateRequestDto })
   @ApiOkResponse({ type: ContainerStateListMessageDto })
-  @AuditLogLevel('disabled')
   async getContainerStatus(@Body() params: WatchContainerStateRequest): Promise<Observable<ContainerStateListMessage>> {
     return this.service
       .handleWatchContainerStatus(params)

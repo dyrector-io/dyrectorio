@@ -1,6 +1,5 @@
 import { Controller, Post, Body, Get, UseGuards, UseInterceptors, UseFilters } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import { CreateDeploymentRequest, CreateEntityResponse, IdRequest } from 'src/grpc/protobuf/proto/crux'
@@ -21,7 +20,6 @@ import DeployStartValidationPipe from './pipes/deploy.start.pipe'
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, HttpIdentityInterceptor)
 @UseFilters(HttpExceptionFilter)
-@AuditLogLevel('disabled')
 @Controller('deploy')
 export default class DeployHttpController {
   constructor(private service: DeployService) {}
@@ -29,7 +27,6 @@ export default class DeployHttpController {
   @Post()
   @ApiBody({ type: CreateDeploymentRequestDto })
   @ApiCreatedResponse({ type: CreateEntityResponseDto })
-  @AuditLogLevel('disabled')
   async createDeployment(
     @Body() request: CreateDeploymentRequest,
     @IdentityFromRequest() identity: Identity,
@@ -40,7 +37,6 @@ export default class DeployHttpController {
   @Post('start')
   @ApiBody({ type: IdRequestDto })
   @ApiOkResponse()
-  @AuditLogLevel('disabled')
   async startDeployment(
     @Body(DeployStartValidationPipe) request: IdRequest,
     @IdentityFromRequest() identity: Identity,
@@ -51,7 +47,6 @@ export default class DeployHttpController {
   @Get('events')
   @ApiBody({ type: IdRequestDto })
   @ApiOkResponse({ type: DeploymentEventsDto })
-  @AuditLogLevel('disabled')
   async getDeploymentEvents(@Body() request: IdRequest): Promise<DeploymentEventsDto> {
     return await this.service.getDeploymenEventsById(request)
   }

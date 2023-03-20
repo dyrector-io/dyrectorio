@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Post, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import {
   CreateEntityResponse,
@@ -32,7 +31,6 @@ export default class VersionHttpController {
   @Get()
   @ApiBody({ type: IdRequestDto })
   @ApiOkResponse({ type: VersionListResponseDto })
-  @AuditLogLevel('disabled')
   async getVersionsByProductId(
     @Body() request: IdRequest,
     @IdentityFromRequest() identity: Identity,
@@ -43,7 +41,6 @@ export default class VersionHttpController {
   @Post()
   @ApiBody({ type: CreateVersionRequestDto })
   @ApiCreatedResponse({ type: CreateEntityResponseDto })
-  @AuditLogLevel('disabled')
   async createVersion(
     @Body() request: CreateVersionRequestDto,
     @IdentityFromRequest() identity: Identity,
@@ -54,7 +51,6 @@ export default class VersionHttpController {
   @Post('increase')
   @ApiBody({ type: CreateVersionRequestDto })
   @ApiCreatedResponse({ type: CreateEntityResponseDto })
-  @AuditLogLevel('disabled')
   async increaseVersion(
     @Body(VersionIncreaseValidationPipe) request: IncreaseVersionRequest,
     @IdentityFromRequest() identity,
