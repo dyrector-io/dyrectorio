@@ -596,7 +596,7 @@ message WatchContainerLogRequest {
   common.ContainerIdentifier container = 101;
 }
 
-// VERSIOn
+// VERSION
 
 enum VersionType {
   VERSION_TYPE_UNSPECIFIED = 0;

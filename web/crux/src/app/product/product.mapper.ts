@@ -27,7 +27,7 @@ export default class ProductMapper {
     return {
       ...this.productToDto(product),
       deletable: product.deletable,
-      versions: product.versions.map(it => this.versionMapper.listItemToDto(it)),
+      versions: product.versions.map(it => this.versionMapper.toDto(it)),
     }
   }
 }

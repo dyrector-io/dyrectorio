@@ -66,9 +66,6 @@ import {
   PortList,
   PortRangeBinding,
   PortRangeBindingList,
-  ProductDetailsReponse,
-  ProductListResponse,
-  ProductReponse,
   ProductType,
   RegistryImages,
   RegistryType,
@@ -88,7 +85,6 @@ import {
   UserResponse,
   UserRole,
   UserStatus,
-  VersionResponse,
   VersionType,
   Volume,
   VolumeLink,
@@ -226,39 +222,6 @@ export class UserResponseDto {
   status: UserStatus
   lastLogin: any
 }
-export class ProductDetailsReponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  description: string | undefined
-  type: ProductType
-  deletable: boolean
-  versions: VersionResponse[]
-}
-export class ProductReponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  description: string | undefined
-  type: ProductType
-  versionCount: number
-}
-export class ProductListResponseDto {
-  data: ProductReponse[]
-}
-export class CreateProductRequestDto {
-  accessedBy: string
-  name: string
-  description: string | undefined
-  type: ProductType
-}
-export class UpdateProductRequestDto {
-  id: string
-  accessedBy: string
-  name: string
-  description: string | undefined
-  changelog: string | undefined
-}
 export class HubRegistryDetailsDto {
   imageNamePrefix: string
 }
@@ -290,9 +253,6 @@ export class VersionResponseDto {
   default: boolean
   type: VersionType
   increasable: boolean
-}
-export class VersionListResponseDto {
-  data: VersionResponse[]
 }
 export class VersionDetailsResponseDto {
   id: string
@@ -769,20 +729,6 @@ export class DashboardDeploymentDto {
   deployedAt: any
   productId: string
   versionId: string
-}
-export class CruxProductClientDto {
-  getProducts: Observable<ProductListResponse>
-  createProduct: Observable<CreateEntityResponse>
-  updateProduct: Observable<UpdateEntityResponse>
-  deleteProduct: any
-  getProductDetails: Observable<ProductDetailsReponse>
-}
-export class CruxProductControllerDto {
-  getProducts: Promise<ProductListResponse> | Observable<ProductListResponse> | ProductListResponse
-  createProduct: Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-  updateProduct: Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-  deleteProduct: any
-  getProductDetails: Promise<ProductDetailsReponse> | Observable<ProductDetailsReponse> | ProductDetailsReponse
 }
 export class CruxNodeClientDto {
   getNodes: Observable<NodeListResponse>

@@ -21,6 +21,7 @@ import ProductService from './product.service'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
 import { CreateProductDto, ProductDetailsDto, ProductDto, ProductListDto, UpdateProductDto } from './product.dto'
+import ProductUpdateValidationInterceptor from './interceptors/product.update.interceptor'
 
 const ProductId = () => Param(':productId')
 
@@ -62,6 +63,7 @@ export default class ProductHttpController {
 
   @Put(':productId')
   @HttpCode(204)
+  @UseInterceptors(ProductUpdateValidationInterceptor)
   @ApiNoContentResponse({ type: ProductDto })
   async updateProduct(
     @ProductId() id: string,
