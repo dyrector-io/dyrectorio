@@ -13,7 +13,6 @@ import { Response as Res } from 'express'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-
 import { Delete, Post, Put } from '@nestjs/common/decorators/http/request-mapping.decorator'
 import { Body, Param } from '@nestjs/common/decorators/http/route-params.decorator'
 import { Identity } from '@ory/kratos-client'
@@ -22,7 +21,7 @@ import RegistryAccessValidationGuard from './guards/registry.auth.validation.gua
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
 import UpdateRegistryInterceptor from './interceptors/registry.update.interceptor'
 import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
-import { CreateRegistry, RegistryDetails, RegistryList, UpdateRegistry } from './registry.dto'
+import { CreateRegistry, RegistryDetails, RegistryList, TestRegistry, UpdateRegistry } from './registry.dto'
 import RegistryService from './registry.service'
 
 @Controller('registries')
@@ -43,6 +42,13 @@ export default class RegistryHttpController {
   @ApiOkResponse({ type: RegistryList })
   async getRegistries(@IdentityFromRequest() identity: Identity): Promise<RegistryList> {
     return await this.service.getRegistries(identity)
+  }
+
+  @Get('/test/:id')
+  @AuditLogLevel('disabled') // TODO(@robot9706): Refactor the auditlog after removing gRPC
+  @ApiOkResponse({ type: TestRegistry })
+  async getTestRegistries(): Promise<RegistryList> {
+    return null
   }
 
   @Get(':id')

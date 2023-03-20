@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsDate } from 'class-validator'
 
@@ -145,6 +145,32 @@ export class CreateRegistry {
   google?: GoogleRegistryDetails
 
   unchecked?: UncheckedRegistryDetails
+}
+
+export class TestRegistry {
+  name: string
+
+  description?: string
+
+  icon?: string
+
+  @ApiProperty({
+    oneOf: [
+      { $ref: getSchemaPath(HubRegistryDetails) },
+      { $ref: getSchemaPath(V2RegistryDetails) },
+      { $ref: getSchemaPath(GitlabRegistryDetails) },
+      { $ref: getSchemaPath(GithubRegistryDetails) },
+      { $ref: getSchemaPath(GoogleRegistryDetails) },
+      { $ref: getSchemaPath(UncheckedRegistryDetails) },
+    ],
+  })
+  details:
+    | HubRegistryDetails
+    | V2RegistryDetails
+    | GitlabRegistryDetails
+    | GithubRegistryDetails
+    | GoogleRegistryDetails
+    | UncheckedRegistryDetails
 }
 
 export class UpdateRegistry {
