@@ -16,6 +16,7 @@ option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/crux";
  *
  */
 service CruxNode {
+  // CRUD
   rpc GetNodes(common.Empty) returns (NodeListResponse);
   rpc CreateNode(CreateNodeRequest) returns (CreateEntityResponse);
   rpc UpdateNode(UpdateNodeRequest) returns (common.Empty);
@@ -145,9 +146,7 @@ service CruxStorage {
 
 message ServiceIdRequest { string id = 1; }
 
-message IdRequest {
-  string id = 1;
-}
+message IdRequest { string id = 1; }
 
 message AuditResponse {
   string createdBy = 100;
@@ -192,9 +191,7 @@ message AuditLogResponse {
 message AuditLogListResponse { repeated AuditLogResponse data = 1000; }
 
 // TEAM
-message CreateTeamRequest {
-  string name = 100;
-}
+message CreateTeamRequest { string name = 100; }
 
 message UpdateTeamRequest {
   string id = 1;
@@ -307,57 +304,6 @@ message UserResponse {
   optional google.protobuf.Timestamp lastLogin = 104;
 }
 
-// PRODUCT
-enum ProductType {
-  PRODUCT_TYPE_UNSPECIFIED = 0;
-  SIMPLE = 1;
-  COMPLEX = 2;
-}
-
-enum VersionType {
-  VERSION_TYPE_UNSPECIFIED = 0;
-  INCREMENTAL = 1;
-  ROLLING = 2;
-}
-
-message ProductDetailsReponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  optional string description = 101;
-  ProductType type = 102;
-  bool deletable = 103;
-
-  repeated VersionResponse versions = 1000;
-}
-
-message ProductReponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  optional string description = 101;
-  ProductType type = 102;
-  uint32 versionCount = 103;
-}
-
-message ProductListResponse { repeated ProductReponse data = 1000; }
-
-message CreateProductRequest {
-  string name = 100;
-  optional string description = 101;
-  ProductType type = 102;
-}
-
-message UpdateProductRequest {
-  string id = 1;
-
-  string name = 100;
-  optional string description = 101;
-  optional string changelog = 102;
-}
-
 // REGISTRY
 
 enum RegistryType {
@@ -420,6 +366,12 @@ message IncreaseVersionRequest {
 
   string name = 100;
   optional string changelog = 101;
+}
+
+enum VersionType {
+  VERSION_TYPE_UNSPECIFIED = 0;
+  INCREMENTAL = 1;
+  ROLLING = 2;
 }
 
 // Container
@@ -987,6 +939,12 @@ message CreateProductFromTemplateRequest {
   ProductType type = 102;
 }
 
+enum ProductType {
+  PRODUCT_TYPE_UNSPECIFIED = 0;
+  SIMPLE = 1;
+  COMPLEX = 2;
+}
+
 message TemplateImageResponse { bytes data = 1; }
 
 // DASHBOARD
@@ -1022,7 +980,6 @@ message DashboardResponse {
   repeated DashboardDeployment latestDeployments = 1001;
   repeated AuditLogResponse auditLog = 1002;
 }
-
 
 // STORAGES
 
@@ -1077,4 +1034,6 @@ message StorageOptionResponse {
   string name = 100;
 }
 
-message StorageOptionListResponse { repeated StorageOptionResponse data = 1000; }
+message StorageOptionListResponse {
+  repeated StorageOptionResponse data = 1000;
+}
