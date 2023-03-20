@@ -15,17 +15,7 @@ option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/crux";
  * Services
  *
  */
-service CruxProduct {
-  // CRUD
-  rpc GetProducts(common.Empty) returns (ProductListResponse);
-  rpc CreateProduct(CreateProductRequest) returns (CreateEntityResponse);
-  rpc UpdateProduct(UpdateProductRequest) returns (UpdateEntityResponse);
-  rpc DeleteProduct(IdRequest) returns (common.Empty);
-  rpc GetProductDetails(IdRequest) returns (ProductDetailsReponse);
-}
-
 service CruxNode {
-  // CRUD
   rpc GetNodes(common.Empty) returns (NodeListResponse);
   rpc CreateNode(CreateNodeRequest) returns (CreateEntityResponse);
   rpc UpdateNode(UpdateNodeRequest) returns (common.Empty);

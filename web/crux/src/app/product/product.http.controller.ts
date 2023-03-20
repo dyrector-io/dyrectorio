@@ -63,6 +63,7 @@ export default class ProductHttpController {
   @Put(':id')
   @HttpCode(204)
   @ApiNoContentResponse({ type: BasicProductDto })
+  @AuditLogLevel('disabled') // TODO(@polaroi8d): Refactor after removing the gRPC
   async updateProduct(
     @Param('id') id: string,
     @Body() request: UpdateProductDto,
