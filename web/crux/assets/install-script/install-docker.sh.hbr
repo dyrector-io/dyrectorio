@@ -135,7 +135,7 @@ dagent_install() {
   echo "Installing dyrector.io agent (dagent)..."
 
   if [ {{disableForcePull}} != true ]; then
-    $CRI_EXECUTABLE pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+    $CRI_EXECUTABLE pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:{{agentImageTag}}
   fi
 
   $CRI_EXECUTABLE run \
@@ -159,7 +159,7 @@ dagent_install() {
     --name 'dagent' \
     -v $PERSISTENCE_FOLDER/:/srv/dagent \
     -v $HOST_DOCKER_SOCK_PATH:/var/run/docker.sock \
-    -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+    -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:{{agentImageTag}}
 
   if [ -z ${ORIGINAL_PATHCONV_CONFIG+x} ]; then
     unset MSYS_NO_PATHCONV

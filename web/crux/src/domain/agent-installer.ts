@@ -66,11 +66,11 @@ export default class AgentInstaller {
 
     const configLocalDeployment = this.configService.get<string>('LOCAL_DEPLOYMENT')
     const configLocalDeploymentNetwork = this.configService.get<string>('LOCAL_DEPLOYMENT_NETWORK')
-    const configK8sLocalManifest = this.configService.get<string>('K8S_LOCAL_MANIFEST')
     const disableForcePull = this.configService.get<boolean>('AGENT_INSTALL_SCRIPT_DISABLE_PULL', false)
+    const agentImageTag = this.configService.get<string>('CRUX_AGENT_IMAGE', 'stable')
     const debugMode = process.env.NODE_ENV !== 'production'
 
-    let installScriptParams: InstallScriptConfig = {
+    const installScriptParams: InstallScriptConfig = {
       name: name.toLowerCase().replace(/\s/g, ''),
       token: this.token,
       network: configLocalDeployment,
@@ -83,12 +83,7 @@ export default class AgentInstaller {
           }
         : undefined,
       disableForcePull,
-    }
-
-    if (this.nodeType === NodeTypeEnum.k8s) {
-      installScriptParams = Object.assign(installScriptParams, {
-        localManifests: configK8sLocalManifest === 'true',
-      })
+      agentImageTag,
     }
 
     return this.scriptCompiler.compile(installScriptParams)
@@ -135,6 +130,7 @@ export type InstallScriptConfig = {
   network: string
   networkName: string
   debugMode: boolean
+  agentImageTag: string
   rootPath?: string
   update?: boolean
   hostname?: string
