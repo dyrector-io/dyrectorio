@@ -5,17 +5,17 @@ import { JWT } from 'google-auth-library'
 import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
 import { catchError, from, map, mergeMap, Observable, of, switchMap } from 'rxjs'
 import { InvalidArgumentException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
+import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
+import { parsers } from 'www-authenticate'
 import {
-  CreateRegistryRequest,
+  CreateRegistry,
   GithubRegistryDetails,
   GitlabRegistryDetails,
   GoogleRegistryDetails,
   HubRegistryDetails,
-  RegistryNamespace,
+  UpdateRegistry,
   V2RegistryDetails,
-} from 'src/grpc/protobuf/proto/crux'
-import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
-import { parsers } from 'www-authenticate'
+} from '../registry.dto'
 
 @Injectable()
 export default class RegistryAccessValidationGuard implements CanActivate {
@@ -30,24 +30,25 @@ export default class RegistryAccessValidationGuard implements CanActivate {
    * @returns boolean
    */
   canActivate(context: ExecutionContext): Observable<boolean> {
-    const req = context.getArgByIndex<CreateRegistryRequest>(0)
+    const request = context.switchToHttp().getRequest()
+    const body = request.body as CreateRegistry | UpdateRegistry
 
-    if (req.hub) {
-      return this.validateHub(req.hub)
+    if (body.hub) {
+      return this.validateHub(body.hub)
     }
-    if (req.v2) {
-      return this.validateV2(req.v2)
+    if (body.v2) {
+      return this.validateV2(body.v2)
     }
-    if (req.gitlab) {
-      return this.validateGitlab(req.gitlab)
+    if (body.gitlab) {
+      return this.validateGitlab(body.gitlab)
     }
-    if (req.github) {
-      return this.validateGithub(req.github)
+    if (body.github) {
+      return this.validateGithub(body.github)
     }
-    if (req.google) {
-      return this.validateGoogle(req.google)
+    if (body.google) {
+      return this.validateGoogle(body.google)
     }
-    if (req.unchecked) {
+    if (body.unchecked) {
       return of(true)
     }
     return of(false)
@@ -134,7 +135,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
     const apiUrl = req.apiUrl ?? REGISTRY_GITLAB_URLS.apiUrl
     const registryUrl = req.url ?? REGISTRY_GITLAB_URLS.registryUrl
 
-    const namespace = req.namespace === RegistryNamespace.RNS_GROUP ? 'groups' : 'projects'
+    const namespace = req.namespace === 'group' ? 'groups' : 'projects'
 
     return this.httpService
       .get(`https://${apiUrl}/api/v4/${namespace}/${req.imageNamePrefix}`, {
@@ -208,7 +209,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
       password: req.token,
     }
 
-    const namespace = req.namespace === RegistryNamespace.RNS_ORGANIZATION ? 'orgs' : 'users'
+    const namespace = req.namespace === 'organization' ? 'orgs' : 'users'
 
     return this.httpService
       .get(`https://api.github.com/${namespace}/${req.imageNamePrefix}/packages?package_type=container`, {

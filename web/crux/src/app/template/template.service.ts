@@ -7,13 +7,7 @@ import {
   networkModeFromJSON,
   restartPolicyFromJSON,
 } from 'src/grpc/protobuf/proto/common'
-import {
-  CreateEntityResponse,
-  CreateProductFromTemplateRequest,
-  CreateProductRequest,
-  ProductType,
-  TemplateImageResponse,
-} from 'src/grpc/protobuf/proto/crux'
+import { CreateProductFromTemplateRequest, ProductType, TemplateImageResponse } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import TemplateFileService, { TemplateContainerConfig, TemplateImage } from 'src/services/template.file.service'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
@@ -21,6 +15,7 @@ import { toPrismaJson } from 'src/shared/mapper'
 import { ContainerConfigData, VolumeType } from 'src/shared/models'
 import { v4 } from 'uuid'
 import ImageMapper from '../image/image.mapper'
+import { CreateProductDto, ProductDto, ProductTypeDto } from '../product/product.dto'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
 import { CreateVersionDto } from '../version/version.dto'
@@ -41,10 +36,7 @@ export default class TemplateService {
     private imageMapper: ImageMapper,
   ) {}
 
-  async createProductFromTemplate(
-    req: CreateProductFromTemplateRequest,
-    identity: Identity,
-  ): Promise<CreateEntityResponse> {
+  async createProductFromTemplate(req: CreateProductFromTemplateRequest, identity: Identity): Promise<ProductDto> {
     const template = await this.templateFileService.getTemplateById(req.id)
 
     if (template.registries && template.registries.length > 0) {
@@ -84,10 +76,10 @@ export default class TemplateService {
       await Promise.all(createRegistries)
     }
 
-    const createProductReq: CreateProductRequest = {
+    const createProductReq: CreateProductDto = {
       name: req.name,
       description: req.description,
-      type: req.type,
+      type: ProductTypeDto[req.type],
     }
 
     const product = await this.productService.createProduct(createProductReq, identity)
@@ -152,7 +144,7 @@ export default class TemplateService {
 
   private async createVersion(
     templateImages: TemplateImage[],
-    product: CreateEntityResponse,
+    product: ProductDto,
     productType: ProductType,
     identity: Identity,
   ): Promise<void> {

@@ -143,85 +143,6 @@ export function userStatusToJSON(object: UserStatus): string {
   }
 }
 
-/** PRODUCT */
-export enum ProductType {
-  PRODUCT_TYPE_UNSPECIFIED = 0,
-  SIMPLE = 1,
-  COMPLEX = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function productTypeFromJSON(object: any): ProductType {
-  switch (object) {
-    case 0:
-    case 'PRODUCT_TYPE_UNSPECIFIED':
-      return ProductType.PRODUCT_TYPE_UNSPECIFIED
-    case 1:
-    case 'SIMPLE':
-      return ProductType.SIMPLE
-    case 2:
-    case 'COMPLEX':
-      return ProductType.COMPLEX
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return ProductType.UNRECOGNIZED
-  }
-}
-
-export function productTypeToJSON(object: ProductType): string {
-  switch (object) {
-    case ProductType.PRODUCT_TYPE_UNSPECIFIED:
-      return 'PRODUCT_TYPE_UNSPECIFIED'
-    case ProductType.SIMPLE:
-      return 'SIMPLE'
-    case ProductType.COMPLEX:
-      return 'COMPLEX'
-    case ProductType.UNRECOGNIZED:
-    default:
-      return 'UNRECOGNIZED'
-  }
-}
-
-export enum VersionType {
-  VERSION_TYPE_UNSPECIFIED = 0,
-  INCREMENTAL = 1,
-  ROLLING = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function versionTypeFromJSON(object: any): VersionType {
-  switch (object) {
-    case 0:
-    case 'VERSION_TYPE_UNSPECIFIED':
-      return VersionType.VERSION_TYPE_UNSPECIFIED
-    case 1:
-    case 'INCREMENTAL':
-      return VersionType.INCREMENTAL
-    case 2:
-    case 'ROLLING':
-      return VersionType.ROLLING
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return VersionType.UNRECOGNIZED
-  }
-}
-
-export function versionTypeToJSON(object: VersionType): string {
-  switch (object) {
-    case VersionType.VERSION_TYPE_UNSPECIFIED:
-      return 'VERSION_TYPE_UNSPECIFIED'
-    case VersionType.INCREMENTAL:
-      return 'INCREMENTAL'
-    case VersionType.ROLLING:
-      return 'ROLLING'
-    case VersionType.UNRECOGNIZED:
-    default:
-      return 'UNRECOGNIZED'
-  }
-}
-
 export enum RegistryType {
   REGISTRY_TYPE_UNSPECIFIED = 0,
   V2 = 1,
@@ -280,57 +201,6 @@ export function registryTypeToJSON(object: RegistryType): string {
     case RegistryType.UNCHECKED:
       return 'UNCHECKED'
     case RegistryType.UNRECOGNIZED:
-    default:
-      return 'UNRECOGNIZED'
-  }
-}
-
-export enum RegistryNamespace {
-  REGISTRY_NAMESPACE_UNSPECIFIED = 0,
-  RNS_ORGANIZATION = 1,
-  RNS_USER = 2,
-  RNS_GROUP = 3,
-  RNS_PROJECT = 4,
-  UNRECOGNIZED = -1,
-}
-
-export function registryNamespaceFromJSON(object: any): RegistryNamespace {
-  switch (object) {
-    case 0:
-    case 'REGISTRY_NAMESPACE_UNSPECIFIED':
-      return RegistryNamespace.REGISTRY_NAMESPACE_UNSPECIFIED
-    case 1:
-    case 'RNS_ORGANIZATION':
-      return RegistryNamespace.RNS_ORGANIZATION
-    case 2:
-    case 'RNS_USER':
-      return RegistryNamespace.RNS_USER
-    case 3:
-    case 'RNS_GROUP':
-      return RegistryNamespace.RNS_GROUP
-    case 4:
-    case 'RNS_PROJECT':
-      return RegistryNamespace.RNS_PROJECT
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return RegistryNamespace.UNRECOGNIZED
-  }
-}
-
-export function registryNamespaceToJSON(object: RegistryNamespace): string {
-  switch (object) {
-    case RegistryNamespace.REGISTRY_NAMESPACE_UNSPECIFIED:
-      return 'REGISTRY_NAMESPACE_UNSPECIFIED'
-    case RegistryNamespace.RNS_ORGANIZATION:
-      return 'RNS_ORGANIZATION'
-    case RegistryNamespace.RNS_USER:
-      return 'RNS_USER'
-    case RegistryNamespace.RNS_GROUP:
-      return 'RNS_GROUP'
-    case RegistryNamespace.RNS_PROJECT:
-      return 'RNS_PROJECT'
-    case RegistryNamespace.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
   }
@@ -457,6 +327,45 @@ export function nodeScriptTypeToJSON(object: NodeScriptType): string {
     case NodeScriptType.POWERSHELL:
       return 'POWERSHELL'
     case NodeScriptType.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED'
+  }
+}
+
+export enum VersionType {
+  VERSION_TYPE_UNSPECIFIED = 0,
+  INCREMENTAL = 1,
+  ROLLING = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function versionTypeFromJSON(object: any): VersionType {
+  switch (object) {
+    case 0:
+    case 'VERSION_TYPE_UNSPECIFIED':
+      return VersionType.VERSION_TYPE_UNSPECIFIED
+    case 1:
+    case 'INCREMENTAL':
+      return VersionType.INCREMENTAL
+    case 2:
+    case 'ROLLING':
+      return VersionType.ROLLING
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return VersionType.UNRECOGNIZED
+  }
+}
+
+export function versionTypeToJSON(object: VersionType): string {
+  switch (object) {
+    case VersionType.VERSION_TYPE_UNSPECIFIED:
+      return 'VERSION_TYPE_UNSPECIFIED'
+    case VersionType.INCREMENTAL:
+      return 'INCREMENTAL'
+    case VersionType.ROLLING:
+      return 'ROLLING'
+    case VersionType.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
   }
@@ -648,6 +557,45 @@ export function serviceStatusToJSON(object: ServiceStatus): string {
   }
 }
 
+export enum ProductType {
+  PRODUCT_TYPE_UNSPECIFIED = 0,
+  SIMPLE = 1,
+  COMPLEX = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function productTypeFromJSON(object: any): ProductType {
+  switch (object) {
+    case 0:
+    case 'PRODUCT_TYPE_UNSPECIFIED':
+      return ProductType.PRODUCT_TYPE_UNSPECIFIED
+    case 1:
+    case 'SIMPLE':
+      return ProductType.SIMPLE
+    case 2:
+    case 'COMPLEX':
+      return ProductType.COMPLEX
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return ProductType.UNRECOGNIZED
+  }
+}
+
+export function productTypeToJSON(object: ProductType): string {
+  switch (object) {
+    case ProductType.PRODUCT_TYPE_UNSPECIFIED:
+      return 'PRODUCT_TYPE_UNSPECIFIED'
+    case ProductType.SIMPLE:
+      return 'SIMPLE'
+    case ProductType.COMPLEX:
+      return 'COMPLEX'
+    case ProductType.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED'
+  }
+}
+
 export interface ServiceIdRequest {
   id: string
 }
@@ -670,31 +618,6 @@ export interface CreateEntityResponse {
 
 export interface UpdateEntityResponse {
   updatedAt: Timestamp | undefined
-}
-
-/** AUTHENTICATION */
-export interface GenerateTokenRequest {
-  name: string
-  expirationInDays: number
-}
-
-export interface GenerateTokenResponse {
-  id: string
-  name: string
-  expiresAt: Timestamp | undefined
-  createdAt: Timestamp | undefined
-  token: string
-}
-
-export interface TokenResponse {
-  id: string
-  name: string
-  expiresAt: Timestamp | undefined
-  createdAt: Timestamp | undefined
-}
-
-export interface TokenListResponse {
-  data: TokenResponse[]
 }
 
 /** TEAM */
@@ -785,147 +708,6 @@ export interface UserResponse {
   role: UserRole
   status: UserStatus
   lastLogin?: Timestamp | undefined
-}
-
-export interface VersionResponse {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  changelog: string
-  default: boolean
-  type: VersionType
-  increasable: boolean
-}
-
-export interface VersionListResponse {
-  data: VersionResponse[]
-}
-
-export interface ProductDetailsReponse {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  description?: string | undefined
-  type: ProductType
-  deletable: boolean
-  versions: VersionResponse[]
-}
-
-export interface ProductReponse {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  description?: string | undefined
-  type: ProductType
-  versionCount: number
-}
-
-export interface ProductListResponse {
-  data: ProductReponse[]
-}
-
-export interface CreateProductRequest {
-  name: string
-  description?: string | undefined
-  type: ProductType
-}
-
-export interface UpdateProductRequest {
-  id: string
-  name: string
-  description?: string | undefined
-  changelog?: string | undefined
-}
-
-export interface RegistryResponse {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  description?: string | undefined
-  icon?: string | undefined
-  url: string
-  type: RegistryType
-}
-
-export interface RegistryListResponse {
-  data: RegistryResponse[]
-}
-
-export interface HubRegistryDetails {
-  imageNamePrefix: string
-}
-
-export interface V2RegistryDetails {
-  url: string
-  user?: string | undefined
-  token?: string | undefined
-}
-
-export interface GitlabRegistryDetails {
-  user: string
-  token: string
-  imageNamePrefix: string
-  url?: string | undefined
-  apiUrl?: string | undefined
-  namespace: RegistryNamespace
-}
-
-export interface GithubRegistryDetails {
-  user: string
-  token: string
-  imageNamePrefix: string
-  namespace: RegistryNamespace
-}
-
-export interface GoogleRegistryDetails {
-  url: string
-  user?: string | undefined
-  token?: string | undefined
-  imageNamePrefix: string
-}
-
-export interface UncheckedRegistryDetails {
-  url: string
-}
-
-export interface CreateRegistryRequest {
-  name: string
-  description?: string | undefined
-  icon?: string | undefined
-  hub?: HubRegistryDetails | undefined
-  v2?: V2RegistryDetails | undefined
-  gitlab?: GitlabRegistryDetails | undefined
-  github?: GithubRegistryDetails | undefined
-  google?: GoogleRegistryDetails | undefined
-  unchecked?: UncheckedRegistryDetails | undefined
-}
-
-export interface UpdateRegistryRequest {
-  id: string
-  name: string
-  description?: string | undefined
-  icon?: string | undefined
-  hub?: HubRegistryDetails | undefined
-  v2?: V2RegistryDetails | undefined
-  gitlab?: GitlabRegistryDetails | undefined
-  github?: GithubRegistryDetails | undefined
-  google?: GoogleRegistryDetails | undefined
-  unchecked?: UncheckedRegistryDetails | undefined
-}
-
-export interface RegistryDetailsResponse {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  description?: string | undefined
-  icon?: string | undefined
-  inUse: boolean
-  hub?: HubRegistryDetails | undefined
-  v2?: V2RegistryDetails | undefined
-  gitlab?: GitlabRegistryDetails | undefined
-  github?: GithubRegistryDetails | undefined
-  google?: GoogleRegistryDetails | undefined
-  unchecked?: UncheckedRegistryDetails | undefined
 }
 
 export interface VolumeLink {
@@ -1574,96 +1356,6 @@ export const UpdateEntityResponse = {
   },
 }
 
-function createBaseGenerateTokenRequest(): GenerateTokenRequest {
-  return { name: '', expirationInDays: 0 }
-}
-
-export const GenerateTokenRequest = {
-  fromJSON(object: any): GenerateTokenRequest {
-    return {
-      name: isSet(object.name) ? String(object.name) : '',
-      expirationInDays: isSet(object.expirationInDays) ? Number(object.expirationInDays) : 0,
-    }
-  },
-
-  toJSON(message: GenerateTokenRequest): unknown {
-    const obj: any = {}
-    message.name !== undefined && (obj.name = message.name)
-    message.expirationInDays !== undefined && (obj.expirationInDays = Math.round(message.expirationInDays))
-    return obj
-  },
-}
-
-function createBaseGenerateTokenResponse(): GenerateTokenResponse {
-  return { id: '', name: '', expiresAt: undefined, createdAt: undefined, token: '' }
-}
-
-export const GenerateTokenResponse = {
-  fromJSON(object: any): GenerateTokenResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      expiresAt: isSet(object.expiresAt) ? fromJsonTimestamp(object.expiresAt) : undefined,
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-      token: isSet(object.token) ? String(object.token) : '',
-    }
-  },
-
-  toJSON(message: GenerateTokenResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
-    message.expiresAt !== undefined && (obj.expiresAt = fromTimestamp(message.expiresAt).toISOString())
-    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
-    message.token !== undefined && (obj.token = message.token)
-    return obj
-  },
-}
-
-function createBaseTokenResponse(): TokenResponse {
-  return { id: '', name: '', expiresAt: undefined, createdAt: undefined }
-}
-
-export const TokenResponse = {
-  fromJSON(object: any): TokenResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      expiresAt: isSet(object.expiresAt) ? fromJsonTimestamp(object.expiresAt) : undefined,
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-    }
-  },
-
-  toJSON(message: TokenResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
-    message.expiresAt !== undefined && (obj.expiresAt = fromTimestamp(message.expiresAt).toISOString())
-    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
-    return obj
-  },
-}
-
-function createBaseTokenListResponse(): TokenListResponse {
-  return { data: [] }
-}
-
-export const TokenListResponse = {
-  fromJSON(object: any): TokenListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => TokenResponse.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: TokenListResponse): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? TokenResponse.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
 function createBaseCreateTeamRequest(): CreateTeamRequest {
   return { name: '' }
 }
@@ -1996,486 +1688,6 @@ export const UserResponse = {
     message.role !== undefined && (obj.role = userRoleToJSON(message.role))
     message.status !== undefined && (obj.status = userStatusToJSON(message.status))
     message.lastLogin !== undefined && (obj.lastLogin = fromTimestamp(message.lastLogin).toISOString())
-    return obj
-  },
-}
-
-function createBaseVersionResponse(): VersionResponse {
-  return { id: '', audit: undefined, name: '', changelog: '', default: false, type: 0, increasable: false }
-}
-
-export const VersionResponse = {
-  fromJSON(object: any): VersionResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : '',
-      default: isSet(object.default) ? Boolean(object.default) : false,
-      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
-      increasable: isSet(object.increasable) ? Boolean(object.increasable) : false,
-    }
-  },
-
-  toJSON(message: VersionResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
-    message.name !== undefined && (obj.name = message.name)
-    message.changelog !== undefined && (obj.changelog = message.changelog)
-    message.default !== undefined && (obj.default = message.default)
-    message.type !== undefined && (obj.type = versionTypeToJSON(message.type))
-    message.increasable !== undefined && (obj.increasable = message.increasable)
-    return obj
-  },
-}
-
-function createBaseVersionListResponse(): VersionListResponse {
-  return { data: [] }
-}
-
-export const VersionListResponse = {
-  fromJSON(object: any): VersionListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => VersionResponse.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: VersionListResponse): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? VersionResponse.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
-function createBaseProductDetailsReponse(): ProductDetailsReponse {
-  return { id: '', audit: undefined, name: '', type: 0, deletable: false, versions: [] }
-}
-
-export const ProductDetailsReponse = {
-  fromJSON(object: any): ProductDetailsReponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
-      deletable: isSet(object.deletable) ? Boolean(object.deletable) : false,
-      versions: Array.isArray(object?.versions) ? object.versions.map((e: any) => VersionResponse.fromJSON(e)) : [],
-    }
-  },
-
-  toJSON(message: ProductDetailsReponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
-    message.name !== undefined && (obj.name = message.name)
-    message.description !== undefined && (obj.description = message.description)
-    message.type !== undefined && (obj.type = productTypeToJSON(message.type))
-    message.deletable !== undefined && (obj.deletable = message.deletable)
-    if (message.versions) {
-      obj.versions = message.versions.map(e => (e ? VersionResponse.toJSON(e) : undefined))
-    } else {
-      obj.versions = []
-    }
-    return obj
-  },
-}
-
-function createBaseProductReponse(): ProductReponse {
-  return { id: '', audit: undefined, name: '', type: 0, versionCount: 0 }
-}
-
-export const ProductReponse = {
-  fromJSON(object: any): ProductReponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
-      versionCount: isSet(object.versionCount) ? Number(object.versionCount) : 0,
-    }
-  },
-
-  toJSON(message: ProductReponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
-    message.name !== undefined && (obj.name = message.name)
-    message.description !== undefined && (obj.description = message.description)
-    message.type !== undefined && (obj.type = productTypeToJSON(message.type))
-    message.versionCount !== undefined && (obj.versionCount = Math.round(message.versionCount))
-    return obj
-  },
-}
-
-function createBaseProductListResponse(): ProductListResponse {
-  return { data: [] }
-}
-
-export const ProductListResponse = {
-  fromJSON(object: any): ProductListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => ProductReponse.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: ProductListResponse): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? ProductReponse.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
-function createBaseCreateProductRequest(): CreateProductRequest {
-  return { name: '', type: 0 }
-}
-
-export const CreateProductRequest = {
-  fromJSON(object: any): CreateProductRequest {
-    return {
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
-    }
-  },
-
-  toJSON(message: CreateProductRequest): unknown {
-    const obj: any = {}
-    message.name !== undefined && (obj.name = message.name)
-    message.description !== undefined && (obj.description = message.description)
-    message.type !== undefined && (obj.type = productTypeToJSON(message.type))
-    return obj
-  },
-}
-
-function createBaseUpdateProductRequest(): UpdateProductRequest {
-  return { id: '', name: '' }
-}
-
-export const UpdateProductRequest = {
-  fromJSON(object: any): UpdateProductRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
-    }
-  },
-
-  toJSON(message: UpdateProductRequest): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
-    message.description !== undefined && (obj.description = message.description)
-    message.changelog !== undefined && (obj.changelog = message.changelog)
-    return obj
-  },
-}
-
-function createBaseRegistryResponse(): RegistryResponse {
-  return { id: '', audit: undefined, name: '', url: '', type: 0 }
-}
-
-export const RegistryResponse = {
-  fromJSON(object: any): RegistryResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      icon: isSet(object.icon) ? String(object.icon) : undefined,
-      url: isSet(object.url) ? String(object.url) : '',
-      type: isSet(object.type) ? registryTypeFromJSON(object.type) : 0,
-    }
-  },
-
-  toJSON(message: RegistryResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
-    message.name !== undefined && (obj.name = message.name)
-    message.description !== undefined && (obj.description = message.description)
-    message.icon !== undefined && (obj.icon = message.icon)
-    message.url !== undefined && (obj.url = message.url)
-    message.type !== undefined && (obj.type = registryTypeToJSON(message.type))
-    return obj
-  },
-}
-
-function createBaseRegistryListResponse(): RegistryListResponse {
-  return { data: [] }
-}
-
-export const RegistryListResponse = {
-  fromJSON(object: any): RegistryListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => RegistryResponse.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: RegistryListResponse): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? RegistryResponse.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
-function createBaseHubRegistryDetails(): HubRegistryDetails {
-  return { imageNamePrefix: '' }
-}
-
-export const HubRegistryDetails = {
-  fromJSON(object: any): HubRegistryDetails {
-    return { imageNamePrefix: isSet(object.imageNamePrefix) ? String(object.imageNamePrefix) : '' }
-  },
-
-  toJSON(message: HubRegistryDetails): unknown {
-    const obj: any = {}
-    message.imageNamePrefix !== undefined && (obj.imageNamePrefix = message.imageNamePrefix)
-    return obj
-  },
-}
-
-function createBaseV2RegistryDetails(): V2RegistryDetails {
-  return { url: '' }
-}
-
-export const V2RegistryDetails = {
-  fromJSON(object: any): V2RegistryDetails {
-    return {
-      url: isSet(object.url) ? String(object.url) : '',
-      user: isSet(object.user) ? String(object.user) : undefined,
-      token: isSet(object.token) ? String(object.token) : undefined,
-    }
-  },
-
-  toJSON(message: V2RegistryDetails): unknown {
-    const obj: any = {}
-    message.url !== undefined && (obj.url = message.url)
-    message.user !== undefined && (obj.user = message.user)
-    message.token !== undefined && (obj.token = message.token)
-    return obj
-  },
-}
-
-function createBaseGitlabRegistryDetails(): GitlabRegistryDetails {
-  return { user: '', token: '', imageNamePrefix: '', namespace: 0 }
-}
-
-export const GitlabRegistryDetails = {
-  fromJSON(object: any): GitlabRegistryDetails {
-    return {
-      user: isSet(object.user) ? String(object.user) : '',
-      token: isSet(object.token) ? String(object.token) : '',
-      imageNamePrefix: isSet(object.imageNamePrefix) ? String(object.imageNamePrefix) : '',
-      url: isSet(object.url) ? String(object.url) : undefined,
-      apiUrl: isSet(object.apiUrl) ? String(object.apiUrl) : undefined,
-      namespace: isSet(object.namespace) ? registryNamespaceFromJSON(object.namespace) : 0,
-    }
-  },
-
-  toJSON(message: GitlabRegistryDetails): unknown {
-    const obj: any = {}
-    message.user !== undefined && (obj.user = message.user)
-    message.token !== undefined && (obj.token = message.token)
-    message.imageNamePrefix !== undefined && (obj.imageNamePrefix = message.imageNamePrefix)
-    message.url !== undefined && (obj.url = message.url)
-    message.apiUrl !== undefined && (obj.apiUrl = message.apiUrl)
-    message.namespace !== undefined && (obj.namespace = registryNamespaceToJSON(message.namespace))
-    return obj
-  },
-}
-
-function createBaseGithubRegistryDetails(): GithubRegistryDetails {
-  return { user: '', token: '', imageNamePrefix: '', namespace: 0 }
-}
-
-export const GithubRegistryDetails = {
-  fromJSON(object: any): GithubRegistryDetails {
-    return {
-      user: isSet(object.user) ? String(object.user) : '',
-      token: isSet(object.token) ? String(object.token) : '',
-      imageNamePrefix: isSet(object.imageNamePrefix) ? String(object.imageNamePrefix) : '',
-      namespace: isSet(object.namespace) ? registryNamespaceFromJSON(object.namespace) : 0,
-    }
-  },
-
-  toJSON(message: GithubRegistryDetails): unknown {
-    const obj: any = {}
-    message.user !== undefined && (obj.user = message.user)
-    message.token !== undefined && (obj.token = message.token)
-    message.imageNamePrefix !== undefined && (obj.imageNamePrefix = message.imageNamePrefix)
-    message.namespace !== undefined && (obj.namespace = registryNamespaceToJSON(message.namespace))
-    return obj
-  },
-}
-
-function createBaseGoogleRegistryDetails(): GoogleRegistryDetails {
-  return { url: '', imageNamePrefix: '' }
-}
-
-export const GoogleRegistryDetails = {
-  fromJSON(object: any): GoogleRegistryDetails {
-    return {
-      url: isSet(object.url) ? String(object.url) : '',
-      user: isSet(object.user) ? String(object.user) : undefined,
-      token: isSet(object.token) ? String(object.token) : undefined,
-      imageNamePrefix: isSet(object.imageNamePrefix) ? String(object.imageNamePrefix) : '',
-    }
-  },
-
-  toJSON(message: GoogleRegistryDetails): unknown {
-    const obj: any = {}
-    message.url !== undefined && (obj.url = message.url)
-    message.user !== undefined && (obj.user = message.user)
-    message.token !== undefined && (obj.token = message.token)
-    message.imageNamePrefix !== undefined && (obj.imageNamePrefix = message.imageNamePrefix)
-    return obj
-  },
-}
-
-function createBaseUncheckedRegistryDetails(): UncheckedRegistryDetails {
-  return { url: '' }
-}
-
-export const UncheckedRegistryDetails = {
-  fromJSON(object: any): UncheckedRegistryDetails {
-    return { url: isSet(object.url) ? String(object.url) : '' }
-  },
-
-  toJSON(message: UncheckedRegistryDetails): unknown {
-    const obj: any = {}
-    message.url !== undefined && (obj.url = message.url)
-    return obj
-  },
-}
-
-function createBaseCreateRegistryRequest(): CreateRegistryRequest {
-  return { name: '' }
-}
-
-export const CreateRegistryRequest = {
-  fromJSON(object: any): CreateRegistryRequest {
-    return {
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      icon: isSet(object.icon) ? String(object.icon) : undefined,
-      hub: isSet(object.hub) ? HubRegistryDetails.fromJSON(object.hub) : undefined,
-      v2: isSet(object.v2) ? V2RegistryDetails.fromJSON(object.v2) : undefined,
-      gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
-      github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
-      google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
-      unchecked: isSet(object.unchecked) ? UncheckedRegistryDetails.fromJSON(object.unchecked) : undefined,
-    }
-  },
-
-  toJSON(message: CreateRegistryRequest): unknown {
-    const obj: any = {}
-    message.name !== undefined && (obj.name = message.name)
-    message.description !== undefined && (obj.description = message.description)
-    message.icon !== undefined && (obj.icon = message.icon)
-    message.hub !== undefined && (obj.hub = message.hub ? HubRegistryDetails.toJSON(message.hub) : undefined)
-    message.v2 !== undefined && (obj.v2 = message.v2 ? V2RegistryDetails.toJSON(message.v2) : undefined)
-    message.gitlab !== undefined &&
-      (obj.gitlab = message.gitlab ? GitlabRegistryDetails.toJSON(message.gitlab) : undefined)
-    message.github !== undefined &&
-      (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
-    message.google !== undefined &&
-      (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
-    message.unchecked !== undefined &&
-      (obj.unchecked = message.unchecked ? UncheckedRegistryDetails.toJSON(message.unchecked) : undefined)
-    return obj
-  },
-}
-
-function createBaseUpdateRegistryRequest(): UpdateRegistryRequest {
-  return { id: '', name: '' }
-}
-
-export const UpdateRegistryRequest = {
-  fromJSON(object: any): UpdateRegistryRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      icon: isSet(object.icon) ? String(object.icon) : undefined,
-      hub: isSet(object.hub) ? HubRegistryDetails.fromJSON(object.hub) : undefined,
-      v2: isSet(object.v2) ? V2RegistryDetails.fromJSON(object.v2) : undefined,
-      gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
-      github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
-      google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
-      unchecked: isSet(object.unchecked) ? UncheckedRegistryDetails.fromJSON(object.unchecked) : undefined,
-    }
-  },
-
-  toJSON(message: UpdateRegistryRequest): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
-    message.description !== undefined && (obj.description = message.description)
-    message.icon !== undefined && (obj.icon = message.icon)
-    message.hub !== undefined && (obj.hub = message.hub ? HubRegistryDetails.toJSON(message.hub) : undefined)
-    message.v2 !== undefined && (obj.v2 = message.v2 ? V2RegistryDetails.toJSON(message.v2) : undefined)
-    message.gitlab !== undefined &&
-      (obj.gitlab = message.gitlab ? GitlabRegistryDetails.toJSON(message.gitlab) : undefined)
-    message.github !== undefined &&
-      (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
-    message.google !== undefined &&
-      (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
-    message.unchecked !== undefined &&
-      (obj.unchecked = message.unchecked ? UncheckedRegistryDetails.toJSON(message.unchecked) : undefined)
-    return obj
-  },
-}
-
-function createBaseRegistryDetailsResponse(): RegistryDetailsResponse {
-  return { id: '', audit: undefined, name: '', inUse: false }
-}
-
-export const RegistryDetailsResponse = {
-  fromJSON(object: any): RegistryDetailsResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      icon: isSet(object.icon) ? String(object.icon) : undefined,
-      inUse: isSet(object.inUse) ? Boolean(object.inUse) : false,
-      hub: isSet(object.hub) ? HubRegistryDetails.fromJSON(object.hub) : undefined,
-      v2: isSet(object.v2) ? V2RegistryDetails.fromJSON(object.v2) : undefined,
-      gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
-      github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
-      google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
-      unchecked: isSet(object.unchecked) ? UncheckedRegistryDetails.fromJSON(object.unchecked) : undefined,
-    }
-  },
-
-  toJSON(message: RegistryDetailsResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
-    message.name !== undefined && (obj.name = message.name)
-    message.description !== undefined && (obj.description = message.description)
-    message.icon !== undefined && (obj.icon = message.icon)
-    message.inUse !== undefined && (obj.inUse = message.inUse)
-    message.hub !== undefined && (obj.hub = message.hub ? HubRegistryDetails.toJSON(message.hub) : undefined)
-    message.v2 !== undefined && (obj.v2 = message.v2 ? V2RegistryDetails.toJSON(message.v2) : undefined)
-    message.gitlab !== undefined &&
-      (obj.gitlab = message.gitlab ? GitlabRegistryDetails.toJSON(message.gitlab) : undefined)
-    message.github !== undefined &&
-      (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
-    message.google !== undefined &&
-      (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
-    message.unchecked !== undefined &&
-      (obj.unchecked = message.unchecked ? UncheckedRegistryDetails.toJSON(message.unchecked) : undefined)
     return obj
   },
 }
@@ -4599,142 +3811,6 @@ export const StorageOptionListResponse = {
 
 /** Services */
 
-export interface CruxProductClient {
-  /** CRUD */
-
-  getProducts(request: Empty, metadata: Metadata, ...rest: any): Observable<ProductListResponse>
-
-  createProduct(request: CreateProductRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
-
-  updateProduct(request: UpdateProductRequest, metadata: Metadata, ...rest: any): Observable<UpdateEntityResponse>
-
-  deleteProduct(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
-
-  getProductDetails(request: IdRequest, metadata: Metadata, ...rest: any): Observable<ProductDetailsReponse>
-}
-
-/** Services */
-
-export interface CruxProductController {
-  /** CRUD */
-
-  getProducts(
-    request: Empty,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<ProductListResponse> | Observable<ProductListResponse> | ProductListResponse
-
-  createProduct(
-    request: CreateProductRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-
-  updateProduct(
-    request: UpdateProductRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-
-  deleteProduct(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
-
-  getProductDetails(
-    request: IdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<ProductDetailsReponse> | Observable<ProductDetailsReponse> | ProductDetailsReponse
-}
-
-export function CruxProductControllerMethods() {
-  return function (constructor: Function) {
-    const grpcMethods: string[] = [
-      'getProducts',
-      'createProduct',
-      'updateProduct',
-      'deleteProduct',
-      'getProductDetails',
-    ]
-    for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcMethod('CruxProduct', method)(constructor.prototype[method], method, descriptor)
-    }
-    const grpcStreamMethods: string[] = []
-    for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcStreamMethod('CruxProduct', method)(constructor.prototype[method], method, descriptor)
-    }
-  }
-}
-
-export const CRUX_PRODUCT_SERVICE_NAME = 'CruxProduct'
-
-export interface CruxRegistryClient {
-  /** CRUD */
-
-  getRegistries(request: Empty, metadata: Metadata, ...rest: any): Observable<RegistryListResponse>
-
-  createRegistry(request: CreateRegistryRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
-
-  updateRegistry(request: UpdateRegistryRequest, metadata: Metadata, ...rest: any): Observable<UpdateEntityResponse>
-
-  deleteRegistry(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
-
-  getRegistryDetails(request: IdRequest, metadata: Metadata, ...rest: any): Observable<RegistryDetailsResponse>
-}
-
-export interface CruxRegistryController {
-  /** CRUD */
-
-  getRegistries(
-    request: Empty,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<RegistryListResponse> | Observable<RegistryListResponse> | RegistryListResponse
-
-  createRegistry(
-    request: CreateRegistryRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-
-  updateRegistry(
-    request: UpdateRegistryRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-
-  deleteRegistry(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
-
-  getRegistryDetails(
-    request: IdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<RegistryDetailsResponse> | Observable<RegistryDetailsResponse> | RegistryDetailsResponse
-}
-
-export function CruxRegistryControllerMethods() {
-  return function (constructor: Function) {
-    const grpcMethods: string[] = [
-      'getRegistries',
-      'createRegistry',
-      'updateRegistry',
-      'deleteRegistry',
-      'getRegistryDetails',
-    ]
-    for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcMethod('CruxRegistry', method)(constructor.prototype[method], method, descriptor)
-    }
-    const grpcStreamMethods: string[] = []
-    for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcStreamMethod('CruxRegistry', method)(constructor.prototype[method], method, descriptor)
-    }
-  }
-}
-
-export const CRUX_REGISTRY_SERVICE_NAME = 'CruxRegistry'
-
 export interface CruxNodeClient {
   /** CRUD */
 
@@ -4776,6 +3852,8 @@ export interface CruxNodeClient {
     ...rest: any
   ): Observable<ContainerLogMessage>
 }
+
+/** Services */
 
 export interface CruxNodeController {
   /** CRUD */
@@ -5396,47 +4474,6 @@ export function CruxTemplateControllerMethods() {
 }
 
 export const CRUX_TEMPLATE_SERVICE_NAME = 'CruxTemplate'
-
-export interface CruxTokenClient {
-  generateToken(request: GenerateTokenRequest, metadata: Metadata, ...rest: any): Observable<GenerateTokenResponse>
-
-  getTokenList(request: Empty, metadata: Metadata, ...rest: any): Observable<TokenListResponse>
-
-  deleteToken(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
-}
-
-export interface CruxTokenController {
-  generateToken(
-    request: GenerateTokenRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<GenerateTokenResponse> | Observable<GenerateTokenResponse> | GenerateTokenResponse
-
-  getTokenList(
-    request: Empty,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<TokenListResponse> | Observable<TokenListResponse> | TokenListResponse
-
-  deleteToken(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
-}
-
-export function CruxTokenControllerMethods() {
-  return function (constructor: Function) {
-    const grpcMethods: string[] = ['generateToken', 'getTokenList', 'deleteToken']
-    for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcMethod('CruxToken', method)(constructor.prototype[method], method, descriptor)
-    }
-    const grpcStreamMethods: string[] = []
-    for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcStreamMethod('CruxToken', method)(constructor.prototype[method], method, descriptor)
-    }
-  }
-}
-
-export const CRUX_TOKEN_SERVICE_NAME = 'CruxToken'
 
 export interface CruxStorageClient {
   /** CRUD */

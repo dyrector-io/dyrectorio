@@ -3,7 +3,9 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 // TODO(Balanceee): refactor
 import { WS_DATA_CRUX } from '@app/const'
-import { CruxHealth } from '@app/models'
+import { CruxHealth, registryDetailDtoToUI, RegistryDetailsDto } from '@app/models'
+import { registryApiUrl } from '@app/routes'
+import { fetchCrux } from '@app/utils'
 import WsConnection from '@app/websockets/connection'
 import { Identity } from '@ory/kratos-client'
 import { sessionOf, sessionOfContext } from '@server/kratos'
@@ -18,18 +20,11 @@ import DyoHealthService from './health-service'
 import DyoImageService from './image-service'
 import DyoNodeService from './node-service'
 import DyoNotifcationService from './notification-service'
-import DyoProductService from './product-service'
-import DyoRegistryService from './registry-service'
 import DyoStorageService from './storage-service'
 import DyoTeamService from './team-service'
 import DyoTemplateService from './template-service'
-import DyoTokenService from './token-service'
 
 export class Crux {
-  private _products: DyoProductService
-
-  private _registries: DyoRegistryService
-
   private _nodes: DyoNodeService
 
   private _images: DyoImageService
@@ -44,8 +39,6 @@ export class Crux {
 
   private _templates: DyoTemplateService
 
-  private _tokens: DyoTokenService
-
   private _storage: DyoStorageService
 
   private constructor(
@@ -54,14 +47,6 @@ export class Crux {
     public readonly cookie: string,
     private registryConnections: RegistryConnections,
   ) {}
-
-  get products() {
-    return this._products ?? new DyoProductService(this.clients.products, this.cookie)
-  }
-
-  get registries() {
-    return this._registries ?? new DyoRegistryService(this.clients.registries, this.registryConnections, this.cookie)
-  }
 
   get nodes() {
     return this._nodes ?? new DyoNodeService(this.clients.nodes, this.cookie)
@@ -91,10 +76,6 @@ export class Crux {
     return this._templates ?? new DyoTemplateService(this.clients.templates, this.cookie)
   }
 
-  get tokens() {
-    return this._tokens ?? new DyoTokenService(this.clients.tokens, this.cookie)
-  }
-
   get storage() {
     return this._storage ?? new DyoStorageService(this.clients.storage, this.cookie)
   }
@@ -102,7 +83,20 @@ export class Crux {
   get registryConnectionsServices(): CruxRegistryConnectionsServices {
     return {
       getIdentity: () => this.identity,
-      getRegistryDetails: (id: string) => this.registries.getRegistryDetails(id),
+      getRegistryDetails: async (id: string) => {
+        const res = await fetchCrux(
+          {
+            req: {
+              headers: {
+                cookie: this.cookie,
+              },
+            },
+          } as any,
+          registryApiUrl(id),
+        )
+        const dto = (await res.json()) as RegistryDetailsDto
+        return registryDetailDtoToUI(dto)
+      },
     }
   }
 
@@ -120,8 +114,7 @@ if (!global.cruxClients) {
         throw new Error('CRUX_API_ADDRESS cannot be empty!')
       }
 
-      const msg = 'could not load public cert file'
-      throw Error(msg)
+      throw err
     }
   }
 }

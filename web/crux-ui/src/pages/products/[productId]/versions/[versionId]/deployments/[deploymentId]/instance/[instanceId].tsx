@@ -27,10 +27,11 @@ import {
   InstanceJsonContainerConfig,
   mergeConfigs,
   mergeJsonConfigToInstanceContainerConfig,
+  ProductDetails,
   VersionDetails,
   ViewState,
 } from '@app/models'
-import { deploymentUrl, instanceConfigUrl, productUrl, ROUTE_PRODUCTS, versionApiUrl, versionUrl } from '@app/routes'
+import { deploymentUrl, instanceConfigUrl, productApiUrl, productUrl, ROUTE_PRODUCTS, versionApiUrl, versionUrl } from '@app/routes'
 import { fetchCrux, withContextAuthorization } from '@app/utils'
 import { jsonErrorOf } from '@app/validations/image'
 import { getMergedContainerConfigFieldErrors } from '@app/validations/instance'
@@ -278,16 +279,16 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   const instanceId = context.query.instanceId as string
 
   const crux = cruxFromContext(context)
-  const product = await crux.products.getById(productId)
+  const product = await fetchCrux(context, productApiUrl(productId))
   const deploymentDetails = await crux.deployments.getById(deploymentId)
   const node = await crux.nodes.getNodeDetails(deploymentDetails.nodeId)
 
-  const res = await fetchCrux(context, versionApiUrl(productId, versionId))
+  const version = await fetchCrux(context, versionApiUrl(productId, versionId))
 
   const deployment: DeploymentRoot = {
     ...deploymentDetails,
-    product,
-    version: (await res.json()) as VersionDetails,
+    product: (await product.json()) as ProductDetails,
+    version: (await version.json()) as VersionDetails,
     node,
   }
 

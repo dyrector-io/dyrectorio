@@ -7,6 +7,7 @@ import {
   ContainerLogDriverType,
   ContainerNetworkMode,
   ContainerRestartPolicyType,
+  RegistryType,
   VersionImage,
 } from '@app/models'
 import {
@@ -34,10 +35,10 @@ import {
   ImageContainerConfig as ProtoContainerConfig,
   ImageResponse,
   LogConfig,
+  registryTypeToJSON,
   Volume,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
-import { registryTypeProtoToDto } from './registry-mappers'
 
 export const objectHasProperties = (object: any): boolean =>
   // booleans and numbers need this type of null check
@@ -288,6 +289,6 @@ export const imageToDto = (image: ImageResponse): VersionImage => ({
   registry: {
     id: image.registryId,
     name: image.registryName,
-    type: registryTypeProtoToDto(image.registryType),
+    type: registryTypeToJSON(image.registryType).toLowerCase() as RegistryType,
   },
 })

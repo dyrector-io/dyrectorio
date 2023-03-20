@@ -10,6 +10,8 @@ import {
   UseFilters,
   UseGuards,
   UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
@@ -32,6 +34,12 @@ const VersionId = () => Param('versionId')
 
 @Controller('products/:productId/versions')
 @UseGuards(JwtAuthGuard)
+@UsePipes(
+  new ValidationPipe({
+    // TODO(@robot9706): Move to global pipes after removing gRPC
+    transform: true,
+  }),
+)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
 @UseFilters(HttpExceptionFilter)
 export default class VersionHttpController {

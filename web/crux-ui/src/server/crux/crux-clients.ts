@@ -5,19 +5,14 @@ import {
   CruxImageClient,
   CruxNodeClient,
   CruxNotificationClient,
-  CruxProductClient,
-  CruxRegistryClient,
   CruxStorageClient,
   CruxTeamClient,
   CruxTemplateClient,
-  CruxTokenClient,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { credentials } from '@grpc/grpc-js'
 
 class CruxClients {
   products: CruxProductClient
-
-  registries: CruxRegistryClient
 
   nodes: CruxNodeClient
 
@@ -33,8 +28,6 @@ class CruxClients {
 
   templates: CruxTemplateClient
 
-  tokens: CruxTokenClient
-
   storage: CruxStorageClient
 
   constructor(address: string) {
@@ -45,8 +38,6 @@ class CruxClients {
       throw invalidArgument('address', 'address cannot be empty!')
     }
 
-    this.products = new CruxProductClient(address, creds)
-    this.registries = new CruxRegistryClient(address, creds)
     this.nodes = new CruxNodeClient(address, creds)
     this.images = new CruxImageClient(address, creds)
     this.deployments = new CruxDeploymentClient(address, creds)
@@ -54,7 +45,6 @@ class CruxClients {
     this.health = new CruxHealthClient(address, creds)
     this.notifications = new CruxNotificationClient(address, creds)
     this.templates = new CruxTemplateClient(address, creds)
-    this.tokens = new CruxTokenClient(address, creds)
     this.storage = new CruxStorageClient(address, creds)
   }
 }

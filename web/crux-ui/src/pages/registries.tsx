@@ -9,17 +9,16 @@ import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { Registry, RegistryListItem, RegistryType, REGISTRY_TYPE_VALUES } from '@app/models'
-import { registryUrl, ROUTE_REGISTRIES } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { BasicRegistry, Registry, RegistryListDto, RegistryType, REGISTRY_TYPE_VALUES } from '@app/models'
+import { API_REGISTRIES, registryUrl, ROUTE_REGISTRIES } from '@app/routes'
+import { fetchCrux, withContextAuthorization } from '@app/utils'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRef, useState } from 'react'
 
 interface RegistriesPageProps {
-  registries: RegistryListItem[]
+  registries: BasicRegistry[]
 }
 
 type RegistryFilter = TextFilter & EnumFilter<RegistryType>
@@ -29,7 +28,7 @@ const RegistriesPage = (props: RegistriesPageProps) => {
 
   const { t } = useTranslation('registries')
 
-  const filters = useFilters<RegistryListItem, RegistryFilter>({
+  const filters = useFilters<BasicRegistry, RegistryFilter>({
     filters: [
       textFilterFor<Registry>(it => [it.name, it.url, it.description, it.icon]),
       enumFilterFor<Registry, RegistryType>(it => [it.type]),
@@ -102,10 +101,15 @@ const RegistriesPage = (props: RegistriesPageProps) => {
 
 export default RegistriesPage
 
-const getPageServerSideProps = async (context: NextPageContext) => ({
-  props: {
-    registries: await cruxFromContext(context).registries.getAll(),
-  },
-})
+const getPageServerSideProps = async (context: NextPageContext) => {
+  const res = await fetchCrux(context, API_REGISTRIES)
+  const { data } = (await res.json()) as RegistryListDto
+
+  return {
+    props: {
+      registries: data,
+    },
+  }
+}
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

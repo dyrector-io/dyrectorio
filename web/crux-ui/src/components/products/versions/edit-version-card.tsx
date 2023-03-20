@@ -9,7 +9,7 @@ import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useVersionHint from '@app/hooks/use-version-hint'
-import { CreateVersion, EditableVersion, Product, UpdateVersion, VERSION_TYPE_VALUES } from '@app/models'
+import { BasicProduct, CreateVersion, EditableVersion, UpdateVersion, VERSION_TYPE_VALUES } from '@app/models'
 import { productVersionsApiUrl, versionApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createVersionSchema, updateVersionSchema } from '@app/validations'
@@ -18,7 +18,7 @@ import { MutableRefObject, useState } from 'react'
 
 interface EditVersionCardProps {
   className?: string
-  product: Product
+  product: BasicProduct
   version?: EditableVersion
   onVersionEdited: (version: EditableVersion) => void
   submitRef?: MutableRefObject<() => Promise<any>>

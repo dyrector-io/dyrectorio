@@ -10,18 +10,19 @@ import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import {
-  CreateRegistry,
+  CreateRegistryDto,
   GithubRegistryDetails,
   GitlabRegistryDetails,
   GoogleRegistryDetails,
   HubRegistryDetails,
   Registry,
+  registryCreateToDto,
   RegistryDetails,
   registryDetailsToRegistry,
   RegistryType,
   REGISTRY_TYPE_VALUES,
   UncheckedRegistryDetails,
-  UpdateRegistry,
+  UpdateRegistryDto,
   V2RegistryDetails,
 } from '@app/models'
 import { API_REGISTRIES, registryApiUrl } from '@app/routes'
@@ -78,13 +79,15 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
 
       const transformedValues = registrySchema.cast(values) as any
 
-      const body: CreateRegistry | UpdateRegistry = {
-        ...transformedValues,
+      const body = {
+        ...registryCreateToDto({
+          ...transformedValues,
+        }),
       }
 
       const res = await (!editing
-        ? sendForm('POST', API_REGISTRIES, body as CreateRegistry)
-        : sendForm('PUT', registryApiUrl(registry.id), body as UpdateRegistry))
+        ? sendForm('POST', API_REGISTRIES, body as CreateRegistryDto)
+        : sendForm('PUT', registryApiUrl(registry.id), body as UpdateRegistryDto))
 
       if (res.ok) {
         let result: RegistryDetails

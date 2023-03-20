@@ -3,7 +3,7 @@ import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { RegistryListItem } from '@app/models'
+import { BasicRegistry } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -11,7 +11,7 @@ import Link from 'next/link'
 import RegistryTypeTag from './registry-type-tag'
 
 interface RegistryCardProps extends Omit<DyoCardProps, 'children'> {
-  registry: RegistryListItem
+  registry: BasicRegistry
   titleHref?: string
 }
 

@@ -1,27 +1,108 @@
-import { Controller, Get, UseGuards, UseInterceptors, UseFilters } from '@nestjs/common'
-import { ApiBody, ApiOkResponse } from '@nestjs/swagger'
+import {
+  Response,
+  Controller,
+  Get,
+  UseGuards,
+  UseInterceptors,
+  UsePipes,
+  ValidationPipe,
+  HttpCode,
+} from '@nestjs/common'
+import { Response as Res } from 'express'
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
-import HttpExceptionFilter from 'src/filters/http-exception.filter'
-import { RegistryListResponse } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
+
 import { AccessRequestDto, RegistryListResponseDto } from 'src/swagger/crux.dto'
 import { Identity } from '@ory/kratos-client'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
+import { Delete, Post, Put } from '@nestjs/common/decorators/http/request-mapping.decorator'
+import { Body, Param } from '@nestjs/common/decorators/http/route-params.decorator'
 import RegistryService from './registry.service'
+import { CreateRegistry, RegistryDetails, RegistryList, UpdateRegistry } from './registry.dto'
+import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
+import UpdateRegistryInterceptor from './interceptors/registry.update.interceptor'
+import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
+import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
 
-@Controller('registry')
-@UseGuards(JwtAuthGuard)
+@Controller('registries')
+@ApiTags('registries')
+@UsePipes(
+  new ValidationPipe({
+    // TODO(@robot9706): Move to global pipes after removing gRPC
+    transform: true,
+  }),
+)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
-@UseFilters(HttpExceptionFilter)
+@UseGuards(JwtAuthGuard, RegistryTeamAccessGuard)
 export default class RegistryHttpController {
   constructor(private service: RegistryService) {}
 
   @Get()
-  @ApiBody({ type: AccessRequestDto })
-  @ApiOkResponse({ type: RegistryListResponseDto })
-  @AuditLogLevel('disabled')
-  async getRegistries(@IdentityFromRequest() identity: Identity): Promise<RegistryListResponse> {
+  @AuditLogLevel('disabled') // TODO(@robot9706): Refactor the auditlog after removing gRPC
+  @ApiOkResponse({ type: RegistryList })
+  async getRegistries(@IdentityFromRequest() identity: Identity): Promise<RegistryList> {
     return await this.service.getRegistries(identity)
+  }
+
+  @Get(':id')
+  // TODO(@robot9706): Refactor the auditlog after removing gRPC
+  // TODO(@robot9706): Access check?
+  @AuditLogLevel('disabled')
+  @ApiOkResponse({ type: RegistryDetails })
+  async getRegistry(@Param('id') id: string): Promise<RegistryDetails> {
+    return await this.service.getRegistryDetails(id)
+  }
+
+  @Post()
+  @UseGuards(RegistryAccessValidationGuard)
+  @AuditLogLevel('disabled')
+  @ApiBody({ type: CreateRegistry })
+  @ApiCreatedResponse({
+    type: RegistryDetails,
+    headers: {
+      Location: {
+        description: 'URL of the created object.',
+        schema: {
+          type: 'URL',
+        },
+      },
+    },
+  })
+  @HttpCode(201)
+  async createRegistry(
+    @Body() request: CreateRegistry,
+    @IdentityFromRequest() identity: Identity,
+    @Response() res: Res,
+  ): Promise<void> {
+    const registry = await this.service.createRegistry(request, identity)
+
+    res.location(`/registries/${registry.id}`).json(registry)
+  }
+
+  @Put(':id')
+  @AuditLogLevel('disabled')
+  @UseInterceptors(UpdateRegistryInterceptor)
+  @UseGuards(RegistryAccessValidationGuard)
+  @ApiBody({ type: UpdateRegistry })
+  @HttpCode(204)
+  async updateRegistry(
+    @Param('id') id: string,
+    @Body() request: UpdateRegistry,
+    @IdentityFromRequest() identity: Identity,
+    @Response() res: Res,
+  ): Promise<void> {
+    await this.service.updateRegistry(id, request, identity)
+
+    res.end()
+  }
+
+  @Delete(':id')
+  @AuditLogLevel('disabled')
+  @HttpCode(204)
+  async deleteRegistry(@Param('id', DeleteRegistryValidationPipe) id: string, @Response() res: Res): Promise<void> {
+    await this.service.deleteRegistry(id)
+    res.end()
   }
 }

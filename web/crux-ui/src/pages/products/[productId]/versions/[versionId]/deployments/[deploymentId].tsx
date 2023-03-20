@@ -19,6 +19,7 @@ import {
   deploymentApiUrl,
   deploymentDeployUrl,
   deploymentUrl,
+  productApiUrl,
   productUrl,
   ROUTE_PRODUCTS,
   versionApiUrl,
@@ -224,17 +225,16 @@ export const getDeploymentRoot = async (context: NextPageContext, crux: Crux) =>
   const versionId = context.query.versionId as string
   const deploymentId = context.query.deploymentId as string
 
-  const product = crux.products.getById(productId)
+  const product = await fetchCrux(context, productApiUrl(productId))
   const deployment = await crux.deployments.getById(deploymentId)
   const node = crux.nodes.getNodeDetails(deployment.nodeId)
 
-  const res = await fetchCrux(context, versionApiUrl(productId, versionId))
-  const version = await res.json()
+  const version = await fetchCrux(context, versionApiUrl(productId, versionId))
 
   return {
     ...deployment,
-    product: await product,
-    version: await version,
+    product: await product.json(),
+    version: await version.json(),
     node: await node,
   } as DeploymentRoot
 }

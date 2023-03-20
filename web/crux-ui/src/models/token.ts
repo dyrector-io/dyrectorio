@@ -1,15 +1,23 @@
-export type Token = {
+export class SimpleToken {
   id: string
+
   name: string
-  createdAt: string
+
   expiresAt: string
+
+  createdAt: string
 }
 
-export type GenerateTokenRequest = {
+export class TokenList {
+  data: SimpleToken[]
+}
+
+export class GenerateToken {
   name: string
+
   expirationInDays: number
 }
 
-export type GenerateTokenResponse = Token & {
+export class Token extends SimpleToken {
   token: string
 }

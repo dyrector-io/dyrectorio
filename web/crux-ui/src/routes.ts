@@ -46,8 +46,8 @@ export const API_CREATE_ACCOUNT = '/api/auth/create-account'
 
 export const API_STATUS = '/api/status'
 
-export const API_PRODUCTS = '/api/products'
-export const API_REGISTRIES = '/api/registries'
+export const API_REGISTRIES = '/api/new/registries'
+export const API_PRODUCTS = '/api/new/products'
 export const API_NODES = '/api/nodes'
 
 export const API_TEAMS = '/api/teams'
@@ -62,13 +62,13 @@ export const API_TEMPLATES = `/api/templates`
 
 export const API_DASHBOARD = '/api/new/dashboard'
 
-export const API_TOKENS = '/api/tokens'
+export const API_TOKENS = '/api/new/tokens'
 
 export const API_STORAGES = '/api/storages'
 export const API_STORAGES_OPTIONS = `${API_STORAGES}/options`
 
 export const WS_NODES = `${API_NODES}/connect`
-export const WS_REGISTRIES = `${API_REGISTRIES}/connect`
+export const WS_REGISTRIES = `/api/registries/connect`
 
 export type CruxUrlParams = {
   anchor?: string
@@ -146,13 +146,12 @@ export const verificationUrl = (email: string) => `${ROUTE_VERIFICATION}?email=$
 
 // product
 export const productUrl = (id: string, params?: VersionUrlParams) => appendUrlParams(`${ROUTE_PRODUCTS}/${id}`, params)
-export const productApiUrl = (id: string) => `/api${productUrl(id)}`
-// TODO(@m8vago): use productApiUrl() when it gets refactored
-export const productVersionsApiUrl = (productId: string) => `/api/new/products/${productId}/versions`
+export const productApiUrl = (id: string) => `${API_PRODUCTS}/${id}`
+export const productVersionsApiUrl = (productId: string) => `${productApiUrl(productId)}/${productId}/versions`
 
 // registry
 export const registryUrl = (id: string) => `${ROUTE_REGISTRIES}/${id}`
-export const registryApiUrl = (id: string) => `/api${registryUrl(id)}`
+export const registryApiUrl = (id: string) => `/api/new${registryUrl(id)}`
 
 // node
 export const nodeUrl = (id: string) => `${ROUTE_NODES}/${id}`

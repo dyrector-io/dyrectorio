@@ -1,12 +1,17 @@
-import { Injectable } from '@nestjs/common'
-import { Identity } from '@ory/kratos-client'
-import { IdRequest } from 'src/grpc/protobuf/proto/crux'
-import UserAccessGuard from 'src/shared/user-access.guard'
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
+import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
-export default class TokenAccessGuard extends UserAccessGuard<IdRequest> {
-  async canActivateWithRequest(request: IdRequest, identity: Identity): Promise<boolean> {
-    if (!request.id) {
+export default class TokenAccessGuard implements CanActivate {
+  constructor(protected readonly prisma: PrismaService) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const {
+      params: { id },
+      body: { identity },
+    } = context.switchToHttp().getRequest()
+
+    if (!id) {
       return true
     }
 
@@ -15,7 +20,7 @@ export default class TokenAccessGuard extends UserAccessGuard<IdRequest> {
         userId: true,
       },
       where: {
-        id: request.id,
+        id,
       },
     })
 

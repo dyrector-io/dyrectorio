@@ -15,24 +15,6 @@ option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/crux";
  * Services
  *
  */
-service CruxProduct {
-  // CRUD
-  rpc GetProducts(common.Empty) returns (ProductListResponse);
-  rpc CreateProduct(CreateProductRequest) returns (CreateEntityResponse);
-  rpc UpdateProduct(UpdateProductRequest) returns (UpdateEntityResponse);
-  rpc DeleteProduct(IdRequest) returns (common.Empty);
-  rpc GetProductDetails(IdRequest) returns (ProductDetailsReponse);
-}
-
-service CruxRegistry {
-  // CRUD
-  rpc GetRegistries(common.Empty) returns (RegistryListResponse);
-  rpc CreateRegistry(CreateRegistryRequest) returns (CreateEntityResponse);
-  rpc UpdateRegistry(UpdateRegistryRequest) returns (UpdateEntityResponse);
-  rpc DeleteRegistry(IdRequest) returns (common.Empty);
-  rpc GetRegistryDetails(IdRequest) returns (RegistryDetailsResponse);
-}
-
 service CruxNode {
   // CRUD
   rpc GetNodes(common.Empty) returns (NodeListResponse);
@@ -126,12 +108,6 @@ service CruxTemplate {
   rpc GetImage(IdRequest) returns (TemplateImageResponse);
 }
 
-service CruxToken {
-  rpc GenerateToken(GenerateTokenRequest) returns (GenerateTokenResponse);
-  rpc GetTokenList(common.Empty) returns (TokenListResponse);
-  rpc DeleteToken(IdRequest) returns (common.Empty);
-}
-
 service CruxStorage {
   // CRUD
   rpc GetStorages(common.Empty) returns (StorageListResponse);
@@ -172,32 +148,6 @@ message UpdateEntityResponse { google.protobuf.Timestamp updatedAt = 100; }
  * Custom messages, please use comment if you add a new entity
  *
  */
-
-// AUTHENTICATION
-message GenerateTokenRequest {
-  string name = 100;
-  int32 expirationInDays = 101;
-}
-
-message GenerateTokenResponse {
-  string id = 1;
-
-  string name = 100;
-  google.protobuf.Timestamp expiresAt = 101;
-  google.protobuf.Timestamp createdAt = 102;
-
-  string token = 103;
-}
-
-message TokenResponse {
-  string id = 1;
-
-  string name = 100;
-  google.protobuf.Timestamp expiresAt = 101;
-  google.protobuf.Timestamp createdAt = 102;
-}
-
-message TokenListResponse { repeated TokenResponse data = 1000; }
 
 // TEAM
 message CreateTeamRequest { string name = 100; }
@@ -313,168 +263,7 @@ message UserResponse {
   optional google.protobuf.Timestamp lastLogin = 104;
 }
 
-// PRODUCT
-enum ProductType {
-  PRODUCT_TYPE_UNSPECIFIED = 0;
-  SIMPLE = 1;
-  COMPLEX = 2;
-}
-
-enum VersionType {
-  VERSION_TYPE_UNSPECIFIED = 0;
-  INCREMENTAL = 1;
-  ROLLING = 2;
-}
-
-message VersionResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  string changelog = 101;
-  bool default = 102;
-  VersionType type = 103;
-  bool increasable = 104;
-}
-
-message VersionListResponse { repeated VersionResponse data = 1000; }
-
-message ProductDetailsReponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  optional string description = 101;
-  ProductType type = 102;
-  bool deletable = 103;
-
-  repeated VersionResponse versions = 1000;
-}
-
-message ProductReponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  optional string description = 101;
-  ProductType type = 102;
-  uint32 versionCount = 103;
-}
-
-message ProductListResponse { repeated ProductReponse data = 1000; }
-
-message CreateProductRequest {
-  string name = 100;
-  optional string description = 101;
-  ProductType type = 102;
-}
-
-message UpdateProductRequest {
-  string id = 1;
-
-  string name = 100;
-  optional string description = 101;
-  optional string changelog = 102;
-}
-
 // REGISTRY
-
-message RegistryResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-  string url = 103;
-  RegistryType type = 104;
-}
-
-message RegistryListResponse { repeated RegistryResponse data = 1000; }
-
-message HubRegistryDetails { string imageNamePrefix = 100; }
-
-message V2RegistryDetails {
-  string url = 100;
-  optional string user = 101;
-  optional string token = 102;
-}
-
-message GitlabRegistryDetails {
-  string user = 100;
-  string token = 101;
-  string imageNamePrefix = 102;
-  optional string url = 103;
-  optional string apiUrl = 104;
-  RegistryNamespace namespace = 105;
-}
-
-message GithubRegistryDetails {
-  string user = 100;
-  string token = 101;
-  string imageNamePrefix = 102;
-  RegistryNamespace namespace = 103;
-}
-
-message GoogleRegistryDetails {
-  string url = 100;
-  optional string user = 101;
-  optional string token = 102;
-  string imageNamePrefix = 103;
-}
-
-message UncheckedRegistryDetails { string url = 100; }
-
-message CreateRegistryRequest {
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-
-  oneof details {
-    HubRegistryDetails hub = 200;
-    V2RegistryDetails v2 = 201;
-    GitlabRegistryDetails gitlab = 202;
-    GithubRegistryDetails github = 203;
-    GoogleRegistryDetails google = 204;
-    UncheckedRegistryDetails unchecked = 205;
-  }
-}
-
-message UpdateRegistryRequest {
-  string id = 1;
-
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-
-  oneof details {
-    HubRegistryDetails hub = 200;
-    V2RegistryDetails v2 = 201;
-    GitlabRegistryDetails gitlab = 202;
-    GithubRegistryDetails github = 203;
-    GoogleRegistryDetails google = 204;
-    UncheckedRegistryDetails unchecked = 205;
-  }
-}
-
-message RegistryDetailsResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-  bool inUse = 103;
-
-  oneof details {
-    HubRegistryDetails hub = 200;
-    V2RegistryDetails v2 = 201;
-    GitlabRegistryDetails gitlab = 202;
-    GithubRegistryDetails github = 203;
-    GoogleRegistryDetails google = 204;
-    UncheckedRegistryDetails unchecked = 205;
-  }
-}
 
 enum RegistryType {
   REGISTRY_TYPE_UNSPECIFIED = 0;
@@ -484,14 +273,6 @@ enum RegistryType {
   GITHUB = 4;
   GOOGLE = 5;
   UNCHECKED = 6;
-}
-
-enum RegistryNamespace {
-  REGISTRY_NAMESPACE_UNSPECIFIED = 0;
-  RNS_ORGANIZATION = 1;
-  RNS_USER = 2;
-  RNS_GROUP = 3;
-  RNS_PROJECT = 4;
 }
 
 // Container
@@ -815,6 +596,14 @@ message WatchContainerLogRequest {
   common.ContainerIdentifier container = 101;
 }
 
+// VERSIOn
+
+enum VersionType {
+  VERSION_TYPE_UNSPECIFIED = 0;
+  INCREMENTAL = 1;
+  ROLLING = 2;
+}
+
 // DEPLOYMENT
 
 message DeploymentProgressMessage {
@@ -1057,6 +846,12 @@ message CreateProductFromTemplateRequest {
   string name = 100;
   string description = 101;
   ProductType type = 102;
+}
+
+enum ProductType {
+  PRODUCT_TYPE_UNSPECIFIED = 0;
+  SIMPLE = 1;
+  COMPLEX = 2;
 }
 
 message TemplateImageResponse { bytes data = 1; }

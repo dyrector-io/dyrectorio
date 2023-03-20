@@ -2,9 +2,8 @@ import { DeploymentStatusEnum, Version, VersionTypeEnum } from '.prisma/client'
 import { Injectable } from '@nestjs/common'
 import { ProductTypeEnum } from '@prisma/client'
 import { versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/domain/version'
-import { AuditResponse, VersionResponse, VersionType, versionTypeToJSON } from 'src/grpc/protobuf/proto/crux'
+import { VersionType, versionTypeToJSON } from 'src/grpc/protobuf/proto/crux'
 import { toAuditDto } from 'src/shared/dto'
-import { versionTypeToProto } from 'src/shared/mapper'
 import { ContainerConfigData, DeploymentStatus } from 'src/shared/models'
 import DeployMapper, { DeploymentWithNode } from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
@@ -13,15 +12,6 @@ import { VersionDetailsDto, VersionDto } from './version.dto'
 @Injectable()
 export default class VersionMapper {
   constructor(private deployMapper: DeployMapper, private imageMapper: ImageMapper) {}
-
-  listItemToProto(version: VersionWithChildren): VersionResponse {
-    return {
-      ...version,
-      audit: AuditResponse.fromJSON(version),
-      type: versionTypeToProto(version.type),
-      increasable: versionIsIncreasable(version),
-    }
-  }
 
   toDto(it: VersionWithChildren): VersionDto {
     return {

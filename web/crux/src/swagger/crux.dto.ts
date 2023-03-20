@@ -15,7 +15,7 @@ import {
   HealthCheckConfig,
   InstanceDeploymentItem,
   ListSecretsResponse,
-  ResourceConfig,
+  ResourceConfig
 } from 'src/grpc/protobuf/proto/common'
 import {
   ActiveTeamDetailsResponse,
@@ -39,12 +39,7 @@ import {
   DeploymentListResponse,
   DeploymentProgressMessage,
   DeploymentResponse,
-  GenerateTokenResponse,
-  GithubRegistryDetails,
-  GitlabRegistryDetails,
-  GoogleRegistryDetails,
   HealthResponse,
-  HubRegistryDetails,
   ImageContainerConfig,
   ImageListResponse,
   ImageResponse,
@@ -75,11 +70,7 @@ import {
   ProductListResponse,
   ProductReponse,
   ProductType,
-  RegistryDetailsResponse,
   RegistryImages,
-  RegistryListResponse,
-  RegistryNamespace,
-  RegistryResponse,
   RegistryType,
   ServiceStatus,
   TeamDetailsResponse,
@@ -89,9 +80,6 @@ import {
   TemplateImageResponse,
   TemplateListResponse,
   TemplateResponse,
-  TokenListResponse,
-  TokenResponse,
-  UncheckedRegistryDetails,
   UniqueKeyList,
   UniqueKeyValueList,
   UniqueSecretKeyValueList,
@@ -100,13 +88,11 @@ import {
   UserResponse,
   UserRole,
   UserStatus,
-  V2RegistryDetails,
-  VersionListResponse,
   VersionResponse,
   VersionType,
   Volume,
   VolumeLink,
-  VolumeList,
+  VolumeList
 } from 'src/grpc/protobuf/proto/crux'
 import {
   InitContainer,
@@ -116,7 +102,7 @@ import {
   UniqueKeyValue,
   UniqueSecretKey,
   UniqueSecretKeyValue,
-  VolumeType,
+  VolumeType
 } from 'src/shared/models'
 
 export class ServiceIdRequestDto {
@@ -138,27 +124,6 @@ export class CreateEntityResponseDto {
 }
 export class UpdateEntityResponseDto {
   updatedAt: any
-}
-export class GenerateTokenRequestDto {
-  accessedBy: string
-  name: string
-  expirationInDays: number
-}
-export class GenerateTokenResponseDto {
-  id: string
-  name: string
-  expiresAt: any
-  createdAt: any
-  token: string
-}
-export class TokenResponseDto {
-  id: string
-  name: string
-  expiresAt: any
-  createdAt: any
-}
-export class TokenListResponseDto {
-  data: TokenResponse[]
 }
 export class AuditLogListRequestDto {
   accessedBy: string
@@ -294,18 +259,6 @@ export class UpdateProductRequestDto {
   description: string | undefined
   changelog: string | undefined
 }
-export class RegistryResponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  description: string | undefined
-  icon: string | undefined
-  url: string
-  type: RegistryType
-}
-export class RegistryListResponseDto {
-  data: RegistryResponse[]
-}
 export class HubRegistryDetailsDto {
   imageNamePrefix: string
 }
@@ -313,20 +266,6 @@ export class V2RegistryDetailsDto {
   url: string
   user: string | undefined
   token: string | undefined
-}
-export class GitlabRegistryDetailsDto {
-  user: string
-  token: string
-  imageNamePrefix: string
-  url: string | undefined
-  apiUrl: string | undefined
-  namespace: RegistryNamespace
-}
-export class GithubRegistryDetailsDto {
-  user: string
-  token: string
-  imageNamePrefix: string
-  namespace: RegistryNamespace
 }
 export class GoogleRegistryDetailsDto {
   url: string
@@ -337,46 +276,6 @@ export class GoogleRegistryDetailsDto {
 export class UncheckedRegistryDetailsDto {
   url: string
 }
-export class CreateRegistryRequestDto {
-  accessedBy: string
-  name: string
-  description: string | undefined
-  icon: string | undefined
-  hub: HubRegistryDetails | undefined
-  v2: V2RegistryDetails | undefined
-  gitlab: GitlabRegistryDetails | undefined
-  github: GithubRegistryDetails | undefined
-  google: GoogleRegistryDetails | undefined
-  unchecked: UncheckedRegistryDetails | undefined
-}
-export class UpdateRegistryRequestDto {
-  id: string
-  accessedBy: string
-  name: string
-  description: string | undefined
-  icon: string | undefined
-  hub: HubRegistryDetails | undefined
-  v2: V2RegistryDetails | undefined
-  gitlab: GitlabRegistryDetails | undefined
-  github: GithubRegistryDetails | undefined
-  google: GoogleRegistryDetails | undefined
-  unchecked: UncheckedRegistryDetails | undefined
-}
-export class RegistryDetailsResponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  description: string | undefined
-  icon: string | undefined
-  inUse: boolean
-  hub: HubRegistryDetails | undefined
-  v2: V2RegistryDetails | undefined
-  gitlab: GitlabRegistryDetails | undefined
-  github: GithubRegistryDetails | undefined
-  google: GoogleRegistryDetails | undefined
-  unchecked: UncheckedRegistryDetails | undefined
-}
-
 export class UpdateVersionRequestDto {
   id: string
   accessedBy: string
@@ -885,20 +784,6 @@ export class CruxProductControllerDto {
   deleteProduct: any
   getProductDetails: Promise<ProductDetailsReponse> | Observable<ProductDetailsReponse> | ProductDetailsReponse
 }
-export class CruxRegistryClientDto {
-  getRegistries: Observable<RegistryListResponse>
-  createRegistry: Observable<CreateEntityResponse>
-  updateRegistry: Observable<UpdateEntityResponse>
-  deleteRegistry: any
-  getRegistryDetails: Observable<RegistryDetailsResponse>
-}
-export class CruxRegistryControllerDto {
-  getRegistries: Promise<RegistryListResponse> | Observable<RegistryListResponse> | RegistryListResponse
-  createRegistry: Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-  updateRegistry: Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-  deleteRegistry: any
-  getRegistryDetails: Promise<RegistryDetailsResponse> | Observable<RegistryDetailsResponse> | RegistryDetailsResponse
-}
 export class CruxNodeClientDto {
   getNodes: Observable<NodeListResponse>
   createNode: Observable<CreateEntityResponse>
@@ -1082,16 +967,6 @@ export class CruxTemplateControllerDto {
   getTemplates: Promise<TemplateListResponse> | Observable<TemplateListResponse> | TemplateListResponse
   createProductFromTemplate: Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
   getImage: Promise<TemplateImageResponse> | Observable<TemplateImageResponse> | TemplateImageResponse
-}
-export class CruxTokenClientDto {
-  generateToken: Observable<GenerateTokenResponse>
-  getTokenList: Observable<TokenListResponse>
-  deleteToken: any
-}
-export class CruxTokenControllerDto {
-  generateToken: Promise<GenerateTokenResponse> | Observable<GenerateTokenResponse> | GenerateTokenResponse
-  getTokenList: Promise<TokenListResponse> | Observable<TokenListResponse> | TokenListResponse
-  deleteToken: any
 }
 
 // Not generated:
