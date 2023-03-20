@@ -24,7 +24,6 @@ import DyoProductService from './product-service'
 import DyoStorageService from './storage-service'
 import DyoTeamService from './team-service'
 import DyoTemplateService from './template-service'
-import DyoTokenService from './token-service'
 import DyoVersionService from './version-service'
 
 export class Crux {
@@ -45,8 +44,6 @@ export class Crux {
   private _notifications: DyoNotifcationService
 
   private _templates: DyoTemplateService
-
-  private _tokens: DyoTokenService
 
   private _storage: DyoStorageService
 
@@ -91,10 +88,6 @@ export class Crux {
 
   get templates() {
     return this._templates ?? new DyoTemplateService(this.clients.templates, this.cookie)
-  }
-
-  get tokens() {
-    return this._tokens ?? new DyoTokenService(this.clients.tokens, this.cookie)
   }
 
   get storage() {

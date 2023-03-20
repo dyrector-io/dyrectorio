@@ -12,7 +12,6 @@ import {
   CruxStorageClient,
   CruxTeamClient,
   CruxTemplateClient,
-  CruxTokenClient,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { credentials } from '@grpc/grpc-js'
 
@@ -39,8 +38,6 @@ class CruxClients {
 
   dashboard: CruxDashboardClient
 
-  tokens: CruxTokenClient
-
   storage: CruxStorageClient
 
   constructor(address: string) {
@@ -62,7 +59,6 @@ class CruxClients {
     this.notifications = new CruxNotificationClient(address, creds)
     this.templates = new CruxTemplateClient(address, creds)
     this.dashboard = new CruxDashboardClient(address, creds)
-    this.tokens = new CruxTokenClient(address, creds)
     this.storage = new CruxStorageClient(address, creds)
   }
 }

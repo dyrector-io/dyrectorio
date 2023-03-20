@@ -11,10 +11,9 @@ import { DyoList } from '@app/elements/dyo-list'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { GenerateTokenResponse, Token } from '@app/models'
-import { ROUTE_SETTINGS_EDIT_PROFILE, ROUTE_SETTINGS_TOKENS, tokensApiUrl } from '@app/routes'
-import { utcDateToLocale, withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { SimpleToken, Token, TokenList } from '@app/models'
+import { API_TOKENS, ROUTE_SETTINGS_EDIT_PROFILE, ROUTE_SETTINGS_TOKENS, tokensApiUrl } from '@app/routes'
+import { fetchCrux, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -23,7 +22,7 @@ import { useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
 
 interface TokensPageProps {
-  tokens: Token[]
+  tokens: SimpleToken[]
 }
 
 const TokensPage = (props: TokensPageProps) => {
@@ -31,18 +30,18 @@ const TokensPage = (props: TokensPageProps) => {
 
   const { t } = useTranslation('settings')
 
-  const [showToken, setShowToken] = useState<GenerateTokenResponse>(null)
+  const [showToken, setShowToken] = useState<Token>(null)
   const [creating, setCreating] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
   const [deleteModalConfig, confirmDelete] = useConfirmation()
 
-  const filters = useFilters<Token, TextFilter>({
+  const filters = useFilters<SimpleToken, TextFilter>({
     initialData: tokens,
     filters: [textFilterFor<Token>(it => [it.name, utcDateToLocale(it.createdAt), utcDateToLocale(it.expiresAt)])],
   })
 
-  const onCreated = (token: GenerateTokenResponse) => {
+  const onCreated = (token: Token) => {
     setCreating(false)
     setShowToken(token)
     filters.setItems([...filters.items, token])
@@ -180,10 +179,15 @@ const TokensPage = (props: TokensPageProps) => {
 
 export default TokensPage
 
-const getPageServerSideProps = async (context: NextPageContext) => ({
-  props: {
-    tokens: await cruxFromContext(context).tokens.getAll(),
-  },
-})
+const getPageServerSideProps = async (context: NextPageContext) => {
+  const res = await fetchCrux(context, API_TOKENS)
+  const { data: tokens } = (await res.json()) as TokenList
+
+  return {
+    props: {
+      tokens,
+    },
+  }
+}
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

@@ -62,7 +62,7 @@ export const API_TEMPLATES = `/api/templates`
 
 export const API_DASHBOARD = '/api/new/dashboard'
 
-export const API_TOKENS = '/api/tokens'
+export const API_TOKENS = '/api/new/tokens'
 
 export const API_STORAGES = '/api/storages'
 export const API_STORAGES_OPTIONS = `${API_STORAGES}/options`
