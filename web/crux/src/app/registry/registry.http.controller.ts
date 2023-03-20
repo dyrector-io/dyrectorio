@@ -1,30 +1,29 @@
 import {
-  Response,
   Controller,
   Get,
+  HttpCode,
+  Response,
   UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
-  HttpCode,
 } from '@nestjs/common'
-import { Response as Res } from 'express'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { Response as Res } from 'express'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 
-import { AccessRequestDto, RegistryListResponseDto } from 'src/swagger/crux.dto'
-import { Identity } from '@ory/kratos-client'
-import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
 import { Delete, Post, Put } from '@nestjs/common/decorators/http/request-mapping.decorator'
 import { Body, Param } from '@nestjs/common/decorators/http/route-params.decorator'
-import RegistryService from './registry.service'
-import { CreateRegistry, RegistryDetails, RegistryList, UpdateRegistry } from './registry.dto'
-import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
-import UpdateRegistryInterceptor from './interceptors/registry.update.interceptor'
-import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
+import { Identity } from '@ory/kratos-client'
+import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
+import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
+import UpdateRegistryInterceptor from './interceptors/registry.update.interceptor'
+import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
+import { CreateRegistry, RegistryDetails, RegistryList, UpdateRegistry } from './registry.dto'
+import RegistryService from './registry.service'
 
 @Controller('registries')
 @ApiTags('registries')

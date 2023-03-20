@@ -29,8 +29,8 @@ export default class VersionUpdateValidationInterceptor implements NestIntercept
         children: {
           select: {
             versionId: true,
-          }
-        }
+          },
+        },
       },
       where: {
         id: versionId,
