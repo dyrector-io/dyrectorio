@@ -1,16 +1,14 @@
+import { DeploymentStatusEnum, Version, VersionTypeEnum } from '.prisma/client'
 import { Injectable } from '@nestjs/common'
+import { ProductTypeEnum } from '@prisma/client'
 import { versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/domain/version'
-import {
-  AuditResponse,
-  VersionDetailsResponse,
-  VersionResponse,
-  VersionType,
-  versionTypeToJSON,
-} from 'src/grpc/protobuf/proto/crux'
+import { AuditResponse, VersionResponse, VersionType, versionTypeToJSON } from 'src/grpc/protobuf/proto/crux'
+import { toAuditDto } from 'src/shared/dto'
 import { versionTypeToProto } from 'src/shared/mapper'
-import { Version, VersionTypeEnum } from '.prisma/client'
+import { ContainerConfigData, DeploymentStatus } from 'src/shared/models'
 import DeployMapper, { DeploymentWithNode } from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
+import { VersionDetailsDto, VersionDto } from './version.dto'
 
 @Injectable()
 export default class VersionMapper {
@@ -25,16 +23,63 @@ export default class VersionMapper {
     }
   }
 
-  detailsToProto(version: VersionDetails): VersionDetailsResponse {
+  toDto(it: VersionWithChildren): VersionDto {
     return {
-      ...version,
-      audit: AuditResponse.fromJSON(version),
-      type: versionTypeToProto(version.type),
+      id: it.id,
+      audit: toAuditDto(it),
+      name: it.name,
+      type: it.type,
+      changelog: it.changelog,
+      default: it.default,
+      increasable: versionIsIncreasable(it),
+    }
+  }
+
+  detailsToDto(version: VersionDetails): VersionDetailsDto {
+    // TODO(@m8vago): move the image and deployment mapping to their respective mapper
+
+    const deploymentStatusToDto = (it: DeploymentStatusEnum): DeploymentStatus => {
+      if (it === 'inProgress') {
+        return 'in-progress'
+      }
+
+      return it as DeploymentStatus
+    }
+
+    return {
+      id: version.id,
+      name: version.name,
+      changelog: version.changelog,
+      default: version.default,
+      audit: toAuditDto(version),
+      type: version.type,
       mutable: versionIsMutable(version),
       deletable: versionIsDeletable(version),
       increasable: versionIsIncreasable(version),
-      images: version.images.map(it => this.imageMapper.detailsToProto(it)),
-      deployments: version.deployments.map(it => this.deployMapper.deploymentByVersionToProto(it)),
+      images: version.images.map(it => ({
+        id: it.id,
+        name: it.name,
+        tag: it.tag,
+        order: it.order,
+        config: it.config as any as ContainerConfigData,
+        createdAt: it.createdAt,
+        registry: {
+          id: it.registry.id,
+          name: it.registry.name,
+          type: it.registry.type,
+        },
+      })),
+      deployments: version.deployments.map(it => ({
+        id: it.id,
+        prefix: it.prefix,
+        status: deploymentStatusToDto(it.status),
+        updatedAt: it.updatedAt ?? it.createdAt,
+        node: {
+          id: it.node.id,
+          name: it.node.name,
+          type: it.node.type,
+        },
+      })),
     }
   }
 
@@ -48,6 +93,9 @@ export type VersionWithChildren = Version & {
 }
 
 export type VersionDetails = VersionWithChildren & {
+  product: {
+    type: ProductTypeEnum
+  }
   images: ImageDetails[]
   deployments: DeploymentWithNode[]
 }

@@ -56,16 +56,6 @@ service CruxNode {
       returns (stream common.ContainerLogMessage);
 }
 
-service CruxProductVersion {
-  rpc GetVersionsByProductId(IdRequest) returns (VersionListResponse);
-  rpc CreateVersion(CreateVersionRequest) returns (CreateEntityResponse);
-  rpc UpdateVersion(UpdateVersionRequest) returns (UpdateEntityResponse);
-  rpc DeleteVersion(IdRequest) returns (common.Empty);
-  rpc SetDefaultVersion(IdRequest) returns (common.Empty);
-  rpc GetVersionDetails(IdRequest) returns (VersionDetailsResponse);
-  rpc IncreaseVersion(IncreaseVersionRequest) returns (CreateEntityResponse);
-}
-
 service CruxImage {
   rpc GetImagesByVersionId(IdRequest) returns (ImageListResponse);
   rpc AddImagesToVersion(AddImagesToVersionRequest) returns (ImageListResponse);
@@ -127,12 +117,6 @@ service CruxNotification {
   rpc TestNotification(IdRequest) returns (common.Empty);
 }
 
-service CruxAudit {
-  rpc GetAuditLog(AuditLogListRequest) returns (AuditLogListResponse);
-  rpc GetAuditLogListCount(AuditLogListRequest)
-      returns (AuditLogListCountResponse);
-}
-
 service CruxHealth { rpc getHealth(common.Empty) returns (HealthResponse); }
 
 service CruxTemplate {
@@ -140,10 +124,6 @@ service CruxTemplate {
   rpc CreateProductFromTemplate(CreateProductFromTemplateRequest)
       returns (CreateEntityResponse);
   rpc GetImage(IdRequest) returns (TemplateImageResponse);
-}
-
-service CruxDashboard {
-  rpc GetDashboard(common.Empty) returns (DashboardResponse);
 }
 
 service CruxToken {
@@ -170,9 +150,7 @@ service CruxStorage {
 
 message ServiceIdRequest { string id = 1; }
 
-message IdRequest {
-  string id = 1;
-}
+message IdRequest { string id = 1; }
 
 message AuditResponse {
   string createdBy = 100;
@@ -221,31 +199,8 @@ message TokenResponse {
 
 message TokenListResponse { repeated TokenResponse data = 1000; }
 
-// AUDIT
-message AuditLogListRequest {
-  uint32 pageSize = 100;
-  uint32 pageNumber = 101;
-  optional string keyword = 102;
-  optional google.protobuf.Timestamp createdFrom = 103;
-  google.protobuf.Timestamp createdTo = 104;
-}
-
-message AuditLogListCountResponse { uint32 count = 100; }
-
-message AuditLogResponse {
-  google.protobuf.Timestamp createdAt = 100;
-  string userId = 101;
-  string identityEmail = 102;
-  string serviceCall = 103;
-  optional string data = 104;
-}
-
-message AuditLogListResponse { repeated AuditLogResponse data = 1000; }
-
 // TEAM
-message CreateTeamRequest {
-  string name = 100;
-}
+message CreateTeamRequest { string name = 100; }
 
 message UpdateTeamRequest {
   string id = 1;
@@ -370,6 +325,19 @@ enum VersionType {
   INCREMENTAL = 1;
   ROLLING = 2;
 }
+
+message VersionResponse {
+  string id = 1;
+  AuditResponse audit = 2;
+
+  string name = 100;
+  string changelog = 101;
+  bool default = 102;
+  VersionType type = 103;
+  bool increasable = 104;
+}
+
+message VersionListResponse { repeated VersionResponse data = 1000; }
 
 message ProductDetailsReponse {
   string id = 1;
@@ -524,58 +492,6 @@ enum RegistryNamespace {
   RNS_USER = 2;
   RNS_GROUP = 3;
   RNS_PROJECT = 4;
-}
-
-// VERSION
-
-message CreateVersionRequest {
-  string productId = 100;
-  string name = 101;
-  optional string changelog = 102;
-  VersionType type = 104;
-}
-
-message UpdateVersionRequest {
-  string id = 1;
-
-  string name = 100;
-  optional string changelog = 101;
-}
-
-message VersionResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  string changelog = 101;
-  bool default = 102;
-  VersionType type = 103;
-  bool increasable = 104;
-}
-
-message VersionListResponse { repeated VersionResponse data = 1000; }
-
-message VersionDetailsResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  string changelog = 101;
-  bool default = 102;
-  VersionType type = 103;
-  bool mutable = 104;
-  bool increasable = 105;
-  bool deletable = 106;
-
-  repeated ImageResponse images = 1000;
-  repeated DeploymentByVersionResponse deployments = 1001;
-}
-
-message IncreaseVersionRequest {
-  string id = 1;
-
-  string name = 100;
-  optional string changelog = 101;
 }
 
 // Container
@@ -1145,41 +1061,6 @@ message CreateProductFromTemplateRequest {
 
 message TemplateImageResponse { bytes data = 1; }
 
-// DASHBOARD
-message DashboardActiveNodes {
-  string id = 1;
-
-  string name = 100;
-  string address = 101;
-  string version = 102;
-}
-
-message DashboardDeployment {
-  string id = 1;
-
-  string product = 100;
-  string version = 101;
-  string node = 102;
-  string changelog = 103;
-  optional google.protobuf.Timestamp deployedAt = 104;
-  string productId = 105;
-  string versionId = 106;
-}
-
-message DashboardResponse {
-  uint32 users = 100;
-  uint32 auditLogEntries = 101;
-  uint32 products = 102;
-  uint32 versions = 103;
-  uint32 deployments = 104;
-  uint32 failedDeployments = 105;
-
-  repeated DashboardActiveNodes nodes = 1000;
-  repeated DashboardDeployment latestDeployments = 1001;
-  repeated AuditLogResponse auditLog = 1002;
-}
-
-
 // STORAGES
 
 message StorageResponse {
@@ -1233,4 +1114,6 @@ message StorageOptionResponse {
   string name = 100;
 }
 
-message StorageOptionListResponse { repeated StorageOptionResponse data = 1000; }
+message StorageOptionListResponse {
+  repeated StorageOptionResponse data = 1000;
+}

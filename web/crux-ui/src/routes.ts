@@ -147,7 +147,8 @@ export const verificationUrl = (email: string) => `${ROUTE_VERIFICATION}?email=$
 // product
 export const productUrl = (id: string, params?: VersionUrlParams) => appendUrlParams(`${ROUTE_PRODUCTS}/${id}`, params)
 export const productApiUrl = (id: string) => `/api${productUrl(id)}`
-export const productVersionsApiUrl = (productId: string) => `${productApiUrl(productId)}/versions`
+// TODO(@m8vago): use productApiUrl() when it gets refactored
+export const productVersionsApiUrl = (productId: string) => `/api/new/products/${productId}/versions`
 
 // registry
 export const registryUrl = (id: string) => `${ROUTE_REGISTRIES}/${id}`
@@ -173,7 +174,7 @@ export type VersionUrlParams = {
 export const versionUrl = (productId: string, versionId: string, params?: VersionUrlParams) =>
   appendUrlParams(`${productUrl(productId)}/versions/${versionId}`, params)
 
-export const versionApiUrl = (productId: string, versionId: string) => `/api${versionUrl(productId, versionId)}`
+export const versionApiUrl = (productId: string, versionId: string) => `/api/new${versionUrl(productId, versionId)}`
 export const versionIncreaseApiUrl = (productId: string, versionId: string) =>
   `${versionApiUrl(productId, versionId)}/increase`
 export const versionSetDefaultApiUrl = (productId: string, versionId: string) =>

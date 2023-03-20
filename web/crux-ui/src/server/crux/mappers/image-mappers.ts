@@ -285,5 +285,9 @@ export const imageToDto = (image: ImageResponse): VersionImage => ({
   ...image,
   config: containerConfigToDto(image.config),
   createdAt: timestampToUTC(image.createdAt),
-  registryType: registryTypeProtoToDto(image.registryType),
+  registry: {
+    id: image.registryId,
+    name: image.registryName,
+    type: registryTypeProtoToDto(image.registryType),
+  },
 })

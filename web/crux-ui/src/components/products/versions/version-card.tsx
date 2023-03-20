@@ -6,7 +6,7 @@ import DyoImgButton from '@app/elements/dyo-img-button'
 import DyoTag from '@app/elements/dyo-tag'
 import { Version } from '@app/models'
 import { versionUrl } from '@app/routes'
-import { utcDateToLocale } from '@app/utils'
+import { auditToLocaleDate } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -56,7 +56,7 @@ const VersionCard = (props: VersionCardProps) => {
       <div className="flex flex-row justify-end mt-4">
         <span className="text-bright font-bold">{`${t('common:updatedAt')}:`}</span>
 
-        <span className="text-bright ml-2">{utcDateToLocale(version.updatedAt)}</span>
+        <span className="text-bright ml-2">{auditToLocaleDate(version.audit)}</span>
       </div>
 
       <div className="flex flex-row my-2">

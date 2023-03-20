@@ -11,10 +11,8 @@ import {
   CreateEntityResponse,
   CreateProductFromTemplateRequest,
   CreateProductRequest,
-  CreateVersionRequest,
   ProductType,
   TemplateImageResponse,
-  VersionType,
 } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import TemplateFileService, { TemplateContainerConfig, TemplateImage } from 'src/services/template.file.service'
@@ -25,6 +23,7 @@ import { v4 } from 'uuid'
 import ImageMapper from '../image/image.mapper'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
+import { CreateVersionDto } from '../version/version.dto'
 import VersionService from '../version/version.service'
 
 const VERSION_NAME = '1.0.0'
@@ -175,13 +174,13 @@ export default class TemplateService {
           })
 
     if (version === null) {
-      const createReq: CreateVersionRequest = {
-        productId,
+      const createReq: CreateVersionDto = {
         name: VERSION_NAME,
-        type: VersionType.INCREMENTAL,
+        type: 'incremental',
+        changelog: null,
       }
 
-      const newVersion = await this.versionService.createVersion(createReq, identity)
+      const newVersion = await this.versionService.createVersion(productId, createReq, identity)
       version = await this.prisma.version.findFirst({
         where: {
           id: newVersion.id,

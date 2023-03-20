@@ -53,7 +53,11 @@ class DyoProductService {
           ({
             ...it,
             type: versionTypeToDyo(it.type),
-            updatedAt: timestampToUTC(it.audit.updatedAt ?? it.audit.createdAt),
+            audit: {
+              ...it.audit,
+              updatedAt: timestampToUTC(it.audit.updatedAt),
+              createdAt: timestampToUTC(it.audit.createdAt),
+            },
           } as Version),
       ),
     }

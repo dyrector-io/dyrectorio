@@ -8,7 +8,6 @@ import NotificationTemplateBuilder from 'src/builders/notification.template.buil
 import DeployModule from '../deploy/deploy.module'
 import ImageModule from '../image/image.module'
 import TeamRepository from '../team/team.repository'
-import VersionController from './version.controller'
 import VersionMapper from './version.mapper'
 import VersionService from './version.service'
 import VersionHttpController from './version.http.controller'
@@ -16,7 +15,7 @@ import VersionHttpController from './version.http.controller'
 @Module({
   imports: [DeployModule, ImageModule, HttpModule],
   exports: [VersionService, VersionMapper],
-  controllers: [VersionController, VersionHttpController],
+  controllers: [VersionHttpController],
   providers: [
     VersionService,
     VersionMapper,

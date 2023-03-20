@@ -395,7 +395,7 @@ export type InstanceDetails = Instance & {
 }
 
 export type DeploymentWithNode = Deployment & {
-  node: Node
+  node: Pick<Node, 'id' | 'name' | 'type'>
 }
 
 export type DeploymentDetails = DeploymentWithNode & {

@@ -10,14 +10,13 @@ import {
   ProductListResponseDto,
 } from 'src/swagger/crux.dto'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
-import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
 import { Identity } from '@ory/kratos-client'
 import ProductService from './product.service'
-import JwtAuthGuard from '../token/jwt-auth.guard'
+import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
 
 @Controller('product')
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(HttpLoggerInterceptor, HttpIdentityInterceptor)
+@UseInterceptors(HttpLoggerInterceptor)
 @UseFilters(HttpExceptionFilter)
 export default class ProductHttpController {
   constructor(private service: ProductService) {}

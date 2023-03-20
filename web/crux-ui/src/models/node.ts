@@ -16,14 +16,18 @@ export type NodeConnection = {
   version?: string
 }
 
-export type DyoNode = NodeConnection & {
+export type BasicNode = {
   id: string
-  icon?: string
   name: string
-  description?: string
   type: NodeType
-  updating: boolean
 }
+
+export type DyoNode = BasicNode &
+  NodeConnection & {
+    icon?: string
+    description?: string
+    updating: boolean
+  }
 
 export const nodeConnectionOf = (node: DyoNode | DyoNodeDetails): NodeConnection => ({
   address: node.address,

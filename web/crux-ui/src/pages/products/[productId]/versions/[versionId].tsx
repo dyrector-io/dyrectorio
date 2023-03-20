@@ -9,7 +9,7 @@ import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { EditableVersion, ProductDetails, VersionDetails } from '@app/models'
 import { productUrl, ROUTE_PRODUCTS, versionApiUrl, versionUrl } from '@app/routes'
-import { anchorLinkOf, redirectTo, searchParamsOf, withContextAuthorization } from '@app/utils'
+import { anchorLinkOf, fetchCrux, redirectTo, searchParamsOf, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -137,12 +137,12 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(`${productUrl(product.id)}${searchParamsOf(context)}`)
   }
 
-  const version = await cruxFromContext(context).versions.getById(versionId)
+  const res = await fetchCrux(context, versionApiUrl(productId, versionId))
 
   return {
     props: {
       product,
-      version,
+      version: await res.json(),
     },
   }
 }

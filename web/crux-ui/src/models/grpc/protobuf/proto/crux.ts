@@ -710,31 +710,6 @@ export interface TokenListResponse {
   data: TokenResponse[]
 }
 
-/** AUDIT */
-export interface AuditLogListRequest {
-  pageSize: number
-  pageNumber: number
-  keyword?: string | undefined
-  createdFrom?: Timestamp | undefined
-  createdTo: Timestamp | undefined
-}
-
-export interface AuditLogListCountResponse {
-  count: number
-}
-
-export interface AuditLogResponse {
-  createdAt: Timestamp | undefined
-  userId: string
-  identityEmail: string
-  serviceCall: string
-  data?: string | undefined
-}
-
-export interface AuditLogListResponse {
-  data: AuditLogResponse[]
-}
-
 /** TEAM */
 export interface CreateTeamRequest {
   name: string
@@ -823,6 +798,20 @@ export interface UserResponse {
   role: UserRole
   status: UserStatus
   lastLogin?: Timestamp | undefined
+}
+
+export interface VersionResponse {
+  id: string
+  audit: AuditResponse | undefined
+  name: string
+  changelog: string
+  default: boolean
+  type: VersionType
+  increasable: boolean
+}
+
+export interface VersionListResponse {
+  data: VersionResponse[]
 }
 
 export interface ProductDetailsReponse {
@@ -950,53 +939,6 @@ export interface RegistryDetailsResponse {
   github?: GithubRegistryDetails | undefined
   google?: GoogleRegistryDetails | undefined
   unchecked?: UncheckedRegistryDetails | undefined
-}
-
-export interface CreateVersionRequest {
-  productId: string
-  name: string
-  changelog?: string | undefined
-  type: VersionType
-}
-
-export interface UpdateVersionRequest {
-  id: string
-  name: string
-  changelog?: string | undefined
-}
-
-export interface VersionResponse {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  changelog: string
-  default: boolean
-  type: VersionType
-  increasable: boolean
-}
-
-export interface VersionListResponse {
-  data: VersionResponse[]
-}
-
-export interface VersionDetailsResponse {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  changelog: string
-  default: boolean
-  type: VersionType
-  mutable: boolean
-  increasable: boolean
-  deletable: boolean
-  images: ImageResponse[]
-  deployments: DeploymentByVersionResponse[]
-}
-
-export interface IncreaseVersionRequest {
-  id: string
-  name: string
-  changelog?: string | undefined
 }
 
 export interface VolumeLink {
@@ -1496,37 +1438,6 @@ export interface CreateProductFromTemplateRequest {
 
 export interface TemplateImageResponse {
   data: Uint8Array
-}
-
-/** DASHBOARD */
-export interface DashboardActiveNodes {
-  id: string
-  name: string
-  address: string
-  version: string
-}
-
-export interface DashboardDeployment {
-  id: string
-  product: string
-  version: string
-  node: string
-  changelog: string
-  deployedAt?: Timestamp | undefined
-  productId: string
-  versionId: string
-}
-
-export interface DashboardResponse {
-  users: number
-  auditLogEntries: number
-  products: number
-  versions: number
-  deployments: number
-  failedDeployments: number
-  nodes: DashboardActiveNodes[]
-  latestDeployments: DashboardDeployment[]
-  auditLog: AuditLogResponse[]
 }
 
 export interface StorageResponse {
@@ -2167,295 +2078,6 @@ export const TokenListResponse = {
   fromPartial<I extends Exact<DeepPartial<TokenListResponse>, I>>(object: I): TokenListResponse {
     const message = createBaseTokenListResponse()
     message.data = object.data?.map(e => TokenResponse.fromPartial(e)) || []
-    return message
-  },
-}
-
-function createBaseAuditLogListRequest(): AuditLogListRequest {
-  return { pageSize: 0, pageNumber: 0, createdTo: undefined }
-}
-
-export const AuditLogListRequest = {
-  encode(message: AuditLogListRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.pageSize !== 0) {
-      writer.uint32(800).uint32(message.pageSize)
-    }
-    if (message.pageNumber !== 0) {
-      writer.uint32(808).uint32(message.pageNumber)
-    }
-    if (message.keyword !== undefined) {
-      writer.uint32(818).string(message.keyword)
-    }
-    if (message.createdFrom !== undefined) {
-      Timestamp.encode(message.createdFrom, writer.uint32(826).fork()).ldelim()
-    }
-    if (message.createdTo !== undefined) {
-      Timestamp.encode(message.createdTo, writer.uint32(834).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): AuditLogListRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseAuditLogListRequest()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 100:
-          message.pageSize = reader.uint32()
-          break
-        case 101:
-          message.pageNumber = reader.uint32()
-          break
-        case 102:
-          message.keyword = reader.string()
-          break
-        case 103:
-          message.createdFrom = Timestamp.decode(reader, reader.uint32())
-          break
-        case 104:
-          message.createdTo = Timestamp.decode(reader, reader.uint32())
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): AuditLogListRequest {
-    return {
-      pageSize: isSet(object.pageSize) ? Number(object.pageSize) : 0,
-      pageNumber: isSet(object.pageNumber) ? Number(object.pageNumber) : 0,
-      keyword: isSet(object.keyword) ? String(object.keyword) : undefined,
-      createdFrom: isSet(object.createdFrom) ? fromJsonTimestamp(object.createdFrom) : undefined,
-      createdTo: isSet(object.createdTo) ? fromJsonTimestamp(object.createdTo) : undefined,
-    }
-  },
-
-  toJSON(message: AuditLogListRequest): unknown {
-    const obj: any = {}
-    message.pageSize !== undefined && (obj.pageSize = Math.round(message.pageSize))
-    message.pageNumber !== undefined && (obj.pageNumber = Math.round(message.pageNumber))
-    message.keyword !== undefined && (obj.keyword = message.keyword)
-    message.createdFrom !== undefined && (obj.createdFrom = fromTimestamp(message.createdFrom).toISOString())
-    message.createdTo !== undefined && (obj.createdTo = fromTimestamp(message.createdTo).toISOString())
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<AuditLogListRequest>, I>>(base?: I): AuditLogListRequest {
-    return AuditLogListRequest.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<AuditLogListRequest>, I>>(object: I): AuditLogListRequest {
-    const message = createBaseAuditLogListRequest()
-    message.pageSize = object.pageSize ?? 0
-    message.pageNumber = object.pageNumber ?? 0
-    message.keyword = object.keyword ?? undefined
-    message.createdFrom =
-      object.createdFrom !== undefined && object.createdFrom !== null
-        ? Timestamp.fromPartial(object.createdFrom)
-        : undefined
-    message.createdTo =
-      object.createdTo !== undefined && object.createdTo !== null ? Timestamp.fromPartial(object.createdTo) : undefined
-    return message
-  },
-}
-
-function createBaseAuditLogListCountResponse(): AuditLogListCountResponse {
-  return { count: 0 }
-}
-
-export const AuditLogListCountResponse = {
-  encode(message: AuditLogListCountResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.count !== 0) {
-      writer.uint32(800).uint32(message.count)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): AuditLogListCountResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseAuditLogListCountResponse()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 100:
-          message.count = reader.uint32()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): AuditLogListCountResponse {
-    return { count: isSet(object.count) ? Number(object.count) : 0 }
-  },
-
-  toJSON(message: AuditLogListCountResponse): unknown {
-    const obj: any = {}
-    message.count !== undefined && (obj.count = Math.round(message.count))
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<AuditLogListCountResponse>, I>>(base?: I): AuditLogListCountResponse {
-    return AuditLogListCountResponse.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<AuditLogListCountResponse>, I>>(object: I): AuditLogListCountResponse {
-    const message = createBaseAuditLogListCountResponse()
-    message.count = object.count ?? 0
-    return message
-  },
-}
-
-function createBaseAuditLogResponse(): AuditLogResponse {
-  return { createdAt: undefined, userId: '', identityEmail: '', serviceCall: '' }
-}
-
-export const AuditLogResponse = {
-  encode(message: AuditLogResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.createdAt !== undefined) {
-      Timestamp.encode(message.createdAt, writer.uint32(802).fork()).ldelim()
-    }
-    if (message.userId !== '') {
-      writer.uint32(810).string(message.userId)
-    }
-    if (message.identityEmail !== '') {
-      writer.uint32(818).string(message.identityEmail)
-    }
-    if (message.serviceCall !== '') {
-      writer.uint32(826).string(message.serviceCall)
-    }
-    if (message.data !== undefined) {
-      writer.uint32(834).string(message.data)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): AuditLogResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseAuditLogResponse()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 100:
-          message.createdAt = Timestamp.decode(reader, reader.uint32())
-          break
-        case 101:
-          message.userId = reader.string()
-          break
-        case 102:
-          message.identityEmail = reader.string()
-          break
-        case 103:
-          message.serviceCall = reader.string()
-          break
-        case 104:
-          message.data = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): AuditLogResponse {
-    return {
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-      userId: isSet(object.userId) ? String(object.userId) : '',
-      identityEmail: isSet(object.identityEmail) ? String(object.identityEmail) : '',
-      serviceCall: isSet(object.serviceCall) ? String(object.serviceCall) : '',
-      data: isSet(object.data) ? String(object.data) : undefined,
-    }
-  },
-
-  toJSON(message: AuditLogResponse): unknown {
-    const obj: any = {}
-    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
-    message.userId !== undefined && (obj.userId = message.userId)
-    message.identityEmail !== undefined && (obj.identityEmail = message.identityEmail)
-    message.serviceCall !== undefined && (obj.serviceCall = message.serviceCall)
-    message.data !== undefined && (obj.data = message.data)
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<AuditLogResponse>, I>>(base?: I): AuditLogResponse {
-    return AuditLogResponse.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<AuditLogResponse>, I>>(object: I): AuditLogResponse {
-    const message = createBaseAuditLogResponse()
-    message.createdAt =
-      object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
-    message.userId = object.userId ?? ''
-    message.identityEmail = object.identityEmail ?? ''
-    message.serviceCall = object.serviceCall ?? ''
-    message.data = object.data ?? undefined
-    return message
-  },
-}
-
-function createBaseAuditLogListResponse(): AuditLogListResponse {
-  return { data: [] }
-}
-
-export const AuditLogListResponse = {
-  encode(message: AuditLogListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    for (const v of message.data) {
-      AuditLogResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): AuditLogListResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseAuditLogListResponse()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1000:
-          message.data.push(AuditLogResponse.decode(reader, reader.uint32()))
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): AuditLogListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => AuditLogResponse.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: AuditLogListResponse): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? AuditLogResponse.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<AuditLogListResponse>, I>>(base?: I): AuditLogListResponse {
-    return AuditLogListResponse.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<AuditLogListResponse>, I>>(object: I): AuditLogListResponse {
-    const message = createBaseAuditLogListResponse()
-    message.data = object.data?.map(e => AuditLogResponse.fromPartial(e)) || []
     return message
   },
 }
@@ -3528,6 +3150,169 @@ export const UserResponse = {
     message.status = object.status ?? 0
     message.lastLogin =
       object.lastLogin !== undefined && object.lastLogin !== null ? Timestamp.fromPartial(object.lastLogin) : undefined
+    return message
+  },
+}
+
+function createBaseVersionResponse(): VersionResponse {
+  return { id: '', audit: undefined, name: '', changelog: '', default: false, type: 0, increasable: false }
+}
+
+export const VersionResponse = {
+  encode(message: VersionResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.audit !== undefined) {
+      AuditResponse.encode(message.audit, writer.uint32(18).fork()).ldelim()
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.changelog !== '') {
+      writer.uint32(810).string(message.changelog)
+    }
+    if (message.default === true) {
+      writer.uint32(816).bool(message.default)
+    }
+    if (message.type !== 0) {
+      writer.uint32(824).int32(message.type)
+    }
+    if (message.increasable === true) {
+      writer.uint32(832).bool(message.increasable)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): VersionResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseVersionResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.audit = AuditResponse.decode(reader, reader.uint32())
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.changelog = reader.string()
+          break
+        case 102:
+          message.default = reader.bool()
+          break
+        case 103:
+          message.type = reader.int32() as any
+          break
+        case 104:
+          message.increasable = reader.bool()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): VersionResponse {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      changelog: isSet(object.changelog) ? String(object.changelog) : '',
+      default: isSet(object.default) ? Boolean(object.default) : false,
+      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
+      increasable: isSet(object.increasable) ? Boolean(object.increasable) : false,
+    }
+  },
+
+  toJSON(message: VersionResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
+    message.name !== undefined && (obj.name = message.name)
+    message.changelog !== undefined && (obj.changelog = message.changelog)
+    message.default !== undefined && (obj.default = message.default)
+    message.type !== undefined && (obj.type = versionTypeToJSON(message.type))
+    message.increasable !== undefined && (obj.increasable = message.increasable)
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<VersionResponse>, I>>(base?: I): VersionResponse {
+    return VersionResponse.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<VersionResponse>, I>>(object: I): VersionResponse {
+    const message = createBaseVersionResponse()
+    message.id = object.id ?? ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
+    message.name = object.name ?? ''
+    message.changelog = object.changelog ?? ''
+    message.default = object.default ?? false
+    message.type = object.type ?? 0
+    message.increasable = object.increasable ?? false
+    return message
+  },
+}
+
+function createBaseVersionListResponse(): VersionListResponse {
+  return { data: [] }
+}
+
+export const VersionListResponse = {
+  encode(message: VersionListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      VersionResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): VersionListResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseVersionListResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(VersionResponse.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): VersionListResponse {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => VersionResponse.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: VersionListResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? VersionResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<VersionListResponse>, I>>(base?: I): VersionListResponse {
+    return VersionListResponse.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<VersionListResponse>, I>>(object: I): VersionListResponse {
+    const message = createBaseVersionListResponse()
+    message.data = object.data?.map(e => VersionResponse.fromPartial(e)) || []
     return message
   },
 }
@@ -5002,557 +4787,6 @@ export const RegistryDetailsResponse = {
       object.unchecked !== undefined && object.unchecked !== null
         ? UncheckedRegistryDetails.fromPartial(object.unchecked)
         : undefined
-    return message
-  },
-}
-
-function createBaseCreateVersionRequest(): CreateVersionRequest {
-  return { productId: '', name: '', type: 0 }
-}
-
-export const CreateVersionRequest = {
-  encode(message: CreateVersionRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.productId !== '') {
-      writer.uint32(802).string(message.productId)
-    }
-    if (message.name !== '') {
-      writer.uint32(810).string(message.name)
-    }
-    if (message.changelog !== undefined) {
-      writer.uint32(818).string(message.changelog)
-    }
-    if (message.type !== 0) {
-      writer.uint32(832).int32(message.type)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): CreateVersionRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCreateVersionRequest()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 100:
-          message.productId = reader.string()
-          break
-        case 101:
-          message.name = reader.string()
-          break
-        case 102:
-          message.changelog = reader.string()
-          break
-        case 104:
-          message.type = reader.int32() as any
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): CreateVersionRequest {
-    return {
-      productId: isSet(object.productId) ? String(object.productId) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
-      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
-    }
-  },
-
-  toJSON(message: CreateVersionRequest): unknown {
-    const obj: any = {}
-    message.productId !== undefined && (obj.productId = message.productId)
-    message.name !== undefined && (obj.name = message.name)
-    message.changelog !== undefined && (obj.changelog = message.changelog)
-    message.type !== undefined && (obj.type = versionTypeToJSON(message.type))
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<CreateVersionRequest>, I>>(base?: I): CreateVersionRequest {
-    return CreateVersionRequest.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<CreateVersionRequest>, I>>(object: I): CreateVersionRequest {
-    const message = createBaseCreateVersionRequest()
-    message.productId = object.productId ?? ''
-    message.name = object.name ?? ''
-    message.changelog = object.changelog ?? undefined
-    message.type = object.type ?? 0
-    return message
-  },
-}
-
-function createBaseUpdateVersionRequest(): UpdateVersionRequest {
-  return { id: '', name: '' }
-}
-
-export const UpdateVersionRequest = {
-  encode(message: UpdateVersionRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== '') {
-      writer.uint32(10).string(message.id)
-    }
-    if (message.name !== '') {
-      writer.uint32(802).string(message.name)
-    }
-    if (message.changelog !== undefined) {
-      writer.uint32(810).string(message.changelog)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): UpdateVersionRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUpdateVersionRequest()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.id = reader.string()
-          break
-        case 100:
-          message.name = reader.string()
-          break
-        case 101:
-          message.changelog = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): UpdateVersionRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
-    }
-  },
-
-  toJSON(message: UpdateVersionRequest): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
-    message.changelog !== undefined && (obj.changelog = message.changelog)
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<UpdateVersionRequest>, I>>(base?: I): UpdateVersionRequest {
-    return UpdateVersionRequest.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<UpdateVersionRequest>, I>>(object: I): UpdateVersionRequest {
-    const message = createBaseUpdateVersionRequest()
-    message.id = object.id ?? ''
-    message.name = object.name ?? ''
-    message.changelog = object.changelog ?? undefined
-    return message
-  },
-}
-
-function createBaseVersionResponse(): VersionResponse {
-  return { id: '', audit: undefined, name: '', changelog: '', default: false, type: 0, increasable: false }
-}
-
-export const VersionResponse = {
-  encode(message: VersionResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== '') {
-      writer.uint32(10).string(message.id)
-    }
-    if (message.audit !== undefined) {
-      AuditResponse.encode(message.audit, writer.uint32(18).fork()).ldelim()
-    }
-    if (message.name !== '') {
-      writer.uint32(802).string(message.name)
-    }
-    if (message.changelog !== '') {
-      writer.uint32(810).string(message.changelog)
-    }
-    if (message.default === true) {
-      writer.uint32(816).bool(message.default)
-    }
-    if (message.type !== 0) {
-      writer.uint32(824).int32(message.type)
-    }
-    if (message.increasable === true) {
-      writer.uint32(832).bool(message.increasable)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): VersionResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseVersionResponse()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.id = reader.string()
-          break
-        case 2:
-          message.audit = AuditResponse.decode(reader, reader.uint32())
-          break
-        case 100:
-          message.name = reader.string()
-          break
-        case 101:
-          message.changelog = reader.string()
-          break
-        case 102:
-          message.default = reader.bool()
-          break
-        case 103:
-          message.type = reader.int32() as any
-          break
-        case 104:
-          message.increasable = reader.bool()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): VersionResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : '',
-      default: isSet(object.default) ? Boolean(object.default) : false,
-      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
-      increasable: isSet(object.increasable) ? Boolean(object.increasable) : false,
-    }
-  },
-
-  toJSON(message: VersionResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
-    message.name !== undefined && (obj.name = message.name)
-    message.changelog !== undefined && (obj.changelog = message.changelog)
-    message.default !== undefined && (obj.default = message.default)
-    message.type !== undefined && (obj.type = versionTypeToJSON(message.type))
-    message.increasable !== undefined && (obj.increasable = message.increasable)
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<VersionResponse>, I>>(base?: I): VersionResponse {
-    return VersionResponse.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<VersionResponse>, I>>(object: I): VersionResponse {
-    const message = createBaseVersionResponse()
-    message.id = object.id ?? ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
-    message.name = object.name ?? ''
-    message.changelog = object.changelog ?? ''
-    message.default = object.default ?? false
-    message.type = object.type ?? 0
-    message.increasable = object.increasable ?? false
-    return message
-  },
-}
-
-function createBaseVersionListResponse(): VersionListResponse {
-  return { data: [] }
-}
-
-export const VersionListResponse = {
-  encode(message: VersionListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    for (const v of message.data) {
-      VersionResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): VersionListResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseVersionListResponse()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1000:
-          message.data.push(VersionResponse.decode(reader, reader.uint32()))
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): VersionListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => VersionResponse.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: VersionListResponse): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? VersionResponse.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<VersionListResponse>, I>>(base?: I): VersionListResponse {
-    return VersionListResponse.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<VersionListResponse>, I>>(object: I): VersionListResponse {
-    const message = createBaseVersionListResponse()
-    message.data = object.data?.map(e => VersionResponse.fromPartial(e)) || []
-    return message
-  },
-}
-
-function createBaseVersionDetailsResponse(): VersionDetailsResponse {
-  return {
-    id: '',
-    audit: undefined,
-    name: '',
-    changelog: '',
-    default: false,
-    type: 0,
-    mutable: false,
-    increasable: false,
-    deletable: false,
-    images: [],
-    deployments: [],
-  }
-}
-
-export const VersionDetailsResponse = {
-  encode(message: VersionDetailsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== '') {
-      writer.uint32(10).string(message.id)
-    }
-    if (message.audit !== undefined) {
-      AuditResponse.encode(message.audit, writer.uint32(18).fork()).ldelim()
-    }
-    if (message.name !== '') {
-      writer.uint32(802).string(message.name)
-    }
-    if (message.changelog !== '') {
-      writer.uint32(810).string(message.changelog)
-    }
-    if (message.default === true) {
-      writer.uint32(816).bool(message.default)
-    }
-    if (message.type !== 0) {
-      writer.uint32(824).int32(message.type)
-    }
-    if (message.mutable === true) {
-      writer.uint32(832).bool(message.mutable)
-    }
-    if (message.increasable === true) {
-      writer.uint32(840).bool(message.increasable)
-    }
-    if (message.deletable === true) {
-      writer.uint32(848).bool(message.deletable)
-    }
-    for (const v of message.images) {
-      ImageResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
-    }
-    for (const v of message.deployments) {
-      DeploymentByVersionResponse.encode(v!, writer.uint32(8010).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): VersionDetailsResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseVersionDetailsResponse()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.id = reader.string()
-          break
-        case 2:
-          message.audit = AuditResponse.decode(reader, reader.uint32())
-          break
-        case 100:
-          message.name = reader.string()
-          break
-        case 101:
-          message.changelog = reader.string()
-          break
-        case 102:
-          message.default = reader.bool()
-          break
-        case 103:
-          message.type = reader.int32() as any
-          break
-        case 104:
-          message.mutable = reader.bool()
-          break
-        case 105:
-          message.increasable = reader.bool()
-          break
-        case 106:
-          message.deletable = reader.bool()
-          break
-        case 1000:
-          message.images.push(ImageResponse.decode(reader, reader.uint32()))
-          break
-        case 1001:
-          message.deployments.push(DeploymentByVersionResponse.decode(reader, reader.uint32()))
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): VersionDetailsResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : '',
-      default: isSet(object.default) ? Boolean(object.default) : false,
-      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
-      mutable: isSet(object.mutable) ? Boolean(object.mutable) : false,
-      increasable: isSet(object.increasable) ? Boolean(object.increasable) : false,
-      deletable: isSet(object.deletable) ? Boolean(object.deletable) : false,
-      images: Array.isArray(object?.images) ? object.images.map((e: any) => ImageResponse.fromJSON(e)) : [],
-      deployments: Array.isArray(object?.deployments)
-        ? object.deployments.map((e: any) => DeploymentByVersionResponse.fromJSON(e))
-        : [],
-    }
-  },
-
-  toJSON(message: VersionDetailsResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
-    message.name !== undefined && (obj.name = message.name)
-    message.changelog !== undefined && (obj.changelog = message.changelog)
-    message.default !== undefined && (obj.default = message.default)
-    message.type !== undefined && (obj.type = versionTypeToJSON(message.type))
-    message.mutable !== undefined && (obj.mutable = message.mutable)
-    message.increasable !== undefined && (obj.increasable = message.increasable)
-    message.deletable !== undefined && (obj.deletable = message.deletable)
-    if (message.images) {
-      obj.images = message.images.map(e => (e ? ImageResponse.toJSON(e) : undefined))
-    } else {
-      obj.images = []
-    }
-    if (message.deployments) {
-      obj.deployments = message.deployments.map(e => (e ? DeploymentByVersionResponse.toJSON(e) : undefined))
-    } else {
-      obj.deployments = []
-    }
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<VersionDetailsResponse>, I>>(base?: I): VersionDetailsResponse {
-    return VersionDetailsResponse.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<VersionDetailsResponse>, I>>(object: I): VersionDetailsResponse {
-    const message = createBaseVersionDetailsResponse()
-    message.id = object.id ?? ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
-    message.name = object.name ?? ''
-    message.changelog = object.changelog ?? ''
-    message.default = object.default ?? false
-    message.type = object.type ?? 0
-    message.mutable = object.mutable ?? false
-    message.increasable = object.increasable ?? false
-    message.deletable = object.deletable ?? false
-    message.images = object.images?.map(e => ImageResponse.fromPartial(e)) || []
-    message.deployments = object.deployments?.map(e => DeploymentByVersionResponse.fromPartial(e)) || []
-    return message
-  },
-}
-
-function createBaseIncreaseVersionRequest(): IncreaseVersionRequest {
-  return { id: '', name: '' }
-}
-
-export const IncreaseVersionRequest = {
-  encode(message: IncreaseVersionRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== '') {
-      writer.uint32(10).string(message.id)
-    }
-    if (message.name !== '') {
-      writer.uint32(802).string(message.name)
-    }
-    if (message.changelog !== undefined) {
-      writer.uint32(810).string(message.changelog)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): IncreaseVersionRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseIncreaseVersionRequest()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.id = reader.string()
-          break
-        case 100:
-          message.name = reader.string()
-          break
-        case 101:
-          message.changelog = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): IncreaseVersionRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
-    }
-  },
-
-  toJSON(message: IncreaseVersionRequest): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
-    message.changelog !== undefined && (obj.changelog = message.changelog)
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<IncreaseVersionRequest>, I>>(base?: I): IncreaseVersionRequest {
-    return IncreaseVersionRequest.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<IncreaseVersionRequest>, I>>(object: I): IncreaseVersionRequest {
-    const message = createBaseIncreaseVersionRequest()
-    message.id = object.id ?? ''
-    message.name = object.name ?? ''
-    message.changelog = object.changelog ?? undefined
     return message
   },
 }
@@ -11668,354 +10902,6 @@ export const TemplateImageResponse = {
   },
 }
 
-function createBaseDashboardActiveNodes(): DashboardActiveNodes {
-  return { id: '', name: '', address: '', version: '' }
-}
-
-export const DashboardActiveNodes = {
-  encode(message: DashboardActiveNodes, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== '') {
-      writer.uint32(10).string(message.id)
-    }
-    if (message.name !== '') {
-      writer.uint32(802).string(message.name)
-    }
-    if (message.address !== '') {
-      writer.uint32(810).string(message.address)
-    }
-    if (message.version !== '') {
-      writer.uint32(818).string(message.version)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): DashboardActiveNodes {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDashboardActiveNodes()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.id = reader.string()
-          break
-        case 100:
-          message.name = reader.string()
-          break
-        case 101:
-          message.address = reader.string()
-          break
-        case 102:
-          message.version = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): DashboardActiveNodes {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      address: isSet(object.address) ? String(object.address) : '',
-      version: isSet(object.version) ? String(object.version) : '',
-    }
-  },
-
-  toJSON(message: DashboardActiveNodes): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
-    message.address !== undefined && (obj.address = message.address)
-    message.version !== undefined && (obj.version = message.version)
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<DashboardActiveNodes>, I>>(base?: I): DashboardActiveNodes {
-    return DashboardActiveNodes.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<DashboardActiveNodes>, I>>(object: I): DashboardActiveNodes {
-    const message = createBaseDashboardActiveNodes()
-    message.id = object.id ?? ''
-    message.name = object.name ?? ''
-    message.address = object.address ?? ''
-    message.version = object.version ?? ''
-    return message
-  },
-}
-
-function createBaseDashboardDeployment(): DashboardDeployment {
-  return { id: '', product: '', version: '', node: '', changelog: '', productId: '', versionId: '' }
-}
-
-export const DashboardDeployment = {
-  encode(message: DashboardDeployment, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== '') {
-      writer.uint32(10).string(message.id)
-    }
-    if (message.product !== '') {
-      writer.uint32(802).string(message.product)
-    }
-    if (message.version !== '') {
-      writer.uint32(810).string(message.version)
-    }
-    if (message.node !== '') {
-      writer.uint32(818).string(message.node)
-    }
-    if (message.changelog !== '') {
-      writer.uint32(826).string(message.changelog)
-    }
-    if (message.deployedAt !== undefined) {
-      Timestamp.encode(message.deployedAt, writer.uint32(834).fork()).ldelim()
-    }
-    if (message.productId !== '') {
-      writer.uint32(842).string(message.productId)
-    }
-    if (message.versionId !== '') {
-      writer.uint32(850).string(message.versionId)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): DashboardDeployment {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDashboardDeployment()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.id = reader.string()
-          break
-        case 100:
-          message.product = reader.string()
-          break
-        case 101:
-          message.version = reader.string()
-          break
-        case 102:
-          message.node = reader.string()
-          break
-        case 103:
-          message.changelog = reader.string()
-          break
-        case 104:
-          message.deployedAt = Timestamp.decode(reader, reader.uint32())
-          break
-        case 105:
-          message.productId = reader.string()
-          break
-        case 106:
-          message.versionId = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): DashboardDeployment {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      product: isSet(object.product) ? String(object.product) : '',
-      version: isSet(object.version) ? String(object.version) : '',
-      node: isSet(object.node) ? String(object.node) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : '',
-      deployedAt: isSet(object.deployedAt) ? fromJsonTimestamp(object.deployedAt) : undefined,
-      productId: isSet(object.productId) ? String(object.productId) : '',
-      versionId: isSet(object.versionId) ? String(object.versionId) : '',
-    }
-  },
-
-  toJSON(message: DashboardDeployment): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.product !== undefined && (obj.product = message.product)
-    message.version !== undefined && (obj.version = message.version)
-    message.node !== undefined && (obj.node = message.node)
-    message.changelog !== undefined && (obj.changelog = message.changelog)
-    message.deployedAt !== undefined && (obj.deployedAt = fromTimestamp(message.deployedAt).toISOString())
-    message.productId !== undefined && (obj.productId = message.productId)
-    message.versionId !== undefined && (obj.versionId = message.versionId)
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<DashboardDeployment>, I>>(base?: I): DashboardDeployment {
-    return DashboardDeployment.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<DashboardDeployment>, I>>(object: I): DashboardDeployment {
-    const message = createBaseDashboardDeployment()
-    message.id = object.id ?? ''
-    message.product = object.product ?? ''
-    message.version = object.version ?? ''
-    message.node = object.node ?? ''
-    message.changelog = object.changelog ?? ''
-    message.deployedAt =
-      object.deployedAt !== undefined && object.deployedAt !== null
-        ? Timestamp.fromPartial(object.deployedAt)
-        : undefined
-    message.productId = object.productId ?? ''
-    message.versionId = object.versionId ?? ''
-    return message
-  },
-}
-
-function createBaseDashboardResponse(): DashboardResponse {
-  return {
-    users: 0,
-    auditLogEntries: 0,
-    products: 0,
-    versions: 0,
-    deployments: 0,
-    failedDeployments: 0,
-    nodes: [],
-    latestDeployments: [],
-    auditLog: [],
-  }
-}
-
-export const DashboardResponse = {
-  encode(message: DashboardResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.users !== 0) {
-      writer.uint32(800).uint32(message.users)
-    }
-    if (message.auditLogEntries !== 0) {
-      writer.uint32(808).uint32(message.auditLogEntries)
-    }
-    if (message.products !== 0) {
-      writer.uint32(816).uint32(message.products)
-    }
-    if (message.versions !== 0) {
-      writer.uint32(824).uint32(message.versions)
-    }
-    if (message.deployments !== 0) {
-      writer.uint32(832).uint32(message.deployments)
-    }
-    if (message.failedDeployments !== 0) {
-      writer.uint32(840).uint32(message.failedDeployments)
-    }
-    for (const v of message.nodes) {
-      DashboardActiveNodes.encode(v!, writer.uint32(8002).fork()).ldelim()
-    }
-    for (const v of message.latestDeployments) {
-      DashboardDeployment.encode(v!, writer.uint32(8010).fork()).ldelim()
-    }
-    for (const v of message.auditLog) {
-      AuditLogResponse.encode(v!, writer.uint32(8018).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): DashboardResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDashboardResponse()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 100:
-          message.users = reader.uint32()
-          break
-        case 101:
-          message.auditLogEntries = reader.uint32()
-          break
-        case 102:
-          message.products = reader.uint32()
-          break
-        case 103:
-          message.versions = reader.uint32()
-          break
-        case 104:
-          message.deployments = reader.uint32()
-          break
-        case 105:
-          message.failedDeployments = reader.uint32()
-          break
-        case 1000:
-          message.nodes.push(DashboardActiveNodes.decode(reader, reader.uint32()))
-          break
-        case 1001:
-          message.latestDeployments.push(DashboardDeployment.decode(reader, reader.uint32()))
-          break
-        case 1002:
-          message.auditLog.push(AuditLogResponse.decode(reader, reader.uint32()))
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): DashboardResponse {
-    return {
-      users: isSet(object.users) ? Number(object.users) : 0,
-      auditLogEntries: isSet(object.auditLogEntries) ? Number(object.auditLogEntries) : 0,
-      products: isSet(object.products) ? Number(object.products) : 0,
-      versions: isSet(object.versions) ? Number(object.versions) : 0,
-      deployments: isSet(object.deployments) ? Number(object.deployments) : 0,
-      failedDeployments: isSet(object.failedDeployments) ? Number(object.failedDeployments) : 0,
-      nodes: Array.isArray(object?.nodes) ? object.nodes.map((e: any) => DashboardActiveNodes.fromJSON(e)) : [],
-      latestDeployments: Array.isArray(object?.latestDeployments)
-        ? object.latestDeployments.map((e: any) => DashboardDeployment.fromJSON(e))
-        : [],
-      auditLog: Array.isArray(object?.auditLog) ? object.auditLog.map((e: any) => AuditLogResponse.fromJSON(e)) : [],
-    }
-  },
-
-  toJSON(message: DashboardResponse): unknown {
-    const obj: any = {}
-    message.users !== undefined && (obj.users = Math.round(message.users))
-    message.auditLogEntries !== undefined && (obj.auditLogEntries = Math.round(message.auditLogEntries))
-    message.products !== undefined && (obj.products = Math.round(message.products))
-    message.versions !== undefined && (obj.versions = Math.round(message.versions))
-    message.deployments !== undefined && (obj.deployments = Math.round(message.deployments))
-    message.failedDeployments !== undefined && (obj.failedDeployments = Math.round(message.failedDeployments))
-    if (message.nodes) {
-      obj.nodes = message.nodes.map(e => (e ? DashboardActiveNodes.toJSON(e) : undefined))
-    } else {
-      obj.nodes = []
-    }
-    if (message.latestDeployments) {
-      obj.latestDeployments = message.latestDeployments.map(e => (e ? DashboardDeployment.toJSON(e) : undefined))
-    } else {
-      obj.latestDeployments = []
-    }
-    if (message.auditLog) {
-      obj.auditLog = message.auditLog.map(e => (e ? AuditLogResponse.toJSON(e) : undefined))
-    } else {
-      obj.auditLog = []
-    }
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<DashboardResponse>, I>>(base?: I): DashboardResponse {
-    return DashboardResponse.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<DashboardResponse>, I>>(object: I): DashboardResponse {
-    const message = createBaseDashboardResponse()
-    message.users = object.users ?? 0
-    message.auditLogEntries = object.auditLogEntries ?? 0
-    message.products = object.products ?? 0
-    message.versions = object.versions ?? 0
-    message.deployments = object.deployments ?? 0
-    message.failedDeployments = object.failedDeployments ?? 0
-    message.nodes = object.nodes?.map(e => DashboardActiveNodes.fromPartial(e)) || []
-    message.latestDeployments = object.latestDeployments?.map(e => DashboardDeployment.fromPartial(e)) || []
-    message.auditLog = object.auditLog?.map(e => AuditLogResponse.fromPartial(e)) || []
-    return message
-  },
-}
-
 function createBaseStorageResponse(): StorageResponse {
   return { id: '', audit: undefined, name: '', url: '' }
 }
@@ -13260,196 +12146,6 @@ export const CruxNodeClient = makeGenericClientConstructor(CruxNodeService, 'cru
   service: typeof CruxNodeService
 }
 
-export type CruxProductVersionService = typeof CruxProductVersionService
-export const CruxProductVersionService = {
-  getVersionsByProductId: {
-    path: '/crux.CruxProductVersion/GetVersionsByProductId',
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
-    responseSerialize: (value: VersionListResponse) => Buffer.from(VersionListResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => VersionListResponse.decode(value),
-  },
-  createVersion: {
-    path: '/crux.CruxProductVersion/CreateVersion',
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: CreateVersionRequest) => Buffer.from(CreateVersionRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => CreateVersionRequest.decode(value),
-    responseSerialize: (value: CreateEntityResponse) => Buffer.from(CreateEntityResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => CreateEntityResponse.decode(value),
-  },
-  updateVersion: {
-    path: '/crux.CruxProductVersion/UpdateVersion',
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: UpdateVersionRequest) => Buffer.from(UpdateVersionRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => UpdateVersionRequest.decode(value),
-    responseSerialize: (value: UpdateEntityResponse) => Buffer.from(UpdateEntityResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => UpdateEntityResponse.decode(value),
-  },
-  deleteVersion: {
-    path: '/crux.CruxProductVersion/DeleteVersion',
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
-    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => Empty.decode(value),
-  },
-  setDefaultVersion: {
-    path: '/crux.CruxProductVersion/SetDefaultVersion',
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
-    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => Empty.decode(value),
-  },
-  getVersionDetails: {
-    path: '/crux.CruxProductVersion/GetVersionDetails',
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
-    responseSerialize: (value: VersionDetailsResponse) => Buffer.from(VersionDetailsResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => VersionDetailsResponse.decode(value),
-  },
-  increaseVersion: {
-    path: '/crux.CruxProductVersion/IncreaseVersion',
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: IncreaseVersionRequest) => Buffer.from(IncreaseVersionRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => IncreaseVersionRequest.decode(value),
-    responseSerialize: (value: CreateEntityResponse) => Buffer.from(CreateEntityResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => CreateEntityResponse.decode(value),
-  },
-} as const
-
-export interface CruxProductVersionServer extends UntypedServiceImplementation {
-  getVersionsByProductId: handleUnaryCall<IdRequest, VersionListResponse>
-  createVersion: handleUnaryCall<CreateVersionRequest, CreateEntityResponse>
-  updateVersion: handleUnaryCall<UpdateVersionRequest, UpdateEntityResponse>
-  deleteVersion: handleUnaryCall<IdRequest, Empty>
-  setDefaultVersion: handleUnaryCall<IdRequest, Empty>
-  getVersionDetails: handleUnaryCall<IdRequest, VersionDetailsResponse>
-  increaseVersion: handleUnaryCall<IncreaseVersionRequest, CreateEntityResponse>
-}
-
-export interface CruxProductVersionClient extends Client {
-  getVersionsByProductId(
-    request: IdRequest,
-    callback: (error: ServiceError | null, response: VersionListResponse) => void,
-  ): ClientUnaryCall
-  getVersionsByProductId(
-    request: IdRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: VersionListResponse) => void,
-  ): ClientUnaryCall
-  getVersionsByProductId(
-    request: IdRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: VersionListResponse) => void,
-  ): ClientUnaryCall
-  createVersion(
-    request: CreateVersionRequest,
-    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
-  ): ClientUnaryCall
-  createVersion(
-    request: CreateVersionRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
-  ): ClientUnaryCall
-  createVersion(
-    request: CreateVersionRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
-  ): ClientUnaryCall
-  updateVersion(
-    request: UpdateVersionRequest,
-    callback: (error: ServiceError | null, response: UpdateEntityResponse) => void,
-  ): ClientUnaryCall
-  updateVersion(
-    request: UpdateVersionRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UpdateEntityResponse) => void,
-  ): ClientUnaryCall
-  updateVersion(
-    request: UpdateVersionRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UpdateEntityResponse) => void,
-  ): ClientUnaryCall
-  deleteVersion(request: IdRequest, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall
-  deleteVersion(
-    request: IdRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall
-  deleteVersion(
-    request: IdRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall
-  setDefaultVersion(
-    request: IdRequest,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall
-  setDefaultVersion(
-    request: IdRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall
-  setDefaultVersion(
-    request: IdRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall
-  getVersionDetails(
-    request: IdRequest,
-    callback: (error: ServiceError | null, response: VersionDetailsResponse) => void,
-  ): ClientUnaryCall
-  getVersionDetails(
-    request: IdRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: VersionDetailsResponse) => void,
-  ): ClientUnaryCall
-  getVersionDetails(
-    request: IdRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: VersionDetailsResponse) => void,
-  ): ClientUnaryCall
-  increaseVersion(
-    request: IncreaseVersionRequest,
-    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
-  ): ClientUnaryCall
-  increaseVersion(
-    request: IncreaseVersionRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
-  ): ClientUnaryCall
-  increaseVersion(
-    request: IncreaseVersionRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
-  ): ClientUnaryCall
-}
-
-export const CruxProductVersionClient = makeGenericClientConstructor(
-  CruxProductVersionService,
-  'crux.CruxProductVersion',
-) as unknown as {
-  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): CruxProductVersionClient
-  service: typeof CruxProductVersionService
-}
-
 export type CruxImageService = typeof CruxImageService
 export const CruxImageService = {
   getImagesByVersionId: {
@@ -14502,72 +13198,6 @@ export const CruxNotificationClient = makeGenericClientConstructor(
   service: typeof CruxNotificationService
 }
 
-export type CruxAuditService = typeof CruxAuditService
-export const CruxAuditService = {
-  getAuditLog: {
-    path: '/crux.CruxAudit/GetAuditLog',
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: AuditLogListRequest) => Buffer.from(AuditLogListRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AuditLogListRequest.decode(value),
-    responseSerialize: (value: AuditLogListResponse) => Buffer.from(AuditLogListResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => AuditLogListResponse.decode(value),
-  },
-  getAuditLogListCount: {
-    path: '/crux.CruxAudit/GetAuditLogListCount',
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: AuditLogListRequest) => Buffer.from(AuditLogListRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AuditLogListRequest.decode(value),
-    responseSerialize: (value: AuditLogListCountResponse) =>
-      Buffer.from(AuditLogListCountResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => AuditLogListCountResponse.decode(value),
-  },
-} as const
-
-export interface CruxAuditServer extends UntypedServiceImplementation {
-  getAuditLog: handleUnaryCall<AuditLogListRequest, AuditLogListResponse>
-  getAuditLogListCount: handleUnaryCall<AuditLogListRequest, AuditLogListCountResponse>
-}
-
-export interface CruxAuditClient extends Client {
-  getAuditLog(
-    request: AuditLogListRequest,
-    callback: (error: ServiceError | null, response: AuditLogListResponse) => void,
-  ): ClientUnaryCall
-  getAuditLog(
-    request: AuditLogListRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: AuditLogListResponse) => void,
-  ): ClientUnaryCall
-  getAuditLog(
-    request: AuditLogListRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: AuditLogListResponse) => void,
-  ): ClientUnaryCall
-  getAuditLogListCount(
-    request: AuditLogListRequest,
-    callback: (error: ServiceError | null, response: AuditLogListCountResponse) => void,
-  ): ClientUnaryCall
-  getAuditLogListCount(
-    request: AuditLogListRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: AuditLogListCountResponse) => void,
-  ): ClientUnaryCall
-  getAuditLogListCount(
-    request: AuditLogListRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: AuditLogListCountResponse) => void,
-  ): ClientUnaryCall
-}
-
-export const CruxAuditClient = makeGenericClientConstructor(CruxAuditService, 'crux.CruxAudit') as unknown as {
-  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): CruxAuditClient
-  service: typeof CruxAuditService
-}
-
 export type CruxHealthService = typeof CruxHealthService
 export const CruxHealthService = {
   getHealth: {
@@ -14694,49 +13324,6 @@ export interface CruxTemplateClient extends Client {
 export const CruxTemplateClient = makeGenericClientConstructor(CruxTemplateService, 'crux.CruxTemplate') as unknown as {
   new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): CruxTemplateClient
   service: typeof CruxTemplateService
-}
-
-export type CruxDashboardService = typeof CruxDashboardService
-export const CruxDashboardService = {
-  getDashboard: {
-    path: '/crux.CruxDashboard/GetDashboard',
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => Empty.decode(value),
-    responseSerialize: (value: DashboardResponse) => Buffer.from(DashboardResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => DashboardResponse.decode(value),
-  },
-} as const
-
-export interface CruxDashboardServer extends UntypedServiceImplementation {
-  getDashboard: handleUnaryCall<Empty, DashboardResponse>
-}
-
-export interface CruxDashboardClient extends Client {
-  getDashboard(
-    request: Empty,
-    callback: (error: ServiceError | null, response: DashboardResponse) => void,
-  ): ClientUnaryCall
-  getDashboard(
-    request: Empty,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: DashboardResponse) => void,
-  ): ClientUnaryCall
-  getDashboard(
-    request: Empty,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: DashboardResponse) => void,
-  ): ClientUnaryCall
-}
-
-export const CruxDashboardClient = makeGenericClientConstructor(
-  CruxDashboardService,
-  'crux.CruxDashboard',
-) as unknown as {
-  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): CruxDashboardClient
-  service: typeof CruxDashboardService
 }
 
 export type CruxTokenService = typeof CruxTokenService

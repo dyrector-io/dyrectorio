@@ -13,13 +13,12 @@ import {
   DeploymentEventsDto,
 } from 'src/swagger/crux.dto'
 import { Identity } from '@ory/kratos-client'
-import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
-import JwtAuthGuard from '../token/jwt-auth.guard'
+import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
 import DeployService from './deploy.service'
 import DeployStartValidationPipe from './pipes/deploy.start.pipe'
 
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, HttpIdentityInterceptor)
+@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
 @UseFilters(HttpExceptionFilter)
 @AuditLogLevel('disabled')
 @Controller('deploy')

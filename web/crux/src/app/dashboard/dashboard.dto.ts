@@ -1,6 +1,7 @@
 import { AuditLogDto } from '../audit/audit.dto'
+import { BasicNodeDto } from '../node/node.dto'
 
-export default class DashboardResponse {
+export default class DashboardDto {
   users: number
 
   auditLogEntries: number
@@ -13,7 +14,7 @@ export default class DashboardResponse {
 
   failedDeployments: number
 
-  nodes: any[] // TODO(@polaroi8d): Need to change the any types to the correct types
+  nodes: BasicNodeDto[]
 
   latestDeployments: any[] // TODO(@polaroi8d): Need to change the any types to the correct types
 

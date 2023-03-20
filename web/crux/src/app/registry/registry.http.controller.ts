@@ -6,14 +6,13 @@ import { RegistryListResponse } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { AccessRequestDto, RegistryListResponseDto } from 'src/swagger/crux.dto'
-import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
 import { Identity } from '@ory/kratos-client'
-import JwtAuthGuard from '../token/jwt-auth.guard'
+import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
 import RegistryService from './registry.service'
 
 @Controller('registry')
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, HttpIdentityInterceptor)
+@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
 @UseFilters(HttpExceptionFilter)
 export default class RegistryHttpController {
   constructor(private service: RegistryService) {}

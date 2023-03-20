@@ -1,64 +1,125 @@
-import { Body, Controller, Get, Post, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  UseFilters,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
-import {
-  CreateEntityResponse,
-  IdRequest,
-  IncreaseVersionRequest,
-  VersionListResponse,
-} from 'src/grpc/protobuf/proto/crux'
-import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import {
-  CreateEntityResponseDto,
-  CreateVersionRequestDto,
-  IdRequestDto,
-  VersionListResponseDto,
-} from 'src/swagger/crux.dto'
-import JwtAuthGuard from '../token/jwt-auth.guard'
-import VersionIncreaseValidationPipe from './pipes/version.increase.pipe'
+import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
+import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
+import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
+import VersionCreateValidationInterceptor from './interceptors/version.create.interceptor'
+import VersionDeleteValidationInterceptor from './interceptors/version.delete.interceptor'
+import VersionIncreaseValidationInterceptor from './interceptors/version.increase.interceptor'
+import VersionUpdateValidationInterceptor from './interceptors/version.update.interceptor'
+import { CreateVersionDto, IncreaseVersionDto, UpdateVersionDto, VersionDetailsDto, VersionDto } from './version.dto'
 import VersionService from './version.service'
 
-@Controller('version')
+const ProductId = () => Param('productId')
+const VersionId = () => Param('versionId')
+
+@Controller('products/:productId/versions')
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, HttpIdentityInterceptor)
+@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
 @UseFilters(HttpExceptionFilter)
 export default class VersionHttpController {
   constructor(private service: VersionService) {}
 
   @Get()
-  @ApiBody({ type: IdRequestDto })
-  @ApiOkResponse({ type: VersionListResponseDto })
   @AuditLogLevel('disabled')
-  async getVersionsByProductId(
-    @Body() request: IdRequest,
-    @IdentityFromRequest() identity: Identity,
-  ): Promise<VersionListResponse> {
-    return await this.service.getVersionsByProductId(request, identity)
+  @ApiOkResponse({ type: Array<VersionDto> })
+  async getVersions(@ProductId() productId: string, @IdentityFromRequest() identity: Identity): Promise<VersionDto[]> {
+    return await this.service.getVersionsByProductId(productId, identity)
+  }
+
+  @Get(':versionId')
+  @AuditLogLevel('disabled')
+  @ApiOkResponse({ type: Array<VersionDto> })
+  async getVersion(@VersionId() versionId: string): Promise<VersionDetailsDto> {
+    return await this.service.getVersionDetails(versionId)
   }
 
   @Post()
-  @ApiBody({ type: CreateVersionRequestDto })
-  @ApiCreatedResponse({ type: CreateEntityResponseDto })
+  @CreatedWithLocation()
+  @UseInterceptors(VersionCreateValidationInterceptor)
   @AuditLogLevel('disabled')
+  @ApiBody({ type: CreateVersionDto })
+  @ApiCreatedResponse({ type: VersionDto })
   async createVersion(
-    @Body() request: CreateVersionRequestDto,
+    @ProductId() productId: string,
+    @Body() request: CreateVersionDto,
     @IdentityFromRequest() identity: Identity,
-  ): Promise<CreateEntityResponse> {
-    return await this.service.createVersion(request, identity)
+  ): Promise<CreatedResponse<VersionDto>> {
+    const version = await this.service.createVersion(productId, request, identity)
+
+    return {
+      url: VersionHttpController.locationOf(productId, version.id),
+      body: version,
+    }
   }
 
-  @Post('increase')
-  @ApiBody({ type: CreateVersionRequestDto })
-  @ApiCreatedResponse({ type: CreateEntityResponseDto })
+  @Put(':versionId')
+  @HttpCode(204)
+  @UseInterceptors(VersionUpdateValidationInterceptor)
   @AuditLogLevel('disabled')
+  @ApiBody({ type: UpdateVersionDto })
+  async updateVersion(
+    @VersionId() versionId: string,
+    @Body() request: UpdateVersionDto,
+    @IdentityFromRequest() identity: Identity,
+  ): Promise<void> {
+    return await this.service.updateVersion(versionId, request, identity)
+  }
+
+  @Delete(':versionId')
+  @HttpCode(204)
+  @UseInterceptors(VersionDeleteValidationInterceptor)
+  @AuditLogLevel('disabled')
+  @ApiBody({ type: UpdateVersionDto })
+  async deleteVersion(@VersionId() versionId: string): Promise<void> {
+    return await this.service.deleteVersion(versionId)
+  }
+
+  @Put(':versionId/default')
+  @HttpCode(204)
+  @AuditLogLevel('disabled')
+  async setDefaultVersion(@ProductId() productId: string, @VersionId() versionId: string): Promise<void> {
+    return await this.service.setDefaultVersion(productId, versionId)
+  }
+
+  @Post('/:versionId/increase')
+  @CreatedWithLocation()
+  @UseInterceptors(VersionIncreaseValidationInterceptor)
+  @AuditLogLevel('disabled')
+  @ApiBody({ type: CreateVersionDto })
+  @ApiCreatedResponse({ type: VersionDto })
   async increaseVersion(
-    @Body(VersionIncreaseValidationPipe) request: IncreaseVersionRequest,
+    @ProductId() productId: string,
+    @VersionId() versionId: string,
+    @Body() request: IncreaseVersionDto,
     @IdentityFromRequest() identity,
-  ): Promise<CreateEntityResponse> {
-    return await this.service.increaseVersion(request, identity)
+  ): Promise<CreatedResponse<VersionDto>> {
+    const version = await this.service.increaseVersion(versionId, request, identity)
+
+    return {
+      url: VersionHttpController.locationOf(productId, version.id),
+      body: version,
+    }
+  }
+
+  private static locationOf(productId: string, versionId: string) {
+    return `/products/${productId}/versions/${versionId}`
   }
 }

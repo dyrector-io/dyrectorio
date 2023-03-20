@@ -1,14 +1,11 @@
 import { invalidArgument } from '@app/error-responses'
 import {
-  CruxAuditClient,
-  CruxDashboardClient,
   CruxDeploymentClient,
   CruxHealthClient,
   CruxImageClient,
   CruxNodeClient,
   CruxNotificationClient,
   CruxProductClient,
-  CruxProductVersionClient,
   CruxRegistryClient,
   CruxStorageClient,
   CruxTeamClient,
@@ -24,8 +21,6 @@ class CruxClients {
 
   nodes: CruxNodeClient
 
-  versions: CruxProductVersionClient
-
   images: CruxImageClient
 
   deployments: CruxDeploymentClient
@@ -34,13 +29,9 @@ class CruxClients {
 
   health: CruxHealthClient
 
-  audit: CruxAuditClient
-
   notifications: CruxNotificationClient
 
   templates: CruxTemplateClient
-
-  dashboard: CruxDashboardClient
 
   tokens: CruxTokenClient
 
@@ -57,15 +48,12 @@ class CruxClients {
     this.products = new CruxProductClient(address, creds)
     this.registries = new CruxRegistryClient(address, creds)
     this.nodes = new CruxNodeClient(address, creds)
-    this.versions = new CruxProductVersionClient(address, creds)
     this.images = new CruxImageClient(address, creds)
     this.deployments = new CruxDeploymentClient(address, creds)
     this.teams = new CruxTeamClient(address, creds)
     this.health = new CruxHealthClient(address, creds)
-    this.audit = new CruxAuditClient(address, creds)
     this.notifications = new CruxNotificationClient(address, creds)
     this.templates = new CruxTemplateClient(address, creds)
-    this.dashboard = new CruxDashboardClient(address, creds)
     this.tokens = new CruxTokenClient(address, creds)
     this.storage = new CruxStorageClient(address, creds)
   }

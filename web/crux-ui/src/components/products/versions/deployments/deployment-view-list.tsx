@@ -36,7 +36,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
 
   const itemTemplate = (item: Instance) => [
     item.overriddenConfig.name ?? item.image.config.name,
-    item.image.registryName,
+    item.image.registry.name,
     <div className="flex items-center">
       <span>
         {item.image.name}

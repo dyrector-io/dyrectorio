@@ -697,31 +697,6 @@ export interface TokenListResponse {
   data: TokenResponse[]
 }
 
-/** AUDIT */
-export interface AuditLogListRequest {
-  pageSize: number
-  pageNumber: number
-  keyword?: string | undefined
-  createdFrom?: Timestamp | undefined
-  createdTo: Timestamp | undefined
-}
-
-export interface AuditLogListCountResponse {
-  count: number
-}
-
-export interface AuditLogResponse {
-  createdAt: Timestamp | undefined
-  userId: string
-  identityEmail: string
-  serviceCall: string
-  data?: string | undefined
-}
-
-export interface AuditLogListResponse {
-  data: AuditLogResponse[]
-}
-
 /** TEAM */
 export interface CreateTeamRequest {
   name: string
@@ -810,6 +785,20 @@ export interface UserResponse {
   role: UserRole
   status: UserStatus
   lastLogin?: Timestamp | undefined
+}
+
+export interface VersionResponse {
+  id: string
+  audit: AuditResponse | undefined
+  name: string
+  changelog: string
+  default: boolean
+  type: VersionType
+  increasable: boolean
+}
+
+export interface VersionListResponse {
+  data: VersionResponse[]
 }
 
 export interface ProductDetailsReponse {
@@ -937,53 +926,6 @@ export interface RegistryDetailsResponse {
   github?: GithubRegistryDetails | undefined
   google?: GoogleRegistryDetails | undefined
   unchecked?: UncheckedRegistryDetails | undefined
-}
-
-export interface CreateVersionRequest {
-  productId: string
-  name: string
-  changelog?: string | undefined
-  type: VersionType
-}
-
-export interface UpdateVersionRequest {
-  id: string
-  name: string
-  changelog?: string | undefined
-}
-
-export interface VersionResponse {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  changelog: string
-  default: boolean
-  type: VersionType
-  increasable: boolean
-}
-
-export interface VersionListResponse {
-  data: VersionResponse[]
-}
-
-export interface VersionDetailsResponse {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  changelog: string
-  default: boolean
-  type: VersionType
-  mutable: boolean
-  increasable: boolean
-  deletable: boolean
-  images: ImageResponse[]
-  deployments: DeploymentByVersionResponse[]
-}
-
-export interface IncreaseVersionRequest {
-  id: string
-  name: string
-  changelog?: string | undefined
 }
 
 export interface VolumeLink {
@@ -1485,37 +1427,6 @@ export interface TemplateImageResponse {
   data: Uint8Array
 }
 
-/** DASHBOARD */
-export interface DashboardActiveNodes {
-  id: string
-  name: string
-  address: string
-  version: string
-}
-
-export interface DashboardDeployment {
-  id: string
-  product: string
-  version: string
-  node: string
-  changelog: string
-  deployedAt?: Timestamp | undefined
-  productId: string
-  versionId: string
-}
-
-export interface DashboardResponse {
-  users: number
-  auditLogEntries: number
-  products: number
-  versions: number
-  deployments: number
-  failedDeployments: number
-  nodes: DashboardActiveNodes[]
-  latestDeployments: DashboardDeployment[]
-  auditLog: AuditLogResponse[]
-}
-
 export interface StorageResponse {
   id: string
   audit: AuditResponse | undefined
@@ -1746,94 +1657,6 @@ export const TokenListResponse = {
     const obj: any = {}
     if (message.data) {
       obj.data = message.data.map(e => (e ? TokenResponse.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
-function createBaseAuditLogListRequest(): AuditLogListRequest {
-  return { pageSize: 0, pageNumber: 0, createdTo: undefined }
-}
-
-export const AuditLogListRequest = {
-  fromJSON(object: any): AuditLogListRequest {
-    return {
-      pageSize: isSet(object.pageSize) ? Number(object.pageSize) : 0,
-      pageNumber: isSet(object.pageNumber) ? Number(object.pageNumber) : 0,
-      keyword: isSet(object.keyword) ? String(object.keyword) : undefined,
-      createdFrom: isSet(object.createdFrom) ? fromJsonTimestamp(object.createdFrom) : undefined,
-      createdTo: isSet(object.createdTo) ? fromJsonTimestamp(object.createdTo) : undefined,
-    }
-  },
-
-  toJSON(message: AuditLogListRequest): unknown {
-    const obj: any = {}
-    message.pageSize !== undefined && (obj.pageSize = Math.round(message.pageSize))
-    message.pageNumber !== undefined && (obj.pageNumber = Math.round(message.pageNumber))
-    message.keyword !== undefined && (obj.keyword = message.keyword)
-    message.createdFrom !== undefined && (obj.createdFrom = fromTimestamp(message.createdFrom).toISOString())
-    message.createdTo !== undefined && (obj.createdTo = fromTimestamp(message.createdTo).toISOString())
-    return obj
-  },
-}
-
-function createBaseAuditLogListCountResponse(): AuditLogListCountResponse {
-  return { count: 0 }
-}
-
-export const AuditLogListCountResponse = {
-  fromJSON(object: any): AuditLogListCountResponse {
-    return { count: isSet(object.count) ? Number(object.count) : 0 }
-  },
-
-  toJSON(message: AuditLogListCountResponse): unknown {
-    const obj: any = {}
-    message.count !== undefined && (obj.count = Math.round(message.count))
-    return obj
-  },
-}
-
-function createBaseAuditLogResponse(): AuditLogResponse {
-  return { createdAt: undefined, userId: '', identityEmail: '', serviceCall: '' }
-}
-
-export const AuditLogResponse = {
-  fromJSON(object: any): AuditLogResponse {
-    return {
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-      userId: isSet(object.userId) ? String(object.userId) : '',
-      identityEmail: isSet(object.identityEmail) ? String(object.identityEmail) : '',
-      serviceCall: isSet(object.serviceCall) ? String(object.serviceCall) : '',
-      data: isSet(object.data) ? String(object.data) : undefined,
-    }
-  },
-
-  toJSON(message: AuditLogResponse): unknown {
-    const obj: any = {}
-    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
-    message.userId !== undefined && (obj.userId = message.userId)
-    message.identityEmail !== undefined && (obj.identityEmail = message.identityEmail)
-    message.serviceCall !== undefined && (obj.serviceCall = message.serviceCall)
-    message.data !== undefined && (obj.data = message.data)
-    return obj
-  },
-}
-
-function createBaseAuditLogListResponse(): AuditLogListResponse {
-  return { data: [] }
-}
-
-export const AuditLogListResponse = {
-  fromJSON(object: any): AuditLogListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => AuditLogResponse.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: AuditLogListResponse): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? AuditLogResponse.toJSON(e) : undefined))
     } else {
       obj.data = []
     }
@@ -2173,6 +1996,56 @@ export const UserResponse = {
     message.role !== undefined && (obj.role = userRoleToJSON(message.role))
     message.status !== undefined && (obj.status = userStatusToJSON(message.status))
     message.lastLogin !== undefined && (obj.lastLogin = fromTimestamp(message.lastLogin).toISOString())
+    return obj
+  },
+}
+
+function createBaseVersionResponse(): VersionResponse {
+  return { id: '', audit: undefined, name: '', changelog: '', default: false, type: 0, increasable: false }
+}
+
+export const VersionResponse = {
+  fromJSON(object: any): VersionResponse {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      changelog: isSet(object.changelog) ? String(object.changelog) : '',
+      default: isSet(object.default) ? Boolean(object.default) : false,
+      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
+      increasable: isSet(object.increasable) ? Boolean(object.increasable) : false,
+    }
+  },
+
+  toJSON(message: VersionResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
+    message.name !== undefined && (obj.name = message.name)
+    message.changelog !== undefined && (obj.changelog = message.changelog)
+    message.default !== undefined && (obj.default = message.default)
+    message.type !== undefined && (obj.type = versionTypeToJSON(message.type))
+    message.increasable !== undefined && (obj.increasable = message.increasable)
+    return obj
+  },
+}
+
+function createBaseVersionListResponse(): VersionListResponse {
+  return { data: [] }
+}
+
+export const VersionListResponse = {
+  fromJSON(object: any): VersionListResponse {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => VersionResponse.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: VersionListResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? VersionResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
     return obj
   },
 }
@@ -2603,184 +2476,6 @@ export const RegistryDetailsResponse = {
       (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
     message.unchecked !== undefined &&
       (obj.unchecked = message.unchecked ? UncheckedRegistryDetails.toJSON(message.unchecked) : undefined)
-    return obj
-  },
-}
-
-function createBaseCreateVersionRequest(): CreateVersionRequest {
-  return { productId: '', name: '', type: 0 }
-}
-
-export const CreateVersionRequest = {
-  fromJSON(object: any): CreateVersionRequest {
-    return {
-      productId: isSet(object.productId) ? String(object.productId) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
-      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
-    }
-  },
-
-  toJSON(message: CreateVersionRequest): unknown {
-    const obj: any = {}
-    message.productId !== undefined && (obj.productId = message.productId)
-    message.name !== undefined && (obj.name = message.name)
-    message.changelog !== undefined && (obj.changelog = message.changelog)
-    message.type !== undefined && (obj.type = versionTypeToJSON(message.type))
-    return obj
-  },
-}
-
-function createBaseUpdateVersionRequest(): UpdateVersionRequest {
-  return { id: '', name: '' }
-}
-
-export const UpdateVersionRequest = {
-  fromJSON(object: any): UpdateVersionRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
-    }
-  },
-
-  toJSON(message: UpdateVersionRequest): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
-    message.changelog !== undefined && (obj.changelog = message.changelog)
-    return obj
-  },
-}
-
-function createBaseVersionResponse(): VersionResponse {
-  return { id: '', audit: undefined, name: '', changelog: '', default: false, type: 0, increasable: false }
-}
-
-export const VersionResponse = {
-  fromJSON(object: any): VersionResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : '',
-      default: isSet(object.default) ? Boolean(object.default) : false,
-      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
-      increasable: isSet(object.increasable) ? Boolean(object.increasable) : false,
-    }
-  },
-
-  toJSON(message: VersionResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
-    message.name !== undefined && (obj.name = message.name)
-    message.changelog !== undefined && (obj.changelog = message.changelog)
-    message.default !== undefined && (obj.default = message.default)
-    message.type !== undefined && (obj.type = versionTypeToJSON(message.type))
-    message.increasable !== undefined && (obj.increasable = message.increasable)
-    return obj
-  },
-}
-
-function createBaseVersionListResponse(): VersionListResponse {
-  return { data: [] }
-}
-
-export const VersionListResponse = {
-  fromJSON(object: any): VersionListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => VersionResponse.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: VersionListResponse): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? VersionResponse.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
-function createBaseVersionDetailsResponse(): VersionDetailsResponse {
-  return {
-    id: '',
-    audit: undefined,
-    name: '',
-    changelog: '',
-    default: false,
-    type: 0,
-    mutable: false,
-    increasable: false,
-    deletable: false,
-    images: [],
-    deployments: [],
-  }
-}
-
-export const VersionDetailsResponse = {
-  fromJSON(object: any): VersionDetailsResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : '',
-      default: isSet(object.default) ? Boolean(object.default) : false,
-      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
-      mutable: isSet(object.mutable) ? Boolean(object.mutable) : false,
-      increasable: isSet(object.increasable) ? Boolean(object.increasable) : false,
-      deletable: isSet(object.deletable) ? Boolean(object.deletable) : false,
-      images: Array.isArray(object?.images) ? object.images.map((e: any) => ImageResponse.fromJSON(e)) : [],
-      deployments: Array.isArray(object?.deployments)
-        ? object.deployments.map((e: any) => DeploymentByVersionResponse.fromJSON(e))
-        : [],
-    }
-  },
-
-  toJSON(message: VersionDetailsResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
-    message.name !== undefined && (obj.name = message.name)
-    message.changelog !== undefined && (obj.changelog = message.changelog)
-    message.default !== undefined && (obj.default = message.default)
-    message.type !== undefined && (obj.type = versionTypeToJSON(message.type))
-    message.mutable !== undefined && (obj.mutable = message.mutable)
-    message.increasable !== undefined && (obj.increasable = message.increasable)
-    message.deletable !== undefined && (obj.deletable = message.deletable)
-    if (message.images) {
-      obj.images = message.images.map(e => (e ? ImageResponse.toJSON(e) : undefined))
-    } else {
-      obj.images = []
-    }
-    if (message.deployments) {
-      obj.deployments = message.deployments.map(e => (e ? DeploymentByVersionResponse.toJSON(e) : undefined))
-    } else {
-      obj.deployments = []
-    }
-    return obj
-  },
-}
-
-function createBaseIncreaseVersionRequest(): IncreaseVersionRequest {
-  return { id: '', name: '' }
-}
-
-export const IncreaseVersionRequest = {
-  fromJSON(object: any): IncreaseVersionRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
-    }
-  },
-
-  toJSON(message: IncreaseVersionRequest): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
-    message.changelog !== undefined && (obj.changelog = message.changelog)
     return obj
   },
 }
@@ -4725,120 +4420,6 @@ export const TemplateImageResponse = {
   },
 }
 
-function createBaseDashboardActiveNodes(): DashboardActiveNodes {
-  return { id: '', name: '', address: '', version: '' }
-}
-
-export const DashboardActiveNodes = {
-  fromJSON(object: any): DashboardActiveNodes {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      address: isSet(object.address) ? String(object.address) : '',
-      version: isSet(object.version) ? String(object.version) : '',
-    }
-  },
-
-  toJSON(message: DashboardActiveNodes): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
-    message.address !== undefined && (obj.address = message.address)
-    message.version !== undefined && (obj.version = message.version)
-    return obj
-  },
-}
-
-function createBaseDashboardDeployment(): DashboardDeployment {
-  return { id: '', product: '', version: '', node: '', changelog: '', productId: '', versionId: '' }
-}
-
-export const DashboardDeployment = {
-  fromJSON(object: any): DashboardDeployment {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      product: isSet(object.product) ? String(object.product) : '',
-      version: isSet(object.version) ? String(object.version) : '',
-      node: isSet(object.node) ? String(object.node) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : '',
-      deployedAt: isSet(object.deployedAt) ? fromJsonTimestamp(object.deployedAt) : undefined,
-      productId: isSet(object.productId) ? String(object.productId) : '',
-      versionId: isSet(object.versionId) ? String(object.versionId) : '',
-    }
-  },
-
-  toJSON(message: DashboardDeployment): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.product !== undefined && (obj.product = message.product)
-    message.version !== undefined && (obj.version = message.version)
-    message.node !== undefined && (obj.node = message.node)
-    message.changelog !== undefined && (obj.changelog = message.changelog)
-    message.deployedAt !== undefined && (obj.deployedAt = fromTimestamp(message.deployedAt).toISOString())
-    message.productId !== undefined && (obj.productId = message.productId)
-    message.versionId !== undefined && (obj.versionId = message.versionId)
-    return obj
-  },
-}
-
-function createBaseDashboardResponse(): DashboardResponse {
-  return {
-    users: 0,
-    auditLogEntries: 0,
-    products: 0,
-    versions: 0,
-    deployments: 0,
-    failedDeployments: 0,
-    nodes: [],
-    latestDeployments: [],
-    auditLog: [],
-  }
-}
-
-export const DashboardResponse = {
-  fromJSON(object: any): DashboardResponse {
-    return {
-      users: isSet(object.users) ? Number(object.users) : 0,
-      auditLogEntries: isSet(object.auditLogEntries) ? Number(object.auditLogEntries) : 0,
-      products: isSet(object.products) ? Number(object.products) : 0,
-      versions: isSet(object.versions) ? Number(object.versions) : 0,
-      deployments: isSet(object.deployments) ? Number(object.deployments) : 0,
-      failedDeployments: isSet(object.failedDeployments) ? Number(object.failedDeployments) : 0,
-      nodes: Array.isArray(object?.nodes) ? object.nodes.map((e: any) => DashboardActiveNodes.fromJSON(e)) : [],
-      latestDeployments: Array.isArray(object?.latestDeployments)
-        ? object.latestDeployments.map((e: any) => DashboardDeployment.fromJSON(e))
-        : [],
-      auditLog: Array.isArray(object?.auditLog) ? object.auditLog.map((e: any) => AuditLogResponse.fromJSON(e)) : [],
-    }
-  },
-
-  toJSON(message: DashboardResponse): unknown {
-    const obj: any = {}
-    message.users !== undefined && (obj.users = Math.round(message.users))
-    message.auditLogEntries !== undefined && (obj.auditLogEntries = Math.round(message.auditLogEntries))
-    message.products !== undefined && (obj.products = Math.round(message.products))
-    message.versions !== undefined && (obj.versions = Math.round(message.versions))
-    message.deployments !== undefined && (obj.deployments = Math.round(message.deployments))
-    message.failedDeployments !== undefined && (obj.failedDeployments = Math.round(message.failedDeployments))
-    if (message.nodes) {
-      obj.nodes = message.nodes.map(e => (e ? DashboardActiveNodes.toJSON(e) : undefined))
-    } else {
-      obj.nodes = []
-    }
-    if (message.latestDeployments) {
-      obj.latestDeployments = message.latestDeployments.map(e => (e ? DashboardDeployment.toJSON(e) : undefined))
-    } else {
-      obj.latestDeployments = []
-    }
-    if (message.auditLog) {
-      obj.auditLog = message.auditLog.map(e => (e ? AuditLogResponse.toJSON(e) : undefined))
-    } else {
-      obj.auditLog = []
-    }
-    return obj
-  },
-}
-
 function createBaseStorageResponse(): StorageResponse {
   return { id: '', audit: undefined, name: '', url: '' }
 }
@@ -5299,83 +4880,6 @@ export function CruxNodeControllerMethods() {
 
 export const CRUX_NODE_SERVICE_NAME = 'CruxNode'
 
-export interface CruxProductVersionClient {
-  getVersionsByProductId(request: IdRequest, metadata: Metadata, ...rest: any): Observable<VersionListResponse>
-
-  createVersion(request: CreateVersionRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
-
-  updateVersion(request: UpdateVersionRequest, metadata: Metadata, ...rest: any): Observable<UpdateEntityResponse>
-
-  deleteVersion(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
-
-  setDefaultVersion(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
-
-  getVersionDetails(request: IdRequest, metadata: Metadata, ...rest: any): Observable<VersionDetailsResponse>
-
-  increaseVersion(request: IncreaseVersionRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
-}
-
-export interface CruxProductVersionController {
-  getVersionsByProductId(
-    request: IdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<VersionListResponse> | Observable<VersionListResponse> | VersionListResponse
-
-  createVersion(
-    request: CreateVersionRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-
-  updateVersion(
-    request: UpdateVersionRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-
-  deleteVersion(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
-
-  setDefaultVersion(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
-
-  getVersionDetails(
-    request: IdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<VersionDetailsResponse> | Observable<VersionDetailsResponse> | VersionDetailsResponse
-
-  increaseVersion(
-    request: IncreaseVersionRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-}
-
-export function CruxProductVersionControllerMethods() {
-  return function (constructor: Function) {
-    const grpcMethods: string[] = [
-      'getVersionsByProductId',
-      'createVersion',
-      'updateVersion',
-      'deleteVersion',
-      'setDefaultVersion',
-      'getVersionDetails',
-      'increaseVersion',
-    ]
-    for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcMethod('CruxProductVersion', method)(constructor.prototype[method], method, descriptor)
-    }
-    const grpcStreamMethods: string[] = []
-    for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcStreamMethod('CruxProductVersion', method)(constructor.prototype[method], method, descriptor)
-    }
-  }
-}
-
-export const CRUX_PRODUCT_VERSION_SERVICE_NAME = 'CruxProductVersion'
-
 export interface CruxImageClient {
   getImagesByVersionId(request: IdRequest, metadata: Metadata, ...rest: any): Observable<ImageListResponse>
 
@@ -5815,47 +5319,6 @@ export function CruxNotificationControllerMethods() {
 
 export const CRUX_NOTIFICATION_SERVICE_NAME = 'CruxNotification'
 
-export interface CruxAuditClient {
-  getAuditLog(request: AuditLogListRequest, metadata: Metadata, ...rest: any): Observable<AuditLogListResponse>
-
-  getAuditLogListCount(
-    request: AuditLogListRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Observable<AuditLogListCountResponse>
-}
-
-export interface CruxAuditController {
-  getAuditLog(
-    request: AuditLogListRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<AuditLogListResponse> | Observable<AuditLogListResponse> | AuditLogListResponse
-
-  getAuditLogListCount(
-    request: AuditLogListRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<AuditLogListCountResponse> | Observable<AuditLogListCountResponse> | AuditLogListCountResponse
-}
-
-export function CruxAuditControllerMethods() {
-  return function (constructor: Function) {
-    const grpcMethods: string[] = ['getAuditLog', 'getAuditLogListCount']
-    for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcMethod('CruxAudit', method)(constructor.prototype[method], method, descriptor)
-    }
-    const grpcStreamMethods: string[] = []
-    for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcStreamMethod('CruxAudit', method)(constructor.prototype[method], method, descriptor)
-    }
-  }
-}
-
-export const CRUX_AUDIT_SERVICE_NAME = 'CruxAudit'
-
 export interface CruxHealthClient {
   getHealth(request: Empty, metadata: Metadata, ...rest: any): Observable<HealthResponse>
 }
@@ -5933,35 +5396,6 @@ export function CruxTemplateControllerMethods() {
 }
 
 export const CRUX_TEMPLATE_SERVICE_NAME = 'CruxTemplate'
-
-export interface CruxDashboardClient {
-  getDashboard(request: Empty, metadata: Metadata, ...rest: any): Observable<DashboardResponse>
-}
-
-export interface CruxDashboardController {
-  getDashboard(
-    request: Empty,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<DashboardResponse> | Observable<DashboardResponse> | DashboardResponse
-}
-
-export function CruxDashboardControllerMethods() {
-  return function (constructor: Function) {
-    const grpcMethods: string[] = ['getDashboard']
-    for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcMethod('CruxDashboard', method)(constructor.prototype[method], method, descriptor)
-    }
-    const grpcStreamMethods: string[] = []
-    for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcStreamMethod('CruxDashboard', method)(constructor.prototype[method], method, descriptor)
-    }
-  }
-}
-
-export const CRUX_DASHBOARD_SERVICE_NAME = 'CruxDashboard'
 
 export interface CruxTokenClient {
   generateToken(request: GenerateTokenRequest, metadata: Metadata, ...rest: any): Observable<GenerateTokenResponse>
