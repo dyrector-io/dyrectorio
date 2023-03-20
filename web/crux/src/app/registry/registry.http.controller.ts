@@ -19,7 +19,7 @@ import { Delete, Post, Put } from '@nestjs/common/decorators/http/request-mappin
 import { Body, Param } from '@nestjs/common/decorators/http/route-params.decorator'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import RegistryService from './registry.service'
-import { CreateRegistry, RegistryDetails, RegistryList, UpdateRegistry } from './registry.dto'
+import { CreateRegistry, RegistryDetails, RegistryList, TestRegistry, UpdateRegistry } from './registry.dto'
 import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
 import UpdateRegistryInterceptor from './interceptors/registry.update.interceptor'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
@@ -43,6 +43,13 @@ export default class RegistryHttpController {
   @ApiOkResponse({ type: RegistryList })
   async getRegistries(@IdentityFromRequest() identity: Identity): Promise<RegistryList> {
     return await this.service.getRegistries(identity)
+  }
+
+  @Get('/test/:id')
+  @AuditLogLevel('disabled') // TODO(@robot9706): Refactor the auditlog after removing gRPC
+  @ApiOkResponse({ type: TestRegistry })
+  async getTestRegistries(): Promise<RegistryList> {
+    return null
   }
 
   @Get(':id')
