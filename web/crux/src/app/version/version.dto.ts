@@ -23,7 +23,7 @@ export class VersionDto extends BasicVersionDto {
 
 export class UpdateVersionDto {
   name: string
-  changelog: string | null
+  changelog?: string
 }
 
 export class CreateVersionDto extends UpdateVersionDto {

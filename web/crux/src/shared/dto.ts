@@ -3,15 +3,15 @@
 export class AuditDto {
   createdBy: string
   createdAt: Date
-  updatedBy: string | null
-  updatedAt: Date | null
+  updatedBy?: string
+  updatedAt: Date
 }
 
 type Audit = {
   createdBy: string
   createdAt: Date
-  updatedBy: string | null
-  updatedAt: Date | null
+  updatedBy?: string
+  updatedAt: Date
 }
 
 export const toAuditDto = (it: Audit): AuditDto => ({
