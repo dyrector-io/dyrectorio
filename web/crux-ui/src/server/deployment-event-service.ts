@@ -19,7 +19,7 @@ class DeploymentEventService {
 
     const [status, events] = await crux.deployments.getEvents(this.deploymentId)
 
-    if (status !== 'in_progress') {
+    if (status !== 'in-progress') {
       return events
     }
 

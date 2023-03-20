@@ -286,6 +286,9 @@ export const imageToDto = (image: ImageResponse): VersionImage => ({
   ...image,
   config: containerConfigToDto(image.config),
   createdAt: timestampToUTC(image.createdAt),
-  // TODO(@robot9706): Remove when ImageMapper is removed
-  registryType: registryTypeToJSON(image.registryType).toLowerCase() as RegistryType,
+  registry: {
+    id: image.registryId,
+    name: image.registryName,
+    type: registryTypeToJSON(image.registryType).toLowerCase() as RegistryType,
+  },
 })

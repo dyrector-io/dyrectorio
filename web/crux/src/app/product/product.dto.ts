@@ -7,7 +7,7 @@ export enum ProductTypeDto {
   complex = 'complex',
 }
 
-export class BasicProductDto extends DateAuditProperties {
+export class ProductDto extends DateAuditProperties {
   @IsUUID()
   id: string
 
@@ -26,7 +26,7 @@ export class BasicProductDto extends DateAuditProperties {
   versionCount?: number
 }
 
-export class ProductDetailsDto extends BasicProductDto {
+export class ProductDetailsDto extends ProductDto {
   @IsBoolean()
   deletable: boolean
 
@@ -34,7 +34,7 @@ export class ProductDetailsDto extends BasicProductDto {
 }
 
 export class ProductListDto {
-  data: BasicProductDto[]
+  data: ProductDto[]
 }
 
 export class UpdateProductDto {

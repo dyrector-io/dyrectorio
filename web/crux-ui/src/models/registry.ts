@@ -9,16 +9,17 @@ export type GitlabNamespace = typeof GITLAB_NAMESPACE_VALUES[number]
 export type GithubNamespace = typeof GITHUB_NAMESPACE_VALUES[number]
 export type RegistryNamespace = GitlabNamespace | GithubNamespace
 
-export type Registry = {
+export type BasicRegistry = {
   id: string
-  icon?: string
   name: string
-  description?: string
-  url: string
   type: RegistryType
 }
 
-export type BasicRegistry = Registry
+export type Registry = BasicRegistry & {
+  icon?: string
+  description?: string
+  url: string
+}
 
 export type RegistryDetailsBase = {
   inUse: boolean

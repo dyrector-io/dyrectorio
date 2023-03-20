@@ -2,8 +2,15 @@ import { ApiProperty, getSchemaPath } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsDate } from 'class-validator'
 
+/* eslint-disable @typescript-eslint/lines-between-class-members */
 export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github', 'google', 'unchecked'] as const
 export type RegistryType = (typeof REGISTRY_TYPE_VALUES)[number]
+
+export class BasicRegistryDto {
+  id: string
+  name: string
+  type: RegistryType
+}
 
 export const GITHUB_NAMESPACE_VALUES = ['organization', 'user'] as const
 export const GITLAB_NAMESPACE_VALUES = ['group', 'project'] as const
@@ -11,7 +18,7 @@ export type GitlabNamespace = (typeof GITLAB_NAMESPACE_VALUES)[number]
 export type GithubNamespace = (typeof GITHUB_NAMESPACE_VALUES)[number]
 export type RegistryNamespace = GitlabNamespace | GithubNamespace
 
-export class BasicRegistry {
+export class RegistryDto {
   id: string
 
   name: string
@@ -29,7 +36,7 @@ export class BasicRegistry {
 }
 
 export class RegistryList {
-  data: BasicRegistry[]
+  data: RegistryDto[]
 }
 
 export class HubRegistryDetails {

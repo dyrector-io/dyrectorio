@@ -98,7 +98,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const filters = useFilters<DeploymentByVersion, DeploymentFilter>({
     filters: [
-      textFilterFor<DeploymentByVersion>(it => [it.nodeName, it.prefix, it.date]),
+      textFilterFor<DeploymentByVersion>(it => [it.node.name, it.prefix, it.updatedAt]),
       enumFilterFor<DeploymentByVersion, DeploymentStatus>(it => [it.status]),
     ],
     initialData: version.deployments,
@@ -109,7 +109,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const nodeSock = useWebSocket(WS_NODES, {
     onOpen: () =>
       nodeSock.send(WS_TYPE_GET_NODE_STATUS_LIST, {
-        nodeIds: distinct(filters.items.map(it => it.nodeId)),
+        nodeIds: distinct(filters.items.map(it => it.node.id)),
       } as GetNodeStatusListMessage),
   })
 
@@ -152,11 +152,11 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
         passHref
       >
         <NodeStatusIndicator className="mr-2" status={item.nodeStatus} />
-        {item.nodeName}
+        {item.node.name}
       </Link>,
       item.prefix,
       <DeploymentStatusTag className="w-fit m-auto" status={item.status} />,
-      <>{utcDateToLocale(item.date)}</>,
+      <>{utcDateToLocale(item.updatedAt)}</>,
       <div className="flex flex-row">
         <Link
           className="mr-2 inline-block cursor-pointer"

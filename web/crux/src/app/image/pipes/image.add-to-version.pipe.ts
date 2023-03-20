@@ -14,9 +14,15 @@ export default class ImageAddToVersionValidationPipe extends BodyPipeTransform<A
   async transformBody(value: AddImagesToVersionRequest) {
     const version = await this.prisma.version.findUniqueOrThrow({
       select: {
+        id: true,
         type: true,
         deployments: {
           distinct: ['status'],
+        },
+        children: {
+          select: {
+            versionId: true,
+          },
         },
       },
       where: {

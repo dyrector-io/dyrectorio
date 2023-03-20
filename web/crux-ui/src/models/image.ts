@@ -1,16 +1,14 @@
 import { ContainerConfigData } from './container'
-import { RegistryImages, RegistryType } from './registry'
+import { BasicRegistry, RegistryImages } from './registry'
 
 export type VersionImage = {
   id: string
   name: string
   tag: string
-  registryId: string
-  registryName: string
-  registryType: RegistryType
   order: number
   config: ContainerConfigData
   createdAt: string
+  registry: BasicRegistry
 }
 
 export type PatchVersionImage = {

@@ -76,10 +76,17 @@ class DyoDeploymentService {
     )(IdRequest, req)
 
     return deployments.data.map(it => ({
-      ...it,
-      date: timestampToUTC(it.audit.updatedAt),
+      id: it.id,
+      prefix: it.prefix,
       status: deploymentStatusToDto(it.status),
+      note: it.note,
+      updatedAt: timestampToUTC(it.audit.updatedAt),
       nodeStatus: nodeStatusToDto(it.nodeStatus),
+      node: {
+        id: it.nodeId,
+        name: it.nodeName,
+        type: null,
+      },
     }))
   }
 

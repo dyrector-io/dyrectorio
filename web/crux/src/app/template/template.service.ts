@@ -7,13 +7,7 @@ import {
   networkModeFromJSON,
   restartPolicyFromJSON,
 } from 'src/grpc/protobuf/proto/common'
-import {
-  CreateProductFromTemplateRequest,
-  CreateVersionRequest,
-  ProductType,
-  TemplateImageResponse,
-  VersionType,
-} from 'src/grpc/protobuf/proto/crux'
+import { CreateProductFromTemplateRequest, ProductType, TemplateImageResponse } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import TemplateFileService, { TemplateContainerConfig, TemplateImage } from 'src/services/template.file.service'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
@@ -21,9 +15,10 @@ import { toPrismaJson } from 'src/shared/mapper'
 import { ContainerConfigData, VolumeType } from 'src/shared/models'
 import { v4 } from 'uuid'
 import ImageMapper from '../image/image.mapper'
-import { BasicProductDto, CreateProductDto, ProductTypeDto } from '../product/product.dto'
+import { CreateProductDto, ProductDto, ProductTypeDto } from '../product/product.dto'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
+import { CreateVersionDto } from '../version/version.dto'
 import VersionService from '../version/version.service'
 
 const VERSION_NAME = '1.0.0'
@@ -41,7 +36,7 @@ export default class TemplateService {
     private imageMapper: ImageMapper,
   ) {}
 
-  async createProductFromTemplate(req: CreateProductFromTemplateRequest, identity: Identity): Promise<BasicProductDto> {
+  async createProductFromTemplate(req: CreateProductFromTemplateRequest, identity: Identity): Promise<ProductDto> {
     const template = await this.templateFileService.getTemplateById(req.id)
 
     if (template.registries && template.registries.length > 0) {
@@ -149,7 +144,7 @@ export default class TemplateService {
 
   private async createVersion(
     templateImages: TemplateImage[],
-    product: BasicProductDto,
+    product: ProductDto,
     productType: ProductType,
     identity: Identity,
   ): Promise<void> {
@@ -171,13 +166,13 @@ export default class TemplateService {
           })
 
     if (version === null) {
-      const createReq: CreateVersionRequest = {
-        productId,
+      const createReq: CreateVersionDto = {
         name: VERSION_NAME,
-        type: VersionType.INCREMENTAL,
+        type: 'incremental',
+        changelog: null,
       }
 
-      const newVersion = await this.versionService.createVersion(createReq, identity)
+      const newVersion = await this.versionService.createVersion(productId, createReq, identity)
       version = await this.prisma.version.findFirst({
         where: {
           id: newVersion.id,

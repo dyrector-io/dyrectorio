@@ -9,7 +9,7 @@ import {
   CreateProductDto,
   ProductListDto,
   ProductTypeDto,
-  BasicProductDto,
+  ProductDto,
   ProductDetailsDto,
   UpdateProductDto,
 } from './product.dto'
@@ -74,7 +74,7 @@ export default class ProductService {
     return this.mapper.detailsToDto({ ...product, deletable: productInProgressDeployments === 0 })
   }
 
-  async createProduct(request: CreateProductDto, identity: Identity): Promise<BasicProductDto> {
+  async createProduct(request: CreateProductDto, identity: Identity): Promise<ProductDto> {
     const type = ProductTypeDto[request.type]
     const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
 
@@ -102,7 +102,7 @@ export default class ProductService {
     return this.mapper.productToDto(product)
   }
 
-  async updateProduct(id: string, req: UpdateProductDto, identity: Identity): Promise<BasicProductDto> {
+  async updateProduct(id: string, req: UpdateProductDto, identity: Identity): Promise<ProductDto> {
     let product = (await this.prisma.product.findUnique({
       select: {
         type: true,

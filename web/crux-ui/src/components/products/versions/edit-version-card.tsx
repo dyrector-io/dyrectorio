@@ -36,7 +36,7 @@ const EditVersionCard = (props: EditVersionCardProps) => {
       changelog: '',
       type: 'incremental',
       increasable: true,
-      updatedAt: null,
+      audit: null,
     },
   )
 

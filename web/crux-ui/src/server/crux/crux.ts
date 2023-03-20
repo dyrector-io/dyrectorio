@@ -20,18 +20,12 @@ import DyoHealthService from './health-service'
 import DyoImageService from './image-service'
 import DyoNodeService from './node-service'
 import DyoNotifcationService from './notification-service'
-import DyoProductService from './product-service'
 import DyoStorageService from './storage-service'
 import DyoTeamService from './team-service'
 import DyoTemplateService from './template-service'
-import DyoVersionService from './version-service'
 
 export class Crux {
-  private _products: DyoProductService
-
   private _nodes: DyoNodeService
-
-  private _versions: DyoVersionService
 
   private _images: DyoImageService
 
@@ -54,16 +48,8 @@ export class Crux {
     private registryConnections: RegistryConnections,
   ) {}
 
-  get products() {
-    return this._products ?? new DyoProductService(this.clients.products, this.cookie)
-  }
-
   get nodes() {
     return this._nodes ?? new DyoNodeService(this.clients.nodes, this.cookie)
-  }
-
-  get versions() {
-    return this._versions ?? new DyoVersionService(this.clients.versions, this.cookie)
   }
 
   get images() {

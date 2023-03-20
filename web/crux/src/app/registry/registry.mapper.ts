@@ -6,13 +6,13 @@ import {
   registryTypeFromJSON as protoRegistryTypeFromJSON,
 } from 'src/grpc/protobuf/proto/crux'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
-import { CreateRegistry, RegistryDetails, BasicRegistry, UpdateRegistry } from './registry.dto'
+import { CreateRegistry, RegistryDetails, RegistryDto, UpdateRegistry } from './registry.dto'
 
 type RegistryTypeUnion = Pick<Registry, 'url' | 'type' | 'apiUrl' | 'user' | 'token' | 'imageNamePrefix' | 'namespace'>
 
 @Injectable()
 export default class RegistryMapper {
-  listItemToDto(registry: Registry): BasicRegistry {
+  listItemToDto(registry: Registry): RegistryDto {
     return {
       ...registry,
     }

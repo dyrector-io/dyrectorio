@@ -1,6 +1,6 @@
-import { ExecutionContext, Injectable } from '@nestjs/common'
+import { createParamDecorator, ExecutionContext, Injectable } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
-import { RequiredError } from '@ory/kratos-client/dist/base'
+import { Identity } from '@ory/kratos-client'
 import http from 'http'
 import KratosService from 'src/services/kratos.service'
 
@@ -19,21 +19,37 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
         const session = await this.kratos.getSessionByCookie(req.headers.cookie)
         req.body.identity = session.identity
         return true
-      } catch (error) {
-        // No valid session cookie found check the JWT Token
-        if (error.response.status === 401) {
-          if (req.headers.authorization) {
-            return super.canActivate(context) as boolean
-          }
-        }
-        throw error as RequiredError
+      } catch {
+        /* ignored */
       }
     }
 
-    return super.canActivate(context) as boolean
+    const activated = super.canActivate(context) as boolean
+    if (activated) {
+      const userId = req.user.data.sub
+      try {
+        req.body.identity = await this.kratos.getIdentityById(userId)
+      } catch {
+        return false
+      }
+    }
+
+    return activated
   }
 }
 
 type ExtendedHttpRequest = http.IncomingMessage & {
-  body: any
+  body: {
+    identity: Identity
+  }
+  user: any
 }
+
+export const identityOfContext = (context: ExecutionContext): Identity => {
+  const req = context.switchToHttp().getRequest() as ExtendedHttpRequest
+  return req.body.identity
+}
+
+export const IdentityFromRequest = createParamDecorator((_: unknown, context: ExecutionContext) =>
+  identityOfContext(context),
+)
