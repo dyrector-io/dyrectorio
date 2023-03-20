@@ -47,7 +47,7 @@ export const API_CREATE_ACCOUNT = '/api/auth/create-account'
 export const API_STATUS = '/api/status'
 
 export const API_PRODUCTS = '/api/products'
-export const API_REGISTRIES = '/api/registries'
+export const API_REGISTRIES = '/api/new/registries'
 export const API_NODES = '/api/nodes'
 
 export const API_TEAMS = '/api/teams'
@@ -68,7 +68,7 @@ export const API_STORAGES = '/api/storages'
 export const API_STORAGES_OPTIONS = `${API_STORAGES}/options`
 
 export const WS_NODES = `${API_NODES}/connect`
-export const WS_REGISTRIES = `${API_REGISTRIES}/connect`
+export const WS_REGISTRIES = `/api/registries/connect`
 
 export type CruxUrlParams = {
   anchor?: string
@@ -151,7 +151,7 @@ export const productVersionsApiUrl = (productId: string) => `${productApiUrl(pro
 
 // registry
 export const registryUrl = (id: string) => `${ROUTE_REGISTRIES}/${id}`
-export const registryApiUrl = (id: string) => `/api${registryUrl(id)}`
+export const registryApiUrl = (id: string) => `/api/new${registryUrl(id)}`
 
 // node
 export const nodeUrl = (id: string) => `${ROUTE_NODES}/${id}`

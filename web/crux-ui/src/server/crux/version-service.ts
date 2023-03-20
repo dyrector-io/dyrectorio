@@ -1,4 +1,4 @@
-import { CreateVersion, IncreaseVersion, UpdateVersion, Version, VersionDetails } from '@app/models'
+import { CreateVersion, IncreaseVersion, RegistryType, UpdateVersion, Version, VersionDetails } from '@app/models'
 import { Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
@@ -6,6 +6,7 @@ import {
   CruxProductVersionClient,
   IdRequest,
   IncreaseVersionRequest,
+  registryTypeToJSON,
   UpdateEntityResponse,
   UpdateVersionRequest,
   VersionDetailsResponse,
@@ -15,7 +16,6 @@ import { protomisify } from '@server/crux/grpc-connection'
 import { deploymentStatusToDto } from './mappers/deployment-mappers'
 import { containerConfigToDto } from './mappers/image-mappers'
 import { nodeStatusToDto } from './mappers/node-mappers'
-import { registryTypeProtoToDto } from './mappers/registry-mappers'
 import { versionTypeToDyo, versionTypeToProto } from './mappers/version-mappers'
 
 class DyoVersionService {
@@ -46,7 +46,7 @@ class DyoVersionService {
         ...it,
         config: containerConfigToDto(it.config),
         createdAt: timestampToUTC(it.createdAt),
-        registryType: registryTypeProtoToDto(it.registryType),
+        registryType: registryTypeToJSON(it.registryType).toLowerCase() as RegistryType,
       })),
     }
   }

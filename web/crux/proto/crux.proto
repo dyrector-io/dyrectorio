@@ -24,15 +24,6 @@ service CruxProduct {
   rpc GetProductDetails(IdRequest) returns (ProductDetailsReponse);
 }
 
-service CruxRegistry {
-  // CRUD
-  rpc GetRegistries(common.Empty) returns (RegistryListResponse);
-  rpc CreateRegistry(CreateRegistryRequest) returns (CreateEntityResponse);
-  rpc UpdateRegistry(UpdateRegistryRequest) returns (UpdateEntityResponse);
-  rpc DeleteRegistry(IdRequest) returns (common.Empty);
-  rpc GetRegistryDetails(IdRequest) returns (RegistryDetailsResponse);
-}
-
 service CruxNode {
   // CRUD
   rpc GetNodes(common.Empty) returns (NodeListResponse);
@@ -411,103 +402,6 @@ message UpdateProductRequest {
 
 // REGISTRY
 
-message RegistryResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-  string url = 103;
-  RegistryType type = 104;
-}
-
-message RegistryListResponse { repeated RegistryResponse data = 1000; }
-
-message HubRegistryDetails { string imageNamePrefix = 100; }
-
-message V2RegistryDetails {
-  string url = 100;
-  optional string user = 101;
-  optional string token = 102;
-}
-
-message GitlabRegistryDetails {
-  string user = 100;
-  string token = 101;
-  string imageNamePrefix = 102;
-  optional string url = 103;
-  optional string apiUrl = 104;
-  RegistryNamespace namespace = 105;
-}
-
-message GithubRegistryDetails {
-  string user = 100;
-  string token = 101;
-  string imageNamePrefix = 102;
-  RegistryNamespace namespace = 103;
-}
-
-message GoogleRegistryDetails {
-  string url = 100;
-  optional string user = 101;
-  optional string token = 102;
-  string imageNamePrefix = 103;
-}
-
-message UncheckedRegistryDetails { string url = 100; }
-
-message CreateRegistryRequest {
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-
-  oneof details {
-    HubRegistryDetails hub = 200;
-    V2RegistryDetails v2 = 201;
-    GitlabRegistryDetails gitlab = 202;
-    GithubRegistryDetails github = 203;
-    GoogleRegistryDetails google = 204;
-    UncheckedRegistryDetails unchecked = 205;
-  }
-}
-
-message UpdateRegistryRequest {
-  string id = 1;
-
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-
-  oneof details {
-    HubRegistryDetails hub = 200;
-    V2RegistryDetails v2 = 201;
-    GitlabRegistryDetails gitlab = 202;
-    GithubRegistryDetails github = 203;
-    GoogleRegistryDetails google = 204;
-    UncheckedRegistryDetails unchecked = 205;
-  }
-}
-
-message RegistryDetailsResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-  bool inUse = 103;
-
-  oneof details {
-    HubRegistryDetails hub = 200;
-    V2RegistryDetails v2 = 201;
-    GitlabRegistryDetails gitlab = 202;
-    GithubRegistryDetails github = 203;
-    GoogleRegistryDetails google = 204;
-    UncheckedRegistryDetails unchecked = 205;
-  }
-}
-
 enum RegistryType {
   REGISTRY_TYPE_UNSPECIFIED = 0;
   V2 = 1;
@@ -516,14 +410,6 @@ enum RegistryType {
   GITHUB = 4;
   GOOGLE = 5;
   UNCHECKED = 6;
-}
-
-enum RegistryNamespace {
-  REGISTRY_NAMESPACE_UNSPECIFIED = 0;
-  RNS_ORGANIZATION = 1;
-  RNS_USER = 2;
-  RNS_GROUP = 3;
-  RNS_PROJECT = 4;
 }
 
 // VERSION

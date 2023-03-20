@@ -5,7 +5,6 @@ import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import KratosService from 'src/services/kratos.service'
 import TeamModule from '../team/team.module'
 import TeamRepository from '../team/team.repository'
-import RegistryController from './registry.controller'
 import RegistryMapper from './registry.mapper'
 import RegistryService from './registry.service'
 import RegistryHttpController from './registry.http.controller'
@@ -13,7 +12,7 @@ import RegistryHttpController from './registry.http.controller'
 @Module({
   imports: [HttpModule, TeamModule],
   exports: [RegistryMapper, RegistryService],
-  controllers: [RegistryController, RegistryHttpController],
+  controllers: [RegistryHttpController],
   providers: [
     RegistryService,
     PrismaService,

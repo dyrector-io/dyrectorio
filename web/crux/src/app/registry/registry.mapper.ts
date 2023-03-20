@@ -1,37 +1,28 @@
 import { Injectable } from '@nestjs/common'
-import { Registry, RegistryNamespaceEnum, RegistryTypeEnum } from '@prisma/client'
-import { InternalException, InvalidArgumentException } from 'src/exception/errors'
+import { Registry, RegistryTypeEnum } from '@prisma/client'
+import { InvalidArgumentException } from 'src/exception/errors'
 import {
-  AuditResponse,
-  CreateRegistryRequest,
-  RegistryDetailsResponse,
-  RegistryNamespace,
-  RegistryResponse,
-  RegistryType,
-  registryTypeFromJSON,
-  registryTypeToJSON,
-  UpdateRegistryRequest,
+  RegistryType as ProtoRegistryType,
+  registryTypeFromJSON as protoRegistryTypeFromJSON,
 } from 'src/grpc/protobuf/proto/crux'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
+import { CreateRegistry, RegistryDetails, SimpleRegistry, UpdateRegistry } from './registry.dto'
 
 type RegistryTypeUnion = Pick<Registry, 'url' | 'type' | 'apiUrl' | 'user' | 'token' | 'imageNamePrefix' | 'namespace'>
 
 @Injectable()
 export default class RegistryMapper {
-  listItemToProto(registry: Registry): RegistryResponse {
+  listItemToDto(registry: Registry): SimpleRegistry {
     return {
       ...registry,
-      type: this.typeToProto(registry.type),
-      audit: AuditResponse.fromJSON(registry),
     }
   }
 
-  detailsToProto(registry: RegistryWithCount): RegistryDetailsResponse {
+  detailsToDto(registry: RegistryWithCount): RegistryDetails {
     return {
       ...registry,
-      inUse: registry._count.images > 0,
+      inUse: registry._count?.images > 0,
       icon: registry.icon ?? null,
-      audit: AuditResponse.fromJSON(registry),
       hub:
         registry.type !== RegistryTypeEnum.hub
           ? null
@@ -55,7 +46,7 @@ export default class RegistryMapper {
               imageNamePrefix: registry.imageNamePrefix,
               url: registry.apiUrl ? registry.url : null,
               apiUrl: registry.apiUrl,
-              namespace: this.registryNamespaceToProto(registry.namespace),
+              namespace: registry.namespace,
             },
       github:
         registry.type !== RegistryTypeEnum.github
@@ -64,7 +55,7 @@ export default class RegistryMapper {
               user: registry.user,
               token: registry.token,
               imageNamePrefix: registry.imageNamePrefix,
-              namespace: this.registryNamespaceToProto(registry.namespace),
+              namespace: registry.namespace,
             },
       google:
         registry.type !== RegistryTypeEnum.google
@@ -84,15 +75,7 @@ export default class RegistryMapper {
     }
   }
 
-  typeToProto(type: RegistryTypeEnum): RegistryType {
-    return registryTypeFromJSON(type.toUpperCase())
-  }
-
-  typeToDb(type: RegistryType): RegistryTypeEnum {
-    return registryTypeToJSON(type).toLowerCase() as RegistryTypeEnum
-  }
-
-  detailsToDb(request: CreateRegistryRequest | UpdateRegistryRequest): RegistryTypeUnion {
+  detailsToDb(request: CreateRegistry | UpdateRegistry): RegistryTypeUnion {
     const emptyOrDefault = (value: string | null | undefined, def: string | null = null) => value || def
 
     if (request.hub) {
@@ -123,7 +106,7 @@ export default class RegistryMapper {
         ...request.gitlab,
         url: request.gitlab.apiUrl ? request.gitlab.url : 'registry.gitlab.com',
         apiUrl: request.gitlab.apiUrl ?? null,
-        namespace: this.registryNamespaceToDb(request.gitlab.namespace),
+        namespace: request.gitlab.namespace,
       }
     }
     if (request.github) {
@@ -132,7 +115,7 @@ export default class RegistryMapper {
         ...request.github,
         url: 'ghcr.io',
         apiUrl: null,
-        namespace: this.registryNamespaceToDb(request.github.namespace),
+        namespace: request.github.namespace,
       }
     }
     if (request.google) {
@@ -163,45 +146,14 @@ export default class RegistryMapper {
     })
   }
 
-  registryNamespaceToProto(type: RegistryNamespaceEnum): RegistryNamespace {
-    switch (type) {
-      case RegistryNamespaceEnum.organization:
-        return RegistryNamespace.RNS_ORGANIZATION
-      case RegistryNamespaceEnum.user:
-        return RegistryNamespace.RNS_USER
-      case RegistryNamespaceEnum.group:
-        return RegistryNamespace.RNS_GROUP
-      case RegistryNamespaceEnum.project:
-        return RegistryNamespace.RNS_PROJECT
-      default:
-        throw new InternalException({
-          message: `Unknown RegistryNamespaceEnum '${type}'`,
-        })
-    }
-  }
-
-  registryNamespaceToDb(type: RegistryNamespace): RegistryNamespaceEnum {
-    switch (type) {
-      case RegistryNamespace.RNS_ORGANIZATION:
-        return RegistryNamespaceEnum.organization
-      case RegistryNamespace.RNS_USER:
-        return RegistryNamespaceEnum.user
-      case RegistryNamespace.RNS_GROUP:
-        return RegistryNamespaceEnum.group
-      case RegistryNamespace.RNS_PROJECT:
-        return RegistryNamespaceEnum.project
-      default:
-        throw new InvalidArgumentException({
-          property: 'namespace',
-          value: type,
-          message: `Unknown RegistryNamespace '${type}'`,
-        })
-    }
+  // TODO(@robot9706): Required by ImageMapper, remove when ImageMapper is removed
+  typeToProto(type: RegistryTypeEnum): ProtoRegistryType {
+    return protoRegistryTypeFromJSON(type.toUpperCase())
   }
 }
 
 type RegistryWithCount = Registry & {
-  _count: {
+  _count?: {
     images: number
   }
 }

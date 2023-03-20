@@ -9,7 +9,6 @@ import {
   CruxNotificationClient,
   CruxProductClient,
   CruxProductVersionClient,
-  CruxRegistryClient,
   CruxStorageClient,
   CruxTeamClient,
   CruxTemplateClient,
@@ -19,8 +18,6 @@ import { credentials } from '@grpc/grpc-js'
 
 class CruxClients {
   products: CruxProductClient
-
-  registries: CruxRegistryClient
 
   nodes: CruxNodeClient
 
@@ -55,7 +52,6 @@ class CruxClients {
     }
 
     this.products = new CruxProductClient(address, creds)
-    this.registries = new CruxRegistryClient(address, creds)
     this.nodes = new CruxNodeClient(address, creds)
     this.versions = new CruxProductVersionClient(address, creds)
     this.images = new CruxImageClient(address, creds)
