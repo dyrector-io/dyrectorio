@@ -12,7 +12,6 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
-	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 )
 
@@ -90,13 +89,13 @@ func GetCrux(state *State, args *ArgsFlags) *containerbuilder.DockerContainerBui
 				"(Host(`%s`) && PathPrefix(`/api/new`)) || "+
 				"(Host(`%s`) && PathPrefix(`/api/new`))",
 				state.Containers.Traefik.Name, state.InternalHostDomain),
-			"traefik.http.routers.crux.entrypoints":                     "web",
-			"traefik.http.services.crux.loadbalancer.server.port":       fmt.Sprintf("%d", defaultCruxHTTPPort),
-			"traefik.http.middlewares.crux-strip.stripprefix.prefixes":  "/api/new",
-			"traefik.http.routers.crux.middlewares":                     "crux-strip",
-			"com.docker.compose.project":                                args.Prefix,
-			"com.docker.compose.service":                                state.Containers.Crux.Name,
-			util.JoinV(".", label.DyrectorioOrg, label.ContainerPrefix): args.Prefix,
+			"traefik.http.routers.crux.entrypoints":                    "web",
+			"traefik.http.services.crux.loadbalancer.server.port":      fmt.Sprintf("%d", defaultCruxHTTPPort),
+			"traefik.http.middlewares.crux-strip.stripprefix.prefixes": "/api/new",
+			"traefik.http.routers.crux.middlewares":                    "crux-strip",
+			"com.docker.compose.project":                               args.Prefix,
+			"com.docker.compose.service":                               state.Containers.Crux.Name,
+			label.DyrectorioOrg + label.ContainerPrefix:                args.Prefix,
 		})
 
 	if !args.FullyContainerized {
@@ -143,9 +142,9 @@ func GetCruxMigrate(state *State, args *ArgsFlags) *containerbuilder.DockerConta
 		WithNetworkAliases(state.Containers.CruxMigrate.Name).
 		WithCmd([]string{"migrate"}).
 		WithLabels(map[string]string{
-			"com.docker.compose.project":                                args.Prefix,
-			"com.docker.compose.service":                                state.Containers.CruxMigrate.Name,
-			util.JoinV(".", label.DyrectorioOrg, label.ContainerPrefix): args.Prefix,
+			"com.docker.compose.project":                args.Prefix,
+			"com.docker.compose.service":                state.Containers.CruxMigrate.Name,
+			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 		})
 
 	if args.DisableForcepull {
@@ -190,11 +189,11 @@ func GetCruxUI(state *State, args *ArgsFlags) *containerbuilder.DockerContainerB
 			"traefik.enable": "true",
 			"traefik.http.routers.crux-ui.rule": fmt.Sprintf("Host(`%s`) || Host(`%s`) || Host(`%s`)", traefikHost, state.InternalHostDomain,
 				state.Containers.Traefik.Name),
-			"traefik.http.routers.crux-ui.entrypoints":                  "web",
-			"traefik.http.services.crux-ui.loadbalancer.server.port":    fmt.Sprintf("%d", defaultCruxUIPort),
-			"com.docker.compose.project":                                args.Prefix,
-			"com.docker.compose.service":                                state.Containers.CruxUI.Name,
-			util.JoinV(".", label.DyrectorioOrg, label.ContainerPrefix): args.Prefix,
+			"traefik.http.routers.crux-ui.entrypoints":               "web",
+			"traefik.http.services.crux-ui.loadbalancer.server.port": fmt.Sprintf("%d", defaultCruxUIPort),
+			"com.docker.compose.project":                             args.Prefix,
+			"com.docker.compose.service":                             state.Containers.CruxUI.Name,
+			label.DyrectorioOrg + label.ContainerPrefix:              args.Prefix,
 		})
 
 	if !args.FullyContainerized {
@@ -338,7 +337,7 @@ func GetKratos(state *State, args *ArgsFlags) *containerbuilder.DockerContainerB
 			"traefik.http.routers.kratos.middlewares":                    "kratos-strip",
 			"com.docker.compose.project":                                 args.Prefix,
 			"com.docker.compose.service":                                 state.Containers.Kratos.Name,
-			util.JoinV(".", label.DyrectorioOrg, label.ContainerPrefix):  args.Prefix,
+			label.DyrectorioOrg + label.ContainerPrefix:                  args.Prefix,
 		})
 
 	if !args.FullyContainerized {
@@ -382,9 +381,9 @@ func GetKratosMigrate(state *State, args *ArgsFlags) *containerbuilder.DockerCon
 		WithNetworkAliases(state.Containers.KratosMigrate.Name).
 		WithCmd([]string{"-c /etc/config/kratos/kratos.yaml", "migrate", "sql", "-e", "--yes"}).
 		WithLabels(map[string]string{
-			"com.docker.compose.project":                                args.Prefix,
-			"com.docker.compose.service":                                state.Containers.KratosMigrate.Name,
-			util.JoinV(".", label.DyrectorioOrg, label.ContainerPrefix): args.Prefix,
+			"com.docker.compose.project":                args.Prefix,
+			"com.docker.compose.service":                state.Containers.KratosMigrate.Name,
+			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 		})
 
 	if args.DisableForcepull {
@@ -406,9 +405,9 @@ func GetMailSlurper(state *State, args *ArgsFlags) *containerbuilder.DockerConta
 		WithNetworks([]string{state.SettingsFile.Network}).
 		WithNetworkAliases(state.Containers.MailSlurper.Name).
 		WithLabels(map[string]string{
-			"com.docker.compose.project":                                args.Prefix,
-			"com.docker.compose.service":                                state.Containers.MailSlurper.Name,
-			util.JoinV(".", label.DyrectorioOrg, label.ContainerPrefix): args.Prefix,
+			"com.docker.compose.project":                args.Prefix,
+			"com.docker.compose.service":                state.Containers.MailSlurper.Name,
+			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 		})
 
 	if !args.FullyContainerized {
@@ -442,9 +441,9 @@ func GetCruxPostgres(state *State, args *ArgsFlags) *containerbuilder.DockerCont
 			fmt.Sprintf("POSTGRES_DB=%s", state.SettingsFile.CruxPostgresDB),
 		}).
 		WithLabels(map[string]string{
-			"com.docker.compose.project":                                args.Prefix,
-			"com.docker.compose.service":                                state.Containers.CruxPostgres.Name,
-			util.JoinV(".", label.DyrectorioOrg, label.ContainerPrefix): args.Prefix,
+			"com.docker.compose.project":                args.Prefix,
+			"com.docker.compose.service":                state.Containers.CruxPostgres.Name,
+			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 		})
 
 	if !args.FullyContainerized {
@@ -475,9 +474,9 @@ func GetKratosPostgres(state *State, args *ArgsFlags) *containerbuilder.DockerCo
 		WithName(state.Containers.KratosPostgres.Name).
 		WithNetworkAliases(state.Containers.KratosPostgres.Name).
 		WithLabels(map[string]string{
-			"com.docker.compose.project":                                args.Prefix,
-			"com.docker.compose.service":                                state.Containers.KratosPostgres.Name,
-			util.JoinV(".", label.DyrectorioOrg, label.ContainerPrefix): args.Prefix,
+			"com.docker.compose.project":                args.Prefix,
+			"com.docker.compose.service":                state.Containers.KratosPostgres.Name,
+			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 		})
 
 	if !args.FullyContainerized {

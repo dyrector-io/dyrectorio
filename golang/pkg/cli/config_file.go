@@ -25,7 +25,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Though the CLI itself is stateless
+// State itself exists per-execution, settingsFile is persisted
+// freedesktop spec folders used by default, $XDG_CONFIG_HOME
 type State struct {
 	SettingsFile       SettingsFile
 	InternalHostDomain string

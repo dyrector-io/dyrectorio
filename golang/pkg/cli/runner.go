@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strings"
 	"text/template"
-	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -171,8 +170,6 @@ func StopContainers(ctx context.Context, args *ArgsFlags) {
 	} else {
 		prefixes = util.JoinV(",", "dyo-stable", "dyo-latest")
 	}
-
-	time.Sleep(1 * time.Minute)
 
 	for _, prefix := range strings.Split(prefixes, ",") {
 		log.Info().Msgf("Removing prefix: %s", prefix)
