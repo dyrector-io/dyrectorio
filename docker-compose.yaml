@@ -24,7 +24,7 @@ services:
 
   crux:
     container_name: dyrectorio_crux
-    image: ghcr.io/dyrector-io/dyrectorio/web/crux:latest
+    image: ghcr.io/dyrector-io/dyrectorio/web/crux:${DYO_VERSION:-stable}
     command:
       - serve
     environment:
@@ -67,7 +67,7 @@ services:
     #   - 1848:1848 # http API
 
   crux-migrate:
-    image: ghcr.io/dyrector-io/dyrectorio/web/crux:latest
+    image: ghcr.io/dyrector-io/dyrectorio/web/crux:${DYO_VERSION:-stable}
     command:
       - migrate
     environment:
@@ -94,7 +94,7 @@ services:
       retries: 5
 
   crux-ui:
-    image: ghcr.io/dyrector-io/dyrectorio/web/crux-ui:latest
+    image: ghcr.io/dyrector-io/dyrectorio/web/crux-ui:${DYO_VERSION:-stable}
     environment:
       - TZ=${TIMEZONE:-Europe/Budapest}
       - KRATOS_URL=http://kratos:4433
@@ -120,7 +120,7 @@ services:
       - traefik.http.routers.crux-ui.tls.certresolver=letsencrypt
 
   kratos:
-    image: ghcr.io/dyrector-io/dyrectorio/web/kratos:latest
+    image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
     environment:
       - SQA_OPT_OUT=true
       - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4&connect_timeout=5
@@ -156,7 +156,7 @@ services:
       - traefik.http.routers.kratos.tls.certresolver=letsencrypt
 
   kratos-migrate:
-    image: ghcr.io/dyrector-io/dyrectorio/web/kratos:latest
+    image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
     command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
     environment:
       - SQA_OPT_OUT=true
