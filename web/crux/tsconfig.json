@@ -17,7 +17,7 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "resolveJsonModule": true,
+    "resolveJsonModule": true
   },
   "include": ["src", "decs.d.ts"],
   "exclude": ["node_modules", "prisma"]

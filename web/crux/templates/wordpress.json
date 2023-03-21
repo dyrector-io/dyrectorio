@@ -6,7 +6,7 @@
     {
       "name": "Docker Hub Library",
       "type": "hub",
-      "hub": {
+      "details": {
         "imageNamePrefix": "library"
       }
     }

@@ -80,7 +80,7 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
         {node.updating && (
           <>
             <DyoLabel>{t('update')}</DyoLabel>
-            <span className="text-light-eased">{t('inProgress')}</span>
+            <span className="text-light-eased">{t('in-progress')}</span>
           </>
         )}
       </div>

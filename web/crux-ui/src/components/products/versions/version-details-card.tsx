@@ -3,7 +3,7 @@ import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoTag from '@app/elements/dyo-tag'
 import { Version } from '@app/models'
-import { utcDateToLocale } from '@app/utils'
+import { auditToLocaleDate } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 
@@ -35,7 +35,7 @@ const VersionDetailsCard = (props: VersionDetailsCardProps) => {
         </div>
 
         <div className="flex flex-col flex-grow">
-          <span className="self-end text-bright whitespace-nowrap ml-2 mb-2">{utcDateToLocale(version.updatedAt)}</span>
+          <span className="self-end text-bright whitespace-nowrap ml-2 mb-2">{auditToLocaleDate(version.audit)}</span>
 
           <div className="flex flex-row ml-auto mt-auto">
             {!version.default ? null : (

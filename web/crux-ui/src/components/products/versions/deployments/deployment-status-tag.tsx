@@ -16,7 +16,7 @@ const DeploymentStatusTag = (props: DeploymentStatusTagProps) => {
     switch (status) {
       case 'failed':
         return 'bg-error-red'
-      case 'in_progress':
+      case 'in-progress':
         return 'bg-warning-orange'
       case 'obsolete':
         return 'bg-dyo-purple'
@@ -33,7 +33,7 @@ const DeploymentStatusTag = (props: DeploymentStatusTagProps) => {
     switch (status) {
       case 'failed':
         return 'text-error-red'
-      case 'in_progress':
+      case 'in-progress':
         return 'text-warning-orange'
       case 'obsolete':
         return 'text-dyo-purple-light'

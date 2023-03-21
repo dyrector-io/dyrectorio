@@ -1,18 +1,25 @@
 import { Injectable } from '@nestjs/common'
-import { Identity } from '@ory/kratos-client'
-import { IdRequest } from 'src/grpc/protobuf/proto/crux'
-import UserAccessGuard from 'src/shared/user-access.guard'
+import { CanActivate, ExecutionContext } from '@nestjs/common/interfaces'
+import { identityOfContext } from 'src/app/token/jwt-auth.guard'
+import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
-export default class RegistryTeamAccessGuard extends UserAccessGuard<IdRequest> {
-  async canActivateWithRequest(request: IdRequest, identity: Identity): Promise<boolean> {
-    if (!request.id) {
+export default class RegistryTeamAccessGuard implements CanActivate {
+  constructor(protected readonly prisma: PrismaService) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const req = context.switchToHttp().getRequest()
+    const registryId = req.params.registryId as string
+
+    if (!registryId) {
       return true
     }
 
+    const identity = identityOfContext(context)
+
     const registries = await this.prisma.registry.count({
       where: {
-        id: request.id,
+        id: req.id,
         team: {
           users: {
             some: {

@@ -6,7 +6,7 @@
     {
       "name": "Docker Hub Minecraft",
       "type": "hub",
-      "hub": {
+      "details": {
         "imageNamePrefix": "itzg"
       }
     }

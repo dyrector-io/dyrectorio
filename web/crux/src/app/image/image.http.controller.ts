@@ -7,15 +7,14 @@ import { AddImagesToVersionRequest, ImageListResponse, PatchImageRequest } from 
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { AddImagesToVersionRequestDto, ImageListResponseDto, PatchImageRequestDto } from 'src/swagger/crux.dto'
-import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
 import { Identity } from '@ory/kratos-client'
-import JwtAuthGuard from '../token/jwt-auth.guard'
+import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
 import ImageService from './image.service'
 import ImagePatchValidationPipe from './pipes/image.patch.pipe'
 
 @Controller('image')
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, HttpIdentityInterceptor)
+@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
 @UseFilters(HttpExceptionFilter)
 export default class ImageHttpController {
   constructor(private service: ImageService) {}

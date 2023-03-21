@@ -6,6 +6,7 @@ import {
   userVerified,
 } from '@server/kratos'
 import { FormikErrors, FormikHandlers, FormikState } from 'formik'
+import http from 'http'
 import {
   GetServerSideProps,
   GetServerSidePropsContext,
@@ -17,7 +18,8 @@ import { Translate } from 'next-translate'
 import { NextRouter } from 'next/router'
 import toast, { ToastOptions } from 'react-hot-toast'
 import { MessageType } from './elements/dyo-input'
-import { AxiosError, DyoApiError, DyoErrorDto, DyoFetchError, RegistryDetails } from './models'
+import { internalError } from './error-responses'
+import { Audit, AxiosError, DyoApiError, DyoErrorDto, DyoFetchError, RegistryDetails } from './models'
 import { Timestamp } from './models/grpc/google/protobuf/timestamp'
 import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_NEW_PASSWORD, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
 
@@ -85,6 +87,8 @@ export const timestampToUTC = (timestamp: Timestamp): string => {
 
 // TODO(@m8vago): check after react and update if there is still a hydration error with narrow spaces
 export const utcDateToLocale = (date: string) => new Date(date).toLocaleString().replace(/\u202f/g, ' ')
+
+export const auditToLocaleDate = (audit: Audit) => utcDateToLocale(audit.updatedAt ?? audit.createdAt)
 
 export const getUserDateFormat = (fallback: string) => {
   let dateFormat: string
@@ -205,14 +209,36 @@ export const configuredFetcher = (init?: RequestInit) => {
 
 export const fetcher = configuredFetcher()
 
-export const fetchCrux = (context: NextPageContext, url: string, init?: RequestInit) =>
-  fetch(`${process.env.CRUX_UI_URL}${url}`, {
+export const fetchCruxFromRequest = async (req: http.IncomingMessage, url: string, init?: RequestInit) => {
+  const res = await fetch(`${process.env.CRUX_UI_URL}${url}`, {
     ...(init ?? {}),
     headers: {
       ...(init?.headers ?? {}),
-      cookie: context.req.headers.cookie,
+      cookie: req.headers.cookie,
     },
   })
+
+  if (!res.ok) {
+    let body: any = null
+    try {
+      body = await res.json()
+    } catch {
+      console.error('[ERROR]: Crux fetch failed to parse error body of url', url)
+    }
+
+    if (body && isDyoError(body)) {
+      throw body
+    } else {
+      console.error('[ERROR]: Crux fetch failed with status', res.status, body)
+      throw internalError('Failed to fetch crux')
+    }
+  }
+
+  return res
+}
+
+export const fetchCrux = (context: NextPageContext, url: string, init?: RequestInit) =>
+  fetchCruxFromRequest(context.req, url, init)
 
 // forms
 export const paginationParams = (req: NextApiRequest, defaultTake: 100): [number, number] => {
@@ -348,11 +374,12 @@ export const withContextErrorHandling =
       return props
     } catch (err) {
       if (isDyoApiError(err)) {
+        console.error(`[ERROR]: ${err.status} - prop: ${err.property}: ${err.value} - ${err.description}`)
+
         if (err.status === 404 && err.property === 'team') {
           return redirectTo(ROUTE_INDEX)
         }
 
-        console.error(`[ERROR]: ${err.status} - prop: ${err.property}: ${err.value} - ${err.description}`)
         const url = dyoApiErrorStatusToRedirectUrl(err.status)
         return redirectTo(url)
       }

@@ -42,6 +42,7 @@ module.exports = {
     'no-nested-ternary': 'off',
     'no-param-reassign': 'off',
     'no-plusplus': 'off',
+    'max-classes-per-file': 'off',
   },
   overrides: [
     {

@@ -11,7 +11,7 @@ import PrismaService from 'src/services/prisma.service'
 import ImageModule from '../image/image.module'
 import SharedModule from '../shared/shared.module'
 import TeamRepository from '../team/team.repository'
-import AgentController from './agent.controller'
+import AgentController from './agent.grpc.controller'
 import AgentService from './agent.service'
 
 @Module({

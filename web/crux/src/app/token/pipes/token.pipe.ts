@@ -1,13 +1,11 @@
-import { Injectable } from '@nestjs/common'
-import BodyPipeTransform from 'src/pipes/body.pipe'
-import { InvalidArgumentException } from 'src/exception/errors'
-import { GenerateTokenRequest } from 'src/grpc/protobuf/proto/crux'
+import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common'
+import { GenerateTokenDto } from '../token.dto'
 
 @Injectable()
-export default class TokenValidationPipe extends BodyPipeTransform<GenerateTokenRequest> {
-  async transformBody(req: GenerateTokenRequest): Promise<GenerateTokenRequest> {
+export default class TokenValidationPipe implements PipeTransform {
+  async transform(req: GenerateTokenDto) {
     if (req.expirationInDays <= 0) {
-      throw new InvalidArgumentException({
+      throw new BadRequestException({
         property: 'expirationInDays',
         value: req.expirationInDays,
         message: `Expiration cannot be zero or negative`,

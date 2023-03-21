@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer'
 import { IsDate, IsString } from 'class-validator'
-import { PaginatedList, PaginationQuery } from 'src/shared/paginating'
+import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
 
 export class AuditLogQueryDto extends PaginationQuery {
   readonly filter?: string
@@ -16,7 +16,6 @@ export class AuditLogQueryDto extends PaginationQuery {
 
 export class AuditLogListDto extends PaginatedList<AuditLogDto> {}
 
-// TODO(@polaroi8d) Remove the Dto after removing gRPC
 export class AuditLogDto {
   @Type(() => Date)
   @IsDate()

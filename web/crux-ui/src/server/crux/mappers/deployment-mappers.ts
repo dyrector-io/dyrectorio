@@ -12,8 +12,14 @@ import {
 import { containerConfigToDto, containerConfigToProto, imageToDto } from './image-mappers'
 import { containerStateToDto } from './node-mappers'
 
-export const deploymentStatusToDto = (status: ProtoDeploymentStatus): DeploymentStatus =>
-  deploymentStatusToJSON(status).toLowerCase() as DeploymentStatus
+export const deploymentStatusToDto = (status: ProtoDeploymentStatus): DeploymentStatus => {
+  switch (status) {
+    case ProtoDeploymentStatus.IN_PROGRESS:
+      return 'in-progress'
+    default:
+      return deploymentStatusToJSON(status).toLowerCase() as DeploymentStatus
+  }
+}
 
 export const deploymentEventTypeToDto = (type: ProtoDeploymentEventType): DeploymentEventType => {
   switch (type) {

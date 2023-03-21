@@ -99,10 +99,10 @@ export interface ImagesStateOptions {
 
 const refreshImageTags = (registriesSock: WebSocketClientEndpoint, images: VersionImage[]): void => {
   const fetchTags = images.reduce((map, it) => {
-    let names = map.get(it.registryId)
+    let names = map.get(it.registry.id)
     if (!names) {
       names = new Set()
-      map.set(it.registryId, names)
+      map.set(it.registry.id, names)
     }
 
     names.add(it.name)
@@ -118,7 +118,7 @@ const refreshImageTags = (registriesSock: WebSocketClientEndpoint, images: Versi
 }
 
 export const selectTagsOfImage = (state: ImagesState, image: VersionImage): string[] => {
-  const regImgTags = state.tags[imageTagKey(image.registryId, image.name)]
+  const regImgTags = state.tags[imageTagKey(image.registry.id, image.name)]
   return regImgTags ? regImgTags.tags : image.tag ? [image.tag] : []
 }
 
@@ -151,7 +151,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
     onOpen: () =>
       refreshImageTags(
         registriesSock,
-        images.filter(it => it.registryType !== 'unchecked'),
+        images.filter(it => it.registry.type !== 'unchecked'),
       ),
   })
 
@@ -250,11 +250,11 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   }
 
   const fetchImageTags = (image: VersionImage): RegistryImageTags => {
-    if (image.registryType === 'unchecked') {
+    if (image.registry.type === 'unchecked') {
       return
     }
 
-    const key = imageTagKey(image.registryId, image.name)
+    const key = imageTagKey(image.registry.id, image.name)
     const imgTags = tags[key]
 
     if (imgTags) {
@@ -262,7 +262,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
     }
 
     registriesSock.send(WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS, {
-      registryId: image.registryId,
+      registryId: image.registry.id,
       images: [image.name],
     })
   }
