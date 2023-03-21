@@ -81,7 +81,7 @@ export default class TemplateService {
       await Promise.all(createRegistries)
     }
 
-    const productType = productTypeToJSON(req.type) as ProductTypeDto
+    const productType = productTypeToJSON(req.type).toLowerCase() as ProductTypeDto
 
     const createProductReq: CreateProductDto = {
       name: req.name,
