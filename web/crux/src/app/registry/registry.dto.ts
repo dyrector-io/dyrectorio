@@ -1,6 +1,16 @@
-import { ApiProperty, getSchemaPath } from '@nestjs/swagger'
+import { ApiExtraModels, ApiProperty, getSchemaPath, refs } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsBoolean, IsDate, IsIn, IsOptional, IsString, IsUrl, IsUUID } from 'class-validator'
+import {
+  IsBoolean,
+  IsDate,
+  IsIn,
+  IsNotEmptyObject,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsUUID,
+} from 'class-validator'
 
 export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github', 'google', 'unchecked'] as const
 export type RegistryType = (typeof REGISTRY_TYPE_VALUES)[number]
@@ -20,7 +30,6 @@ export const GITHUB_NAMESPACE_VALUES = ['organization', 'user'] as const
 export const GITLAB_NAMESPACE_VALUES = ['group', 'project'] as const
 export type GitlabNamespace = (typeof GITLAB_NAMESPACE_VALUES)[number]
 export type GithubNamespace = (typeof GITHUB_NAMESPACE_VALUES)[number]
-export type RegistryNamespace = GitlabNamespace | GithubNamespace
 
 export class RegistryDto {
   @IsUUID()
@@ -48,12 +57,15 @@ export class RegistryDto {
   type: RegistryType
 }
 
-export class HubRegistryDetailsDto {
+interface Test {}
+
+export class HubRegistryDetailsDto implements Test {
   @IsString()
+  @ApiProperty()
   imageNamePrefix: string
 }
 
-export class V2RegistryDetailsDto {
+export class V2RegistryDetailsDto implements Test {
   @IsUrl()
   url: string
 
@@ -89,7 +101,7 @@ export class GitlabRegistryDetailsDto {
   })
   @IsString()
   @IsIn(GITLAB_NAMESPACE_VALUES)
-  namespace: RegistryNamespace
+  namespace: GitlabNamespace
 }
 
 export class GithubRegistryDetailsDto {
@@ -107,7 +119,7 @@ export class GithubRegistryDetailsDto {
   })
   @IsString()
   @IsIn(GITHUB_NAMESPACE_VALUES)
-  namespace: RegistryNamespace
+  namespace: GithubNamespace
 }
 
 export class GoogleRegistryDetailsDto {
@@ -143,6 +155,17 @@ const RegistryDetailsOneOf = () =>
     ],
   })
 
+const RegistryDetailsExtraModels = () =>
+  ApiExtraModels(
+    HubRegistryDetailsDto,
+    V2RegistryDetailsDto,
+    GitlabRegistryDetailsDto,
+    GithubRegistryDetailsDto,
+    GoogleRegistryDetailsDto,
+    UncheckedRegistryDetailsDto,
+  )
+
+@RegistryDetailsExtraModels()
 export class RegistryDetailsDto {
   @IsUUID()
   id: string
@@ -177,6 +200,7 @@ export class RegistryDetailsDto {
   type: RegistryType
 
   @RegistryDetailsOneOf()
+  @IsNotEmptyObject()
   details:
     | HubRegistryDetailsDto
     | V2RegistryDetailsDto
@@ -186,6 +210,7 @@ export class RegistryDetailsDto {
     | UncheckedRegistryDetailsDto
 }
 
+@RegistryDetailsExtraModels()
 export class CreateRegistryDto {
   @IsString()
   name: string
@@ -206,6 +231,7 @@ export class CreateRegistryDto {
   type: RegistryType
 
   @RegistryDetailsOneOf()
+  @IsNotEmptyObject()
   details:
     | HubRegistryDetailsDto
     | V2RegistryDetailsDto
@@ -215,6 +241,7 @@ export class CreateRegistryDto {
     | UncheckedRegistryDetailsDto
 }
 
+@RegistryDetailsExtraModels()
 export class UpdateRegistryDto {
   @IsString()
   name: string
@@ -235,6 +262,7 @@ export class UpdateRegistryDto {
   type: RegistryType
 
   @RegistryDetailsOneOf()
+  @IsNotEmptyObject()
   details:
     | HubRegistryDetailsDto
     | V2RegistryDetailsDto
