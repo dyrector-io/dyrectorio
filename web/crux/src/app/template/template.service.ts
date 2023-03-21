@@ -7,7 +7,12 @@ import {
   networkModeFromJSON,
   restartPolicyFromJSON,
 } from 'src/grpc/protobuf/proto/common'
-import { CreateProductFromTemplateRequest, ProductType, TemplateImageResponse } from 'src/grpc/protobuf/proto/crux'
+import {
+  CreateProductFromTemplateRequest,
+  ProductType,
+  productTypeToJSON,
+  TemplateImageResponse,
+} from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import TemplateFileService, { TemplateContainerConfig, TemplateImage } from 'src/services/template.file.service'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
@@ -18,7 +23,7 @@ import ImageMapper from '../image/image.mapper'
 import { CreateProductDto, ProductDto, ProductTypeDto } from '../product/product.dto'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
-import { CreateVersionDto, VersionTypeDto } from '../version/version.dto'
+import { CreateVersionDto } from '../version/version.dto'
 import VersionService from '../version/version.service'
 
 const VERSION_NAME = '1.0.0'
@@ -76,15 +81,17 @@ export default class TemplateService {
       await Promise.all(createRegistries)
     }
 
+    const productType = productTypeToJSON(req.type) as ProductTypeDto
+
     const createProductReq: CreateProductDto = {
       name: req.name,
       description: req.description,
-      type: ProductTypeDto[req.type],
+      type: productType,
     }
 
     const product = await this.productService.createProduct(createProductReq, identity)
 
-    await this.createVersion(template.images, product, req.type, identity)
+    await this.createVersion(template.images, product, productType, identity)
 
     return product
   }
@@ -145,13 +152,13 @@ export default class TemplateService {
   private async createVersion(
     templateImages: TemplateImage[],
     product: ProductDto,
-    productType: ProductType,
+    productType: ProductTypeDto,
     identity: Identity,
   ): Promise<void> {
     const { id: productId } = product
 
     let version =
-      productType === ProductType.COMPLEX
+      productType === productTypeToJSON(ProductType.COMPLEX)
         ? await this.prisma.version.findFirst({
             where: {
               name: VERSION_NAME,
@@ -168,7 +175,7 @@ export default class TemplateService {
     if (version === null) {
       const createReq: CreateVersionDto = {
         name: VERSION_NAME,
-        type: VersionTypeDto.incremental,
+        type: 'incremental',
         changelog: null,
       }
 

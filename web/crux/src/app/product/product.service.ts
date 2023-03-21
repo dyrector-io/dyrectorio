@@ -68,7 +68,7 @@ export default class ProductService {
   }
 
   async createProduct(request: CreateProductDto, identity: Identity): Promise<ProductDto> {
-    const type = ProductTypeDto[request.type]
+    const { type } = request
     const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
 
     const product = await this.prisma.product.create({

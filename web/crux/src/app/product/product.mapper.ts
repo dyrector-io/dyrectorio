@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Product } from '.prisma/client'
 import VersionMapper, { VersionWithChildren } from '../version/version.mapper'
-import { ProductDto, ProductDetailsDto, ProductTypeDto } from './product.dto'
+import { ProductDto, ProductDetailsDto } from './product.dto'
 
 @Injectable()
 export default class ProductMapper {
@@ -10,7 +10,7 @@ export default class ProductMapper {
   productToDto(product: Product): ProductDto {
     return {
       ...product,
-      type: ProductTypeDto[product.type],
+      type: product.type,
     }
   }
 

@@ -1,12 +1,11 @@
+import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
+import { IsBoolean, IsIn, IsNumber, IsString, IsUUID } from 'class-validator'
 import { AuditDto } from 'src/shared/dtos/audit'
 import { VersionDto } from '../version/version.dto'
 
-export enum ProductTypeDto {
-  simple = 'simple',
-  complex = 'complex',
-}
+export const PRODUCT_TYPE_VALUES = ['simple', 'complex'] as const
+export type ProductTypeDto = (typeof PRODUCT_TYPE_VALUES)[number]
 
 export class ProductDto extends AuditDto {
   @IsUUID()
@@ -16,14 +15,16 @@ export class ProductDto extends AuditDto {
   name: string
 
   @IsString()
-  @IsOptional()
   description?: string
 
-  @IsEnum(ProductTypeDto)
+  @ApiProperty({
+    enum: PRODUCT_TYPE_VALUES,
+  })
+  @IsString()
+  @IsIn(PRODUCT_TYPE_VALUES)
   type: ProductTypeDto
 
   @IsNumber()
-  @IsOptional()
   versionCount?: number
 }
 
@@ -40,15 +41,17 @@ export class UpdateProductDto {
   name: string
 
   @IsString()
-  @IsOptional()
   description?: string
 
   @IsString()
-  @IsOptional()
   changelog?: string
 }
 
 export class CreateProductDto extends UpdateProductDto {
-  @IsEnum(ProductTypeDto)
+  @ApiProperty({
+    enum: PRODUCT_TYPE_VALUES,
+  })
+  @IsString()
+  @IsIn(PRODUCT_TYPE_VALUES)
   type: ProductTypeDto
 }
