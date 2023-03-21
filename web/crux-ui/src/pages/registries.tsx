@@ -9,7 +9,7 @@ import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { BasicRegistry, Registry, RegistryListDto, RegistryType, REGISTRY_TYPE_VALUES } from '@app/models'
+import { Registry, RegistryType, REGISTRY_TYPE_VALUES } from '@app/models'
 import { API_REGISTRIES, registryUrl, ROUTE_REGISTRIES } from '@app/routes'
 import { fetchCrux, withContextAuthorization } from '@app/utils'
 import clsx from 'clsx'
@@ -18,7 +18,7 @@ import useTranslation from 'next-translate/useTranslation'
 import { useRef, useState } from 'react'
 
 interface RegistriesPageProps {
-  registries: BasicRegistry[]
+  registries: Registry[]
 }
 
 type RegistryFilter = TextFilter & EnumFilter<RegistryType>
@@ -28,7 +28,7 @@ const RegistriesPage = (props: RegistriesPageProps) => {
 
   const { t } = useTranslation('registries')
 
-  const filters = useFilters<BasicRegistry, RegistryFilter>({
+  const filters = useFilters<Registry, RegistryFilter>({
     filters: [
       textFilterFor<Registry>(it => [it.name, it.url, it.description, it.icon]),
       enumFilterFor<Registry, RegistryType>(it => [it.type]),
@@ -103,11 +103,10 @@ export default RegistriesPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const res = await fetchCrux(context, API_REGISTRIES)
-  const { data } = (await res.json()) as RegistryListDto
 
   return {
     props: {
-      registries: data,
+      registries: (await res.json()) as Registry[],
     },
   }
 }

@@ -4,7 +4,7 @@ import { Identity } from '@ory/kratos-client'
 import PrismaService from 'src/services/prisma.service'
 import { AuthPayload } from 'src/shared/models'
 import { v4 as uuid } from 'uuid'
-import { GenerateToken, Token, GeneratedToken } from './token.dto'
+import { GenerateTokenDto, TokenDto, GeneratedTokenDto } from './token.dto'
 import TokenMapper from './token.mapper'
 
 @Injectable()
@@ -13,7 +13,7 @@ export default class TokenService {
 
   constructor(private jwtService: JwtService, private prisma: PrismaService, private mapper: TokenMapper) {}
 
-  async generateToken(req: GenerateToken, identity: Identity): Promise<GeneratedToken> {
+  async generateToken(req: GenerateTokenDto, identity: Identity): Promise<GeneratedTokenDto> {
     const nonce = uuid()
     const expirationDate = new Date(Date.now())
     expirationDate.setDate(expirationDate.getDate() + req.expirationInDays)
@@ -35,20 +35,20 @@ export default class TokenService {
 
     const jwt = this.jwtService.sign({ exp: expirationDate.getTime() / 1000, data: payload })
 
-    return this.mapper.generateResponseToDto(newToken, jwt)
+    return this.mapper.generatedTokenToDto(newToken, jwt)
   }
 
-  async getTokenList(identity: Identity): Promise<Token[]> {
+  async getTokenList(identity: Identity): Promise<TokenDto[]> {
     const response = await this.prisma.token.findMany({
       where: {
         userId: identity.id,
       },
     })
 
-    return response.map(it => this.mapper.listItemToDto(it))
+    return response.map(it => this.mapper.toDto(it))
   }
 
-  async getToken(id: string, identity: Identity): Promise<Token> {
+  async getToken(id: string, identity: Identity): Promise<TokenDto> {
     const response = await this.prisma.token.findFirst({
       where: {
         userId: identity.id,
@@ -56,7 +56,7 @@ export default class TokenService {
       },
     })
 
-    return this.mapper.listItemToDto(response)
+    return this.mapper.toDto(response)
   }
 
   async deleteToken(id: string): Promise<void> {

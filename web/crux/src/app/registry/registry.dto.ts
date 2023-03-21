@@ -5,18 +5,6 @@ import { IsBoolean, IsDate, IsIn, IsOptional, IsString, IsUrl, IsUUID } from 'cl
 export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github', 'google', 'unchecked'] as const
 export type RegistryType = (typeof REGISTRY_TYPE_VALUES)[number]
 
-const RegistryDetailOneOf = () =>
-  ApiProperty({
-    oneOf: [
-      { $ref: getSchemaPath(HubRegistryDetails) },
-      { $ref: getSchemaPath(V2RegistryDetails) },
-      { $ref: getSchemaPath(GitlabRegistryDetails) },
-      { $ref: getSchemaPath(GithubRegistryDetails) },
-      { $ref: getSchemaPath(GoogleRegistryDetails) },
-      { $ref: getSchemaPath(UncheckedRegistryDetails) },
-    ],
-  })
-
 export class BasicRegistryDto {
   @IsUUID()
   id: string
@@ -60,16 +48,12 @@ export class RegistryDto {
   type: RegistryType
 }
 
-export class RegistryList {
-  data: RegistryDto[]
-}
-
-export class HubRegistryDetails {
+export class HubRegistryDetailsDto {
   @IsString()
   imageNamePrefix: string
 }
 
-export class V2RegistryDetails {
+export class V2RegistryDetailsDto {
   @IsUrl()
   url: string
 
@@ -82,7 +66,7 @@ export class V2RegistryDetails {
   token?: string
 }
 
-export class GitlabRegistryDetails {
+export class GitlabRegistryDetailsDto {
   @IsString()
   user: string
 
@@ -108,7 +92,7 @@ export class GitlabRegistryDetails {
   namespace: RegistryNamespace
 }
 
-export class GithubRegistryDetails {
+export class GithubRegistryDetailsDto {
   @IsString()
   user: string
 
@@ -126,7 +110,7 @@ export class GithubRegistryDetails {
   namespace: RegistryNamespace
 }
 
-export class GoogleRegistryDetails {
+export class GoogleRegistryDetailsDto {
   @IsUrl()
   url: string
 
@@ -142,12 +126,24 @@ export class GoogleRegistryDetails {
   imageNamePrefix: string
 }
 
-export class UncheckedRegistryDetails {
+export class UncheckedRegistryDetailsDto {
   @IsUrl()
   url: string
 }
 
-export class RegistryDetails {
+const RegistryDetailsOneOf = () =>
+  ApiProperty({
+    oneOf: [
+      { $ref: getSchemaPath(HubRegistryDetailsDto) },
+      { $ref: getSchemaPath(V2RegistryDetailsDto) },
+      { $ref: getSchemaPath(GitlabRegistryDetailsDto) },
+      { $ref: getSchemaPath(GithubRegistryDetailsDto) },
+      { $ref: getSchemaPath(GoogleRegistryDetailsDto) },
+      { $ref: getSchemaPath(UncheckedRegistryDetailsDto) },
+    ],
+  })
+
+export class RegistryDetailsDto {
   @IsUUID()
   id: string
 
@@ -180,17 +176,17 @@ export class RegistryDetails {
   })
   type: RegistryType
 
-  @RegistryDetailOneOf()
+  @RegistryDetailsOneOf()
   details:
-    | HubRegistryDetails
-    | V2RegistryDetails
-    | GitlabRegistryDetails
-    | GithubRegistryDetails
-    | GoogleRegistryDetails
-    | UncheckedRegistryDetails
+    | HubRegistryDetailsDto
+    | V2RegistryDetailsDto
+    | GitlabRegistryDetailsDto
+    | GithubRegistryDetailsDto
+    | GoogleRegistryDetailsDto
+    | UncheckedRegistryDetailsDto
 }
 
-export class CreateRegistry {
+export class CreateRegistryDto {
   @IsString()
   name: string
 
@@ -209,17 +205,17 @@ export class CreateRegistry {
   })
   type: RegistryType
 
-  @RegistryDetailOneOf()
+  @RegistryDetailsOneOf()
   details:
-    | HubRegistryDetails
-    | V2RegistryDetails
-    | GitlabRegistryDetails
-    | GithubRegistryDetails
-    | GoogleRegistryDetails
-    | UncheckedRegistryDetails
+    | HubRegistryDetailsDto
+    | V2RegistryDetailsDto
+    | GitlabRegistryDetailsDto
+    | GithubRegistryDetailsDto
+    | GoogleRegistryDetailsDto
+    | UncheckedRegistryDetailsDto
 }
 
-export class UpdateRegistry {
+export class UpdateRegistryDto {
   @IsString()
   name: string
 
@@ -238,12 +234,12 @@ export class UpdateRegistry {
   })
   type: RegistryType
 
-  @RegistryDetailOneOf()
+  @RegistryDetailsOneOf()
   details:
-    | HubRegistryDetails
-    | V2RegistryDetails
-    | GitlabRegistryDetails
-    | GithubRegistryDetails
-    | GoogleRegistryDetails
-    | UncheckedRegistryDetails
+    | HubRegistryDetailsDto
+    | V2RegistryDetailsDto
+    | GitlabRegistryDetailsDto
+    | GithubRegistryDetailsDto
+    | GoogleRegistryDetailsDto
+    | UncheckedRegistryDetailsDto
 }

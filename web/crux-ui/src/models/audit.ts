@@ -1,5 +1,5 @@
 export type Audit = {
-  updatedAt?: string | null
+  updatedAt: string
   updatedBy?: string | null
   createdBy: string
   createdAt: string

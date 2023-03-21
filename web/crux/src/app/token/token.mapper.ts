@@ -1,18 +1,18 @@
 import { Injectable } from '@nestjs/common'
-import { Token as PrismaToken } from '@prisma/client'
-import { Token } from './token.dto'
+import { Token } from '@prisma/client'
+import { GeneratedTokenDto, TokenDto } from './token.dto'
 
 @Injectable()
 export default class TokenMapper {
-  listItemToDto(token: PrismaToken): Token {
+  toDto(token: Token): TokenDto {
     return {
       ...token,
     }
   }
 
-  generateResponseToDto(prismaToken: PrismaToken, jwt: string) {
+  generatedTokenToDto(prismaToken: Token, jwt: string): GeneratedTokenDto {
     return {
-      ...this.listItemToDto(prismaToken),
+      ...this.toDto(prismaToken),
       token: jwt,
     }
   }

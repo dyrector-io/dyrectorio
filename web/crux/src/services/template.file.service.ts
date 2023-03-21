@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { readdir, readFileSync } from 'fs'
 import { join, parse } from 'path'
 import { cwd } from 'process'
-import { CreateRegistry } from 'src/app/registry/registry.dto'
+import { CreateRegistryDto } from 'src/app/registry/registry.dto'
 import { Port, TemplateResponse, Volume } from 'src/grpc/protobuf/proto/crux'
 import { ContainerConfigData, UniqueKeyValue, UniqueSecretKey } from 'src/shared/models'
 import { templateSchema } from 'src/shared/validation'
@@ -15,7 +15,7 @@ export interface TemplateDetail {
   name: string
   description: string
   technologies: string[]
-  registries?: CreateRegistry[]
+  registries?: CreateRegistryDto[]
   images: TemplateImage[]
 }
 

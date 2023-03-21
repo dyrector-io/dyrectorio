@@ -7,29 +7,29 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
 import {
-  CreateRegistry,
-  GithubRegistryDetails,
-  GitlabRegistryDetails,
-  GoogleRegistryDetails,
-  HubRegistryDetails,
-  RegistryDetails,
+  CreateRegistryDto,
+  GithubRegistryDetailsDto,
+  GitlabRegistryDetailsDto,
+  GoogleRegistryDetailsDto,
+  HubRegistryDetailsDto,
+  RegistryDetailsDto,
   RegistryDto,
-  UncheckedRegistryDetails,
-  UpdateRegistry,
-  V2RegistryDetails,
+  UncheckedRegistryDetailsDto,
+  UpdateRegistryDto,
+  V2RegistryDetailsDto,
 } from './registry.dto'
 
 type RegistryTypeUnion = Pick<Registry, 'url' | 'type' | 'apiUrl' | 'user' | 'token' | 'imageNamePrefix' | 'namespace'>
 
 @Injectable()
 export default class RegistryMapper {
-  listItemToDto(registry: Registry): RegistryDto {
+  toDto(registry: Registry): RegistryDto {
     return {
       ...registry,
     }
   }
 
-  detailsToDto(registry: RegistryWithCount): RegistryDetails {
+  detailsToDto(registry: RegistryWithCount): RegistryDetailsDto {
     const details =
       registry.type === RegistryTypeEnum.hub
         ? {
@@ -84,13 +84,13 @@ export default class RegistryMapper {
     }
   }
 
-  detailsToDb(request: CreateRegistry | UpdateRegistry): RegistryTypeUnion {
+  detailsToDb(request: CreateRegistryDto | UpdateRegistryDto): RegistryTypeUnion {
     const emptyOrDefault = (value: string | null | undefined, def: string | null = null) => value || def
 
     if (request.type === 'hub') {
       return {
         type: RegistryTypeEnum.hub,
-        ...(request.details as HubRegistryDetails),
+        ...(request.details as HubRegistryDetailsDto),
         url: REGISTRY_HUB_URL,
         apiUrl: null,
         token: null,
@@ -99,7 +99,7 @@ export default class RegistryMapper {
       }
     }
     if (request.type === 'v2') {
-      const v2Details = request.details as V2RegistryDetails
+      const v2Details = request.details as V2RegistryDetailsDto
       return {
         type: RegistryTypeEnum.v2,
         ...v2Details,
@@ -111,7 +111,7 @@ export default class RegistryMapper {
       }
     }
     if (request.type === 'gitlab') {
-      const gitlabDetails = request.details as GitlabRegistryDetails
+      const gitlabDetails = request.details as GitlabRegistryDetailsDto
       return {
         type: RegistryTypeEnum.gitlab,
         ...gitlabDetails,
@@ -121,7 +121,7 @@ export default class RegistryMapper {
       }
     }
     if (request.type === 'github') {
-      const githubDetails = request.details as GithubRegistryDetails
+      const githubDetails = request.details as GithubRegistryDetailsDto
       return {
         type: RegistryTypeEnum.github,
         ...githubDetails,
@@ -131,7 +131,7 @@ export default class RegistryMapper {
       }
     }
     if (request.type === 'google') {
-      const googleDetails = request.details as GoogleRegistryDetails
+      const googleDetails = request.details as GoogleRegistryDetailsDto
       return {
         type: RegistryTypeEnum.google,
         ...googleDetails,
@@ -145,7 +145,7 @@ export default class RegistryMapper {
     if (request.type === 'unchecked') {
       return {
         type: RegistryTypeEnum.unchecked,
-        ...(request.details as UncheckedRegistryDetails),
+        ...(request.details as UncheckedRegistryDetailsDto),
         user: null,
         apiUrl: null,
         token: null,

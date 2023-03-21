@@ -12,8 +12,6 @@ import {
 import { credentials } from '@grpc/grpc-js'
 
 class CruxClients {
-  products: CruxProductClient
-
   nodes: CruxNodeClient
 
   images: CruxImageClient

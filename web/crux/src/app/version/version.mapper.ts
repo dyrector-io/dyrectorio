@@ -44,7 +44,7 @@ export default class VersionMapper {
         name: it.name,
         tag: it.tag,
         order: it.order,
-        config: it.config as any as ContainerConfigData,
+        config: this.imageMapper.containerConfigDataToDto(it.config as any as ContainerConfigData),
         createdAt: it.createdAt,
         registry: {
           id: it.registry.id,

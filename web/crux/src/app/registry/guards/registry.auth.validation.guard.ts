@@ -8,13 +8,13 @@ import { InvalidArgumentException, NotFoundException, UnauthenticatedException }
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
 import { parsers } from 'www-authenticate'
 import {
-  CreateRegistry,
-  GithubRegistryDetails,
-  GitlabRegistryDetails,
-  GoogleRegistryDetails,
-  HubRegistryDetails,
-  UpdateRegistry,
-  V2RegistryDetails,
+  CreateRegistryDto,
+  GithubRegistryDetailsDto,
+  GitlabRegistryDetailsDto,
+  GoogleRegistryDetailsDto,
+  HubRegistryDetailsDto,
+  UpdateRegistryDto,
+  V2RegistryDetailsDto,
 } from '../registry.dto'
 
 @Injectable()
@@ -31,22 +31,22 @@ export default class RegistryAccessValidationGuard implements CanActivate {
    */
   canActivate(context: ExecutionContext): Observable<boolean> {
     const request = context.switchToHttp().getRequest()
-    const body = request.body as CreateRegistry | UpdateRegistry
+    const body = request.body as CreateRegistryDto | UpdateRegistryDto
 
     if (body.type === 'hub') {
-      return this.validateHub(body.details as HubRegistryDetails)
+      return this.validateHub(body.details as HubRegistryDetailsDto)
     }
     if (body.type === 'v2') {
-      return this.validateV2(body.details as V2RegistryDetails)
+      return this.validateV2(body.details as V2RegistryDetailsDto)
     }
     if (body.type === 'gitlab') {
-      return this.validateGitlab(body.details as GitlabRegistryDetails)
+      return this.validateGitlab(body.details as GitlabRegistryDetailsDto)
     }
     if (body.type === 'github') {
-      return this.validateGithub(body.details as GithubRegistryDetails)
+      return this.validateGithub(body.details as GithubRegistryDetailsDto)
     }
     if (body.type === 'google') {
-      return this.validateGoogle(body.details as GoogleRegistryDetails)
+      return this.validateGoogle(body.details as GoogleRegistryDetailsDto)
     }
     if (body.type === 'unchecked') {
       return of(true)
@@ -54,7 +54,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
     return of(false)
   }
 
-  private validateHub(req: HubRegistryDetails): Observable<boolean> {
+  private validateHub(req: HubRegistryDetailsDto): Observable<boolean> {
     if (!req.imageNamePrefix || req.imageNamePrefix.trim().length < 1) {
       return of(false)
     }
@@ -81,7 +81,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
     )
   }
 
-  private validateV2(req: V2RegistryDetails): Observable<boolean> {
+  private validateV2(req: V2RegistryDetailsDto): Observable<boolean> {
     const withCredentials = !!req.user
     const auth = {
       username: req.user,
@@ -126,7 +126,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
       )
   }
 
-  private validateGitlab(req: GitlabRegistryDetails) {
+  private validateGitlab(req: GitlabRegistryDetailsDto) {
     const auth = {
       username: req.user,
       password: req.token,
@@ -203,7 +203,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
       )
   }
 
-  private validateGithub(req: GithubRegistryDetails) {
+  private validateGithub(req: GithubRegistryDetailsDto) {
     const auth = {
       username: req.user,
       password: req.token,
@@ -245,7 +245,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
       )
   }
 
-  private validateGoogle(req: GoogleRegistryDetails): Observable<boolean> {
+  private validateGoogle(req: GoogleRegistryDetailsDto): Observable<boolean> {
     const withCredentials = !!req.user
     const client = withCredentials
       ? new JWT({

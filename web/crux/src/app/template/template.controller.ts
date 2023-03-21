@@ -1,7 +1,9 @@
+import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards } from '@nestjs/common'
 import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import {
   CreateEntityResponse,
+  CreateProductFromTemplateRequest,
   CruxTemplateController,
   CruxTemplateControllerMethods,
   IdRequest,
@@ -9,7 +11,7 @@ import {
   TemplateListResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import TemplateFileService from 'src/services/template.file.service'
-import UserAccessGuard from 'src/shared/user-access.guard'
+import UserAccessGuard, { IdentityAwareServerSurfaceCall } from 'src/shared/user-access.guard'
 import TemplateService from './template.service'
 
 @Controller()
@@ -25,9 +27,14 @@ export default class TemplateController implements CruxTemplateController {
     }
   }
 
-  createProductFromTemplate(): Promise<CreateEntityResponse> {
-    return null
-    // return this.service.createProductFromTemplate(request, call.user)
+  async createProductFromTemplate(
+    request: CreateProductFromTemplateRequest,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<CreateEntityResponse> {
+    const product = await this.service.createProductFromTemplate(request, call.user)
+
+    return CreateEntityResponse.fromJSON(product)
   }
 
   getImage(request: IdRequest): Promise<TemplateImageResponse> {

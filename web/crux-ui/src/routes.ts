@@ -151,7 +151,7 @@ export const productVersionsApiUrl = (productId: string) => `${productApiUrl(pro
 
 // registry
 export const registryUrl = (id: string) => `${ROUTE_REGISTRIES}/${id}`
-export const registryApiUrl = (id: string) => `/api/new${registryUrl(id)}`
+export const registryApiUrl = (id: string) => `${API_REGISTRIES}/${id}`
 
 // node
 export const nodeUrl = (id: string) => `${ROUTE_NODES}/${id}`

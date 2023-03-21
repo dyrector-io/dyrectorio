@@ -156,10 +156,6 @@ export class UpdateRegistryDto {
     | UncheckedRegistryDetailsDto
 }
 
-export class RegistryListDto {
-  data: BasicRegistry[]
-}
-
 // ws
 
 export type RegistryImages = {

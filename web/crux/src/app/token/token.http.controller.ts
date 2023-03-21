@@ -14,20 +14,24 @@ import {
 } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
+import { Response as ExpressResponse } from 'express'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import { Response as ExpressResponse } from 'express'
-import JwtAuthGuard, { IdentityFromRequest } from './jwt-auth.guard'
-import { GenerateToken, Token, GeneratedToken } from './token.dto'
-import TokenService from './token.service'
-import TokenValidationPipe from './pipes/token.pipe'
+import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
 import TokenAccessGuard from './guards/token.access.guard'
+import JwtAuthGuard, { IdentityFromRequest } from './jwt-auth.guard'
+import TokenValidationPipe from './pipes/token.pipe'
+import { GeneratedTokenDto, GenerateTokenDto, TokenDto } from './token.dto'
+import TokenService from './token.service'
 
-const TokenId = () => Param(':tokenId')
+const TokenId = () => Param('tokenId')
 
-@Controller('tokens')
-@ApiTags('tokens')
+const ROUTE_TOKENS = 'tokens'
+const ROUTE_TOKEN_ID = ':tokenId'
+
+@Controller(ROUTE_TOKENS)
+@ApiTags(ROUTE_TOKENS)
 @UsePipes(
   new ValidationPipe({
     transform: true,
@@ -40,35 +44,28 @@ export default class TokenHttpController {
 
   @Get()
   @ApiOkResponse({
-    type: Token,
+    type: TokenDto,
     isArray: true,
   })
-  async getTokens(@IdentityFromRequest() identity: Identity): Promise<Token[]> {
+  async getTokens(@IdentityFromRequest() identity: Identity): Promise<TokenDto[]> {
     return this.service.getTokenList(identity)
   }
 
-  @Get(':tokenId')
-  @ApiOkResponse({ type: Token })
-  async getToken(@TokenId() id: string, @IdentityFromRequest() identity: Identity): Promise<Token> {
+  @Get(ROUTE_TOKEN_ID)
+  @ApiOkResponse({ type: TokenDto })
+  async getToken(@TokenId() id: string, @IdentityFromRequest() identity: Identity): Promise<TokenDto> {
     return this.service.getToken(id, identity)
   }
 
   @Post()
-  @ApiBody({ type: GenerateToken })
+  @ApiBody({ type: GenerateTokenDto })
   @ApiCreatedResponse({
-    type: GeneratedToken,
-    headers: {
-      Location: {
-        description: 'URL of the created object.',
-        schema: {
-          type: 'URL',
-        },
-      },
-    },
+    type: GeneratedTokenDto,
+    headers: API_CREATED_LOCATION_HEADERS,
   })
   @HttpCode(201)
   async generateToken(
-    @Body(TokenValidationPipe) request: GenerateToken,
+    @Body(TokenValidationPipe) request: GenerateTokenDto,
     @IdentityFromRequest() identity: Identity,
     @Response() res: ExpressResponse,
   ): Promise<void> {
@@ -77,7 +74,7 @@ export default class TokenHttpController {
     res.location(`/tokens/${token.id}`).json(token)
   }
 
-  @Delete(':tokenId')
+  @Delete(ROUTE_TOKEN_ID)
   @AuditLogLevel('disabled')
   @HttpCode(204)
   async deleteToken(@TokenId() id: string, @Response() res: ExpressResponse): Promise<void> {

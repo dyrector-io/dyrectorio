@@ -2,7 +2,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Observable } from 'rxjs'
 import { PreconditionFailedException } from 'src/exception/errors'
 import PrismaService from 'src/services/prisma.service'
-import { UpdateRegistry } from '../registry.dto'
+import { UpdateRegistryDto } from '../registry.dto'
 import RegistryMapper from '../registry.mapper'
 
 @Injectable()
@@ -12,7 +12,7 @@ export default class UpdateRegistryInterceptor implements NestInterceptor {
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const request = context.switchToHttp().getRequest()
 
-    const body = request.body as UpdateRegistry
+    const body = request.body as UpdateRegistryDto
     const { id } = request.params
 
     const used = await this.prisma.image.count({
