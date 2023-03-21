@@ -5,7 +5,7 @@ import PrismaService from 'src/services/prisma.service'
 import { Identity } from '@ory/kratos-client'
 import TeamRepository from '../team/team.repository'
 import ProductMapper from './product.mapper'
-import { CreateProductDto, ProductTypeDto, ProductDto, ProductDetailsDto, UpdateProductDto } from './product.dto'
+import { CreateProductDto, ProductDto, ProductDetailsDto, UpdateProductDto } from './product.dto'
 
 @Injectable()
 export default class ProductService {

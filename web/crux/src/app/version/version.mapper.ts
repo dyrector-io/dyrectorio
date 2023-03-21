@@ -8,7 +8,7 @@ import { ContainerConfigData } from 'src/shared/models'
 import { DeploymentStatusDto } from '../deploy/deploy.dto'
 import DeployMapper, { DeploymentWithNode } from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
-import { VersionDetailsDto, VersionDto, VersionTypeDto } from './version.dto'
+import { VersionDetailsDto, VersionDto } from './version.dto'
 
 @Injectable()
 export default class VersionMapper {
