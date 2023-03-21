@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer'
-import { IsDate, IsOptional, IsUUID } from 'class-validator'
+import { IsDate, IsUUID } from 'class-validator'
 
 export class AuditDto {
   @Type(() => Date)
@@ -14,7 +14,6 @@ export class AuditDto {
   updatedAt: Date
 
   @IsUUID()
-  @IsOptional()
   updatedBy?: string
 }
 
