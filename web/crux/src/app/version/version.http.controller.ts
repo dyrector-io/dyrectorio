@@ -28,11 +28,15 @@ import VersionUpdateValidationInterceptor from './interceptors/version.update.in
 import { CreateVersionDto, IncreaseVersionDto, UpdateVersionDto, VersionDetailsDto, VersionDto } from './version.dto'
 import VersionService from './version.service'
 
+const ROUTE_PRODUCTS = 'products'
+const ROUTE_PRODUCT_ID = ':productId'
+const ROUTE_VERSION_ID = ':versionId'
+
 const ProductId = () => Param('productId')
 const VersionId = () => Param('versionId')
 
-@Controller('products/:productId/versions')
-@ApiTags('products')
+@Controller(`${ROUTE_PRODUCTS}/${ROUTE_PRODUCT_ID}/versions`)
+@ApiTags(ROUTE_PRODUCTS)
 @UseGuards(JwtAuthGuard)
 @UsePipes(
   new ValidationPipe({
@@ -51,7 +55,7 @@ export default class VersionHttpController {
     return await this.service.getVersionsByProductId(productId, identity)
   }
 
-  @Get(':versionId')
+  @Get(ROUTE_VERSION_ID)
   @ApiOkResponse({ type: VersionDetailsDto })
   async getVersion(@VersionId() versionId: string): Promise<VersionDetailsDto> {
     return await this.service.getVersionDetails(versionId)
@@ -75,7 +79,7 @@ export default class VersionHttpController {
     }
   }
 
-  @Put(':versionId')
+  @Put(ROUTE_VERSION_ID)
   @HttpCode(204)
   @UseInterceptors(VersionUpdateValidationInterceptor)
   @ApiBody({ type: UpdateVersionDto })
@@ -87,7 +91,7 @@ export default class VersionHttpController {
     return await this.service.updateVersion(versionId, request, identity)
   }
 
-  @Delete(':versionId')
+  @Delete(ROUTE_VERSION_ID)
   @HttpCode(204)
   @UseInterceptors(VersionDeleteValidationInterceptor)
   @ApiBody({ type: UpdateVersionDto })
@@ -95,13 +99,13 @@ export default class VersionHttpController {
     return await this.service.deleteVersion(versionId)
   }
 
-  @Put(':versionId/default')
+  @Put(`${ROUTE_VERSION_ID}/default`)
   @HttpCode(204)
   async setDefaultVersion(@ProductId() productId: string, @VersionId() versionId: string): Promise<void> {
     return await this.service.setDefaultVersion(productId, versionId)
   }
 
-  @Post('/:versionId/increase')
+  @Post(`${ROUTE_VERSION_ID}/increase`)
   @CreatedWithLocation()
   @UseInterceptors(VersionIncreaseValidationInterceptor)
   @ApiBody({ type: IncreaseVersionDto })
