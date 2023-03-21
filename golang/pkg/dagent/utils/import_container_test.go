@@ -19,7 +19,7 @@ func TestCheckIfTargetVolumeIsThere(t *testing.T) {
 		{Source: "foo"},
 	}
 
-	index, err := checkIfTargetVolumeIsThere(mounts, importContainer)
+	index, err := checkIfTargetVolumeIsThere(mounts, importContainer.Volume)
 	assert.Nil(t, err)
 	assert.Equal(t, 0, index)
 }
@@ -27,7 +27,7 @@ func TestCheckIfTargetVolumeIsThere(t *testing.T) {
 func TestCheckIfTargetVolumeIsThere_NotThere(t *testing.T) {
 	importContainer := &v1.ImportContainer{}
 
-	index, err := checkIfTargetVolumeIsThere([]mount.Mount{}, importContainer)
+	index, err := checkIfTargetVolumeIsThere([]mount.Mount{}, importContainer.Volume)
 	assert.Equal(t, -1, index)
 	assert.Error(t, err, "import container target volume is not enlisted")
 }

@@ -243,10 +243,6 @@ func logDeployInfo(
 	if deployImageRequest.ContainerConfig.User != nil {
 		dog.Write(fmt.Sprintf("User: %v", *deployImageRequest.ContainerConfig.User))
 	}
-
-	if len(deployImageRequest.ContainerConfig.InitContainers) > 0 {
-		dog.Write("WARNING: missing implementation: initContainers!")
-	}
 }
 
 func buildMountList(cfg *config.Configuration, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest) []mount.Mount {
@@ -391,13 +387,30 @@ func WithInitContainers(dc *containerbuilder.DockerContainerBuilder, containerCo
 				containerName string, containerId *string,
 				mountList []mount.Mount, logger *io.StringWriter,
 			) error {
-				if initError := spawnInitContainer(ctx, client, containerName, mountList, containerConfig.ImportContainer, dog, cfg); initError != nil {
+				if initError := spawnImportContainer(ctx, client, containerName, mountList,
+					containerConfig.ImportContainer, dog, cfg); initError != nil {
 					dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, "Failed to spawn init container: "+initError.Error())
 					return initError
 				}
 				dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Loading assets was successful.")
 				return nil
 			})
+	}
+
+	if len(containerConfig.InitContainers) > 0 {
+		initFuncs = append(initFuncs, func(ctx context.Context, client *client.Client,
+			containerName string, containerId *string,
+			mountList []mount.Mount, logger *io.StringWriter,
+		) error {
+			for i := range containerConfig.InitContainers {
+				err := spawnInitContainer(ctx, client, containerName, &containerConfig.InitContainers[i], MountListToMap(mountList), dog)
+				if err != nil {
+					return err
+				}
+			}
+			dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Init containers are started successfully.")
+			return nil
+		})
 	}
 	dc.WithPreStartHooks(initFuncs...)
 }
