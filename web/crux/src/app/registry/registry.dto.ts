@@ -1,16 +1,6 @@
-import { ApiExtraModels, ApiProperty, getSchemaPath, refs } from '@nestjs/swagger'
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import {
-  IsBoolean,
-  IsDate,
-  IsIn,
-  IsNotEmptyObject,
-  IsObject,
-  IsOptional,
-  IsString,
-  IsUrl,
-  IsUUID,
-} from 'class-validator'
+import { IsBoolean, IsDate, IsIn, IsNotEmptyObject, IsOptional, IsString, IsUrl, IsUUID } from 'class-validator'
 
 export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github', 'google', 'unchecked'] as const
 export type RegistryType = (typeof REGISTRY_TYPE_VALUES)[number]
@@ -57,15 +47,13 @@ export class RegistryDto {
   type: RegistryType
 }
 
-interface Test {}
-
-export class HubRegistryDetailsDto implements Test {
+export class HubRegistryDetailsDto {
   @IsString()
   @ApiProperty()
   imageNamePrefix: string
 }
 
-export class V2RegistryDetailsDto implements Test {
+export class V2RegistryDetailsDto {
   @IsUrl()
   url: string
 
