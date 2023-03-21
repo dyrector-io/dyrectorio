@@ -36,7 +36,7 @@ type ProductWithVersions = Product & {
 }
 
 export type ProductWithCounts = Product & {
-  _count?: {
+  _count: {
     versions: number
   }
 }

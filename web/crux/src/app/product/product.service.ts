@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common'
-import { Product, ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
-import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
-import PrismaService from 'src/services/prisma.service'
 import { Identity } from '@ory/kratos-client'
+import { ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
+import PrismaService from 'src/services/prisma.service'
+import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
 import TeamRepository from '../team/team.repository'
+import { CreateProductDto, ProductDetailsDto, ProductDto, UpdateProductDto } from './product.dto'
 import ProductMapper from './product.mapper'
-import { CreateProductDto, ProductDto, ProductDetailsDto, UpdateProductDto } from './product.dto'
 
 @Injectable()
 export default class ProductService {
@@ -96,16 +96,16 @@ export default class ProductService {
   }
 
   async updateProduct(id: string, req: UpdateProductDto, identity: Identity): Promise<ProductDto> {
-    let product = (await this.prisma.product.findUnique({
+    const currentProduct = await this.prisma.product.findUnique({
       select: {
         type: true,
       },
       where: {
         id,
       },
-    })) as Product
+    })
 
-    product = await this.prisma.product.update({
+    const product = await this.prisma.product.update({
       where: {
         id,
       },
@@ -114,7 +114,7 @@ export default class ProductService {
         description: req.description,
         updatedBy: identity.id,
         versions:
-          product.type === ProductTypeEnum.simple
+          currentProduct.type === ProductTypeEnum.simple
             ? {
                 updateMany: {
                   data: {
