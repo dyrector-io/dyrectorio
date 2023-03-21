@@ -7,11 +7,11 @@ export default class TokenAccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const {
-      params: { id },
+      params: { tokenId },
       body: { identity },
     } = context.switchToHttp().getRequest()
 
-    if (!id) {
+    if (!tokenId) {
       return true
     }
 
@@ -20,7 +20,7 @@ export default class TokenAccessGuard implements CanActivate {
         userId: true,
       },
       where: {
-        id,
+        id: tokenId,
       },
     })
 

@@ -10,9 +10,9 @@ export default class RegistryTeamAccessGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest()
     const { params, body } = request
-    const { id } = params
+    const { registryId } = params
 
-    if (!id) {
+    if (!registryId) {
       return true
     }
 
