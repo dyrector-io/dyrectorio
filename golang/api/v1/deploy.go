@@ -291,24 +291,24 @@ type ImportContainer struct {
 // todo(nandor-magyar): extend docs here
 type InitContainer struct {
 	// name of the init container, they must be unique within a pod
-	Name string
+	Name string `json:"name"`
 	// image to use
-	Image string
+	Image string `json:"image"`
 	// Reference(s) to already existing volume(s)
-	Volumes []VolumeLink
+	Volumes []VolumeLink `json:"volumes"`
 	// command to run, expecting exit code 0
-	Command []string
+	Command []string `json:"command"`
 	// arguments added to the command
-	Args []string
+	Args []string `json:"args"`
 	// use env/secrets from the parent container
-	UseParent bool
+	UseParent bool `json:"useParent"`
 	// envs directly defined
-	Envs map[string]string
+	Envs map[string]string `json:"envs"`
 }
 
 type VolumeLink struct {
-	Name string
-	Path string
+	Name string `json:"name"`
+	Path string `json:"path"`
 }
 
 // Verbose volume definitions with support of size and type parameters
