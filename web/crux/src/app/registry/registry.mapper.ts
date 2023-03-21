@@ -6,7 +6,18 @@ import {
   registryTypeFromJSON as protoRegistryTypeFromJSON,
 } from 'src/grpc/protobuf/proto/crux'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
-import { CreateRegistry, RegistryDetails, RegistryDto, UpdateRegistry } from './registry.dto'
+import {
+  CreateRegistry,
+  GithubRegistryDetails,
+  GitlabRegistryDetails,
+  GoogleRegistryDetails,
+  HubRegistryDetails,
+  RegistryDetails,
+  RegistryDto,
+  UncheckedRegistryDetails,
+  UpdateRegistry,
+  V2RegistryDetails,
+} from './registry.dto'
 
 type RegistryTypeUnion = Pick<Registry, 'url' | 'type' | 'apiUrl' | 'user' | 'token' | 'imageNamePrefix' | 'namespace'>
 
@@ -19,69 +30,67 @@ export default class RegistryMapper {
   }
 
   detailsToDto(registry: RegistryWithCount): RegistryDetails {
+    const details =
+      registry.type === RegistryTypeEnum.hub
+        ? {
+            imageNamePrefix: registry.imageNamePrefix,
+          }
+        : registry.type === RegistryTypeEnum.v2
+        ? {
+            url: registry.url,
+            user: registry.user,
+            token: registry.token,
+          }
+        : registry.type === RegistryTypeEnum.gitlab
+        ? {
+            user: registry.user,
+            token: registry.token,
+            imageNamePrefix: registry.imageNamePrefix,
+            url: registry.apiUrl ? registry.url : null,
+            apiUrl: registry.apiUrl,
+            namespace: registry.namespace,
+          }
+        : registry.type === RegistryTypeEnum.github
+        ? {
+            user: registry.user,
+            token: registry.token,
+            imageNamePrefix: registry.imageNamePrefix,
+            namespace: registry.namespace,
+          }
+        : registry.type === RegistryTypeEnum.google
+        ? {
+            url: registry.url,
+            user: registry.user,
+            token: registry.token,
+            imageNamePrefix: registry.imageNamePrefix,
+          }
+        : registry.type === RegistryTypeEnum.unchecked
+        ? {
+            url: registry.url,
+          }
+        : null
+    if (!details) {
+      throw new InvalidArgumentException({
+        message: 'Unknown registry type',
+        property: 'type',
+      })
+    }
+
     return {
       ...registry,
       inUse: registry._count?.images > 0,
       icon: registry.icon ?? null,
-      hub:
-        registry.type !== RegistryTypeEnum.hub
-          ? null
-          : {
-              imageNamePrefix: registry.imageNamePrefix,
-            },
-      v2:
-        registry.type !== RegistryTypeEnum.v2
-          ? null
-          : {
-              url: registry.url,
-              user: registry.user,
-              token: registry.token,
-            },
-      gitlab:
-        registry.type !== RegistryTypeEnum.gitlab
-          ? null
-          : {
-              user: registry.user,
-              token: registry.token,
-              imageNamePrefix: registry.imageNamePrefix,
-              url: registry.apiUrl ? registry.url : null,
-              apiUrl: registry.apiUrl,
-              namespace: registry.namespace,
-            },
-      github:
-        registry.type !== RegistryTypeEnum.github
-          ? null
-          : {
-              user: registry.user,
-              token: registry.token,
-              imageNamePrefix: registry.imageNamePrefix,
-              namespace: registry.namespace,
-            },
-      google:
-        registry.type !== RegistryTypeEnum.google
-          ? null
-          : {
-              url: registry.url,
-              user: registry.user,
-              token: registry.token,
-              imageNamePrefix: registry.imageNamePrefix,
-            },
-      unchecked:
-        registry.type !== RegistryTypeEnum.unchecked
-          ? null
-          : {
-              url: registry.url,
-            },
+      details,
     }
   }
 
   detailsToDb(request: CreateRegistry | UpdateRegistry): RegistryTypeUnion {
     const emptyOrDefault = (value: string | null | undefined, def: string | null = null) => value || def
 
-    if (request.hub) {
+    if (request.type === 'hub') {
       return {
         type: RegistryTypeEnum.hub,
-        ...request.hub,
+        ...(request.details as HubRegistryDetails),
         url: REGISTRY_HUB_URL,
         apiUrl: null,
         token: null,
@@ -89,50 +98,54 @@ export default class RegistryMapper {
         namespace: null,
       }
     }
-    if (request.v2) {
+    if (request.type === 'v2') {
+      const v2Details = request.details as V2RegistryDetails
       return {
         type: RegistryTypeEnum.v2,
-        ...request.v2,
-        user: emptyOrDefault(request.v2.user),
-        token: emptyOrDefault(request.v2.token),
+        ...v2Details,
+        user: emptyOrDefault(v2Details.user),
+        token: emptyOrDefault(v2Details.token),
         imageNamePrefix: null,
         apiUrl: null,
         namespace: null,
       }
     }
-    if (request.gitlab) {
+    if (request.type === 'gitlab') {
+      const gitlabDetails = request.details as GitlabRegistryDetails
       return {
         type: RegistryTypeEnum.gitlab,
-        ...request.gitlab,
-        url: request.gitlab.apiUrl ? request.gitlab.url : 'registry.gitlab.com',
-        apiUrl: request.gitlab.apiUrl ?? null,
-        namespace: request.gitlab.namespace,
+        ...gitlabDetails,
+        url: gitlabDetails.apiUrl ? gitlabDetails.url : 'registry.gitlab.com',
+        apiUrl: gitlabDetails.apiUrl ?? null,
+        namespace: gitlabDetails.namespace,
       }
     }
-    if (request.github) {
+    if (request.type === 'github') {
+      const githubDetails = request.details as GithubRegistryDetails
       return {
         type: RegistryTypeEnum.github,
-        ...request.github,
+        ...githubDetails,
         url: 'ghcr.io',
         apiUrl: null,
-        namespace: request.github.namespace,
+        namespace: githubDetails.namespace,
       }
     }
-    if (request.google) {
+    if (request.type === 'google') {
+      const googleDetails = request.details as GoogleRegistryDetails
       return {
         type: RegistryTypeEnum.google,
-        ...request.google,
-        user: emptyOrDefault(request.google.user),
-        token: emptyOrDefault(request.google.token),
-        imageNamePrefix: request.google.imageNamePrefix,
+        ...googleDetails,
+        user: emptyOrDefault(googleDetails.user),
+        token: emptyOrDefault(googleDetails.token),
+        imageNamePrefix: googleDetails.imageNamePrefix,
         apiUrl: null,
         namespace: null,
       }
     }
-    if (request.unchecked) {
+    if (request.type === 'unchecked') {
       return {
         type: RegistryTypeEnum.unchecked,
-        ...request.unchecked,
+        ...(request.details as UncheckedRegistryDetails),
         user: null,
         apiUrl: null,
         token: null,
@@ -141,7 +154,7 @@ export default class RegistryMapper {
       }
     }
     throw new InvalidArgumentException({
-      message: 'Registry type is undeductable',
+      message: 'Unknown registry type',
       property: 'type',
     })
   }

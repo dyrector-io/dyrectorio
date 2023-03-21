@@ -5,6 +5,18 @@ import { IsBoolean, IsDate, IsIn, IsOptional, IsString, IsUrl, IsUUID } from 'cl
 export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github', 'google', 'unchecked'] as const
 export type RegistryType = (typeof REGISTRY_TYPE_VALUES)[number]
 
+const RegistryDetailOneOf = () =>
+  ApiProperty({
+    oneOf: [
+      { $ref: getSchemaPath(HubRegistryDetails) },
+      { $ref: getSchemaPath(V2RegistryDetails) },
+      { $ref: getSchemaPath(GitlabRegistryDetails) },
+      { $ref: getSchemaPath(GithubRegistryDetails) },
+      { $ref: getSchemaPath(GoogleRegistryDetails) },
+      { $ref: getSchemaPath(UncheckedRegistryDetails) },
+    ],
+  })
+
 export class BasicRegistryDto {
   @IsUUID()
   id: string
@@ -161,23 +173,21 @@ export class RegistryDetails {
   @IsDate()
   updatedAt: Date
 
-  @IsOptional()
-  hub?: HubRegistryDetails
+  @IsString()
+  @IsIn(REGISTRY_TYPE_VALUES)
+  @ApiProperty({
+    enum: GITLAB_NAMESPACE_VALUES,
+  })
+  type: RegistryType
 
-  @IsOptional()
-  v2?: V2RegistryDetails
-
-  @IsOptional()
-  gitlab?: GitlabRegistryDetails
-
-  @IsOptional()
-  github?: GithubRegistryDetails
-
-  @IsOptional()
-  google?: GoogleRegistryDetails
-
-  @IsOptional()
-  unchecked?: UncheckedRegistryDetails
+  @RegistryDetailOneOf()
+  details:
+    | HubRegistryDetails
+    | V2RegistryDetails
+    | GitlabRegistryDetails
+    | GithubRegistryDetails
+    | GoogleRegistryDetails
+    | UncheckedRegistryDetails
 }
 
 export class CreateRegistry {
@@ -192,42 +202,14 @@ export class CreateRegistry {
   @IsOptional()
   icon?: string
 
-  @IsOptional()
-  hub?: HubRegistryDetails
-
-  @IsOptional()
-  v2?: V2RegistryDetails
-
-  @IsOptional()
-  gitlab?: GitlabRegistryDetails
-
-  @IsOptional()
-  github?: GithubRegistryDetails
-
-  @IsOptional()
-  google?: GoogleRegistryDetails
-
-  @IsOptional()
-  unchecked?: UncheckedRegistryDetails
-}
-
-export class TestRegistry {
-  name: string
-
-  description?: string
-
-  icon?: string
-
+  @IsString()
+  @IsIn(REGISTRY_TYPE_VALUES)
   @ApiProperty({
-    oneOf: [
-      { $ref: getSchemaPath(HubRegistryDetails) },
-      { $ref: getSchemaPath(V2RegistryDetails) },
-      { $ref: getSchemaPath(GitlabRegistryDetails) },
-      { $ref: getSchemaPath(GithubRegistryDetails) },
-      { $ref: getSchemaPath(GoogleRegistryDetails) },
-      { $ref: getSchemaPath(UncheckedRegistryDetails) },
-    ],
+    enum: GITLAB_NAMESPACE_VALUES,
   })
+  type: RegistryType
+
+  @RegistryDetailOneOf()
   details:
     | HubRegistryDetails
     | V2RegistryDetails
@@ -249,21 +231,19 @@ export class UpdateRegistry {
   @IsOptional()
   icon?: string
 
-  @IsOptional()
-  hub?: HubRegistryDetails
+  @IsString()
+  @IsIn(REGISTRY_TYPE_VALUES)
+  @ApiProperty({
+    enum: GITLAB_NAMESPACE_VALUES,
+  })
+  type: RegistryType
 
-  @IsOptional()
-  v2?: V2RegistryDetails
-
-  @IsOptional()
-  gitlab?: GitlabRegistryDetails
-
-  @IsOptional()
-  github?: GithubRegistryDetails
-
-  @IsOptional()
-  google?: GoogleRegistryDetails
-
-  @IsOptional()
-  unchecked?: UncheckedRegistryDetails
+  @RegistryDetailOneOf()
+  details:
+    | HubRegistryDetails
+    | V2RegistryDetails
+    | GitlabRegistryDetails
+    | GithubRegistryDetails
+    | GoogleRegistryDetails
+    | UncheckedRegistryDetails
 }

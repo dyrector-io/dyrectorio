@@ -33,22 +33,22 @@ export default class RegistryAccessValidationGuard implements CanActivate {
     const request = context.switchToHttp().getRequest()
     const body = request.body as CreateRegistry | UpdateRegistry
 
-    if (body.hub) {
-      return this.validateHub(body.hub)
+    if (body.type === 'hub') {
+      return this.validateHub(body.details as HubRegistryDetails)
     }
-    if (body.v2) {
-      return this.validateV2(body.v2)
+    if (body.type === 'v2') {
+      return this.validateV2(body.details as V2RegistryDetails)
     }
-    if (body.gitlab) {
-      return this.validateGitlab(body.gitlab)
+    if (body.type === 'gitlab') {
+      return this.validateGitlab(body.details as GitlabRegistryDetails)
     }
-    if (body.github) {
-      return this.validateGithub(body.github)
+    if (body.type === 'github') {
+      return this.validateGithub(body.details as GithubRegistryDetails)
     }
-    if (body.google) {
-      return this.validateGoogle(body.google)
+    if (body.type === 'google') {
+      return this.validateGoogle(body.details as GoogleRegistryDetails)
     }
-    if (body.unchecked) {
+    if (body.type === 'unchecked') {
       return of(true)
     }
     return of(false)

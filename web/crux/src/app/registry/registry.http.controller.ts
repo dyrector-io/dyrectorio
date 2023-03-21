@@ -2,7 +2,9 @@ import {
   Controller,
   Get,
   HttpCode,
+  PipeTransform,
   Response,
+  Type,
   UseGuards,
   UseInterceptors,
   UsePipes,
@@ -21,8 +23,10 @@ import RegistryAccessValidationGuard from './guards/registry.auth.validation.gua
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
 import UpdateRegistryInterceptor from './interceptors/registry.update.interceptor'
 import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
-import { CreateRegistry, RegistryDetails, RegistryList, TestRegistry, UpdateRegistry } from './registry.dto'
+import { CreateRegistry, RegistryDetails, RegistryList, UpdateRegistry } from './registry.dto'
 import RegistryService from './registry.service'
+
+const RegistryId = (...pipes: (Type<PipeTransform> | PipeTransform)[]) => Param('registryId', ...pipes)
 
 @Controller('registries')
 @ApiTags('registries')
@@ -44,19 +48,11 @@ export default class RegistryHttpController {
     return await this.service.getRegistries(identity)
   }
 
-  @Get('/test/:id')
-  @AuditLogLevel('disabled') // TODO(@robot9706): Refactor the auditlog after removing gRPC
-  @ApiOkResponse({ type: TestRegistry })
-  async getTestRegistries(): Promise<RegistryList> {
-    return null
-  }
-
-  @Get(':id')
+  @Get(':registryId')
   // TODO(@robot9706): Refactor the auditlog after removing gRPC
-  // TODO(@robot9706): Access check?
   @AuditLogLevel('disabled')
   @ApiOkResponse({ type: RegistryDetails })
-  async getRegistry(@Param('id') id: string): Promise<RegistryDetails> {
+  async getRegistry(@RegistryId() id: string): Promise<RegistryDetails> {
     return await this.service.getRegistryDetails(id)
   }
 
@@ -86,14 +82,14 @@ export default class RegistryHttpController {
     res.location(`/registries/${registry.id}`).json(registry)
   }
 
-  @Put(':id')
+  @Put(':registryId')
   @AuditLogLevel('disabled')
   @UseInterceptors(UpdateRegistryInterceptor)
   @UseGuards(RegistryAccessValidationGuard)
   @ApiBody({ type: UpdateRegistry })
   @HttpCode(204)
   async updateRegistry(
-    @Param('id') id: string,
+    @RegistryId() id: string,
     @Body() request: UpdateRegistry,
     @IdentityFromRequest() identity: Identity,
     @Response() res: Res,
@@ -103,10 +99,10 @@ export default class RegistryHttpController {
     res.end()
   }
 
-  @Delete(':id')
+  @Delete(':registryId')
   @AuditLogLevel('disabled')
   @HttpCode(204)
-  async deleteRegistry(@Param('id', DeleteRegistryValidationPipe) id: string, @Response() res: Res): Promise<void> {
+  async deleteRegistry(@RegistryId(DeleteRegistryValidationPipe) id: string, @Response() res: Res): Promise<void> {
     await this.service.deleteRegistry(id)
     res.end()
   }

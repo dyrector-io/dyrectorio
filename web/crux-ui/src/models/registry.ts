@@ -109,17 +109,15 @@ export class RegistryDetailsDto {
 
   updatedAt: string
 
-  hub?: HubRegistryDetailsDto
+  type: RegistryType
 
-  v2?: V2RegistryDetailsDto
-
-  gitlab?: GitlabRegistryDetailsDto
-
-  github?: GithubRegistryDetailsDto
-
-  google?: GoogleRegistryDetailsDto
-
-  unchecked?: UncheckedRegistryDetailsDto
+  details:
+    | HubRegistryDetailsDto
+    | V2RegistryDetailsDto
+    | GitlabRegistryDetailsDto
+    | GithubRegistryDetailsDto
+    | GoogleRegistryDetailsDto
+    | UncheckedRegistryDetailsDto
 }
 
 export class CreateRegistryDto {
@@ -129,17 +127,15 @@ export class CreateRegistryDto {
 
   icon?: string
 
-  hub?: HubRegistryDetailsDto
+  type: RegistryType
 
-  v2?: V2RegistryDetailsDto
-
-  gitlab?: GitlabRegistryDetailsDto
-
-  github?: GithubRegistryDetailsDto
-
-  google?: GoogleRegistryDetailsDto
-
-  unchecked?: UncheckedRegistryDetailsDto
+  details:
+    | HubRegistryDetailsDto
+    | V2RegistryDetailsDto
+    | GitlabRegistryDetailsDto
+    | GithubRegistryDetailsDto
+    | GoogleRegistryDetailsDto
+    | UncheckedRegistryDetailsDto
 }
 
 export class UpdateRegistryDto {
@@ -149,17 +145,15 @@ export class UpdateRegistryDto {
 
   icon?: string
 
-  hub?: HubRegistryDetailsDto
+  type: RegistryType
 
-  v2?: V2RegistryDetailsDto
-
-  gitlab?: GitlabRegistryDetailsDto
-
-  github?: GithubRegistryDetailsDto
-
-  google?: GoogleRegistryDetailsDto
-
-  unchecked?: UncheckedRegistryDetailsDto
+  details:
+    | HubRegistryDetailsDto
+    | V2RegistryDetailsDto
+    | GitlabRegistryDetailsDto
+    | GithubRegistryDetailsDto
+    | GoogleRegistryDetailsDto
+    | UncheckedRegistryDetailsDto
 }
 
 export class RegistryListDto {
@@ -227,74 +221,88 @@ export const registryDetailsToRegistry = (it: RegistryDetails): Registry => ({
   url: registryUrlOf(it),
 })
 
-export const registryDetailsDtoToUI = (dto: RegistryDetailsDto): RegistryDetails => ({
-  id: dto.id,
-  inUse: dto.inUse,
-  name: dto.name,
-  description: dto.description,
-  icon: dto.icon ?? null,
-  updatedAt: dto.updatedAt ?? dto.createdAt,
-  ...(dto.hub
-    ? {
-        type: 'hub',
-        ...dto.hub,
-      }
-    : dto.v2
-    ? {
-        type: 'v2',
-        ...dto.v2,
-        private: !!dto.v2.user,
-      }
-    : dto.gitlab
-    ? {
-        type: 'gitlab',
-        ...dto.gitlab,
-        selfManaged: !!dto.gitlab.apiUrl,
-        namespace: dto.gitlab.namespace,
-      }
-    : dto.github
-    ? {
-        type: 'github',
-        ...dto.github,
-        namespace: dto.github.namespace,
-      }
-    : dto.unchecked
-    ? {
-        type: 'unchecked',
-        ...dto.unchecked,
-      }
-    : {
-        type: 'google',
-        ...dto.google,
-        private: !!dto.google.user,
-      }),
-})
+export const registryDetailsDtoToUI = (dto: RegistryDetailsDto): RegistryDetails => {
+  const registry = {
+    id: dto.id,
+    inUse: dto.inUse,
+    name: dto.name,
+    description: dto.description,
+    icon: dto.icon ?? null,
+    updatedAt: dto.updatedAt ?? dto.createdAt,
+    type: dto.type,
+  }
+  if (dto.type === 'hub') {
+    const hubDetails = dto.details as HubRegistryDetails
+    return {
+      ...registry,
+      ...hubDetails,
+    }
+  }
+  if (dto.type === 'v2') {
+    const v2Details = dto.details as V2RegistryDetails
+    return {
+      ...registry,
+      ...v2Details,
+      private: !!v2Details.user,
+    }
+  }
+  if (dto.type === 'gitlab') {
+    const gitlabDetails = dto.details as GitlabRegistryDetails
+    return {
+      ...registry,
+      ...gitlabDetails,
+      selfManaged: !!gitlabDetails.apiUrl,
+      namespace: gitlabDetails.namespace,
+    }
+  }
+  if (dto.type === 'github') {
+    const githubDetails = dto.details as GithubRegistryDetails
+    return {
+      ...registry,
+      ...githubDetails,
+      namespace: githubDetails.namespace,
+    }
+  }
+  if (dto.type === 'google') {
+    const googleDetail = dto.details as GoogleRegistryDetails
+    return {
+      ...registry,
+      ...googleDetail,
+      private: !!googleDetail.user,
+    }
+  }
+  if (dto.type === 'unchecked') {
+    const uncheckedDetails = dto.details as UncheckedRegistryDetails
+    return {
+      ...registry,
+      ...uncheckedDetails,
+    }
+  }
+
+  throw new Error(`Unknown registry type: ${dto.type}`)
+}
 
 export const registryCreateToDto = (ui: CreateRegistry): CreateRegistryDto => ({
   name: ui.name,
   description: ui.description,
   icon: ui.icon,
-  hub:
-    ui.type !== 'hub'
-      ? null
-      : {
+  type: ui.type,
+  details:
+    ui.type === 'hub'
+      ? {
           type: 'hub',
           imageNamePrefix: ui.imageNamePrefix,
-        },
-  v2:
-    ui.type !== 'v2'
-      ? null
-      : {
+        }
+      : ui.type === 'v2'
+      ? {
           type: 'v2',
           url: ui.url,
           user: ui.user,
           token: ui.token,
           private: ui.private,
-        },
-  gitlab:
-    ui.type !== 'gitlab'
-      ? null
-      : {
+        }
+      : ui.type === 'gitlab'
+      ? {
           type: 'gitlab',
           user: ui.user,
           token: ui.token,
@@ -303,33 +311,28 @@ export const registryCreateToDto = (ui: CreateRegistry): CreateRegistryDto => ({
           apiUrl: ui.selfManaged ? ui.apiUrl : null,
           namespace: ui.namespace,
           selfManaged: ui.selfManaged,
-        },
-  github:
-    ui.type !== 'github'
-      ? null
-      : {
+        }
+      : ui.type === 'github'
+      ? {
           type: 'github',
           user: ui.user,
           token: ui.token,
           imageNamePrefix: ui.imageNamePrefix,
           namespace: ui.namespace,
-        },
-  google:
-    ui.type !== 'google'
-      ? null
-      : {
+        }
+      : ui.type === 'google'
+      ? {
           type: 'google',
           url: ui.url,
           imageNamePrefix: ui.imageNamePrefix,
           user: ui.user,
           token: ui.token,
           private: ui.private,
-        },
-  unchecked:
-    ui.type !== 'unchecked'
-      ? null
-      : {
+        }
+      : ui.type === 'unchecked'
+      ? {
           type: 'unchecked',
           url: ui.url,
-        },
+        }
+      : null,
 })
