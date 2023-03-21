@@ -10,6 +10,10 @@ export default class ProductTeamAccessGuard implements CanActivate {
     const req = context.switchToHttp().getRequest()
     const productId = req.params.productId as string
 
+    if (!productId) {
+      return true
+    }
+
     const identity = identityOfContext(context)
 
     const products = await this.prisma.product.count({
