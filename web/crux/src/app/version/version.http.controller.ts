@@ -21,6 +21,7 @@ import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
+import VersionTeamAccessGuard from './guards/version.team-access.guard'
 import VersionCreateValidationInterceptor from './interceptors/version.create.interceptor'
 import VersionDeleteValidationInterceptor from './interceptors/version.delete.interceptor'
 import VersionIncreaseValidationInterceptor from './interceptors/version.increase.interceptor'
@@ -37,7 +38,7 @@ const VersionId = () => Param('versionId')
 
 @Controller(`${ROUTE_PRODUCTS}/${ROUTE_PRODUCT_ID}/versions`)
 @ApiTags(ROUTE_PRODUCTS)
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, VersionTeamAccessGuard)
 @UsePipes(
   new ValidationPipe({
     // TODO(@robot9706): Move to global pipes after removing gRPC
