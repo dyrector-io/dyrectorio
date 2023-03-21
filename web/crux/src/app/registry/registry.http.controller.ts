@@ -45,7 +45,7 @@ export default class RegistryHttpController {
   constructor(private service: RegistryService) {}
 
   @Get()
-  @ApiOkResponse({ type: Array<RegistryDto> })
+  @ApiOkResponse({ type: RegistryDto, isArray: true })
   async getRegistries(@IdentityFromRequest() identity: Identity): Promise<RegistryDto[]> {
     return await this.service.getRegistries(identity)
   }

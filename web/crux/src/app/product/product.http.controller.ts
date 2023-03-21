@@ -29,7 +29,7 @@ const ProductId = () => Param('productId')
 
 @Controller('products')
 @ApiTags('products')
-@UseGuards(JwtAuthGuard, ProductTeamAccessGuard)
+@UseGuards(JwtAuthGuard)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
 @UseFilters(HttpExceptionFilter)
 export default class ProductHttpController {
@@ -40,12 +40,14 @@ export default class ProductHttpController {
     type: ProductDto,
     isArray: true,
   })
+  @UseGuards(ProductTeamAccessGuard)
   async getProducts(@IdentityFromRequest() identity: Identity): Promise<ProductDto[]> {
     return this.service.getProducts(identity)
   }
 
   @Get(':productId')
   @ApiOkResponse({ type: ProductDetailsDto })
+  @UseGuards(ProductTeamAccessGuard)
   async getProductDetails(@ProductId() id: string): Promise<ProductDetailsDto> {
     return this.service.getProductDetails(id)
   }
@@ -70,6 +72,7 @@ export default class ProductHttpController {
   @HttpCode(204)
   @UseInterceptors(ProductUpdateValidationInterceptor)
   @ApiNoContentResponse({ type: ProductDto })
+  @UseGuards(ProductTeamAccessGuard)
   async updateProduct(
     @ProductId() id: string,
     @Body() request: UpdateProductDto,
@@ -80,6 +83,7 @@ export default class ProductHttpController {
 
   @Delete(':productId')
   @HttpCode(204)
+  @UseGuards(ProductTeamAccessGuard)
   async deleteProduct(@ProductId() id: string): Promise<void> {
     return this.service.deleteProduct(id)
     // TODO(@polaroi8d): exception if there is no product with the given Id

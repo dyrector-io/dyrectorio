@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer'
-import { IsBoolean, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator'
+import { IsBoolean, IsEnum, IsString, IsUUID } from 'class-validator'
 import { AuditDto } from 'src/shared/dtos/audit'
 import BasicDeploymentWithNodeDto from '../deploy/deploy.dto'
 import ImageDto from '../image/image.dto'
@@ -39,7 +39,6 @@ export class UpdateVersionDto {
   name: string
 
   @IsString()
-  @IsOptional()
   changelog?: string
 }
 
