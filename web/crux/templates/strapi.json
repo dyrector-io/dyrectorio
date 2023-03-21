@@ -6,7 +6,7 @@
     {
       "name": "Docker Hub Library",
       "type": "hub",
-      "hub": {
+      "details": {
         "imageNamePrefix": "library"
       }
     },
@@ -14,7 +14,7 @@
       "name": "Docker Hub Strapi",
       "description": "Docker Hub Strapi images",
       "type": "hub",
-      "hub": {
+      "details": {
         "imageNamePrefix": "strapi"
       }
     }

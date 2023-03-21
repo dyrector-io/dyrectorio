@@ -1,21 +1,18 @@
 import { Injectable } from '@nestjs/common'
 import { Token } from '@prisma/client'
-import { toTimestamp } from 'src/domain/utils'
-import { TokenResponse } from 'src/grpc/protobuf/proto/crux'
+import { GeneratedTokenDto, TokenDto } from './token.dto'
 
 @Injectable()
 export default class TokenMapper {
-  toGrpc(token: Token): TokenResponse {
+  toDto(token: Token): TokenDto {
     return {
       ...token,
-      expiresAt: toTimestamp(token.expiresAt),
-      createdAt: toTimestamp(token.createdAt),
     }
   }
 
-  generateResponseToGrpc(prismaToken: Token, jwt: string) {
+  generatedTokenToDto(prismaToken: Token, jwt: string): GeneratedTokenDto {
     return {
-      ...this.toGrpc(prismaToken),
+      ...this.toDto(prismaToken),
       token: jwt,
     }
   }

@@ -131,7 +131,7 @@
     "obsolete": "Obsolete",
     "unknown": "Unknown",
     "preparing": "Preparing",
-    "in_progress": "In progress"
+    "in-progress": "In progress"
   },
 
   "containerStatuses": {

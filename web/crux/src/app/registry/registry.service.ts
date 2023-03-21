@@ -1,16 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
-import {
-  CreateEntityResponse,
-  CreateRegistryRequest,
-  IdRequest,
-  RegistryDetailsResponse,
-  RegistryListResponse,
-  UpdateEntityResponse,
-  UpdateRegistryRequest,
-} from 'src/grpc/protobuf/proto/crux'
 import { Identity } from '@ory/kratos-client'
+import PrismaService from 'src/services/prisma.service'
 import TeamRepository from '../team/team.repository'
+import { CreateRegistryDto, RegistryDetailsDto, RegistryDto, UpdateRegistryDto } from './registry.dto'
 import RegistryMapper from './registry.mapper'
 
 @Injectable()
@@ -19,7 +11,7 @@ export default class RegistryService {
 
   private readonly logger = new Logger(RegistryService.name)
 
-  async getRegistries(identity: Identity): Promise<RegistryListResponse> {
+  async getRegistries(identity: Identity): Promise<RegistryDto[]> {
     const registries = await this.prisma.registry.findMany({
       where: {
         team: {
@@ -33,12 +25,27 @@ export default class RegistryService {
       },
     })
 
-    return {
-      data: registries.map(it => this.mapper.listItemToProto(it)),
-    }
+    return registries.map(it => this.mapper.toDto(it))
   }
 
-  async createRegistry(req: CreateRegistryRequest, identity: Identity): Promise<CreateEntityResponse> {
+  async getRegistryDetails(id: string): Promise<RegistryDetailsDto> {
+    const registry = await this.prisma.registry.findUniqueOrThrow({
+      include: {
+        _count: {
+          select: {
+            images: true,
+          },
+        },
+      },
+      where: {
+        id,
+      },
+    })
+
+    return this.mapper.detailsToDto(registry)
+  }
+
+  async createRegistry(req: CreateRegistryDto, identity: Identity): Promise<RegistryDetailsDto> {
     const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
 
     const registry = await this.prisma.registry.create({
@@ -52,13 +59,13 @@ export default class RegistryService {
       },
     })
 
-    return CreateEntityResponse.fromJSON(registry)
+    return this.mapper.detailsToDto(registry)
   }
 
-  async updateRegistry(req: UpdateRegistryRequest, identity: Identity): Promise<UpdateEntityResponse> {
+  async updateRegistry(id: string, req: UpdateRegistryDto, identity: Identity): Promise<RegistryDetailsDto> {
     const registry = await this.prisma.registry.update({
       where: {
-        id: req.id,
+        id,
       },
       data: {
         name: req.name,
@@ -69,31 +76,14 @@ export default class RegistryService {
       },
     })
 
-    return UpdateEntityResponse.fromJSON(registry)
+    return this.mapper.detailsToDto(registry)
   }
 
-  async deleteRegistry(req: IdRequest): Promise<void> {
+  async deleteRegistry(id: string): Promise<void> {
     await this.prisma.registry.delete({
       where: {
-        id: req.id,
+        id,
       },
     })
-  }
-
-  async getRegistryDetails(req: IdRequest): Promise<RegistryDetailsResponse> {
-    const registry = await this.prisma.registry.findUniqueOrThrow({
-      include: {
-        _count: {
-          select: {
-            images: true,
-          },
-        },
-      },
-      where: {
-        id: req.id,
-      },
-    })
-
-    return this.mapper.detailsToProto(registry)
   }
 }

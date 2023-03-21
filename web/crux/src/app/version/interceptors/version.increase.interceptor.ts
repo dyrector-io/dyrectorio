@@ -1,18 +1,21 @@
-import { Injectable } from '@nestjs/common'
+import { ProductTypeEnum, VersionTypeEnum } from '.prisma/client'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
+import { Observable } from 'rxjs'
 import { AlreadyExistsException, PreconditionFailedException } from 'src/exception/errors'
-import { IncreaseVersionRequest } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
-import { ProductTypeEnum } from '.prisma/client'
-import BodyPipeTransform from 'src/pipes/body.pipe'
 
 @Injectable()
-export default class VersionIncreaseValidationPipe extends BodyPipeTransform<IncreaseVersionRequest> {
-  constructor(private prisma: PrismaService) {
-    super()
-  }
+export default class VersionIncreaseValidationPipe implements NestInterceptor {
+  constructor(private prisma: PrismaService) {}
 
-  async transformBody(value: IncreaseVersionRequest) {
+  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+    const req = context.switchToHttp().getRequest()
+    const versionId = req.params.versionId as string
+
     const version = await this.prisma.version.findUniqueOrThrow({
+      where: {
+        id: versionId,
+      },
       include: {
         product: {
           select: {
@@ -31,16 +34,21 @@ export default class VersionIncreaseValidationPipe extends BodyPipeTransform<Inc
           },
         },
       },
-      where: {
-        id: value.id,
-      },
     })
+
+    if (version.type === VersionTypeEnum.rolling) {
+      throw new PreconditionFailedException({
+        message: 'Can not increase a rolling version.',
+        property: 'id',
+        value: versionId,
+      })
+    }
 
     if (version.product.type === ProductTypeEnum.simple) {
       throw new PreconditionFailedException({
         message: 'Can not increase version of a simple product.',
         property: 'id',
-        value: value.name,
+        value: versionId,
       })
     }
 
@@ -48,10 +56,10 @@ export default class VersionIncreaseValidationPipe extends BodyPipeTransform<Inc
       throw new AlreadyExistsException({
         message: 'This version already has a child version',
         property: 'id',
-        value: value.id,
+        value: versionId,
       })
     }
 
-    return value
+    return next.handle()
   }
 }

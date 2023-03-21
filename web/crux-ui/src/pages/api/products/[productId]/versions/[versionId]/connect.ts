@@ -32,10 +32,12 @@ import {
   WS_TYPE_PATCH_IMAGE,
   WS_TYPE_PATCH_RECEIVED,
 } from '@app/models'
+import { versionApiUrl } from '@app/routes'
+import { fetchCruxFromRequest } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
-import crux, { cruxFromConnection } from '@server/crux/crux'
+import { cruxFromConnection } from '@server/crux/crux'
 import EditorService from '@server/editing/editor-service'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
 import useWebsocketErrorMiddleware from '@server/websocket-error-middleware'
@@ -49,10 +51,11 @@ const onReady = async (endpoint: WsEndpoint): Promise<void> => {
 }
 
 const onAuthorize = async (endpoint: WsEndpoint, req: NextApiRequest): Promise<boolean> => {
+  const productId = endpoint.query.productId as string
   const versionId = endpoint.query.versionId as string
 
   try {
-    await crux(req).versions.getById(versionId)
+    await fetchCruxFromRequest(req, versionApiUrl(productId, versionId))
     return true
   } catch {
     return false

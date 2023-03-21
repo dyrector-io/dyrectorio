@@ -27,10 +27,20 @@ import {
   InstanceJsonContainerConfig,
   mergeConfigs,
   mergeJsonConfigToInstanceContainerConfig,
+  ProductDetails,
+  VersionDetails,
   ViewState,
 } from '@app/models'
-import { deploymentUrl, instanceConfigUrl, productUrl, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
+import {
+  deploymentUrl,
+  instanceConfigUrl,
+  productApiUrl,
+  productUrl,
+  ROUTE_PRODUCTS,
+  versionApiUrl,
+  versionUrl,
+} from '@app/routes'
+import { fetchCrux, withContextAuthorization } from '@app/utils'
 import { jsonErrorOf } from '@app/validations/image'
 import { getMergedContainerConfigFieldErrors } from '@app/validations/instance'
 import { cruxFromContext } from '@server/crux/crux'
@@ -271,18 +281,22 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 export default InstanceDetailsPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const { productId, versionId, deploymentId, instanceId } = context.query
+  const productId = context.query.productId as string
+  const versionId = context.query.versionId as string
+  const deploymentId = context.query.deploymentId as string
+  const instanceId = context.query.instanceId as string
 
   const crux = cruxFromContext(context)
-  const product = await crux.products.getById(productId as string)
-  const version = await crux.versions.getById(versionId as string)
-  const deploymentDetails = await crux.deployments.getById(deploymentId as string)
+  const product = await fetchCrux(context, productApiUrl(productId))
+  const deploymentDetails = await crux.deployments.getById(deploymentId)
   const node = await crux.nodes.getNodeDetails(deploymentDetails.nodeId)
+
+  const version = await fetchCrux(context, versionApiUrl(productId, versionId))
 
   const deployment: DeploymentRoot = {
     ...deploymentDetails,
-    product,
-    version,
+    product: (await product.json()) as ProductDetails,
+    version: (await version.json()) as VersionDetails,
     node,
   }
 

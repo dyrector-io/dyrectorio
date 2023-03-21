@@ -60,7 +60,7 @@ const VersionViewList = (props: VersionViewListProps) => {
 
   const itemTemplate = (item: VersionImage) => [
     item.config.name,
-    item.registryName,
+    item.registry.name,
     <div className="flex items-center">
       <a>
         {item.name}
@@ -128,7 +128,7 @@ const VersionViewList = (props: VersionViewListProps) => {
         >
           <EditImageTags
             selected={tagsModalTarget?.tag ?? ''}
-            tags={tagsModalTarget.registryType === 'unchecked' ? null : selectTagsOfImage(state, tagsModalTarget)}
+            tags={tagsModalTarget.registry.type === 'unchecked' ? null : selectTagsOfImage(state, tagsModalTarget)}
             onTagSelected={it => actions.selectTagForImage(tagsModalTarget, it)}
           />
         </DyoModal>

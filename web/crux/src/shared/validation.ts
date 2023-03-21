@@ -377,49 +377,51 @@ const templateRegistrySchema = yup.object().shape({
   description: descriptionRule,
   icon: yup.string(),
   type: yup.string().required(),
-  hub: yup.mixed().when(['type'], {
-    is: type => type === 'hub',
-    then: yup.object({
-      imageNamePrefix: yup.string().required(),
+  details: yup
+    .mixed()
+    .when('type', {
+      is: type => type === 'hub',
+      then: yup.object({
+        imageNamePrefix: yup.string().required(),
+      }),
+    })
+    .when('type', {
+      is: type => type === 'v2',
+      then: yup.object({
+        url: yup.string().required(),
+        user: yup.string(),
+        token: yup.string(),
+      }),
+    })
+    .when('type', {
+      is: type => type === 'gitlab',
+      then: yup.object({
+        user: yup.string().required(),
+        token: yup.string().required(),
+        imageNamePrefix: yup.string().required(),
+        url: yup.string(),
+        apiUrl: yup.string(),
+        namespace: yup.string().required(),
+      }),
+    })
+    .when('type', {
+      is: type => type === 'github',
+      then: yup.object({
+        user: yup.string().required(),
+        token: yup.string().required(),
+        imageNamePrefix: yup.string().required(),
+        namespace: yup.string().required(),
+      }),
+    })
+    .when(['type'], {
+      is: type => type === 'google',
+      then: yup.object({
+        url: yup.string().required(),
+        user: yup.string(),
+        token: yup.string(),
+        imageNamePrefix: yup.string().required(),
+      }),
     }),
-  }),
-  v2: yup.mixed().when(['type'], {
-    is: type => type === 'v2',
-    then: yup.object({
-      url: yup.string().required(),
-      user: yup.string(),
-      token: yup.string(),
-    }),
-  }),
-  gitlab: yup.mixed().when(['type'], {
-    is: type => type === 'gitlab',
-    then: yup.object({
-      user: yup.string().required(),
-      token: yup.string().required(),
-      imageNamePrefix: yup.string().required(),
-      url: yup.string(),
-      apiUrl: yup.string(),
-      namespace: yup.string().required(),
-    }),
-  }),
-  github: yup.mixed().when(['type'], {
-    is: type => type === 'github',
-    then: yup.object({
-      user: yup.string().required(),
-      token: yup.string().required(),
-      imageNamePrefix: yup.string().required(),
-      namespace: yup.string().required(),
-    }),
-  }),
-  google: yup.mixed().when(['type'], {
-    is: type => type === 'google',
-    then: yup.object({
-      url: yup.string().required(),
-      user: yup.string(),
-      token: yup.string(),
-      imageNamePrefix: yup.string().required(),
-    }),
-  }),
 })
 
 export const templateSchema = yup.object({

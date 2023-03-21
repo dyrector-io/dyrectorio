@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common'
-import { DashboardActiveNodes, DashboardDeployment, NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
 import { Node } from '@prisma/client'
 import { toTimestamp } from 'src/domain/utils'
+import { NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
 import AgentService from '../agent/agent.service'
+import { NodeDto } from '../node/node.dto'
 
 @Injectable()
 export default class DashboardMapper {
   constructor(private agentService: AgentService) {}
 
-  nodesToProto(nodes: ActiveNode[]): DashboardActiveNodes[] {
+  nodesToProto(nodes: ActiveNode[]): NodeDto[] {
     return nodes.flatMap(it => {
       const agent = this.agentService.getById(it.id)
 
@@ -25,7 +26,7 @@ export default class DashboardMapper {
     })
   }
 
-  deploymentsToProto(deployments: LatestDeployment[]): DashboardDeployment[] {
+  deploymentsToProto(deployments: LatestDeployment[]): any[] {
     return deployments.map(it => ({
       id: it.id,
       changelog: it.version.changelog,

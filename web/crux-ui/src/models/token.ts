@@ -1,15 +1,19 @@
-export type Token = {
+export class Token {
   id: string
+
   name: string
-  createdAt: string
+
   expiresAt: string
+
+  createdAt: string
 }
 
-export type GenerateTokenRequest = {
+export class GenerateToken {
   name: string
+
   expirationInDays: number
 }
 
-export type GenerateTokenResponse = Token & {
+export class GeneratedToken extends Token {
   token: string
 }

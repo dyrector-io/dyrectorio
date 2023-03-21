@@ -19,9 +19,15 @@ import {
   Version,
   VersionDetails,
 } from '@app/models'
-import { productApiUrl, productUrl, ROUTE_PRODUCTS, versionSetDefaultApiUrl, versionUrl } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import {
+  productApiUrl,
+  productUrl,
+  ROUTE_PRODUCTS,
+  versionApiUrl,
+  versionSetDefaultApiUrl,
+  versionUrl,
+} from '@app/routes'
+import { fetchCrux, withContextAuthorization } from '@app/utils'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -204,7 +210,8 @@ export default ProductDetailsPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const productId = context.query.productId as string
 
-  const product = await cruxFromContext(context).products.getById(productId)
+  const res = await fetchCrux(context, productApiUrl(productId))
+  const product = (await res.json()) as ProductDetails
 
   const props: ProductDetailsPageProps = {
     product,
@@ -213,7 +220,9 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 
   if (product.type === 'simple') {
     const version = product.versions[0]
-    props.simpleProductVersionDetails = await cruxFromContext(context).versions.getById(version.id)
+
+    const versionRes = await fetchCrux(context, versionApiUrl(productId, version.id))
+    props.simpleProductVersionDetails = (await versionRes.json()) as VersionDetails
   }
 
   return {

@@ -5,17 +5,17 @@ import { JWT } from 'google-auth-library'
 import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
 import { catchError, from, map, mergeMap, Observable, of, switchMap } from 'rxjs'
 import { InvalidArgumentException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
-import {
-  CreateRegistryRequest,
-  GithubRegistryDetails,
-  GitlabRegistryDetails,
-  GoogleRegistryDetails,
-  HubRegistryDetails,
-  RegistryNamespace,
-  V2RegistryDetails,
-} from 'src/grpc/protobuf/proto/crux'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
 import { parsers } from 'www-authenticate'
+import {
+  CreateRegistryDto,
+  GithubRegistryDetailsDto,
+  GitlabRegistryDetailsDto,
+  GoogleRegistryDetailsDto,
+  HubRegistryDetailsDto,
+  UpdateRegistryDto,
+  V2RegistryDetailsDto,
+} from '../registry.dto'
 
 @Injectable()
 export default class RegistryAccessValidationGuard implements CanActivate {
@@ -30,30 +30,31 @@ export default class RegistryAccessValidationGuard implements CanActivate {
    * @returns boolean
    */
   canActivate(context: ExecutionContext): Observable<boolean> {
-    const req = context.getArgByIndex<CreateRegistryRequest>(0)
+    const request = context.switchToHttp().getRequest()
+    const body = request.body as CreateRegistryDto | UpdateRegistryDto
 
-    if (req.hub) {
-      return this.validateHub(req.hub)
+    if (body.type === 'hub') {
+      return this.validateHub(body.details as HubRegistryDetailsDto)
     }
-    if (req.v2) {
-      return this.validateV2(req.v2)
+    if (body.type === 'v2') {
+      return this.validateV2(body.details as V2RegistryDetailsDto)
     }
-    if (req.gitlab) {
-      return this.validateGitlab(req.gitlab)
+    if (body.type === 'gitlab') {
+      return this.validateGitlab(body.details as GitlabRegistryDetailsDto)
     }
-    if (req.github) {
-      return this.validateGithub(req.github)
+    if (body.type === 'github') {
+      return this.validateGithub(body.details as GithubRegistryDetailsDto)
     }
-    if (req.google) {
-      return this.validateGoogle(req.google)
+    if (body.type === 'google') {
+      return this.validateGoogle(body.details as GoogleRegistryDetailsDto)
     }
-    if (req.unchecked) {
+    if (body.type === 'unchecked') {
       return of(true)
     }
     return of(false)
   }
 
-  private validateHub(req: HubRegistryDetails): Observable<boolean> {
+  private validateHub(req: HubRegistryDetailsDto): Observable<boolean> {
     if (!req.imageNamePrefix || req.imageNamePrefix.trim().length < 1) {
       return of(false)
     }
@@ -80,7 +81,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
     )
   }
 
-  private validateV2(req: V2RegistryDetails): Observable<boolean> {
+  private validateV2(req: V2RegistryDetailsDto): Observable<boolean> {
     const withCredentials = !!req.user
     const auth = {
       username: req.user,
@@ -125,7 +126,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
       )
   }
 
-  private validateGitlab(req: GitlabRegistryDetails) {
+  private validateGitlab(req: GitlabRegistryDetailsDto) {
     const auth = {
       username: req.user,
       password: req.token,
@@ -134,7 +135,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
     const apiUrl = req.apiUrl ?? REGISTRY_GITLAB_URLS.apiUrl
     const registryUrl = req.url ?? REGISTRY_GITLAB_URLS.registryUrl
 
-    const namespace = req.namespace === RegistryNamespace.RNS_GROUP ? 'groups' : 'projects'
+    const namespace = req.namespace === 'group' ? 'groups' : 'projects'
 
     return this.httpService
       .get(`https://${apiUrl}/api/v4/${namespace}/${req.imageNamePrefix}`, {
@@ -202,13 +203,13 @@ export default class RegistryAccessValidationGuard implements CanActivate {
       )
   }
 
-  private validateGithub(req: GithubRegistryDetails) {
+  private validateGithub(req: GithubRegistryDetailsDto) {
     const auth = {
       username: req.user,
       password: req.token,
     }
 
-    const namespace = req.namespace === RegistryNamespace.RNS_ORGANIZATION ? 'orgs' : 'users'
+    const namespace = req.namespace === 'organization' ? 'orgs' : 'users'
 
     return this.httpService
       .get(`https://api.github.com/${namespace}/${req.imageNamePrefix}/packages?package_type=container`, {
@@ -244,7 +245,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
       )
   }
 
-  private validateGoogle(req: GoogleRegistryDetails): Observable<boolean> {
+  private validateGoogle(req: GoogleRegistryDetailsDto): Observable<boolean> {
     const withCredentials = !!req.user
     const client = withCredentials
       ? new JWT({

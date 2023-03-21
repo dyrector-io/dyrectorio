@@ -4,7 +4,7 @@ import { extractDeploymentUrl } from './utils/common'
 import { deployWithDagent } from './utils/node-helper'
 import { createImage, createProduct, createVersion } from './utils/products'
 
-test('Inprogress deployment should be not deletable', async ({ page }) => {
+test('In progress deployment should be not deletable', async ({ page }) => {
   const productName = 'PRODUCT-TEST1-DELETE'
 
   const productId = await createProduct(page, productName, 'Complex')

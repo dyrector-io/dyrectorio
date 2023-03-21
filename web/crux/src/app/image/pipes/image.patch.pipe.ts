@@ -18,6 +18,11 @@ export default class ImagePatchValidationPipe extends BodyPipeTransform<PatchIma
             deployments: {
               distinct: ['status'],
             },
+            children: {
+              select: {
+                versionId: true,
+              },
+            },
           },
         },
       },

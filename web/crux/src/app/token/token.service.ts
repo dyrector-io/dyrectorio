@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { Identity } from '@ory/kratos-client'
-import { GenerateTokenRequest, GenerateTokenResponse, IdRequest, TokenListResponse } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import { AuthPayload } from 'src/shared/models'
 import { v4 as uuid } from 'uuid'
+import { GenerateTokenDto, TokenDto, GeneratedTokenDto } from './token.dto'
 import TokenMapper from './token.mapper'
 
 @Injectable()
@@ -13,7 +13,7 @@ export default class TokenService {
 
   constructor(private jwtService: JwtService, private prisma: PrismaService, private mapper: TokenMapper) {}
 
-  async generateToken(req: GenerateTokenRequest, identity: Identity): Promise<GenerateTokenResponse> {
+  async generateToken(req: GenerateTokenDto, identity: Identity): Promise<GeneratedTokenDto> {
     const nonce = uuid()
     const expirationDate = new Date(Date.now())
     expirationDate.setDate(expirationDate.getDate() + req.expirationInDays)
@@ -35,25 +35,34 @@ export default class TokenService {
 
     const jwt = this.jwtService.sign({ exp: expirationDate.getTime() / 1000, data: payload })
 
-    return this.mapper.generateResponseToGrpc(newToken, jwt)
+    return this.mapper.generatedTokenToDto(newToken, jwt)
   }
 
-  async getTokenList(identity: Identity): Promise<TokenListResponse> {
+  async getTokenList(identity: Identity): Promise<TokenDto[]> {
     const response = await this.prisma.token.findMany({
       where: {
         userId: identity.id,
       },
     })
 
-    return {
-      data: response.map(it => this.mapper.toGrpc(it)),
-    }
+    return response.map(it => this.mapper.toDto(it))
   }
 
-  async deleteToken(req: IdRequest): Promise<void> {
+  async getToken(id: string, identity: Identity): Promise<TokenDto> {
+    const response = await this.prisma.token.findFirst({
+      where: {
+        userId: identity.id,
+        id,
+      },
+    })
+
+    return this.mapper.toDto(response)
+  }
+
+  async deleteToken(id: string): Promise<void> {
     await this.prisma.token.delete({
       where: {
-        id: req.id,
+        id,
       },
     })
   }
