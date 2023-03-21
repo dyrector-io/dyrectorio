@@ -19,11 +19,13 @@ import {
   deploymentApiUrl,
   deploymentDeployUrl,
   deploymentUrl,
+  productApiUrl,
   productUrl,
   ROUTE_PRODUCTS,
+  versionApiUrl,
   versionUrl,
 } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
+import { fetchCrux, withContextAuthorization } from '@app/utils'
 import { containerConfigSchema, getValidationError } from '@app/validations'
 import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
@@ -219,17 +221,20 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 export default DeploymentDetailsPage
 
 export const getDeploymentRoot = async (context: NextPageContext, crux: Crux) => {
-  const { productId, versionId, deploymentId } = context.query
+  const productId = context.query.productId as string
+  const versionId = context.query.versionId as string
+  const deploymentId = context.query.deploymentId as string
 
-  const product = crux.products.getById(productId as string)
-  const version = crux.versions.getById(versionId as string)
-  const deployment = await crux.deployments.getById(deploymentId as string)
+  const product = await fetchCrux(context, productApiUrl(productId))
+  const deployment = await crux.deployments.getById(deploymentId)
   const node = crux.nodes.getNodeDetails(deployment.nodeId)
+
+  const version = await fetchCrux(context, versionApiUrl(productId, versionId))
 
   return {
     ...deployment,
-    product: await product,
-    version: await version,
+    product: await product.json(),
+    version: await version.json(),
     node: await node,
   } as DeploymentRoot
 }

@@ -15,9 +15,15 @@ export default class DeleteImageValidationPipe extends BodyPipeTransform<IdReque
       select: {
         version: {
           select: {
+            id: true,
             type: true,
             deployments: {
               distinct: ['status'],
+            },
+            children: {
+              select: {
+                versionId: true,
+              },
             },
           },
         },

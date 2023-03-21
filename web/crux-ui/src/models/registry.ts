@@ -9,36 +9,38 @@ export type GitlabNamespace = typeof GITLAB_NAMESPACE_VALUES[number]
 export type GithubNamespace = typeof GITHUB_NAMESPACE_VALUES[number]
 export type RegistryNamespace = GitlabNamespace | GithubNamespace
 
-export type Registry = {
+export type BasicRegistry = {
   id: string
-  icon?: string
   name: string
-  description?: string
-  url: string
   type: RegistryType
-  inUse: boolean
 }
 
-export type RegistryListItem = Omit<Registry, 'inUse'>
+export type Registry = BasicRegistry & {
+  icon?: string
+  description?: string
+  url: string
+}
 
 export type RegistryDetailsBase = {
   inUse: boolean
 }
 
-export type HubRegistryDetails = RegistryDetailsBase & {
+type HubRegistryDetailsDto = {
   type: 'hub'
   imageNamePrefix: string
 }
+export type HubRegistryDetails = RegistryDetailsBase & HubRegistryDetailsDto
 
-export type V2RegistryDetails = RegistryDetailsBase & {
+type V2RegistryDetailsDto = {
   type: 'v2'
   url: string
   private: boolean
   user?: string
   token?: string
 }
+export type V2RegistryDetails = RegistryDetailsBase & V2RegistryDetailsDto
 
-export type GitlabRegistryDetails = RegistryDetailsBase & {
+type GitlabRegistryDetailsDto = {
   type: 'gitlab'
   imageNamePrefix: string
   user: string
@@ -48,16 +50,18 @@ export type GitlabRegistryDetails = RegistryDetailsBase & {
   url?: string
   apiUrl?: string
 }
+export type GitlabRegistryDetails = RegistryDetailsBase & GitlabRegistryDetailsDto
 
-export type GithubRegistryDetails = RegistryDetailsBase & {
+type GithubRegistryDetailsDto = {
   type: 'github'
   imageNamePrefix: string
   user: string
   token: string
   namespace: RegistryNamespace
 }
+export type GithubRegistryDetails = RegistryDetailsBase & GithubRegistryDetailsDto
 
-export type GoogleRegistryDetails = RegistryDetailsBase & {
+type GoogleRegistryDetailsDto = {
   type: 'google'
   url: string
   imageNamePrefix: string
@@ -65,11 +69,13 @@ export type GoogleRegistryDetails = RegistryDetailsBase & {
   user?: string
   token?: string
 }
+export type GoogleRegistryDetails = RegistryDetailsBase & GoogleRegistryDetailsDto
 
-export type UncheckedRegistryDetails = RegistryDetailsBase & {
+type UncheckedRegistryDetailsDto = {
   type: 'unchecked'
   url: string
 }
+export type UncheckedRegistryDetails = RegistryDetailsBase & UncheckedRegistryDetailsDto
 
 export type RegistryDetails = Omit<Registry, 'url'> &
   (
@@ -81,10 +87,74 @@ export type RegistryDetails = Omit<Registry, 'url'> &
     | UncheckedRegistryDetails
   ) & {
     updatedAt: string
+    inUse: boolean
   }
 
 export type UpdateRegistry = RegistryDetails
 export type CreateRegistry = UpdateRegistry
+
+// crux dto
+export class RegistryDetailsDto {
+  id: string
+
+  name: string
+
+  description?: string
+
+  icon?: string
+
+  inUse: boolean
+
+  createdAt: string
+
+  updatedAt: string
+
+  type: RegistryType
+
+  details:
+    | HubRegistryDetailsDto
+    | V2RegistryDetailsDto
+    | GitlabRegistryDetailsDto
+    | GithubRegistryDetailsDto
+    | GoogleRegistryDetailsDto
+    | UncheckedRegistryDetailsDto
+}
+
+export class CreateRegistryDto {
+  name: string
+
+  description?: string
+
+  icon?: string
+
+  type: RegistryType
+
+  details:
+    | HubRegistryDetailsDto
+    | V2RegistryDetailsDto
+    | GitlabRegistryDetailsDto
+    | GithubRegistryDetailsDto
+    | GoogleRegistryDetailsDto
+    | UncheckedRegistryDetailsDto
+}
+
+export class UpdateRegistryDto {
+  name: string
+
+  description?: string
+
+  icon?: string
+
+  type: RegistryType
+
+  details:
+    | HubRegistryDetailsDto
+    | V2RegistryDetailsDto
+    | GitlabRegistryDetailsDto
+    | GithubRegistryDetailsDto
+    | GoogleRegistryDetailsDto
+    | UncheckedRegistryDetailsDto
+}
 
 // ws
 
@@ -123,12 +193,15 @@ export type RegistryImageTagsMessage = {
   images: RegistryImageTags[]
 }
 
+// mappers
+
 export const registryUrlOf = (it: RegistryDetails) => {
   switch (it.type) {
     case 'hub':
       return REGISTRY_HUB_URL
     case 'v2':
     case 'google':
+    case 'unchecked':
       return it.url
     case 'gitlab':
       return it.selfManaged ? it.url : REGISTRY_GITLAB_URLS.registryUrl
@@ -142,4 +215,120 @@ export const registryUrlOf = (it: RegistryDetails) => {
 export const registryDetailsToRegistry = (it: RegistryDetails): Registry => ({
   ...it,
   url: registryUrlOf(it),
+})
+
+export const registryDetailsDtoToUI = (dto: RegistryDetailsDto): RegistryDetails => {
+  const registry = {
+    id: dto.id,
+    inUse: dto.inUse,
+    name: dto.name,
+    description: dto.description,
+    icon: dto.icon ?? null,
+    updatedAt: dto.updatedAt ?? dto.createdAt,
+    type: dto.type,
+  }
+  if (dto.type === 'hub') {
+    const hubDetails = dto.details as HubRegistryDetails
+    return {
+      ...registry,
+      ...hubDetails,
+    }
+  }
+  if (dto.type === 'v2') {
+    const v2Details = dto.details as V2RegistryDetails
+    return {
+      ...registry,
+      ...v2Details,
+      private: !!v2Details.user,
+    }
+  }
+  if (dto.type === 'gitlab') {
+    const gitlabDetails = dto.details as GitlabRegistryDetails
+    return {
+      ...registry,
+      ...gitlabDetails,
+      selfManaged: !!gitlabDetails.apiUrl,
+      namespace: gitlabDetails.namespace,
+    }
+  }
+  if (dto.type === 'github') {
+    const githubDetails = dto.details as GithubRegistryDetails
+    return {
+      ...registry,
+      ...githubDetails,
+      namespace: githubDetails.namespace,
+    }
+  }
+  if (dto.type === 'google') {
+    const googleDetail = dto.details as GoogleRegistryDetails
+    return {
+      ...registry,
+      ...googleDetail,
+      private: !!googleDetail.user,
+    }
+  }
+  if (dto.type === 'unchecked') {
+    const uncheckedDetails = dto.details as UncheckedRegistryDetails
+    return {
+      ...registry,
+      ...uncheckedDetails,
+    }
+  }
+
+  throw new Error(`Unknown registry type: ${dto.type}`)
+}
+
+export const registryCreateToDto = (ui: CreateRegistry): CreateRegistryDto => ({
+  name: ui.name,
+  description: ui.description,
+  icon: ui.icon,
+  type: ui.type,
+  details:
+    ui.type === 'hub'
+      ? {
+          type: 'hub',
+          imageNamePrefix: ui.imageNamePrefix,
+        }
+      : ui.type === 'v2'
+      ? {
+          type: 'v2',
+          url: ui.url,
+          user: ui.user,
+          token: ui.token,
+          private: ui.private,
+        }
+      : ui.type === 'gitlab'
+      ? {
+          type: 'gitlab',
+          user: ui.user,
+          token: ui.token,
+          imageNamePrefix: ui.imageNamePrefix,
+          url: ui.selfManaged ? ui.url : null,
+          apiUrl: ui.selfManaged ? ui.apiUrl : null,
+          namespace: ui.namespace,
+          selfManaged: ui.selfManaged,
+        }
+      : ui.type === 'github'
+      ? {
+          type: 'github',
+          user: ui.user,
+          token: ui.token,
+          imageNamePrefix: ui.imageNamePrefix,
+          namespace: ui.namespace,
+        }
+      : ui.type === 'google'
+      ? {
+          type: 'google',
+          url: ui.url,
+          imageNamePrefix: ui.imageNamePrefix,
+          user: ui.user,
+          token: ui.token,
+          private: ui.private,
+        }
+      : ui.type === 'unchecked'
+      ? {
+          type: 'unchecked',
+          url: ui.url,
+        }
+      : null,
 })

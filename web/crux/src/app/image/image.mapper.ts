@@ -48,6 +48,7 @@ import {
   VolumeType,
 } from 'src/shared/models'
 import RegistryMapper from '../registry/registry.mapper'
+import { ContainerConfigDto } from './image.dto'
 
 @Injectable()
 export default class ImageMapper {
@@ -258,6 +259,20 @@ export default class ImageMapper {
       capabilities: toPrismaJson(config.capabilities),
       annotations: toPrismaJson(config.annotations),
       labels: toPrismaJson(config.labels),
+    }
+  }
+
+  containerConfigDataToDto(config: ContainerConfigData): ContainerConfigDto {
+    return {
+      ...config,
+      capabilities: null,
+      storage: !config.storageSet
+        ? null
+        : {
+            storageId: config.storageId,
+            bucket: config.storageConfig.bucket,
+            path: config.storageConfig.path,
+          },
     }
   }
 

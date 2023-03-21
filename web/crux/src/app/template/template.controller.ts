@@ -27,12 +27,14 @@ export default class TemplateController implements CruxTemplateController {
     }
   }
 
-  createProductFromTemplate(
+  async createProductFromTemplate(
     request: CreateProductFromTemplateRequest,
     _: Metadata,
     call: IdentityAwareServerSurfaceCall,
   ): Promise<CreateEntityResponse> {
-    return this.service.createProductFromTemplate(request, call.user)
+    const product = await this.service.createProductFromTemplate(request, call.user)
+
+    return CreateEntityResponse.fromJSON(product)
   }
 
   getImage(request: IdRequest): Promise<TemplateImageResponse> {

@@ -8,9 +8,8 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { EditableVersion, ProductDetails, VersionDetails } from '@app/models'
-import { productUrl, ROUTE_PRODUCTS, versionApiUrl, versionUrl } from '@app/routes'
-import { anchorLinkOf, redirectTo, searchParamsOf, withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { productApiUrl, productUrl, ROUTE_PRODUCTS, versionApiUrl, versionUrl } from '@app/routes'
+import { anchorLinkOf, fetchCrux, redirectTo, searchParamsOf, withContextAuthorization } from '@app/utils'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -132,17 +131,18 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   const productId = context.query.productId as string
   const versionId = context.query.versionId as string
 
-  const product = await cruxFromContext(context).products.getById(productId)
+  const productRes = await fetchCrux(context, productApiUrl(productId))
+  const product = (await productRes.json()) as ProductDetails
   if (product.type === 'simple') {
     return redirectTo(`${productUrl(product.id)}${searchParamsOf(context)}`)
   }
 
-  const version = await cruxFromContext(context).versions.getById(versionId)
+  const res = await fetchCrux(context, versionApiUrl(productId, versionId))
 
   return {
     props: {
       product,
-      version,
+      version: await res.json(),
     },
   }
 }

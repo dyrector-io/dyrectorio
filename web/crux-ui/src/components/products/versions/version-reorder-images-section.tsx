@@ -41,10 +41,14 @@ const VersionReorderImagesSection = (props: VersionReorderImagesSectionProps) =>
   const itemTemplate = (img: VersionImage, index: number) => (
     <DyoCard key={img.id} className="grid grid-cols-4 items-center text-bright m-2 p-4">
       <span className="mx-4 text-dyo-turquoise">{`#${++index}`}</span>
+
       <span className="text-bright">{img.config?.name ?? img.name}</span>
-      <span className="text-sm text-bright-muted">{img.registryName}</span>
+
+      <span className="text-sm text-bright-muted">{img.registry.name}</span>
+
       <div className="flex items-center">
         <span className="text-md text-light-eased">{`${img.name}:`}</span>
+
         <span className={clsx('text-md', img.tag ? 'text-light-eased' : 'text-warning-orange/75')}>
           {`${img.tag ? img.tag : t('unknownTag')}`}
         </span>

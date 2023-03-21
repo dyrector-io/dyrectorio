@@ -8,8 +8,8 @@ export type Product = {
   name: string
   description?: string
   type: ProductType
-  updatedAt: string
   versionCount?: number
+  updatedAt: string
 }
 
 export type EditableProduct = Product & {

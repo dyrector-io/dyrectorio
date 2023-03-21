@@ -1,131 +1,104 @@
 /* eslint-disable */
 
-import { RestartPolicy, NetworkMode, DeploymentStrategy, ExposeStrategy, InstanceContainerConfig } from '@prisma/client'
+import { DeploymentStrategy, ExposeStrategy, InstanceContainerConfig, NetworkMode, RestartPolicy } from '@prisma/client'
 import { Observable } from 'rxjs'
 import {
-  DriverType,
-  HealthCheckConfig,
-  ResourceConfig,
-  Ingress,
   ConfigContainer,
   ContainerCommandRequest,
-  DeleteContainersRequest,
   ContainerIdentifier,
-  DeploymentStatus,
-  InstanceDeploymentItem,
+  ContainerLogMessage,
   ContainerState,
   ContainerStateListMessage,
-  ContainerLogMessage,
+  DeleteContainersRequest,
+  DeploymentStatus,
+  DriverType,
+  HealthCheckConfig,
+  InstanceDeploymentItem,
   ListSecretsResponse,
+  ResourceConfig,
 } from 'src/grpc/protobuf/proto/common'
 import {
-  AuditLogResponse,
-  UserRole,
+  ActiveTeamDetailsResponse,
   ActiveTeamUser,
-  TeamResponse,
-  UserStatus,
-  UserResponse,
-  TeamStatistics,
-  TeamWithStatsResponse,
+  AllTeamsResponse,
   AuditResponse,
-  ProductType,
-  VersionResponse,
-  ProductReponse,
-  RegistryType,
-  RegistryResponse,
-  RegistryNamespace,
-  HubRegistryDetails,
-  V2RegistryDetails,
-  GitlabRegistryDetails,
-  GithubRegistryDetails,
-  GoogleRegistryDetails,
-  UncheckedRegistryDetails,
-  VersionType,
-  ImageResponse,
-  DeploymentByVersionResponse,
-  VolumeLink,
-  Port,
-  PortRangeBinding,
-  Volume,
-  LogConfig,
-  UniqueKeyList,
-  UniqueKeyValueList,
-  PortList,
-  PortRangeBindingList,
-  VolumeList,
-  InitContainerList,
   CommonContainerConfig,
-  DagentContainerConfig,
   CraneContainerConfig,
-  UniqueSecretKeyValueList,
-  ImageContainerConfig,
-  RegistryImages,
-  NodeConnectionStatus,
-  NodeType,
-  NodeInstallResponse,
-  NodeScriptResponse,
-  NodeResponse,
-  NodeScriptType,
-  DagentTraefikOptions,
-  InstanceResponse,
-  InstancesCreatedEventList,
-  PatchInstanceRequest,
-  DeploymentResponse,
-  DeploymentEventType,
-  DeploymentEventLog,
-  DeploymentEventContainerState,
-  DeploymentEventResponse,
-  NotificationType,
-  NotificationEventType,
-  NotificationResponse,
-  ServiceStatus,
-  TemplateResponse,
-  DashboardActiveNodes,
-  DashboardDeployment,
-  ProductListResponse,
   CreateEntityResponse,
-  UpdateEntityResponse,
-  ProductDetailsReponse,
-  RegistryListResponse,
-  RegistryDetailsResponse,
-  NodeListResponse,
-  NodeDetailsResponse,
-  NodeEventMessage,
-  VersionListResponse,
-  VersionDetailsResponse,
-  ImageListResponse,
-  DeploymentListByVersionResponse,
+  CreateNotificationResponse,
+  DagentContainerConfig,
+  DagentTraefikOptions,
+  DeploymentByVersionResponse,
   DeploymentDetailsResponse,
+  DeploymentEditEventMessage,
+  DeploymentEventContainerState,
   DeploymentEventListResponse,
+  DeploymentEventLog,
+  DeploymentEventType,
+  DeploymentListByVersionResponse,
   DeploymentListResponse,
   DeploymentProgressMessage,
-  DeploymentEditEventMessage,
-  ActiveTeamDetailsResponse,
-  UserMetaResponse,
-  AllTeamsResponse,
-  TeamDetailsResponse,
-  CreateNotificationResponse,
-  NotificationListResponse,
-  NotificationDetailsResponse,
-  AuditLogListResponse,
-  AuditLogListCountResponse,
+  DeploymentResponse,
   HealthResponse,
-  TemplateListResponse,
+  ImageContainerConfig,
+  ImageListResponse,
+  ImageResponse,
+  InitContainerList,
+  InstanceResponse,
+  InstancesCreatedEventList,
+  LogConfig,
+  NodeConnectionStatus,
+  NodeDetailsResponse,
+  NodeEventMessage,
+  NodeInstallResponse,
+  NodeListResponse,
+  NodeResponse,
+  NodeScriptResponse,
+  NodeScriptType,
+  NodeType,
+  NotificationDetailsResponse,
+  NotificationEventType,
+  NotificationListResponse,
+  NotificationResponse,
+  NotificationType,
+  PatchInstanceRequest,
+  Port,
+  PortList,
+  PortRangeBinding,
+  PortRangeBindingList,
+  ProductType,
+  RegistryImages,
+  RegistryType,
+  ServiceStatus,
+  TeamDetailsResponse,
+  TeamResponse,
+  TeamStatistics,
+  TeamWithStatsResponse,
   TemplateImageResponse,
-  DashboardResponse,
-  GenerateTokenResponse,
-  TokenListResponse,
-  TokenResponse,
+  TemplateListResponse,
+  TemplateResponse,
+  UniqueKeyList,
+  UniqueKeyValueList,
+  UniqueSecretKeyValueList,
+  UpdateEntityResponse,
+  UserMetaResponse,
+  UserResponse,
+  UserRole,
+  UserStatus,
+  VersionType,
+  Volume,
+  VolumeLink,
+  VolumeList,
 } from 'src/grpc/protobuf/proto/crux'
 import {
+  InitContainer,
+  Marker,
+  PortRange,
   UniqueKey,
   UniqueKeyValue,
-  InitContainer,
-  PortRange,
-  VolumeType,
   UniqueSecretKey,
   UniqueSecretKeyValue,
-  Marker,
+  VolumeType,
 } from 'src/shared/models'
 
 export class ServiceIdRequestDto {
@@ -148,27 +121,6 @@ export class CreateEntityResponseDto {
 export class UpdateEntityResponseDto {
   updatedAt: any
 }
-export class GenerateTokenRequestDto {
-  accessedBy: string
-  name: string
-  expirationInDays: number
-}
-export class GenerateTokenResponseDto {
-  id: string
-  name: string
-  expiresAt: any
-  createdAt: any
-  token: string
-}
-export class TokenResponseDto {
-  id: string
-  name: string
-  expiresAt: any
-  createdAt: any
-}
-export class TokenListResponseDto {
-  data: TokenResponse[]
-}
 export class AuditLogListRequestDto {
   accessedBy: string
   pageSize: number
@@ -186,9 +138,6 @@ export class AuditLogResponseDto {
   identityEmail: string
   serviceCall: string
   data: string | undefined
-}
-export class AuditLogListResponseDto {
-  data: AuditLogResponse[]
 }
 export class CreateTeamRequestDto {
   accessedBy: string
@@ -273,51 +222,6 @@ export class UserResponseDto {
   status: UserStatus
   lastLogin: any
 }
-export class ProductDetailsReponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  description: string | undefined
-  type: ProductType
-  deletable: boolean
-  versions: VersionResponse[]
-}
-export class ProductReponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  description: string | undefined
-  type: ProductType
-  versionCount: number
-}
-export class ProductListResponseDto {
-  data: ProductReponse[]
-}
-export class CreateProductRequestDto {
-  accessedBy: string
-  name: string
-  description: string | undefined
-  type: ProductType
-}
-export class UpdateProductRequestDto {
-  id: string
-  accessedBy: string
-  name: string
-  description: string | undefined
-  changelog: string | undefined
-}
-export class RegistryResponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  description: string | undefined
-  icon: string | undefined
-  url: string
-  type: RegistryType
-}
-export class RegistryListResponseDto {
-  data: RegistryResponse[]
-}
 export class HubRegistryDetailsDto {
   imageNamePrefix: string
 }
@@ -325,20 +229,6 @@ export class V2RegistryDetailsDto {
   url: string
   user: string | undefined
   token: string | undefined
-}
-export class GitlabRegistryDetailsDto {
-  user: string
-  token: string
-  imageNamePrefix: string
-  url: string | undefined
-  apiUrl: string | undefined
-  namespace: RegistryNamespace
-}
-export class GithubRegistryDetailsDto {
-  user: string
-  token: string
-  imageNamePrefix: string
-  namespace: RegistryNamespace
 }
 export class GoogleRegistryDetailsDto {
   url: string
@@ -348,52 +238,6 @@ export class GoogleRegistryDetailsDto {
 }
 export class UncheckedRegistryDetailsDto {
   url: string
-}
-export class CreateRegistryRequestDto {
-  accessedBy: string
-  name: string
-  description: string | undefined
-  icon: string | undefined
-  hub: HubRegistryDetails | undefined
-  v2: V2RegistryDetails | undefined
-  gitlab: GitlabRegistryDetails | undefined
-  github: GithubRegistryDetails | undefined
-  google: GoogleRegistryDetails | undefined
-  unchecked: UncheckedRegistryDetails | undefined
-}
-export class UpdateRegistryRequestDto {
-  id: string
-  accessedBy: string
-  name: string
-  description: string | undefined
-  icon: string | undefined
-  hub: HubRegistryDetails | undefined
-  v2: V2RegistryDetails | undefined
-  gitlab: GitlabRegistryDetails | undefined
-  github: GithubRegistryDetails | undefined
-  google: GoogleRegistryDetails | undefined
-  unchecked: UncheckedRegistryDetails | undefined
-}
-export class RegistryDetailsResponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  description: string | undefined
-  icon: string | undefined
-  inUse: boolean
-  hub: HubRegistryDetails | undefined
-  v2: V2RegistryDetails | undefined
-  gitlab: GitlabRegistryDetails | undefined
-  github: GithubRegistryDetails | undefined
-  google: GoogleRegistryDetails | undefined
-  unchecked: UncheckedRegistryDetails | undefined
-}
-export class CreateVersionRequestDto {
-  accessedBy: string
-  productId: string
-  name: string
-  changelog: string | undefined
-  type: VersionType
 }
 export class UpdateVersionRequestDto {
   id: string
@@ -409,9 +253,6 @@ export class VersionResponseDto {
   default: boolean
   type: VersionType
   increasable: boolean
-}
-export class VersionListResponseDto {
-  data: VersionResponse[]
 }
 export class VersionDetailsResponseDto {
   id: string
@@ -889,45 +730,6 @@ export class DashboardDeploymentDto {
   productId: string
   versionId: string
 }
-export class DashboardResponseDto {
-  users: number
-  auditLogEntries: number
-  products: number
-  versions: number
-  deployments: number
-  failedDeployments: number
-  nodes: DashboardActiveNodes[]
-  latestDeployments: DashboardDeployment[]
-  auditLog: AuditLogResponse[]
-}
-export class CruxProductClientDto {
-  getProducts: Observable<ProductListResponse>
-  createProduct: Observable<CreateEntityResponse>
-  updateProduct: Observable<UpdateEntityResponse>
-  deleteProduct: any
-  getProductDetails: Observable<ProductDetailsReponse>
-}
-export class CruxProductControllerDto {
-  getProducts: Promise<ProductListResponse> | Observable<ProductListResponse> | ProductListResponse
-  createProduct: Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-  updateProduct: Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-  deleteProduct: any
-  getProductDetails: Promise<ProductDetailsReponse> | Observable<ProductDetailsReponse> | ProductDetailsReponse
-}
-export class CruxRegistryClientDto {
-  getRegistries: Observable<RegistryListResponse>
-  createRegistry: Observable<CreateEntityResponse>
-  updateRegistry: Observable<UpdateEntityResponse>
-  deleteRegistry: any
-  getRegistryDetails: Observable<RegistryDetailsResponse>
-}
-export class CruxRegistryControllerDto {
-  getRegistries: Promise<RegistryListResponse> | Observable<RegistryListResponse> | RegistryListResponse
-  createRegistry: Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-  updateRegistry: Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-  deleteRegistry: any
-  getRegistryDetails: Promise<RegistryDetailsResponse> | Observable<RegistryDetailsResponse> | RegistryDetailsResponse
-}
 export class CruxNodeClientDto {
   getNodes: Observable<NodeListResponse>
   createNode: Observable<CreateEntityResponse>
@@ -961,24 +763,6 @@ export class CruxNodeControllerDto {
   subscribeNodeEventChannel: Observable<NodeEventMessage>
   watchContainerState: Observable<ContainerStateListMessage>
   subscribeContainerLogChannel: Observable<ContainerLogMessage>
-}
-export class CruxProductVersionClientDto {
-  getVersionsByProductId: Observable<VersionListResponse>
-  createVersion: Observable<CreateEntityResponse>
-  updateVersion: Observable<UpdateEntityResponse>
-  deleteVersion: any
-  setDefaultVersion: any
-  getVersionDetails: Observable<VersionDetailsResponse>
-  increaseVersion: Observable<CreateEntityResponse>
-}
-export class CruxProductVersionControllerDto {
-  getVersionsByProductId: Promise<VersionListResponse> | Observable<VersionListResponse> | VersionListResponse
-  createVersion: Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-  updateVersion: Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-  deleteVersion: any
-  setDefaultVersion: any
-  getVersionDetails: Promise<VersionDetailsResponse> | Observable<VersionDetailsResponse> | VersionDetailsResponse
-  increaseVersion: Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
 }
 export class CruxImageClientDto {
   getImagesByVersionId: Observable<ImageListResponse>
@@ -1114,17 +898,6 @@ export class CruxNotificationControllerDto {
     | NotificationDetailsResponse
   testNotification: any
 }
-export class CruxAuditClientDto {
-  getAuditLog: Observable<AuditLogListResponse>
-  getAuditLogListCount: Observable<AuditLogListCountResponse>
-}
-export class CruxAuditControllerDto {
-  getAuditLog: Promise<AuditLogListResponse> | Observable<AuditLogListResponse> | AuditLogListResponse
-  getAuditLogListCount:
-    | Promise<AuditLogListCountResponse>
-    | Observable<AuditLogListCountResponse>
-    | AuditLogListCountResponse
-}
 export class CruxHealthClientDto {
   getHealth: Observable<HealthResponse>
 }
@@ -1140,22 +913,6 @@ export class CruxTemplateControllerDto {
   getTemplates: Promise<TemplateListResponse> | Observable<TemplateListResponse> | TemplateListResponse
   createProductFromTemplate: Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
   getImage: Promise<TemplateImageResponse> | Observable<TemplateImageResponse> | TemplateImageResponse
-}
-export class CruxDashboardClientDto {
-  getDashboard: Observable<DashboardResponse>
-}
-export class CruxDashboardControllerDto {
-  getDashboard: Promise<DashboardResponse> | Observable<DashboardResponse> | DashboardResponse
-}
-export class CruxTokenClientDto {
-  generateToken: Observable<GenerateTokenResponse>
-  getTokenList: Observable<TokenListResponse>
-  deleteToken: any
-}
-export class CruxTokenControllerDto {
-  generateToken: Promise<GenerateTokenResponse> | Observable<GenerateTokenResponse> | GenerateTokenResponse
-  getTokenList: Promise<TokenListResponse> | Observable<TokenListResponse> | TokenListResponse
-  deleteToken: any
 }
 
 // Not generated:

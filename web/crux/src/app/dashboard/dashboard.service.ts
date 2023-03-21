@@ -3,7 +3,7 @@ import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum } from '@prisma/client'
 import PrismaService from 'src/services/prisma.service'
 import AuditService from '../audit/audit.service'
-import DashboardResponse from './dashboard.dto'
+import DashboardDto from './dashboard.dto'
 import DashboardMapper from './dashboard.mapper'
 
 @Injectable()
@@ -14,7 +14,7 @@ export default class DashboardService {
     private readonly auditService: AuditService,
   ) {}
 
-  public async getDashboard(identity: Identity): Promise<DashboardResponse> {
+  public async getDashboard(identity: Identity): Promise<DashboardDto> {
     const team = await this.prisma.usersOnTeams.findFirstOrThrow({
       select: {
         teamId: true,

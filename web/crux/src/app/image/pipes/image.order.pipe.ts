@@ -18,6 +18,11 @@ export default class OrderImagesValidationPipe extends BodyPipeTransform<OrderVe
         deployments: {
           distinct: ['status'],
         },
+        children: {
+          select: {
+            versionId: true,
+          },
+        },
       },
       where: {
         id: value.versionId,
