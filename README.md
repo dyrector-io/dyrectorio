@@ -168,6 +168,20 @@ Send a pull request to any of our open source repositories on Github. Check our 
 
 The project can only accept contributions which are licensed under the [Apache License 2.0](LICENSE). For further information please see our [Contribution Guidelines](CONTRIBUTING.md).
 
+## Releases
+
+We use [semantic versioning](https://semver.org/), but shifted to the right, we don't bump major versions yet, until we reach beta phase.
+
+Minor version is raised if:
+- introduction of a braking API change (proto or HTTP)
+- new feature set is completed
+- milestone is reached
+- agent configuration changes
+
+Patch version is raised if:
+- important fixes in develop
+- any other reason
+
 ## Changelog
 
 Install the generator

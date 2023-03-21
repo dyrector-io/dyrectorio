@@ -14,13 +14,15 @@ import (
 	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
+	"github.com/dyrector-io/dyrectorio/golang/internal/label"
+	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	dagentutils "github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
 	dockerhelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 )
 
 type DyrectorioStack struct {
-	Containers     Containers
+	Containers     *Containers
 	Traefik        *containerbuilder.DockerContainerBuilder
 	Crux           *containerbuilder.DockerContainerBuilder
 	CruxMigrate    *containerbuilder.DockerContainerBuilder
@@ -52,31 +54,32 @@ type traefikFileProviderData struct {
 //go:embed traefik.yaml.tmpl
 var traefikTmpl embed.FS
 
-func ProcessCommand(settings *Settings) {
-	containers := DyrectorioStack{
-		Containers: settings.Containers,
+func ProcessCommand(ctx context.Context, initialState *State, args *ArgsFlags) {
+	builders := DyrectorioStack{
+		Containers: initialState.Containers,
 	}
-	switch settings.Command {
+	switch args.Command {
 	case UpCommand:
-		settings = CheckAndUpdatePorts(settings)
-		if settings.SettingsWrite {
-			SaveSettings(settings)
+		state := SettingsFileDefaults(initialState, args)
+		CheckAndUpdatePorts(state, args)
+		if args.SettingsWrite {
+			SaveSettings(state, args)
 		}
 
-		containers.Traefik = GetTraefik(settings)
-		containers.Crux = GetCrux(settings)
-		containers.CruxMigrate = GetCruxMigrate(settings)
-		containers.CruxUI = GetCruxUI(settings)
-		containers.Kratos = GetKratos(settings)
-		containers.KratosMigrate = GetKratosMigrate(settings)
-		containers.CruxPostgres = GetCruxPostgres(settings)
-		containers.KratosPostgres = GetKratosPostgres(settings)
-		containers.MailSlurper = GetMailSlurper(settings)
+		builders.Traefik = GetTraefik(state, args)
+		builders.Crux = GetCrux(state, args)
+		builders.CruxMigrate = GetCruxMigrate(state, args)
+		builders.CruxUI = GetCruxUI(state, args)
+		builders.Kratos = GetKratos(state, args)
+		builders.KratosMigrate = GetKratosMigrate(state, args)
+		builders.CruxPostgres = GetCruxPostgres(state, args)
+		builders.KratosPostgres = GetKratosPostgres(state, args)
+		builders.MailSlurper = GetMailSlurper(state, args)
 
-		StartContainers(&containers, settings)
-		PrintInfo(settings)
+		StartContainers(&builders, state, args)
+		PrintInfo(state, args)
 	case DownCommand:
-		StopContainers(&containers)
+		StopContainers(ctx, args)
 		log.Info().Msg("Stack is stopped. Hope you had fun! 🎬")
 	default:
 		log.Fatal().Msg("invalid command")
@@ -84,7 +87,7 @@ func ProcessCommand(settings *Settings) {
 }
 
 // Create and Start containers
-func StartContainers(containers *DyrectorioStack, settings *Settings) {
+func StartContainers(containers *DyrectorioStack, state *State, args *ArgsFlags) {
 	traefik, err := containers.Traefik.Create()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
@@ -92,9 +95,9 @@ func StartContainers(containers *DyrectorioStack, settings *Settings) {
 
 	TraefikConfiguration(
 		containers.Containers.Traefik.Name,
-		settings.InternalHostDomain,
-		settings.SettingsFile.CruxHTTPPort,
-		settings.SettingsFile.CruxUIPort,
+		state.InternalHostDomain,
+		state.SettingsFile.CruxHTTPPort,
+		state.SettingsFile.CruxUIPort,
 	)
 
 	err = traefik.Start()
@@ -158,33 +161,19 @@ func StartContainers(containers *DyrectorioStack, settings *Settings) {
 	log.Info().Str("container", containers.Containers.MailSlurper.Name).Msg("started:")
 }
 
-// Cleanup for "down" command
-func StopContainers(containers *DyrectorioStack) {
-	ctx := context.Background()
+// Cleanup for "down" command, prefix can be provided with for multi removal
+func StopContainers(ctx context.Context, args *ArgsFlags) {
+	var prefixes string
 
-	containerNames := []string{
-		containers.Containers.MailSlurper.Name,
+	if args.Prefix != "" {
+		prefixes = args.Prefix
+	} else {
+		prefixes = util.JoinV(",", "dyo-stable", "dyo-latest")
 	}
 
-	if !containers.Containers.CruxUI.Disabled {
-		containerNames = append(containerNames, containers.Containers.CruxUI.Name)
-	}
-
-	if !containers.Containers.Crux.Disabled {
-		containerNames = append(containerNames,
-			containers.Containers.Crux.Name,
-			containers.Containers.CruxMigrate.Name)
-	}
-
-	containerNames = append(containerNames,
-		containers.Containers.KratosMigrate.Name,
-		containers.Containers.Kratos.Name,
-		containers.Containers.CruxPostgres.Name,
-		containers.Containers.KratosPostgres.Name,
-		containers.Containers.Traefik.Name)
-
-	for i := range containerNames {
-		err := dockerhelper.DeleteContainerByName(ctx, containerNames[i])
+	for _, prefix := range strings.Split(prefixes, ",") {
+		log.Info().Msgf("Removing prefix: %s", prefix)
+		err := dockerhelper.DeleteContainersByLabel(ctx, label.GetPrefixLabelFilter(prefix))
 		if err != nil {
 			log.Debug().Err(err).Send()
 		}
@@ -243,14 +232,14 @@ func TraefikConfiguration(name, internalHostDomain string, cruxPort, cruxUIPort 
 	}
 }
 
-func EnsureNetworkExists(settings *Settings) {
+func EnsureNetworkExists(state *State, args *ArgsFlags) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
 
 	filter := filters.NewArgs()
-	filter.Add("name", fmt.Sprintf("^%s$", settings.SettingsFile.Network))
+	filter.Add("name", fmt.Sprintf("^%s$", state.SettingsFile.Network))
 
 	networks, err := cli.NetworkList(context.Background(),
 		types.NetworkListOptions{
@@ -265,7 +254,7 @@ func EnsureNetworkExists(settings *Settings) {
 			Driver: ContainerNetDriver,
 		}
 
-		resp, err := cli.NetworkCreate(context.Background(), settings.SettingsFile.Network, opts)
+		resp, err := cli.NetworkCreate(context.Background(), state.SettingsFile.Network, opts)
 		log.Info().Str("responseId", resp.ID).Msg("Network created with ")
 		if err != nil {
 			log.Fatal().Err(err).Stack().Send()
@@ -276,7 +265,7 @@ func EnsureNetworkExists(settings *Settings) {
 	for i := range networks {
 		if networks[i].Driver != ContainerNetDriver {
 			log.Fatal().
-				Str("network", settings.SettingsFile.Network).
+				Str("network", state.SettingsFile.Network).
 				Str("driver", ContainerNetDriver).
 				Msg("network exists, but doesn't have the correct driver")
 		} else {

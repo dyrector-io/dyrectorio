@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"fmt"
-
 	"github.com/rs/zerolog"
 	ucli "github.com/urfave/cli/v2"
 
@@ -88,12 +86,13 @@ func flags() []ucli.Flag {
 			EnvVars:  []string{"DISABLE_PODMAN_CHECKS"},
 		},
 		&ucli.StringFlag{
-			Name:     "config",
-			Aliases:  []string{"c"},
-			Value:    "",
-			Usage:    fmt.Sprintf("configuration location, default location: %s", SettingsPath()),
-			Required: false,
-			EnvVars:  []string{"DYO_CONFIG"},
+			Name:        "config",
+			Aliases:     []string{"c"},
+			Value:       "",
+			DefaultText: SettingsPath(),
+			Usage:       "persisted configuration path",
+			Required:    false,
+			EnvVars:     []string{"DYO_CONFIG"},
 		},
 		&ucli.StringFlag{
 			Name:     "imagetag",
@@ -101,6 +100,15 @@ func flags() []ucli.Flag {
 			Usage:    "image tag, it will override the config",
 			Required: false,
 			EnvVars:  []string{"DYO_IMAGE_TAG"},
+		},
+		&ucli.StringFlag{
+			Name:        "prefix",
+			Value:       "",
+			Aliases:     []string{"p"},
+			DefaultText: "dyo-stable",
+			Usage:       "prefix that is preprended to container names, default: dyo-stable",
+			Required:    false,
+			EnvVars:     []string{"PREFIX"},
 		},
 		&ucli.StringFlag{
 			Name:  "local-imagetag",
@@ -133,30 +141,31 @@ func run(cCtx *ucli.Context) error {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
-	state := Settings{
+	args := ArgsFlags{
 		SettingsWrite:       cCtx.Bool("write"),
 		SettingsFilePath:    SettingsFileLocation(cCtx.String("config")),
 		SettingsExists:      SettingsExists(cCtx.String("config")),
 		DisableForcepull:    cCtx.Bool("disable-forcepull"),
 		ImageTag:            cCtx.String("imagetag"),
+		Prefix:              cCtx.String("prefix"),
 		SpecialImageTag:     cCtx.String("local-imagetag"),
 		DisablePodmanChecks: cCtx.Bool("disable-podman-checks"),
 		FullyContainerized:  cCtx.Bool("expect-container-env"),
 		Network:             cCtx.String("network"),
-		Containers: Containers{
-			CruxUI: ContainerSettings{
-				Disabled: cCtx.Bool("disable-crux-ui"),
-			},
-			Crux: ContainerSettings{
-				Disabled:   cCtx.Bool("disable-crux"),
-				LocalAgent: cCtx.Bool("local-agent"),
-			},
-		},
-		Command: cCtx.Command.Name,
+		Command:             cCtx.Command.Name,
 	}
 
-	settings := SettingsFileReadWrite(&state)
-	ProcessCommand(settings)
+	initialState := State{Containers: &Containers{
+		CruxUI: ContainerSettings{
+			Disabled: cCtx.Bool("disable-crux-ui"),
+		},
+		Crux: ContainerSettings{
+			Disabled:   cCtx.Bool("disable-crux"),
+			LocalAgent: cCtx.Bool("local-agent"),
+		},
+	}}
+
+	ProcessCommand(cCtx.Context, &initialState, &args)
 
 	return nil
 }

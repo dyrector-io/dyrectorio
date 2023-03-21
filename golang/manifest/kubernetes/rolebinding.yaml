@@ -1,3 +1,5 @@
+# deprecated, delete these after 0.4 is out
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
