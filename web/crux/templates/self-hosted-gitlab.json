@@ -6,7 +6,7 @@
     {
       "name": "Docker Hub Gitlab",
       "type": "hub",
-      "hub": {
+      "details": {
         "imageNamePrefix": "gitlab"
       }
     }

@@ -6,7 +6,7 @@
     {
       "name": "Vaultwarden / Docker HUB",
       "type": "hub",
-      "hub": {
+      "details": {
         "imageNamePrefix": "vaultwarden"
       }
     }

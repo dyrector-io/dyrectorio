@@ -6,14 +6,14 @@
     {
       "name": "Docker Hub Library",
       "type": "hub",
-      "hub": {
+      "details": {
         "imageNamePrefix": "library"
       }
     },
     {
       "name": "Docker Hub Linkace",
       "type": "hub",
-      "hub": {
+      "details": {
         "imageNamePrefix": "linkace"
       }
     }
