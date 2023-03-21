@@ -147,7 +147,7 @@ export const verificationUrl = (email: string) => `${ROUTE_VERIFICATION}?email=$
 // product
 export const productUrl = (id: string, params?: VersionUrlParams) => appendUrlParams(`${ROUTE_PRODUCTS}/${id}`, params)
 export const productApiUrl = (id: string) => `${API_PRODUCTS}/${id}`
-export const productVersionsApiUrl = (productId: string) => `${productApiUrl(productId)}/${productId}/versions`
+export const productVersionsApiUrl = (productId: string) => `${productApiUrl(productId)}/versions`
 
 // registry
 export const registryUrl = (id: string) => `${ROUTE_REGISTRIES}/${id}`
@@ -178,7 +178,7 @@ export const versionIncreaseApiUrl = (productId: string, versionId: string) =>
   `${versionApiUrl(productId, versionId)}/increase`
 export const versionSetDefaultApiUrl = (productId: string, versionId: string) =>
   `${versionApiUrl(productId, versionId)}/default`
-export const versionWsUrl = (productId: string, versionId: string) => `${versionApiUrl(productId, versionId)}/connect`
+export const versionWsUrl = (productId: string, versionId: string) => `/api${versionUrl(productId, versionId)}/connect`
 
 // deployment
 export const versionDeploymentsUrl = (productId: string, versionId: string) =>
