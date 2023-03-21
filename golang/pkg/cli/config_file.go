@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 
 	"github.com/docker/docker/client"
@@ -24,21 +25,28 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Settings and state of the application
-type Settings struct {
-	SettingsFile        SettingsFile
+// State itself exists per-execution, settingsFile is persisted
+// freedesktop spec folders used by default, $XDG_CONFIG_HOME
+type State struct {
+	SettingsFile       SettingsFile
+	InternalHostDomain string
+	*Containers
+}
+
+type ArgsFlags struct {
 	SettingsWrite       bool
 	SettingsExists      bool
 	SettingsFilePath    string
 	Command             string
 	ImageTag            string
+	Prefix              string
 	SpecialImageTag     string
 	DisableForcepull    bool
 	DisablePodmanChecks bool
+	CruxDisabled        bool
+	CruxUIDisabled      bool
 	FullyContainerized  bool
 	Network             string
-	InternalHostDomain  string
-	Containers
 }
 
 type Containers struct {
@@ -67,8 +75,8 @@ type SettingsFile struct {
 	Version        string `yaml:"version" env-default:"stable"`
 	CruxDisabled   bool   `yaml:"crux_disabled" env-default:"false"`
 	CruxUIDisabled bool   `yaml:"crux-ui_disabled" env-default:"false"`
-	Network        string `yaml:"network-name" env-default:"dyrectorio-stack"`
-	Prefix         string `yaml:"prefix" env-default:"dyrectorio-stack"`
+	Network        string `yaml:"network-name" env-default:"dyo-stable"`
+	Prefix         string `yaml:"prefix" env-default:"dyo-stable"`
 	Options
 }
 
@@ -157,50 +165,52 @@ func SettingsFileLocation(settingsPath string) string {
 }
 
 // Reading and parsing the settings.yaml
-func SettingsFileReadWrite(state *Settings) *Settings {
-	if state.SettingsExists {
-		err := cleanenv.ReadConfig(state.SettingsFilePath, &state.SettingsFile)
+func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
+	settingsFile := SettingsFile{}
+	if args.SettingsExists {
+		err := cleanenv.ReadConfig(args.SettingsFilePath, &settingsFile)
 		if err != nil {
 			log.Fatal().Err(err).Stack().Msg("Failed to load configuration")
 		}
 	} else {
-		state.SettingsWrite = true
-		err := cleanenv.ReadEnv(&state.SettingsFile)
+		args.SettingsWrite = true
+		err := cleanenv.ReadEnv(&settingsFile)
 		if err != nil {
 			log.Fatal().Err(err).Stack().Msg("Failed to load configuration")
 		}
 	}
+	initialState.SettingsFile = settingsFile
 
-	internalHostDomain := CheckRequirements(state)
+	internalHostDomain := CheckRequirements(args)
 
 	// Fill out data if empty
-	settings := LoadDefaultsOnEmpty(state)
-	settings.InternalHostDomain = internalHostDomain
+	state := LoadDefaultsOnEmpty(initialState, args)
+	state.InternalHostDomain = internalHostDomain
 
-	EnsureNetworkExists(settings)
+	EnsureNetworkExists(state, args)
 
-	if settings.Network != "" {
-		settings.SettingsFile.Network = settings.Network
+	if args.Network != "" {
+		state.SettingsFile.Network = args.Network
 	}
 
-	if settings.ImageTag != "" {
-		settings.SettingsFile.Version = settings.ImageTag
+	if args.ImageTag != "" {
+		state.SettingsFile.Version = args.ImageTag
 	}
 
 	// Set disabled stuff
-	settings = DisabledServiceSettings(settings)
+	state = DisabledServiceSettings(state)
 
 	// Settings Validation steps
 
-	if settings.SettingsWrite {
-		SaveSettings(settings)
+	if args.SettingsWrite {
+		SaveSettings(state, args)
 	}
 
-	return settings
+	return state
 }
 
 // Check prerequisites
-func CheckRequirements(state *Settings) string {
+func CheckRequirements(state *ArgsFlags) string {
 	// getenv
 	envVarValue := os.Getenv("DOCKER_HOST")
 
@@ -293,32 +303,32 @@ func PodmanInfo() {
 	}
 }
 
-func DisabledServiceSettings(settings *Settings) *Settings {
-	if settings.Containers.CruxUI.Disabled {
-		settings.CruxUI.CruxAddr = localhost
+func DisabledServiceSettings(state *State) *State {
+	if state.Containers.CruxUI.Disabled {
+		state.CruxUI.CruxAddr = localhost
 	} else {
-		settings.CruxUI.CruxAddr = fmt.Sprintf("%s_crux", settings.SettingsFile.Prefix)
+		state.CruxUI.CruxAddr = fmt.Sprintf("%s_crux", state.SettingsFile.Prefix)
 	}
 
-	return settings
+	return state
 }
 
-func PrintInfo(settings *Settings) {
+func PrintInfo(state *State, settings *ArgsFlags) {
 	log.Warn().Msg("🦩🦩🦩 Use the CLI tool only for NON-PRODUCTION purpose. 🦩🦩🦩")
 
-	if settings.Containers.Crux.Disabled {
+	if state.Containers.Crux.Disabled {
 		log.Info().Msg("Do not forget to add your environmental variables to your .env files or export them!")
 		log.Info().Msgf("DATABASE_URL=postgresql://%s:%s@localhost:%d/%s?schema=public",
-			settings.SettingsFile.CruxPostgresUser,
-			settings.SettingsFile.CruxPostgresPassword,
-			settings.SettingsFile.CruxPostgresPort,
-			settings.SettingsFile.CruxPostgresDB)
+			state.SettingsFile.CruxPostgresUser,
+			state.SettingsFile.CruxPostgresPassword,
+			state.SettingsFile.CruxPostgresPort,
+			state.SettingsFile.CruxPostgresDB)
 	}
 
 	log.Info().Msgf("Stack is ready. The UI should be available at http://localhost:%d location.",
-		settings.SettingsFile.Options.TraefikWebPort)
+		state.SettingsFile.Options.TraefikWebPort)
 	log.Info().Msgf("The e-mail service should be available at http://localhost:%d location.",
-		settings.SettingsFile.Options.MailSlurperWebPort)
+		state.SettingsFile.Options.MailSlurperWebPort)
 	log.Info().Msg("Happy deploying! 🎬")
 }
 
@@ -332,33 +342,33 @@ func SettingsPath() string {
 }
 
 // Save the settings
-func SaveSettings(settings *Settings) {
+func SaveSettings(state *State, args *ArgsFlags) {
 	settingsPath := SettingsPath()
 
 	// If settingsPath is default, we create the directory for it
-	if settings.SettingsFilePath == settingsPath {
+	if args.SettingsFilePath == settingsPath {
 		if _, err := os.Stat(path.Dir(settingsPath)); errors.Is(err, os.ErrNotExist) {
 			err = os.MkdirAll(path.Dir(settingsPath), DirPerms)
 			if err != nil {
 				log.Fatal().Err(err).Stack().Send()
 			}
-			printWelcomeMessage(settings.SettingsFilePath)
+			printWelcomeMessage(args.SettingsFilePath)
 		} else if err != nil {
 			log.Fatal().Err(err).Stack().Send()
 		}
 	}
 
-	filedata, err := yaml.Marshal(&settings.SettingsFile)
+	filedata, err := yaml.Marshal(state.SettingsFile)
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
 
-	err = os.WriteFile(settings.SettingsFilePath, filedata, FilePerms)
+	err = os.WriteFile(args.SettingsFilePath, filedata, FilePerms)
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
 
-	settings.SettingsWrite = false
+	args.SettingsWrite = false
 }
 
 func printWelcomeMessage(settingsPath string) {
@@ -369,38 +379,35 @@ func printWelcomeMessage(settingsPath string) {
 }
 
 // There are options which are not filled out by default, we need to initialize values
-func LoadDefaultsOnEmpty(settings *Settings) *Settings {
+func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	// Set Docker Image location
-	settings.Crux.Image = "ghcr.io/dyrector-io/dyrectorio/web/crux"
-	settings.CruxUI.Image = "ghcr.io/dyrector-io/dyrectorio/web/crux-ui"
-	settings.Kratos.Image = "ghcr.io/dyrector-io/dyrectorio/web/kratos"
+	state.Crux.Image = "ghcr.io/dyrector-io/dyrectorio/web/crux"
+	state.CruxUI.Image = "ghcr.io/dyrector-io/dyrectorio/web/crux-ui"
+	state.Kratos.Image = "ghcr.io/dyrector-io/dyrectorio/web/kratos"
 
-	// Store state to settings
-	if settings.Containers.Crux.Disabled != settings.SettingsFile.CruxDisabled {
-		settings.SettingsFile.CruxDisabled = settings.Containers.Crux.Disabled
-	}
-	if settings.Containers.CruxUI.Disabled != settings.SettingsFile.CruxUIDisabled {
-		settings.SettingsFile.CruxUIDisabled = settings.Containers.CruxUI.Disabled
+	// Pushing down prefix
+	if args.Prefix != "" {
+		state.SettingsFile.Prefix = args.Prefix
 	}
 
 	// Load defaults
-	settings.SettingsFile.CruxSecret = LoadStringVal(settings.SettingsFile.CruxSecret, RandomChars(SecretLength))
-	settings.SettingsFile.CruxPostgresPassword = LoadStringVal(settings.SettingsFile.CruxPostgresPassword, RandomChars(SecretLength))
-	settings.SettingsFile.KratosPostgresPassword = LoadStringVal(settings.SettingsFile.KratosPostgresPassword, RandomChars(SecretLength))
-	settings.SettingsFile.KratosSecret = LoadStringVal(settings.SettingsFile.KratosSecret, RandomChars(SecretLength))
+	state.SettingsFile.CruxSecret = util.Fallback(state.SettingsFile.CruxSecret, RandomChars(SecretLength))
+	state.SettingsFile.CruxPostgresPassword = util.Fallback(state.SettingsFile.CruxPostgresPassword, RandomChars(SecretLength))
+	state.SettingsFile.KratosPostgresPassword = util.Fallback(state.SettingsFile.KratosPostgresPassword, RandomChars(SecretLength))
+	state.SettingsFile.KratosSecret = util.Fallback(state.SettingsFile.KratosSecret, RandomChars(SecretLength))
 
 	// Generate names
-	settings.Containers.Traefik.Name = fmt.Sprintf("%s_traefik", settings.SettingsFile.Prefix)
-	settings.Containers.Crux.Name = fmt.Sprintf("%s_crux", settings.SettingsFile.Prefix)
-	settings.Containers.CruxMigrate.Name = fmt.Sprintf("%s_crux-migrate", settings.SettingsFile.Prefix)
-	settings.Containers.CruxUI.Name = fmt.Sprintf("%s_crux-ui", settings.SettingsFile.Prefix)
-	settings.Containers.Kratos.Name = fmt.Sprintf("%s_kratos", settings.SettingsFile.Prefix)
-	settings.Containers.KratosMigrate.Name = fmt.Sprintf("%s_kratos-migrate", settings.SettingsFile.Prefix)
-	settings.Containers.CruxPostgres.Name = fmt.Sprintf("%s_crux-postgres", settings.SettingsFile.Prefix)
-	settings.Containers.KratosPostgres.Name = fmt.Sprintf("%s_kratos-postgres", settings.SettingsFile.Prefix)
-	settings.Containers.MailSlurper.Name = fmt.Sprintf("%s_mailslurper", settings.SettingsFile.Prefix)
+	state.Containers.Traefik.Name = fmt.Sprintf("%s_traefik", state.SettingsFile.Prefix)
+	state.Containers.Crux.Name = fmt.Sprintf("%s_crux", state.SettingsFile.Prefix)
+	state.Containers.CruxMigrate.Name = fmt.Sprintf("%s_crux-migrate", state.SettingsFile.Prefix)
+	state.Containers.CruxUI.Name = fmt.Sprintf("%s_crux-ui", state.SettingsFile.Prefix)
+	state.Containers.Kratos.Name = fmt.Sprintf("%s_kratos", state.SettingsFile.Prefix)
+	state.Containers.KratosMigrate.Name = fmt.Sprintf("%s_kratos-migrate", state.SettingsFile.Prefix)
+	state.Containers.CruxPostgres.Name = fmt.Sprintf("%s_crux-postgres", state.SettingsFile.Prefix)
+	state.Containers.KratosPostgres.Name = fmt.Sprintf("%s_kratos-postgres", state.SettingsFile.Prefix)
+	state.Containers.MailSlurper.Name = fmt.Sprintf("%s_mailslurper", state.SettingsFile.Prefix)
 
-	return settings
+	return state
 }
 
 // This function will check if an image with the given custom tag is existing
@@ -434,13 +441,6 @@ func TryImage(dockerImage, specialTag string) string {
 	return fullDockerImage
 }
 
-func LoadStringVal(value, def string) string {
-	if value == "" {
-		return def
-	}
-	return value
-}
-
 func RandomChars(bufflength uint) string {
 	buffer := make([]byte, bufflength*BufferMultiplier)
 	_, err := rand.Read(buffer)
@@ -461,51 +461,49 @@ func RandomChars(bufflength uint) string {
 	return result[0:bufflength]
 }
 
-func CheckAndUpdatePorts(settings *Settings) *Settings {
+func CheckAndUpdatePorts(state *State, args *ArgsFlags) {
 	portMap := map[string]uint{}
-	if !settings.Containers.Crux.Disabled {
-		portMap[CruxAgentGrpcPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxAgentGrpcPort,
-			CruxAgentGrpcPort, &settings.SettingsWrite)
-		settings.SettingsFile.Options.CruxAgentGrpcPort = portMap[CruxAgentGrpcPort]
-		portMap[CruxGrpcPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxGrpcPort,
-			CruxGrpcPort, &settings.SettingsWrite)
-		settings.SettingsFile.Options.CruxGrpcPort = portMap[CruxGrpcPort]
+	if !state.Containers.Crux.Disabled {
+		portMap[CruxAgentGrpcPort] = getAvailablePort(portMap, state.SettingsFile.Options.CruxAgentGrpcPort,
+			CruxAgentGrpcPort, &args.SettingsWrite)
+		state.SettingsFile.Options.CruxAgentGrpcPort = portMap[CruxAgentGrpcPort]
+		portMap[CruxGrpcPort] = getAvailablePort(portMap, state.SettingsFile.Options.CruxGrpcPort,
+			CruxGrpcPort, &args.SettingsWrite)
+		state.SettingsFile.Options.CruxGrpcPort = portMap[CruxGrpcPort]
 	}
-	if !settings.Containers.CruxUI.Disabled {
-		portMap[CruxUIPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxUIPort,
-			CruxUIPort, &settings.SettingsWrite)
-		settings.SettingsFile.Options.CruxUIPort = portMap[CruxUIPort]
+	if !state.Containers.CruxUI.Disabled {
+		portMap[CruxUIPort] = getAvailablePort(portMap, state.SettingsFile.Options.CruxUIPort,
+			CruxUIPort, &args.SettingsWrite)
+		state.SettingsFile.Options.CruxUIPort = portMap[CruxUIPort]
 	}
 
-	portMap[CruxPostgresPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxPostgresPort,
-		CruxPostgresPort, &settings.SettingsWrite)
-	settings.SettingsFile.Options.CruxPostgresPort = portMap[CruxPostgresPort]
-	portMap[KratosAdminPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosAdminPort,
-		KratosAdminPort, &settings.SettingsWrite)
-	settings.SettingsFile.Options.KratosAdminPort = portMap[KratosAdminPort]
-	portMap[KratosPublicPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosPublicPort,
-		KratosPublicPort, &settings.SettingsWrite)
-	settings.SettingsFile.Options.KratosPublicPort = portMap[KratosPublicPort]
-	portMap[KratosPostgresPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosPostgresPort,
-		KratosPostgresPort, &settings.SettingsWrite)
-	settings.SettingsFile.Options.KratosPostgresPort = portMap[KratosPostgresPort]
-	portMap[MailSlurperSMTPPort] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperSMTPPort,
-		MailSlurperSMTPPort, &settings.SettingsWrite)
-	settings.SettingsFile.Options.MailSlurperSMTPPort = portMap[MailSlurperSMTPPort]
-	portMap[MailSlurperWebPort] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperWebPort,
-		MailSlurperWebPort, &settings.SettingsWrite)
-	settings.SettingsFile.Options.MailSlurperWebPort = portMap[MailSlurperWebPort]
-	portMap[MailSlurperWebPort2] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperWebPort2,
-		MailSlurperWebPort2, &settings.SettingsWrite)
-	settings.SettingsFile.Options.MailSlurperWebPort2 = portMap[MailSlurperWebPort2]
-	portMap[TraefikWebPort] = getAvailablePort(portMap, settings.SettingsFile.Options.TraefikWebPort,
-		TraefikWebPort, &settings.SettingsWrite)
-	settings.SettingsFile.Options.TraefikWebPort = portMap[TraefikWebPort]
-	portMap[TraefikUIPort] = getAvailablePort(portMap, settings.SettingsFile.Options.TraefikUIPort,
-		TraefikUIPort, &settings.SettingsWrite)
-	settings.SettingsFile.Options.TraefikUIPort = portMap[TraefikUIPort]
-
-	return settings
+	portMap[CruxPostgresPort] = getAvailablePort(portMap, state.SettingsFile.Options.CruxPostgresPort,
+		CruxPostgresPort, &args.SettingsWrite)
+	state.SettingsFile.Options.CruxPostgresPort = portMap[CruxPostgresPort]
+	portMap[KratosAdminPort] = getAvailablePort(portMap, state.SettingsFile.Options.KratosAdminPort,
+		KratosAdminPort, &args.SettingsWrite)
+	state.SettingsFile.Options.KratosAdminPort = portMap[KratosAdminPort]
+	portMap[KratosPublicPort] = getAvailablePort(portMap, state.SettingsFile.Options.KratosPublicPort,
+		KratosPublicPort, &args.SettingsWrite)
+	state.SettingsFile.Options.KratosPublicPort = portMap[KratosPublicPort]
+	portMap[KratosPostgresPort] = getAvailablePort(portMap, state.SettingsFile.Options.KratosPostgresPort,
+		KratosPostgresPort, &args.SettingsWrite)
+	state.SettingsFile.Options.KratosPostgresPort = portMap[KratosPostgresPort]
+	portMap[MailSlurperSMTPPort] = getAvailablePort(portMap, state.SettingsFile.Options.MailSlurperSMTPPort,
+		MailSlurperSMTPPort, &args.SettingsWrite)
+	state.SettingsFile.Options.MailSlurperSMTPPort = portMap[MailSlurperSMTPPort]
+	portMap[MailSlurperWebPort] = getAvailablePort(portMap, state.SettingsFile.Options.MailSlurperWebPort,
+		MailSlurperWebPort, &args.SettingsWrite)
+	state.SettingsFile.Options.MailSlurperWebPort = portMap[MailSlurperWebPort]
+	portMap[MailSlurperWebPort2] = getAvailablePort(portMap, state.SettingsFile.Options.MailSlurperWebPort2,
+		MailSlurperWebPort2, &args.SettingsWrite)
+	state.SettingsFile.Options.MailSlurperWebPort2 = portMap[MailSlurperWebPort2]
+	portMap[TraefikWebPort] = getAvailablePort(portMap, state.SettingsFile.Options.TraefikWebPort,
+		TraefikWebPort, &args.SettingsWrite)
+	state.SettingsFile.Options.TraefikWebPort = portMap[TraefikWebPort]
+	portMap[TraefikUIPort] = getAvailablePort(portMap, state.SettingsFile.Options.TraefikUIPort,
+		TraefikUIPort, &args.SettingsWrite)
+	state.SettingsFile.Options.TraefikUIPort = portMap[TraefikUIPort]
 }
 
 func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string, changed *bool) uint {

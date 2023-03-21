@@ -17,9 +17,9 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/thanhpk/randstr"
 
+	"github.com/dyrector-io/dyrectorio/golang/internal/label"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
-	dagentutils "github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 )
 
@@ -178,7 +178,7 @@ func (testSuite *DockerContainerHelperTestSuite) DeleteContainersByLabel() {
 	assert.GreaterOrEqual(testSuite.T(), len(testSuite.testContainers), len(containers),
 		"should return number of original containers")
 
-	err = dockerHelper.DeleteContainersByLabel(testSuite.ctx, util.JoinV("=", dagentutils.LabelContainerPrefix, testSuite.prefix))
+	err = dockerHelper.DeleteContainersByLabel(testSuite.ctx, util.JoinV("=", label.ContainerPrefix, testSuite.prefix))
 	assert.NoError(testSuite.T(), err, "%s", err)
 
 	containers, err = dockerHelper.GetAllContainersByName(testSuite.ctx, fmt.Sprintf("^%s", testSuite.prefix))
