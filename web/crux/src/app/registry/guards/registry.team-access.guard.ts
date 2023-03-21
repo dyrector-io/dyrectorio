@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { UnauthorizedException } from '@nestjs/common/exceptions'
 import { CanActivate, ExecutionContext } from '@nestjs/common/interfaces'
+import { identityOfContext } from 'src/app/token/jwt-auth.guard'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
@@ -8,22 +8,18 @@ export default class RegistryTeamAccessGuard implements CanActivate {
   constructor(protected readonly prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest()
-    const { params, body } = request
-    const { registryId } = params
+    const req = context.switchToHttp().getRequest()
+    const registryId = req.params.registryId as string
 
     if (!registryId) {
       return true
     }
 
-    const { identity } = body
-    if (!identity) {
-      throw new UnauthorizedException()
-    }
+    const identity = identityOfContext(context)
 
     const registries = await this.prisma.registry.count({
       where: {
-        id: request.id,
+        id: req.id,
         team: {
           users: {
             some: {
