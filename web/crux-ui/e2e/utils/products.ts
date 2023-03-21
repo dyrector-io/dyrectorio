@@ -15,9 +15,8 @@ export const createProduct = async (page: Page, name: string, type: 'Simple' | '
 
   const product = await page.waitForSelector(`a:has-text("${name}")`)
 
-  const navigation = page.waitForNavigation({ url: `**${ROUTE_PRODUCTS}/**` })
   await product.click()
-  await navigation
+  await page.waitForURL(`**${ROUTE_PRODUCTS}/**`)
 
   if (type === 'Simple') {
     await page.waitForSelector(`span:has-text("Changelog")`)
@@ -100,7 +99,7 @@ export const addDeploymentToSimpleProduct = async (
   productId: string,
   nodeName: string,
   prefix: string | null,
-): Promise<{ id: string; url: string }> => {
+): Promise<{ id: string; versionId: string; url: string }> => {
   await page.goto(productUrl(productId))
 
   await page.locator('button:has-text("Add deployment")').click()
@@ -112,12 +111,15 @@ export const addDeploymentToSimpleProduct = async (
 
   await page.locator(`button:has-text("${nodeName}")`).click()
 
-  const navigation = page.waitForNavigation({ url: `**${productUrl(productId)}/versions/**/deployments/**` })
   await page.locator('button:has-text("Add")').click()
-  await navigation
+  await page.waitForURL(`**${productUrl(productId)}/versions/**/deployments/**`)
 
+  const urlParts = page.url().split('/')
+  const deploymentId = urlParts[urlParts.length - 1]
+  const versionId = urlParts[urlParts.length - 3]
   return {
-    id: page.url().split('/').pop(),
+    id: deploymentId,
+    versionId,
     url: page.url(),
   }
 }
@@ -140,9 +142,8 @@ export const addDeploymentToVersion = async (
 
   await page.locator(`button:has-text("${nodeName}")`).click()
 
-  const navigation = page.waitForNavigation({ url: `**${versionUrl(productId, versionId)}/deployments/**` })
   await page.locator('button:has-text("Add")').click()
-  await navigation
+  await page.waitForURL(`**${versionUrl(productId, versionId)}/deployments/**`)
 
   return {
     id: page.url().split('/').pop(),

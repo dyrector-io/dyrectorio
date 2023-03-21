@@ -38,7 +38,6 @@ test('Delete deployment should work', async ({ page }, testInfo) => {
 
   await page.waitForSelector('h4:has-text("Are you sure you want to delete Deployment?")')
 
-  const navigation = page.waitForNavigation({ url: `**${productUrl(productId)}**` })
   await page.locator('button:has-text("Delete")').nth(1).click()
-  await navigation
+  await page.waitForURL(`**${productUrl(productId)}**`)
 })
