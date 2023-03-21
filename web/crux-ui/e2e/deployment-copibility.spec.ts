@@ -153,9 +153,8 @@ test.describe('Complex product', () => {
 
     await expect(await page.locator('button:has-text("Copy")')).toHaveCount(1)
 
-    const navigation = page.waitForNavigation({ url: `**${versionUrl(productId, versionId)}/deployments/**` })
     await page.locator('button:has-text("Copy")').click()
-    await navigation
+    await page.waitForURL(`**${versionUrl(productId, versionId)}/deployments/**`)
 
     await expect(await page.locator('div.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
@@ -177,9 +176,8 @@ test.describe('Complex product', () => {
 
     await expect(await page.locator('button:has-text("Copy")')).toHaveCount(1)
 
-    const navigation = page.waitForNavigation({ url: `**${versionUrl(productId, versionId)}/deployments/**` })
     await page.locator('button:has-text("Copy")').click()
-    await navigation
+    await page.waitForURL(`**${versionUrl(productId, versionId)}/deployments/**`)
 
     await expect(await page.locator('div.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
@@ -206,9 +204,8 @@ test.describe('Complex product', () => {
 
     const copy = await page.locator(`[alt="Copy"]:right-of(:text("pw-complex-second"))`).first()
 
-    const navigation = page.waitForNavigation({ url: `**${versionUrl(productId, versionId)}/deployments/**` })
     await copy.click()
-    await navigation
+    await page.waitForURL(`**${versionUrl(productId, versionId)}/deployments/**`)
 
     await page.goto(versionUrl(productId, versionId))
 

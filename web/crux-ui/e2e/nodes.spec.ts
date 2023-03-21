@@ -1,4 +1,4 @@
-import { ROUTE_NODES } from '@app/routes'
+import { deploymentContainerLogUrl, deploymentDeployUrl, nodeContainerLogUrl, ROUTE_NODES } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { DAGENT_NODE, screenshotPath } from './utils/common'
 import { addDeploymentToSimpleProduct, addImageToSimpleProduct, createProduct } from './utils/products'
@@ -6,9 +6,8 @@ import { addDeploymentToSimpleProduct, addImageToSimpleProduct, createProduct } 
 test('Install dagent should be successful', async ({ page }) => {
   await page.goto(ROUTE_NODES)
 
-  const navigation = page.waitForNavigation({ url: `**${ROUTE_NODES}/**` })
   await page.locator(`h3:has-text("${DAGENT_NODE}")`).click()
-  await navigation
+  await page.waitForURL(`**${ROUTE_NODES}/**`)
 
   await expect(await page.locator('span:has-text("Running")')).toHaveCount(1)
 })
@@ -116,16 +115,15 @@ test('Container log should appear after a successful deployment', async ({ page 
 
   const productId = await createProduct(page, 'PW-DEPLOY-LOG-TEST', 'Simple')
   await addImageToSimpleProduct(page, productId, imageName)
-  const { url } = await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, prefix)
+  const { url, versionId, id: deploymentId } = await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, prefix)
 
   await page.goto(url)
 
   const deployButtonSelector = 'button:text-is("Deploy")'
   await page.waitForSelector(deployButtonSelector)
 
-  let navigation = page.waitForNavigation()
   await page.locator(deployButtonSelector).click()
-  await navigation
+  await page.waitForURL(deploymentDeployUrl(productId, versionId, deploymentId))
 
   const containerRow = page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
@@ -135,9 +133,13 @@ test('Container log should appear after a successful deployment', async ({ page 
 
   const showLogs = containerRow.locator('span:text-is("Show logs")')
 
-  navigation = page.waitForNavigation()
   await showLogs.click()
-  await navigation
+  await page.waitForURL(
+    deploymentContainerLogUrl(productId, versionId, deploymentId, {
+      prefix,
+      name: imageName,
+    }),
+  )
 
   await page.waitForSelector('div.font-roboto')
   const terminal = page.locator('div.font-roboto')
@@ -150,16 +152,15 @@ test('Container log should appear on a node container', async ({ page }) => {
 
   const productId = await createProduct(page, 'PW-NODE-DEPLOY-LOG-TEST', 'Simple')
   await addImageToSimpleProduct(page, productId, imageName)
-  const { url } = await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, prefix)
+  const { url, versionId, id: deploymentId } = await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, prefix)
 
   await page.goto(url)
 
   const deployButtonSelector = 'button:text-is("Deploy")'
   await page.waitForSelector(deployButtonSelector)
 
-  let navigation = page.waitForNavigation()
   await page.locator(deployButtonSelector).click()
-  await navigation
+  await page.waitForURL(deploymentDeployUrl(productId, versionId, deploymentId))
 
   const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
@@ -180,9 +181,15 @@ test('Container log should appear on a node container', async ({ page }) => {
   const logButton = await nodeContainerRow.locator('img[src*="/note-text-outline.svg"]')
   await expect(logButton).toBeVisible()
 
-  navigation = page.waitForNavigation()
+  const nodeId = page.url().split('/').pop()
+  console.log(nodeId)
+
   await logButton.click()
-  await navigation
+  await page.waitForURL(
+    nodeContainerLogUrl(nodeId, {
+      name: `${prefix}-${imageName}`,
+    }),
+  )
 
   await page.waitForSelector('div.font-roboto')
   const terminal = await page.locator('div.font-roboto')
