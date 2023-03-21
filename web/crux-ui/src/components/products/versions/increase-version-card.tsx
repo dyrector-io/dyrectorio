@@ -8,7 +8,7 @@ import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useVersionHint from '@app/hooks/use-version-hint'
-import { BasicProduct, IncreaseVersion, Version } from '@app/models'
+import { IncreaseVersion, Product, Version } from '@app/models'
 import { versionIncreaseApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { increaseVersionSchema } from '@app/validations'
@@ -17,7 +17,7 @@ import { MutableRefObject } from 'react'
 
 interface IncreaseVersionCardProps {
   className?: string
-  product: BasicProduct
+  product: Product
   parent: Version
   onVersionIncreased: (version: Version) => void
   submitRef?: MutableRefObject<() => Promise<any>>

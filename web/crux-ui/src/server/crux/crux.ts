@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 // TODO(Balanceee): refactor
 import { WS_DATA_CRUX } from '@app/const'
-import { CruxHealth, registryDetailsDtoToUI, RegistryDetailsDto } from '@app/models'
+import { CruxHealth, RegistryDetailsDto, registryDetailsDtoToUI } from '@app/models'
 import { registryApiUrl } from '@app/routes'
 import { fetchCrux } from '@app/utils'
 import WsConnection from '@app/websockets/connection'

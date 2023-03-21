@@ -3,7 +3,7 @@ import { Version } from './version'
 export const PRODUCT_TYPE_VALUES = ['simple', 'complex'] as const
 export type ProductType = typeof PRODUCT_TYPE_VALUES[number]
 
-export type BasicProduct = {
+export type Product = {
   id: string
   name: string
   description?: string
@@ -12,15 +12,11 @@ export type BasicProduct = {
   updatedAt: string
 }
 
-export type ProductListDto = {
-  data: BasicProduct[]
-}
-
-export type EditableProduct = BasicProduct & {
+export type EditableProduct = Product & {
   changelog?: string
 }
 
-export type ProductDetails = BasicProduct & {
+export type ProductDetails = Product & {
   createdAt: string
   deletable: boolean
   versions: Version[]

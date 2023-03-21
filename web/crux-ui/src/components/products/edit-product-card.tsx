@@ -8,7 +8,7 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { BasicProduct, CreateProduct, EditableProduct, PRODUCT_TYPE_VALUES, UpdateProduct } from '@app/models'
+import { CreateProduct, EditableProduct, Product, PRODUCT_TYPE_VALUES, UpdateProduct } from '@app/models'
 import { API_PRODUCTS, productApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createProductSchema, updateProductSchema } from '@app/validations'
@@ -18,7 +18,7 @@ import { MutableRefObject, useState } from 'react'
 interface EditProductCardProps {
   className?: string
   product?: EditableProduct
-  onProductEdited: (product: BasicProduct) => void
+  onProductEdited: (product: Product) => void
   submitRef?: MutableRefObject<() => Promise<any>>
 }
 
@@ -61,14 +61,14 @@ const EditProductCard = (props: EditProductCardProps) => {
         : sendForm('PUT', productApiUrl(product.id), body as UpdateProduct))
 
       if (res.ok) {
-        let result: BasicProduct
+        let result: Product
         if (res.status !== 204) {
           const json = await res.json()
-          result = json as BasicProduct
+          result = json as Product
         } else {
           result = {
             ...values,
-          } as BasicProduct
+          } as Product
         }
 
         setProduct(result)

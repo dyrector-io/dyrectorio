@@ -20,7 +20,7 @@ import ProductService from './product.service'
 
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
-import { CreateProductDto, ProductDetailsDto, ProductDto, ProductListDto, UpdateProductDto } from './product.dto'
+import { CreateProductDto, ProductDetailsDto, ProductDto, UpdateProductDto } from './product.dto'
 import ProductUpdateValidationInterceptor from './interceptors/product.update.interceptor'
 import ProductTeamAccessGuard from './guards/product.team-access.guard'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
@@ -36,8 +36,11 @@ export default class ProductHttpController {
   constructor(private service: ProductService) {}
 
   @Get()
-  @ApiOkResponse({ type: ProductListDto })
-  async getProducts(@IdentityFromRequest() identity: Identity): Promise<ProductListDto> {
+  @ApiOkResponse({
+    type: ProductDto,
+    isArray: true,
+  })
+  async getProducts(@IdentityFromRequest() identity: Identity): Promise<ProductDto[]> {
     return this.service.getProducts(identity)
   }
 

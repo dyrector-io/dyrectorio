@@ -5,20 +5,13 @@ import PrismaService from 'src/services/prisma.service'
 import { Identity } from '@ory/kratos-client'
 import TeamRepository from '../team/team.repository'
 import ProductMapper from './product.mapper'
-import {
-  CreateProductDto,
-  ProductListDto,
-  ProductTypeDto,
-  ProductDto,
-  ProductDetailsDto,
-  UpdateProductDto,
-} from './product.dto'
+import { CreateProductDto, ProductTypeDto, ProductDto, ProductDetailsDto, UpdateProductDto } from './product.dto'
 
 @Injectable()
 export default class ProductService {
   constructor(private teamRepository: TeamRepository, private prisma: PrismaService, private mapper: ProductMapper) {}
 
-  async getProducts(identity: Identity): Promise<ProductListDto> {
+  async getProducts(identity: Identity): Promise<ProductDto[]> {
     const products = await this.prisma.product.findMany({
       where: {
         team: {

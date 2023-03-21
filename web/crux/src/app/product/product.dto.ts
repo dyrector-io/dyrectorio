@@ -35,10 +35,6 @@ export class ProductDetailsDto extends ProductDto {
   versions: VersionDto[]
 }
 
-export class ProductListDto {
-  data: ProductDto[]
-}
-
 export class UpdateProductDto {
   @IsString()
   name: string

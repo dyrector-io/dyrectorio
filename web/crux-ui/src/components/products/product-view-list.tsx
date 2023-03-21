@@ -1,6 +1,6 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoList } from '@app/elements/dyo-list'
-import { BasicProduct } from '@app/models'
+import { Product } from '@app/models'
 import { productUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
@@ -10,7 +10,7 @@ import Link from 'next/link'
 import ProductTypeTag from './product-type-tag'
 
 export interface ProductViewListProps {
-  products: BasicProduct[]
+  products: Product[]
 }
 
 const ProductViewList = (props: ProductViewListProps) => {
@@ -35,7 +35,7 @@ const ProductViewList = (props: ProductViewListProps) => {
     clsx('pr-4 text-center', defaultItemClass),
   ]
 
-  const itemTemplate = (item: BasicProduct) => [
+  const itemTemplate = (item: Product) => [
     <a>{item.name}</a>,
     <a>{item.versionCount}</a>,
     <a>{utcDateToLocale(item.updatedAt)}</a>,
