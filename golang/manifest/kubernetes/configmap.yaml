@@ -1,3 +1,5 @@
+# deprecated, delete these after 0.4 is out
+
 # For manual installation this file and options are a good start
 # Check component-specific config options for more
 # apiVersion: v1
@@ -7,5 +9,5 @@
 #   namespace: dyrectorio
 # data:
 #   CRANE_IN_CLUSTER: "true"
-#   GRPC_TOKEN: 
+#   GRPC_TOKEN:
 #   NAME:

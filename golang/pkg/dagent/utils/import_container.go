@@ -19,9 +19,9 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
-func checkIfTargetVolumeIsThere(mountList []mount.Mount, importContainer *v1.ImportContainer) (int, error) {
+func checkIfTargetVolumeIsThere(mountList []mount.Mount, targetVolumeName string) (int, error) {
 	for i := range mountList {
-		if strings.Contains(mountList[i].Source, importContainer.Volume) {
+		if strings.Contains(mountList[i].Source, targetVolumeName) {
 			return i, nil
 		}
 	}
@@ -30,12 +30,12 @@ func checkIfTargetVolumeIsThere(mountList []mount.Mount, importContainer *v1.Imp
 }
 
 // before application container starts, loads import container
-func spawnInitContainer(
+func spawnImportContainer(
 	ctx context.Context, cli *client.Client, name string, mountList []mount.Mount,
 	importContainer *v1.ImportContainer, dog *dogger.DeploymentLogger, cfg *config.Configuration,
 ) error {
 	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Spawning importer container to load assets")
-	targetVolumeIndex, err := checkIfTargetVolumeIsThere(mountList, importContainer)
+	targetVolumeIndex, err := checkIfTargetVolumeIsThere(mountList, importContainer.Volume)
 	if err != nil {
 		return err
 	}

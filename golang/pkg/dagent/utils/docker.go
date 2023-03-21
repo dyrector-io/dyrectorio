@@ -24,6 +24,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/crypt"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
+	"github.com/dyrector-io/dyrectorio/golang/internal/label"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
@@ -242,10 +243,6 @@ func logDeployInfo(
 	if deployImageRequest.ContainerConfig.User != nil {
 		dog.Write(fmt.Sprintf("User: %v", *deployImageRequest.ContainerConfig.User))
 	}
-
-	if len(deployImageRequest.ContainerConfig.InitContainers) > 0 {
-		dog.Write("WARNING: missing implementation: initContainers!")
-	}
 }
 
 func buildMountList(cfg *config.Configuration, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest) []mount.Mount {
@@ -390,13 +387,30 @@ func WithInitContainers(dc *containerbuilder.DockerContainerBuilder, containerCo
 				containerName string, containerId *string,
 				mountList []mount.Mount, logger *io.StringWriter,
 			) error {
-				if initError := spawnInitContainer(ctx, client, containerName, mountList, containerConfig.ImportContainer, dog, cfg); initError != nil {
+				if initError := spawnImportContainer(ctx, client, containerName, mountList,
+					containerConfig.ImportContainer, dog, cfg); initError != nil {
 					dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, "Failed to spawn init container: "+initError.Error())
 					return initError
 				}
 				dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Loading assets was successful.")
 				return nil
 			})
+	}
+
+	if len(containerConfig.InitContainers) > 0 {
+		initFuncs = append(initFuncs, func(ctx context.Context, client *client.Client,
+			containerName string, containerId *string,
+			mountList []mount.Mount, logger *io.StringWriter,
+		) error {
+			for i := range containerConfig.InitContainers {
+				err := spawnInitContainer(ctx, client, containerName, &containerConfig.InitContainers[i], MountListToMap(mountList), dog)
+				if err != nil {
+					return err
+				}
+			}
+			dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Init containers are started successfully.")
+			return nil
+		})
 	}
 	dc.WithPreStartHooks(initFuncs...)
 }
@@ -560,7 +574,7 @@ func setImageLabels(expandedImageName string,
 	}
 
 	// set organization labels to the container
-	organizationLabels, err := SetOrganizationLabel(LabelContainerPrefix, deployImageRequest.InstanceConfig.ContainerPreName)
+	organizationLabels, err := SetOrganizationLabel(label.ContainerPrefix, deployImageRequest.InstanceConfig.ContainerPreName)
 	if err != nil {
 		return nil, fmt.Errorf("setting organization prefix: %s", err.Error())
 	}
@@ -573,7 +587,7 @@ func setImageLabels(expandedImageName string,
 			secretKeys = append(secretKeys, secretKey)
 		}
 
-		secretKeysList, err := SetOrganizationLabel(LabelSecretKeys, strings.Join(secretKeys, ","))
+		secretKeysList, err := SetOrganizationLabel(label.SecretKeys, strings.Join(secretKeys, ","))
 		if err != nil {
 			return nil, fmt.Errorf("setting secret list: %s", err.Error())
 		}
@@ -606,7 +620,7 @@ func SecretList(ctx context.Context, prefix, name string) ([]string, error) {
 
 	container := containers[0]
 
-	if val, ok := GetOrganizationLabel(container.Labels, LabelSecretKeys); ok {
+	if val, ok := GetOrganizationLabel(container.Labels, label.SecretKeys); ok {
 		return strings.Split(val, ","), nil
 	}
 
@@ -647,7 +661,7 @@ func DeleteContainers(ctx context.Context, request *common.DeleteContainersReque
 	if request.GetContainer() != nil {
 		err = DeleteContainerByPrefixAndName(ctx, request.GetContainer().Prefix, request.GetContainer().Name)
 	} else if request.GetPrefix() != "" {
-		err = dockerHelper.DeleteContainersByLabel(ctx, getPrefixLabelFilter(request.GetPrefix()))
+		err = dockerHelper.DeleteContainersByLabel(ctx, label.GetPrefixLabelFilter(request.GetPrefix()))
 	} else {
 		log.Error().Msg("Unknown DeleteContainers request")
 	}

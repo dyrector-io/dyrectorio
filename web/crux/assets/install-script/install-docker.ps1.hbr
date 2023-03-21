@@ -32,7 +32,7 @@ If ( -not (Test-Path $PERSISTENCE_FOLDER -PathType Container) ) {
 }
 
 If ( -not ${{disableForcePull}} ) {
-  docker pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+  docker pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:{{agentImageTag}}
 }
 
 docker run `
@@ -56,4 +56,4 @@ docker run `
   --name 'dagent' `
   -v ${DATA_MOUNT_PATH}:/srv/dagent `
   -v //var/run/docker.sock:/var/run/docker.sock `
-  -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+  -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:{{agentImageTag}}

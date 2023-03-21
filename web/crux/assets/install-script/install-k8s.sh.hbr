@@ -1,13 +1,18 @@
 #!/bin/sh
 set -e
 
-{{#if localManifests }}
-kubectl apply -f ./golang/manifest/kubernetes/namespace.yaml
-{{else}}
-kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/golang/manifest/kubernetes/namespace.yaml
-{{/if }}
+# migrating away from deployments because of the limited restartPolicy
+kubectl delete -n dyrectorio deployment dyrectorio-k8s-agent || true
+
+# restart command:
+# kubectl get pod dyrectorio-k8s-agent -o yaml | kubectl replace --force -f -
 
 cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dyrectorio
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -20,12 +25,59 @@ data:
 {{#if debugMode}}
   DEBUG: 'true'
 {{/if}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dyorectorio-admin-role
+  namespace: dyrectorio
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: dyrectorio
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dyrectorio-k8s-agent
+  namespace: dyrectorio
+  labels:
+    app: dyrectorio-k8s-agent
+spec:
+  initContainers:
+  - name: crane-init
+    image: ghcr.io/dyrector-io/dyrectorio/agent/crane:{{agentImageTag}}
+    args:
+      - init
+    imagePullPolicy: Always
+    resources:
+      requests:
+        memory: 128Mi
+      limits:
+        cpu: "1"
+        memory: 256Mi
+    envFrom:
+      - configMapRef:
+          name: crane-config
+  containers:
+  - name: crane
+    image: ghcr.io/dyrector-io/dyrectorio/agent/crane:{{agentImageTag}}
+    imagePullPolicy: Always
+    resources:
+      requests:
+        memory: 128Mi
+        cpu: 84m
+      limits:
+        cpu: "1"
+        memory: 256Mi
+    envFrom:
+      - configMapRef:
+          name: crane-config
+      - secretRef:
+          name: dyrectorio-secret
+  restartPolicy: OnFailure
 EOF
-
-{{#if localManifests }}
-kubectl apply -f ./golang/manifest/kubernetes/rolebinding.yaml
-kubectl apply -f ./golang/manifest/kubernetes/deployment.yaml
-{{else}}
-kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/golang/manifest/kubernetes/rolebinding.yaml
-kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/golang/manifest/kubernetes/deployment.yaml
-{{/if }}
