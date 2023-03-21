@@ -17,6 +17,7 @@ import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
+import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
@@ -38,7 +39,7 @@ const ROUTE_REGISTRY_ID = ':registryId'
     transform: true,
   }),
 )
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
+@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
 @UseGuards(JwtAuthGuard, RegistryTeamAccessGuard)
 export default class RegistryHttpController {
   constructor(private service: RegistryService) {}
