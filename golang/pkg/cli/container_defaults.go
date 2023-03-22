@@ -73,6 +73,7 @@ func GetCrux(state *State, args *ArgsFlags) *containerbuilder.DockerContainerBui
 			fmt.Sprintf("CRUX_UI_URL=%s:%d", traefikhost, state.SettingsFile.TraefikWebPort),
 			fmt.Sprintf("CRUX_AGENT_ADDRESS=%s", cruxAgentAddr),
 			"LOCAL_DEPLOYMENT=true",
+			fmt.Sprintf("CRUX_AGENT_IMAGE=%s", state.SettingsFile.Version),
 			fmt.Sprintf("LOCAL_DEPLOYMENT_NETWORK=%s", state.SettingsFile.Network),
 			fmt.Sprintf("JWT_SECRET=%s", state.SettingsFile.CruxSecret),
 			"FROM_NAME=dyrector.io",
