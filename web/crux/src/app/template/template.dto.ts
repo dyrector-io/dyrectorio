@@ -1,11 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsArray, IsIn, IsString, IsUUID } from 'class-validator'
+import { IsIn, IsString, IsUUID } from 'class-validator'
 import { ProductTypeDto, PRODUCT_TYPE_VALUES } from '../product/product.dto'
 
 export class TemplateDto {
   id: string
+
   name: string
+
   description?: string
+
   technologies: string[]
 }
 

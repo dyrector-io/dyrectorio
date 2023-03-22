@@ -9,9 +9,13 @@ import DyoButton from '@app/elements/dyo-button'
 import { defaultApiErrorHandler } from '@app/errors'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import { NotificationDetails } from '@app/models'
-import { notificationApiHookUrl, notificationApiUrl, notificationUrl, ROUTE_NOTIFICATIONS } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import {
+  notificationApiHookUrl as notificationApiTestUrl,
+  notificationApiUrl,
+  notificationUrl,
+  ROUTE_NOTIFICATIONS,
+} from '@app/routes'
+import { fetchCrux, withContextAuthorization } from '@app/utils'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -58,8 +62,8 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
     setNotification(item as NotificationDetails)
   }
 
-  const onTestHook = async () => {
-    const res = await fetch(notificationApiHookUrl(notification.id), {
+  const onTest = async () => {
+    const res = await fetch(notificationApiTestUrl(notification.id), {
       method: 'POST',
     })
 
@@ -78,7 +82,7 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
         ]}
       >
         {!editing && (
-          <DyoButton type="button" className="px-4 mr-4 whitespace-nowrap" onClick={() => throttle(onTestHook)}>
+          <DyoButton type="button" className="px-4 mr-4 whitespace-nowrap" onClick={() => throttle(onTest)}>
             {t('hook.textWebhook')}
           </DyoButton>
         )}
@@ -112,10 +116,12 @@ export default NotificationDetailsPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const notificationId = context.query.notificationId as string
+  const res = await fetchCrux(context, notificationApiUrl(notificationId))
+  const notification = (await res.json()) as NotificationDetails
 
   return {
     props: {
-      notification: await cruxFromContext(context).notificiations.getNotificationDetails(notificationId),
+      notification,
     },
   }
 }

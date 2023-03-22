@@ -25,7 +25,6 @@ import {
   CommonContainerConfig,
   CraneContainerConfig,
   CreateEntityResponse,
-  CreateNotificationResponse,
   DagentContainerConfig,
   DagentTraefikOptions,
   DeploymentByVersionResponse,
@@ -55,11 +54,6 @@ import {
   NodeScriptResponse,
   NodeScriptType,
   NodeType,
-  NotificationDetailsResponse,
-  NotificationEventType,
-  NotificationListResponse,
-  NotificationResponse,
-  NotificationType,
   PatchInstanceRequest,
   Port,
   PortList,
@@ -638,48 +632,6 @@ export class DeploymentListSecretsRequestDto {
   accessedBy: string
   instanceId: string
 }
-export class CreateNotificationRequestDto {
-  accessedBy: string
-  name: string
-  url: string
-  type: NotificationType
-  active: boolean
-  events: NotificationEventType[]
-}
-export class CreateNotificationResponseDto {
-  id: string
-  creator: string
-}
-export class UpdateNotificationRequestDto {
-  id: string
-  accessedBy: string
-  name: string
-  url: string
-  type: NotificationType
-  active: boolean
-  events: NotificationEventType[]
-}
-export class NotificationDetailsResponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  url: string
-  type: NotificationType
-  active: boolean
-  events: NotificationEventType[]
-}
-export class NotificationResponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  url: string
-  type: NotificationType
-  active: boolean
-  events: NotificationEventType[]
-}
-export class NotificationListResponseDto {
-  data: NotificationResponse[]
-}
 export class HealthResponseDto {
   status: ServiceStatus
   cruxVersion: string
@@ -827,31 +779,6 @@ export class CruxTeamControllerDto {
   getUserMeta: Promise<UserMetaResponse> | Observable<UserMetaResponse> | UserMetaResponse
   getAllTeams: Promise<AllTeamsResponse> | Observable<AllTeamsResponse> | AllTeamsResponse
   getTeamById: Promise<TeamDetailsResponse> | Observable<TeamDetailsResponse> | TeamDetailsResponse
-}
-export class CruxNotificationClientDto {
-  createNotification: Observable<CreateNotificationResponse>
-  updateNotification: Observable<UpdateEntityResponse>
-  deleteNotification: any
-  getNotificationList: Observable<NotificationListResponse>
-  getNotificationDetails: Observable<NotificationDetailsResponse>
-  testNotification: any
-}
-export class CruxNotificationControllerDto {
-  createNotification:
-    | Promise<CreateNotificationResponse>
-    | Observable<CreateNotificationResponse>
-    | CreateNotificationResponse
-  updateNotification: Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-  deleteNotification: any
-  getNotificationList:
-    | Promise<NotificationListResponse>
-    | Observable<NotificationListResponse>
-    | NotificationListResponse
-  getNotificationDetails:
-    | Promise<NotificationDetailsResponse>
-    | Observable<NotificationDetailsResponse>
-    | NotificationDetailsResponse
-  testNotification: any
 }
 export class CruxHealthClientDto {
   getHealth: Observable<HealthResponse>

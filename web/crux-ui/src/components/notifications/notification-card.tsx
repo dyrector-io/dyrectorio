@@ -1,7 +1,7 @@
 import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { NotificationDetails } from '@app/models'
+import { Notification } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -10,7 +10,7 @@ import NotificationStatusTag from './notification-status-tag'
 import NotificationTypeTag from './notification-type-tag'
 
 interface NotificationCardProps extends Omit<DyoCardProps, 'children'> {
-  notification: NotificationDetails
+  notification: Notification
   titleHref?: string
 }
 

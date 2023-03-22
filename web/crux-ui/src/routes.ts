@@ -54,7 +54,7 @@ export const API_TEAMS = '/api/teams'
 export const API_TEAMS_ACTIVE = '/api/teams/active'
 export const API_WHOAMI = '/api/whoami'
 
-export const API_NOTIFICATIONS = '/api/notifications'
+export const API_NOTIFICATIONS = '/api/new/notifications'
 
 export const API_AUDIT = `/api/new/audit-log`
 
@@ -218,7 +218,7 @@ export const teamInvitationApiUrl = (teamId: string) => `${teamApiUrl(teamId)}/i
 // notification
 export const notificationUrl = (id: string) => `${ROUTE_NOTIFICATIONS}/${id}`
 export const notificationApiUrl = (id: string) => `${API_NOTIFICATIONS}/${id}`
-export const notificationApiHookUrl = (id: string) => `${notificationApiUrl(id)}/hook`
+export const notificationApiHookUrl = (id: string) => `${notificationApiUrl(id)}/test`
 
 // image config
 export const imageConfigUrl = (productId: string, versionId: string, imageId: string) =>

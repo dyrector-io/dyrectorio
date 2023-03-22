@@ -18,7 +18,6 @@ import CruxClients from './crux-clients'
 import DyoDeploymentService from './deployment-service'
 import DyoHealthService from './health-service'
 import DyoNodeService from './node-service'
-import DyoNotifcationService from './notification-service'
 import DyoStorageService from './storage-service'
 import DyoTeamService from './team-service'
 
@@ -30,8 +29,6 @@ export class Crux {
   private _teams: DyoTeamService
 
   private _health: DyoHealthService
-
-  private _notifications: DyoNotifcationService
 
   private _storage: DyoStorageService
 
@@ -56,10 +53,6 @@ export class Crux {
 
   get health() {
     return this._health ?? new DyoHealthService(this.clients.health)
-  }
-
-  get notificiations() {
-    return this._notifications ?? new DyoNotifcationService(this.clients.notifications, this.cookie)
   }
 
   get storage() {

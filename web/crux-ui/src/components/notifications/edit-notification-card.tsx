@@ -62,18 +62,27 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
         ...values,
       }
 
-      const response = await (editMode
+      const res = await (editMode
         ? sendForm('PUT', notificationApiUrl(notification.id), request as UpdateNotification)
         : sendForm('POST', API_NOTIFICATIONS, request as CreateNotification))
 
-      if (response.ok) {
-        const result = response.status === 200 ? ((await response.json()) as NotificationDetails) : { ...values }
+      if (res.ok) {
+        let result: NotificationDetails
+        if (res.status !== 204) {
+          const json = await res.json()
+          result = json as NotificationDetails
+        } else {
+          result = {
+            ...values,
+          }
+        }
+
         setNotification(result)
         setSubmitting(false)
         onSubmitted(result as NotificationDetails)
       } else {
         setSubmitting(false)
-        handleApiError(response, setFieldError)
+        handleApiError(res, setFieldError)
       }
     },
   })

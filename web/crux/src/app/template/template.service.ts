@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { ReadStream } from 'fs'
 import { NotFoundException } from 'src/exception/errors'
