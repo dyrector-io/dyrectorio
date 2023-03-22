@@ -427,12 +427,11 @@ jobs:
           password: ${{ secrets.GHCR_PAT }}
       - name: Setup using cli
         run: |
-          docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} --disable-forcepull --imagetag ${{ needs.changes.outputs.tag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --expect-container-env --debug up
+          docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} --disable-forcepull --imagetag ${{ needs.changes.outputs.tag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --expect-container-env --debug -p dyo-e2e up
       - name: Run tests
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
         env:
           # DEBUG: pw:api
-          PREFIX: dyo-e2e
           HUB_PROXY_URL: ${{ secrets.HUB_PROXY_URL }}
           HUB_PROXY_TOKEN: ${{ secrets.HUB_PROXY_TOKEN }}
           E2E_BASE_URL: "http://dyo-e2e_traefik:8000"
