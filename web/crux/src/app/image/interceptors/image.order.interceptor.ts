@@ -47,12 +47,12 @@ export default class OrderImagesValidationInterceptor implements NestInterceptor
       })
     }
 
-    const idMismatch = images.filter(it => !body.includes(it.id))
-    if (idMismatch.length > 0) {
+    const mismatchingImages = images.filter(it => !body.includes(it.id))
+    if (mismatchingImages.length > 0) {
       throw new BadRequestException({
         message: 'Missing image id(s)',
         property: 'imageIds',
-        value: idMismatch.map(it => it.id),
+        value: mismatchingImages.map(it => it.id),
       })
     }
 

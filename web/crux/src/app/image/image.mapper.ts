@@ -179,7 +179,7 @@ export default class ImageMapper {
     return {
       ...current,
       ...patch,
-      capabilities: undefined, // TODO (@m8vago, @nandor-magyar): capabilities
+      capabilities: undefined, // TODO (@m8vago, @nandor-magyar): Remove this line, when capabilites are ready
       annotations: !patch.annotations
         ? current.annotations
         : {
