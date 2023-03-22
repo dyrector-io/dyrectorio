@@ -68,18 +68,17 @@ export default class ProductService {
   }
 
   async createProduct(request: CreateProductDto, identity: Identity): Promise<ProductDto> {
-    const { type } = request
     const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
 
     const product = await this.prisma.product.create({
       data: {
         name: request.name,
         description: request.description,
-        type,
+        type: request.type,
         teamId: team.teamId,
         createdBy: identity.id,
         versions:
-          type === ProductTypeEnum.simple
+          request.type === ProductTypeEnum.simple
             ? {
                 create: {
                   name: SIMPLE_PRODUCT_VERSION_NAME,

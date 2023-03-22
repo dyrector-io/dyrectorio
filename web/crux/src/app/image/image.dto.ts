@@ -21,7 +21,7 @@ import {
 } from 'src/shared/models'
 import { BasicRegistryDto } from '../registry/registry.dto'
 
-export default class ImageDto {
+export class ImageDto {
   @IsUUID()
   id: string
 
@@ -43,6 +43,18 @@ export default class ImageDto {
 
   @Type(() => BasicRegistryDto)
   registry: BasicRegistryDto
+}
+
+export class AddImagesDto {
+  registryId: string
+
+  images: string[]
+}
+
+export class PatchImageDto {
+  tag?: string
+
+  config?: Partial<ContainerConfigDto>
 }
 
 export class ContainerStorageDto {

@@ -38,15 +38,6 @@ service CruxNode {
       returns (stream common.ContainerLogMessage);
 }
 
-service CruxImage {
-  rpc GetImagesByVersionId(IdRequest) returns (ImageListResponse);
-  rpc AddImagesToVersion(AddImagesToVersionRequest) returns (ImageListResponse);
-  rpc OrderImages(OrderVersionImagesRequest) returns (common.Empty);
-  rpc PatchImage(PatchImageRequest) returns (common.Empty);
-  rpc DeleteImage(IdRequest) returns (common.Empty);
-  rpc GetImageDetails(IdRequest) returns (ImageResponse);
-}
-
 service CruxDeployment {
   rpc GetDeploymentsByVersionId(IdRequest)
       returns (DeploymentListByVersionResponse);
@@ -442,31 +433,6 @@ message ImageResponse {
   google.protobuf.Timestamp createdAt = 105;
   string registryName = 106;
   RegistryType registryType = 107;
-}
-
-message ImageListResponse { repeated ImageResponse data = 100; }
-
-message OrderVersionImagesRequest {
-  string versionId = 100;
-  repeated string imageIds = 101;
-}
-
-message RegistryImages {
-  string registryId = 100;
-  repeated string imageNames = 101;
-}
-
-message AddImagesToVersionRequest {
-  string versionId = 100;
-  repeated RegistryImages images = 101;
-}
-
-message PatchImageRequest {
-  string id = 1;
-
-  optional string tag = 101;
-  optional ImageContainerConfig config = 102;
-  optional string resetSection = 103;
 }
 
 // NODE

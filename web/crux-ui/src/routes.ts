@@ -173,7 +173,8 @@ export type VersionUrlParams = {
 export const versionUrl = (productId: string, versionId: string, params?: VersionUrlParams) =>
   appendUrlParams(`${productUrl(productId)}/versions/${versionId}`, params)
 
-export const versionApiUrl = (productId: string, versionId: string) => `/api/new${versionUrl(productId, versionId)}`
+export const versionApiUrl = (productId: string, versionId: string) =>
+  `${productApiUrl(productId)}/versions/${versionId}`
 export const versionIncreaseApiUrl = (productId: string, versionId: string) =>
   `${versionApiUrl(productId, versionId)}/increase`
 export const versionSetDefaultApiUrl = (productId: string, versionId: string) =>
@@ -222,6 +223,15 @@ export const notificationApiHookUrl = (id: string) => `${notificationApiUrl(id)}
 // image config
 export const imageConfigUrl = (productId: string, versionId: string, imageId: string) =>
   `${versionUrl(productId, versionId)}/image/${imageId}`
+
+export const versionImagesApiUrl = (productId: string, versionId: string) =>
+  `${versionApiUrl(productId, versionId)}/images`
+
+export const versionImagesOrderApiUrl = (productId: string, versionId: string) =>
+  `${versionImagesApiUrl(productId, versionId)}/order`
+
+export const imageApiUrl = (productId: string, versionId: string, imageId: string) =>
+  `${versionImagesApiUrl(productId, versionId)}/${imageId}`
 
 // instance
 export const instanceConfigUrl = (productId: string, versionId: string, deploymentId: string, instanceId: string) =>

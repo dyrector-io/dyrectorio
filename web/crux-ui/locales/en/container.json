@@ -34,7 +34,6 @@
     "secrets": "Secrets",
     "initContainer": "Init container",
     "image": "Image",
-    "importContainer": "Import container",
     "volume": "Volume",
     "command": "Command",
     "configContainer": "Config container",
