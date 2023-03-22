@@ -44,7 +44,7 @@ export default class ImageHttpController {
   constructor(private service: ImageService) {}
 
   @Get()
-  @ApiOkResponse({ type: Array<ImageDto> })
+  @ApiOkResponse({ type: ImageDto, isArray: true })
   async getImagesByVersionId(@VersionId() versionId: string): Promise<ImageDto[]> {
     return await this.service.getImagesByVersionId(versionId)
   }
@@ -57,8 +57,8 @@ export default class ImageHttpController {
 
   @Post()
   @CreatedWithLocation()
-  @ApiBody({ type: Array<AddImagesDto> })
-  @ApiCreatedResponse({ type: Array<ImageDto> })
+  @ApiBody({ type: AddImagesDto, isArray: true })
+  @ApiCreatedResponse({ type: ImageDto, isArray: true })
   @UseGuards(ImageAddToVersionTeamAccessGuard)
   @UseInterceptors(ImageAddToVersionValidationInterceptor)
   async addImagesToVersion(
@@ -97,7 +97,7 @@ export default class ImageHttpController {
 
   @Put('order')
   @HttpCode(204)
-  @ApiBody({ type: Array<string> })
+  @ApiBody({ type: String, isArray: true })
   @UseGuards(ImageOrderImagesTeamAccessGuard)
   @UseInterceptors(OrderImagesValidationInterceptor)
   async orderImages(@Body() request: string[], @IdentityFromRequest() identity: Identity): Promise<void> {
