@@ -65,16 +65,12 @@ import {
   PortList,
   PortRangeBinding,
   PortRangeBindingList,
-  ProductType,
   RegistryType,
   ServiceStatus,
   TeamDetailsResponse,
   TeamResponse,
   TeamStatistics,
   TeamWithStatsResponse,
-  TemplateImageResponse,
-  TemplateListResponse,
-  TemplateResponse,
   UniqueKeyList,
   UniqueKeyValueList,
   UniqueSecretKeyValueList,
@@ -689,24 +685,6 @@ export class HealthResponseDto {
   cruxVersion: string
   lastMigration: string | undefined
 }
-export class TemplateResponseDto {
-  id: string
-  name: string
-  description: string
-}
-export class TemplateListResponseDto {
-  data: TemplateResponse[]
-}
-export class CreateProductFromTemplateRequestDto {
-  id: string
-  accessedBy: string
-  name: string
-  description: string
-  type: ProductType
-}
-export class TemplateImageResponseDto {
-  data: Uint8Array
-}
 export class DashboardActiveNodesDto {
   id: string
   name: string
@@ -880,16 +858,6 @@ export class CruxHealthClientDto {
 }
 export class CruxHealthControllerDto {
   getHealth: Promise<HealthResponse> | Observable<HealthResponse> | HealthResponse
-}
-export class CruxTemplateClientDto {
-  getTemplates: Observable<TemplateListResponse>
-  createProductFromTemplate: Observable<CreateEntityResponse>
-  getImage: Observable<TemplateImageResponse>
-}
-export class CruxTemplateControllerDto {
-  getTemplates: Promise<TemplateListResponse> | Observable<TemplateListResponse> | TemplateListResponse
-  createProductFromTemplate: Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-  getImage: Promise<TemplateImageResponse> | Observable<TemplateImageResponse> | TemplateImageResponse
 }
 
 // Not generated:

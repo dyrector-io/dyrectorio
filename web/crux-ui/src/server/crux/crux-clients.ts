@@ -6,7 +6,6 @@ import {
   CruxNotificationClient,
   CruxStorageClient,
   CruxTeamClient,
-  CruxTemplateClient,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { credentials } from '@grpc/grpc-js'
 
@@ -20,8 +19,6 @@ class CruxClients {
   health: CruxHealthClient
 
   notifications: CruxNotificationClient
-
-  templates: CruxTemplateClient
 
   storage: CruxStorageClient
 
@@ -38,7 +35,6 @@ class CruxClients {
     this.teams = new CruxTeamClient(address, creds)
     this.health = new CruxHealthClient(address, creds)
     this.notifications = new CruxNotificationClient(address, creds)
-    this.templates = new CruxTemplateClient(address, creds)
     this.storage = new CruxStorageClient(address, creds)
   }
 }

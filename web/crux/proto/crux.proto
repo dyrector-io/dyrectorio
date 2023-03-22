@@ -92,13 +92,6 @@ service CruxNotification {
 
 service CruxHealth { rpc getHealth(common.Empty) returns (HealthResponse); }
 
-service CruxTemplate {
-  rpc GetTemplates(common.Empty) returns (TemplateListResponse);
-  rpc CreateProductFromTemplate(CreateProductFromTemplateRequest)
-      returns (CreateEntityResponse);
-  rpc GetImage(IdRequest) returns (TemplateImageResponse);
-}
-
 service CruxStorage {
   // CRUD
   rpc GetStorages(common.Empty) returns (StorageListResponse);
@@ -793,34 +786,6 @@ message HealthResponse {
   string cruxVersion = 101;
   optional string lastMigration = 102;
 }
-
-// TEMPLATE
-message TemplateResponse {
-  string id = 1;
-
-  string name = 100;
-  string description = 101;
-
-  repeated string technologies = 1000;
-}
-
-message TemplateListResponse { repeated TemplateResponse data = 1000; }
-
-message CreateProductFromTemplateRequest {
-  string id = 1;
-
-  string name = 100;
-  string description = 101;
-  ProductType type = 102;
-}
-
-enum ProductType {
-  PRODUCT_TYPE_UNSPECIFIED = 0;
-  SIMPLE = 1;
-  COMPLEX = 2;
-}
-
-message TemplateImageResponse { bytes data = 1; }
 
 // STORAGES
 

@@ -58,7 +58,7 @@ export const API_NOTIFICATIONS = '/api/notifications'
 
 export const API_AUDIT = `/api/new/audit-log`
 
-export const API_TEMPLATES = `/api/templates`
+export const API_TEMPLATES = `/api/new/templates`
 
 export const API_DASHBOARD = '/api/new/dashboard'
 

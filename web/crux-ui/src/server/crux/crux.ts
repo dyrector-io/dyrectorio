@@ -21,7 +21,6 @@ import DyoNodeService from './node-service'
 import DyoNotifcationService from './notification-service'
 import DyoStorageService from './storage-service'
 import DyoTeamService from './team-service'
-import DyoTemplateService from './template-service'
 
 export class Crux {
   private _nodes: DyoNodeService
@@ -33,8 +32,6 @@ export class Crux {
   private _health: DyoHealthService
 
   private _notifications: DyoNotifcationService
-
-  private _templates: DyoTemplateService
 
   private _storage: DyoStorageService
 
@@ -63,10 +60,6 @@ export class Crux {
 
   get notificiations() {
     return this._notifications ?? new DyoNotifcationService(this.clients.notifications, this.cookie)
-  }
-
-  get templates() {
-    return this._templates ?? new DyoTemplateService(this.clients.templates, this.cookie)
   }
 
   get storage() {

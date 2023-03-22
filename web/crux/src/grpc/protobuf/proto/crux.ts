@@ -557,45 +557,6 @@ export function serviceStatusToJSON(object: ServiceStatus): string {
   }
 }
 
-export enum ProductType {
-  PRODUCT_TYPE_UNSPECIFIED = 0,
-  SIMPLE = 1,
-  COMPLEX = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function productTypeFromJSON(object: any): ProductType {
-  switch (object) {
-    case 0:
-    case 'PRODUCT_TYPE_UNSPECIFIED':
-      return ProductType.PRODUCT_TYPE_UNSPECIFIED
-    case 1:
-    case 'SIMPLE':
-      return ProductType.SIMPLE
-    case 2:
-    case 'COMPLEX':
-      return ProductType.COMPLEX
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return ProductType.UNRECOGNIZED
-  }
-}
-
-export function productTypeToJSON(object: ProductType): string {
-  switch (object) {
-    case ProductType.PRODUCT_TYPE_UNSPECIFIED:
-      return 'PRODUCT_TYPE_UNSPECIFIED'
-    case ProductType.SIMPLE:
-      return 'SIMPLE'
-    case ProductType.COMPLEX:
-      return 'COMPLEX'
-    case ProductType.UNRECOGNIZED:
-    default:
-      return 'UNRECOGNIZED'
-  }
-}
-
 export interface ServiceIdRequest {
   id: string
 }
@@ -1158,29 +1119,6 @@ export interface HealthResponse {
   status: ServiceStatus
   cruxVersion: string
   lastMigration?: string | undefined
-}
-
-/** TEMPLATE */
-export interface TemplateResponse {
-  id: string
-  name: string
-  description: string
-  technologies: string[]
-}
-
-export interface TemplateListResponse {
-  data: TemplateResponse[]
-}
-
-export interface CreateProductFromTemplateRequest {
-  id: string
-  name: string
-  description: string
-  type: ProductType
-}
-
-export interface TemplateImageResponse {
-  data: Uint8Array
 }
 
 export interface StorageResponse {
@@ -3400,95 +3338,6 @@ export const HealthResponse = {
   },
 }
 
-function createBaseTemplateResponse(): TemplateResponse {
-  return { id: '', name: '', description: '', technologies: [] }
-}
-
-export const TemplateResponse = {
-  fromJSON(object: any): TemplateResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : '',
-      technologies: Array.isArray(object?.technologies) ? object.technologies.map((e: any) => String(e)) : [],
-    }
-  },
-
-  toJSON(message: TemplateResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
-    message.description !== undefined && (obj.description = message.description)
-    if (message.technologies) {
-      obj.technologies = message.technologies.map(e => e)
-    } else {
-      obj.technologies = []
-    }
-    return obj
-  },
-}
-
-function createBaseTemplateListResponse(): TemplateListResponse {
-  return { data: [] }
-}
-
-export const TemplateListResponse = {
-  fromJSON(object: any): TemplateListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => TemplateResponse.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: TemplateListResponse): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? TemplateResponse.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
-function createBaseCreateProductFromTemplateRequest(): CreateProductFromTemplateRequest {
-  return { id: '', name: '', description: '', type: 0 }
-}
-
-export const CreateProductFromTemplateRequest = {
-  fromJSON(object: any): CreateProductFromTemplateRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : '',
-      type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
-    }
-  },
-
-  toJSON(message: CreateProductFromTemplateRequest): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
-    message.description !== undefined && (obj.description = message.description)
-    message.type !== undefined && (obj.type = productTypeToJSON(message.type))
-    return obj
-  },
-}
-
-function createBaseTemplateImageResponse(): TemplateImageResponse {
-  return { data: new Uint8Array() }
-}
-
-export const TemplateImageResponse = {
-  fromJSON(object: any): TemplateImageResponse {
-    return { data: isSet(object.data) ? bytesFromBase64(object.data) : new Uint8Array() }
-  },
-
-  toJSON(message: TemplateImageResponse): unknown {
-    const obj: any = {}
-    message.data !== undefined &&
-      (obj.data = base64FromBytes(message.data !== undefined ? message.data : new Uint8Array()))
-    return obj
-  },
-}
-
 function createBaseStorageResponse(): StorageResponse {
   return { id: '', audit: undefined, name: '', url: '' }
 }
@@ -4211,55 +4060,6 @@ export function CruxHealthControllerMethods() {
 
 export const CRUX_HEALTH_SERVICE_NAME = 'CruxHealth'
 
-export interface CruxTemplateClient {
-  getTemplates(request: Empty, metadata: Metadata, ...rest: any): Observable<TemplateListResponse>
-
-  createProductFromTemplate(
-    request: CreateProductFromTemplateRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Observable<CreateEntityResponse>
-
-  getImage(request: IdRequest, metadata: Metadata, ...rest: any): Observable<TemplateImageResponse>
-}
-
-export interface CruxTemplateController {
-  getTemplates(
-    request: Empty,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<TemplateListResponse> | Observable<TemplateListResponse> | TemplateListResponse
-
-  createProductFromTemplate(
-    request: CreateProductFromTemplateRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-
-  getImage(
-    request: IdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<TemplateImageResponse> | Observable<TemplateImageResponse> | TemplateImageResponse
-}
-
-export function CruxTemplateControllerMethods() {
-  return function (constructor: Function) {
-    const grpcMethods: string[] = ['getTemplates', 'createProductFromTemplate', 'getImage']
-    for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcMethod('CruxTemplate', method)(constructor.prototype[method], method, descriptor)
-    }
-    const grpcStreamMethods: string[] = []
-    for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcStreamMethod('CruxTemplate', method)(constructor.prototype[method], method, descriptor)
-    }
-  }
-}
-
-export const CRUX_TEMPLATE_SERVICE_NAME = 'CruxTemplate'
-
 export interface CruxStorageClient {
   /** CRUD */
 
@@ -4335,50 +4135,6 @@ export function CruxStorageControllerMethods() {
 }
 
 export const CRUX_STORAGE_SERVICE_NAME = 'CruxStorage'
-
-declare var self: any | undefined
-declare var window: any | undefined
-declare var global: any | undefined
-var tsProtoGlobalThis: any = (() => {
-  if (typeof globalThis !== 'undefined') {
-    return globalThis
-  }
-  if (typeof self !== 'undefined') {
-    return self
-  }
-  if (typeof window !== 'undefined') {
-    return window
-  }
-  if (typeof global !== 'undefined') {
-    return global
-  }
-  throw 'Unable to locate global object'
-})()
-
-function bytesFromBase64(b64: string): Uint8Array {
-  if (tsProtoGlobalThis.Buffer) {
-    return Uint8Array.from(tsProtoGlobalThis.Buffer.from(b64, 'base64'))
-  } else {
-    const bin = tsProtoGlobalThis.atob(b64)
-    const arr = new Uint8Array(bin.length)
-    for (let i = 0; i < bin.length; ++i) {
-      arr[i] = bin.charCodeAt(i)
-    }
-    return arr
-  }
-}
-
-function base64FromBytes(arr: Uint8Array): string {
-  if (tsProtoGlobalThis.Buffer) {
-    return tsProtoGlobalThis.Buffer.from(arr).toString('base64')
-  } else {
-    const bin: string[] = []
-    arr.forEach(byte => {
-      bin.push(String.fromCharCode(byte))
-    })
-    return tsProtoGlobalThis.btoa(bin.join(''))
-  }
-}
 
 function toTimestamp(date: Date): Timestamp {
   const seconds = date.getTime() / 1_000

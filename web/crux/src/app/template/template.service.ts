@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
+import { ReadStream } from 'fs'
 import { NotFoundException } from 'src/exception/errors'
 import {
   deploymentStrategyFromJSON,
@@ -7,12 +8,6 @@ import {
   networkModeFromJSON,
   restartPolicyFromJSON,
 } from 'src/grpc/protobuf/proto/common'
-import {
-  CreateProductFromTemplateRequest,
-  ProductType,
-  productTypeToJSON,
-  TemplateImageResponse,
-} from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import TemplateFileService, { TemplateContainerConfig, TemplateImage } from 'src/services/template.file.service'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
@@ -20,18 +15,17 @@ import { toPrismaJson } from 'src/shared/mapper'
 import { ContainerConfigData, VolumeType } from 'src/shared/models'
 import { v4 } from 'uuid'
 import ImageMapper from '../image/image.mapper'
-import { CreateProductDto, ProductDto, ProductTypeDto } from '../product/product.dto'
+import { CreateProductDto, ProductDto } from '../product/product.dto'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
 import { CreateVersionDto } from '../version/version.dto'
 import VersionService from '../version/version.service'
+import { CreateProductFromTemplateDto } from './template.dto'
 
 const VERSION_NAME = '1.0.0'
 
 @Injectable()
 export default class TemplateService {
-  private readonly logger = new Logger(TemplateService.name)
-
   constructor(
     private prisma: PrismaService,
     private productService: ProductService,
@@ -41,7 +35,7 @@ export default class TemplateService {
     private imageMapper: ImageMapper,
   ) {}
 
-  async createProductFromTemplate(req: CreateProductFromTemplateRequest, identity: Identity): Promise<ProductDto> {
+  async createProductFromTemplate(req: CreateProductFromTemplateDto, identity: Identity): Promise<ProductDto> {
     const template = await this.templateFileService.getTemplateById(req.id)
 
     if (template.registries && template.registries.length > 0) {
@@ -81,27 +75,22 @@ export default class TemplateService {
       await Promise.all(createRegistries)
     }
 
-    const productType = productTypeToJSON(req.type).toLowerCase() as ProductTypeDto
-
     const createProductReq: CreateProductDto = {
       name: req.name,
       description: req.description,
-      type: productType,
+      type: req.type,
     }
 
     const product = await this.productService.createProduct(createProductReq, identity)
 
-    await this.createVersion(template.images, product, productType, identity)
+    await this.createVersion(template.images, product, identity)
 
     return product
   }
 
-  async getImage(id: string): Promise<TemplateImageResponse> {
+  async getImageStream(id: string): Promise<ReadStream> {
     try {
-      const buffer = await this.templateFileService.getTemplateImageById(id)
-      return {
-        data: new Uint8Array(buffer),
-      }
+      return this.templateFileService.getTemplateImageStreamById(id)
     } catch (err) {
       throw new NotFoundException({ message: 'Template image not found.', property: 'template', value: id })
     }
@@ -149,16 +138,11 @@ export default class TemplateService {
     }
   }
 
-  private async createVersion(
-    templateImages: TemplateImage[],
-    product: ProductDto,
-    productType: ProductTypeDto,
-    identity: Identity,
-  ): Promise<void> {
+  private async createVersion(templateImages: TemplateImage[], product: ProductDto, identity: Identity): Promise<void> {
     const { id: productId } = product
 
     let version =
-      productType === productTypeToJSON(ProductType.COMPLEX)
+      product.type === 'complex'
         ? await this.prisma.version.findFirst({
             where: {
               name: VERSION_NAME,
