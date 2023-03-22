@@ -5,6 +5,7 @@ on:
     branches:
       - develop
       - main
+    tags:
   pull_request:
 
 permissions:
@@ -25,6 +26,8 @@ env:
   CRUX_UI_WORKING_DIRECTORY: web/crux-ui
   KRATOS_WORKING_DIRECTORY: web/kratos
   GOLANG_WORKING_DIRECTORY: golang
+  BUILDER_IMAGE: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+
 
 jobs:
   conventional_commits:
@@ -164,6 +167,8 @@ jobs:
         run: go mod tidy
       - name: Compile
         run: |
+          make compile-cli
+          make build-cli
           make compile-agents
           make build-agents
         env:
@@ -173,6 +178,7 @@ jobs:
         run: |
           docker save ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > crane.zstd
           docker save ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > dagent.zstd
+          docker save ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > cli.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -183,33 +189,6 @@ jobs:
         with:
           name: dagent
           path: ${{ env.GOLANG_WORKING_DIRECTORY }}/dagent.zstd
-
-  go_cli_build:
-    runs-on: ubuntu-22.04
-    needs: [go_security, go_lint, go_test, changes]
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
-    defaults:
-      run:
-        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      # fixes: fatal: unsafe repository
-      - name: Adding workspace
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Load go mod
-        run: go mod tidy
-      - name: Compile
-        run: |
-          make compile-cli
-          make build-cli
-        env:
-          VERSION: ${{ needs.changes.outputs.version }}
-          image_version: ${{ needs.changes.outputs.tag }}
-      - name: Docker save
-        run: |
-          docker save ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > cli.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -236,12 +215,13 @@ jobs:
 
   crux_test:
     runs-on: ubuntu-22.04
-    needs: [crux_lint, changes]
+    needs: changes
     defaults:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+    if: ${{ (needs.changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
@@ -259,7 +239,7 @@ jobs:
 
   crux_build:
     runs-on: ubuntu-22.04
-    needs: [crux_test, changes]
+    needs: [crux_test, crux_lint, changes]
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     defaults:
@@ -348,20 +328,18 @@ jobs:
       image: ghcr.io/dyrector-io/dyrectorio/playwright:latest
       volumes:
         - /var/run/docker.sock:/var/run/docker
-    needs: [go_build, go_cli_build, crux_build, crux-ui_build, kratos_build, changes, conventional_commits]
+    needs: [go_build, crux_build, crux-ui_build, kratos_build, changes, conventional_commits]
     if: |
       always() &&
       (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
       (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
       (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
       (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
-      (needs.go_cli_build.result == 'success' || needs.go_cli_build.result == 'skipped') &&
       needs.conventional_commits.result == 'success' &&
       needs.changes.result == 'success'
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
-
       # - name: crane - artifact download
       #   if: needs.changes.outputs.agents == 'true'
       #   uses: actions/download-artifact@v3
@@ -379,7 +357,6 @@ jobs:
         run: |
           zstd -dc artifacts/dagent.zstd | docker load
         # zstd -dc artifacts/crane.zstd | docker load
-
       - name: crux - artifact download
         if: ${{ (needs.changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
         uses: actions/download-artifact@v3
@@ -475,10 +452,17 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
-    needs: [go_build, go_cli_build, e2e, changes]
-    if: (github.ref_name == 'develop' ||
-      github.ref_name == 'main' ||
-      github.ref_type == 'tag')
+    needs: [go_build, e2e, changes]
+    if: |
+      always() &&
+      (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
+      needs.e2e.result == 'success' &&
+      needs.go_build.result == 'success' &&
+      (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
+      (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
+      (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
+      needs.conventional_commits.result == 'success' &&
+      needs.changes.result == 'success'
     environment: Workflow - Protected
     steps:
       - name: artifact download
@@ -544,9 +528,16 @@ jobs:
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     needs: [crux_build, e2e, changes]
-    if: (github.ref_name == 'develop' ||
-      github.ref_name == 'main' ||
-      github.ref_type == 'tag')
+    if: |
+      always() &&
+      (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
+      needs.e2e.result == 'success' &&
+      (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
+      needs.crux_build.result == 'success' &&
+      (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
+      (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
+      needs.conventional_commits.result == 'success' &&
+      needs.changes.result == 'success'
     environment: Workflow - Protected
     steps:
       - name: artifact download
@@ -589,9 +580,16 @@ jobs:
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     needs: [crux-ui_build, e2e, changes]
-    if: (github.ref_name == 'develop' ||
-      github.ref_name == 'main' ||
-      github.ref_type == 'tag')
+    if: |
+      always() &&
+      (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
+      needs.e2e.result == 'success' &&
+      (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
+      (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
+      needs.crux-ui_build.result == 'success' &&
+      (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
+      needs.conventional_commits.result == 'success' &&
+      needs.changes.result == 'success'
     environment: Workflow - Protected
     steps:
       - name: artifact download
@@ -634,9 +632,16 @@ jobs:
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     needs: [kratos_build, e2e, changes]
-    if: (github.ref_name == 'develop' ||
-      github.ref_name == 'main' ||
-      github.ref_type == 'tag')
+    if: |
+      always() &&
+      (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
+      needs.e2e.result == 'success' &&
+      (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
+      (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
+      (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
+      needs.kratos_build.result == 'success' &&
+      needs.conventional_commits.result == 'success' &&
+      needs.changes.result == 'success'
     environment: Workflow - Protected
     steps:
       - name: artifact download
