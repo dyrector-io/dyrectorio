@@ -1,43 +1,106 @@
-import { Controller, Post, Body, UseGuards, UseInterceptors, Patch, UseFilters } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Put,
+  UseFilters,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
+import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { Identity } from '@ory/kratos-client'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
-import { Empty } from 'src/grpc/protobuf/proto/common'
-import { AddImagesToVersionRequest, ImageListResponse, PatchImageRequest } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import { AddImagesToVersionRequestDto, ImageListResponseDto, PatchImageRequestDto } from 'src/swagger/crux.dto'
-import { Identity } from '@ory/kratos-client'
+import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
+import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
+import ImageAddToVersionTeamAccessGuard from './guards/image.add-to-version.team-access.guard'
+import ImageOrderImagesTeamAccessGuard from './guards/image.order-images.team-access.guard'
+import ImageTeamAccessGuard from './guards/image.team-access.guard'
+import { AddImagesDto, ImageDto, PatchImageDto } from './image.dto'
 import ImageService from './image.service'
-import ImagePatchValidationPipe from './pipes/image.patch.pipe'
+import ImageAddToVersionValidationInterceptor from './interceptors/image.add-images.interceptor'
+import DeleteImageValidationInterceptor from './interceptors/image.delete.interceptor'
+import OrderImagesValidationInterceptor from './interceptors/image.order.interceptor'
 
-@Controller('image')
-@UseGuards(JwtAuthGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
+const ProductId = () => Param('productId')
+const VersionId = () => Param('versionId')
+const ImageId = () => Param('imageId')
+
+const ROUTE_IMAGE_ID = ':imageId'
+
+@Controller('/products/:productId/versions/:versionId/images')
+@ApiTags('version-images')
+@UseGuards(JwtAuthGuard, ImageTeamAccessGuard)
+@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
 @UseFilters(HttpExceptionFilter)
 export default class ImageHttpController {
   constructor(private service: ImageService) {}
 
-  @Post()
-  @ApiBody({ type: AddImagesToVersionRequestDto })
-  @ApiCreatedResponse({ type: ImageListResponseDto })
-  @AuditLogLevel('disabled')
-  async addImagesToVersion(
-    @Body() request: AddImagesToVersionRequest,
-    @IdentityFromRequest() identity: Identity,
-  ): Promise<ImageListResponse> {
-    return this.service.addImagesToVersion(request, identity)
+  @Get()
+  @ApiOkResponse({ type: ImageDto, isArray: true })
+  async getImagesByVersionId(@VersionId() versionId: string): Promise<ImageDto[]> {
+    return await this.service.getImagesByVersionId(versionId)
   }
 
-  @Patch()
-  @ApiBody({ type: PatchImageRequestDto })
-  @ApiOkResponse()
-  @AuditLogLevel('disabled')
-  async UpdateImage(
-    @Body(ImagePatchValidationPipe) request: PatchImageRequest,
+  @Get(ROUTE_IMAGE_ID)
+  @ApiOkResponse({ type: ImageDto })
+  async getImageDetails(@ImageId() imageId: string): Promise<ImageDto> {
+    return await this.service.getImageDetails(imageId)
+  }
+
+  @Post()
+  @CreatedWithLocation()
+  @ApiBody({ type: AddImagesDto, isArray: true })
+  @ApiCreatedResponse({ type: ImageDto, isArray: true })
+  @UseGuards(ImageAddToVersionTeamAccessGuard)
+  @UseInterceptors(ImageAddToVersionValidationInterceptor)
+  async addImagesToVersion(
+    @ProductId() productId: string,
+    @VersionId() versionId: string,
+    @Body() request: AddImagesDto[],
     @IdentityFromRequest() identity: Identity,
-  ): Promise<Empty> {
-    return await this.service.patchImage(request, identity)
+  ): Promise<CreatedResponse<ImageDto[]>> {
+    const images = await this.service.addImagesToVersion(versionId, request, identity)
+
+    return {
+      url: `/products/${productId}/versions/${versionId}/images`,
+      body: images,
+    }
+  }
+
+  @Patch(ROUTE_IMAGE_ID)
+  @HttpCode(204)
+  @ApiBody({ type: PatchImageDto })
+  @ApiNoContentResponse()
+  async patchImage(
+    @ImageId() imageId: string,
+    @Body() request: PatchImageDto,
+    @IdentityFromRequest() identity: Identity,
+  ): Promise<void> {
+    return await this.service.patchImage(imageId, request, identity)
+  }
+
+  @Delete(ROUTE_IMAGE_ID)
+  @HttpCode(204)
+  @ApiNoContentResponse()
+  @UseInterceptors(DeleteImageValidationInterceptor)
+  async deleteImage(@ImageId() imageId: string): Promise<void> {
+    return await this.service.deleteImage(imageId)
+  }
+
+  @Put('order')
+  @HttpCode(204)
+  @ApiBody({ type: String, isArray: true })
+  @UseGuards(ImageOrderImagesTeamAccessGuard)
+  @UseInterceptors(OrderImagesValidationInterceptor)
+  async orderImages(@Body() request: string[], @IdentityFromRequest() identity: Identity): Promise<void> {
+    return await this.service.orderImages(request, identity)
   }
 }

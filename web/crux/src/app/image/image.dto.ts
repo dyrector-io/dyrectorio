@@ -1,5 +1,6 @@
+import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsDate, IsNumber, IsString, IsUUID } from 'class-validator'
+import { IsDate, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
 import {
   ContainerConfigContainer,
   ContainerConfigExposeStrategy,
@@ -13,6 +14,10 @@ import {
   ContainerDeploymentStrategyType,
   ContainerNetworkMode,
   ContainerRestartPolicyType,
+  CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
+  CONTAINER_EXPOSE_STRATEGY_VALUES,
+  CONTAINER_NETWORK_MODE_VALUES,
+  CONTAINER_RESTART_POLICY_TYPE_VALUES,
   InitContainer,
   Marker,
   UniqueKey,
@@ -21,7 +26,7 @@ import {
 } from 'src/shared/models'
 import { BasicRegistryDto } from '../registry/registry.dto'
 
-export default class ImageDto {
+export class ImageDto {
   @IsUUID()
   id: string
 
@@ -45,11 +50,29 @@ export default class ImageDto {
   registry: BasicRegistryDto
 }
 
+export class AddImagesDto {
+  @IsUUID()
+  registryId: string
+
+  images: string[]
+}
+
+export class PatchImageDto {
+  @IsOptional()
+  tag?: string
+
+  @IsOptional()
+  config?: Partial<ContainerConfigDto>
+}
+
 export class ContainerStorageDto {
+  @IsUUID()
   storageId?: string
 
+  @IsString()
   path?: string
 
+  @IsString()
   bucket?: string
 }
 
@@ -63,6 +86,9 @@ export class ContainerConfigDto {
 
   ingress?: ContainerConfigIngress
 
+  @ApiProperty({
+    enum: CONTAINER_EXPOSE_STRATEGY_VALUES,
+  })
   expose: ContainerConfigExposeStrategy
 
   user?: number
@@ -90,8 +116,14 @@ export class ContainerConfigDto {
   // dagent
   logConfig?: ContainerConfigLog
 
+  @ApiProperty({
+    enum: CONTAINER_RESTART_POLICY_TYPE_VALUES,
+  })
   restartPolicy: ContainerRestartPolicyType
 
+  @ApiProperty({
+    enum: CONTAINER_NETWORK_MODE_VALUES,
+  })
   networkMode: ContainerNetworkMode
 
   networks?: UniqueKey[]
@@ -99,6 +131,9 @@ export class ContainerConfigDto {
   dockerLabels?: UniqueKeyValue[]
 
   // crane
+  @ApiProperty({
+    enum: CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
+  })
   deploymentStrategy: ContainerDeploymentStrategyType
 
   customHeaders?: UniqueKey[]

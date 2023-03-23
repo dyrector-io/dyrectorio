@@ -1,18 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
+import { ContainerConfig } from '@prisma/client'
 import { Subject } from 'rxjs'
 import { containerNameFromImageName } from 'src/domain/deployment'
-import { Empty } from 'src/grpc/protobuf/proto/common'
-import {
-  AddImagesToVersionRequest,
-  IdRequest,
-  ImageListResponse,
-  ImageResponse,
-  OrderVersionImagesRequest,
-  PatchImageRequest,
-} from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import { ContainerConfigData } from 'src/shared/models'
+import { AddImagesDto, ImageDto, PatchImageDto } from './image.dto'
 import ImageMapper, { ImageDetails } from './image.mapper'
 
 @Injectable()
@@ -25,10 +18,10 @@ export default class ImageService {
 
   constructor(private prisma: PrismaService, private mapper: ImageMapper) {}
 
-  async getImagesByVersionId(request: IdRequest): Promise<ImageListResponse> {
+  async getImagesByVersionId(versionId: string): Promise<ImageDto[]> {
     const images = await this.prisma.image.findMany({
       where: {
-        versionId: request.id,
+        versionId,
       },
       include: {
         config: true,
@@ -36,15 +29,13 @@ export default class ImageService {
       },
     })
 
-    return {
-      data: images.map(it => this.mapper.detailsToProto(it)),
-    }
+    return images.map(it => this.mapper.toDto(it))
   }
 
-  async getImageDetails(request: IdRequest): Promise<ImageResponse> {
+  async getImageDetails(imageId: string): Promise<ImageDto> {
     const image = await this.prisma.image.findUniqueOrThrow({
       where: {
-        id: request.id,
+        id: imageId,
       },
       include: {
         config: true,
@@ -52,17 +43,17 @@ export default class ImageService {
       },
     })
 
-    return this.mapper.detailsToProto(image)
+    return this.mapper.toDto(image)
   }
 
-  async addImagesToVersion(request: AddImagesToVersionRequest, identity: Identity): Promise<ImageListResponse> {
+  async addImagesToVersion(versionId: string, request: AddImagesDto[], identity: Identity): Promise<ImageDto[]> {
     const images = await this.prisma.$transaction(async prisma => {
       const lastImageOrder = await this.prisma.image.findFirst({
         select: {
           order: true,
         },
         where: {
-          versionId: request.versionId,
+          versionId,
         },
         orderBy: {
           order: 'desc',
@@ -73,8 +64,8 @@ export default class ImageService {
       let order = lastOrder + 1
 
       // we need the generated uuids, so we can't use createMany
-      const imgs = request.images.flatMap(registyImages =>
-        registyImages.imageNames.map(async it => {
+      const imgs = request.flatMap(registyImages =>
+        registyImages.images.map(async it => {
           const [imageName, imageTag] = this.splitImageAndTag(it)
 
           const image = await prisma.image.create({
@@ -84,7 +75,7 @@ export default class ImageService {
             },
             data: {
               registryId: registyImages.registryId,
-              versionId: request.versionId,
+              versionId,
               createdBy: identity.id,
               name: imageName,
               tag: imageTag,
@@ -113,13 +104,58 @@ export default class ImageService {
 
     this.imagesAddedToVersionEvent.next(images)
 
-    return {
-      data: images.map(it => this.mapper.detailsToProto(it)),
-    }
+    return images.map(it => this.mapper.toDto(it))
   }
 
-  async orderImages(request: OrderVersionImagesRequest, identity: Identity): Promise<Empty> {
-    const updates = request.imageIds.map((it, index) =>
+  async patchImage(imageId: string, request: PatchImageDto, identity: Identity): Promise<void> {
+    let config: Omit<ContainerConfig, 'id' | 'imageId'>
+
+    if (request.config) {
+      const currentConfig = await this.prisma.containerConfig.findUniqueOrThrow({
+        where: {
+          imageId,
+        },
+      })
+
+      const configData = this.mapper.configDtoToContainerConfigData(
+        currentConfig as any as ContainerConfigData,
+        request.config,
+      )
+      config = this.mapper.containerConfigDataToDb(configData)
+    }
+
+    const image = await this.prisma.image.update({
+      where: {
+        id: imageId,
+      },
+      include: {
+        config: true,
+        registry: true,
+      },
+      data: {
+        tag: request.tag ?? undefined,
+        config: {
+          update: config,
+        },
+        updatedBy: identity.id,
+      },
+    })
+
+    this.imageUpdatedEvent.next(image)
+  }
+
+  async deleteImage(versionId: string): Promise<void> {
+    await this.prisma.image.delete({
+      where: {
+        id: versionId,
+      },
+    })
+
+    this.imageDeletedFromVersionEvent.next(versionId)
+  }
+
+  async orderImages(request: string[], identity: Identity): Promise<void> {
+    const updates = request.map((it, index) =>
       this.prisma.image.update({
         data: {
           order: index,
@@ -132,59 +168,6 @@ export default class ImageService {
     )
 
     await this.prisma.$transaction(updates)
-
-    return Empty
-  }
-
-  async patchImage(request: PatchImageRequest, identity: Identity): Promise<Empty> {
-    let config: Partial<ContainerConfigData>
-
-    if (request.config) {
-      const currentConfig = await this.prisma.containerConfig.findUnique({
-        where: {
-          imageId: request.id,
-        },
-      })
-
-      config = this.mapper.configProtoToContainerConfigData(currentConfig as any as ContainerConfigData, request.config)
-    }
-
-    if (request.resetSection) {
-      config = this.mapper.configSectionResetToDb(config ?? {}, request.resetSection)
-    }
-
-    const image = await this.prisma.image.update({
-      include: {
-        config: true,
-        registry: true,
-      },
-      data: {
-        tag: request.tag ?? undefined,
-        config: {
-          update: config,
-        },
-        updatedBy: identity.id,
-      },
-      where: {
-        id: request.id,
-      },
-    })
-
-    this.imageUpdatedEvent.next(image)
-
-    return Empty
-  }
-
-  async deleteImage(request: IdRequest): Promise<Empty> {
-    await this.prisma.image.delete({
-      where: {
-        id: request.id,
-      },
-    })
-
-    this.imageDeletedFromVersionEvent.next(request.id)
-
-    return Empty
   }
 
   private splitImageAndTag(nameTag: string): [string, string | undefined] {

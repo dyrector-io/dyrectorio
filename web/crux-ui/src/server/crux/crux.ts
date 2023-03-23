@@ -17,7 +17,6 @@ import { NextApiRequest, NextPageContext } from 'next'
 import CruxClients from './crux-clients'
 import DyoDeploymentService from './deployment-service'
 import DyoHealthService from './health-service'
-import DyoImageService from './image-service'
 import DyoNodeService from './node-service'
 import DyoNotifcationService from './notification-service'
 import DyoStorageService from './storage-service'
@@ -26,8 +25,6 @@ import DyoTemplateService from './template-service'
 
 export class Crux {
   private _nodes: DyoNodeService
-
-  private _images: DyoImageService
 
   private _deployments: DyoDeploymentService
 
@@ -50,10 +47,6 @@ export class Crux {
 
   get nodes() {
     return this._nodes ?? new DyoNodeService(this.clients.nodes, this.cookie)
-  }
-
-  get images() {
-    return this._images ?? new DyoImageService(this.clients.images, this.cookie)
   }
 
   get deployments() {

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { Registry, RegistryTypeEnum } from '@prisma/client'
 import { InvalidArgumentException } from 'src/exception/errors'
 import {
@@ -7,6 +7,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
 import {
+  BasicRegistryDto,
   CreateRegistryDto,
   GithubRegistryDetailsDto,
   GitlabRegistryDetailsDto,
@@ -23,9 +24,22 @@ type RegistryTypeUnion = Pick<Registry, 'url' | 'type' | 'apiUrl' | 'user' | 'to
 
 @Injectable()
 export default class RegistryMapper {
-  toDto(registry: Registry): RegistryDto {
+  toBasicDto(it: Pick<Registry, 'id' | 'name' | 'type'>): BasicRegistryDto {
     return {
-      ...registry,
+      id: it.id,
+      name: it.name,
+      type: it.type,
+    }
+  }
+
+  toDto(it: Registry): RegistryDto {
+    return {
+      id: it.id,
+      name: it.name,
+      type: it.type,
+      url: it.url,
+      description: it.description,
+      icon: it.icon,
     }
   }
 
@@ -153,9 +167,11 @@ export default class RegistryMapper {
         namespace: null,
       }
     }
-    throw new InvalidArgumentException({
+
+    throw new BadRequestException({
       message: 'Unknown registry type',
       property: 'type',
+      value: request.type,
     })
   }
 

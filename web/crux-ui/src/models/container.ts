@@ -148,12 +148,6 @@ export type ContainerConfigContainer = {
   keepFiles: boolean
 }
 
-export type ContainerConfigImportContainer = {
-  environment: UniqueKeyValue[]
-  volume: string
-  command: string
-}
-
 export type InitContainerVolumeLink = {
   id: string
   name: string
@@ -192,7 +186,6 @@ export type ContainerConfigData = {
   expose: ContainerConfigExposeStrategy
   user?: number
   tty: boolean
-  importContainer?: ContainerConfigImportContainer
   configContainer?: ContainerConfigContainer
   ports?: ContainerConfigPort[]
   portRanges?: ContainerConfigPortRange[]
@@ -262,10 +255,6 @@ export type JsonContainerConfigLog = {
   options: JsonKeyValue
 }
 
-export type JsonContainerConfigImportContainer = Omit<ContainerConfigImportContainer, 'environment'> & {
-  environment: JsonKeyValue
-}
-
 export type JsonMarker = {
   service: JsonKeyValue
   deployment: JsonKeyValue
@@ -287,7 +276,6 @@ export type JsonContainerConfig = {
   expose?: ContainerConfigExposeStrategy
   user?: number
   tty?: boolean
-  importContainer?: JsonContainerConfigImportContainer
   configContainer?: ContainerConfigContainer
   ports?: JsonContainerConfigPort[]
   portRanges?: JsonContainerConfigPortRange[]
@@ -376,7 +364,6 @@ export const mergeConfigs = (
     configContainer: instance.configContainer ?? image.configContainer,
     ingress: instance.ingress ?? image.ingress,
     volumes: instance.volumes ?? image.volumes,
-    importContainer: instance.importContainer ?? image.importContainer,
     initContainers: instance.initContainers ?? image.initContainers,
     capabilities: null,
     storage: instance.storage ?? image.storage,
@@ -439,12 +426,6 @@ export const imageConfigToJsonContainerConfig = (config: Partial<ContainerConfig
     environment: keyValueArrayToJson(container.environment),
     volumes: container.volumes?.map(vit => removeId(vit)),
   })),
-  importContainer: config.importContainer
-    ? {
-        ...config.importContainer,
-        environment: keyValueArrayToJson(config.importContainer.environment),
-      }
-    : null,
   volumes: config.volumes?.map(it => removeId(it)),
   dockerLabels: keyValueArrayToJson(config.dockerLabels),
   annotations: config.annotations
@@ -647,12 +628,6 @@ export const mergeJsonConfigToInstanceContainerConfig = (
         }
       : null,
     initContainers: mergeInitContainersWithJson(config.initContainers, json.initContainers),
-    importContainer: !json.importContainer
-      ? null
-      : {
-          ...json.importContainer,
-          environment: mergeKeyValuesWithJson(config.importContainer.environment, json.importContainer.environment),
-        },
     ports: !json.ports
       ? []
       : json.ports.map(it => ({

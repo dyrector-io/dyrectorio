@@ -41,7 +41,6 @@ import {
   DeploymentResponse,
   HealthResponse,
   ImageContainerConfig,
-  ImageListResponse,
   ImageResponse,
   InitContainerList,
   InstanceResponse,
@@ -67,7 +66,6 @@ import {
   PortRangeBinding,
   PortRangeBindingList,
   ProductType,
-  RegistryImages,
   RegistryType,
   ServiceStatus,
   TeamDetailsResponse,
@@ -439,11 +437,6 @@ export class RegistryImagesDto {
   registryId: string
   imageNames: string[]
 }
-export class AddImagesToVersionRequestDto {
-  accessedBy: string
-  versionId: string
-  images: RegistryImages[]
-}
 export class PatchImageRequestDto {
   id: string
   accessedBy: string
@@ -763,22 +756,6 @@ export class CruxNodeControllerDto {
   subscribeNodeEventChannel: Observable<NodeEventMessage>
   watchContainerState: Observable<ContainerStateListMessage>
   subscribeContainerLogChannel: Observable<ContainerLogMessage>
-}
-export class CruxImageClientDto {
-  getImagesByVersionId: Observable<ImageListResponse>
-  addImagesToVersion: Observable<ImageListResponse>
-  orderImages: any
-  patchImage: any
-  deleteImage: any
-  getImageDetails: Observable<ImageResponse>
-}
-export class CruxImageControllerDto {
-  getImagesByVersionId: Promise<ImageListResponse> | Observable<ImageListResponse> | ImageListResponse
-  addImagesToVersion: Promise<ImageListResponse> | Observable<ImageListResponse> | ImageListResponse
-  orderImages: any
-  patchImage: any
-  deleteImage: any
-  getImageDetails: Promise<ImageResponse> | Observable<ImageResponse> | ImageResponse
 }
 
 export class DeploymentEventsDto {

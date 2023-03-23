@@ -36,6 +36,7 @@ import {
   WS_TYPE_PATCH_IMAGE,
 } from '@app/models'
 import {
+  imageApiUrl,
   imageConfigUrl,
   productApiUrl,
   productUrl,
@@ -46,7 +47,6 @@ import {
 } from '@app/routes'
 import { fetchCrux, withContextAuthorization } from '@app/utils'
 import { getContainerConfigFieldErrors, jsonErrorOf } from '@app/validations/image'
-import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -294,13 +294,12 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 
   const version = await fetchCrux(context, versionApiUrl(productId, versionId))
 
-  const crux = cruxFromContext(context)
-  const image = await crux.images.getById(imageId)
+  const image = await fetchCrux(context, imageApiUrl(productId, versionId, imageId))
   const product = await fetchCrux(context, productApiUrl(productId))
 
   return {
     props: {
-      image,
+      image: await image.json(),
       product: await product.json(),
       version: await version.json(),
     },
