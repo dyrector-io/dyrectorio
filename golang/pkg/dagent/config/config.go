@@ -12,10 +12,8 @@ type Configuration struct {
 	InternalMountPath  string `yaml:"internalMountPath"      env:"INTERNAL_MOUNT_PATH"   env-default:"/srv/dagent"`
 	LogDefaultSkip     uint64 `yaml:"logDefaultSkip"         env:"LOG_DEFAULT_SKIP"      env-default:"0"`
 	LogDefaultTake     uint64 `yaml:"logDefaultTake"         env:"LOG_DEFAULT_TAKE"      env-default:"100"`
-	// for debug use, also for podman ;))
-	MinDockerServerVersion string `yaml:"minDockerVersion"     env:"MIN_DOCKER_VERSION"     env-default:"20.10"`
-	TraefikAcmeMail        string `yaml:"traefikAcmeMail"      env:"TRAEFIK_ACME_MAIL"      env-default:""`
-	TraefikEnabled         bool   `yaml:"traefikEnabled"       env:"TRAEFIK_ENABLED"        env-default:"false"`
+	TraefikAcmeMail    string `yaml:"traefikAcmeMail"      env:"TRAEFIK_ACME_MAIL"      env-default:""`
+	TraefikEnabled     bool   `yaml:"traefikEnabled"       env:"TRAEFIK_ENABLED"        env-default:"false"`
 	// set to "DEBUG" to access the Traefik dashboard
 	TraefikLogLevel string `yaml:"traefikLogLevel"      env:"TRAEFIK_LOG_LEVEL"      env-default:"INFO"`
 	TraefikTLS      bool   `yaml:"traefikTLS"           env:"TRAEFIK_TLS"            env-default:"false"`
