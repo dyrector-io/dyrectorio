@@ -25,7 +25,7 @@ import (
 
 type DockerContainerHelperTestSuite struct {
 	suite.Suite
-	testContainers []*containerbuilder.DockerContainerBuilder
+	testContainers []containerbuilder.Builder
 	dockerClient   client.Client
 	ctx            context.Context
 	prefix         string
@@ -66,7 +66,7 @@ func (testSuite *DockerContainerHelperTestSuite) TearDownSuite() {
 // this function executes before each test case
 func (testSuite *DockerContainerHelperTestSuite) SetupTest() {
 	for i := range testSuite.testContainers {
-		err := testSuite.testContainers[i].CreateAndStart()
+		_, err := testSuite.testContainers[i].CreateAndStart()
 		if err != nil {
 			log.Fatal().Err(err).Msg("Could not start container")
 		}

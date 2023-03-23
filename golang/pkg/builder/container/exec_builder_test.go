@@ -24,16 +24,12 @@ func TestExecBuilder(t *testing.T) {
 		WithLogWriter(logger).
 		WithImage("nginx:latest")
 
-	dockerContainerBuilder, err := containerBuilder.Create()
-	assert.NoError(t, err)
-	containerID := dockerContainerBuilder.GetContainerID()
+	cont, err := containerBuilder.CreateAndStart()
+	assert.Nil(t, err)
 
-	containerBuilderErr := dockerContainerBuilder.Start()
-	assert.NoError(t, containerBuilderErr)
+	defer containerCleanup(cont)
 
-	defer builderCleanup(containerBuilder)
-
-	execBuilder := containerbuilder.NewExecBuilder(context.Background(), containerID).
+	execBuilder := containerbuilder.NewExecBuilder(context.Background(), cont.GetContainerID()).
 		WithAttachStdout().
 		WithLogWriter(logger).
 		WithAttachStdout().

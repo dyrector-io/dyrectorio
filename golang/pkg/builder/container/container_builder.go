@@ -25,25 +25,25 @@ import (
 // it can be configured using 'With...' methods.
 // A Builder can be created using the NewDockerBuilder method.
 type Builder interface {
-	WithClient(client *client.Client) Builder
+	WithClient(client client.APIClient) Builder
 	WithImage(imageWithTag string) Builder
 	WithEnv(env []string) Builder
 	WithPortBindings(portList []PortBinding) Builder
-	WithPortRange(portRanges []PortRange) Builder
+	WithPortRanges(portRanges []PortRangeBinding) Builder
 	WithMountPoints(mounts []mount.Mount) Builder
 	WithName(name string) Builder
 	WithNetworkAliases(aliases ...string) Builder
 	WithNetworkMode(networkMode string) Builder
 	WithNetworks(networks []string) Builder
 	WithLabels(labels map[string]string) Builder
-	WithLogConfig(config container.LogConfig)
-	WithRegistryAuth(auth imageHelper.RegistryAuth) Builder
+	WithLogConfig(config *container.LogConfig) Builder
+	WithRegistryAuth(auth *imageHelper.RegistryAuth) Builder
 	WithAutoRemove(remove bool) Builder
 	WithRestartPolicy(policy RestartPolicyName) Builder
 	WithEntrypoint(cmd []string) Builder
 	WithCmd(cmd []string) Builder
 	WithShell(shell []string) Builder
-	WithUser(uid string) Builder
+	WithUser(uid *int64) Builder
 	WithLogWriter(logger io.StringWriter) Builder
 	WithoutConflict() Builder
 	WithForcePullImage() Builder
@@ -52,18 +52,14 @@ type Builder interface {
 	WithPostCreateHooks(hooks ...LifecycleFunc) Builder
 	WithPreStartHooks(hooks ...LifecycleFunc) Builder
 	WithPostStartHooks(hooks ...LifecycleFunc) Builder
-	Create() (Builder, error)
-	GetContainerID() *string
-	GetNetworkID() *string
-	Start() error
-	StartWaitUntilExit() (WaitResult, error)
-	CreateAndStart() error
-	CreateAndWaitUntilExit() (WaitResult, error)
+	Create() (Container, error)
+	CreateAndStart() (Container, error)
+	CreateAndWaitUntilExit() (Container, *WaitResult, error)
 }
 
 type DockerContainerBuilder struct {
 	ctx             context.Context
-	client          *client.Client
+	client          client.APIClient
 	containerID     *string
 	networkIDs      []string
 	networkAliases  []string
@@ -98,7 +94,7 @@ type DockerContainerBuilder struct {
 // A shorthand function for creating a new DockerContainerBuilder and calling WithClient.
 // Creates a default Docker client which can be overwritten using 'WithClient'.
 // Creates a default logger which logs using the 'fmt' package.
-func NewDockerBuilder(ctx context.Context) *DockerContainerBuilder {
+func NewDockerBuilder(ctx context.Context) Builder {
 	var logger io.StringWriter = defaultLogger{}
 	b := DockerContainerBuilder{
 		ctx:    ctx,
@@ -114,13 +110,13 @@ func NewDockerBuilder(ctx context.Context) *DockerContainerBuilder {
 }
 
 // Sets the Docker client of the ContainerBuilder. By default NewDockerBuilder creates a client.
-func (dc *DockerContainerBuilder) WithClient(cli *client.Client) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithClient(cli client.APIClient) Builder {
 	dc.client = cli
 	return dc
 }
 
 // Sets the name of the target container.
-func (dc *DockerContainerBuilder) WithName(name string) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithName(name string) Builder {
 	dc.containerName = name
 	return dc
 }
@@ -128,37 +124,37 @@ func (dc *DockerContainerBuilder) WithName(name string) *DockerContainerBuilder 
 // Sets the network aliases used when connecting the container to the network.
 // Applied only if the NetworkMode is not none/host.
 // It is a must for Podman, without this the DNS resolution won't work.
-func (dc *DockerContainerBuilder) WithNetworkAliases(aliases ...string) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithNetworkAliases(aliases ...string) Builder {
 	dc.networkAliases = aliases
 	return dc
 }
 
 // Sets the port bindings of a container. Expose internal container ports to the host.
-func (dc *DockerContainerBuilder) WithPortBindings(portList []PortBinding) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithPortBindings(portList []PortBinding) Builder {
 	dc.portList = portList
 	return dc
 }
 
 // Sets port ranges of a container.
-func (dc *DockerContainerBuilder) WithPortRanges(portRanges []PortRangeBinding) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithPortRanges(portRanges []PortRangeBinding) Builder {
 	dc.portRanges = portRanges
 	return dc
 }
 
 // Sets the environment variables of a container. Values are in a "KEY=VALUE" format.
-func (dc *DockerContainerBuilder) WithEnv(envList []string) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithEnv(envList []string) Builder {
 	dc.envList = envList
 	return dc
 }
 
 // Sets the labels of a container.
-func (dc *DockerContainerBuilder) WithLabels(labels map[string]string) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithLabels(labels map[string]string) Builder {
 	dc.labels = labels
 	return dc
 }
 
 // Sets the log config of the container.
-func (dc *DockerContainerBuilder) WithLogConfig(logConfig *container.LogConfig) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithLogConfig(logConfig *container.LogConfig) Builder {
 	if logConfig != nil {
 		dc.logConfig = logConfig
 	}
@@ -166,31 +162,31 @@ func (dc *DockerContainerBuilder) WithLogConfig(logConfig *container.LogConfig) 
 }
 
 // Sets the image of a container in a "image:tag" format where image can be a fully qualified name.
-func (dc *DockerContainerBuilder) WithImage(imageWithTag string) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithImage(imageWithTag string) Builder {
 	dc.imageWithTag = imageWithTag
 	return dc
 }
 
 // Sets mount points of a container.
-func (dc *DockerContainerBuilder) WithMountPoints(mountList []mount.Mount) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithMountPoints(mountList []mount.Mount) Builder {
 	dc.mountList = mountList
 	return dc
 }
 
 // Sets the network mode of a container.
-func (dc *DockerContainerBuilder) WithNetworkMode(networkMode string) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithNetworkMode(networkMode string) Builder {
 	dc.networkMode = networkMode
 	return dc
 }
 
 // Sets the extra networks.
-func (dc *DockerContainerBuilder) WithNetworks(networks []string) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithNetworks(networks []string) Builder {
 	dc.networks = networks
 	return dc
 }
 
 // Sets the registry and authentication for the given image.
-func (dc *DockerContainerBuilder) WithRegistryAuth(auth *imageHelper.RegistryAuth) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithRegistryAuth(auth *imageHelper.RegistryAuth) Builder {
 	if auth != nil {
 		dc.registryAuth = registryAuthBase64(auth.User, auth.Password)
 	}
@@ -198,123 +194,115 @@ func (dc *DockerContainerBuilder) WithRegistryAuth(auth *imageHelper.RegistryAut
 }
 
 // Sets the restart policy of the container.
-func (dc *DockerContainerBuilder) WithRestartPolicy(policy RestartPolicyName) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithRestartPolicy(policy RestartPolicyName) Builder {
 	dc.restartPolicy = policy
 	return dc
 }
 
 // Sets if the container should be removed after it exists.
-func (dc *DockerContainerBuilder) WithAutoRemove(remove bool) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithAutoRemove(remove bool) Builder {
 	dc.remove = remove
 	return dc
 }
 
 // Sets the entrypoint of a container.
-func (dc *DockerContainerBuilder) WithEntrypoint(entrypoint []string) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithEntrypoint(entrypoint []string) Builder {
 	dc.entrypoint = entrypoint
 	return dc
 }
 
 // Sets the CMD of a container.
-func (dc *DockerContainerBuilder) WithCmd(cmd []string) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithCmd(cmd []string) Builder {
 	dc.cmd = cmd
 	return dc
 }
 
 // Sets the SHELL of a container.
-func (dc *DockerContainerBuilder) WithShell(shell []string) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithShell(shell []string) Builder {
 	dc.shell = shell
 	return dc
 }
 
 // Sets if standard streams should be attached to a tty.
-func (dc *DockerContainerBuilder) WithTTY(tty bool) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithTTY(tty bool) Builder {
 	dc.tty = tty
 	return dc
 }
 
 // Deletes the container with the given name if already exists.
-func (dc *DockerContainerBuilder) WithoutConflict() *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithoutConflict() Builder {
 	dc.withoutConflict = true
 
 	return dc
 }
 
 // Sets the UID.
-func (dc *DockerContainerBuilder) WithUser(user *int64) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithUser(user *int64) Builder {
 	dc.user = user
 	return dc
 }
 
 // Sets the logger which logs messages releated to the builder (and not the container).
-func (dc *DockerContainerBuilder) WithLogWriter(logger io.StringWriter) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithLogWriter(logger io.StringWriter) Builder {
 	dc.logger = logger
 	return dc
 }
 
 // Sets the builder to force pull the image before creating the container.
-func (dc *DockerContainerBuilder) WithForcePullImage() *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithForcePullImage() Builder {
 	dc.forcePull = true
 	return dc
 }
 
 // Sets the builder to use extra hosts when creating the container.
 // Hosts must be defined in a "HOSTNAME:IP" format.
-func (dc *DockerContainerBuilder) WithExtraHosts(hosts []string) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithExtraHosts(hosts []string) Builder {
 	dc.extraHosts = hosts
 	return dc
 }
 
 // Sets an array of hooks which runs before the container is created. ContainerID is nil in these hooks.
-func (dc *DockerContainerBuilder) WithPreCreateHooks(hooks ...LifecycleFunc) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithPreCreateHooks(hooks ...LifecycleFunc) Builder {
 	dc.hooksPreCreate = hooks
 	return dc
 }
 
 // Sets an array of hooks which runs after the container is created.
-func (dc *DockerContainerBuilder) WithPostCreateHooks(hooks ...LifecycleFunc) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithPostCreateHooks(hooks ...LifecycleFunc) Builder {
 	dc.hooksPostCreate = hooks
 	return dc
 }
 
 // Sets an array of hooks which runs before the container is started.
-func (dc *DockerContainerBuilder) WithPreStartHooks(hooks ...LifecycleFunc) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithPreStartHooks(hooks ...LifecycleFunc) Builder {
 	dc.hooksPreStart = hooks
 	return dc
 }
 
 // Sets an array of hooks which runs after the container is started.
-func (dc *DockerContainerBuilder) WithPostStartHooks(hooks ...LifecycleFunc) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithPostStartHooks(hooks ...LifecycleFunc) Builder {
 	dc.hooksPostStart = hooks
 	return dc
 }
 
-func (dc *DockerContainerBuilder) GetContainerID() *string {
-	return dc.containerID
-}
-
-func (dc *DockerContainerBuilder) GetNetworkIDs() []string {
-	return dc.networkIDs
-}
-
 // Creates the container using the configuration given by 'With...' functions.
-func (dc *DockerContainerBuilder) Create() (*DockerContainerBuilder, error) {
+func (dc *DockerContainerBuilder) Create() (Container, error) {
 	expandedImageName, err := imageHelper.ExpandImageName(dc.imageWithTag)
 	if err != nil {
 		dc.logWrite(fmt.Sprintf("Failed to parse image with tag ('%s'): %s", dc.imageWithTag, err.Error()))
-		return dc, err
+		return nil, err
 	}
 
 	if err = prepareImage(dc, expandedImageName); err != nil {
 		dc.logWrite(fmt.Sprintf("Failed to prepare image: %s", err.Error()))
-		return dc, err
+		return nil, err
 	}
 
 	if dc.withoutConflict {
 		err = dockerHelper.DeleteContainerByName(dc.ctx, dc.containerName)
 		if err != nil {
 			dc.logWrite(fmt.Sprintf("Failed to resolve conflict during creating the container: %v", err))
-			return dc, err
+			return nil, err
 		}
 	}
 
@@ -356,7 +344,7 @@ func (dc *DockerContainerBuilder) Create() (*DockerContainerBuilder, error) {
 	} else {
 		networkIDs := createNetworks(dc)
 		if networkIDs == nil {
-			return dc, errors.New("failed to create networks")
+			return nil, errors.New("failed to create networks")
 		}
 
 		dc.networkIDs = networkIDs
@@ -392,49 +380,33 @@ func (dc *DockerContainerBuilder) Create() (*DockerContainerBuilder, error) {
 
 	if len(containers) != 1 {
 		dc.logWrite("Container was not created.")
-		return dc, errors.New("container was not created")
+		return nil, errors.New("container was not created")
 	}
 
 	dc.containerID = &containers[0].ID
 	attachNetworks(dc)
 
-	return dc, nil
+	return NewDockerContainer(&containers[0]), nil
 }
 
-// Starts the container and waits until the first exit to happen then returns
-func (dc *DockerContainerBuilder) StartWaitUntilExit() (*WaitResult, error) {
-	containerID := *dc.GetContainerID()
-	waitC, errC := dc.client.ContainerWait(dc.ctx, containerID, container.WaitConditionNextExit)
-	err := dc.Start()
-	if err != nil {
-		return nil, fmt.Errorf("failed start-waiting container: %w", err)
-	}
-
-	select {
-	case result := <-waitC:
-		return &WaitResult{StatusCode: result.StatusCode}, nil
-
-	case err = <-errC:
-		return nil, fmt.Errorf("error container waiting: %w", err)
-	}
-}
-
-func (dc *DockerContainerBuilder) CreateAndStart() error {
-	builder, err := dc.Create()
-	if err != nil {
-		return err
-	}
-
-	return builder.Start()
-}
-
-func (dc *DockerContainerBuilder) CreateAndWaitUntilExit() (*WaitResult, error) {
-	builder, err := dc.Create()
+func (dc *DockerContainerBuilder) CreateAndStart() (Container, error) {
+	cont, err := dc.Create()
 	if err != nil {
 		return nil, err
 	}
+	err = cont.Start(dc.ctx, dc.client)
 
-	return builder.StartWaitUntilExit()
+	return cont, err
+}
+
+func (dc *DockerContainerBuilder) CreateAndWaitUntilExit() (Container, *WaitResult, error) {
+	cont, err := dc.Create()
+	if err != nil {
+		return nil, nil, err
+	}
+	res, err := cont.StartWaitUntilExit(dc.ctx, dc.client)
+
+	return cont, res, err
 }
 
 // Starts the container using the configuration given by 'With...' functions.

@@ -27,6 +27,7 @@ import (
 // State itself exists per-execution, settingsFile is persisted
 // freedesktop spec folders used by default, $XDG_CONFIG_HOME
 type State struct {
+	Ctx                context.Context
 	SettingsFile       SettingsFile
 	InternalHostDomain string
 	*Containers
@@ -106,7 +107,7 @@ type Options struct {
 
 const (
 	SettingsFileName = "settings.yaml"
-	SettingsFileDir  = "dyo-cli"
+	CLIDirName       = "dyo-cli"
 )
 
 const (
@@ -155,7 +156,8 @@ func SettingsFileLocation(settingsPath string) string {
 		if err != nil {
 			log.Fatal().Err(err).Stack().Msg("Couldn't determine the user's configuration dir")
 		}
-		settingsPath = fmt.Sprintf("%s/%s/%s", userConfDir, SettingsFileDir, SettingsFileName)
+
+		settingsPath = path.Join(userConfDir, CLIDirName, SettingsFileName)
 	}
 
 	return settingsPath
@@ -236,32 +238,13 @@ func DisabledServiceSettings(state *State) *State {
 	return state
 }
 
-func PrintInfo(state *State, args *ArgsFlags) {
-	log.Warn().Msg("🦩🦩🦩 Use the CLI tool only for NON-PRODUCTION purpose. 🦩🦩🦩")
-
-	if state.Containers.Crux.Disabled {
-		log.Info().Msg("Do not forget to add your environmental variables to your .env files or export them!")
-		log.Info().Msgf("DATABASE_URL=postgresql://%s:%s@localhost:%d/%s?schema=public",
-			state.SettingsFile.CruxPostgresUser,
-			state.SettingsFile.CruxPostgresPassword,
-			state.SettingsFile.CruxPostgresPort,
-			state.SettingsFile.CruxPostgresDB)
-	}
-
-	log.Info().Msgf("Stack is ready. The UI should be available at http://localhost:%d location.",
-		state.SettingsFile.Options.TraefikWebPort)
-	log.Info().Msgf("The e-mail service should be available at http://localhost:%d location.",
-		state.SettingsFile.Options.MailSlurperWebPort)
-	log.Info().Msg("Happy deploying! 🎬")
-}
-
 func SettingsPath() string {
 	userConfDir, err := os.UserConfigDir()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
 
-	return path.Join(userConfDir, SettingsFileDir, SettingsFileName)
+	return path.Join(userConfDir, CLIDirName, SettingsFileName)
 }
 
 // Save the settings
@@ -275,7 +258,7 @@ func SaveSettings(state *State, args *ArgsFlags) {
 			if err != nil {
 				log.Fatal().Err(err).Stack().Send()
 			}
-			printWelcomeMessage(args.SettingsFilePath)
+			PrintWelcomeMessage(args.SettingsFilePath)
 		} else if err != nil {
 			log.Fatal().Err(err).Stack().Send()
 		}
@@ -292,13 +275,6 @@ func SaveSettings(state *State, args *ArgsFlags) {
 	}
 
 	args.SettingsWrite = false
-}
-
-func printWelcomeMessage(settingsPath string) {
-	log.Info().Msgf("The config file is located at %s, where you can turn this message off.", settingsPath)
-	log.Info().Msgf("If you have any questions head to our Discord - https://discord.gg/pZWbd4fxga ! We're happy to help!")
-	log.Info().Msgf("You can learn more about the project at https://docs.dyrector.io, if you found this project useful please " +
-		"give us a star - https://github.com/dyrector-io/dyrectorio")
 }
 
 // There are options which are not filled out by default, we need to initialize values

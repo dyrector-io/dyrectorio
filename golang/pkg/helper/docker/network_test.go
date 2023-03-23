@@ -20,7 +20,7 @@ import (
 
 type DockerNetworkHelperTestSuite struct {
 	suite.Suite
-	dockerClient client.Client
+	dockerClient client.APIClient
 	ctx          context.Context
 	prefix       string
 	networkNames []string
@@ -32,7 +32,7 @@ func (testSuite *DockerNetworkHelperTestSuite) SetupSuite() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Could not connect to docker socket.")
 	}
-	testSuite.dockerClient = *cli
+	testSuite.dockerClient = cli
 	testSuite.prefix = randstr.Hex(prefixLength)
 	testSuite.ctx = context.Background()
 	testSuite.networkNames = []string{"network1", "network2"}

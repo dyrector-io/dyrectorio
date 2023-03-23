@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"fmt"
+	"io"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
@@ -18,7 +19,7 @@ import (
 
 // before application container starts, loads import container
 func spawnInitContainer(
-	ctx context.Context, cli *client.Client,
+	ctx context.Context, cli client.APIClient,
 	parentName string, cont *v1.InitContainer, mountMap map[string]mount.Mount,
 	dog *dogger.DeploymentLogger,
 ) error {
@@ -42,7 +43,7 @@ func spawnInitContainer(
 		)
 	}
 
-	builder, err := builder.
+	resultCont, waitResult, err := builder.
 		WithClient(cli).
 		WithImage(cont.Image).
 		WithCmd(cont.Command).
@@ -50,27 +51,26 @@ func spawnInitContainer(
 		WithEnv(EnvMapToSlice(cont.Envs)).
 		WithMountPoints(targetVolumes).
 		WithoutConflict().
-		WithLogWriter(dog).
-		Create()
+		WithPreStartHooks(
+			func(ctx context.Context, client client.APIClient, containerName string,
+				containerId *string, mountList []mount.Mount, logger *io.StringWriter,
+			) error {
+				dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for init container to finish")
+				return nil
+			}).
+		WithLogWriter(dog).CreateAndWaitUntilExit()
 	if err != nil {
 		return err
 	}
 
-	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
-
-	exitResult, err := builder.StartWaitUntilExit()
-	if err != nil {
-		return fmt.Errorf("import container start failed: %w", err)
-	}
-
-	if exitResult.StatusCode == 0 {
-		containerID := *builder.GetContainerID()
+	if waitResult.StatusCode == 0 {
+		containerID := *resultCont.GetContainerID()
 		err = dockerHelper.DeleteContainerByID(ctx, dog, containerID)
 		if err != nil {
 			log.Warn().Msg("Failed to delete import container after completion")
 		}
 	} else {
-		return fmt.Errorf("import container exited with code: %v", exitResult.StatusCode)
+		return fmt.Errorf("import container exited with code: %v", waitResult.StatusCode)
 	}
 	return nil
 }

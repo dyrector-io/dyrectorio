@@ -6,6 +6,7 @@ on:
       - develop
       - main
     tags:
+      - **
   pull_request:
 
 permissions:

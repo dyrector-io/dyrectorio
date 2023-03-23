@@ -2,6 +2,7 @@ package docker
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/docker/docker/api/types"
@@ -68,17 +69,22 @@ func DeleteContainersByLabel(ctx context.Context, label string) error {
 	if err != nil {
 		return fmt.Errorf("could not get containers by label (%s) to delete: %s", label, err.Error())
 	}
-
+	baseErr := fmt.Errorf("failed to delete containers")
+	err = baseErr
 	for i := range containers {
 		containerDeleteErr := deleteContainerByIDAndState(ctx, nil, containers[i].ID, containers[i].State)
 
-		if err == nil {
+		if containerDeleteErr != nil {
 			log.Error().Err(containerDeleteErr).Stack().Send()
-			err = containerDeleteErr
+			err = errors.Join(err, containerDeleteErr)
 		}
 	}
 
-	return err
+	if !errors.Is(err, baseErr) {
+		return err
+	}
+
+	return nil
 }
 
 // Check the existence of containers, then return it

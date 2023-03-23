@@ -332,13 +332,13 @@ func DeployImage(ctx context.Context,
 
 	WithInitContainers(builder, &deployImageRequest.ContainerConfig, dog, cfg)
 
-	err = builder.CreateAndStart()
+	cont, err := builder.CreateAndStart()
 	if err != nil {
 		dog.WriteContainerState("", fmt.Sprintf("Failed to start container (%s): %s", containerName, err.Error()))
 		return err
 	}
 
-	matchedContainer, err = dockerHelper.GetContainerByID(ctx, *builder.GetContainerID())
+	matchedContainer, err = dockerHelper.GetContainerByID(ctx, *cont.GetContainerID())
 	if err != nil || matchedContainer == nil {
 		dog.WriteContainerState("", fmt.Sprintf("Failed to find container (%s): %s", containerName, err.Error()))
 		return err
@@ -362,13 +362,13 @@ func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, 
 	return networkMode, deployImageRequest.ContainerConfig.Networks
 }
 
-func WithInitContainers(dc *containerbuilder.DockerContainerBuilder, containerConfig *v1.ContainerConfig,
+func WithInitContainers(dc containerbuilder.Builder, containerConfig *v1.ContainerConfig,
 	dog *dogger.DeploymentLogger, cfg *config.Configuration,
 ) {
 	initFuncs := []containerbuilder.LifecycleFunc{}
 	if containerConfig.ImportContainer != nil {
 		initFuncs = append(initFuncs,
-			func(ctx context.Context, client *client.Client,
+			func(ctx context.Context, client client.APIClient,
 				containerName string, containerId *string,
 				mountList []mount.Mount, logger *io.StringWriter,
 			) error {
@@ -383,7 +383,7 @@ func WithInitContainers(dc *containerbuilder.DockerContainerBuilder, containerCo
 	}
 
 	if len(containerConfig.InitContainers) > 0 {
-		initFuncs = append(initFuncs, func(ctx context.Context, client *client.Client,
+		initFuncs = append(initFuncs, func(ctx context.Context, client client.APIClient,
 			containerName string, containerId *string,
 			mountList []mount.Mount, logger *io.StringWriter,
 		) error {

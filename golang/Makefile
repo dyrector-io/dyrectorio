@@ -53,7 +53,7 @@ upd:
 .PHONY: down
 down:
 	cd cmd/dyo && \
-	go run . down
+	go run . --prefix dyo-latest down
 
 .PHONY: go-crane
 go-crane:
