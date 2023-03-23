@@ -210,7 +210,8 @@ export const configuredFetcher = (init?: RequestInit) => {
 export const fetcher = configuredFetcher()
 
 export const fetchCruxFromRequest = async (req: http.IncomingMessage, url: string, init?: RequestInit) => {
-  const res = await fetch(`${process.env.CRUX_UI_URL}${url}`, {
+  const externalUrl = process.env.CRUX_URL ?? process.env.CRUX_UI_URL
+  const res = await fetch(`${externalUrl}${url}`, {
     ...(init ?? {}),
     headers: {
       ...(init?.headers ?? {}),
