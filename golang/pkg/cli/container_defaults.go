@@ -325,7 +325,6 @@ func GetKratos(state *State, args *ArgsFlags) containerbuilder.Builder {
 		WithName(state.Containers.Kratos.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
-		WithForcePullImage().
 		WithEnv(GetKratosEnvs(state, args)).
 		WithNetworks([]string{state.SettingsFile.Network}).
 		WithNetworkAliases(state.Containers.Kratos.Name).
@@ -375,7 +374,6 @@ func getKratosInitContainer(state *State, args *ArgsFlags) containerbuilder.Life
 			WithLogWriter(nil).
 			WithName(state.Containers.KratosMigrate.Name).
 			WithoutConflict().
-			WithForcePullImage().
 			WithEnv([]string{
 				"SQA_OPT_OUT=true",
 				fmt.Sprintf("DSN=postgresql://%s:%s@%s:%d/%s?sslmode=disable&max_conns=20&max_idle_conns=4",
