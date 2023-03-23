@@ -36,8 +36,6 @@ type DyrectorioStack struct {
 
 const (
 	ContainerNetDriver = "bridge"
-	PodmanHost         = "host.containers.internal"
-	DockerHost         = "host.docker.internal"
 )
 
 const (

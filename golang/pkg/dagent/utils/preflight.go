@@ -2,40 +2,35 @@ package utils
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
-	"github.com/hashicorp/go-version"
+	"github.com/docker/docker/client"
 	"github.com/rs/zerolog/log"
 
+	containerRuntime "github.com/dyrector-io/dyrectorio/golang/internal/runtime/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 )
 
 func PreflightChecks(cfg *config.Configuration) {
-	_, err := dockerHelper.GetAllContainers(context.Background())
+	ctx := context.Background()
+
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Fatal().Stack().Err(err).Send()
 	}
 
-	versions, err := GetServerInformation()
+	_, err = dockerHelper.GetAllContainers(ctx)
 	if err != nil {
-		log.Fatal().Stack().Err(err).Msg("Version error")
+		log.Fatal().Stack().Err(err).Send()
 	}
 
-	log.Info().Str("dockerVersion", versions.ServerVersion).Str("dockerClientVersion", versions.ClientVersion).Send()
-
-	serVer, err := version.NewVersion(versions.ServerVersion)
+	err = containerRuntime.VersionCheck(ctx, cli)
 	if err != nil {
-		log.Error().Stack().Err(err).Msg("Invalid version string from server")
-	}
-	constraints, _ := version.NewConstraint(fmt.Sprintf(">=%s", cfg.MinDockerServerVersion))
-	if err != nil {
-		log.Error().Stack().Err(err).Msg("Error with version constraint")
-	}
-	if !constraints.Check(serVer) {
-		log.Warn().
-			Str("serverVersion", serVer.String()).
-			Str("minVersion", cfg.MinDockerServerVersion).
-			Msg("Server is behind the supported version")
+		if errors.Is(err, containerRuntime.ErrServerIsOutdated) {
+			log.Warn().Stack().Err(err).Msg("Server version is outdated, please consider updating.")
+		} else {
+			log.Fatal().Stack().Err(err).Send()
+		}
 	}
 }
