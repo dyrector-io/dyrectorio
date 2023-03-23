@@ -74,7 +74,6 @@ type SettingsFile struct {
 	// version as in image tag like "latest" or "stable"
 	Version string `yaml:"version" env-default:"latest"`
 	Network string `yaml:"network-name" env-default:"dyo-stable"`
-	Prefix  string `yaml:"prefix" env-default:"dyo-stable"`
 	Options
 }
 
@@ -217,7 +216,7 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 	}
 
 	// Set disabled stuff
-	state = DisabledServiceSettings(state)
+	state = DisabledServiceSettings(state, args)
 
 	// Settings Validation steps
 
@@ -228,11 +227,11 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 	return state
 }
 
-func DisabledServiceSettings(state *State) *State {
+func DisabledServiceSettings(state *State, args *ArgsFlags) *State {
 	if state.Containers.CruxUI.Disabled {
 		state.CruxUI.CruxAddr = localhost
 	} else {
-		state.CruxUI.CruxAddr = fmt.Sprintf("%s_crux", state.SettingsFile.Prefix)
+		state.CruxUI.CruxAddr = fmt.Sprintf("%s_crux", args.Prefix)
 	}
 
 	return state
@@ -284,11 +283,6 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	state.CruxUI.Image = "ghcr.io/dyrector-io/dyrectorio/web/crux-ui"
 	state.Kratos.Image = "ghcr.io/dyrector-io/dyrectorio/web/kratos"
 
-	// Pushing down prefix
-	if args.Prefix != "" {
-		state.SettingsFile.Prefix = args.Prefix
-	}
-
 	// Load defaults
 	state.SettingsFile.CruxSecret = util.Fallback(state.SettingsFile.CruxSecret, RandomChars(SecretLength))
 	state.SettingsFile.CruxPostgresPassword = util.Fallback(state.SettingsFile.CruxPostgresPassword, RandomChars(SecretLength))
@@ -296,15 +290,15 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	state.SettingsFile.KratosSecret = util.Fallback(state.SettingsFile.KratosSecret, RandomChars(SecretLength))
 
 	// Generate names
-	state.Containers.Traefik.Name = fmt.Sprintf("%s_traefik", state.SettingsFile.Prefix)
-	state.Containers.Crux.Name = fmt.Sprintf("%s_crux", state.SettingsFile.Prefix)
-	state.Containers.CruxMigrate.Name = fmt.Sprintf("%s_crux-migrate", state.SettingsFile.Prefix)
-	state.Containers.CruxUI.Name = fmt.Sprintf("%s_crux-ui", state.SettingsFile.Prefix)
-	state.Containers.Kratos.Name = fmt.Sprintf("%s_kratos", state.SettingsFile.Prefix)
-	state.Containers.KratosMigrate.Name = fmt.Sprintf("%s_kratos-migrate", state.SettingsFile.Prefix)
-	state.Containers.CruxPostgres.Name = fmt.Sprintf("%s_crux-postgres", state.SettingsFile.Prefix)
-	state.Containers.KratosPostgres.Name = fmt.Sprintf("%s_kratos-postgres", state.SettingsFile.Prefix)
-	state.Containers.MailSlurper.Name = fmt.Sprintf("%s_mailslurper", state.SettingsFile.Prefix)
+	state.Containers.Traefik.Name = fmt.Sprintf("%s_traefik", args.Prefix)
+	state.Containers.Crux.Name = fmt.Sprintf("%s_crux", args.Prefix)
+	state.Containers.CruxMigrate.Name = fmt.Sprintf("%s_crux-migrate", args.Prefix)
+	state.Containers.CruxUI.Name = fmt.Sprintf("%s_crux-ui", args.Prefix)
+	state.Containers.Kratos.Name = fmt.Sprintf("%s_kratos", args.Prefix)
+	state.Containers.KratosMigrate.Name = fmt.Sprintf("%s_kratos-migrate", args.Prefix)
+	state.Containers.CruxPostgres.Name = fmt.Sprintf("%s_crux-postgres", args.Prefix)
+	state.Containers.KratosPostgres.Name = fmt.Sprintf("%s_kratos-postgres", args.Prefix)
+	state.Containers.MailSlurper.Name = fmt.Sprintf("%s_mailslurper", args.Prefix)
 
 	return state
 }

@@ -386,7 +386,7 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 	dc.containerID = &containers[0].ID
 	attachNetworks(dc)
 
-	return NewDockerContainer(&containers[0]), nil
+	return NewDockerContainer(&containers[0], dc.hooksPreStart, dc.hooksPostStart), nil
 }
 
 func (dc *DockerContainerBuilder) CreateAndStart() (Container, error) {
@@ -407,33 +407,6 @@ func (dc *DockerContainerBuilder) CreateAndWaitUntilExit() (Container, *WaitResu
 	res, err := cont.StartWaitUntilExit(dc.ctx, dc.client)
 
 	return cont, res, err
-}
-
-// Starts the container using the configuration given by 'With...' functions.
-// Returns true if successful, false and an error if not.
-func (dc *DockerContainerBuilder) Start() error {
-	if hookError := execHooks(dc, dc.hooksPreStart); hookError != nil {
-		dc.logWrite(fmt.Sprintln("Container pre-start hook error: ", hookError))
-	}
-
-	if dc.containerID == nil {
-		dc.logWrite("Unable to start non-existent container")
-		return errors.New("container does not exist")
-	}
-
-	err := dc.client.ContainerStart(dc.ctx, *dc.containerID, types.ContainerStartOptions{})
-
-	if hookError := execHooks(dc, dc.hooksPostStart); hookError != nil {
-		dc.logWrite(fmt.Sprintln("Container post-start hook error: ", hookError))
-		return hookError
-	}
-
-	if err != nil {
-		dc.logWrite(err.Error())
-		return err
-	}
-	dc.logWrite(fmt.Sprintf("Started container: %s", *dc.containerID))
-	return nil
 }
 
 func prepareImage(dc *DockerContainerBuilder, imageName string) error {

@@ -127,7 +127,11 @@ func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.Lifecy
 		}
 
 		cont, res, err := cruxMigrate.CreateAndWaitUntilExit()
-		return errors.Join(err, fmt.Errorf("container %s exited with code: %d", cont.GetName(), res.StatusCode))
+		if err != nil {
+			return errors.Join(err, fmt.Errorf("container %s exited with code: %d", cont.GetName(), res.StatusCode))
+		}
+		log.Info().Str("initContainer", cont.GetName()).Msgf("Started")
+		return nil
 	}
 }
 
@@ -395,7 +399,11 @@ func getKratosInitContainer(state *State, args *ArgsFlags) containerbuilder.Life
 		}
 
 		cont, res, err := kratosMigrate.CreateAndWaitUntilExit()
-		return errors.Join(err, fmt.Errorf("container %s exited with code: %d", cont.GetName(), res.StatusCode))
+		if err != nil {
+			return errors.Join(err, fmt.Errorf("container %s exited with code: %d", cont.GetName(), res.StatusCode))
+		}
+		log.Info().Str("initContainer", cont.GetName()).Msgf("Started")
+		return nil
 	}
 }
 
@@ -541,7 +549,7 @@ func GetKratosPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 // To remove some code duplication
 func GetBasePostgres(state *State) containerbuilder.Builder {
 	basePostgres := containerbuilder.
-		NewDockerBuilder(context.Background()).
+		NewDockerBuilder(state.Ctx).
 		WithLogWriter(nil).
 		WithImage(PostgresImage).
 		WithNetworks([]string{state.SettingsFile.Network}).

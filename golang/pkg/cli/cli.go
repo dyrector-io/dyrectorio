@@ -102,7 +102,7 @@ func InitCLI() *ucli.App {
 			},
 			&ucli.StringFlag{
 				Name:        "prefix",
-				Value:       "",
+				Value:       "dyo-stable",
 				Aliases:     []string{"p"},
 				DefaultText: "dyo-stable",
 				Usage:       "prefix that is preprended to container names",
