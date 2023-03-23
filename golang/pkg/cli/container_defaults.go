@@ -176,6 +176,7 @@ func GetCruxUI(state *State, args *ArgsFlags) *containerbuilder.DockerContainerB
 		WithEnv([]string{
 			fmt.Sprintf("TZ=%s", state.SettingsFile.TimeZone),
 			fmt.Sprintf("CRUX_UI_URL=http://%s:%d", traefikHost, state.SettingsFile.TraefikWebPort),
+			fmt.Sprintf("CRUX_URL=http://%s:%d", state.Containers.Traefik.Name, state.SettingsFile.TraefikWebPort),
 			fmt.Sprintf("KRATOS_URL=http://%s:%d/kratos",
 				state.Containers.Traefik.Name,
 				defaultTraefikWebPort),
