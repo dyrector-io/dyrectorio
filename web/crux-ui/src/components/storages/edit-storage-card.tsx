@@ -8,7 +8,7 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { CreateStorage, Storage, UpdateStorage } from '@app/models'
+import { CreateStorage, Storage, StorageDetails, UpdateStorage } from '@app/models'
 import { API_STORAGES, storageApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { storageSchema } from '@app/validations/storage'
@@ -17,7 +17,7 @@ import { MutableRefObject, useState } from 'react'
 
 interface EditStorageCardProps {
   className?: string
-  storage?: Storage
+  storage?: StorageDetails
   onStorageEdited: (registry: Storage) => void
   submitRef: MutableRefObject<() => Promise<any>>
 }
@@ -27,7 +27,7 @@ const EditStorageCard = (props: EditStorageCardProps) => {
 
   const { t } = useTranslation('storages')
 
-  const [storage, setStorage] = useState<Storage>(
+  const [storage, setStorage] = useState<StorageDetails>(
     propsStorage ?? {
       id: null,
       name: '',
@@ -61,10 +61,10 @@ const EditStorageCard = (props: EditStorageCardProps) => {
         : sendForm('PUT', storageApiUrl(storage.id), body as UpdateStorage))
 
       if (res.ok) {
-        let result: Storage
+        let result: StorageDetails
         if (res.status !== 204) {
           const json = await res.json()
-          result = json as Storage
+          result = json as StorageDetails
         } else {
           result = {
             ...values,

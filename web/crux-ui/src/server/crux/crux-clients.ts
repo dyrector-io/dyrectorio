@@ -3,7 +3,6 @@ import {
   CruxDeploymentClient,
   CruxHealthClient,
   CruxNodeClient,
-  CruxStorageClient,
   CruxTeamClient,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { credentials } from '@grpc/grpc-js'
@@ -17,8 +16,6 @@ class CruxClients {
 
   health: CruxHealthClient
 
-  storage: CruxStorageClient
-
   constructor(address: string) {
     // tls must be terminated by the reverse proxy
     const creds = credentials.createInsecure()
@@ -31,7 +28,6 @@ class CruxClients {
     this.deployments = new CruxDeploymentClient(address, creds)
     this.teams = new CruxTeamClient(address, creds)
     this.health = new CruxHealthClient(address, creds)
-    this.storage = new CruxStorageClient(address, creds)
   }
 }
 

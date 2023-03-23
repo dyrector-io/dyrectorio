@@ -65,7 +65,7 @@ export const API_DASHBOARD = '/api/new/dashboard'
 
 export const API_TOKENS = '/api/new/tokens'
 
-export const API_STORAGES = '/api/storages'
+export const API_STORAGES = '/api/new/storages'
 export const API_STORAGES_OPTIONS = `${API_STORAGES}/options`
 
 export const WS_NODES = `${API_NODES}/connect`
@@ -262,4 +262,4 @@ export const deploymentContainerLogUrl = (deploymentId: string, params: Containe
 
 // storage
 export const storageUrl = (id: string) => `${ROUTE_STORAGES}/${id}`
-export const storageApiUrl = (id: string) => `/api${storageUrl(id)}`
+export const storageApiUrl = (id: string) => `${API_STORAGES}/${id}`
