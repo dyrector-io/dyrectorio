@@ -49,7 +49,7 @@ const NotificationCard = (props: NotificationCardProps) => {
 
       <div className="flex flex-row flex-grow justify-end">
         <DyoLabel className="mr-4 mt-auto py-0.5 leading-4">
-          {t('common:createdByName', { name: notification.creator })}
+          {t('common:createdByName', { name: notification.creatorName })}
         </DyoLabel>
 
         <NotificationTypeTag className="px-2.5" type={notification.type} />

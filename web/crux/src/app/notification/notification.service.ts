@@ -78,7 +78,7 @@ export default class NotificationService {
         active: !!request.active,
         events: {
           createMany: {
-            data: (request.events ?? []).map(it => ({
+            data: (request.enabledEvents ?? []).map(it => ({
               event: this.mapper.eventTypeToDb(it),
             })),
           },
@@ -96,7 +96,7 @@ export default class NotificationService {
       },
     })
 
-    const eventsDbMapped = (request.events ?? []).map(ev => this.mapper.eventTypeToDb(ev))
+    const eventsDbMapped = (request.enabledEvents ?? []).map(ev => this.mapper.eventTypeToDb(ev))
     const newEvents = eventsDbMapped.filter(event => !notificationEvents.find(it => it.event === event))
     const deleteEvents = notificationEvents.filter(event => !eventsDbMapped.find(it => event.event === it))
 

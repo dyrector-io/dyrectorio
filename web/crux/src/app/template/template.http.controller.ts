@@ -1,23 +1,10 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Response,
-  Param,
-  Post,
-  UseFilters,
-  Header,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common'
+import { Body, Controller, Get, Response, Param, Post, Header, UseGuards, UseInterceptors } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import TemplateFileService from 'src/services/template.file.service'
 import { Response as ExpressResponse } from 'express'
-import { HttpCode } from '@nestjs/common/decorators'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -33,7 +20,6 @@ const TemplateId = () => Param('templateId')
 @ApiTags(ROUTE_TEMPLATES)
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
-@UseFilters(HttpExceptionFilter)
 export default class TemplateHttpController {
   constructor(private service: TemplateService, private templateFileService: TemplateFileService) {}
 
@@ -44,7 +30,6 @@ export default class TemplateHttpController {
   }
 
   @Post()
-  @HttpCode(204)
   @CreatedWithLocation()
   @ApiBody({ type: CreateProductFromTemplateDto })
   @ApiCreatedResponse({ type: ProductDto })
@@ -63,6 +48,7 @@ export default class TemplateHttpController {
   @Get(`${ROUTE_TEMPLATE_ID}/image`)
   @Header('content-type', 'image/jpeg')
   async getImage(@TemplateId() templateId: string, @Response() response: ExpressResponse) {
-    ;(await this.service.getImageStream(templateId)).pipe(response)
+    const image = await this.service.getImageStream(templateId)
+    image.pipe(response)
   }
 }

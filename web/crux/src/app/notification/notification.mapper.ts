@@ -13,14 +13,14 @@ export default class NotificationMapper {
       url: notification.url,
       type: notification.type,
       active: notification.active,
-      creator: nameOrEmailOfIdentity(createdByIdentity),
+      creatorName: nameOrEmailOfIdentity(createdByIdentity),
     }
   }
 
   detailsToDto(notification: NotificationWithEvents, createdByIdentity: Identity): NotificationDetailsDto {
     return {
       ...this.listToDto(notification, createdByIdentity),
-      events: notification.events.map(ev => this.eventTypeToDto(ev.event)),
+      enabledEvents: notification.events.map(ev => this.eventTypeToDto(ev.event)),
     }
   }
 

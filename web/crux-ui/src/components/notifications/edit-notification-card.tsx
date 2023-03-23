@@ -41,8 +41,8 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       name: '',
       type: 'discord',
       url: '',
-      creator: '',
-      events: [...NOTIFICATION_EVENT_VALUES],
+      creatorName: '',
+      enabledEvents: [...NOTIFICATION_EVENT_VALUES],
     },
   )
 
@@ -69,8 +69,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       if (res.ok) {
         let result: NotificationDetails
         if (res.status !== 204) {
-          const json = await res.json()
-          result = json as NotificationDetails
+          result = (await res.json()) as NotificationDetails
         } else {
           result = {
             ...values,
@@ -149,8 +148,8 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
           <DyoLabel className="mb-2.5">{t('events')}</DyoLabel>
 
           <NotificationEventList
-            value={formik.values.events}
-            onChanged={value => formik.setFieldValue('events', value, false)}
+            value={formik.values.enabledEvents}
+            onChanged={value => formik.setFieldValue('enabledEvents', value, false)}
           />
         </div>
       </DyoForm>

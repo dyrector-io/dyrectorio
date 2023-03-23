@@ -1,19 +1,6 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Put,
-  Param,
-  Post,
-  UseFilters,
-  HttpCode,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common'
+import { Body, Controller, Delete, Get, Put, Param, Post, HttpCode, UseGuards, UseInterceptors } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
@@ -36,7 +23,6 @@ const NotificationId = () => Param('notificationId')
 @ApiTags(ROUTE_NOTIFICATIONS)
 @UseGuards(JwtAuthGuard, NotificationTeamAccessGuard)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
-@UseFilters(HttpExceptionFilter)
 export default class NotificationHttpController {
   constructor(private service: NotificationService) {}
 

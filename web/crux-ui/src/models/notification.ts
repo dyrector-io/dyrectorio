@@ -15,11 +15,11 @@ export type Notification = {
   url: string
   type: NotificationType
   active: boolean
-  creator: string
+  creatorName: string
 }
 
 export type NotificationDetails = Notification & {
-  events: NotificationEventType[]
+  enabledEvents: NotificationEventType[]
 }
 
 export type CreateNotification = {
@@ -27,9 +27,7 @@ export type CreateNotification = {
   url: string
   type: NotificationType
   active: boolean
-  events: NotificationEventType[]
+  enabledEvents: NotificationEventType[]
 }
 
-export type UpdateNotification = CreateNotification & {
-  id: string
-}
+export type UpdateNotification = CreateNotification

@@ -91,7 +91,7 @@ export default class TemplateFileService {
     return `${join(this.templatesFolder, id)}.${extension}`
   }
 
-  readTemplate(id: string): TemplateDto | null {
+  readTemplate(id: string): TemplateDto {
     const templateContent = readFileSync(this.getTemplatePath(id, 'json'), 'utf8')
     const template = JSON.parse(templateContent) as TemplateDto
 

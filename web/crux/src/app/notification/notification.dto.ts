@@ -20,11 +20,12 @@ export class NotificationDto {
   url: string
 
   @ApiProperty({ enum: NOTIFICATION_TYPE_VALUES })
+  @IsIn(NOTIFICATION_TYPE_VALUES)
   type: NotificationTypeDto
 
   active: boolean
 
-  creator: string
+  creatorName: string
 }
 
 export class NotificationDetailsDto extends NotificationDto {
@@ -32,7 +33,8 @@ export class NotificationDetailsDto extends NotificationDto {
     enum: NOTIFICATION_EVENT_TYPE_VALUES,
     isArray: true,
   })
-  events: NotificationEventTypeDto[]
+  @IsIn(NOTIFICATION_EVENT_TYPE_VALUES)
+  enabledEvents: NotificationEventTypeDto[]
 }
 
 export class CreateNotificationDto {
@@ -42,18 +44,19 @@ export class CreateNotificationDto {
   @IsUrl()
   url: string
 
-  @IsString()
-  @IsIn(NOTIFICATION_TYPE_VALUES)
   @ApiProperty({ enum: NOTIFICATION_TYPE_VALUES })
+  @IsIn(NOTIFICATION_TYPE_VALUES)
   type: NotificationTypeDto
 
   @IsBoolean()
   active: boolean
 
-  @IsString()
+  @ApiProperty({
+    enum: NOTIFICATION_EVENT_TYPE_VALUES,
+    isArray: true,
+  })
   @IsIn(NOTIFICATION_EVENT_TYPE_VALUES)
-  @ApiProperty({ enum: NOTIFICATION_EVENT_TYPE_VALUES })
-  events: NotificationEventTypeDto[]
+  enabledEvents: NotificationEventTypeDto[]
 }
 
 export class UpdateNotificationDto {
@@ -63,16 +66,17 @@ export class UpdateNotificationDto {
   @IsUrl()
   url: string
 
-  @IsString()
-  @IsIn(NOTIFICATION_TYPE_VALUES)
   @ApiProperty({ enum: NOTIFICATION_TYPE_VALUES })
+  @IsIn(NOTIFICATION_TYPE_VALUES)
   type: NotificationTypeDto
 
   @IsBoolean()
   active: boolean
 
-  @IsString()
+  @ApiProperty({
+    enum: NOTIFICATION_EVENT_TYPE_VALUES,
+    isArray: true,
+  })
   @IsIn(NOTIFICATION_EVENT_TYPE_VALUES)
-  @ApiProperty({ enum: NOTIFICATION_EVENT_TYPE_VALUES })
-  events: NotificationEventTypeDto[]
+  enabledEvents: NotificationEventTypeDto[]
 }

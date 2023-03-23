@@ -3,12 +3,18 @@ import { IsIn, IsString, IsUUID } from 'class-validator'
 import { ProductTypeDto, PRODUCT_TYPE_VALUES } from '../product/product.dto'
 
 export class TemplateDto {
+  @IsUUID()
   id: string
 
+  @IsString()
   name: string
 
+  @IsString()
   description?: string
 
+  @IsString({
+    each: true,
+  })
   technologies: string[]
 }
 
@@ -25,7 +31,6 @@ export class CreateProductFromTemplateDto {
   @ApiProperty({
     enum: PRODUCT_TYPE_VALUES,
   })
-  @IsString()
   @IsIn(PRODUCT_TYPE_VALUES)
   type: ProductTypeDto
 }
