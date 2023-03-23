@@ -34,18 +34,17 @@ func PrintInfo(state *State) {
 }
 
 func NotifyOnce(name string, notifyFunc func()) {
-	cacheDir, err := os.UserCacheDir()
+	targetDir, err := os.UserCacheDir()
 	if err != nil {
-		log.Trace().Err(err).Msgf("cache folder is not available to store temporal info")
-		notifyFunc()
-		return
+		log.Trace().Err(err).Msgf("cache folder is not available to store temporal info, using tmp directory")
+		targetDir = os.TempDir()
 	}
-	notificationPath := path.Join(cacheDir, CLIDirName, "."+name)
+	notificationPath := path.Join(targetDir, CLIDirName, "."+name)
 	if _, err := os.Stat(notificationPath); err != nil {
-		notifyFunc()
 		err = os.WriteFile(notificationPath, []byte{}, os.ModePerm)
 		if err != nil {
 			log.Trace().Err(err).Msgf("cache folder is not available to store temporal info")
 		}
 	}
+	notifyFunc()
 }

@@ -40,20 +40,28 @@ endif
 
 GOPARAMS:=GOOS=$(GOOS) CGO_ENABLED=0 $(GRPC_DEBUG_FLAGS)
 
+# cli start fully containerized stack, stable branch
 .PHONY: up
 up:
 	cd cmd/dyo && \
 	go run . up
 
+# cli stop
+.PHONY: down
+down:
+	cd cmd/dyo && \
+	go run . --prefix dyo-stable down
+
+# upd is short for up dev
 .PHONY: upd
 upd:
 	cd cmd/dyo && \
 	go run . --disable-crux --disable-crux-ui --prefix dyo-latest up
 
-.PHONY: down
-down:
+.PHONY: downd
+downd:
 	cd cmd/dyo && \
-	go run . --prefix dyo-stable down
+	go run . --prefix dyo-latest down
 
 .PHONY: go-crane
 go-crane:

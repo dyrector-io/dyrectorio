@@ -60,7 +60,7 @@ func TestNameWithBuilder(t *testing.T) {
 	var _ containerbuilder.Builder = (*containerbuilder.DockerContainerBuilder)(nil)
 
 	builder := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("nginx:latest")
+		WithImage("docker.io/library/nginx:latest")
 
 	cont, err := builder.CreateAndStart()
 	defer containerCleanup(cont)
@@ -90,7 +90,7 @@ func TestEnvPortsLabelsRestartPolicySettings(t *testing.T) {
 			"LABEL2": "1234",
 		}).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
-		WithImage("nginx:latest").
+		WithImage("docker.io/library/nginx:latest").
 		CreateAndStart()
 
 	defer containerCleanup(cont)
@@ -127,7 +127,7 @@ func TestLogging(t *testing.T) {
 	}
 
 	cont, err := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("nginx:latest").
+		WithImage("docker.io/library/nginx:latest").
 		WithLogWriter(logger).CreateAndStart()
 
 	defer containerCleanup(cont)
@@ -139,7 +139,7 @@ func TestHooks(t *testing.T) {
 	order := []string{}
 
 	cont, err := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("nginx:latest").
+		WithImage("docker.io/library/nginx:latest").
 		WithPreCreateHooks(hookCallback(func() {
 			order = append(order, "pre-create")
 		})).
@@ -170,7 +170,7 @@ func TestNetwork(t *testing.T) {
 	}
 
 	cont, err := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("nginx:latest").
+		WithImage("docker.io/library/nginx:latest").
 		WithName("prefix-container").
 		WithLogWriter(logger).
 		WithNetworkMode("prefix").
@@ -187,7 +187,7 @@ func TestAutoRemove(t *testing.T) {
 	ctx := context.Background()
 
 	cont, waitResult, err := containerbuilder.NewDockerBuilder(ctx).
-		WithImage("nginx:latest").
+		WithImage("docker.io/library/nginx:latest").
 		WithName("prefix-container").
 		WithCmd([]string{"bash"}).
 		WithAutoRemove(true).CreateAndWaitUntilExit()
@@ -214,7 +214,7 @@ func TestAutoRemove(t *testing.T) {
 
 func TestConflict(t *testing.T) {
 	cont1, err := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("nginx:latest").
+		WithImage("docker.io/library/nginx:latest").
 		WithName("conflicting-container").
 		WithLabels(map[string]string{"TEST": "OLD_CONTAINER"}).
 		CreateAndStart()
@@ -223,7 +223,7 @@ func TestConflict(t *testing.T) {
 	assert.NoError(t, err)
 
 	cont2, err := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("nginx:latest").
+		WithImage("docker.io/library/nginx:latest").
 		WithName("conflicting-container").
 		WithLabels(map[string]string{"TEST": "NEW_CONTAINER"}).
 		WithoutConflict().

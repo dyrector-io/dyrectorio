@@ -1,17 +1,30 @@
 
 SHELL = /bin/sh
 
-## shortcut to start stack
+## shortcut to start stack, fully containerized, stable stable build
 .PHONY: up
 up:
 	cd golang && \
 	make up
 
-# shortcut to start stack with local development
+.PHONY: down
+down:
+	cd golang && \
+	make prefix=stable down
+
+# shortcut to start stack with local development config
 .PHONY: upd
 upd:
 	cd golang && \
 	make upd
+
+.PHONY: downd
+downd:
+	cd golang && \
+	make downd
+
+.PHONY: dwd
+dwd: downd
 
 # shortcut for cli
 .PHONY: cli
@@ -19,10 +32,7 @@ cli:
 	cd golang/cmd/dyo && \
 	go run .
 
-.PHONY: down
-down:
-	cd golang && \
-	make down
+
 
 ## compile docs
 .PHONY: docs
