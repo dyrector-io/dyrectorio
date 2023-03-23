@@ -7,17 +7,16 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io"
 	"net"
-	"net/url"
 	"os"
-	"os/exec"
 	"path"
 	"strconv"
 	"strings"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
+
+	containerRuntime "github.com/dyrector-io/dyrectorio/golang/internal/runtime/container"
 
 	"github.com/docker/docker/client"
 	"github.com/ilyakaznacheev/cleanenv"
@@ -181,11 +180,31 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 	}
 	initialState.SettingsFile = settingsFile
 
-	internalHostDomain := CheckRequirements(args)
+	ctx := context.Background()
+
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		log.Fatal().Stack().Err(err).Send()
+	}
+
+	err = containerRuntime.VersionCheck(ctx, cli)
+	if err != nil {
+		switch {
+		case errors.Is(err, containerRuntime.ErrServerIsOutdated):
+			log.Warn().Stack().Err(err).Msg("Server is outdated, please consider updating")
+		case errors.Is(err, containerRuntime.ErrServerVersionIsNotSupported):
+			log.Fatal().Stack().Err(err).Msg("Server is outdated")
+		default:
+			log.Fatal().Stack().Err(err).Send()
+		}
+	}
 
 	// Fill out data if empty
 	state := LoadDefaultsOnEmpty(initialState, args)
-	state.InternalHostDomain = internalHostDomain
+	state.InternalHostDomain, err = containerRuntime.GetInternalHostDomain(context.Background(), cli)
+	if err != nil {
+		log.Fatal().Stack().Err(err).Send()
+	}
 
 	EnsureNetworkExists(state, args)
 
@@ -209,100 +228,6 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 	return state
 }
 
-// Check prerequisites
-func CheckRequirements(state *ArgsFlags) string {
-	// getenv
-	envVarValue := os.Getenv("DOCKER_HOST")
-
-	if envVarValue != "" {
-		socketurl, err := url.ParseRequestURI(envVarValue)
-		if err != nil {
-			log.Fatal().Err(err).Stack().Send()
-		}
-
-		if socketurl.Scheme == "unix" {
-			if socketurl.Host != "" {
-				log.Fatal().Msg("DOCKER_HOST variable shouldn't have host")
-			}
-		}
-
-		if socketurl.Scheme == "tcp" && socketurl.Host == "" {
-			log.Fatal().Msg("DOCKER_HOST tcp scheme is without host")
-		}
-	} else {
-		// We cannot assume unix:///var/run/docker.sock on Mac/Win platforms, we let Docker SDK does its magic :)
-		log.Warn().Msg("DOCKER_HOST environmental variable is empty or not set.")
-		log.Warn().Msg("Using default socket determined by Docker SDK.")
-	}
-
-	// Check socket
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("Docker socket connection unsuccessful")
-	}
-
-	info, err := cli.Info(context.Background())
-	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("Cannot get info via docker socket")
-	}
-
-	switch info.InitBinary {
-	case "":
-		log.Info().Str("version", info.ServerVersion).Msg("Podman")
-		if !state.DisablePodmanChecks {
-			PodmanInfo()
-		}
-		return PodmanHost
-	case "docker-init":
-		log.Info().Str("version", info.ServerVersion).Msg("Docker")
-		return DockerHost
-	default:
-		log.Fatal().Msg("Unknown init binary")
-		return ""
-	}
-}
-
-func PodmanInfo() {
-	cmd := exec.Command("podman", "info", "--format", "{{.Host.NetworkBackend}}")
-
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("Podman check stderr pipe error")
-	}
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("Podman check stdout pipe error")
-	}
-
-	err = cmd.Start()
-	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("Podman command execution error")
-	}
-
-	readstderr, err := io.ReadAll(stderr)
-	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("Podman command stderr reading error")
-	}
-
-	readstdout, err := io.ReadAll(stdout)
-	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("Podman command stdout reading error")
-	}
-
-	err = cmd.Wait()
-	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("Podman command execution error")
-	}
-
-	if len(readstderr) != 0 {
-		log.Fatal().Str("errOut", string(readstderr)).Msg("Podman command execution error")
-	}
-
-	if string(readstdout) != "netavark\n" {
-		log.Fatal().Msg("Podman network backend error: it should have the netavark network backend")
-	}
-}
-
 func DisabledServiceSettings(state *State) *State {
 	if state.Containers.CruxUI.Disabled {
 		state.CruxUI.CruxAddr = localhost
@@ -313,7 +238,7 @@ func DisabledServiceSettings(state *State) *State {
 	return state
 }
 
-func PrintInfo(state *State, settings *ArgsFlags) {
+func PrintInfo(state *State, args *ArgsFlags) {
 	log.Warn().Msg("🦩🦩🦩 Use the CLI tool only for NON-PRODUCTION purpose. 🦩🦩🦩")
 
 	if state.Containers.Crux.Disabled {
