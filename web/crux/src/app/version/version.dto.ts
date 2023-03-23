@@ -3,7 +3,7 @@ import { Type } from 'class-transformer'
 import { IsBoolean, IsIn, IsString, IsUUID } from 'class-validator'
 import { AuditDto } from 'src/shared/dtos/audit'
 import BasicDeploymentWithNodeDto from '../deploy/deploy.dto'
-import ImageDto from '../image/image.dto'
+import { ImageDto } from '../image/image.dto'
 
 export const VERSION_TYPE_VALUES = ['incremental', 'rolling'] as const
 export type VersionTypeDto = (typeof VERSION_TYPE_VALUES)[number]

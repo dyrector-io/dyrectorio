@@ -2,7 +2,6 @@ import { invalidArgument } from '@app/error-responses'
 import {
   CruxDeploymentClient,
   CruxHealthClient,
-  CruxImageClient,
   CruxNodeClient,
   CruxNotificationClient,
   CruxStorageClient,
@@ -13,8 +12,6 @@ import { credentials } from '@grpc/grpc-js'
 
 class CruxClients {
   nodes: CruxNodeClient
-
-  images: CruxImageClient
 
   deployments: CruxDeploymentClient
 
@@ -37,7 +34,6 @@ class CruxClients {
     }
 
     this.nodes = new CruxNodeClient(address, creds)
-    this.images = new CruxImageClient(address, creds)
     this.deployments = new CruxDeploymentClient(address, creds)
     this.teams = new CruxTeamClient(address, creds)
     this.health = new CruxHealthClient(address, creds)

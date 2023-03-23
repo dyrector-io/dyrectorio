@@ -48,11 +48,23 @@ import {
   VolumeType,
 } from 'src/shared/models'
 import RegistryMapper from '../registry/registry.mapper'
-import { ContainerConfigDto } from './image.dto'
+import { ContainerConfigDto, ImageDto } from './image.dto'
 
 @Injectable()
 export default class ImageMapper {
   constructor(private registryMapper: RegistryMapper) {}
+
+  toDto(it: ImageDetails): ImageDto {
+    return {
+      id: it.id,
+      name: it.name,
+      tag: it.tag,
+      order: it.order,
+      registry: this.registryMapper.toDto(it.registry),
+      config: this.containerConfigDataToDto(it.config as any as ContainerConfigData),
+      createdAt: it.createdAt,
+    }
+  }
 
   detailsToProto(image: ImageDetails): ImageResponse {
     return {
@@ -158,6 +170,39 @@ export default class ImageMapper {
     })
 
     return config
+  }
+
+  configDtoToContainerConfigData(
+    current: ContainerConfigData,
+    patch: Partial<ContainerConfigDto>,
+  ): ContainerConfigData {
+    return {
+      ...current,
+      ...patch,
+      capabilities: undefined, // TODO (@m8vago, @nandor-magyar): Remove this line, when capabilites are ready
+      annotations: !patch.annotations
+        ? current.annotations
+        : {
+            ...(current.annotations ?? {}),
+            ...patch.annotations,
+          },
+      labels: !patch.labels
+        ? current.labels
+        : {
+            ...(current.labels ?? {}),
+            ...patch.labels,
+          },
+      storageSet: patch.storage ? !!patch.storage.storageId : current.storageSet,
+      storageId: patch.storage ? patch.storage.storageId : current.storageId,
+      storageConfig: patch.storage
+        ? patch.storage.storageId
+          ? {
+              path: patch.storage.path,
+              bucket: patch.storage.bucket,
+            }
+          : null
+        : current.storageConfig,
+    }
   }
 
   configProtoToContainerConfigData(

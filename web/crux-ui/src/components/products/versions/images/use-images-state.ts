@@ -227,9 +227,8 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
     }
   }
 
-  const addImages = registryImages => {
+  const addImages = (registryImages: RegistryImages[]) => {
     setAddSection('none')
-
     versionSock.send(WS_TYPE_ADD_IMAGES, {
       registryImages,
     } as AddImagesMessage)

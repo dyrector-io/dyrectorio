@@ -1,15 +1,25 @@
-import { Injectable } from '@nestjs/common'
-import { AddImagesToVersionRequest } from 'src/grpc/protobuf/proto/crux'
-import UserAccessGuard from 'src/shared/user-access.guard'
-import { Identity } from '@ory/kratos-client'
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
+import { identityOfContext } from 'src/app/token/jwt-auth.guard'
+import PrismaService from 'src/services/prisma.service'
+import { AddImagesDto } from '../image.dto'
 
 @Injectable()
-export default class ImageAddToVersionTeamAccessGuard extends UserAccessGuard<AddImagesToVersionRequest> {
-  async canActivateWithRequest(request: AddImagesToVersionRequest, identity: Identity): Promise<boolean> {
+export default class ImageAddToVersionTeamAccessGuard implements CanActivate {
+  constructor(private prisma: PrismaService) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const req = context.switchToHttp().getRequest()
+    const productId = req.params.productId as string
+    const versionId = req.params.versionId as string
+    const body = req.body as AddImagesDto[]
+
+    const identity = identityOfContext(context)
+
+    const regIds = body.map(it => it.registryId)
     const registries = await this.prisma.registry.count({
       where: {
         id: {
-          in: request.images.map(it => it.registryId),
+          in: regIds,
         },
         team: {
           users: {
@@ -20,9 +30,10 @@ export default class ImageAddToVersionTeamAccessGuard extends UserAccessGuard<Ad
           },
           products: {
             some: {
+              id: productId,
               versions: {
                 some: {
-                  id: request.versionId,
+                  id: versionId,
                 },
               },
             },
@@ -31,6 +42,6 @@ export default class ImageAddToVersionTeamAccessGuard extends UserAccessGuard<Ad
       },
     })
 
-    return registries === request.images.length
+    return registries === regIds.length
   }
 }

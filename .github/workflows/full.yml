@@ -409,7 +409,6 @@ jobs:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
         env:
           # DEBUG: pw:api
-          PREFIX: dyo-e2e
           HUB_PROXY_URL: ${{ secrets.HUB_PROXY_URL }}
           HUB_PROXY_TOKEN: ${{ secrets.HUB_PROXY_TOKEN }}
           E2E_BASE_URL: "http://dyo-e2e_traefik:8000"

@@ -12,6 +12,7 @@ import {
   InputFocusMessage,
   OrderImagesMessage,
   PatchImageMessage,
+  PatchVersionImage,
   WS_TYPE_ADD_IMAGES,
   WS_TYPE_ALL_ITEM_EDITORS,
   WS_TYPE_BLUR_INPUT,
@@ -32,12 +33,11 @@ import {
   WS_TYPE_PATCH_IMAGE,
   WS_TYPE_PATCH_RECEIVED,
 } from '@app/models'
-import { versionApiUrl } from '@app/routes'
+import { imageApiUrl, versionApiUrl, versionImagesApiUrl, versionImagesOrderApiUrl } from '@app/routes'
 import { fetchCruxFromRequest } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
-import { cruxFromConnection } from '@server/crux/crux'
 import EditorService from '@server/editing/editor-service'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
 import useWebsocketErrorMiddleware from '@server/websocket-error-middleware'
@@ -86,20 +86,29 @@ const onDisconnect = (endpoint: WsEndpoint, connection: WsConnection) => {
 
 const onGetImage = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<GetImageMessage>) => {
   const req = message.payload
+  const productId = endpoint.query.productId as string
+  const versionId = endpoint.query.versionId as string
 
-  const image = await cruxFromConnection(connection).images.getById(req.id)
-  connection.send(WS_TYPE_IMAGE, image as ImageMessage)
+  const image = await fetchCruxFromRequest(connection.request, imageApiUrl(productId, versionId, req.id))
+
+  connection.send(WS_TYPE_IMAGE, (await image.json()) as ImageMessage)
 }
 
 const onAddImages = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<AddImagesMessage>) => {
+  const req = message.payload
+  const productId = endpoint.query.productId as string
   const versionId = endpoint.query.versionId as string
 
-  const req = message.payload
-
-  const images = await cruxFromConnection(connection).images.addImagesToVersion(versionId, req.registryImages)
+  const images = await fetchCruxFromRequest(connection.request, versionImagesApiUrl(productId, versionId), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(req.registryImages),
+  })
 
   endpoint.sendAll(WS_TYPE_IMAGES_ADDED, {
-    images,
+    images: await images.json(),
   } as ImagesAddedMessage)
 }
 
@@ -111,8 +120,12 @@ const onDeleteImage = async (
   const editors = endpoint.services.get(EditorService)
 
   const req = message.payload
+  const productId = endpoint.query.productId as string
+  const versionId = endpoint.query.versionId as string
 
-  await cruxFromConnection(connection).images.deleteImage(req.imageId)
+  await fetchCruxFromRequest(connection.request, imageApiUrl(productId, versionId, req.imageId), {
+    method: 'DELETE',
+  })
 
   editors.onDeleteItem(req.imageId)
 
@@ -123,8 +136,25 @@ const onDeleteImage = async (
 
 const onPatchImage = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<PatchImageMessage>) => {
   const req = message.payload
+  const productId = endpoint.query.productId as string
+  const versionId = endpoint.query.versionId as string
 
-  await cruxFromConnection(connection).images.patchImage(req.id, req)
+  let cruxReq: Pick<PatchVersionImage, 'tag' | 'config'> = {}
+
+  if (req.resetSection) {
+    cruxReq.config = {}
+    cruxReq.config[req.resetSection as string] = null
+  } else {
+    cruxReq = req
+  }
+
+  await fetchCruxFromRequest(connection.request, imageApiUrl(productId, versionId, req.id), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(cruxReq),
+  })
 
   connection.send(WS_TYPE_PATCH_RECEIVED, {})
 
@@ -139,10 +169,16 @@ const onOrderImages = async (
   message: WsMessage<OrderImagesMessage>,
 ) => {
   const req = message.payload
-
+  const productId = endpoint.query.productId as string
   const versionId = endpoint.query.versionId as string
 
-  await cruxFromConnection(connection).images.orderImages(versionId, req)
+  await fetchCruxFromRequest(connection.request, versionImagesOrderApiUrl(productId, versionId), {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(req),
+  })
 
   endpoint.sendAllExcept(connection, WS_TYPE_IMAGES_WERE_REORDERED, req as ImagesWereReorderedMessage)
 }
