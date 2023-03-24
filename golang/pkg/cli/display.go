@@ -15,7 +15,7 @@ func PrintWelcomeMessage(settingsPath string) {
 }
 
 func PrintInfo(state *State) {
-	log.Warn().Msg("🦩🦩🦩 Use the CLI tool only for NON-PRODUCTION purpose. 🦩🦩🦩")
+	log.Warn().Msg("🦩🦩🦩 Use the CLI tool only for NON-PRODUCTION purposes. 🦩🦩🦩")
 
 	if state.Containers.Crux.Disabled {
 		log.Info().Msg("Do not forget to add your environmental variables to your .env files or export them!")
