@@ -9,7 +9,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/AlekSi/pointer"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/rs/zerolog/log"
@@ -90,7 +92,7 @@ func (testSuite *DockerContainerHelperTestSuite) TearDownTest() {
 
 	timeoutValue := (time.Duration(dockerClientTimeoutSeconds) * time.Second)
 	for i := range containers {
-		err = testSuite.dockerClient.ContainerStop(testSuite.ctx, containers[i].ID, &timeoutValue)
+		err = testSuite.dockerClient.ContainerStop(testSuite.ctx, containers[i].ID, container.StopOptions{Timeout: pointer.ToIntOrNil(int(timeoutValue.Seconds()))})
 		if err != nil {
 			log.Warn().Err(err).Send()
 		}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/rs/zerolog/log"
@@ -26,8 +27,8 @@ func DeleteContainerByName(ctx context.Context, nameFilter string) error {
 	return deleteContainerByIDAndState(ctx, nil, matchedContainer.ID, matchedContainer.State)
 }
 
-func DeleteContainer(ctx context.Context, container *types.Container) error {
-	return deleteContainerByIDAndState(ctx, nil, container.ID, container.State)
+func DeleteContainer(ctx context.Context, cont *types.Container) error {
+	return deleteContainerByIDAndState(ctx, nil, cont.ID, cont.State)
 }
 
 func deleteContainerByIDAndState(ctx context.Context, dog *dogger.DeploymentLogger, id, state string) error {
@@ -42,7 +43,7 @@ func deleteContainerByIDAndState(ctx context.Context, dog *dogger.DeploymentLogg
 			dog.Write("Stopping container: " + id)
 		}
 
-		if err = cli.ContainerStop(ctx, id, nil); err != nil {
+		if err = cli.ContainerStop(ctx, id, container.StopOptions{}); err != nil {
 			return fmt.Errorf("could not stop container (%s): %s", id, err.Error())
 		}
 
@@ -131,16 +132,16 @@ func GetContainerByID(ctx context.Context, idFilter string) (*types.Container, e
 }
 
 func DeleteContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, id string) error {
-	container, err := GetContainerByID(ctx, id)
+	cont, err := GetContainerByID(ctx, id)
 	if err != nil {
 		return fmt.Errorf("could not get container (%s) to delete: %s", id, err.Error())
 	}
 
-	if container == nil {
+	if cont == nil {
 		return nil
 	}
 
-	return deleteContainerByIDAndState(ctx, dog, id, container.State)
+	return deleteContainerByIDAndState(ctx, dog, id, cont.State)
 }
 
 func GetAllContainersByLabel(ctx context.Context, label string) ([]types.Container, error) {

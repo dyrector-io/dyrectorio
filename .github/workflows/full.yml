@@ -27,7 +27,7 @@ env:
   CRUX_UI_WORKING_DIRECTORY: web/crux-ui
   KRATOS_WORKING_DIRECTORY: web/kratos
   GOLANG_WORKING_DIRECTORY: golang
-  BUILDER_IMAGE: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+  BUILDER_IMAGE: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
 
 
 jobs:
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -103,8 +103,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Load go mod
-        run: go mod tidy
+      - name: Setup Golang caches
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/$GOCACHE
+            ~/$GOPATH/pkg/mod
+          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-golang-
       # fixes: fatal: unsafe repository
       - name: Adding workspace
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -115,7 +122,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -123,6 +130,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Setup Golang caches
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/$GOCACHE
+            ~/$GOPATH/pkg/mod
+          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-golang-
       - name: Load go mod
         run: go mod tidy
       - name: Run gosec
@@ -132,7 +148,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -140,6 +156,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Setup Golang caches
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/$GOCACHE
+            ~/$GOPATH/pkg/mod
+          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-golang-
       - name: Load go mod
         run: go mod tidy
       # fixes: fatal: unsafe repository
@@ -154,13 +179,22 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [go_security, go_lint, go_test, changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Setup Golang caches
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/$GOCACHE
+            ~/$GOPATH/pkg/mod
+          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-golang-
       # fixes: fatal: unsafe repository
       - name: Adding workspace
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -204,7 +238,7 @@ jobs:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     if: ${{ (needs.changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout the repository
@@ -221,7 +255,7 @@ jobs:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     if: ${{ (needs.changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout the repository
@@ -242,7 +276,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [crux_test, crux_lint, changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
@@ -264,7 +298,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -281,7 +315,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [crux-ui_lint,changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -303,7 +337,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
       run:
         working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
@@ -452,7 +486,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     needs: [go_build, e2e, changes]
     if: |
       always() &&
@@ -527,7 +561,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     needs: [crux_build, e2e, changes]
     if: |
       always() &&
@@ -579,7 +613,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     needs: [crux-ui_build, e2e, changes]
     if: |
       always() &&
@@ -631,7 +665,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     needs: [kratos_build, e2e, changes]
     if: |
       always() &&

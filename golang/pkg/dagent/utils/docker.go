@@ -36,6 +36,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
 	"github.com/docker/docker/api/types"
+	dockerContainer "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
@@ -631,9 +632,9 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 	if operation == common.ContainerOperation_START_CONTAINER {
 		err = cli.ContainerStart(ctx, container.ID, types.ContainerStartOptions{})
 	} else if operation == common.ContainerOperation_STOP_CONTAINER {
-		err = cli.ContainerStop(ctx, container.ID, nil)
+		err = cli.ContainerStop(ctx, container.ID, dockerContainer.StopOptions{})
 	} else if operation == common.ContainerOperation_RESTART_CONTAINER {
-		err = cli.ContainerRestart(ctx, container.ID, nil)
+		err = cli.ContainerRestart(ctx, container.ID, dockerContainer.StopOptions{})
 	} else {
 		log.Error().Str("operation", operation.String()).Str("prefix", prefix).Str("name", name).Msg("Unknown operation")
 	}
