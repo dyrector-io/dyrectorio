@@ -2,6 +2,7 @@ import { Logger } from '@app/logger'
 import {
   activeTeamOf,
   GetNodeStatusListMessage,
+  Node,
   NodeStatusMessage,
   UpdateNodeAgentMessage,
   UserMeta,
@@ -10,12 +11,12 @@ import {
   WS_TYPE_NODE_STATUSES,
   WS_TYPE_UPDATE_NODE_AGENT,
 } from '@app/models'
-import { API_USERS_ME } from '@app/routes'
-import { postCrux } from '@app/utils'
+import { API_NODES, API_USERS_ME, nodeUpdateApiUrl } from '@app/routes'
+import { fetchCruxFromWebsocket, postCrux } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
-import { Crux, cruxFromConnection } from '@server/crux/crux'
+import { Crux } from '@server/crux/crux'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
 import { NextApiRequest } from 'next'
 
@@ -44,13 +45,15 @@ const onAuthorize = async (endpoint: WsEndpoint, req: NextApiRequest): Promise<b
 }
 
 const onGetNodeStatuses = async (
-  endpoint: WsEndpoint,
+  _: WsEndpoint,
   connection: WsConnection,
   message: WsMessage<GetNodeStatusListMessage>,
 ) => {
   const req = message.payload
 
-  const nodes = await cruxFromConnection(connection).nodes.getAll()
+  const nodesRes = await fetchCruxFromWebsocket(connection, API_NODES)
+  const nodes = (await nodesRes.json()) as Node[]
+
   const res = nodes
     .filter(it => req.nodeIds.includes(it.id))
     .map(
@@ -70,7 +73,9 @@ const onUpdateNodeAgent = async (
   connection: WsConnection,
   message: WsMessage<UpdateNodeAgentMessage>,
 ) => {
-  await cruxFromConnection(connection).nodes.updateNodeAgent(message.payload.id)
+  await fetchCruxFromWebsocket(connection, nodeUpdateApiUrl(message.payload.id), {
+    method: 'POST',
+  })
 }
 
 export default routedWebSocketEndpoint(

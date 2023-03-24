@@ -315,8 +315,8 @@ export default class ImageMapper {
         ? null
         : {
             storageId: config.storageId,
-            bucket: config.storageConfig.bucket,
-            path: config.storageConfig.path,
+            bucket: config.storageConfig?.bucket,
+            path: config.storageConfig?.path,
           },
     }
   }

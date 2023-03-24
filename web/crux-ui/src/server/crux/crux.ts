@@ -37,7 +37,7 @@ export class Crux {
   ) {}
 
   get nodes() {
-    return this._nodes ?? new DyoNodeService(this.clients.nodes, this.cookie)
+    return this._nodes ?? new DyoNodeService(this.clients.nodes)
   }
 
   get deployments() {

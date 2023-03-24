@@ -3,7 +3,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import TimeLabel from '@app/elements/time-label'
-import { DyoNode } from '@app/models'
+import { Node } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useRef, useState } from 'react'
@@ -11,7 +11,7 @@ import NodeStatusIndicator from './node-status-indicator'
 
 interface NodeConnectionCardProps {
   className?: string
-  node: DyoNode
+  node: Node
   showName?: boolean
 }
 
@@ -26,7 +26,7 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
   const interval = useRef(SECOND_IN_MILLIS)
 
   const updateRunningSince = () => {
-    if (node.status !== 'running') {
+    if (node.status !== 'connected') {
       setRunningSince(null)
     } else {
       const now = new Date().getTime()

@@ -1,23 +1,19 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, PipeTransform } from '@nestjs/common'
 import AgentService from 'src/app/agent/agent.service'
-import PrismaService from 'src/services/prisma.service'
 import { AlreadyExistsException } from 'src/exception/errors'
-import { IdRequest } from 'src/grpc/protobuf/proto/crux'
-import BodyPipeTransform from 'src/pipes/body.pipe'
+import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
-export default class NodeGenerateScriptValidationPipe extends BodyPipeTransform<IdRequest> {
-  constructor(private prisma: PrismaService, private agentService: AgentService) {
-    super()
-  }
+export default class NodeGenerateScriptValidationPipe implements PipeTransform {
+  constructor(private prisma: PrismaService, private agentService: AgentService) {}
 
-  async transformBody(req: IdRequest) {
+  async transform(id: string) {
     const node = await this.prisma.node.findUniqueOrThrow({
       select: {
         id: true,
       },
       where: {
-        id: req.id,
+        id,
       },
     })
 
@@ -30,6 +26,6 @@ export default class NodeGenerateScriptValidationPipe extends BodyPipeTransform<
       })
     }
 
-    return req
+    return id
   }
 }

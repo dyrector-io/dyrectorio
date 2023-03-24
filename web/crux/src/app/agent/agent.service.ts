@@ -35,17 +35,13 @@ import {
   Empty,
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
-import {
-  DagentTraefikOptions,
-  NodeConnectionStatus,
-  NodeEventMessage,
-  NodeScriptType,
-} from 'src/grpc/protobuf/proto/crux'
+import { NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { JWT_EXPIRATION } from '../../shared/const'
 import ImageMapper from '../image/image.mapper'
+import { DagentTraefikOptionsDto, NodeScriptTypeDto } from '../node/node.dto'
 import ContainerMapper from '../shared/container.mapper'
 
 @Injectable()
@@ -122,10 +118,11 @@ export default class AgentService {
 
   async install(
     nodeId: string,
+    nodeName: string,
     nodeType: NodeTypeEnum,
     rootPath: string | null,
-    scriptType: NodeScriptType,
-    traefik: DagentTraefikOptions | null,
+    scriptType: NodeScriptTypeDto,
+    traefik: DagentTraefikOptionsDto | null,
   ): Promise<AgentInstaller> {
     let installer = this.getInstallerByNodeId(nodeId)
     if (!installer || installer.nodeType !== nodeType) {
@@ -140,6 +137,7 @@ export default class AgentService {
       installer = new AgentInstaller(
         this.configService,
         nodeId,
+        nodeName,
         this.jwtService.sign(token),
         new Date(now + JWT_EXPIRATION),
         nodeType,
@@ -176,7 +174,7 @@ export default class AgentService {
 
   kick(nodeId: string) {
     const agent = this.getById(nodeId)
-    agent?.close()
+    agent?.close(CloseReason.SHUTDOWN)
   }
 
   handleConnect(connection: GrpcNodeConnection, request: AgentInfo): Observable<AgentCommand> {

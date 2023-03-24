@@ -2,6 +2,7 @@ import { Logger } from '@app/logger'
 import {
   ContainerCommandMessage,
   DeleteContainerMessage,
+  NodeDeleteContainer,
   WatchContainerLogMessage,
   WatchContainerStatusMessage,
   WS_TYPE_CONTAINER_COMMAND,
@@ -11,12 +12,14 @@ import {
   WS_TYPE_WATCH_CONTAINER_LOG,
   WS_TYPE_WATCH_CONTAINER_STATUS,
 } from '@app/models'
+import { nodeApiUrl, nodeContainerApiUrl } from '@app/routes'
+import { fetchCruxFromRequest, fetchCruxFromWebsocket } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
 import ContainerLogStreamService from '@server/container-log-stream-service'
 import ContainerStatusWatcherService from '@server/container-status-watchers-service'
-import crux, { cruxFromConnection } from '@server/crux/crux'
+import { cruxFromConnection } from '@server/crux/crux'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
 import useWebsocketErrorMiddleware from '@server/websocket-error-middleware'
 import { NextApiRequest } from 'next'
@@ -33,7 +36,7 @@ const onAuthorize = async (endpoint: WsEndpoint, req: NextApiRequest): Promise<b
   const nodeId = endpoint.query.nodeId as string
 
   try {
-    await crux(req).nodes.getNodeDetails(nodeId)
+    await fetchCruxFromRequest(req, nodeApiUrl(nodeId))
     return true
   } catch {
     return false
@@ -55,7 +58,13 @@ const onContainerCommand = async (
 ) => {
   const nodeId = endpoint.query.nodeId as string
 
-  cruxFromConnection(connection).nodes.sendContainerCommand(nodeId, message.payload)
+  await fetchCruxFromWebsocket(connection, nodeContainerApiUrl(nodeId), {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(message.payload),
+  })
 }
 
 const onDeleteContainer = async (
@@ -65,7 +74,20 @@ const onDeleteContainer = async (
 ) => {
   const nodeId = endpoint.query.nodeId as string
 
-  cruxFromConnection(connection).nodes.deleteContainer(nodeId, message.payload)
+  const { id } = message.payload
+  const req = {
+    container: {
+      prefix: id.prefix ?? '',
+      name: id.name,
+    },
+  } as NodeDeleteContainer
+  await fetchCruxFromWebsocket(connection, nodeContainerApiUrl(nodeId), {
+    method: 'DELETE',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(req),
+  })
 }
 
 const onWatchContainerStatus = async (

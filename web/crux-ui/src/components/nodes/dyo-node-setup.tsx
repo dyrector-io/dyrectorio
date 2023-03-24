@@ -10,9 +10,9 @@ import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTimer from '@app/hooks/use-timer'
 import {
-  DyoNodeDetails,
-  DyoNodeGenerateScript,
-  DyoNodeInstall,
+  NodeDetails,
+  NodeGenerateScript,
+  NodeInstall,
   NodeInstallScriptType,
   NodeType,
   NODE_INSTALL_SCRIPT_TYPE_VALUES,
@@ -30,8 +30,8 @@ const expiresIn = (expireAt: Date): number => {
 }
 
 interface DyoNodeSetupProps {
-  node: DyoNodeDetails
-  onNodeInstallChanged: (install: DyoNodeInstall) => void
+  node: NodeDetails
+  onNodeInstallChanged: (install: NodeInstall) => void
   onNodeTypeChanged: (type: NodeType) => void
 }
 
@@ -63,12 +63,12 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
   const onCopyScript = () => writeToClipboard(t, node.install.command)
 
-  const formik = useDyoFormik<DyoNodeGenerateScript>({
+  const formik = useDyoFormik<NodeGenerateScript>({
     initialValues: {
       type: node.type,
       rootPath: '',
       scriptType: 'shell',
-      traefik: undefined,
+      dagentTraefik: undefined,
     },
     validationSchema: nodeGenerateScriptSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -86,7 +86,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
         return
       }
 
-      const install = (await res.json()) as DyoNodeInstall
+      const install = (await res.json()) as NodeInstall
 
       startCountdown(expiresIn(new Date(install.expireAt)))
 
@@ -96,7 +96,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
     },
   })
 
-  const onTraefikChanged = it => formik.setFieldValue('traefik', it ? {} : undefined)
+  const onTraefikChanged = it => formik.setFieldValue('dagentTraefik', it ? {} : undefined)
 
   const onTypeChanged = it => {
     if (it === 'k8s') {
@@ -133,23 +133,23 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
               <div className="flex flex-row mb-2">
                 <DyoLabel className="my-auto mx-4">{t('installTraefik')}</DyoLabel>
                 <DyoSwitch
-                  name="traefik"
-                  checked={formik.values.traefik !== undefined}
+                  name="dagentTraefik"
+                  checked={formik.values.dagentTraefik !== undefined}
                   onCheckedChange={onTraefikChanged}
                 />
               </div>
-              {formik.values.traefik && (
+              {formik.values.dagentTraefik && (
                 <div className="ml-2 mb-2">
                   <DyoLabel className="text-lg mb-2.5" textColor="text-bright">
                     {t('traefikAcmeEmail')}
                   </DyoLabel>
                   <DyoInput
-                    name="traefik.acmeEmail"
+                    name="dagentTraefik.acmeEmail"
                     className="max-w-lg mb-2.5"
                     grow
-                    value={formik.values.traefik.acmeEmail ?? null}
+                    value={formik.values.dagentTraefik.acmeEmail ?? null}
                     onChange={formik.handleChange}
-                    message={formik.errors.traefik ? formik.errors.traefik.acmeEmail : undefined}
+                    message={formik.errors.dagentTraefik ? formik.errors.dagentTraefik.acmeEmail : undefined}
                   />
                 </div>
               )}

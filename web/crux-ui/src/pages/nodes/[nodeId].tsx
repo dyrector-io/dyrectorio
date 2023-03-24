@@ -10,21 +10,20 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
-import { DyoNodeDetails } from '@app/models'
+import { NodeDetails } from '@app/models'
 import { API_NODES, nodeApiUrl, nodeUrl, ROUTE_NODES } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { fetchCrux, withContextAuthorization } from '@app/utils'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useRef } from 'react'
 import { useSWRConfig } from 'swr'
 
-interface NodeDetailsProps {
-  node: DyoNodeDetails
+interface NodeDetailsPageProps {
+  node: NodeDetails
 }
 
-const NodeDetails = (props: NodeDetailsProps) => {
+const NodeDetailsPage = (props: NodeDetailsPageProps) => {
   const { node: propsNode } = props
 
   const { t } = useTranslation('nodes')
@@ -107,16 +106,17 @@ const NodeDetails = (props: NodeDetailsProps) => {
   )
 }
 
-export default NodeDetails
+export default NodeDetailsPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const nodeId = context.query.nodeId as string
 
-  const res = await cruxFromContext(context).nodes.getNodeDetails(nodeId)
+  const res = await fetchCrux(context, nodeApiUrl(nodeId))
+  const node = (await res.json()) as NodeDetails
 
   return {
     props: {
-      node: res,
+      node,
     },
   }
 }

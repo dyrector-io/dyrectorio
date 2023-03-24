@@ -1,17 +1,24 @@
 import { createParamDecorator, ExecutionContext, Injectable } from '@nestjs/common'
+import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
 import { Identity, Session } from '@ory/kratos-client'
 import http from 'http'
 import KratosService from 'src/services/kratos.service'
 import { AuthPayload } from 'src/shared/models'
+import { DISABLE_ACCESS_CHECK } from 'src/shared/user-access.guard'
 
 @Injectable()
 export default class JwtAuthGuard extends AuthGuard('jwt') {
-  constructor(private kratos: KratosService) {
+  constructor(private kratos: KratosService, private reflector: Reflector) {
     super()
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const disabled = this.reflector.get<boolean>(DISABLE_ACCESS_CHECK, context.getHandler())
+    if (disabled) {
+      return true
+    }
+
     const req = context.switchToHttp().getRequest() as ExtendedHttpRequest
 
     if (req.headers.cookie?.includes('ory_kratos_session=')) {

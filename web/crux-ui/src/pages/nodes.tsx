@@ -10,10 +10,9 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
-import { DyoNode, NodeStatus, NodeStatusMessage, WS_TYPE_NODE_STATUS } from '@app/models'
+import { Node, NodeStatus, NodeStatusMessage, WS_TYPE_NODE_STATUS } from '@app/models'
 import { API_NODES, nodeUrl, ROUTE_NODES, WS_NODES } from '@app/routes'
-import { upsertById, withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { fetchCrux, upsertById, withContextAuthorization } from '@app/utils'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -22,10 +21,10 @@ import toast from 'react-hot-toast'
 import { useSWRConfig } from 'swr'
 
 interface NodesPageProps {
-  nodes: DyoNode[]
+  nodes: Node[]
 }
 
-const nodeStatusFilters = ['running', 'unreachable'] as const
+const nodeStatusFilters = ['connected', 'unreachable'] as const
 
 type NodeFilter = TextFilter & EnumFilter<NodeStatus>
 
@@ -36,10 +35,10 @@ const NodesPage = (props: NodesPageProps) => {
 
   const { mutate } = useSWRConfig()
 
-  const filters = useFilters<DyoNode, NodeFilter>({
+  const filters = useFilters<Node, NodeFilter>({
     filters: [
-      textFilterFor<DyoNode>(it => [it.address, it.name, it.description, it.status, it.icon]),
-      enumFilterFor<DyoNode, NodeStatus>(it => [it.status]),
+      textFilterFor<Node>(it => [it.address, it.name, it.description, it.status, it.icon]),
+      enumFilterFor<Node, NodeStatus>(it => [it.status]),
     ],
     initialData: nodes,
   })
@@ -63,7 +62,7 @@ const NodesPage = (props: NodesPageProps) => {
       status: message.status,
       createdAt: new Date().toUTCString(),
       updating: message.updating,
-    } as DyoNode
+    } as Node
 
     const newNodes = upsertById(filters.items, newNode, {
       onUpdate: old => ({
@@ -76,7 +75,7 @@ const NodesPage = (props: NodesPageProps) => {
     filters.setItems(newNodes)
   })
 
-  const onCreated = async (item: DyoNode) => {
+  const onCreated = async (item: Node) => {
     const newNodes = upsertById(filters.items, item, {
       onUpdate: old => ({
         ...item,
@@ -143,10 +142,15 @@ const NodesPage = (props: NodesPageProps) => {
 
 export default NodesPage
 
-const getPageServerSideProps = async (context: NextPageContext) => ({
-  props: {
-    nodes: await cruxFromContext(context).nodes.getAll(),
-  },
-})
+const getPageServerSideProps = async (context: NextPageContext) => {
+  const res = await fetchCrux(context, API_NODES)
+  const nodes = (await res.json()) as Node[]
+
+  return {
+    props: {
+      nodes,
+    },
+  }
+}
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

@@ -9,7 +9,7 @@ test('Install dagent should be successful', async ({ page }) => {
   await page.locator(`h3:has-text("${DAGENT_NODE}")`).click()
   await page.waitForURL(`${ROUTE_NODES}/**`)
 
-  await expect(await page.locator('span:has-text("Running")')).toHaveCount(1)
+  await expect(await page.locator('span:has-text("Connected")')).toHaveCount(1)
 })
 
 test('After adding a new node the setup process should be shown', async ({ page }) => {
@@ -128,8 +128,8 @@ test('Container log should appear after a successful deployment', async ({ page 
   const containerRow = page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
 
-  const runningTag = containerRow.locator('div:text-is("Running")')
-  await expect(runningTag).toBeVisible()
+  const connectedTag = containerRow.locator('div:text-is("Connected")')
+  await expect(connectedTag).toBeVisible()
 
   const showLogs = containerRow.locator('span:text-is("Show logs")')
 
@@ -165,8 +165,8 @@ test('Container log should appear on a node container', async ({ page }) => {
   const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
 
-  const runningTag = await containerRow.locator('div:text-is("Running")')
-  await expect(runningTag).toBeVisible()
+  const connectedTag = await containerRow.locator('div:text-is("Connected")')
+  await expect(connectedTag).toBeVisible()
 
   await page.goto(ROUTE_NODES)
 

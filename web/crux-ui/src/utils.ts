@@ -22,6 +22,7 @@ import { internalError } from './error-responses'
 import { Audit, AxiosError, DyoApiError, DyoErrorDto, DyoFetchError, RegistryDetails } from './models'
 import { Timestamp } from './models/grpc/google/protobuf/timestamp'
 import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_NEW_PASSWORD, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
+import WsConnection from './websockets/connection'
 
 export type AsyncVoidFunction = () => Promise<void>
 
@@ -294,6 +295,9 @@ export const patchCrux = <Body>(req: http.IncomingMessage, url: string, body: Bo
   })
 
 export const deleteCrux = (req: http.IncomingMessage, url: string) => fetchCrux(req, url, { method: 'DELETE' })
+
+export const fetchCruxFromWebsocket = (connection: WsConnection, url: string, init?: RequestInit) =>
+  fetchCruxWithCookie(connection.cookie, url, init)
 
 // forms
 export const paginationParams = (req: NextApiRequest, defaultTake: 100): [number, number] => {

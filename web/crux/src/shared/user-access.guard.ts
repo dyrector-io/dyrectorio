@@ -7,8 +7,8 @@ import { UnauthorizedException } from '@nestjs/common/exceptions'
 import { Identity } from '@ory/kratos-client'
 import { ServerSurfaceCall } from '@grpc/grpc-js/build/src/server-call'
 
-const DISABLE_ACCESS_CHECK = 'disable-team-access-check'
-const DISABLE_IDENTITY = 'disable-accessed-by-metadata'
+export const DISABLE_ACCESS_CHECK = 'disable-team-access-check'
+export const DISABLE_IDENTITY = 'disable-accessed-by-metadata'
 
 export const DisableAccessCheck = () => SetMetadata(DISABLE_ACCESS_CHECK, true)
 

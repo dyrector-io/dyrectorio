@@ -1,7 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsDate, IsIn, IsOptional, IsString, IsUUID } from 'class-validator'
-import { NodeType, NODE_TYPE_VALUES } from 'src/shared/models'
+
+export const NODE_CONNECTION_STATUS_VALUES = ['unreachable', 'connected'] as const
+export type NodeConnectionStatus = (typeof NODE_CONNECTION_STATUS_VALUES)[number]
+
+export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
+export type NodeType = (typeof NODE_TYPE_VALUES)[number]
 
 export type BasicProperties = 'id' | 'name' | 'type'
 

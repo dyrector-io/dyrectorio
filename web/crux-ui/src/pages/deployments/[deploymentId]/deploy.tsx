@@ -25,7 +25,6 @@ import {
   versionUrl,
 } from '@app/routes'
 import { terminalDateFormat, withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -144,7 +143,7 @@ export default DeployPage
 
 const getPageServerSideProps = async (context: NextPageContext) => ({
   props: {
-    deployment: await getDeploymentRoot(context, cruxFromContext(context)),
+    deployment: await getDeploymentRoot(context),
   },
 })
 

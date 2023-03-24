@@ -48,7 +48,7 @@ export const API_STATUS = '/api/status'
 
 export const API_REGISTRIES = '/api/new/registries'
 export const API_PRODUCTS = '/api/new/products'
-export const API_NODES = '/api/nodes'
+export const API_NODES = '/api/new/nodes'
 export const API_DEPLOYMENTS = '/api/new/deployments'
 
 export const API_TEAMS = '/api/new/teams'
@@ -69,7 +69,7 @@ export const API_TOKENS = '/api/new/tokens'
 export const API_STORAGES = '/api/storages'
 export const API_STORAGES_OPTIONS = `${API_STORAGES}/options`
 
-export const WS_NODES = `${API_NODES}/connect`
+export const WS_NODES = `/api/nodes/connect`
 export const WS_REGISTRIES = `/api/registries/connect`
 
 export type CruxUrlParams = {
@@ -157,12 +157,14 @@ export const registryApiUrl = (id: string) => `${API_REGISTRIES}/${id}`
 
 // node
 export const nodeUrl = (id: string) => `${ROUTE_NODES}/${id}`
-export const nodeApiUrl = (id: string) => `/api${nodeUrl(id)}`
-export const nodeWsUrl = (id: string) => `${nodeApiUrl(id)}/connect`
+export const nodeInspectUrl = (id: string, prefix?: string) => `${nodeUrl(id)}?prefix=${prefix}`
+export const nodeApiUrl = (id: string) => `/api/new${nodeUrl(id)}`
 export const nodeSetupApiUrl = (id: string) => `${nodeApiUrl(id)}/setup`
 export const nodeScriptApiUrl = (id: string) => `${nodeApiUrl(id)}/script`
 export const nodeTokenApiUrl = (id: string) => `${nodeApiUrl(id)}/token`
-export const nodeInspectUrl = (id: string, prefix?: string) => `${nodeUrl(id)}?prefix=${prefix}`
+export const nodeUpdateApiUrl = (id: string) => `${nodeApiUrl(id)}/update`
+export const nodeContainerApiUrl = (id: string) => `${nodeApiUrl(id)}/container`
+export const nodeWsUrl = (id: string) => `/api/nodes/${id}/connect`
 
 // version
 

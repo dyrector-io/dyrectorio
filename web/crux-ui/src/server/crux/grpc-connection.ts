@@ -78,7 +78,7 @@ export class GrpcConnection<I, O extends object> {
   }
 
   private onData(data: I) {
-    this.logger.verbose('Grpc message', JSON.stringify(data, null, 2))
+    // this.logger.verbose('Grpc message', JSON.stringify(data))
 
     const message = this.transform(data)
     this.options.onMessage(message)
