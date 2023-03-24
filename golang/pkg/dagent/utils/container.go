@@ -118,7 +118,8 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 		WithExtraHosts([]string{"host.docker.internal:host-gateway"}).
 		WithoutConflict()
 
-	return builder.CreateAndStart()
+	_, err = builder.CreateAndStart()
+	return err
 }
 
 func GetOwnContainer(ctx context.Context) (*types.Container, error) {

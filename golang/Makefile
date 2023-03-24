@@ -20,9 +20,9 @@ LDFLAGS := -ldflags "-X '${PACKAGE}/internal/version.Version=${VCS_VERSION}'\
 # default tag is latest for building
 image_version ?= latest
 
-GOAIR=v1.40.4
-GOSEC=v2.14.0
-GOLANGCI=v1.50.1
+GOAIR=v1.42.0
+GOSEC=v2.15.0
+GOLANGCI=v1.51.2
 GOFUMPT=v0.4.0
 
 GOOS?=linux
@@ -40,10 +40,17 @@ endif
 
 GOPARAMS:=GOOS=$(GOOS) CGO_ENABLED=0 $(GRPC_DEBUG_FLAGS)
 
+# cli start fully containerized stack, stable branch
 .PHONY: up
 up:
 	cd cmd/dyo && \
 	go run . up
+
+# cli stop
+.PHONY: down
+down:
+	cd cmd/dyo && \
+	go run . down
 
 # target `upd` is for development purposes it defaults to the latest images
 # and expects crux and crux-ui to run locally
@@ -52,10 +59,10 @@ upd:
 	cd cmd/dyo && \
 	go run . --disable-crux --disable-crux-ui --imagetag latest --prefix dyo-latest up
 
-.PHONY: down
-down:
+.PHONY: downd
+downd:
 	cd cmd/dyo && \
-	go run . down
+	go run . --prefix dyo-latest down
 
 .PHONY: go-crane
 go-crane:

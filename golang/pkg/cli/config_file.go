@@ -27,6 +27,7 @@ import (
 // State itself exists per-execution, settingsFile is persisted
 // freedesktop spec folders used by default, $XDG_CONFIG_HOME
 type State struct {
+	Ctx                context.Context
 	SettingsFile       SettingsFile
 	InternalHostDomain string
 	*Containers
@@ -71,11 +72,9 @@ type ContainerSettings struct {
 // Settings file will be read/written as this struct
 type SettingsFile struct {
 	// version as in image tag like "latest" or "stable"
-	Version        string `yaml:"version" env-default:"stable"`
-	CruxDisabled   bool   `yaml:"crux_disabled" env-default:"false"`
-	CruxUIDisabled bool   `yaml:"crux-ui_disabled" env-default:"false"`
-	Network        string `yaml:"network-name" env-default:"dyo-stable"`
-	Prefix         string `yaml:"prefix" env-default:"dyo-stable"`
+	Version string `yaml:"version" env-default:"stable"`
+	Network string `yaml:"network-name" env-default:"dyo-stable"`
+	Prefix  string `yaml:"prefix" env-default:"dyo-stable"`
 	Options
 }
 
@@ -108,7 +107,7 @@ type Options struct {
 
 const (
 	SettingsFileName = "settings.yaml"
-	SettingsFileDir  = "dyo-cli"
+	CLIDirName       = "dyo-cli"
 )
 
 const (
@@ -157,7 +156,8 @@ func SettingsFileLocation(settingsPath string) string {
 		if err != nil {
 			log.Fatal().Err(err).Stack().Msg("Couldn't determine the user's configuration dir")
 		}
-		settingsPath = fmt.Sprintf("%s/%s/%s", userConfDir, SettingsFileDir, SettingsFileName)
+
+		settingsPath = path.Join(userConfDir, CLIDirName, SettingsFileName)
 	}
 
 	return settingsPath
@@ -191,7 +191,9 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 	if err != nil {
 		switch {
 		case errors.Is(err, containerRuntime.ErrServerIsOutdated):
-			log.Warn().Stack().Err(err).Msg("Server is outdated, please consider updating")
+			NotifyOnce("dockerversion", func() {
+				log.Warn().Stack().Err(err).Msg("Server is outdated, please consider updating")
+			})
 		case errors.Is(err, containerRuntime.ErrServerVersionIsNotSupported):
 			log.Fatal().Stack().Err(err).Msg("Server is outdated")
 		default:
@@ -217,7 +219,7 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 	}
 
 	// Set disabled stuff
-	state = DisabledServiceSettings(state)
+	state = DisabledServiceSettings(state, args)
 
 	// Settings Validation steps
 
@@ -228,33 +230,14 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 	return state
 }
 
-func DisabledServiceSettings(state *State) *State {
+func DisabledServiceSettings(state *State, args *ArgsFlags) *State {
 	if state.Containers.CruxUI.Disabled {
 		state.CruxUI.CruxAddr = localhost
 	} else {
-		state.CruxUI.CruxAddr = fmt.Sprintf("%s_crux", state.SettingsFile.Prefix)
+		state.CruxUI.CruxAddr = fmt.Sprintf("%s_crux", args.Prefix)
 	}
 
 	return state
-}
-
-func PrintInfo(state *State, args *ArgsFlags) {
-	log.Warn().Msg("🦩🦩🦩 Use the CLI tool only for NON-PRODUCTION purpose. 🦩🦩🦩")
-
-	if state.Containers.Crux.Disabled {
-		log.Info().Msg("Do not forget to add your environmental variables to your .env files or export them!")
-		log.Info().Msgf("DATABASE_URL=postgresql://%s:%s@localhost:%d/%s?schema=public",
-			state.SettingsFile.CruxPostgresUser,
-			state.SettingsFile.CruxPostgresPassword,
-			state.SettingsFile.CruxPostgresPort,
-			state.SettingsFile.CruxPostgresDB)
-	}
-
-	log.Info().Msgf("Stack is ready. The UI should be available at http://localhost:%d location.",
-		state.SettingsFile.Options.TraefikWebPort)
-	log.Info().Msgf("The e-mail service should be available at http://localhost:%d location.",
-		state.SettingsFile.Options.MailSlurperWebPort)
-	log.Info().Msg("Happy deploying! 🎬")
 }
 
 func SettingsPath() string {
@@ -263,7 +246,7 @@ func SettingsPath() string {
 		log.Fatal().Err(err).Stack().Send()
 	}
 
-	return path.Join(userConfDir, SettingsFileDir, SettingsFileName)
+	return path.Join(userConfDir, CLIDirName, SettingsFileName)
 }
 
 // Save the settings
@@ -277,7 +260,7 @@ func SaveSettings(state *State, args *ArgsFlags) {
 			if err != nil {
 				log.Fatal().Err(err).Stack().Send()
 			}
-			printWelcomeMessage(args.SettingsFilePath)
+			PrintWelcomeMessage(args.SettingsFilePath)
 		} else if err != nil {
 			log.Fatal().Err(err).Stack().Send()
 		}
@@ -296,24 +279,12 @@ func SaveSettings(state *State, args *ArgsFlags) {
 	args.SettingsWrite = false
 }
 
-func printWelcomeMessage(settingsPath string) {
-	log.Info().Msgf("The config file is located at %s, where you can turn this message off.", settingsPath)
-	log.Info().Msgf("If you have any questions head to our Discord - https://discord.gg/pZWbd4fxga ! We're happy to help!")
-	log.Info().Msgf("You can learn more about the project at https://docs.dyrector.io, if you found this project useful please " +
-		"give us a star - https://github.com/dyrector-io/dyrectorio")
-}
-
 // There are options which are not filled out by default, we need to initialize values
 func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	// Set Docker Image location
 	state.Crux.Image = "ghcr.io/dyrector-io/dyrectorio/web/crux"
 	state.CruxUI.Image = "ghcr.io/dyrector-io/dyrectorio/web/crux-ui"
 	state.Kratos.Image = "ghcr.io/dyrector-io/dyrectorio/web/kratos"
-
-	// Pushing down prefix
-	if args.Prefix != "" {
-		state.SettingsFile.Prefix = args.Prefix
-	}
 
 	// Load defaults
 	state.SettingsFile.CruxSecret = util.Fallback(state.SettingsFile.CruxSecret, RandomChars(SecretLength))
@@ -322,15 +293,15 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	state.SettingsFile.KratosSecret = util.Fallback(state.SettingsFile.KratosSecret, RandomChars(SecretLength))
 
 	// Generate names
-	state.Containers.Traefik.Name = fmt.Sprintf("%s_traefik", state.SettingsFile.Prefix)
-	state.Containers.Crux.Name = fmt.Sprintf("%s_crux", state.SettingsFile.Prefix)
-	state.Containers.CruxMigrate.Name = fmt.Sprintf("%s_crux-migrate", state.SettingsFile.Prefix)
-	state.Containers.CruxUI.Name = fmt.Sprintf("%s_crux-ui", state.SettingsFile.Prefix)
-	state.Containers.Kratos.Name = fmt.Sprintf("%s_kratos", state.SettingsFile.Prefix)
-	state.Containers.KratosMigrate.Name = fmt.Sprintf("%s_kratos-migrate", state.SettingsFile.Prefix)
-	state.Containers.CruxPostgres.Name = fmt.Sprintf("%s_crux-postgres", state.SettingsFile.Prefix)
-	state.Containers.KratosPostgres.Name = fmt.Sprintf("%s_kratos-postgres", state.SettingsFile.Prefix)
-	state.Containers.MailSlurper.Name = fmt.Sprintf("%s_mailslurper", state.SettingsFile.Prefix)
+	state.Containers.Traefik.Name = fmt.Sprintf("%s_traefik", args.Prefix)
+	state.Containers.Crux.Name = fmt.Sprintf("%s_crux", args.Prefix)
+	state.Containers.CruxMigrate.Name = fmt.Sprintf("%s_crux-migrate", args.Prefix)
+	state.Containers.CruxUI.Name = fmt.Sprintf("%s_crux-ui", args.Prefix)
+	state.Containers.Kratos.Name = fmt.Sprintf("%s_kratos", args.Prefix)
+	state.Containers.KratosMigrate.Name = fmt.Sprintf("%s_kratos-migrate", args.Prefix)
+	state.Containers.CruxPostgres.Name = fmt.Sprintf("%s_crux-postgres", args.Prefix)
+	state.Containers.KratosPostgres.Name = fmt.Sprintf("%s_kratos-postgres", args.Prefix)
+	state.Containers.MailSlurper.Name = fmt.Sprintf("%s_mailslurper", args.Prefix)
 
 	return state
 }

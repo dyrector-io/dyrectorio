@@ -16,6 +16,7 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/version"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
@@ -110,12 +111,13 @@ func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool,
 		return nil, fmt.Errorf("failed to create the http request: %s", err.Error())
 	}
 
+	//nolint:bodyclose //closed already
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request for certificates: %s", err.Error())
 	}
 
-	defer resp.Body.Close()
+	defer logdefer.LogDeferredErr(resp.Body.Close, log.Warn(), "error closing http response")
 
 	if resp.TLS == nil {
 		return nil, errors.New("TLS info is missing")

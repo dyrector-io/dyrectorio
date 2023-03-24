@@ -1,16 +1,18 @@
 # this image is our official way of generating proto-files
 # for reproducable builds, anywhere
-FROM alpine:3.17
+FROM golang:1.20-alpine3.17
 
-ENV GOROOT /usr/lib/go
-ENV GOPATH /go
-ENV PATH /go/bin:$PATH
 ENV GOLANGCI_LINT_CACHE $GOPATH/cache
 ENV GOCACHE $GOPATH/cache
 
-RUN mkdir -p "$GOPATH/{src,bin,cache}" && chmod -R 777 "$GOPATH"
+SHELL ["/bin/ash","-c"]
 
-RUN apk add nodejs npm alpine-sdk go protoc protobuf-dev rsync docker git cosign zstd openssl1.1-compat
+RUN mkdir -p $GOPATH/src && \
+    mkdir -p $GOPATH/bin && \
+    mkdir -p $GOPATH/cache && \
+    mkdir -p $GOPATH/pkg
+
+RUN apk add nodejs npm alpine-sdk protoc protobuf-dev rsync docker git cosign zstd openssl1.1-compat
 
 RUN npm i -g \
         ts-proto@1.138.0 \
@@ -21,7 +23,7 @@ RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28 && \
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
 COPY ./golang/Makefile /tmp/
-RUN cd /tmp && make install-go-tools && rm Makefile
+RUN cd /tmp && make install-go-tools && rm Makefile && chmod -R 777 $GOPATH/
 
 WORKDIR /usr/work
 

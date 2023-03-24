@@ -25,6 +25,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
+	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
@@ -36,6 +37,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
 	"github.com/docker/docker/api/types"
+	dockerContainer "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
@@ -69,7 +71,7 @@ func GetContainerLogs(name string, skip, take uint) []string {
 	if err != nil {
 		log.Err(err).Stack().Send()
 	}
-	defer logs.Close()
+	defer logdefer.LogDeferredErr(logs.Close, log.Warn(), "error closing container log reader")
 
 	return ReadDockerLogsFromReadCloser(logs, int(skip), int(take))
 }
@@ -332,13 +334,13 @@ func DeployImage(ctx context.Context,
 
 	WithInitContainers(builder, &deployImageRequest.ContainerConfig, dog, cfg)
 
-	err = builder.CreateAndStart()
+	cont, err := builder.CreateAndStart()
 	if err != nil {
 		dog.WriteContainerState("", fmt.Sprintf("Failed to start container (%s): %s", containerName, err.Error()))
 		return err
 	}
 
-	matchedContainer, err = dockerHelper.GetContainerByID(ctx, *builder.GetContainerID())
+	matchedContainer, err = dockerHelper.GetContainerByID(ctx, *cont.GetContainerID())
 	if err != nil || matchedContainer == nil {
 		dog.WriteContainerState("", fmt.Sprintf("Failed to find container (%s): %s", containerName, err.Error()))
 		return err
@@ -362,13 +364,13 @@ func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, 
 	return networkMode, deployImageRequest.ContainerConfig.Networks
 }
 
-func WithInitContainers(dc *containerbuilder.DockerContainerBuilder, containerConfig *v1.ContainerConfig,
+func WithInitContainers(dc containerbuilder.Builder, containerConfig *v1.ContainerConfig,
 	dog *dogger.DeploymentLogger, cfg *config.Configuration,
 ) {
 	initFuncs := []containerbuilder.LifecycleFunc{}
 	if containerConfig.ImportContainer != nil {
 		initFuncs = append(initFuncs,
-			func(ctx context.Context, client *client.Client,
+			func(ctx context.Context, client client.APIClient,
 				containerName string, containerId *string,
 				mountList []mount.Mount, logger *io.StringWriter,
 			) error {
@@ -383,7 +385,7 @@ func WithInitContainers(dc *containerbuilder.DockerContainerBuilder, containerCo
 	}
 
 	if len(containerConfig.InitContainers) > 0 {
-		initFuncs = append(initFuncs, func(ctx context.Context, client *client.Client,
+		initFuncs = append(initFuncs, func(ctx context.Context, client client.APIClient,
 			containerName string, containerId *string,
 			mountList []mount.Mount, logger *io.StringWriter,
 		) error {
@@ -631,9 +633,9 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 	if operation == common.ContainerOperation_START_CONTAINER {
 		err = cli.ContainerStart(ctx, container.ID, types.ContainerStartOptions{})
 	} else if operation == common.ContainerOperation_STOP_CONTAINER {
-		err = cli.ContainerStop(ctx, container.ID, nil)
+		err = cli.ContainerStop(ctx, container.ID, dockerContainer.StopOptions{})
 	} else if operation == common.ContainerOperation_RESTART_CONTAINER {
-		err = cli.ContainerRestart(ctx, container.ID, nil)
+		err = cli.ContainerRestart(ctx, container.ID, dockerContainer.StopOptions{})
 	} else {
 		log.Error().Str("operation", operation.String()).Str("prefix", prefix).Str("name", name).Msg("Unknown operation")
 	}

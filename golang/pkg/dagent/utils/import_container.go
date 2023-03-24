@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/docker/docker/api/types/mount"
@@ -31,7 +32,7 @@ func checkIfTargetVolumeIsThere(mountList []mount.Mount, targetVolumeName string
 
 // before application container starts, loads import container
 func spawnImportContainer(
-	ctx context.Context, cli *client.Client, name string, mountList []mount.Mount,
+	ctx context.Context, cli client.APIClient, name string, mountList []mount.Mount,
 	importContainer *v1.ImportContainer, dog *dogger.DeploymentLogger, cfg *config.Configuration,
 ) error {
 	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Spawning importer container to load assets")
@@ -45,7 +46,7 @@ func spawnImportContainer(
 	importContainerName := util.JoinV("-", name, "import")
 	targetVolume := mount.Mount{Type: mount.TypeBind, Source: mountList[targetVolumeIndex].Source, Target: "/data/output"}
 
-	builder, err = builder.
+	cont, waitResult, err := builder.
 		WithClient(cli).
 		WithImage(cfg.ImportContainerImage).
 		WithCmd(strings.Split(importContainer.Command, " ")).
@@ -54,26 +55,25 @@ func spawnImportContainer(
 		WithMountPoints([]mount.Mount{targetVolume}).
 		WithoutConflict().
 		WithLogWriter(dog).
-		Create()
+		WithPreStartHooks(func(ctx context.Context, client client.APIClient,
+			containerName string, containerId *string, mountList []mount.Mount, logger *io.StringWriter,
+		) error {
+			dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
+			return nil
+		}).
+		CreateAndWaitUntilExit()
 	if err != nil {
 		return err
 	}
 
-	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
-
-	exitResult, err := builder.StartWaitUntilExit()
-	if err != nil {
-		return fmt.Errorf("import container start failed: %w", err)
-	}
-
-	if exitResult.StatusCode == 0 {
-		containerID := *builder.GetContainerID()
+	if waitResult.StatusCode == 0 {
+		containerID := *cont.GetContainerID()
 		err = dockerHelper.DeleteContainerByID(ctx, dog, containerID)
 		if err != nil {
 			log.Warn().Msg("Failed to delete import container after completion")
 		}
 	} else {
-		return fmt.Errorf("import container exited with code: %v", exitResult.StatusCode)
+		return fmt.Errorf("import container exited with code: %v", waitResult.StatusCode)
 	}
 	return nil
 }
