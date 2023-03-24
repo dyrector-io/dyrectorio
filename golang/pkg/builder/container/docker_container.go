@@ -18,7 +18,6 @@ type Container interface {
 	GetName() string
 	GetContainerID() *string
 	GetNetworkIDs() []string
-	Sync() error
 	Start(context.Context, client.APIClient) error
 	StartWaitUntilExit(context.Context, client.APIClient) (*WaitResult, error)
 }
@@ -31,10 +30,6 @@ type DockerContainer struct {
 
 func NewDockerContainer(cont *types.Container, preStartHooks, postStartHooks []LifecycleFunc) DockerContainer {
 	return DockerContainer{container: cont, preStartHooks: preStartHooks, postStartHooks: postStartHooks}
-}
-
-func (d DockerContainer) Sync() error {
-	return nil
 }
 
 func (d DockerContainer) GetName() string {
