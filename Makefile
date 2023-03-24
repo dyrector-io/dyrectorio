@@ -1,7 +1,7 @@
 
 SHELL = /bin/sh
 
-## shortcut to start stack, fully containerized, stable stable build
+## shortcut to start stack, fully containerized, stable build
 .PHONY: up
 up:
 	cd golang && \

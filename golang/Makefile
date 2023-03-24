@@ -134,7 +134,7 @@ security:
 # golangci for linting
 .PHONY: lint
 lint:
-	go mod tidy && golangci-lint run  ./...
+	golangci-lint run  ./...
 
 .PHONY: build-cli
 build-cli:
