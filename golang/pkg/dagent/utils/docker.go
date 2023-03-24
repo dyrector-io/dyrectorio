@@ -25,6 +25,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
+	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
@@ -70,7 +71,7 @@ func GetContainerLogs(name string, skip, take uint) []string {
 	if err != nil {
 		log.Err(err).Stack().Send()
 	}
-	defer logs.Close()
+	defer logdefer.LogDeferredErr(logs.Close, log.Warn(), "error closing container log reader")
 
 	return ReadDockerLogsFromReadCloser(logs, int(skip), int(take))
 }
