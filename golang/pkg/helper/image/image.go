@@ -14,6 +14,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/rs/zerolog/log"
 
+	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
@@ -109,7 +110,7 @@ func Pull(ctx context.Context, logger io.StringWriter, expandedImageName, authCr
 	if logger != nil {
 		_, err = logger.WriteString("Pulling image: " + expandedImageName)
 		if err != nil {
-			//nolint
+			//nolint:forbidigo
 			fmt.Printf("Failed to write log: %s", err.Error())
 		}
 	}
@@ -118,7 +119,7 @@ func Pull(ctx context.Context, logger io.StringWriter, expandedImageName, authCr
 	if err != nil {
 		return err
 	}
-	defer reader.Close()
+	defer logdefer.LogDeferredErr(reader.Close, log.Warn(), "error closing image pull reader")
 
 	d := json.NewDecoder(reader)
 

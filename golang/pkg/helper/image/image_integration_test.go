@@ -34,7 +34,7 @@ func TestPullImage(t *testing.T) {
 		})
 	}
 
-	err = imageHelper.Pull(context.Background(), nil, "nginx:latest", "")
+	err = imageHelper.Pull(context.Background(), nil, "docker.io/library/nginx:latest", "")
 	if err != nil {
 		t.Fatal(err)
 	}

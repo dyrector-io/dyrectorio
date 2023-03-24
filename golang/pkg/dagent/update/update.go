@@ -86,12 +86,12 @@ func createNewDAgentContainer(ctx context.Context, cli *client.Client, oldContai
 		WithEnv(inspect.Config.Env).
 		WithMountPoints(mounts)
 
-	err = builder.CreateAndStart()
+	cont, err := builder.CreateAndStart()
 	if err != nil {
 		return err
 	}
 
-	log.Debug().Str("containerID", *builder.GetContainerID()).Msg("Created new DAgent")
+	log.Debug().Str("containerID", *cont.GetContainerID()).Msg("Created new dagent")
 
 	return nil
 }

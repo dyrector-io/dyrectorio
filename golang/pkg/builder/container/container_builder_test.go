@@ -22,12 +22,12 @@ import (
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 )
 
-func builderCleanup(builder *containerbuilder.DockerContainerBuilder) {
+func containerCleanup(container containerbuilder.Container) {
 	ctx := context.Background()
-	if builder.GetContainerID() != nil {
-		dockerHelper.DeleteContainerByID(ctx, nil, *builder.GetContainerID())
+	if container.GetContainerID() != nil {
+		dockerHelper.DeleteContainerByID(ctx, nil, *container.GetContainerID())
 	}
-	if networks := builder.GetNetworkIDs(); networks != nil {
+	if networks := container.GetNetworkIDs(); len(networks) > 0 {
 		for _, network := range networks {
 			err := dockerHelper.DeleteNetworkByID(ctx, network)
 			if err != nil {
@@ -48,7 +48,7 @@ func assertPortBinding(t *testing.T, portMap nat.PortMap, internal, external str
 }
 
 func hookCallback(callback func()) containerbuilder.LifecycleFunc {
-	return func(ctx context.Context, client *client.Client, containerName string,
+	return func(ctx context.Context, client client.APIClient, containerName string,
 		containerId *string, mountList []mount.Mount, logger *io.StringWriter,
 	) error {
 		callback()
@@ -57,17 +57,18 @@ func hookCallback(callback func()) containerbuilder.LifecycleFunc {
 }
 
 func TestNameWithBuilder(t *testing.T) {
+	var _ containerbuilder.Builder = (*containerbuilder.DockerContainerBuilder)(nil)
+
 	builder := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("nginx:latest")
+		WithImage("docker.io/library/nginx:latest")
 
-	defer builderCleanup(builder)
-
-	err := builder.CreateAndStart()
+	cont, err := builder.CreateAndStart()
+	defer containerCleanup(cont)
 	assert.NoError(t, err)
 }
 
 func TestEnvPortsLabelsRestartPolicySettings(t *testing.T) {
-	builder := containerbuilder.NewDockerBuilder(context.Background()).
+	cont, err := containerbuilder.NewDockerBuilder(context.Background()).
 		WithName("test02").
 		WithEnv([]string{"A=B", "E_N_V=123"}).
 		WithPortBindings([]containerbuilder.PortBinding{{
@@ -89,19 +90,17 @@ func TestEnvPortsLabelsRestartPolicySettings(t *testing.T) {
 			"LABEL2": "1234",
 		}).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
-		WithImage("nginx:latest")
+		WithImage("docker.io/library/nginx:latest").
+		CreateAndStart()
 
-	defer builderCleanup(builder)
-
-	err := builder.CreateAndStart()
+	defer containerCleanup(cont)
 	assert.NoError(t, err)
-
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
 
-	container, err := cli.ContainerInspect(context.Background(), *builder.GetContainerID())
+	container, err := cli.ContainerInspect(context.Background(), *cont.GetContainerID())
 	assert.Nil(t, err)
 
 	assert.Equal(t, "/test02", container.Name)
@@ -127,23 +126,20 @@ func TestLogging(t *testing.T) {
 		test: t,
 	}
 
-	builder := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("nginx:latest").
-		WithLogWriter(logger)
+	cont, err := containerbuilder.NewDockerBuilder(context.Background()).
+		WithImage("docker.io/library/nginx:latest").
+		WithLogWriter(logger).CreateAndStart()
 
-	defer builderCleanup(builder)
-
-	err := builder.CreateAndStart()
+	defer containerCleanup(cont)
 	assert.NoError(t, err)
-
 	assert.True(t, logger.gotMessage)
 }
 
 func TestHooks(t *testing.T) {
 	order := []string{}
 
-	builder := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("nginx:latest").
+	cont, err := containerbuilder.NewDockerBuilder(context.Background()).
+		WithImage("docker.io/library/nginx:latest").
 		WithPreCreateHooks(hookCallback(func() {
 			order = append(order, "pre-create")
 		})).
@@ -155,13 +151,12 @@ func TestHooks(t *testing.T) {
 		})).
 		WithPostStartHooks(hookCallback(func() {
 			order = append(order, "post-start")
-		}))
+		})).
+		CreateAndStart()
 
-	defer builderCleanup(builder)
+	defer containerCleanup(cont)
 
-	err := builder.CreateAndStart()
 	assert.NoError(t, err)
-
 	assert.Equal(t, 4, len(order))
 	assert.Equal(t, "pre-create", order[0])
 	assert.Equal(t, "post-create", order[1])
@@ -174,37 +169,32 @@ func TestNetwork(t *testing.T) {
 		test: t,
 	}
 
-	builder := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("nginx:latest").
+	cont, err := containerbuilder.NewDockerBuilder(context.Background()).
+		WithImage("docker.io/library/nginx:latest").
 		WithName("prefix-container").
 		WithLogWriter(logger).
 		WithNetworkMode("prefix").
-		WithNetworkAliases("prefix-container", "container")
+		WithNetworkAliases("prefix-container", "container").
+		CreateAndStart()
 
-	defer builderCleanup(builder)
+	defer containerCleanup(cont)
 
-	err := builder.CreateAndStart()
 	assert.NoError(t, err)
-
-	assert.NotNil(t, builder.GetNetworkIDs())
+	assert.NotEmpty(t, cont.GetNetworkIDs())
 }
 
 func TestAutoRemove(t *testing.T) {
-	builder := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("nginx:latest").
+	ctx := context.Background()
+
+	cont, waitResult, err := containerbuilder.NewDockerBuilder(ctx).
+		WithImage("docker.io/library/nginx:latest").
 		WithName("prefix-container").
 		WithCmd([]string{"bash"}).
-		WithAutoRemove(true)
+		WithAutoRemove(true).CreateAndWaitUntilExit()
 
-	defer builderCleanup(builder)
+	defer containerCleanup(cont)
 
-	builder, err := builder.Create()
 	assert.NoError(t, err)
-
-	waitResult, err := builder.StartWaitUntilExit()
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -212,7 +202,7 @@ func TestAutoRemove(t *testing.T) {
 	}
 
 	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: *builder.GetContainerID()}),
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: *cont.GetContainerID()}),
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -223,25 +213,23 @@ func TestAutoRemove(t *testing.T) {
 }
 
 func TestConflict(t *testing.T) {
-	preBuilder := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("nginx:latest").
+	cont1, err := containerbuilder.NewDockerBuilder(context.Background()).
+		WithImage("docker.io/library/nginx:latest").
 		WithName("conflicting-container").
-		WithLabels(map[string]string{"TEST": "OLD_CONTAINER"})
+		WithLabels(map[string]string{"TEST": "OLD_CONTAINER"}).
+		CreateAndStart()
 
-	defer builderCleanup(preBuilder)
-
-	err := preBuilder.CreateAndStart()
+	defer containerCleanup(cont1)
 	assert.NoError(t, err)
 
-	builder := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("nginx:latest").
+	cont2, err := containerbuilder.NewDockerBuilder(context.Background()).
+		WithImage("docker.io/library/nginx:latest").
 		WithName("conflicting-container").
 		WithLabels(map[string]string{"TEST": "NEW_CONTAINER"}).
-		WithoutConflict()
+		WithoutConflict().
+		CreateAndStart()
 
-	defer builderCleanup(builder)
-
-	err = builder.CreateAndStart()
+	defer containerCleanup(cont2)
 	assert.NoError(t, err)
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -251,7 +239,7 @@ func TestConflict(t *testing.T) {
 
 	list, err := cli.ContainerList(context.Background(), types.ContainerListOptions{
 		All:     true,
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: *builder.GetContainerID()}),
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: *cont2.GetContainerID()}),
 	})
 	if err != nil {
 		t.Fatal(err)

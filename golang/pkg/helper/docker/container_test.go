@@ -9,7 +9,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/AlekSi/pointer"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/rs/zerolog/log"
@@ -25,7 +27,7 @@ import (
 
 type DockerContainerHelperTestSuite struct {
 	suite.Suite
-	testContainers []*containerbuilder.DockerContainerBuilder
+	testContainers []containerbuilder.Builder
 	dockerClient   client.Client
 	ctx            context.Context
 	prefix         string
@@ -66,7 +68,7 @@ func (testSuite *DockerContainerHelperTestSuite) TearDownSuite() {
 // this function executes before each test case
 func (testSuite *DockerContainerHelperTestSuite) SetupTest() {
 	for i := range testSuite.testContainers {
-		err := testSuite.testContainers[i].CreateAndStart()
+		_, err := testSuite.testContainers[i].CreateAndStart()
 		if err != nil {
 			log.Fatal().Err(err).Msg("Could not start container")
 		}
@@ -90,7 +92,7 @@ func (testSuite *DockerContainerHelperTestSuite) TearDownTest() {
 
 	timeoutValue := (time.Duration(dockerClientTimeoutSeconds) * time.Second)
 	for i := range containers {
-		err = testSuite.dockerClient.ContainerStop(testSuite.ctx, containers[i].ID, &timeoutValue)
+		err = testSuite.dockerClient.ContainerStop(testSuite.ctx, containers[i].ID, container.StopOptions{Timeout: pointer.ToIntOrNil(int(timeoutValue.Seconds()))})
 		if err != nil {
 			log.Warn().Err(err).Send()
 		}
