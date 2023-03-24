@@ -10,7 +10,7 @@ up:
 .PHONY: down
 down:
 	cd golang && \
-	make prefix=stable down
+	make down
 
 # shortcut to start stack with local development config
 .PHONY: upd

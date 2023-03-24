@@ -190,7 +190,9 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 	if err != nil {
 		switch {
 		case errors.Is(err, containerRuntime.ErrServerIsOutdated):
-			log.Warn().Stack().Err(err).Msg("Server is outdated, please consider updating")
+			NotifyOnce("dockerversion", func() {
+				log.Warn().Stack().Err(err).Msg("Server is outdated, please consider updating")
+			})
 		case errors.Is(err, containerRuntime.ErrServerVersionIsNotSupported):
 			log.Fatal().Stack().Err(err).Msg("Server is outdated")
 		default:
