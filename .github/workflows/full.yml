@@ -141,6 +141,9 @@ jobs:
           key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-golang-
+        # fixes: fatal: unsafe repository
+      - name: Adding workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Load go mod
         run: go mod tidy
       - name: Run gosec
