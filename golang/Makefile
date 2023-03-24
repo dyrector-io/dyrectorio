@@ -50,7 +50,7 @@ up:
 .PHONY: down
 down:
 	cd cmd/dyo && \
-	go run . --prefix dyo-stable down
+	go run . down
 
 # upd is short for up dev
 .PHONY: upd
