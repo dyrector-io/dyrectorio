@@ -44,7 +44,6 @@ import {
   UniqueKey,
   UniqueKeyValue,
 } from 'src/shared/models'
-import AgentService from '../agent/agent.service'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import ContainerMapper from '../shared/container.mapper'
 import { BasicProperties } from '../shared/shared.dto'

@@ -525,7 +525,7 @@ func executeSecretList(
 		Name:      name,
 		PublicKey: publicKey,
 		HasKeys:   keys != nil,
-		Keys:      keys,	
+		Keys:      keys,
 	}
 
 	_, err = grpcConn.Client.SecretList(ctx, resp)
