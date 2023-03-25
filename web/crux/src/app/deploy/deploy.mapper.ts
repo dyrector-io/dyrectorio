@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import {
   ContainerStateEnum,
   Deployment,
@@ -8,11 +8,10 @@ import {
   Instance,
   InstanceContainerConfig,
   Node,
+  Product,
   Storage,
-  VersionTypeEnum,
+  Version,
 } from '@prisma/client'
-import { toTimestamp } from 'src/domain/utils'
-import { InternalException } from 'src/exception/errors'
 import {
   CommonContainerConfig,
   CraneContainerConfig,
@@ -30,22 +29,14 @@ import {
   DeploymentStrategy as ProtoDeploymentStrategy,
   ExposeStrategy as ProtoExposeStrategy,
   KeyValue,
+  ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
 import {
   AuditResponse,
-  DeploymentByVersionResponse,
-  DeploymentDetailsResponse,
-  DeploymentEventContainerState,
-  DeploymentEventLog,
-  DeploymentEventResponse,
-  DeploymentEventType,
-  DeploymentResponse,
   InitContainer,
   InstanceContainerConfig as ProtoInstanceContainerConfig,
   InstanceResponse,
-  NodeConnectionStatus,
 } from 'src/grpc/protobuf/proto/crux'
-import { versionTypeToProto } from 'src/shared/mapper'
 import {
   ContainerConfigData,
   InstanceContainerConfigData,
@@ -56,84 +47,106 @@ import {
 import AgentService from '../agent/agent.service'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import ContainerMapper from '../shared/container.mapper'
+import { BasicProperties } from '../shared/shared.dto'
+import SharedMapper from '../shared/shared.mapper'
+import {
+  DeploymentDetailsDto,
+  DeploymentDto,
+  DeploymentEventDto,
+  DeploymentEventTypeDto,
+  DeploymentStatusDto,
+  DeploymentWithBasicNodeDto,
+  InstanceContainerConfigDto,
+  InstanceDto,
+  InstanceSecretsDto,
+} from './deploy.dto'
 
 @Injectable()
 export default class DeployMapper {
   constructor(
+    private sharedMapper: SharedMapper,
     private imageMapper: ImageMapper,
-    private agentService: AgentService,
     private containerMapper: ContainerMapper,
   ) {}
 
-  listItemToProto(deployment: DeploymentListItem): DeploymentResponse {
-    return {
-      ...deployment,
-      node: deployment.node.name,
-      product: deployment.version.product.name,
-      version: deployment.version.name,
-      status: this.statusToProto(deployment.status),
-      productId: deployment.version.product.id,
-      versionId: deployment.version.id,
-      nodeId: deployment.node.id,
-      updatedAt: toTimestamp(deployment.updatedAt),
-      versionType: versionTypeToProto(deployment.version.type),
+  statusToDto(it: DeploymentStatusEnum): DeploymentStatusDto {
+    switch (it) {
+      case 'inProgress':
+        return 'in-progress'
+      default:
+        return it as DeploymentStatusDto
     }
   }
 
-  deploymentByVersionToProto(deployment: DeploymentWithNode): DeploymentByVersionResponse {
-    const agent = this.agentService.getById(deployment.nodeId)
-
-    const status = agent?.getConnectionStatus() ?? NodeConnectionStatus.UNREACHABLE
+  toDeploymentWithBasicNodeDto(it: DeploymentWithNode): DeploymentWithBasicNodeDto {
     return {
-      ...deployment,
-      audit: AuditResponse.fromJSON(deployment),
-      status: this.statusToProto(deployment.status),
-      nodeId: deployment.nodeId,
-      nodeName: deployment.node.name,
-      nodeStatus: status,
+      id: it.id,
+      prefix: it.prefix,
+      status: this.statusToDto(it.status),
+      updatedAt: it.updatedAt ?? it.createdAt,
+      node: this.sharedMapper.nodeToBasicDto(it.node),
     }
   }
 
-  detailsToProto(deployment: DeploymentDetails, publicKey?: string): DeploymentDetailsResponse {
+  toDto(it: DeploymentWithNodeVersion): DeploymentDto {
     return {
-      ...deployment,
-      audit: AuditResponse.fromJSON(deployment),
-      productVersionId: deployment.versionId,
-      status: this.statusToProto(deployment.status),
+      id: it.id,
+      prefix: it.prefix,
+      status: this.statusToDto(it.status),
+      audit: this.sharedMapper.auditToDto(it),
+      node: this.sharedMapper.nodeToBasicDto(it.node),
+      product: this.sharedMapper.productToBasicDto(it.version.product),
+      version: this.sharedMapper.versionToBasicDto(it.version),
+    }
+  }
+
+  toDetailsDto(deployment: DeploymentDetails, publicKey?: string): DeploymentDetailsDto {
+    return {
+      ...this.toDto(deployment),
       publicKey,
       environment: deployment.environment as UniqueKeyValue[],
-      instances: deployment.instances.map(it => ({
-        ...this.instanceToProto(it),
-        audit: AuditResponse.fromJSON(deployment),
-      })),
+      instances: deployment.instances.map(it => this.instanceToDto(it)),
     }
   }
 
-  instanceToProto(instance: InstanceDetails): InstanceResponse {
+  instanceToDto(it: InstanceDetails): InstanceDto {
     return {
-      ...instance,
-      audit: AuditResponse.fromJSON(instance),
-      image: this.imageMapper.detailsToProto(instance.image),
-      state: this.containerStateToProto(instance.state),
-      config: this.instanceConfigToProto((instance.config ?? {}) as InstanceContainerConfigData),
+      id: it.id,
+      updatedAt: it.updatedAt,
+      image: this.imageMapper.toDto(it.image),
+      state: it.state,
+      config: this.instanceConfigToDto(it.config as any as InstanceContainerConfigData),
     }
   }
 
-  instanceConfigToProto(config: InstanceContainerConfigData): ProtoInstanceContainerConfig {
+  secretsResponseToInstanceSecretsDto(it: ListSecretsResponse): InstanceSecretsDto {
     return {
-      common: this.imageMapper.commonConfigToProto(config),
-      dagent: this.imageMapper.dagentConfigToProto(config),
-      crane: this.imageMapper.craneConfigToProto(config),
-      secrets: !config.secrets ? null : { data: config.secrets },
+      container: {
+        prefix: it.prefix,
+        name: it.name,
+      },
+      publicKey: it.publicKey,
+      keys: !it.hasKeys ? null : it.keys,
     }
   }
 
-  instanceConfigToInstanceContainerConfigData(
+  instanceConfigToDto(it?: InstanceContainerConfigData): InstanceContainerConfigDto {
+    if (!it) {
+      return null
+    }
+
+    return {
+      ...this.imageMapper.containerConfigDataToDto(it as ContainerConfigData),
+      secrets: it.secrets,
+    }
+  }
+
+  instanceConfigDtoToInstanceContainerConfigData(
     imageConfig: ContainerConfigData,
     currentConfig: InstanceContainerConfigData,
-    configPatch: ProtoInstanceContainerConfig,
+    patch: InstanceContainerConfigDto,
   ): InstanceContainerConfigData {
-    const config = this.imageMapper.configProtoToContainerConfigData(currentConfig, configPatch)
+    const config = this.imageMapper.configDtoToContainerConfigData(currentConfig as ContainerConfigData, patch)
 
     if (config.labels) {
       const currentLabels = currentConfig.labels ?? imageConfig.labels ?? {}
@@ -155,7 +168,7 @@ export default class DeployMapper {
       }
     }
 
-    let secrets = !configPatch.secrets ? undefined : configPatch.secrets.data
+    let secrets = !patch.secrets ? undefined : patch.secrets
     if (secrets && !currentConfig.secrets && imageConfig.secrets) {
       secrets = this.containerMapper.mergeSecrets(secrets, imageConfig.secrets)
     }
@@ -166,8 +179,14 @@ export default class DeployMapper {
     }
   }
 
-  configSectionResetToDb(config: Partial<InstanceContainerConfigData>, section: string): InstanceContainerConfigData {
-    return this.imageMapper.configSectionResetToDb(config, section) as InstanceContainerConfigData
+  instanceConfigDataToDb(config: InstanceContainerConfigData): Omit<InstanceContainerConfig, 'id' | 'instanceId'> {
+    const imageConfig = this.imageMapper.containerConfigDataToDb(config)
+    return {
+      ...imageConfig,
+      tty: config.tty,
+      useLoadBalancer: config.useLoadBalancer,
+      proxyHeaders: config.proxyHeaders,
+    }
   }
 
   instanceContainerConfigDataToDb(
@@ -176,57 +195,63 @@ export default class DeployMapper {
     return this.imageMapper.containerConfigDataToDb(config)
   }
 
-  eventToProto(event: DeploymentEvent): DeploymentEventResponse {
-    let log: DeploymentEventLog
-    let deploymentStatus: DeploymentStatus
-    let containerStatus: DeploymentEventContainerState
+  eventTypeToDto(it: DeploymentEventTypeEnum): DeploymentEventTypeDto {
+    switch (it) {
+      case 'deploymentStatus':
+        return 'deployment-status'
+      case 'containerStatus':
+        return 'container-status'
+      default:
+        return it as DeploymentEventTypeDto
+    }
+  }
+
+  eventToDto(event: DeploymentEvent): DeploymentEventDto {
+    const result: DeploymentEventDto = {
+      createdAt: event.createdAt,
+      type: this.eventTypeToDto(event.type),
+    }
+
     switch (event.type) {
       case DeploymentEventTypeEnum.log: {
-        log = DeploymentEventLog.fromJSON({
-          log: event.value,
-        })
+        result.log = event.value as string[]
         break
       }
       case DeploymentEventTypeEnum.deploymentStatus: {
-        deploymentStatus = this.statusToProto(event.value as DeploymentStatusEnum)
+        result.deploymentStatus = this.statusToDto(event.value as DeploymentStatusEnum)
         break
       }
+      // TODO(@m8vago): rename to containerState
       case DeploymentEventTypeEnum.containerStatus: {
-        const value = event.value as { instanceId: string; state: string }
-        containerStatus = DeploymentEventContainerState.fromJSON({
-          ...value,
-          state: value.state.toUpperCase(),
-        })
+        const value = event.value as { instanceId: string; state: ContainerStateEnum }
+        result.containerState = value
         break
       }
       default:
-        throw new InternalException({
+        throw new InternalServerErrorException({
           message: 'Unsupported deployment event type!',
         })
     }
 
+    return result
+  }
+
+  instanceToProto(instance: InstanceDetails): InstanceResponse {
     return {
-      ...event,
-      createdAt: toTimestamp(event.createdAt),
-      type: this.eventTypeToProto(event.type),
-      log,
-      deploymentStatus,
-      containerStatus,
+      ...instance,
+      audit: AuditResponse.fromJSON(instance),
+      image: this.imageMapper.detailsToProto(instance.image),
+      state: this.containerStateToProto(instance.state),
+      config: this.instanceConfigToProto((instance.config ?? {}) as InstanceContainerConfigData),
     }
   }
 
-  eventTypeToProto(type: DeploymentEventTypeEnum) {
-    switch (type) {
-      case 'containerStatus':
-        return DeploymentEventType.CONTAINER_STATUS
-      case 'deploymentStatus':
-        return DeploymentEventType.DEPLOYMENT_STATUS
-      case 'log':
-        return DeploymentEventType.DEPLOYMENT_LOG
-      default:
-        throw new InternalException({
-          message: 'Unsupported event type!',
-        })
+  instanceConfigToProto(config: InstanceContainerConfigData): ProtoInstanceContainerConfig {
+    return {
+      common: this.imageMapper.commonConfigToProto(config),
+      dagent: this.imageMapper.dagentConfigToProto(config),
+      crane: this.imageMapper.craneConfigToProto(config),
+      secrets: !config.secrets ? null : { data: config.secrets },
     }
   }
 
@@ -389,20 +414,21 @@ export default class DeployMapper {
   }
 }
 
+export type DeploymentWithNode = Deployment & {
+  node: Pick<Node, BasicProperties>
+}
+
+type DeploymentWithNodeVersion = DeploymentWithNode & {
+  version: Pick<Version, BasicProperties> & {
+    product: Pick<Product, BasicProperties>
+  }
+}
+
 export type InstanceDetails = Instance & {
   image: ImageDetails
   config?: InstanceContainerConfig
 }
 
-export type DeploymentWithNode = Deployment & {
-  node: Pick<Node, 'id' | 'name' | 'type'>
-}
-
-export type DeploymentDetails = DeploymentWithNode & {
+export type DeploymentDetails = DeploymentWithNodeVersion & {
   instances: InstanceDetails[]
-}
-
-type DeploymentListItem = Deployment & {
-  node: { id: string; name: string }
-  version: { id: string; name: string; product: { id: string; name: string }; type: VersionTypeEnum }
 }

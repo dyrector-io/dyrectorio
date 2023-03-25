@@ -29,7 +29,6 @@ import {
   HealthCheckConfig,
   Ingress,
   InstanceDeploymentItem,
-  ListSecretsResponse,
   NetworkMode,
   networkModeFromJSON,
   networkModeToJSON,
@@ -1001,25 +1000,6 @@ export interface DeploymentEditEventMessage {
   imageIdDeleted?: string | undefined
 }
 
-export interface CreateDeploymentRequest {
-  versionId: string
-  nodeId: string
-  note?: string | undefined
-  prefix: string
-}
-
-export interface UpdateDeploymentRequest {
-  id: string
-  note?: string | undefined
-  prefix: string
-}
-
-export interface PatchDeploymentRequest {
-  id: string
-  environment?: UniqueKeyValueList | undefined
-  instance?: PatchInstanceRequest | undefined
-}
-
 export interface InstanceResponse {
   id: string
   audit: AuditResponse | undefined
@@ -1034,53 +1014,6 @@ export interface PatchInstanceRequest {
   resetSection?: string | undefined
 }
 
-export interface DeploymentListResponse {
-  data: DeploymentResponse[]
-}
-
-export interface DeploymentResponse {
-  id: string
-  product: string
-  productId: string
-  version: string
-  versionId: string
-  node: string
-  status: DeploymentStatus
-  nodeId: string
-  note?: string | undefined
-  prefix: string
-  updatedAt?: Timestamp | undefined
-  versionType: VersionType
-}
-
-export interface DeploymentListByVersionResponse {
-  data: DeploymentByVersionResponse[]
-}
-
-export interface DeploymentByVersionResponse {
-  id: string
-  audit: AuditResponse | undefined
-  prefix: string
-  nodeId: string
-  nodeName: string
-  status: DeploymentStatus
-  nodeStatus: NodeConnectionStatus
-  note?: string | undefined
-}
-
-export interface DeploymentDetailsResponse {
-  id: string
-  audit: AuditResponse | undefined
-  productVersionId: string
-  nodeId: string
-  note?: string | undefined
-  prefix: string
-  environment: UniqueKeyValue[]
-  status: DeploymentStatus
-  publicKey?: string | undefined
-  instances: InstanceResponse[]
-}
-
 export interface DeploymentEventContainerState {
   instanceId: string
   state: ContainerState
@@ -1088,24 +1021,6 @@ export interface DeploymentEventContainerState {
 
 export interface DeploymentEventLog {
   log: string[]
-}
-
-export interface DeploymentEventResponse {
-  type: DeploymentEventType
-  createdAt: Timestamp | undefined
-  log?: DeploymentEventLog | undefined
-  deploymentStatus?: DeploymentStatus | undefined
-  containerStatus?: DeploymentEventContainerState | undefined
-}
-
-export interface DeploymentEventListResponse {
-  status: DeploymentStatus
-  data: DeploymentEventResponse[]
-}
-
-export interface DeploymentListSecretsRequest {
-  id: string
-  instanceId: string
 }
 
 export interface CreateNotificationRequest {
@@ -2790,76 +2705,6 @@ export const DeploymentEditEventMessage = {
   },
 }
 
-function createBaseCreateDeploymentRequest(): CreateDeploymentRequest {
-  return { versionId: '', nodeId: '', prefix: '' }
-}
-
-export const CreateDeploymentRequest = {
-  fromJSON(object: any): CreateDeploymentRequest {
-    return {
-      versionId: isSet(object.versionId) ? String(object.versionId) : '',
-      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      note: isSet(object.note) ? String(object.note) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-    }
-  },
-
-  toJSON(message: CreateDeploymentRequest): unknown {
-    const obj: any = {}
-    message.versionId !== undefined && (obj.versionId = message.versionId)
-    message.nodeId !== undefined && (obj.nodeId = message.nodeId)
-    message.note !== undefined && (obj.note = message.note)
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    return obj
-  },
-}
-
-function createBaseUpdateDeploymentRequest(): UpdateDeploymentRequest {
-  return { id: '', prefix: '' }
-}
-
-export const UpdateDeploymentRequest = {
-  fromJSON(object: any): UpdateDeploymentRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      note: isSet(object.note) ? String(object.note) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-    }
-  },
-
-  toJSON(message: UpdateDeploymentRequest): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.note !== undefined && (obj.note = message.note)
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    return obj
-  },
-}
-
-function createBasePatchDeploymentRequest(): PatchDeploymentRequest {
-  return { id: '' }
-}
-
-export const PatchDeploymentRequest = {
-  fromJSON(object: any): PatchDeploymentRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      environment: isSet(object.environment) ? UniqueKeyValueList.fromJSON(object.environment) : undefined,
-      instance: isSet(object.instance) ? PatchInstanceRequest.fromJSON(object.instance) : undefined,
-    }
-  },
-
-  toJSON(message: PatchDeploymentRequest): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.environment !== undefined &&
-      (obj.environment = message.environment ? UniqueKeyValueList.toJSON(message.environment) : undefined)
-    message.instance !== undefined &&
-      (obj.instance = message.instance ? PatchInstanceRequest.toJSON(message.instance) : undefined)
-    return obj
-  },
-}
-
 function createBaseInstanceResponse(): InstanceResponse {
   return { id: '', audit: undefined, image: undefined }
 }
@@ -2911,186 +2756,6 @@ export const PatchInstanceRequest = {
   },
 }
 
-function createBaseDeploymentListResponse(): DeploymentListResponse {
-  return { data: [] }
-}
-
-export const DeploymentListResponse = {
-  fromJSON(object: any): DeploymentListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => DeploymentResponse.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: DeploymentListResponse): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? DeploymentResponse.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
-function createBaseDeploymentResponse(): DeploymentResponse {
-  return {
-    id: '',
-    product: '',
-    productId: '',
-    version: '',
-    versionId: '',
-    node: '',
-    status: 0,
-    nodeId: '',
-    prefix: '',
-    versionType: 0,
-  }
-}
-
-export const DeploymentResponse = {
-  fromJSON(object: any): DeploymentResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      product: isSet(object.product) ? String(object.product) : '',
-      productId: isSet(object.productId) ? String(object.productId) : '',
-      version: isSet(object.version) ? String(object.version) : '',
-      versionId: isSet(object.versionId) ? String(object.versionId) : '',
-      node: isSet(object.node) ? String(object.node) : '',
-      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
-      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      note: isSet(object.note) ? String(object.note) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-      updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined,
-      versionType: isSet(object.versionType) ? versionTypeFromJSON(object.versionType) : 0,
-    }
-  },
-
-  toJSON(message: DeploymentResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.product !== undefined && (obj.product = message.product)
-    message.productId !== undefined && (obj.productId = message.productId)
-    message.version !== undefined && (obj.version = message.version)
-    message.versionId !== undefined && (obj.versionId = message.versionId)
-    message.node !== undefined && (obj.node = message.node)
-    message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
-    message.nodeId !== undefined && (obj.nodeId = message.nodeId)
-    message.note !== undefined && (obj.note = message.note)
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    message.updatedAt !== undefined && (obj.updatedAt = fromTimestamp(message.updatedAt).toISOString())
-    message.versionType !== undefined && (obj.versionType = versionTypeToJSON(message.versionType))
-    return obj
-  },
-}
-
-function createBaseDeploymentListByVersionResponse(): DeploymentListByVersionResponse {
-  return { data: [] }
-}
-
-export const DeploymentListByVersionResponse = {
-  fromJSON(object: any): DeploymentListByVersionResponse {
-    return {
-      data: Array.isArray(object?.data) ? object.data.map((e: any) => DeploymentByVersionResponse.fromJSON(e)) : [],
-    }
-  },
-
-  toJSON(message: DeploymentListByVersionResponse): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? DeploymentByVersionResponse.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
-function createBaseDeploymentByVersionResponse(): DeploymentByVersionResponse {
-  return { id: '', audit: undefined, prefix: '', nodeId: '', nodeName: '', status: 0, nodeStatus: 0 }
-}
-
-export const DeploymentByVersionResponse = {
-  fromJSON(object: any): DeploymentByVersionResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      nodeName: isSet(object.nodeName) ? String(object.nodeName) : '',
-      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
-      nodeStatus: isSet(object.nodeStatus) ? nodeConnectionStatusFromJSON(object.nodeStatus) : 0,
-      note: isSet(object.note) ? String(object.note) : undefined,
-    }
-  },
-
-  toJSON(message: DeploymentByVersionResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    message.nodeId !== undefined && (obj.nodeId = message.nodeId)
-    message.nodeName !== undefined && (obj.nodeName = message.nodeName)
-    message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
-    message.nodeStatus !== undefined && (obj.nodeStatus = nodeConnectionStatusToJSON(message.nodeStatus))
-    message.note !== undefined && (obj.note = message.note)
-    return obj
-  },
-}
-
-function createBaseDeploymentDetailsResponse(): DeploymentDetailsResponse {
-  return {
-    id: '',
-    audit: undefined,
-    productVersionId: '',
-    nodeId: '',
-    prefix: '',
-    environment: [],
-    status: 0,
-    instances: [],
-  }
-}
-
-export const DeploymentDetailsResponse = {
-  fromJSON(object: any): DeploymentDetailsResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      productVersionId: isSet(object.productVersionId) ? String(object.productVersionId) : '',
-      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      note: isSet(object.note) ? String(object.note) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-      environment: Array.isArray(object?.environment)
-        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
-      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
-      publicKey: isSet(object.publicKey) ? String(object.publicKey) : undefined,
-      instances: Array.isArray(object?.instances) ? object.instances.map((e: any) => InstanceResponse.fromJSON(e)) : [],
-    }
-  },
-
-  toJSON(message: DeploymentDetailsResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
-    message.productVersionId !== undefined && (obj.productVersionId = message.productVersionId)
-    message.nodeId !== undefined && (obj.nodeId = message.nodeId)
-    message.note !== undefined && (obj.note = message.note)
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    if (message.environment) {
-      obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.environment = []
-    }
-    message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
-    message.publicKey !== undefined && (obj.publicKey = message.publicKey)
-    if (message.instances) {
-      obj.instances = message.instances.map(e => (e ? InstanceResponse.toJSON(e) : undefined))
-    } else {
-      obj.instances = []
-    }
-    return obj
-  },
-}
-
 function createBaseDeploymentEventContainerState(): DeploymentEventContainerState {
   return { instanceId: '', state: 0 }
 }
@@ -3127,83 +2792,6 @@ export const DeploymentEventLog = {
     } else {
       obj.log = []
     }
-    return obj
-  },
-}
-
-function createBaseDeploymentEventResponse(): DeploymentEventResponse {
-  return { type: 0, createdAt: undefined }
-}
-
-export const DeploymentEventResponse = {
-  fromJSON(object: any): DeploymentEventResponse {
-    return {
-      type: isSet(object.type) ? deploymentEventTypeFromJSON(object.type) : 0,
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-      log: isSet(object.log) ? DeploymentEventLog.fromJSON(object.log) : undefined,
-      deploymentStatus: isSet(object.deploymentStatus) ? deploymentStatusFromJSON(object.deploymentStatus) : undefined,
-      containerStatus: isSet(object.containerStatus)
-        ? DeploymentEventContainerState.fromJSON(object.containerStatus)
-        : undefined,
-    }
-  },
-
-  toJSON(message: DeploymentEventResponse): unknown {
-    const obj: any = {}
-    message.type !== undefined && (obj.type = deploymentEventTypeToJSON(message.type))
-    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
-    message.log !== undefined && (obj.log = message.log ? DeploymentEventLog.toJSON(message.log) : undefined)
-    message.deploymentStatus !== undefined &&
-      (obj.deploymentStatus =
-        message.deploymentStatus !== undefined ? deploymentStatusToJSON(message.deploymentStatus) : undefined)
-    message.containerStatus !== undefined &&
-      (obj.containerStatus = message.containerStatus
-        ? DeploymentEventContainerState.toJSON(message.containerStatus)
-        : undefined)
-    return obj
-  },
-}
-
-function createBaseDeploymentEventListResponse(): DeploymentEventListResponse {
-  return { status: 0, data: [] }
-}
-
-export const DeploymentEventListResponse = {
-  fromJSON(object: any): DeploymentEventListResponse {
-    return {
-      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
-      data: Array.isArray(object?.data) ? object.data.map((e: any) => DeploymentEventResponse.fromJSON(e)) : [],
-    }
-  },
-
-  toJSON(message: DeploymentEventListResponse): unknown {
-    const obj: any = {}
-    message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? DeploymentEventResponse.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
-function createBaseDeploymentListSecretsRequest(): DeploymentListSecretsRequest {
-  return { id: '', instanceId: '' }
-}
-
-export const DeploymentListSecretsRequest = {
-  fromJSON(object: any): DeploymentListSecretsRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      instanceId: isSet(object.instanceId) ? String(object.instanceId) : '',
-    }
-  },
-
-  toJSON(message: DeploymentListSecretsRequest): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.instanceId !== undefined && (obj.instanceId = message.instanceId)
     return obj
   },
 }
@@ -3816,38 +3404,6 @@ export function CruxNodeControllerMethods() {
 export const CRUX_NODE_SERVICE_NAME = 'CruxNode'
 
 export interface CruxDeploymentClient {
-  getDeploymentsByVersionId(
-    request: IdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Observable<DeploymentListByVersionResponse>
-
-  createDeployment(request: CreateDeploymentRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
-
-  updateDeployment(request: UpdateDeploymentRequest, metadata: Metadata, ...rest: any): Observable<UpdateEntityResponse>
-
-  patchDeployment(request: PatchDeploymentRequest, metadata: Metadata, ...rest: any): Observable<UpdateEntityResponse>
-
-  deleteDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
-
-  getDeploymentDetails(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentDetailsResponse>
-
-  getDeploymentEvents(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentEventListResponse>
-
-  getDeploymentList(request: Empty, metadata: Metadata, ...rest: any): Observable<DeploymentListResponse>
-
-  getDeploymentSecrets(
-    request: DeploymentListSecretsRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Observable<ListSecretsResponse>
-
-  copyDeploymentSafe(request: IdRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
-
-  copyDeploymentUnsafe(request: IdRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
-
-  startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
-
   subscribeToDeploymentEvents(
     request: IdRequest,
     metadata: Metadata,
@@ -3862,73 +3418,6 @@ export interface CruxDeploymentClient {
 }
 
 export interface CruxDeploymentController {
-  getDeploymentsByVersionId(
-    request: IdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ):
-    | Promise<DeploymentListByVersionResponse>
-    | Observable<DeploymentListByVersionResponse>
-    | DeploymentListByVersionResponse
-
-  createDeployment(
-    request: CreateDeploymentRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-
-  updateDeployment(
-    request: UpdateDeploymentRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-
-  patchDeployment(
-    request: PatchDeploymentRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-
-  deleteDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
-
-  getDeploymentDetails(
-    request: IdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<DeploymentDetailsResponse> | Observable<DeploymentDetailsResponse> | DeploymentDetailsResponse
-
-  getDeploymentEvents(
-    request: IdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<DeploymentEventListResponse> | Observable<DeploymentEventListResponse> | DeploymentEventListResponse
-
-  getDeploymentList(
-    request: Empty,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<DeploymentListResponse> | Observable<DeploymentListResponse> | DeploymentListResponse
-
-  getDeploymentSecrets(
-    request: DeploymentListSecretsRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<ListSecretsResponse> | Observable<ListSecretsResponse> | ListSecretsResponse
-
-  copyDeploymentSafe(
-    request: IdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-
-  copyDeploymentUnsafe(
-    request: IdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-
-  startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
-
   subscribeToDeploymentEvents(
     request: IdRequest,
     metadata: Metadata,
@@ -3944,22 +3433,7 @@ export interface CruxDeploymentController {
 
 export function CruxDeploymentControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = [
-      'getDeploymentsByVersionId',
-      'createDeployment',
-      'updateDeployment',
-      'patchDeployment',
-      'deleteDeployment',
-      'getDeploymentDetails',
-      'getDeploymentEvents',
-      'getDeploymentList',
-      'getDeploymentSecrets',
-      'copyDeploymentSafe',
-      'copyDeploymentUnsafe',
-      'startDeployment',
-      'subscribeToDeploymentEvents',
-      'subscribeToDeploymentEditEvents',
-    ]
+    const grpcMethods: string[] = ['subscribeToDeploymentEvents', 'subscribeToDeploymentEditEvents']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('CruxDeployment', method)(constructor.prototype[method], method, descriptor)

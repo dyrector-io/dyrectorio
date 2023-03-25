@@ -1,6 +1,9 @@
 import { NetworkMode } from '@prisma/client'
 import { UniqueKey, UniqueKeyValue, UniqueSecretKey, UniqueSecretKeyValue } from './common'
 
+export const CONTAINER_STATE_VALUES = ['created', 'restarting', 'running', 'removing', 'paused', 'exited', 'dead']
+export type ContainerState = (typeof CONTAINER_STATE_VALUES)[number]
+
 export type ContainerConfigPort = {
   id: string
   internal: number

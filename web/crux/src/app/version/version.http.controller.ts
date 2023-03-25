@@ -7,7 +7,6 @@ import {
   Param,
   Post,
   Put,
-  UseFilters,
   UseGuards,
   UseInterceptors,
   UsePipes,
@@ -15,7 +14,6 @@ import {
 } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
@@ -32,12 +30,13 @@ import VersionService from './version.service'
 const ROUTE_PRODUCTS = 'products'
 const ROUTE_PRODUCT_ID = ':productId'
 const ROUTE_VERSION_ID = ':versionId'
+const ROUTE_VERSIONS = 'versions'
 
 const ProductId = () => Param('productId')
 const VersionId = () => Param('versionId')
 
-@Controller(`${ROUTE_PRODUCTS}/${ROUTE_PRODUCT_ID}/versions`)
-@ApiTags(ROUTE_PRODUCTS)
+@Controller(`${ROUTE_PRODUCTS}/${ROUTE_PRODUCT_ID}/${ROUTE_VERSIONS}`)
+@ApiTags(ROUTE_VERSIONS)
 @UseGuards(JwtAuthGuard, VersionTeamAccessGuard)
 @UsePipes(
   new ValidationPipe({
@@ -46,7 +45,6 @@ const VersionId = () => Param('versionId')
   }),
 )
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
-@UseFilters(HttpExceptionFilter)
 export default class VersionHttpController {
   constructor(private service: VersionService) {}
 
@@ -126,6 +124,6 @@ export default class VersionHttpController {
   }
 
   private static locationOf(productId: string, versionId: string) {
-    return `/products/${productId}/versions/${versionId}`
+    return `/${ROUTE_PRODUCTS}/${productId}/${ROUTE_VERSIONS}/${versionId}`
   }
 }

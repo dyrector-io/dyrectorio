@@ -6,7 +6,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { DeploymentDetails, UpdateDeployment } from '@app/models'
+import { DeploymentDetails, PatchDeployment } from '@app/models'
 import { deploymentApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { updateDeploymentSchema } from '@app/validations'
@@ -16,13 +16,12 @@ import React from 'react'
 interface EditDeploymentCardProps {
   className?: string
   deployment: DeploymentDetails
-  productId: string
   submitRef: React.MutableRefObject<() => Promise<any>>
   onDeploymentEdited: (deployment: DeploymentDetails) => void
 }
 
 const EditDeploymentCard = (props: EditDeploymentCardProps) => {
-  const { deployment, productId, className, onDeploymentEdited, submitRef } = props
+  const { deployment, className, onDeploymentEdited, submitRef } = props
 
   const { t } = useTranslation('deployments')
 
@@ -36,11 +35,11 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
 
       const transformedValues = updateDeploymentSchema.cast(values) as any
 
-      const body: UpdateDeployment = {
+      const body: PatchDeployment = {
         ...transformedValues,
       }
 
-      const res = await sendForm('PUT', deploymentApiUrl(productId, deployment.versionId, deployment.id), body)
+      const res = await sendForm('PUT', deploymentApiUrl(deployment.id), body)
 
       setSubmitting(false)
 

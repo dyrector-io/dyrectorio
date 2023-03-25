@@ -49,6 +49,7 @@ export const API_STATUS = '/api/status'
 export const API_REGISTRIES = '/api/new/registries'
 export const API_PRODUCTS = '/api/new/products'
 export const API_NODES = '/api/nodes'
+export const API_DEPLOYMENTS = '/api/new/deployments'
 
 export const API_TEAMS = '/api/teams'
 export const API_TEAMS_ACTIVE = '/api/teams/active'
@@ -187,23 +188,26 @@ export const versionDeploymentsUrl = (productId: string, versionId: string) =>
 export const versionDeploymentsApiUrl = (productId: string, versionId: string) =>
   `/api${versionDeploymentsUrl(productId, versionId)}`
 
-export const deploymentUrl = (productId: string, versionId: string, deploymentId: string) =>
-  `${versionUrl(productId, versionId)}/deployments/${deploymentId}`
+export const deploymentUrl = (deploymentId: string) => `${ROUTE_DEPLOYMENTS}/${deploymentId}`
 
-export const deploymentApiUrl = (productId: string, versionId: string, deploymentId: string) =>
-  `/api${deploymentUrl(productId, versionId, deploymentId)}`
+export const deploymentApiUrl = (deploymentId: string) => `${API_DEPLOYMENTS}/${deploymentId}`
 
-export const deploymentWsUrl = (productId: string, versionId: string, deploymentId: string) =>
-  `${deploymentApiUrl(productId, versionId, deploymentId)}/connect`
+export const deploymentEventsApiUrl = (deploymentId: string) => `${deploymentApiUrl(deploymentId)}/events`
 
-export const deploymentDeployUrl = (productId: string, versionId: string, deploymentId: string) =>
-  `${deploymentUrl(productId, versionId, deploymentId)}/deploy`
+export const deploymentWsUrl = (deploymentId: string) => `/api${deploymentUrl(deploymentId)}/connect`
 
-export const deploymentCopyUrl = (productId: string, versionId: string, deploymentId: string, force?: boolean) =>
-  `${deploymentApiUrl(productId, versionId, deploymentId)}/copy${force ? '?overwrite=true' : ''}`
+export const deploymentDeployUrl = (deploymentId: string) => `${deploymentUrl(deploymentId)}/deploy`
 
-export const deploymentStartApiUrl = (productId: string, versionId: string, deploymentId: string) =>
-  `${deploymentApiUrl(productId, versionId, deploymentId)}/start`
+export const deploymentCopyUrl = (deploymentId: string, force?: boolean) =>
+  `${deploymentApiUrl(deploymentId)}/copy${force ? '?overwrite=true' : ''}`
+
+export const deploymentStartApiUrl = (deploymentId: string) => `${deploymentApiUrl(deploymentId)}/start`
+
+export const instanceApiUrl = (deploymentId: string, instanceId: string) =>
+  `${deploymentApiUrl(deploymentId)}/instances/${instanceId}`
+
+export const instanceSecretsApiUrl = (deploymentId: string, instanceId: string) =>
+  `${instanceApiUrl(deploymentId, instanceId)}/secrets`
 
 // team
 export const teamUrl = (id: string) => `${ROUTE_TEAMS}/${id}`
@@ -222,7 +226,7 @@ export const notificationApiHookUrl = (id: string) => `${notificationApiUrl(id)}
 
 // image config
 export const imageConfigUrl = (productId: string, versionId: string, imageId: string) =>
-  `${versionUrl(productId, versionId)}/image/${imageId}`
+  `${versionUrl(productId, versionId)}/images/${imageId}`
 
 export const versionImagesApiUrl = (productId: string, versionId: string) =>
   `${versionApiUrl(productId, versionId)}/images`
@@ -234,8 +238,8 @@ export const imageApiUrl = (productId: string, versionId: string, imageId: strin
   `${versionImagesApiUrl(productId, versionId)}/${imageId}`
 
 // instance
-export const instanceConfigUrl = (productId: string, versionId: string, deploymentId: string, instanceId: string) =>
-  `${deploymentUrl(productId, versionId, deploymentId)}/instance/${instanceId}`
+export const instanceConfigUrl = (deploymentId: string, instanceId: string) =>
+  `${deploymentUrl(deploymentId)}/instances/${instanceId}`
 
 // template
 export const templateImageUrl = (templateId: string) => `${API_TEMPLATES}/${templateId}/image`
@@ -253,12 +257,8 @@ export type ContainerLogParams = {
 export const nodeContainerLogUrl = (nodeId: string, params: ContainerLogParams) =>
   appendUrlParams(`${nodeUrl(nodeId)}/log`, params)
 
-export const deploymentContainerLogUrl = (
-  productId: string,
-  versionId: string,
-  deploymentId: string,
-  params: ContainerLogParams,
-) => appendUrlParams(`${deploymentUrl(productId, versionId, deploymentId)}/log`, params)
+export const deploymentContainerLogUrl = (deploymentId: string, params: ContainerLogParams) =>
+  appendUrlParams(`${deploymentUrl(deploymentId)}/log`, params)
 
 // storage
 export const storageUrl = (id: string) => `${ROUTE_STORAGES}/${id}`

@@ -17,19 +17,9 @@
     "/auth/settings/tokens": ["settings"],
     "/auth/verify": ["verify"],
     "/products": ["products"],
-
     "/products/[productId]": ["products", "versions", "images", "deployments"],
     "/products/[productId]/versions/[versionId]": ["versions", "images", "deployments"],
-
-    "/products/[productId]/versions/[versionId]/deployments/[deploymentId]": ["images", "deployments", "nodes"],
-    "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/deploy": ["deployments"],
-    "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/log": [],
-    "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/instance/[instanceId]": [
-      "images",
-      "deployments",
-      "container"
-    ],
-    "/products/[productId]/versions/[versionId]/image/[imageId]": ["images", "container"],
+    "/products/[productId]/versions/[versionId]/images/[imageId]": ["images", "container"],
     "/nodes": ["nodes"],
     "/nodes/[nodeId]": ["nodes", "images"],
     "/nodes/[nodeId]/log": [],
@@ -43,6 +33,10 @@
     "/notifications": ["notifications"],
     "/notifications/[notificationId]": ["notifications"],
     "/deployments": ["deployments"],
+    "/deployments/[deploymentId]": ["images", "deployments", "nodes"],
+    "/deployments/[deploymentId]/deploy": ["deployments"],
+    "/deployments/[deploymentId]/log": [],
+    "/deployments/[deploymentId]/instances/[instanceId]": ["images", "deployments", "container"],
     "/status": ["status"],
     "/templates": ["templates", "products"],
     "/dashboard": ["dashboard"],

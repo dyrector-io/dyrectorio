@@ -75,7 +75,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
         {selection === 'config' ? (
           <EditInstanceConfig
             disabled={!deploymentState.mutable}
-            config={config}
+            config={config ?? {}}
             publicKey={deploymentState.deployment.publicKey}
             definedSecrets={state.definedSecrets}
             editorOptions={editorState}

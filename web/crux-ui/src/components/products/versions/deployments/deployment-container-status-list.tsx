@@ -30,7 +30,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     deployment.instances.map(it => ({
       id: {
         prefix: deployment.prefix,
-        name: it.overriddenConfig?.name ?? it.image.config.name,
+        name: it.config?.name ?? it.image.config.name,
       },
       date: it.image.createdAt,
       state: null,
@@ -40,7 +40,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     })),
   )
 
-  const sock = useWebSocket(nodeWsUrl(deployment.nodeId), {
+  const sock = useWebSocket(nodeWsUrl(deployment.node.id), {
     onOpen: () =>
       sock.send(WS_TYPE_WATCH_CONTAINER_STATUS, {
         prefix: deployment.prefix,
@@ -70,7 +70,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     const created = new Date(container.date).getTime()
     const seconds = Math.floor((now - created) / 1000)
 
-    const logUrl = deploymentContainerLogUrl(deployment.product.id, deployment.versionId, deployment.id, container.id)
+    const logUrl = deploymentContainerLogUrl(deployment.id, container.id)
 
     /* eslint-disable react/jsx-key */
     return [

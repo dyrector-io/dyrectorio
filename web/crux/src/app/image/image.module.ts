@@ -7,9 +7,10 @@ import ImageMapper from './image.mapper'
 import ImageService from './image.service'
 import RegistryMapper from '../registry/registry.mapper'
 import ImageHttpController from './image.http.controller'
+import RegistryModule from '../registry/registry.module'
 
 @Module({
-  imports: [],
+  imports: [RegistryModule],
   exports: [ImageService, ImageMapper],
   providers: [
     PrismaService,

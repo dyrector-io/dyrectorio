@@ -1,24 +1,21 @@
 import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
-import { CopyDeploymentResponse } from '@app/models'
+import { Deployment } from '@app/models'
 import { deploymentCopyUrl, deploymentUrl } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 
 type CopyDeploymentOptions = {
-  productId: string
-  versionId: string
   deploymentId: string
+  overwrite?: boolean
 }
 
 const postCopyDeployment = async (
   onApiError: (response: Response) => void,
-  options: CopyDeploymentOptions & {
-    overwrite?: boolean
-  },
+  options: CopyDeploymentOptions,
 ): Promise<[string, number]> => {
-  const { productId, versionId, deploymentId, overwrite } = options
+  const { deploymentId, overwrite } = options
 
-  const url = deploymentCopyUrl(productId, versionId, deploymentId, overwrite)
+  const url = deploymentCopyUrl(deploymentId, overwrite)
 
   const res = await fetch(url, {
     method: 'POST',
@@ -33,7 +30,7 @@ const postCopyDeployment = async (
     return null
   }
 
-  const json = (await res.json()) as CopyDeploymentResponse
+  const json = (await res.json()) as Deployment
   return [json.id, res.status]
 }
 
@@ -64,7 +61,7 @@ const useCopyDeploymentModal = (
       })
     }
 
-    return !newDeploymentId ? null : deploymentUrl(options.productId, options.versionId, newDeploymentId)
+    return !newDeploymentId ? null : deploymentUrl(newDeploymentId)
   }
 
   return [confirmationModal, onCopy]

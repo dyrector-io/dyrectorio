@@ -20,9 +20,10 @@ import { toPrismaJson } from 'src/shared/mapper'
 import { ContainerConfigData, VolumeType } from 'src/shared/models'
 import { v4 } from 'uuid'
 import ImageMapper from '../image/image.mapper'
-import { CreateProductDto, ProductDto, ProductTypeDto } from '../product/product.dto'
+import { CreateProductDto, ProductListItemDto } from '../product/product.dto'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
+import { ProductTypeDto } from '../shared/shared.dto'
 import { CreateVersionDto } from '../version/version.dto'
 import VersionService from '../version/version.service'
 
@@ -41,7 +42,10 @@ export default class TemplateService {
     private imageMapper: ImageMapper,
   ) {}
 
-  async createProductFromTemplate(req: CreateProductFromTemplateRequest, identity: Identity): Promise<ProductDto> {
+  async createProductFromTemplate(
+    req: CreateProductFromTemplateRequest,
+    identity: Identity,
+  ): Promise<ProductListItemDto> {
     const template = await this.templateFileService.getTemplateById(req.id)
 
     if (template.registries && template.registries.length > 0) {
@@ -151,7 +155,7 @@ export default class TemplateService {
 
   private async createVersion(
     templateImages: TemplateImage[],
-    product: ProductDto,
+    product: ProductListItemDto,
     productType: ProductTypeDto,
     identity: Identity,
   ): Promise<void> {

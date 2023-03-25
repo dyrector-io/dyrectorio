@@ -74,8 +74,8 @@ export type DeploymentActions = {
 
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
   ...instance,
-  overriddenConfig: {
-    ...instance.overriddenConfig,
+  config: {
+    ...instance.config,
     ...message,
   },
 })
@@ -112,7 +112,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
     })
   })
 
-  const sock = useWebSocket(deploymentWsUrl(product.id, version.id, deployment.id), {
+  const sock = useWebSocket(deploymentWsUrl(deployment.id), {
     onSend: message => {
       if ([WS_TYPE_PATCH_INSTANCE, WS_TYPE_PATCH_DEPLOYMENT_ENV].includes(message.type)) {
         setSaving(true)
@@ -168,8 +168,6 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
 
   const onCopyDeployment = () =>
     copyDeployment({
-      productId: product.id,
-      versionId: version.id,
       deploymentId: deployment.id,
     })
 
@@ -182,9 +180,9 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
 
       return {
         ...it,
-        overriddenConfig: {
-          ...(it.overriddenConfig ?? {}),
-          secrets: (it.overriddenConfig?.secrets ?? []).map(secret => {
+        config: {
+          ...(it.config ?? {}),
+          secrets: (it.config?.secrets ?? []).map(secret => {
             if (invalidated.invalid.includes(secret.id)) {
               return {
                 ...secret,

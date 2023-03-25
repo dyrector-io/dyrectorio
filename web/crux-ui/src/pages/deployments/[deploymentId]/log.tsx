@@ -41,7 +41,7 @@ const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
 
   const [log, setLog] = useState<ContainerLogMessage[]>([])
 
-  const sock = useWebSocket(nodeWsUrl(deployment.nodeId), {
+  const sock = useWebSocket(nodeWsUrl(deployment.node.id), {
     onOpen: () => {
       const request: WatchContainerLogMessage = {
         container: {
@@ -70,19 +70,19 @@ const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
     },
     {
       name: deployment.version.name,
-      url: versionUrl(deployment.product.id, deployment.versionId),
+      url: versionUrl(deployment.product.id, deployment.version.id),
     },
     {
       name: t('deployment'),
-      url: deploymentUrl(deployment.product.id, deployment.versionId, deployment.id),
+      url: deploymentUrl(deployment.id),
     },
     {
       name: t('deploy'),
-      url: deploymentDeployUrl(deployment.product.id, deployment.versionId, deployment.id),
+      url: deploymentDeployUrl(deployment.id),
     },
     {
       name: t('log'),
-      url: deploymentContainerLogUrl(deployment.product.id, deployment.versionId, deployment.id, {
+      url: deploymentContainerLogUrl(deployment.id, {
         prefix,
         name,
       }),

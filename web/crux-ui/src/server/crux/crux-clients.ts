@@ -29,7 +29,7 @@ class CruxClients {
     // tls must be terminated by the reverse proxy
     const creds = credentials.createInsecure()
 
-    if (address === undefined || address === '') {
+    if (!address || address === '') {
       throw invalidArgument('address', 'address cannot be empty!')
     }
 

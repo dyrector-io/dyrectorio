@@ -1,20 +1,21 @@
-import { Injectable } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
-import { IdRequest } from 'src/grpc/protobuf/proto/crux'
-import { PreconditionFailedException } from 'src/exception/errors'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor, PreconditionFailedException } from '@nestjs/common'
+import { Observable } from 'rxjs'
 import { checkDeploymentCopiability } from 'src/domain/deployment'
-import BodyPipeTransform from 'src/pipes/body.pipe'
+import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
-export default class DeployCopyValidationPipe extends BodyPipeTransform<IdRequest> {
-  constructor(private prisma: PrismaService) {
-    super()
-  }
+export default class DeployCopyValidationInterceptor implements NestInterceptor {
+  constructor(private prisma: PrismaService) {}
 
-  async transformBody(value: IdRequest) {
+  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+    const req = context.switchToHttp().getRequest()
+    const deploymentId = req.params.deploymentId as string
+    const queryForce = req.query.force as string
+    const force = queryForce === 'true'
+
     const deployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
-        id: value.id,
+        id: deploymentId,
       },
       select: {
         nodeId: true,
@@ -37,6 +38,10 @@ export default class DeployCopyValidationPipe extends BodyPipeTransform<IdReques
       })
     }
 
+    if (force) {
+      return next.handle()
+    }
+
     const preparingDeployment = await this.prisma.deployment.findFirst({
       where: {
         nodeId: deployment.nodeId,
@@ -51,12 +56,12 @@ export default class DeployCopyValidationPipe extends BodyPipeTransform<IdReques
 
     if (preparingDeployment) {
       throw new PreconditionFailedException({
-        message: 'The node already has a preparing deployment.',
-        property: 'id',
+        message: 'The node already has a preparing deployment with this prefix and version.',
+        property: 'deploymentId',
         value: preparingDeployment.id,
       })
     }
 
-    return value
+    return next.handle()
   }
 }

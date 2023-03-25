@@ -1,7 +1,6 @@
-import { Controller, Body, Get, UseGuards, UseInterceptors, UseFilters } from '@nestjs/common'
+import { Body, Controller, Get, UseGuards, UseInterceptors } from '@nestjs/common'
 import { ApiBody, ApiOkResponse } from '@nestjs/swagger'
 import { first, Observable, timeout } from 'rxjs'
-import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
 import { WatchContainerStateRequest } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
@@ -13,7 +12,6 @@ import NodeService from './node.service'
 @Controller('node')
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
-@UseFilters(HttpExceptionFilter)
 export default class NodeHttpController {
   constructor(private service: NodeService) {}
 

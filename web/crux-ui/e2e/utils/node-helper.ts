@@ -38,7 +38,7 @@ export const deployWithDagent = async (
   versionId?: string,
   ignoreResult?: boolean,
   testName?: string,
-) => {
+): Promise<string> => {
   if (versionId) {
     await page.goto(versionUrl(productId, versionId))
   } else {
@@ -54,17 +54,19 @@ export const deployWithDagent = async (
   await page.locator('input[name=prefix]').fill(prefix)
 
   await page.locator('button:has-text("Add")').click()
-  await page.waitForURL(`**${productUrl(productId)}/versions/**/deployments/**`)
+  await page.waitForURL(`**/deployments/**`)
+
+  const deploymentId = page.url().split('/').pop()
 
   const deploy = page.getByText('Deploy', {
     exact: true,
   })
 
   await deploy.click()
-  await page.waitForURL(`**${productUrl(productId)}/versions/**/deployments/**/deploy`)
+  await page.waitForURL(`**/deployments/${deploymentId}/deploy`)
 
   if (ignoreResult) {
-    return
+    return null
   }
 
   if (testName) {
@@ -74,6 +76,8 @@ export const deployWithDagent = async (
 
   expect(page.url().endsWith('deploy'))
   await page.getByText('Successful').waitFor()
+
+  return deploymentId
 }
 
 const logCmdOutput = (err: Error, stdOut: string, stdErr: string, logStdOut?: boolean) => {

@@ -55,16 +55,6 @@ test.describe('View state', () => {
 })
 
 test.describe('Filters', () => {
-  const randomFilter = () => {
-    const mainFilters = [
-      { base: 'Common', sub: 'Config container' },
-      { base: 'Docker', sub: 'Network mode' },
-      { base: 'Kubernetes', sub: 'Deployment strategy' },
-    ]
-
-    return mainFilters[Math.floor(Math.random() * mainFilters.length)]
-  }
-
   test('All should be selected by default', async ({ page }) => {
     const { productId, versionId, imageId } = await setup(page, 'filter-all', '1.0.0', 'redis')
 
@@ -80,7 +70,7 @@ test.describe('Filters', () => {
 
     await page.goto(imageConfigUrl(productId, versionId, imageId))
 
-    await page.locator(`button:has-text("${randomFilter().base}")`).first().click()
+    await page.locator(`button:has-text("Common")`).first().click()
 
     const allButton = await page.locator('button:has-text("All")')
 
@@ -92,12 +82,11 @@ test.describe('Filters', () => {
 
     await page.goto(imageConfigUrl(productId, versionId, imageId))
 
-    const filter = randomFilter()
-    const subFilter = await page.locator(`button:has-text("${filter.sub}")`)
+    const subFilter = await page.locator(`button:has-text("Network mode")`)
 
     await subFilter.click()
 
-    const mainFilter = await page.locator(`button:has-text("${filter.base}")`).first()
+    const mainFilter = await page.locator(`button:has-text("Docker")`).first()
 
     await expect(mainFilter).not.toHaveClass(/bg-/)
   })
@@ -107,12 +96,11 @@ test.describe('Filters', () => {
 
     await page.goto(imageConfigUrl(productId, versionId, imageId))
 
-    const filter = randomFilter()
-    const subFilter = await page.locator(`button:has-text("${filter.sub}")`)
+    const subFilter = await page.locator(`button:has-text("Deployment strategy")`)
 
     await subFilter.click()
 
-    const configField = await page.locator(`label:has-text("${filter.sub.toUpperCase()}")`)
+    const configField = await page.locator(`label:has-text("Kubernetes")`)
 
     await expect(configField).toHaveCount(0)
   })

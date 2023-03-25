@@ -28,17 +28,11 @@ import {
   CreateNotificationResponse,
   DagentContainerConfig,
   DagentTraefikOptions,
-  DeploymentByVersionResponse,
-  DeploymentDetailsResponse,
   DeploymentEditEventMessage,
   DeploymentEventContainerState,
-  DeploymentEventListResponse,
   DeploymentEventLog,
   DeploymentEventType,
-  DeploymentListByVersionResponse,
-  DeploymentListResponse,
   DeploymentProgressMessage,
-  DeploymentResponse,
   HealthResponse,
   ImageContainerConfig,
   ImageResponse,
@@ -211,65 +205,6 @@ export class TeamDetailsResponseDto {
 }
 export class AllTeamsResponseDto {
   data: TeamWithStatsResponse[]
-}
-export class UserResponseDto {
-  id: string
-  name: string
-  email: string
-  role: UserRole
-  status: UserStatus
-  lastLogin: any
-}
-export class HubRegistryDetailsDto {
-  imageNamePrefix: string
-}
-export class V2RegistryDetailsDto {
-  url: string
-  user: string | undefined
-  token: string | undefined
-}
-export class GoogleRegistryDetailsDto {
-  url: string
-  user: string | undefined
-  token: string | undefined
-  imageNamePrefix: string
-}
-export class UncheckedRegistryDetailsDto {
-  url: string
-}
-export class UpdateVersionRequestDto {
-  id: string
-  accessedBy: string
-  name: string
-  changelog: string | undefined
-}
-export class VersionResponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  changelog: string
-  default: boolean
-  type: VersionType
-  increasable: boolean
-}
-export class VersionDetailsResponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  changelog: string
-  default: boolean
-  type: VersionType
-  mutable: boolean
-  increasable: boolean
-  deletable: boolean
-  images: ImageResponse[]
-  deployments: DeploymentByVersionResponse[]
-}
-export class IncreaseVersionRequestDto {
-  id: string
-  accessedBy: string
-  name: string
-  changelog: string | undefined
 }
 export class VolumeLinkDto {
   id: string
@@ -577,9 +512,6 @@ export class PatchInstanceRequestDto {
   accessedBy: string
   config: InstanceContainerConfig | undefined
 }
-export class DeploymentListResponseDto {
-  data: DeploymentResponse[]
-}
 export class DeploymentResponseDto {
   id: string
   product: string
@@ -593,9 +525,6 @@ export class DeploymentResponseDto {
   prefix: string
   updatedAt: any
   versionType: VersionType
-}
-export class DeploymentListByVersionResponseDto {
-  data: DeploymentByVersionResponse[]
 }
 export class DeploymentByVersionResponseDto {
   id: string
@@ -758,63 +687,6 @@ export class CruxNodeControllerDto {
   subscribeContainerLogChannel: Observable<ContainerLogMessage>
 }
 
-export class DeploymentEventsDto {
-  id: string
-  createdAt: Date
-  type: DeploymentStatusDto
-  value: string[]
-  deploymentId: string
-}
-
-export enum DeploymentStatusDto {
-  UNSPECIFIED = 'UNSPECIFIED',
-  LOG = 'LOG',
-  DEPLOYMENT_STATUS = 'DEPLOYMENT_STATUS',
-  CONTAINER_STATUS = 'CONTAINER_STATUS',
-  UNRECOGNIZED = 'UNRECOGNIZED',
-}
-
-export class CruxDeploymentClientDto {
-  getDeploymentsByVersionId: Observable<DeploymentListByVersionResponse>
-  createDeployment: Observable<CreateEntityResponse>
-  updateDeployment: Observable<UpdateEntityResponse>
-  patchDeployment: Observable<UpdateEntityResponse>
-  deleteDeployment: any
-  getDeploymentDetails: Observable<DeploymentDetailsResponse>
-  getDeploymentEvents: Observable<DeploymentEventListResponse>
-  getDeploymentList: Observable<DeploymentListResponse>
-  getDeploymentSecrets: Observable<ListSecretsResponse>
-  copyDeploymentSafe: Observable<CreateEntityResponse>
-  copyDeploymentUnsafe: Observable<CreateEntityResponse>
-  startDeployment: any
-  subscribeToDeploymentEvents: Observable<DeploymentProgressMessage>
-  subscribeToDeploymentEditEvents: Observable<DeploymentEditEventMessage>
-}
-export class CruxDeploymentControllerDto {
-  getDeploymentsByVersionId:
-    | Promise<DeploymentListByVersionResponse>
-    | Observable<DeploymentListByVersionResponse>
-    | DeploymentListByVersionResponse
-  createDeployment: Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-  updateDeployment: Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-  patchDeployment: Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-  deleteDeployment: any
-  getDeploymentDetails:
-    | Promise<DeploymentDetailsResponse>
-    | Observable<DeploymentDetailsResponse>
-    | DeploymentDetailsResponse
-  getDeploymentEvents:
-    | Promise<DeploymentEventListResponse>
-    | Observable<DeploymentEventListResponse>
-    | DeploymentEventListResponse
-  getDeploymentList: Promise<DeploymentListResponse> | Observable<DeploymentListResponse> | DeploymentListResponse
-  getDeploymentSecrets: Promise<ListSecretsResponse> | Observable<ListSecretsResponse> | ListSecretsResponse
-  copyDeploymentSafe: Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-  copyDeploymentUnsafe: Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-  startDeployment: any
-  subscribeToDeploymentEvents: Observable<DeploymentProgressMessage>
-  subscribeToDeploymentEditEvents: Observable<DeploymentEditEventMessage>
-}
 export class CruxTeamClientDto {
   createTeam: Observable<CreateEntityResponse>
   getActiveTeamByUser: Observable<ActiveTeamDetailsResponse>

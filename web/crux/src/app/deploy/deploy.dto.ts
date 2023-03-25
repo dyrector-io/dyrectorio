@@ -1,26 +1,142 @@
-import { IsEnum } from 'class-validator'
-import { BasicNodeDto } from '../node/node.dto'
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger'
+import { Type } from 'class-transformer'
+import { IsDate, IsIn, IsOptional, IsString, IsUUID } from 'class-validator'
+import { ContainerState, CONTAINER_STATE_VALUES, UniqueKeyValue, UniqueSecretKeyValue } from 'src/shared/models'
+import { ContainerConfigDto, ImageDto } from '../image/image.dto'
+import { AuditDto, BasicNodeDto, BasicProductDto, BasicVersionDto, ContainerIdentifierDto } from '../shared/shared.dto'
 
-export enum DeploymentStatusDto {
-  preparing = 'preparing',
-  inProgress = 'in-progress',
-  successful = 'successful',
-  failed = 'failed',
-  obsolete = 'obsolete',
-  downgrade = 'downgrade',
-}
+const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete'] as const
+export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]
 
-export default class BasicDeploymentWithNodeDto {
+export class BasicDeploymentDto {
+  @IsUUID()
   id: string
 
+  @IsString()
   prefix: string
 
-  @IsEnum(DeploymentStatusDto)
+  @ApiProperty({ enum: DEPLOYMENT_STATUS_VALUES })
+  @IsIn(DEPLOYMENT_STATUS_VALUES)
   status: DeploymentStatusDto
+}
 
+export class DeploymentDto extends BasicDeploymentDto {
+  @IsString()
+  @IsOptional()
+  note?: string
+
+  audit: AuditDto
+
+  product: BasicProductDto
+
+  version: BasicVersionDto
+
+  node: BasicNodeDto
+}
+
+export class DeploymentWithBasicNodeDto extends BasicDeploymentDto {
+  @IsString()
+  @IsOptional()
   note?: string | null
 
+  @Type(() => Date)
+  @IsDate()
   updatedAt: Date
 
   node: BasicNodeDto
+}
+
+export class InstanceContainerConfigDto extends OmitType(PartialType(ContainerConfigDto), ['secrets']) {
+  secrets?: UniqueSecretKeyValue[] | null
+}
+
+export class InstanceDto {
+  @IsUUID()
+  id: string
+
+  @Type(() => Date)
+  @IsDate()
+  updatedAt: Date
+
+  image: ImageDto
+
+  @ApiProperty({ enum: CONTAINER_STATE_VALUES })
+  @IsOptional()
+  state?: ContainerState
+
+  config?: InstanceContainerConfigDto
+}
+
+export class DeploymentDetailsDto extends DeploymentDto {
+  environment: UniqueKeyValue[]
+
+  @IsString()
+  publicKey?: string | null
+
+  instances: InstanceDto[]
+}
+
+export class CreateDeploymentDto {
+  @IsUUID()
+  versionId: string
+
+  @IsUUID()
+  nodeId: string
+
+  @IsString()
+  prefix: string
+
+  @IsString()
+  @IsOptional()
+  note?: string | null
+}
+
+export class PatchDeploymentDto {
+  @IsString()
+  @IsOptional()
+  note?: string
+
+  @IsString()
+  prefix?: string
+
+  environment?: UniqueKeyValue[]
+}
+
+export class PatchInstanceDto {
+  config: InstanceContainerConfigDto
+}
+
+export const DEPLOYMENT_EVENT_TYPE_VALUES = ['log', 'deployment-status', 'container-status'] as const
+export type DeploymentEventTypeDto = (typeof DEPLOYMENT_EVENT_TYPE_VALUES)[number]
+
+export class DeploymentEventContainerStateDto {
+  @IsUUID()
+  instanceId: string
+
+  @ApiProperty({ enum: CONTAINER_STATE_VALUES })
+  state: ContainerState
+}
+
+export class DeploymentEventDto {
+  @ApiProperty({ enum: DEPLOYMENT_EVENT_TYPE_VALUES })
+  type: DeploymentEventTypeDto
+
+  @Type(() => Date)
+  @IsDate()
+  createdAt: Date
+
+  log?: string[] | null
+
+  @ApiProperty({ enum: DEPLOYMENT_STATUS_VALUES })
+  deploymentStatus?: DeploymentStatusDto | null
+
+  containerState?: DeploymentEventContainerStateDto | null
+}
+
+export class InstanceSecretsDto {
+  container: ContainerIdentifierDto
+
+  publicKey: string
+
+  keys?: string[]
 }

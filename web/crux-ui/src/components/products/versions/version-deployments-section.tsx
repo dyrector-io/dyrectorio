@@ -41,7 +41,7 @@ export const startDeployment = async (
   versionId: string,
   deploymentId: string,
 ) => {
-  const res = await fetch(deploymentStartApiUrl(productId, versionId, deploymentId), {
+  const res = await fetch(deploymentStartApiUrl(deploymentId), {
     method: 'POST',
   })
 
@@ -55,7 +55,7 @@ export const startDeployment = async (
     return null
   }
 
-  await router.push(deploymentDeployUrl(productId, versionId, deploymentId))
+  await router.push(deploymentDeployUrl(deploymentId))
 
   return null
 }
@@ -84,8 +84,6 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const onCopyDeployment = async (deploymentId: string) => {
     const url = await copyDeployment({
-      productId: product.id,
-      versionId: version.id,
       deploymentId,
     })
 
@@ -146,11 +144,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
     /* eslint-disable react/jsx-key */
     return [
-      <Link
-        className="flex place-items-center cursor-pointer"
-        href={deploymentUrl(product.id, version.id, item.id)}
-        passHref
-      >
+      <Link className="flex place-items-center cursor-pointer" href={deploymentUrl(item.id)} passHref>
         <NodeStatusIndicator className="mr-2" status={item.nodeStatus} />
         {item.node.name}
       </Link>,
@@ -158,11 +152,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       <DeploymentStatusTag className="w-fit m-auto" status={item.status} />,
       <>{utcDateToLocale(item.updatedAt)}</>,
       <div className="flex flex-row">
-        <Link
-          className="mr-2 inline-block cursor-pointer"
-          href={deploymentUrl(product.id, version.id, item.id)}
-          passHref
-        >
+        <Link className="mr-2 inline-block cursor-pointer" href={deploymentUrl(item.id)} passHref>
           <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} />
         </Link>
         {deployable && (

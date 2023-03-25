@@ -1,13 +1,13 @@
 import {
   ContainerConfigData,
-  DeploymentGetSecretListMessage,
-  DeploymentSecretListMessage,
+  GetInstanceSecretsMessage,
   ImageConfigProperty,
   Instance,
   InstanceContainerConfigData,
+  InstanceSecretsMessage,
   PatchInstanceMessage,
-  WS_TYPE_DEPLOYMENT_SECRETS,
-  WS_TYPE_GET_DEPLOYMENT_SECRETS,
+  WS_TYPE_GET_INSTANCE_SECRETS,
+  WS_TYPE_INSTANCE_SECRETS,
   WS_TYPE_PATCH_INSTANCE,
 } from '@app/models'
 import { containerConfigSchema, getValidationError } from '@app/validations'
@@ -41,23 +41,23 @@ const useInstanceState = (options: InstanceStateOptions) => {
   const { sock } = deploymentState
 
   const [selection, setSelection] = useState<EditInstanceCardSelection>('config')
-  const [config, setConfig] = useState(instance.overriddenConfig)
+  const [config, setConfig] = useState(instance.config)
   const [parseError, setParseError] = useState<string>(null)
   const [definedSecrets, setDefinedSecrets] = useState<string[]>([])
 
-  useEffect(() => setConfig(instance.overriddenConfig), [instance.overriddenConfig])
+  useEffect(() => setConfig(instance.config), [instance.config])
 
   useEffect(() => {
     if (selection !== 'config') {
       return
     }
 
-    sock.send(WS_TYPE_GET_DEPLOYMENT_SECRETS, {
-      instanceId: instance.id,
-    } as DeploymentGetSecretListMessage)
+    sock.send(WS_TYPE_GET_INSTANCE_SECRETS, {
+      id: instance.id,
+    } as GetInstanceSecretsMessage)
   }, [sock, instance.id, selection])
 
-  sock.on(WS_TYPE_DEPLOYMENT_SECRETS, (message: DeploymentSecretListMessage) => {
+  sock.on(WS_TYPE_INSTANCE_SECRETS, (message: InstanceSecretsMessage) => {
     if (message.instanceId !== instance.id) {
       return
     }
