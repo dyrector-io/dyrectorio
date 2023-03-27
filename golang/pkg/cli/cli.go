@@ -131,6 +131,12 @@ func InitCLI() *ucli.App {
 				Required: false,
 				EnvVars:  []string{"DYO_FULLY_CONTAINERIZED"},
 			},
+			&ucli.BoolFlag{
+				Name:    "silent",
+				Aliases: []string{"s"},
+				Value:   false,
+				Usage:   "hides the welcome message and minimizes chattiness",
+			},
 		},
 	}
 }
@@ -152,6 +158,7 @@ func run(cCtx *ucli.Context) error {
 		DisablePodmanChecks: cCtx.Bool("disable-podman-checks"),
 		FullyContainerized:  cCtx.Bool("expect-container-env"),
 		Network:             cCtx.String("network"),
+		Silent:              cCtx.Bool("silent"),
 		Command:             cCtx.Command.Name,
 	}
 
