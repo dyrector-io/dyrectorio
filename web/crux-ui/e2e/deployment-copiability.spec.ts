@@ -1,6 +1,6 @@
 import { deploymentUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
-import { DAGENT_NODE } from './utils/common'
+import { DAGENT_NODE, waitForURLExcept } from './utils/common'
 import { deployWithDagent } from './utils/node-helper'
 import { createNode } from './utils/nodes'
 import {
@@ -155,8 +155,9 @@ test.describe('Complex product', () => {
 
     await expect(await page.locator('button:has-text("Copy")')).toHaveCount(1)
 
+    const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
-    await page.waitForURL(`**/deployments/**`)
+    await waitForURLExcept(page, { startsWith: `${ROUTE_DEPLOYMENTS}/`, except: currentUrl })
 
     await expect(await page.locator('div.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
@@ -183,8 +184,9 @@ test.describe('Complex product', () => {
 
     await expect(await page.locator('button:has-text("Copy")')).toHaveCount(1)
 
+    const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
-    await page.waitForURL(`**/deployments/**`)
+    await waitForURLExcept(page, { startsWith: `${ROUTE_DEPLOYMENTS}/`, except: currentUrl })
 
     await expect(await page.locator('div.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
@@ -211,8 +213,9 @@ test.describe('Complex product', () => {
 
     const copy = await page.locator(`[alt="Copy"]:right-of(:text("pw-complex-second"))`).first()
 
+    const currentUrl = page.url()
     await copy.click()
-    await page.waitForURL(`**/deployments/**`)
+    await waitForURLExcept(page, { startsWith: `${ROUTE_DEPLOYMENTS}/`, except: currentUrl })
 
     await page.goto(versionUrl(productId, versionId))
 

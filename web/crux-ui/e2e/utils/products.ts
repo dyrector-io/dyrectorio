@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { productUrl, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
+import { productUrl, ROUTE_DEPLOYMENTS, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
 import { expect, Page } from '@playwright/test'
 
 export const createProduct = async (page: Page, name: string, type: 'Simple' | 'Complex') => {
@@ -16,7 +16,7 @@ export const createProduct = async (page: Page, name: string, type: 'Simple' | '
   const product = await page.waitForSelector(`a:has-text("${name}")`)
 
   await product.click()
-  await page.waitForURL(`**${ROUTE_PRODUCTS}/**`)
+  await page.waitForURL(`${ROUTE_PRODUCTS}/**`)
 
   if (type === 'Simple') {
     await page.waitForSelector(`span:has-text("Changelog")`)
@@ -131,7 +131,7 @@ export const addDeploymentToSimpleProduct = async (
   await page.locator(`button:has-text("${nodeName}")`).click()
 
   await page.locator('button:has-text("Add")').click()
-  await page.waitForURL(`**/deployments/**`)
+  await page.waitForURL(`${ROUTE_DEPLOYMENTS}/**`)
 
   const deploymentId = page.url().split('/').pop()
   return {
@@ -159,7 +159,7 @@ export const addDeploymentToVersion = async (
   await page.locator(`button:has-text("${nodeName}")`).click()
 
   await page.locator('button:has-text("Add")').click()
-  await page.waitForURL(`**/deployments/**`)
+  await page.waitForURL(`${ROUTE_DEPLOYMENTS}/**`)
 
   return {
     id: page.url().split('/').pop(),

@@ -9,7 +9,7 @@ import {
   IdentityApi,
   UpdateLoginFlowWithPasswordMethod,
 } from '@ory/kratos-client'
-import { FullConfig, Locator } from '@playwright/test'
+import { FullConfig, Locator, Page } from '@playwright/test'
 import path from 'path'
 import { v4 as uuid } from 'uuid'
 import MailSlurper from './mail-slurper'
@@ -165,3 +165,6 @@ export const clearInput = async (input: Locator) => {
   await input.fill('')
   await input.press('Backspace')
 }
+
+export const waitForURLExcept = (page: Page, options: { startsWith: string; except: string }) =>
+  page.waitForURL(it => it.toString() !== options.except && it.pathname.startsWith(options.startsWith))

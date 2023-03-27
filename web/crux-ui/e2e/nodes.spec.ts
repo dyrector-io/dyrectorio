@@ -7,7 +7,7 @@ test('Install dagent should be successful', async ({ page }) => {
   await page.goto(ROUTE_NODES)
 
   await page.locator(`h3:has-text("${DAGENT_NODE}")`).click()
-  await page.waitForURL(`**${ROUTE_NODES}/**`)
+  await page.waitForURL(`${ROUTE_NODES}/**`)
 
   await expect(await page.locator('span:has-text("Running")')).toHaveCount(1)
 })

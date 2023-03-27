@@ -11,6 +11,7 @@ test('In progress deployment should be not deletable', async ({ page }) => {
   await createImage(page, productId, versionId, 'nginx')
 
   const deploymentId = await deployWithDagent(page, 'pw-complex-deletability', productId, versionId, true)
+  console.log('inprogdepid', deploymentId)
 
   await page.goto(deploymentUrl(deploymentId))
 
@@ -36,5 +37,5 @@ test('Delete deployment should work', async ({ page }, testInfo) => {
   await page.waitForSelector('h4:has-text("Are you sure you want to delete Deployment?")')
 
   await page.locator('button:has-text("Delete")').nth(1).click()
-  await page.waitForURL(`**${productUrl(productId)}**`)
+  await page.waitForURL(`${productUrl(productId)}**`)
 })
