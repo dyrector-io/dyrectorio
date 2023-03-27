@@ -47,6 +47,7 @@ type ArgsFlags struct {
 	CruxUIDisabled      bool
 	FullyContainerized  bool
 	Network             string
+	Silent              bool
 }
 
 type Containers struct {
@@ -260,7 +261,11 @@ func SaveSettings(state *State, args *ArgsFlags) {
 			if err != nil {
 				log.Fatal().Err(err).Stack().Send()
 			}
-			PrintWelcomeMessage(args.SettingsFilePath)
+			if !args.Silent {
+				NotifyOnce("welcome", func() {
+					PrintWelcomeMessage(args.SettingsFilePath)
+				})
+			}
 		} else if err != nil {
 			log.Fatal().Err(err).Stack().Send()
 		}
