@@ -19,13 +19,13 @@ export default class StorageMapper {
       ...this.listItemToDto(storage),
       accessKey: storage.accessKey,
       secretKey: storage.secretKey,
-      inUse: storage._count?.containerConfigs > 0 || storage._count?.instanceConfigs > 0,
+      inUse: storage._count.containerConfigs > 0 || storage._count.instanceConfigs > 0,
     }
   }
 }
 
 type StorageWithCount = Storage & {
-  _count?: {
+  _count: {
     containerConfigs: number
     instanceConfigs: number
   }

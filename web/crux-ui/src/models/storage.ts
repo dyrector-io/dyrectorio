@@ -1,6 +1,9 @@
-export type Storage = {
+export type BasicStorage = {
   id: string
   name: string
+}
+
+export type Storage = BasicStorage & {
   description?: string
   icon?: string
   url: string

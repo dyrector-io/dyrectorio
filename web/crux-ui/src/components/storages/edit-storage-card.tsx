@@ -63,8 +63,7 @@ const EditStorageCard = (props: EditStorageCardProps) => {
       if (res.ok) {
         let result: StorageDetails
         if (res.status !== 204) {
-          const json = await res.json()
-          result = json as StorageDetails
+          result = (await res.json()) as StorageDetails
         } else {
           result = {
             ...values,

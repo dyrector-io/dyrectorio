@@ -60,7 +60,13 @@ export default class StorageService {
       },
     })
 
-    return this.mapper.detailsToDto(storage)
+    return this.mapper.detailsToDto({
+      ...storage,
+      _count: {
+        containerConfigs: 0,
+        instanceConfigs: 0,
+      },
+    })
   }
 
   async updateStorage(id: string, req: UpdateStorageDto, identity: Identity): Promise<void> {
