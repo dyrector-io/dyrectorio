@@ -3,10 +3,10 @@ import { ProductType } from './product'
 export type Template = {
   id: string
   name: string
-  description: string
-  technologies: Array<string>
+  description?: string
+  technologies: string[]
 }
 
-export type ApplyTemplate = Omit<Template, 'technologies'> & {
+export type CreateProductFromTemplate = Omit<Template, 'technologies'> & {
   type: ProductType
 }

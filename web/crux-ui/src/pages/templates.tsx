@@ -5,10 +5,9 @@ import ApplyTemplateCard from '@app/components/templates/apply-template-card'
 import TemplateCard from '@app/components/templates/template-card'
 import DyoButton from '@app/elements/dyo-button'
 import DyoWrap from '@app/elements/dyo-wrap'
-import { Template } from '@app/models/template'
-import { productUrl, ROUTE_TEMPLATES } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { Template } from '@app/models'
+import { API_TEMPLATES, productUrl, ROUTE_TEMPLATES } from '@app/routes'
+import { fetchCrux, withContextAuthorization } from '@app/utils'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -74,10 +73,15 @@ const TemplatesPage = (props: TemplatesPageProps) => {
 }
 export default TemplatesPage
 
-const getPageServerSideProps = async (context: NextPageContext) => ({
-  props: {
-    templates: await cruxFromContext(context).templates.getAll(),
-  },
-})
+const getPageServerSideProps = async (context: NextPageContext) => {
+  const res = await fetchCrux(context, API_TEMPLATES)
+  const templates = (await res.json()) as Template[]
+
+  return {
+    props: {
+      templates,
+    },
+  }
+}
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

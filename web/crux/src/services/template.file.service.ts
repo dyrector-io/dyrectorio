@@ -1,15 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { readdir, readFileSync } from 'fs'
+import { createReadStream, readdir, readFileSync, ReadStream } from 'fs'
 import { join, parse } from 'path'
 import { cwd } from 'process'
 import { CreateRegistryDto } from 'src/app/registry/registry.dto'
-import { Port, TemplateResponse, Volume } from 'src/grpc/protobuf/proto/crux'
+import { TemplateDto } from 'src/app/template/template.dto'
+import { Port, Volume } from 'src/grpc/protobuf/proto/crux'
 import { ContainerConfigData, UniqueKeyValue, UniqueSecretKey } from 'src/shared/models'
 import { templateSchema } from 'src/shared/validation'
 import { promisify } from 'util'
 import * as yup from 'yup'
 
-const TEMPLATES_FOLDER = 'templates'
+const TEMPLATES_FOLDER = join('assets', 'templates')
 
 export interface TemplateDetail {
   name: string
@@ -58,7 +59,7 @@ export default class TemplateFileService {
     this.templatesFolder = join(cwd(), TEMPLATES_FOLDER)
   }
 
-  async getTemplates(): Promise<TemplateResponse[]> {
+  async getTemplates(): Promise<TemplateDto[]> {
     const files = await promisify<string, string[]>(readdir)(this.templatesFolder)
 
     return files
@@ -82,17 +83,17 @@ export default class TemplateFileService {
     return JSON.parse(templateContent) as TemplateDetail
   }
 
-  async getTemplateImageById(id: string): Promise<Buffer> {
-    return readFileSync(this.getTemplatePath(id, 'jpg'))
+  async getTemplateImageStreamById(id: string): Promise<ReadStream> {
+    return createReadStream(this.getTemplatePath(id, 'jpg'))
   }
 
   getTemplatePath(id: string, extension: string): string {
     return `${join(this.templatesFolder, id)}.${extension}`
   }
 
-  readTemplate(id: string): TemplateDetail | null {
+  readTemplate(id: string): TemplateDto {
     const templateContent = readFileSync(this.getTemplatePath(id, 'json'), 'utf8')
-    const template = JSON.parse(templateContent) as TemplateDetail
+    const template = JSON.parse(templateContent) as TemplateDto
 
     try {
       templateSchema.validateSync(template)
