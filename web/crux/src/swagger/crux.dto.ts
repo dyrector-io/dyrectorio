@@ -25,7 +25,6 @@ import {
   CommonContainerConfig,
   CraneContainerConfig,
   CreateEntityResponse,
-  CreateNotificationResponse,
   DagentContainerConfig,
   DagentTraefikOptions,
   DeploymentByVersionResponse,
@@ -55,26 +54,17 @@ import {
   NodeScriptResponse,
   NodeScriptType,
   NodeType,
-  NotificationDetailsResponse,
-  NotificationEventType,
-  NotificationListResponse,
-  NotificationResponse,
-  NotificationType,
   PatchInstanceRequest,
   Port,
   PortList,
   PortRangeBinding,
   PortRangeBindingList,
-  ProductType,
   RegistryType,
   ServiceStatus,
   TeamDetailsResponse,
   TeamResponse,
   TeamStatistics,
   TeamWithStatsResponse,
-  TemplateImageResponse,
-  TemplateListResponse,
-  TemplateResponse,
   UniqueKeyList,
   UniqueKeyValueList,
   UniqueSecretKeyValueList,
@@ -642,70 +632,10 @@ export class DeploymentListSecretsRequestDto {
   accessedBy: string
   instanceId: string
 }
-export class CreateNotificationRequestDto {
-  accessedBy: string
-  name: string
-  url: string
-  type: NotificationType
-  active: boolean
-  events: NotificationEventType[]
-}
-export class CreateNotificationResponseDto {
-  id: string
-  creator: string
-}
-export class UpdateNotificationRequestDto {
-  id: string
-  accessedBy: string
-  name: string
-  url: string
-  type: NotificationType
-  active: boolean
-  events: NotificationEventType[]
-}
-export class NotificationDetailsResponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  url: string
-  type: NotificationType
-  active: boolean
-  events: NotificationEventType[]
-}
-export class NotificationResponseDto {
-  id: string
-  audit: AuditResponse | undefined
-  name: string
-  url: string
-  type: NotificationType
-  active: boolean
-  events: NotificationEventType[]
-}
-export class NotificationListResponseDto {
-  data: NotificationResponse[]
-}
 export class HealthResponseDto {
   status: ServiceStatus
   cruxVersion: string
   lastMigration: string | undefined
-}
-export class TemplateResponseDto {
-  id: string
-  name: string
-  description: string
-}
-export class TemplateListResponseDto {
-  data: TemplateResponse[]
-}
-export class CreateProductFromTemplateRequestDto {
-  id: string
-  accessedBy: string
-  name: string
-  description: string
-  type: ProductType
-}
-export class TemplateImageResponseDto {
-  data: Uint8Array
 }
 export class DashboardActiveNodesDto {
   id: string
@@ -850,46 +780,11 @@ export class CruxTeamControllerDto {
   getAllTeams: Promise<AllTeamsResponse> | Observable<AllTeamsResponse> | AllTeamsResponse
   getTeamById: Promise<TeamDetailsResponse> | Observable<TeamDetailsResponse> | TeamDetailsResponse
 }
-export class CruxNotificationClientDto {
-  createNotification: Observable<CreateNotificationResponse>
-  updateNotification: Observable<UpdateEntityResponse>
-  deleteNotification: any
-  getNotificationList: Observable<NotificationListResponse>
-  getNotificationDetails: Observable<NotificationDetailsResponse>
-  testNotification: any
-}
-export class CruxNotificationControllerDto {
-  createNotification:
-    | Promise<CreateNotificationResponse>
-    | Observable<CreateNotificationResponse>
-    | CreateNotificationResponse
-  updateNotification: Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
-  deleteNotification: any
-  getNotificationList:
-    | Promise<NotificationListResponse>
-    | Observable<NotificationListResponse>
-    | NotificationListResponse
-  getNotificationDetails:
-    | Promise<NotificationDetailsResponse>
-    | Observable<NotificationDetailsResponse>
-    | NotificationDetailsResponse
-  testNotification: any
-}
 export class CruxHealthClientDto {
   getHealth: Observable<HealthResponse>
 }
 export class CruxHealthControllerDto {
   getHealth: Promise<HealthResponse> | Observable<HealthResponse> | HealthResponse
-}
-export class CruxTemplateClientDto {
-  getTemplates: Observable<TemplateListResponse>
-  createProductFromTemplate: Observable<CreateEntityResponse>
-  getImage: Observable<TemplateImageResponse>
-}
-export class CruxTemplateControllerDto {
-  getTemplates: Promise<TemplateListResponse> | Observable<TemplateListResponse> | TemplateListResponse
-  createProductFromTemplate: Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
-  getImage: Promise<TemplateImageResponse> | Observable<TemplateImageResponse> | TemplateImageResponse
 }
 
 // Not generated:

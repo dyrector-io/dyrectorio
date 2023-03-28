@@ -6,7 +6,7 @@ import TemplateFileService from 'src/services/template.file.service'
 import KratosService from 'src/services/kratos.service'
 import ProductModule from '../product/product.module'
 import TemplateService from './template.service'
-import TemplateController from './template.controller'
+import TemplateHttpController from './template.http.controller'
 import VersionModule from '../version/version.module'
 import TeamModule from '../team/team.module'
 import RegistryModule from '../registry/registry.module'
@@ -26,7 +26,7 @@ import DeployModule from '../deploy/deploy.module'
     DeployModule,
   ],
   exports: [TemplateService],
-  controllers: [TemplateController],
+  controllers: [TemplateHttpController],
   providers: [TemplateService, InterceptorGrpcHelperProvider, PrismaService, TemplateFileService, KratosService],
 })
 export default class TemplateModule {}

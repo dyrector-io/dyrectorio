@@ -8,9 +8,8 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
-import { CreateEntityResponse } from '@app/models/grpc/protobuf/proto/crux'
-import { ApplyTemplate, Template } from '@app/models/template'
+import { Product, ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
+import { CreateProductFromTemplate, Template } from '@app/models/template'
 import { API_TEMPLATES } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { applyTemplateSchema } from '@app/validations'
@@ -42,7 +41,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
-      const body: ApplyTemplate = {
+      const body: CreateProductFromTemplate = {
         id: propsTemplate.id,
         ...values,
       }
@@ -51,7 +50,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
 
       if (res.ok) {
         const json = await res.json()
-        const result = json as CreateEntityResponse
+        const result = json as Product
 
         setSubmitting(false)
         await onTemplateApplied(result.id)

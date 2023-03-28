@@ -79,25 +79,7 @@ service CruxTeam {
   rpc GetTeamById(IdRequest) returns (TeamDetailsResponse);
 }
 
-service CruxNotification {
-  rpc CreateNotification(CreateNotificationRequest)
-      returns (CreateNotificationResponse);
-  rpc UpdateNotification(UpdateNotificationRequest)
-      returns (UpdateEntityResponse);
-  rpc DeleteNotification(IdRequest) returns (common.Empty);
-  rpc GetNotificationList(common.Empty) returns (NotificationListResponse);
-  rpc GetNotificationDetails(IdRequest) returns (NotificationDetailsResponse);
-  rpc TestNotification(IdRequest) returns (common.Empty);
-}
-
 service CruxHealth { rpc getHealth(common.Empty) returns (HealthResponse); }
-
-service CruxTemplate {
-  rpc GetTemplates(common.Empty) returns (TemplateListResponse);
-  rpc CreateProductFromTemplate(CreateProductFromTemplateRequest)
-      returns (CreateEntityResponse);
-  rpc GetImage(IdRequest) returns (TemplateImageResponse);
-}
 
 service CruxStorage {
   // CRUD
@@ -710,75 +692,6 @@ message DeploymentListSecretsRequest {
   string instanceId = 3;
 }
 
-// NOTIFICATION
-
-enum NotificationType {
-  NOTIFICATION_TYPE_UNSPECIFIED = 0;
-  DISCORD = 1;
-  SLACK = 2;
-  TEAMS = 3;
-}
-
-enum NotificationEventType {
-  NOTIFICATION_EVENT_TYPE_UNSPECIFIED = 0;
-  DEPLOYMENT_CREATED = 1;
-  VERSION_CREATED = 2;
-  NODE_ADDED = 3;
-  USER_INVITED = 4;
-}
-
-message CreateNotificationRequest {
-  string name = 100;
-  string url = 101;
-  NotificationType type = 102;
-  bool active = 103;
-
-  repeated NotificationEventType events = 1000;
-}
-
-message CreateNotificationResponse {
-  string id = 1;
-
-  string creator = 100;
-}
-
-message UpdateNotificationRequest {
-  string id = 1;
-
-  string name = 100;
-  string url = 101;
-  NotificationType type = 102;
-  bool active = 103;
-
-  repeated NotificationEventType events = 1000;
-}
-
-message NotificationDetailsResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  string url = 101;
-  NotificationType type = 102;
-  bool active = 103;
-
-  repeated NotificationEventType events = 1000;
-}
-
-message NotificationResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  string url = 101;
-  NotificationType type = 103;
-  bool active = 104;
-
-  repeated NotificationEventType events = 1000;
-}
-
-message NotificationListResponse { repeated NotificationResponse data = 1000; }
-
 // HEALTH
 
 enum ServiceStatus {
@@ -793,34 +706,6 @@ message HealthResponse {
   string cruxVersion = 101;
   optional string lastMigration = 102;
 }
-
-// TEMPLATE
-message TemplateResponse {
-  string id = 1;
-
-  string name = 100;
-  string description = 101;
-
-  repeated string technologies = 1000;
-}
-
-message TemplateListResponse { repeated TemplateResponse data = 1000; }
-
-message CreateProductFromTemplateRequest {
-  string id = 1;
-
-  string name = 100;
-  string description = 101;
-  ProductType type = 102;
-}
-
-enum ProductType {
-  PRODUCT_TYPE_UNSPECIFIED = 0;
-  SIMPLE = 1;
-  COMPLEX = 2;
-}
-
-message TemplateImageResponse { bytes data = 1; }
 
 // STORAGES
 

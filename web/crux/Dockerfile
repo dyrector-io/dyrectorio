@@ -8,7 +8,6 @@ RUN apk --update add openssl1.1-compat
 
 COPY ./package.json ./package-lock.json ./tsconfig.build.json ./tsconfig.json ./
 COPY ./prisma ./prisma
-COPY ./templates ./templates
 COPY ./src ./src
 
 RUN npm ci --no-fund && npm run prismagen
@@ -27,7 +26,6 @@ COPY --from=BUILDER /app/dist ./dist
 COPY --from=BUILDER /app/package.json ./
 COPY --from=BUILDER /app/node_modules ./node_modules
 COPY --from=BUILDER /app/prisma ./prisma
-COPY --from=BUILDER /app/templates ./templates
 COPY ./crux-docker-entrypoint.sh ./
 COPY ./assets/ ./assets/
 COPY ./proto ./proto

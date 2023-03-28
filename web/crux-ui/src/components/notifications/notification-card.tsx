@@ -1,7 +1,7 @@
 import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { NotificationDetails } from '@app/models'
+import { Notification } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -10,7 +10,7 @@ import NotificationStatusTag from './notification-status-tag'
 import NotificationTypeTag from './notification-type-tag'
 
 interface NotificationCardProps extends Omit<DyoCardProps, 'children'> {
-  notification: NotificationDetails
+  notification: Notification
   titleHref?: string
 }
 
@@ -49,7 +49,7 @@ const NotificationCard = (props: NotificationCardProps) => {
 
       <div className="flex flex-row flex-grow justify-end">
         <DyoLabel className="mr-4 mt-auto py-0.5 leading-4">
-          {t('common:createdByName', { name: notification.creator })}
+          {t('common:createdByName', { name: notification.creatorName })}
         </DyoLabel>
 
         <NotificationTypeTag className="px-2.5" type={notification.type} />

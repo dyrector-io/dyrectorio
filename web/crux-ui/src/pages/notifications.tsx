@@ -7,17 +7,16 @@ import { ListPageMenu } from '@app/components/shared/page-menu'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoWrap from '@app/elements/dyo-wrap'
-import { NotificationDetails } from '@app/models'
-import { notificationUrl, ROUTE_NOTIFICATIONS } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { Notification } from '@app/models'
+import { API_NOTIFICATIONS, notificationUrl, ROUTE_NOTIFICATIONS } from '@app/routes'
+import { fetchCrux, withContextAuthorization } from '@app/utils'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRef, useState } from 'react'
 
 interface NotificationsPageProps {
-  notifications: NotificationDetails[]
+  notifications: Notification[]
 }
 
 const NotificationsPage = (props: NotificationsPageProps) => {
@@ -26,14 +25,14 @@ const NotificationsPage = (props: NotificationsPageProps) => {
   const { t } = useTranslation('notifications')
 
   const [creating, setCreating] = useState<boolean>(false)
-  const [notifications, setNotifications] = useState<NotificationDetails[]>(propsNotifications)
+  const [notifications, setNotifications] = useState<Notification[]>(propsNotifications)
 
   const pageLink: BreadcrumbLink = {
     name: t('common:notifications'),
     url: ROUTE_NOTIFICATIONS,
   }
 
-  const onSubmitted = (item: NotificationDetails) => {
+  const onSubmitted = (item: Notification) => {
     setCreating(false)
     setNotifications([...notifications, item])
   }
@@ -71,11 +70,16 @@ const NotificationsPage = (props: NotificationsPageProps) => {
   )
 }
 
-const getPageServerSideProps = async (context: NextPageContext) => ({
-  props: {
-    notifications: await cruxFromContext(context).notificiations.getAll(),
-  },
-})
+const getPageServerSideProps = async (context: NextPageContext) => {
+  const res = await fetchCrux(context, API_NOTIFICATIONS)
+  const notifications = (await res.json()) as Notification[]
+
+  return {
+    props: {
+      notifications,
+    },
+  }
+}
 
 export default NotificationsPage
 

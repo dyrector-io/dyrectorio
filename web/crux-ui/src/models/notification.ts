@@ -9,19 +9,25 @@ export const NOTIFICATION_EVENT_VALUES = [
 ] as const
 export type NotificationEventType = typeof NOTIFICATION_EVENT_VALUES[number]
 
+export type Notification = {
+  id: string
+  name: string
+  url: string
+  type: NotificationType
+  active: boolean
+  creatorName: string
+}
+
+export type NotificationDetails = Notification & {
+  enabledEvents: NotificationEventType[]
+}
+
 export type CreateNotification = {
   name: string
   url: string
   type: NotificationType
   active: boolean
-  events: NotificationEventType[]
+  enabledEvents: NotificationEventType[]
 }
 
-export type UpdateNotification = CreateNotification & {
-  id: string
-}
-
-export type NotificationDetails = CreateNotification & {
-  id: string
-  creator: string
-}
+export type UpdateNotification = CreateNotification
