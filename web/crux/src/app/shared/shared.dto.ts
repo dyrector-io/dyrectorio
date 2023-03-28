@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsDate, IsIn, IsString, IsUUID } from 'class-validator'
+import { IsDate, IsIn, IsOptional, IsString, IsUUID } from 'class-validator'
 import { NodeType, NODE_TYPE_VALUES } from 'src/shared/models'
 
 export type BasicProperties = 'id' | 'name' | 'type'
@@ -26,8 +26,10 @@ export class AuditDto {
   updatedAt: Date
 
   @IsUUID()
+  @IsOptional()
   updatedBy?: string
 }
+
 export class BasicNodeDto {
   @IsUUID()
   id: string
@@ -51,7 +53,6 @@ export class BasicProductDto {
   name: string
 
   @ApiProperty({ enum: PRODUCT_TYPE_VALUES })
-  @IsString()
   @IsIn(PRODUCT_TYPE_VALUES)
   type: ProductTypeDto
 }
@@ -66,10 +67,7 @@ export class BasicVersionDto {
   @IsString()
   name: string
 
-  @ApiProperty({
-    enum: VERSION_TYPE_VALUES,
-  })
-  @IsString()
+  @ApiProperty({ enum: VERSION_TYPE_VALUES })
   @IsIn(VERSION_TYPE_VALUES)
   type: VersionTypeDto
 }

@@ -23,7 +23,7 @@ export class BasicDeploymentDto {
 export class DeploymentDto extends BasicDeploymentDto {
   @IsString()
   @IsOptional()
-  note?: string
+  note?: string | null
 
   audit: AuditDto
 
@@ -61,16 +61,19 @@ export class InstanceDto {
   image: ImageDto
 
   @ApiProperty({ enum: CONTAINER_STATE_VALUES })
+  @IsIn(CONTAINER_STATE_VALUES)
   @IsOptional()
-  state?: ContainerState
+  state?: ContainerState | null
 
-  config?: InstanceContainerConfigDto
+  @IsOptional()
+  config?: InstanceContainerConfigDto | null
 }
 
 export class DeploymentDetailsDto extends DeploymentDto {
   environment: UniqueKeyValue[]
 
   @IsString()
+  @IsOptional()
   publicKey?: string | null
 
   instances: InstanceDto[]
@@ -94,11 +97,13 @@ export class CreateDeploymentDto {
 export class PatchDeploymentDto {
   @IsString()
   @IsOptional()
-  note?: string
+  note?: string | null
 
   @IsString()
-  prefix?: string
+  @IsOptional()
+  prefix?: string | null
 
+  @IsOptional()
   environment?: UniqueKeyValue[]
 }
 
@@ -114,22 +119,29 @@ export class DeploymentEventContainerStateDto {
   instanceId: string
 
   @ApiProperty({ enum: CONTAINER_STATE_VALUES })
+  @IsIn(CONTAINER_STATE_VALUES)
   state: ContainerState
 }
 
 export class DeploymentEventDto {
   @ApiProperty({ enum: DEPLOYMENT_EVENT_TYPE_VALUES })
+  @IsIn(DEPLOYMENT_EVENT_TYPE_VALUES)
   type: DeploymentEventTypeDto
 
   @Type(() => Date)
   @IsDate()
   createdAt: Date
 
+  @IsString({ each: true })
+  @IsOptional()
   log?: string[] | null
 
   @ApiProperty({ enum: DEPLOYMENT_STATUS_VALUES })
+  @IsIn(DEPLOYMENT_STATUS_VALUES)
+  @IsOptional()
   deploymentStatus?: DeploymentStatusDto | null
 
+  @IsOptional()
   containerState?: DeploymentEventContainerStateDto | null
 }
 
@@ -138,5 +150,7 @@ export class InstanceSecretsDto {
 
   publicKey: string
 
-  keys?: string[]
+  @IsOptional()
+  @IsString({ each: true })
+  keys?: string[] | null
 }

@@ -12,12 +12,11 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import ProductService from './product.service'
-
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -76,7 +75,6 @@ export default class ProductHttpController {
   @Put(ROUTE_PRODUCT_ID)
   @HttpCode(204)
   @UseInterceptors(ProductUpdateValidationInterceptor)
-  @ApiNoContentResponse({ type: ProductListItemDto })
   async updateProduct(
     @ProductId() id: string,
     @Body() request: UpdateProductDto,

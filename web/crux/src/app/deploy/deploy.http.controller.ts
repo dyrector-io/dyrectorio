@@ -46,6 +46,7 @@ const ROUTE_DEPLOYMENTS = 'deployments'
 const ROUTE_DEPLOYMENT_ID = ':deploymentId'
 const ROUTE_INSTANCES = 'instances'
 const ROUTE_INSTANCE_ID = ':instanceId'
+
 @Controller(ROUTE_DEPLOYMENTS)
 @ApiTags(ROUTE_DEPLOYMENTS)
 @UseGuards(JwtAuthGuard, DeployTeamAccessGuard)
@@ -69,10 +70,7 @@ export default class DeployHttpController {
   }
 
   @Get(ROUTE_DEPLOYMENT_ID)
-  @ApiOkResponse({
-    type: DeploymentDetailsDto,
-    isArray: true,
-  })
+  @ApiOkResponse({ type: DeploymentDetailsDto })
   async getDeploymentDetails(@DeploymentId() deploymentId: string): Promise<DeploymentDetailsDto> {
     return await this.service.getDeploymentDetails(deploymentId)
   }

@@ -10,8 +10,7 @@ export default class DeployCopyValidationInterceptor implements NestInterceptor 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest()
     const deploymentId = req.params.deploymentId as string
-    const queryForce = req.query.force as string
-    const force = queryForce === 'true'
+    const force = req.query.force === 'true'
 
     const deployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
