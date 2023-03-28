@@ -32,7 +32,7 @@ const EditProductCard = (props: EditProductCardProps) => {
       id: null,
       name: '',
       description: '',
-      updatedAt: null,
+      audit: null,
       type: 'complex',
       changelog: '',
     },

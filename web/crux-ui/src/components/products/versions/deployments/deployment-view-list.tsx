@@ -35,7 +35,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
   ]
 
   const itemTemplate = (item: Instance) => [
-    item.overriddenConfig.name ?? item.image.config.name,
+    item.config?.name ?? item.image.config.name,
     item.image.registry.name,
     <div className="flex items-center">
       <span>
@@ -44,7 +44,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
       </span>
     </div>,
     <span suppressHydrationWarning>{item.image.createdAt ? utcDateToLocale(item.image.createdAt) : 'new'}</span>,
-    <Link href={instanceConfigUrl(state.product.id, state.version.id, state.deployment.id, item.id)} passHref>
+    <Link href={instanceConfigUrl(state.deployment.id, item.id)} passHref>
       <Image src="/settings.svg" alt={t('common:settings')} width={24} height={24} />
     </Link>,
   ]

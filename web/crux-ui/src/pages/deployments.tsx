@@ -12,9 +12,8 @@ import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Deployment, deploymentIsCopiable, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
-import { deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
-import { utcDateToLocale, withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { API_DEPLOYMENTS, deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
+import { auditToLocaleDate, fetchCrux, withContextAuthorization } from '@app/utils'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -43,8 +42,6 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     const deployment = deployments.find(d => d.id === deploymentId)
     const url = await copyDeployment({
       deploymentId: deployment.id,
-      productId: deployment.productId,
-      versionId: deployment.versionId,
     })
 
     if (!url) {
@@ -56,7 +53,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
 
   const filters = useFilters<Deployment, DeploymentFilter>({
     filters: [
-      textFilterFor<Deployment>(it => [it.product, it.version, it.node, it.prefix]),
+      textFilterFor<Deployment>(it => [it.product.name, it.version.name, it.node.name, it.prefix]),
       enumFilterFor<Deployment, DeploymentStatus>(it => [it.status]),
     ],
     initialData: deployments,
@@ -84,18 +81,19 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   ]
 
   const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [
-    <Link href={productUrl(item.productId)}>{item.product}</Link>,
-    <Link href={versionUrl(item.productId, item.versionId)}>{item.version}</Link>,
-    <Link href={nodeUrl(item.nodeId)}>{item.node}</Link>,
+    <Link href={productUrl(item.product.id)}>{item.product.name}</Link>,
+    <Link href={versionUrl(item.product.id, item.version.id)}>{item.version.name}</Link>,
+    <Link href={nodeUrl(item.node.id)}>{item.node.name}</Link>,
     <span>{item.prefix}</span>,
-    <span>{utcDateToLocale(item.updatedAt)}</span>,
+    <span>{auditToLocaleDate(item.audit)}</span>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
     <div className="flex flex-row">
       <div className="mr-2 inline-block">
-        <Link href={deploymentUrl(item.productId, item.versionId, item.id)} passHref>
+        <Link href={deploymentUrl(item.id)} passHref>
           <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} className="cursor-pointer" />
         </Link>
       </div>
+
       <div className="mr-2 inline-block">
         <Image
           src="/note.svg"
@@ -112,8 +110,10 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
         alt={t('common:copy')}
         width={24}
         height={24}
-        className={deploymentIsCopiable(item.status, item.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-        onClick={() => deploymentIsCopiable(item.status, item.type) && onCopyDeployment(item.id)}
+        className={
+          deploymentIsCopiable(item.status, item.version.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'
+        }
+        onClick={() => deploymentIsCopiable(item.status, item.version.type) && onCopyDeployment(item.id)}
       />
     </div>,
   ]
@@ -172,10 +172,14 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
 
 export default DeploymentsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => ({
-  props: {
-    deployments: await cruxFromContext(context).deployments.getAll(),
-  },
-})
+const getPageServerSideProps = async (context: NextPageContext) => {
+  const deployments = await fetchCrux(context, API_DEPLOYMENTS)
+
+  return {
+    props: {
+      deployments: await deployments.json(),
+    },
+  }
+}
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

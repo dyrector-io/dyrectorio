@@ -9,7 +9,7 @@ import {
   IdentityApi,
   UpdateLoginFlowWithPasswordMethod,
 } from '@ory/kratos-client'
-import { FullConfig, Locator } from '@playwright/test'
+import { FullConfig, Locator, Page } from '@playwright/test'
 import path from 'path'
 import { v4 as uuid } from 'uuid'
 import MailSlurper from './mail-slurper'
@@ -161,20 +161,10 @@ export const getUserSessionToken = async (frontend: FrontendApi, email: string, 
 
 export const screenshotPath = (name: string) => path.join(__dirname, '..', SCREENSHOTS_FOLDER, `${name}.png`)
 
-export const extractDeploymentUrl = (url: string): { versionId: string; deploymentId: string } => {
-  const urlParts = url.split('/')
-  urlParts.pop()
-  const deploymentId = urlParts.pop()
-  urlParts.pop()
-  const versionId = urlParts.pop()
-
-  return {
-    versionId,
-    deploymentId,
-  }
-}
-
 export const clearInput = async (input: Locator) => {
   await input.fill('')
   await input.press('Backspace')
 }
+
+export const waitForURLExcept = (page: Page, options: { startsWith: string; except: string }) =>
+  page.waitForURL(it => it.toString() !== options.except && it.pathname.startsWith(options.startsWith))

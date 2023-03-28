@@ -1,6 +1,5 @@
 import { deploymentUrl, productUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { extractDeploymentUrl } from './utils/common'
 import { deployWithDagent } from './utils/node-helper'
 import { createImage, createProduct, createVersion } from './utils/products'
 
@@ -11,10 +10,10 @@ test('In progress deployment should be not deletable', async ({ page }) => {
   const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
   await createImage(page, productId, versionId, 'nginx')
 
-  await deployWithDagent(page, 'pw-complex-deletability', productId, versionId, true)
+  const deploymentId = await deployWithDagent(page, 'pw-complex-deletability', productId, versionId, true)
+  console.log('inprogdepid', deploymentId)
 
-  const { deploymentId } = extractDeploymentUrl(page.url())
-  await page.goto(deploymentUrl(productId, versionId, deploymentId))
+  await page.goto(deploymentUrl(deploymentId))
 
   await expect(await page.getByText('In progress')).toHaveCount(1)
   await expect(await page.locator('button:has-text("Delete")')).toHaveCount(0)
@@ -27,10 +26,9 @@ test('Delete deployment should work', async ({ page }, testInfo) => {
   const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
   await createImage(page, productId, versionId, 'nginx')
 
-  await deployWithDagent(page, 'pw-complex-delete', productId, versionId, false, testInfo.title)
+  const deploymentId = await deployWithDagent(page, 'pw-complex-delete', productId, versionId, false, testInfo.title)
 
-  const { deploymentId } = extractDeploymentUrl(page.url())
-  await page.goto(deploymentUrl(productId, versionId, deploymentId))
+  await page.goto(deploymentUrl(deploymentId))
 
   await expect(await page.locator('button:has-text("Delete")')).toHaveCount(1)
 
@@ -39,5 +37,5 @@ test('Delete deployment should work', async ({ page }, testInfo) => {
   await page.waitForSelector('h4:has-text("Are you sure you want to delete Deployment?")')
 
   await page.locator('button:has-text("Delete")').nth(1).click()
-  await page.waitForURL(`**${productUrl(productId)}**`)
+  await page.waitForURL(`${productUrl(productId)}**`)
 })

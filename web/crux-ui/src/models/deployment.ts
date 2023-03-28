@@ -1,55 +1,54 @@
+import { Audit } from './audit'
 import { DeploymentStatus } from './common'
-import { InstanceContainerConfigData } from './container'
+import { ContainerIdentifier, ContainerState, InstanceContainerConfigData } from './container'
 import { UniqueKeyValue } from './grpc/protobuf/proto/crux'
 import { ImageConfigProperty, ImageDeletedMessage } from './image'
-import { Instance, InstanceStatus, PatchInstance } from './instance'
-import { DyoNode } from './node'
-import { ProductDetails } from './product'
-import { VersionDetails, VersionType } from './version'
+import { Instance } from './instance'
+import { BasicNode, DyoNode } from './node'
+import { BasicProduct, ProductDetails } from './product'
+import { BasicVersion, VersionDetails, VersionType } from './version'
 
-export type DeploymentDetails = {
+export type Deployment = {
   id: string
-  versionId: string
-  nodeId: string
-  note?: string | undefined
+  audit: Audit
   prefix: string
-  updatedAt: string
-  environment: UniqueKeyValue[]
   status: DeploymentStatus
+  note?: string
+  node: BasicNode
+  product: BasicProduct
+  version: BasicVersion
+}
+
+export type DeploymentDetails = Deployment & {
+  environment: UniqueKeyValue[]
   publicKey?: string
   instances: Instance[]
 }
 
-export type Deployment = {
-  id: string
-  productId: string
-  product: string
-  versionId: string
-  version: string
-  node: string
-  status: DeploymentStatus
-  nodeId: string
-  note?: string
-  prefix: string
-  updatedAt: string
-  type: VersionType
-}
-
-export type DeploymentRoot = DeploymentDetails & {
+export type DeploymentRoot = Omit<DeploymentDetails, 'product' | 'version' | 'node'> & {
   product: ProductDetails
   version: VersionDetails
   node: DyoNode
 }
 
-export type DeploymentEventType = 'log' | 'deploymentStatus' | 'containerStatus'
+export const DEPLOYMENT_EVENT_TYPE_VALUES = ['log', 'deployment-status', 'container-status'] as const
+export type DeploymentEventType = typeof DEPLOYMENT_EVENT_TYPE_VALUES[number]
+
+export type DeploymentEventContainerState = {
+  instanceId: string
+  state: ContainerState
+}
 
 export type DeploymentEvent = {
   type: DeploymentEventType
-  value: string[] | DeploymentStatus | InstanceStatus
+  log?: string[]
+  deploymentStatus?: DeploymentStatus
+  containerState?: DeploymentEventContainerState
   createdAt: string
 }
 
 export type CreateDeployment = {
+  versionId: string
   nodeId: string
   prefix: string
   note?: string | undefined
@@ -61,13 +60,9 @@ export type DeploymentCreated = {
 
 export type PatchDeployment = {
   id: string
-  environment?: UniqueKeyValue[]
-  instance?: PatchInstance
-}
-
-export type UpdateDeployment = {
+  prefix?: string
   note?: string
-  prefix: string
+  environment?: UniqueKeyValue[]
 }
 
 export type CheckDeploymentCopyResponse = {
@@ -127,13 +122,21 @@ export type DeploymentEventMessage = DeploymentEvent
 
 export const WS_TYPE_DEPLOYMENT_FINISHED = 'deployment-finished'
 
-export const WS_TYPE_GET_DEPLOYMENT_SECRETS = 'deployment-secret-list'
-export type DeploymentGetSecretListMessage = {
-  instanceId: string
+export const WS_TYPE_GET_INSTANCE_SECRETS = 'get-instance-secrets'
+export type GetInstanceSecretsMessage = {
+  id: string
 }
 
-export const WS_TYPE_DEPLOYMENT_SECRETS = 'deployment-secrets'
-export type DeploymentSecretListMessage = {
+export type InstanceSecrets = {
+  container: ContainerIdentifier
+
+  publicKey: string
+
+  keys?: string[]
+}
+
+export const WS_TYPE_INSTANCE_SECRETS = 'instance-secrets'
+export type InstanceSecretsMessage = {
   instanceId: string
   keys: string[]
 }
@@ -180,3 +183,9 @@ export const deploymentLogVisible = (status: DeploymentStatus) => {
 }
 
 export const productNameToDeploymentPrefix = (name: string) => name.replaceAll(/( |\.)/g, '-').toLocaleLowerCase()
+
+export const lastDeploymentStatusOfEvents = (events: DeploymentEvent[]): DeploymentStatus | null =>
+  events
+    .filter(it => it.type === 'deployment-status')
+    .sort((one, other) => new Date(other.createdAt).getTime() - new Date(one.createdAt).getTime())
+    .at(0)?.deploymentStatus ?? null

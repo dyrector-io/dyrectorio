@@ -1,14 +1,21 @@
-import { Injectable } from '@nestjs/common'
-import { CreateDeploymentRequest } from 'src/grpc/protobuf/proto/crux'
-import UserAccessGuard from 'src/shared/user-access.guard'
-import { Identity } from '@ory/kratos-client'
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
+import { identityOfContext } from 'src/app/token/jwt-auth.guard'
+import PrismaService from 'src/services/prisma.service'
+import { CreateDeploymentDto } from '../deploy.dto'
 
 @Injectable()
-export default class DeployCreateTeamAccessGuard extends UserAccessGuard<CreateDeploymentRequest> {
-  async canActivateWithRequest(request: CreateDeploymentRequest, identity: Identity): Promise<boolean> {
+export default class DeployCreateTeamAccessGuard implements CanActivate {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const req = context.switchToHttp().getRequest()
+    const body = req.body as CreateDeploymentDto
+
+    const identity = identityOfContext(context)
+
     const version = await this.prisma.version.count({
       where: {
-        id: request.versionId,
+        id: body.versionId,
         product: {
           team: {
             users: {
@@ -19,7 +26,7 @@ export default class DeployCreateTeamAccessGuard extends UserAccessGuard<CreateD
             },
             nodes: {
               some: {
-                id: request.nodeId,
+                id: body.nodeId,
               },
             },
           },

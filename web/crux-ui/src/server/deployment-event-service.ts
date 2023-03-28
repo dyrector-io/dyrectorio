@@ -1,6 +1,15 @@
-import { DeploymentEvent, DeploymentEventMessage, WS_TYPE_DEPLOYMENT_EVENT, WS_TYPE_DYO_ERROR } from '@app/models'
+import {
+  DeploymentEvent,
+  DeploymentEventMessage,
+  lastDeploymentStatusOfEvents,
+  WS_TYPE_DEPLOYMENT_EVENT,
+  WS_TYPE_DYO_ERROR,
+} from '@app/models'
+import { deploymentEventsApiUrl } from '@app/routes'
+import { fetchCruxFromRequest } from '@app/utils'
+import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
-import { Crux } from './crux/crux'
+import { cruxFromConnection } from './crux/crux'
 import { fromGrpcError, parseGrpcError } from './error-middleware'
 
 class DeploymentEventService {
@@ -12,18 +21,22 @@ class DeploymentEventService {
     return !!this.events
   }
 
-  async fetchEvents(crux: Crux): Promise<DeploymentEvent[]> {
+  async fetchEvents(connection: WsConnection): Promise<DeploymentEvent[]> {
     if (this.running) {
       return this.events
     }
 
-    const [status, events] = await crux.deployments.getEvents(this.deploymentId)
+    const cruxRes = await fetchCruxFromRequest(connection.request, deploymentEventsApiUrl(this.deploymentId))
+    const events = (await cruxRes.json()) as DeploymentEvent[]
+    const status = lastDeploymentStatusOfEvents(events)
 
     if (status !== 'in-progress') {
       return events
     }
 
     this.events = events
+
+    const crux = cruxFromConnection(connection)
     crux.deployments.subscribeToDeploymentEvents(this.deploymentId, {
       onMessage: message => {
         this.events.push(...message)

@@ -58,11 +58,12 @@ export class AddImagesDto {
 }
 
 export class PatchImageDto {
+  @IsString()
   @IsOptional()
-  tag?: string
+  tag?: string | null
 
   @IsOptional()
-  config?: Partial<ContainerConfigDto>
+  config?: Partial<ContainerConfigDto> | null
 }
 
 export class ContainerStorageDto {

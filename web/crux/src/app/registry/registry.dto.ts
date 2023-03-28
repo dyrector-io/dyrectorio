@@ -12,7 +12,8 @@ export class BasicRegistryDto {
   @IsString()
   name: string
 
-  // TODO (@polaroi8d): Missing the enum and the validator
+  @ApiProperty({ enum: REGISTRY_TYPE_VALUES })
+  @IsIn(REGISTRY_TYPE_VALUES)
   type: RegistryType
 }
 
@@ -30,11 +31,11 @@ export class RegistryDto {
 
   @IsString()
   @IsOptional()
-  description?: string
+  description?: string | null
 
   @IsString()
   @IsOptional()
-  icon?: string
+  icon?: string | null
 
   @IsUrl()
   url: string
@@ -59,11 +60,11 @@ export class V2RegistryDetailsDto {
 
   @IsString()
   @IsOptional()
-  user?: string
+  user?: string | null
 
   @IsString()
   @IsOptional()
-  token?: string
+  token?: string | null
 }
 
 export class GitlabRegistryDetailsDto {
@@ -78,11 +79,11 @@ export class GitlabRegistryDetailsDto {
 
   @IsUrl()
   @IsOptional()
-  url?: string
+  url?: string | null
 
   @IsUrl()
   @IsOptional()
-  apiUrl?: string
+  apiUrl?: string | null
 
   @ApiProperty({
     enum: GITLAB_NAMESPACE_VALUES,
@@ -116,11 +117,11 @@ export class GoogleRegistryDetailsDto {
 
   @IsString()
   @IsOptional()
-  user?: string
+  user?: string | null
 
   @IsString()
   @IsOptional()
-  token?: string
+  token?: string | null
 
   @IsString()
   imageNamePrefix: string
@@ -163,11 +164,11 @@ export class RegistryDetailsDto {
 
   @IsString()
   @IsOptional()
-  description?: string
+  description?: string | null
 
   @IsString()
   @IsOptional()
-  icon?: string
+  icon?: string | null
 
   @IsBoolean()
   inUse: boolean
@@ -205,13 +206,12 @@ export class CreateRegistryDto {
 
   @IsString()
   @IsOptional()
-  description?: string
+  description?: string | null
 
   @IsString()
   @IsOptional()
-  icon?: string
+  icon?: string | null
 
-  @IsString()
   @IsIn(REGISTRY_TYPE_VALUES)
   @ApiProperty({
     enum: GITLAB_NAMESPACE_VALUES,
@@ -236,11 +236,11 @@ export class UpdateRegistryDto {
 
   @IsString()
   @IsOptional()
-  description?: string
+  description?: string | null
 
   @IsString()
   @IsOptional()
-  icon?: string
+  icon?: string | null
 
   @IsString()
   @IsIn(REGISTRY_TYPE_VALUES)

@@ -1,30 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsBoolean, IsIn, IsNumber, IsString, IsUUID } from 'class-validator'
-import { AuditDto } from 'src/shared/dtos/audit'
+import { IsBoolean, IsIn, IsNumber, IsOptional, IsString } from 'class-validator'
+import { AuditDto, BasicProductDto, ProductTypeDto, PRODUCT_TYPE_VALUES } from '../shared/shared.dto'
 import { VersionDto } from '../version/version.dto'
 
-export const PRODUCT_TYPE_VALUES = ['simple', 'complex'] as const
-export type ProductTypeDto = (typeof PRODUCT_TYPE_VALUES)[number]
-
-export class ProductDto extends AuditDto {
-  @IsUUID()
-  id: string
-
+export class ProductDto extends BasicProductDto {
   @IsString()
-  name: string
+  @IsOptional()
+  description?: string | null
 
-  @IsString()
-  description?: string
+  audit: AuditDto
+}
 
-  @ApiProperty({
-    enum: PRODUCT_TYPE_VALUES,
-  })
-  @IsString()
-  @IsIn(PRODUCT_TYPE_VALUES)
-  type: ProductTypeDto
-
+export class ProductListItemDto extends ProductDto {
   @IsNumber()
+  @IsOptional()
   versionCount?: number
 }
 
@@ -41,17 +31,16 @@ export class UpdateProductDto {
   name: string
 
   @IsString()
-  description?: string
+  @IsOptional()
+  description?: string | null
 
   @IsString()
-  changelog?: string
+  @IsOptional()
+  changelog?: string | null
 }
 
 export class CreateProductDto extends UpdateProductDto {
-  @ApiProperty({
-    enum: PRODUCT_TYPE_VALUES,
-  })
-  @IsString()
+  @ApiProperty({ enum: PRODUCT_TYPE_VALUES })
   @IsIn(PRODUCT_TYPE_VALUES)
   type: ProductTypeDto
 }

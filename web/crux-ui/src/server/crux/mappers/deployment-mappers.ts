@@ -26,9 +26,9 @@ export const deploymentEventTypeToDto = (type: ProtoDeploymentEventType): Deploy
     case ProtoDeploymentEventType.DEPLOYMENT_LOG:
       return 'log'
     case ProtoDeploymentEventType.CONTAINER_STATUS:
-      return 'containerStatus'
+      return 'container-status'
     case ProtoDeploymentEventType.DEPLOYMENT_STATUS:
-      return 'deploymentStatus'
+      return 'deployment-status'
     default:
       return null
   }
@@ -57,7 +57,7 @@ export const instanceToDto = (res: InstanceResponse): Instance =>
     ...res,
     image: imageToDto(res.image),
     state: !res.state ? null : containerStateToDto(res.state),
-    overriddenConfig: instanceContainerConfigToDto(res.config),
+    config: instanceContainerConfigToDto(res.config),
   } as Instance)
 
 export const instanceContainerConfigToProto = (

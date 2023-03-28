@@ -90,7 +90,7 @@ test('Increase version should work', async ({ page }) => {
   await page.locator('input[name=name]').fill('2.0.0')
 
   await page.locator('button:has-text("Save")').click()
-  await page.waitForURL(`**${productUrl(productId)}/versions/**`)
+  await page.waitForURL(`${productUrl(productId)}/versions/**`)
 
   const imagesTableBody = await page.locator('.table-row-group')
   const imagesRows = await imagesTableBody.locator('.table-row')

@@ -1,15 +1,19 @@
+import { Audit } from './audit'
 import { Version } from './version'
 
 export const PRODUCT_TYPE_VALUES = ['simple', 'complex'] as const
 export type ProductType = typeof PRODUCT_TYPE_VALUES[number]
 
-export type Product = {
+export type BasicProduct = {
   id: string
   name: string
-  description?: string
   type: ProductType
+}
+
+export type Product = BasicProduct & {
+  description?: string
   versionCount?: number
-  updatedAt: string
+  audit: Audit
 }
 
 export type EditableProduct = Product & {
@@ -17,7 +21,6 @@ export type EditableProduct = Product & {
 }
 
 export type ProductDetails = Product & {
-  createdAt: string
   deletable: boolean
   versions: Version[]
 }

@@ -1,20 +1,20 @@
-import { Injectable } from '@nestjs/common'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor, PreconditionFailedException } from '@nestjs/common'
+import { Observable } from 'rxjs'
 import AgentService from 'src/app/agent/agent.service'
-import BodyPipeTransform from 'src/pipes/body.pipe'
 import { checkDeploymentDeployability } from 'src/domain/deployment'
-import { PreconditionFailedException } from 'src/exception/errors'
-import { IdRequest, NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
+import { NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import { UniqueSecretKey, UniqueSecretKeyValue } from 'src/shared/models'
 import { deploymentSchema, yupValidate } from 'src/shared/validation'
 
 @Injectable()
-export default class DeployStartValidationPipe extends BodyPipeTransform<IdRequest> {
-  constructor(private prisma: PrismaService, private agentService: AgentService) {
-    super()
-  }
+export default class DeployStartValidationInterceptor implements NestInterceptor {
+  constructor(private prisma: PrismaService, private agentService: AgentService) {}
 
-  async transformBody(value: IdRequest) {
+  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+    const req = context.switchToHttp().getRequest()
+    const deploymentId = req.params.deploymentId as string
+
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       include: {
         version: true,
@@ -30,9 +30,16 @@ export default class DeployStartValidationPipe extends BodyPipeTransform<IdReque
         },
       },
       where: {
-        id: value.id,
+        id: deploymentId,
       },
     })
+
+    if (deployment.instances.length < 1) {
+      throw new PreconditionFailedException({
+        message: 'There is no instances to deploy',
+        property: 'instances',
+      })
+    }
 
     if (!checkDeploymentDeployability(deployment.status, deployment.version.type)) {
       throw new PreconditionFailedException({
@@ -78,6 +85,6 @@ export default class DeployStartValidationPipe extends BodyPipeTransform<IdReque
       })
     }
 
-    return value
+    return next.handle()
   }
 }

@@ -1,6 +1,6 @@
 import { deploymentUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { DAGENT_NODE, extractDeploymentUrl, screenshotPath } from './utils/common'
+import { DAGENT_NODE, screenshotPath } from './utils/common'
 import { deployWithDagent } from './utils/node-helper'
 import {
   addDeploymentToSimpleProduct,
@@ -32,11 +32,9 @@ test.describe('Simple product', () => {
 
     const prefix = 'pw-simp-mut'
 
-    await deployWithDagent(page, prefix, productId, '', false, testInfo.title)
+    const deploymentId = await deployWithDagent(page, prefix, productId, '', false, testInfo.title)
 
-    const { versionId, deploymentId } = extractDeploymentUrl(page.url())
-
-    await page.goto(deploymentUrl(productId, versionId, deploymentId))
+    await page.goto(deploymentUrl(deploymentId))
 
     await page.screenshot({ path: screenshotPath('simple-prod-successful-deployment'), fullPage: true })
 
@@ -56,7 +54,7 @@ test.describe('Complex product incremental version', () => {
 
     const { id } = await addDeploymentToVersion(page, productId, versionId, DAGENT_NODE)
 
-    await page.goto(deploymentUrl(productId, versionId, id))
+    await page.goto(deploymentUrl(id))
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
     await page.locator("img[src='/view_tile.svg']").click()
@@ -70,11 +68,16 @@ test.describe('Complex product incremental version', () => {
     const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
     await createImage(page, productId, versionId, image)
 
-    await deployWithDagent(page, 'pw-complex-mutability', productId, versionId, false, testInfo.title)
+    const deploymentId = await deployWithDagent(
+      page,
+      'pw-complex-mutability',
+      productId,
+      versionId,
+      false,
+      testInfo.title,
+    )
 
-    const { deploymentId } = extractDeploymentUrl(page.url())
-
-    await page.goto(deploymentUrl(productId, versionId, deploymentId))
+    await page.goto(deploymentUrl(deploymentId))
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(0)
     await page.locator("img[src='/view_tile.svg']").click()
@@ -88,13 +91,18 @@ test.describe('Complex product incremental version', () => {
     const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
     await createImage(page, productId, versionId, image)
 
-    await deployWithDagent(page, 'pw-complex-mutability-obsolete', productId, versionId, false, `${testInfo.title}1`)
-
-    const { deploymentId } = extractDeploymentUrl(page.url())
+    const deploymentId = await deployWithDagent(
+      page,
+      'pw-complex-mutability-obsolete',
+      productId,
+      versionId,
+      false,
+      `${testInfo.title}1`,
+    )
 
     await deployWithDagent(page, 'pw-complex-mutability-obsolete', productId, versionId, false, `${testInfo.title}2`)
 
-    await page.goto(deploymentUrl(productId, versionId, deploymentId))
+    await page.goto(deploymentUrl(deploymentId))
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(0)
     await page.locator("img[src='/view_tile.svg']").click()

@@ -9,7 +9,7 @@ import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { CreateDeployment, DeploymentCreated, DyoApiError, DyoNode, productNameToDeploymentPrefix } from '@app/models'
-import { API_NODES, versionDeploymentsApiUrl } from '@app/routes'
+import { API_DEPLOYMENTS, API_NODES } from '@app/routes'
 import { fetcher, sendForm } from '@app/utils'
 import { createDeploymentSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
@@ -19,7 +19,6 @@ import useSWR from 'swr'
 
 interface AddDeploymentCardProps {
   className?: string
-  productId: string
   productName: string
   versionId: string
   onAdd: (deploymentId: string) => void
@@ -27,7 +26,7 @@ interface AddDeploymentCardProps {
 }
 
 const AddDeploymentCard = (props: AddDeploymentCardProps) => {
-  const { productId, productName, versionId, className, onAdd, onDiscard } = props
+  const { productName, versionId, className, onAdd, onDiscard } = props
 
   const { t } = useTranslation('versions')
 
@@ -55,9 +54,10 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
       const body: CreateDeployment = {
         ...transformedValues,
+        versionId,
       }
 
-      const res = await sendForm('POST', versionDeploymentsApiUrl(productId, versionId), body)
+      const res = await sendForm('POST', API_DEPLOYMENTS, body)
 
       if (res.ok) {
         const result = (await res.json()) as DeploymentCreated

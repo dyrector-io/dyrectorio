@@ -1,37 +1,43 @@
 import { Logger } from '@app/logger'
 import {
   DeploymentEventMessage,
-  DeploymentGetSecretListMessage,
-  DeploymentSecretListMessage,
   EditorJoinedMessage,
   GetInstanceMessage,
+  GetInstanceSecretsMessage,
   InputFocusMessage,
+  InstanceMessage,
+  InstanceSecrets,
+  InstanceSecretsMessage,
+  PatchDeployment,
   PatchDeploymentEnvMessage,
+  PatchInstance,
   PatchInstanceMessage,
   WS_TYPE_ALL_ITEM_EDITORS,
   WS_TYPE_BLUR_INPUT,
   WS_TYPE_DEPLOYMENT_ENV_UPDATED,
   WS_TYPE_DEPLOYMENT_EVENT_LIST,
-  WS_TYPE_DEPLOYMENT_SECRETS,
   WS_TYPE_EDITOR_IDENTITY,
   WS_TYPE_EDITOR_JOINED,
   WS_TYPE_EDITOR_LEFT,
   WS_TYPE_FETCH_DEPLOYMENT_EVENTS,
   WS_TYPE_FOCUS_INPUT,
-  WS_TYPE_GET_DEPLOYMENT_SECRETS,
   WS_TYPE_GET_INSTANCE,
+  WS_TYPE_GET_INSTANCE_SECRETS,
   WS_TYPE_INPUT_BLURED,
   WS_TYPE_INPUT_FOCUSED,
   WS_TYPE_INSTANCE,
+  WS_TYPE_INSTANCE_SECRETS,
   WS_TYPE_INSTANCE_UPDATED,
   WS_TYPE_PATCH_DEPLOYMENT_ENV,
   WS_TYPE_PATCH_INSTANCE,
   WS_TYPE_PATCH_RECEIVED,
 } from '@app/models'
+import { deploymentApiUrl, instanceApiUrl } from '@app/routes'
+import { fetchCruxFromRequest } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
-import crux, { Crux, cruxFromConnection } from '@server/crux/crux'
+import { Crux } from '@server/crux/crux'
 import DeploymentEventsService from '@server/deployment-event-service'
 import EditorService from '@server/editing/editor-service'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
@@ -61,7 +67,7 @@ const onAuthorize = async (endpoint: WsEndpoint, req: NextApiRequest): Promise<b
   const deploymentId = endpoint.query.deploymentId as string
 
   try {
-    crux(req).deployments.getById(deploymentId)
+    fetchCruxFromRequest(req, deploymentApiUrl(deploymentId))
     return true
   } catch {
     return false
@@ -93,7 +99,7 @@ const onDisconnect = (endpoint: WsEndpoint, connection: WsConnection) => {
 const onFetchEvents = async (endpoint: WsEndpoint, connection: WsConnection) => {
   const eventService = endpoint.services.get(DeploymentEventsService)
 
-  const events = await eventService.fetchEvents(cruxFromConnection(connection))
+  const events = await eventService.fetchEvents(connection)
 
   connection.send(WS_TYPE_DEPLOYMENT_EVENT_LIST, events as DeploymentEventMessage[])
 }
@@ -103,17 +109,25 @@ export const onPatchInstance = async (
   connection: WsConnection,
   message: WsMessage<PatchInstanceMessage>,
 ) => {
-  const id = endpoint.query.deploymentId as string
+  const deploymentId = endpoint.query.deploymentId as string
 
   const req = message.payload
 
-  await cruxFromConnection(connection).deployments.patch({
-    id,
-    instance: {
-      instanceId: req.instanceId,
-      config: req.config,
-      resetSection: req.resetSection,
+  const cruxReq: Pick<PatchInstance, 'config'> = {}
+
+  if (req.resetSection) {
+    cruxReq.config = {}
+    cruxReq.config[req.resetSection as string] = null
+  } else {
+    cruxReq.config = req.config
+  }
+
+  await fetchCruxFromRequest(connection.request, instanceApiUrl(deploymentId, req.instanceId), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
     },
+    body: JSON.stringify(cruxReq),
   })
 
   connection.send(WS_TYPE_PATCH_RECEIVED, {})
@@ -128,13 +142,20 @@ const onPatchDeploymentEnvironment = async (
   connection: WsConnection,
   message: WsMessage<PatchDeploymentEnvMessage>,
 ) => {
-  const id = endpoint.query.deploymentId as string
+  const deploymentId = endpoint.query.deploymentId as string
 
   const req = message.payload
 
-  await cruxFromConnection(connection).deployments.patch({
-    id,
+  const cruxReq: Omit<PatchDeployment, 'id'> = {
     environment: req,
+  }
+
+  await fetchCruxFromRequest(connection.request, deploymentApiUrl(deploymentId), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(cruxReq),
   })
 
   connection.send(WS_TYPE_PATCH_RECEIVED, {})
@@ -150,33 +171,31 @@ const onGetInstance = async (
 
   const req = message.payload
 
-  const res = await cruxFromConnection(connection).deployments.getById(deploymentId)
+  const res = await fetchCruxFromRequest(connection.request, instanceApiUrl(deploymentId, req.id))
 
-  connection.send(
-    WS_TYPE_INSTANCE,
-    res.instances.find(it => it.id === req.id),
-  )
+  connection.send(WS_TYPE_INSTANCE, (await res.json()) as InstanceMessage)
 }
 
 const onGetSecrets = async (
   endpoint: WsEndpoint,
   connection: WsConnection,
-  message: WsMessage<DeploymentGetSecretListMessage>,
+  message: WsMessage<GetInstanceSecretsMessage>,
 ) => {
   const deploymentId = endpoint.query.deploymentId as string
 
   const req = message.payload
 
-  const res = await cruxFromConnection(connection).deployments.getSecretsList(deploymentId, req.instanceId)
+  const cruxRes = await fetchCruxFromRequest(connection.request, instanceApiUrl(deploymentId, req.id))
+  const res = (await cruxRes.json()) as InstanceSecrets
 
-  if (!res.hasKeys) {
+  if (!res.keys) {
     return
   }
 
-  connection.send(WS_TYPE_DEPLOYMENT_SECRETS, {
-    instanceId: message.payload.instanceId,
+  connection.send(WS_TYPE_INSTANCE_SECRETS, {
+    instanceId: message.payload.id,
     keys: res.keys,
-  } as DeploymentSecretListMessage)
+  } as InstanceSecretsMessage)
 }
 
 const onFocusInput = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<InputFocusMessage>) => {
@@ -207,7 +226,7 @@ export default routedWebSocketEndpoint(
     [WS_TYPE_PATCH_INSTANCE, onPatchInstance],
     [WS_TYPE_PATCH_DEPLOYMENT_ENV, onPatchDeploymentEnvironment],
     [WS_TYPE_GET_INSTANCE, onGetInstance],
-    [WS_TYPE_GET_DEPLOYMENT_SECRETS, onGetSecrets],
+    [WS_TYPE_GET_INSTANCE_SECRETS, onGetSecrets],
     [WS_TYPE_FOCUS_INPUT, onFocusInput],
     [WS_TYPE_BLUR_INPUT, onBlurInput],
   ],

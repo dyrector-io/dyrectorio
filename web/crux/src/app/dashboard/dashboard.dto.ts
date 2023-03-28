@@ -1,5 +1,5 @@
 import { AuditLogDto } from '../audit/audit.dto'
-import { BasicNodeDto } from '../node/node.dto'
+import { BasicNodeDto } from '../shared/shared.dto'
 
 export default class DashboardDto {
   users: number

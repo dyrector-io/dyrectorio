@@ -462,6 +462,7 @@ jobs:
           npx playwright install chromium
           npm run test:e2e
       - name: Gather logs
+        working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
         if: always()
         run: |
           mkdir logs

@@ -1,7 +1,7 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DeploymentDetails } from '@app/models'
-import { utcDateToLocale } from '@app/utils'
+import { auditToLocaleDate } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import React from 'react'
@@ -26,7 +26,7 @@ const DeploymentDetailsCard = (props: DeploymentDetailsCardProps) => {
         <DeploymentStatusTag className="my-auto" status={deployment.status} />
 
         <DyoLabel textColor="text-bright" suppressHydrationWarning>
-          {utcDateToLocale(deployment.updatedAt)}
+          {auditToLocaleDate(deployment.audit)}
         </DyoLabel>
       </div>
 

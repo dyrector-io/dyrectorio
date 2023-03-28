@@ -1,4 +1,4 @@
-import { productUrl, ROUTE_NODES, versionUrl } from '@app/routes'
+import { deploymentDeployUrl, productUrl, ROUTE_DEPLOYMENTS, ROUTE_NODES, versionUrl } from '@app/routes'
 import { expect, Page } from '@playwright/test'
 import { exec, ExecOptions } from 'child_process'
 import { DAGENT_NODE, screenshotPath } from './common'
@@ -38,7 +38,7 @@ export const deployWithDagent = async (
   versionId?: string,
   ignoreResult?: boolean,
   testName?: string,
-) => {
+): Promise<string> => {
   if (versionId) {
     await page.goto(versionUrl(productId, versionId))
   } else {
@@ -54,17 +54,19 @@ export const deployWithDagent = async (
   await page.locator('input[name=prefix]').fill(prefix)
 
   await page.locator('button:has-text("Add")').click()
-  await page.waitForURL(`**${productUrl(productId)}/versions/**/deployments/**`)
+  await page.waitForURL(`${ROUTE_DEPLOYMENTS}/**`)
+
+  const deploymentId = page.url().split('/').pop()
 
   const deploy = page.getByText('Deploy', {
     exact: true,
   })
 
   await deploy.click()
-  await page.waitForURL(`**${productUrl(productId)}/versions/**/deployments/**/deploy`)
+  await page.waitForURL(deploymentDeployUrl(deploymentId))
 
   if (ignoreResult) {
-    return
+    return deploymentId
   }
 
   if (testName) {
@@ -72,8 +74,10 @@ export const deployWithDagent = async (
     await page.screenshot({ path: screenshotPath(`dagent-deploy-after-1s-${testName}`), fullPage: true })
   }
 
-  expect(page.url().endsWith('deploy'))
+  expect(page.url()).toContain(deploymentDeployUrl(deploymentId))
   await page.getByText('Successful').waitFor()
+
+  return deploymentId
 }
 
 const logCmdOutput = (err: Error, stdOut: string, stdErr: string, logStdOut?: boolean) => {
