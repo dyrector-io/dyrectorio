@@ -41,8 +41,8 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       name: '',
       type: 'discord',
       url: '',
-      creator: '',
-      events: [...NOTIFICATION_EVENT_VALUES],
+      creatorName: '',
+      enabledEvents: [...NOTIFICATION_EVENT_VALUES],
     },
   )
 
@@ -62,18 +62,26 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
         ...values,
       }
 
-      const response = await (editMode
+      const res = await (editMode
         ? sendForm('PUT', notificationApiUrl(notification.id), request as UpdateNotification)
         : sendForm('POST', API_NOTIFICATIONS, request as CreateNotification))
 
-      if (response.ok) {
-        const result = response.status === 200 ? ((await response.json()) as NotificationDetails) : { ...values }
+      if (res.ok) {
+        let result: NotificationDetails
+        if (res.status !== 204) {
+          result = (await res.json()) as NotificationDetails
+        } else {
+          result = {
+            ...values,
+          }
+        }
+
         setNotification(result)
         setSubmitting(false)
         onSubmitted(result as NotificationDetails)
       } else {
         setSubmitting(false)
-        handleApiError(response, setFieldError)
+        handleApiError(res, setFieldError)
       }
     },
   })
@@ -140,8 +148,8 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
           <DyoLabel className="mb-2.5">{t('events')}</DyoLabel>
 
           <NotificationEventList
-            value={formik.values.events}
-            onChanged={value => formik.setFieldValue('events', value, false)}
+            value={formik.values.enabledEvents}
+            onChanged={value => formik.setFieldValue('enabledEvents', value, false)}
           />
         </div>
       </DyoForm>

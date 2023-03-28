@@ -1,98 +1,58 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { Notification, NotificationEvent, NotificationEventTypeEnum, NotificationTypeEnum } from '@prisma/client'
-import { InternalException, InvalidArgumentException } from 'src/exception/errors'
-import {
-  AuditResponse,
-  NotificationDetailsResponse,
-  NotificationEventType,
-  NotificationResponse,
-  NotificationType,
-  notificationTypeFromJSON,
-  notificationTypeToJSON,
-} from 'src/grpc/protobuf/proto/crux'
+import { Notification, NotificationEvent, NotificationEventTypeEnum } from '@prisma/client'
 import { nameOrEmailOfIdentity } from 'src/shared/models'
+import { NotificationDetailsDto, NotificationDto, NotificationEventTypeDto } from './notification.dto'
 
 @Injectable()
 export default class NotificationMapper {
-  listItemToProto(notification: NotificationWithEvents): NotificationResponse {
+  listToDto(notification: Notification, createdByIdentity: Identity): NotificationDto {
     return {
-      ...notification,
-      type: this.typeToProto(notification.type),
-      audit: AuditResponse.fromJSON(notification),
-      events: notification.events.map(ev => this.eventTypeToProto(ev.event)),
+      id: notification.id,
+      name: notification.name,
+      url: notification.url,
+      type: notification.type,
+      active: notification.active,
+      creatorName: nameOrEmailOfIdentity(createdByIdentity),
     }
   }
 
-  detailsToProto(notification: NotificationWithEvents, identity: Identity): NotificationDetailsResponse {
+  detailsToDto(notification: NotificationWithEvents, createdByIdentity: Identity): NotificationDetailsDto {
     return {
-      ...notification,
-      type: this.typeToProto(notification.type),
-      audit: {
-        ...AuditResponse.fromJSON(notification),
-        createdBy: nameOrEmailOfIdentity(identity),
-      },
-      events: notification.events.map(ev => this.eventTypeToProto(ev.event)),
+      ...this.listToDto(notification, createdByIdentity),
+      enabledEvents: notification.events.map(ev => this.eventTypeToDto(ev.event)),
     }
   }
 
-  listToProto(notifications: NotificationWithEvents[], identities: Map<string, Identity>): NotificationResponse[] {
-    return notifications.map(it => {
-      const identity = identities.get(it.createdBy)
-
-      if (!identity) {
-        return null
-      }
-
-      return {
-        ...it,
-        type: this.typeToProto(it.type),
-        audit: {
-          ...AuditResponse.fromJSON(it),
-          createdBy: nameOrEmailOfIdentity(identity),
-        },
-        events: it.events.map(ev => this.eventTypeToProto(ev.event)),
-      } as NotificationResponse
-    })
-  }
-
-  typeToProto(type: NotificationTypeEnum): NotificationType {
-    return notificationTypeFromJSON(type.toUpperCase())
-  }
-
-  typeToDb(type: NotificationType): NotificationTypeEnum {
-    return notificationTypeToJSON(type).toLowerCase() as NotificationTypeEnum
-  }
-
-  eventTypeToProto(type: NotificationEventTypeEnum): NotificationEventType {
+  eventTypeToDto(type: NotificationEventTypeEnum): NotificationEventTypeDto {
     switch (type) {
       case NotificationEventTypeEnum.deploymentCreated:
-        return NotificationEventType.DEPLOYMENT_CREATED
+        return 'deployment-created'
       case NotificationEventTypeEnum.versionCreated:
-        return NotificationEventType.VERSION_CREATED
+        return 'version-created'
       case NotificationEventTypeEnum.nodeAdded:
-        return NotificationEventType.NODE_ADDED
+        return 'node-added'
       case NotificationEventTypeEnum.userInvited:
-        return NotificationEventType.USER_INVITED
+        return 'user-invited'
       default:
-        throw new InternalException({
+        throw new BadRequestException({
           message: `Unknown NotificationEventType '${type}'`,
         })
     }
   }
 
-  eventTypeToDb(type: NotificationEventType): NotificationEventTypeEnum {
+  eventTypeToDb(type: NotificationEventTypeDto): NotificationEventTypeEnum {
     switch (type) {
-      case NotificationEventType.DEPLOYMENT_CREATED:
+      case 'deployment-created':
         return NotificationEventTypeEnum.deploymentCreated
-      case NotificationEventType.VERSION_CREATED:
+      case 'version-created':
         return NotificationEventTypeEnum.versionCreated
-      case NotificationEventType.NODE_ADDED:
+      case 'node-added':
         return NotificationEventTypeEnum.nodeAdded
-      case NotificationEventType.USER_INVITED:
+      case 'user-invited':
         return NotificationEventTypeEnum.userInvited
       default:
-        throw new InvalidArgumentException({
+        throw new BadRequestException({
           property: 'notificationType',
           value: type,
           message: `Unknown NotificationEventType '${type}'`,
