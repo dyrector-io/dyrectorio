@@ -20,6 +20,7 @@ import { defaultApiErrorHandler } from '@app/errors'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import {
   BaseImageConfigFilterType,
+  DeploymentDetails,
   DeploymentRoot,
   ImageConfigProperty,
   instanceConfigToJsonInstanceConfig,
@@ -32,6 +33,7 @@ import {
   ViewState,
 } from '@app/models'
 import {
+  deploymentApiUrl,
   deploymentUrl,
   instanceConfigUrl,
   productApiUrl,
@@ -163,11 +165,11 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     },
     {
       name: t('common:deployment'),
-      url: deploymentUrl(product.id, version.id, deployment.id),
+      url: deploymentUrl(deployment.id),
     },
     {
       name: instance.image.name,
-      url: instanceConfigUrl(product.id, version.id, deployment.id, instance.id),
+      url: instanceConfigUrl(deployment.id, instance.id),
     },
   ]
 
@@ -202,7 +204,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   return (
     <Layout title={t('instancesName', state.config ?? instance.image)} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        <DyoButton href={deploymentUrl(product.id, version.id, deployment.id)}>{t('common:back')}</DyoButton>
+        <DyoButton href={deploymentUrl(deployment.id)}>{t('common:back')}</DyoButton>
       </PageHeading>
 
       <DyoCard className="p-4">
@@ -288,8 +290,9 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 
   const crux = cruxFromContext(context)
   const product = await fetchCrux(context, productApiUrl(productId))
-  const deploymentDetails = await crux.deployments.getById(deploymentId)
-  const node = await crux.nodes.getNodeDetails(deploymentDetails.nodeId)
+  const deploymentRes = await fetchCrux(context, deploymentApiUrl(deploymentId))
+  const deploymentDetails = (await deploymentRes.json()) as DeploymentDetails
+  const node = await crux.nodes.getNodeDetails(deploymentDetails.node.id)
 
   const version = await fetchCrux(context, versionApiUrl(productId, versionId))
 

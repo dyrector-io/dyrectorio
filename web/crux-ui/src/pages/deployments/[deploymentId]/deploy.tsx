@@ -52,7 +52,7 @@ const DeployPage = (props: DeployPageProps) => {
   }
   const { product, version } = deployment
 
-  const sock = useWebSocket(deploymentWsUrl(product.id, deployment.versionId, deployment.id), {
+  const sock = useWebSocket(deploymentWsUrl(deployment.id), {
     onOpen: () => {
       sock.send(WS_TYPE_FETCH_DEPLOYMENT_EVENTS, {})
     },
@@ -63,18 +63,18 @@ const DeployPage = (props: DeployPageProps) => {
     newEvents = newEvents.sort((one, other) => new Date(one.createdAt).getTime() - new Date(other.createdAt).getTime())
     setEvents(newEvents)
 
-    const deploymentStatuses = newEvents.filter(it => it.type === 'deploymentStatus')
+    const deploymentStatuses = newEvents.filter(it => it.type === 'deployment-status')
 
     if (deploymentStatuses.length > 0) {
-      setStatus(deploymentStatuses[deploymentStatuses.length - 1].value as DeploymentStatus)
+      setStatus(deploymentStatuses[deploymentStatuses.length - 1].deploymentStatus)
     }
   })
   sock.on(WS_TYPE_DEPLOYMENT_EVENT, (message: DeploymentEventMessage) => {
     const newEvents = [...events, message]
     setEvents(newEvents)
 
-    if (message.type === 'deploymentStatus') {
-      setStatus(message.value as DeploymentStatus)
+    if (message.type === 'deployment-status') {
+      setStatus(message.deploymentStatus)
     }
   })
 
@@ -94,11 +94,11 @@ const DeployPage = (props: DeployPageProps) => {
     },
     {
       name: t('common:deployment'),
-      url: deploymentUrl(product.id, version.id, deployment.id),
+      url: deploymentUrl(deployment.id),
     },
     {
       name: t('common:deploy'),
-      url: deploymentDeployUrl(product.id, version.id, deployment.id),
+      url: deploymentDeployUrl(deployment.id),
     },
   ]
 
@@ -110,8 +110,8 @@ const DeployPage = (props: DeployPageProps) => {
     }
 
     const date = new Date(event.createdAt)
-    const value = event.value as string[]
-    return value.map(it => `${terminalDateFormat(date)}\xa0\xa0\xa0\xa0${it}`)
+    const value = event.log as string[]
+    return value?.map(it => `${terminalDateFormat(date)}\xa0\xa0\xa0\xa0${it}`) ?? []
   }
 
   return (
@@ -123,7 +123,7 @@ const DeployPage = (props: DeployPageProps) => {
       })}
     >
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        <DyoButton className="px-6 ml-auto" href={nodeInspectUrl(deployment.nodeId, deployment.prefix)}>
+        <DyoButton className="px-6 ml-auto" href={nodeInspectUrl(deployment.node.id, deployment.prefix)}>
           {t('common:inspect')}
         </DyoButton>
 

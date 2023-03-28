@@ -1,27 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum, Prisma } from '@prisma/client'
-import { JsonArray } from 'prisma'
 import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
 import { InternalException, PreconditionFailedException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
-import { Empty, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import {
-  CreateDeploymentRequest,
-  CreateEntityResponse,
-  DeploymentDetailsResponse,
   DeploymentEditEventMessage,
-  DeploymentEventListResponse,
-  DeploymentListByVersionResponse,
-  DeploymentListResponse,
-  DeploymentListSecretsRequest,
   DeploymentProgressMessage,
   IdRequest,
-  PatchDeploymentRequest,
   ServiceIdRequest,
-  UpdateDeploymentRequest,
-  UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import { toPrismaJson } from 'src/shared/mapper'
@@ -35,6 +23,16 @@ import AgentService from '../agent/agent.service'
 import { ImageDetails } from '../image/image.mapper'
 import ImageService from '../image/image.service'
 import ContainerMapper from '../shared/container.mapper'
+import {
+  CreateDeploymentDto,
+  DeploymentDetailsDto,
+  DeploymentDto,
+  DeploymentEventDto,
+  InstanceDto,
+  InstanceSecretsDto,
+  PatchDeploymentDto,
+  PatchInstanceDto,
+} from './deploy.dto'
 import DeployMapper, { InstanceDetails } from './deploy.mapper'
 
 @Injectable()
@@ -62,28 +60,18 @@ export default class DeployService {
     this.imageDeletedEvent = imageService.imageDeletedFromVersionEvent
   }
 
-  async getDeploymentsByVersionId(request: IdRequest): Promise<DeploymentListByVersionResponse> {
-    const deployments = await this.prisma.deployment.findMany({
-      where: {
-        versionId: request.id,
-      },
-      include: {
-        node: true,
-      },
-    })
-
-    return {
-      data: deployments.map(it => this.mapper.deploymentByVersionToProto(it)),
-    }
-  }
-
-  async getDeploymentDetails(request: IdRequest): Promise<DeploymentDetailsResponse> {
+  async getDeploymentDetails(deploymentId: string): Promise<DeploymentDetailsDto> {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
-        id: request.id,
+        id: deploymentId,
       },
       include: {
         node: true,
+        version: {
+          include: {
+            product: true,
+          },
+        },
         instances: {
           include: {
             image: {
@@ -100,39 +88,41 @@ export default class DeployService {
 
     const publicKey = this.agentService.getById(deployment.nodeId)?.publicKey
 
-    return this.mapper.detailsToProto(deployment, publicKey)
+    return this.mapper.toDetailsDto(deployment, publicKey)
   }
 
-  async getDeploymentEvents(request: IdRequest): Promise<DeploymentEventListResponse> {
-    const deployment = await this.prisma.deployment.findUniqueOrThrow({
+  async getDeploymentEvents(deploymentId: string): Promise<DeploymentEventDto[]> {
+    const events = await this.prisma.deploymentEvent.findMany({
       where: {
-        id: request.id,
+        deploymentId,
       },
-      select: {
-        status: true,
-        events: {
-          orderBy: {
-            createdAt: 'asc',
+      orderBy: {
+        createdAt: 'asc',
+      },
+    })
+
+    return events.map(it => this.mapper.eventToDto(it))
+  }
+
+  async getInstance(instanceId: string): Promise<InstanceDto> {
+    const instance = await this.prisma.instance.findUniqueOrThrow({
+      where: {
+        id: instanceId,
+      },
+      include: {
+        image: {
+          include: {
+            config: true,
+            registry: true,
           },
         },
       },
     })
 
-    return {
-      status: this.mapper.statusToProto(deployment.status),
-      data: deployment.events.map(it => this.mapper.eventToProto(it)),
-    }
+    return this.mapper.instanceToDto(instance)
   }
 
-  async getDeploymenEventsById(request: ServiceIdRequest): Promise<any> {
-    return await this.prisma.deploymentEvent.findMany({
-      where: {
-        deploymentId: request.id,
-      },
-    })
-  }
-
-  async createDeployment(request: CreateDeploymentRequest, identity: Identity): Promise<CreateEntityResponse> {
+  async createDeployment(request: CreateDeploymentDto, identity: Identity): Promise<DeploymentDto> {
     const version = await this.prisma.version.findUniqueOrThrow({
       where: {
         id: request.versionId,
@@ -158,6 +148,14 @@ export default class DeployService {
               imageId: it.id,
               state: null,
             })),
+          },
+        },
+      },
+      include: {
+        node: true,
+        version: {
+          include: {
+            product: true,
           },
         },
       },
@@ -219,96 +217,80 @@ export default class DeployService {
       })
     }
 
-    return CreateEntityResponse.fromJSON(deployment)
+    return this.mapper.toDto(deployment)
   }
 
-  async updateDeployment(request: UpdateDeploymentRequest, identity: Identity): Promise<UpdateEntityResponse> {
-    const deployment = await this.prisma.deployment.update({
+  async patchDeployment(deploymentId: string, req: PatchDeploymentDto, identity: Identity): Promise<void> {
+    await this.prisma.deployment.update({
+      where: {
+        id: deploymentId,
+      },
       data: {
-        note: request.note,
-        prefix: request.prefix,
+        note: req.note ?? undefined,
+        prefix: req.prefix ?? undefined,
+        environment: req.environment ?? undefined,
         updatedBy: identity.id,
       },
-      where: {
-        id: request.id,
-      },
-    })
-
-    return UpdateEntityResponse.fromJSON({
-      ...deployment,
     })
   }
 
-  async patchDeployment(request: PatchDeploymentRequest, identity: Identity): Promise<UpdateEntityResponse> {
-    const reqInstance = request.instance
-    let instanceConfigPatchSet: Partial<InstanceContainerConfigData> = null
-
-    if (reqInstance?.config) {
-      const instance = await this.prisma.instance.findUnique({
-        where: {
-          id: reqInstance.id,
-        },
-        select: {
-          config: true,
-          image: {
-            select: {
-              config: true,
-            },
+  async patchInstance(
+    deploymentId: string,
+    instanceId: string,
+    req: PatchInstanceDto,
+    identity: Identity,
+  ): Promise<void> {
+    const instance = await this.prisma.instance.findUnique({
+      where: {
+        id: instanceId,
+      },
+      select: {
+        config: true,
+        image: {
+          select: {
+            config: true,
           },
         },
-      })
+      },
+    })
 
-      const config = this.mapper.instanceConfigToInstanceContainerConfigData(
-        instance.image.config as any as ContainerConfigData,
-        (instance.config ?? {}) as any as InstanceContainerConfigData,
-        reqInstance.config,
-      )
-      instanceConfigPatchSet = config
-    }
+    const configData = this.mapper.instanceConfigDtoToInstanceContainerConfigData(
+      instance.image.config as any as ContainerConfigData,
+      (instance.config ?? {}) as any as InstanceContainerConfigData,
+      req.config,
+    )
 
-    if (reqInstance?.resetSection) {
-      instanceConfigPatchSet = this.mapper.configSectionResetToDb(
-        instanceConfigPatchSet ?? {},
-        reqInstance.resetSection,
-      )
-    }
+    const config = this.mapper.instanceConfigDataToDb(configData)
 
-    const deployment = await this.prisma.deployment.update({
+    await this.prisma.deployment.update({
+      where: {
+        id: deploymentId,
+      },
       data: {
-        environment: request.environment?.data as JsonArray,
         updatedBy: identity.id,
-        instances: !reqInstance
-          ? undefined
-          : {
-              update: {
-                where: {
-                  id: reqInstance.id,
-                },
-                data: {
-                  config: {
-                    upsert: {
-                      update: instanceConfigPatchSet,
-                      create: instanceConfigPatchSet,
-                    },
-                  },
+        instances: {
+          update: {
+            where: {
+              id: instanceId,
+            },
+            data: {
+              config: {
+                upsert: {
+                  update: config,
+                  create: config,
                 },
               },
             },
+          },
+        },
       },
-      where: {
-        id: request.id,
-      },
-    })
-
-    return UpdateEntityResponse.fromJSON({
-      ...deployment,
     })
   }
 
-  async deleteDeployment(request: IdRequest): Promise<Empty> {
+  async deleteDeployment(deploymentId: string): Promise<void> {
     const deployment = await this.prisma.deployment.delete({
       where: {
-        id: request.id,
+        id: deploymentId,
       },
       select: {
         prefix: true,
@@ -323,14 +305,12 @@ export default class DeployService {
         container: null,
       })
     }
-
-    return Empty
   }
 
-  async startDeployment(request: IdRequest, identity: Identity): Promise<Empty> {
+  async startDeployment(deploymentId: string, identity: Identity): Promise<void> {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
-        id: request.id,
+        id: deploymentId,
       },
       include: {
         version: {
@@ -529,8 +509,6 @@ export default class DeployService {
         status: DeploymentStatusEnum.inProgress,
       },
     })
-
-    return Empty
   }
 
   async subscribeToDeploymentEvents(request: IdRequest): Promise<Observable<DeploymentProgressMessage>> {
@@ -581,7 +559,7 @@ export default class DeployService {
     )
   }
 
-  async getDeploymentList(identity: Identity): Promise<DeploymentListResponse> {
+  async getDeployments(identity: Identity): Promise<DeploymentDto[]> {
     const deployments = await this.prisma.deployment.findMany({
       where: {
         version: {
@@ -607,6 +585,7 @@ export default class DeployService {
               select: {
                 id: true,
                 name: true,
+                type: true,
               },
             },
           },
@@ -615,26 +594,19 @@ export default class DeployService {
           select: {
             id: true,
             name: true,
+            type: true,
           },
         },
       },
     })
 
-    return {
-      data: deployments.map(it => this.mapper.listItemToProto(it)),
-    }
+    return deployments.map(it => this.mapper.toDto(it))
   }
 
-  async getDeploymentSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
-    const deployment = await this.prisma.deployment.findFirstOrThrow({
+  async getInstanceSecrets(instanceId: string): Promise<InstanceSecretsDto> {
+    const instance = await this.prisma.instance.findUniqueOrThrow({
       where: {
-        id: request.id,
-      },
-    })
-
-    const instanceWithImageAndConfig = await this.prisma.instance.findFirstOrThrow({
-      where: {
-        id: request.instanceId,
+        id: instanceId,
       },
       include: {
         image: {
@@ -642,10 +614,12 @@ export default class DeployService {
             config: true,
           },
         },
+        deployment: true,
       },
     })
 
-    const containerName = instanceWithImageAndConfig.image.config.name
+    const { deployment } = instance
+    const containerName = instance.image.config.name
 
     const agent = this.agentService.getById(deployment.nodeId)
     if (!agent) {
@@ -658,13 +632,15 @@ export default class DeployService {
 
     const watcher = agent.getContainerSecrets(deployment.prefix, containerName)
 
-    return lastValueFrom(watcher)
+    const secrets = await lastValueFrom(watcher)
+
+    return this.mapper.secretsResponseToInstanceSecretsDto(secrets)
   }
 
-  async copyDeployment(request: IdRequest, identity: Identity): Promise<CreateEntityResponse> {
+  async copyDeployment(deploymentId: string, identity: Identity): Promise<DeploymentDto> {
     const oldDeployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
-        id: request.id,
+        id: deploymentId,
       },
       include: {
         instances: {
@@ -695,6 +671,14 @@ export default class DeployService {
         note: oldDeployment.note,
         createdBy: identity.id,
         prefix: oldDeployment.prefix,
+      },
+      include: {
+        node: true,
+        version: {
+          include: {
+            product: true,
+          },
+        },
       },
     })
 
@@ -748,12 +732,10 @@ export default class DeployService {
     )
 
     if (preparingDeployment) {
-      await this.deleteDeployment({
-        id: preparingDeployment.id,
-      })
+      await this.deleteDeployment(preparingDeployment.id)
     }
 
-    return CreateEntityResponse.fromJSON(newDeployment)
+    return this.mapper.toDto(newDeployment)
   }
 
   private async onImagesAddedToVersion(images: ImageDetails[]): Promise<InstancesCreatedEvent> {

@@ -2,7 +2,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import { DyoList } from '@app/elements/dyo-list'
 import { Product } from '@app/models'
 import { productUrl } from '@app/routes'
-import { utcDateToLocale } from '@app/utils'
+import { auditToLocaleDate } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -38,7 +38,7 @@ const ProductViewList = (props: ProductViewListProps) => {
   const itemTemplate = (item: Product) => [
     <a>{item.name}</a>,
     <a>{item.versionCount}</a>,
-    <a>{utcDateToLocale(item.updatedAt)}</a>,
+    <a>{auditToLocaleDate(item.audit)}</a>,
     <div>
       <ProductTypeTag className="w-fit m-auto" type={item.type} />
     </div>,

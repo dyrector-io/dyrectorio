@@ -1,7 +1,7 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { Product } from '@app/models'
-import { utcDateToLocale } from '@app/utils'
+import { auditToLocaleDate } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -37,7 +37,7 @@ const ProductCard = (props: ProductCardProps) => {
             <div className="flex flex-row justify-start">
               <span className="text-bright font-bold ml-4">{`${t('common:updatedAt')}:`}</span>
 
-              <span className="text-bright ml-2">{utcDateToLocale(product.updatedAt)}</span>
+              <span className="text-bright ml-2">{auditToLocaleDate(product.audit)}</span>
             </div>
 
             <ProductTypeTag className="ml-auto" type={product.type} />

@@ -168,7 +168,7 @@ const setRemote =
 // selectors
 const selectHighlightColor = (state: string[], allEditors: Editor[], me: Editor): string => {
   const otherEditors = state.filter(it => it !== me?.id)
-  if (otherEditors.length < 0) {
+  if (otherEditors.length < 1) {
     return null
   }
 

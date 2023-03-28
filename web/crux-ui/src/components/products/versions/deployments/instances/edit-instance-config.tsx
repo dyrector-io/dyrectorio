@@ -76,7 +76,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
         containerClassName="w-5/12"
         grow
         editorOptions={editorOptions}
-        value={config?.name}
+        value={config.name}
         onPatch={onContainerNameChange}
       />
 

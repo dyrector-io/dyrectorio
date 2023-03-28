@@ -2,7 +2,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { ProductDetails } from '@app/models'
-import { utcDateToLocale } from '@app/utils'
+import { auditToLocaleDate } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -41,7 +41,7 @@ const ProductDetailsCard = (props: ProductDetailsCardProps) => {
 
             <div className="flex flex-col ml-auto">
               <span className="text-bright whitespace-nowrap" suppressHydrationWarning>
-                {utcDateToLocale(product.createdAt)}
+                {auditToLocaleDate(product.audit)}
               </span>
 
               <ProductTypeTag className="mt-2 ml-auto" type={product.type} />

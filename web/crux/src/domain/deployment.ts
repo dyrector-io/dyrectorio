@@ -5,7 +5,7 @@ import { DeploymentProgressMessage } from 'src/grpc/protobuf/proto/crux'
 import {
   ContainerState,
   containerStateToJSON,
-  DeploymentStatus,
+  DeploymentStatus as ProtoDeploymentStatus,
   DeploymentStatusMessage,
   deploymentStatusToJSON,
 } from 'src/grpc/protobuf/proto/common'
@@ -22,9 +22,9 @@ export type DeploymentProgressEvent = {
   value: string[] | DeploymentStatusEnum | DeploymentProgressContainerEvent
 }
 
-export const deploymentStatusToDb = (status: DeploymentStatus): DeploymentStatusEnum => {
+export const deploymentStatusToDb = (status: ProtoDeploymentStatus): DeploymentStatusEnum => {
   switch (status) {
-    case DeploymentStatus.IN_PROGRESS:
+    case ProtoDeploymentStatus.IN_PROGRESS:
       return DeploymentStatusEnum.inProgress
     default:
       return deploymentStatusToJSON(status).toLowerCase() as DeploymentStatusEnum
@@ -53,7 +53,6 @@ export const checkDeploymentMutability = (status: DeploymentStatusEnum, type: Ve
     case 'preparing':
       return true
     case 'successful':
-      return type === 'rolling'
     case 'failed':
       return type === 'rolling'
     default:
@@ -67,7 +66,6 @@ export const checkDeploymentDeployability = (status: DeploymentStatusEnum, type:
     case 'obsolete':
       return true
     case 'successful':
-      return type === 'rolling'
     case 'failed':
       return type === 'rolling'
     default:
@@ -85,7 +83,7 @@ export type DeploymentNotification = {
 export default class Deployment {
   private statusChannel = new Subject<DeploymentProgressMessage>()
 
-  private status = DeploymentStatus.PREPARING
+  private status = ProtoDeploymentStatus.PREPARING
 
   readonly id: string
 
@@ -102,11 +100,11 @@ export default class Deployment {
   }
 
   start(commandChannel: Subject<AgentCommand>): Observable<DeploymentProgressMessage> {
-    this.status = DeploymentStatus.IN_PROGRESS
+    this.status = ProtoDeploymentStatus.IN_PROGRESS
     this.statusChannel.next({
       id: this.id,
       log: [],
-      status: DeploymentStatus.IN_PROGRESS,
+      status: ProtoDeploymentStatus.IN_PROGRESS,
     })
 
     commandChannel.next({

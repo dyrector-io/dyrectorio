@@ -45,14 +45,14 @@ const EditImageConfig = (props: EditImageConfigProps) => {
         containerClassName="w-5/12"
         grow
         editorOptions={editorOptions}
-        value={config?.name}
+        value={config.name}
         onPatch={onContainerNameChange}
       />
 
       <KeyValueInput
         disabled={disabled}
         label={t('environment').toUpperCase()}
-        items={config?.environment ?? []}
+        items={config.environment ?? []}
         editorOptions={editorOptions}
         onChange={onEnvChange}
         hint={{ hintValidation: sensitiveKeyRule, hintText: t('sensitiveKey') }}

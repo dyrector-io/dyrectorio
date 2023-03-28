@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { productUrl, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
+import { productUrl, ROUTE_DEPLOYMENTS, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
 import { expect, Page } from '@playwright/test'
 
 export const createProduct = async (page: Page, name: string, type: 'Simple' | 'Complex') => {
@@ -16,7 +16,7 @@ export const createProduct = async (page: Page, name: string, type: 'Simple' | '
   const product = await page.waitForSelector(`a:has-text("${name}")`)
 
   await product.click()
-  await page.waitForURL(`**${ROUTE_PRODUCTS}/**`)
+  await page.waitForURL(`${ROUTE_PRODUCTS}/**`)
 
   if (type === 'Simple') {
     await page.waitForSelector(`span:has-text("Changelog")`)
@@ -28,7 +28,7 @@ export const createProduct = async (page: Page, name: string, type: 'Simple' | '
   return page.url().split('/').pop()
 }
 
-export const createVersion = async (page: Page, productId: string, name: string, type: string) => {
+export const createVersion = async (page: Page, productId: string, name: string, type: 'Incremental' | 'Rolling') => {
   await page.goto(productUrl(productId))
   await page.waitForSelector(`button:has-text("Add version")`)
 
@@ -75,6 +75,25 @@ export const createImage = async (page: Page, productId: string, versionId: stri
   return page.url().split('/').pop()
 }
 
+export const addImageToComplexVersion = async (page: Page, productId: string, versionId: string, image: string) => {
+  await page.goto(versionUrl(productId, versionId))
+
+  await page.locator('button:has-text("Add image")').click()
+  await expect(page.locator('h4:has-text("Add image")')).toHaveCount(1)
+
+  const registry = await page.waitForSelector(`button:has-text("Docker Hub Library")`)
+  await registry.click()
+
+  await page.locator('input[name=imageName] >> visible=true').type(image)
+
+  const imageItem = await page.waitForSelector(`label:has-text("${image}")`)
+  await imageItem.click()
+
+  await page.locator('button:has-text("Add")').click()
+
+  await page.waitForSelector(`a:has-text("${image}")`)
+}
+
 export const addImageToSimpleProduct = async (page: Page, productId: string, image: string) => {
   await page.goto(productUrl(productId))
 
@@ -99,7 +118,7 @@ export const addDeploymentToSimpleProduct = async (
   productId: string,
   nodeName: string,
   prefix: string | null,
-): Promise<{ id: string; versionId: string; url: string }> => {
+): Promise<{ id: string; url: string }> => {
   await page.goto(productUrl(productId))
 
   await page.locator('button:has-text("Add deployment")').click()
@@ -112,14 +131,11 @@ export const addDeploymentToSimpleProduct = async (
   await page.locator(`button:has-text("${nodeName}")`).click()
 
   await page.locator('button:has-text("Add")').click()
-  await page.waitForURL(`**${productUrl(productId)}/versions/**/deployments/**`)
+  await page.waitForURL(`${ROUTE_DEPLOYMENTS}/**`)
 
-  const urlParts = page.url().split('/')
-  const deploymentId = urlParts[urlParts.length - 1]
-  const versionId = urlParts[urlParts.length - 3]
+  const deploymentId = page.url().split('/').pop()
   return {
     id: deploymentId,
-    versionId,
     url: page.url(),
   }
 }
@@ -143,7 +159,7 @@ export const addDeploymentToVersion = async (
   await page.locator(`button:has-text("${nodeName}")`).click()
 
   await page.locator('button:has-text("Add")').click()
-  await page.waitForURL(`**${versionUrl(productId, versionId)}/deployments/**`)
+  await page.waitForURL(`${ROUTE_DEPLOYMENTS}/**`)
 
   return {
     id: page.url().split('/').pop(),

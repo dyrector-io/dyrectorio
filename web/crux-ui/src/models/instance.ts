@@ -10,8 +10,7 @@ export type Instance = {
   id: string
   image: VersionImage
   state?: ContainerState
-  publicKey?: string
-  overriddenConfig?: InstanceContainerConfigData
+  config?: InstanceContainerConfigData
 }
 
 export type PatchInstance = {

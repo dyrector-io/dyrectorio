@@ -1,4 +1,4 @@
-import { ROUTE_VERIFICATION } from '@app/routes'
+import { ROUTE_LOGIN, ROUTE_VERIFICATION } from '@app/routes'
 import { expect, test as base } from '@playwright/test'
 import {
   createUser,
@@ -7,7 +7,7 @@ import {
   kratosFromBaseURL,
   mailslurperFromBaseURL,
   screenshotPath,
-  USER_PASSWORD,
+  USER_PASSWORD
 } from './utils/common'
 
 const VERIFYABLE_PASSWORD = `v.${USER_PASSWORD}`
@@ -64,7 +64,7 @@ test('should verify address', async ({ baseURL, page, email }) => {
 
   await page.screenshot({ path: screenshotPath('verify-code'), fullPage: true })
 
-  await page.waitForURL('/auth/login')
+  await page.waitForURL(ROUTE_LOGIN)
   await expect(page.locator('h1')).toContainText('Log in')
 })
 

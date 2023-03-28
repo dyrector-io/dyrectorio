@@ -7,23 +7,22 @@ import {
   Param,
   Post,
   Put,
-  UseFilters,
   UseGuards,
   UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import ProductService from './product.service'
-
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
-import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
-import { CreateProductDto, ProductDetailsDto, ProductDto, UpdateProductDto } from './product.dto'
-import ProductUpdateValidationInterceptor from './interceptors/product.update.interceptor'
-import ProductTeamAccessGuard from './guards/product.team-access.guard'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
+import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
+import ProductTeamAccessGuard from './guards/product.team-access.guard'
+import ProductUpdateValidationInterceptor from './interceptors/product.update.interceptor'
+import { CreateProductDto, ProductDetailsDto, ProductListItemDto, UpdateProductDto } from './product.dto'
 
 const ROUTE_PRODUCTS = 'products'
 const ROUTE_PRODUCT_ID = ':productId'
@@ -32,17 +31,22 @@ const ProductId = () => Param('productId')
 @Controller(ROUTE_PRODUCTS)
 @ApiTags(ROUTE_PRODUCTS)
 @UseGuards(JwtAuthGuard, ProductTeamAccessGuard)
+@UsePipes(
+  new ValidationPipe({
+    // TODO(@robot9706): Move to global pipes after removing gRPC
+    transform: true,
+  }),
+)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
-@UseFilters(HttpExceptionFilter)
 export default class ProductHttpController {
   constructor(private service: ProductService) {}
 
   @Get()
   @ApiOkResponse({
-    type: ProductDto,
+    type: ProductListItemDto,
     isArray: true,
   })
-  async getProducts(@IdentityFromRequest() identity: Identity): Promise<ProductDto[]> {
+  async getProducts(@IdentityFromRequest() identity: Identity): Promise<ProductListItemDto[]> {
     return this.service.getProducts(identity)
   }
 
@@ -55,11 +59,11 @@ export default class ProductHttpController {
   @Post()
   @CreatedWithLocation()
   @ApiBody({ type: CreateProductDto })
-  @ApiCreatedResponse({ type: ProductDto })
+  @ApiCreatedResponse({ type: ProductListItemDto })
   async createProduct(
     @Body() request: CreateProductDto,
     @IdentityFromRequest() identity: Identity,
-  ): Promise<CreatedResponse<ProductDto>> {
+  ): Promise<CreatedResponse<ProductListItemDto>> {
     const product = await this.service.createProduct(request, identity)
 
     return {
@@ -71,7 +75,6 @@ export default class ProductHttpController {
   @Put(ROUTE_PRODUCT_ID)
   @HttpCode(204)
   @UseInterceptors(ProductUpdateValidationInterceptor)
-  @ApiNoContentResponse({ type: ProductDto })
   async updateProduct(
     @ProductId() id: string,
     @Body() request: UpdateProductDto,

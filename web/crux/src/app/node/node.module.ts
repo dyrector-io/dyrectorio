@@ -15,7 +15,7 @@ import NodeHttpController from './node.http.controller'
 
 @Module({
   imports: [AgentModule, TeamModule, HttpModule],
-  exports: [],
+  exports: [NodeMapper],
   controllers: [NodeController, NodeHttpController],
   providers: [
     PrismaService,

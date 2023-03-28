@@ -13,7 +13,7 @@ import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Product, ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
 import { API_PRODUCTS, ROUTE_PRODUCTS } from '@app/routes'
 
-import { fetchCrux, utcDateToLocale, withContextAuthorization } from '@app/utils'
+import { auditToLocaleDate, fetchCrux, withContextAuthorization } from '@app/utils'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRef, useState } from 'react'
@@ -41,7 +41,7 @@ const ProductsPage = (props: ProductsPageProps) => {
   const filters = useFilters<Product, ProductFilter>({
     initialData: products,
     filters: [
-      textFilterFor<Product>(it => [it.name, it.description, it.type, utcDateToLocale(it.updatedAt)]),
+      textFilterFor<Product>(it => [it.name, it.description, it.type, auditToLocaleDate(it.audit)]),
       productTypeFilter,
     ],
   })

@@ -124,7 +124,7 @@ class WebSocketClientRoute {
     }
 
     if (this.state === 'unsubscribed') {
-      return this.endpoints.length < 0
+      return this.endpoints.length < 1
     }
 
     this.state = 'unsubscribing'

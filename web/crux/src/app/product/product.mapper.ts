@@ -1,29 +1,33 @@
 import { Injectable } from '@nestjs/common'
 import { Product } from '.prisma/client'
 import VersionMapper, { VersionWithChildren } from '../version/version.mapper'
-import { ProductDto, ProductDetailsDto } from './product.dto'
+import { ProductListItemDto, ProductDetailsDto, ProductDto } from './product.dto'
+import SharedMapper from '../shared/shared.mapper'
 
 @Injectable()
 export default class ProductMapper {
-  constructor(private versionMapper: VersionMapper) {}
+  constructor(private sharedMapper: SharedMapper, private versionMapper: VersionMapper) {}
 
-  productToDto(product: Product): ProductDto {
+  toDto(it: Product): ProductDto {
     return {
-      ...product,
-      type: product.type,
+      id: it.id,
+      name: it.name,
+      type: it.type,
+      audit: this.sharedMapper.auditToDto(it),
+      description: it.description,
     }
   }
 
-  listItemToDto(products: ProductWithCounts[]): ProductDto[] {
-    return products.map(({ _count, ...product }) => ({
-      ...this.productToDto(product),
-      versionCount: _count.versions,
-    }))
+  toListItemDto(it: ProductWithCount): ProductListItemDto {
+    return {
+      ...this.toDto(it),
+      versionCount: it._count.versions,
+    }
   }
 
   detailsToDto(product: ProductWithVersions): ProductDetailsDto {
     return {
-      ...this.productToDto(product),
+      ...this.toDto(product),
       deletable: product.deletable,
       versions: product.versions.map(it => this.versionMapper.toDto(it)),
     }
@@ -35,7 +39,7 @@ type ProductWithVersions = Product & {
   deletable: boolean
 }
 
-export type ProductWithCounts = Product & {
+export type ProductWithCount = Product & {
   _count: {
     versions: number
   }

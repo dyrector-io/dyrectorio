@@ -8,13 +8,13 @@ import {
   Patch,
   Post,
   Put,
-  UseFilters,
   UseGuards,
   UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
@@ -38,8 +38,13 @@ const ROUTE_IMAGE_ID = ':imageId'
 @Controller('/products/:productId/versions/:versionId/images')
 @ApiTags('version-images')
 @UseGuards(JwtAuthGuard, ImageTeamAccessGuard)
+@UsePipes(
+  new ValidationPipe({
+    // TODO(@robot9706): Move to global pipes after removing gRPC
+    transform: true,
+  }),
+)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
-@UseFilters(HttpExceptionFilter)
 export default class ImageHttpController {
   constructor(private service: ImageService) {}
 

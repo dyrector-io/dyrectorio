@@ -39,21 +39,6 @@ service CruxNode {
 }
 
 service CruxDeployment {
-  rpc GetDeploymentsByVersionId(IdRequest)
-      returns (DeploymentListByVersionResponse);
-  rpc CreateDeployment(CreateDeploymentRequest) returns (CreateEntityResponse);
-  rpc UpdateDeployment(UpdateDeploymentRequest) returns (UpdateEntityResponse);
-  rpc PatchDeployment(PatchDeploymentRequest) returns (UpdateEntityResponse);
-  rpc DeleteDeployment(IdRequest) returns (common.Empty);
-  rpc GetDeploymentDetails(IdRequest) returns (DeploymentDetailsResponse);
-  rpc GetDeploymentEvents(IdRequest) returns (DeploymentEventListResponse);
-  rpc GetDeploymentList(common.Empty) returns (DeploymentListResponse);
-  rpc GetDeploymentSecrets(DeploymentListSecretsRequest)
-      returns (common.ListSecretsResponse);
-  rpc CopyDeploymentSafe(IdRequest) returns (CreateEntityResponse);
-  rpc CopyDeploymentUnsafe(IdRequest) returns (CreateEntityResponse);
-
-  rpc StartDeployment(IdRequest) returns (common.Empty);
   rpc SubscribeToDeploymentEvents(IdRequest)
       returns (stream DeploymentProgressMessage);
   rpc SubscribeToDeploymentEditEvents(ServiceIdRequest)
@@ -572,27 +557,6 @@ message DeploymentEditEventMessage {
   }
 }
 
-message CreateDeploymentRequest {
-  string versionId = 100;
-  string nodeId = 101;
-  optional string note = 102;
-  string prefix = 103;
-}
-
-message UpdateDeploymentRequest {
-  string id = 1;
-
-  optional string note = 100;
-  string prefix = 101;
-}
-
-message PatchDeploymentRequest {
-  string id = 1;
-
-  optional UniqueKeyValueList environment = 100;
-  optional PatchInstanceRequest instance = 1001;
-}
-
 message InstanceResponse {
   string id = 1;
   AuditResponse audit = 2;
@@ -609,55 +573,6 @@ message PatchInstanceRequest {
   optional string resetSection = 101;
 }
 
-message DeploymentListResponse { repeated DeploymentResponse data = 1000; }
-
-message DeploymentResponse {
-  string id = 1;
-
-  string product = 100;
-  string productId = 101;
-  string version = 102;
-  string versionId = 103;
-  string node = 104;
-  common.DeploymentStatus status = 105;
-  string nodeId = 106;
-  optional string note = 107;
-  string prefix = 108;
-  optional google.protobuf.Timestamp updatedAt = 109;
-  VersionType versionType = 110;
-}
-
-message DeploymentListByVersionResponse {
-  repeated DeploymentByVersionResponse data = 1000;
-}
-
-message DeploymentByVersionResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string prefix = 100;
-  string nodeId = 101;
-  string nodeName = 102;
-  common.DeploymentStatus status = 103;
-  NodeConnectionStatus nodeStatus = 104;
-  optional string note = 105;
-}
-
-message DeploymentDetailsResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string productVersionId = 100;
-  string nodeId = 101;
-  optional string note = 102;
-  string prefix = 103;
-  repeated UniqueKeyValue environment = 104;
-  common.DeploymentStatus status = 105;
-  optional string publicKey = 106;
-
-  repeated InstanceResponse instances = 1000;
-}
-
 enum DeploymentEventType {
   DEPLOYMENT_EVENT_TYPE_UNSPECIFIED = 0;
   DEPLOYMENT_LOG = 1;
@@ -671,26 +586,6 @@ message DeploymentEventContainerState {
 }
 
 message DeploymentEventLog { repeated string log = 1000; }
-
-message DeploymentEventResponse {
-  DeploymentEventType type = 100;
-  google.protobuf.Timestamp createdAt = 101;
-  oneof details {
-    DeploymentEventLog log = 200;
-    common.DeploymentStatus deploymentStatus = 201;
-    DeploymentEventContainerState containerStatus = 202;
-  }
-}
-
-message DeploymentEventListResponse {
-  common.DeploymentStatus status = 100;
-  repeated DeploymentEventResponse data = 1000;
-}
-
-message DeploymentListSecretsRequest {
-  string id = 1;
-  string instanceId = 3;
-}
 
 // HEALTH
 

@@ -1,7 +1,8 @@
-import { InstanceContainerConfig } from 'src/grpc/protobuf/proto/crux'
 import { ContainerConfigData, InstanceContainerConfigData } from 'src/shared/models'
 import ImageMapper from '../image/image.mapper'
 import ContainerMapper from '../shared/container.mapper'
+import SharedMapper from '../shared/shared.mapper'
+import { PatchInstanceDto } from './deploy.dto'
 import DeployMapper from './deploy.mapper'
 
 describe('DeployMapper', () => {
@@ -12,7 +13,7 @@ describe('DeployMapper', () => {
   beforeEach(() => {
     imageMapper = new ImageMapper(null)
     containerMapper = new ContainerMapper()
-    deployMapper = new DeployMapper(imageMapper, null, containerMapper)
+    deployMapper = new DeployMapper(new SharedMapper(), imageMapper, containerMapper)
   })
 
   const fullImage: ContainerConfigData = {
@@ -544,18 +545,16 @@ describe('DeployMapper', () => {
 
   describe('instanceConfigToInstanceContainerConfigData', () => {
     it('should overwrite the specified properties only', () => {
-      const patch: InstanceContainerConfig = {
-        common: {
-          ports: {
-            data: [
-              ...fullImage.ports,
-              {
-                id: 'instance.new-port',
-                internal: 20,
-                external: 20,
-              },
-            ],
-          },
+      const patch: PatchInstanceDto = {
+        config: {
+          ports: [
+            ...fullImage.ports,
+            {
+              id: 'instance.new-port',
+              internal: 20,
+              external: 20,
+            },
+          ],
         },
       }
 
@@ -570,14 +569,14 @@ describe('DeployMapper', () => {
         },
       ]
 
-      const actual = deployMapper.instanceConfigToInstanceContainerConfigData(fullImage, {}, patch)
+      const actual = deployMapper.instanceConfigDtoToInstanceContainerConfigData(fullImage, {}, patch.config)
 
       expect(actual).toEqual(expected)
     })
 
     it('should patch annotations and labels values based on image, when no current instance value present', () => {
-      const patch: InstanceContainerConfig = {
-        crane: {
+      const patch: PatchInstanceDto = {
+        config: {
           annotations: {
             ingress: fullInstance.annotations.ingress,
             deployment: undefined,
@@ -603,7 +602,7 @@ describe('DeployMapper', () => {
         deployment: fullInstance.labels.deployment,
       }
 
-      const actual = deployMapper.instanceConfigToInstanceContainerConfigData(fullImage, {}, patch)
+      const actual = deployMapper.instanceConfigDtoToInstanceContainerConfigData(fullImage, {}, patch.config)
 
       expect(actual).toEqual(expected)
     })
@@ -625,8 +624,8 @@ describe('DeployMapper', () => {
         },
       ]
 
-      const patch: InstanceContainerConfig = {
-        crane: {
+      const patch: PatchInstanceDto = {
+        config: {
           annotations: {
             ingress: undefined,
             deployment: undefined,
@@ -657,7 +656,7 @@ describe('DeployMapper', () => {
         ingress: labelIngress,
       }
 
-      const actual = deployMapper.instanceConfigToInstanceContainerConfigData(fullImage, instance, patch)
+      const actual = deployMapper.instanceConfigDtoToInstanceContainerConfigData(fullImage, instance, patch.config)
 
       expect(actual).toEqual(expected)
     })

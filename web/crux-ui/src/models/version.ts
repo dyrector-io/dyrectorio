@@ -6,11 +6,14 @@ import { BasicNode, NodeStatus } from './node'
 export const VERSION_TYPE_VALUES = ['incremental', 'rolling'] as const
 export type VersionType = typeof VERSION_TYPE_VALUES[number]
 
-export type Version = {
+export type BasicVersion = {
   id: string
   name: string
-  changelog?: string
   type: VersionType
+}
+
+export type Version = BasicVersion & {
+  changelog?: string
   default: boolean
   increasable: boolean
   audit: Audit

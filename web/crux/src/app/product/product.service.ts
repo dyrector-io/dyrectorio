@@ -4,14 +4,14 @@ import { ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
 import PrismaService from 'src/services/prisma.service'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
 import TeamRepository from '../team/team.repository'
-import { CreateProductDto, ProductDetailsDto, ProductDto, UpdateProductDto } from './product.dto'
+import { CreateProductDto, ProductDetailsDto, ProductListItemDto, UpdateProductDto } from './product.dto'
 import ProductMapper from './product.mapper'
 
 @Injectable()
 export default class ProductService {
   constructor(private teamRepository: TeamRepository, private prisma: PrismaService, private mapper: ProductMapper) {}
 
-  async getProducts(identity: Identity): Promise<ProductDto[]> {
+  async getProducts(identity: Identity): Promise<ProductListItemDto[]> {
     const products = await this.prisma.product.findMany({
       where: {
         team: {
@@ -32,7 +32,7 @@ export default class ProductService {
       },
     })
 
-    return this.mapper.listItemToDto(products)
+    return products.map(it => this.mapper.toDto(it))
   }
 
   async getProductDetails(id: string): Promise<ProductDetailsDto> {
@@ -67,7 +67,7 @@ export default class ProductService {
     return this.mapper.detailsToDto({ ...product, deletable: productInProgressDeployments === 0 })
   }
 
-  async createProduct(request: CreateProductDto, identity: Identity): Promise<ProductDto> {
+  async createProduct(request: CreateProductDto, identity: Identity): Promise<ProductListItemDto> {
     const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
 
     const product = await this.prisma.product.create({
@@ -91,10 +91,10 @@ export default class ProductService {
       },
     })
 
-    return this.mapper.productToDto(product)
+    return this.mapper.toDto(product)
   }
 
-  async updateProduct(id: string, req: UpdateProductDto, identity: Identity): Promise<ProductDto> {
+  async updateProduct(id: string, req: UpdateProductDto, identity: Identity): Promise<ProductListItemDto> {
     const currentProduct = await this.prisma.product.findUnique({
       select: {
         type: true,
@@ -128,7 +128,7 @@ export default class ProductService {
       },
     })
 
-    return this.mapper.productToDto(product)
+    return this.mapper.toDto(product)
   }
 
   async deleteProduct(id: string): Promise<void> {

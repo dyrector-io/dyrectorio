@@ -14,7 +14,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
-import { DeploymentInvalidatedSecrets, DeploymentRoot, mergeConfigs } from '@app/models'
+import { DeploymentDetails, DeploymentInvalidatedSecrets, DeploymentRoot, mergeConfigs } from '@app/models'
 import {
   deploymentApiUrl,
   deploymentDeployUrl,
@@ -84,7 +84,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
     while (!error && i < deployment.instances.length) {
       const instance = deployment.instances[i]
-      const mergedConfig = mergeConfigs(instance.image.config, instance.overriddenConfig)
+      const mergedConfig = mergeConfigs(instance.image.config, instance.config)
       error = getValidationError(containerConfigSchema, mergedConfig)
       i++
     }
@@ -121,12 +121,12 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     },
     {
       name: t('common:deployment'),
-      url: deploymentUrl(product.id, version.id, deployment.id),
+      url: deploymentUrl(deployment.id),
     },
   ]
 
   const onDelete = async () => {
-    const res = await fetch(deploymentApiUrl(product.id, version.id, deployment.id), {
+    const res = await fetch(deploymentApiUrl(deployment.id), {
       method: 'DELETE',
     })
 
@@ -182,7 +182,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
         )}
 
         {state.showDeploymentLog ? (
-          <DyoButton className="px-6 ml-4" href={deploymentDeployUrl(product.id, version.id, deployment.id)}>
+          <DyoButton className="px-6 ml-4" href={deploymentDeployUrl(deployment.id)}>
             {t('log')}
           </DyoButton>
         ) : null}
@@ -196,7 +196,6 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
       {state.editing ? (
         <EditDeploymentCard
-          productId={state.product.id}
           deployment={state.deployment}
           submitRef={submitRef}
           onDeploymentEdited={actions.onDeploymentEdited}
@@ -221,15 +220,14 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 export default DeploymentDetailsPage
 
 export const getDeploymentRoot = async (context: NextPageContext, crux: Crux) => {
-  const productId = context.query.productId as string
-  const versionId = context.query.versionId as string
   const deploymentId = context.query.deploymentId as string
 
-  const product = await fetchCrux(context, productApiUrl(productId))
-  const deployment = await crux.deployments.getById(deploymentId)
-  const node = crux.nodes.getNodeDetails(deployment.nodeId)
+  const deploymentRes = await fetchCrux(context, deploymentApiUrl(deploymentId))
+  const deployment = (await deploymentRes.json()) as DeploymentDetails
+  const product = await fetchCrux(context, productApiUrl(deployment.product.id))
+  const node = crux.nodes.getNodeDetails(deployment.node.id)
 
-  const version = await fetchCrux(context, versionApiUrl(productId, versionId))
+  const version = await fetchCrux(context, versionApiUrl(deployment.product.id, deployment.version.id))
 
   return {
     ...deployment,
