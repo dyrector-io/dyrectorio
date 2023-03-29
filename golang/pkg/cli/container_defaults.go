@@ -162,7 +162,7 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 		fmt.Sprintf("KRATOS_ADMIN_URL=http://%s:%d",
 			state.Containers.Kratos.Name,
 			state.SettingsFile.KratosAdminPort),
-		fmt.Sprintf("CRUX_UI_URL=%s:%d", traefikHost, state.SettingsFile.TraefikWebPort),
+		fmt.Sprintf("CRUX_UI_URL=http://%s:%d", traefikHost, state.SettingsFile.TraefikWebPort),
 		fmt.Sprintf("CRUX_AGENT_ADDRESS=%s", cruxAgentAddr),
 		"LOCAL_DEPLOYMENT=true",
 		fmt.Sprintf("CRUX_AGENT_IMAGE=%s", state.SettingsFile.Version),
