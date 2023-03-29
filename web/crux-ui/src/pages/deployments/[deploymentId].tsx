@@ -14,7 +14,14 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
-import { DeploymentDetails, DeploymentInvalidatedSecrets, DeploymentRoot, mergeConfigs } from '@app/models'
+import {
+  DeploymentDetails,
+  DeploymentInvalidatedSecrets,
+  DeploymentRoot,
+  mergeConfigs,
+  ProductDetails,
+  VersionDetails,
+} from '@app/models'
 import {
   deploymentApiUrl,
   deploymentDeployUrl,
@@ -25,7 +32,7 @@ import {
   versionApiUrl,
   versionUrl,
 } from '@app/routes'
-import { fetchCrux, withContextAuthorization } from '@app/utils'
+import { getCruxFromContext, withContextAuthorization } from '@app/utils'
 import { containerConfigSchema, getValidationError } from '@app/validations'
 import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
@@ -222,17 +229,19 @@ export default DeploymentDetailsPage
 export const getDeploymentRoot = async (context: NextPageContext, crux: Crux) => {
   const deploymentId = context.query.deploymentId as string
 
-  const deploymentRes = await fetchCrux(context, deploymentApiUrl(deploymentId))
-  const deployment = (await deploymentRes.json()) as DeploymentDetails
-  const product = await fetchCrux(context, productApiUrl(deployment.product.id))
+  const deployment = await getCruxFromContext<DeploymentDetails>(context, deploymentApiUrl(deploymentId))
+  const product = await getCruxFromContext<ProductDetails>(context, productApiUrl(deployment.product.id))
   const node = crux.nodes.getNodeDetails(deployment.node.id)
 
-  const version = await fetchCrux(context, versionApiUrl(deployment.product.id, deployment.version.id))
+  const version = await getCruxFromContext<VersionDetails>(
+    context,
+    versionApiUrl(deployment.product.id, deployment.version.id),
+  )
 
   return {
     ...deployment,
-    product: await product.json(),
-    version: await version.json(),
+    product,
+    version,
     node: await node,
   } as DeploymentRoot
 }

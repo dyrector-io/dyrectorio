@@ -13,7 +13,7 @@ import useConfirmation from '@app/hooks/use-confirmation'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { GeneratedToken, Token } from '@app/models'
 import { API_TOKENS, ROUTE_SETTINGS_EDIT_PROFILE, ROUTE_SETTINGS_TOKENS, tokensApiUrl } from '@app/routes'
-import { fetchCrux, utcDateToLocale, withContextAuthorization } from '@app/utils'
+import { getCruxFromContext, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -182,8 +182,7 @@ const TokensPage = (props: TokensPageProps) => {
 export default TokensPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const res = await fetchCrux(context, API_TOKENS)
-  const tokens = (await res.json()) as Token[]
+  const tokens = await getCruxFromContext<Token[]>(context, API_TOKENS)
 
   return {
     props: {

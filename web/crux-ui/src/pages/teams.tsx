@@ -5,9 +5,8 @@ import { ListPageMenu } from '@app/components/shared/page-menu'
 import EditTeamCard from '@app/components/team/edit-team-card'
 import TeamCard from '@app/components/team/team-card'
 import { Team, UserMeta } from '@app/models'
-import { ROUTE_INDEX, ROUTE_TEAMS } from '@app/routes'
-import { redirectTo, withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { API_TEAMS, API_USERS_ME, ROUTE_INDEX, ROUTE_TEAMS } from '@app/routes'
+import { getCruxFromContext, postCruxFromContext, redirectTo, withContextAuthorization } from '@app/utils'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRef, useState } from 'react'
@@ -55,14 +54,12 @@ const TeamsPage = (props: TeamsPageProps) => {
 export default TeamsPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const crux = cruxFromContext(context)
-
-  const me = await crux.teams.getUserMeta()
+  const me = await postCruxFromContext<UserMeta>(context, API_USERS_ME)
   if (!me.activeTeamId) {
     return redirectTo(ROUTE_INDEX)
   }
 
-  const teams = await crux.teams.getAllTeams()
+  const teams = await getCruxFromContext<Team[]>(context, API_TEAMS)
 
   return {
     props: {

@@ -71,3 +71,11 @@ export class BasicVersionDto {
   @IsIn(VERSION_TYPE_VALUES)
   type: VersionTypeDto
 }
+
+export class BasicTeamDto {
+  @IsUUID()
+  id: string
+
+  @IsString()
+  name: string
+}

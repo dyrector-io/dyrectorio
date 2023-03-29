@@ -9,7 +9,7 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoList } from '@app/elements/dyo-list'
 import { AuditLog, beautifyAuditLogEvent, Dashboard } from '@app/models'
 import { API_DASHBOARD, deploymentUrl, ROUTE_DASHBOARD } from '@app/routes'
-import { fetchCrux, fetcher, utcDateToLocale, withContextAuthorization } from '@app/utils'
+import { fetcher, getCruxFromContext, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -201,10 +201,10 @@ const DashboardPage = (props: DashboardPageProps) => {
 export default DashboardPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const res = await fetchCrux(context, API_DASHBOARD)
+  const dashboard = await getCruxFromContext<Dashboard>(context, API_DASHBOARD)
 
   return {
-    props: await res.json(),
+    props: dashboard,
   }
 }
 

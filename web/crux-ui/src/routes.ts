@@ -51,9 +51,10 @@ export const API_PRODUCTS = '/api/new/products'
 export const API_NODES = '/api/nodes'
 export const API_DEPLOYMENTS = '/api/new/deployments'
 
-export const API_TEAMS = '/api/teams'
-export const API_TEAMS_ACTIVE = '/api/teams/active'
-export const API_WHOAMI = '/api/whoami'
+export const API_TEAMS = '/api/new/teams'
+export const API_USERS_ME = '/api/new/users/me'
+export const API_USERS_ME_ACTIVE_TEAM = `${API_USERS_ME}/active-team`
+export const API_USERS_ME_INVITATIONS = `${API_USERS_ME}/invitations`
 
 export const API_NOTIFICATIONS = '/api/new/notifications'
 
@@ -211,13 +212,14 @@ export const instanceSecretsApiUrl = (deploymentId: string, instanceId: string) 
 
 // team
 export const teamUrl = (id: string) => `${ROUTE_TEAMS}/${id}`
-export const teamApiUrl = (id: string) => `/api${teamUrl(id)}`
+export const teamApiUrl = (id: string) => `${API_TEAMS}/${id}`
 export const teamInvitationUrl = (teamId: string) => `${ROUTE_TEAMS}/${teamId}/invitation`
-export const teamUsersApiUrl = (teamId: string) => `${teamApiUrl(teamId)}/users`
-export const userApiUrl = (teamId: string, userId: string) => `${teamUsersApiUrl(teamId)}/${userId}`
-export const userRoleApiUrl = (teamId: string, userId: string) => `${userApiUrl(teamId, userId)}/role`
-export const teamReinviteUrl = (teamId: string, userId: string) => `${userApiUrl(teamId, userId)}/reinvite`
-export const teamInvitationApiUrl = (teamId: string) => `${teamApiUrl(teamId)}/invitation`
+export const teamUserListApiUrl = (teamId: string) => `${teamApiUrl(teamId)}/users`
+export const teamUserApiUrl = (teamId: string, userId: string) => `${teamUserListApiUrl(teamId)}/${userId}`
+export const teamUserRoleApiUrl = (teamId: string, userId: string) => `${teamUserApiUrl(teamId, userId)}/role`
+export const teamUserReinviteUrl = (teamId: string, userId: string) => `${teamUserApiUrl(teamId, userId)}/reinvite`
+
+export const userInvitationApiUrl = (teamId: string) => `${API_USERS_ME_INVITATIONS}/${teamId}`
 
 // notification
 export const notificationUrl = (id: string) => `${ROUTE_NOTIFICATIONS}/${id}`

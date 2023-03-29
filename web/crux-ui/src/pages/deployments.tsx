@@ -13,7 +13,7 @@ import { defaultApiErrorHandler } from '@app/errors'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Deployment, deploymentIsCopiable, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
 import { API_DEPLOYMENTS, deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
-import { auditToLocaleDate, fetchCrux, withContextAuthorization } from '@app/utils'
+import { auditToLocaleDate, getCruxFromContext, withContextAuthorization } from '@app/utils'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -173,11 +173,11 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
 export default DeploymentsPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const deployments = await fetchCrux(context, API_DEPLOYMENTS)
+  const deployments = await getCruxFromContext<Deployment[]>(context, API_DEPLOYMENTS)
 
   return {
     props: {
-      deployments: await deployments.json(),
+      deployments,
     },
   }
 }

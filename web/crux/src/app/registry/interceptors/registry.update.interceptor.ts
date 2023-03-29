@@ -22,7 +22,7 @@ export default class UpdateRegistryInterceptor implements NestInterceptor {
       take: 1,
     })
 
-    if (used === 0) {
+    if (used < 1) {
       return next.handle()
     }
 

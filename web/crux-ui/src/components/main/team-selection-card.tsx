@@ -1,8 +1,8 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoList } from '@app/elements/dyo-list'
 import { defaultApiErrorHandler } from '@app/errors'
-import { SelectTeam, UserMeta, UserMetaTeam } from '@app/models'
-import { API_TEAMS_ACTIVE, ROUTE_INDEX } from '@app/routes'
+import { ActivateTeam, UserMeta, UserMetaTeam } from '@app/models'
+import { API_USERS_ME_ACTIVE_TEAM, ROUTE_INDEX } from '@app/routes'
 import { sendForm } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -25,11 +25,11 @@ const TeamSelectionCard = (props: TeamSelectionCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const onSelectTeam = async (team: UserMetaTeam) => {
-    const dto: SelectTeam = {
-      id: team.id,
+    const req: ActivateTeam = {
+      teamId: team.id,
     }
 
-    const res = await sendForm('POST', API_TEAMS_ACTIVE, dto)
+    const res = await sendForm('POST', API_USERS_ME_ACTIVE_TEAM, req)
 
     if (res.ok) {
       router.replace(ROUTE_INDEX)

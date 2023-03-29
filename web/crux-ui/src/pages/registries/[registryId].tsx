@@ -7,7 +7,7 @@ import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import { defaultApiErrorHandler } from '@app/errors'
 import { RegistryDetails, RegistryDetailsDto, registryDetailsDtoToUI, registryDetailsToRegistry } from '@app/models'
 import { registryApiUrl, registryUrl, ROUTE_REGISTRIES } from '@app/routes'
-import { fetchCrux, toastWarning, withContextAuthorization } from '@app/utils'
+import { getCruxFromContext, toastWarning, withContextAuthorization } from '@app/utils'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -96,8 +96,7 @@ export default RegistryDetailsPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const registryId = context.query.registryId as string
 
-  const res = await fetchCrux(context, registryApiUrl(registryId))
-  const dto = (await res.json()) as RegistryDetailsDto
+  const dto = await getCruxFromContext<RegistryDetailsDto>(context, registryApiUrl(registryId))
   const details = registryDetailsDtoToUI(dto)
 
   return {

@@ -1,50 +1,70 @@
 import { Injectable } from '@nestjs/common'
 import { Identity, Session } from '@ory/kratos-client'
-import { Team, UserInvitation, UserInvitationStatusEnum, UserRoleEnum, UsersOnTeams } from '@prisma/client'
-import { toTimestamp } from 'src/domain/utils'
-import {
-  ActiveTeamDetailsResponse,
-  TeamDetailsResponse,
-  UserResponse,
-  UserRole,
-  UserStatus,
-} from 'src/grpc/protobuf/proto/crux'
+import { Team, UserInvitation, UsersOnTeams } from '@prisma/client'
 import { IdentityTraits, invitationExpired, nameOfIdentity } from 'src/shared/models'
+import SharedMapper from '../shared/shared.mapper'
+import { TeamDetailsDto, TeamDto, TeamStatisticsDto } from './team.dto'
+import { UserDto, UserMetaDto } from './user.dto'
 
 @Injectable()
 export default class TeamMapper {
-  private userToProto(
-    user: UsersOnTeams,
-    identities: Map<string, Identity>,
-    sessions: Map<string, Session[]>,
-  ): UserResponse {
-    const identity = identities.get(user.userId)
-    if (!identity) {
-      return null
-    }
+  constructor(private sharedMapper: SharedMapper) {}
 
+  toDto(team: TeamWithStatistics): TeamDto {
+    return {
+      ...this.sharedMapper.teamToBasicDto(team),
+      statistics: this.statisticsToDto(team),
+    }
+  }
+
+  detailsToDto(team: TeamDetails, identities: Map<string, Identity>, sessions: Map<string, Session[]>): TeamDetailsDto {
+    return {
+      ...this.toDto(team),
+      users: this.teamUsersToUserDtos(team, identities, sessions),
+    }
+  }
+
+  toUserMetaDto(teams: MetaTeam[], invitations: MetaInvitation[], session: Session): UserMetaDto {
+    const activeTeam = teams.find(it => it.active)
+
+    return {
+      activeTeamId: activeTeam?.teamId,
+      user: !activeTeam ? null : this.userToDto(activeTeam, session.identity, session),
+      teams: teams.map(it => it.team),
+      invitations: invitations.map(it => it.team),
+    }
+  }
+
+  private statisticsToDto(team: TeamWithStatistics): TeamStatisticsDto {
+    return {
+      users: team._count.users + team._count.invitations,
+      products: team._count.products,
+      nodes: team._count.nodes,
+      versions: team.products.flatMap(it => it._count.versions).reduce((prev, it) => prev + it, 0),
+      deployments: team.products
+        .flatMap(it => it.versions)
+        .flatMap(it => it._count.deployments)
+        .reduce((prev, it) => prev + it, 0),
+    }
+  }
+
+  userToDto(activeTeam: UsersOnTeams, identity: Identity, session: Session): UserDto {
     const traits = identity.traits as IdentityTraits
     if (!traits) {
       return null
     }
 
-    const userSessions = sessions.get(user.userId)
-    const lastSession = userSessions
-      .filter(it => !!it.authenticated_at)
-      .sort((a, b) => new Date(b.authenticated_at).getTime() - new Date(a.authenticated_at).getTime())
-      .shift()
-
     return {
-      id: user.userId,
+      id: identity.id,
       name: nameOfIdentity(identity),
       email: traits.email,
-      role: this.roleToProto(user.role),
-      status: UserStatus.VERIFIED,
-      lastLogin: lastSession ? toTimestamp(new Date(lastSession.authenticated_at)) : undefined,
+      role: activeTeam.role,
+      status: 'verified',
+      lastLogin: session ? new Date(session.authenticated_at) : null,
     }
   }
 
-  private invitationToUserGrpc(inv: UserInvitation, identities: Map<string, Identity>): UserResponse {
+  private invitationToUserDto(inv: UserInvitation, identities: Map<string, Identity>): UserDto {
     const identity = identities.get(inv.userId)
 
     const now = new Date().getTime()
@@ -52,89 +72,35 @@ export default class TeamMapper {
       id: inv.userId,
       email: inv.email,
       name: nameOfIdentity(identity),
-      role: UserRole.USER,
-      status:
-        inv.status === 'pending' && invitationExpired(inv.createdAt, now)
-          ? UserStatus.EXPIRED
-          : this.invitationStatusToProto(inv.status),
+      role: 'user',
+      status: inv.status === 'pending' && invitationExpired(inv.createdAt, now) ? 'expired' : inv.status,
     }
   }
 
-  private teamUsersToProto(
-    team: TeamWithUsersAndInvitations,
-    identities: Map<string, Identity>,
-    sessions: Map<string, Session[]>,
-  ): UserResponse[] {
-    const users = team.users.map(it => this.userToProto(it, identities, sessions)).filter(it => !!it)
-    const invitations = team.invitations.map(it => this.invitationToUserGrpc(it, identities)).filter(it => !!it)
-
-    return users.concat(invitations)
-  }
-
-  activeTeamDetailsToProto(
-    team: TeamWithUsersAndInvitations,
-    identities: Map<string, Identity>,
-    sessions: Map<string, Session[]>,
-  ): ActiveTeamDetailsResponse {
-    return {
-      ...team,
-      users: this.teamUsersToProto(team, identities, sessions),
-    }
-  }
-
-  teamDetailsToProto(
+  private teamUsersToUserDtos(
     team: TeamDetails,
     identities: Map<string, Identity>,
     sessions: Map<string, Session[]>,
-  ): TeamDetailsResponse {
-    return {
-      id: team.id,
-      name: team.name,
-      users: this.teamUsersToProto(team, identities, sessions),
-      statistics: {
-        users: team._count.users + team._count.invitations,
-        products: team._count.products,
-        nodes: team._count.nodes,
-        versions: team.products.flatMap(it => it._count.versions).reduce((prev, it) => prev + it, 0),
-        deployments: team.products
-          .flatMap(it => it.versions)
-          .flatMap(it => it._count.deployments)
-          .reduce((prev, it) => prev + it, 0),
-      },
-    }
-  }
+  ): UserDto[] {
+    const users = team.users
+      .map(user => {
+        const identity = identities.get(user.userId)
+        if (!identity) {
+          return null
+        }
 
-  roleToProto(role: UserRoleEnum): UserRole {
-    switch (role) {
-      case 'owner':
-        return UserRole.OWNER
-      case 'admin':
-        return UserRole.ADMIN
-      default:
-        return UserRole.USER
-    }
-  }
+        const userSessions = sessions.get(user.userId) ?? []
+        const lastSession = userSessions
+          .filter(it => !!it.authenticated_at)
+          .sort((a, b) => new Date(b.authenticated_at).getTime() - new Date(a.authenticated_at).getTime())
+          .shift()
 
-  roleToDb(role: UserRole): UserRoleEnum {
-    switch (role) {
-      case UserRole.OWNER:
-        return 'owner'
-      case UserRole.ADMIN:
-        return 'admin'
-      default:
-        return 'user'
-    }
-  }
+        return this.userToDto(user, identity, lastSession)
+      })
+      .filter(it => !!it)
+    const invitations = team.invitations.map(it => this.invitationToUserDto(it, identities)).filter(it => !!it)
 
-  invitationStatusToProto(status: UserInvitationStatusEnum): UserStatus {
-    switch (status) {
-      case 'pending':
-        return UserStatus.PENDING
-      case 'declined':
-        return UserStatus.DECLINED
-      default:
-        return UserStatus.EXPIRED
-    }
+    return users.concat(invitations)
   }
 }
 
@@ -142,11 +108,15 @@ export type TeamWithUsers = Team & {
   users: UsersOnTeams[]
 }
 
-type TeamWithUsersAndInvitations = TeamWithUsers & {
-  invitations: UserInvitation[]
+type TeamStatistics = {
+  registries: number
+  products: number
+  nodes: number
+  users: number
+  invitations: number
 }
 
-type TeamDetails = TeamWithUsersAndInvitations & {
+type TeamWithStatistics = Team & {
   products: {
     _count: {
       versions: number
@@ -157,11 +127,20 @@ type TeamDetails = TeamWithUsersAndInvitations & {
       }
     }[]
   }[]
-  _count: {
-    registries: number
-    products: number
-    nodes: number
-    users: number
-    invitations: number
+  _count: TeamStatistics
+}
+
+type TeamDetails = TeamWithUsers &
+  TeamWithStatistics & {
+    invitations: UserInvitation[]
   }
+
+type TeamWithIdAndName = Pick<Team, 'id' | 'name'>
+
+type MetaTeam = UsersOnTeams & {
+  team: TeamWithIdAndName
+}
+
+type MetaInvitation = {
+  team: TeamWithIdAndName
 }

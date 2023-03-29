@@ -30,8 +30,12 @@ export type UserMetaTeam = {
   name: string
 }
 
-export type SelectTeam = {
-  id: string
+export type ActivateTeam = {
+  teamId: string
+}
+
+export type UpdateUserRole = {
+  role: UserRole
 }
 
 export const roleToText = (role: UserRole) => {
@@ -45,7 +49,7 @@ export const roleToText = (role: UserRole) => {
   }
 }
 
-export const selectedTeamOf = (meta: UserMeta): UserMetaTeam => {
+export const activeTeamOf = (meta: UserMeta): UserMetaTeam => {
   const team = meta.teams.find(it => it.id === meta.activeTeamId)
   return team
 }

@@ -11,7 +11,7 @@ import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Registry, RegistryType, REGISTRY_TYPE_VALUES } from '@app/models'
 import { API_REGISTRIES, registryUrl, ROUTE_REGISTRIES } from '@app/routes'
-import { fetchCrux, withContextAuthorization } from '@app/utils'
+import { getCruxFromContext, withContextAuthorization } from '@app/utils'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -102,11 +102,11 @@ const RegistriesPage = (props: RegistriesPageProps) => {
 export default RegistriesPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const res = await fetchCrux(context, API_REGISTRIES)
+  const registries = await getCruxFromContext<Registry[]>(context, API_REGISTRIES)
 
   return {
     props: {
-      registries: (await res.json()) as Registry[],
+      registries,
     },
   }
 }

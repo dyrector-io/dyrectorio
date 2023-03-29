@@ -209,13 +209,16 @@ export const configuredFetcher = (init?: RequestInit) => {
 
 export const fetcher = configuredFetcher()
 
-export const fetchCruxFromRequest = async (req: http.IncomingMessage, url: string, init?: RequestInit) => {
-  const externalUrl = process.env.CRUX_URL ?? process.env.CRUX_UI_URL
-  const res = await fetch(`${externalUrl}${url}`, {
+export const fetchCrux = async (requestOrCookie: http.IncomingMessage | string, url: string, init?: RequestInit) => {
+  const cruxUrl = process.env.CRUX_URL ?? process.env.CRUX_UI_URL
+
+  const cookie: string = typeof requestOrCookie === 'string' ? requestOrCookie : requestOrCookie.headers.cookie
+
+  const res = await fetch(`${cruxUrl}${url}`, {
     ...(init ?? {}),
     headers: {
       ...(init?.headers ?? {}),
-      cookie: req.headers.cookie,
+      cookie,
     },
   })
 
@@ -238,8 +241,59 @@ export const fetchCruxFromRequest = async (req: http.IncomingMessage, url: strin
   return res
 }
 
-export const fetchCrux = (context: NextPageContext, url: string, init?: RequestInit) =>
-  fetchCruxFromRequest(context.req, url, init)
+export const getCrux = async <Res>(req: http.IncomingMessage, url: string): Promise<Res> => {
+  const res = await fetchCrux(req, url)
+  const body = await res.json()
+
+  return body
+}
+
+export const getCruxFromContext = <Res>(context: NextPageContext, url: string) => getCrux<Res>(context.req, url)
+
+export const postCruxFromContext = async <Res>(context: NextPageContext, url: string): Promise<Res> => {
+  const res = await fetchCrux(context.req, url, {
+    method: 'POST',
+  })
+
+  return await res.json()
+}
+
+const CONTENT_TYPE_JSON_HEADERS = {
+  'Content-Type': 'application/json',
+}
+
+export const postCrux = async <Body, Res>(req: http.IncomingMessage, url: string, body: Body | null): Promise<Res> => {
+  const init = body
+    ? {
+        headers: CONTENT_TYPE_JSON_HEADERS,
+        body: JSON.stringify(body),
+      }
+    : {}
+
+  const res = await fetchCrux(req, url, {
+    method: 'POST',
+    ...init,
+  })
+
+  const responseBody = await res.json()
+  return responseBody
+}
+
+export const putCrux = <Body>(req: http.IncomingMessage, url: string, body: Body) =>
+  fetchCrux(req, url, {
+    method: 'PUT',
+    headers: CONTENT_TYPE_JSON_HEADERS,
+    body: JSON.stringify(body),
+  })
+
+export const patchCrux = <Body>(req: http.IncomingMessage, url: string, body: Body) =>
+  fetchCrux(req, url, {
+    method: 'PATCH',
+    headers: CONTENT_TYPE_JSON_HEADERS,
+    body: JSON.stringify(body),
+  })
+
+export const deleteCrux = (req: http.IncomingMessage, url: string) => fetchCrux(req, url, { method: 'DELETE' })
 
 // forms
 export const paginationParams = (req: NextApiRequest, defaultTake: 100): [number, number] => {

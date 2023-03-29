@@ -7,7 +7,7 @@ import DyoButton from '@app/elements/dyo-button'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { Template } from '@app/models'
 import { API_TEMPLATES, productUrl, ROUTE_TEMPLATES } from '@app/routes'
-import { fetchCrux, withContextAuthorization } from '@app/utils'
+import { getCruxFromContext, withContextAuthorization } from '@app/utils'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -74,8 +74,7 @@ const TemplatesPage = (props: TemplatesPageProps) => {
 export default TemplatesPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const res = await fetchCrux(context, API_TEMPLATES)
-  const templates = (await res.json()) as Template[]
+  const templates = await getCruxFromContext<Template[]>(context, API_TEMPLATES)
 
   return {
     props: {

@@ -3,10 +3,9 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
-import { UserMetaTeam } from '@app/models'
-import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, teamInvitationApiUrl } from '@app/routes'
-import { redirectTo, setupContextSession, withContextErrorHandling } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { UserMeta, UserMetaTeam } from '@app/models'
+import { API_USERS_ME, ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, userInvitationApiUrl } from '@app/routes'
+import { postCruxFromContext, redirectTo, setupContextSession, withContextErrorHandling } from '@app/utils'
 import { obtainSessionFromRequest } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -32,7 +31,7 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const sendInvitationRequest = async (method: 'PUT' | 'DELETE') => {
-    const res = await fetch(teamInvitationApiUrl(team.id), {
+    const res = await fetch(userInvitationApiUrl(team.id), {
       method,
     })
 
@@ -98,8 +97,8 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 
   await setupContextSession(context, session)
 
-  const meta = await cruxFromContext(context).teams.getUserMeta()
-  const team = meta.invitations.find(it => it.id === teamId) ?? null
+  const user = await postCruxFromContext<UserMeta>(context, API_USERS_ME)
+  const team = user.invitations.find(it => it.id === teamId) ?? null
   if (!team) {
     return redirectTo(ROUTE_404)
   }

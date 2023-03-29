@@ -13,6 +13,9 @@ import {
   OrderImagesMessage,
   PatchImageMessage,
   PatchVersionImage,
+  RegistryImages,
+  VersionDetails,
+  VersionImage,
   WS_TYPE_ADD_IMAGES,
   WS_TYPE_ALL_ITEM_EDITORS,
   WS_TYPE_BLUR_INPUT,
@@ -34,7 +37,7 @@ import {
   WS_TYPE_PATCH_RECEIVED,
 } from '@app/models'
 import { imageApiUrl, versionApiUrl, versionImagesApiUrl, versionImagesOrderApiUrl } from '@app/routes'
-import { fetchCruxFromRequest } from '@app/utils'
+import { deleteCrux, getCrux, patchCrux, postCrux, putCrux } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
@@ -55,7 +58,7 @@ const onAuthorize = async (endpoint: WsEndpoint, req: NextApiRequest): Promise<b
   const versionId = endpoint.query.versionId as string
 
   try {
-    await fetchCruxFromRequest(req, versionApiUrl(productId, versionId))
+    await getCrux<VersionDetails>(req, versionApiUrl(productId, versionId))
     return true
   } catch {
     return false
@@ -89,9 +92,9 @@ const onGetImage = async (endpoint: WsEndpoint, connection: WsConnection, messag
   const productId = endpoint.query.productId as string
   const versionId = endpoint.query.versionId as string
 
-  const image = await fetchCruxFromRequest(connection.request, imageApiUrl(productId, versionId, req.id))
+  const image = await getCrux<VersionImage>(connection.request, imageApiUrl(productId, versionId, req.id))
 
-  connection.send(WS_TYPE_IMAGE, (await image.json()) as ImageMessage)
+  connection.send(WS_TYPE_IMAGE, image as ImageMessage)
 }
 
 const onAddImages = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<AddImagesMessage>) => {
@@ -99,16 +102,14 @@ const onAddImages = async (endpoint: WsEndpoint, connection: WsConnection, messa
   const productId = endpoint.query.productId as string
   const versionId = endpoint.query.versionId as string
 
-  const images = await fetchCruxFromRequest(connection.request, versionImagesApiUrl(productId, versionId), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(req.registryImages),
-  })
+  const images = await postCrux<RegistryImages[], VersionImage[]>(
+    connection.request,
+    versionImagesApiUrl(productId, versionId),
+    req.registryImages,
+  )
 
   endpoint.sendAll(WS_TYPE_IMAGES_ADDED, {
-    images: await images.json(),
+    images,
   } as ImagesAddedMessage)
 }
 
@@ -123,9 +124,7 @@ const onDeleteImage = async (
   const productId = endpoint.query.productId as string
   const versionId = endpoint.query.versionId as string
 
-  await fetchCruxFromRequest(connection.request, imageApiUrl(productId, versionId, req.imageId), {
-    method: 'DELETE',
-  })
+  await deleteCrux(connection.request, imageApiUrl(productId, versionId, req.imageId))
 
   editors.onDeleteItem(req.imageId)
 
@@ -148,13 +147,7 @@ const onPatchImage = async (endpoint: WsEndpoint, connection: WsConnection, mess
     cruxReq = req
   }
 
-  await fetchCruxFromRequest(connection.request, imageApiUrl(productId, versionId, req.id), {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(cruxReq),
-  })
+  await patchCrux(connection.request, imageApiUrl(productId, versionId, req.id), cruxReq)
 
   connection.send(WS_TYPE_PATCH_RECEIVED, {})
 
@@ -172,13 +165,7 @@ const onOrderImages = async (
   const productId = endpoint.query.productId as string
   const versionId = endpoint.query.versionId as string
 
-  await fetchCruxFromRequest(connection.request, versionImagesOrderApiUrl(productId, versionId), {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(req),
-  })
+  await putCrux(connection.request, versionImagesOrderApiUrl(productId, versionId), req)
 
   endpoint.sendAllExcept(connection, WS_TYPE_IMAGES_WERE_REORDERED, req as ImagesWereReorderedMessage)
 }
