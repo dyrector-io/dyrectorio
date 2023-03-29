@@ -7,7 +7,7 @@ import {
   kratosFromBaseURL,
   mailslurperFromBaseURL,
   screenshotPath,
-  USER_PASSWORD,
+  USER_PASSWORD
 } from './utils/common'
 
 const VERIFYABLE_PASSWORD = `v.${USER_PASSWORD}`
