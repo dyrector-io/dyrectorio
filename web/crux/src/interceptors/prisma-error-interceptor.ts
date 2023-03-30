@@ -1,7 +1,6 @@
-import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common'
+import { CallHandler, ConflictException, ExecutionContext, NestInterceptor, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { catchError, Observable } from 'rxjs'
-import { AlreadyExistsException, NotFoundException } from '../exception/errors'
 
 type NotFoundErrorMappings = { [P in Prisma.ModelName]: string }
 
@@ -24,7 +23,7 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
         const hasName = target && target.includes('name')
         const property = hasName ? 'name' : target?.toString() ?? 'unknown'
 
-        throw new AlreadyExistsException({
+        throw new ConflictException({
           message: `${property} taken`,
           property,
         })
@@ -49,7 +48,7 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
       return null
     }
 
-    const tableName = message.substring(after, before)
+    const tableName = message.substring(after + FIRST_PART.length, before)
 
     return PrismaErrorInterceptor.NOT_FOUND_ERRORS[tableName]
   }

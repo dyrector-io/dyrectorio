@@ -3,10 +3,6 @@ export type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U,
 
 // errors
 
-export type DyoApiError = DyoErrorDto & {
-  status: number
-}
-
 export type DyoErrorDto = {
   error: string
   property?: string
@@ -14,7 +10,7 @@ export type DyoErrorDto = {
   description: string
 }
 
-export type DyoFetchError = DyoErrorDto & {
+export type DyoApiError = DyoErrorDto & {
   status: number
 }
 

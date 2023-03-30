@@ -23,6 +23,44 @@ import {
   UnavailableError,
 } from './crux/grpc-errors'
 
+export const fromApiError = (
+  status: number,
+  error: { message: string; property?: string; value?: string },
+): DyoApiError => {
+  switch (status) {
+    case 503: {
+      const dto = error as UnavailableError
+      return unavailableError('crux', dto.message)
+    }
+    case 401: {
+      const dto = error as UnauthenticatedError
+      return unauthorizedError(dto.message)
+    }
+    case 404: {
+      const dto = error as NotFoundError
+      return notFoundError(dto.property, dto.message, dto.value)
+    }
+    case 400: {
+      const dto = error as InvalidArgumentError
+      return invalidArgument(dto.property, dto.message, dto.value)
+    }
+    case 409: {
+      const dto = error as AlreadyExistsError
+      return alreadyExistsError(dto.property, dto.message, dto.value)
+    }
+    case 412: {
+      const dto = error as PreconditionFailedError
+      return preconditionFailedError(dto.property, dto.message, dto.value)
+    }
+    case 403: {
+      return forbiddenError(error.message)
+    }
+    default: {
+      return internalError(error.message)
+    }
+  }
+}
+
 export const parseGrpcError = (error: ServiceError): CruxGrpcError => {
   let { message } = error
   let details

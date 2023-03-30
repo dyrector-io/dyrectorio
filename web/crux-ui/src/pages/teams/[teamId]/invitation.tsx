@@ -5,7 +5,8 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import { UserMeta, UserMetaTeam } from '@app/models'
 import { API_USERS_ME, ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, userInvitationApiUrl } from '@app/routes'
-import { postCruxFromContext, redirectTo, setupContextSession, withContextErrorHandling } from '@app/utils'
+import { redirectTo, setupContextSession, withContextErrorHandling } from '@app/utils'
+import { postCruxFromContext } from '@server/crux-api'
 import { obtainSessionFromRequest } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -30,7 +31,7 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const sendInvitationRequest = async (method: 'PUT' | 'DELETE') => {
+  const sendInvitationRequest = async (method: 'POST' | 'DELETE') => {
     const res = await fetch(userInvitationApiUrl(team.id), {
       method,
     })
@@ -44,7 +45,7 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
     }
   }
 
-  const onAcceptInvitation = () => sendInvitationRequest('PUT')
+  const onAcceptInvitation = () => sendInvitationRequest('POST')
   const onDeclineInvitation = () => sendInvitationRequest('DELETE')
 
   return (

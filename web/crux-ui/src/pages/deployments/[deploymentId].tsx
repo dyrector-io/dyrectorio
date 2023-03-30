@@ -32,8 +32,9 @@ import {
   versionApiUrl,
   versionUrl,
 } from '@app/routes'
-import { getCruxFromContext, withContextAuthorization } from '@app/utils'
+import { withContextAuthorization } from '@app/utils'
 import { containerConfigSchema, getValidationError } from '@app/validations'
+import { getCruxFromContext } from '@server/crux-api'
 import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'

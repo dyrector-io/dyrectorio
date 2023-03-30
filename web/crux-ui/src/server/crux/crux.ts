@@ -5,9 +5,9 @@
 import { WS_DATA_CRUX } from '@app/const'
 import { CruxHealth, RegistryDetailsDto, registryDetailsDtoToUI } from '@app/models'
 import { registryApiUrl } from '@app/routes'
-import { getCruxFromContext } from '@app/utils'
 import WsConnection from '@app/websockets/connection'
 import { Identity } from '@ory/kratos-client'
+import { getCruxFromContext } from '@server/crux-api'
 import { sessionOf, sessionOfContext } from '@server/kratos'
 import registryConnections, {
   CruxRegistryConnectionsServices,

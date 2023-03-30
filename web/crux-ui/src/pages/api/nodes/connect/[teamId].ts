@@ -11,10 +11,10 @@ import {
   WS_TYPE_UPDATE_NODE_AGENT,
 } from '@app/models'
 import { API_USERS_ME } from '@app/routes'
-import { postCrux } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
+import { postCrux } from '@server/crux-api'
 import { Crux, cruxFromConnection } from '@server/crux/crux'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
 import { NextApiRequest } from 'next'
