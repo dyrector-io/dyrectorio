@@ -12,7 +12,7 @@ import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from
 import useWebSocket from '@app/hooks/use-websocket'
 import { Node, NodeStatus, NodeStatusMessage, WS_TYPE_NODE_STATUS } from '@app/models'
 import { API_NODES, nodeUrl, ROUTE_NODES, WS_NODES } from '@app/routes'
-import { fetchCrux, upsertById, withContextAuthorization } from '@app/utils'
+import { getCruxFromContext, upsertById, withContextAuthorization } from '@app/utils'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -143,8 +143,7 @@ const NodesPage = (props: NodesPageProps) => {
 export default NodesPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const res = await fetchCrux(context, API_NODES)
-  const nodes = (await res.json()) as Node[]
+  const nodes = await getCruxFromContext<Node[]>(context, API_NODES)
 
   return {
     props: {

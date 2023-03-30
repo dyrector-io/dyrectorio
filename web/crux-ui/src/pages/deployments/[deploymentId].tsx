@@ -14,7 +14,15 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
-import { DeploymentDetails, DeploymentInvalidatedSecrets, DeploymentRoot, mergeConfigs, NodeDetails, ProductDetails, VersionDetails } from '@app/models'
+import {
+  DeploymentDetails,
+  DeploymentInvalidatedSecrets,
+  DeploymentRoot,
+  mergeConfigs,
+  NodeDetails,
+  ProductDetails,
+  VersionDetails,
+} from '@app/models'
 import {
   deploymentApiUrl,
   deploymentDeployUrl,

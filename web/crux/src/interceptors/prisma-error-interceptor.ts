@@ -1,7 +1,6 @@
-import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common'
+import { BadRequestException, CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { catchError, Observable } from 'rxjs'
-import { AlreadyExistsException, NotFoundException } from '../exception/errors'
 
 type NotFoundErrorMappings = { [P in Prisma.ModelName]: string }
 
@@ -24,14 +23,18 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
         const hasName = target && target.includes('name')
         const property = hasName ? 'name' : target?.toString() ?? 'unknown'
 
-        throw new AlreadyExistsException({
+        // TODO(@robot9706): gRPC error?
+        throw new BadRequestException({
           message: `${property} taken`,
           property,
+          error: 'alreadyExists',
         })
       } else if (err.code === NOT_FOUND) {
-        throw new NotFoundException({
+        // TODO(@robot9706): gRPC error?
+        throw new BadRequestException({
           property: this.prismaMessageToProperty(err.message),
           message: err.message,
+          error: 'notFound',
         })
       }
     }

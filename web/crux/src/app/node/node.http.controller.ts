@@ -151,24 +151,4 @@ export default class NodeHttpController {
   async getNodeDetails(@NodeId() nodeId: string): Promise<NodeDetailsDto> {
     return this.service.getNodeDetails(nodeId)
   }
-
-  /**
-   * @param request WatchContainerStateRequest
-   * @returns Promise<Observable<ContainerStateListMessage>>
-   * @description HTTP Endpoint to get the status of all containers in a node.
-   *
-   * Client can subscribe to the returned observable, and receive new data as it becomes available.
-   *
-   * @todo(polaroi8d): if a timeout occurs, the client will not receive any data.
-   * This is just an experimental implementation, and should be improved in the future.
-   */
-  @Get('status')
-  // @ApiBody({ type: WatchContainerStateRequestDto })
-  // @ApiOkResponse({ type: ContainerStateListMessageDto })
-  async getContainerStatus(@Body() params: WatchContainerStateRequest): Promise<Observable<ContainerStateListMessage>> {
-    return this.service
-      .handleWatchContainerStatus(params)
-      .pipe(first(value => value.data?.length > 0))
-      .pipe(timeout(1000))
-  }
 }
