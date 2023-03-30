@@ -8,15 +8,17 @@ import EmailService from 'src/mailer/email.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
-import TeamController from './team.controller'
+import SharedModule from '../shared/shared.module'
+import TeamHttpController from './team.http.controller'
 import TeamMapper from './team.mapper'
 import TeamRepository from './team.repository'
 import TeamService from './team.service'
+import UserHttpController from './user.http.controller'
 
 @Module({
-  imports: [HttpModule, EmailModule],
-  exports: [TeamRepository],
-  controllers: [TeamController],
+  imports: [HttpModule, EmailModule, SharedModule],
+  exports: [TeamRepository, TeamService],
+  controllers: [TeamHttpController, UserHttpController],
   providers: [
     TeamService,
     TeamRepository,

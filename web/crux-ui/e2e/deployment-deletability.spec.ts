@@ -11,7 +11,6 @@ test('In progress deployment should be not deletable', async ({ page }) => {
   await createImage(page, productId, versionId, 'nginx')
 
   const deploymentId = await deployWithDagent(page, 'pw-complex-deletability', productId, versionId, true)
-  console.log('inprogdepid', deploymentId)
 
   await page.goto(deploymentUrl(deploymentId))
 

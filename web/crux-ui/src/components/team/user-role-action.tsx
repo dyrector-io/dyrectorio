@@ -2,8 +2,8 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
-import { User, UserRole } from '@app/models'
-import { userRoleApiUrl } from '@app/routes'
+import { UpdateUserRole, User, UserRole } from '@app/models'
+import { teamUserRoleApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -43,7 +43,11 @@ const UserRoleAction = (props: UserRoleActionProps) => {
 
     setUpdating(true)
 
-    const res = await sendForm('PUT', userRoleApiUrl(teamId, user.id), updatedRole)
+    const req: UpdateUserRole = {
+      role: updatedRole,
+    }
+
+    const res = await sendForm('PUT', teamUserRoleApiUrl(teamId, user.id), req)
     if (res.ok) {
       onRoleUpdated(updatedRole)
     } else {

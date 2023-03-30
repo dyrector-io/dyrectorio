@@ -9,7 +9,8 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { Notification } from '@app/models'
 import { API_NOTIFICATIONS, notificationUrl, ROUTE_NOTIFICATIONS } from '@app/routes'
-import { fetchCrux, withContextAuthorization } from '@app/utils'
+import { withContextAuthorization } from '@app/utils'
+import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -71,8 +72,7 @@ const NotificationsPage = (props: NotificationsPageProps) => {
 }
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const res = await fetchCrux(context, API_NOTIFICATIONS)
-  const notifications = (await res.json()) as Notification[]
+  const notifications = await getCruxFromContext<Notification[]>(context, API_NOTIFICATIONS)
 
   return {
     props: {

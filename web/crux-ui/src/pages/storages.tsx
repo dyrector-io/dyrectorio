@@ -10,7 +10,8 @@ import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Storage } from '@app/models'
 import { API_STORAGES, ROUTE_STORAGES, storageUrl } from '@app/routes'
-import { fetchCrux, withContextAuthorization } from '@app/utils'
+import { withContextAuthorization } from '@app/utils'
+import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -84,8 +85,7 @@ const StoragesPage = (props: StoragesPageProps) => {
 export default StoragesPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const res = await fetchCrux(context, API_STORAGES)
-  const storages = (await res.json()) as Storage[]
+  const storages = await getCruxFromContext<Storage[]>(context, API_STORAGES)
 
   return {
     props: {

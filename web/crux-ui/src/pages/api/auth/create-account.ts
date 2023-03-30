@@ -1,8 +1,9 @@
 import { HEADER_LOCATION } from '@app/const'
 import { missingParameter } from '@app/error-responses'
 import { CreateAccount, toRecoverNewPasswordError } from '@app/models'
-import { Identity, UpdateRecoveryFlowWithCodeMethod } from '@ory/kratos-client'
-import { Crux } from '@server/crux/crux'
+import { userInvitationApiUrl } from '@app/routes'
+import { UpdateRecoveryFlowWithCodeMethod } from '@ory/kratos-client'
+import { fetchCrux } from '@server/crux-api'
 import { useErrorMiddleware } from '@server/error-middleware'
 import kratos, {
   cookieOf,
@@ -15,9 +16,11 @@ import useKratosErrorMiddleware from '@server/kratos-error-middleware'
 import { withMiddlewares } from '@server/middlewares'
 import { NextApiRequest, NextApiResponse } from 'next'
 
-const acceptInvitation = async (idenity: Identity, cookie: string, teamId: string): Promise<void> => {
+const acceptInvitation = async (cookie: string, teamId: string): Promise<void> => {
   try {
-    await Crux.withIdentity(idenity, cookie).teams.acceptInvitation(teamId)
+    await fetchCrux(cookie, userInvitationApiUrl(teamId), {
+      method: 'POST',
+    })
   } catch (err) {
     console.error('[ERROR][TEAM]: Failed to accept invitation', err)
   }
@@ -61,7 +64,7 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
       const session = await obtainSessionFromResponse(error)
       await identityRecovered(session, settingsFlow)
 
-      await acceptInvitation(session.identity, cookie, dto.team)
+      await acceptInvitation(cookie, dto.team)
 
       res.status(201).setHeader(HEADER_LOCATION, error.data.redirect_browser_to).end()
       return

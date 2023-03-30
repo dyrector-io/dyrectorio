@@ -1,8 +1,9 @@
 import { createParamDecorator, ExecutionContext, Injectable } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
-import { Identity } from '@ory/kratos-client'
+import { Identity, Session } from '@ory/kratos-client'
 import http from 'http'
 import KratosService from 'src/services/kratos.service'
+import { AuthPayload } from 'src/shared/models'
 
 @Injectable()
 export default class JwtAuthGuard extends AuthGuard('jwt') {
@@ -17,7 +18,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
       try {
         // check the cookie for a valid session
         const session = await this.kratos.getSessionByCookie(req.headers.cookie)
-        req.body.identity = session.identity
+        req.session = session
         return true
       } catch {
         /* ignored */
@@ -29,7 +30,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
     if (activated) {
       const userId = req.user.data.sub
       try {
-        req.body.identity = await this.kratos.getIdentityById(userId)
+        req.session.identity = await this.kratos.getIdentityById(userId)
       } catch {
         return false
       }
@@ -40,17 +41,23 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
 }
 
 type ExtendedHttpRequest = http.IncomingMessage & {
-  body: {
-    identity: Identity
+  session: Session
+  user: {
+    data: AuthPayload
   }
-  user: any
 }
 
-export const identityOfContext = (context: ExecutionContext): Identity => {
+export const sessionOfContext = (context: ExecutionContext): Session => {
   const req = context.switchToHttp().getRequest() as ExtendedHttpRequest
-  return req.body.identity
+  return req.session
 }
 
-export const IdentityFromRequest = createParamDecorator((_: unknown, context: ExecutionContext) =>
-  identityOfContext(context),
+export const identityOfContext = (context: ExecutionContext): Identity => sessionOfContext(context).identity
+
+export const IdentityFromRequest = createParamDecorator(
+  (_: unknown, context: ExecutionContext): Identity => identityOfContext(context),
+)
+
+export const SessionFromRequest = createParamDecorator(
+  (_: unknown, context: ExecutionContext): Session => sessionOfContext(context),
 )

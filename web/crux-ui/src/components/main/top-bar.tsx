@@ -1,7 +1,7 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoLabel } from '@app/elements/dyo-label'
 import LoadingIndicator from '@app/elements/loading-indicator'
-import { roleToText, selectedTeamOf, UserMeta } from '@app/models'
+import { activeTeamOf, roleToText, UserMeta } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
@@ -36,7 +36,7 @@ const Topbar = (props: TopbarProps) => {
           <div className="flex flex-col items-end cursor-pointer ml-auto mr-4" onClick={toggleTeamSelection}>
             <DyoLabel className="cursor-pointer">{user.name}</DyoLabel>
             <DyoLabel className="text-sm cursor-pointer">{`${t(roleToText(user.role))} @ ${
-              selectedTeamOf(meta)?.name
+              activeTeamOf(meta)?.name
             }`}</DyoLabel>
           </div>
 

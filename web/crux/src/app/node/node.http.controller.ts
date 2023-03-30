@@ -1,11 +1,9 @@
 import { Body, Controller, Get, UseGuards, UseInterceptors } from '@nestjs/common'
-import { ApiBody, ApiOkResponse } from '@nestjs/swagger'
 import { first, Observable, timeout } from 'rxjs'
 import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
 import { WatchContainerStateRequest } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import { ContainerStateListMessageDto, WatchContainerStateRequestDto } from 'src/swagger/crux.dto'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import NodeService from './node.service'
 
@@ -26,8 +24,8 @@ export default class NodeHttpController {
    * This is just an experimental implementation, and should be improved in the future.
    */
   @Get('status')
-  @ApiBody({ type: WatchContainerStateRequestDto })
-  @ApiOkResponse({ type: ContainerStateListMessageDto })
+  // @ApiBody({ type: WatchContainerStateRequestDto })
+  // @ApiOkResponse({ type: ContainerStateListMessageDto })
   async getContainerStatus(@Body() params: WatchContainerStateRequest): Promise<Observable<ContainerStateListMessage>> {
     return this.service
       .handleWatchContainerStatus(params)

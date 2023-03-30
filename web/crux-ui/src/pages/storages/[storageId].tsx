@@ -7,7 +7,8 @@ import StorageCard from '@app/components/storages/storage-card'
 import { defaultApiErrorHandler } from '@app/errors'
 import { StorageDetails } from '@app/models'
 import { ROUTE_REGISTRIES, storageApiUrl, storageUrl } from '@app/routes'
-import { fetchCrux, toastWarning, withContextAuthorization } from '@app/utils'
+import { toastWarning, withContextAuthorization } from '@app/utils'
+import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -91,8 +92,7 @@ export default StorageDetailsPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const storageId = context.query.storageId as string
 
-  const res = await fetchCrux(context, storageApiUrl(storageId))
-  const storage = (await res.json()) as StorageDetails
+  const storage = await getCruxFromContext<StorageDetails>(context, storageApiUrl(storageId))
 
   return {
     props: {

@@ -1,17 +1,21 @@
 import { Logger } from '@app/logger'
 import {
+  activeTeamOf,
   GetNodeStatusListMessage,
   NodeStatusMessage,
   UpdateNodeAgentMessage,
+  UserMeta,
   WS_TYPE_GET_NODE_STATUS_LIST,
   WS_TYPE_NODE_STATUS,
   WS_TYPE_NODE_STATUSES,
   WS_TYPE_UPDATE_NODE_AGENT,
 } from '@app/models'
+import { API_USERS_ME } from '@app/routes'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
-import crux, { Crux, cruxFromConnection } from '@server/crux/crux'
+import { postCrux } from '@server/crux-api'
+import { Crux, cruxFromConnection } from '@server/crux/crux'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
 import { NextApiRequest } from 'next'
 
@@ -30,8 +34,10 @@ const onAuthorize = async (endpoint: WsEndpoint, req: NextApiRequest): Promise<b
   const teamId = endpoint.query.teamId as string
 
   try {
-    const team = await crux(req).teams.getActiveTeam()
-    return teamId === team.id
+    const user = await postCrux<null, UserMeta>(req, API_USERS_ME, null)
+    const activeTeam = activeTeamOf(user)
+
+    return teamId === activeTeam?.id
   } catch {
     return false
   }

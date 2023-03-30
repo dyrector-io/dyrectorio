@@ -32,8 +32,7 @@
     "ts-node": "ts-node --compiler-options { \"module\": \"CommonJS\"}",
     "database:up": "docker-compose -f docker-compose.database.yaml up -d",
     "database:down": "docker-compose -f docker-compose.database.yaml down",
-    "prismagen": "prisma generate",
-    "build:dtos": "npx ts-node ./src/swagger/generator.ts -i ./src/grpc/protobuf/proto/crux.ts -o ./src/swagger/crux.dto.ts && npx prettier --write src/swagger/crux.dto.ts"
+    "prismagen": "prisma generate"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"

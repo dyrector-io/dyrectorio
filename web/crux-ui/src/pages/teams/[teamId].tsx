@@ -23,10 +23,10 @@ import {
   UserRole,
   userStatusReinvitable,
 } from '@app/models'
-import { API_WHOAMI, ROUTE_TEAMS, teamApiUrl, teamReinviteUrl, teamUrl, userApiUrl } from '@app/routes'
+import { API_USERS_ME, ROUTE_TEAMS, teamApiUrl, teamUrl, teamUserApiUrl, teamUserReinviteUrl } from '@app/routes'
 import { redirectTo, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
-import { cruxFromContext } from '@server/crux/crux'
+import { getCruxFromContext } from '@server/crux-api'
 import { sessionOfContext } from '@server/kratos'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
@@ -66,7 +66,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const sendDeleteUserRequest = async (user: User) => {
-    const res = await fetch(userApiUrl(team.id, user.id), {
+    const res = await fetch(teamUserApiUrl(team.id, user.id), {
       method: 'DELETE',
     })
 
@@ -86,7 +86,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
       ...team,
       ...newTeam,
     })
-    mutate(API_WHOAMI)
+    mutate(API_USERS_ME)
   }
 
   const onDeleteTeam = async () => {
@@ -106,7 +106,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const onReinviteUser = async (user: User) => {
     startCountdown(AUTH_RESEND_DELAY)
 
-    const res = await fetch(teamReinviteUrl(team.id, user.id), {
+    const res = await fetch(teamUserReinviteUrl(team.id, user.id), {
       method: 'POST',
     })
 
@@ -279,7 +279,7 @@ export default TeamDetailsPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const teamId = context.query.teamId as string
 
-  const team = await cruxFromContext(context).teams.getTeamById(teamId)
+  const team = await getCruxFromContext<TeamDetails>(context, teamApiUrl(teamId))
   if (!team) {
     return redirectTo(ROUTE_TEAMS)
   }

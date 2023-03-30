@@ -1,9 +1,9 @@
 import { SingleFormLayout } from '@app/components/layout'
 import CreateTeamCard from '@app/components/team/create-team-card'
-import { ActiveTeamDetails } from '@app/models'
-import { ROUTE_INDEX } from '@app/routes'
+import { activeTeamOf, Team, UserMeta } from '@app/models'
+import { API_USERS_ME, ROUTE_INDEX } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { postCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -13,7 +13,7 @@ const CreateTeamPage = () => {
 
   const router = useRouter()
 
-  const onTeamCreated = (_: ActiveTeamDetails) => router.replace(ROUTE_INDEX)
+  const onTeamCreated = (_: Team) => router.replace(ROUTE_INDEX)
 
   return (
     <SingleFormLayout title={t('createTeam')}>
@@ -25,8 +25,10 @@ const CreateTeamPage = () => {
 export default CreateTeamPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const team = await cruxFromContext(context).teams.getActiveTeam()
-  if (team) {
+  const user = await postCruxFromContext<UserMeta>(context, API_USERS_ME)
+  const activeTeam = activeTeamOf(user)
+
+  if (activeTeam) {
     return redirectTo(ROUTE_INDEX)
   }
 

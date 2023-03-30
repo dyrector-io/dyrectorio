@@ -1,21 +1,22 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
-import { IdRequest } from 'src/grpc/protobuf/proto/crux'
+import { identityOfContext } from 'src/app/token/jwt-auth.guard'
 import PrismaService from 'src/services/prisma.service'
-import { IdentityAwareServerSurfaceCall } from 'src/shared/user-access.guard'
 
 @Injectable()
 export default class TeamSelectGuard implements CanActivate {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.getArgByIndex<IdRequest>(0)
-    const identity = context.getArgByIndex<IdentityAwareServerSurfaceCall>(2).user
+    const req = context.switchToHttp().getRequest()
+    const teamId = req.params.teamId as string
+
+    const identity = identityOfContext(context)
 
     const team = await this.prisma.usersOnTeams.findUnique({
       where: {
         userId_teamId: {
           userId: identity.id,
-          teamId: request.id,
+          teamId,
         },
       },
     })
