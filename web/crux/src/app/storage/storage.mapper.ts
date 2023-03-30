@@ -1,22 +1,25 @@
 import { Injectable } from '@nestjs/common'
 import { Storage } from '@prisma/client'
-import { AuditResponse, StorageDetailsResponse, StorageResponse } from 'src/grpc/protobuf/proto/crux'
+import { StorageDetailsDto, StorageDto } from './storage.dto'
 
 @Injectable()
 export default class StorageMapper {
-  listItemToProto(registry: Storage): StorageResponse {
+  listItemToDto(storage: Storage): StorageDto {
     return {
-      ...registry,
-      audit: AuditResponse.fromJSON(registry),
+      id: storage.id,
+      name: storage.name,
+      description: storage.description,
+      icon: storage.icon,
+      url: storage.url,
     }
   }
 
-  detailsToProto(registry: StorageWithCount): StorageDetailsResponse {
+  detailsToDto(storage: StorageWithCount): StorageDetailsDto {
     return {
-      ...registry,
-      inUse: registry._count.containerConfigs > 0 || registry._count.instanceConfigs > 0,
-      icon: registry.icon ?? null,
-      audit: AuditResponse.fromJSON(registry),
+      ...this.listItemToDto(storage),
+      accessKey: storage.accessKey,
+      secretKey: storage.secretKey,
+      inUse: storage._count.containerConfigs > 0 || storage._count.instanceConfigs > 0,
     }
   }
 }
