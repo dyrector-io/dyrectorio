@@ -8,17 +8,16 @@ import StorageCard from '@app/components/storages/storage-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { Storage, StorageListItem } from '@app/models'
-import { ROUTE_STORAGES, storageUrl } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { Storage } from '@app/models'
+import { API_STORAGES, ROUTE_STORAGES, storageUrl } from '@app/routes'
+import { fetchCrux, withContextAuthorization } from '@app/utils'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRef, useState } from 'react'
 
 interface StoragesPageProps {
-  storages: StorageListItem[]
+  storages: Storage[]
 }
 
 const StoragesPage = (props: StoragesPageProps) => {
@@ -26,8 +25,8 @@ const StoragesPage = (props: StoragesPageProps) => {
 
   const { t } = useTranslation('storages')
 
-  const filters = useFilters<StorageListItem, TextFilter>({
-    filters: [textFilterFor<StorageListItem>(it => [it.name, it.url, it.description, it.icon])],
+  const filters = useFilters<Storage, TextFilter>({
+    filters: [textFilterFor<Storage>(it => [it.name, it.url, it.description, it.icon])],
     initialData: storages,
   })
 
@@ -84,10 +83,15 @@ const StoragesPage = (props: StoragesPageProps) => {
 
 export default StoragesPage
 
-const getPageServerSideProps = async (context: NextPageContext) => ({
-  props: {
-    storages: await cruxFromContext(context).storage.getAll(),
-  },
-})
+const getPageServerSideProps = async (context: NextPageContext) => {
+  const res = await fetchCrux(context, API_STORAGES)
+  const storages = (await res.json()) as Storage[]
+
+  return {
+    props: {
+      storages,
+    },
+  }
+}
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)
