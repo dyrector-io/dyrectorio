@@ -15,7 +15,8 @@ import {
   notificationUrl,
   ROUTE_NOTIFICATIONS,
 } from '@app/routes'
-import { fetchCrux, withContextAuthorization } from '@app/utils'
+import { withContextAuthorization } from '@app/utils'
+import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -116,8 +117,7 @@ export default NotificationDetailsPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const notificationId = context.query.notificationId as string
-  const res = await fetchCrux(context, notificationApiUrl(notificationId))
-  const notification = (await res.json()) as NotificationDetails
+  const notification = await getCruxFromContext<NotificationDetails>(context, notificationApiUrl(notificationId))
 
   return {
     props: {

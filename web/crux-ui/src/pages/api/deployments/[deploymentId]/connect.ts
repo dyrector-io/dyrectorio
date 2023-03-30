@@ -1,10 +1,12 @@
 import { Logger } from '@app/logger'
 import {
+  DeploymentDetails,
   DeploymentEventMessage,
   EditorJoinedMessage,
   GetInstanceMessage,
   GetInstanceSecretsMessage,
   InputFocusMessage,
+  Instance,
   InstanceMessage,
   InstanceSecrets,
   InstanceSecretsMessage,
@@ -33,10 +35,10 @@ import {
   WS_TYPE_PATCH_RECEIVED,
 } from '@app/models'
 import { deploymentApiUrl, instanceApiUrl } from '@app/routes'
-import { fetchCruxFromRequest } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
+import { getCrux, patchCrux } from '@server/crux-api'
 import { Crux } from '@server/crux/crux'
 import DeploymentEventsService from '@server/deployment-event-service'
 import EditorService from '@server/editing/editor-service'
@@ -67,7 +69,7 @@ const onAuthorize = async (endpoint: WsEndpoint, req: NextApiRequest): Promise<b
   const deploymentId = endpoint.query.deploymentId as string
 
   try {
-    fetchCruxFromRequest(req, deploymentApiUrl(deploymentId))
+    await getCrux<DeploymentDetails>(req, deploymentApiUrl(deploymentId))
     return true
   } catch {
     return false
@@ -122,13 +124,7 @@ export const onPatchInstance = async (
     cruxReq.config = req.config
   }
 
-  await fetchCruxFromRequest(connection.request, instanceApiUrl(deploymentId, req.instanceId), {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(cruxReq),
-  })
+  await patchCrux(connection.request, instanceApiUrl(deploymentId, req.instanceId), cruxReq)
 
   connection.send(WS_TYPE_PATCH_RECEIVED, {})
 
@@ -150,13 +146,7 @@ const onPatchDeploymentEnvironment = async (
     environment: req,
   }
 
-  await fetchCruxFromRequest(connection.request, deploymentApiUrl(deploymentId), {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(cruxReq),
-  })
+  await patchCrux(connection.request, deploymentApiUrl(deploymentId), cruxReq)
 
   connection.send(WS_TYPE_PATCH_RECEIVED, {})
   endpoint.sendAllExcept(connection, WS_TYPE_DEPLOYMENT_ENV_UPDATED, req)
@@ -171,9 +161,9 @@ const onGetInstance = async (
 
   const req = message.payload
 
-  const res = await fetchCruxFromRequest(connection.request, instanceApiUrl(deploymentId, req.id))
+  const instance = await getCrux<Instance>(connection.request, instanceApiUrl(deploymentId, req.id))
 
-  connection.send(WS_TYPE_INSTANCE, (await res.json()) as InstanceMessage)
+  connection.send(WS_TYPE_INSTANCE, instance as InstanceMessage)
 }
 
 const onGetSecrets = async (
@@ -185,16 +175,15 @@ const onGetSecrets = async (
 
   const req = message.payload
 
-  const cruxRes = await fetchCruxFromRequest(connection.request, instanceApiUrl(deploymentId, req.id))
-  const res = (await cruxRes.json()) as InstanceSecrets
+  const secrets = await getCrux<InstanceSecrets>(connection.request, instanceApiUrl(deploymentId, req.id))
 
-  if (!res.keys) {
+  if (!secrets.keys) {
     return
   }
 
   connection.send(WS_TYPE_INSTANCE_SECRETS, {
     instanceId: message.payload.id,
-    keys: res.keys,
+    keys: secrets.keys,
   } as InstanceSecretsMessage)
 }
 

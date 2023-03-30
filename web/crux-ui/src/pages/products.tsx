@@ -13,7 +13,8 @@ import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Product, ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
 import { API_PRODUCTS, ROUTE_PRODUCTS } from '@app/routes'
 
-import { auditToLocaleDate, fetchCrux, withContextAuthorization } from '@app/utils'
+import { auditToLocaleDate, withContextAuthorization } from '@app/utils'
+import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRef, useState } from 'react'
@@ -106,8 +107,7 @@ const ProductsPage = (props: ProductsPageProps) => {
 export default ProductsPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const res = await fetchCrux(context, API_PRODUCTS)
-  const products = (await res.json()) as Product[]
+  const products = await getCruxFromContext<Product[]>(context, API_PRODUCTS)
 
   return {
     props: {

@@ -6,9 +6,9 @@ import {
   WS_TYPE_DYO_ERROR,
 } from '@app/models'
 import { deploymentEventsApiUrl } from '@app/routes'
-import { fetchCruxFromRequest } from '@app/utils'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
+import { getCrux } from './crux-api'
 import { cruxFromConnection } from './crux/crux'
 import { fromGrpcError, parseGrpcError } from './error-middleware'
 
@@ -26,8 +26,7 @@ class DeploymentEventService {
       return this.events
     }
 
-    const cruxRes = await fetchCruxFromRequest(connection.request, deploymentEventsApiUrl(this.deploymentId))
-    const events = (await cruxRes.json()) as DeploymentEvent[]
+    const events = await getCrux<DeploymentEvent[]>(connection.request, deploymentEventsApiUrl(this.deploymentId))
     const status = lastDeploymentStatusOfEvents(events)
 
     if (status !== 'in-progress') {

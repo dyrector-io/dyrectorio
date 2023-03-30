@@ -5,9 +5,9 @@
 import { WS_DATA_CRUX } from '@app/const'
 import { CruxHealth, RegistryDetailsDto, registryDetailsDtoToUI } from '@app/models'
 import { registryApiUrl } from '@app/routes'
-import { fetchCrux } from '@app/utils'
 import WsConnection from '@app/websockets/connection'
 import { Identity } from '@ory/kratos-client'
+import { getCruxFromContext } from '@server/crux-api'
 import { sessionOf, sessionOfContext } from '@server/kratos'
 import registryConnections, {
   CruxRegistryConnectionsServices,
@@ -18,14 +18,11 @@ import CruxClients from './crux-clients'
 import DyoDeploymentService from './deployment-service'
 import DyoHealthService from './health-service'
 import DyoNodeService from './node-service'
-import DyoTeamService from './team-service'
 
 export class Crux {
   private _nodes: DyoNodeService
 
   private _deployments: DyoDeploymentService
-
-  private _teams: DyoTeamService
 
   private _health: DyoHealthService
 
@@ -44,10 +41,6 @@ export class Crux {
     return this._deployments ?? new DyoDeploymentService(this.clients.deployments, this.cookie)
   }
 
-  get teams() {
-    return this._teams ?? new DyoTeamService(this.clients.teams, this.identity, this.registryConnections, this.cookie)
-  }
-
   get health() {
     return this._health ?? new DyoHealthService(this.clients.health)
   }
@@ -56,7 +49,7 @@ export class Crux {
     return {
       getIdentity: () => this.identity,
       getRegistryDetails: async (id: string) => {
-        const res = await fetchCrux(
+        const dto = await getCruxFromContext<RegistryDetailsDto>(
           {
             req: {
               headers: {
@@ -66,7 +59,7 @@ export class Crux {
           } as any,
           registryApiUrl(id),
         )
-        const dto = (await res.json()) as RegistryDetailsDto
+
         return registryDetailsDtoToUI(dto)
       },
     }

@@ -45,8 +45,9 @@ import {
   versionUrl,
   versionWsUrl,
 } from '@app/routes'
-import { fetchCrux, withContextAuthorization } from '@app/utils'
+import { withContextAuthorization } from '@app/utils'
 import { getContainerConfigFieldErrors, jsonErrorOf } from '@app/validations/image'
+import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -292,16 +293,15 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   const versionId = context.query.versionId as string
   const imageId = context.query.imageId as string
 
-  const version = await fetchCrux(context, versionApiUrl(productId, versionId))
-
-  const image = await fetchCrux(context, imageApiUrl(productId, versionId, imageId))
-  const product = await fetchCrux(context, productApiUrl(productId))
+  const product = getCruxFromContext<ProductDetails>(context, productApiUrl(productId))
+  const version = getCruxFromContext<VersionDetails>(context, versionApiUrl(productId, versionId))
+  const image = getCruxFromContext<VersionImage>(context, imageApiUrl(productId, versionId, imageId))
 
   return {
     props: {
-      image: await image.json(),
-      product: await product.json(),
-      version: await version.json(),
+      image: await image,
+      product: await product,
+      version: await version,
     },
   }
 }

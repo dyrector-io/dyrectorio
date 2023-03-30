@@ -1,5 +1,5 @@
 import { UserMeta } from '@app/models'
-import { API_WHOAMI, ROUTE_LOGIN } from '@app/routes'
+import { API_USERS_ME, ROUTE_LOGIN } from '@app/routes'
 import { configuredFetcher } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -42,7 +42,7 @@ export const Layout = (props: LayoutProps) => {
   const { title, children, topBarContent } = props
 
   const { data: meta, error } = useSWR<UserMeta>(
-    API_WHOAMI,
+    API_USERS_ME,
     configuredFetcher({
       method: 'POST',
     }),

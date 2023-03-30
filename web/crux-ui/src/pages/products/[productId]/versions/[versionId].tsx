@@ -9,7 +9,8 @@ import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { EditableVersion, ProductDetails, VersionDetails } from '@app/models'
 import { productApiUrl, productUrl, ROUTE_PRODUCTS, versionApiUrl, versionUrl } from '@app/routes'
-import { anchorLinkOf, fetchCrux, redirectTo, searchParamsOf, withContextAuthorization } from '@app/utils'
+import { anchorLinkOf, redirectTo, searchParamsOf, withContextAuthorization } from '@app/utils'
+import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -131,18 +132,17 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   const productId = context.query.productId as string
   const versionId = context.query.versionId as string
 
-  const productRes = await fetchCrux(context, productApiUrl(productId))
-  const product = (await productRes.json()) as ProductDetails
+  const product = await getCruxFromContext<ProductDetails>(context, productApiUrl(productId))
   if (product.type === 'simple') {
     return redirectTo(`${productUrl(product.id)}${searchParamsOf(context)}`)
   }
 
-  const res = await fetchCrux(context, versionApiUrl(productId, versionId))
+  const version = await getCruxFromContext<VersionDetails>(context, versionApiUrl(productId, versionId))
 
   return {
     props: {
       product,
-      version: await res.json(),
+      version,
     },
   }
 }

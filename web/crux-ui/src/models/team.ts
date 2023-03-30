@@ -27,7 +27,3 @@ export type Team = UserMetaTeam & {
 export type TeamDetails = Team & {
   users: User[]
 }
-
-export type ActiveTeamDetails = UserMetaTeam & {
-  users: User[]
-}

@@ -1,5 +1,5 @@
-import { Node, Product, Version } from '@prisma/client'
-import { AuditDto, BasicNodeDto, BasicProductDto, BasicProperties, BasicVersionDto } from './shared.dto'
+import { Node, Product, Team, Version } from '@prisma/client'
+import { AuditDto, BasicNodeDto, BasicProductDto, BasicProperties, BasicTeamDto, BasicVersionDto } from './shared.dto'
 
 export default class SharedMapper {
   auditToDto(it: Audit): AuditDto {
@@ -32,6 +32,13 @@ export default class SharedMapper {
       id: it.id,
       name: it.name,
       type: it.type,
+    }
+  }
+
+  teamToBasicDto(it: Pick<Team, 'id' | 'name'>): BasicTeamDto {
+    return {
+      id: it.id,
+      name: it.name,
     }
   }
 }

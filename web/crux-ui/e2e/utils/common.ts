@@ -33,11 +33,10 @@ export const mailslurperFromBaseURL = (baseURL: string): MailSlurper => {
   return new MailSlurper(url)
 }
 
-export const cruxAddressFromConfig = (config: FullConfig) => {
+export const cruxUrlFromConfig = (config: FullConfig) => {
   const { baseURL } = config.projects[0].use
-  const address = baseURL.substring(baseURL.indexOf('//') + 2)
-
-  return process.env.CRUX_URL ?? replacePort(address, '5001')
+  const url = process.env.CRUX_URL ?? baseURL
+  return replacePort(url, '8000')
 }
 
 export const extractKratosLinkFromMail = (body: string): string => {
@@ -137,10 +136,10 @@ export const deleteUserByEmail = async (kratos: IdentityApi, email: string) => {
   })
 }
 
-export const getUserSessionToken = async (frontend: FrontendApi, email: string, password: string) => {
+export const getUserSessionToken = async (frontend: FrontendApi) => {
   const flow = await frontend.createBrowserLoginFlow()
   const cookie = flow.headers[HEADER_SET_COOKIE]
-  const data = flow.data
+  const { data } = flow
 
   const body: UpdateLoginFlowWithPasswordMethod = {
     method: 'password',
