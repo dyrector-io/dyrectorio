@@ -1,54 +1,54 @@
-import { Injectable } from '@nestjs/common'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor, PreconditionFailedException } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
-import { UpdateStorageRequest } from 'src/grpc/protobuf/proto/crux'
-import { PreconditionFailedException } from 'src/exception/errors'
-import BodyPipeTransform from 'src/pipes/body.pipe'
-import { Storage } from '@prisma/client'
-import StorageMapper from '../storage.mapper'
+import { Observable } from 'rxjs'
+import { UpdateStorageDto } from '../storage.dto'
 
 type Blacklist = Array<keyof Storage>
 const blacklistedFields: Blacklist = ['name', 'url', 'accessKey', 'secretKey']
 
 @Injectable()
-export default class UpdateStorageValidationPipe extends BodyPipeTransform<UpdateStorageRequest> {
-  constructor(private prisma: PrismaService, private mapper: StorageMapper) {
-    super()
-  }
+export default class StorageUpdateValidationInterceptor implements NestInterceptor {
+  constructor(private prisma: PrismaService) {}
 
-  async transformBody(req: UpdateStorageRequest) {
+  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+    const req = context.switchToHttp().getRequest()
+
+    const storageId = req.params.storageId as string
+    const update = req.body as UpdateStorageDto
+
     const usedContainerConfig = await this.prisma.containerConfig.count({
       where: {
-        storageId: req.id,
+        storageId,
       },
       take: 1,
     })
     const usedInstanceContainerConfig = await this.prisma.instanceContainerConfig.count({
       where: {
-        storageId: req.id,
+        storageId,
       },
       take: 1,
     })
 
     if (usedContainerConfig === 0 && usedInstanceContainerConfig === 0) {
-      return req
+      return next.handle()
     }
 
     const storage = await this.prisma.storage.findUniqueOrThrow({
       where: {
-        id: req.id,
+        id: storageId,
       },
     })
 
     blacklistedFields.forEach(it => {
-      if (req[it] !== storage[it]) {
+      if (update[it] !== storage[it]) {
         throw new PreconditionFailedException({
           property: 'id',
-          value: req.id,
+          value: storageId,
           message: 'Storage is already in use.',
         })
       }
     })
 
-    return req
+    return next.handle()
   }
 }

@@ -1,10 +1,5 @@
 import { invalidArgument } from '@app/error-responses'
-import {
-  CruxDeploymentClient,
-  CruxHealthClient,
-  CruxNodeClient,
-  CruxStorageClient,
-} from '@app/models/grpc/protobuf/proto/crux'
+import { CruxDeploymentClient, CruxHealthClient, CruxNodeClient } from '@app/models/grpc/protobuf/proto/crux'
 import { credentials } from '@grpc/grpc-js'
 
 class CruxClients {
@@ -13,8 +8,6 @@ class CruxClients {
   deployments: CruxDeploymentClient
 
   health: CruxHealthClient
-
-  storage: CruxStorageClient
 
   constructor(address: string) {
     // tls must be terminated by the reverse proxy
@@ -27,7 +20,6 @@ class CruxClients {
     this.nodes = new CruxNodeClient(address, creds)
     this.deployments = new CruxDeploymentClient(address, creds)
     this.health = new CruxHealthClient(address, creds)
-    this.storage = new CruxStorageClient(address, creds)
   }
 }
 

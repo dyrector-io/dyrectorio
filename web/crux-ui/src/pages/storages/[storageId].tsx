@@ -5,17 +5,17 @@ import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import EditStorageCard from '@app/components/storages/edit-storage-card'
 import StorageCard from '@app/components/storages/storage-card'
 import { defaultApiErrorHandler } from '@app/errors'
-import { Storage } from '@app/models'
+import { StorageDetails } from '@app/models'
 import { ROUTE_REGISTRIES, storageApiUrl, storageUrl } from '@app/routes'
 import { toastWarning, withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 
 interface StorageDetailsPageProps {
-  storage: Storage
+  storage: StorageDetails
 }
 
 const StorageDetailsPage = (props: StorageDetailsPageProps) => {
@@ -31,9 +31,9 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const onStorageEdited = reg => {
+  const onStorageEdited = (it: StorageDetails) => {
     setEditing(false)
-    setStorage(reg)
+    setStorage(it)
   }
 
   const onDelete = async () => {
@@ -92,9 +92,11 @@ export default StorageDetailsPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const storageId = context.query.storageId as string
 
+  const storage = await getCruxFromContext<StorageDetails>(context, storageApiUrl(storageId))
+
   return {
     props: {
-      storage: await cruxFromContext(context).storage.getStorageDetails(storageId),
+      storage,
     },
   }
 }

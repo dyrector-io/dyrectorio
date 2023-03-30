@@ -18,7 +18,6 @@ import CruxClients from './crux-clients'
 import DyoDeploymentService from './deployment-service'
 import DyoHealthService from './health-service'
 import DyoNodeService from './node-service'
-import DyoStorageService from './storage-service'
 
 export class Crux {
   private _nodes: DyoNodeService
@@ -26,8 +25,6 @@ export class Crux {
   private _deployments: DyoDeploymentService
 
   private _health: DyoHealthService
-
-  private _storage: DyoStorageService
 
   private constructor(
     private clients: CruxClients,
@@ -46,10 +43,6 @@ export class Crux {
 
   get health() {
     return this._health ?? new DyoHealthService(this.clients.health)
-  }
-
-  get storage() {
-    return this._storage ?? new DyoStorageService(this.clients.storage, this.cookie)
   }
 
   get registryConnectionsServices(): CruxRegistryConnectionsServices {

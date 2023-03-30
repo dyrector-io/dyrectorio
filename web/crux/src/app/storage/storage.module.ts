@@ -7,12 +7,12 @@ import TeamModule from '../team/team.module'
 import TeamRepository from '../team/team.repository'
 import StorageService from './storage.service'
 import StorageMapper from './storage.mapper'
-import StorageController from './storage.controller'
+import StorageHttpController from './storage.http.controller'
 
 @Module({
   imports: [HttpModule, TeamModule],
   exports: [StorageMapper, StorageService],
-  controllers: [StorageController],
+  controllers: [StorageHttpController],
   providers: [
     StorageService,
     PrismaService,
