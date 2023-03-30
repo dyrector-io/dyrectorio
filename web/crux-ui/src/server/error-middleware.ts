@@ -56,7 +56,7 @@ export const fromApiError = (
       return forbiddenError(error.message)
     }
     default: {
-      return internalError(error.message)
+      return internalError(error?.message ?? 'Unknown error')
     }
   }
 }
