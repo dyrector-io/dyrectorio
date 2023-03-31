@@ -1,7 +1,6 @@
 import { Body, Controller, Delete, Get, Header, HttpCode, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import { Observable } from 'rxjs'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
