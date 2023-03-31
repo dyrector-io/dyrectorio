@@ -128,8 +128,8 @@ test('Container log should appear after a successful deployment', async ({ page 
   const containerRow = page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
 
-  const connectedTag = containerRow.locator('div:text-is("Connected")')
-  await expect(connectedTag).toBeVisible()
+  const runningTag = containerRow.locator('div:text-is("Running")')
+  await expect(runningTag).toBeVisible()
 
   const showLogs = containerRow.locator('span:text-is("Show logs")')
 
@@ -165,8 +165,8 @@ test('Container log should appear on a node container', async ({ page }) => {
   const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
 
-  const connectedTag = await containerRow.locator('div:text-is("Connected")')
-  await expect(connectedTag).toBeVisible()
+  const runningTag = await containerRow.locator('div:text-is("Running")')
+  await expect(runningTag).toBeVisible()
 
   await page.goto(ROUTE_NODES)
 

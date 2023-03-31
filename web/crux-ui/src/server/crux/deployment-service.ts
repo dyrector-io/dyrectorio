@@ -11,7 +11,6 @@ import {
   CruxDeploymentClient,
   DeploymentEditEventMessage as ProtoDeploymentEditEventMessage,
   DeploymentProgressMessage,
-  IdRequest,
   ServiceIdRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { WsMessage } from '@app/websockets/common'
@@ -25,11 +24,11 @@ class DyoDeploymentService {
   constructor(private client: CruxDeploymentClient, private cookie: string) {}
 
   subscribeToDeploymentEvents(id: string, options?: ProtoSubscriptionOptions<DeploymentEvent[]>) {
-    const req: IdRequest = {
+    const req: ServiceIdRequest = {
       id,
     }
 
-    const stream = () => this.client.subscribeToDeploymentEvents(IdRequest.fromJSON(req))
+    const stream = () => this.client.subscribeToDeploymentEvents(ServiceIdRequest.fromJSON(req))
     return new GrpcConnection(
       this.logger.descend('status'),
       stream,
@@ -67,7 +66,7 @@ class DyoDeploymentService {
       return null
     }
 
-    const stream = () => this.client.subscribeToDeploymentEditEvents(IdRequest.fromJSON(req))
+    const stream = () => this.client.subscribeToDeploymentEditEvents(ServiceIdRequest.fromJSON(req))
     return new GrpcConnection(this.logger.descend('edit-events'), stream, transform, options)
   }
 

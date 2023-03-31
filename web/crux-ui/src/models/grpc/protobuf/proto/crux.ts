@@ -168,168 +168,6 @@ export function nodeConnectionStatusToJSON(object: NodeConnectionStatus): string
   }
 }
 
-export enum NodeType {
-  NODE_TYPE_UNSPECIFIED = 0,
-  DOCKER = 1,
-  K8S = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function nodeTypeFromJSON(object: any): NodeType {
-  switch (object) {
-    case 0:
-    case 'NODE_TYPE_UNSPECIFIED':
-      return NodeType.NODE_TYPE_UNSPECIFIED
-    case 1:
-    case 'DOCKER':
-      return NodeType.DOCKER
-    case 2:
-    case 'K8S':
-      return NodeType.K8S
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return NodeType.UNRECOGNIZED
-  }
-}
-
-export function nodeTypeToJSON(object: NodeType): string {
-  switch (object) {
-    case NodeType.NODE_TYPE_UNSPECIFIED:
-      return 'NODE_TYPE_UNSPECIFIED'
-    case NodeType.DOCKER:
-      return 'DOCKER'
-    case NodeType.K8S:
-      return 'K8S'
-    case NodeType.UNRECOGNIZED:
-    default:
-      return 'UNRECOGNIZED'
-  }
-}
-
-export enum NodeScriptType {
-  NODE_SCRIPT_TYPE_UNSPECIFIED = 0,
-  SHELL = 1,
-  POWERSHELL = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function nodeScriptTypeFromJSON(object: any): NodeScriptType {
-  switch (object) {
-    case 0:
-    case 'NODE_SCRIPT_TYPE_UNSPECIFIED':
-      return NodeScriptType.NODE_SCRIPT_TYPE_UNSPECIFIED
-    case 1:
-    case 'SHELL':
-      return NodeScriptType.SHELL
-    case 2:
-    case 'POWERSHELL':
-      return NodeScriptType.POWERSHELL
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return NodeScriptType.UNRECOGNIZED
-  }
-}
-
-export function nodeScriptTypeToJSON(object: NodeScriptType): string {
-  switch (object) {
-    case NodeScriptType.NODE_SCRIPT_TYPE_UNSPECIFIED:
-      return 'NODE_SCRIPT_TYPE_UNSPECIFIED'
-    case NodeScriptType.SHELL:
-      return 'SHELL'
-    case NodeScriptType.POWERSHELL:
-      return 'POWERSHELL'
-    case NodeScriptType.UNRECOGNIZED:
-    default:
-      return 'UNRECOGNIZED'
-  }
-}
-
-export enum VersionType {
-  VERSION_TYPE_UNSPECIFIED = 0,
-  INCREMENTAL = 1,
-  ROLLING = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function versionTypeFromJSON(object: any): VersionType {
-  switch (object) {
-    case 0:
-    case 'VERSION_TYPE_UNSPECIFIED':
-      return VersionType.VERSION_TYPE_UNSPECIFIED
-    case 1:
-    case 'INCREMENTAL':
-      return VersionType.INCREMENTAL
-    case 2:
-    case 'ROLLING':
-      return VersionType.ROLLING
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return VersionType.UNRECOGNIZED
-  }
-}
-
-export function versionTypeToJSON(object: VersionType): string {
-  switch (object) {
-    case VersionType.VERSION_TYPE_UNSPECIFIED:
-      return 'VERSION_TYPE_UNSPECIFIED'
-    case VersionType.INCREMENTAL:
-      return 'INCREMENTAL'
-    case VersionType.ROLLING:
-      return 'ROLLING'
-    case VersionType.UNRECOGNIZED:
-    default:
-      return 'UNRECOGNIZED'
-  }
-}
-
-export enum DeploymentEventType {
-  DEPLOYMENT_EVENT_TYPE_UNSPECIFIED = 0,
-  DEPLOYMENT_LOG = 1,
-  DEPLOYMENT_STATUS = 2,
-  CONTAINER_STATUS = 3,
-  UNRECOGNIZED = -1,
-}
-
-export function deploymentEventTypeFromJSON(object: any): DeploymentEventType {
-  switch (object) {
-    case 0:
-    case 'DEPLOYMENT_EVENT_TYPE_UNSPECIFIED':
-      return DeploymentEventType.DEPLOYMENT_EVENT_TYPE_UNSPECIFIED
-    case 1:
-    case 'DEPLOYMENT_LOG':
-      return DeploymentEventType.DEPLOYMENT_LOG
-    case 2:
-    case 'DEPLOYMENT_STATUS':
-      return DeploymentEventType.DEPLOYMENT_STATUS
-    case 3:
-    case 'CONTAINER_STATUS':
-      return DeploymentEventType.CONTAINER_STATUS
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return DeploymentEventType.UNRECOGNIZED
-  }
-}
-
-export function deploymentEventTypeToJSON(object: DeploymentEventType): string {
-  switch (object) {
-    case DeploymentEventType.DEPLOYMENT_EVENT_TYPE_UNSPECIFIED:
-      return 'DEPLOYMENT_EVENT_TYPE_UNSPECIFIED'
-    case DeploymentEventType.DEPLOYMENT_LOG:
-      return 'DEPLOYMENT_LOG'
-    case DeploymentEventType.DEPLOYMENT_STATUS:
-      return 'DEPLOYMENT_STATUS'
-    case DeploymentEventType.CONTAINER_STATUS:
-      return 'CONTAINER_STATUS'
-    case DeploymentEventType.UNRECOGNIZED:
-    default:
-      return 'UNRECOGNIZED'
-  }
-}
-
 export enum ServiceStatus {
   SERVICE_STATUS_UNSPECIFIED = 0,
   UNAVAILABLE = 1,
@@ -379,24 +217,11 @@ export interface ServiceIdRequest {
   id: string
 }
 
-export interface IdRequest {
-  id: string
-}
-
 export interface AuditResponse {
   createdBy: string
   createdAt: Timestamp | undefined
   updatedBy?: string | undefined
   updatedAt?: Timestamp | undefined
-}
-
-export interface CreateEntityResponse {
-  id: string
-  createdAt: Timestamp | undefined
-}
-
-export interface UpdateEntityResponse {
-  updatedAt: Timestamp | undefined
 }
 
 export interface VolumeLink {
@@ -619,21 +444,6 @@ export interface InstanceResponse {
   config?: InstanceContainerConfig | undefined
 }
 
-export interface PatchInstanceRequest {
-  id: string
-  config?: InstanceContainerConfig | undefined
-  resetSection?: string | undefined
-}
-
-export interface DeploymentEventContainerState {
-  instanceId: string
-  state: ContainerState
-}
-
-export interface DeploymentEventLog {
-  log: string[]
-}
-
 export interface HealthResponse {
   status: ServiceStatus
   cruxVersion: string
@@ -686,57 +496,6 @@ export const ServiceIdRequest = {
 
   fromPartial<I extends Exact<DeepPartial<ServiceIdRequest>, I>>(object: I): ServiceIdRequest {
     const message = createBaseServiceIdRequest()
-    message.id = object.id ?? ''
-    return message
-  },
-}
-
-function createBaseIdRequest(): IdRequest {
-  return { id: '' }
-}
-
-export const IdRequest = {
-  encode(message: IdRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== '') {
-      writer.uint32(10).string(message.id)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): IdRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseIdRequest()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.id = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): IdRequest {
-    return { id: isSet(object.id) ? String(object.id) : '' }
-  },
-
-  toJSON(message: IdRequest): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<IdRequest>, I>>(base?: I): IdRequest {
-    return IdRequest.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<IdRequest>, I>>(object: I): IdRequest {
-    const message = createBaseIdRequest()
     message.id = object.id ?? ''
     return message
   },
@@ -818,121 +577,6 @@ export const AuditResponse = {
     message.createdAt =
       object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
     message.updatedBy = object.updatedBy ?? undefined
-    message.updatedAt =
-      object.updatedAt !== undefined && object.updatedAt !== null ? Timestamp.fromPartial(object.updatedAt) : undefined
-    return message
-  },
-}
-
-function createBaseCreateEntityResponse(): CreateEntityResponse {
-  return { id: '', createdAt: undefined }
-}
-
-export const CreateEntityResponse = {
-  encode(message: CreateEntityResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== '') {
-      writer.uint32(10).string(message.id)
-    }
-    if (message.createdAt !== undefined) {
-      Timestamp.encode(message.createdAt, writer.uint32(802).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): CreateEntityResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCreateEntityResponse()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.id = reader.string()
-          break
-        case 100:
-          message.createdAt = Timestamp.decode(reader, reader.uint32())
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): CreateEntityResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-    }
-  },
-
-  toJSON(message: CreateEntityResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<CreateEntityResponse>, I>>(base?: I): CreateEntityResponse {
-    return CreateEntityResponse.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<CreateEntityResponse>, I>>(object: I): CreateEntityResponse {
-    const message = createBaseCreateEntityResponse()
-    message.id = object.id ?? ''
-    message.createdAt =
-      object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
-    return message
-  },
-}
-
-function createBaseUpdateEntityResponse(): UpdateEntityResponse {
-  return { updatedAt: undefined }
-}
-
-export const UpdateEntityResponse = {
-  encode(message: UpdateEntityResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.updatedAt !== undefined) {
-      Timestamp.encode(message.updatedAt, writer.uint32(802).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): UpdateEntityResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUpdateEntityResponse()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 100:
-          message.updatedAt = Timestamp.decode(reader, reader.uint32())
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): UpdateEntityResponse {
-    return { updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined }
-  },
-
-  toJSON(message: UpdateEntityResponse): unknown {
-    const obj: any = {}
-    message.updatedAt !== undefined && (obj.updatedAt = fromTimestamp(message.updatedAt).toISOString())
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<UpdateEntityResponse>, I>>(base?: I): UpdateEntityResponse {
-    return UpdateEntityResponse.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<UpdateEntityResponse>, I>>(object: I): UpdateEntityResponse {
-    const message = createBaseUpdateEntityResponse()
     message.updatedAt =
       object.updatedAt !== undefined && object.updatedAt !== null ? Timestamp.fromPartial(object.updatedAt) : undefined
     return message
@@ -3670,200 +3314,6 @@ export const InstanceResponse = {
   },
 }
 
-function createBasePatchInstanceRequest(): PatchInstanceRequest {
-  return { id: '' }
-}
-
-export const PatchInstanceRequest = {
-  encode(message: PatchInstanceRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== '') {
-      writer.uint32(10).string(message.id)
-    }
-    if (message.config !== undefined) {
-      InstanceContainerConfig.encode(message.config, writer.uint32(802).fork()).ldelim()
-    }
-    if (message.resetSection !== undefined) {
-      writer.uint32(810).string(message.resetSection)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): PatchInstanceRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBasePatchInstanceRequest()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.id = reader.string()
-          break
-        case 100:
-          message.config = InstanceContainerConfig.decode(reader, reader.uint32())
-          break
-        case 101:
-          message.resetSection = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): PatchInstanceRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      config: isSet(object.config) ? InstanceContainerConfig.fromJSON(object.config) : undefined,
-      resetSection: isSet(object.resetSection) ? String(object.resetSection) : undefined,
-    }
-  },
-
-  toJSON(message: PatchInstanceRequest): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.config !== undefined &&
-      (obj.config = message.config ? InstanceContainerConfig.toJSON(message.config) : undefined)
-    message.resetSection !== undefined && (obj.resetSection = message.resetSection)
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<PatchInstanceRequest>, I>>(base?: I): PatchInstanceRequest {
-    return PatchInstanceRequest.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<PatchInstanceRequest>, I>>(object: I): PatchInstanceRequest {
-    const message = createBasePatchInstanceRequest()
-    message.id = object.id ?? ''
-    message.config =
-      object.config !== undefined && object.config !== null
-        ? InstanceContainerConfig.fromPartial(object.config)
-        : undefined
-    message.resetSection = object.resetSection ?? undefined
-    return message
-  },
-}
-
-function createBaseDeploymentEventContainerState(): DeploymentEventContainerState {
-  return { instanceId: '', state: 0 }
-}
-
-export const DeploymentEventContainerState = {
-  encode(message: DeploymentEventContainerState, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.instanceId !== '') {
-      writer.uint32(10).string(message.instanceId)
-    }
-    if (message.state !== 0) {
-      writer.uint32(16).int32(message.state)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentEventContainerState {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentEventContainerState()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.instanceId = reader.string()
-          break
-        case 2:
-          message.state = reader.int32() as any
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): DeploymentEventContainerState {
-    return {
-      instanceId: isSet(object.instanceId) ? String(object.instanceId) : '',
-      state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
-    }
-  },
-
-  toJSON(message: DeploymentEventContainerState): unknown {
-    const obj: any = {}
-    message.instanceId !== undefined && (obj.instanceId = message.instanceId)
-    message.state !== undefined && (obj.state = containerStateToJSON(message.state))
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<DeploymentEventContainerState>, I>>(base?: I): DeploymentEventContainerState {
-    return DeploymentEventContainerState.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<DeploymentEventContainerState>, I>>(
-    object: I,
-  ): DeploymentEventContainerState {
-    const message = createBaseDeploymentEventContainerState()
-    message.instanceId = object.instanceId ?? ''
-    message.state = object.state ?? 0
-    return message
-  },
-}
-
-function createBaseDeploymentEventLog(): DeploymentEventLog {
-  return { log: [] }
-}
-
-export const DeploymentEventLog = {
-  encode(message: DeploymentEventLog, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    for (const v of message.log) {
-      writer.uint32(8002).string(v!)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentEventLog {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentEventLog()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1000:
-          message.log.push(reader.string())
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): DeploymentEventLog {
-    return { log: Array.isArray(object?.log) ? object.log.map((e: any) => String(e)) : [] }
-  },
-
-  toJSON(message: DeploymentEventLog): unknown {
-    const obj: any = {}
-    if (message.log) {
-      obj.log = message.log.map(e => e)
-    } else {
-      obj.log = []
-    }
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<DeploymentEventLog>, I>>(base?: I): DeploymentEventLog {
-    return DeploymentEventLog.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<DeploymentEventLog>, I>>(object: I): DeploymentEventLog {
-    const message = createBaseDeploymentEventLog()
-    message.log = object.log?.map(e => e) || []
-    return message
-  },
-}
-
 function createBaseHealthResponse(): HealthResponse {
   return { status: 0, cruxVersion: '' }
 }
@@ -4016,8 +3466,8 @@ export const CruxDeploymentService = {
     path: '/crux.CruxDeployment/SubscribeToDeploymentEvents',
     requestStream: false,
     responseStream: true,
-    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    requestSerialize: (value: ServiceIdRequest) => Buffer.from(ServiceIdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => ServiceIdRequest.decode(value),
     responseSerialize: (value: DeploymentProgressMessage) =>
       Buffer.from(DeploymentProgressMessage.encode(value).finish()),
     responseDeserialize: (value: Buffer) => DeploymentProgressMessage.decode(value),
@@ -4035,17 +3485,17 @@ export const CruxDeploymentService = {
 } as const
 
 export interface CruxDeploymentServer extends UntypedServiceImplementation {
-  subscribeToDeploymentEvents: handleServerStreamingCall<IdRequest, DeploymentProgressMessage>
+  subscribeToDeploymentEvents: handleServerStreamingCall<ServiceIdRequest, DeploymentProgressMessage>
   subscribeToDeploymentEditEvents: handleServerStreamingCall<ServiceIdRequest, DeploymentEditEventMessage>
 }
 
 export interface CruxDeploymentClient extends Client {
   subscribeToDeploymentEvents(
-    request: IdRequest,
+    request: ServiceIdRequest,
     options?: Partial<CallOptions>,
   ): ClientReadableStream<DeploymentProgressMessage>
   subscribeToDeploymentEvents(
-    request: IdRequest,
+    request: ServiceIdRequest,
     metadata?: Metadata,
     options?: Partial<CallOptions>,
   ): ClientReadableStream<DeploymentProgressMessage>

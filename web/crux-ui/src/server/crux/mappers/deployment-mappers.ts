@@ -1,11 +1,10 @@
-import { DeploymentEventType, DeploymentStatus, Instance, InstanceContainerConfigData } from '@app/models'
+import { DeploymentStatus, Instance, InstanceContainerConfigData } from '@app/models'
 import {
   DeploymentStatus as ProtoDeploymentStatus,
   deploymentStatusToJSON,
 } from '@app/models/grpc/protobuf/proto/common'
 
 import {
-  DeploymentEventType as ProtoDeploymentEventType,
   InstanceContainerConfig as ProtoInstanceContainerConfig,
   InstanceResponse,
 } from '@app/models/grpc/protobuf/proto/crux'
@@ -18,19 +17,6 @@ export const deploymentStatusToDto = (status: ProtoDeploymentStatus): Deployment
       return 'in-progress'
     default:
       return deploymentStatusToJSON(status).toLowerCase() as DeploymentStatus
-  }
-}
-
-export const deploymentEventTypeToDto = (type: ProtoDeploymentEventType): DeploymentEventType => {
-  switch (type) {
-    case ProtoDeploymentEventType.DEPLOYMENT_LOG:
-      return 'log'
-    case ProtoDeploymentEventType.CONTAINER_STATUS:
-      return 'container-status'
-    case ProtoDeploymentEventType.DEPLOYMENT_STATUS:
-      return 'deployment-status'
-    default:
-      return null
   }
 }
 
