@@ -74,6 +74,7 @@ export default class ContainerLogStream {
       return
     }
 
+    console.log('node stream finished')
     this.stream.complete()
     this.completer?.next(undefined)
     this.completer = null

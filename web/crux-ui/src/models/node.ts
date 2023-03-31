@@ -58,7 +58,7 @@ export type NodeGenerateScript = {
   type: NodeType
   rootPath?: string
   scriptType: NodeInstallScriptType
-  dagentTraefik?: NodeInstallTraefik
+  traefik?: NodeInstallTraefik
 }
 
 export type NodeDeleteContainer = {
@@ -97,7 +97,7 @@ export type ContainerListMessage = Container[]
 
 export const WS_TYPE_DELETE_CONTAINER = 'delete-containers'
 export type DeleteContainerMessage = {
-  id: ContainerIdentifier
+  container: ContainerIdentifier
 }
 
 export const WS_TYPE_UPDATE_NODE_AGENT = 'update-node-agent'

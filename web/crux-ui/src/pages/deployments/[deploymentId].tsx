@@ -34,8 +34,9 @@ import {
   versionApiUrl,
   versionUrl,
 } from '@app/routes'
-import { getCruxFromContext, withContextAuthorization } from '@app/utils'
+import { withContextAuthorization } from '@app/utils'
 import { containerConfigSchema, getValidationError } from '@app/validations'
+import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -233,7 +234,6 @@ export const getDeploymentRoot = async (context: NextPageContext) => {
   const deployment = await getCruxFromContext<DeploymentDetails>(context, deploymentApiUrl(deploymentId))
   const product = await getCruxFromContext<ProductDetails>(context, productApiUrl(deployment.product.id))
   const node = await getCruxFromContext<NodeDetails>(context, nodeApiUrl(deployment.node.id))
-
   const version = await getCruxFromContext<VersionDetails>(
     context,
     versionApiUrl(deployment.product.id, deployment.version.id),

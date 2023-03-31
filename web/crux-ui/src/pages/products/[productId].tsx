@@ -27,7 +27,8 @@ import {
   versionSetDefaultApiUrl,
   versionUrl,
 } from '@app/routes'
-import { getCruxFromContext, withContextAuthorization } from '@app/utils'
+import { withContextAuthorization } from '@app/utils'
+import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'

@@ -1,6 +1,10 @@
-import { BadRequestException, CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common'
+import { CallHandler, ConflictException, ExecutionContext, NestInterceptor, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { catchError, Observable } from 'rxjs'
+import {
+  AlreadyExistsException as GrpcAlreadyExistsException,
+  NotFoundException as GrpcNotFoundException,
+} from 'src/exception/errors'
 
 type NotFoundErrorMappings = { [P in Prisma.ModelName]: string }
 
@@ -10,11 +14,11 @@ const UNIQUE_CONSTRAINT_FAILED = 'P2002'
 const NOT_FOUND = 'P2025'
 
 export default class PrismaErrorInterceptor implements NestInterceptor {
-  intercept(_: ExecutionContext, next: CallHandler): Observable<any> {
-    return next.handle().pipe(catchError(err => this.onError(err)))
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    return next.handle().pipe(catchError(err => this.onError(context, err)))
   }
 
-  onError(err: Error): any {
+  onError(context: ExecutionContext, err: Error): any {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === UNIQUE_CONSTRAINT_FAILED) {
         const meta = err.meta ?? ({} as any)
@@ -23,19 +27,19 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
         const hasName = target && target.includes('name')
         const property = hasName ? 'name' : target?.toString() ?? 'unknown'
 
-        // TODO(@robot9706): gRPC error?
-        throw new BadRequestException({
+        const error = {
           message: `${property} taken`,
           property,
-          error: 'alreadyExists',
-        })
+        }
+
+        throw context.getType() === 'http' ? new ConflictException(error) : new GrpcAlreadyExistsException(error)
       } else if (err.code === NOT_FOUND) {
-        // TODO(@robot9706): gRPC error?
-        throw new BadRequestException({
+        const error = {
           property: this.prismaMessageToProperty(err.message),
           message: err.message,
-          error: 'notFound',
-        })
+        }
+
+        throw context.getType() === 'http' ? new NotFoundException(error) : new GrpcNotFoundException(error)
       }
     }
 
@@ -52,7 +56,7 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
       return null
     }
 
-    const tableName = message.substring(after, before)
+    const tableName = message.substring(after + FIRST_PART.length, before)
 
     return PrismaErrorInterceptor.NOT_FOUND_ERRORS[tableName]
   }

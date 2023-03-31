@@ -1,4 +1,4 @@
-import { Controller, UseGuards } from '@nestjs/common'
+import { Controller } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
@@ -11,33 +11,28 @@ import {
   WatchContainerLogRequest,
   WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { DisableAccessCheck, DisableIdentity } from 'src/shared/user-access.guard'
-import NodeTeamAccessGuard from './guards/node.team-access.guard'
+import { DisableAuth } from '../token/jwt-auth.guard'
 import NodeService from './node.service'
 
 @Controller()
 @CruxNodeControllerMethods()
-@UseGuards(NodeTeamAccessGuard)
 @UseGrpcInterceptors()
-export default class NodeController implements CruxNodeController {
+export default class NodeGrcpController implements CruxNodeController {
   constructor(private service: NodeService) {}
 
-  @DisableAccessCheck()
-  @DisableIdentity()
+  @DisableAuth()
   @AuditLogLevel('disabled')
   subscribeNodeEventChannel(request: ServiceIdRequest): Observable<NodeEventMessage> {
     return from(this.service.handleSubscribeNodeEventChannel(request)).pipe(concatAll())
   }
 
-  @DisableAccessCheck()
-  @DisableIdentity()
+  @DisableAuth()
   @AuditLogLevel('disabled')
   watchContainerState(request: WatchContainerStateRequest): Observable<ContainerStateListMessage> {
     return this.service.handleWatchContainerStatus(request)
   }
 
-  @DisableAccessCheck()
-  @DisableIdentity()
+  @DisableAuth()
   @AuditLogLevel('disabled')
   subscribeContainerLogChannel(request: WatchContainerLogRequest): Observable<ContainerLogMessage> {
     return this.service.handleContainerLogStream(request)

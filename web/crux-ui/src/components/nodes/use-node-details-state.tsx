@@ -154,7 +154,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     }
 
     sock.send(WS_TYPE_DELETE_CONTAINER, {
-      id: container.id,
+      container: container.id,
     } as DeleteContainerMessage)
   }
 

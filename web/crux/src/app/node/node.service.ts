@@ -1,16 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { Observable } from 'rxjs'
+import { map, Observable } from 'rxjs'
 import { Agent } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
 import { PreconditionFailedException } from 'src/exception/errors'
 import {
   ContainerCommandRequest,
+  ContainerIdentifier,
   ContainerLogMessage,
   ContainerOperation,
   ContainerStateListMessage,
   DeleteContainersRequest,
-  Empty,
 } from 'src/grpc/protobuf/proto/common'
 import {
   NodeEventMessage,
@@ -26,12 +26,9 @@ import {
   CreateNodeDto,
   NodeDetailsDto,
   NodeDto,
-  UpdateNodeDto,
   NodeGenerateScriptDto,
   NodeInstallDto,
-  NodeContainerCommandDto,
-  NodeDeleteContainerDto,
-  ContainerOperationDto,
+  UpdateNodeDto,
 } from './node.dto'
 import NodeMapper from './node.mapper'
 
@@ -212,44 +209,68 @@ export default class NodeService {
     this.agentService.updateAgent(id)
   }
 
-  sendContainerCommand(id: string, request: NodeContainerCommandDto) {
-    const { container, operation } = request
-    const agent = this.agentService.getByIdOrThrow(id)
+  startContainer(nodeId: string, prefix: string, name: string) {
+    this.sendContainerOperation(
+      nodeId,
+      {
+        prefix,
+        name,
+      },
+      ContainerOperation.START_CONTAINER,
+    )
+  }
+
+  stopContainer(nodeId: string, prefix: string, name: string) {
+    this.sendContainerOperation(
+      nodeId,
+      {
+        prefix,
+        name,
+      },
+      ContainerOperation.STOP_CONTAINER,
+    )
+  }
+
+  restartContainer(nodeId: string, prefix: string, name: string) {
+    this.sendContainerOperation(
+      nodeId,
+      {
+        prefix,
+        name,
+      },
+      ContainerOperation.RESTART_CONTAINER,
+    )
+  }
+
+  deleteAllContainers(nodeId: string, prefix: string): Observable<void> {
+    const agent = this.agentService.getByIdOrThrow(nodeId)
+    const cmd: DeleteContainersRequest = {
+      prefix,
+    }
+
+    return agent.deleteContainers(cmd).pipe(map(() => undefined))
+  }
+
+  deleteContainer(nodeId: string, prefix: string, name: string): Observable<void> {
+    const agent = this.agentService.getByIdOrThrow(nodeId)
+    const cmd: DeleteContainersRequest = {
+      container: {
+        prefix: prefix ?? '',
+        name,
+      },
+    }
+
+    return agent.deleteContainers(cmd).pipe(map(() => undefined))
+  }
+
+  private sendContainerOperation(nodeId: string, container: ContainerIdentifier, operation: ContainerOperation) {
+    const agent = this.agentService.getByIdOrThrow(nodeId)
 
     const command: ContainerCommandRequest = {
-      container: {
-        prefix: container.prefix,
-        name: container.name,
-      },
-      operation: NodeService.operationDtoToAgent(operation),
+      container,
+      operation,
     }
+
     agent.sendContainerCommand(command)
-  }
-
-  deleteContainers(id: string, request: NodeDeleteContainerDto): Observable<Empty> {
-    const agent = this.agentService.getByIdOrThrow(id)
-    const cmd: DeleteContainersRequest = {
-      prefix: request.prefix,
-      container: request.container
-        ? {
-            prefix: request.container.prefix ?? '',
-            name: request.container.name,
-          }
-        : undefined,
-    }
-    return agent.deleteContainers(cmd)
-  }
-
-  static operationDtoToAgent(operation: ContainerOperationDto): ContainerOperation {
-    switch (operation) {
-      case 'start':
-        return ContainerOperation.START_CONTAINER
-      case 'stop':
-        return ContainerOperation.STOP_CONTAINER
-      case 'restart':
-        return ContainerOperation.RESTART_CONTAINER
-      default:
-        return ContainerOperation.UNRECOGNIZED
-    }
   }
 }

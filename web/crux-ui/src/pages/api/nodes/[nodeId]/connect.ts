@@ -2,7 +2,6 @@ import { Logger } from '@app/logger'
 import {
   ContainerCommandMessage,
   DeleteContainerMessage,
-  NodeDeleteContainer,
   WatchContainerLogMessage,
   WatchContainerStatusMessage,
   WS_TYPE_CONTAINER_COMMAND,
@@ -12,13 +11,19 @@ import {
   WS_TYPE_WATCH_CONTAINER_LOG,
   WS_TYPE_WATCH_CONTAINER_STATUS,
 } from '@app/models'
-import { nodeApiUrl, nodeContainerApiUrl } from '@app/routes'
-import { fetchCruxFromRequest, fetchCruxFromWebsocket } from '@app/utils'
+import {
+  nodeApiUrl,
+  nodeGlobalContainerApiUrl,
+  nodeGlobalContainerOperationApiUrl,
+  nodePrefixContainerApiUrl,
+  nodePrefixContainerOperationApiUrl,
+} from '@app/routes'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
 import ContainerLogStreamService from '@server/container-log-stream-service'
 import ContainerStatusWatcherService from '@server/container-status-watchers-service'
+import { deleteCrux, getCrux, postCrux } from '@server/crux-api'
 import { cruxFromConnection } from '@server/crux/crux'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
 import useWebsocketErrorMiddleware from '@server/websocket-error-middleware'
@@ -36,7 +41,7 @@ const onAuthorize = async (endpoint: WsEndpoint, req: NextApiRequest): Promise<b
   const nodeId = endpoint.query.nodeId as string
 
   try {
-    await fetchCruxFromRequest(req, nodeApiUrl(nodeId))
+    await getCrux(req, nodeApiUrl(nodeId))
     return true
   } catch {
     return false
@@ -57,14 +62,15 @@ const onContainerCommand = async (
   message: WsMessage<ContainerCommandMessage>,
 ) => {
   const nodeId = endpoint.query.nodeId as string
+  const req = message.payload
 
-  await fetchCruxFromWebsocket(connection, nodeContainerApiUrl(nodeId), {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify(message.payload),
-  })
+  await postCrux(
+    connection.request,
+    req.container.prefix
+      ? nodePrefixContainerOperationApiUrl(nodeId, req.container, req.operation)
+      : nodeGlobalContainerOperationApiUrl(nodeId, req.container.name, req.operation),
+    null,
+  )
 }
 
 const onDeleteContainer = async (
@@ -73,21 +79,14 @@ const onDeleteContainer = async (
   message: WsMessage<DeleteContainerMessage>,
 ) => {
   const nodeId = endpoint.query.nodeId as string
+  const req = message.payload
 
-  const { id } = message.payload
-  const req = {
-    container: {
-      prefix: id.prefix ?? '',
-      name: id.name,
-    },
-  } as NodeDeleteContainer
-  await fetchCruxFromWebsocket(connection, nodeContainerApiUrl(nodeId), {
-    method: 'DELETE',
-    headers: {
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify(req),
-  })
+  await deleteCrux(
+    connection.request,
+    req.container.prefix
+      ? nodePrefixContainerApiUrl(nodeId, req.container)
+      : nodeGlobalContainerApiUrl(nodeId, req.container.name),
+  )
 }
 
 const onWatchContainerStatus = async (

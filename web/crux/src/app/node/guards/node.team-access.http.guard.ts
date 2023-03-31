@@ -1,8 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { identityOfContext } from 'src/app/token/jwt-auth.guard'
+import { DISABLE_AUTH, identityOfContext } from 'src/app/token/jwt-auth.guard'
 import PrismaService from 'src/services/prisma.service'
-import { DISABLE_IDENTITY } from 'src/shared/user-access.guard'
 
 // TODO(@robot9706): Remove http from name when Node gRPC is removed
 @Injectable()
@@ -17,8 +16,8 @@ export default class NodeTeamAccessHttpGuard implements CanActivate {
       return true
     }
 
-    const identityDisabled = this.reflector.get<boolean>(DISABLE_IDENTITY, context.getHandler())
-    if (identityDisabled) {
+    const authDisabled = this.reflector.get<boolean>(DISABLE_AUTH, context.getHandler())
+    if (authDisabled) {
       return true
     }
 

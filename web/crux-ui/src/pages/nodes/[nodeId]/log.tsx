@@ -13,7 +13,8 @@ import {
   WS_TYPE_WATCH_CONTAINER_LOG,
 } from '@app/models'
 import { nodeApiUrl, nodeContainerLogUrl, nodeUrl, nodeWsUrl, ROUTE_NODES } from '@app/routes'
-import { fetchCrux, withContextAuthorization } from '@app/utils'
+import { withContextAuthorization } from '@app/utils'
+import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
@@ -86,8 +87,7 @@ export default NodeContainerLogPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const { nodeId, prefix, name } = context.query
 
-  const nodeRes = await fetchCrux(context, nodeApiUrl(nodeId as string))
-  const node = (await nodeRes.json()) as NodeDetails
+  const node = await getCruxFromContext<NodeDetails>(context, nodeApiUrl(nodeId as string))
 
   return {
     props: {

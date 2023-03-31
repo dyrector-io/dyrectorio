@@ -23,10 +23,11 @@ export const nodeGenerateScriptSchema = yup.object().shape({
     .mixed<NodeInstallScriptType>()
     .oneOf([...NODE_INSTALL_SCRIPT_TYPE_VALUES])
     .required(),
-  dagentTraefik: yup
+  traefik: yup
     .object()
     .shape({
       acmeEmail: yup.string().email().required().label('ACME email'),
     })
-    .default(undefined),
+    .nullable()
+    .default(null),
 })

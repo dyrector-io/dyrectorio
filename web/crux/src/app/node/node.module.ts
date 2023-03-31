@@ -1,22 +1,29 @@
-import KratosService from 'src/services/kratos.service'
-import { Module } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
-import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import { HttpModule } from '@nestjs/axios'
-import DomainNotificationService from 'src/services/domain.notification.service'
+import { Module } from '@nestjs/common'
 import NotificationTemplateBuilder from 'src/builders/notification.template.builder'
+import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
+import DomainNotificationService from 'src/services/domain.notification.service'
+import KratosService from 'src/services/kratos.service'
+import PrismaService from 'src/services/prisma.service'
 import AgentModule from '../agent/agent.module'
 import TeamModule from '../team/team.module'
 import TeamRepository from '../team/team.repository'
-import NodeController from './node.controller'
-import NodeMapper from './node.mapper'
-import NodeService from './node.service'
+import NodeGrcpController from './node.grpc.controller'
+import NodeGlobalContainerHttpController from './node.global-container.http.controller'
 import NodeHttpController from './node.http.controller'
+import NodeMapper from './node.mapper'
+import NodePrefixContainerHttpController from './node.prefix-container.http.controller'
+import NodeService from './node.service'
 
 @Module({
   imports: [AgentModule, TeamModule, HttpModule],
   exports: [NodeMapper],
-  controllers: [NodeController, NodeHttpController],
+  controllers: [
+    NodeGrcpController,
+    NodeHttpController,
+    NodePrefixContainerHttpController,
+    NodeGlobalContainerHttpController,
+  ],
   providers: [
     PrismaService,
     NodeService,

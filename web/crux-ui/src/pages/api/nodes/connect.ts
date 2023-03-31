@@ -2,7 +2,7 @@ import { invalidArgument } from '@app/error-responses'
 import { Logger } from '@app/logger'
 import { activeTeamOf, UserMeta } from '@app/models'
 import { API_USERS_ME } from '@app/routes'
-import { postCrux } from '@app/utils'
+import { postCrux } from '@server/crux-api'
 import { redirectedWebSocketEndpoint } from '@server/websocket-endpoint'
 import { NextApiRequest } from 'next'
 

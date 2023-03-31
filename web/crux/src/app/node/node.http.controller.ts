@@ -1,47 +1,25 @@
-import {
-  Controller,
-  Body,
-  Get,
-  UseGuards,
-  UseInterceptors,
-  Param,
-  Post,
-  HttpCode,
-  Put,
-  Delete,
-  PipeTransform,
-  Type,
-  Header,
-} from '@nestjs/common'
+import { Body, Controller, Delete, Get, Header, HttpCode, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import { first, Observable, timeout } from 'rxjs'
-import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
-import { WatchContainerStateRequest } from 'src/grpc/protobuf/proto/crux'
+import { Observable } from 'rxjs'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import { DisableAccessCheck, DisableIdentity } from 'src/shared/user-access.guard'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
-import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
+import JwtAuthGuard, { DisableAuth, IdentityFromRequest } from '../token/jwt-auth.guard'
 import NodeTeamAccessHttpGuard from './guards/node.team-access.http.guard'
+import { NodeId, ROUTE_NODES, ROUTE_NODE_ID } from './node.const'
 import {
   CreateNodeDto,
-  NodeGenerateScriptDto,
   NodeDetailsDto,
   NodeDto,
+  NodeGenerateScriptDto,
   NodeInstallDto,
   UpdateNodeDto,
-  NodeContainerCommandDto,
-  NodeDeleteContainerDto,
 } from './node.dto'
 import NodeService from './node.service'
 import NodeGenerateScriptValidationPipe from './pipes/node.generate-script.pipe'
 import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
-
-const ROUTE_NODES = 'nodes'
-const ROUTE_NODE_ID = ':nodeId'
-const NodeId = (...pipes: (Type<PipeTransform> | PipeTransform)[]) => Param('nodeId', ...pipes)
 
 @Controller(ROUTE_NODES)
 @ApiTags(ROUTE_NODES)
@@ -59,6 +37,12 @@ export default class NodeHttpController {
     return this.service.getNodes(identity)
   }
 
+  @Get(ROUTE_NODE_ID)
+  @ApiOkResponse({ type: NodeDetailsDto })
+  async getNodeDetails(@NodeId() nodeId: string): Promise<NodeDetailsDto> {
+    return this.service.getNodeDetails(nodeId)
+  }
+
   @Post()
   @CreatedWithLocation()
   @ApiBody({ type: CreateNodeDto })
@@ -70,7 +54,7 @@ export default class NodeHttpController {
     const node = await this.service.createNode(request, identity)
 
     return {
-      url: `/nodes/${node.id}`,
+      url: `/${ROUTE_NODES}/${node.id}`,
       body: node,
     }
   }
@@ -88,11 +72,11 @@ export default class NodeHttpController {
 
   @Delete(ROUTE_NODE_ID)
   @HttpCode(204)
-  async deleteProduct(@NodeId() nodeId: string): Promise<void> {
+  async deleteNode(@NodeId() nodeId: string): Promise<void> {
     return this.service.deleteNode(nodeId)
   }
 
-  @Post(`${ROUTE_NODE_ID}/setup`)
+  @Post(`${ROUTE_NODE_ID}/script`)
   @ApiOkResponse({ type: NodeInstallDto })
   async generateScript(
     @NodeId(NodeGenerateScriptValidationPipe) nodeId: string,
@@ -102,7 +86,7 @@ export default class NodeHttpController {
     return await this.service.generateScript(nodeId, request, identity)
   }
 
-  @Delete(`${ROUTE_NODE_ID}/setup`)
+  @Delete(`${ROUTE_NODE_ID}/script`)
   @HttpCode(204)
   @ApiNoContentResponse()
   async discardScript(@NodeId() nodeId: string): Promise<void> {
@@ -112,8 +96,7 @@ export default class NodeHttpController {
   @Get(`${ROUTE_NODE_ID}/script`)
   @ApiOkResponse({ type: 'string' })
   @Header('content-type', 'text/plain')
-  @DisableAccessCheck()
-  @DisableIdentity()
+  @DisableAuth()
   async getScript(@NodeId(NodeGetScriptValidationPipe) nodeId: string): Promise<string> {
     return await this.service.getScript(nodeId)
   }
@@ -130,25 +113,5 @@ export default class NodeHttpController {
   @ApiNoContentResponse()
   async updateNodeAgent(@NodeId() nodeId: string): Promise<void> {
     this.service.updateNodeAgent(nodeId)
-  }
-
-  @Post(`${ROUTE_NODE_ID}/container`)
-  @HttpCode(204)
-  @ApiNoContentResponse()
-  sendContainerCommand(@NodeId() nodeId: string, @Body() request: NodeContainerCommandDto) {
-    this.service.sendContainerCommand(nodeId, request)
-  }
-
-  @Delete(`${ROUTE_NODE_ID}/container`)
-  @HttpCode(204)
-  @ApiNoContentResponse()
-  deleteContainers(@NodeId() nodeId: string, @Body() request: NodeDeleteContainerDto) {
-    this.service.deleteContainers(nodeId, request)
-  }
-
-  @Get(ROUTE_NODE_ID)
-  @ApiOkResponse({ type: NodeDetailsDto })
-  async getNodeDetails(@NodeId() nodeId: string): Promise<NodeDetailsDto> {
-    return this.service.getNodeDetails(nodeId)
   }
 }

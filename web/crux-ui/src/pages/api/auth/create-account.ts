@@ -2,8 +2,8 @@ import { HEADER_LOCATION } from '@app/const'
 import { missingParameter } from '@app/error-responses'
 import { CreateAccount, toRecoverNewPasswordError } from '@app/models'
 import { userInvitationApiUrl } from '@app/routes'
-import { fetchCrux } from '@app/utils'
 import { UpdateRecoveryFlowWithCodeMethod } from '@ory/kratos-client'
+import { fetchCrux } from '@server/crux-api'
 import { useErrorMiddleware } from '@server/error-middleware'
 import kratos, {
   cookieOf,

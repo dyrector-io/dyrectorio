@@ -15,7 +15,8 @@ import {
   notificationUrl,
   ROUTE_NOTIFICATIONS,
 } from '@app/routes'
-import { getCruxFromContext, withContextAuthorization } from '@app/utils'
+import { withContextAuthorization } from '@app/utils'
+import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'

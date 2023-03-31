@@ -6,9 +6,9 @@ import {
   WS_TYPE_DYO_ERROR,
 } from '@app/models'
 import { deploymentEventsApiUrl } from '@app/routes'
-import { getCrux } from '@app/utils'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
+import { getCrux } from './crux-api'
 import { cruxFromConnection } from './crux/crux'
 import { fromGrpcError, parseGrpcError } from './error-middleware'
 

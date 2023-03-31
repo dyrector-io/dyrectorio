@@ -1,5 +1,6 @@
 import { Translate } from 'next-translate'
 import toast from 'react-hot-toast'
+import { fromApiError } from './error-responses'
 import { DyoErrorDto, DyoErrorMessage } from './models'
 
 type Translation = {
@@ -10,6 +11,12 @@ type Translation = {
 type FormikSetErrorValue = (field: string, message: string | undefined) => void
 
 type Translator = (stringId: string, status: number, dto: DyoErrorDto) => Translation
+
+type CruxApiError = {
+  message: string
+  property?: string
+  value?: string
+}
 
 export const defaultTranslator: (t: Translate) => Translator = t => (stringId, status, dto) => {
   if (status < 500) {
@@ -35,11 +42,13 @@ export const apiErrorHandler =
     let translation = null
 
     try {
-      const dto = (await res.json()) as DyoErrorDto
-      translation = translator(dto.error, status, dto)
+      const cruxError = (await res.json()) as CruxApiError
+      const dyoError = fromApiError(status, cruxError)
+
+      translation = translator(dyoError.error, status, dyoError)
 
       if (setErrorValue && translation.input) {
-        setErrorValue(dto.property, translation.input)
+        setErrorValue(dyoError.property, translation.input)
       }
     } catch (err) {
       translation = translator(null, 500, null)

@@ -35,10 +35,10 @@ import {
   WS_TYPE_PATCH_RECEIVED,
 } from '@app/models'
 import { deploymentApiUrl, instanceApiUrl } from '@app/routes'
-import { getCrux, patchCrux } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
+import { getCrux, patchCrux } from '@server/crux-api'
 import { Crux } from '@server/crux/crux'
 import DeploymentEventsService from '@server/deployment-event-service'
 import EditorService from '@server/editing/editor-service'

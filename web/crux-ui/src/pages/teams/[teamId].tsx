@@ -24,8 +24,9 @@ import {
   userStatusReinvitable,
 } from '@app/models'
 import { API_USERS_ME, ROUTE_TEAMS, teamApiUrl, teamUrl, teamUserApiUrl, teamUserReinviteUrl } from '@app/routes'
-import { getCruxFromContext, redirectTo, utcDateToLocale, withContextAuthorization } from '@app/utils'
+import { redirectTo, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
+import { getCruxFromContext } from '@server/crux-api'
 import { sessionOfContext } from '@server/kratos'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'

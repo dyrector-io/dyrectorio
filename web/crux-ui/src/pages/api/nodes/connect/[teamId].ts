@@ -12,10 +12,10 @@ import {
   WS_TYPE_UPDATE_NODE_AGENT,
 } from '@app/models'
 import { API_NODES, API_USERS_ME, nodeUpdateApiUrl } from '@app/routes'
-import { fetchCruxFromWebsocket, postCrux } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
+import { getCrux, postCrux } from '@server/crux-api'
 import { Crux } from '@server/crux/crux'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
 import { NextApiRequest } from 'next'
@@ -24,7 +24,6 @@ const logger = new Logger('ws-nodes')
 
 const onReady = async (endpoint: WsEndpoint) => {
   const teamId = endpoint.query.teamId as string
-
   await Crux.withIdentity(null, null).nodes.subscribeToNodeEvents(teamId, {
     onClose: () => logger.debug(`Crux disconnected for: ${teamId}`),
     onMessage: message => endpoint.sendAll(WS_TYPE_NODE_STATUS, message),
@@ -51,8 +50,7 @@ const onGetNodeStatuses = async (
 ) => {
   const req = message.payload
 
-  const nodesRes = await fetchCruxFromWebsocket(connection, API_NODES)
-  const nodes = (await nodesRes.json()) as Node[]
+  const nodes = await getCrux<Node[]>(connection.request, API_NODES)
 
   const res = nodes
     .filter(it => req.nodeIds.includes(it.id))
@@ -73,9 +71,7 @@ const onUpdateNodeAgent = async (
   connection: WsConnection,
   message: WsMessage<UpdateNodeAgentMessage>,
 ) => {
-  await fetchCruxFromWebsocket(connection, nodeUpdateApiUrl(message.payload.id), {
-    method: 'POST',
-  })
+  await postCrux(connection.request, nodeUpdateApiUrl(message.payload.id), message.payload)
 }
 
 export default routedWebSocketEndpoint(

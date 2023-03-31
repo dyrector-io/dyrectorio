@@ -18,7 +18,7 @@ import {
   NODE_INSTALL_SCRIPT_TYPE_VALUES,
   NODE_TYPE_VALUES,
 } from '@app/models'
-import { nodeSetupApiUrl } from '@app/routes'
+import { nodeScriptApiUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
 import { nodeGenerateScriptSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
@@ -48,7 +48,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const onDiscard = async () => {
-    const res = await fetch(nodeSetupApiUrl(node.id), {
+    const res = await fetch(nodeScriptApiUrl(node.id), {
       method: 'DELETE',
     })
 
@@ -68,7 +68,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
       type: node.type,
       rootPath: '',
       scriptType: 'shell',
-      dagentTraefik: undefined,
+      traefik: null,
     },
     validationSchema: nodeGenerateScriptSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -78,7 +78,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
         cancelCountdown()
       }
 
-      const res = await sendForm('POST', nodeSetupApiUrl(node.id), values)
+      const res = await sendForm('POST', nodeScriptApiUrl(node.id), values)
 
       if (!res.ok) {
         setSubmitting(false)
@@ -96,7 +96,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
     },
   })
 
-  const onTraefikChanged = it => formik.setFieldValue('dagentTraefik', it ? {} : undefined)
+  const onTraefikChanged = it => formik.setFieldValue('traefik', it ? {} : null)
 
   const onTypeChanged = it => {
     if (it === 'k8s') {
@@ -130,29 +130,30 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
               <DyoHeading element="h4" className="text-lg text-bright mb-2">
                 {t('traefik')}
               </DyoHeading>
+
               <div className="flex flex-row mb-2">
                 <DyoLabel className="my-auto mx-4">{t('installTraefik')}</DyoLabel>
-                <DyoSwitch
-                  name="dagentTraefik"
-                  checked={formik.values.dagentTraefik !== undefined}
-                  onCheckedChange={onTraefikChanged}
-                />
+
+                <DyoSwitch name="traefik" checked={!!formik.values.traefik} onCheckedChange={onTraefikChanged} />
               </div>
-              {formik.values.dagentTraefik && (
+
+              {formik.values.traefik && (
                 <div className="ml-2 mb-2">
                   <DyoLabel className="text-lg mb-2.5" textColor="text-bright">
                     {t('traefikAcmeEmail')}
                   </DyoLabel>
+
                   <DyoInput
-                    name="dagentTraefik.acmeEmail"
+                    name="traefik.acmeEmail"
                     className="max-w-lg mb-2.5"
                     grow
-                    value={formik.values.dagentTraefik.acmeEmail ?? null}
+                    value={formik.values.traefik.acmeEmail ?? ''}
                     onChange={formik.handleChange}
-                    message={formik.errors.dagentTraefik ? formik.errors.dagentTraefik.acmeEmail : undefined}
+                    message={formik.errors.traefik ? formik.errors.traefik.acmeEmail : null}
                   />
                 </div>
               )}
+
               <div className="text-bright mb-4">
                 <DyoHeading element="h4" className="text-md">
                   {t('whatIsTraefik')}
@@ -160,9 +161,11 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
                 <p className="text-light-eased ml-4">{t('traefikExplanation')}</p>
               </div>
+
               <DyoHeading element="h4" className="text-lg text-bright mb-2">
                 {t('type')}
               </DyoHeading>
+
               <DyoChips
                 className="mb-2 ml-2"
                 choices={NODE_INSTALL_SCRIPT_TYPE_VALUES}
@@ -170,9 +173,11 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                 converter={(it: NodeInstallScriptType) => t(`installScript.${it}`)}
                 onSelectionChange={it => formik.setFieldValue('scriptType', it, true)}
               />
+
               <DyoLabel className="text-lg mb-2.5" textColor="text-bright">
                 {t('persistentDataPath')}
               </DyoLabel>
+
               <DyoInput
                 name="rootPath"
                 placeholder={t('optionalLeaveEmptyForDefaults')}

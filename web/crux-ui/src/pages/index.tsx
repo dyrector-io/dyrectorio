@@ -1,6 +1,7 @@
 import { UserMeta } from '@app/models'
 import { API_USERS_ME, ROUTE_DASHBOARD, ROUTE_TEAMS_CREATE, teamInvitationUrl } from '@app/routes'
-import { postCruxFromContext, redirectTo, withContextAuthorization } from '@app/utils'
+import { redirectTo, withContextAuthorization } from '@app/utils'
+import { postCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 
 // eslint-disable-next-line react/jsx-no-useless-fragment

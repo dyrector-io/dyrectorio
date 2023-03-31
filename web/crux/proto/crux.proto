@@ -33,16 +33,6 @@ service CruxDeployment {
 
 service CruxHealth { rpc getHealth(common.Empty) returns (HealthResponse); }
 
-service CruxStorage {
-  // CRUD
-  rpc GetStorages(common.Empty) returns (StorageListResponse);
-  rpc CreateStorage(CreateStorageRequest) returns (CreateEntityResponse);
-  rpc UpdateStorage(UpdateStorageRequest) returns (UpdateEntityResponse);
-  rpc DeleteStorage(IdRequest) returns (common.Empty);
-  rpc GetStorageDetails(IdRequest) returns (StorageDetailsResponse);
-  rpc GetStorageOptions(common.Empty) returns (StorageOptionListResponse);
-}
-
 /**
  *
  * Common messages
@@ -373,61 +363,4 @@ message HealthResponse {
   ServiceStatus status = 100;
   string cruxVersion = 101;
   optional string lastMigration = 102;
-}
-
-// STORAGES
-
-message StorageResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-  string url = 103;
-}
-
-message StorageListResponse { repeated StorageResponse data = 1000; }
-
-message CreateStorageRequest {
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-  string url = 103;
-  optional string accessKey = 104;
-  optional string secretKey = 105;
-}
-
-message UpdateStorageRequest {
-  string id = 1;
-
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-  string url = 103;
-  optional string accessKey = 104;
-  optional string secretKey = 105;
-}
-
-message StorageDetailsResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-  string url = 103;
-  optional string accessKey = 104;
-  optional string secretKey = 105;
-  bool inUse = 106;
-}
-
-message StorageOptionResponse {
-  string id = 1;
-
-  string name = 100;
-}
-
-message StorageOptionListResponse {
-  repeated StorageOptionResponse data = 1000;
 }

@@ -1,16 +1,12 @@
-import { CanActivate, createParamDecorator, ExecutionContext, Injectable, SetMetadata } from '@nestjs/common'
-import { Reflector } from '@nestjs/core'
-import PrismaService from 'src/services/prisma.service'
 import { Metadata } from '@grpc/grpc-js'
-import KratosService from 'src/services/kratos.service'
-import { UnauthorizedException } from '@nestjs/common/exceptions'
-import { Identity } from '@ory/kratos-client'
 import { ServerSurfaceCall } from '@grpc/grpc-js/build/src/server-call'
-
-export const DISABLE_ACCESS_CHECK = 'disable-team-access-check'
-export const DISABLE_IDENTITY = 'disable-accessed-by-metadata'
-
-export const DisableAccessCheck = () => SetMetadata(DISABLE_ACCESS_CHECK, true)
+import { CanActivate, createParamDecorator, ExecutionContext, Injectable } from '@nestjs/common'
+import { UnauthorizedException } from '@nestjs/common/exceptions'
+import { Reflector } from '@nestjs/core'
+import { Identity } from '@ory/kratos-client'
+import { DISABLE_AUTH } from 'src/app/token/jwt-auth.guard'
+import KratosService from 'src/services/kratos.service'
+import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
 export default class UserAccessGuard<Req> implements CanActivate {
@@ -21,8 +17,8 @@ export default class UserAccessGuard<Req> implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const disabled = this.reflector.get<boolean>(DISABLE_ACCESS_CHECK, context.getHandler())
-    if (disabled) {
+    const disableAuth = this.reflector.get<boolean>(DISABLE_AUTH, context.getHandler())
+    if (disableAuth) {
       return true
     }
 
@@ -50,8 +46,6 @@ export default class UserAccessGuard<Req> implements CanActivate {
     return true
   }
 }
-
-export const DisableIdentity = () => SetMetadata(DISABLE_IDENTITY, true)
 
 export const IdentityFromGrpcCall = createParamDecorator((_: unknown, context: ExecutionContext): Identity => {
   const call = context.getArgByIndex(2) as IdentityAwareServerSurfaceCall

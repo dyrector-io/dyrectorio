@@ -37,10 +37,10 @@ import {
   WS_TYPE_PATCH_RECEIVED,
 } from '@app/models'
 import { imageApiUrl, versionApiUrl, versionImagesApiUrl, versionImagesOrderApiUrl } from '@app/routes'
-import { deleteCrux, getCrux, patchCrux, postCrux, putCrux } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
+import { deleteCrux, getCrux, patchCrux, postCrux, putCrux } from '@server/crux-api'
 import EditorService from '@server/editing/editor-service'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
 import useWebsocketErrorMiddleware from '@server/websocket-error-middleware'
