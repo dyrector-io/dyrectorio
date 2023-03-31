@@ -6,7 +6,7 @@ const statusToAssetName = (status: NodeStatus) => {
   switch (status) {
     case 'unreachable':
       return 'circle-red'
-    case 'running':
+    case 'connected':
       return 'circle-green'
     default:
       return 'circle-orange'

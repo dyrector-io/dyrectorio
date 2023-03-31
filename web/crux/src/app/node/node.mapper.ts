@@ -1,63 +1,68 @@
 import { Injectable } from '@nestjs/common'
 import { Node, NodeTypeEnum } from '@prisma/client'
 import AgentInstaller from 'src/domain/agent-installer'
-import { toTimestamp } from 'src/domain/utils'
-import {
-  AuditResponse,
-  NodeConnectionStatus,
-  NodeDetailsResponse,
-  NodeInstallResponse,
-  NodeResponse,
-  NodeScriptResponse,
-  NodeType,
-} from 'src/grpc/protobuf/proto/crux'
+import { InvalidArgumentException } from 'src/exception/errors'
+import { NodeConnectionStatus as ProtoNodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
 import AgentService from '../agent/agent.service'
+import { NodeConnectionStatus, NodeType } from '../shared/shared.dto'
+import { NodeDetailsDto, NodeDto, NodeInstallDto } from './node.dto'
 
 @Injectable()
 export default class NodeMapper {
   constructor(private agentService: AgentService) {}
 
-  listItemToProto(node: Node): NodeResponse {
+  nodeStatusToDto(status: ProtoNodeConnectionStatus): NodeConnectionStatus {
+    switch (status) {
+      case ProtoNodeConnectionStatus.CONNECTED:
+        return 'connected'
+      case ProtoNodeConnectionStatus.UNREACHABLE:
+        return 'unreachable'
+      default:
+        throw new InvalidArgumentException({
+          message: 'Invalid NodeConnectionStatus',
+          property: 'status',
+          value: status,
+        })
+    }
+  }
+
+  listItemToDto(node: Node): NodeDto {
     const agent = this.agentService.getById(node.id)
 
-    const status = agent?.getConnectionStatus() ?? NodeConnectionStatus.UNREACHABLE
+    const status = agent?.getConnectionStatus() ?? ProtoNodeConnectionStatus.UNREACHABLE
     return {
-      ...node,
-      audit: AuditResponse.fromJSON(node),
+      id: node.id,
+      name: node.name,
+      description: node.description,
+      icon: node.icon,
       address: agent?.address,
+      status: this.nodeStatusToDto(status),
+      connectedAt: node.connectedAt ?? null,
       version: agent?.version,
-      status,
-      connectedAt: node.connectedAt ? toTimestamp(node.connectedAt) : null,
-      type: node.type === NodeTypeEnum.docker ? NodeType.DOCKER : NodeType.K8S,
+      type: node.type,
       updating: agent?.updating,
     }
   }
 
-  detailsToProto(node: Node): NodeDetailsResponse {
+  detailsToDto(node: Node): NodeDetailsDto {
     const installer = this.agentService.getInstallerByNodeId(node.id)
 
     return {
-      ...this.listItemToProto(node),
+      ...this.listItemToDto(node),
       hasToken: !!node.token,
-      install: installer ? this.installerToProto(installer) : null,
-      script: installer ? this.scriptToProto(node, installer) : null,
+      install: installer ? this.installerToDto(installer) : null,
     }
   }
 
   nodeTypeToDb(type: NodeType): NodeTypeEnum {
-    return type === NodeType.DOCKER ? NodeTypeEnum.docker : NodeTypeEnum.k8s
+    return type === 'docker' ? NodeTypeEnum.docker : NodeTypeEnum.k8s
   }
 
-  installerToProto(installer: AgentInstaller): NodeInstallResponse {
+  installerToDto(installer: AgentInstaller): NodeInstallDto {
     return {
       command: installer.getCommand(),
-      expireAt: toTimestamp(new Date(installer.expireAt)),
-    }
-  }
-
-  scriptToProto(node: Node, installer: AgentInstaller): NodeScriptResponse {
-    return {
-      content: installer.getScript(node.name),
+      script: installer.getScript(),
+      expireAt: installer.expireAt,
     }
   }
 }

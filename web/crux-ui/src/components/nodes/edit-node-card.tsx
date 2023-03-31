@@ -13,13 +13,12 @@ import useConfirmation from '@app/hooks/use-confirmation'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
-  CreateDyoNode,
-  DyoNode,
-  DyoNodeDetails,
-  DyoNodeInstall,
+  CreateNode,
+  NodeDetails,
+  NodeInstall,
   NodeStatusMessage,
   NodeType,
-  UpdateDyoNode,
+  UpdateNode,
   UpdateNodeAgentMessage,
   WS_TYPE_NODE_STATUS,
   WS_TYPE_UPDATE_NODE_AGENT,
@@ -37,8 +36,8 @@ import useNodeState from './use-node-state'
 
 interface EditNodeCardProps {
   className?: string
-  node?: DyoNodeDetails
-  onNodeEdited: (node: DyoNode, shouldClose?: boolean) => void
+  node?: NodeDetails
+  onNodeEdited: (node: NodeDetails, shouldClose?: boolean) => void
   submitRef?: MutableRefObject<() => Promise<any>>
 }
 
@@ -56,7 +55,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
         description: '',
         type: 'docker',
         status: 'unreachable',
-      } as DyoNodeDetails),
+      } as NodeDetails),
   )
 
   const editing = !!node.id
@@ -79,16 +78,16 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       ...node,
       address: message.address ?? node.address,
       status: message.status,
-      hasToken: message.status === 'running' || node.hasToken,
+      hasToken: message.status === 'connected' || node.hasToken,
       updating: message.updating ?? node.updating,
       install: null,
-    } as DyoNodeDetails
+    } as NodeDetails
 
     setNode(newNode)
     onNodeEdited(newNode)
   })
 
-  const onNodeInstallChanged = (install: DyoNodeInstall) => {
+  const onNodeInstallChanged = (install: NodeInstall) => {
     const newNode = {
       ...node,
       install,
@@ -115,7 +114,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
         version: null,
         hasToken: false,
         install: null,
-      } as DyoNodeDetails
+      } as NodeDetails
 
       setNode(newNode)
       onNodeEdited(newNode)
@@ -145,29 +144,29 @@ const EditNodeCard = (props: EditNodeCardProps) => {
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
-      const body: CreateDyoNode | UpdateDyoNode = {
+      const body: CreateNode | UpdateNode = {
         ...values,
       }
 
       const res = await (!editing
-        ? sendForm('POST', API_NODES, body as CreateDyoNode)
-        : sendForm('PUT', nodeApiUrl(node.id), body as UpdateDyoNode))
+        ? sendForm('POST', API_NODES, body as CreateNode)
+        : sendForm('PUT', nodeApiUrl(node.id), body as UpdateNode))
 
       if (res.ok) {
-        let result: DyoNodeDetails
+        let result: NodeDetails
         if (res.status !== 204) {
           const json = await res.json()
           result = {
             ...json,
             status: node.status,
-          } as DyoNodeDetails
+          } as NodeDetails
         } else {
           result = {
             ...values,
             id: node.id,
             status: node.status,
             type: node.type,
-          } as DyoNodeDetails
+          } as NodeDetails
         }
 
         setNode(result)
@@ -267,7 +266,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
                   className="px-6 mt-4 ml-4 mr-auto"
                   secondary
                   onClick={onUpdateNode}
-                  disabled={node.status !== 'running' || node.updating}
+                  disabled={node.status !== 'connected' || node.updating}
                 >
                   <span className="flex">
                     {t('update')}

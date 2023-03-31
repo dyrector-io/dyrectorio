@@ -7,20 +7,20 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   ContainerLogMessage,
-  DyoNodeDetails,
+  NodeDetails,
   WatchContainerLogMessage,
   WS_TYPE_CONTAINER_LOG,
   WS_TYPE_WATCH_CONTAINER_LOG,
 } from '@app/models'
-import { nodeContainerLogUrl, nodeUrl, nodeWsUrl, ROUTE_NODES } from '@app/routes'
+import { nodeApiUrl, nodeContainerLogUrl, nodeUrl, nodeWsUrl, ROUTE_NODES } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
+import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
 interface InstanceLogPageProps {
-  node: DyoNodeDetails
+  node: NodeDetails
   prefix: string
   name: string
 }
@@ -87,7 +87,7 @@ export default NodeContainerLogPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const { nodeId, prefix, name } = context.query
 
-  const node = await cruxFromContext(context).nodes.getNodeDetails(nodeId as string)
+  const node = await getCruxFromContext<NodeDetails>(context, nodeApiUrl(nodeId as string))
 
   return {
     props: {

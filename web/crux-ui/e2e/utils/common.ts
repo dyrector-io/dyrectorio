@@ -35,8 +35,7 @@ export const mailslurperFromBaseURL = (baseURL: string): MailSlurper => {
 
 export const cruxUrlFromConfig = (config: FullConfig) => {
   const { baseURL } = config.projects[0].use
-  const url = process.env.CRUX_URL ?? baseURL
-  return replacePort(url, '8000')
+  return process.env.CRUX_URL ?? baseURL
 }
 
 export const extractKratosLinkFromMail = (body: string): string => {

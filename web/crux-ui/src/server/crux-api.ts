@@ -1,6 +1,6 @@
+import { fromApiError } from '@app/error-responses'
 import http from 'http'
 import { NextPageContext } from 'next'
-import { fromApiError } from './error-middleware'
 
 export const fetchCrux = async (requestOrCookie: http.IncomingMessage | string, url: string, init?: RequestInit) => {
   const cruxUrl = process.env.CRUX_URL ?? process.env.CRUX_UI_URL
@@ -23,7 +23,7 @@ export const fetchCrux = async (requestOrCookie: http.IncomingMessage | string, 
       console.error('[ERROR]: Crux fetch failed to parse error body of url', url)
     }
 
-    const apiError = fromApiError(res.status, body)
+    const apiError = fromApiError(res.status, body ?? {})
     throw apiError
   }
 

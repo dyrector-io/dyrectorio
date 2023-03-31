@@ -9,7 +9,7 @@ test('Install dagent should be successful', async ({ page }) => {
   await page.locator(`h3:has-text("${DAGENT_NODE}")`).click()
   await page.waitForURL(`${ROUTE_NODES}/**`)
 
-  await expect(await page.locator('span:has-text("Running")')).toHaveCount(1)
+  await expect(await page.locator('span:has-text("Connected")')).toHaveCount(1)
 })
 
 test('After adding a new node the setup process should be shown', async ({ page }) => {

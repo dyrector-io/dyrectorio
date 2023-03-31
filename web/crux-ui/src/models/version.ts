@@ -1,7 +1,7 @@
 import { Audit } from './audit'
 import { DeploymentStatus } from './common'
 import { VersionImage } from './image'
-import { BasicNode, NodeStatus } from './node'
+import { Node } from './node'
 
 export const VERSION_TYPE_VALUES = ['incremental', 'rolling'] as const
 export type VersionType = typeof VERSION_TYPE_VALUES[number]
@@ -38,8 +38,7 @@ export type DeploymentByVersion = {
   status: DeploymentStatus
   note?: string | null
   updatedAt: string
-  node: BasicNode
-  nodeStatus?: NodeStatus | null
+  node: Node
 }
 
 export type VersionDetails = Version & {

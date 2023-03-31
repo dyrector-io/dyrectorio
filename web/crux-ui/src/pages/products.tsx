@@ -12,7 +12,6 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Product, ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
 import { API_PRODUCTS, ROUTE_PRODUCTS } from '@app/routes'
-
 import { auditToLocaleDate, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'

@@ -1,4 +1,3 @@
-import { XOR } from './common'
 import { Container, ContainerCommand, ContainerIdentifier } from './container'
 
 export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
@@ -7,7 +6,7 @@ export type NodeType = typeof NODE_TYPE_VALUES[number]
 export const NODE_INSTALL_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
 export type NodeInstallScriptType = typeof NODE_INSTALL_SCRIPT_TYPE_VALUES[number]
 
-export type NodeStatus = 'connecting' | 'unreachable' | 'running'
+export type NodeStatus = 'unreachable' | 'connected'
 
 export type NodeConnection = {
   address?: string
@@ -16,71 +15,56 @@ export type NodeConnection = {
   version?: string
 }
 
-export type BasicNode = {
+export type Node = NodeConnection & {
   id: string
   name: string
+  description?: string
+  icon?: string
   type: NodeType
+  updating: boolean
 }
 
-export type DyoNode = BasicNode &
-  NodeConnection & {
-    icon?: string
-    description?: string
-    updating: boolean
-  }
+export type NodeInstall = {
+  command: string
+  script: string
+  expireAt: string
+}
 
-export const nodeConnectionOf = (node: DyoNode | DyoNodeDetails): NodeConnection => ({
+export type NodeDetails = Node & {
+  hasToken: boolean
+  install?: NodeInstall
+}
+
+export const nodeConnectionOf = (node: Node): NodeConnection => ({
   address: node.address,
   status: node.status,
   connectedAt: node.connectedAt,
   version: node.version,
 })
 
-export type DyoNodeInstall = {
-  command: string
-  expireAt: string
-  script: string
-}
-
-export type DyoNodeDetails = DyoNode & {
-  hasToken: boolean
-  install?: DyoNodeInstall
-}
-
-export type CreateDyoNode = {
-  icon?: string
+export type CreateNode = {
   name: string
   description?: string
+  icon?: string
 }
 
-export type DyoNodeInstallTraefik = {
+export type UpdateNode = CreateNode
+
+export type NodeInstallTraefik = {
   acmeEmail: string
 }
 
-export type DyoNodeGenerateScript = {
+export type NodeGenerateScript = {
   type: NodeType
   rootPath?: string
   scriptType: NodeInstallScriptType
-  traefik?: DyoNodeInstallTraefik
+  traefik?: NodeInstallTraefik
 }
 
-export type UpdateDyoNode = CreateDyoNode & {
-  address: string
+export type NodeDeleteContainer = {
+  container?: ContainerIdentifier
+  prefix?: string
 }
-
-export type DyoNodeScript = {
-  content: string
-}
-
-type DeleteContainersByPrefix = {
-  prefix: string
-}
-
-type DeleteContainerById = {
-  id: ContainerIdentifier
-}
-
-export type DeleteContainers = XOR<DeleteContainersByPrefix, DeleteContainerById>
 
 // ws
 
@@ -113,7 +97,7 @@ export type ContainerListMessage = Container[]
 
 export const WS_TYPE_DELETE_CONTAINER = 'delete-containers'
 export type DeleteContainerMessage = {
-  id: ContainerIdentifier
+  container: ContainerIdentifier
 }
 
 export const WS_TYPE_UPDATE_NODE_AGENT = 'update-node-agent'

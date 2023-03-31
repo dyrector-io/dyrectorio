@@ -19,6 +19,7 @@ import {
   DeploymentInvalidatedSecrets,
   DeploymentRoot,
   mergeConfigs,
+  NodeDetails,
   ProductDetails,
   VersionDetails,
 } from '@app/models'
@@ -26,6 +27,7 @@ import {
   deploymentApiUrl,
   deploymentDeployUrl,
   deploymentUrl,
+  nodeApiUrl,
   productApiUrl,
   productUrl,
   ROUTE_PRODUCTS,
@@ -35,7 +37,6 @@ import {
 import { withContextAuthorization } from '@app/utils'
 import { containerConfigSchema, getValidationError } from '@app/validations'
 import { getCruxFromContext } from '@server/crux-api'
-import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -81,7 +82,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   }
 
   const onDeploy = async () => {
-    if (node.status !== 'running') {
+    if (node.status !== 'connected') {
       toast.error(t('errors.preconditionFailed'))
       return
     }
@@ -174,7 +175,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
               name: t('common:deployment'),
             })}
             deleteModalDescription={
-              node.status === 'running' && state.deployment.status === 'successful'
+              node.status === 'connected' && state.deployment.status === 'successful'
                 ? t('proceedYouDeletePrefix', state.deployment)
                 : t('common:proceedYouLoseAllDataToName', {
                     name: state.deployment.prefix,
@@ -196,7 +197,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
         ) : null}
 
         {state.deployable && !state.editing ? (
-          <DyoButton className="px-6 ml-4" onClick={onDeploy} disabled={node.status !== 'running'}>
+          <DyoButton className="px-6 ml-4" onClick={onDeploy} disabled={node.status !== 'connected'}>
             {t('common:deploy')}
           </DyoButton>
         ) : null}
@@ -227,13 +228,12 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
 export default DeploymentDetailsPage
 
-export const getDeploymentRoot = async (context: NextPageContext, crux: Crux) => {
+export const getDeploymentRoot = async (context: NextPageContext) => {
   const deploymentId = context.query.deploymentId as string
 
   const deployment = await getCruxFromContext<DeploymentDetails>(context, deploymentApiUrl(deploymentId))
   const product = await getCruxFromContext<ProductDetails>(context, productApiUrl(deployment.product.id))
-  const node = crux.nodes.getNodeDetails(deployment.node.id)
-
+  const node = await getCruxFromContext<NodeDetails>(context, nodeApiUrl(deployment.node.id))
   const version = await getCruxFromContext<VersionDetails>(
     context,
     versionApiUrl(deployment.product.id, deployment.version.id),
@@ -249,7 +249,7 @@ export const getDeploymentRoot = async (context: NextPageContext, crux: Crux) =>
 
 const getPageServerSideProps = async (context: NextPageContext) => ({
   props: {
-    deployment: await getDeploymentRoot(context, cruxFromContext(context)),
+    deployment: await getDeploymentRoot(context),
   },
 })
 

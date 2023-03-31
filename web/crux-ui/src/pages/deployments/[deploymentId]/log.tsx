@@ -22,7 +22,6 @@ import {
   versionUrl,
 } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
@@ -111,8 +110,7 @@ export default DeploymentContainerLogPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const { prefix, name } = context.query
 
-  const crux = cruxFromContext(context)
-  const deployment = await getDeploymentRoot(context, crux)
+  const deployment = await getDeploymentRoot(context)
 
   return {
     props: {

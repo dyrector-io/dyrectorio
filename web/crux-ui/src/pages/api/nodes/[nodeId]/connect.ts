@@ -11,12 +11,20 @@ import {
   WS_TYPE_WATCH_CONTAINER_LOG,
   WS_TYPE_WATCH_CONTAINER_STATUS,
 } from '@app/models'
+import {
+  nodeApiUrl,
+  nodeGlobalContainerApiUrl,
+  nodeGlobalContainerOperationApiUrl,
+  nodePrefixContainerApiUrl,
+  nodePrefixContainerOperationApiUrl,
+} from '@app/routes'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
 import ContainerLogStreamService from '@server/container-log-stream-service'
 import ContainerStatusWatcherService from '@server/container-status-watchers-service'
-import crux, { cruxFromConnection } from '@server/crux/crux'
+import { deleteCrux, getCrux, postCrux } from '@server/crux-api'
+import { cruxFromConnection } from '@server/crux/crux'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
 import useWebsocketErrorMiddleware from '@server/websocket-error-middleware'
 import { NextApiRequest } from 'next'
@@ -33,7 +41,7 @@ const onAuthorize = async (endpoint: WsEndpoint, req: NextApiRequest): Promise<b
   const nodeId = endpoint.query.nodeId as string
 
   try {
-    await crux(req).nodes.getNodeDetails(nodeId)
+    await getCrux(req, nodeApiUrl(nodeId))
     return true
   } catch {
     return false
@@ -54,8 +62,15 @@ const onContainerCommand = async (
   message: WsMessage<ContainerCommandMessage>,
 ) => {
   const nodeId = endpoint.query.nodeId as string
+  const req = message.payload
 
-  cruxFromConnection(connection).nodes.sendContainerCommand(nodeId, message.payload)
+  await postCrux(
+    connection.request,
+    req.container.prefix
+      ? nodePrefixContainerOperationApiUrl(nodeId, req.container, req.operation)
+      : nodeGlobalContainerOperationApiUrl(nodeId, req.container.name, req.operation),
+    null,
+  )
 }
 
 const onDeleteContainer = async (
@@ -64,8 +79,14 @@ const onDeleteContainer = async (
   message: WsMessage<DeleteContainerMessage>,
 ) => {
   const nodeId = endpoint.query.nodeId as string
+  const req = message.payload
 
-  cruxFromConnection(connection).nodes.deleteContainer(nodeId, message.payload)
+  await deleteCrux(
+    connection.request,
+    req.container.prefix
+      ? nodePrefixContainerApiUrl(nodeId, req.container)
+      : nodeGlobalContainerApiUrl(nodeId, req.container.name),
+  )
 }
 
 const onWatchContainerStatus = async (

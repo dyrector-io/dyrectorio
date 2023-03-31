@@ -145,7 +145,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     /* eslint-disable react/jsx-key */
     return [
       <Link className="flex place-items-center cursor-pointer" href={deploymentUrl(item.id)} passHref>
-        <NodeStatusIndicator className="mr-2" status={item.nodeStatus} />
+        <NodeStatusIndicator className="mr-2" status={item.node.status} />
         {item.node.name}
       </Link>,
       item.prefix,
@@ -159,16 +159,16 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           <div
             className={clsx(
               'mr-2 inline-block',
-              item.nodeStatus === 'running' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30',
+              item.node.status === 'connected' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30',
             )}
           >
             <Image
               src="/deploy.svg"
               alt={t('common:deploy')}
-              className={item.nodeStatus === 'running' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+              className={item.node.status === 'connected' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
               width={24}
               height={24}
-              onClick={() => item.nodeStatus === 'running' && onDeploy(item.id)}
+              onClick={() => item.node.status === 'connected' && onDeploy(item.id)}
             />
           </div>
         )}

@@ -28,6 +28,7 @@ import {
   InstanceJsonContainerConfig,
   mergeConfigs,
   mergeJsonConfigToInstanceContainerConfig,
+  NodeDetails,
   ProductDetails,
   VersionDetails,
   ViewState,
@@ -46,7 +47,6 @@ import { withContextAuthorization } from '@app/utils'
 import { jsonErrorOf } from '@app/validations/image'
 import { getMergedContainerConfigFieldErrors } from '@app/validations/instance'
 import { getCruxFromContext } from '@server/crux-api'
-import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useRef, useState } from 'react'
@@ -289,10 +289,9 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   const deploymentId = context.query.deploymentId as string
   const instanceId = context.query.instanceId as string
 
-  const crux = cruxFromContext(context)
   const product = await getCruxFromContext<ProductDetails>(context, productApiUrl(productId))
   const deploymentDetails = await getCruxFromContext<DeploymentDetails>(context, deploymentApiUrl(deploymentId))
-  const node = await crux.nodes.getNodeDetails(deploymentDetails.node.id)
+  const node = await getCruxFromContext<NodeDetails>(context, deploymentDetails.node.id)
 
   const version = await getCruxFromContext<VersionDetails>(context, versionApiUrl(productId, versionId))
 

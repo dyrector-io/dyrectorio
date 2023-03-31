@@ -3,14 +3,14 @@ import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { DyoNode } from '@app/models'
+import { Node } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import NodeStatusIndicator from './node-status-indicator'
 
 interface DyoNodeCardProps extends Omit<DyoCardProps, 'children'> {
-  node: DyoNode
+  node: Node
   titleHref?: string
   hideConnectionInfo?: boolean
 }

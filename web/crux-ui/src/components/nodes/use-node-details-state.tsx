@@ -10,7 +10,7 @@ import {
   containerPrefixNameOf,
   ContainerState,
   DeleteContainerMessage,
-  DyoNodeDetails,
+  NodeDetails,
   WS_TYPE_CONTAINER_COMMAND,
   WS_TYPE_CONTAINER_STATUS_LIST,
   WS_TYPE_DELETE_CONTAINER,
@@ -29,7 +29,7 @@ export type ContainerTargetStates = { [key: string]: ContainerState } // contain
 
 export type NodeDetailsState = {
   section: NodeDetailsSection
-  node: DyoNodeDetails
+  node: NodeDetails
   containerTargetStates: ContainerTargetStates
   filters: FilterConfig<Container, TextFilter>
   pagination: PaginationSettings
@@ -37,7 +37,7 @@ export type NodeDetailsState = {
 }
 
 export type NodeDetailsActions = {
-  onNodeEdited: (node: DyoNodeDetails, shouldClose?: boolean) => void
+  onNodeEdited: (node: NodeDetails, shouldClose?: boolean) => void
   setEditing: (editing: boolean) => void
   setPagination: (pagination: PaginationSettings) => void
   onStartContainer: (container: Container) => void
@@ -47,7 +47,7 @@ export type NodeDetailsActions = {
 }
 
 export type NodeDetailsStateOptions = {
-  node: DyoNodeDetails
+  node: NodeDetails
 }
 
 const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsState, NodeDetailsActions] => {
@@ -100,7 +100,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     }
   })
 
-  const onNodeEdited = (newNode: DyoNodeDetails, shouldClose?: boolean) => {
+  const onNodeEdited = (newNode: NodeDetails, shouldClose?: boolean) => {
     if (shouldClose) {
       setSection('containers')
     }
@@ -154,7 +154,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     }
 
     sock.send(WS_TYPE_DELETE_CONTAINER, {
-      id: container.id,
+      container: container.id,
     } as DeleteContainerMessage)
   }
 

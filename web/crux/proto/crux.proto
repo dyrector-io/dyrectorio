@@ -16,20 +16,6 @@ option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/crux";
  *
  */
 service CruxNode {
-  // CRUD
-  rpc GetNodes(common.Empty) returns (NodeListResponse);
-  rpc CreateNode(CreateNodeRequest) returns (CreateEntityResponse);
-  rpc UpdateNode(UpdateNodeRequest) returns (common.Empty);
-  rpc DeleteNode(IdRequest) returns (common.Empty);
-  rpc GetNodeDetails(IdRequest) returns (NodeDetailsResponse);
-  rpc GenerateScript(GenerateScriptRequest) returns (NodeInstallResponse);
-  rpc GetScript(ServiceIdRequest) returns (NodeScriptResponse);
-  rpc DiscardScript(IdRequest) returns (common.Empty);
-  rpc RevokeToken(IdRequest) returns (common.Empty);
-  rpc UpdateNodeAgent(IdRequest) returns (common.Empty);
-  rpc SendContainerCommand(NodeContainerCommandRequest) returns (common.Empty);
-  rpc DeleteContainers(NodeDeleteContainersRequest) returns (common.Empty);
-
   rpc SubscribeNodeEventChannel(ServiceIdRequest)
       returns (stream NodeEventMessage);
   rpc WatchContainerState(WatchContainerStateRequest)
@@ -257,86 +243,6 @@ message ImageResponse {
   google.protobuf.Timestamp createdAt = 105;
   string registryName = 106;
   RegistryType registryType = 107;
-}
-
-// NODE
-
-message NodeResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-  optional string address = 103;
-  NodeConnectionStatus status = 104;
-  optional google.protobuf.Timestamp connectedAt = 105;
-  optional string version = 106;
-  NodeType type = 107;
-  bool updating = 108;
-}
-
-message NodeDetailsResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-  optional string address = 103;
-  NodeConnectionStatus status = 104;
-  bool hasToken = 105;
-  optional google.protobuf.Timestamp connectedAt = 106;
-  optional NodeInstallResponse install = 107;
-  optional NodeScriptResponse script = 108;
-  optional string version = 109;
-  NodeType type = 110;
-  bool updating = 111;
-}
-
-message NodeListResponse { repeated NodeResponse data = 1000; }
-
-message CreateNodeRequest {
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-}
-
-message UpdateNodeRequest {
-  string id = 1;
-
-  string name = 100;
-  optional string description = 101;
-  optional string icon = 102;
-}
-
-message DagentTraefikOptions { string acmeEmail = 100; }
-
-message GenerateScriptRequest {
-  string id = 1;
-  NodeType type = 100;
-  optional string rootPath = 101;
-  NodeScriptType scriptType = 102;
-  optional DagentTraefikOptions dagentTraefik = 103;
-}
-
-message NodeInstallResponse {
-  string command = 100;
-  google.protobuf.Timestamp expireAt = 101;
-}
-
-message NodeScriptResponse { string content = 100; }
-
-message NodeContainerCommandRequest {
-  string id = 1;
-
-  common.ContainerCommandRequest command = 100;
-}
-
-message NodeDeleteContainersRequest {
-  string id = 1;
-
-  common.DeleteContainersRequest containers = 100;
 }
 
 /*
