@@ -63,6 +63,64 @@ Join our Discord and connect with other members to share and learn together. If 
 -   ChatOps & notification solutions
 -   Proud Ory Kratos users
 
+## Getting Started
+
+Our CLI tool lets you run and manage the whole dyrector.io project's containers, you will have a fully-featured platform locally.
+
+Stack:
+
+-   UI Service (crux-ui)
+-   Backend Service (crux)
+-   PostgreSQL database
+-   Authentication (Ory Kratos)
+-   Migrations
+-   SMTP mail test server
+
+### Prerequirements
+
+-   Docker installed on your system (Podman works, too).
+-   Go Compiler to run the CLI from its source code. (Precompiled binaries are planned)
+
+### Option 1: Go install
+
+1. Execute `go install github.com/dyrector-io/dyrectorio/golang/cmd/dyo@develop`
+2. Execute `dyo up`
+3. After you navigated to `localhost:8000` (this is the default traefik port) you will see a Login screen
+4. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
+5. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
+6. Open your e-mail message and using the link inside you can activate your account
+7. Happy deploying! 🎬
+
+### Option 2: From Source
+
+1. Clone the repository to your local workdir with `git clone`
+2. Execute `make up` in the project root
+3. Open the `localhost:8000`
+4. Happy deploying! 🎬
+
+## Development
+
+1. Read the CLI documentation first(see the end of this section)
+2. Decide which part of the project you want to work on, in this case it is crux, crux-ui or both
+3. Modify the CLI's settings file if you need it.
+4. Execute the correct CLI command using the appropriate flags to turn off crux or crux-ui services
+5. Start crux or crux-ui with the appropriate `npm` command, usually `npm run start`
+6. After you navigated to `localhost:8000` (this is the default traefik port) you will see a Login screen
+7. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
+8. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
+9. Open your e-mail message and using the link inside you can activate your account
+10. Fruitful contributing! 🎬
+
+Read more about the CLI in the [documentation](https://docs.dyrector.io/get-started/cli).
+
+## Non-development
+
+You can set up dyrectorio for self-hosting purposes with the [docker-compose](https://github.com/dyrector-io/dyrectorio/blob/develop/docker-compose.yaml) file located in the root folder.
+
+## Hosted version (SaaS)
+
+Besides the self-hosted instance of dyrectorio, you can check out the platform's alpha at [app.dyrectorio.com](https://app.dyrector.io). The platform is still in progress, we might refresh database time-to-time, so it's not recommended to use for production. In case you're interested in using dyrectorio in production, reach out to us via email and we'll set up a stable instance for you.
+
 ## How it works
 
 dyrector.io consists of an agent (GoLang) and a platform (UI developed in React.js, Next.js. Backend developed in Node.js, Nest.js). There are two types of agents communicating with the platform: one for Docker and another for Kubernetes. Communication takes place in gRPC with TLS encryption. The data is managed in a PostgreSQL database which we use with Prisma ORM.
@@ -89,69 +147,27 @@ Both Docker and Kubernetes require specialized staff to manage. Via dyrector.io,
 
 Seamless testing whenever your team wants to test the application, without waiting for a SysAdmin to set up an environment.
 
-## Getting Started
-
-Our CLI tool lets you run and manage the whole dyrector.io project's containers, you will have a fully-featured platform locally.
-
-Stack:
-
--   UI Service (crux-ui)
--   Backend Service (crux)
--   PostgreSQL database
--   Authentication (Ory Kratos)
--   Migrations
--   SMTP mail test server
-
-### Prerequirements
-
--   Docker installed on your system (Podman works, too).
--   Go Compiler to run the CLI from its source code. (Precompiled binaries are planned)
-
-### Go install
-
-1. Execute `go install github.com/dyrector-io/dyrectorio/golang/cmd/dyo@develop`
-2. Execute `dyo up`
-3. After you navigated to `localhost:8000` (this is the default traefik port) you will see a Login screen
-4. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
-5. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
-6. Open your e-mail message and using the link inside you can activate your account
-7. Happy deploying! 🎬
-
-### From Source
-
-1. Clone the repository to your local workdir with `git clone`
-2. Execute `make up` in the project root
-3. Open the `localhost:8000`
-4. Happy deploying! 🎬
-
-## Development
-
-1. Read the CLI documentation first(see the end of this section)
-2. Decide which part of the project you want to work on, in this case it is crux, crux-ui or both
-3. Modify the CLI's settings file if you need it.
-4. Execute the correct CLI command using the appropriate flags to turn off crux or crux-ui services
-5. Start crux or crux-ui with the appropriate `npm` command, usually `npm run start`
-6. After you navigated to `localhost:8000` (this is the default traefik port) you will see a Login screen
-7. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
-8. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
-9. Open your e-mail message and using the link inside you can activate your account
-10. Fruitful contributing! 🎬
-
-Read more about the CLI in the [documentation](https://docs.dyrector.io/get-started/cli).
-
-## Hosted version (SaaS)
-
-We are planning to support a hosted version in the near future.
-
 ## FAQ
-
--   How do I get in touch with the Support Team?
-
-    You can contact dyrector.io support directly using our [contact forms](https://dyrector.io/contact) for users and developers or by reaching out to us via email at help@dyrector.io. Developers can get in touch via our Community Discord server.
 
 -   Can we use dyrector.io without containerization?
 
     Unfortunately, we're unable to support applications that don't run in a containerization environment.
+
+-   Will the tool remain completely free in the future, despite certain features only being accessible with a license key in upcoming versions, despite being open source?
+
+    Our team consists of seven people, and although not all of them work on this project full-time, the majority do. We need to pay our engineers every month, and currently, we generate revenue by providing consultancy services. We are a fully independent team and do not have any investments. Our long-term goal is to work on this project full-time but to achieve this, we require funding.
+
+    Our plan is to make the full project available for free if you choose to self-host it, but we also want to create a SaaS model where users can pay based on their usage. We don't have a complete plan for this yet. At present, we enjoy working on this project, collecting feedback, and making improvements to it.
+
+-   What was the motivation behind making this tool?
+
+    We were working on a totally different project that included self-service release management capabilities of containerized apps as a business requirement. Our client made a white labelled product that needed self-service deployments to redistribute the product. While Portainer and Yacht are amazing projects, we just couldn't find one serving our exact needs, so we decided to make our platform.
+
+    After a while, we noticed that this is a bit of a niche use case, so we tried to extend its capabilities into an Internal Developer Platform direction so that it can be valuable to a lot of users. On top of these, we decided to make it open source so users can take a better look at the project before introducing it into their infrastructure.
+
+-   How do I get in touch with the Support Team?
+
+    You can contact dyrector.io support directly by reaching out to us via email at help@dyrector.io. Developers can get in touch via our Community Discord server.
 
 ## Community
 
@@ -173,14 +189,16 @@ The project can only accept contributions which are licensed under the [Apache L
 We use [semantic versioning](https://semver.org/), but shifted to the right, we don't bump major versions yet, until we reach beta phase.
 
 Minor version is raised if:
-- introduction of a braking API change (proto or HTTP)
-- new feature set is completed
-- milestone is reached
-- agent configuration changes
+
+-   introduction of a braking API change (proto or HTTP)
+-   new feature set is completed
+-   milestone is reached
+-   agent configuration changes
 
 Patch version is raised if:
-- important fixes in develop
-- any other reason
+
+-   important fixes in develop
+-   any other reason
 
 ## Changelog
 
