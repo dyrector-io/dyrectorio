@@ -119,7 +119,7 @@ You can set up dyrectorio for self-hosting purposes with the [docker-compose](ht
 
 ## Hosted version (SaaS)
 
-Besides the self-hosted instance of dyrectorio, you can check out the platform's alpha at [app.dyrectorio.com](https://app.dyrector.io). The platform is still in progress, we might refresh database time-to-time, so it's not recommended to use for production. In case you're interested in using dyrectorio in production, reach out to us via email and we'll set up a stable instance for you.
+Besides the self-hosted instance of dyrectorio, you can check out the platform's alpha at [app.dyrectorio.com](https://app.dyrector.io). The platform is still in progress, we might reset the database, so it's not recommended for production yet. In case you are interested about using dyrectorio in production, reach out to us via email and we'll set up a stable instance for you.
 
 ## How it works
 
