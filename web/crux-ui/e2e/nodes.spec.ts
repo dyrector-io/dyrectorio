@@ -3,197 +3,197 @@ import { expect, test } from '@playwright/test'
 import { DAGENT_NODE, screenshotPath } from './utils/common'
 import { addDeploymentToSimpleProduct, addImageToSimpleProduct, createProduct } from './utils/products'
 
-// test('Install dagent should be successful', async ({ page }) => {
-//   await page.goto(ROUTE_NODES)
+test('Install dagent should be successful', async ({ page }) => {
+  await page.goto(ROUTE_NODES)
 
-//   await page.locator(`h3:has-text("${DAGENT_NODE}")`).click()
-//   await page.waitForURL(`${ROUTE_NODES}/**`)
+  await page.locator(`h3:has-text("${DAGENT_NODE}")`).click()
+  await page.waitForURL(`${ROUTE_NODES}/**`)
 
-//   await expect(await page.locator('span:has-text("Connected")')).toHaveCount(1)
-// })
+  await expect(await page.locator('span:has-text("Connected")')).toHaveCount(1)
+})
 
-// test('After adding a new node the setup process should be shown', async ({ page }) => {
-//   await page.goto(ROUTE_NODES)
+test('After adding a new node the setup process should be shown', async ({ page }) => {
+  await page.goto(ROUTE_NODES)
 
-//   await page.locator('button:has-text("Add")').click()
+  await page.locator('button:has-text("Add")').click()
 
-//   await page.locator('input[name=name] >> visible=true').fill('PW_NEW_NODE')
+  await page.locator('input[name=name] >> visible=true').fill('PW_NEW_NODE')
 
-//   await page.screenshot({ path: screenshotPath('new-node'), fullPage: true })
+  await page.screenshot({ path: screenshotPath('new-node'), fullPage: true })
 
-//   await page.locator('button:has-text("Save")').click()
+  await page.locator('button:has-text("Save")').click()
 
-//   await page.waitForSelector('h4:has-text("Technology")')
+  await page.waitForSelector('h4:has-text("Technology")')
 
-//   const dockerHost = await page.locator('button:has-text("Docker Host")')
-//   const kubernetesCluster = await page.locator('button:has-text("Kubernetes Cluster")')
-//   const generateScript = await page.locator('button:has-text("Generate script")')
+  const dockerHost = await page.locator('button:has-text("Docker Host")')
+  const kubernetesCluster = await page.locator('button:has-text("Kubernetes Cluster")')
+  const generateScript = await page.locator('button:has-text("Generate script")')
 
-//   await expect(dockerHost).toBeVisible()
-//   await expect(kubernetesCluster).toBeVisible()
-//   await expect(generateScript).toBeVisible()
-// })
+  await expect(dockerHost).toBeVisible()
+  await expect(kubernetesCluster).toBeVisible()
+  await expect(generateScript).toBeVisible()
+})
 
-// test('Should not create the new node if the name already exist', async ({ page }) => {
-//   await page.goto(ROUTE_NODES)
+test('Should not create the new node if the name already exist', async ({ page }) => {
+  await page.goto(ROUTE_NODES)
 
-//   await page.locator('button:has-text("Add")').click()
+  await page.locator('button:has-text("Add")').click()
 
-//   await page.locator('input[name=name] >> visible=true').fill('PW_NEW_NODE')
+  await page.locator('input[name=name] >> visible=true').fill('PW_NEW_NODE')
 
-//   await page.locator('button:has-text("Save")').click()
+  await page.locator('button:has-text("Save")').click()
 
-//   await page.waitForSelector('p.text-error-red')
+  await page.waitForSelector('p.text-error-red')
 
-//   const error = await page.locator('p.text-error-red')
+  const error = await page.locator('p.text-error-red')
 
-//   await expect(error).toContainText('Already exists')
-// })
+  await expect(error).toContainText('Already exists')
+})
 
-// test('Generate script should show the curl command and the script', async ({ page }) => {
-//   await page.goto(ROUTE_NODES)
+test('Generate script should show the curl command and the script', async ({ page }) => {
+  await page.goto(ROUTE_NODES)
 
-//   await page.locator('button:has-text("Add")').click()
+  await page.locator('button:has-text("Add")').click()
 
-//   await page.locator('input[name=name]').fill('PW_DAGENT_SCRIPT')
+  await page.locator('input[name=name]').fill('PW_DAGENT_SCRIPT')
 
-//   await page.locator('button:has-text("Save")').click()
+  await page.locator('button:has-text("Save")').click()
 
-//   await page.waitForSelector('h4:has-text("Technology")')
+  await page.waitForSelector('h4:has-text("Technology")')
 
-//   const dockerHost = await page.locator('button:has-text("Docker Host")')
-//   await dockerHost.click()
+  const dockerHost = await page.locator('button:has-text("Docker Host")')
+  await dockerHost.click()
 
-//   const rootPath = await page.locator('input[placeholder="Optional, leave empty for default paths"]')
-//   await expect(rootPath).toBeVisible()
+  const rootPath = await page.locator('input[placeholder="Optional, leave empty for default paths"]')
+  await expect(rootPath).toBeVisible()
 
-//   const generateScript = await page.locator('button:has-text("Generate script")')
-//   await generateScript.click()
+  const generateScript = await page.locator('button:has-text("Generate script")')
+  await generateScript.click()
 
-//   await page.waitForSelector('input[readonly]')
+  await page.waitForSelector('input[readonly]')
 
-//   await page.screenshot({ path: screenshotPath('node-script'), fullPage: true })
+  await page.screenshot({ path: screenshotPath('node-script'), fullPage: true })
 
-//   const curl = await page.locator('input[readonly]')
-//   const script = await page.locator('textarea[readonly]')
-//   const timer = await page.locator('label.text-dyo-turquoise')
-//   const discardButton = await page.locator('button:has-text("Discard")').first()
-//   const copyButton = await page.locator('button:has-text("Copy")')
+  const curl = await page.locator('input[readonly]')
+  const script = await page.locator('textarea[readonly]')
+  const timer = await page.locator('label.text-dyo-turquoise')
+  const discardButton = await page.locator('button:has-text("Discard")').first()
+  const copyButton = await page.locator('button:has-text("Copy")')
 
-//   await expect(curl).toBeVisible()
-//   await expect(curl).toHaveValue(/curl/)
-//   await expect(script).toBeVisible()
-//   await expect(timer).toBeVisible()
-//   await expect(discardButton).toBeVisible()
-//   await expect(copyButton).toBeVisible()
-// })
+  await expect(curl).toBeVisible()
+  await expect(curl).toHaveValue(/curl/)
+  await expect(script).toBeVisible()
+  await expect(timer).toBeVisible()
+  await expect(discardButton).toBeVisible()
+  await expect(copyButton).toBeVisible()
+})
 
-// test('Generate script should show script type selector for Docker', async ({ page }) => {
-//   await page.goto(ROUTE_NODES)
+test('Generate script should show script type selector for Docker', async ({ page }) => {
+  await page.goto(ROUTE_NODES)
 
-//   await page.locator('button:has-text("Add")').click()
+  await page.locator('button:has-text("Add")').click()
 
-//   await page.locator('input[name=name]').fill('PW_DAGENT_DOCKER_SCRIPT')
+  await page.locator('input[name=name]').fill('PW_DAGENT_DOCKER_SCRIPT')
 
-//   await page.locator('button:has-text("Save")').click()
+  await page.locator('button:has-text("Save")').click()
 
-//   await page.waitForSelector('h4:has-text("Technology")')
+  await page.waitForSelector('h4:has-text("Technology")')
 
-//   const dockerHost = await page.locator('button:has-text("Docker Host")')
-//   await dockerHost.click()
+  const dockerHost = await page.locator('button:has-text("Docker Host")')
+  await dockerHost.click()
 
-//   const rootPath = await page.locator('input[placeholder="Optional, leave empty for default paths"]')
-//   await expect(rootPath).toBeVisible()
+  const rootPath = await page.locator('input[placeholder="Optional, leave empty for default paths"]')
+  await expect(rootPath).toBeVisible()
 
-//   await expect(await page.locator('button:text-is("Shell")')).toBeVisible()
-//   await expect(await page.locator('button:text-is("PowerShell")')).toBeVisible()
-// })
+  await expect(await page.locator('button:text-is("Shell")')).toBeVisible()
+  await expect(await page.locator('button:text-is("PowerShell")')).toBeVisible()
+})
 
-// test('Container log should appear after a successful deployment', async ({ page }) => {
-//   const prefix = 'pw-deploy-log'
-//   const imageName = 'nginx'
+test('Container log should appear after a successful deployment', async ({ page }) => {
+  const prefix = 'pw-deploy-log'
+  const imageName = 'nginx'
 
-//   const productId = await createProduct(page, 'PW-DEPLOY-LOG-TEST', 'Simple')
-//   await addImageToSimpleProduct(page, productId, imageName)
-//   const { url, id: deploymentId } = await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, prefix)
+  const productId = await createProduct(page, 'PW-DEPLOY-LOG-TEST', 'Simple')
+  await addImageToSimpleProduct(page, productId, imageName)
+  const { url, id: deploymentId } = await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, prefix)
 
-//   await page.goto(url)
+  await page.goto(url)
 
-//   const deployButtonSelector = 'button:text-is("Deploy")'
-//   await page.waitForSelector(deployButtonSelector)
+  const deployButtonSelector = 'button:text-is("Deploy")'
+  await page.waitForSelector(deployButtonSelector)
 
-//   await page.locator(deployButtonSelector).click()
-//   await page.waitForURL(deploymentDeployUrl(deploymentId))
+  await page.locator(deployButtonSelector).click()
+  await page.waitForURL(deploymentDeployUrl(deploymentId))
 
-//   const containerRow = page.locator(`span:text-is("${imageName}") >> xpath=../..`)
-//   await expect(containerRow).toBeVisible()
+  const containerRow = page.locator(`span:text-is("${imageName}") >> xpath=../..`)
+  await expect(containerRow).toBeVisible()
 
-//   const connectedTag = containerRow.locator('div:text-is("Connected")')
-//   await expect(connectedTag).toBeVisible()
+  const connectedTag = containerRow.locator('div:text-is("Connected")')
+  await expect(connectedTag).toBeVisible()
 
-//   const showLogs = containerRow.locator('span:text-is("Show logs")')
+  const showLogs = containerRow.locator('span:text-is("Show logs")')
 
-//   await showLogs.click()
-//   await page.waitForURL(
-//     deploymentContainerLogUrl(deploymentId, {
-//       prefix,
-//       name: imageName,
-//     }),
-//   )
+  await showLogs.click()
+  await page.waitForURL(
+    deploymentContainerLogUrl(deploymentId, {
+      prefix,
+      name: imageName,
+    }),
+  )
 
-//   await page.waitForSelector('div.font-roboto')
-//   const terminal = page.locator('div.font-roboto')
-//   await expect(await terminal.locator('span')).not.toHaveCount(0)
-// })
+  await page.waitForSelector('div.font-roboto')
+  const terminal = page.locator('div.font-roboto')
+  await expect(await terminal.locator('span')).not.toHaveCount(0)
+})
 
-// test('Container log should appear on a node container', async ({ page }) => {
-//   const prefix = 'pw-node-deploy-log'
-//   const imageName = 'nginx'
+test('Container log should appear on a node container', async ({ page }) => {
+  const prefix = 'pw-node-deploy-log'
+  const imageName = 'nginx'
 
-//   const productId = await createProduct(page, 'PW-NODE-DEPLOY-LOG-TEST', 'Simple')
-//   await addImageToSimpleProduct(page, productId, imageName)
-//   const { url, id: deploymentId } = await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, prefix)
+  const productId = await createProduct(page, 'PW-NODE-DEPLOY-LOG-TEST', 'Simple')
+  await addImageToSimpleProduct(page, productId, imageName)
+  const { url, id: deploymentId } = await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, prefix)
 
-//   await page.goto(url)
+  await page.goto(url)
 
-//   const deployButtonSelector = 'button:text-is("Deploy")'
-//   await page.waitForSelector(deployButtonSelector)
+  const deployButtonSelector = 'button:text-is("Deploy")'
+  await page.waitForSelector(deployButtonSelector)
 
-//   await page.locator(deployButtonSelector).click()
-//   await page.waitForURL(deploymentDeployUrl(deploymentId))
+  await page.locator(deployButtonSelector).click()
+  await page.waitForURL(deploymentDeployUrl(deploymentId))
 
-//   const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
-//   await expect(containerRow).toBeVisible()
+  const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
+  await expect(containerRow).toBeVisible()
 
-//   const connectedTag = await containerRow.locator('div:text-is("Connected")')
-//   await expect(connectedTag).toBeVisible()
+  const connectedTag = await containerRow.locator('div:text-is("Connected")')
+  await expect(connectedTag).toBeVisible()
 
-//   await page.goto(ROUTE_NODES)
+  await page.goto(ROUTE_NODES)
 
-//   const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
-//   await nodeButton.click()
+  const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
+  await nodeButton.click()
 
-//   await page.locator('input[placeholder="Search"]').type(`${prefix}-${imageName}`)
+  await page.locator('input[placeholder="Search"]').type(`${prefix}-${imageName}`)
 
-//   const nodeContainerRow = await page.locator(`span:text-is("${prefix}-${imageName}") >> xpath=../..`)
-//   await expect(nodeContainerRow).toHaveCount(1)
+  const nodeContainerRow = await page.locator(`span:text-is("${prefix}-${imageName}") >> xpath=../..`)
+  await expect(nodeContainerRow).toHaveCount(1)
 
-//   const logButton = await nodeContainerRow.locator('img[src*="/note-text-outline.svg"]')
-//   await expect(logButton).toBeVisible()
+  const logButton = await nodeContainerRow.locator('img[src*="/note-text-outline.svg"]')
+  await expect(logButton).toBeVisible()
 
-//   const nodeId = page.url().split('/').pop()
+  const nodeId = page.url().split('/').pop()
 
-//   await logButton.click()
-//   await page.waitForURL(
-//     nodeContainerLogUrl(nodeId, {
-//       name: `${prefix}-${imageName}`,
-//     }),
-//   )
+  await logButton.click()
+  await page.waitForURL(
+    nodeContainerLogUrl(nodeId, {
+      name: `${prefix}-${imageName}`,
+    }),
+  )
 
-//   await page.waitForSelector('div.font-roboto')
-//   const terminal = await page.locator('div.font-roboto')
-//   await expect(await terminal.locator('span')).not.toHaveCount(0)
-// })
+  await page.waitForSelector('div.font-roboto')
+  const terminal = await page.locator('div.font-roboto')
+  await expect(await terminal.locator('span')).not.toHaveCount(0)
+})
 
 test('Docker generate script should show Traefik options', async ({ page }) => {
   await page.goto(ROUTE_NODES)
