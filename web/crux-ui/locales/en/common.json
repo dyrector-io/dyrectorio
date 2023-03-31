@@ -120,8 +120,7 @@
   },
 
   "nodeStatuses": {
-    "connecting": "Connecting",
-    "running": "Running",
+    "connected": "Connected",
     "unreachable": "Unreachable"
   },
 

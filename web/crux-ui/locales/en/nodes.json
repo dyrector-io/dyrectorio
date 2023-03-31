@@ -40,7 +40,7 @@
     "powershell": "PowerShell"
   },
   "statusFilters": {
-    "running": "Running",
+    "connected": "Connected",
     "unreachable": "Unreachable"
   },
   "persistentDataPath": "Persistent data path",

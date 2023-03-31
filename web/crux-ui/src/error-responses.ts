@@ -62,3 +62,40 @@ export const unavailableError = (error: UnavailableErrorType, description: strin
   error,
   description,
 })
+
+type CruxApiError = {
+  message: string
+  property?: string
+  value?: string
+}
+
+export const fromApiError = (status: number, error: CruxApiError): DyoApiError => {
+  const { message, property, value } = error
+
+  switch (status) {
+    case 503: {
+      return unavailableError('crux', message)
+    }
+    case 401: {
+      return unauthorizedError(message)
+    }
+    case 404: {
+      return notFoundError(property, message, value)
+    }
+    case 400: {
+      return invalidArgument(property, message, value)
+    }
+    case 409: {
+      return alreadyExistsError(property, message, value)
+    }
+    case 412: {
+      return preconditionFailedError(property, message, value)
+    }
+    case 403: {
+      return forbiddenError(message)
+    }
+    default: {
+      return internalError(error.message ?? 'Unknown error')
+    }
+  }
+}

@@ -10,7 +10,7 @@ import {
   IdRequest,
   ServiceIdRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { DisableAccessCheck, DisableIdentity } from 'src/shared/user-access.guard'
+import { DisableAuth } from '../token/jwt-auth.guard'
 import DeployService from './deploy.service'
 
 @Controller()
@@ -19,15 +19,13 @@ import DeployService from './deploy.service'
 export default class DeployController implements CruxDeploymentController {
   constructor(private service: DeployService) {}
 
-  @DisableAccessCheck()
-  @DisableIdentity()
+  @DisableAuth()
   @AuditLogLevel('disabled')
   subscribeToDeploymentEvents(request: IdRequest): Observable<DeploymentProgressMessage> {
     return from(this.service.subscribeToDeploymentEvents(request)).pipe(concatAll())
   }
 
-  @DisableAccessCheck()
-  @DisableIdentity()
+  @DisableAuth()
   @AuditLogLevel('disabled')
   subscribeToDeploymentEditEvents(request: ServiceIdRequest): Observable<DeploymentEditEventMessage> {
     return this.service.subscribeToDeploymentEditEvents(request)

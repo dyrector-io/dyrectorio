@@ -6,9 +6,10 @@ import Handlebars from 'handlebars'
 import { join } from 'path'
 import { cwd } from 'process'
 import { Subject } from 'rxjs'
+import { DagentTraefikOptionsDto, NodeScriptTypeDto } from 'src/app/node/node.dto'
 import { InvalidArgumentException, PreconditionFailedException } from 'src/exception/errors'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
-import { DagentTraefikOptions, NodeEventMessage, NodeScriptType } from 'src/grpc/protobuf/proto/crux'
+import { NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { Agent } from './agent'
 
@@ -20,12 +21,13 @@ export default class AgentInstaller {
   constructor(
     readonly configService: ConfigService,
     readonly nodeId: string,
+    readonly nodeName: string,
     readonly token: string,
     readonly expireAt: Date,
     readonly nodeType: NodeTypeEnum,
     readonly rootPath: string | null,
-    readonly scriptType: NodeScriptType,
-    readonly dagentTraefik: DagentTraefikOptions | null,
+    readonly scriptType: NodeScriptTypeDto,
+    readonly dagentTraefik: DagentTraefikOptionsDto | null,
   ) {
     this.loadScriptAndCompiler(nodeType, scriptType)
   }
@@ -46,10 +48,10 @@ export default class AgentInstaller {
 
   getCommand(): string {
     switch (this.scriptType) {
-      case NodeScriptType.SHELL:
-        return `curl -sL ${this.configService.get<string>('CRUX_UI_URL')}/api/nodes/${this.nodeId}/script | sh -`
-      case NodeScriptType.POWERSHELL:
-        return `Invoke-WebRequest -Uri ${this.configService.get<string>('CRUX_UI_URL')}/api/nodes/${
+      case 'shell':
+        return `curl -sL ${this.configService.get<string>('CRUX_UI_URL')}/api/new/nodes/${this.nodeId}/script | sh -`
+      case 'powershell':
+        return `Invoke-WebRequest -Uri ${this.configService.get<string>('CRUX_UI_URL')}/api/new/nodes/${
           this.nodeId
         }/script -Method GET | Select-Object -Expand Content | Invoke-Expression`
       default:
@@ -61,7 +63,7 @@ export default class AgentInstaller {
     }
   }
 
-  getScript(name: string): string {
+  getScript(): string {
     this.verify()
 
     const configLocalDeployment = this.configService.get<string>('LOCAL_DEPLOYMENT')
@@ -71,7 +73,7 @@ export default class AgentInstaller {
     const debugMode = process.env.NODE_ENV !== 'production'
 
     const installScriptParams: InstallScriptConfig = {
-      name: name.toLowerCase().replace(/\s/g, ''),
+      name: this.nodeName.toLowerCase().replace(/\s/g, ''),
       token: this.token,
       network: configLocalDeployment,
       networkName: configLocalDeploymentNetwork,
@@ -94,7 +96,7 @@ export default class AgentInstaller {
     return new Agent(connection, info, eventChannel)
   }
 
-  loadScriptAndCompiler(nodeType: NodeTypeEnum, scriptType: NodeScriptType): void {
+  loadScriptAndCompiler(nodeType: NodeTypeEnum, scriptType: NodeScriptTypeDto): void {
     const extension = this.getInstallScriptExtension(nodeType, scriptType)
     const agentFilename = `install-${nodeType}${extension}.hbr`
     const scriptFile = readFileSync(join(cwd(), 'assets', 'install-script', agentFilename), 'utf8')
@@ -104,15 +106,15 @@ export default class AgentInstaller {
     }
   }
 
-  private getInstallScriptExtension(nodeType: NodeTypeEnum, scriptType: NodeScriptType): string {
+  private getInstallScriptExtension(nodeType: NodeTypeEnum, scriptType: NodeScriptTypeDto): string {
     if (nodeType === 'k8s') {
       return '.sh'
     }
 
     switch (scriptType) {
-      case NodeScriptType.SHELL:
+      case 'shell':
         return '.sh'
-      case NodeScriptType.POWERSHELL:
+      case 'powershell':
         return '.ps1'
       default:
         throw new InvalidArgumentException({

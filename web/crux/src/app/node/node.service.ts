@@ -1,25 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { Observable } from 'rxjs'
+import { map, Observable } from 'rxjs'
 import { Agent } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
 import { PreconditionFailedException } from 'src/exception/errors'
-import { CloseReason } from 'src/grpc/protobuf/proto/agent'
-import { ContainerLogMessage, ContainerStateListMessage, Empty } from 'src/grpc/protobuf/proto/common'
 import {
-  CreateEntityResponse,
-  CreateNodeRequest,
-  GenerateScriptRequest,
-  IdRequest,
-  NodeContainerCommandRequest,
-  NodeDeleteContainersRequest,
-  NodeDetailsResponse,
+  ContainerCommandRequest,
+  ContainerIdentifier,
+  ContainerLogMessage,
+  ContainerOperation,
+  ContainerStateListMessage,
+  DeleteContainersRequest,
+} from 'src/grpc/protobuf/proto/common'
+import {
   NodeEventMessage,
-  NodeInstallResponse,
-  NodeListResponse,
-  NodeScriptResponse,
   ServiceIdRequest,
-  UpdateNodeRequest,
   WatchContainerLogRequest,
   WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
@@ -27,6 +22,14 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
+import {
+  CreateNodeDto,
+  NodeDetailsDto,
+  NodeDto,
+  NodeGenerateScriptDto,
+  NodeInstallDto,
+  UpdateNodeDto,
+} from './node.dto'
 import NodeMapper from './node.mapper'
 
 @Injectable()
@@ -41,7 +44,7 @@ export default class NodeService {
     private notificationService: DomainNotificationService,
   ) {}
 
-  async getNodes(identity: Identity): Promise<NodeListResponse> {
+  async getNodes(identity: Identity): Promise<NodeDto[]> {
     const nodes = await this.prisma.node.findMany({
       where: {
         team: {
@@ -55,22 +58,20 @@ export default class NodeService {
       },
     })
 
-    return {
-      data: nodes.map(it => this.mapper.listItemToProto(it)),
-    }
+    return nodes.map(it => this.mapper.listItemToDto(it))
   }
 
-  async getNodeDetails(req: IdRequest): Promise<NodeDetailsResponse> {
+  async getNodeDetails(id: string): Promise<NodeDetailsDto> {
     const node = await this.prisma.node.findUniqueOrThrow({
       where: {
-        id: req.id,
+        id,
       },
     })
 
-    return this.mapper.detailsToProto(node)
+    return this.mapper.detailsToDto(node)
   }
 
-  async createNode(req: CreateNodeRequest, identity: Identity): Promise<CreateEntityResponse> {
+  async createNode(req: CreateNodeDto, identity: Identity): Promise<NodeDto> {
     const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
 
     const node = await this.prisma.node.create({
@@ -89,26 +90,23 @@ export default class NodeService {
       message: { subject: node.name } as BaseMessage,
     })
 
-    return CreateEntityResponse.fromJSON(node)
+    return this.mapper.listItemToDto(node)
   }
 
-  async deleteNode(req: IdRequest): Promise<void> {
+  async deleteNode(id: string): Promise<void> {
     await this.prisma.node.delete({
       where: {
-        id: req.id,
+        id,
       },
     })
 
-    const agent = this.agentService.getById(req.id)
-    if (agent) {
-      agent.close(CloseReason.SHUTDOWN)
-    }
+    this.agentService.kick(id)
   }
 
-  async updateNode(req: UpdateNodeRequest, identity: Identity): Promise<Empty> {
+  async updateNode(id: string, req: UpdateNodeDto, identity: Identity): Promise<void> {
     await this.prisma.node.update({
       where: {
-        id: req.id,
+        id,
       },
       data: {
         name: req.name,
@@ -117,61 +115,50 @@ export default class NodeService {
         updatedBy: identity.id,
       },
     })
-
-    return Empty
   }
 
-  async generateScript(req: GenerateScriptRequest, identity: Identity): Promise<NodeInstallResponse> {
+  async generateScript(id: string, req: NodeGenerateScriptDto, identity: Identity): Promise<NodeInstallDto> {
     const nodeType = this.mapper.nodeTypeToDb(req.type)
 
-    await this.prisma.node.update({
+    const node = await this.prisma.node.update({
       where: {
-        id: req.id,
+        id,
       },
       data: {
         type: nodeType,
         updatedBy: identity.id,
       },
+      select: {
+        name: true,
+      },
     })
 
     const installer = await this.agentService.install(
-      req.id,
+      id,
+      node.name,
       nodeType,
       req.rootPath ?? null,
       req.scriptType,
       req.dagentTraefik ?? null,
     )
 
-    return this.mapper.installerToProto(installer)
+    return this.mapper.installerToDto(installer)
   }
 
-  async getScript(request: ServiceIdRequest): Promise<NodeScriptResponse> {
-    const node = await this.prisma.node.findUniqueOrThrow({
-      where: {
-        id: request.id,
-      },
-      select: {
-        name: true,
-        type: true,
-      },
-    })
+  async getScript(id: string): Promise<string> {
+    const installer = this.agentService.getInstallerByNodeId(id)
 
-    const installer = this.agentService.getInstallerByNodeId(request.id)
-
-    return {
-      content: installer.getScript(node.name),
-    }
+    return installer.getScript()
   }
 
-  async discardScript(request: IdRequest): Promise<Empty> {
-    await this.agentService.discardInstaller(request.id)
-    return Empty
+  async discardScript(id: string): Promise<void> {
+    await this.agentService.discardInstaller(id)
   }
 
-  async revokeToken(request: IdRequest, identity: Identity): Promise<Empty> {
+  async revokeToken(id: string, identity: Identity): Promise<void> {
     await this.prisma.node.update({
       where: {
-        id: request.id,
+        id,
       },
       data: {
         token: null,
@@ -179,8 +166,7 @@ export default class NodeService {
       },
     })
 
-    this.agentService.kick(request.id)
-    return Empty
+    this.agentService.kick(id)
   }
 
   async handleSubscribeNodeEventChannel(request: ServiceIdRequest): Promise<Observable<NodeEventMessage>> {
@@ -219,19 +205,72 @@ export default class NodeService {
     return stream.watch()
   }
 
-  async updateNodeAgent(request: IdRequest): Promise<void> {
-    this.agentService.updateAgent(request.id)
+  async updateNodeAgent(id: string): Promise<void> {
+    this.agentService.updateAgent(id)
   }
 
-  sendContainerCommand(request: NodeContainerCommandRequest): Empty {
-    const agent = this.agentService.getByIdOrThrow(request.id)
-    agent.sendContainerCommand(request.command)
-
-    return Empty
+  startContainer(nodeId: string, prefix: string, name: string) {
+    this.sendContainerOperation(
+      nodeId,
+      {
+        prefix,
+        name,
+      },
+      ContainerOperation.START_CONTAINER,
+    )
   }
 
-  deleteContainers(request: NodeDeleteContainersRequest): Observable<Empty> {
-    const agent = this.agentService.getByIdOrThrow(request.id)
-    return agent.deleteContainers(request.containers)
+  stopContainer(nodeId: string, prefix: string, name: string) {
+    this.sendContainerOperation(
+      nodeId,
+      {
+        prefix,
+        name,
+      },
+      ContainerOperation.STOP_CONTAINER,
+    )
+  }
+
+  restartContainer(nodeId: string, prefix: string, name: string) {
+    this.sendContainerOperation(
+      nodeId,
+      {
+        prefix,
+        name,
+      },
+      ContainerOperation.RESTART_CONTAINER,
+    )
+  }
+
+  deleteAllContainers(nodeId: string, prefix: string): Observable<void> {
+    const agent = this.agentService.getByIdOrThrow(nodeId)
+    const cmd: DeleteContainersRequest = {
+      prefix,
+    }
+
+    return agent.deleteContainers(cmd).pipe(map(() => undefined))
+  }
+
+  deleteContainer(nodeId: string, prefix: string, name: string): Observable<void> {
+    const agent = this.agentService.getByIdOrThrow(nodeId)
+    const cmd: DeleteContainersRequest = {
+      container: {
+        prefix: prefix ?? '',
+        name,
+      },
+    }
+
+    return agent.deleteContainers(cmd).pipe(map(() => undefined))
+  }
+
+  private sendContainerOperation(nodeId: string, container: ContainerIdentifier, operation: ContainerOperation) {
+    const agent = this.agentService.getByIdOrThrow(nodeId)
+
+    const command: ContainerCommandRequest = {
+      container,
+      operation,
+    }
+
+    agent.sendContainerCommand(command)
   }
 }

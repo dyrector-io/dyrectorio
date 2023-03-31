@@ -28,5 +28,6 @@ export const nodeGenerateScriptSchema = yup.object().shape({
     .shape({
       acmeEmail: yup.string().email().required().label('ACME email'),
     })
-    .default(undefined),
+    .nullable()
+    .default(null),
 })

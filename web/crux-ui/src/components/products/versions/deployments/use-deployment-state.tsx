@@ -13,13 +13,13 @@ import {
   deploymentIsMutable,
   deploymentLogVisible,
   DeploymentRoot,
-  DyoNode,
   GetInstanceMessage,
   ImageDeletedMessage,
   Instance,
   InstanceMessage,
   InstancesAddedMessage,
   InstanceUpdatedMessage,
+  Node,
   NodeStatusMessage,
   ProductDetails,
   VersionDetails,
@@ -48,7 +48,7 @@ export type DeploymentStateOptions = {
 export type DeploymentState = {
   deployment: DeploymentDetails
   product: ProductDetails
-  node: DyoNode
+  node: Node
   version: VersionDetails
   instances: Instance[]
   mutable: boolean
