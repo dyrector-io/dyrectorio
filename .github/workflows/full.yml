@@ -29,10 +29,8 @@ env:
   GOLANG_WORKING_DIRECTORY: golang
   BUILDER_IMAGE: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
 
-
 jobs:
   conventional_commits:
-    name: Conventional commits validation
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
@@ -48,8 +46,7 @@ jobs:
         with:
           config-preset: conventionalcommits
 
-  changes:
-    name: Gather changes and export variables
+  gather_changes:
     runs-on: ubuntu-22.04
     needs: conventional_commits
     outputs:
@@ -90,7 +87,7 @@ jobs:
           ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_WORKING_DIRECTORY }}
           ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}
 
-# agents scope
+  # agents scope
   go_lint:
     runs-on: ubuntu-22.04
     needs: changes
@@ -235,7 +232,7 @@ jobs:
           name: cli
           path: ${{ env.GOLANG_WORKING_DIRECTORY }}/cli.zstd
 
-# crux scope
+  # crux scope
   crux_lint:
     runs-on: ubuntu-22.04
     needs: changes
@@ -298,7 +295,7 @@ jobs:
           name: crux
           path: ${{ env.CRUX_WORKING_DIRECTORY }}/crux.zstd
 
-# crux-ui scope
+  # crux-ui scope
   crux-ui_lint:
     runs-on: ubuntu-22.04
     needs: changes
@@ -318,7 +315,7 @@ jobs:
 
   crux-ui_build:
     runs-on: ubuntu-22.04
-    needs: [crux-ui_lint,changes]
+    needs: [crux-ui_lint, changes]
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
@@ -337,7 +334,7 @@ jobs:
           name: crux-ui
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/crux-ui.zstd
 
-#kratos scope
+  # kratos scope
   kratos_build:
     runs-on: ubuntu-22.04
     needs: changes
@@ -360,7 +357,7 @@ jobs:
           name: kratos
           path: ${{ env.KRATOS_WORKING_DIRECTORY }}/kratos.zstd
 
-# e2e scope
+  # e2e scope
   e2e:
     runs-on: ubuntu-22.04
     # runs-on: self-hosted
@@ -368,7 +365,15 @@ jobs:
       image: ghcr.io/dyrector-io/dyrectorio/playwright:latest
       volumes:
         - /var/run/docker.sock:/var/run/docker
-    needs: [go_build, crux_build, crux-ui_build, kratos_build, changes, conventional_commits]
+    needs:
+      [
+        go_build,
+        crux_build,
+        crux-ui_build,
+        kratos_build,
+        changes,
+        conventional_commits,
+      ]
     if: |
       always() &&
       (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
@@ -470,7 +475,7 @@ jobs:
           docker logs dyo-e2e_crux > logs/e2e-crux.log
           docker logs dyo-e2e_kratos > logs/e2e-kratos.log
       - uses: actions/upload-artifact@v3
-        if: always()
+        if: failure()
         with:
           name: e2e-logs
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/logs
@@ -480,7 +485,7 @@ jobs:
           name: e2e-screenshots
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e/screenshots/
       - uses: actions/upload-artifact@v3
-        if: always()
+        if: failure()
         with:
           name: e2e-trace
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e_results
