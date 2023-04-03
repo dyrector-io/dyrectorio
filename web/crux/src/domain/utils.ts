@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop, no-constant-condition */
 import { PrismaClient } from '@prisma/client'
 import { Timestamp } from 'src/grpc/google/protobuf/timestamp'
+import * as Long from 'long'
 
 export type PrismaTransactionClient = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>
 
@@ -59,6 +60,16 @@ export const toTimestamp = (date: Date): Timestamp => {
   const seconds = date.getTime() / 1_000
   const nanos = (date.getTime() % 1_000) * 1_000_000
   return { seconds, nanos }
+}
+
+export const toDate = (timestamp: Timestamp): Date => {
+  const seconds = typeof timestamp.seconds === 'number' ? timestamp.seconds : (timestamp.seconds as Long).toNumber()
+  const nanos = timestamp.nanos
+    ? typeof timestamp.nanos === 'number'
+      ? timestamp.nanos
+      : (timestamp.nanos as Long).toNumber()
+    : 0
+  return new Date(seconds * 1000 + nanos / 1e6)
 }
 
 export const typedQuery =

@@ -3,6 +3,7 @@ import { Identity } from '@ory/kratos-client'
 import { map, Observable } from 'rxjs'
 import { Agent } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
+import { toDate } from 'src/domain/utils'
 import { PreconditionFailedException } from 'src/exception/errors'
 import {
   ContainerCommandRequest,
@@ -23,11 +24,13 @@ import PrismaService from 'src/services/prisma.service'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
 import {
+  ContainerStatus,
   CreateNodeDto,
   NodeDetailsDto,
   NodeDto,
   NodeGenerateScriptDto,
   NodeInstallDto,
+  ContainerOperationDto,
   UpdateNodeDto,
 } from './node.dto'
 import NodeMapper from './node.mapper'
@@ -173,13 +176,16 @@ export default class NodeService {
     return await this.agentService.getNodeEventsByTeam(request.id)
   }
 
-  handleWatchContainerStatus(request: WatchContainerStateRequest): Observable<ContainerStateListMessage> {
+  handleWatchContainerStatus(
+    request: WatchContainerStateRequest,
+    oneShot?: boolean,
+  ): Observable<ContainerStateListMessage> {
     this.logger.debug(`Opening container status channel for prefix: ${request.nodeId} - ${request.prefix}`)
 
     const agent = this.agentService.getByIdOrThrow(request.nodeId)
 
     const prefix = request.prefix ?? ''
-    const watcher = agent.upsertContainerStatusWatcher(prefix)
+    const watcher = agent.upsertContainerStatusWatcher(prefix, oneShot)
 
     return watcher.watch()
   }
@@ -272,5 +278,48 @@ export default class NodeService {
     }
 
     agent.sendContainerCommand(command)
+  }
+
+  handleWatchContainerStatusDto(nodeId: string, prefix: string): Observable<ContainerStatus[]> {
+    const params = {
+      nodeId,
+      prefix,
+    }
+
+    return this.handleWatchContainerStatus(params, true).pipe(
+      map(
+        it =>
+          it.data?.map(
+            container =>
+              ({
+                id: container.id,
+                command: container.command,
+                createdAt: toDate(container.createdAt),
+                state: this.mapper.containerGrpcStateToDto(container.state),
+                status: container.status,
+                imageName: container.imageName,
+                imageTag: container.imageTag,
+                ports:
+                  container.ports?.map(port => ({
+                    internal: port.internal,
+                    external: port.external,
+                  })) ?? [],
+              } as ContainerStatus),
+          ) ?? [],
+      ),
+    )
+  }
+
+  static operationDtoToAgent(operation: ContainerOperationDto): ContainerOperation {
+    switch (operation) {
+      case 'start':
+        return ContainerOperation.START_CONTAINER
+      case 'stop':
+        return ContainerOperation.STOP_CONTAINER
+      case 'restart':
+        return ContainerOperation.RESTART_CONTAINER
+      default:
+        return ContainerOperation.UNRECOGNIZED
+    }
   }
 }
