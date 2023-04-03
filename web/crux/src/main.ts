@@ -97,12 +97,8 @@ const bootstrap = async () => {
     {
       transport: Transport.GRPC,
       options: {
-        package: ['crux', 'grpc.health.v1'],
-        protoPath: [
-          join(__dirname, '../proto/crux.proto'),
-          join(__dirname, '../proto/common.proto'),
-          join(__dirname, '../proto/health.proto'),
-        ],
+        package: ['crux'],
+        protoPath: [join(__dirname, '../proto/crux.proto'), join(__dirname, '../proto/common.proto')],
         keepalive: { keepaliveTimeoutMs: HOUR_IN_MS },
         ...apiOptions,
       },
