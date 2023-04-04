@@ -219,7 +219,8 @@ k3d-init-ext:
         echo "k3d is required for integration test, install it and add to PATH!"; \
     fi
 	k3d cluster create crane-test && \
-	kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/bundle.yaml
+	k3d kubeconfig get crane-test > k3d.yaml && \
+	KUBECONFIG=$(PWD)/k3d.yaml kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/bundle.yaml
 
 # config k3d
 .PHONY: k3d-config
