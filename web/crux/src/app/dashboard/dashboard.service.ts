@@ -3,7 +3,7 @@ import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum } from '@prisma/client'
 import PrismaService from 'src/services/prisma.service'
 import AuditService from '../audit/audit.service'
-import DashboardDto from './dashboard.dto'
+import { DashboardDto } from './dashboard.dto'
 import DashboardMapper from './dashboard.mapper'
 
 @Injectable()
@@ -127,8 +127,8 @@ export default class DashboardService {
       versions,
       deployments,
       failedDeployments,
-      nodes: this.mapper.nodesToProto(activeNodes),
-      latestDeployments: this.mapper.deploymentsToProto(latestDeployments),
+      nodes: this.mapper.nodesToDto(activeNodes),
+      latestDeployments: this.mapper.deploymentsToDto(latestDeployments),
       auditLog: auditLog.items,
     }
   }

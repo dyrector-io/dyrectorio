@@ -14,9 +14,10 @@ import NodeHttpController from './node.http.controller'
 import NodeMapper from './node.mapper'
 import NodePrefixContainerHttpController from './node.prefix-container.http.controller'
 import NodeService from './node.service'
+import SharedModule from '../shared/shared.module'
 
 @Module({
-  imports: [AgentModule, TeamModule, HttpModule],
+  imports: [AgentModule, TeamModule, HttpModule, SharedModule],
   exports: [NodeMapper],
   controllers: [
     NodeGrcpController,

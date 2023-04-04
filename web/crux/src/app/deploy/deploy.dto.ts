@@ -3,7 +3,14 @@ import { Type } from 'class-transformer'
 import { IsDate, IsIn, IsOptional, IsString, IsUUID } from 'class-validator'
 import { ContainerState, CONTAINER_STATE_VALUES, UniqueKeyValue, UniqueSecretKeyValue } from 'src/shared/models'
 import { ContainerConfigDto, ImageDto } from '../image/image.dto'
-import { AuditDto, BasicNodeDto, BasicProductDto, BasicVersionDto, ContainerIdentifierDto } from '../shared/shared.dto'
+import {
+  AuditDto,
+  BasicNodeDto,
+  BasicNodeWithStatus,
+  BasicProductDto,
+  BasicVersionDto,
+  ContainerIdentifierDto,
+} from '../shared/shared.dto'
 
 const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete'] as const
 export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]
@@ -43,7 +50,7 @@ export class DeploymentWithBasicNodeDto extends BasicDeploymentDto {
   @IsDate()
   updatedAt: Date
 
-  node: BasicNodeDto
+  node: BasicNodeWithStatus
 }
 
 export class InstanceContainerConfigDto extends OmitType(PartialType(ContainerConfigDto), ['secrets']) {

@@ -1,7 +1,29 @@
+import { Type } from 'class-transformer'
+import { IsDate } from 'class-validator'
 import { AuditLogDto } from '../audit/audit.dto'
 import { BasicNodeDto } from '../shared/shared.dto'
 
-export default class DashboardDto {
+export class DashboardDeploymentDto {
+  id: string
+
+  product: string
+
+  version: string
+
+  node: string
+
+  changelog: string
+
+  @IsDate()
+  @Type(() => Date)
+  deployedAt: Date
+
+  productId: string
+
+  versionId: string
+}
+
+export class DashboardDto {
   users: number
 
   auditLogEntries: number
@@ -16,7 +38,7 @@ export default class DashboardDto {
 
   nodes: BasicNodeDto[]
 
-  latestDeployments: any[] // TODO(@polaroi8d): Need to change the any types to the correct types
+  latestDeployments: DashboardDeploymentDto[]
 
   auditLog: AuditLogDto[]
 }

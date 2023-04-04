@@ -17,7 +17,6 @@ import {
   GetNodeStatusListMessage,
   NodeStatus,
   NodeStatusMessage,
-  ProductDetails,
   VersionDetails,
   WS_TYPE_GET_NODE_STATUS_LIST,
   WS_TYPE_NODE_STATUS,
@@ -31,14 +30,12 @@ import { NextRouter, useRouter } from 'next/dist/client/router'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import toast from 'react-hot-toast'
 import DeploymentStatusTag from './deployments/deployment-status-tag'
 import useCopyDeploymentModal from './deployments/use-copy-deployment-confirmation-modal'
 
 export const startDeployment = async (
   router: NextRouter,
-  productId: string,
-  versionId: string,
+  onApiError: (response: Response) => void,
   deploymentId: string,
 ) => {
   const res = await fetch(deploymentStartApiUrl(deploymentId), {
@@ -46,12 +43,7 @@ export const startDeployment = async (
   })
 
   if (!res.ok) {
-    if (res.status === 412) {
-      const json = await res.json()
-      toast.error(json.description)
-      return json
-    }
-
+    onApiError(res)
     return null
   }
 
@@ -61,14 +53,13 @@ export const startDeployment = async (
 }
 
 interface VersionDeploymentsSectionProps {
-  product: ProductDetails
   version: VersionDetails
 }
 
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
 
 const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
-  const { version, product } = props
+  const { version } = props
 
   const { t } = useTranslation('versions')
 
@@ -80,7 +71,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const [showInfo, setShowInfo] = useState<DeploymentByVersion>(null)
 
-  const onDeploy = (deploymentId: string) => startDeployment(router, product.id, version.id, deploymentId)
+  const onDeploy = (deploymentId: string) => startDeployment(router, handleApiError, deploymentId)
 
   const onCopyDeployment = async (deploymentId: string) => {
     const url = await copyDeployment({

@@ -4,7 +4,7 @@ import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
-import DashboardDto from './dashboard.dto'
+import { DashboardDto } from './dashboard.dto'
 import DashboardService from './dashboard.service'
 
 @Controller('dashboard')

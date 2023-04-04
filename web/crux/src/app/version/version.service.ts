@@ -4,9 +4,11 @@ import { DeploymentStatusEnum } from '@prisma/client'
 import { VersionMessage } from 'src/domain/notification-templates'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
+import AgentService from '../agent/agent.service'
 import ImageMapper from '../image/image.mapper'
 import { CreateVersionDto, IncreaseVersionDto, UpdateVersionDto, VersionDetailsDto, VersionDto } from './version.dto'
 import VersionMapper from './version.mapper'
+import SharedMapper from '../shared/shared.mapper'
 
 @Injectable()
 export default class VersionService {
@@ -15,6 +17,8 @@ export default class VersionService {
     private mapper: VersionMapper,
     private imageMapper: ImageMapper,
     private notificationService: DomainNotificationService,
+    private agentService: AgentService,
+    private sharedMapper: SharedMapper,
   ) {}
 
   async getVersionsByProductId(productId: string, user: Identity): Promise<VersionDto[]> {
@@ -71,7 +75,16 @@ export default class VersionService {
       },
     })
 
-    return this.mapper.detailsToDto(version)
+    const nodes = new Set(version.deployments.map(it => it.nodeId))
+    const statusLookup = new Map(
+      [...nodes].map(it => {
+        const node = this.agentService.getById(it)
+        const status = node ? this.sharedMapper.nodeStatusToDto(node.getConnectionStatus()) : 'unreachable'
+        return [it, status]
+      }),
+    )
+
+    return this.mapper.detailsToDto(version, statusLookup)
   }
 
   async createVersion(productId: string, req: CreateVersionDto, identity: Identity): Promise<VersionDto> {
