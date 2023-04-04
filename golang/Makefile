@@ -204,20 +204,21 @@ push-agents: | push-crane push-dagent
 .PHONY: push-all
 push-all: | push-crane push-dagent push-cli
 
-# init k3d with basic
-.PHONY: k3d-init
-k3d-init:
+
+.PHONY: k3d-check
+k3d-check:
 	if [ -z "$(shell which k3d)" ]; then \
         echo "k3d is required for integration test, install it and add to PATH!"; \
     fi
+
+# init k3d with basic
+.PHONY: k3d-init
+k3d-init: k3d-check
 	k3d cluster create crane-test
 
 # init k3d with ext
 .PHONY: k3d-init-ext
-k3d-init-ext:
-	if [ -z "$(shell which k3d)" ]; then \
-        echo "k3d is required for integration test, install it and add to PATH!"; \
-    fi
+k3d-init-ext: k3d-check
 	k3d cluster create crane-test && \
 	k3d kubeconfig get crane-test > k3d.yaml && \
 	KUBECONFIG=$(PWD)/k3d.yaml kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/bundle.yaml
