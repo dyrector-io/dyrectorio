@@ -90,13 +90,13 @@ jobs:
   # agents scope
   go_lint:
     runs-on: ubuntu-22.04
-    needs: changes
+    needs: gather_changes
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
+    if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -119,13 +119,13 @@ jobs:
 
   go_security:
     runs-on: ubuntu-22.04
-    needs: changes
+    needs: gather_changes
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
+    if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -148,13 +148,13 @@ jobs:
 
   go_test:
     runs-on: ubuntu-22.04
-    needs: changes
+    needs: gather_changes
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
+    if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -179,7 +179,7 @@ jobs:
 
   go_build:
     runs-on: ubuntu-22.04
-    needs: [go_security, go_lint, go_test, changes]
+    needs: [go_security, go_lint, go_test, gather_changes]
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
@@ -209,13 +209,13 @@ jobs:
           make compile-agents
           make build-agents
         env:
-          VERSION: ${{ needs.changes.outputs.version }}
-          image_version: ${{ needs.changes.outputs.tag }}
+          VERSION: ${{ needs.gather_changes.outputs.version }}
+          image_version: ${{ needs.gather_changes.outputs.tag }}
       - name: Docker save
         run: |
-          docker save ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > crane.zstd
-          docker save ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > dagent.zstd
-          docker save ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > cli.zstd
+          docker save ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > crane.zstd
+          docker save ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > dagent.zstd
+          docker save ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > cli.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -235,13 +235,13 @@ jobs:
   # crux scope
   crux_lint:
     runs-on: ubuntu-22.04
-    needs: changes
+    needs: gather_changes
     defaults:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
-    if: ${{ (needs.changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
+    if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
@@ -252,13 +252,13 @@ jobs:
 
   crux_test:
     runs-on: ubuntu-22.04
-    needs: changes
+    needs: gather_changes
     defaults:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
-    if: ${{ (needs.changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
+    if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
@@ -276,7 +276,7 @@ jobs:
 
   crux_build:
     runs-on: ubuntu-22.04
-    needs: [crux_test, crux_lint, changes]
+    needs: [crux_test, crux_lint, gather_changes]
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
@@ -286,9 +286,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Docker build
-        run: docker build -t ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} .
+        run: docker build -t ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > crux.zstd
+        run: docker save ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > crux.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -298,13 +298,13 @@ jobs:
   # crux-ui scope
   crux-ui_lint:
     runs-on: ubuntu-22.04
-    needs: changes
+    needs: gather_changes
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
-    if: ${{ (needs.changes.outputs.cruxui == 'true') || (github.ref_type == 'tag') }}
+    if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -315,7 +315,7 @@ jobs:
 
   crux-ui_build:
     runs-on: ubuntu-22.04
-    needs: [crux-ui_lint, changes]
+    needs: [crux-ui_lint, gather_changes]
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
@@ -325,9 +325,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Docker build
-        run: docker build -t ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} .
+        run: docker build -t ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > crux-ui.zstd
+        run: docker save ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > crux-ui.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -337,20 +337,20 @@ jobs:
   # kratos scope
   kratos_build:
     runs-on: ubuntu-22.04
-    needs: changes
+    needs: gather_changes
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
     defaults:
       run:
         working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
-    if: ${{ (needs.changes.outputs.kratos == 'true') || (github.ref_type == 'tag') }}
+    if: ${{ (needs.gather_changes.outputs.kratos == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
       - name: Docker build
-        run: docker build -t ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} .
+        run: docker build -t ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > kratos.zstd
+        run: docker save ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > kratos.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -371,7 +371,7 @@ jobs:
         crux_build,
         crux-ui_build,
         kratos_build,
-        changes,
+        gather_changes,
         conventional_commits,
       ]
     if: |
@@ -381,65 +381,65 @@ jobs:
       (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
       (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
       needs.conventional_commits.result == 'success' &&
-      needs.changes.result == 'success'
+      needs.gather_changes.result == 'success'
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
       # - name: crane - artifact download
-      #   if: needs.changes.outputs.agents == 'true'
+      #   if: needs.gather_changes.outputs.agents == 'true'
       #   uses: actions/download-artifact@v3
       #   with:
       #     name: crane
       #     path: artifacts
       - name: dagent - artifact download
-        if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
+        if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
         uses: actions/download-artifact@v3
         with:
           name: dagent
           path: artifacts
       - name: agents - docker load
-        if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
+        if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
         run: |
           zstd -dc artifacts/dagent.zstd | docker load
         # zstd -dc artifacts/crane.zstd | docker load
       - name: crux - artifact download
-        if: ${{ (needs.changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
+        if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
         uses: actions/download-artifact@v3
         with:
           name: crux
           path: artifacts
       - name: crux - docker load
-        if: ${{ (needs.changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
+        if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
         run: zstd -dc artifacts/crux.zstd | docker load
 
       - name: crux-ui - artifact download
-        if: ${{ (needs.changes.outputs.cruxui == 'true') || (github.ref_type == 'tag') }}
+        if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag') }}
         uses: actions/download-artifact@v3
         with:
           name: crux-ui
           path: artifacts
       - name: crux-ui - docker load
-        if: ${{ (needs.changes.outputs.cruxui == 'true') || (github.ref_type == 'tag') }}
+        if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag') }}
         run: zstd -dc artifacts/crux-ui.zstd | docker load
 
       - name: kratos - artifact download
-        if: ${{ (needs.changes.outputs.kratos == 'true') || (github.ref_type == 'tag') }}
+        if: ${{ (needs.gather_changes.outputs.kratos == 'true') || (github.ref_type == 'tag') }}
         uses: actions/download-artifact@v3
         with:
           name: kratos
           path: artifacts
       - name: kratos - docker load
-        if: ${{ (needs.changes.outputs.kratos == 'true') || (github.ref_type == 'tag') }}
+        if: ${{ (needs.gather_changes.outputs.kratos == 'true') || (github.ref_type == 'tag') }}
         run: zstd -dc artifacts/kratos.zstd | docker load
 
       - name: cli - artifact download
-        if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
+        if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
         uses: actions/download-artifact@v3
         with:
           name: cli
           path: artifacts
       - name: cli - docker load
-        if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
+        if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
         run: zstd -dc artifacts/cli.zstd | docker load
       - name: Login to GHCR
         uses: docker/login-action@v2
@@ -449,7 +449,7 @@ jobs:
           password: ${{ secrets.GHCR_PAT }}
       - name: Setup using cli
         run: |
-          docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} --disable-forcepull --imagetag ${{ needs.changes.outputs.tag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --expect-container-env --debug -p dyo-e2e up
+          docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --disable-forcepull --imagetag ${{ needs.gather_changes.outputs.tag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --expect-container-env --debug -p dyo-e2e up
       - name: Run tests
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
         env:
@@ -490,7 +490,7 @@ jobs:
           name: e2e-trace
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e_results
       - name: Teardown using cli
-        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} --debug down
+        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --debug down
 
   go_push:
     permissions:
@@ -498,7 +498,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
-    needs: [go_build, e2e, changes]
+    needs: [go_build, e2e, gather_changes]
     if: |
       always() &&
       (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
@@ -508,7 +508,7 @@ jobs:
       (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
       (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
       needs.conventional_commits.result == 'success' &&
-      needs.changes.result == 'success'
+      needs.gather_changes.result == 'success'
     environment: Workflow - Protected
     steps:
       - name: artifact download
@@ -550,20 +550,20 @@ jobs:
           docker push -a ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}
           docker push -a ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}
           docker push -a ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}
-          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.changes.outputs.tag }}
-          docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.changes.outputs.tag }}
-          docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }}
           docker push -a ${DOCKERHUB_REGISTRY}/crane
           docker push -a ${DOCKERHUB_REGISTRY}/dagent
           docker push -a ${DOCKERHUB_REGISTRY}/dyo
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/crane:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/dagent:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/dyo:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
+          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
+          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }}
         env:
           COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
 
@@ -573,7 +573,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
-    needs: [crux_build, e2e, changes]
+    needs: [crux_build, e2e, gather_changes]
     if: |
       always() &&
       (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
@@ -583,7 +583,7 @@ jobs:
       (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
       (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
       needs.conventional_commits.result == 'success' &&
-      needs.changes.result == 'success'
+      needs.gather_changes.result == 'success'
     environment: Workflow - Protected
     steps:
       - name: artifact download
@@ -608,14 +608,14 @@ jobs:
       - name: Docker push
         run: |
           docker push -a ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}
-          docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.tag }}
           docker push -a ${DOCKERHUB_REGISTRY}/crux
       - name: Write signing key to disk
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/crux:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.tag }}
         env:
           COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
 
@@ -625,7 +625,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
-    needs: [crux-ui_build, e2e, changes]
+    needs: [crux-ui_build, e2e, gather_changes]
     if: |
       always() &&
       (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
@@ -635,7 +635,7 @@ jobs:
       needs.crux-ui_build.result == 'success' &&
       (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
       needs.conventional_commits.result == 'success' &&
-      needs.changes.result == 'success'
+      needs.gather_changes.result == 'success'
     environment: Workflow - Protected
     steps:
       - name: artifact download
@@ -660,14 +660,14 @@ jobs:
       - name: Docker push
         run: |
           docker push -a ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}
-          docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.tag }}
           docker push -a ${DOCKERHUB_REGISTRY}/crux-ui
       - name: Write signing key to disk
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.tag }}
         env:
           COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
 
@@ -677,7 +677,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2
-    needs: [kratos_build, e2e, changes]
+    needs: [kratos_build, e2e, gather_changes]
     if: |
       always() &&
       (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
@@ -687,7 +687,7 @@ jobs:
       (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
       needs.kratos_build.result == 'success' &&
       needs.conventional_commits.result == 'success' &&
-      needs.changes.result == 'success'
+      needs.gather_changes.result == 'success'
     environment: Workflow - Protected
     steps:
       - name: artifact download
@@ -712,13 +712,13 @@ jobs:
       - name: Docker push
         run: |
           docker push -a ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}
-          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.tag }}
           docker push -a ${DOCKERHUB_REGISTRY}/kratos
       - name: Write signing key to disk
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/kratos:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.tag }}
         env:
           COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
