@@ -39,7 +39,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
     if (activated) {
       const userId = req.user.data.sub
       try {
-        req.session.identity = await this.kratos.getIdentityById(userId)
+        req.identity = await this.kratos.getIdentityById(userId)
       } catch {
         return false
       }
@@ -51,21 +51,25 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
 
 type ExtendedHttpRequest = http.IncomingMessage & {
   session: Session
+  identity?: Identity
   user: {
     data: AuthPayload
   }
 }
 
-export const sessionOfContext = (context: ExecutionContext): Session => {
+export const identityOfContext = (context: ExecutionContext): Identity => {
   const req = context.switchToHttp().getRequest() as ExtendedHttpRequest
-  return req.session
+  return req.identity ?? req.session.identity
 }
-
-export const identityOfContext = (context: ExecutionContext): Identity => sessionOfContext(context).identity
 
 export const IdentityFromRequest = createParamDecorator(
   (_: unknown, context: ExecutionContext): Identity => identityOfContext(context),
 )
+
+export const sessionOfContext = (context: ExecutionContext): Session => {
+  const req = context.switchToHttp().getRequest() as ExtendedHttpRequest
+  return req.session
+}
 
 export const SessionFromRequest = createParamDecorator(
   (_: unknown, context: ExecutionContext): Session => sessionOfContext(context),
