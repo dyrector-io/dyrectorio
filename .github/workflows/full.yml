@@ -148,13 +148,13 @@ jobs:
 
   go_integration:
     runs-on: ubuntu-22.04
-    needs: changes
+    needs: gather_changes
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
+    if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3

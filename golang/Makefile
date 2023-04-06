@@ -214,12 +214,12 @@ k3d-check:
 # init k3d with basic
 .PHONY: k3d-init
 k3d-init: k3d-check
-	k3d cluster create crane-test
+	k3d cluster create --api-port 172.17.0.1:6443 crane-test
 
 # init k3d with ext
 .PHONY: k3d-init-ext
 k3d-init-ext: k3d-check
-	k3d cluster create crane-test && \
+	k3d cluster create --api-port 172.17.0.1:6443 crane-test && \
 	k3d kubeconfig get crane-test > k3d.yaml && \
 	KUBECONFIG=$(PWD)/k3d.yaml kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/bundle.yaml
 
@@ -239,7 +239,8 @@ k3d-stop:
 # make sure to have k3s set and configured
 .PHONY: k3d-test
 k3d-test: k3d-config
-	KUBECONFIG=$(PWD)/k3d.yaml go test -tags=integration -race ./pkg/crane/...
+	export KUBECONFIG='$(PWD)/k3d.yaml'
+	go test -tags=integration -race ./pkg/crane/...
 
 k3d-rm:
 	k3d cluster delete crane-test
@@ -247,7 +248,7 @@ k3d-rm:
 # dependency: valid & working k8s configuration
 .PHONY: test-unit
 test-unit:
-	go test -tags=unist -race ./...
+	go test -tags=unit -race ./...
 
 # dependency: valid & working k8s configuration
 .PHONY: test-unit-with-coverage
