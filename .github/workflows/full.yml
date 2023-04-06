@@ -175,7 +175,7 @@ jobs:
       - name: Init k3d
         run: make k3d-init
       - name: Run integration tests
-        run: make test-integration
+        run: make k3d-test
 
   go_test:
     runs-on: ubuntu-22.04

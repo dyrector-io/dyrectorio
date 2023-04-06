@@ -28,16 +28,8 @@ require (
 require golang.org/x/sync v0.1.0
 
 require (
-	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
-	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
-	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00 // indirect
-	github.com/xlab/treeprint v1.1.0 // indirect
-	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
-	sigs.k8s.io/kustomize/api v0.12.1 // indirect
-	sigs.k8s.io/kustomize/kyaml v0.13.9 // indirect
 )
 
 require (
@@ -101,7 +93,6 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gotest.tools/v3 v3.4.0 // indirect
-	k8s.io/cli-runtime v0.26.3
 	k8s.io/klog/v2 v2.90.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230308215209-15aac26d736a // indirect
 	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749 // indirect

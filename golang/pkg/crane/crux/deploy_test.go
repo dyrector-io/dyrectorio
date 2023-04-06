@@ -19,5 +19,4 @@ func TestGetAllDeployments(t *testing.T) {
 	})
 	res := crux.GetDeployments(ctx, "")
 	assert.NotNil(t, res)
-	assert.Nil(t, nil)
 }
