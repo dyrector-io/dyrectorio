@@ -33,7 +33,7 @@ https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a
 
 dyrector.io is an open-source container management platform that helps software teams to manage releases & deployments efficiently. While non-specialists are enabled to manage these processes in a simplified, self-service manner, specialists can customize and manage containerized apps faster through the platform.
 
-Our product is a platform for:
+dyrectorio is the platform where:
 
 -   **DevOps & System Engineers** can build and manage robust cloud infrastructure
 -   **Engineers** can focus more on developing the product because self-service deployments are faster
