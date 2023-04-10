@@ -386,7 +386,7 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 	dc.containerID = &containers[0].ID
 	attachNetworks(dc)
 
-	return NewDockerContainer(&containers[0], dc.hooksPreStart, dc.hooksPostStart), nil
+	return NewDockerContainer(&containers[0], &dc.hooksPreStart, &dc.hooksPostStart, &dc.mountList), nil
 }
 
 func (dc *DockerContainerBuilder) CreateAndStart() (Container, error) {
