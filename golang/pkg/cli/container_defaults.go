@@ -126,7 +126,7 @@ func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.Lifecy
 			cruxMigrate = cruxMigrate.WithForcePullImage()
 		}
 
-		cont, res, err := cruxMigrate.CreateAndWaitUntilExit()
+		cont, res, err := cruxMigrate.CreateAndStartWaitUntilExit()
 		if err != nil {
 			return errors.Join(err, fmt.Errorf("container %s exited with code: %d", cont.GetName(), res.StatusCode))
 		}
@@ -396,7 +396,7 @@ func getKratosInitContainer(state *State, args *ArgsFlags) containerbuilder.Life
 			kratosMigrate = kratosMigrate.WithForcePullImage()
 		}
 
-		cont, res, err := kratosMigrate.CreateAndWaitUntilExit()
+		cont, res, err := kratosMigrate.CreateAndStartWaitUntilExit()
 		if err != nil {
 			return errors.Join(err, fmt.Errorf("container %s exited with code: %d", cont.GetName(), res.StatusCode))
 		}

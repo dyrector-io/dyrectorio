@@ -108,4 +108,5 @@ type LifecycleFunc func(ctx context.Context, client client.APIClient, containerN
 // WaitResult with the status code from the container
 type WaitResult struct {
 	StatusCode int64
+	Logs       []string
 }

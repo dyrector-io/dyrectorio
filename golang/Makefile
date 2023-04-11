@@ -205,48 +205,72 @@ push-agents: | push-crane push-dagent
 .PHONY: push-all
 push-all: | push-crane push-dagent push-cli
 
-.PHONY: k3d-start # todo: put these into use
-k3d-start: #start k3d
+
+.PHONY: k3d-check
+k3d-check:
 	if [ -z "$(shell which k3d)" ]; then \
         echo "k3d is required for integration test, install it and add to PATH!"; \
     fi
-	k3d cluster create crane-cluster
 
+# init k3d with basic
+.PHONY: k3d-init
+k3d-init: k3d-check
+	k3d cluster create --api-port 172.17.0.1:6443 crane-test
+
+# init k3d with ext
+.PHONY: k3d-init-ext
+k3d-init-ext: k3d-check
+	k3d cluster create --api-port 172.17.0.1:6443 crane-test && \
+	k3d kubeconfig get crane-test > k3d.yaml && \
+	KUBECONFIG=$(PWD)/k3d.yaml kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/bundle.yaml
+
+# config k3d
 .PHONY: k3d-config
-k3d-config: # config k3d
-	k3d kubeconfig get crane-cluster > k3s.yaml
+k3d-config:
+	k3d kubeconfig get crane-test > k3d.yaml
 
+.PHONY: k3d-start
+k3d-start:
+	k3d cluster start crane-test
+
+.PHONY: k3d-stop
+k3d-stop:
+	k3d cluster stop crane-test
+
+# make sure to have k3s set and configured
 .PHONY: k3d-test
-k3d-test: # make sure to have k3s set and configured
-	KUBECONFIG=$(PWD)/k3s.yaml go test -tags=integration -race ./pkg/crane/...
+k3d-test: k3d-config
+	export KUBECONFIG='$(PWD)/k3d.yaml'
+	go test -tags=integration -race ./pkg/crane/...
 
-.PHONY: k3s-start
-k3s-start: # start k3s with docker
-	docker run --name k3s -d -p 6443:6443 -p 8081:8081 registry.gitlab.com/gitlab-org/cluster-integration/test-utils/k3s-gitlab-ci/releases/v1.22.2-k3s2:latest
+k3d-rm:
+	k3d cluster delete crane-test
 
-.PHONY: k3s-config
-k3s-config:
-	curl -sf localhost:8081 > k3s.yaml && \
-	sed -i 's/k3s:6443/localhost:6443/g' ./k3s.yaml
-
-.PHONY: k3s-clean
-k3s-clean: #
-	docker stop k3s && docker rm k3s; rm -r ./k3s.yaml
-
-.PHONY: k3s-test
-k3s-test: # make sure to have k3s set and configured
-	KUBECONFIG=$(PWD)/k3s.yaml go test -tags=integration -race ./pkg/crane/...
-
+# dependency: valid & working k8s configuration
 .PHONY: test-unit
-test-unit: # dependency: valid & working k8s configuration
+test-unit:
 	go test -tags=unit -race ./...
 
+# dependency: valid & working k8s configuration
 .PHONY: test-unit-with-coverage
-test-unit-with-coverage: # dependency: valid & working k8s configuration
+test-unit-with-coverage:
 	go test -tags=unit -race -coverpkg=./... -coverprofile=./coverage.cov -covermode=atomic ./...
 
-.PHONY: test-dagent-docker
-test-dagent-docker:
+.PHONY: test-integration
+test-integration: test-dagent test-crane test-cli test-internal
+
+.PHONY: test-crane
+test-crane:
+	go test -tags=integration -race ./pkg/crane/...
+
+.PHONY: test-internal
+test-internal:
+	go test -tags=integration -race ./internal/...
+	go test -tags=integration -race ./pkg/helper/...
+	go test -tags=integration -race ./pkg/builder/...
+
+.PHONY: test-dagent
+test-dagent:
 	go test -tags=integration -race ./pkg/dagent/...
 
 .PHONY: coverage
