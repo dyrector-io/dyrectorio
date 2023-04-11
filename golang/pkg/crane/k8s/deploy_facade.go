@@ -47,6 +47,11 @@ type DeployFacadeParams struct {
 func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *DeployFacade {
 	k8sClient := NewClient(cfg)
 
+	serviceMonitor, err := NewServiceMonitor(params.Ctx, k8sClient)
+	if err != nil {
+		log.Warn().Err(err).Msgf("service client could not be created")
+	}
+
 	return &DeployFacade{
 		ctx:            params.Ctx,
 		params:         params,
@@ -59,7 +64,7 @@ func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *Dep
 		ingress:        newIngress(params.Ctx, k8sClient),
 		secret:         NewSecret(params.Ctx, k8sClient),
 		pvc:            NewPVC(params.Ctx, k8sClient),
-		ServiceMonitor: NewServiceMonitor(params.Ctx, k8sClient),
+		ServiceMonitor: serviceMonitor,
 		appConfig:      cfg,
 	}
 }
@@ -245,7 +250,10 @@ func (d *DeployFacade) PostDeploy() error {
 			return err
 		}
 	} else if d.ServiceMonitor != nil {
-		d.ServiceMonitor.Cleanup(d.namespace.name, d.params.ContainerConfig.Container)
+		err := d.ServiceMonitor.Cleanup(d.namespace.name, d.params.ContainerConfig.Container)
+		if !errors.IsNotFound(err) {
+			return err
+		}
 	}
 
 	return nil

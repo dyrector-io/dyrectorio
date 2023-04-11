@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"testing"
+	"time"
 
 	"github.com/AlekSi/pointer"
 	"github.com/docker/docker/api/types"
@@ -21,6 +22,12 @@ import (
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 )
+
+var testLabels = map[string]string{"dyo": "test"}
+
+func baseBuilder(ctx context.Context) containerbuilder.Builder {
+	return containerbuilder.NewDockerBuilder(ctx).WithLabels(testLabels)
+}
 
 func containerCleanup(container containerbuilder.Container) {
 	ctx := context.Background()
@@ -186,30 +193,30 @@ func TestNetwork(t *testing.T) {
 func TestAutoRemove(t *testing.T) {
 	ctx := context.Background()
 
-	cont, waitResult, err := containerbuilder.NewDockerBuilder(ctx).
-		WithImage("docker.io/library/nginx:latest").
+	_, waitResult, err := baseBuilder(ctx).
 		WithName("prefix-container").
-		WithCmd([]string{"bash"}).
-		WithAutoRemove(true).CreateAndWaitUntilExit()
-
-	defer containerCleanup(cont)
-
+		WithImage("docker.io/library/nginx:latest").
+		WithCmd([]string{"echo", "test"}).
+		WithAutoRemove(true).CreateAndStartWaitUntilExit()
 	assert.NoError(t, err)
 
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		t.Fatal(err)
+	// unfortunately container is not removed instantly from the docker engine, regardless of our wait until the exit
+	// we attempt to wait 5 seconds
+	containerRemoved := false
+	for i := 0; i < 10; i++ {
+		containers, err := dockerHelper.GetAllContainersByLabel(ctx, "dyo=test")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(containers) == 0 {
+			containerRemoved = true
+			break
+		}
+		time.Sleep(time.Second / 2)
 	}
 
-	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: *cont.GetContainerID()}),
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assert.Equal(t, int64(0), waitResult.StatusCode)
-	assert.Zero(t, len(containers))
+	assert.Equal(t, int64(0), waitResult.StatusCode, "exit code expected to be zero, logs: %v", waitResult.Logs)
+	assert.True(t, containerRemoved, "container should be removed in 5 seconds after exit")
 }
 
 func TestConflict(t *testing.T) {
