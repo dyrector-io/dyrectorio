@@ -54,12 +54,12 @@ protogen:| proto-agent proto-crux proto-crux-ui
 ## Generate agent grpc files
 .PHONY: go-lint
 go-lint:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3 ash -c "\
 		cd golang && make lint"
 ## Generate agent grpc files
 .PHONY: proto-agent
 proto-agent:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3 ash -c "\
 		mkdir -p protobuf/go && \
 		protoc -I. \
 			--go_out protobuf/go \
@@ -71,7 +71,7 @@ proto-agent:
 # Generate API grpc files
 .PHONY: proto-crux
 proto-crux:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3 ash -c "\
 		mkdir -p ./web/crux/src/grpc && \
 		protoc \
 			--experimental_allow_proto3_optional \
@@ -89,7 +89,7 @@ proto-crux:
 # Generate UI grpc files, note the single file
 .PHONY:  proto-crux-ui
 proto-crux-ui:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3 ash -c "\
 		mkdir -p ./web/crux-ui/src/models/grpc && \
 		protoc \
 			--experimental_allow_proto3_optional \
@@ -110,7 +110,7 @@ all: | protogen docs
 
 .PHONY: build-proto-image
 build-proto-image:
-	docker build -t ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-2 -f images/alpine-proto/Dockerfile --progress plain .
+	docker build -t ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3 -f images/alpine-proto/Dockerfile --progress plain .
 
 .PHONY: release
 release:
@@ -143,6 +143,11 @@ release:
 ## Finalizing changes
 	git commit -m "release: $(version)"
 	git tag -sm "$(version)" $(version)
+
+.PHONY: test-integration
+test-integration:
+	cd golang && \
+	make test-integration
 
 ## Generate video with gource, needs ffmpeg and gource installed
 .PHONY: gource

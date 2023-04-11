@@ -25,6 +25,8 @@ RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28 && \
 COPY ./golang/Makefile /tmp/
 RUN cd /tmp && make install-go-tools && rm Makefile && chmod -R 777 $GOPATH/
 
+RUN curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | ash
+
 WORKDIR /usr/work
 
 LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/tree/develop/images/alpine-proto"

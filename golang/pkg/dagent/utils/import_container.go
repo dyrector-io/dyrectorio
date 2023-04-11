@@ -61,7 +61,7 @@ func spawnImportContainer(
 			dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
 			return nil
 		}).
-		CreateAndWaitUntilExit()
+		CreateAndStartWaitUntilExit()
 	if err != nil {
 		return err
 	}

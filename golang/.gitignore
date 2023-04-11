@@ -5,4 +5,5 @@ tmp/
 *_bin
 k3s.yml
 k3s.yaml
+k3d.yaml
 coverage.cov
