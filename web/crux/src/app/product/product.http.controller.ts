@@ -16,6 +16,8 @@ import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTa
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
+import UuidValidationGuard from 'src/app/product/guards/productId.validation.guard'
+import Params from 'src/decorators/api-params.decorator'
 import ProductService from './product.service'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
@@ -30,7 +32,7 @@ const ProductId = () => Param('productId')
 
 @Controller(ROUTE_PRODUCTS)
 @ApiTags(ROUTE_PRODUCTS)
-@UseGuards(JwtAuthGuard, ProductTeamAccessGuard)
+@UseGuards(JwtAuthGuard, UuidValidationGuard, ProductTeamAccessGuard)
 @UsePipes(
   new ValidationPipe({
     // TODO(@robot9706): Move to global pipes after removing gRPC
@@ -54,6 +56,7 @@ export default class ProductHttpController {
   @Get(ROUTE_PRODUCT_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: ProductDetailsDto })
+  @Params('productId')
   async getProductDetails(@ProductId() id: string): Promise<ProductDetailsDto> {
     return this.service.getProductDetails(id)
   }

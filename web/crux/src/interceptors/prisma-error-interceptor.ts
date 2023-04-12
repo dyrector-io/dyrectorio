@@ -1,4 +1,11 @@
-import { CallHandler, ConflictException, ExecutionContext, NestInterceptor, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  CallHandler,
+  ConflictException,
+  ExecutionContext,
+  NestInterceptor,
+  NotFoundException,
+} from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { catchError, Observable } from 'rxjs'
 import {
@@ -12,12 +19,14 @@ type NotFoundErrorMappings = { [P in Prisma.ModelName]: string }
 // https://www.prisma.io/docs/reference/api-reference/error-reference#error-codes
 const UNIQUE_CONSTRAINT_FAILED = 'P2002'
 const NOT_FOUND = 'P2025'
+const UUID_INVALID = 'P2003'
 
 export default class PrismaErrorInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(catchError(err => this.onError(context, err)))
   }
 
+  // TODO(@polaroi8d): not working, and remove gRPC error handling
   onError(context: ExecutionContext, err: Error): any {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === UNIQUE_CONSTRAINT_FAILED) {
@@ -40,10 +49,12 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
         }
 
         throw context.getType() === 'http' ? new NotFoundException(error) : new GrpcNotFoundException(error)
+      } else if (err.code === UUID_INVALID) {
+        throw new BadRequestException()
       }
-    }
 
-    throw err
+      throw err
+    }
   }
 
   private prismaMessageToProperty(message: string) {
