@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { Node, NodeTypeEnum } from '@prisma/client'
 import AgentInstaller from 'src/domain/agent-installer'
 import { InvalidArgumentException } from 'src/exception/errors'
+import { ContainerState as ProtoContainerState } from 'src/grpc/protobuf/proto/common'
 import { NodeConnectionStatus as ProtoNodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
+import { ContainerState } from 'src/shared/models'
 import AgentService from '../agent/agent.service'
 import { NodeConnectionStatus, NodeType } from '../shared/shared.dto'
 import { NodeDetailsDto, NodeDto, NodeInstallDto } from './node.dto'
@@ -63,6 +65,31 @@ export default class NodeMapper {
       command: installer.getCommand(),
       script: installer.getScript(),
       expireAt: installer.expireAt,
+    }
+  }
+
+  containerGrpcStateToDto(state: ProtoContainerState): ContainerState {
+    switch (state) {
+      case ProtoContainerState.CREATED:
+        return 'created'
+      case ProtoContainerState.DEAD:
+        return 'dead'
+      case ProtoContainerState.EXITED:
+        return 'exited'
+      case ProtoContainerState.PAUSED:
+        return 'paused'
+      case ProtoContainerState.REMOVING:
+        return 'removing'
+      case ProtoContainerState.RESTARTING:
+        return 'restarting'
+      case ProtoContainerState.RUNNING:
+        return 'running'
+      default:
+        throw new BadRequestException({
+          message: 'Unknown ContainerState',
+          property: 'state',
+          value: state,
+        })
     }
   }
 }

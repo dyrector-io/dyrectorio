@@ -1,6 +1,19 @@
-import { Body, Controller, Delete, Get, Header, HttpCode, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common'
+import {
+  Controller,
+  Body,
+  Get,
+  UseGuards,
+  UseInterceptors,
+  Post,
+  HttpCode,
+  Put,
+  Delete,
+  Header,
+  Query,
+} from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
+import { Observable, timeout } from 'rxjs'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
@@ -9,6 +22,7 @@ import JwtAuthGuard, { DisableAuth, IdentityFromRequest } from '../token/jwt-aut
 import NodeTeamAccessHttpGuard from './guards/node.team-access.http.guard'
 import { NodeId, ROUTE_NODES, ROUTE_NODE_ID } from './node.const'
 import {
+  ContainerStatus,
   CreateNodeDto,
   NodeDetailsDto,
   NodeDto,
@@ -112,5 +126,11 @@ export default class NodeHttpController {
   @ApiNoContentResponse()
   async updateNodeAgent(@NodeId() nodeId: string): Promise<void> {
     this.service.updateNodeAgent(nodeId)
+  }
+
+  @Get(`${ROUTE_NODE_ID}/container`)
+  @ApiOkResponse({ type: ContainerStatus, isArray: true })
+  async getContainerStatus(@NodeId() nodeId: string, @Query('prefix') prefix: string): Promise<Observable<any>> {
+    return this.service.handleWatchContainerStatusDto(nodeId, prefix).pipe(timeout(5000))
   }
 }
