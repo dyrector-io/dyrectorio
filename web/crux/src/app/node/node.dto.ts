@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsBoolean, IsDate, IsEmail, IsIn, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator'
+import { ContainerState } from 'src/shared/models'
 import {
   BasicNodeDto,
   NodeConnectionStatus,
@@ -134,4 +135,30 @@ export class NodeDeleteContainerDto {
 
   @IsString()
   prefix?: string
+}
+
+export class ContainerPort {
+  internal: number
+
+  external: number
+}
+
+export class ContainerStatus {
+  id: ContainerIdentifierDto
+
+  command: string
+
+  @Type(() => Date)
+  @IsDate()
+  createdAt: Date
+
+  state: ContainerState
+
+  status: string
+
+  imageName: string
+
+  imageTag: string
+
+  ports: ContainerPort[]
 }
