@@ -24,12 +24,13 @@ type Container interface {
 
 type DockerContainer struct {
 	container      *types.Container
-	preStartHooks  []LifecycleFunc
-	postStartHooks []LifecycleFunc
+	preStartHooks  *[]LifecycleFunc
+	postStartHooks *[]LifecycleFunc
+	mountList      *[]mount.Mount
 }
 
-func NewDockerContainer(cont *types.Container, preStartHooks, postStartHooks []LifecycleFunc) DockerContainer {
-	return DockerContainer{container: cont, preStartHooks: preStartHooks, postStartHooks: postStartHooks}
+func NewDockerContainer(cont *types.Container, preStartHooks, postStartHooks *[]LifecycleFunc, mountList *[]mount.Mount) DockerContainer {
+	return DockerContainer{container: cont, preStartHooks: preStartHooks, postStartHooks: postStartHooks, mountList: mountList}
 }
 
 func (d DockerContainer) GetName() string {
@@ -49,19 +50,19 @@ func (d DockerContainer) GetNetworkIDs() []string {
 }
 
 func (d DockerContainer) Start(ctx context.Context, cli client.APIClient) error {
-	if hookError := execStartHooks(ctx, cli, d.GetName(), d.container, []mount.Mount{}, d.preStartHooks); hookError != nil {
-		return hookError
-	}
-
 	if d.container.ID == "" {
 		return errors.New("container does not exist")
+	}
+
+	if hookError := execStartHooks(ctx, cli, d.GetName(), d.container, d.mountList, d.preStartHooks); hookError != nil {
+		return hookError
 	}
 
 	err := cli.ContainerStart(ctx, d.container.ID, types.ContainerStartOptions{})
 	if err != nil {
 		return err
 	}
-	if hookError := execStartHooks(ctx, cli, d.GetName(), d.container, []mount.Mount{}, d.postStartHooks); hookError != nil {
+	if hookError := execStartHooks(ctx, cli, d.GetName(), d.container, d.mountList, d.postStartHooks); hookError != nil {
 		return hookError
 	}
 	return nil
@@ -85,10 +86,10 @@ func (d DockerContainer) StartWaitUntilExit(ctx context.Context, cli client.APIC
 }
 
 func execStartHooks(ctx context.Context, cli client.APIClient, name string,
-	cont *types.Container, mountList []mount.Mount, hooks []LifecycleFunc,
+	cont *types.Container, mountList *[]mount.Mount, hooks *[]LifecycleFunc,
 ) error {
-	for _, hook := range hooks {
-		if err := hook(ctx, cli, name, pointer.ToStringOrNil(cont.ID), mountList, nil); err != nil {
+	for _, hook := range *hooks {
+		if err := hook(ctx, cli, name, pointer.ToStringOrNil(cont.ID), *mountList, nil); err != nil {
 			return err
 		}
 	}

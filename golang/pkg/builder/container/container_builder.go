@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/api/types"
@@ -16,7 +17,9 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
+	"github.com/rs/zerolog/log"
 
+	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 )
@@ -54,7 +57,7 @@ type Builder interface {
 	WithPostStartHooks(hooks ...LifecycleFunc) Builder
 	Create() (Container, error)
 	CreateAndStart() (Container, error)
-	CreateAndWaitUntilExit() (Container, *WaitResult, error)
+	CreateAndStartWaitUntilExit() (Container, *WaitResult, error)
 }
 
 type DockerContainerBuilder struct {
@@ -386,7 +389,7 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 	dc.containerID = &containers[0].ID
 	attachNetworks(dc)
 
-	return NewDockerContainer(&containers[0], dc.hooksPreStart, dc.hooksPostStart), nil
+	return NewDockerContainer(&containers[0], &dc.hooksPreStart, &dc.hooksPostStart, &dc.mountList), nil
 }
 
 func (dc *DockerContainerBuilder) CreateAndStart() (Container, error) {
@@ -399,12 +402,28 @@ func (dc *DockerContainerBuilder) CreateAndStart() (Container, error) {
 	return cont, err
 }
 
-func (dc *DockerContainerBuilder) CreateAndWaitUntilExit() (Container, *WaitResult, error) {
+func (dc *DockerContainerBuilder) CreateAndStartWaitUntilExit() (Container, *WaitResult, error) {
 	cont, err := dc.Create()
 	if err != nil {
 		return nil, nil, err
 	}
 	res, err := cont.StartWaitUntilExit(dc.ctx, dc.client)
+	if err != nil {
+		return cont, res, err
+	}
+
+	if res.StatusCode == 0 {
+		return cont, res, err
+	}
+	logReader, err := dc.client.ContainerLogs(dc.ctx, *cont.GetContainerID(), types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
+	if err != nil {
+		return cont, res, err
+	}
+
+	defer logdefer.LogDeferredErr(logReader.Close, log.Debug(), "could not close log reader")
+
+	logs, err := io.ReadAll(logReader)
+	res.Logs = strings.Split(string(logs), "\n")
 
 	return cont, res, err
 }

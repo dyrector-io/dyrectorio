@@ -4,21 +4,20 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rs/zerolog/log"
-
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 
-	monitoringapiv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	versionedv1 "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned"
+
+	smv1 "github.com/prometheus-operator/prometheus-operator/pkg/client/applyconfiguration/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
 )
 
 type ServiceMonitor struct {
-	Ctx       context.Context
-	Client    *monitoringv1.MonitoringV1Client
+	Ctx    context.Context
+	Client *Client
+
+	ClientSet *versionedv1.Clientset
 	appConfig *config.Configuration
 }
 
@@ -28,75 +27,41 @@ const (
 )
 
 // service monitor is spawned per deployment
-func NewServiceMonitor(ctx context.Context, cli *Client) *ServiceMonitor {
+func NewServiceMonitor(ctx context.Context, cli *Client) (*ServiceMonitor, error) {
 	if !cli.VerifyAPIResourceExists(ServiceMonitorVersion, ServiceMonitorKind) {
-		log.Warn().Msg("service monitor could not be spawned")
-		return nil
+		return nil, fmt.Errorf("service monitor is not installed")
 	}
 
 	restConf, err := cli.GetRestConfig()
 	if err != nil {
-		log.Panic().Err(err).Stack().Send()
+		return nil, err
 	}
 
-	// todo(nandor-magyar): fix error handling here, and with every sub-component
-	smClient, err := NewServiceMonitorClient(restConf)
-	log.Warn().AnErr("Monitor spawn error", err).Send()
+	smClient, err := versionedv1.NewForConfig(restConf)
 
 	return &ServiceMonitor{
 		Ctx:       ctx,
-		Client:    smClient,
+		Client:    cli,
+		ClientSet: smClient,
 		appConfig: cli.appConfig,
-	}
+	}, err
 }
 
 // Deploy firstPort is used as a fallback if only path is provided, the first port is used
 func (sm *ServiceMonitor) Deploy(namespace, serviceName string, metricParams v1.Metrics, firstPort string) error {
-	if sm == nil || sm.Client == nil {
+	if sm == nil || sm.ClientSet == nil {
 		return fmt.Errorf("service monitor client uninitialized")
 	}
-	newMonitor := createServiceMonitorSpec(serviceName, metricParams, firstPort)
-	clientSet := sm.Client.ServiceMonitors(namespace)
-
-	oldServiceMonitor, err := clientSet.Get(sm.Ctx, serviceName, metav1.GetOptions{})
-	if apierrors.IsNotFound(err) {
-		_, err = clientSet.Create(sm.Ctx, newMonitor, metav1.CreateOptions{
-			FieldManager: sm.appConfig.FieldManagerName,
-		})
-		if err != nil {
-			return err
-		}
-	} else if err != nil && !apierrors.IsNotFound(err) {
+	nsHandler := NewNamespaceClient(sm.Ctx, namespace, sm.Client)
+	err := nsHandler.EnsureExists(namespace)
+	if err != nil {
 		return err
-	} else {
-		newMonitor.ResourceVersion = oldServiceMonitor.ResourceVersion
-		_, err := clientSet.Update(sm.Ctx, newMonitor, metav1.UpdateOptions{
-			FieldManager: sm.appConfig.FieldManagerName,
-		})
-		if err != nil {
-			return err
-		}
 	}
 
-	return nil
-}
-
-// cleanup ignores errors, expected to run if no metrics were defined
-func (sm *ServiceMonitor) Cleanup(namespace, serviceName string) {
-	if sm.Client != nil {
-		clientSet := sm.Client.ServiceMonitors(namespace)
-		_ = clientSet.Delete(sm.Ctx, serviceName, metav1.DeleteOptions{})
-	}
-}
-
-func createServiceMonitorSpec(name string,
-	metricParams v1.Metrics,
-	defaultPortName string,
-) *monitoringapiv1.ServiceMonitor {
 	portName := metricParams.Port
 
 	if portName == "" {
-		portName = defaultPortName
+		portName = firstPort
 	}
 
 	metricsPath := metricParams.Path
@@ -104,23 +69,31 @@ func createServiceMonitorSpec(name string,
 		metricsPath = "/metrics"
 	}
 
-	return &monitoringapiv1.ServiceMonitor{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		},
-		Spec: monitoringapiv1.ServiceMonitorSpec{
-			Endpoints: []monitoringapiv1.Endpoint{
-				{Port: portName, Path: metricsPath},
-			},
-			Selector: metav1.LabelSelector{
+	smApplyConfig := smv1.ServiceMonitor(serviceName, namespace).
+		WithSpec(smv1.ServiceMonitorSpec().
+			WithEndpoints(
+				smv1.Endpoint().WithPort(portName).WithPath(metricsPath),
+			).WithSelector(
+			metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": name,
+					"app": serviceName,
 				},
 			},
-		},
-	}
+		))
+
+	_, err = sm.ClientSet.MonitoringV1().ServiceMonitors(namespace).Apply(sm.Ctx, smApplyConfig, metav1.ApplyOptions{
+		FieldManager: sm.appConfig.FieldManagerName,
+		Force:        sm.appConfig.ForceOnConflicts,
+	})
+
+	return err
 }
 
-func NewServiceMonitorClient(c *rest.Config) (*monitoringv1.MonitoringV1Client, error) {
-	return monitoringv1.NewForConfig(c)
+// cleanup ignores errors, expected to run if no metrics were defined
+func (sm *ServiceMonitor) Cleanup(namespace, serviceName string) error {
+	if sm.Client != nil {
+		return sm.ClientSet.MonitoringV1().ServiceMonitors(namespace).Delete(sm.Ctx, serviceName, metav1.DeleteOptions{})
+	}
+
+	return nil
 }
