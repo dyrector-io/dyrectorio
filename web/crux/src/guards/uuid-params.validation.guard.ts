@@ -21,14 +21,8 @@ export default class UuidValidationGuard implements CanActivate {
       return true
     }
 
-    let validUuid
-
     params.forEach(actualParam => {
       const id = req.params[actualParam] as string
-
-      if (!id) {
-        validUuid = true
-      }
 
       if (!validator.isUUID(id)) {
         throw new BadRequestException({
@@ -36,11 +30,9 @@ export default class UuidValidationGuard implements CanActivate {
           property: actualParam,
           value: id,
         })
-      } else {
-        validUuid = true
       }
     })
 
-    return validUuid
+    return true
   }
 }
