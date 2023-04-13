@@ -192,10 +192,10 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 		switch {
 		case errors.Is(err, containerRuntime.ErrServerIsOutdated):
 			NotifyOnce("dockerversion", func() {
-				log.Warn().Stack().Err(err).Msg("Docker Engine (Server) is outdated, please consider updating")
+				log.Warn().Stack().Err(err).Msg("There is a newer version of the container engine in use, please consider updating.")
 			})
 		case errors.Is(err, containerRuntime.ErrServerVersionIsNotSupported):
-			log.Fatal().Stack().Err(err).Msg("Docker Engine (Server) is outdated")
+			log.Fatal().Stack().Err(err).Msg("There is a newer version of the container engine in use, please consider updating.")
 		default:
 			log.Fatal().Stack().Err(err).Send()
 		}
