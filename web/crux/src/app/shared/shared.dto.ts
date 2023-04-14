@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsDate, IsIn, IsOptional, IsString, IsUUID } from 'class-validator'
+import { IsDate, IsIn, IsString, IsUUID } from 'class-validator'
 
 export const NODE_CONNECTION_STATUS_VALUES = ['unreachable', 'connected'] as const
 export type NodeConnectionStatus = (typeof NODE_CONNECTION_STATUS_VALUES)[number]
@@ -31,8 +31,7 @@ export class AuditDto {
   updatedAt: Date
 
   @IsUUID()
-  @IsOptional()
-  updatedBy?: string
+  updatedBy: string
 }
 
 export class BasicNodeDto {
