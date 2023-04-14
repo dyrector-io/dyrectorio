@@ -13,7 +13,14 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -36,7 +43,7 @@ const ImageId = () => Param('imageId')
 const ROUTE_IMAGE_ID = ':imageId'
 
 @Controller('/products/:productId/versions/:versionId/images')
-@ApiTags('version-images')
+@ApiTags('version/images')
 @UseGuards(JwtAuthGuard, ImageTeamAccessGuard)
 @UsePipes(
   new ValidationPipe({
@@ -49,18 +56,21 @@ export default class ImageHttpController {
   constructor(private service: ImageService) {}
 
   @Get()
+  @HttpCode(200)
   @ApiOkResponse({ type: ImageDto, isArray: true })
   async getImagesByVersionId(@VersionId() versionId: string): Promise<ImageDto[]> {
     return await this.service.getImagesByVersionId(versionId)
   }
 
   @Get(ROUTE_IMAGE_ID)
+  @HttpCode(200)
   @ApiOkResponse({ type: ImageDto })
   async getImageDetails(@ImageId() imageId: string): Promise<ImageDto> {
     return await this.service.getImageDetails(imageId)
   }
 
   @Post()
+  @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: AddImagesDto, isArray: true })
   @ApiCreatedResponse({ type: ImageDto, isArray: true })
@@ -83,7 +93,7 @@ export default class ImageHttpController {
   @Patch(ROUTE_IMAGE_ID)
   @HttpCode(204)
   @ApiBody({ type: PatchImageDto })
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Image patched successfully' })
   async patchImage(
     @ImageId() imageId: string,
     @Body() request: PatchImageDto,
@@ -94,7 +104,7 @@ export default class ImageHttpController {
 
   @Delete(ROUTE_IMAGE_ID)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Image deleted successfully' })
   @UseInterceptors(DeleteImageValidationInterceptor)
   async deleteImage(@ImageId() imageId: string): Promise<void> {
     return await this.service.deleteImage(imageId)
@@ -102,6 +112,7 @@ export default class ImageHttpController {
 
   @Put('order')
   @HttpCode(204)
+  @ApiNoContentResponse({ description: 'Images ordered successfully' })
   @ApiBody({ type: String, isArray: true })
   @UseGuards(ImageOrderImagesTeamAccessGuard)
   @UseInterceptors(OrderImagesValidationInterceptor)

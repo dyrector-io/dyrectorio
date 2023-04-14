@@ -12,7 +12,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -49,6 +49,7 @@ export default class VersionHttpController {
   constructor(private service: VersionService) {}
 
   @Get()
+  @HttpCode(200)
   @ApiOkResponse({ type: VersionDto, isArray: true })
   async getVersions(@ProductId() productId: string, @IdentityFromRequest() identity: Identity): Promise<VersionDto[]> {
     return await this.service.getVersionsByProductId(productId, identity)
@@ -61,6 +62,7 @@ export default class VersionHttpController {
   }
 
   @Post()
+  @HttpCode(201)
   @CreatedWithLocation()
   @UseInterceptors(VersionCreateValidationInterceptor)
   @ApiBody({ type: CreateVersionDto })
@@ -80,6 +82,7 @@ export default class VersionHttpController {
 
   @Put(ROUTE_VERSION_ID)
   @HttpCode(204)
+  @ApiNoContentResponse()
   @UseInterceptors(VersionUpdateValidationInterceptor)
   @ApiBody({ type: UpdateVersionDto })
   async updateVersion(
@@ -92,6 +95,7 @@ export default class VersionHttpController {
 
   @Delete(ROUTE_VERSION_ID)
   @HttpCode(204)
+  @ApiNoContentResponse()
   @UseInterceptors(VersionDeleteValidationInterceptor)
   @ApiBody({ type: UpdateVersionDto })
   async deleteVersion(@VersionId() versionId: string): Promise<void> {
@@ -100,11 +104,13 @@ export default class VersionHttpController {
 
   @Put(`${ROUTE_VERSION_ID}/default`)
   @HttpCode(204)
+  @ApiNoContentResponse()
   async setDefaultVersion(@ProductId() productId: string, @VersionId() versionId: string): Promise<void> {
     return await this.service.setDefaultVersion(productId, versionId)
   }
 
   @Post(`${ROUTE_VERSION_ID}/increase`)
+  @HttpCode(201)
   @CreatedWithLocation()
   @UseInterceptors(VersionIncreaseValidationInterceptor)
   @ApiBody({ type: IncreaseVersionDto })

@@ -13,7 +13,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -70,30 +70,35 @@ export default class DeployHttpController {
   }
 
   @Get(ROUTE_DEPLOYMENT_ID)
+  @HttpCode(200)
   @ApiOkResponse({ type: DeploymentDetailsDto })
   async getDeploymentDetails(@DeploymentId() deploymentId: string): Promise<DeploymentDetailsDto> {
     return await this.service.getDeploymentDetails(deploymentId)
   }
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/events`)
+  @HttpCode(200)
   @ApiOkResponse({ type: DeploymentEventDto, isArray: true })
   async getDeploymentEvents(@DeploymentId() deploymentId: string): Promise<DeploymentEventDto[]> {
     return await this.service.getDeploymentEvents(deploymentId)
   }
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)
+  @HttpCode(200)
   @ApiOkResponse({ type: InstanceDto })
   async getInstance(@InstanceId() instanceId: string): Promise<InstanceDto> {
     return await this.service.getInstance(instanceId)
   }
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}/secrets`)
+  @HttpCode(200)
   @ApiOkResponse({ type: InstanceSecretsDto })
   async getDeploymentSecrets(@InstanceId() instanceId: string): Promise<InstanceSecretsDto> {
     return await this.service.getInstanceSecrets(instanceId)
   }
 
   @Post()
+  @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateDeploymentDto })
   @ApiCreatedResponse({ type: DeploymentDto })
@@ -114,6 +119,7 @@ export default class DeployHttpController {
   @Patch(ROUTE_DEPLOYMENT_ID)
   @HttpCode(204)
   @UseInterceptors(DeployPatchValidationInterceptor)
+  @ApiNoContentResponse()
   async patchDeployment(
     @DeploymentId() deploymentId: string,
     @Body() request: PatchDeploymentDto,
@@ -125,6 +131,7 @@ export default class DeployHttpController {
   @Patch(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)
   @HttpCode(204)
   @UseInterceptors(DeployPatchValidationInterceptor)
+  @ApiNoContentResponse()
   async patchInstance(
     @DeploymentId() deploymentId: string,
     @InstanceId() instanceId: string,
@@ -144,6 +151,7 @@ export default class DeployHttpController {
   @Post(`${ROUTE_DEPLOYMENT_ID}/start`)
   @HttpCode(204)
   @UseInterceptors(DeployStartValidationInterceptor)
+  @ApiNoContentResponse()
   async startDeployment(
     @DeploymentId() deploymentId: string,
     @IdentityFromRequest() identity: Identity,
@@ -152,8 +160,10 @@ export default class DeployHttpController {
   }
 
   @Post(`${ROUTE_DEPLOYMENT_ID}/copy`)
+  @HttpCode(201)
   @CreatedWithLocation()
   @UseInterceptors(DeployCopyValidationInterceptor)
+  @ApiCreatedResponse({ type: DeploymentDto })
   async copyDeployment(
     @Query('force') _: boolean,
     @DeploymentId() deploymentId: string,

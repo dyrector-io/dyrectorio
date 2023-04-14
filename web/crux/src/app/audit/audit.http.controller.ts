@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common'
+import { Controller, Get, HttpCode, Query, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common'
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
@@ -21,7 +21,8 @@ export default class AuditController {
   constructor(private service: AuditService) {}
 
   @Get()
-  @ApiOkResponse()
+  @HttpCode(200)
+  @ApiOkResponse({ type: AuditLogListDto, isArray: true })
   async getAuditLog(
     @Query() query: AuditLogQueryDto,
     @IdentityFromRequest() identity: Identity,
