@@ -7,7 +7,7 @@ export default class SharedMapper {
       createdAt: it.createdAt,
       createdBy: it.createdBy,
       updatedAt: it.updatedAt,
-      updatedBy: it.updatedBy,
+      updatedBy: it.updatedBy ? it.updatedBy : it.createdBy,
     }
   }
 
