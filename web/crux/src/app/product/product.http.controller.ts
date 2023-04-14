@@ -12,7 +12,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -42,6 +42,7 @@ export default class ProductHttpController {
   constructor(private service: ProductService) {}
 
   @Get()
+  @HttpCode(200)
   @ApiOkResponse({
     type: ProductListItemDto,
     isArray: true,
@@ -51,12 +52,14 @@ export default class ProductHttpController {
   }
 
   @Get(ROUTE_PRODUCT_ID)
+  @HttpCode(200)
   @ApiOkResponse({ type: ProductDetailsDto })
   async getProductDetails(@ProductId() id: string): Promise<ProductDetailsDto> {
     return this.service.getProductDetails(id)
   }
 
   @Post()
+  @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateProductDto })
   @ApiCreatedResponse({ type: ProductListItemDto })
@@ -74,6 +77,7 @@ export default class ProductHttpController {
 
   @Put(ROUTE_PRODUCT_ID)
   @HttpCode(204)
+  @ApiNoContentResponse()
   @UseInterceptors(ProductUpdateValidationInterceptor)
   async updateProduct(
     @ProductId() id: string,
@@ -85,6 +89,7 @@ export default class ProductHttpController {
 
   @Delete(ROUTE_PRODUCT_ID)
   @HttpCode(204)
+  @ApiNoContentResponse()
   async deleteProduct(@ProductId() id: string): Promise<void> {
     return this.service.deleteProduct(id)
     // TODO(@polaroi8d): exception if there is no product with the given Id

@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common'
 import { Delete, Post, Put } from '@nestjs/common/decorators/http/request-mapping.decorator'
 import { Body, Param } from '@nestjs/common/decorators/http/route-params.decorator'
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -45,18 +45,21 @@ export default class RegistryHttpController {
   constructor(private service: RegistryService) {}
 
   @Get()
+  @HttpCode(200)
   @ApiOkResponse({ type: RegistryDto, isArray: true })
   async getRegistries(@IdentityFromRequest() identity: Identity): Promise<RegistryDto[]> {
     return await this.service.getRegistries(identity)
   }
 
   @Get(ROUTE_REGISTRY_ID)
+  @HttpCode(200)
   @ApiOkResponse({ type: RegistryDetailsDto })
   async getRegistry(@RegistryId() id: string): Promise<RegistryDetailsDto> {
     return await this.service.getRegistryDetails(id)
   }
 
   @Post()
+  @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateRegistryDto })
   @ApiCreatedResponse({
@@ -81,6 +84,7 @@ export default class RegistryHttpController {
   @UseInterceptors(UpdateRegistryInterceptor)
   @UseGuards(RegistryAccessValidationGuard)
   @ApiBody({ type: UpdateRegistryDto })
+  @ApiNoContentResponse()
   async updateRegistry(
     @RegistryId() id: string,
     @Body() request: UpdateRegistryDto,
@@ -91,6 +95,7 @@ export default class RegistryHttpController {
 
   @Delete(ROUTE_REGISTRY_ID)
   @HttpCode(204)
+  @ApiNoContentResponse()
   async deleteRegistry(@RegistryId(DeleteRegistryValidationPipe) id: string): Promise<void> {
     await this.service.deleteRegistry(id)
   }
