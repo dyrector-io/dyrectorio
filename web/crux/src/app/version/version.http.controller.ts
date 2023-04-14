@@ -57,7 +57,7 @@ export default class VersionHttpController {
 
   @Get(ROUTE_VERSION_ID)
   @ApiOkResponse({ type: VersionDetailsDto })
-  async getVersion(@VersionId() versionId: string): Promise<VersionDetailsDto> {
+  async getVersion(@ProductId() _productId: string, @VersionId() versionId: string): Promise<VersionDetailsDto> {
     return await this.service.getVersionDetails(versionId)
   }
 
@@ -86,6 +86,7 @@ export default class VersionHttpController {
   @UseInterceptors(VersionUpdateValidationInterceptor)
   @ApiBody({ type: UpdateVersionDto })
   async updateVersion(
+    @ProductId() _productId: string,
     @VersionId() versionId: string,
     @Body() request: UpdateVersionDto,
     @IdentityFromRequest() identity: Identity,
@@ -98,7 +99,7 @@ export default class VersionHttpController {
   @ApiNoContentResponse()
   @UseInterceptors(VersionDeleteValidationInterceptor)
   @ApiBody({ type: UpdateVersionDto })
-  async deleteVersion(@VersionId() versionId: string): Promise<void> {
+  async deleteVersion(@ProductId() _productId: string, @VersionId() versionId: string): Promise<void> {
     return await this.service.deleteVersion(versionId)
   }
 

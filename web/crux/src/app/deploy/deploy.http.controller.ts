@@ -86,14 +86,17 @@ export default class DeployHttpController {
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)
   @HttpCode(200)
   @ApiOkResponse({ type: InstanceDto })
-  async getInstance(@InstanceId() instanceId: string): Promise<InstanceDto> {
+  async getInstance(@DeploymentId() _deploymentId: string, @InstanceId() instanceId: string): Promise<InstanceDto> {
     return await this.service.getInstance(instanceId)
   }
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}/secrets`)
   @HttpCode(200)
   @ApiOkResponse({ type: InstanceSecretsDto })
-  async getDeploymentSecrets(@InstanceId() instanceId: string): Promise<InstanceSecretsDto> {
+  async getDeploymentSecrets(
+    @DeploymentId() _deploymentId: string,
+    @InstanceId() instanceId: string,
+  ): Promise<InstanceSecretsDto> {
     return await this.service.getInstanceSecrets(instanceId)
   }
 

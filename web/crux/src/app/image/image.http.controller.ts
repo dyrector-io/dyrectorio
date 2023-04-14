@@ -51,14 +51,18 @@ export default class ImageHttpController {
   @Get()
   @HttpCode(200)
   @ApiOkResponse({ type: ImageDto, isArray: true })
-  async getImagesByVersionId(@VersionId() versionId: string): Promise<ImageDto[]> {
+  async getImagesByVersionId(@ProductId() _productId: string, @VersionId() versionId: string): Promise<ImageDto[]> {
     return await this.service.getImagesByVersionId(versionId)
   }
 
   @Get(ROUTE_IMAGE_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: ImageDto })
-  async getImageDetails(@ImageId() imageId: string): Promise<ImageDto> {
+  async getImageDetails(
+    @ProductId() _productId: string,
+    @VersionId() _versionId: string,
+    @ImageId() imageId: string,
+  ): Promise<ImageDto> {
     return await this.service.getImageDetails(imageId)
   }
 
@@ -88,6 +92,8 @@ export default class ImageHttpController {
   @ApiBody({ type: PatchImageDto })
   @ApiNoContentResponse({ description: 'Image patched successfully' })
   async patchImage(
+    @ProductId() _productId: string,
+    @VersionId() _versionId: string,
     @ImageId() imageId: string,
     @Body() request: PatchImageDto,
     @IdentityFromRequest() identity: Identity,
@@ -99,7 +105,11 @@ export default class ImageHttpController {
   @HttpCode(204)
   @ApiNoContentResponse({ description: 'Image deleted successfully' })
   @UseInterceptors(DeleteImageValidationInterceptor)
-  async deleteImage(@ImageId() imageId: string): Promise<void> {
+  async deleteImage(
+    @ProductId() _productId: string,
+    @VersionId() _versionId: string,
+    @ImageId() imageId: string,
+  ): Promise<void> {
     return await this.service.deleteImage(imageId)
   }
 
@@ -109,7 +119,12 @@ export default class ImageHttpController {
   @ApiBody({ type: String, isArray: true })
   @UseGuards(ImageOrderImagesTeamAccessGuard)
   @UseInterceptors(OrderImagesValidationInterceptor)
-  async orderImages(@Body() request: string[], @IdentityFromRequest() identity: Identity): Promise<void> {
+  async orderImages(
+    @ProductId() _productId: string,
+    @VersionId() _versionId: string,
+    @Body() request: string[],
+    @IdentityFromRequest() identity: Identity,
+  ): Promise<void> {
     return await this.service.orderImages(request, identity)
   }
 }
