@@ -10,7 +10,7 @@ export class VersionDto extends BasicVersionDto {
   audit: AuditDto
 
   @IsString()
-  changelog: string
+  changelog?: string
 
   @IsBoolean()
   default: boolean
