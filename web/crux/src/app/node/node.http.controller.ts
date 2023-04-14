@@ -113,7 +113,7 @@ export default class NodeHttpController {
 
   @Get(`${ROUTE_NODE_ID}/script`)
   @HttpCode(200)
-  @ApiOkResponse({ type: 'string' })
+  @ApiOkResponse({ type: String })
   @Header('content-type', 'text/plain')
   @DisableAuth()
   async getScript(@NodeId(NodeGetScriptValidationPipe) nodeId: string): Promise<string> {
