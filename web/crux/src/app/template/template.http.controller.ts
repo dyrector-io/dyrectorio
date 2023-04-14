@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Response, Param, Post, Header, UseGuards, UseInterceptors } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Response,
+  Param,
+  Post,
+  Header,
+  UseGuards,
+  UseInterceptors,
+  HttpCode,
+} from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
@@ -24,12 +35,14 @@ export default class TemplateHttpController {
   constructor(private service: TemplateService, private templateFileService: TemplateFileService) {}
 
   @Get()
+  @HttpCode(200)
   @ApiOkResponse({ type: TemplateDto, isArray: true })
   async getTemplates(): Promise<TemplateDto[]> {
     return this.templateFileService.getTemplates()
   }
 
   @Post()
+  @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateProductFromTemplateDto })
   @ApiCreatedResponse({ type: ProductDto })
@@ -46,7 +59,9 @@ export default class TemplateHttpController {
   }
 
   @Get(`${ROUTE_TEMPLATE_ID}/image`)
+  @HttpCode(200)
   @Header('content-type', 'image/jpeg')
+  @ApiOkResponse()
   async getImage(@TemplateId() templateId: string, @Response() response: ExpressResponse) {
     const image = await this.service.getImageStream(templateId)
     image.pipe(response)

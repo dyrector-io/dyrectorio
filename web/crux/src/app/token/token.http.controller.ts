@@ -11,7 +11,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -42,6 +42,7 @@ export default class TokenHttpController {
   constructor(private service: TokenService) {}
 
   @Get()
+  @HttpCode(200)
   @ApiOkResponse({
     type: TokenDto,
     isArray: true,
@@ -51,12 +52,14 @@ export default class TokenHttpController {
   }
 
   @Get(ROUTE_TOKEN_ID)
+  @HttpCode(200)
   @ApiOkResponse({ type: TokenDto })
   async getToken(@TokenId() id: string, @IdentityFromRequest() identity: Identity): Promise<TokenDto> {
     return this.service.getToken(id, identity)
   }
 
   @Post()
+  @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: GenerateTokenDto })
   @ApiCreatedResponse({
@@ -77,6 +80,7 @@ export default class TokenHttpController {
 
   @Delete(ROUTE_TOKEN_ID)
   @HttpCode(204)
+  @ApiNoContentResponse({ description: 'Token deleted' })
   async deleteToken(@TokenId() id: string): Promise<void> {
     await this.service.deleteToken(id)
   }
