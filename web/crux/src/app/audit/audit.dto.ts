@@ -14,8 +14,6 @@ export class AuditLogQueryDto extends PaginationQuery {
   readonly to: Date
 }
 
-export class AuditLogListDto extends PaginatedList<AuditLogDto> {}
-
 export class AuditLogDto {
   @Type(() => Date)
   @IsDate()
@@ -31,4 +29,11 @@ export class AuditLogDto {
   serviceCall: string
 
   data?: object
+}
+
+export class AuditLogListDto extends PaginatedList<AuditLogDto> {
+  @Type(() => AuditLogDto)
+  items: AuditLogDto[]
+
+  total: number
 }

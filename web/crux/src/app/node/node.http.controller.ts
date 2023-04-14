@@ -42,6 +42,7 @@ export default class NodeHttpController {
   constructor(private service: NodeService) {}
 
   @Get()
+  @HttpCode(200)
   @ApiOkResponse({
     type: NodeDto,
     isArray: true,
@@ -51,12 +52,14 @@ export default class NodeHttpController {
   }
 
   @Get(ROUTE_NODE_ID)
+  @HttpCode(200)
   @ApiOkResponse({ type: NodeDetailsDto })
   async getNodeDetails(@NodeId() nodeId: string): Promise<NodeDetailsDto> {
     return this.service.getNodeDetails(nodeId)
   }
 
   @Post()
+  @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateNodeDto })
   @ApiCreatedResponse({ type: NodeDto })
@@ -85,11 +88,13 @@ export default class NodeHttpController {
 
   @Delete(ROUTE_NODE_ID)
   @HttpCode(204)
+  @ApiNoContentResponse()
   async deleteNode(@NodeId() nodeId: string): Promise<void> {
     return this.service.deleteNode(nodeId)
   }
 
   @Post(`${ROUTE_NODE_ID}/script`)
+  @HttpCode(201)
   @ApiOkResponse({ type: NodeInstallDto })
   async generateScript(
     @NodeId(NodeGenerateScriptValidationPipe) nodeId: string,
@@ -107,6 +112,7 @@ export default class NodeHttpController {
   }
 
   @Get(`${ROUTE_NODE_ID}/script`)
+  @HttpCode(200)
   @ApiOkResponse({ type: 'string' })
   @Header('content-type', 'text/plain')
   @DisableAuth()
@@ -129,6 +135,7 @@ export default class NodeHttpController {
   }
 
   @Get(`${ROUTE_NODE_ID}/container`)
+  @HttpCode(200)
   @ApiOkResponse({ type: ContainerStatus, isArray: true })
   async getContainerStatus(@NodeId() nodeId: string, @Query('prefix') prefix: string): Promise<Observable<any>> {
     return this.service.handleWatchContainerStatusDto(nodeId, prefix).pipe(timeout(5000))

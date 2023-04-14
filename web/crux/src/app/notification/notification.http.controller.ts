@@ -27,18 +27,21 @@ export default class NotificationHttpController {
   constructor(private service: NotificationService) {}
 
   @Get()
+  @HttpCode(200)
   @ApiOkResponse({ type: NotificationDto, isArray: true })
   async getNotifications(@IdentityFromRequest() identity: Identity): Promise<NotificationDto[]> {
     return this.service.getNotifications(identity)
   }
 
   @Get(ROUTE_NOTIFICATION_ID)
+  @HttpCode(200)
   @ApiOkResponse({ type: NotificationDetailsDto })
   async getNotificationDetails(@NotificationId() notificationId: string): Promise<NotificationDetailsDto> {
     return this.service.getNotificationDetails(notificationId)
   }
 
   @Post()
+  @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateNotificationDto })
   @ApiCreatedResponse({ type: NotificationDetailsDto })
@@ -55,8 +58,8 @@ export default class NotificationHttpController {
   }
 
   @Put(ROUTE_NOTIFICATION_ID)
-  @HttpCode(204)
-  @ApiNoContentResponse({ type: NotificationDetailsDto })
+  @HttpCode(200)
+  @ApiOkResponse({ type: NotificationDetailsDto })
   async updateNotification(
     @NotificationId() notificationId: string,
     @Body() request: UpdateNotificationDto,
@@ -67,12 +70,14 @@ export default class NotificationHttpController {
 
   @Delete(ROUTE_NOTIFICATION_ID)
   @HttpCode(204)
+  @ApiNoContentResponse()
   async deleteNotification(@NotificationId() notificationId: string): Promise<void> {
     this.service.deleteNotification(notificationId)
   }
 
   @Post(`${ROUTE_NOTIFICATION_ID}/test`)
   @HttpCode(204)
+  @ApiNoContentResponse()
   async testNotification(@NotificationId() notificationId: string): Promise<void> {
     this.service.testNotification(notificationId)
   }

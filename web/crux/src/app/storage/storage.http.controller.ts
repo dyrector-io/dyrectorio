@@ -24,6 +24,7 @@ export default class StorageHttpController {
   constructor(private service: StorageService) {}
 
   @Get()
+  @HttpCode(200)
   @ApiOkResponse({
     type: StorageDto,
     isArray: true,
@@ -33,6 +34,7 @@ export default class StorageHttpController {
   }
 
   @Get('options')
+  @HttpCode(200)
   @ApiOkResponse({
     type: StorageOptionDto,
     isArray: true,
@@ -42,12 +44,14 @@ export default class StorageHttpController {
   }
 
   @Get(ROUTE_STORAGE_ID)
+  @HttpCode(200)
   @ApiOkResponse({ type: StorageDetailsDto })
   async getProductDetails(@StorageId() id: string): Promise<StorageDetailsDto> {
     return this.service.getStorageDetails(id)
   }
 
   @Post()
+  @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateStorageDto })
   @ApiCreatedResponse({ type: StorageDetailsDto })
@@ -78,6 +82,7 @@ export default class StorageHttpController {
   @Delete(ROUTE_STORAGE_ID)
   @HttpCode(204)
   @UseInterceptors(StorageDeleteValidationInterceptor)
+  @ApiNoContentResponse()
   async deleteProduct(@StorageId() id: string): Promise<void> {
     return this.service.deleteStorage(id)
   }
