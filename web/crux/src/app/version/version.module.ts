@@ -5,6 +5,7 @@ import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
+import AgentModule from '../agent/agent.module'
 import DeployModule from '../deploy/deploy.module'
 import ImageModule from '../image/image.module'
 import SharedModule from '../shared/shared.module'
@@ -14,7 +15,7 @@ import VersionMapper from './version.mapper'
 import VersionService from './version.service'
 
 @Module({
-  imports: [ImageModule, HttpModule, SharedModule, DeployModule],
+  imports: [ImageModule, HttpModule, SharedModule, DeployModule, AgentModule],
   exports: [VersionService, VersionMapper],
   controllers: [VersionHttpController],
   providers: [

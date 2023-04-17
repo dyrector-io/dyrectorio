@@ -1,17 +1,17 @@
 import {
-  Controller,
   Body,
+  Controller,
+  Delete,
   Get,
+  Header,
+  HttpCode,
+  Post,
+  Put,
+  Query,
   UseGuards,
   UseInterceptors,
-  Post,
-  HttpCode,
-  Put,
-  Delete,
-  Header,
-  Query,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiProduces, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import { Observable, timeout } from 'rxjs'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
@@ -112,8 +112,7 @@ export default class NodeHttpController {
   }
 
   @Get(`${ROUTE_NODE_ID}/script`)
-  @HttpCode(200)
-  @ApiOkResponse({ type: String })
+  @ApiProduces('text/plain')
   @Header('content-type', 'text/plain')
   @DisableAuth()
   async getScript(@NodeId(NodeGetScriptValidationPipe) nodeId: string): Promise<string> {

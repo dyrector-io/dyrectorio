@@ -9,9 +9,5 @@
   "prefixName": "Prefix: {{name}}",
   "showLogs": "Show logs",
 
-  "proceedYouDeletePrefix": "If you proceed, you will delete containers under prefix {{prefix}}. This action is not revocable.",
-
-  "errors": {
-    "preconditionFailed": "Node is unreachable!"
-  }
+  "proceedYouDeletePrefix": "If you proceed, you will delete containers under prefix {{prefix}}. This action is not revocable."
 }

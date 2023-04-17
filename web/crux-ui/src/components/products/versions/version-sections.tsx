@@ -79,7 +79,7 @@ const VersionSections = (props: VersionSectionsProps) => {
       {state.section === 'images' ? (
         <VersionImagesSection disabled={!version.mutable} state={state} actions={actions} />
       ) : state.section === 'deployments' ? (
-        <VersionDeploymentsSection product={product} version={version} />
+        <VersionDeploymentsSection version={version} />
       ) : (
         <VersionReorderImagesSection images={state.images} saveRef={saveImageOrderRef} onSave={actions.orderImages} />
       )}
