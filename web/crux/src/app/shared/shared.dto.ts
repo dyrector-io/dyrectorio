@@ -46,6 +46,15 @@ export class BasicNodeDto {
   type: NodeType
 }
 
+export class BasicNodeWithStatus extends BasicNodeDto {
+  @IsString()
+  @IsIn(NODE_CONNECTION_STATUS_VALUES)
+  @ApiProperty({
+    enum: NODE_CONNECTION_STATUS_VALUES,
+  })
+  status?: NodeConnectionStatus
+}
+
 export const PRODUCT_TYPE_VALUES = ['simple', 'complex'] as const
 export type ProductTypeDto = (typeof PRODUCT_TYPE_VALUES)[number]
 

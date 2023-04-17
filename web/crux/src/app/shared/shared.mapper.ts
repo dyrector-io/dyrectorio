@@ -1,5 +1,16 @@
 import { Node, Product, Team, Version } from '@prisma/client'
-import { AuditDto, BasicNodeDto, BasicProductDto, BasicProperties, BasicTeamDto, BasicVersionDto } from './shared.dto'
+import { InvalidArgumentException } from 'src/exception/errors'
+import { NodeConnectionStatus as ProtoNodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
+import {
+  AuditDto,
+  BasicNodeDto,
+  BasicNodeWithStatus,
+  BasicProductDto,
+  BasicProperties,
+  BasicTeamDto,
+  BasicVersionDto,
+  NodeConnectionStatus,
+} from './shared.dto'
 
 export default class SharedMapper {
   auditToDto(it: Audit): AuditDto {
@@ -16,6 +27,15 @@ export default class SharedMapper {
       id: it.id,
       name: it.name,
       type: it.type,
+    }
+  }
+
+  nodeToBasicWithStatusDto(it: Pick<Node, BasicProperties>, status: NodeConnectionStatus): BasicNodeWithStatus {
+    return {
+      id: it.id,
+      name: it.name,
+      type: it.type,
+      status,
     }
   }
 
@@ -39,6 +59,21 @@ export default class SharedMapper {
     return {
       id: it.id,
       name: it.name,
+    }
+  }
+
+  nodeStatusToDto(status: ProtoNodeConnectionStatus): NodeConnectionStatus {
+    switch (status) {
+      case ProtoNodeConnectionStatus.CONNECTED:
+        return 'connected'
+      case ProtoNodeConnectionStatus.UNREACHABLE:
+        return 'unreachable'
+      default:
+        throw new InvalidArgumentException({
+          message: 'Invalid NodeConnectionStatus',
+          property: 'status',
+          value: status,
+        })
     }
   }
 }

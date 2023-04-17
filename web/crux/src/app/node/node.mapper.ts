@@ -1,32 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { Node, NodeTypeEnum } from '@prisma/client'
 import AgentInstaller from 'src/domain/agent-installer'
-import { InvalidArgumentException } from 'src/exception/errors'
 import { ContainerState as ProtoContainerState } from 'src/grpc/protobuf/proto/common'
 import { NodeConnectionStatus as ProtoNodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
 import { ContainerState } from 'src/shared/models'
 import AgentService from '../agent/agent.service'
-import { NodeConnectionStatus, NodeType } from '../shared/shared.dto'
+import { NodeType } from '../shared/shared.dto'
+import SharedMapper from '../shared/shared.mapper'
 import { NodeDetailsDto, NodeDto, NodeInstallDto } from './node.dto'
 
 @Injectable()
 export default class NodeMapper {
-  constructor(private agentService: AgentService) {}
-
-  nodeStatusToDto(status: ProtoNodeConnectionStatus): NodeConnectionStatus {
-    switch (status) {
-      case ProtoNodeConnectionStatus.CONNECTED:
-        return 'connected'
-      case ProtoNodeConnectionStatus.UNREACHABLE:
-        return 'unreachable'
-      default:
-        throw new InvalidArgumentException({
-          message: 'Invalid NodeConnectionStatus',
-          property: 'status',
-          value: status,
-        })
-    }
-  }
+  constructor(private agentService: AgentService, private sharedMapper: SharedMapper) {}
 
   listItemToDto(node: Node): NodeDto {
     const agent = this.agentService.getById(node.id)
@@ -38,7 +23,7 @@ export default class NodeMapper {
       description: node.description,
       icon: node.icon,
       address: agent?.address,
-      status: this.nodeStatusToDto(status),
+      status: this.sharedMapper.nodeStatusToDto(status),
       connectedAt: node.connectedAt ?? null,
       version: agent?.version,
       type: node.type,

@@ -29,8 +29,5 @@
   "deploymentName": "Deployment name",
   "alreadyHavePreparing": "You already have one preparing deployment with the same prefix!",
   "nodeRequired": "You can't create deployment without having at least one node!",
-  "versionSemanticHint": "Version is not in semantic format.",
-  "errors": {
-    "preconditionFailed": "You can't create a deployment without having atleast one image"
-  }
+  "versionSemanticHint": "Version is not in semantic format."
 }
