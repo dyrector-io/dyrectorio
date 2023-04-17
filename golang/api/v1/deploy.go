@@ -15,9 +15,9 @@ import (
 	"github.com/docker/docker/api/types/container"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 )
 
 type DeployImageRequest struct {

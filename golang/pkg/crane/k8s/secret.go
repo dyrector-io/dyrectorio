@@ -8,8 +8,8 @@ import (
 
 	commonConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/crypt"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 
 	"github.com/rs/zerolog/log"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
