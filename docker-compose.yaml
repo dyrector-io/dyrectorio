@@ -40,6 +40,9 @@ services:
       # If you don't have a mailserver you can use the provided mailslurper
       # but keep in mind, this one is insecure, only use it at your own risk!
       # - SMTP_URI=smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true
+      - DISABLE_RECAPTCHA=${DISABLE_RECAPTCHA}
+      - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
+      - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
     depends_on:
       crux-postgres:
         condition: service_healthy
@@ -104,10 +107,9 @@ services:
       - KRATOS_URL=http://kratos:4433
       - KRATOS_ADMIN_URL=http://kratos:4434
       - CRUX_API_ADDRESS=crux:5001
+      - DISABLE_RECAPTCHA=${DISABLE_RECAPTCHA}
       - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
       - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
-      # In case you don't want to use ReCAPTCHA
-      # - DISABLE_RECAPTCHA=true
     depends_on:
       crux:
         condition: service_started
