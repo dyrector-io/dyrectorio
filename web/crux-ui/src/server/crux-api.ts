@@ -2,10 +2,18 @@ import { fromApiError } from '@app/error-responses'
 import http from 'http'
 import { NextPageContext } from 'next'
 
-export const fetchCrux = async (requestOrCookie: http.IncomingMessage | string, url: string, init?: RequestInit) => {
+export const fetchCrux = async (
+  requestOrCookie: http.IncomingMessage | string | null,
+  url: string,
+  init?: RequestInit,
+) => {
   const cruxUrl = process.env.CRUX_URL ?? process.env.CRUX_UI_URL
 
-  const cookie: string = typeof requestOrCookie === 'string' ? requestOrCookie : requestOrCookie.headers.cookie
+  const cookie: string = requestOrCookie
+    ? typeof requestOrCookie === 'string'
+      ? requestOrCookie
+      : requestOrCookie.headers.cookie
+    : null
 
   const res = await fetch(`${cruxUrl}${url}`, {
     ...(init ?? {}),
