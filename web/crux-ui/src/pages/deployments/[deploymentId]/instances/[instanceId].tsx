@@ -37,6 +37,7 @@ import {
   deploymentApiUrl,
   deploymentUrl,
   instanceConfigUrl,
+  nodeApiUrl,
   productApiUrl,
   productUrl,
   ROUTE_PRODUCTS,
@@ -226,6 +227,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             disabled={!deploymentState.mutable}
             selectedFilters={filters}
             config={state.config}
+            resetableConfig={state.resetableConfig}
             onChange={onChange}
             onResetSection={onResetSection}
             editorOptions={editorState}
@@ -240,6 +242,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             disabled={!deploymentState.mutable}
             selectedFilters={filters}
             config={state.config}
+            resetableConfig={state.resetableConfig}
             onChange={onChange}
             onResetSection={onResetSection}
             editorOptions={editorState}
@@ -251,6 +254,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             disabled={!deploymentState.mutable}
             selectedFilters={filters}
             config={state.config}
+            resetableConfig={state.resetableConfig}
             onChange={onChange}
             onResetSection={onResetSection}
             editorOptions={editorState}
@@ -284,16 +288,17 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 export default InstanceDetailsPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const productId = context.query.productId as string
-  const versionId = context.query.versionId as string
   const deploymentId = context.query.deploymentId as string
   const instanceId = context.query.instanceId as string
 
-  const product = await getCruxFromContext<ProductDetails>(context, productApiUrl(productId))
   const deploymentDetails = await getCruxFromContext<DeploymentDetails>(context, deploymentApiUrl(deploymentId))
-  const node = await getCruxFromContext<NodeDetails>(context, deploymentDetails.node.id)
+  const product = await getCruxFromContext<ProductDetails>(context, productApiUrl(deploymentDetails.product.id))
+  const node = await getCruxFromContext<NodeDetails>(context, nodeApiUrl(deploymentDetails.node.id))
 
-  const version = await getCruxFromContext<VersionDetails>(context, versionApiUrl(productId, versionId))
+  const version = await getCruxFromContext<VersionDetails>(
+    context,
+    versionApiUrl(deploymentDetails.product.id, deploymentDetails.version.id),
+  )
 
   const deployment: DeploymentRoot = {
     ...deploymentDetails,

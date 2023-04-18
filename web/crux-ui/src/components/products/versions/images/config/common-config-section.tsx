@@ -44,6 +44,7 @@ type CommonConfigSectionBaseProps<T> = {
   selectedFilters: ImageConfigProperty[]
   editorOptions: ItemEditorState
   config: T
+  resetableConfig?: T
   onChange: (config: Partial<T>) => void
   onResetSection: (section: CommonConfigProperty) => void
   fieldErrors: ValidationError[]
@@ -75,6 +76,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
     definedSecrets,
     publicKey,
     config: propsConfig,
+    resetableConfig: propsResetableConfig,
   } = props
 
   const { data: storages } = useSWR<StorageOption[]>(API_STORAGES_OPTIONS, fetcher)
@@ -82,7 +84,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
   const disabledOnImage = configType === 'image' || disabled
   // eslint-disable-next-line react/destructuring-assignment
   const imageConfig = configType === 'instance' ? props.imageConfig : null
-  const resetableConfig = propsConfig
+  const resetableConfig = propsResetableConfig ?? propsConfig
   const config = configType === 'instance' ? mergeConfigs(imageConfig, propsConfig) : propsConfig
 
   const onVolumesChanged = (it: ContainerConfigVolume[]) =>

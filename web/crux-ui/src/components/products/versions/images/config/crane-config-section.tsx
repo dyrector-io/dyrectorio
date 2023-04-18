@@ -27,6 +27,7 @@ import ConfigSectionLabel from './config-section-label'
 
 type CraneConfigSectionBaseProps<T> = {
   config: T
+  resetableConfig?: T
   onChange: (config: Partial<T>) => void
   onResetSection: (section: CraneConfigProperty) => void
   selectedFilters: ImageConfigProperty[]
@@ -47,12 +48,21 @@ export type CraneConfigSectionProps = ImageCraneConfigSectionProps | InstanceCra
 
 const CraneConfigSection = (props: CraneConfigSectionProps) => {
   const { t } = useTranslation('container')
-  const { config: propsConfig, configType, selectedFilters, onChange, onResetSection, editorOptions, disabled } = props
+  const {
+    config: propsConfig,
+    resetableConfig: propsResetableConfig,
+    configType,
+    selectedFilters,
+    onChange,
+    onResetSection,
+    editorOptions,
+    disabled,
+  } = props
 
   const disabledOnImage = configType === 'image' || disabled
   // eslint-disable-next-line react/destructuring-assignment
   const imageConfig = configType === 'instance' ? props.imageConfig : null
-  const resetableConfig = propsConfig
+  const resetableConfig = propsResetableConfig ?? propsConfig
   const config = configType === 'instance' ? mergeConfigs(imageConfig, propsConfig) : propsConfig
 
   return !filterEmpty([...CRANE_CONFIG_FILTER_VALUES], selectedFilters) ? null : (

@@ -176,6 +176,20 @@ export default class ImageMapper {
     current: ContainerConfigData,
     patch: Partial<ContainerConfigDto>,
   ): ContainerConfigData {
+    const storagePatch =
+      'storage' in patch
+        ? {
+            storageSet: !!patch.storage?.storageId,
+            storageId: patch.storage?.storageId ?? null,
+            storageConfig: patch.storage?.storageId
+              ? {
+                  path: patch.storage.path,
+                  bucket: patch.storage.bucket,
+                }
+              : null,
+          }
+        : undefined
+
     return {
       ...current,
       ...patch,
@@ -192,16 +206,7 @@ export default class ImageMapper {
             ...(current.labels ?? {}),
             ...patch.labels,
           },
-      storageSet: patch.storage ? !!patch.storage.storageId : current.storageSet,
-      storageId: patch.storage ? patch.storage.storageId : current.storageId,
-      storageConfig: patch.storage
-        ? patch.storage.storageId
-          ? {
-              path: patch.storage.path,
-              bucket: patch.storage.bucket,
-            }
-          : null
-        : current.storageConfig,
+      ...storagePatch,
     }
   }
 
