@@ -98,7 +98,6 @@ export default class VersionHttpController {
   @HttpCode(204)
   @ApiNoContentResponse()
   @UseInterceptors(VersionDeleteValidationInterceptor)
-  @ApiBody({ type: UpdateVersionDto })
   async deleteVersion(@ProductId() _productId: string, @VersionId() versionId: string): Promise<void> {
     return await this.service.deleteVersion(versionId)
   }
