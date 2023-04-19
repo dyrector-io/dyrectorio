@@ -32,13 +32,22 @@ cli:
 	cd golang/cmd/dyo && \
 	go run .
 
-
+.PHONY: bundle
+bundle:
+	mv .env .env_bak || true
+	echo "DYO_VERSION=latest" > .env
+	docker-compose pull 2>/dev/null
+	docker-compose config 2>/dev/null | yq -r '.services[].image' | sort | uniq | while read line ; do \
+	docker save $$line | gzip > "offline/$$(echo "$$line" | sed 's/\//\./g; s/\:/\_/g' | cut -d'.' -f3-).tgz" ; done
+	cp docker-compose.yaml offline/
+	cp .env.example offline/
+	zip -r dyo-offline-bundle.zip offline
+	mv .env_bak .env || true
 
 ## compile docs
 .PHONY: docs
 docs:
 	protoc -I. --doc_out=./docs --doc_opt=markdown,docs.md  proto/*.proto
-
 
 UID := $(shell id -u)
 GID := $(shell id -g)
@@ -48,8 +57,6 @@ REMOTE=github.com/dyrector-io/dyrectorio/protobuf/go
 ## Compile the all grpc files
 .PHONY: protogen
 protogen:| proto-agent proto-crux proto-crux-ui
-
-
 
 ## Generate agent grpc files
 .PHONY: go-lint
