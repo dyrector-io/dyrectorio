@@ -58,12 +58,10 @@ const bootstrap = async () => {
     .setVersion('0.3')
     .addBearerAuth(
       {
-        description: 'Please enter token in following format: ',
-        name: 'Authorization',
-        bearerFormat: 'Bearer',
-        scheme: 'Bearer',
         type: 'http',
-        in: 'Header',
+        scheme: 'bearer',
+        bearerFormat: 'Bearer',
+        description: 'Please enter token in following format: ',
       },
       'jwt',
     )

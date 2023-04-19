@@ -19,7 +19,7 @@ export const API_CREATED_LOCATION_HEADERS = {
   Location: {
     description: 'URL of the created object.',
     schema: {
-      type: 'URL',
+      type: 'string',
     },
   },
 }
