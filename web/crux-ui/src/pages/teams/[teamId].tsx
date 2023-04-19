@@ -26,6 +26,7 @@ import {
 import { API_USERS_ME, ROUTE_TEAMS, teamApiUrl, teamUrl, teamUserApiUrl, teamUserReinviteUrl } from '@app/routes'
 import { redirectTo, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
+import { captchaDisabled } from '@server/captcha'
 import { getCruxFromContext } from '@server/crux-api'
 import { sessionOfContext } from '@server/kratos'
 import clsx from 'clsx'
@@ -40,6 +41,7 @@ import { useSWRConfig } from 'swr'
 interface TeamDetailsPageProps {
   me: Identity
   team: TeamDetails
+  recaptchaSiteKey?: string
 }
 
 const TeamDetailsPage = (props: TeamDetailsPageProps) => {
@@ -47,7 +49,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
 
   const router = useRouter()
 
-  const { me, team: propsTeam } = props
+  const { me, team: propsTeam, recaptchaSiteKey } = props
 
   const { mutate } = useSWRConfig()
 
@@ -248,7 +250,13 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
       {detailsState === 'editing' ? (
         <EditTeamCard className="mb-8 px-8 py-6" team={team} submitRef={submitRef} onTeamEdited={onTeamEdited} />
       ) : detailsState === 'inviting' ? (
-        <InviteUserCard className="mb-8 px-8 py-6" team={team} submitRef={submitRef} onUserInvited={onUserInvited} />
+        <InviteUserCard
+          className="mb-8 px-8 py-6"
+          team={team}
+          recaptchaSiteKey={recaptchaSiteKey}
+          submitRef={submitRef}
+          onUserInvited={onUserInvited}
+        />
       ) : null}
 
       <DyoCard className="relative">
@@ -288,6 +296,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     props: {
       me: sessionOfContext(context).identity,
       team,
+      recaptchaSiteKey: captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY,
     },
   }
 }

@@ -11,22 +11,25 @@ import { teamUserListApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { inviteUserSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject } from 'react'
+import { MutableRefObject, useRef } from 'react'
+import ReCAPTCHA from 'react-google-recaptcha'
 
 interface InviteUserCardProps {
   className?: string
   team: TeamDetails
+  recaptchaSiteKey?: string
   onUserInvited: (product: User) => void
   submitRef?: MutableRefObject<() => Promise<any>>
 }
 
 const InviteUserCard = (props: InviteUserCardProps) => {
-  const { team, className, onUserInvited, submitRef } = props
+  const { team, className, onUserInvited, submitRef, recaptchaSiteKey } = props
 
   const { t } = useTranslation('teams')
 
   const handleApiError = defaultApiErrorHandler(t)
 
+  const recaptcha = useRef<ReCAPTCHA>()
   const formik = useDyoFormik({
     initialValues: {
       email: '',
@@ -37,7 +40,14 @@ const InviteUserCard = (props: InviteUserCardProps) => {
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
-      const res = await sendForm('POST', teamUserListApiUrl(team.id), values as InviteUser)
+      const captcha = await recaptcha.current?.executeAsync()
+
+      const request: InviteUser = {
+        ...values,
+        captcha,
+      }
+
+      const res = await sendForm('POST', teamUserListApiUrl(team.id), request)
 
       if (res.ok) {
         const json = await res.json()
@@ -46,6 +56,8 @@ const InviteUserCard = (props: InviteUserCardProps) => {
         setSubmitting(false)
         onUserInvited(user)
       } else {
+        recaptcha.current?.reset()
+
         setSubmitting(false)
         handleApiError(res, setFieldError)
       }
@@ -98,6 +110,8 @@ const InviteUserCard = (props: InviteUserCardProps) => {
           message={formik.errors.lastName}
           messageType="error"
         />
+
+        {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
 
         <DyoButton className="hidden" type="submit" />
       </DyoForm>
