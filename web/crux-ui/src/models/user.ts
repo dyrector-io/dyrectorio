@@ -16,6 +16,7 @@ export type InviteUser = {
   email: string
   firstName: string
   lastName?: string
+  captcha?: string
 }
 
 export type UserMeta = {
