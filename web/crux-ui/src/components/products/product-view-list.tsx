@@ -38,7 +38,7 @@ const ProductViewList = (props: ProductViewListProps) => {
   const itemTemplate = (item: Product) => [
     <a>{item.name}</a>,
     <a>{item.versionCount}</a>,
-    <a>{auditToLocaleDate(item.audit)}</a>,
+    <a suppressHydrationWarning>{auditToLocaleDate(item.audit)}</a>,
     <div>
       <ProductTypeTag className="w-fit m-auto" type={item.type} />
     </div>,
