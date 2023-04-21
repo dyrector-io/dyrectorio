@@ -61,7 +61,7 @@ const onReady = async (endpoint: WsEndpoint) => {
 
   Crux.withIdentity(null, null).deployments.subscribeToDeploymentEditEvents(deploymentId, {
     onClose: () => logger.debug(`Crux disconnected for: ${deploymentId}`),
-    onMessage: message => endpoint.sendAll(message.type, message.payload),
+    onMessage: message => endpoint.sendAll(message.type, message.data),
   })
 }
 
@@ -113,7 +113,7 @@ export const onPatchInstance = async (
 ) => {
   const deploymentId = endpoint.query.deploymentId as string
 
-  const req = message.payload
+  const req = message.data
 
   const cruxReq: Pick<PatchInstance, 'config'> = {}
 
@@ -140,7 +140,7 @@ const onPatchDeploymentEnvironment = async (
 ) => {
   const deploymentId = endpoint.query.deploymentId as string
 
-  const req = message.payload
+  const req = message.data
 
   const cruxReq: Omit<PatchDeployment, 'id'> = {
     environment: req,
@@ -159,7 +159,7 @@ const onGetInstance = async (
 ) => {
   const deploymentId = endpoint.query.deploymentId as string
 
-  const req = message.payload
+  const req = message.data
 
   const instance = await getCrux<Instance>(connection.request, instanceApiUrl(deploymentId, req.id))
 
@@ -173,7 +173,7 @@ const onGetSecrets = async (
 ) => {
   const deploymentId = endpoint.query.deploymentId as string
 
-  const req = message.payload
+  const req = message.data
 
   const secrets = await getCrux<InstanceSecrets>(connection.request, instanceApiUrl(deploymentId, req.id))
 
@@ -182,7 +182,7 @@ const onGetSecrets = async (
   }
 
   connection.send(WS_TYPE_INSTANCE_SECRETS, {
-    instanceId: message.payload.id,
+    instanceId: message.data.id,
     keys: secrets.keys,
   } as InstanceSecretsMessage)
 }
@@ -191,7 +191,7 @@ const onFocusInput = async (endpoint: WsEndpoint, connection: WsConnection, mess
   const { token } = connection
   const editors = endpoint.services.get(EditorService)
 
-  const res = editors.onFocus(token, message.payload)
+  const res = editors.onFocus(token, message.data)
 
   endpoint.sendAllExcept(connection, WS_TYPE_INPUT_FOCUSED, res)
 }
@@ -200,7 +200,7 @@ const onBlurInput = async (endpoint: WsEndpoint, connection: WsConnection, messa
   const { token } = connection
   const editors = endpoint.services.get(EditorService)
 
-  const res = editors.onBlur(token, message.payload)
+  const res = editors.onBlur(token, message.data)
   if (!res) {
     return
   }

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Node } from '@prisma/client'
 import { toTimestamp } from 'src/domain/utils'
-import { NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
 import AgentService from '../agent/agent.service'
 import { NodeDto } from '../node/node.dto'
 
@@ -13,7 +12,7 @@ export default class DashboardMapper {
     return nodes.flatMap(it => {
       const agent = this.agentService.getById(it.id)
 
-      if (!agent || agent.getConnectionStatus() !== NodeConnectionStatus.CONNECTED) {
+      if (!agent?.connected) {
         return []
       }
 

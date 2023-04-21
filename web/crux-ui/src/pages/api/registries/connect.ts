@@ -25,7 +25,7 @@ const onDisconnect = (endpoint: WsEndpoint, connection: WsConnection): void => {
 }
 
 const onFindImage = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<FindImageMessage>) => {
-  const req = message.payload
+  const req = message.data
 
   const registry = await registryConnections.getByRegistryId(
     req.registryId,
@@ -48,7 +48,7 @@ const onFetchImageTags = async (
   connection: WsConnection,
   message: WsMessage<FetchImageTagsMessage>,
 ) => {
-  const req = message.payload
+  const req = message.data
 
   const registry = await registryConnections.getByRegistryId(
     req.registryId,

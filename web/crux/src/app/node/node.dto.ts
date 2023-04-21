@@ -3,10 +3,10 @@ import { Type } from 'class-transformer'
 import { IsBoolean, IsDate, IsEmail, IsIn, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator'
 import {
   BasicNodeDto,
-  NodeConnectionStatus,
-  NodeType,
   NODE_CONNECTION_STATUS_VALUES,
   NODE_TYPE_VALUES,
+  NodeConnectionStatus,
+  NodeType,
 } from '../shared/shared.dto'
 
 export const NODE_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
@@ -30,7 +30,7 @@ export class NodeDto extends BasicNodeDto {
   @ApiProperty({
     enum: NODE_CONNECTION_STATUS_VALUES,
   })
-  status?: NodeConnectionStatus
+  status: NodeConnectionStatus
 
   @IsDate()
   @Type(() => Date)

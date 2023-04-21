@@ -2,10 +2,12 @@ import { ServerCredentials } from '@grpc/grpc-js'
 import { Logger, LogLevel, VersioningType } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { MicroserviceOptions, Transport } from '@nestjs/microservices'
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { join } from 'path'
+import DyoWsAdapter from './websockets/dyo.ws.adapter'
 import AppModule from './app.module'
+import JwtAuthGuard from './app/token/jwt-auth.guard'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -26,9 +28,13 @@ const loadGrpcOptions = (certPrefix: GrpcClient, portEnv: string): GrpcOptions =
   }
 }
 
-const parseLogLevelFromEnv = (logLevelEnv: string, nodeEnv: string): LogLevel[] => {
+const parseLogLevelFromEnv = (logger: Logger, logLevelEnv: string, nodeEnv: string): LogLevel[] => {
   const VALID_LOG_LEVEL_VALUES = ['error', 'warn', 'log', 'debug', 'verbose']
   const index = VALID_LOG_LEVEL_VALUES.indexOf(logLevelEnv)
+
+  if (index < 0) {
+    logger.warn(`Invalid log level: ${logLevelEnv} Valid values: ${VALID_LOG_LEVEL_VALUES}`)
+  }
 
   const logLevel =
     index >= 0
@@ -43,7 +49,7 @@ const parseLogLevelFromEnv = (logLevelEnv: string, nodeEnv: string): LogLevel[] 
 const bootstrap = async () => {
   const logger: Logger = new Logger('NestBoostrap')
   const app = await NestFactory.create(AppModule, {
-    logger: parseLogLevelFromEnv(process.env.LOG_LEVEL, process.env.NODE_ENV),
+    logger: parseLogLevelFromEnv(logger, process.env.LOG_LEVEL, process.env.NODE_ENV),
   })
   const configService = app.get(ConfigService)
 
@@ -76,6 +82,10 @@ const bootstrap = async () => {
   const agentOptions = loadGrpcOptions('agent', configService.get<string>('GRPC_AGENT_PORT'))
   const apiOptions = loadGrpcOptions('api', configService.get<string>('GRPC_API_PORT'))
   const httpOptions = configService.get<string>('HTTP_API_PORT', '1848')
+
+  app.useGlobalGuards(app.get(JwtAuthGuard))
+
+  app.useWebSocketAdapter(new DyoWsAdapter(app))
 
   // agent
   app.connectMicroservice<MicroserviceOptions>({

@@ -61,6 +61,16 @@ export const toTimestamp = (date: Date): Timestamp => {
   return { seconds, nanos }
 }
 
+export const fromTimestamp = (timestamp: Timestamp): Date => {
+  if (!timestamp) {
+    return null
+  }
+
+  let millis = timestamp.seconds * 1_000
+  millis += timestamp.nanos / 1_000_000
+  return new Date(millis)
+}
+
 export const typedQuery =
   <T>() =>
   <U extends T>(query: U): U =>

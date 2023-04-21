@@ -49,14 +49,14 @@ class DyoDeploymentService {
       if (data.instancesCreated) {
         return {
           type: WS_TYPE_INSTANCES_ADDED,
-          payload: data.instancesCreated.data.map(it => instanceToDto(it)) as InstancesAddedMessage,
+          data: data.instancesCreated.data.map(it => instanceToDto(it)) as InstancesAddedMessage,
         } as WsMessage<DeploymentEditEventMessage>
       }
 
       if (data.imageIdDeleted) {
         return {
           type: WS_TYPE_IMAGE_DELETED,
-          payload: {
+          data: {
             imageId: data.imageIdDeleted,
           } as ImageDeletedMessage,
         } as WsMessage<DeploymentEditEventMessage>

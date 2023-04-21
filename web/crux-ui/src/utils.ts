@@ -244,31 +244,6 @@ export const sendForm = async <Dto>(method: 'POST' | 'PUT', url: string, body: D
     body: JSON.stringify(body),
   })
 
-type Identifiable = {
-  id: string
-}
-
-type UpsertByIdOptions<T> = {
-  onUpdate?: (old: T) => T
-}
-
-export const upsertById = <T extends Identifiable>(curentItems: T[], item: T, options?: UpsertByIdOptions<T>): T[] => {
-  if (!item) {
-    return curentItems
-  }
-
-  const items = [...curentItems]
-  const index = items.findIndex(it => it.id === item.id)
-  if (index > -1) {
-    const current = items[index]
-    items[index] = options?.onUpdate?.call(this, current) ?? item
-  } else {
-    items.push(item)
-  }
-
-  return items
-}
-
 // routing
 export const anchorLinkOf = (router: NextRouter): string => {
   const url = router.asPath ?? ''

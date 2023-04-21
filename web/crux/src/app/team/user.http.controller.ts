@@ -11,11 +11,11 @@ import {
   ValidationPipe,
 } from '@nestjs/common'
 import { ApiBody, ApiOkResponse, ApiTags } from '@nestjs/swagger'
-import { Identity, Session } from '@ory/kratos-client'
+import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
-import JwtAuthGuard, { IdentityFromRequest, SessionFromRequest } from '../token/jwt-auth.guard'
+import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
 import { ActivateTeamDto } from './team.dto'
 import TeamService from './team.service'
 import { UserMetaDto } from './user.dto'
@@ -42,8 +42,8 @@ export default class UserHttpController {
 
   @Post()
   @ApiOkResponse({ type: UserMetaDto })
-  async getUserMeta(@SessionFromRequest() session: Session): Promise<UserMetaDto> {
-    return await this.service.getUserMeta(session)
+  async getUserMeta(@IdentityFromRequest() identity: Identity): Promise<UserMetaDto> {
+    return await this.service.getUserMeta(identity)
   }
 
   @Post(ROUTE_ACTIVE_TEAM)

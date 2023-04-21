@@ -1,13 +1,13 @@
-import { WebSocketClientOptions, WebSocketClientSendMessage, WsMessage, WsMessageCallback } from './common'
+import { WebSocketClientOptions, WebSocketSendMessage, WsMessage, WsMessageCallback } from './common'
 
 class WebSocketClientEndpoint {
-  private sendClientMessage: WebSocketClientSendMessage = null
+  private sendClientMessage: WebSocketSendMessage = null
 
   private callbacks: Map<string, Array<WsMessageCallback<object>>> = new Map()
 
   private sendables: Array<WsMessage<object>> = []
 
-  constructor(readonly url: string) {}
+  constructor(readonly path: string) {}
 
   readyStateChanged: (readyState: number) => void
 
@@ -21,7 +21,7 @@ class WebSocketClientEndpoint {
 
   kill() {
     this.sendClientMessage = null
-    this.callbacks = new Map()
+    this.callbacks.clear()
     this.sendables = []
   }
 
@@ -55,11 +55,11 @@ class WebSocketClientEndpoint {
   send(type: string, payload: object) {
     this.sendWsMessage({
       type,
-      payload,
+      data: payload,
     } as WsMessage<object>)
   }
 
-  onMessage(message: WsMessage<object>) {
+  onMessage(message: WsMessage) {
     let msg = { ...message }
 
     const { transformReceive } = this.options ?? {}
@@ -74,10 +74,10 @@ class WebSocketClientEndpoint {
     this.options?.onReceive?.call(null, msg)
 
     const callbacks = this.callbacks.get(msg.type)
-    callbacks?.forEach(it => it(msg.payload))
+    callbacks?.forEach(it => it(msg.data))
   }
 
-  onOpen(sendClientMessage: WebSocketClientSendMessage): void {
+  onSubscribed(sendClientMessage: WebSocketSendMessage): void {
     this.sendClientMessage = sendClientMessage
 
     if (this.readyStateChanged) {

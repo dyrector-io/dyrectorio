@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
 import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import KratosService from 'src/services/kratos.service'
+import PrismaService from 'src/services/prisma.service'
+import RegistryMapper from '../registry/registry.mapper'
+import RegistryModule from '../registry/registry.module'
 import TeamRepository from '../team/team.repository'
+import ImageHttpController from './image.http.controller'
 import ImageMapper from './image.mapper'
 import ImageService from './image.service'
-import RegistryMapper from '../registry/registry.mapper'
-import ImageHttpController from './image.http.controller'
-import RegistryModule from '../registry/registry.module'
+import ImageWebSocketGateway from './image.ws.gateway'
 
 @Module({
   imports: [RegistryModule],
@@ -20,6 +21,7 @@ import RegistryModule from '../registry/registry.module'
     TeamRepository,
     RegistryMapper,
     KratosService,
+    ImageWebSocketGateway,
   ],
   controllers: [ImageHttpController],
 })

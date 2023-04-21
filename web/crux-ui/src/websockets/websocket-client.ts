@@ -1,7 +1,15 @@
 import { WS_RECONNECT_TIMEOUT } from '@app/const'
 import { Logger } from '@app/logger'
 import { DyoApiError, WS_TYPE_DYO_ERROR } from '@app/models'
-import { WsErrorHandler, WsMessage } from './common'
+import {
+  SubscriptionMessage,
+  SubscriptionRedirectMessage,
+  WsErrorHandler,
+  WsMessage,
+  WS_TYPE_SUBBED,
+  WS_TYPE_SUB_REDIRECT,
+  WS_TYPE_UNSUBBED,
+} from './common'
 import WebSocketClientEndpoint from './websocket-client-endpoint'
 import WebSocketClientRoute from './websocket-client-route'
 
@@ -14,40 +22,50 @@ class WebSocketClient {
 
   private lastAttempt = 0
 
-  private token?: string
-
   private unsubscribe?: VoidFunction
 
   private routes: Map<string, WebSocketClientRoute> = new Map()
 
+  private redirectedRoutes: Map<string, string> = new Map()
+
   private errorHandler: WsErrorHandler = null
 
-  async register(endpoint: WebSocketClientEndpoint): Promise<boolean> {
-    const { url } = endpoint
+  async register(endpoint: WebSocketClientEndpoint) {
+    let { path } = endpoint
 
-    let route = this.routes.get(url)
-    if (!route) {
-      route = new WebSocketClientRoute(this.logger, (msg, it) => this.sendWsMessage(msg, it), url)
-      this.routes.set(url, route)
+    const redirected = this.redirectedRoutes.get(path)
+    if (redirected) {
+      path = redirected
     }
 
-    const connected = await this.connect(route)
-    route.addEndpoint(endpoint, this.token)
-    return connected
+    this.logger.debug('Registering endpoint for', path)
+
+    let route = this.routes.get(path)
+    if (!route) {
+      console.log('route wasnt found', path, Array.from(this.redirectedRoutes.entries()))
+      route = new WebSocketClientRoute(this.logger, it => this.sendWsMessage(it), path)
+      this.routes.set(path, route)
+    }
+
+    await this.connect()
+    route.subscribe(endpoint)
   }
 
   async remove(endpoint: WebSocketClientEndpoint) {
-    const { url } = endpoint
+    const { path } = endpoint
 
-    this.logger.debug('Disconnecting:', url)
+    this.logger.debug('Disconnecting:', path)
 
     endpoint.kill()
 
-    const route = this.routes.get(url)
+    const route = this.routes.get(path)
     if (route) {
-      const shouldRemove = await route.unsubscribe(endpoint, this.token)
+      const shouldRemove = await route.unsubscribe(endpoint)
       if (shouldRemove) {
-        this.routes.delete(url)
+        this.routes.delete(path)
+        if (route.redirectedFrom) {
+          this.redirectedRoutes.delete(route.redirectedFrom)
+        }
       }
     }
 
@@ -58,36 +76,24 @@ class WebSocketClient {
   }
 
   close() {
-    this.routes.forEach(route => route.kill())
+    this.routes.forEach(route => route.clear())
     this.routes.clear()
-    this.token = null
-    if (this.socket) {
-      this.socket.close()
-      this.token = null
-      this.socket = null
-      this.logger.debug('Connection closed.')
-    }
-  }
+    this.redirectedRoutes.clear()
 
-  sendWsMessage(message: WsMessage<object>, route: WebSocketClientRoute) {
-    route.forEachEndpoint(it => it.options?.onSend?.call(null, message))
-
-    if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
-      return false
+    if (!this.socket) {
+      return
     }
 
-    this.logger.verbose('Sending message:', message.type, message.payload)
-
-    const json = JSON.stringify(message)
-    this.socket.send(json)
-    return true
+    this.socket.close()
+    this.socket = null
+    this.logger.debug('Connection closed.')
   }
 
   setErrorHandler(handler: WsErrorHandler) {
     this.errorHandler = handler
   }
 
-  private async connect(route: WebSocketClientRoute): Promise<boolean> {
+  private async connect(): Promise<boolean> {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       return true
     }
@@ -98,18 +104,10 @@ class WebSocketClient {
 
     this.lastAttempt = Date.now()
     this.connectionAttempt = (async () => {
-      this.token = null
-
       this.unsubscribe?.call(this)
 
-      const [token, url] = await route.subscribe(this.token)
-      if (!token) {
-        return false
-      }
-
-      this.token = token
-
       return await new Promise<boolean>(resolve => {
+        this.logger.debug('Connecting...')
         let resolved = false
 
         const onOpen = () => {
@@ -119,7 +117,7 @@ class WebSocketClient {
           }
 
           this.logger.info('Connected')
-          this.routes.forEach(it => it.onOpen(this.token))
+          this.routes.forEach(it => it.onSocketOpen())
         }
 
         const onClose = () => {
@@ -130,30 +128,35 @@ class WebSocketClient {
 
           this.logger.info('Disconnected')
 
-          this.routes.forEach(it => it.onClose())
+          this.routes.forEach(it => it.onSocketClose())
           this.reconnect()
         }
 
         const onError = ev => {
           this.logger.error(`Error occurred:`, ev)
 
-          this.routes.forEach(r => r.forEachEndpoint(it => it.onError(ev)))
+          this.routes.forEach(r => r.onError(ev))
           resolve(false)
         }
 
         const onMessage = ev => {
-          const message = JSON.parse(ev.data) as WsMessage<object>
+          const message = JSON.parse(ev.data) as WsMessage
+          const { type } = message
 
-          this.logger.verbose('Receiving message:', message.type, message.payload)
+          this.logger.verbose('Receiving message:', type, message.data)
 
           if (message.type === WS_TYPE_DYO_ERROR && this.errorHandler) {
-            this.errorHandler(message.payload as DyoApiError)
+            this.errorHandler(message.data as DyoApiError)
+          } else if (type === WS_TYPE_SUBBED || type === WS_TYPE_UNSUBBED || message.type === WS_TYPE_SUB_REDIRECT) {
+            this.onSubscriptionMessage(message as WsMessage<SubscriptionMessage>)
+            return
           }
 
-          this.routes.forEach(r => r.forEachEndpoint(it => it.onMessage(message)))
+          this.routes.forEach(r => r.onMessage(message))
         }
 
-        this.socket = new WebSocket(this.assembleWsUrl(url))
+        this.socket?.close()
+        this.socket = new WebSocket(WebSocketClient.assembleWsUrl())
 
         const ws = this.socket
         ws.addEventListener('open', onOpen)
@@ -175,19 +178,67 @@ class WebSocketClient {
     return result
   }
 
+  private sendWsMessage(message: WsMessage): boolean {
+    if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
+      return false
+    }
+
+    this.logger.verbose('Sending message:', message.type, message.data)
+
+    const json = JSON.stringify(message)
+    this.socket.send(json)
+    return true
+  }
+
+  private onSubscriptionMessage(message: WsMessage<SubscriptionMessage>): void {
+    const { type } = message
+
+    if (type === WS_TYPE_SUB_REDIRECT) {
+      const msg = message.data as SubscriptionRedirectMessage
+      const { redirect, path } = msg
+      const route = this.routes.get(path)
+      if (!route) {
+        this.logger.debug('Redirected route not found', path)
+        return
+      }
+
+      this.routes.delete(path)
+      this.routes.set(redirect, route)
+      this.redirectedRoutes.set(path, redirect)
+      route.onRedirect(redirect)
+    }
+
+    const route = this.routes.get(message.data.path)
+    if (type === WS_TYPE_SUBBED) {
+      if (!route) {
+        this.logger.error(`No route for ${message.data.path}`)
+        return
+      }
+
+      route.onSubscribed()
+    } else {
+      const shouldRemove = route?.onUnsubscribed()
+      if (shouldRemove) {
+        this.routes.delete(route.path)
+        if (route.redirectedFrom) {
+          this.redirectedRoutes.delete(route.redirectedFrom)
+        }
+      }
+    }
+  }
+
   private reconnect() {
     if (this.routes.size < 1) {
       this.logger.debug('Reconnect skipped: there are no endpoints')
       return
     }
 
-    const route = Array.from(this.routes.values())[0]
     if (!this.socket) {
       this.logger.debug('Reconnect skipped: socket is null')
       return
     }
 
-    if (this.socket.readyState !== WebSocket.CLOSED && this.socket.readyState !== WebSocket.CONNECTING) {
+    if (this.socket.readyState !== WebSocket.CLOSED) {
       return
     }
 
@@ -199,15 +250,14 @@ class WebSocketClient {
     }
 
     this.logger.debug('Reconnecting...')
-    this.connect(route)
+    this.connect()
   }
 
-  private assembleWsUrl(endpoint: string) {
+  private static assembleWsUrl() {
     const { location } = window
     // TODO create some warning when we are in production build but the connection is insecure
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const route = `${protocol}//${location.host}${endpoint}`
-    return !this.token ? route : `${route}?token=${this.token}`
+    return `${protocol}//${location.host}/api/new`
   }
 }
 

@@ -8,11 +8,11 @@ import { MultiInputEditorOptions } from './use-multi-input-state'
 export type ItemEditorState = EditorState & MultiInputEditorOptions
 
 const transformInputFocusMessage = (message: WsMessage<any>, itemId: string) => {
-  const { type } = message
+  const { type: type } = message
 
   if (type === WS_TYPE_FOCUS_INPUT || type === WS_TYPE_BLUR_INPUT) {
     const msg = message as WsMessage<InputFocusMessage>
-    msg.payload.itemId = itemId
+    msg.data.itemId = itemId
     return msg
   }
 
@@ -24,7 +24,7 @@ const useItemEditorState = (
   parentSock: WebSocketClientEndpoint,
   itemId: string,
 ): ItemEditorState => {
-  const sock = useWebSocket(parentSock.url, {
+  const sock = useWebSocket(parentSock.path, {
     transformSend: it => transformInputFocusMessage(it, itemId),
   })
 

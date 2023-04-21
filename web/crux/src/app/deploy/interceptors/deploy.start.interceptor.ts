@@ -52,7 +52,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
     yupValidate(deploymentSchema, deployment)
 
     const node = this.agentService.getById(deployment.nodeId)
-    if (!node || node.getConnectionStatus() !== NodeConnectionStatus.CONNECTED) {
+    if (!node?.connected) {
       throw new PreconditionFailedException({
         message: 'Node is unreachable',
         property: 'nodeId',

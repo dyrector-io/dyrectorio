@@ -1,5 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
-import { identityOfContext } from 'src/app/token/jwt-auth.guard'
+import { identityOfRequest } from 'src/app/token/jwt-auth.guard'
 import PrismaService from 'src/services/prisma.service'
 import { CreateDeploymentDto } from '../deploy.dto'
 
@@ -11,7 +11,7 @@ export default class DeployCreateTeamAccessGuard implements CanActivate {
     const req = context.switchToHttp().getRequest()
     const body = req.body as CreateDeploymentDto
 
-    const identity = identityOfContext(context)
+    const identity = identityOfRequest(context)
 
     const version = await this.prisma.version.count({
       where: {

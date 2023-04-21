@@ -34,13 +34,14 @@ export class ImageDto {
   name: string
 
   @IsString()
-  tag: string
+  @IsOptional()
+  tag?: string
 
   @IsNumber()
   order: number
 
   // TODO (@polaroi8d): Missing the DTO in the validator
-  config: ContainerConfigDto
+  config?: ContainerConfigDto
 
   @Type(() => Date)
   @IsDate()
@@ -110,7 +111,7 @@ export class ContainerConfigDto {
 
   initContainers?: InitContainer[]
 
-  capabilities: UniqueKeyValue[]
+  capabilities?: UniqueKeyValue[]
 
   storage?: ContainerStorageDto
 

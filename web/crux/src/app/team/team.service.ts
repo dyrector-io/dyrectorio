@@ -44,9 +44,12 @@ export default class TeamService {
     private notificationService: DomainNotificationService,
   ) {}
 
-  async getUserMeta(session: Session): Promise<UserMetaDto> {
-    const { identity } = session
+  async checkUserActiveTeam(teamId: string, identity: Identity): Promise<boolean> {
+    const userOnTeam = await this.teamRepository.getActiveTeamByUserId(identity.id)
+    return userOnTeam.teamId === teamId
+  }
 
+  async getUserMeta(identity: Identity): Promise<UserMetaDto> {
     const teams = await this.prisma.usersOnTeams.findMany({
       where: {
         userId: identity.id,
@@ -76,7 +79,7 @@ export default class TeamService {
       },
     })
 
-    return this.mapper.toUserMetaDto(teams, invitations, session)
+    return this.mapper.toUserMetaDto(teams, invitations, identity)
   }
 
   async createTeam(request: CreateTeamDto, identity: Identity): Promise<TeamDto> {

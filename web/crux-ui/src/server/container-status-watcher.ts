@@ -1,11 +1,11 @@
-import { ContainerListMessage, WS_TYPE_CONTAINER_STATUS_LIST } from '@app/models'
+import { ContainersStateListMessage, WS_TYPE_CONTAINERS_STATE_LIST } from '@app/models'
 import { ContainerStateListMessage } from '@app/models/grpc/protobuf/proto/common'
 import WsConnection from '@app/websockets/connection'
 import { GrpcConnection } from './crux/grpc-connection'
 import DyoNodeService from './crux/node-service'
 
 class ContainerStatusWatcher {
-  private grpc: GrpcConnection<ContainerStateListMessage, ContainerListMessage> = null
+  private grpc: GrpcConnection<ContainerStateListMessage, ContainersStateListMessage> = null
 
   private connections: Set<WsConnection> = new Set()
 
@@ -16,7 +16,7 @@ class ContainerStatusWatcher {
 
     this.grpc = nodeService.watchContainerState(nodeId, this.prefix, {
       onMessage: message => {
-        this.connections.forEach(it => it.send(WS_TYPE_CONTAINER_STATUS_LIST, message))
+        this.connections.forEach(it => it.send(WS_TYPE_CONTAINERS_STATE_LIST, message))
       },
     })
   }

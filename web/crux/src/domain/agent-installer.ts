@@ -9,9 +9,8 @@ import { Subject } from 'rxjs'
 import { DagentTraefikOptionsDto, NodeScriptTypeDto } from 'src/app/node/node.dto'
 import { InvalidArgumentException, PreconditionFailedException } from 'src/exception/errors'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
-import { NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
-import { Agent } from './agent'
+import { Agent, AgentEvent } from './agent'
 
 export default class AgentInstaller {
   private readonly logger = new Logger(AgentInstaller.name)
@@ -91,7 +90,7 @@ export default class AgentInstaller {
     return this.scriptCompiler.compile(installScriptParams)
   }
 
-  complete(connection: GrpcNodeConnection, info: AgentInfo, eventChannel: Subject<NodeEventMessage>): Agent {
+  complete(connection: GrpcNodeConnection, info: AgentInfo, eventChannel: Subject<AgentEvent>): Agent {
     this.verify()
     return new Agent(connection, info, eventChannel)
   }

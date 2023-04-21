@@ -5,20 +5,20 @@ import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@pr
 import { InjectMetric } from '@willsoto/nestjs-prometheus'
 import { Gauge } from 'prom-client'
 import {
+  EMPTY,
+  Observable,
+  Subject,
   catchError,
   concatAll,
   concatMap,
-  EMPTY,
   finalize,
   from,
   map,
-  Observable,
   of,
   startWith,
-  Subject,
   takeUntil,
 } from 'rxjs'
-import { Agent, AgentToken } from 'src/domain/agent'
+import { Agent, AgentEvent, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import Deployment, { DeploymentProgressEvent } from 'src/domain/deployment'
 import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
@@ -35,7 +35,7 @@ import {
   Empty,
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
-import { NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
+import { NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
@@ -52,7 +52,7 @@ export default class AgentService {
 
   private agents: Map<string, Agent> = new Map()
 
-  private eventChannelByTeamId: Map<string, Subject<NodeEventMessage>> = new Map()
+  private eventChannelByTeamId: Map<string, Subject<AgentEvent>> = new Map()
 
   constructor(
     @InjectMetric('agent_online_count') private agentCount: Gauge<string>,
@@ -60,7 +60,6 @@ export default class AgentService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private notificationService: DomainNotificationService,
-    private containerMapper: ContainerMapper,
     private imageMapper: ImageMapper,
   ) {}
 
@@ -92,7 +91,7 @@ export default class AgentService {
     return installer
   }
 
-  async getNodeEventsByTeam(teamId: string): Promise<Subject<NodeEventMessage>> {
+  async getNodeEventsByTeam(teamId: string): Promise<Subject<AgentEvent>> {
     const team = await this.prisma.team.findUniqueOrThrow({
       where: {
         id: teamId,
@@ -111,7 +110,7 @@ export default class AgentService {
     return channel
   }
 
-  async sendNodeEventToTeam(teamId: string, event: NodeEventMessage) {
+  async sendNodeEventToTeam(teamId: string, event: AgentEvent) {
     const channel = await this.getNodeEventsByTeam(teamId)
     channel.next(event)
   }
@@ -336,6 +335,7 @@ export default class AgentService {
   private async onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === NodeConnectionStatus.UNREACHABLE) {
       this.logger.log(`Left: ${agent.id}`)
+      agent.onDisconnected()
       this.agents.delete(agent.id)
       this.agentCount.dec()
 
@@ -410,7 +410,7 @@ export default class AgentService {
             message: 'Invalid token',
           })
         }
-        agent = new Agent(connection, request, eventChannel as Subject<NodeEventMessage>)
+        agent = new Agent(connection, request, eventChannel)
 
         await prisma.node.update({
           where: { id: node.id },

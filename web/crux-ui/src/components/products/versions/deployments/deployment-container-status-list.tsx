@@ -4,12 +4,12 @@ import { DyoList } from '@app/elements/dyo-list'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   Container,
-  ContainerListMessage,
   containerPrefixNameOf,
+  ContainersStateListMessage,
   DeploymentRoot,
   WatchContainerStatusMessage,
-  WS_TYPE_CONTAINER_STATUS_LIST,
-  WS_TYPE_WATCH_CONTAINER_STATUS,
+  WS_TYPE_CONTAINERS_STATE_LIST,
+  WS_TYPE_WATCH_CONTAINERS_STATE,
 } from '@app/models'
 import { deploymentContainerLogUrl, nodeWsUrl } from '@app/routes'
 import { timeAgo, utcNow } from '@app/utils'
@@ -42,7 +42,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
 
   const sock = useWebSocket(nodeWsUrl(deployment.node.id), {
     onOpen: () =>
-      sock.send(WS_TYPE_WATCH_CONTAINER_STATUS, {
+      sock.send(WS_TYPE_WATCH_CONTAINERS_STATE, {
         prefix: deployment.prefix,
         deploymentId: deployment.id,
       } as WatchContainerStatusMessage),
@@ -63,7 +63,9 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     })
   }
 
-  sock.on(WS_TYPE_CONTAINER_STATUS_LIST, (message: ContainerListMessage) => setContainers(merge(containers, message)))
+  sock.on(WS_TYPE_CONTAINERS_STATE_LIST, (message: ContainersStateListMessage) =>
+    setContainers(merge(containers, message.containers)),
+  )
 
   const itemTemplate = (container: Container) => {
     const now = utcNow()

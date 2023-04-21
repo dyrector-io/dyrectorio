@@ -88,7 +88,7 @@ const onDisconnect = (endpoint: WsEndpoint, connection: WsConnection) => {
 }
 
 const onGetImage = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<GetImageMessage>) => {
-  const req = message.payload
+  const req = message.data
   const productId = endpoint.query.productId as string
   const versionId = endpoint.query.versionId as string
 
@@ -98,7 +98,7 @@ const onGetImage = async (endpoint: WsEndpoint, connection: WsConnection, messag
 }
 
 const onAddImages = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<AddImagesMessage>) => {
-  const req = message.payload
+  const req = message.data
   const productId = endpoint.query.productId as string
   const versionId = endpoint.query.versionId as string
 
@@ -120,7 +120,7 @@ const onDeleteImage = async (
 ) => {
   const editors = endpoint.services.get(EditorService)
 
-  const req = message.payload
+  const req = message.data
   const productId = endpoint.query.productId as string
   const versionId = endpoint.query.versionId as string
 
@@ -134,7 +134,7 @@ const onDeleteImage = async (
 }
 
 const onPatchImage = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<PatchImageMessage>) => {
-  const req = message.payload
+  const req = message.data
   const productId = endpoint.query.productId as string
   const versionId = endpoint.query.versionId as string
 
@@ -161,7 +161,7 @@ const onOrderImages = async (
   connection: WsConnection,
   message: WsMessage<OrderImagesMessage>,
 ) => {
-  const req = message.payload
+  const req = message.data
   const productId = endpoint.query.productId as string
   const versionId = endpoint.query.versionId as string
 
@@ -174,7 +174,7 @@ const onFocusInput = async (endpoint: WsEndpoint, connection: WsConnection, mess
   const { token } = connection
   const editors = endpoint.services.get(EditorService)
 
-  const res = editors.onFocus(token, message.payload)
+  const res = editors.onFocus(token, message.data)
 
   endpoint.sendAllExcept(connection, WS_TYPE_INPUT_FOCUSED, res)
 }
@@ -183,7 +183,7 @@ const onBlurInput = async (endpoint: WsEndpoint, connection: WsConnection, messa
   const { token } = connection
   const editors = endpoint.services.get(EditorService)
 
-  const res = editors.onBlur(token, message.payload)
+  const res = editors.onBlur(token, message.data)
   if (!res) {
     return
   }

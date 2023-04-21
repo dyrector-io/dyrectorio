@@ -4,7 +4,7 @@ import { ContainerIdentifier, ContainerState, InstanceContainerConfigData } from
 import { UniqueKeyValue } from './grpc/protobuf/proto/crux'
 import { ImageConfigProperty, ImageDeletedMessage } from './image'
 import { Instance } from './instance'
-import { Node } from './node'
+import { DyoNode } from './node'
 import { BasicProduct, ProductDetails } from './product'
 import { BasicVersion, VersionDetails, VersionType } from './version'
 
@@ -14,7 +14,7 @@ export type Deployment = {
   prefix: string
   status: DeploymentStatus
   note?: string
-  node: Node
+  node: DyoNode
   product: BasicProduct
   version: BasicVersion
 }
@@ -28,7 +28,7 @@ export type DeploymentDetails = Deployment & {
 export type DeploymentRoot = Omit<DeploymentDetails, 'product' | 'version' | 'node'> & {
   product: ProductDetails
   version: VersionDetails
-  node: Node
+  node: DyoNode
 }
 
 export const DEPLOYMENT_EVENT_TYPE_VALUES = ['log', 'deployment-status', 'container-status'] as const

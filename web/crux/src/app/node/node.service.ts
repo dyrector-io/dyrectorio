@@ -1,23 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { map, Observable } from 'rxjs'
-import { Agent } from 'src/domain/agent'
+import { Observable, map, mergeAll, mergeWith, of } from 'rxjs'
+import { Agent, AgentEvent } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
 import { PreconditionFailedException } from 'src/exception/errors'
 import {
   ContainerCommandRequest,
   ContainerIdentifier,
-  ContainerLogMessage,
   ContainerOperation,
-  ContainerStateListMessage,
   DeleteContainersRequest,
 } from 'src/grpc/protobuf/proto/common'
-import {
-  NodeEventMessage,
-  ServiceIdRequest,
-  WatchContainerLogRequest,
-  WatchContainerStateRequest,
-} from 'src/grpc/protobuf/proto/crux'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import AgentService from '../agent/agent.service'
@@ -31,6 +23,7 @@ import {
   UpdateNodeDto,
 } from './node.dto'
 import NodeMapper from './node.mapper'
+import { ContainerLogMessage, ContainersStateListMessage, WatchContainerLogMessage, WatchContainersStateMessage } from './node.message'
 
 @Injectable()
 export default class NodeService {
@@ -58,7 +51,7 @@ export default class NodeService {
       },
     })
 
-    return nodes.map(it => this.mapper.listItemToDto(it))
+    return nodes.map(it => this.mapper.toDto(it))
   }
 
   async getNodeDetails(id: string): Promise<NodeDetailsDto> {
@@ -90,7 +83,7 @@ export default class NodeService {
       message: { subject: node.name } as BaseMessage,
     })
 
-    return this.mapper.listItemToDto(node)
+    return this.mapper.toDto(node)
   }
 
   async deleteNode(id: string): Promise<void> {
@@ -169,39 +162,52 @@ export default class NodeService {
     this.agentService.kick(id)
   }
 
-  async handleSubscribeNodeEventChannel(request: ServiceIdRequest): Promise<Observable<NodeEventMessage>> {
-    return await this.agentService.getNodeEventsByTeam(request.id)
+  async subscribeToNodeEvents(teamId: string): Promise<Observable<AgentEvent>> {
+    const nodes = await this.prisma.node.findMany({
+      where: {
+        team: {
+          id: teamId,
+        },
+      },
+    })
+
+    const currentEvents = nodes.map(it => this.mapper.toAgentEvent(it))
+
+    const events = await this.agentService.getNodeEventsByTeam(teamId)
+    return events.pipe(mergeWith(of(currentEvents).pipe(mergeAll())))
   }
 
-  handleWatchContainerStatus(request: WatchContainerStateRequest): Observable<ContainerStateListMessage> {
-    this.logger.debug(`Opening container status channel for prefix: ${request.nodeId} - ${request.prefix}`)
+  watchContainersState(nodeId: string, message: WatchContainersStateMessage): Observable<ContainersStateListMessage> {
+    const { prefix } = message
 
-    const agent = this.agentService.getByIdOrThrow(request.nodeId)
+    this.logger.debug(`Opening container status channel for prefix: ${nodeId} - ${prefix}`)
 
-    const prefix = request.prefix ?? ''
-    const watcher = agent.upsertContainerStatusWatcher(prefix)
+    const agent = this.agentService.getByIdOrThrow(nodeId)
 
-    return watcher.watch()
+    const watcher = agent.upsertContainerStatusWatcher(prefix ?? '')
+
+    return watcher.watch().pipe(map(it => this.mapper.containerStateMessageToContainerMessage(it)))
   }
 
-  handleContainerLogStream(request: WatchContainerLogRequest): Observable<ContainerLogMessage> {
+  watchContainerLog(nodeId: string, message: WatchContainerLogMessage): Observable<ContainerLogMessage> {
+    const { container } = message
+
     this.logger.debug(
-      `Opening container log stream for container: ${request.nodeId} - ${Agent.containerPrefixNameOf(
-        request.container,
-      )}}`,
+      `Opening container log stream for container: ${nodeId} - ${Agent.containerPrefixNameOf(container)}}`,
     )
 
-    const agent = this.agentService.getById(request.nodeId)
+    const agent = this.agentService.getById(nodeId)
 
     if (!agent) {
       throw new PreconditionFailedException({
         message: 'Node is unreachable',
         property: 'nodeId',
-        value: request.nodeId,
+        value: nodeId,
       })
     }
 
-    const stream = agent.upsertContainerLogStream(request.container)
+    const stream = agent.upsertContainerLogStream(container)
+
     return stream.watch()
   }
 

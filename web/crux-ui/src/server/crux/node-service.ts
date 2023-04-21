@@ -2,9 +2,9 @@ import { Logger } from '@app/logger'
 import {
   Container,
   ContainerIdentifier,
-  ContainerListMessage,
   ContainerLogMessage,
-  NodeStatusMessage,
+  ContainersStateListMessage,
+  NodeEventMessage,
 } from '@app/models'
 import {
   ContainerLogMessage as GrpcContainerLogMessage,
@@ -12,7 +12,6 @@ import {
 } from '@app/models/grpc/protobuf/proto/common'
 import {
   CruxNodeClient,
-  NodeEventMessage,
   ServiceIdRequest,
   WatchContainerLogRequest,
   WatchContainerStateRequest,
@@ -28,8 +27,8 @@ class DyoNodeService {
 
   subscribeToNodeEvents(
     teamId: string,
-    options: ProtoSubscriptionOptions<NodeStatusMessage>,
-  ): GrpcConnection<NodeEventMessage, NodeStatusMessage> {
+    options: ProtoSubscriptionOptions<NodeEventMessage>,
+  ): GrpcConnection<NodeEventMessage, NodeEventMessage> {
     const req: ServiceIdRequest = {
       id: teamId,
     }
@@ -43,7 +42,7 @@ class DyoNodeService {
         connectedAt: timestampToUTC(data.connectedAt),
         error: data.error,
         updating: data.updating,
-      } as NodeStatusMessage)
+      } as NodeEventMessage)
 
     const stream = () => this.client.subscribeNodeEventChannel(ServiceIdRequest.fromJSON(req))
     return new GrpcConnection(this.logger.descend('events'), stream, transform, options)
@@ -52,8 +51,8 @@ class DyoNodeService {
   watchContainerState(
     nodeId: string,
     prefix: string | undefined,
-    options: ProtoSubscriptionOptions<ContainerListMessage>,
-  ): GrpcConnection<ContainerStateListMessage, ContainerListMessage> {
+    options: ProtoSubscriptionOptions<ContainersStateListMessage>,
+  ): GrpcConnection<ContainerStateListMessage, ContainersStateListMessage> {
     const req: WatchContainerStateRequest = {
       nodeId,
       prefix,
@@ -70,7 +69,7 @@ class DyoNodeService {
             imageName: it.imageName,
             imageTag: it.imageTag,
           } as Container),
-      ) as ContainerListMessage
+      ) as ContainersStateListMessage
 
     const stream = () => this.client.watchContainerState(WatchContainerStateRequest.fromJSON(req))
     return new GrpcConnection(this.logger.descend('container-status'), stream, transform, options)
