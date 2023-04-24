@@ -106,13 +106,14 @@ const RegisterPage = (props: RegisterPageProps) => {
     <SingleFormLayout title={t('signUp')}>
       <DyoSingleFormLogo />
 
-      <DyoCard className="p-8 mt-16 mx-auto w-5/12">
+      <DyoCard className="p-8 mt-16 mx-auto w-full md:w-1/2 lg:w-1/3 2xl:w-5/12 2xl:max-w-4xl">
         <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoSingleFormHeading>{t('signUp')}</DyoSingleFormHeading>
 
-          <div className="grid grid-cols-2 gap-x-4">
+          <div className="flex flex-wrap flex-col 2xl:flex-row">
             <DyoInput
-              containerClassName="order-1"
+              containerClassName="order-1 2xl:w-1/2 2xl:order-1 2xl:pr-2"
+              grow
               label={t('common:email')}
               name="email"
               type="email"
@@ -122,30 +123,8 @@ const RegisterPage = (props: RegisterPageProps) => {
             />
 
             <DyoInput
-              containerClassName="order-3"
-              label={t('common:password')}
-              name="password"
-              type="password"
-              onChange={formik.handleChange}
-              value={formik.values.password}
-              message={formik.errors.password ?? findMessage(ui, 'password')}
-            />
-
-            <DyoInput
-              containerClassName="order-5"
-              label={t('common:confirmPass')}
-              name="confirmPassword"
-              type="password"
-              onChange={formik.handleChange}
-              value={formik.values.confirmPassword}
-              message={
-                formik.errors.confirmPassword ?? findError(errors, 'confirmPassword', it => t(`errors:${it.error}`))
-              }
-              messageType="error"
-            />
-
-            <DyoInput
-              containerClassName="order-2"
+              containerClassName="order-2 2xl:w-1/2 2xl:order-1 2xl:pl-2"
+              grow
               label={t('common:firstName')}
               name="firstName"
               onChange={formik.handleChange}
@@ -155,12 +134,38 @@ const RegisterPage = (props: RegisterPageProps) => {
             />
 
             <DyoInput
-              containerClassName="order-4"
+              containerClassName="order-4 2xl:w-1/2 2xl:order-1 2xl:pr-2"
+              grow
+              label={t('common:password')}
+              name="password"
+              type="password"
+              onChange={formik.handleChange}
+              value={formik.values.password}
+              message={formik.errors.password ?? findMessage(ui, 'password')}
+            />
+
+            <DyoInput
+              containerClassName="order-3 2xl:w-1/2 2xl:order-1 2xl:pl-2"
+              grow
               label={t('common:lastName')}
               name="lastName"
               onChange={formik.handleChange}
               value={formik.values.lastName}
               message={formik.errors.lastName}
+              messageType="error"
+            />
+
+            <DyoInput
+              containerClassName="order-5 2xl:w-1/2 2xl:order-1 2xl:pr-2"
+              grow
+              label={t('common:confirmPass')}
+              name="confirmPassword"
+              type="password"
+              onChange={formik.handleChange}
+              value={formik.values.confirmPassword}
+              message={
+                formik.errors.confirmPassword ?? findError(errors, 'confirmPassword', it => t(`errors:${it.error}`))
+              }
               messageType="error"
             />
           </div>
@@ -179,7 +184,7 @@ const RegisterPage = (props: RegisterPageProps) => {
             messageType="error"
           />
 
-          <DyoButton className="mx-40 mt-8" type="submit">
+          <DyoButton className="mx-auto mt-8 px-8" type="submit">
             {t('createAcc')}
           </DyoButton>
 
