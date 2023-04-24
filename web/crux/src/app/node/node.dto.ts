@@ -72,9 +72,11 @@ export class CreateNodeDto {
   name: string
 
   @IsString()
+  @IsOptional()
   description?: string
 
   @IsString()
+  @IsOptional()
   icon?: string
 }
 
@@ -94,6 +96,7 @@ export class NodeGenerateScriptDto {
   type: NodeType
 
   @IsString()
+  @IsOptional()
   rootPath?: string
 
   @IsString()
@@ -105,6 +108,7 @@ export class NodeGenerateScriptDto {
 
   @IsObject()
   @ValidateNested()
+  @IsOptional()
   dagentTraefik?: DagentTraefikOptionsDto
 }
 
@@ -134,6 +138,7 @@ export class NodeDeleteContainerDto {
   container?: ContainerIdentifierDto
 
   @IsString()
+  @IsOptional()
   prefix?: string
 }
 
