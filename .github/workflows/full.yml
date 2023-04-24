@@ -1,4 +1,4 @@
-name: product builder pipeline
+name: product_builder_pipeline
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: builder image builder pipeline
+name: builder_image_builder_pipeline
 
 on:
   push:
