@@ -1,3 +1,5 @@
+# this file is for development,
+# when crux and crux-ui is executed locally using node
 version: "3.3"
 services:
   crux-postgres:

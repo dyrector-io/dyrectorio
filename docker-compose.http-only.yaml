@@ -1,3 +1,6 @@
+# !! This is for demonstration purposes only !!
+# This file components (like kratos) is in development mode
+# traffic goes around in plain text
 # version is removed as per: https://github.com/docker/cli/pull/3445
 services:
   # If you plan to deploy where a proxy is already in place, feel free to remove the traefik service
@@ -7,15 +10,8 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - "letsencrypt:/letsencrypt"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
@@ -28,11 +24,12 @@ services:
       - serve
     environment:
       - TZ=${TIMEZONE:-Europe/Budapest}
+      - NODE_ENV=${NODE_ENV}
       - DATABASE_URL=postgresql://crux:${CRUX_POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
       - KRATOS_ADMIN_URL=http://kratos:4434
       - KRATOS_URL=http://kratos:4433
       - CRUX_UI_URL=${EXTERNAL_URL}
-      - CRUX_AGENT_ADDRESS=${DOMAIN}:443
+      - CRUX_AGENT_ADDRESS=${DOMAIN}:80
       - JWT_SECRET=${CRUX_SECRET}
       - FROM_EMAIL=${FROM_EMAIL}
       - FROM_NAME=${FROM_NAME}
@@ -54,21 +51,15 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.crux.rule=(Host(`${DOMAIN}`) && Headers(`content-type`, `application/grpc`))
-      - traefik.http.routers.crux.entrypoints=websecure
+      - traefik.http.routers.crux.entrypoints=web
       - traefik.http.routers.crux.service=crux
       - traefik.http.services.crux.loadbalancer.server.port=5000
       - traefik.http.services.crux.loadbalancer.server.scheme=h2c
-      - traefik.http.routers.crux.tls=true
-      - traefik.http.routers.crux.tls.domains[0].main=${DOMAIN}
-      - traefik.http.routers.crux.tls.certresolver=letsencrypt
       - traefik.http.routers.crux-http.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/new`)
-      - traefik.http.routers.crux-http.entrypoints=websecure
+      - traefik.http.routers.crux-http.entrypoints=web
       - traefik.http.routers.crux-http.service=crux-http
       - traefik.http.services.crux-http.loadbalancer.server.port=1848
       - traefik.http.routers.crux-http.middlewares=crux-strip
-      - traefik.http.routers.crux-http.tls=true
-      - traefik.http.routers.crux-http.tls.domains[0].main=${DOMAIN}
-      - traefik.http.routers.crux-http.tls.certresolver=letsencrypt
       - traefik.http.middlewares.crux-strip.stripprefix.prefixes=/api/new
     # ports:
     #   - 1848:1848 # http API
@@ -104,9 +95,10 @@ services:
     image: ghcr.io/dyrector-io/dyrectorio/web/crux-ui:${DYO_VERSION:-stable}
     environment:
       - TZ=${TIMEZONE:-Europe/Budapest}
-      - CRUX_UI_URL=${EXTERNAL_URL}
+      - NODE_ENV=${NODE_ENV}
       - KRATOS_URL=http://kratos:4433
       - KRATOS_ADMIN_URL=http://kratos:4434
+      - CRUX_UI_URL=${EXTERNAL_URL}
       - CRUX_API_ADDRESS=crux:5001
       - DISABLE_RECAPTCHA=${DISABLE_RECAPTCHA}
       - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
@@ -120,16 +112,14 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.crux-ui.rule=Host(`${DOMAIN}`)
-      - traefik.http.routers.crux-ui.entrypoints=websecure
+      - traefik.http.routers.crux-ui.entrypoints=web
       - traefik.http.services.crux-ui.loadbalancer.server.port=3000
-      - traefik.http.routers.crux-ui.tls=true
-      - traefik.http.routers.crux-ui.tls.domains[0].main=${DOMAIN}
-      - traefik.http.routers.crux-ui.tls.certresolver=letsencrypt
 
   kratos:
     image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
     environment:
       - SQA_OPT_OUT=true
+      - DEV=true
       - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4&connect_timeout=5
       - KRATOS_URL=${EXTERNAL_URL}/kratos
       - KRATOS_ADMIN_URL=http://kratos:4434
@@ -155,14 +145,11 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.kratos.rule=(Host(`${DOMAIN}`) && PathPrefix(`/kratos`))
-      - traefik.http.routers.kratos.entrypoints=websecure
+      - traefik.http.routers.kratos.entrypoints=web
       - traefik.http.services.kratos.loadbalancer.server.port=4433
       - traefik.http.middlewares.kratos-strip.stripprefix.prefixes=/kratos
       - traefik.http.middlewares.kratos-ratelimit.ratelimit.average=100
       - traefik.http.routers.kratos.middlewares=kratos-strip,kratos-ratelimit
-      - traefik.http.routers.kratos.tls=true
-      - traefik.http.routers.kratos.tls.domains[0].main=${DOMAIN}
-      - traefik.http.routers.kratos.tls.certresolver=letsencrypt
 
   kratos-migrate:
     image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
@@ -191,12 +178,13 @@ services:
       retries: 5
 
   # This is insecure, do not use this in production or on the public internet
-  # mailslurper:
-  #   image: docker.io/oryd/mailslurper:smtps-latest
-  #   ports: # port 1025 is used internally for smtp, you do not have to expose that
-  #     - 4436:4436 # web UI
-  #     - 4437:4437 # http API
-  #   restart: unless-stopped
+  # example URI: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true
+  mailslurper:
+    image: docker.io/oryd/mailslurper:smtps-latest
+    ports: # port 1025 is used internally for smtp, you do not have to expose that
+      - 4436:4436 # web UI
+      - 4437:4437 # http API
+    restart: unless-stopped
 
 volumes:
   letsencrypt:
