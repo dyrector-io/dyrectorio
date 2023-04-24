@@ -1,4 +1,4 @@
-import { IsIn, IsString } from 'class-validator'
+import { IsIn, IsOptional, IsString } from 'class-validator'
 
 export const SERVICE_STATUS_VALUES = ['unavailable', 'disrupted', 'operational'] as const
 export type ServiceStatusDto = (typeof SERVICE_STATUS_VALUES)[number]
@@ -11,5 +11,6 @@ export class HealthDto {
   version: string
 
   @IsString()
+  @IsOptional()
   lastMigration?: string
 }
