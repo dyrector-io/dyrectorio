@@ -6,7 +6,7 @@ services:
     image: ghcr.io/dyrector-io/dyrectorio/web/crux-ui:${CRUX_UI_IMAGE_TAG}
     build: .
     environment:
-      - TZ=Europe/Budapest
+      - TZ=UTC
       - KRATOS_URL=$KRATOS_URL
       - CRUX_API_ADDRESS=$CRUX_API_ADDRESS
       - RECAPTCHA_SECRET_KEY=$RECAPTCHA_SECRET_KEY
