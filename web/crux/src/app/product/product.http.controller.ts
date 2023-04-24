@@ -12,7 +12,15 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -47,10 +55,20 @@ export default class ProductHttpController {
 
   @Get()
   @HttpCode(200)
+  @ApiOperation({
+    description:
+      'Returns a list of transactions that have contributed to the Stripe account balance (e.g., charges, transfers, and so forth). The transactions are returned in sorted order, with the most recent transactions appearing first.',
+    summary: 'List all balance transactions',
+  })
   @ApiOkResponse({
     type: ProductListItemDto,
     isArray: true,
-    description: 'Fetch list of products.',
+    description:
+      'A dictionary with a data property that contains an array of up to limit transactions, starting after transaction starting_after. Each entry in the array is a separate transaction history object. If no more transactions are available, the resulting array will be empty.',
+  })
+  @ApiNoContentResponse()
+  @ApiBadRequestResponse({
+    description: 'Provided bad parmaters',
   })
   async getProducts(@IdentityFromRequest() identity: Identity): Promise<ProductListItemDto[]> {
     return this.service.getProducts(identity)

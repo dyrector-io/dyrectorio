@@ -54,23 +54,15 @@ export default class VersionHttpController {
 
   @Get()
   @HttpCode(200)
-<<<<<<< HEAD
-  @ApiOkResponse({ type: VersionDto, isArray: true })
-  @UuidParams(PARAM_PRODUCT_ID)
-=======
   @ApiOkResponse({ type: VersionDto, isArray: true, description: 'Fetch a list of versions that belong to a product.' })
->>>>>>> fc7162d6 (feat: openapi description improvements)
+  @UuidParams(PARAM_PRODUCT_ID)
   async getVersions(@ProductId() productId: string, @IdentityFromRequest() identity: Identity): Promise<VersionDto[]> {
     return await this.service.getVersionsByProductId(productId, identity)
   }
 
   @Get(ROUTE_VERSION_ID)
-<<<<<<< HEAD
-  @ApiOkResponse({ type: VersionDetailsDto })
-  @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
-=======
   @ApiOkResponse({ type: VersionDetailsDto, description: 'Fetch the details of a version that belongs to a product.' })
->>>>>>> fc7162d6 (feat: openapi description improvements)
+  @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async getVersion(@ProductId() _productId: string, @VersionId() versionId: string): Promise<VersionDetailsDto> {
     return await this.service.getVersionDetails(versionId)
   }
@@ -121,7 +113,9 @@ export default class VersionHttpController {
 
   @Put(`${ROUTE_VERSION_ID}/default`)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Turn version into a default one of the complex product later versions will inherit images from.' })
+  @ApiNoContentResponse({
+    description: 'Turn version into a default one of the complex product later versions will inherit images from.',
+  })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async setDefaultVersion(@ProductId() productId: string, @VersionId() versionId: string): Promise<void> {
     return await this.service.setDefaultVersion(productId, versionId)

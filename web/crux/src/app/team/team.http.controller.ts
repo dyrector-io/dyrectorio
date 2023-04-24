@@ -63,12 +63,8 @@ export default class TeamHttpController {
 
   @Get(ROUTE_TEAM_ID)
   @HttpCode(200)
-<<<<<<< HEAD
-  @ApiOkResponse({ type: TeamDetailsDto })
-  @UuidParams(PARAM_TEAM_ID)
-=======
   @ApiOkResponse({ type: TeamDetailsDto, description: 'Fetch data of a team.' })
->>>>>>> fc7162d6 (feat: openapi description improvements)
+  @UuidParams(PARAM_TEAM_ID)
   async getTeamById(@TeamId() teamId: string): Promise<TeamDetailsDto> {
     return await this.service.getTeamById(teamId)
   }
@@ -80,7 +76,7 @@ export default class TeamHttpController {
   @ApiCreatedResponse({
     type: TeamDto,
     headers: API_CREATED_LOCATION_HEADERS,
-    description: 'Create new team.'
+    description: 'Create new team.',
   })
   @TeamRoleRequired('none')
   async createTeam(
@@ -127,7 +123,7 @@ export default class TeamHttpController {
   @ApiCreatedResponse({
     type: UserDto,
     headers: API_CREATED_LOCATION_HEADERS,
-    description: 'Add new user to a team.'
+    description: 'Add new user to a team.',
   })
   @UseInterceptors(TeamInviteUserValitationInterceptor)
   @TeamRoleRequired('admin')

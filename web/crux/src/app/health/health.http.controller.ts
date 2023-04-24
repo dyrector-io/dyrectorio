@@ -16,7 +16,7 @@ export default class HealthHttpController {
   @Get()
   @ApiOkResponse({
     type: HealthDto,
-    description: 'Return service status of the platform.'
+    description: 'Return service status of the platform.',
   })
   async getHealth(): Promise<HealthDto> {
     return this.service.getCruxHealth()

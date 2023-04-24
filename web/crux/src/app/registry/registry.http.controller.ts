@@ -56,12 +56,8 @@ export default class RegistryHttpController {
 
   @Get(ROUTE_REGISTRY_ID)
   @HttpCode(200)
-<<<<<<< HEAD
-  @ApiOkResponse({ type: RegistryDetailsDto })
-  @UuidParams(PARAM_REGISTRY_ID)
-=======
   @ApiOkResponse({ type: RegistryDetailsDto, description: 'Retrieve data of a registry.' })
->>>>>>> fc7162d6 (feat: openapi description improvements)
+  @UuidParams(PARAM_REGISTRY_ID)
   async getRegistry(@RegistryId() id: string): Promise<RegistryDetailsDto> {
     return await this.service.getRegistryDetails(id)
   }
@@ -73,7 +69,7 @@ export default class RegistryHttpController {
   @ApiCreatedResponse({
     type: RegistryDetailsDto,
     headers: API_CREATED_LOCATION_HEADERS,
-    description: 'Add new registry.'
+    description: 'Add new registry.',
   })
   @UseGuards(RegistryAccessValidationGuard)
   async createRegistry(
