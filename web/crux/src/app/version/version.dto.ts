@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsBoolean, IsIn, IsString } from 'class-validator'
+import { IsBoolean, IsIn, IsOptional, IsString } from 'class-validator'
 import { DeploymentWithBasicNodeDto } from '../deploy/deploy.dto'
 import { ImageDto } from '../image/image.dto'
 import { AuditDto, BasicVersionDto, VersionTypeDto, VERSION_TYPE_VALUES } from '../shared/shared.dto'
@@ -10,6 +10,7 @@ export class VersionDto extends BasicVersionDto {
   audit: AuditDto
 
   @IsString()
+  @IsOptional()
   changelog?: string
 
   @IsBoolean()
@@ -24,6 +25,7 @@ export class UpdateVersionDto {
   name: string
 
   @IsString()
+  @IsOptional()
   changelog?: string
 }
 
