@@ -19,6 +19,7 @@ import {
   MergedContainerConfigData,
   UniqueSecretKeyValue,
 } from 'src/shared/models'
+import { PaginationQuery } from 'src/shared/dtos/paginating'
 import AgentService from '../agent/agent.service'
 import { ImageDetails } from '../image/image.mapper'
 import ImageService from '../image/image.service'
@@ -28,6 +29,7 @@ import {
   DeploymentDetailsDto,
   DeploymentDto,
   DeploymentEventDto,
+  DeploymentLogListDto,
   InstanceDto,
   InstanceSecretsDto,
   PatchDeploymentDto,
@@ -736,6 +738,31 @@ export default class DeployService {
     }
 
     return this.mapper.toDto(newDeployment)
+  }
+
+  async getDeploymentLog(deploymentId: string, query: PaginationQuery): Promise<DeploymentLogListDto> {
+    const { skip, take } = query
+
+    const where: Prisma.DeploymentEventWhereInput = {
+      deploymentId,
+    }
+
+    const [events, total] = await this.prisma.$transaction([
+      this.prisma.deploymentEvent.findMany({
+        where,
+        skip,
+        take,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.prisma.deploymentEvent.count({ where }),
+    ])
+
+    return {
+      items: events.reverse().map(it => this.mapper.eventToDto(it)),
+      total,
+    }
   }
 
   private async onImagesAddedToVersion(images: ImageDetails[]): Promise<InstancesCreatedEvent> {

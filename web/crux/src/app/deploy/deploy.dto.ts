@@ -2,6 +2,7 @@ import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsDate, IsIn, IsOptional, IsString, IsUUID } from 'class-validator'
 import { ContainerState, CONTAINER_STATE_VALUES, UniqueKeyValue, UniqueSecretKeyValue } from 'src/shared/models'
+import { PaginatedList } from 'src/shared/dtos/paginating'
 import { ContainerConfigDto, ImageDto } from '../image/image.dto'
 import {
   AuditDto,
@@ -160,4 +161,11 @@ export class InstanceSecretsDto {
   @IsOptional()
   @IsString({ each: true })
   keys?: string[] | null
+}
+
+export class DeploymentLogListDto extends PaginatedList<DeploymentEventDto> {
+  @Type(() => DeploymentEventDto)
+  items: DeploymentEventDto[]
+
+  total: number
 }
