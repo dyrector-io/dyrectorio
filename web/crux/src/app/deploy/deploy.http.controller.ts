@@ -70,7 +70,11 @@ export default class DeployHttpController {
   @ApiOkResponse({
     type: DeploymentDto,
     isArray: true,
+<<<<<<< HEAD
     description: 'Fetch data of deployments.',
+=======
+    description: 'Fetch data of deployments.'
+>>>>>>> fc49aba4 (feat: openapi description improvements)
   })
   async getDeployments(@IdentityFromRequest() identity: Identity): Promise<DeploymentDto[]> {
     return await this.service.getDeployments(identity)
@@ -79,19 +83,26 @@ export default class DeployHttpController {
   @Get(ROUTE_DEPLOYMENT_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: DeploymentDetailsDto, description: 'Retrieve data of a deployment.' })
+<<<<<<< HEAD
   @UuidParams(PARAM_DEPLOYMENT_ID)
+=======
+>>>>>>> fc49aba4 (feat: openapi description improvements)
   async getDeploymentDetails(@DeploymentId() deploymentId: string): Promise<DeploymentDetailsDto> {
     return await this.service.getDeploymentDetails(deploymentId)
   }
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/events`)
   @HttpCode(200)
+<<<<<<< HEAD
   @ApiOkResponse({
     type: DeploymentEventDto,
     isArray: true,
     description: 'Fetch event log that belongs to a deployment.',
   })
   @UuidParams(PARAM_DEPLOYMENT_ID)
+=======
+  @ApiOkResponse({ type: DeploymentEventDto, isArray: true, description: 'Fetch event log that belongs to a deployment.' })
+>>>>>>> fc49aba4 (feat: openapi description improvements)
   async getDeploymentEvents(@DeploymentId() deploymentId: string): Promise<DeploymentEventDto[]> {
     return await this.service.getDeploymentEvents(deploymentId)
   }
@@ -99,7 +110,10 @@ export default class DeployHttpController {
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)
   @HttpCode(200)
   @ApiOkResponse({ type: InstanceDto, description: 'Get details of a deployed container.' })
+<<<<<<< HEAD
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
+=======
+>>>>>>> fc49aba4 (feat: openapi description improvements)
   async getInstance(@DeploymentId() _deploymentId: string, @InstanceId() instanceId: string): Promise<InstanceDto> {
     return await this.service.getInstance(instanceId)
   }
@@ -107,7 +121,10 @@ export default class DeployHttpController {
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}/secrets`)
   @HttpCode(200)
   @ApiOkResponse({ type: InstanceSecretsDto, description: 'Fetch secrets of a deployed container.' })
+<<<<<<< HEAD
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
+=======
+>>>>>>> fc49aba4 (feat: openapi description improvements)
   async getDeploymentSecrets(
     @DeploymentId() _deploymentId: string,
     @InstanceId() instanceId: string,

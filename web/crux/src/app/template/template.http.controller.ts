@@ -66,7 +66,10 @@ export default class TemplateHttpController {
   @HttpCode(200)
   @Header('content-type', 'image/jpeg')
   @ApiOkResponse({ description: 'Retrieve data of an image of a template.' })
+<<<<<<< HEAD
   @UuidParams(PARAM_TEMPLATE_ID)
+=======
+>>>>>>> fc49aba4 (feat: openapi description improvements)
   async getImage(@TemplateId() templateId: string, @Response() response: ExpressResponse) {
     const image = await this.service.getImageStream(templateId)
     image.pipe(response)
