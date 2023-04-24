@@ -5,6 +5,7 @@ import {
   Instance,
   InstanceContainerConfigData,
   InstanceSecretsMessage,
+  mergeConfigs,
   PatchInstanceMessage,
   WS_TYPE_GET_INSTANCE_SECRETS,
   WS_TYPE_INSTANCE_SECRETS,
@@ -23,6 +24,7 @@ export type InstanceStateOptions = {
 
 export type InstanceState = {
   config: ContainerConfigData
+  resetableConfig: ContainerConfigData
   definedSecrets: string[]
   selection: EditInstanceCardSelection
   errorMessage: string
@@ -97,7 +99,8 @@ const useInstanceState = (options: InstanceStateOptions) => {
   return [
     {
       selection,
-      config,
+      config: mergeConfigs(instance.image.config, config),
+      resetableConfig: config,
       definedSecrets,
       errorMessage,
     },

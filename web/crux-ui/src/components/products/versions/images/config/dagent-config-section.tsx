@@ -28,6 +28,7 @@ import ConfigSectionLabel from './config-section-label'
 
 type DagentConfigSectionBaseProps<T> = {
   config: T
+  resetableConfig?: T
   onChange: (config: Partial<T>) => void
   onResetSection: (section: DagentConfigProperty) => void
   selectedFilters: ImageConfigProperty[]
@@ -48,12 +49,21 @@ type DagentConfigSectionProps = ImageDagentConfigSectionProps | InstanceDagentCo
 
 const DagentConfigSection = (props: DagentConfigSectionProps) => {
   const { t } = useTranslation('container')
-  const { config: propsConfig, configType, onResetSection, selectedFilters, onChange, editorOptions, disabled } = props
+  const {
+    config: propsConfig,
+    resetableConfig: propsResetableConfig,
+    configType,
+    onResetSection,
+    selectedFilters,
+    onChange,
+    editorOptions,
+    disabled,
+  } = props
 
   const disabledOnImage = configType === 'image' || disabled
   // eslint-disable-next-line react/destructuring-assignment
   const imageConfig = configType === 'instance' ? props.imageConfig : null
-  const resetableConfig = propsConfig
+  const resetableConfig = propsResetableConfig ?? propsConfig
   const config = configType === 'instance' ? mergeConfigs(imageConfig, propsConfig) : propsConfig
 
   return !filterEmpty([...DAGENT_CONFIG_PROPERTIES], selectedFilters) ? null : (
