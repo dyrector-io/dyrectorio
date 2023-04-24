@@ -17,6 +17,7 @@ import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTa
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
+import { PaginationQuery } from 'src/shared/dtos/paginating'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -25,6 +26,7 @@ import {
   DeploymentDetailsDto,
   DeploymentDto,
   DeploymentEventDto,
+  DeploymentLogListDto,
   InstanceDto,
   InstanceSecretsDto,
   PatchDeploymentDto,
@@ -177,6 +179,15 @@ export default class DeployHttpController {
       url: DeployHttpController.locationOf(deployment.id),
       body: deployment,
     }
+  }
+
+  @Get(`${ROUTE_DEPLOYMENT_ID}/log`)
+  @ApiOkResponse({ type: DeploymentLogListDto })
+  async deploymentLog(
+    @DeploymentId() deploymentId: string,
+    @Query() query: PaginationQuery,
+  ): Promise<DeploymentLogListDto> {
+    return this.service.getDeploymentLog(deploymentId, query)
   }
 
   private static locationOf(deploymentId: string) {
