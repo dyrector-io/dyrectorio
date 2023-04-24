@@ -32,11 +32,7 @@ export default class StorageHttpController {
   @ApiOkResponse({
     type: StorageDto,
     isArray: true,
-<<<<<<< HEAD
     description: 'Fetch details of storages.',
-=======
-    description: 'Fetch details of storages.'
->>>>>>> fc49aba4 (feat: openapi description improvements)
   })
   async getStorages(@IdentityFromRequest() identity: Identity): Promise<StorageDto[]> {
     return this.service.getStorages(identity)
@@ -47,11 +43,7 @@ export default class StorageHttpController {
   @ApiOkResponse({
     type: StorageOptionDto,
     isArray: true,
-<<<<<<< HEAD
     description: 'Fetch the name and ID of a storage.',
-=======
-    description: 'Fetch the name and ID of a storage.'
->>>>>>> fc49aba4 (feat: openapi description improvements)
   })
   async getStorageOptions(@IdentityFromRequest() identity: Identity): Promise<StorageOptionDto[]> {
     return this.service.getStorageOptions(identity)
@@ -60,10 +52,7 @@ export default class StorageHttpController {
   @Get(ROUTE_STORAGE_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: StorageDetailsDto, description: 'Return name and ID of a storage.' })
-<<<<<<< HEAD
   @UuidParams(PARAM_STORAGE_ID)
-=======
->>>>>>> fc49aba4 (feat: openapi description improvements)
   async getProductDetails(@StorageId() id: string): Promise<StorageDetailsDto> {
     return this.service.getStorageDetails(id)
   }
@@ -89,10 +78,7 @@ export default class StorageHttpController {
   @HttpCode(204)
   @UseInterceptors(StorageUpdateValidationInterceptor)
   @ApiNoContentResponse({ description: 'Update a storage.' })
-<<<<<<< HEAD
   @UuidParams(PARAM_STORAGE_ID)
-=======
->>>>>>> fc49aba4 (feat: openapi description improvements)
   async updateProduct(
     @StorageId() id: string,
     @Body() request: UpdateStorageDto,
@@ -105,10 +91,7 @@ export default class StorageHttpController {
   @HttpCode(204)
   @UseInterceptors(StorageDeleteValidationInterceptor)
   @ApiNoContentResponse({ description: 'Delete a storage.' })
-<<<<<<< HEAD
   @UuidParams(PARAM_STORAGE_ID)
-=======
->>>>>>> fc49aba4 (feat: openapi description improvements)
   async deleteProduct(@StorageId() id: string): Promise<void> {
     return this.service.deleteStorage(id)
   }
