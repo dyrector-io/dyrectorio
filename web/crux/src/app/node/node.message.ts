@@ -44,7 +44,7 @@ export class ContainerDto {
 
   @IsDate()
   @Type(() => Date)
-  date: string
+  date: Date
 
   state: ContainerStateDto
 

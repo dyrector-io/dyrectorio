@@ -88,5 +88,12 @@ export const ensurePathFormat = (path: string | null): string | null => {
 export const namespaceOf = (message: WsMessage): string => {
   const { type } = message
   const lastSlashIndex = type.lastIndexOf('/')
+
   return type.substring(0, lastSlashIndex)
+}
+
+export const handlerKeyOf = (message: WsMessage): string => {
+  const { type } = message
+  const lastSlashIndex = type.lastIndexOf('/')
+  return type.substring(lastSlashIndex + 1)
 }

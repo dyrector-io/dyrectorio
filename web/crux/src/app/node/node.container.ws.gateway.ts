@@ -1,9 +1,11 @@
+import { UsePipes, ValidationPipe } from '@nestjs/common'
 import { MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
 import { Observable, map } from 'rxjs'
 import { WsAuthorize, WsMessage } from 'src/websockets/common'
 import WsParam from 'src/websockets/decorators/ws.param.decorator'
 import TeamService from '../team/team.service'
+import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import {
   ContainerCommandMessage,
   ContainerLogMessage,
@@ -15,7 +17,6 @@ import {
   WatchContainersStateMessage as WatchContainersStatusMessage,
 } from './node.message'
 import NodeService from './node.service'
-import { IdentityFromSocket } from '../token/jwt-auth.guard'
 
 const NodeId = () => WsParam('nodeId')
 
@@ -51,7 +52,7 @@ export default class NodeContainerWebSocketGateway {
   @SubscribeMessage('watch-containers-state')
   watchContainersState(
     @NodeId() nodeId: string,
-    message: WatchContainersStatusMessage,
+    @MessageBody() message: WatchContainersStatusMessage,
   ): Observable<WsMessage<ContainersStateListMessage>> {
     return this.service.watchContainersState(nodeId, message).pipe(
       map(it => {

@@ -66,8 +66,9 @@ export const fromTimestamp = (timestamp: Timestamp): Date => {
     return null
   }
 
-  let millis = timestamp.seconds * 1_000
-  millis += timestamp.nanos / 1_000_000
+  const json = Timestamp.fromJSON(timestamp)
+  let millis = json.seconds * 1_000
+  millis += json.nanos / 1_000_000
   return new Date(millis)
 }
 

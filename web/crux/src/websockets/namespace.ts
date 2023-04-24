@@ -11,6 +11,7 @@ import {
   WsRouteMatch,
   WsSubscription,
   WsTransform,
+  handlerKeyOf,
 } from './common'
 
 export default class WsNamespace implements WsSubscription {
@@ -100,17 +101,16 @@ export default class WsNamespace implements WsSubscription {
   }
 
   onMessage(client: WsClient, message: WsMessage): Observable<WsMessage> {
-    this.removePathFromType(message)
-    const { type, data } = message
+    const handlerKey = handlerKeyOf(message)
 
     const clientWithHandlers = this.clients.get(client.token)
-    const handler = clientWithHandlers.handlers.get(type)
+    const handler = clientWithHandlers.handlers.get(handlerKey)
     if (!handler) {
-      this.logger.error(`Handler not found for: ${type}`)
+      this.logger.error(`Handler not found for: ${handlerKey}`)
       return EMPTY
     }
 
-    const result: Observable<WsMessage> | null = clientWithHandlers.transform(handler(data))
+    const result: Observable<WsMessage> | null = clientWithHandlers.transform(handler(message))
 
     return !result ? EMPTY : result.pipe(map(it => this.overwriteMessageType(it)))
   }
@@ -128,10 +128,6 @@ export default class WsNamespace implements WsSubscription {
   private overwriteMessageType(message: WsMessage): WsMessage {
     message.type = `${this.path}/${message.type}`
     return message
-  }
-
-  private removePathFromType(message: WsMessage) {
-    message.type = message.type.substring(this.path.length + 1)
   }
 }
 

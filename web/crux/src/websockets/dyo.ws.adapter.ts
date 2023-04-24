@@ -212,7 +212,6 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
 
     const namespace = namespaceOf(message)
 
-    console.log('msg namespace', namespace)
     const subscription = client.subscriptions.get(namespace)
     if (!subscription) {
       this.logger.debug(`Subscription not found for ${namespace} for client ${client.token}`)

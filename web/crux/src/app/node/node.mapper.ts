@@ -12,6 +12,7 @@ import AgentService from '../agent/agent.service'
 import { NodeType } from '../shared/shared.dto'
 import { NodeDetailsDto, NodeDto, NodeInstallDto } from './node.dto'
 import { ContainersStateListMessage, ContainerStateDto } from './node.message'
+import { Timestamp } from 'src/grpc/google/protobuf/timestamp'
 
 @Injectable()
 export default class NodeMapper {
@@ -72,7 +73,7 @@ export default class NodeMapper {
         imageTag: it.imageTag,
         ports: it.ports,
         state: this.containerStateToDto(it.state),
-        date: fromTimestamp(it.createdAt).toUTCString(),
+        date: fromTimestamp(it.createdAt),
       })),
     }
   }
