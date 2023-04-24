@@ -68,12 +68,15 @@ export class PatchImageDto {
 
 export class ContainerStorageDto {
   @IsUUID()
+  @IsOptional()
   storageId?: string
 
   @IsString()
+  @IsOptional()
   path?: string
 
   @IsString()
+  @IsOptional()
   bucket?: string
 }
 

@@ -16,7 +16,7 @@ const CruxApp = ({ Component, pageProps }: AppProps) => (
             style: {
               color: 'white',
             },
-            position: 'top-right',
+            position: 'top-center',
           },
         }}
       />

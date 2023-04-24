@@ -57,5 +57,6 @@ export class InviteUserDto {
   lastName?: string
 
   @IsString()
+  @IsOptional()
   captcha?: string
 }
