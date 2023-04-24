@@ -23,7 +23,7 @@ services:
     command:
       - serve
     environment:
-      - TZ=${TIMEZONE:-Europe/Budapest}
+      - TZ=${TIMEZONE:-UTC}
       - NODE_ENV=${NODE_ENV}
       - DATABASE_URL=postgresql://crux:${CRUX_POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
       - KRATOS_ADMIN_URL=http://kratos:4434
@@ -69,7 +69,7 @@ services:
     command:
       - migrate
     environment:
-      - TZ=${TIMEZONE:-Europe/Budapest}
+      - TZ=${TIMEZONE:-UTC}
       - DATABASE_URL=postgresql://crux:${CRUX_POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public&connect_timeout=5
     depends_on:
       crux-postgres:
@@ -94,7 +94,7 @@ services:
   crux-ui:
     image: ghcr.io/dyrector-io/dyrectorio/web/crux-ui:${DYO_VERSION:-stable}
     environment:
-      - TZ=${TIMEZONE:-Europe/Budapest}
+      - TZ=${TIMEZONE:-UTC}
       - NODE_ENV=${NODE_ENV}
       - KRATOS_URL=http://kratos:4433
       - KRATOS_ADMIN_URL=http://kratos:4434
@@ -119,6 +119,8 @@ services:
     image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
     environment:
       - SQA_OPT_OUT=true
+      # !! additional warning: this is for demonstration purposes only !!
+      # !! devmode is necessary for cookies to work without https !!
       - DEV=true
       - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4&connect_timeout=5
       - KRATOS_URL=${EXTERNAL_URL}/kratos

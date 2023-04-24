@@ -79,7 +79,7 @@ type SettingsFile struct {
 }
 
 type Options struct {
-	TimeZone                       string `yaml:"timezone" env-default:"Europe/Budapest"`
+	TimeZone                       string `yaml:"timezone" env-default:"UTC"`
 	CruxAgentGrpcPort              uint   `yaml:"crux-agentgrpc-port" env-default:"5000"`
 	CruxGrpcPort                   uint   `yaml:"crux-grpc-port" env-default:"5001"`
 	CruxHTTPPort                   uint   `yaml:"crux-http-port" env-default:"1848"`
