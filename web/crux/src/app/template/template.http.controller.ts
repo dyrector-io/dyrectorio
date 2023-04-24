@@ -16,6 +16,8 @@ import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import TemplateFileService from 'src/services/template.file.service'
 import { Response as ExpressResponse } from 'express'
+import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
+import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -29,7 +31,7 @@ const TemplateId = () => Param('templateId')
 
 @Controller(ROUTE_TEMPLATES)
 @ApiTags(ROUTE_TEMPLATES)
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, UuidValidationGuard)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
 export default class TemplateHttpController {
   constructor(private service: TemplateService, private templateFileService: TemplateFileService) {}
@@ -62,6 +64,7 @@ export default class TemplateHttpController {
   @HttpCode(200)
   @Header('content-type', 'image/jpeg')
   @ApiOkResponse()
+  @UuidParams('templateId')
   async getImage(@TemplateId() templateId: string, @Response() response: ExpressResponse) {
     const image = await this.service.getImageStream(templateId)
     image.pipe(response)

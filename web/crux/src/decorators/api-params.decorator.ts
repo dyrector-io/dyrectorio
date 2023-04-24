@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common'
 
-const Params = (...params: string[]) => SetMetadata('params', params)
+const UuidParams = (...uuidParams: string[]) => SetMetadata('uuidParams', uuidParams)
 
-export default Params
+export default UuidParams

@@ -3,6 +3,8 @@ import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTa
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
+import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
+import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -21,7 +23,7 @@ const NotificationId = () => Param('notificationId')
 
 @Controller(ROUTE_NOTIFICATIONS)
 @ApiTags(ROUTE_NOTIFICATIONS)
-@UseGuards(JwtAuthGuard, NotificationTeamAccessGuard)
+@UseGuards(JwtAuthGuard, UuidValidationGuard, NotificationTeamAccessGuard)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
 export default class NotificationHttpController {
   constructor(private service: NotificationService) {}
@@ -60,6 +62,7 @@ export default class NotificationHttpController {
   @Put(ROUTE_NOTIFICATION_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: NotificationDetailsDto })
+  @UuidParams('notificationId')
   async updateNotification(
     @NotificationId() notificationId: string,
     @Body() request: UpdateNotificationDto,
@@ -71,6 +74,7 @@ export default class NotificationHttpController {
   @Delete(ROUTE_NOTIFICATION_ID)
   @HttpCode(204)
   @ApiNoContentResponse()
+  @UuidParams('notificationId')
   async deleteNotification(@NotificationId() notificationId: string): Promise<void> {
     this.service.deleteNotification(notificationId)
   }
@@ -78,6 +82,7 @@ export default class NotificationHttpController {
   @Post(`${ROUTE_NOTIFICATION_ID}/test`)
   @HttpCode(204)
   @ApiNoContentResponse()
+  @UuidParams('notificationId')
   async testNotification(@NotificationId() notificationId: string): Promise<void> {
     this.service.testNotification(notificationId)
   }

@@ -17,6 +17,8 @@ import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
+import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
+import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -45,7 +47,7 @@ const ROUTE_USER_ID = ':userId'
   }),
 )
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
-@UseGuards(JwtAuthGuard, TeamGuard)
+@UseGuards(JwtAuthGuard, UuidValidationGuard, TeamGuard)
 export default class TeamHttpController {
   constructor(private service: TeamService) {}
 
@@ -60,6 +62,7 @@ export default class TeamHttpController {
   @Get(ROUTE_TEAM_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: TeamDetailsDto })
+  @UuidParams('teamId')
   async getTeamById(@TeamId() teamId: string): Promise<TeamDetailsDto> {
     return await this.service.getTeamById(teamId)
   }
@@ -90,6 +93,7 @@ export default class TeamHttpController {
   @ApiBody({ type: UpdateTeamDto })
   @TeamRoleRequired('admin')
   @ApiNoContentResponse()
+  @UuidParams('teamId')
   async updateTeam(
     @TeamId() teamId: string,
     @Body() request: UpdateTeamDto,
@@ -102,6 +106,7 @@ export default class TeamHttpController {
   @HttpCode(204)
   @TeamRoleRequired('owner')
   @ApiNoContentResponse()
+  @UuidParams('teamId')
   async deleteTeam(@TeamId() teamId: string): Promise<void> {
     await this.service.deleteTeam(teamId)
   }
@@ -118,6 +123,7 @@ export default class TeamHttpController {
   })
   @UseInterceptors(TeamInviteUserValitationInterceptor)
   @TeamRoleRequired('admin')
+  @UuidParams('teamId')
   async inviteUserToTeam(
     @TeamId() teamId: string,
     @Body() request: InviteUserDto,
@@ -137,6 +143,8 @@ export default class TeamHttpController {
   @TeamRoleRequired('admin')
   @UseInterceptors(TeamOwnerImmutabilityValidationInterceptor)
   @ApiNoContentResponse()
+  @UuidParams('teamId')
+  @UuidParams('userId')
   async updateUserRoleInTeam(
     @TeamId() teamId: string,
     @UserId() userId: string,
@@ -151,6 +159,8 @@ export default class TeamHttpController {
   @TeamRoleRequired('admin')
   @UseInterceptors(TeamOwnerImmutabilityValidationInterceptor)
   @ApiNoContentResponse()
+  @UuidParams('teamId')
+  @UuidParams('userId')
   async deleteUserFromTeam(@TeamId() teamId: string, @UserId() userId: string): Promise<void> {
     await this.service.deleteUserFromTeam(teamId, userId)
   }
@@ -160,6 +170,8 @@ export default class TeamHttpController {
   @UseInterceptors(TeamReinviteUserValidationInterceptor)
   @TeamRoleRequired('admin')
   @ApiNoContentResponse()
+  @UuidParams('teamId')
+  @UuidParams('userId')
   async reinviteUser(
     @TeamId() teamId: string,
     @UserId() userId: string,

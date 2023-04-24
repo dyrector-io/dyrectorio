@@ -16,6 +16,8 @@ import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
+import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
+import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -40,7 +42,7 @@ const ROUTE_REGISTRY_ID = ':registryId'
   }),
 )
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
-@UseGuards(JwtAuthGuard, RegistryTeamAccessGuard)
+@UseGuards(JwtAuthGuard, UuidValidationGuard, RegistryTeamAccessGuard)
 export default class RegistryHttpController {
   constructor(private service: RegistryService) {}
 
@@ -54,6 +56,7 @@ export default class RegistryHttpController {
   @Get(ROUTE_REGISTRY_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: RegistryDetailsDto })
+  @UuidParams('registryId')
   async getRegistry(@RegistryId() id: string): Promise<RegistryDetailsDto> {
     return await this.service.getRegistryDetails(id)
   }
@@ -85,6 +88,7 @@ export default class RegistryHttpController {
   @UseGuards(RegistryAccessValidationGuard)
   @ApiBody({ type: UpdateRegistryDto })
   @ApiNoContentResponse()
+  @UuidParams('registryId')
   async updateRegistry(
     @RegistryId() id: string,
     @Body() request: UpdateRegistryDto,
@@ -96,6 +100,7 @@ export default class RegistryHttpController {
   @Delete(ROUTE_REGISTRY_ID)
   @HttpCode(204)
   @ApiNoContentResponse()
+  @UuidParams('registryId')
   async deleteRegistry(@RegistryId(DeleteRegistryValidationPipe) id: string): Promise<void> {
     await this.service.deleteRegistry(id)
   }

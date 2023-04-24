@@ -17,7 +17,7 @@ import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
-import Params from 'src/decorators/api-params.decorator'
+import UuidParams from 'src/decorators/api-params.decorator'
 import ProductService from './product.service'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
@@ -56,7 +56,7 @@ export default class ProductHttpController {
   @Get(ROUTE_PRODUCT_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: ProductDetailsDto })
-  @Params('productId')
+  @UuidParams('productId')
   async getProductDetails(@ProductId() id: string): Promise<ProductDetailsDto> {
     return this.service.getProductDetails(id)
   }
@@ -81,6 +81,7 @@ export default class ProductHttpController {
   @Put(ROUTE_PRODUCT_ID)
   @HttpCode(204)
   @ApiNoContentResponse()
+  @UuidParams('productId')
   @UseInterceptors(ProductUpdateValidationInterceptor)
   async updateProduct(
     @ProductId() id: string,
@@ -93,6 +94,7 @@ export default class ProductHttpController {
   @Delete(ROUTE_PRODUCT_ID)
   @HttpCode(204)
   @ApiNoContentResponse()
+  @UuidParams('productId')
   async deleteProduct(@ProductId() id: string): Promise<void> {
     return this.service.deleteProduct(id)
     // TODO(@polaroi8d): exception if there is no product with the given Id
