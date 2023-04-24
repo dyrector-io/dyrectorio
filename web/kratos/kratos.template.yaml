@@ -77,6 +77,6 @@ identity:
 
 courier:
   smtp:
-    from_name: dyrector.io
-    from_address: noreply@dyrector.io
+    from_name: ${FROM_NAME}
+    from_address: ${FROM_EMAIL}
   template_override_path: /etc/config/kratos/templates

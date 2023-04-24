@@ -16,7 +16,7 @@ RUN npm run build
 # Stage 2
 FROM node:19.2-alpine3.17 AS RUNNER
 ENV NODE_ENV production
-ENV TZ Europe/Budapest
+ENV TZ UTC
 
 RUN apk --update add tzdata openssl1.1-compat
 
