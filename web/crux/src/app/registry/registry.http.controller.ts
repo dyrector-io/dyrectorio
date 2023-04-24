@@ -49,15 +49,19 @@ export default class RegistryHttpController {
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: RegistryDto, isArray: true })
+  @ApiOkResponse({ type: RegistryDto, isArray: true, description: 'Read data of registries.' })
   async getRegistries(@IdentityFromRequest() identity: Identity): Promise<RegistryDto[]> {
     return await this.service.getRegistries(identity)
   }
 
   @Get(ROUTE_REGISTRY_ID)
   @HttpCode(200)
+<<<<<<< HEAD
   @ApiOkResponse({ type: RegistryDetailsDto })
   @UuidParams(PARAM_REGISTRY_ID)
+=======
+  @ApiOkResponse({ type: RegistryDetailsDto, description: 'Retrieve data of a registry.' })
+>>>>>>> fc7162d6 (feat: openapi description improvements)
   async getRegistry(@RegistryId() id: string): Promise<RegistryDetailsDto> {
     return await this.service.getRegistryDetails(id)
   }
@@ -69,6 +73,7 @@ export default class RegistryHttpController {
   @ApiCreatedResponse({
     type: RegistryDetailsDto,
     headers: API_CREATED_LOCATION_HEADERS,
+    description: 'Add new registry.'
   })
   @UseGuards(RegistryAccessValidationGuard)
   async createRegistry(
@@ -88,7 +93,7 @@ export default class RegistryHttpController {
   @UseInterceptors(UpdateRegistryInterceptor)
   @UseGuards(RegistryAccessValidationGuard)
   @ApiBody({ type: UpdateRegistryDto })
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Modify a registry.' })
   @UuidParams(PARAM_REGISTRY_ID)
   async updateRegistry(
     @RegistryId() id: string,
@@ -100,7 +105,7 @@ export default class RegistryHttpController {
 
   @Delete(ROUTE_REGISTRY_ID)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Delete a registry.' })
   @UuidParams(PARAM_REGISTRY_ID)
   async deleteRegistry(@RegistryId(DeleteRegistryValidationPipe) id: string): Promise<void> {
     await this.service.deleteRegistry(id)

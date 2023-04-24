@@ -48,6 +48,7 @@ export default class NodeHttpController {
   @ApiOkResponse({
     type: NodeDto,
     isArray: true,
+    description: 'Get data of nodes that belong to your team.',
   })
   async getNodes(@IdentityFromRequest() identity: Identity): Promise<NodeDto[]> {
     return this.service.getNodes(identity)
@@ -55,7 +56,7 @@ export default class NodeHttpController {
 
   @Get(ROUTE_NODE_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: NodeDetailsDto })
+  @ApiOkResponse({ type: NodeDetailsDto, description: 'Fetch data of a node.' })
   @UuidParams(PARAM_NODE_ID)
   async getNodeDetails(@NodeId() nodeId: string): Promise<NodeDetailsDto> {
     return this.service.getNodeDetails(nodeId)
@@ -65,7 +66,7 @@ export default class NodeHttpController {
   @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateNodeDto })
-  @ApiCreatedResponse({ type: NodeDto })
+  @ApiCreatedResponse({ type: NodeDto, description: 'Create new node.' })
   async createNode(
     @Body() request: CreateNodeDto,
     @IdentityFromRequest() identity: Identity,
@@ -80,7 +81,7 @@ export default class NodeHttpController {
 
   @Put(ROUTE_NODE_ID)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Update data of a node.' })
   @UuidParams(PARAM_NODE_ID)
   async updateNode(
     @NodeId() id: string,
@@ -92,7 +93,7 @@ export default class NodeHttpController {
 
   @Delete(ROUTE_NODE_ID)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Delete node.' })
   @UuidParams(PARAM_NODE_ID)
   async deleteNode(@NodeId() nodeId: string): Promise<void> {
     return this.service.deleteNode(nodeId)
@@ -100,7 +101,7 @@ export default class NodeHttpController {
 
   @Post(`${ROUTE_NODE_ID}/script`)
   @HttpCode(201)
-  @ApiOkResponse({ type: NodeInstallDto })
+  @ApiOkResponse({ type: NodeInstallDto, description: 'Create node set up install script.' })
   @UuidParams(PARAM_NODE_ID)
   async generateScript(
     @NodeId(NodeGenerateScriptValidationPipe) nodeId: string,
@@ -112,13 +113,14 @@ export default class NodeHttpController {
 
   @Delete(`${ROUTE_NODE_ID}/script`)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Delete node set up install script.' })
   async discardScript(@NodeId() nodeId: string): Promise<void> {
     return await this.service.discardScript(nodeId)
   }
 
   @Get(`${ROUTE_NODE_ID}/script`)
   @ApiProduces('text/plain')
+  @ApiOkResponse({ type: NodeDetailsDto, description: 'Fetch install script.' })
   @Header('content-type', 'text/plain')
   @DisableAuth()
   @UuidParams(PARAM_NODE_ID)
@@ -128,7 +130,7 @@ export default class NodeHttpController {
 
   @Delete(`${ROUTE_NODE_ID}/token`)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: "Delete token that belongs to a node's install script." })
   @UuidParams(PARAM_NODE_ID)
   async revokeToken(@NodeId() nodeId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
     return await this.service.revokeToken(nodeId, identity)
@@ -136,7 +138,7 @@ export default class NodeHttpController {
 
   @Post(`${ROUTE_NODE_ID}/update`)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: "Update node's data." })
   @UuidParams(PARAM_NODE_ID)
   async updateNodeAgent(@NodeId() nodeId: string): Promise<void> {
     this.service.updateNodeAgent(nodeId)
@@ -144,7 +146,7 @@ export default class NodeHttpController {
 
   @Get(`${ROUTE_NODE_ID}/container`)
   @HttpCode(200)
-  @ApiOkResponse({ type: ContainerStatus, isArray: true })
+  @ApiOkResponse({ type: ContainerStatus, isArray: true, description: 'Fetch data of containers running on a node.' })
   @UuidParams(PARAM_NODE_ID)
   async getContainerStatus(@NodeId() nodeId: string, @Query('prefix') prefix: string): Promise<Observable<any>> {
     return this.service.handleWatchContainerStatusDto(nodeId, prefix).pipe(timeout(5000))

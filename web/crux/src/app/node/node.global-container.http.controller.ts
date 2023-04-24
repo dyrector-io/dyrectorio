@@ -29,7 +29,7 @@ export default class NodeGlobalContainerHttpController {
 
   @Post(`${ROUTE_NAME}/start`)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Start containers on a node.' })
   @UuidParams(PARAM_NODE_ID)
   startContainer(@NodeId() nodeId: string, @Name() name: string) {
     this.service.startContainer(nodeId, GLOBAL_PREFIX, name)
@@ -37,7 +37,7 @@ export default class NodeGlobalContainerHttpController {
 
   @Post(`${ROUTE_NAME}/stop`)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Stop containers on a node.' })
   @UuidParams(PARAM_NODE_ID)
   stopContainer(@NodeId() nodeId: string, @Name() name: string) {
     this.service.stopContainer(nodeId, GLOBAL_PREFIX, name)
@@ -45,7 +45,7 @@ export default class NodeGlobalContainerHttpController {
 
   @Post(`${ROUTE_NAME}/restart`)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Restart containers on a node.' })
   @UuidParams(PARAM_NODE_ID)
   restartContainer(@NodeId() nodeId: string, @Name() name: string) {
     this.service.restartContainer(nodeId, GLOBAL_PREFIX, name)
@@ -53,7 +53,7 @@ export default class NodeGlobalContainerHttpController {
 
   @Delete(`${ROUTE_NAME}`)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Delete a specific container on a node.' })
   @UuidParams(PARAM_NODE_ID)
   deleteContainer(@NodeId() nodeId: string, @Name() name: string): Observable<void> {
     return this.service.deleteContainer(nodeId, GLOBAL_PREFIX, name)

@@ -70,6 +70,7 @@ export default class DeployHttpController {
   @ApiOkResponse({
     type: DeploymentDto,
     isArray: true,
+    description: 'Fetch data of deployments.',
   })
   async getDeployments(@IdentityFromRequest() identity: Identity): Promise<DeploymentDto[]> {
     return await this.service.getDeployments(identity)
@@ -77,7 +78,7 @@ export default class DeployHttpController {
 
   @Get(ROUTE_DEPLOYMENT_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: DeploymentDetailsDto })
+  @ApiOkResponse({ type: DeploymentDetailsDto, description: 'Retrieve data of a deployment.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async getDeploymentDetails(@DeploymentId() deploymentId: string): Promise<DeploymentDetailsDto> {
     return await this.service.getDeploymentDetails(deploymentId)
@@ -85,7 +86,11 @@ export default class DeployHttpController {
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/events`)
   @HttpCode(200)
-  @ApiOkResponse({ type: DeploymentEventDto, isArray: true })
+  @ApiOkResponse({
+    type: DeploymentEventDto,
+    isArray: true,
+    description: 'Fetch event log that belongs to a deployment.',
+  })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async getDeploymentEvents(@DeploymentId() deploymentId: string): Promise<DeploymentEventDto[]> {
     return await this.service.getDeploymentEvents(deploymentId)
@@ -93,7 +98,7 @@ export default class DeployHttpController {
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)
   @HttpCode(200)
-  @ApiOkResponse({ type: InstanceDto })
+  @ApiOkResponse({ type: InstanceDto, description: 'Get details of a deployed container.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
   async getInstance(@DeploymentId() _deploymentId: string, @InstanceId() instanceId: string): Promise<InstanceDto> {
     return await this.service.getInstance(instanceId)
@@ -101,7 +106,7 @@ export default class DeployHttpController {
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}/secrets`)
   @HttpCode(200)
-  @ApiOkResponse({ type: InstanceSecretsDto })
+  @ApiOkResponse({ type: InstanceSecretsDto, description: 'Fetch secrets of a deployed container.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
   async getDeploymentSecrets(
     @DeploymentId() _deploymentId: string,
@@ -114,7 +119,7 @@ export default class DeployHttpController {
   @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateDeploymentDto })
-  @ApiCreatedResponse({ type: DeploymentDto })
+  @ApiCreatedResponse({ type: DeploymentDto, description: 'Create new deployment.' })
   @UseGuards(DeployCreateTeamAccessGuard)
   @UseInterceptors(DeployCreateValidationInterceptor)
   async createDeployment(
@@ -132,7 +137,7 @@ export default class DeployHttpController {
   @Patch(ROUTE_DEPLOYMENT_ID)
   @HttpCode(204)
   @UseInterceptors(DeployPatchValidationInterceptor)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Update deployment.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async patchDeployment(
     @DeploymentId() deploymentId: string,
@@ -145,7 +150,7 @@ export default class DeployHttpController {
   @Patch(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)
   @HttpCode(204)
   @UseInterceptors(DeployPatchValidationInterceptor)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Update instance configuration.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
   async patchInstance(
     @DeploymentId() deploymentId: string,
@@ -159,6 +164,7 @@ export default class DeployHttpController {
   @Delete(ROUTE_DEPLOYMENT_ID)
   @HttpCode(204)
   @UseInterceptors(DeleteDeploymentValidationInterceptor)
+  @ApiNoContentResponse({ description: 'Delete deployment.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async deleteDeployment(@DeploymentId() deploymentId: string): Promise<void> {
     await this.service.deleteDeployment(deploymentId)
@@ -167,7 +173,7 @@ export default class DeployHttpController {
   @Post(`${ROUTE_DEPLOYMENT_ID}/start`)
   @HttpCode(204)
   @UseInterceptors(DeployStartValidationInterceptor)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Start deployment.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async startDeployment(
     @DeploymentId() deploymentId: string,
@@ -180,7 +186,7 @@ export default class DeployHttpController {
   @HttpCode(201)
   @CreatedWithLocation()
   @UseInterceptors(DeployCopyValidationInterceptor)
-  @ApiCreatedResponse({ type: DeploymentDto })
+  @ApiCreatedResponse({ type: DeploymentDto, description: 'Copy deployment.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async copyDeployment(
     @Query('force') _: boolean,

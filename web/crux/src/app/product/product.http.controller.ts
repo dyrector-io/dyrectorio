@@ -50,6 +50,7 @@ export default class ProductHttpController {
   @ApiOkResponse({
     type: ProductListItemDto,
     isArray: true,
+    description: 'Fetch list of products.',
   })
   async getProducts(@IdentityFromRequest() identity: Identity): Promise<ProductListItemDto[]> {
     return this.service.getProducts(identity)
@@ -57,7 +58,7 @@ export default class ProductHttpController {
 
   @Get(ROUTE_PRODUCT_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: ProductDetailsDto })
+  @ApiOkResponse({ type: ProductDetailsDto, description: 'Return data of a product.' })
   @UuidParams(PARAM_PRODUCT_ID)
   async getProductDetails(@ProductId() id: string): Promise<ProductDetailsDto> {
     return this.service.getProductDetails(id)
@@ -67,7 +68,7 @@ export default class ProductHttpController {
   @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateProductDto })
-  @ApiCreatedResponse({ type: ProductListItemDto })
+  @ApiCreatedResponse({ type: ProductListItemDto, description: 'Create new product.' })
   async createProduct(
     @Body() request: CreateProductDto,
     @IdentityFromRequest() identity: Identity,
@@ -82,7 +83,7 @@ export default class ProductHttpController {
 
   @Put(ROUTE_PRODUCT_ID)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Update product details.' })
   @UuidParams(PARAM_PRODUCT_ID)
   @UseInterceptors(ProductUpdateValidationInterceptor)
   async updateProduct(
@@ -95,7 +96,7 @@ export default class ProductHttpController {
 
   @Delete(ROUTE_PRODUCT_ID)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Delete product.' })
   @UuidParams(PARAM_PRODUCT_ID)
   async deleteProduct(@ProductId() id: string): Promise<void> {
     return this.service.deleteProduct(id)
