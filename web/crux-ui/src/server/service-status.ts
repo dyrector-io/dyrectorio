@@ -1,6 +1,7 @@
 import { SERVICE_STATUS_CHECK_INTERVAL } from '@app/const'
 import { CruxHealth, DEFAULT_CRUX_HEALTH, DEFAULT_SERVICE_INFO, ServiceInfo } from '@app/models'
-import { getCruxHealth } from './crux/crux'
+import { API_HEALTH } from '@app/routes'
+import { getCrux } from './crux-api'
 import { getKratosServiceStatus } from './kratos'
 
 class ServiceStatusChecker<T extends ServiceInfo> {
@@ -40,6 +41,8 @@ export type DyoServiceStatusCheckers = {
 }
 
 if (!global.serviceStatus) {
+  const getCruxHealth = async (): Promise<CruxHealth> => await getCrux<CruxHealth>(null, API_HEALTH)
+
   global.serviceStatus = {
     crux: new ServiceStatusChecker(DEFAULT_CRUX_HEALTH, getCruxHealth),
     kratos: new ServiceStatusChecker(DEFAULT_SERVICE_INFO, getKratosServiceStatus),

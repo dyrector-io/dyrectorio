@@ -30,8 +30,8 @@ export const subscriptionOfContext = (context: ExecutionContext): WsSubscription
   return sub
 }
 
-const WebSocketSubscription = createParamDecorator(
+const SocketSubscription = createParamDecorator(
   (_: unknown, context: ExecutionContext): WsSubscription => subscriptionOfContext(context),
 )
 
-export default WebSocketSubscription
+export default SocketSubscription

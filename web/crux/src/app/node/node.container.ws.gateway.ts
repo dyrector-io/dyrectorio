@@ -28,7 +28,7 @@ export default class NodeContainerWebSocketGateway {
 
   @WsAuthorize()
   async onAuthorize(@NodeId() nodeId: string, @IdentityFromSocket() identity: Identity): Promise<boolean> {
-    return this.service.checkNodeIsInActiveTeam(nodeId, identity)
+    return this.service.checkNodeIsInTheActiveTeam(nodeId, identity)
   }
 
   @SubscribeMessage('update-agent')

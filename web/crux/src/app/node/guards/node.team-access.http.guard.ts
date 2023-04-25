@@ -24,6 +24,6 @@ export default class NodeTeamAccessHttpGuard implements CanActivate {
 
     const identity = identityOfRequest(context)
 
-    return await this.service.checkNodeIsInActiveTeam(nodeId, identity)
+    return await this.service.checkNodeIsInTheActiveTeam(nodeId, identity)
   }
 }

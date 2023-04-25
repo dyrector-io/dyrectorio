@@ -1,23 +1,23 @@
-import {
-  Editor,
-  EditorLeftMessage,
-  EditorsMessage,
-  InputFocusChangeMessage,
-  InputFocusMessage,
-  nameOfIdentity,
-} from '@app/models'
+import { Injectable, Scope } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import ColorProvider from './color-provider'
+import { nameOfIdentity } from 'src/shared/models'
+import EditorColorProvider from './editor.color.provider'
+import { EditorLeftMessage, EditorMessage, InputFocusChangeMessage, InputFocusMessage } from './editor.message'
 
-class EditorService {
-  private editors: Map<string, Editor> = new Map() // token to editor
+@Injectable({
+  scope: Scope.TRANSIENT,
+})
+export default class EditorService {
+  private editors: Map<string, EditorMessage> = new Map()
 
-  private colors = new ColorProvider()
+  constructor(private readonly colors: EditorColorProvider) {}
 
-  getEditors(): EditorsMessage {
-    return {
-      editors: Array.from(this.editors.values()),
-    }
+  get editorCount(): number {
+    return this.editors.size
+  }
+
+  getEditors(): EditorMessage[] {
+    return Array.from(this.editors.values())
   }
 
   onFocus(token: string, message: InputFocusMessage): InputFocusChangeMessage {
@@ -45,7 +45,7 @@ class EditorService {
   }
 
   onDeleteItem(itemId: string): void {
-    const editors: [string, Editor][] = Array.from(this.editors.entries()).map(entry => {
+    const editors: [string, EditorMessage][] = Array.from(this.editors.entries()).map(entry => {
       // eslint-disable-next-line prefer-const
       let [token, user] = entry
       if (user.focusedItemId === itemId) {
@@ -62,14 +62,14 @@ class EditorService {
     this.editors = new Map(editors)
   }
 
-  onWebSocketConnected(token: string, user: Identity): Editor {
+  onClientJoin(token: string, user: Identity): EditorMessage {
     const editor = this.editorFromIdentity(token, user)
     this.editors.set(token, editor)
 
     return editor
   }
 
-  onWebSocketDisconnected(token: string): EditorLeftMessage {
+  onClientLeft(token: string): EditorLeftMessage {
     this.colors.free(token)
 
     const editor = this.editors.get(token)
@@ -86,7 +86,7 @@ class EditorService {
     }
   }
 
-  private editorFromIdentity(token: string, user: Identity): Editor {
+  private editorFromIdentity(token: string, user: Identity): EditorMessage {
     return {
       id: token,
       name: nameOfIdentity(user),
@@ -94,5 +94,3 @@ class EditorService {
     }
   }
 }
-
-export default EditorService

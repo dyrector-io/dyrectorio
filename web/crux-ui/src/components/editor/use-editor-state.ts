@@ -56,11 +56,11 @@ const useEditorState = (sock: WebSocketClientEndpoint): EditorState => {
   })
 
   sock.on(WS_TYPE_EDITOR_LEFT, (message: EditorLeftMessage) => {
-    if (!editors.find(it => it.id === message.userId)) {
+    if (!editors.find(it => it.id === message.id)) {
       return
     }
 
-    setEditors([...editors].filter(it => it.id !== message.userId))
+    setEditors([...editors].filter(it => it.id !== message.id))
   })
 
   sock.on(WS_TYPE_INPUT_FOCUSED, (message: InputFocusChangeMessage) => {

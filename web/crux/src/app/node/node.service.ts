@@ -44,7 +44,7 @@ export default class NodeService {
     private notificationService: DomainNotificationService,
   ) {}
 
-  async checkNodeIsInActiveTeam(nodeId: string, identity: Identity): Promise<boolean> {
+  async checkNodeIsInTheActiveTeam(nodeId: string, identity: Identity): Promise<boolean> {
     const nodes = await this.prisma.node.count({
       where: {
         id: nodeId,

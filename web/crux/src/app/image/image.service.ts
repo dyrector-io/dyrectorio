@@ -5,18 +5,23 @@ import { Subject } from 'rxjs'
 import { containerNameFromImageName } from 'src/domain/deployment'
 import PrismaService from 'src/services/prisma.service'
 import { ContainerConfigData } from 'src/shared/models'
+import EditorServiceProvider from '../editor/editor.service.provider'
 import { AddImagesDto, ImageDto, PatchImageDto } from './image.dto'
-import ImageMapper, { ImageDetails } from './image.mapper'
+import ImageMapper from './image.mapper'
 
 @Injectable()
 export default class ImageService {
-  readonly imageUpdatedEvent = new Subject<ImageDetails>()
+  private readonly imageUpdatedEvent = new Subject<ImageDto>()
 
-  readonly imagesAddedToVersionEvent = new Subject<ImageDetails[]>()
+  private readonly imagesAddedToVersionEvent = new Subject<ImageDto[]>()
 
-  readonly imageDeletedFromVersionEvent = new Subject<string>()
+  private readonly imageDeletedFromVersionEvent = new Subject<string>()
 
-  constructor(private prisma: PrismaService, private mapper: ImageMapper) {}
+  constructor(
+    private prisma: PrismaService,
+    private mapper: ImageMapper,
+    private editorServices: EditorServiceProvider,
+  ) {}
 
   async getImagesByVersionId(versionId: string): Promise<ImageDto[]> {
     const images = await this.prisma.image.findMany({
@@ -102,9 +107,11 @@ export default class ImageService {
       return await Promise.all(imgs)
     })
 
-    this.imagesAddedToVersionEvent.next(images)
+    const dtos = images.map(it => this.mapper.toDto(it))
 
-    return images.map(it => this.mapper.toDto(it))
+    this.imagesAddedToVersionEvent.next(dtos)
+
+    return dtos
   }
 
   async patchImage(imageId: string, request: PatchImageDto, identity: Identity): Promise<void> {
@@ -141,17 +148,26 @@ export default class ImageService {
       },
     })
 
-    this.imageUpdatedEvent.next(image)
+    const dto = this.mapper.toDto(image)
+    this.imageUpdatedEvent.next(dto)
+
+    return dto
   }
 
-  async deleteImage(versionId: string): Promise<void> {
-    await this.prisma.image.delete({
+  async deleteImage(imageId: string): Promise<void> {
+    const image = await this.prisma.image.delete({
       where: {
-        id: versionId,
+        id: imageId,
+      },
+      select: {
+        versionId: true,
       },
     })
 
-    this.imageDeletedFromVersionEvent.next(versionId)
+    const editors = await this.editorServices.getService(image.versionId)
+    editors?.onDeleteItem(imageId)
+
+    this.imageDeletedFromVersionEvent.next(imageId)
   }
 
   async orderImages(request: string[], identity: Identity): Promise<void> {

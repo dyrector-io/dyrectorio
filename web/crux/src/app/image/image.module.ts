@@ -8,7 +8,6 @@ import TeamRepository from '../team/team.repository'
 import ImageHttpController from './image.http.controller'
 import ImageMapper from './image.mapper'
 import ImageService from './image.service'
-import ImageWebSocketGateway from './image.ws.gateway'
 
 @Module({
   imports: [RegistryModule],
@@ -21,7 +20,6 @@ import ImageWebSocketGateway from './image.ws.gateway'
     TeamRepository,
     RegistryMapper,
     KratosService,
-    ImageWebSocketGateway,
   ],
   controllers: [ImageHttpController],
 })

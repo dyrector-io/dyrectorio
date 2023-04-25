@@ -1,7 +1,6 @@
 /* eslint-disable no-await-in-loop, no-constant-condition */
 import { PrismaClient } from '@prisma/client'
 import { Timestamp } from 'src/grpc/google/protobuf/timestamp'
-import * as Long from 'long'
 
 export type PrismaTransactionClient = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>
 

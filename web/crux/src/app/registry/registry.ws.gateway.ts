@@ -1,11 +1,17 @@
-import { MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
-import JwtAuthGuard, { IdentityFromSocket } from '../token/jwt-auth.guard'
+import { UseGuards } from '@nestjs/common'
+import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
 import { WsAuthorize, WsMessage } from 'src/websockets/common'
+import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
+import JwtAuthGuard, { IdentityFromSocket } from '../token/jwt-auth.guard'
 import { RegistryConnections } from './registry-api/registry-connections'
 import { IMAGE_FILTER_TAKE } from './registry.const'
-import { FetchImageTagsMessage, FindImageMessage, FindImageResultMessage, RegistryImageTagsMessage } from './registry.message'
-import { UseGuards } from '@nestjs/common'
+import {
+  FetchImageTagsMessage,
+  FindImageMessage,
+  FindImageResultMessage,
+  RegistryImageTagsMessage,
+} from './registry.message'
 
 @WebSocketGateway({
   namespace: 'registries',
@@ -23,15 +29,17 @@ export default class RegistryWebSocketGateway {
   }
 
   @SubscribeMessage('find-image')
-  async findImage(@MessageBody() message: WsMessage<FindImageMessage>, @IdentityFromSocket() identity: Identity): Promise<WsMessage<FindImageResultMessage>> {
-    const req = message.data
-    const api = await this.connections.getByRegistryId(req.registryId, identity)
-    const images = await api.catalog(req.filter, IMAGE_FILTER_TAKE)
+  async findImage(
+    @SocketMessage() message: FindImageMessage,
+    @IdentityFromSocket() identity: Identity,
+  ): Promise<WsMessage<FindImageResultMessage>> {
+    const api = await this.connections.getByRegistryId(message.registryId, identity)
+    const images = await api.catalog(message.filter, IMAGE_FILTER_TAKE)
 
     return {
       type: 'find-image-result',
       data: {
-        registryId: req.registryId,
+        registryId: message.registryId,
         images: images.map(it => ({
           id: '',
           name: it,
@@ -42,16 +50,18 @@ export default class RegistryWebSocketGateway {
   }
 
   @SubscribeMessage('fetch-image-tags')
-  async fetchImageTags(@MessageBody() message: WsMessage<FetchImageTagsMessage>, @IdentityFromSocket() identity: Identity): Promise<WsMessage<RegistryImageTagsMessage>> {
-    const req = message.data
-    const api = await this.connections.getByRegistryId(req.registryId, identity)
-    const tags = req.images.map(it => api.tags(it))
+  async fetchImageTags(
+    @SocketMessage() message: FetchImageTagsMessage,
+    @IdentityFromSocket() identity: Identity,
+  ): Promise<WsMessage<RegistryImageTagsMessage>> {
+    const api = await this.connections.getByRegistryId(message.registryId, identity)
+    const tags = message.images.map(it => api.tags(it))
 
     return {
       type: 'registry-image-tags',
       data: {
-        registryId: req.registryId,
-        images: await Promise.all(tags)
+        registryId: message.registryId,
+        images: await Promise.all(tags),
       },
     } as WsMessage<RegistryImageTagsMessage>
   }
