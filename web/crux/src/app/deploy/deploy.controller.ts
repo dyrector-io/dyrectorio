@@ -21,12 +21,6 @@ export default class DeployController implements CruxDeploymentController {
 
   @DisableAuth()
   @AuditLogLevel('disabled')
-  subscribeToDeploymentEvents(request: IdRequest): Observable<DeploymentProgressMessage> {
-    return from(this.service.subscribeToDeploymentEvents(request)).pipe(concatAll())
-  }
-
-  @DisableAuth()
-  @AuditLogLevel('disabled')
   subscribeToDeploymentEditEvents(request: ServiceIdRequest): Observable<DeploymentEditEventMessage> {
     return this.service.subscribeToDeploymentEditEvents(request)
   }

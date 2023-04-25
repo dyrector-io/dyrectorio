@@ -1,4 +1,4 @@
-import { Logger } from '@app/logger'
+/*import { Logger } from '@app/logger'
 import {
   AddImagesMessage,
   DeleteImageMessage,
@@ -87,89 +87,6 @@ const onDisconnect = (endpoint: WsEndpoint, connection: WsConnection) => {
   endpoint.sendAll(WS_TYPE_EDITOR_LEFT, disconnectMessage)
 }
 
-const onGetImage = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<GetImageMessage>) => {
-  const req = message.data
-  const productId = endpoint.query.productId as string
-  const versionId = endpoint.query.versionId as string
-
-  const image = await getCrux<VersionImage>(connection.request, imageApiUrl(productId, versionId, req.id))
-
-  connection.send(WS_TYPE_IMAGE, image as ImageMessage)
-}
-
-const onAddImages = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<AddImagesMessage>) => {
-  const req = message.data
-  const productId = endpoint.query.productId as string
-  const versionId = endpoint.query.versionId as string
-
-  const images = await postCrux<RegistryImages[], VersionImage[]>(
-    connection.request,
-    versionImagesApiUrl(productId, versionId),
-    req.registryImages,
-  )
-
-  endpoint.sendAll(WS_TYPE_IMAGES_ADDED, {
-    images,
-  } as ImagesAddedMessage)
-}
-
-const onDeleteImage = async (
-  endpoint: WsEndpoint,
-  connection: WsConnection,
-  message: WsMessage<DeleteImageMessage>,
-) => {
-  const editors = endpoint.services.get(EditorService)
-
-  const req = message.data
-  const productId = endpoint.query.productId as string
-  const versionId = endpoint.query.versionId as string
-
-  await deleteCrux(connection.request, imageApiUrl(productId, versionId, req.imageId))
-
-  editors.onDeleteItem(req.imageId)
-
-  endpoint.sendAll(WS_TYPE_IMAGE_DELETED, {
-    imageId: req.imageId,
-  } as ImageDeletedMessage)
-}
-
-const onPatchImage = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<PatchImageMessage>) => {
-  const req = message.data
-  const productId = endpoint.query.productId as string
-  const versionId = endpoint.query.versionId as string
-
-  let cruxReq: Pick<PatchVersionImage, 'tag' | 'config'> = {}
-
-  if (req.resetSection) {
-    cruxReq.config = {}
-    cruxReq.config[req.resetSection as string] = null
-  } else {
-    cruxReq = req
-  }
-
-  await patchCrux(connection.request, imageApiUrl(productId, versionId, req.id), cruxReq)
-
-  connection.send(WS_TYPE_PATCH_RECEIVED, {})
-
-  endpoint.sendAllExcept(connection, WS_TYPE_IMAGE_UPDATED, {
-    ...req,
-  } as ImageUpdateMessage)
-}
-
-const onOrderImages = async (
-  endpoint: WsEndpoint,
-  connection: WsConnection,
-  message: WsMessage<OrderImagesMessage>,
-) => {
-  const req = message.data
-  const productId = endpoint.query.productId as string
-  const versionId = endpoint.query.versionId as string
-
-  await putCrux(connection.request, versionImagesOrderApiUrl(productId, versionId), req)
-
-  endpoint.sendAllExcept(connection, WS_TYPE_IMAGES_WERE_REORDERED, req as ImagesWereReorderedMessage)
-}
-
 const onFocusInput = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<InputFocusMessage>) => {
   const { token } = connection
   const editors = endpoint.services.get(EditorService)
@@ -194,11 +111,6 @@ const onBlurInput = async (endpoint: WsEndpoint, connection: WsConnection, messa
 export default routedWebSocketEndpoint(
   logger,
   [
-    [WS_TYPE_GET_IMAGE, onGetImage],
-    [WS_TYPE_ADD_IMAGES, onAddImages],
-    [WS_TYPE_DELETE_IMAGE, onDeleteImage],
-    [WS_TYPE_PATCH_IMAGE, onPatchImage],
-    [WS_TYPE_ORDER_IMAGES, onOrderImages],
     [WS_TYPE_FOCUS_INPUT, onFocusInput],
     [WS_TYPE_BLUR_INPUT, onBlurInput],
   ],
@@ -209,4 +121,4 @@ export default routedWebSocketEndpoint(
     onConnect,
     onDisconnect,
   },
-)
+)*/

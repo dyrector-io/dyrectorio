@@ -1,6 +1,6 @@
-import { internalError, unauthorizedError } from '@app/error-responses'
-import { RegistryImageTags } from '@app/models'
 import { RegistryApiClient } from './registry-api-client'
+import { RegistryImageTags } from '../registry.message'
+import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
 
 export type RegistryV2ApiClientOptions = {
   username?: string
@@ -16,7 +16,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
   constructor(private url: string, options?: RegistryV2ApiClientOptions) {
     if (options?.username) {
       if (!options.password) {
-        throw unauthorizedError(`Invalid authentication parameters for: ${url}`)
+        throw new UnauthorizedException(`Invalid authentication parameters for: ${url}`)
       }
 
       this.headers = {
@@ -31,7 +31,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
     const res = await this.fetch('/')
     if (!res.ok) {
       const errorMessage = `Version request failed with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
+      throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
     }
 
     return res
@@ -41,7 +41,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this.fetch(it), '/_catalog')
     if (!res.ok) {
       const errorMessage = `Catalog request failed with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
+      throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
     }
 
     const json = (await res.json()) as { repositories: string }[]
@@ -53,7 +53,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this.fetch(it), `/${image}/tags/list`)
     if (!res.ok) {
       const errorMessage = `Tags request failed with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
+      throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
     }
 
     const json = (await res.json()) as RegistryImageTags[]

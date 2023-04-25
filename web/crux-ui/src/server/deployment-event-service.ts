@@ -1,4 +1,4 @@
-import {
+/*import {
   DeploymentEvent,
   DeploymentEventMessage,
   lastDeploymentStatusOfEvents,
@@ -55,4 +55,4 @@ class DeploymentEventService {
   }
 }
 
-export default DeploymentEventService
+export default DeploymentEventService*/

@@ -513,10 +513,10 @@ export default class DeployService {
     })
   }
 
-  async subscribeToDeploymentEvents(request: IdRequest): Promise<Observable<DeploymentProgressMessage>> {
+  async subscribeToDeploymentEvents(id: string): Promise<Observable<DeploymentProgressMessage>> {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
-        id: request.id,
+        id,
       },
       select: {
         id: true,

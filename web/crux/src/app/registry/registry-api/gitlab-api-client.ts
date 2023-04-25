@@ -1,7 +1,8 @@
-import { internalError, unauthorizedError } from '@app/error-responses'
-import { RegistryImageTags, RegistryNamespace } from '@app/models'
+import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
+import { GitlabNamespace } from '../registry.dto'
 import { RegistryApiClient } from './registry-api-client'
 import RegistryV2ApiClient, { RegistryV2ApiClientOptions } from './v2-api-client'
+import { RegistryImageTags } from '../registry.message'
 
 export type GitlabRegistryClientUrls = {
   apiUrl: string
@@ -19,7 +20,7 @@ export class GitlabRegistryClient implements RegistryApiClient {
     private namespaceId: string,
     options: RegistryV2ApiClientOptions,
     private urls: GitlabRegistryClientUrls,
-    namespace: RegistryNamespace,
+    namespace: GitlabNamespace,
   ) {
     this.basicAuthHeaders = {
       Authorization: `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`,
@@ -42,7 +43,7 @@ export class GitlabRegistryClient implements RegistryApiClient {
 
     if (!res.ok) {
       const errorMessage = `Gitlab repositories request failed with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
+      throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
     }
 
     const json = (await res.json()) as { path: string }[]
@@ -59,7 +60,7 @@ export class GitlabRegistryClient implements RegistryApiClient {
     )
     if (!tokenRes.ok) {
       const errorMessage = `Gitlab jwt auth request failed with status: ${tokenRes.status} ${tokenRes.statusText}`
-      throw tokenRes.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
+      throw tokenRes.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
     }
 
     const token = ((await tokenRes.json()) as { token: string })?.token
@@ -74,7 +75,7 @@ export class GitlabRegistryClient implements RegistryApiClient {
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(fetcher, `/${image}/tags/list`)
     if (!res.ok) {
       const errorMessage = `Gitlab tags request failed for image ${image} with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
+      throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
     }
 
     const json = (await res.json()) as RegistryImageTags[]

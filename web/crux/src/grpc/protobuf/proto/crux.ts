@@ -1741,12 +1741,6 @@ export function CruxNodeControllerMethods() {
 export const CRUX_NODE_SERVICE_NAME = 'CruxNode'
 
 export interface CruxDeploymentClient {
-  subscribeToDeploymentEvents(
-    request: IdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Observable<DeploymentProgressMessage>
-
   subscribeToDeploymentEditEvents(
     request: ServiceIdRequest,
     metadata: Metadata,
@@ -1755,12 +1749,6 @@ export interface CruxDeploymentClient {
 }
 
 export interface CruxDeploymentController {
-  subscribeToDeploymentEvents(
-    request: IdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Observable<DeploymentProgressMessage>
-
   subscribeToDeploymentEditEvents(
     request: ServiceIdRequest,
     metadata: Metadata,
@@ -1770,7 +1758,7 @@ export interface CruxDeploymentController {
 
 export function CruxDeploymentControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['subscribeToDeploymentEvents', 'subscribeToDeploymentEditEvents']
+    const grpcMethods: string[] = ['subscribeToDeploymentEditEvents']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('CruxDeployment', method)(constructor.prototype[method], method, descriptor)

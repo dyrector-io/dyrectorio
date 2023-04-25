@@ -69,15 +69,10 @@ export const API_TOKENS = '/api/new/tokens'
 export const API_STORAGES = '/api/new/storages'
 export const API_STORAGES_OPTIONS = `${API_STORAGES}/options`
 
-<<<<<<< HEAD
 export const WS_NODES = `/nodes`
 export const WS_REGISTRIES = `/registries`
-=======
-export const API_HEALTH = '/api/new/health'
 
-export const WS_NODES = `/api/nodes/connect`
-export const WS_REGISTRIES = `/api/registries/connect`
->>>>>>> develop
+export const API_HEALTH = '/api/new/health'
 
 export type CruxUrlParams = {
   anchor?: string

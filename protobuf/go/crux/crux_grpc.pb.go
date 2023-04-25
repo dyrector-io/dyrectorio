@@ -262,7 +262,6 @@ var CruxNode_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CruxDeploymentClient interface {
-	SubscribeToDeploymentEvents(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (CruxDeployment_SubscribeToDeploymentEventsClient, error)
 	SubscribeToDeploymentEditEvents(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxDeployment_SubscribeToDeploymentEditEventsClient, error)
 }
 
@@ -274,40 +273,8 @@ func NewCruxDeploymentClient(cc grpc.ClientConnInterface) CruxDeploymentClient {
 	return &cruxDeploymentClient{cc}
 }
 
-func (c *cruxDeploymentClient) SubscribeToDeploymentEvents(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (CruxDeployment_SubscribeToDeploymentEventsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &CruxDeployment_ServiceDesc.Streams[0], "/crux.CruxDeployment/SubscribeToDeploymentEvents", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &cruxDeploymentSubscribeToDeploymentEventsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type CruxDeployment_SubscribeToDeploymentEventsClient interface {
-	Recv() (*DeploymentProgressMessage, error)
-	grpc.ClientStream
-}
-
-type cruxDeploymentSubscribeToDeploymentEventsClient struct {
-	grpc.ClientStream
-}
-
-func (x *cruxDeploymentSubscribeToDeploymentEventsClient) Recv() (*DeploymentProgressMessage, error) {
-	m := new(DeploymentProgressMessage)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 func (c *cruxDeploymentClient) SubscribeToDeploymentEditEvents(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxDeployment_SubscribeToDeploymentEditEventsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &CruxDeployment_ServiceDesc.Streams[1], "/crux.CruxDeployment/SubscribeToDeploymentEditEvents", opts...)
+	stream, err := c.cc.NewStream(ctx, &CruxDeployment_ServiceDesc.Streams[0], "/crux.CruxDeployment/SubscribeToDeploymentEditEvents", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -342,7 +309,6 @@ func (x *cruxDeploymentSubscribeToDeploymentEditEventsClient) Recv() (*Deploymen
 // All implementations must embed UnimplementedCruxDeploymentServer
 // for forward compatibility
 type CruxDeploymentServer interface {
-	SubscribeToDeploymentEvents(*IdRequest, CruxDeployment_SubscribeToDeploymentEventsServer) error
 	SubscribeToDeploymentEditEvents(*ServiceIdRequest, CruxDeployment_SubscribeToDeploymentEditEventsServer) error
 	mustEmbedUnimplementedCruxDeploymentServer()
 }
@@ -351,9 +317,6 @@ type CruxDeploymentServer interface {
 type UnimplementedCruxDeploymentServer struct {
 }
 
-func (UnimplementedCruxDeploymentServer) SubscribeToDeploymentEvents(*IdRequest, CruxDeployment_SubscribeToDeploymentEventsServer) error {
-	return status.Errorf(codes.Unimplemented, "method SubscribeToDeploymentEvents not implemented")
-}
 func (UnimplementedCruxDeploymentServer) SubscribeToDeploymentEditEvents(*ServiceIdRequest, CruxDeployment_SubscribeToDeploymentEditEventsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeToDeploymentEditEvents not implemented")
 }
@@ -368,27 +331,6 @@ type UnsafeCruxDeploymentServer interface {
 
 func RegisterCruxDeploymentServer(s grpc.ServiceRegistrar, srv CruxDeploymentServer) {
 	s.RegisterService(&CruxDeployment_ServiceDesc, srv)
-}
-
-func _CruxDeployment_SubscribeToDeploymentEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(IdRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(CruxDeploymentServer).SubscribeToDeploymentEvents(m, &cruxDeploymentSubscribeToDeploymentEventsServer{stream})
-}
-
-type CruxDeployment_SubscribeToDeploymentEventsServer interface {
-	Send(*DeploymentProgressMessage) error
-	grpc.ServerStream
-}
-
-type cruxDeploymentSubscribeToDeploymentEventsServer struct {
-	grpc.ServerStream
-}
-
-func (x *cruxDeploymentSubscribeToDeploymentEventsServer) Send(m *DeploymentProgressMessage) error {
-	return x.ServerStream.SendMsg(m)
 }
 
 func _CruxDeployment_SubscribeToDeploymentEditEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -420,11 +362,6 @@ var CruxDeployment_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*CruxDeploymentServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "SubscribeToDeploymentEvents",
-			Handler:       _CruxDeployment_SubscribeToDeploymentEvents_Handler,
-			ServerStreams: true,
-		},
 		{
 			StreamName:    "SubscribeToDeploymentEditEvents",
 			Handler:       _CruxDeployment_SubscribeToDeploymentEditEvents_Handler,

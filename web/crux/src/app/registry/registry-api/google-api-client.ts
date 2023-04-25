@@ -1,8 +1,8 @@
-import { internalError, unauthorizedError } from '@app/error-responses'
-import { RegistryImageTags } from '@app/models'
 import { JWT } from 'google-auth-library'
 import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
 import { RegistryApiClient } from './registry-api-client'
+import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
+import { RegistryImageTags } from '../registry.message'
 
 export type GoogleClientOptions = {
   username?: string
@@ -17,7 +17,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
   constructor(private url: string, private imageNamePrefix: string, options?: GoogleClientOptions) {
     if (options?.username) {
       if (!options.password) {
-        throw unauthorizedError(`Invalid authentication parameters for: ${url}`)
+        throw new UnauthorizedException(`Invalid authentication parameters for: ${url}`)
       }
 
       this.client = new JWT({
@@ -33,7 +33,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
     try {
       accessToken = await this.client.getAccessToken()
     } catch (err) {
-      throw unauthorizedError(`Google auth request failed`)
+      throw new UnauthorizedException(`Google auth request failed`)
     }
 
     this.headers = {
@@ -55,7 +55,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
 
     if (!res.ok) {
       const errorMessage = `Google repositories request failed with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
+      throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
     }
 
     const json = (await res.json()) as { child: string[] }
@@ -76,7 +76,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
 
     if (!tagRes.ok) {
       const errorMessage = `Google tags request failed with status: ${tagRes.status} ${tagRes.statusText}`
-      throw tagRes.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
+      throw tagRes.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
     }
 
     const json = (await tagRes.json()) as { tags: string[] }

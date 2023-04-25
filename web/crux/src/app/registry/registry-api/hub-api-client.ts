@@ -1,6 +1,5 @@
-import { internalError, unauthorizedError } from '@app/error-responses'
-import { Logger } from '@app/logger'
-import { RegistryImageTags } from '@app/models'
+import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
+import { RegistryImageTags } from '../registry.message'
 import HubApiCache from './caches/hub-api-cache'
 import { RegistryApiClient } from './registry-api-client'
 
@@ -14,8 +13,6 @@ type HubApiPaginatedResponse = {
 const MAX_RATE_RETRY = 3
 
 class HubApiClient implements RegistryApiClient {
-  private logger = new Logger(HubApiClient.name)
-
   private url: string
 
   private proxyToken?: string
@@ -93,7 +90,7 @@ class HubApiClient implements RegistryApiClient {
         const retryAfterHeader = res.headers.get('x-retry-after') ?? res.headers.get('retry-after')
         const retryAfter = Number(retryAfterHeader) - new Date().getTime() / 1000
 
-        this.logger.warn(`DockerHub API rate limit '${endpoint}', retry after ${retryAfter}s`)
+        // this.logger.warn(`DockerHub API rate limit '${endpoint}', retry after ${retryAfter}s`)
 
         const fetchNext = next
         next = () =>
@@ -106,7 +103,7 @@ class HubApiClient implements RegistryApiClient {
         rateTry += 1
       } else {
         const errorMessage = `${endpoint} request failed with status: ${res.status} ${res.statusText}`
-        throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
+        throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
       }
     } while (next)
 
