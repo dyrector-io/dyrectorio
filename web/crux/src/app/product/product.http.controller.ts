@@ -57,14 +57,14 @@ export default class ProductHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      'Returns a list of transactions that have contributed to the Stripe account balance (e.g., charges, transfers, and so forth). The transactions are returned in sorted order, with the most recent transactions appearing first.',
-    summary: 'List all balance transactions',
+      "Returns a list of a team's products and their details. Products come in two types: Simple or Complex. Simple Products make up one deployable unit without versioning, while Complex Products come with multiple rolling or incremental versions. The response should be an array containing each product's `name`, `id`, `type`, `description`, `versionCount`, and `audit` log data of creation and update.",
+    summary: 'Fetch details of products.',
   })
   @ApiOkResponse({
     type: ProductListItemDto,
     isArray: true,
     description:
-      'A dictionary with a data property that contains an array of up to limit transactions, starting after transaction starting_after. Each entry in the array is a separate transaction history object. If no more transactions are available, the resulting array will be empty.',
+      "Everything is OK.",
   })
   @ApiNoContentResponse()
   @ApiBadRequestResponse({
@@ -76,17 +76,31 @@ export default class ProductHttpController {
 
   @Get(ROUTE_PRODUCT_ID)
   @HttpCode(200)
+<<<<<<< HEAD
   @ApiOkResponse({ type: ProductDetailsDto, description: 'Return data of a product.' })
   @UuidParams(PARAM_PRODUCT_ID)
+=======
+  @ApiOperation({
+    description:
+      "Returns a products' details. The response should contain an array, consisting of the product's `name`, `id`, `type`, `description`, `deletability`, versions and version related data, including version `name` and `id`, `changelog`, increasibility.",
+    summary: 'Fetch details of a product.',
+  })
+  @ApiOkResponse({ type: ProductDetailsDto, description: 'Everything is OK.' })
+>>>>>>> 5d447b6a (feat(crux): improve openapi docs)
   async getProductDetails(@ProductId() id: string): Promise<ProductDetailsDto> {
     return this.service.getProductDetails(id)
   }
 
   @Post()
   @HttpCode(201)
+  @ApiOperation({
+    description:
+      "Create a new product for a team. Newly created team has a `type` and a `name` as required variables, and optionally a `description` and a `changelog`.",
+    summary: 'Create a new product for a team.',
+  })
   @CreatedWithLocation()
   @ApiBody({ type: CreateProductDto })
-  @ApiCreatedResponse({ type: ProductListItemDto, description: 'Create new product.' })
+  @ApiCreatedResponse({ type: ProductListItemDto, description: 'New product created.' })
   async createProduct(
     @Body() request: CreateProductDto,
     @IdentityFromRequest() identity: Identity,
@@ -101,9 +115,14 @@ export default class ProductHttpController {
 
   @Put(ROUTE_PRODUCT_ID)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Update product details.' })
-  @UuidParams(PARAM_PRODUCT_ID)
+  @ApiOperation({
+    description:
+      "Updates a product. `Name` is a required variable to identify which product is modified, `description` and `changelog` can be adjusted with this call.",
+    summary: 'Update a product.',
+  })
+  @ApiNoContentResponse({ description: 'Product details are modified.' })
   @UseInterceptors(ProductUpdateValidationInterceptor)
+  @UuidParams(PARAM_PRODUCT_ID)
   async updateProduct(
     @ProductId() id: string,
     @Body() request: UpdateProductDto,
@@ -114,7 +133,12 @@ export default class ProductHttpController {
 
   @Delete(ROUTE_PRODUCT_ID)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Delete product.' })
+  @ApiOperation({
+    description:
+      "Deletes a product. Only the `name` is required.",
+    summary: 'Delete a product.',
+  })
+  @ApiNoContentResponse({ description: 'Product deleted.' })
   @UuidParams(PARAM_PRODUCT_ID)
   async deleteProduct(@ProductId() id: string): Promise<void> {
     return this.service.deleteProduct(id)

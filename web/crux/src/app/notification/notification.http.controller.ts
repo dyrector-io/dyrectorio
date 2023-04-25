@@ -1,5 +1,12 @@
 import { Body, Controller, Delete, Get, Put, Param, Post, HttpCode, UseGuards, UseInterceptors } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOperation,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -32,23 +39,37 @@ export default class NotificationHttpController {
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: NotificationDto, isArray: true, description: 'Retrieve notifications that belong to a team.' })
+  @ApiOperation({
+    description: 'Response should include `type`, `id`, `name`, `url`, `active`, and `creatorName`.',
+    summary: 'Retrieve notifications that belong to a team.',
+  })
+  @ApiOkResponse({ type: NotificationDto, isArray: true, description: 'Notification details listed.' })
   async getNotifications(@IdentityFromRequest() identity: Identity): Promise<NotificationDto[]> {
     return this.service.getNotifications(identity)
   }
 
   @Get(ROUTE_NOTIFICATION_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: NotificationDetailsDto, description: 'Fetch data that belongs to a notification.' })
+  @ApiOperation({
+    description:
+      'Request must include `notificationId` parameter. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
+    summary: 'Fetch details of a notification.',
+  })
+  @ApiOkResponse({ type: NotificationDetailsDto, description: 'Data of notification listed.' })
   async getNotificationDetails(@NotificationId() notificationId: string): Promise<NotificationDetailsDto> {
     return this.service.getNotificationDetails(notificationId)
   }
 
   @Post()
   @HttpCode(201)
+  @ApiOperation({
+    description:
+      'Request must include `type`, `enabledEvents`, `id`, `name`, `url`, and `active`. Response should list `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
+    summary: 'Create a new notification.',
+  })
   @CreatedWithLocation()
   @ApiBody({ type: CreateNotificationDto })
-  @ApiCreatedResponse({ type: NotificationDetailsDto, description: 'Create a new notification.' })
+  @ApiCreatedResponse({ type: NotificationDetailsDto, description: 'New notification created.' })
   async createNotification(
     @Body() request: CreateNotificationDto,
     @IdentityFromRequest() identity: Identity,
@@ -63,7 +84,12 @@ export default class NotificationHttpController {
 
   @Put(ROUTE_NOTIFICATION_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: NotificationDetailsDto, description: 'Modify a notification.' })
+  @ApiOperation({
+    description:
+      'Request must include `notificationId`, `type`, `enabledEvents`, `id`, `name`, `url`, and `active`. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
+    summary: 'Modify a notification.',
+  })
+  @ApiOkResponse({ type: NotificationDetailsDto, description: 'Notification modified.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
   async updateNotification(
     @NotificationId() notificationId: string,
@@ -75,7 +101,11 @@ export default class NotificationHttpController {
 
   @Delete(ROUTE_NOTIFICATION_ID)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Delete a notification.' })
+  @ApiOperation({
+    description: 'Request must include `notificationId`.',
+    summary: 'Delete a notification.',
+  })
+  @ApiNoContentResponse({ description: 'Notification deleted.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
   async deleteNotification(@NotificationId() notificationId: string): Promise<void> {
     this.service.deleteNotification(notificationId)
@@ -83,7 +113,11 @@ export default class NotificationHttpController {
 
   @Post(`${ROUTE_NOTIFICATION_ID}/test`)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Send a test notification.' })
+  @ApiOperation({
+    description: 'Request must include `notificationId`.',
+    summary: 'Send a test message.',
+  })
+  @ApiNoContentResponse({ description: 'Test message sent.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
   async testNotification(@NotificationId() notificationId: string): Promise<void> {
     this.service.testNotification(notificationId)

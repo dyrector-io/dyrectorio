@@ -1,5 +1,12 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiTags,
+  ApiOperation,
+} from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -29,10 +36,14 @@ export default class StorageHttpController {
 
   @Get()
   @HttpCode(200)
+  @ApiOperation({
+    description: 'Response should include `description`, `icon`, `url`, `id`, and `name`.',
+    summary: 'Fetch details of storages.',
+  })
   @ApiOkResponse({
     type: StorageDto,
     isArray: true,
-    description: 'Fetch details of storages.',
+    description: 'Details of storages listed.',
   })
   async getStorages(@IdentityFromRequest() identity: Identity): Promise<StorageDto[]> {
     return this.service.getStorages(identity)
@@ -40,10 +51,14 @@ export default class StorageHttpController {
 
   @Get('options')
   @HttpCode(200)
+  @ApiOperation({
+    description: 'Response should include `id`, and `name`.',
+    summary: 'Fetch the name and ID of storages.',
+  })
   @ApiOkResponse({
     type: StorageOptionDto,
     isArray: true,
-    description: 'Fetch the name and ID of a storage.',
+    description: 'Name and ID of storages listed.',
   })
   async getStorageOptions(@IdentityFromRequest() identity: Identity): Promise<StorageOptionDto[]> {
     return this.service.getStorageOptions(identity)
@@ -51,7 +66,12 @@ export default class StorageHttpController {
 
   @Get(ROUTE_STORAGE_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: StorageDetailsDto, description: 'Return name and ID of a storage.' })
+  @ApiOperation({
+    description:
+      'Request must include `storageId`. Response should include description, icon, url, `id`, `name`, `accessKey`, `secretKey`, and `inUse`.',
+    summary: 'Return details of a storage.',
+  })
+  @ApiOkResponse({ type: StorageDetailsDto, description: 'Storage details listed.' })
   @UuidParams(PARAM_STORAGE_ID)
   async getProductDetails(@StorageId() id: string): Promise<StorageDetailsDto> {
     return this.service.getStorageDetails(id)
@@ -59,9 +79,14 @@ export default class StorageHttpController {
 
   @Post()
   @HttpCode(201)
+  @ApiOperation({
+    description:
+      'Request must include `name`, and `url`. Request body may include `description`, `icon`, `accesKey`, and `secretKey`. Response should include `description`, `icon`, `url`, `id`, `name`, `accessKey`, `secretKey`, and `inUse`.',
+    summary: 'Add a new storage.',
+  })
   @CreatedWithLocation()
   @ApiBody({ type: CreateStorageDto })
-  @ApiCreatedResponse({ type: StorageDetailsDto, description: 'Create a new storage.' })
+  @ApiCreatedResponse({ type: StorageDetailsDto, description: 'New storage added.' })
   async createProduct(
     @Body() request: CreateStorageDto,
     @IdentityFromRequest() identity: Identity,
@@ -76,8 +101,13 @@ export default class StorageHttpController {
 
   @Put(ROUTE_STORAGE_ID)
   @HttpCode(204)
+  @ApiOperation({
+    description:
+      'Request must include `storageId`, `name`, and `url`. Request body may include `description`, `icon`, `accesKey`, and `secretKey`.',
+    summary: 'Modify a storage.',
+  })
   @UseInterceptors(StorageUpdateValidationInterceptor)
-  @ApiNoContentResponse({ description: 'Update a storage.' })
+  @ApiNoContentResponse({ description: 'Storage updated.' })
   @UuidParams(PARAM_STORAGE_ID)
   async updateProduct(
     @StorageId() id: string,
@@ -89,8 +119,12 @@ export default class StorageHttpController {
 
   @Delete(ROUTE_STORAGE_ID)
   @HttpCode(204)
+  @ApiOperation({
+    description: 'Request must include `storageId`.',
+    summary: 'Remove a storage from dyrectorio.',
+  })
   @UseInterceptors(StorageDeleteValidationInterceptor)
-  @ApiNoContentResponse({ description: 'Delete a storage.' })
+  @ApiNoContentResponse({ description: 'Storage removed.' })
   @UuidParams(PARAM_STORAGE_ID)
   async deleteProduct(@StorageId() id: string): Promise<void> {
     return this.service.deleteStorage(id)
