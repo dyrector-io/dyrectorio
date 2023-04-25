@@ -121,7 +121,6 @@ class WebSocketClientRoute {
       return
     }
 
-    console.log('on msg', this.endpoints.length)
     message.type = message.type.substring(this.path.length + 1)
     this.endpoints.forEach(it => it.onMessage(message))
   }

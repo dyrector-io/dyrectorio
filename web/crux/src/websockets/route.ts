@@ -29,7 +29,7 @@ export default class WsRoute {
   private readonly callbacks: Map<string, WsClientCallbacks> = new Map()
 
   constructor(readonly path: string) {
-    this.logger = new Logger(`${WsRoute.name}/${path}`)
+    this.logger = new Logger(`${WsRoute.name} ${path}`)
 
     const parts = path.split('/').filter(it => it.length > 0)
     this.matchers = parts.map(it => {
@@ -120,17 +120,9 @@ export default class WsRoute {
   ): Observable<WsMessage<SubscriptionMessage>> {
     const { path } = match
 
-    const { unsubscribe, transform } = this.callbacks.get(client.token)
-
-    let unsubRes: Observable<any>
-    if (unsubscribe) {
-      unsubRes = transform(unsubscribe(message))
-    }
-
     const res = this.removeClientFromNamespace(client, path, message)
-    const observableRes = res ? of(res) : EMPTY
 
-    return unsubRes ? unsubRes.pipe(mergeMap(() => observableRes)) : observableRes
+    return res ? of(res) : EMPTY
   }
 
   onClientBind(client: WsClient, handlers: MessageMappingProperties[], transform: WsTransform) {
@@ -181,6 +173,8 @@ export default class WsRoute {
     if (!ns) {
       ns = new WsNamespace(match)
       this.namespaces.set(path, ns)
+
+      this.logger.verbose(`Namespace created ${path}`)
     }
 
     return ns
@@ -199,6 +193,8 @@ export default class WsRoute {
     const { res, shouldRemove } = ns.onUnsubscribe(client, message)
     if (shouldRemove) {
       this.namespaces.delete(namespacePath)
+
+      this.logger.verbose(`Namespace deleted ${namespacePath}`)
     }
 
     return res

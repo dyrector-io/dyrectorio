@@ -39,7 +39,7 @@ export default class AgentController implements GrpcAgentController {
   }
 
   containerState(request: Observable<ContainerStateListMessage>, _: Metadata, call): Observable<Empty> {
-    return this.service.handleContainerStatus(call.connection, request)
+    return this.service.handleContainerState(call.connection, request)
   }
 
   secretList(request: ListSecretsResponse, _: Metadata, call: NodeGrpcCall): Observable<Empty> {

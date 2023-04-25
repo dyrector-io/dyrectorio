@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common'
-import { EMPTY, Observable, first, map, mergeWith, of } from 'rxjs'
+import { EMPTY, Observable, Subject, filter, first, map, mergeWith, of, takeUntil } from 'rxjs'
 import {
   SubscriptionMessage,
   WS_TYPE_SUBBED,
@@ -17,7 +17,7 @@ import {
 export default class WsNamespace implements WsSubscription {
   private readonly logger: Logger
 
-  private readonly clients: Map<string, ClientWithHandlers> = new Map()
+  private readonly clients: Map<string, ClientResources> = new Map()
 
   private readonly path: string
 
@@ -27,7 +27,7 @@ export default class WsNamespace implements WsSubscription {
     this.path = match.path
     this.params = match.params
 
-    this.logger = new Logger(`${WsNamespace.name}${this.path}`)
+    this.logger = new Logger(`${WsNamespace.name} ${this.path}`)
   }
 
   close() {
@@ -45,12 +45,14 @@ export default class WsNamespace implements WsSubscription {
   ): Observable<WsMessage> {
     const { subscribe, handlers, transform, unsubscribe } = callbacks
 
-    this.clients.set(client.token, {
+    const resources: ClientResources = {
       client,
       handlers,
       transform,
       unsubscribe,
-    })
+      completer: new Subject(),
+    }
+    this.clients.set(client.token, resources)
 
     client.subscriptions.set(this.path, this)
 
@@ -67,8 +69,10 @@ export default class WsNamespace implements WsSubscription {
 
     if (stream) {
       return stream.pipe(
+        filter(it => typeof it !== 'undefined' && it !== null),
         map(it => this.overwriteMessageType(it)),
         mergeWith(of(res)),
+        takeUntil(resources.completer),
       )
     }
 
@@ -78,13 +82,14 @@ export default class WsNamespace implements WsSubscription {
   onUnsubscribe(client: WsClient, message: WsMessage<SubscriptionMessage> | null): UnsubcribeResult {
     const { token } = client
 
-    const clientWithHandlers = this.clients.get(token)
-    const { unsubscribe } = clientWithHandlers
+    const resources = this.clients.get(token)
+    const { unsubscribe, completer } = resources
 
     if (unsubscribe) {
       unsubscribe(message)
     }
 
+    completer.next(undefined)
     this.clients.delete(token)
 
     this.logger.verbose(`${token} unsubscribed`)
@@ -103,16 +108,22 @@ export default class WsNamespace implements WsSubscription {
   onMessage(client: WsClient, message: WsMessage): Observable<WsMessage> {
     const handlerKey = handlerKeyOf(message)
 
-    const clientWithHandlers = this.clients.get(client.token)
-    const handler = clientWithHandlers.handlers.get(handlerKey)
+    const { handlers, transform, completer } = this.clients.get(client.token)
+    const handler = handlers.get(handlerKey)
     if (!handler) {
       this.logger.error(`Handler not found for: ${handlerKey}`)
       return EMPTY
     }
 
-    const result: Observable<WsMessage> | null = clientWithHandlers.transform(handler(message))
+    const result: Observable<WsMessage> | null = transform(handler(message))
 
-    return !result ? EMPTY : result.pipe(map(it => this.overwriteMessageType(it)))
+    return !result
+      ? EMPTY
+      : result.pipe(
+          filter(it => typeof it !== 'undefined' && it !== null),
+          map(it => this.overwriteMessageType(it)),
+          takeUntil(completer),
+        )
   }
 
   sendToAll(message: WsMessage): void {
@@ -131,11 +142,12 @@ export default class WsNamespace implements WsSubscription {
   }
 }
 
-type ClientWithHandlers = {
+type ClientResources = {
   client: WsClient
   handlers: Map<string, WsCallback>
   transform: WsTransform
   unsubscribe?: WsCallback
+  completer: Subject<undefined>
 }
 
 type UnsubcribeResult = {

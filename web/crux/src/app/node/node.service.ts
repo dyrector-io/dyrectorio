@@ -23,7 +23,12 @@ import {
   UpdateNodeDto,
 } from './node.dto'
 import NodeMapper from './node.mapper'
-import { ContainerLogMessage, ContainersStateListMessage, WatchContainerLogMessage, WatchContainersStateMessage } from './node.message'
+import {
+  ContainerLogMessage,
+  ContainersStateListMessage,
+  WatchContainerLogMessage,
+  WatchContainersStateMessage,
+} from './node.message'
 
 @Injectable()
 export default class NodeService {
@@ -36,6 +41,24 @@ export default class NodeService {
     private mapper: NodeMapper,
     private notificationService: DomainNotificationService,
   ) {}
+
+  async checkNodeIsInActiveTeam(nodeId: string, identity: Identity): Promise<boolean> {
+    const nodes = await this.prisma.node.count({
+      where: {
+        id: nodeId,
+        team: {
+          users: {
+            some: {
+              userId: identity.id,
+              active: true,
+            },
+          },
+        },
+      },
+    })
+
+    return nodes > 0
+  }
 
   async getNodes(identity: Identity): Promise<NodeDto[]> {
     const nodes = await this.prisma.node.findMany({
@@ -180,7 +203,7 @@ export default class NodeService {
   watchContainersState(nodeId: string, message: WatchContainersStateMessage): Observable<ContainersStateListMessage> {
     const { prefix } = message
 
-    this.logger.debug(`Opening container status channel for prefix: ${nodeId} - ${prefix}`)
+    this.logger.debug(`Opening container state stream for prefix: ${nodeId} - ${prefix}`)
 
     const agent = this.agentService.getByIdOrThrow(nodeId)
 
@@ -211,7 +234,7 @@ export default class NodeService {
     return stream.watch()
   }
 
-  async updateNodeAgent(id: string): Promise<void> {
+  updateAgent(id: string) {
     this.agentService.updateAgent(id)
   }
 

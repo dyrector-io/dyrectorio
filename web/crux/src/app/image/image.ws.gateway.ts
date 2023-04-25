@@ -8,7 +8,6 @@ import ImageService from './image.service'
 const ImageId = () => WsParam('imageId')
 
 @WebSocketGateway({
-  // todo gateway namespace first part into a map
   namespace: 'images/:imageId',
 })
 export default class ImageWebSocketGateway {

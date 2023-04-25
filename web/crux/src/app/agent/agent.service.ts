@@ -42,7 +42,6 @@ import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { JWT_EXPIRATION } from '../../shared/const'
 import ImageMapper from '../image/image.mapper'
 import { DagentTraefikOptionsDto, NodeScriptTypeDto } from '../node/node.dto'
-import ContainerMapper from '../shared/container.mapper'
 
 @Injectable()
 export default class AgentService {
@@ -226,14 +225,14 @@ export default class AgentService {
     )
   }
 
-  handleContainerStatus(
+  handleContainerState(
     connection: GrpcNodeConnection,
     request: Observable<ContainerStateListMessage>,
   ): Observable<Empty> {
     const agent = this.getByIdOrThrow(connection.nodeId)
     const prefix = connection.getMetaData(GrpcNodeConnection.META_FILTER_PREFIX)
 
-    const [watcher, completer] = agent.onContainerStatusStreamStarted(prefix)
+    const [watcher, completer] = agent.onContainerStateStreamStarted(prefix)
     if (!watcher) {
       this.logger.warn(`${agent.id} - There was no watcher for ${prefix}`)
 

@@ -197,7 +197,7 @@ export class Agent {
     return deployment.getStatus()
   }
 
-  onContainerStatusStreamStarted(prefix: string): [ContainerStatusWatcher, ContainerStatusStreamCompleter] {
+  onContainerStateStreamStarted(prefix: string): [ContainerStatusWatcher, ContainerStatusStreamCompleter] {
     const watcher = this.statusWatchers.get(prefix)
     if (!watcher) {
       return [null, null]

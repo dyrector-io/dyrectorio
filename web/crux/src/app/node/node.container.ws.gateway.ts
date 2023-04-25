@@ -1,9 +1,9 @@
-import { UsePipes, ValidationPipe } from '@nestjs/common'
-import { MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
+import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
 import { Observable, map } from 'rxjs'
 import { WsAuthorize, WsMessage } from 'src/websockets/common'
 import WsParam from 'src/websockets/decorators/ws.param.decorator'
+import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
 import TeamService from '../team/team.service'
 import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import {
@@ -14,7 +14,7 @@ import {
   WS_TYPE_CONTAINERS_STATE_LIST,
   WS_TYPE_CONTAINER_LOG,
   WatchContainerLogMessage,
-  WatchContainersStateMessage as WatchContainersStatusMessage,
+  WatchContainersStateMessage,
 } from './node.message'
 import NodeService from './node.service'
 
@@ -24,21 +24,20 @@ const NodeId = () => WsParam('nodeId')
   namespace: 'nodes/:nodeId',
 })
 export default class NodeContainerWebSocketGateway {
-  constructor(private readonly service: NodeService, private readonly teamService: TeamService) {}
+  constructor(private readonly service: NodeService) {}
 
   @WsAuthorize()
   async onAuthorize(@NodeId() nodeId: string, @IdentityFromSocket() identity: Identity): Promise<boolean> {
-    // TODO(@m8vago): implement
-    return true
+    return this.service.checkNodeIsInActiveTeam(nodeId, identity)
   }
 
-  @SubscribeMessage('update-node-agent')
-  async updateNodeAgent(@NodeId() nodeId: string): Promise<void> {
-    await this.service.updateNodeAgent(nodeId)
+  @SubscribeMessage('update-agent')
+  updateAgent(@NodeId() nodeId: string) {
+    this.service.updateAgent(nodeId)
   }
 
   @SubscribeMessage('container-command')
-  containerCommand(@NodeId() nodeId: string, @MessageBody() message: ContainerCommandMessage): void {
+  containerCommand(@NodeId() nodeId: string, @SocketMessage() message: ContainerCommandMessage): void {
     const { container, operation } = message
     if (operation === 'start') {
       this.service.startContainer(nodeId, container.prefix, container.name)
@@ -52,7 +51,7 @@ export default class NodeContainerWebSocketGateway {
   @SubscribeMessage('watch-containers-state')
   watchContainersState(
     @NodeId() nodeId: string,
-    @MessageBody() message: WatchContainersStatusMessage,
+    @SocketMessage() message: WatchContainersStateMessage,
   ): Observable<WsMessage<ContainersStateListMessage>> {
     return this.service.watchContainersState(nodeId, message).pipe(
       map(it => {
@@ -67,9 +66,9 @@ export default class NodeContainerWebSocketGateway {
   }
 
   @SubscribeMessage('watch-container-log')
-  watchContainer(
+  watchContainerLog(
     @NodeId() nodeId: string,
-    message: WatchContainerLogMessage,
+    @SocketMessage() message: WatchContainerLogMessage,
   ): Observable<WsMessage<ContainerLogMessage>> {
     return this.service.watchContainerLog(nodeId, message).pipe(
       map(it => {
@@ -84,14 +83,9 @@ export default class NodeContainerWebSocketGateway {
   }
 
   @SubscribeMessage('delete-container')
-  deleteContainer(@NodeId() nodeId: string, message: DeleteContainerMessage): void {
+  deleteContainer(@NodeId() nodeId: string, @SocketMessage() message: DeleteContainerMessage): void {
     const { container } = message
 
     this.service.deleteContainer(nodeId, container.prefix, container.name)
-  }
-
-  @SubscribeMessage('update-agent')
-  async updateAgent(@NodeId() nodeId: string): Promise<void> {
-    await this.service.updateNodeAgent(nodeId)
   }
 }

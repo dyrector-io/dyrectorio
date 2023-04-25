@@ -110,7 +110,7 @@ export default class NodeHttpController {
   @Post(`${ROUTE_NODE_ID}/update`)
   @HttpCode(204)
   @ApiNoContentResponse()
-  async updateNodeAgent(@NodeId() nodeId: string): Promise<void> {
-    this.service.updateNodeAgent(nodeId)
+  updateNodeAgent(@NodeId() nodeId: string) {
+    this.service.updateAgent(nodeId)
   }
 }
