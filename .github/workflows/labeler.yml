@@ -1,33 +1,15 @@
 name: "Pull Request Labeler"
 on:
-- pull_request_target
+  pull_request:
 
 jobs:
   triage:
     permissions:
       contents: read
       pull-requests: write
-    runs-on: ubuntu-22.04;
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/labeler@v4
       with:
-        source:web:
-        - any: [ 'web' ]
-        source:documentation:
-        - any: [ 'docs' ]
-        source:agent:
-        - any: [ 'golang/pkg/crane', 'golang/pkg/dagent', 'golang/cmd/crane', 'golang/cmd/dagent' ]
-        source:ci:
-        - any: [ '.github/workflows/']
-        source:build:
-        - any: [ '**/Makefile', 'web/kratos', '**/Dockerfile', 'golang/build' ]
-        source:cli:
-        - any: [ 'golang/pkg/cli', 'golang/cmd/dyo' ]
-        lang:makefile:
-        - any: [ '**/Makefile' ]
-        lang:shell:
-        - any: [ '**/*.sh', '**/*.sh.hbr', '**/*.ps1.hbr' ]
-        lang:golang:
-        - any: [ '**/*.go' ]
-        lang:typescript:
-        - any: [ '**/*.ts', '**/*.js' ]
+        configuration-path: .github/labeler.yml
+
