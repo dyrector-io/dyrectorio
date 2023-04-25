@@ -30,8 +30,10 @@ import { CreateTeamDto, InviteUserDto, TeamDetailsDto, TeamDto, UpdateTeamDto, U
 import TeamService from './team.service'
 import { UserDto } from './user.dto'
 
-const TeamId = () => Param('teamId')
-const UserId = () => Param('userId')
+const PARAM_TEAM_ID = 'teamId'
+const PARAM_USER_ID = 'userId'
+const TeamId = () => Param(PARAM_TEAM_ID)
+const UserId = () => Param(PARAM_USER_ID)
 
 const ROUTE_TEAMS = 'teams'
 const ROUTE_TEAM_ID = ':teamId'
@@ -62,7 +64,7 @@ export default class TeamHttpController {
   @Get(ROUTE_TEAM_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: TeamDetailsDto })
-  @UuidParams('teamId')
+  @UuidParams(PARAM_TEAM_ID)
   async getTeamById(@TeamId() teamId: string): Promise<TeamDetailsDto> {
     return await this.service.getTeamById(teamId)
   }
@@ -93,7 +95,7 @@ export default class TeamHttpController {
   @ApiBody({ type: UpdateTeamDto })
   @TeamRoleRequired('admin')
   @ApiNoContentResponse()
-  @UuidParams('teamId')
+  @UuidParams(PARAM_TEAM_ID)
   async updateTeam(
     @TeamId() teamId: string,
     @Body() request: UpdateTeamDto,
@@ -106,7 +108,7 @@ export default class TeamHttpController {
   @HttpCode(204)
   @TeamRoleRequired('owner')
   @ApiNoContentResponse()
-  @UuidParams('teamId')
+  @UuidParams(PARAM_TEAM_ID)
   async deleteTeam(@TeamId() teamId: string): Promise<void> {
     await this.service.deleteTeam(teamId)
   }
@@ -123,7 +125,7 @@ export default class TeamHttpController {
   })
   @UseInterceptors(TeamInviteUserValitationInterceptor)
   @TeamRoleRequired('admin')
-  @UuidParams('teamId')
+  @UuidParams(PARAM_TEAM_ID)
   async inviteUserToTeam(
     @TeamId() teamId: string,
     @Body() request: InviteUserDto,
@@ -143,8 +145,7 @@ export default class TeamHttpController {
   @TeamRoleRequired('admin')
   @UseInterceptors(TeamOwnerImmutabilityValidationInterceptor)
   @ApiNoContentResponse()
-  @UuidParams('teamId')
-  @UuidParams('userId')
+  @UuidParams(PARAM_TEAM_ID, PARAM_USER_ID)
   async updateUserRoleInTeam(
     @TeamId() teamId: string,
     @UserId() userId: string,
@@ -159,8 +160,7 @@ export default class TeamHttpController {
   @TeamRoleRequired('admin')
   @UseInterceptors(TeamOwnerImmutabilityValidationInterceptor)
   @ApiNoContentResponse()
-  @UuidParams('teamId')
-  @UuidParams('userId')
+  @UuidParams(PARAM_TEAM_ID, PARAM_USER_ID)
   async deleteUserFromTeam(@TeamId() teamId: string, @UserId() userId: string): Promise<void> {
     await this.service.deleteUserFromTeam(teamId, userId)
   }
@@ -170,8 +170,7 @@ export default class TeamHttpController {
   @UseInterceptors(TeamReinviteUserValidationInterceptor)
   @TeamRoleRequired('admin')
   @ApiNoContentResponse()
-  @UuidParams('teamId')
-  @UuidParams('userId')
+  @UuidParams(PARAM_TEAM_ID, PARAM_USER_ID)
   async reinviteUser(
     @TeamId() teamId: string,
     @UserId() userId: string,

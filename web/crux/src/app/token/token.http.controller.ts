@@ -26,7 +26,8 @@ import TokenValidationPipe from './pipes/token.pipe'
 import { GeneratedTokenDto, GenerateTokenDto, TokenDto } from './token.dto'
 import TokenService from './token.service'
 
-const TokenId = () => Param('tokenId')
+const PARAM_TOKEN_ID = 'tokenId'
+const TokenId = () => Param(PARAM_TOKEN_ID)
 
 const ROUTE_TOKENS = 'tokens'
 const ROUTE_TOKEN_ID = ':tokenId'
@@ -56,7 +57,7 @@ export default class TokenHttpController {
   @Get(ROUTE_TOKEN_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: TokenDto })
-  @UuidParams('tokenId')
+  @UuidParams(PARAM_TOKEN_ID)
   async getToken(@TokenId() id: string, @IdentityFromRequest() identity: Identity): Promise<TokenDto> {
     return this.service.getToken(id, identity)
   }
@@ -84,7 +85,7 @@ export default class TokenHttpController {
   @Delete(ROUTE_TOKEN_ID)
   @HttpCode(204)
   @ApiNoContentResponse({ description: 'Token deleted' })
-  @UuidParams('tokenId')
+  @UuidParams(PARAM_TOKEN_ID)
   async deleteToken(@TokenId() id: string): Promise<void> {
     await this.service.deleteToken(id)
   }

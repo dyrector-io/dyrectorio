@@ -20,6 +20,8 @@ import {
 } from './node.const'
 import NodeService from './node.service'
 
+const PARAM_NODE_ID = 'nodeId'
+
 @Controller(`${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_PREFIX}/${ROUTE_CONTAINERS}`)
 @ApiTags(ROUTE_NODES)
 @UseGuards(JwtAuthGuard, UuidValidationGuard, NodeTeamAccessHttpGuard)
@@ -30,7 +32,7 @@ export default class NodePrefixContainerHttpController {
   @Post(`${ROUTE_NAME}/start`)
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams('nodeId')
+  @UuidParams(PARAM_NODE_ID)
   startContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string) {
     this.service.startContainer(nodeId, prefix, name)
   }
@@ -38,7 +40,7 @@ export default class NodePrefixContainerHttpController {
   @Post(`${ROUTE_NAME}/stop`)
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams('nodeId')
+  @UuidParams(PARAM_NODE_ID)
   stopContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string) {
     this.service.stopContainer(nodeId, prefix, name)
   }
@@ -46,7 +48,7 @@ export default class NodePrefixContainerHttpController {
   @Post(`${ROUTE_NAME}/restart`)
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams('nodeId')
+  @UuidParams(PARAM_NODE_ID)
   restartContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string) {
     this.service.restartContainer(nodeId, prefix, name)
   }
@@ -54,7 +56,7 @@ export default class NodePrefixContainerHttpController {
   @Delete()
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams('nodeId')
+  @UuidParams(PARAM_NODE_ID)
   deleteAllContainers(@NodeId() nodeId: string, @Prefix() prefix: string): Observable<void> {
     return this.service.deleteAllContainers(nodeId, prefix)
   }
@@ -62,7 +64,7 @@ export default class NodePrefixContainerHttpController {
   @Delete(`${ROUTE_NAME}`)
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams('nodeId')
+  @UuidParams(PARAM_NODE_ID)
   deleteContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Observable<void> {
     return this.service.deleteContainer(nodeId, prefix, name)
   }

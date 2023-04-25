@@ -28,7 +28,8 @@ import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
 import { CreateRegistryDto, RegistryDetailsDto, RegistryDto, UpdateRegistryDto } from './registry.dto'
 import RegistryService from './registry.service'
 
-const RegistryId = (...pipes: (Type<PipeTransform> | PipeTransform)[]) => Param('registryId', ...pipes)
+const PARAM_REGISTRY_ID = 'registryId'
+const RegistryId = (...pipes: (Type<PipeTransform> | PipeTransform)[]) => Param(PARAM_REGISTRY_ID, ...pipes)
 
 const ROUTE_REGISTRIES = 'registries'
 const ROUTE_REGISTRY_ID = ':registryId'
@@ -56,7 +57,7 @@ export default class RegistryHttpController {
   @Get(ROUTE_REGISTRY_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: RegistryDetailsDto })
-  @UuidParams('registryId')
+  @UuidParams(PARAM_REGISTRY_ID)
   async getRegistry(@RegistryId() id: string): Promise<RegistryDetailsDto> {
     return await this.service.getRegistryDetails(id)
   }
@@ -88,7 +89,7 @@ export default class RegistryHttpController {
   @UseGuards(RegistryAccessValidationGuard)
   @ApiBody({ type: UpdateRegistryDto })
   @ApiNoContentResponse()
-  @UuidParams('registryId')
+  @UuidParams(PARAM_REGISTRY_ID)
   async updateRegistry(
     @RegistryId() id: string,
     @Body() request: UpdateRegistryDto,
@@ -100,7 +101,7 @@ export default class RegistryHttpController {
   @Delete(ROUTE_REGISTRY_ID)
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams('registryId')
+  @UuidParams(PARAM_REGISTRY_ID)
   async deleteRegistry(@RegistryId(DeleteRegistryValidationPipe) id: string): Promise<void> {
     await this.service.deleteRegistry(id)
   }
