@@ -11,24 +11,29 @@ jobs:
     steps:
     - uses: actions/labeler@v4
       with:
-        source/web:
-        - any: [ 'web' ]
-        source/documentation:
-        - any: [ 'docs' ]
-        source/agent:
-        - any: [ 'golang/pkg/crane', 'golang/pkg/dagent', 'golang/cmd/crane', 'golang/cmd/dagent' ]
-        source/ci:
-        - any: [ '.github/workflows/']
-        source/build:
-        - any: [ '**/Makefile', 'web/kratos', '**/Dockerfile', 'golang/build' ]
-        source/cli:
-        - any: [ 'golang/pkg/cli', 'golang/cmd/dyo' ]
-        lang/makefile:
-        - any: [ '**/Makefile' ]
-        lang/shell:
-        - any: [ '**/*.sh', '**/*.sh.hbr', '**/*.ps1.hbr' ]
-        lang/golang:
-        - any: [ '**/*.go' ]
-        lang/typescript:
-        - any: [ '**/*.ts', '**/*.js' ]
+        source:web: 'web'
+        source:documentation: 'docs'
+        source:agent:
+        - 'golang/pkg/crane'
+        - 'golang/pkg/dagent'
+        - 'golang/cmd/crane'
+        - 'golang/cmd/dagent'
+        source:ci: '.github/workflows/'
+        source:build:
+        - '**/Makefile'
+        - 'web/kratos'
+        - '**/Dockerfile'
+        - 'golang/build'
+        source:cli:
+        - 'golang/pkg/cli'
+        - 'golang/cmd/dyo'
+        lang:makefile: '**/Makefile'
+        lang:shell:
+        - '**/*.sh'
+        - '**/*.sh.hbr'
+        - '**/*.ps1.hbr'
+        lang:golang: '**/*.go'
+        lang:typescript:
+        - '**/*.ts'
+        - '**/*.js'
 
