@@ -56,7 +56,7 @@ export default class ImageHttpController {
   @Get()
   @HttpCode(200)
   @ApiOkResponse({ type: ImageDto, isArray: true })
-  @UuidParams(PARAM_VERSION_ID)
+  @UuidParams([PARAM_PRODUCT_ID, PARAM_VERSION_ID])
   async getImagesByVersionId(@ProductId() _productId: string, @VersionId() versionId: string): Promise<ImageDto[]> {
     return await this.service.getImagesByVersionId(versionId)
   }
@@ -64,7 +64,7 @@ export default class ImageHttpController {
   @Get(ROUTE_IMAGE_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: ImageDto })
-  @UuidParams(PARAM_IMAGE_ID)
+  @UuidParams([PARAM_PRODUCT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID])
   async getImageDetails(
     @ProductId() _productId: string,
     @VersionId() _versionId: string,
@@ -80,7 +80,7 @@ export default class ImageHttpController {
   @ApiCreatedResponse({ type: ImageDto, isArray: true })
   @UseGuards(ImageAddToVersionTeamAccessGuard)
   @UseInterceptors(ImageAddToVersionValidationInterceptor)
-  @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
+  @UuidParams([PARAM_PRODUCT_ID, PARAM_VERSION_ID])
   async addImagesToVersion(
     @ProductId() productId: string,
     @VersionId() versionId: string,
@@ -99,7 +99,7 @@ export default class ImageHttpController {
   @HttpCode(204)
   @ApiBody({ type: PatchImageDto })
   @ApiNoContentResponse({ description: 'Image patched successfully' })
-  @UuidParams(PARAM_IMAGE_ID)
+  @UuidParams([PARAM_PRODUCT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID])
   async patchImage(
     @ProductId() _productId: string,
     @VersionId() _versionId: string,
@@ -114,7 +114,7 @@ export default class ImageHttpController {
   @HttpCode(204)
   @ApiNoContentResponse({ description: 'Image deleted successfully' })
   @UseInterceptors(DeleteImageValidationInterceptor)
-  @UuidParams(PARAM_IMAGE_ID)
+  @UuidParams([PARAM_PRODUCT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID])
   async deleteImage(
     @ProductId() _productId: string,
     @VersionId() _versionId: string,
@@ -129,6 +129,7 @@ export default class ImageHttpController {
   @ApiBody({ type: String, isArray: true })
   @UseGuards(ImageOrderImagesTeamAccessGuard)
   @UseInterceptors(OrderImagesValidationInterceptor)
+  @UuidParams([PARAM_PRODUCT_ID, PARAM_VERSION_ID])
   async orderImages(
     @ProductId() _productId: string,
     @VersionId() _versionId: string,

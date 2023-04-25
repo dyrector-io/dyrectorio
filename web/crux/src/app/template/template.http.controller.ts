@@ -66,7 +66,7 @@ export default class TemplateHttpController {
   @HttpCode(200)
   @Header('content-type', 'image/jpeg')
   @ApiOkResponse()
-  @UuidParams(PARAM_TEMPLATE_ID)
+  @UuidParams([PARAM_TEMPLATE_ID])
   async getImage(@TemplateId() templateId: string, @Response() response: ExpressResponse) {
     const image = await this.service.getImageStream(templateId)
     image.pipe(response)

@@ -64,7 +64,7 @@ export default class TeamHttpController {
   @Get(ROUTE_TEAM_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: TeamDetailsDto })
-  @UuidParams(PARAM_TEAM_ID)
+  @UuidParams([PARAM_TEAM_ID])
   async getTeamById(@TeamId() teamId: string): Promise<TeamDetailsDto> {
     return await this.service.getTeamById(teamId)
   }
@@ -95,7 +95,7 @@ export default class TeamHttpController {
   @ApiBody({ type: UpdateTeamDto })
   @TeamRoleRequired('admin')
   @ApiNoContentResponse()
-  @UuidParams(PARAM_TEAM_ID)
+  @UuidParams([PARAM_TEAM_ID])
   async updateTeam(
     @TeamId() teamId: string,
     @Body() request: UpdateTeamDto,
@@ -108,7 +108,7 @@ export default class TeamHttpController {
   @HttpCode(204)
   @TeamRoleRequired('owner')
   @ApiNoContentResponse()
-  @UuidParams(PARAM_TEAM_ID)
+  @UuidParams([PARAM_TEAM_ID])
   async deleteTeam(@TeamId() teamId: string): Promise<void> {
     await this.service.deleteTeam(teamId)
   }
@@ -125,7 +125,7 @@ export default class TeamHttpController {
   })
   @UseInterceptors(TeamInviteUserValitationInterceptor)
   @TeamRoleRequired('admin')
-  @UuidParams(PARAM_TEAM_ID)
+  @UuidParams([PARAM_TEAM_ID])
   async inviteUserToTeam(
     @TeamId() teamId: string,
     @Body() request: InviteUserDto,
@@ -145,7 +145,7 @@ export default class TeamHttpController {
   @TeamRoleRequired('admin')
   @UseInterceptors(TeamOwnerImmutabilityValidationInterceptor)
   @ApiNoContentResponse()
-  @UuidParams(PARAM_TEAM_ID, PARAM_USER_ID)
+  @UuidParams([PARAM_TEAM_ID, PARAM_USER_ID])
   async updateUserRoleInTeam(
     @TeamId() teamId: string,
     @UserId() userId: string,
@@ -160,7 +160,7 @@ export default class TeamHttpController {
   @TeamRoleRequired('admin')
   @UseInterceptors(TeamOwnerImmutabilityValidationInterceptor)
   @ApiNoContentResponse()
-  @UuidParams(PARAM_TEAM_ID, PARAM_USER_ID)
+  @UuidParams([PARAM_TEAM_ID, PARAM_USER_ID])
   async deleteUserFromTeam(@TeamId() teamId: string, @UserId() userId: string): Promise<void> {
     await this.service.deleteUserFromTeam(teamId, userId)
   }
@@ -170,7 +170,7 @@ export default class TeamHttpController {
   @UseInterceptors(TeamReinviteUserValidationInterceptor)
   @TeamRoleRequired('admin')
   @ApiNoContentResponse()
-  @UuidParams(PARAM_TEAM_ID, PARAM_USER_ID)
+  @UuidParams([PARAM_TEAM_ID, PARAM_USER_ID])
   async reinviteUser(
     @TeamId() teamId: string,
     @UserId() userId: string,
