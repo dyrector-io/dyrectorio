@@ -11,5 +11,5 @@ jobs:
     steps:
     - uses: actions/labeler@v4
       with:
-        CONFIGURATION_PATH: .github/labeler.yml
+        configuration-path: .github/labeler.yml
 
