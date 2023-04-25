@@ -63,7 +63,7 @@ export default class VersionHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      "Returns an array containing the details of every version that belong to a product. `ProductId` refers to the product's ID. Details include the version's `name`, `id`, `type`, `audit` log details, `changelog`, and increasibility.</br></br> Versions belong to products. While Simple Products are technically versionless, they act as a rolling version of a Complex Product. The purpose of versions is to separate different variations of your product. They can be either rolling or incremental. One Complex Product can have multiple versions of both types. More details about rolling and incremental versions here.",
+      "Returns an array containing the details of every version that belong to a product. `ProductId` refers to the product's ID. Details include the version's `name`, `id`, `type`, `audit` log details, `changelog`, and increasibility.",
     summary: 'Fetch the details of all the versions under a product.',
   })
   @ApiOkResponse({

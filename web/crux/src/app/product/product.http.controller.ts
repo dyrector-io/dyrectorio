@@ -57,7 +57,7 @@ export default class ProductHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      "Returns a list of a team's products and their details. Products come in two types: Simple or Complex. Simple Products make up one deployable unit without versioning, while Complex Products come with multiple rolling or incremental versions. The response should be an array containing each product's `name`, `id`, `type`, `description`, `versionCount`, and `audit` log data of creation and update.",
+      "Returns a list of a team's products and their details.",
     summary: 'Fetch details of products.',
   })
   @ApiOkResponse({

@@ -64,7 +64,7 @@ export default class ImageHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      "Fetch details of images within a version. `ProductId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables.</br></br>Details come in an array, including `name`, `id`, `tag`, `order`, and config details of the image.</br></br>Images make up a Complex Product's version, or a Simple Product.",
+      "Fetch details of images within a version. `ProductId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables.</br></br>Details come in an array, including `name`, `id`, `tag`, `order`, and config details of the image.",
     summary: 'Fetch data of all images of a version.',
   })
   @ApiOkResponse({
