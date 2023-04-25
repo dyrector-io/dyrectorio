@@ -55,6 +55,7 @@ export class DeploymentWithBasicNodeDto extends BasicDeploymentDto {
 }
 
 export class InstanceContainerConfigDto extends OmitType(PartialType(ContainerConfigDto), ['secrets']) {
+  @IsOptional()
   secrets?: UniqueSecretKeyValue[] | null
 }
 

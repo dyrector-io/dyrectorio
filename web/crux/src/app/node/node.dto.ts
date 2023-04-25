@@ -31,10 +31,12 @@ export class NodeDto extends BasicNodeDto {
   @ApiProperty({
     enum: NODE_CONNECTION_STATUS_VALUES,
   })
+  @IsOptional()
   status?: NodeConnectionStatus
 
   @IsDate()
   @Type(() => Date)
+  @IsOptional()
   connectedAt?: Date
 
   @IsString()
@@ -64,6 +66,7 @@ export class NodeDetailsDto extends NodeDto {
 
   @IsOptional()
   @ValidateNested()
+  @IsOptional()
   install?: NodeInstallDto
 }
 
