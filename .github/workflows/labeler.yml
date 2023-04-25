@@ -13,23 +13,22 @@ jobs:
       with:
         source/web:
         - any: [ 'web' ]
-        source:web:
-        - any: [ 'web' ]
-        source:documentation:
+        source/documentation:
         - any: [ 'docs' ]
-        source:agent:
+        source/agent:
         - any: [ 'golang/pkg/crane', 'golang/pkg/dagent', 'golang/cmd/crane', 'golang/cmd/dagent' ]
-        source:ci:
+        source/ci:
         - any: [ '.github/workflows/']
-        source:build:
+        source/build:
         - any: [ '**/Makefile', 'web/kratos', '**/Dockerfile', 'golang/build' ]
-        source:cli:
+        source/cli:
         - any: [ 'golang/pkg/cli', 'golang/cmd/dyo' ]
-        lang:makefile:
+        lang/makefile:
         - any: [ '**/Makefile' ]
-        lang:shell:
+        lang/shell:
         - any: [ '**/*.sh', '**/*.sh.hbr', '**/*.ps1.hbr' ]
-        lang:golang:
+        lang/golang:
         - any: [ '**/*.go' ]
-        lang:typescript:
+        lang/typescript:
         - any: [ '**/*.ts', '**/*.js' ]
+
