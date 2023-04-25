@@ -86,7 +86,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     <Link href={versionUrl(item.product.id, item.version.id)}>{item.version.name}</Link>,
     <Link href={nodeUrl(item.node.id)}>{item.node.name}</Link>,
     <span>{item.prefix}</span>,
-    <span>{auditToLocaleDate(item.audit)}</span>,
+    <span suppressHydrationWarning>{auditToLocaleDate(item.audit)}</span>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
     <div className="flex flex-row">
       <div className="mr-2 inline-block">

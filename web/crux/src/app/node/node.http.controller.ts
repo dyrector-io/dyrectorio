@@ -1,6 +1,19 @@
-import { Body, Controller, Delete, Get, Header, HttpCode, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  HttpCode,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
+import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiProduces, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
+import { Observable, timeout } from 'rxjs'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
@@ -9,6 +22,7 @@ import JwtAuthGuard, { DisableAuth, IdentityFromRequest } from '../token/jwt-aut
 import NodeTeamAccessHttpGuard from './guards/node.team-access.http.guard'
 import { NodeId, ROUTE_NODES, ROUTE_NODE_ID } from './node.const'
 import {
+  ContainerDto,
   CreateNodeDto,
   NodeDetailsDto,
   NodeDto,
@@ -28,6 +42,7 @@ export default class NodeHttpController {
   constructor(private service: NodeService) {}
 
   @Get()
+  @HttpCode(200)
   @ApiOkResponse({
     type: NodeDto,
     isArray: true,
@@ -37,12 +52,14 @@ export default class NodeHttpController {
   }
 
   @Get(ROUTE_NODE_ID)
+  @HttpCode(200)
   @ApiOkResponse({ type: NodeDetailsDto })
   async getNodeDetails(@NodeId() nodeId: string): Promise<NodeDetailsDto> {
     return this.service.getNodeDetails(nodeId)
   }
 
   @Post()
+  @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateNodeDto })
   @ApiCreatedResponse({ type: NodeDto })
@@ -71,11 +88,13 @@ export default class NodeHttpController {
 
   @Delete(ROUTE_NODE_ID)
   @HttpCode(204)
+  @ApiNoContentResponse()
   async deleteNode(@NodeId() nodeId: string): Promise<void> {
     return this.service.deleteNode(nodeId)
   }
 
   @Post(`${ROUTE_NODE_ID}/script`)
+  @HttpCode(201)
   @ApiOkResponse({ type: NodeInstallDto })
   async generateScript(
     @NodeId(NodeGenerateScriptValidationPipe) nodeId: string,
@@ -94,6 +113,7 @@ export default class NodeHttpController {
 
   @Get(`${ROUTE_NODE_ID}/script`)
   @ApiOkResponse({ type: String })
+  @ApiProduces('text/plain')
   @Header('content-type', 'text/plain')
   @DisableAuth()
   async getScript(@NodeId(NodeGetScriptValidationPipe) nodeId: string): Promise<string> {

@@ -31,8 +31,7 @@ export class AuditDto {
   updatedAt: Date
 
   @IsUUID()
-  @IsOptional()
-  updatedBy?: string
+  updatedBy: string
 }
 
 export class BasicNodeDto {
@@ -45,6 +44,16 @@ export class BasicNodeDto {
   @ApiProperty({ enum: NODE_TYPE_VALUES })
   @IsIn(NODE_TYPE_VALUES)
   type: NodeType
+}
+
+export class BasicNodeWithStatus extends BasicNodeDto {
+  @IsString()
+  @IsIn(NODE_CONNECTION_STATUS_VALUES)
+  @ApiProperty({
+    enum: NODE_CONNECTION_STATUS_VALUES,
+  })
+  @IsOptional()
+  status?: NodeConnectionStatus
 }
 
 export const PRODUCT_TYPE_VALUES = ['simple', 'complex'] as const

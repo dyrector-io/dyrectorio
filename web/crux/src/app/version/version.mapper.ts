@@ -5,6 +5,7 @@ import { versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/
 import { VersionType, versionTypeToJSON } from 'src/grpc/protobuf/proto/crux'
 import DeployMapper, { DeploymentWithNode } from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
+import { NodeConnectionStatus } from '../shared/shared.dto'
 import SharedMapper from '../shared/shared.mapper'
 import { VersionDetailsDto, VersionDto } from './version.dto'
 
@@ -28,7 +29,7 @@ export default class VersionMapper {
     }
   }
 
-  detailsToDto(version: VersionDetails): VersionDetailsDto {
+  detailsToDto(version: VersionDetails, nodeStatusLookup: Map<string, NodeConnectionStatus>): VersionDetailsDto {
     return {
       id: version.id,
       name: version.name,
@@ -40,7 +41,9 @@ export default class VersionMapper {
       deletable: versionIsDeletable(version),
       increasable: versionIsIncreasable(version),
       images: version.images.map(it => this.imageMapper.toDto(it)),
-      deployments: version.deployments.map(it => this.deployMapper.toDeploymentWithBasicNodeDto(it)),
+      deployments: version.deployments.map(it =>
+        this.deployMapper.toDeploymentWithBasicNodeDto(it, nodeStatusLookup.get(it.nodeId)),
+      ),
     }
   }
 

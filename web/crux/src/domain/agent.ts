@@ -95,12 +95,12 @@ export class Agent {
     return deployment.start(this.commandChannel)
   }
 
-  upsertContainerStatusWatcher(prefix: string): ContainerStatusWatcher {
+  upsertContainerStatusWatcher(prefix: string, oneShot: boolean): ContainerStatusWatcher {
     this.throwWhenUpdating()
 
     let watcher = this.statusWatchers.get(prefix)
     if (!watcher) {
-      watcher = new ContainerStatusWatcher(prefix)
+      watcher = new ContainerStatusWatcher(prefix, oneShot)
       this.statusWatchers.set(prefix, watcher)
       watcher.start(this.commandChannel)
     }

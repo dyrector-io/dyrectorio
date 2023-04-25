@@ -126,7 +126,7 @@ func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.Lifecy
 			cruxMigrate = cruxMigrate.WithForcePullImage()
 		}
 
-		cont, res, err := cruxMigrate.CreateAndWaitUntilExit()
+		cont, res, err := cruxMigrate.CreateAndStartWaitUntilExit()
 		if err != nil {
 			return errors.Join(err, fmt.Errorf("container %s exited with code: %d", cont.GetName(), res.StatusCode))
 		}
@@ -144,7 +144,7 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 	}
 
 	cruxAgentAddr := fmt.Sprintf("%s:%d", state.Containers.Crux.Name, defaultCruxAgentGrpcPort)
-	if state.Containers.Crux.LocalAgent {
+	if args.LocalAgent {
 		cruxAgentAddr = fmt.Sprintf("%s:%d", host, state.SettingsFile.CruxAgentGrpcPort)
 	}
 	return []string{
@@ -168,10 +168,11 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 		fmt.Sprintf("CRUX_AGENT_IMAGE=%s", state.SettingsFile.Version),
 		fmt.Sprintf("LOCAL_DEPLOYMENT_NETWORK=%s", state.SettingsFile.Network),
 		fmt.Sprintf("JWT_SECRET=%s", state.SettingsFile.CruxSecret),
-		"FROM_NAME=dyrector.io",
-		"FROM_EMAIL=mail@example.com",
+		fmt.Sprintf("FROM_NAME=%s", state.SettingsFile.FromName),
+		fmt.Sprintf("FROM_EMAIL=%s", state.SettingsFile.FromEmail),
 		fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", state.Containers.MailSlurper.Name),
 		fmt.Sprintf("AGENT_INSTALL_SCRIPT_DISABLE_PULL=%t", args.DisableForcepull),
+		"DISABLE_RECAPTCHA=true",
 	}
 }
 
@@ -396,7 +397,7 @@ func getKratosInitContainer(state *State, args *ArgsFlags) containerbuilder.Life
 			kratosMigrate = kratosMigrate.WithForcePullImage()
 		}
 
-		cont, res, err := kratosMigrate.CreateAndWaitUntilExit()
+		cont, res, err := kratosMigrate.CreateAndStartWaitUntilExit()
 		if err != nil {
 			return errors.Join(err, fmt.Errorf("container %s exited with code: %d", cont.GetName(), res.StatusCode))
 		}
@@ -435,6 +436,8 @@ func GetKratosEnvs(state *State, args *ArgsFlags) []string {
 		fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", state.Containers.MailSlurper.Name),
 		fmt.Sprintf("COURIER_SMTP_CONNECTION_URI=smtps://test:test@%s:1025/?skip_ssl_verify=true&legacy_ssl=true",
 			state.Containers.MailSlurper.Name),
+		fmt.Sprintf("FROM_NAME=%s", state.SettingsFile.FromName),
+		fmt.Sprintf("FROM_EMAIL=%s", state.SettingsFile.FromEmail),
 	}
 }
 

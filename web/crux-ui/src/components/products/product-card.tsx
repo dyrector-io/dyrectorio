@@ -37,7 +37,9 @@ const ProductCard = (props: ProductCardProps) => {
             <div className="flex flex-row justify-start">
               <span className="text-bright font-bold ml-4">{`${t('common:updatedAt')}:`}</span>
 
-              <span className="text-bright ml-2">{auditToLocaleDate(product.audit)}</span>
+              <span className="text-bright ml-2" suppressHydrationWarning>
+                {auditToLocaleDate(product.audit)}
+              </span>
             </div>
 
             <ProductTypeTag className="ml-auto" type={product.type} />

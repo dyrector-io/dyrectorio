@@ -8,7 +8,7 @@ services:
       context: ./
     platform: linux/amd64
     environment:
-      - TZ=Europe/Budapest
+      - TZ=UTC
       - DATABASE_URL=postgresql://crux:${POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
     command: migrate
     networks:
@@ -24,7 +24,7 @@ services:
       - 5000:5000
       - 5001:5001
     environment:
-      - TZ=Europe/Budapest
+      - TZ=UTC
       - DATABASE_URL=postgresql://crux:${POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
       - SMTP_URI=$SMTP_URI
       - FROM_EMAIL=$FROM_EMAIL

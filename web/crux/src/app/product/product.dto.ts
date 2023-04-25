@@ -9,6 +9,7 @@ export class ProductDto extends BasicProductDto {
   @IsOptional()
   description?: string | null
 
+  @Type(() => AuditDto)
   audit: AuditDto
 }
 

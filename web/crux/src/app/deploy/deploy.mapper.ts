@@ -46,7 +46,7 @@ import {
 } from 'src/shared/models'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import ContainerMapper from '../shared/container.mapper'
-import { BasicProperties } from '../shared/shared.dto'
+import { BasicProperties, NodeConnectionStatus } from '../shared/shared.dto'
 import SharedMapper from '../shared/shared.mapper'
 import {
   DeploymentDetailsDto,
@@ -77,13 +77,13 @@ export default class DeployMapper {
     }
   }
 
-  toDeploymentWithBasicNodeDto(it: DeploymentWithNode): DeploymentWithBasicNodeDto {
+  toDeploymentWithBasicNodeDto(it: DeploymentWithNode, nodeStatus: NodeConnectionStatus): DeploymentWithBasicNodeDto {
     return {
       id: it.id,
       prefix: it.prefix,
       status: this.statusToDto(it.status),
       updatedAt: it.updatedAt ?? it.createdAt,
-      node: this.sharedMapper.nodeToBasicDto(it.node),
+      node: this.sharedMapper.nodeToBasicWithStatusDto(it.node, nodeStatus),
     }
   }
 

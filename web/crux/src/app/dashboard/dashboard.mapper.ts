@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common'
 import { Node } from '@prisma/client'
-import { toTimestamp } from 'src/domain/utils'
 import AgentService from '../agent/agent.service'
 import { NodeDto } from '../node/node.dto'
+import { DashboardDeploymentDto } from './dashboard.dto'
 
 @Injectable()
 export default class DashboardMapper {
   constructor(private agentService: AgentService) {}
 
-  nodesToProto(nodes: ActiveNode[]): NodeDto[] {
+  nodesToDto(nodes: ActiveNode[]): NodeDto[] {
     return nodes.flatMap(it => {
       const agent = this.agentService.getById(it.id)
 
@@ -25,14 +25,14 @@ export default class DashboardMapper {
     })
   }
 
-  deploymentsToProto(deployments: LatestDeployment[]): any[] {
+  deploymentsToDto(deployments: LatestDeployment[]): DashboardDeploymentDto[] {
     return deployments.map(it => ({
       id: it.id,
       changelog: it.version.changelog,
       product: it.version.product.name,
       node: it.node.name,
       version: it.version.name,
-      deployedAt: toTimestamp(it.createdAt),
+      deployedAt: it.createdAt,
       productId: it.version.product.id,
       versionId: it.version.id,
     }))

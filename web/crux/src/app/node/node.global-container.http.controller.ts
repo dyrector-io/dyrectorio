@@ -1,5 +1,5 @@
-import { Controller, Delete, HttpCode, Post, UseGuards, UseInterceptors } from '@nestjs/common'
-import { ApiNoContentResponse, ApiTags } from '@nestjs/swagger'
+import { Controller, Delete, Get, HttpCode, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common'
+import { ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Observable } from 'rxjs'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -8,6 +8,7 @@ import JwtAuthGuard from '../token/jwt-auth.guard'
 import NodeTeamAccessHttpGuard from './guards/node.team-access.http.guard'
 import { GLOBAL_PREFIX, Name, NodeId, ROUTE_CONTAINERS, ROUTE_NAME, ROUTE_NODES, ROUTE_NODE_ID } from './node.const'
 import NodeService from './node.service'
+import { ContainerDto } from './node.dto'
 
 @Controller(`${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_CONTAINERS}`)
 @ApiTags(ROUTE_NODES)
@@ -15,6 +16,13 @@ import NodeService from './node.service'
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
 export default class NodeGlobalContainerHttpController {
   constructor(private service: NodeService) {}
+
+  @Get(`${ROUTE_NODE_ID}/containers`)
+  @HttpCode(200)
+  @ApiOkResponse({ type: ContainerDto, isArray: true })
+  async getContainers(@NodeId() nodeId: string, @Query('prefix') prefix?: string): Promise<ContainerDto[]> {
+    return await this.service.getContainers(nodeId, prefix)
+  }
 
   @Post(`${ROUTE_NAME}/start`)
   @HttpCode(204)

@@ -73,15 +73,15 @@ func ProcessCommand(ctx context.Context, initialState *State, args *ArgsFlags) {
 		stack.builders[CruxPostgres] = GetCruxPostgres(state, args)
 		stack.builders[KratosPostgres] = GetKratosPostgres(state, args)
 		stack.builders[MailSlurper] = GetMailSlurper(state, args)
-		if !stack.Containers.Crux.Disabled {
+		if !args.CruxDisabled {
 			stack.builders[Crux] = GetCrux(state, args)
 		}
-		if !stack.Containers.CruxUI.Disabled {
+		if !args.CruxUIDisabled {
 			stack.builders[CruxUI] = GetCruxUI(state, args)
 		}
 
 		StartContainers(&stack, state, args)
-		PrintInfo(state)
+		PrintInfo(state, args)
 	case DownCommand:
 		StopContainers(ctx, args)
 		log.Info().Msg("Stack is stopped. Hope you had fun! 🎬")

@@ -69,12 +69,15 @@ export class PatchImageDto {
 
 export class ContainerStorageDto {
   @IsUUID()
+  @IsOptional()
   storageId?: string
 
   @IsString()
+  @IsOptional()
   path?: string
 
   @IsString()
+  @IsOptional()
   bucket?: string
 }
 
@@ -82,10 +85,13 @@ export class ContainerConfigDto {
   // common
   name: string
 
+  @IsOptional()
   environment?: UniqueKeyValue[]
 
+  @IsOptional()
   secrets?: UniqueSecretKey[]
 
+  @IsOptional()
   ingress?: ContainerConfigIngress
 
   @ApiProperty({
@@ -93,29 +99,39 @@ export class ContainerConfigDto {
   })
   expose: ContainerConfigExposeStrategy
 
+  @IsOptional()
   user?: number
 
   tty: boolean
 
+  @IsOptional()
   configContainer?: ContainerConfigContainer
 
+  @IsOptional()
   ports?: ContainerConfigPort[]
 
+  @IsOptional()
   portRanges?: ContainerConfigPortRange[]
 
+  @IsOptional()
   volumes?: ContainerConfigVolume[]
 
+  @IsOptional()
   commands?: UniqueKey[]
 
+  @IsOptional()
   args?: UniqueKey[]
 
+  @IsOptional()
   initContainers?: InitContainer[]
 
   capabilities?: UniqueKeyValue[]
 
+  @IsOptional()
   storage?: ContainerStorageDto
 
   // dagent
+  @IsOptional()
   logConfig?: ContainerConfigLog
 
   @ApiProperty({
@@ -128,8 +144,10 @@ export class ContainerConfigDto {
   })
   networkMode: ContainerNetworkMode
 
+  @IsOptional()
   networks?: UniqueKey[]
 
+  @IsOptional()
   dockerLabels?: UniqueKeyValue[]
 
   // crane
@@ -138,19 +156,25 @@ export class ContainerConfigDto {
   })
   deploymentStrategy: ContainerDeploymentStrategyType
 
+  @IsOptional()
   customHeaders?: UniqueKey[]
 
   proxyHeaders: boolean
 
   useLoadBalancer: boolean
 
+  @IsOptional()
   extraLBAnnotations?: UniqueKeyValue[]
 
+  @IsOptional()
   healthCheckConfig?: ContainerConfigHealthCheck
 
+  @IsOptional()
   resourceConfig?: ContainerConfigResourceConfig
 
+  @IsOptional()
   annotations?: Marker
 
+  @IsOptional()
   labels?: Marker
 }

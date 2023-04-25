@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { Observable, map, mergeAll, mergeWith, of } from 'rxjs'
+import { Observable, filter, firstValueFrom, map, mergeAll, mergeWith, of, timeout } from 'rxjs'
 import { Agent, AgentEvent } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
 import { PreconditionFailedException } from 'src/exception/errors'
@@ -8,6 +8,7 @@ import {
   ContainerCommandRequest,
   ContainerIdentifier,
   ContainerOperation,
+  ContainerStateListMessage,
   DeleteContainersRequest,
 } from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
@@ -15,6 +16,7 @@ import PrismaService from 'src/services/prisma.service'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
 import {
+  ContainerDto,
   CreateNodeDto,
   NodeDetailsDto,
   NodeDto,
@@ -203,13 +205,9 @@ export default class NodeService {
   watchContainersState(nodeId: string, message: WatchContainersStateMessage): Observable<ContainersStateListMessage> {
     const { prefix } = message
 
-    this.logger.debug(`Opening container state stream for prefix: ${nodeId} - ${prefix}`)
-
-    const agent = this.agentService.getByIdOrThrow(nodeId)
-
-    const watcher = agent.upsertContainerStatusWatcher(prefix ?? '')
-
-    return watcher.watch().pipe(map(it => this.mapper.containerStateMessageToContainerMessage(it)))
+    return this.upsertAndWatchStateWatcher(nodeId, prefix, false).pipe(
+      map(it => this.mapper.containerStateMessageToContainerMessage(it)),
+    )
   }
 
   watchContainerLog(nodeId: string, message: WatchContainerLogMessage): Observable<ContainerLogMessage> {
@@ -290,6 +288,29 @@ export default class NodeService {
     }
 
     return agent.deleteContainers(cmd).pipe(map(() => undefined))
+  }
+
+  async getContainers(nodeId: string, prefix?: string): Promise<ContainerDto[]> {
+    const states = this.upsertAndWatchStateWatcher(nodeId, prefix, true).pipe(
+      map(list => list.data?.map(it => this.mapper.containerStateItemToDto(it))),
+      filter(it => it && it.length > 0),
+      timeout(5000),
+    )
+    const containers = await firstValueFrom(states)
+    return containers ?? []
+  }
+
+  private upsertAndWatchStateWatcher(
+    nodeId: string,
+    prefix: string,
+    oneShot: boolean,
+  ): Observable<ContainerStateListMessage> {
+    this.logger.debug(`Opening container state stream for prefix: ${nodeId} - ${prefix}`)
+
+    const agent = this.agentService.getByIdOrThrow(nodeId)
+    const watcher = agent.upsertContainerStatusWatcher(prefix ?? '', oneShot)
+
+    return watcher.watch()
   }
 
   private sendContainerOperation(nodeId: string, container: ContainerIdentifier, operation: ContainerOperation) {

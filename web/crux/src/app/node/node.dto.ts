@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsBoolean, IsDate, IsEmail, IsIn, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator'
+import { ContainerState } from 'src/shared/models'
 import {
   BasicNodeDto,
   NODE_CONNECTION_STATUS_VALUES,
@@ -30,10 +31,12 @@ export class NodeDto extends BasicNodeDto {
   @ApiProperty({
     enum: NODE_CONNECTION_STATUS_VALUES,
   })
-  status: NodeConnectionStatus
+  @IsOptional()
+  status?: NodeConnectionStatus
 
   @IsDate()
   @Type(() => Date)
+  @IsOptional()
   connectedAt?: Date
 
   @IsString()
@@ -63,6 +66,7 @@ export class NodeDetailsDto extends NodeDto {
 
   @IsOptional()
   @ValidateNested()
+  @IsOptional()
   install?: NodeInstallDto
 }
 
@@ -71,9 +75,11 @@ export class CreateNodeDto {
   name: string
 
   @IsString()
+  @IsOptional()
   description?: string
 
   @IsString()
+  @IsOptional()
   icon?: string
 }
 
@@ -93,6 +99,7 @@ export class NodeGenerateScriptDto {
   type: NodeType
 
   @IsString()
+  @IsOptional()
   rootPath?: string
 
   @IsString()
@@ -104,6 +111,7 @@ export class NodeGenerateScriptDto {
 
   @IsObject()
   @ValidateNested()
+  @IsOptional()
   dagentTraefik?: DagentTraefikOptionsDto
 }
 
@@ -133,5 +141,32 @@ export class NodeDeleteContainerDto {
   container?: ContainerIdentifierDto
 
   @IsString()
+  @IsOptional()
   prefix?: string
+}
+
+export class ContainerPort {
+  internal: number
+
+  external: number
+}
+
+export class ContainerDto {
+  id: ContainerIdentifierDto
+
+  command: string
+
+  @Type(() => Date)
+  @IsDate()
+  createdAt: Date
+
+  state: ContainerState
+
+  status: string
+
+  imageName: string
+
+  imageTag: string
+
+  ports: ContainerPort[]
 }

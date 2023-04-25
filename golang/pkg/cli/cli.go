@@ -159,20 +159,15 @@ func run(cCtx *ucli.Context) error {
 		FullyContainerized:  cCtx.Bool("expect-container-env"),
 		Network:             cCtx.String("network"),
 		Silent:              cCtx.Bool("silent"),
+		CruxDisabled:        cCtx.Bool("disable-crux"),
+		CruxUIDisabled:      cCtx.Bool("disable-crux-ui"),
+		LocalAgent:          cCtx.Bool("local-agent"),
 		Command:             cCtx.Command.Name,
 	}
 
 	initialState := State{
-		Ctx: context.Background(),
-		Containers: &Containers{
-			CruxUI: ContainerSettings{
-				Disabled: cCtx.Bool("disable-crux-ui"),
-			},
-			Crux: ContainerSettings{
-				Disabled:   cCtx.Bool("disable-crux"),
-				LocalAgent: cCtx.Bool("local-agent"),
-			},
-		},
+		Ctx:        context.Background(),
+		Containers: &Containers{},
 	}
 
 	ProcessCommand(cCtx.Context, &initialState, &args)

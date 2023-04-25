@@ -58,7 +58,7 @@ func spawnInitContainer(
 				dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for init container to finish")
 				return nil
 			}).
-		WithLogWriter(dog).CreateAndWaitUntilExit()
+		WithLogWriter(dog).CreateAndStartWaitUntilExit()
 	if err != nil {
 		return err
 	}

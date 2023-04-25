@@ -56,7 +56,9 @@ const VersionCard = (props: VersionCardProps) => {
       <div className="flex flex-row justify-end mt-4">
         <span className="text-bright font-bold">{`${t('common:updatedAt')}:`}</span>
 
-        <span className="text-bright ml-2">{auditToLocaleDate(version.audit)}</span>
+        <span className="text-bright ml-2" suppressHydrationWarning>
+          {auditToLocaleDate(version.audit)}
+        </span>
       </div>
 
       <div className="flex flex-row my-2">

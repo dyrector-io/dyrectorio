@@ -12,7 +12,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -50,6 +50,7 @@ export default class TeamHttpController {
   constructor(private service: TeamService) {}
 
   @Get()
+  @HttpCode(200)
   @ApiOkResponse({ type: TeamDto, isArray: true })
   @TeamRoleRequired('none')
   async getTeams(@IdentityFromRequest() identity: Identity): Promise<TeamDto[]> {
@@ -57,12 +58,14 @@ export default class TeamHttpController {
   }
 
   @Get(ROUTE_TEAM_ID)
+  @HttpCode(200)
   @ApiOkResponse({ type: TeamDetailsDto })
   async getTeamById(@TeamId() teamId: string): Promise<TeamDetailsDto> {
     return await this.service.getTeamById(teamId)
   }
 
   @Post()
+  @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateTeamDto })
   @ApiCreatedResponse({
@@ -86,6 +89,7 @@ export default class TeamHttpController {
   @HttpCode(204)
   @ApiBody({ type: UpdateTeamDto })
   @TeamRoleRequired('admin')
+  @ApiNoContentResponse()
   async updateTeam(
     @TeamId() teamId: string,
     @Body() request: UpdateTeamDto,
@@ -97,13 +101,15 @@ export default class TeamHttpController {
   @Delete(ROUTE_TEAM_ID)
   @HttpCode(204)
   @TeamRoleRequired('owner')
+  @ApiNoContentResponse()
   async deleteTeam(@TeamId() teamId: string): Promise<void> {
     await this.service.deleteTeam(teamId)
   }
 
-  // users
+  // Users endpoints
 
   @Post(`${ROUTE_TEAM_ID}/${ROUTE_USERS}`)
+  @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: InviteUserDto })
   @ApiCreatedResponse({
@@ -130,6 +136,7 @@ export default class TeamHttpController {
   @ApiBody({ type: UpdateUserRoleDto })
   @TeamRoleRequired('admin')
   @UseInterceptors(TeamOwnerImmutabilityValidationInterceptor)
+  @ApiNoContentResponse()
   async updateUserRoleInTeam(
     @TeamId() teamId: string,
     @UserId() userId: string,
@@ -140,8 +147,10 @@ export default class TeamHttpController {
   }
 
   @Delete(`${ROUTE_TEAM_ID}/${ROUTE_USERS}/${ROUTE_USER_ID}`)
+  @HttpCode(204)
   @TeamRoleRequired('admin')
   @UseInterceptors(TeamOwnerImmutabilityValidationInterceptor)
+  @ApiNoContentResponse()
   async deleteUserFromTeam(@TeamId() teamId: string, @UserId() userId: string): Promise<void> {
     await this.service.deleteUserFromTeam(teamId, userId)
   }
@@ -150,6 +159,7 @@ export default class TeamHttpController {
   @HttpCode(204)
   @UseInterceptors(TeamReinviteUserValidationInterceptor)
   @TeamRoleRequired('admin')
+  @ApiNoContentResponse()
   async reinviteUser(
     @TeamId() teamId: string,
     @UserId() userId: string,

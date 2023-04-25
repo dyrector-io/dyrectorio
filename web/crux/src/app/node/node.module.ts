@@ -8,13 +8,13 @@ import PrismaService from 'src/services/prisma.service'
 import AgentModule from '../agent/agent.module'
 import TeamModule from '../team/team.module'
 import TeamRepository from '../team/team.repository'
+import NodeContainerWebSocketGateway from './node.container.ws.gateway'
 import NodeGlobalContainerHttpController from './node.global-container.http.controller'
 import NodeHttpController from './node.http.controller'
 import NodeMapper from './node.mapper'
 import NodePrefixContainerHttpController from './node.prefix-container.http.controller'
 import NodeService from './node.service'
 import NodeWebSocketGateway from './node.ws.gateway'
-import NodeContainerWebSocketGateway from './node.container.ws.gateway'
 
 @Module({
   imports: [AgentModule, TeamModule, HttpModule],

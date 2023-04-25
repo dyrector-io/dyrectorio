@@ -13,7 +13,7 @@ export default class ContainerStatusWatcher {
 
   private completer: ContainerStatusStreamCompleter = null
 
-  constructor(private prefix: string) {}
+  constructor(private prefix: string, private oneShot: boolean) {}
 
   start(commandChannel: Subject<AgentCommand>) {
     if (this.started) {
@@ -23,6 +23,7 @@ export default class ContainerStatusWatcher {
     commandChannel.next({
       containerState: {
         prefix: this.prefix,
+        oneShot: this.oneShot,
       },
     } as AgentCommand)
     this.started = true

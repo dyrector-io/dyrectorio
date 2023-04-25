@@ -45,6 +45,7 @@ type ArgsFlags struct {
 	DisablePodmanChecks bool
 	CruxDisabled        bool
 	CruxUIDisabled      bool
+	LocalAgent          bool
 	FullyContainerized  bool
 	Network             string
 	Silent              bool
@@ -63,11 +64,10 @@ type Containers struct {
 }
 
 type ContainerSettings struct {
-	Image      string
-	Name       string
-	Disabled   bool
-	CruxAddr   string
-	LocalAgent bool
+	Image    string
+	Name     string
+	Disabled bool
+	CruxAddr string
 }
 
 // Settings file will be read/written as this struct
@@ -79,7 +79,7 @@ type SettingsFile struct {
 }
 
 type Options struct {
-	TimeZone                       string `yaml:"timezone" env-default:"Europe/Budapest"`
+	TimeZone                       string `yaml:"timezone" env-default:"UTC"`
 	CruxAgentGrpcPort              uint   `yaml:"crux-agentgrpc-port" env-default:"5000"`
 	CruxGrpcPort                   uint   `yaml:"crux-grpc-port" env-default:"5001"`
 	CruxHTTPPort                   uint   `yaml:"crux-http-port" env-default:"1848"`
@@ -103,6 +103,8 @@ type Options struct {
 	MailSlurperSMTPPort            uint   `yaml:"mailSlurperSMTPPort" env-default:"1025"`
 	MailSlurperWebPort             uint   `yaml:"mailSlurperWebPort" env-default:"4436"`
 	MailSlurperWebPort2            uint   `yaml:"mailSlurperWebPort2" env-default:"4437"`
+	FromName                       string `yaml:"FROM_NAME" env-default:"dyrectorio Platform"`
+	FromEmail                      string `yaml:"FROM_EMAIL" env-default:"noreply@dyrectorio.com"`
 }
 
 const (
@@ -180,22 +182,20 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 	}
 	initialState.SettingsFile = settingsFile
 
-	ctx := context.Background()
-
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Fatal().Stack().Err(err).Send()
 	}
 
-	err = containerRuntime.VersionCheck(ctx, cli)
+	err = containerRuntime.VersionCheck(initialState.Ctx, cli)
 	if err != nil {
 		switch {
 		case errors.Is(err, containerRuntime.ErrServerIsOutdated):
 			NotifyOnce("dockerversion", func() {
-				log.Warn().Stack().Err(err).Msg("Server is outdated, please consider updating")
+				log.Info().Stack().Err(err).Msg("There is a newer version of the container engine in use, please consider updating.")
 			})
 		case errors.Is(err, containerRuntime.ErrServerVersionIsNotSupported):
-			log.Fatal().Stack().Err(err).Msg("Server is outdated")
+			log.Fatal().Stack().Err(err).Msg("The container engine in use is not supported, please consider updating.")
 		default:
 			log.Fatal().Stack().Err(err).Send()
 		}
@@ -203,7 +203,7 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 
 	// Fill out data if empty
 	state := LoadDefaultsOnEmpty(initialState, args)
-	state.InternalHostDomain, err = containerRuntime.GetInternalHostDomain(context.Background(), cli)
+	state.InternalHostDomain, err = containerRuntime.GetInternalHostDomain(initialState.Ctx, cli)
 	if err != nil {
 		log.Fatal().Stack().Err(err).Send()
 	}
@@ -231,7 +231,7 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 }
 
 func DisabledServiceSettings(state *State, args *ArgsFlags) *State {
-	if state.Containers.CruxUI.Disabled {
+	if args.CruxUIDisabled {
 		state.CruxUI.CruxAddr = localhost
 	} else {
 		state.CruxUI.CruxAddr = fmt.Sprintf("%s_crux", args.Prefix)
@@ -363,7 +363,7 @@ func RandomChars(bufflength uint) string {
 
 func CheckAndUpdatePorts(state *State, args *ArgsFlags) {
 	portMap := map[string]uint{}
-	if !state.Containers.Crux.Disabled {
+	if !args.CruxDisabled {
 		portMap[CruxAgentGrpcPort] = getAvailablePort(portMap, state.SettingsFile.Options.CruxAgentGrpcPort,
 			CruxAgentGrpcPort, &args.SettingsWrite)
 		state.SettingsFile.Options.CruxAgentGrpcPort = portMap[CruxAgentGrpcPort]
@@ -371,7 +371,7 @@ func CheckAndUpdatePorts(state *State, args *ArgsFlags) {
 			CruxGrpcPort, &args.SettingsWrite)
 		state.SettingsFile.Options.CruxGrpcPort = portMap[CruxGrpcPort]
 	}
-	if !state.Containers.CruxUI.Disabled {
+	if !args.CruxUIDisabled {
 		portMap[CruxUIPort] = getAvailablePort(portMap, state.SettingsFile.Options.CruxUIPort,
 			CruxUIPort, &args.SettingsWrite)
 		state.SettingsFile.Options.CruxUIPort = portMap[CruxUIPort]

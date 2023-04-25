@@ -56,6 +56,8 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const router = useRouter()
   const submitRef = useRef<() => Promise<any>>()
 
+  const handleApiError = defaultApiErrorHandler(t)
+
   const onApiError = defaultApiErrorHandler(t)
   const onWsError = (error: Error) => {
     // eslint-disable-next-line
@@ -104,7 +106,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    const result = await startDeployment(router, product.id, version.id, deployment.id)
+    const result = await startDeployment(router, handleApiError, deployment.id)
     if (result?.property === 'secrets') {
       const invalidSecrets = result.value as DeploymentInvalidatedSecrets[]
 

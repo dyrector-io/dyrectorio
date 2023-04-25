@@ -14,10 +14,10 @@ func PrintWelcomeMessage(settingsPath string) {
 		"give us a star - https://github.com/dyrector-io/dyrectorio")
 }
 
-func PrintInfo(state *State) {
+func PrintInfo(state *State, args *ArgsFlags) {
 	log.Warn().Msg("🦩🦩🦩 Use the CLI tool only for NON-PRODUCTION purposes. 🦩🦩🦩")
 
-	if state.Containers.Crux.Disabled {
+	if args.CruxDisabled {
 		log.Info().Msg("Do not forget to add your environmental variables to your .env files or export them!")
 		log.Info().Msgf("DATABASE_URL=postgresql://%s:%s@localhost:%d/%s?schema=public",
 			state.SettingsFile.CruxPostgresUser,

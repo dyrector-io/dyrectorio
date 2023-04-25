@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsIn, IsString, IsUUID } from 'class-validator'
+import { IsIn, IsOptional, IsString, IsUUID } from 'class-validator'
 import { ProductTypeDto, PRODUCT_TYPE_VALUES } from '../shared/shared.dto'
 
 export class TemplateDto {
@@ -10,6 +10,7 @@ export class TemplateDto {
   name: string
 
   @IsString()
+  @IsOptional()
   description?: string
 
   @IsString({
@@ -26,6 +27,7 @@ export class CreateProductFromTemplateDto {
   name: string
 
   @IsString()
+  @IsOptional()
   description?: string
 
   @ApiProperty({ enum: PRODUCT_TYPE_VALUES })

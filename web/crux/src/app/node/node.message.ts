@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer'
 import { IsDate } from 'class-validator'
-import { NodeConnectionStatus } from '../shared/shared.dto'
+import { ContainerState } from 'src/shared/models'
+import { ContainerIdentifierDto, NodeConnectionStatus } from '../shared/shared.dto'
 
 export const WS_TYPE_NODE_EVENT = 'event'
 export class NodeEventMessage {
@@ -21,21 +22,13 @@ export class NodeEventMessage {
   updating?: boolean
 }
 
-export type ContainerStateDto = 'created' | 'restarting' | 'running' | 'removing' | 'paused' | 'exited' | 'dead'
-
 export class ContainerPortDto {
   internal: number
 
   external: number
 }
 
-export class ContainerIdentifierDto {
-  prefix: string
-
-  name: string
-}
-
-export class ContainerDto {
+export class ContainerMessage {
   id: ContainerIdentifierDto
 
   imageName: string
@@ -46,7 +39,7 @@ export class ContainerDto {
   @Type(() => Date)
   date: Date
 
-  state: ContainerStateDto
+  state: ContainerState
 
   ports: ContainerPortDto[]
 }
@@ -63,7 +56,7 @@ export const WS_TYPE_CONTAINERS_STATE_LIST = 'containers-state-list'
 export class ContainersStateListMessage {
   prefix: string
 
-  containers: ContainerDto[]
+  containers: ContainerMessage[]
 }
 
 // container log

@@ -1,8 +1,9 @@
 import { Type } from 'class-transformer'
-import { IsDate, IsString } from 'class-validator'
+import { IsDate, IsOptional, IsString } from 'class-validator'
 import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
 
 export class AuditLogQueryDto extends PaginationQuery {
+  @IsOptional()
   readonly filter?: string
 
   @Type(() => Date)
@@ -13,8 +14,6 @@ export class AuditLogQueryDto extends PaginationQuery {
   @IsDate()
   readonly to: Date
 }
-
-export class AuditLogListDto extends PaginatedList<AuditLogDto> {}
 
 export class AuditLogDto {
   @Type(() => Date)
@@ -30,5 +29,13 @@ export class AuditLogDto {
   @IsString()
   serviceCall: string
 
+  @IsOptional()
   data?: object
+}
+
+export class AuditLogListDto extends PaginatedList<AuditLogDto> {
+  @Type(() => AuditLogDto)
+  items: AuditLogDto[]
+
+  total: number
 }

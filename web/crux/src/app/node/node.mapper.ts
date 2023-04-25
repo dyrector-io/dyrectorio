@@ -4,15 +4,17 @@ import { AgentEvent } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { fromTimestamp } from 'src/domain/utils'
 import {
+  ContainerOperation,
+  ContainerStateItem,
   ContainerStateListMessage,
   ContainerState as ProtoContainerState,
   containerStateToJSON,
 } from 'src/grpc/protobuf/proto/common'
+import { ContainerState } from 'src/shared/models'
 import AgentService from '../agent/agent.service'
 import { NodeType } from '../shared/shared.dto'
-import { NodeDetailsDto, NodeDto, NodeInstallDto } from './node.dto'
-import { ContainersStateListMessage, ContainerStateDto } from './node.message'
-import { Timestamp } from 'src/grpc/google/protobuf/timestamp'
+import { ContainerDto, ContainerOperationDto, NodeDetailsDto, NodeDto, NodeInstallDto } from './node.dto'
+import { ContainersStateListMessage } from './node.message'
 
 @Injectable()
 export default class NodeMapper {
@@ -78,7 +80,37 @@ export default class NodeMapper {
     }
   }
 
-  containerStateToDto(state: ProtoContainerState): ContainerStateDto {
-    return containerStateToJSON(state).toLowerCase() as ContainerStateDto
+  containerStateItemToDto(it: ContainerStateItem): ContainerDto {
+    return {
+      id: it.id,
+      command: it.command,
+      createdAt: fromTimestamp(it.createdAt),
+      state: this.containerStateToDto(it.state),
+      status: it.status,
+      imageName: it.imageName,
+      imageTag: it.imageTag,
+      ports:
+        it.ports?.map(port => ({
+          internal: port.internal,
+          external: port.external,
+        })) ?? [],
+    }
+  }
+
+  containerStateToDto(state: ProtoContainerState): ContainerState {
+    return containerStateToJSON(state).toLowerCase() as ContainerState
+  }
+
+  operationDtoToProto(operation: ContainerOperationDto): ContainerOperation {
+    switch (operation) {
+      case 'start':
+        return ContainerOperation.START_CONTAINER
+      case 'stop':
+        return ContainerOperation.STOP_CONTAINER
+      case 'restart':
+        return ContainerOperation.RESTART_CONTAINER
+      default:
+        return ContainerOperation.UNRECOGNIZED
+    }
   }
 }

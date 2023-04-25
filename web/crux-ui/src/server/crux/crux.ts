@@ -4,10 +4,10 @@
 // TODO(Balanceee): refactor
 import { WS_DATA_CRUX } from '@app/const'
 import { CruxHealth, RegistryDetailsDto, registryDetailsDtoToUI } from '@app/models'
-import { registryApiUrl } from '@app/routes'
+import { API_HEALTH, registryApiUrl } from '@app/routes'
 import WsConnection from '@app/websockets/connection'
 import { Identity } from '@ory/kratos-client'
-import { getCruxFromContext } from '@server/crux-api'
+import { getCrux, getCruxFromContext } from '@server/crux-api'
 import { sessionOf, sessionOfContext } from '@server/kratos'
 import registryConnections, {
   CruxRegistryConnectionsServices,
@@ -16,15 +16,12 @@ import registryConnections, {
 import { NextApiRequest, NextPageContext } from 'next'
 import CruxClients from './crux-clients'
 import DyoDeploymentService from './deployment-service'
-import DyoHealthService from './health-service'
 import DyoNodeService from './node-service'
 
 export class Crux {
   private _nodes: DyoNodeService
 
   private _deployments: DyoDeploymentService
-
-  private _health: DyoHealthService
 
   private constructor(
     private clients: CruxClients,
@@ -39,10 +36,6 @@ export class Crux {
 
   get deployments() {
     return this._deployments ?? new DyoDeploymentService(this.clients.deployments, this.cookie)
-  }
-
-  get health() {
-    return this._health ?? new DyoHealthService(this.clients.health)
   }
 
   get registryConnectionsServices(): CruxRegistryConnectionsServices {
@@ -84,7 +77,7 @@ if (!global.cruxClients) {
   }
 }
 
-export const getCruxHealth = async (): Promise<CruxHealth> => await Crux.withIdentity(null, null).health.getHealth()
+export const getCruxHealth = async (): Promise<CruxHealth> => await getCrux<CruxHealth>(null, API_HEALTH)
 
 export const cruxFromContext = (context: NextPageContext): Crux => {
   const { req } = context
