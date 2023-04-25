@@ -11,6 +11,8 @@ jobs:
     steps:
     - uses: actions/labeler@v4
       with:
+        source/web:
+        - any: [ 'web' ]
         source:web:
         - any: [ 'web' ]
         source:documentation:
