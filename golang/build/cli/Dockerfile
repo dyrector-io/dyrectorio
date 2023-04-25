@@ -6,3 +6,4 @@ LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio
 
 ENTRYPOINT ["dyo"]
 CMD ["help"]
+
