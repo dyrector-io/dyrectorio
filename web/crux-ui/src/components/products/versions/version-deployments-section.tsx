@@ -16,11 +16,8 @@ import {
   DEPLOYMENT_STATUS_VALUES,
   NodeEventMessage,
   NodeStatus,
-<<<<<<< HEAD
   ProductDetails,
-=======
   NodeStatusMessage,
->>>>>>> develop
   VersionDetails,
   WS_TYPE_NODE_EVENT,
 } from '@app/models'
