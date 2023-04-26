@@ -28,7 +28,9 @@ class GithubRegistryClient implements RegistryApiClient {
 
     if (!res.ok) {
       const errorMessage = `Github packages request failed with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
+      throw res.status === 401
+        ? new UnauthorizedException(errorMessage)
+        : new InternalServerErrorException(errorMessage)
     }
 
     const json = (await res.json()) as { name: string }[]
@@ -45,7 +47,9 @@ class GithubRegistryClient implements RegistryApiClient {
     )
     if (!tokenRes.ok) {
       const errorMessage = `Github auth request failed with status: ${tokenRes.status} ${tokenRes.statusText}`
-      throw tokenRes.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
+      throw tokenRes.status === 401
+        ? new UnauthorizedException(errorMessage)
+        : new InternalServerErrorException(errorMessage)
     }
 
     const token = ((await tokenRes.json()) as { token: string })?.token
@@ -60,7 +64,9 @@ class GithubRegistryClient implements RegistryApiClient {
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(fetcher, `/${this.imageNamePrefix}/${image}/tags/list`)
     if (!res.ok) {
       const errorMessage = `Github tags request failed with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
+      throw res.status === 401
+        ? new UnauthorizedException(errorMessage)
+        : new InternalServerErrorException(errorMessage)
     }
 
     const json = (await res.json()) as RegistryImageTags[]

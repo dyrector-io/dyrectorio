@@ -103,7 +103,9 @@ class HubApiClient implements RegistryApiClient {
         rateTry += 1
       } else {
         const errorMessage = `${endpoint} request failed with status: ${res.status} ${res.statusText}`
-        throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
+        throw res.status === 401
+          ? new UnauthorizedException(errorMessage)
+          : new InternalServerErrorException(errorMessage)
       }
     } while (next)
 

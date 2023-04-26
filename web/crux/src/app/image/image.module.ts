@@ -8,9 +8,10 @@ import TeamRepository from '../team/team.repository'
 import ImageHttpController from './image.http.controller'
 import ImageMapper from './image.mapper'
 import ImageService from './image.service'
+import EditorModule from '../editor/editor.module'
 
 @Module({
-  imports: [RegistryModule],
+  imports: [RegistryModule, EditorModule],
   exports: [ImageService, ImageMapper],
   providers: [
     PrismaService,

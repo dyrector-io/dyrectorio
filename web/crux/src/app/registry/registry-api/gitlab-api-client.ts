@@ -43,7 +43,9 @@ export class GitlabRegistryClient implements RegistryApiClient {
 
     if (!res.ok) {
       const errorMessage = `Gitlab repositories request failed with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
+      throw res.status === 401
+        ? new UnauthorizedException(errorMessage)
+        : new InternalServerErrorException(errorMessage)
     }
 
     const json = (await res.json()) as { path: string }[]
@@ -60,7 +62,9 @@ export class GitlabRegistryClient implements RegistryApiClient {
     )
     if (!tokenRes.ok) {
       const errorMessage = `Gitlab jwt auth request failed with status: ${tokenRes.status} ${tokenRes.statusText}`
-      throw tokenRes.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
+      throw tokenRes.status === 401
+        ? new UnauthorizedException(errorMessage)
+        : new InternalServerErrorException(errorMessage)
     }
 
     const token = ((await tokenRes.json()) as { token: string })?.token
@@ -75,7 +79,9 @@ export class GitlabRegistryClient implements RegistryApiClient {
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(fetcher, `/${image}/tags/list`)
     if (!res.ok) {
       const errorMessage = `Gitlab tags request failed for image ${image} with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
+      throw res.status === 401
+        ? new UnauthorizedException(errorMessage)
+        : new InternalServerErrorException(errorMessage)
     }
 
     const json = (await res.json()) as RegistryImageTags[]

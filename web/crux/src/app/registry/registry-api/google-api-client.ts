@@ -55,7 +55,9 @@ export class GoogleRegistryClient implements RegistryApiClient {
 
     if (!res.ok) {
       const errorMessage = `Google repositories request failed with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
+      throw res.status === 401
+        ? new UnauthorizedException(errorMessage)
+        : new InternalServerErrorException(errorMessage)
     }
 
     const json = (await res.json()) as { child: string[] }
@@ -76,7 +78,9 @@ export class GoogleRegistryClient implements RegistryApiClient {
 
     if (!tagRes.ok) {
       const errorMessage = `Google tags request failed with status: ${tagRes.status} ${tagRes.statusText}`
-      throw tagRes.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
+      throw tagRes.status === 401
+        ? new UnauthorizedException(errorMessage)
+        : new InternalServerErrorException(errorMessage)
     }
 
     const json = (await tagRes.json()) as { tags: string[] }

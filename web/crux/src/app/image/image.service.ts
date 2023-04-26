@@ -150,8 +150,6 @@ export default class ImageService {
 
     const dto = this.mapper.toDto(image)
     this.imageUpdatedEvent.next(dto)
-
-    return dto
   }
 
   async deleteImage(imageId: string): Promise<void> {

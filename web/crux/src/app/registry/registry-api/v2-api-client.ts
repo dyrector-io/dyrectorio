@@ -31,7 +31,9 @@ class RegistryV2ApiClient implements RegistryApiClient {
     const res = await this.fetch('/')
     if (!res.ok) {
       const errorMessage = `Version request failed with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
+      throw res.status === 401
+        ? new UnauthorizedException(errorMessage)
+        : new InternalServerErrorException(errorMessage)
     }
 
     return res
@@ -41,7 +43,9 @@ class RegistryV2ApiClient implements RegistryApiClient {
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this.fetch(it), '/_catalog')
     if (!res.ok) {
       const errorMessage = `Catalog request failed with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
+      throw res.status === 401
+        ? new UnauthorizedException(errorMessage)
+        : new InternalServerErrorException(errorMessage)
     }
 
     const json = (await res.json()) as { repositories: string }[]
@@ -53,7 +57,9 @@ class RegistryV2ApiClient implements RegistryApiClient {
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this.fetch(it), `/${image}/tags/list`)
     if (!res.ok) {
       const errorMessage = `Tags request failed with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? new UnauthorizedException(errorMessage) : new InternalServerErrorException(errorMessage)
+      throw res.status === 401
+        ? new UnauthorizedException(errorMessage)
+        : new InternalServerErrorException(errorMessage)
     }
 
     const json = (await res.json()) as RegistryImageTags[]

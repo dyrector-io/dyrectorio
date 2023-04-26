@@ -11,11 +11,20 @@ import DeployHttpController from './deploy.http.controller'
 import DeployMapper from './deploy.mapper'
 import DeployService from './deploy.service'
 import DeployWebSocketGateway from './deploy.ws.gateway'
+import EditorModule from '../editor/editor.module'
 
 @Module({
-  imports: [AgentModule, ImageModule, SharedModule],
+  imports: [AgentModule, ImageModule, SharedModule, EditorModule],
   exports: [DeployService, DeployMapper],
   controllers: [DeployController, DeployHttpController],
-  providers: [PrismaService, DeployService, DeployMapper, InterceptorGrpcHelperProvider, TeamRepository, KratosService, DeployWebSocketGateway],
+  providers: [
+    PrismaService,
+    DeployService,
+    DeployMapper,
+    InterceptorGrpcHelperProvider,
+    TeamRepository,
+    KratosService,
+    DeployWebSocketGateway,
+  ],
 })
 export default class DeployModule {}

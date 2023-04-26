@@ -1,7 +1,7 @@
 import { UseGuards } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
-import { WsAuthorize, WsMessage } from 'src/websockets/common'
+import { WsAuthorize, WsMessage, WsUnsubscribe } from 'src/websockets/common'
 import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
 import JwtAuthGuard, { IdentityFromSocket } from '../token/jwt-auth.guard'
 import { RegistryConnections } from './registry-api/registry-connections'
@@ -20,12 +20,15 @@ import {
 export default class RegistryWebSocketGateway {
   constructor(private readonly connections: RegistryConnections) {}
 
-  // TODO(@robot9706): disconnect
-
   @WsAuthorize()
   async onAuthorize(@IdentityFromSocket() identity: Identity): Promise<boolean> {
     // TODO(@robot9706): implement
     return true
+  }
+
+  @WsUnsubscribe()
+  async onDisconnect(@IdentityFromSocket() identity: Identity) {
+    this.connections.resetAuthorization(identity)
   }
 
   @SubscribeMessage('find-image')

@@ -36,6 +36,8 @@ import {
   PatchInstanceDto,
 } from './deploy.dto'
 import DeployMapper, { InstanceDetails } from './deploy.mapper'
+import { EditorLeftMessage, EditorMessage } from '../editor/editor.message'
+import EditorServiceProvider from '../editor/editor.service.provider'
 
 @Injectable()
 export default class DeployService {
@@ -51,15 +53,16 @@ export default class DeployService {
     imageService: ImageService,
     private mapper: DeployMapper,
     private containerMapper: ContainerMapper,
+    private readonly editorServices: EditorServiceProvider,
   ) {
-    imageService.imagesAddedToVersionEvent
+    /*imageService.imagesAddedToVersionEvent
       .pipe(
         map(it => from(this.onImagesAddedToVersion(it))),
         concatAll(),
       )
       .subscribe(it => this.instancesCreatedEvent.next(it))
 
-    this.imageDeletedEvent = imageService.imageDeletedFromVersionEvent
+    this.imageDeletedEvent = imageService.imageDeletedFromVersionEvent*/
   }
 
   async getDeploymentDetails(deploymentId: string): Promise<DeploymentDetailsDto> {
@@ -809,6 +812,29 @@ export default class DeployService {
       deploymentIds: deployments.map(it => it.id),
       instances,
     }
+  }
+
+  async onEditorJoined(
+    versionId: string,
+    clientToken: string,
+    identity: Identity,
+  ): Promise<[EditorMessage, EditorMessage[]]> {
+    const editors = await this.editorServices.getOrCreateService(versionId)
+
+    const me = editors.onClientJoin(clientToken, identity)
+
+    return [me, editors.getEditors()]
+  }
+
+  async onEditorLeft(versionId: string, clientToken: string): Promise<EditorLeftMessage> {
+    const editors = await this.editorServices.getOrCreateService(versionId)
+    const message = editors.onClientLeft(clientToken)
+
+    if (editors.editorCount < 1) {
+      this.editorServices.free(versionId)
+    }
+
+    return message
   }
 }
 

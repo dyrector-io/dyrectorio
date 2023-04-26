@@ -1,6 +1,6 @@
-import { InstanceContainerConfigData, UniqueKeyValue } from "src/shared/models"
-import { DeploymentEventDto, InstanceDto } from "./deploy.dto"
-import { ImageConfigProperty } from "../image/image.const"
+import { InstanceContainerConfigData, UniqueKeyValue } from 'src/shared/models'
+import { DeploymentEventDto, InstanceDto } from './deploy.dto'
+import { ImageConfigProperty } from '../image/image.const'
 
 export const WS_TYPE_FETCH_DEPLOYMENT_EVENTS = 'fetch-deployment-events'
 
@@ -18,6 +18,11 @@ export type PatchInstanceMessage = {
 }
 
 export const WS_TYPE_PATCH_RECEIVED = 'patch-received'
+
+export const WS_TYPE_INSTANCE_UPDATED = 'instance-updated'
+export type InstanceUpdatedMessage = InstanceContainerConfigData & {
+  instanceId: string
+}
 
 export const WS_TYPE_PATCH_DEPLOYMENT_ENV = 'patch-deployment-env'
 export type PatchDeploymentEnvMessage = UniqueKeyValue[]

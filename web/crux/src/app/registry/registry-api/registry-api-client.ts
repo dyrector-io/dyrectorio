@@ -1,4 +1,4 @@
-import { RegistryImageTags } from "../registry.message"
+import { RegistryImageTags } from '../registry.message'
 
 export interface RegistryApiClient {
   catalog(text: string, take: number): Promise<string[]>

@@ -14,9 +14,10 @@ import VersionHttpController from './version.http.controller'
 import VersionMapper from './version.mapper'
 import VersionService from './version.service'
 import VersionWebSocketGateway from './version.ws.gateway'
+import EditorModule from '../editor/editor.module'
 
 @Module({
-  imports: [ImageModule, HttpModule, SharedModule, DeployModule, AgentModule],
+  imports: [ImageModule, HttpModule, SharedModule, DeployModule, AgentModule, EditorModule],
   exports: [VersionService, VersionMapper],
   controllers: [VersionHttpController],
   providers: [
