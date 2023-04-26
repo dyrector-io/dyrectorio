@@ -13,8 +13,8 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
-	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 )

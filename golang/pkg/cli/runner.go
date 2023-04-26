@@ -11,9 +11,9 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/rs/zerolog/log"
 
+	dockerhelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
-	dockerhelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 )
 
 type StackItemID string
