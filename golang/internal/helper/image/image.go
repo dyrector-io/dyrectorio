@@ -294,7 +294,7 @@ func imagePullPrivileged(ctx context.Context, cli client.APIClient, imgRefAndAut
 	if err != nil {
 		return err
 	}
-	defer responseBody.Close()
+	defer logdefer.LogDeferredErr(responseBody.Close, log.Warn(), "image pull body close error")
 
 	return JSONStreamToStatusStream(responseBody, status)
 }
