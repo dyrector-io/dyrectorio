@@ -11,6 +11,7 @@ import NodeTeamAccessHttpGuard from './guards/node.team-access.http.guard'
 import {
   Name,
   NodeId,
+  PARAM_NODE_ID,
   Prefix,
   ROUTE_CONTAINERS,
   ROUTE_NAME,
@@ -19,8 +20,6 @@ import {
   ROUTE_PREFIX,
 } from './node.const'
 import NodeService from './node.service'
-
-const PARAM_NODE_ID = 'nodeId'
 
 @Controller(`${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_PREFIX}/${ROUTE_CONTAINERS}`)
 @ApiTags(ROUTE_NODES)

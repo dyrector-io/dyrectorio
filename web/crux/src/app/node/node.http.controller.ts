@@ -22,7 +22,7 @@ import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-loc
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { DisableAuth, IdentityFromRequest } from '../token/jwt-auth.guard'
 import NodeTeamAccessHttpGuard from './guards/node.team-access.http.guard'
-import { NodeId, ROUTE_NODES, ROUTE_NODE_ID } from './node.const'
+import { NodeId, PARAM_NODE_ID, ROUTE_NODES, ROUTE_NODE_ID } from './node.const'
 import {
   ContainerStatus,
   CreateNodeDto,
@@ -35,8 +35,6 @@ import {
 import NodeService from './node.service'
 import NodeGenerateScriptValidationPipe from './pipes/node.generate-script.pipe'
 import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
-
-const PARAM_NODE_ID = 'nodeId'
 
 @Controller(ROUTE_NODES)
 @ApiTags(ROUTE_NODES)

@@ -8,10 +8,17 @@ import UuidParams from 'src/decorators/api-params.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import NodeTeamAccessHttpGuard from './guards/node.team-access.http.guard'
-import { GLOBAL_PREFIX, Name, NodeId, ROUTE_CONTAINERS, ROUTE_NAME, ROUTE_NODES, ROUTE_NODE_ID } from './node.const'
+import {
+  GLOBAL_PREFIX,
+  Name,
+  NodeId,
+  PARAM_NODE_ID,
+  ROUTE_CONTAINERS,
+  ROUTE_NAME,
+  ROUTE_NODES,
+  ROUTE_NODE_ID,
+} from './node.const'
 import NodeService from './node.service'
-
-const PARAM_NODE_ID = 'nodeId'
 
 @Controller(`${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_CONTAINERS}`)
 @ApiTags(ROUTE_NODES)
