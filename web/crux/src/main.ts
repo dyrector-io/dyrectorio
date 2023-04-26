@@ -1,5 +1,5 @@
 import { ServerCredentials } from '@grpc/grpc-js'
-import { Logger, LogLevel, VersioningType } from '@nestjs/common'
+import { Logger, LogLevel } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
@@ -48,9 +48,6 @@ const bootstrap = async () => {
   const configService = app.get(ConfigService)
 
   app.enableShutdownHooks()
-  app.enableVersioning({
-    type: VersioningType.URI,
-  })
 
   const config = new DocumentBuilder()
     .setTitle('dyrectorio platform API')

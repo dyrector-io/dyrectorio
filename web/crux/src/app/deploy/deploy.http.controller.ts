@@ -18,6 +18,8 @@ import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { PaginationQuery } from 'src/shared/dtos/paginating'
+import UuidParams from 'src/decorators/api-params.decorator'
+import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -41,8 +43,10 @@ import DeleteDeploymentValidationInterceptor from './interceptors/deploy.delete.
 import DeployPatchValidationInterceptor from './interceptors/deploy.patch.interceptor'
 import DeployStartValidationInterceptor from './interceptors/deploy.start.interceptor'
 
-const DeploymentId = () => Param('deploymentId')
-const InstanceId = () => Param('instanceId')
+const PARAM_DEPLOYMENT_ID = 'deploymentId'
+const PARAM_INSTANCE_ID = 'instanceId'
+const DeploymentId = () => Param(PARAM_DEPLOYMENT_ID)
+const InstanceId = () => Param(PARAM_INSTANCE_ID)
 
 const ROUTE_DEPLOYMENTS = 'deployments'
 const ROUTE_DEPLOYMENT_ID = ':deploymentId'
@@ -51,7 +55,7 @@ const ROUTE_INSTANCE_ID = ':instanceId'
 
 @Controller(ROUTE_DEPLOYMENTS)
 @ApiTags(ROUTE_DEPLOYMENTS)
-@UseGuards(JwtAuthGuard, DeployTeamAccessGuard)
+@UseGuards(JwtAuthGuard, UuidValidationGuard, DeployTeamAccessGuard)
 @UsePipes(
   new ValidationPipe({
     // TODO(@robot9706): Move to global pipes after removing gRPC
@@ -74,6 +78,7 @@ export default class DeployHttpController {
   @Get(ROUTE_DEPLOYMENT_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: DeploymentDetailsDto })
+  @UuidParams(PARAM_DEPLOYMENT_ID)
   async getDeploymentDetails(@DeploymentId() deploymentId: string): Promise<DeploymentDetailsDto> {
     return await this.service.getDeploymentDetails(deploymentId)
   }
@@ -81,6 +86,7 @@ export default class DeployHttpController {
   @Get(`${ROUTE_DEPLOYMENT_ID}/events`)
   @HttpCode(200)
   @ApiOkResponse({ type: DeploymentEventDto, isArray: true })
+  @UuidParams(PARAM_DEPLOYMENT_ID)
   async getDeploymentEvents(@DeploymentId() deploymentId: string): Promise<DeploymentEventDto[]> {
     return await this.service.getDeploymentEvents(deploymentId)
   }
@@ -88,6 +94,7 @@ export default class DeployHttpController {
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)
   @HttpCode(200)
   @ApiOkResponse({ type: InstanceDto })
+  @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
   async getInstance(@DeploymentId() _deploymentId: string, @InstanceId() instanceId: string): Promise<InstanceDto> {
     return await this.service.getInstance(instanceId)
   }
@@ -95,6 +102,7 @@ export default class DeployHttpController {
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}/secrets`)
   @HttpCode(200)
   @ApiOkResponse({ type: InstanceSecretsDto })
+  @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
   async getDeploymentSecrets(
     @DeploymentId() _deploymentId: string,
     @InstanceId() instanceId: string,
@@ -125,6 +133,7 @@ export default class DeployHttpController {
   @HttpCode(204)
   @UseInterceptors(DeployPatchValidationInterceptor)
   @ApiNoContentResponse()
+  @UuidParams(PARAM_DEPLOYMENT_ID)
   async patchDeployment(
     @DeploymentId() deploymentId: string,
     @Body() request: PatchDeploymentDto,
@@ -137,6 +146,7 @@ export default class DeployHttpController {
   @HttpCode(204)
   @UseInterceptors(DeployPatchValidationInterceptor)
   @ApiNoContentResponse()
+  @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
   async patchInstance(
     @DeploymentId() deploymentId: string,
     @InstanceId() instanceId: string,
@@ -149,6 +159,7 @@ export default class DeployHttpController {
   @Delete(ROUTE_DEPLOYMENT_ID)
   @HttpCode(204)
   @UseInterceptors(DeleteDeploymentValidationInterceptor)
+  @UuidParams(PARAM_DEPLOYMENT_ID)
   async deleteDeployment(@DeploymentId() deploymentId: string): Promise<void> {
     await this.service.deleteDeployment(deploymentId)
   }
@@ -157,6 +168,7 @@ export default class DeployHttpController {
   @HttpCode(204)
   @UseInterceptors(DeployStartValidationInterceptor)
   @ApiNoContentResponse()
+  @UuidParams(PARAM_DEPLOYMENT_ID)
   async startDeployment(
     @DeploymentId() deploymentId: string,
     @IdentityFromRequest() identity: Identity,
@@ -169,6 +181,7 @@ export default class DeployHttpController {
   @CreatedWithLocation()
   @UseInterceptors(DeployCopyValidationInterceptor)
   @ApiCreatedResponse({ type: DeploymentDto })
+  @UuidParams(PARAM_DEPLOYMENT_ID)
   async copyDeployment(
     @Query('force') _: boolean,
     @DeploymentId() deploymentId: string,
@@ -183,6 +196,7 @@ export default class DeployHttpController {
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/log`)
   @ApiOkResponse({ type: DeploymentLogListDto })
+  @UuidParams(PARAM_DEPLOYMENT_ID)
   async deploymentLog(
     @DeploymentId() deploymentId: string,
     @Query() query: PaginationQuery,
