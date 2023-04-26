@@ -10,10 +10,10 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/rs/zerolog/log"
 
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
-	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 

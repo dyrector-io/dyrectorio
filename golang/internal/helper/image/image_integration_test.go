@@ -5,6 +5,7 @@ package image_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/docker/docker/api/types"
@@ -12,7 +13,9 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/stretchr/testify/assert"
 
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
+	"github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
+	"github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 )
 
 func TestPullImage(t *testing.T) {
@@ -47,4 +50,13 @@ func TestPullImage(t *testing.T) {
 	}
 
 	assert.Greater(t, len(images), 0)
+}
+
+func TestNewPull(t *testing.T) {
+	ctx := context.Background()
+	img := "nginx:alpine"
+	docker.DeleteImage(ctx, img)
+	stat, err := image.PrettyImagePull(ctx, img)
+	fmt.Printf("%v", stat)
+	assert.Nilf(t, err, "expected err to be nil for a valid image name")
 }

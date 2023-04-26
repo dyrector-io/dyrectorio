@@ -19,9 +19,9 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/rs/zerolog/log"
 
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
-	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 )
 
 // A Builder handles the process of creating and starting containers,

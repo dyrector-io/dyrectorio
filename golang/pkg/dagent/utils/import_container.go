@@ -13,10 +13,10 @@ import (
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
-	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
