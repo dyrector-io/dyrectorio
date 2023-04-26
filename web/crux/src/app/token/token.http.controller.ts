@@ -57,7 +57,7 @@ export default class TokenHttpController {
   @Get(ROUTE_TOKEN_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: TokenDto })
-  @UuidParams([PARAM_TOKEN_ID])
+  @UuidParams(PARAM_TOKEN_ID)
   async getToken(@TokenId() id: string, @IdentityFromRequest() identity: Identity): Promise<TokenDto> {
     return this.service.getToken(id, identity)
   }
@@ -85,7 +85,7 @@ export default class TokenHttpController {
   @Delete(ROUTE_TOKEN_ID)
   @HttpCode(204)
   @ApiNoContentResponse({ description: 'Token deleted' })
-  @UuidParams([PARAM_TOKEN_ID])
+  @UuidParams(PARAM_TOKEN_ID)
   async deleteToken(@TokenId() id: string): Promise<void> {
     await this.service.deleteToken(id)
   }

@@ -64,7 +64,7 @@ export default class NotificationHttpController {
   @Put(ROUTE_NOTIFICATION_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: NotificationDetailsDto })
-  @UuidParams([PARAM_NOTIFICATION_ID])
+  @UuidParams(PARAM_NOTIFICATION_ID)
   async updateNotification(
     @NotificationId() notificationId: string,
     @Body() request: UpdateNotificationDto,
@@ -76,7 +76,7 @@ export default class NotificationHttpController {
   @Delete(ROUTE_NOTIFICATION_ID)
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams([PARAM_NOTIFICATION_ID])
+  @UuidParams(PARAM_NOTIFICATION_ID)
   async deleteNotification(@NotificationId() notificationId: string): Promise<void> {
     this.service.deleteNotification(notificationId)
   }
@@ -84,7 +84,7 @@ export default class NotificationHttpController {
   @Post(`${ROUTE_NOTIFICATION_ID}/test`)
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams([PARAM_NOTIFICATION_ID])
+  @UuidParams(PARAM_NOTIFICATION_ID)
   async testNotification(@NotificationId() notificationId: string): Promise<void> {
     this.service.testNotification(notificationId)
   }

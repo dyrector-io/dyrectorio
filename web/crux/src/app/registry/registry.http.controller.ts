@@ -57,7 +57,7 @@ export default class RegistryHttpController {
   @Get(ROUTE_REGISTRY_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: RegistryDetailsDto })
-  @UuidParams([PARAM_REGISTRY_ID])
+  @UuidParams(PARAM_REGISTRY_ID)
   async getRegistry(@RegistryId() id: string): Promise<RegistryDetailsDto> {
     return await this.service.getRegistryDetails(id)
   }
@@ -89,7 +89,7 @@ export default class RegistryHttpController {
   @UseGuards(RegistryAccessValidationGuard)
   @ApiBody({ type: UpdateRegistryDto })
   @ApiNoContentResponse()
-  @UuidParams([PARAM_REGISTRY_ID])
+  @UuidParams(PARAM_REGISTRY_ID)
   async updateRegistry(
     @RegistryId() id: string,
     @Body() request: UpdateRegistryDto,
@@ -101,7 +101,7 @@ export default class RegistryHttpController {
   @Delete(ROUTE_REGISTRY_ID)
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams([PARAM_REGISTRY_ID])
+  @UuidParams(PARAM_REGISTRY_ID)
   async deleteRegistry(@RegistryId(DeleteRegistryValidationPipe) id: string): Promise<void> {
     await this.service.deleteRegistry(id)
   }

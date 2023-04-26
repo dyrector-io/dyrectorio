@@ -58,7 +58,7 @@ export default class NodeHttpController {
   @Get(ROUTE_NODE_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: NodeDetailsDto })
-  @UuidParams([PARAM_NODE_ID])
+  @UuidParams(PARAM_NODE_ID)
   async getNodeDetails(@NodeId() nodeId: string): Promise<NodeDetailsDto> {
     return this.service.getNodeDetails(nodeId)
   }
@@ -83,7 +83,7 @@ export default class NodeHttpController {
   @Put(ROUTE_NODE_ID)
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams([PARAM_NODE_ID])
+  @UuidParams(PARAM_NODE_ID)
   async updateNode(
     @NodeId() id: string,
     @Body() request: UpdateNodeDto,
@@ -95,7 +95,7 @@ export default class NodeHttpController {
   @Delete(ROUTE_NODE_ID)
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams([PARAM_NODE_ID])
+  @UuidParams(PARAM_NODE_ID)
   async deleteNode(@NodeId() nodeId: string): Promise<void> {
     return this.service.deleteNode(nodeId)
   }
@@ -103,7 +103,7 @@ export default class NodeHttpController {
   @Post(`${ROUTE_NODE_ID}/script`)
   @HttpCode(201)
   @ApiOkResponse({ type: NodeInstallDto })
-  @UuidParams([PARAM_NODE_ID])
+  @UuidParams(PARAM_NODE_ID)
   async generateScript(
     @NodeId(NodeGenerateScriptValidationPipe) nodeId: string,
     @Body() request: NodeGenerateScriptDto,
@@ -123,7 +123,7 @@ export default class NodeHttpController {
   @ApiProduces('text/plain')
   @Header('content-type', 'text/plain')
   @DisableAuth()
-  @UuidParams([PARAM_NODE_ID])
+  @UuidParams(PARAM_NODE_ID)
   async getScript(@NodeId(NodeGetScriptValidationPipe) nodeId: string): Promise<string> {
     return await this.service.getScript(nodeId)
   }
@@ -131,7 +131,7 @@ export default class NodeHttpController {
   @Delete(`${ROUTE_NODE_ID}/token`)
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams([PARAM_NODE_ID])
+  @UuidParams(PARAM_NODE_ID)
   async revokeToken(@NodeId() nodeId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
     return await this.service.revokeToken(nodeId, identity)
   }
@@ -139,7 +139,7 @@ export default class NodeHttpController {
   @Post(`${ROUTE_NODE_ID}/update`)
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams([PARAM_NODE_ID])
+  @UuidParams(PARAM_NODE_ID)
   async updateNodeAgent(@NodeId() nodeId: string): Promise<void> {
     this.service.updateNodeAgent(nodeId)
   }
@@ -147,7 +147,7 @@ export default class NodeHttpController {
   @Get(`${ROUTE_NODE_ID}/container`)
   @HttpCode(200)
   @ApiOkResponse({ type: ContainerStatus, isArray: true })
-  @UuidParams([PARAM_NODE_ID])
+  @UuidParams(PARAM_NODE_ID)
   async getContainerStatus(@NodeId() nodeId: string, @Query('prefix') prefix: string): Promise<Observable<any>> {
     return this.service.handleWatchContainerStatusDto(nodeId, prefix).pipe(timeout(5000))
   }

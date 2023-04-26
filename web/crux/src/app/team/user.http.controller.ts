@@ -58,14 +58,14 @@ export default class UserHttpController {
 
   @Post(`${ROUTE_INVITATIONS}/${ROUTE_TEAM_ID}`)
   @HttpCode(204)
-  @UuidParams([PARAM_TEAM_ID])
+  @UuidParams(PARAM_TEAM_ID)
   async acceptTeamInvitation(@TeamId() teamId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
     await this.service.acceptTeamInvitation(teamId, identity)
   }
 
   @Delete(`${ROUTE_INVITATIONS}/${ROUTE_TEAM_ID}`)
   @HttpCode(204)
-  @UuidParams([PARAM_TEAM_ID])
+  @UuidParams(PARAM_TEAM_ID)
   async declineTeamInvitation(@TeamId() teamId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
     await this.service.declineTeamInvitation(teamId, identity)
   }

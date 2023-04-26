@@ -1,5 +1,6 @@
 import { BadRequestException, CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
+import { UUID_PARAMS } from 'src/decorators/api-params.decorator'
 
 import validator from 'validator'
 
@@ -13,7 +14,7 @@ export default class UuidValidationGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const params = this.reflector.get<string[]>('uuidParams', context.getHandler())
+    const params = this.reflector.get<string[]>(UUID_PARAMS, context.getHandler())
     const req = context.switchToHttp().getRequest()
 
     // return if there is no given params

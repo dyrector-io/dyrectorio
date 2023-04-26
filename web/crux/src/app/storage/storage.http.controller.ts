@@ -50,7 +50,7 @@ export default class StorageHttpController {
   @Get(ROUTE_STORAGE_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: StorageDetailsDto })
-  @UuidParams([PARAM_STORAGE_ID])
+  @UuidParams(PARAM_STORAGE_ID)
   async getProductDetails(@StorageId() id: string): Promise<StorageDetailsDto> {
     return this.service.getStorageDetails(id)
   }
@@ -76,7 +76,7 @@ export default class StorageHttpController {
   @HttpCode(204)
   @UseInterceptors(StorageUpdateValidationInterceptor)
   @ApiNoContentResponse()
-  @UuidParams([PARAM_STORAGE_ID])
+  @UuidParams(PARAM_STORAGE_ID)
   async updateProduct(
     @StorageId() id: string,
     @Body() request: UpdateStorageDto,
@@ -89,7 +89,7 @@ export default class StorageHttpController {
   @HttpCode(204)
   @UseInterceptors(StorageDeleteValidationInterceptor)
   @ApiNoContentResponse()
-  @UuidParams([PARAM_STORAGE_ID])
+  @UuidParams(PARAM_STORAGE_ID)
   async deleteProduct(@StorageId() id: string): Promise<void> {
     return this.service.deleteStorage(id)
   }

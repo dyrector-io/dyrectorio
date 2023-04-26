@@ -58,7 +58,7 @@ export default class ProductHttpController {
   @Get(ROUTE_PRODUCT_ID)
   @HttpCode(200)
   @ApiOkResponse({ type: ProductDetailsDto })
-  @UuidParams([PARAM_PRODUCT_ID])
+  @UuidParams(PARAM_PRODUCT_ID)
   async getProductDetails(@ProductId() id: string): Promise<ProductDetailsDto> {
     return this.service.getProductDetails(id)
   }
@@ -83,7 +83,7 @@ export default class ProductHttpController {
   @Put(ROUTE_PRODUCT_ID)
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams([PARAM_PRODUCT_ID])
+  @UuidParams(PARAM_PRODUCT_ID)
   @UseInterceptors(ProductUpdateValidationInterceptor)
   async updateProduct(
     @ProductId() id: string,
@@ -96,7 +96,7 @@ export default class ProductHttpController {
   @Delete(ROUTE_PRODUCT_ID)
   @HttpCode(204)
   @ApiNoContentResponse()
-  @UuidParams([PARAM_PRODUCT_ID])
+  @UuidParams(PARAM_PRODUCT_ID)
   async deleteProduct(@ProductId() id: string): Promise<void> {
     return this.service.deleteProduct(id)
     // TODO(@polaroi8d): exception if there is no product with the given Id
