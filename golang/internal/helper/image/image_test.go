@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 

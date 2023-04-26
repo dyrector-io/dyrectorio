@@ -15,9 +15,9 @@ import (
 	"github.com/docker/docker/api/types/container"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 )
 
 type DeployImageRequest struct {
@@ -288,7 +288,7 @@ type ImportContainer struct {
 }
 
 // classic initContainer, also mimicked on docker
-// todo(nandor-magyar): extend docs here
+// TODO(nandor-magyar): extend docs here
 type InitContainer struct {
 	// name of the init container, they must be unique within a pod
 	Name string `json:"name"`

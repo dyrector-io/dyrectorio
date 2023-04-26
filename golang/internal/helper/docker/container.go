@@ -168,6 +168,16 @@ func GetContainerByName(ctx context.Context, nameFilter string) (*types.Containe
 	return checkOneContainer(containers)
 }
 
+func DeleteImage(ctx context.Context, imageID string) error {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		log.Fatal().Err(err).Send()
+	}
+
+	_, err = cli.ImageRemove(ctx, imageID, types.ImageRemoveOptions{})
+	return err
+}
+
 // Making sure there's only one, tops
 func checkOneContainer(containers []types.Container) (*types.Container, error) {
 	switch len(containers) {

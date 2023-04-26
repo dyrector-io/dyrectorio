@@ -3,6 +3,8 @@ import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTa
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
+import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
+import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
@@ -12,13 +14,15 @@ import StorageTeamAccessGuard from './guards/storage.team-access.guard'
 import StorageUpdateValidationInterceptor from './interceptors/storage.update.interceptor'
 import StorageDeleteValidationInterceptor from './interceptors/storage.delete.interceptor'
 
+const PARAM_STORAGE_ID = 'storageId'
+const StorageId = () => Param(PARAM_STORAGE_ID)
+
 const ROUTE_STORAGES = 'storages'
 const ROUTE_STORAGE_ID = ':storageId'
-const StorageId = () => Param('storageId')
 
 @Controller(ROUTE_STORAGES)
 @ApiTags(ROUTE_STORAGES)
-@UseGuards(JwtAuthGuard, StorageTeamAccessGuard)
+@UseGuards(JwtAuthGuard, UuidValidationGuard, StorageTeamAccessGuard)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
 export default class StorageHttpController {
   constructor(private service: StorageService) {}
@@ -28,6 +32,7 @@ export default class StorageHttpController {
   @ApiOkResponse({
     type: StorageDto,
     isArray: true,
+    description: 'Fetch details of storages.',
   })
   async getStorages(@IdentityFromRequest() identity: Identity): Promise<StorageDto[]> {
     return this.service.getStorages(identity)
@@ -38,6 +43,7 @@ export default class StorageHttpController {
   @ApiOkResponse({
     type: StorageOptionDto,
     isArray: true,
+    description: 'Fetch the name and ID of a storage.',
   })
   async getStorageOptions(@IdentityFromRequest() identity: Identity): Promise<StorageOptionDto[]> {
     return this.service.getStorageOptions(identity)
@@ -45,7 +51,8 @@ export default class StorageHttpController {
 
   @Get(ROUTE_STORAGE_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: StorageDetailsDto })
+  @ApiOkResponse({ type: StorageDetailsDto, description: 'Return name and ID of a storage.' })
+  @UuidParams(PARAM_STORAGE_ID)
   async getProductDetails(@StorageId() id: string): Promise<StorageDetailsDto> {
     return this.service.getStorageDetails(id)
   }
@@ -54,7 +61,7 @@ export default class StorageHttpController {
   @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateStorageDto })
-  @ApiCreatedResponse({ type: StorageDetailsDto })
+  @ApiCreatedResponse({ type: StorageDetailsDto, description: 'Create a new storage.' })
   async createProduct(
     @Body() request: CreateStorageDto,
     @IdentityFromRequest() identity: Identity,
@@ -70,7 +77,8 @@ export default class StorageHttpController {
   @Put(ROUTE_STORAGE_ID)
   @HttpCode(204)
   @UseInterceptors(StorageUpdateValidationInterceptor)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Update a storage.' })
+  @UuidParams(PARAM_STORAGE_ID)
   async updateProduct(
     @StorageId() id: string,
     @Body() request: UpdateStorageDto,
@@ -82,7 +90,8 @@ export default class StorageHttpController {
   @Delete(ROUTE_STORAGE_ID)
   @HttpCode(204)
   @UseInterceptors(StorageDeleteValidationInterceptor)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Delete a storage.' })
+  @UuidParams(PARAM_STORAGE_ID)
   async deleteProduct(@StorageId() id: string): Promise<void> {
     return this.service.deleteStorage(id)
   }

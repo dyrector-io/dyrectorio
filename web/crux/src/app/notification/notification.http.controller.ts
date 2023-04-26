@@ -3,6 +3,8 @@ import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTa
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
+import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
+import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -15,27 +17,29 @@ import {
 } from './notification.dto'
 import NotificationService from './notification.service'
 
+const PARAM_NOTIFICATION_ID = 'notificationId'
+const NotificationId = () => Param(PARAM_NOTIFICATION_ID)
+
 const ROUTE_NOTIFICATIONS = 'notifications'
 const ROUTE_NOTIFICATION_ID = ':notificationId'
-const NotificationId = () => Param('notificationId')
 
 @Controller(ROUTE_NOTIFICATIONS)
 @ApiTags(ROUTE_NOTIFICATIONS)
-@UseGuards(JwtAuthGuard, NotificationTeamAccessGuard)
+@UseGuards(JwtAuthGuard, UuidValidationGuard, NotificationTeamAccessGuard)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
 export default class NotificationHttpController {
   constructor(private service: NotificationService) {}
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: NotificationDto, isArray: true })
+  @ApiOkResponse({ type: NotificationDto, isArray: true, description: 'Retrieve notifications that belong to a team.' })
   async getNotifications(@IdentityFromRequest() identity: Identity): Promise<NotificationDto[]> {
     return this.service.getNotifications(identity)
   }
 
   @Get(ROUTE_NOTIFICATION_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: NotificationDetailsDto })
+  @ApiOkResponse({ type: NotificationDetailsDto, description: 'Fetch data that belongs to a notification.' })
   async getNotificationDetails(@NotificationId() notificationId: string): Promise<NotificationDetailsDto> {
     return this.service.getNotificationDetails(notificationId)
   }
@@ -44,7 +48,7 @@ export default class NotificationHttpController {
   @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateNotificationDto })
-  @ApiCreatedResponse({ type: NotificationDetailsDto })
+  @ApiCreatedResponse({ type: NotificationDetailsDto, description: 'Create a new notification.' })
   async createNotification(
     @Body() request: CreateNotificationDto,
     @IdentityFromRequest() identity: Identity,
@@ -59,7 +63,8 @@ export default class NotificationHttpController {
 
   @Put(ROUTE_NOTIFICATION_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: NotificationDetailsDto })
+  @ApiOkResponse({ type: NotificationDetailsDto, description: 'Modify a notification.' })
+  @UuidParams(PARAM_NOTIFICATION_ID)
   async updateNotification(
     @NotificationId() notificationId: string,
     @Body() request: UpdateNotificationDto,
@@ -70,14 +75,16 @@ export default class NotificationHttpController {
 
   @Delete(ROUTE_NOTIFICATION_ID)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Delete a notification.' })
+  @UuidParams(PARAM_NOTIFICATION_ID)
   async deleteNotification(@NotificationId() notificationId: string): Promise<void> {
     this.service.deleteNotification(notificationId)
   }
 
   @Post(`${ROUTE_NOTIFICATION_ID}/test`)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Send a test notification.' })
+  @UuidParams(PARAM_NOTIFICATION_ID)
   async testNotification(@NotificationId() notificationId: string): Promise<void> {
     this.service.testNotification(notificationId)
   }

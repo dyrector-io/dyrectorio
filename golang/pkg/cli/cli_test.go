@@ -12,5 +12,5 @@ func TestMain(m *testing.M) {
 }
 
 func TestBasic(t *testing.T) {
-	// todo(nandor-magyar): write integration tests
+	// TODO(nandor-magyar): write integration tests
 }
