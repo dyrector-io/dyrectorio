@@ -87,6 +87,7 @@ func GetImageByReference(ctx context.Context, ref string) (*types.ImageSummary, 
 	return nil, errors.New("found more than 1 image with the same reference")
 }
 
+// Exists check local references using a filter, this uses exact matching
 func Exists(ctx context.Context, logger io.StringWriter, expandedImageName string) (bool, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -118,7 +119,7 @@ func Exists(ctx context.Context, logger io.StringWriter, expandedImageName strin
 }
 
 // force pulls the given image name
-// todo(nandor-magyar): the output from docker is not really nice, should be improved
+// TODO(nandor-magyar): the output from docker is not really nice, should be improved
 func Pull(ctx context.Context, logger io.StringWriter, expandedImageName, authCreds string) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {

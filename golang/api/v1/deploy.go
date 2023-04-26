@@ -288,7 +288,7 @@ type ImportContainer struct {
 }
 
 // classic initContainer, also mimicked on docker
-// todo(nandor-magyar): extend docs here
+// TODO(nandor-magyar): extend docs here
 type InitContainer struct {
 	// name of the init container, they must be unique within a pod
 	Name string `json:"name"`

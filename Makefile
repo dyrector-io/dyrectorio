@@ -34,14 +34,15 @@ cli:
 
 .PHONY: bundle
 bundle:
+	$(eval BUNDLEVER=$(or $(version),latest))
 	mv .env .env_bak || true
-	echo "DYO_VERSION=latest" > .env
-	docker-compose pull 2>/dev/null
+	echo "DYO_VERSION=$(BUNDLEVER)" > .env
+	docker-compose --ansi=never pull  2> >(awk '!/level=warning/') >/dev/stdout
 	docker-compose config 2>/dev/null | yq -r '.services[].image' | sort | uniq | while read line ; do \
 	docker save $$line | gzip > "offline/$$(echo "$$line" | sed 's/\//\./g; s/\:/\_/g' | cut -d'.' -f3-).tgz" ; done
 	cp docker-compose.yaml offline/
 	cp .env.example offline/
-	zip -r dyo-offline-bundle.zip offline
+	zip -r dyrectorio-offline-bundle-$(BUNDLEVER).zip offline
 	mv .env_bak .env || true
 
 ## compile docs
@@ -63,6 +64,7 @@ protogen:| proto-agent proto-crux proto-crux-ui
 go-lint:
 	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3 ash -c "\
 		cd golang && make lint"
+
 ## Generate agent grpc files
 .PHONY: proto-agent
 proto-agent:
@@ -150,6 +152,9 @@ release:
 ## Finalizing changes
 	git commit -m "release: $(version)"
 	git tag -sm "$(version)" $(version)
+
+## Generating bundle
+	@echo "After the pipeline completes and the images are tagged run: 'make version=$(version) bundle' , upload the result to: https://github.com/dyrector-io/dyrectorio/releases"
 
 .PHONY: test-integration
 test-integration:
