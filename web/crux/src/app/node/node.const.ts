@@ -8,6 +8,8 @@ export const ROUTE_CONTAINERS = 'containers'
 export const ROUTE_PREFIX = ':prefix'
 export const ROUTE_NAME = ':name'
 
-export const NodeId = (...pipes: (Type<PipeTransform> | PipeTransform)[]) => Param('nodeId', ...pipes)
+export const PARAM_NODE_ID = 'nodeId'
+
+export const NodeId = (...pipes: (Type<PipeTransform> | PipeTransform)[]) => Param(PARAM_NODE_ID, ...pipes)
 export const Prefix = () => Param('prefix')
 export const Name = () => Param('name')

@@ -16,6 +16,8 @@ import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTa
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
+import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
+import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -27,17 +29,19 @@ import VersionUpdateValidationInterceptor from './interceptors/version.update.in
 import { CreateVersionDto, IncreaseVersionDto, UpdateVersionDto, VersionDetailsDto, VersionDto } from './version.dto'
 import VersionService from './version.service'
 
+const PARAM_PRODUCT_ID = 'productId'
+const PARAM_VERSION_ID = 'versionId'
+const ProductId = () => Param(PARAM_PRODUCT_ID)
+const VersionId = () => Param(PARAM_VERSION_ID)
+
 const ROUTE_PRODUCTS = 'products'
 const ROUTE_PRODUCT_ID = ':productId'
 const ROUTE_VERSION_ID = ':versionId'
 const ROUTE_VERSIONS = 'versions'
 
-const ProductId = () => Param('productId')
-const VersionId = () => Param('versionId')
-
 @Controller(`${ROUTE_PRODUCTS}/${ROUTE_PRODUCT_ID}/${ROUTE_VERSIONS}`)
 @ApiTags(ROUTE_VERSIONS)
-@UseGuards(JwtAuthGuard, VersionTeamAccessGuard)
+@UseGuards(JwtAuthGuard, UuidValidationGuard, VersionTeamAccessGuard)
 @UsePipes(
   new ValidationPipe({
     // TODO(@robot9706): Move to global pipes after removing gRPC
@@ -51,12 +55,14 @@ export default class VersionHttpController {
   @Get()
   @HttpCode(200)
   @ApiOkResponse({ type: VersionDto, isArray: true })
+  @UuidParams(PARAM_PRODUCT_ID)
   async getVersions(@ProductId() productId: string, @IdentityFromRequest() identity: Identity): Promise<VersionDto[]> {
     return await this.service.getVersionsByProductId(productId, identity)
   }
 
   @Get(ROUTE_VERSION_ID)
   @ApiOkResponse({ type: VersionDetailsDto })
+  @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async getVersion(@ProductId() _productId: string, @VersionId() versionId: string): Promise<VersionDetailsDto> {
     return await this.service.getVersionDetails(versionId)
   }
@@ -67,6 +73,7 @@ export default class VersionHttpController {
   @UseInterceptors(VersionCreateValidationInterceptor)
   @ApiBody({ type: CreateVersionDto })
   @ApiCreatedResponse({ type: VersionDto })
+  @UuidParams(PARAM_PRODUCT_ID)
   async createVersion(
     @ProductId() productId: string,
     @Body() request: CreateVersionDto,
@@ -85,6 +92,7 @@ export default class VersionHttpController {
   @ApiNoContentResponse()
   @UseInterceptors(VersionUpdateValidationInterceptor)
   @ApiBody({ type: UpdateVersionDto })
+  @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async updateVersion(
     @ProductId() _productId: string,
     @VersionId() versionId: string,
@@ -98,6 +106,7 @@ export default class VersionHttpController {
   @HttpCode(204)
   @ApiNoContentResponse()
   @UseInterceptors(VersionDeleteValidationInterceptor)
+  @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async deleteVersion(@ProductId() _productId: string, @VersionId() versionId: string): Promise<void> {
     return await this.service.deleteVersion(versionId)
   }
@@ -105,6 +114,7 @@ export default class VersionHttpController {
   @Put(`${ROUTE_VERSION_ID}/default`)
   @HttpCode(204)
   @ApiNoContentResponse()
+  @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async setDefaultVersion(@ProductId() productId: string, @VersionId() versionId: string): Promise<void> {
     return await this.service.setDefaultVersion(productId, versionId)
   }
@@ -115,6 +125,7 @@ export default class VersionHttpController {
   @UseInterceptors(VersionIncreaseValidationInterceptor)
   @ApiBody({ type: IncreaseVersionDto })
   @ApiCreatedResponse({ type: VersionDto })
+  @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async increaseVersion(
     @ProductId() productId: string,
     @VersionId() versionId: string,
