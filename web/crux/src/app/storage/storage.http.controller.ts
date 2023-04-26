@@ -32,6 +32,7 @@ export default class StorageHttpController {
   @ApiOkResponse({
     type: StorageDto,
     isArray: true,
+    description: 'Fetch details of storages.',
   })
   async getStorages(@IdentityFromRequest() identity: Identity): Promise<StorageDto[]> {
     return this.service.getStorages(identity)
@@ -42,6 +43,7 @@ export default class StorageHttpController {
   @ApiOkResponse({
     type: StorageOptionDto,
     isArray: true,
+    description: 'Fetch the name and ID of a storage.',
   })
   async getStorageOptions(@IdentityFromRequest() identity: Identity): Promise<StorageOptionDto[]> {
     return this.service.getStorageOptions(identity)
@@ -49,7 +51,7 @@ export default class StorageHttpController {
 
   @Get(ROUTE_STORAGE_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: StorageDetailsDto })
+  @ApiOkResponse({ type: StorageDetailsDto, description: 'Return name and ID of a storage.' })
   @UuidParams(PARAM_STORAGE_ID)
   async getProductDetails(@StorageId() id: string): Promise<StorageDetailsDto> {
     return this.service.getStorageDetails(id)
@@ -59,7 +61,7 @@ export default class StorageHttpController {
   @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateStorageDto })
-  @ApiCreatedResponse({ type: StorageDetailsDto })
+  @ApiCreatedResponse({ type: StorageDetailsDto, description: 'Create a new storage.' })
   async createProduct(
     @Body() request: CreateStorageDto,
     @IdentityFromRequest() identity: Identity,
@@ -75,7 +77,7 @@ export default class StorageHttpController {
   @Put(ROUTE_STORAGE_ID)
   @HttpCode(204)
   @UseInterceptors(StorageUpdateValidationInterceptor)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Update a storage.' })
   @UuidParams(PARAM_STORAGE_ID)
   async updateProduct(
     @StorageId() id: string,
@@ -88,7 +90,7 @@ export default class StorageHttpController {
   @Delete(ROUTE_STORAGE_ID)
   @HttpCode(204)
   @UseInterceptors(StorageDeleteValidationInterceptor)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Delete a storage.' })
   @UuidParams(PARAM_STORAGE_ID)
   async deleteProduct(@StorageId() id: string): Promise<void> {
     return this.service.deleteStorage(id)

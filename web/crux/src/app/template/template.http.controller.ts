@@ -40,7 +40,7 @@ export default class TemplateHttpController {
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: TemplateDto, isArray: true })
+  @ApiOkResponse({ type: TemplateDto, isArray: true, description: 'Return details of templates on the platform.' })
   async getTemplates(): Promise<TemplateDto[]> {
     return this.templateFileService.getTemplates()
   }
@@ -49,7 +49,7 @@ export default class TemplateHttpController {
   @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateProductFromTemplateDto })
-  @ApiCreatedResponse({ type: ProductDto })
+  @ApiCreatedResponse({ type: ProductDto, description: 'Create a new template.' })
   async createProduct(
     @Body() request: CreateProductFromTemplateDto,
     @IdentityFromRequest() identity: Identity,
@@ -65,7 +65,7 @@ export default class TemplateHttpController {
   @Get(`${ROUTE_TEMPLATE_ID}/image`)
   @HttpCode(200)
   @Header('content-type', 'image/jpeg')
-  @ApiOkResponse()
+  @ApiOkResponse({ description: 'Retrieve data of an image of a template.' })
   @UuidParams(PARAM_TEMPLATE_ID)
   async getImage(@TemplateId() templateId: string, @Response() response: ExpressResponse) {
     const image = await this.service.getImageStream(templateId)

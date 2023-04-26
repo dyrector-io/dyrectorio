@@ -32,14 +32,14 @@ export default class NotificationHttpController {
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: NotificationDto, isArray: true })
+  @ApiOkResponse({ type: NotificationDto, isArray: true, description: 'Retrieve notifications that belong to a team.' })
   async getNotifications(@IdentityFromRequest() identity: Identity): Promise<NotificationDto[]> {
     return this.service.getNotifications(identity)
   }
 
   @Get(ROUTE_NOTIFICATION_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: NotificationDetailsDto })
+  @ApiOkResponse({ type: NotificationDetailsDto, description: 'Fetch data that belongs to a notification.' })
   async getNotificationDetails(@NotificationId() notificationId: string): Promise<NotificationDetailsDto> {
     return this.service.getNotificationDetails(notificationId)
   }
@@ -48,7 +48,7 @@ export default class NotificationHttpController {
   @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateNotificationDto })
-  @ApiCreatedResponse({ type: NotificationDetailsDto })
+  @ApiCreatedResponse({ type: NotificationDetailsDto, description: 'Create a new notification.' })
   async createNotification(
     @Body() request: CreateNotificationDto,
     @IdentityFromRequest() identity: Identity,
@@ -63,7 +63,7 @@ export default class NotificationHttpController {
 
   @Put(ROUTE_NOTIFICATION_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: NotificationDetailsDto })
+  @ApiOkResponse({ type: NotificationDetailsDto, description: 'Modify a notification.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
   async updateNotification(
     @NotificationId() notificationId: string,
@@ -75,7 +75,7 @@ export default class NotificationHttpController {
 
   @Delete(ROUTE_NOTIFICATION_ID)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Delete a notification.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
   async deleteNotification(@NotificationId() notificationId: string): Promise<void> {
     this.service.deleteNotification(notificationId)
@@ -83,7 +83,7 @@ export default class NotificationHttpController {
 
   @Post(`${ROUTE_NOTIFICATION_ID}/test`)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Send a test notification.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
   async testNotification(@NotificationId() notificationId: string): Promise<void> {
     this.service.testNotification(notificationId)

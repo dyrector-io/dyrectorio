@@ -49,6 +49,7 @@ export default class TokenHttpController {
   @ApiOkResponse({
     type: TokenDto,
     isArray: true,
+    description: 'Retrieve access token.',
   })
   async getTokens(@IdentityFromRequest() identity: Identity): Promise<TokenDto[]> {
     return this.service.getTokenList(identity)
@@ -56,7 +57,7 @@ export default class TokenHttpController {
 
   @Get(ROUTE_TOKEN_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: TokenDto })
+  @ApiOkResponse({ type: TokenDto, description: 'Fetch tokenID.' })
   @UuidParams(PARAM_TOKEN_ID)
   async getToken(@TokenId() id: string, @IdentityFromRequest() identity: Identity): Promise<TokenDto> {
     return this.service.getToken(id, identity)
@@ -65,7 +66,7 @@ export default class TokenHttpController {
   @Post()
   @HttpCode(201)
   @CreatedWithLocation()
-  @ApiBody({ type: GenerateTokenDto })
+  @ApiBody({ type: GenerateTokenDto, description: 'Create access token.' })
   @ApiCreatedResponse({
     type: GeneratedTokenDto,
     headers: API_CREATED_LOCATION_HEADERS,
@@ -84,7 +85,7 @@ export default class TokenHttpController {
 
   @Delete(ROUTE_TOKEN_ID)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Token deleted' })
+  @ApiNoContentResponse({ description: 'Delete token.' })
   @UuidParams(PARAM_TOKEN_ID)
   async deleteToken(@TokenId() id: string): Promise<void> {
     await this.service.deleteToken(id)

@@ -10,7 +10,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiBody, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiOkResponse, ApiNoContentResponse, ApiTags } from '@nestjs/swagger'
 import { Identity, Session } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -44,7 +44,7 @@ export default class UserHttpController {
   constructor(private service: TeamService) {}
 
   @Post()
-  @ApiOkResponse({ type: UserMetaDto })
+  @ApiOkResponse({ type: UserMetaDto, description: 'Create new user profile.' })
   async getUserMeta(@SessionFromRequest() session: Session): Promise<UserMetaDto> {
     return await this.service.getUserMeta(session)
   }
@@ -52,12 +52,14 @@ export default class UserHttpController {
   @Post(ROUTE_ACTIVE_TEAM)
   @HttpCode(204)
   @ApiBody({ type: ActivateTeamDto })
+  @ApiNoContentResponse({ description: 'Create new team to your user.' })
   async activateTeam(@Body() request: ActivateTeamDto, @IdentityFromRequest() identity: Identity): Promise<void> {
     await this.service.activateTeam(request, identity)
   }
 
   @Post(`${ROUTE_INVITATIONS}/${ROUTE_TEAM_ID}`)
   @HttpCode(204)
+  @ApiNoContentResponse({ description: 'Accept invitation to a team.' })
   @UuidParams(PARAM_TEAM_ID)
   async acceptTeamInvitation(@TeamId() teamId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
     await this.service.acceptTeamInvitation(teamId, identity)
@@ -65,6 +67,7 @@ export default class UserHttpController {
 
   @Delete(`${ROUTE_INVITATIONS}/${ROUTE_TEAM_ID}`)
   @HttpCode(204)
+  @ApiNoContentResponse({ description: 'Reject invitation to a team.' })
   @UuidParams(PARAM_TEAM_ID)
   async declineTeamInvitation(@TeamId() teamId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
     await this.service.declineTeamInvitation(teamId, identity)

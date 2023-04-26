@@ -54,14 +54,14 @@ export default class VersionHttpController {
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: VersionDto, isArray: true })
+  @ApiOkResponse({ type: VersionDto, isArray: true, description: 'Fetch a list of versions that belong to a product.' })
   @UuidParams(PARAM_PRODUCT_ID)
   async getVersions(@ProductId() productId: string, @IdentityFromRequest() identity: Identity): Promise<VersionDto[]> {
     return await this.service.getVersionsByProductId(productId, identity)
   }
 
   @Get(ROUTE_VERSION_ID)
-  @ApiOkResponse({ type: VersionDetailsDto })
+  @ApiOkResponse({ type: VersionDetailsDto, description: 'Fetch the details of a version that belongs to a product.' })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async getVersion(@ProductId() _productId: string, @VersionId() versionId: string): Promise<VersionDetailsDto> {
     return await this.service.getVersionDetails(versionId)
@@ -72,7 +72,7 @@ export default class VersionHttpController {
   @CreatedWithLocation()
   @UseInterceptors(VersionCreateValidationInterceptor)
   @ApiBody({ type: CreateVersionDto })
-  @ApiCreatedResponse({ type: VersionDto })
+  @ApiCreatedResponse({ type: VersionDto, description: 'Create a new version to a product.' })
   @UuidParams(PARAM_PRODUCT_ID)
   async createVersion(
     @ProductId() productId: string,
@@ -89,7 +89,7 @@ export default class VersionHttpController {
 
   @Put(ROUTE_VERSION_ID)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Modify the name and changelog of a version.' })
   @UseInterceptors(VersionUpdateValidationInterceptor)
   @ApiBody({ type: UpdateVersionDto })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
@@ -104,7 +104,7 @@ export default class VersionHttpController {
 
   @Delete(ROUTE_VERSION_ID)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Delete version that belongs to a product.' })
   @UseInterceptors(VersionDeleteValidationInterceptor)
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async deleteVersion(@ProductId() _productId: string, @VersionId() versionId: string): Promise<void> {
@@ -113,7 +113,9 @@ export default class VersionHttpController {
 
   @Put(`${ROUTE_VERSION_ID}/default`)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({
+    description: 'Turn version into a default one of the complex product later versions will inherit images from.',
+  })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async setDefaultVersion(@ProductId() productId: string, @VersionId() versionId: string): Promise<void> {
     return await this.service.setDefaultVersion(productId, versionId)
@@ -124,7 +126,7 @@ export default class VersionHttpController {
   @CreatedWithLocation()
   @UseInterceptors(VersionIncreaseValidationInterceptor)
   @ApiBody({ type: IncreaseVersionDto })
-  @ApiCreatedResponse({ type: VersionDto })
+  @ApiCreatedResponse({ type: VersionDto, description: 'Increase version of a complex product with a new version.' })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async increaseVersion(
     @ProductId() productId: string,

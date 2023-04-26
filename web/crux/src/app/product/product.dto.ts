@@ -1,12 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsBoolean, IsIn, IsNumber, IsOptional, IsString } from 'class-validator'
+import { IsBoolean, IsIn, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
 import { AuditDto, BasicProductDto, ProductTypeDto, PRODUCT_TYPE_VALUES } from '../shared/shared.dto'
 import { VersionDto } from '../version/version.dto'
 
 export class ProductDto extends BasicProductDto {
-  @IsString()
+  @IsUUID()
   @IsOptional()
+  @ApiProperty()
   description?: string | null
 
   @Type(() => AuditDto)

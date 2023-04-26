@@ -55,7 +55,11 @@ export default class ImageHttpController {
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: ImageDto, isArray: true })
+  @ApiOkResponse({
+    type: ImageDto,
+    isArray: true,
+    description: 'Retrieve the data of images that belong to a version.',
+  })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async getImagesByVersionId(@ProductId() _productId: string, @VersionId() versionId: string): Promise<ImageDto[]> {
     return await this.service.getImagesByVersionId(versionId)
@@ -63,7 +67,7 @@ export default class ImageHttpController {
 
   @Get(ROUTE_IMAGE_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: ImageDto })
+  @ApiOkResponse({ type: ImageDto, description: 'Retrieve the data of an image that belongs to a version.' })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async getImageDetails(
     @ProductId() _productId: string,
@@ -77,7 +81,7 @@ export default class ImageHttpController {
   @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: AddImagesDto, isArray: true })
-  @ApiCreatedResponse({ type: ImageDto, isArray: true })
+  @ApiCreatedResponse({ type: ImageDto, isArray: true, description: 'Add an image to a version.' })
   @UseGuards(ImageAddToVersionTeamAccessGuard)
   @UseInterceptors(ImageAddToVersionValidationInterceptor)
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
@@ -98,7 +102,7 @@ export default class ImageHttpController {
   @Patch(ROUTE_IMAGE_ID)
   @HttpCode(204)
   @ApiBody({ type: PatchImageDto })
-  @ApiNoContentResponse({ description: 'Image patched successfully' })
+  @ApiNoContentResponse({ description: 'Modify an image of a version.' })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async patchImage(
     @ProductId() _productId: string,
@@ -112,7 +116,7 @@ export default class ImageHttpController {
 
   @Delete(ROUTE_IMAGE_ID)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Image deleted successfully' })
+  @ApiNoContentResponse({ description: 'Delete an image from a version.' })
   @UseInterceptors(DeleteImageValidationInterceptor)
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async deleteImage(
@@ -125,7 +129,7 @@ export default class ImageHttpController {
 
   @Put('order')
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Images ordered successfully' })
+  @ApiNoContentResponse({ description: 'Update image order of a version.' })
   @ApiBody({ type: String, isArray: true })
   @UseGuards(ImageOrderImagesTeamAccessGuard)
   @UseInterceptors(OrderImagesValidationInterceptor)

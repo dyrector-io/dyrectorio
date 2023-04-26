@@ -12,7 +12,15 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -47,9 +55,20 @@ export default class ProductHttpController {
 
   @Get()
   @HttpCode(200)
+  @ApiOperation({
+    description:
+      'Returns a list of transactions that have contributed to the Stripe account balance (e.g., charges, transfers, and so forth). The transactions are returned in sorted order, with the most recent transactions appearing first.',
+    summary: 'List all balance transactions',
+  })
   @ApiOkResponse({
     type: ProductListItemDto,
     isArray: true,
+    description:
+      'A dictionary with a data property that contains an array of up to limit transactions, starting after transaction starting_after. Each entry in the array is a separate transaction history object. If no more transactions are available, the resulting array will be empty.',
+  })
+  @ApiNoContentResponse()
+  @ApiBadRequestResponse({
+    description: 'Provided bad parmaters',
   })
   async getProducts(@IdentityFromRequest() identity: Identity): Promise<ProductListItemDto[]> {
     return this.service.getProducts(identity)
@@ -57,7 +76,7 @@ export default class ProductHttpController {
 
   @Get(ROUTE_PRODUCT_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: ProductDetailsDto })
+  @ApiOkResponse({ type: ProductDetailsDto, description: 'Return data of a product.' })
   @UuidParams(PARAM_PRODUCT_ID)
   async getProductDetails(@ProductId() id: string): Promise<ProductDetailsDto> {
     return this.service.getProductDetails(id)
@@ -67,7 +86,7 @@ export default class ProductHttpController {
   @HttpCode(201)
   @CreatedWithLocation()
   @ApiBody({ type: CreateProductDto })
-  @ApiCreatedResponse({ type: ProductListItemDto })
+  @ApiCreatedResponse({ type: ProductListItemDto, description: 'Create new product.' })
   async createProduct(
     @Body() request: CreateProductDto,
     @IdentityFromRequest() identity: Identity,
@@ -82,7 +101,7 @@ export default class ProductHttpController {
 
   @Put(ROUTE_PRODUCT_ID)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Update product details.' })
   @UuidParams(PARAM_PRODUCT_ID)
   @UseInterceptors(ProductUpdateValidationInterceptor)
   async updateProduct(
@@ -95,7 +114,7 @@ export default class ProductHttpController {
 
   @Delete(ROUTE_PRODUCT_ID)
   @HttpCode(204)
-  @ApiNoContentResponse()
+  @ApiNoContentResponse({ description: 'Delete product.' })
   @UuidParams(PARAM_PRODUCT_ID)
   async deleteProduct(@ProductId() id: string): Promise<void> {
     return this.service.deleteProduct(id)
