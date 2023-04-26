@@ -60,10 +60,7 @@ export default class ImageHttpController {
     isArray: true,
     description: 'Retrieve the data of images that belong to a version.',
   })
-<<<<<<< HEAD
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
-=======
->>>>>>> 4dcbf548 (feat: openapi description improvements)
   async getImagesByVersionId(@ProductId() _productId: string, @VersionId() versionId: string): Promise<ImageDto[]> {
     return await this.service.getImagesByVersionId(versionId)
   }
