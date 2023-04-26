@@ -16,7 +16,7 @@ export default class DashboardController {
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: DashboardDto })
+  @ApiOkResponse({ type: DashboardDto, description: 'Fetch dashboard data of latest activities.' })
   async getDashboard(@IdentityFromRequest() identity: Identity): Promise<DashboardDto> {
     return await this.service.getDashboard(identity)
   }

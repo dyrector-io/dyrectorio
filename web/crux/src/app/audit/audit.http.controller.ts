@@ -22,7 +22,7 @@ export default class AuditController {
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: AuditLogListDto })
+  @ApiOkResponse({ type: AuditLogListDto, description: 'Fetch audit log.' })
   async getAuditLog(
     @Query() query: AuditLogQueryDto,
     @IdentityFromRequest() identity: Identity,
