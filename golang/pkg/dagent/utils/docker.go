@@ -24,6 +24,8 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/crypt"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
 	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
@@ -31,8 +33,6 @@ import (
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
-	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 

@@ -19,10 +19,10 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/thanhpk/randstr"
 
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
-	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 )
 
 type DockerContainerHelperTestSuite struct {

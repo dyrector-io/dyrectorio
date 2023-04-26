@@ -13,8 +13,8 @@ import (
 	"strconv"
 	"strings"
 
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 
 	containerRuntime "github.com/dyrector-io/dyrectorio/golang/internal/runtime/container"
 

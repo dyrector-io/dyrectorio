@@ -77,7 +77,7 @@ linters:
   enable:
     - asciicheck
     - bodyclose
-    # todo(nandor-magyar): refactor golang code to comply
+    # TODO(nandor-magyar): refactor golang code to comply
     # - containedctx
     - depguard
     - dogsled

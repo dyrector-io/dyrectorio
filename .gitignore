@@ -6,5 +6,6 @@ node_modules/
 
 docker-compose.ci.yaml
 .idea
+dyrectorio-offline-bundle*.zip
 
 git-history-visualization.mp4
