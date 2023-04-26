@@ -1,12 +1,11 @@
 import {
   Editor,
+  EditorInitMessage,
   EditorJoinedMessage,
   EditorLeftMessage,
-  EditorsMessage,
   InputEditorsMap,
   InputFocusChangeMessage,
-  WS_TYPE_ALL_ITEM_EDITORS,
-  WS_TYPE_EDITOR_IDENTITY,
+  WS_TYPE_EDITOR_INIT,
   WS_TYPE_EDITOR_JOINED,
   WS_TYPE_EDITOR_LEFT,
   WS_TYPE_INPUT_BLURED,
@@ -44,8 +43,10 @@ const useEditorState = (sock: WebSocketClientEndpoint): EditorState => {
   const [me, setMe] = useState<Editor>(null)
   const [editors, setEditors] = useState<Editor[]>([])
 
-  sock.on(WS_TYPE_EDITOR_IDENTITY, (message: EditorJoinedMessage) => setMe(message))
-  sock.on(WS_TYPE_ALL_ITEM_EDITORS, (message: EditorsMessage) => setEditors(message.editors))
+  sock.on(WS_TYPE_EDITOR_INIT, (message: EditorInitMessage) => {
+    setEditors(message.editors)
+    setMe(message.editors.find(it => it.id === message.meId))
+  })
 
   sock.on(WS_TYPE_EDITOR_JOINED, (message: EditorJoinedMessage) => {
     if (editors.find(it => it.id === message.id)) {

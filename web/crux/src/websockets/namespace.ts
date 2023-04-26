@@ -83,6 +83,11 @@ export default class WsNamespace implements WsSubscription {
     const { token } = client
 
     const resources = this.clients.get(token)
+    if (!resources) {
+      this.logger.warn(`undefined resource for '${token}'`)
+      return
+    }
+
     const { unsubscribe, completer } = resources
 
     if (unsubscribe) {
@@ -127,10 +132,12 @@ export default class WsNamespace implements WsSubscription {
   }
 
   sendToAll(message: WsMessage): void {
+    message = this.overwriteMessageType(message)
     Array.from(this.clients.values()).forEach(it => it.client.sendWsMessage(message))
   }
 
   sendToAllExcept(except: WsClient, message: WsMessage<any>): void {
+    message = this.overwriteMessageType(message)
     Array.from(this.clients.values())
       .filter(it => it.client !== except)
       .forEach(it => it.client.sendWsMessage(message))
