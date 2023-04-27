@@ -1,13 +1,17 @@
 import { ServerCredentials } from '@grpc/grpc-js'
-import { Logger, LogLevel } from '@nestjs/common'
+import { Logger, LogLevel, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { MicroserviceOptions, Transport } from '@nestjs/microservices'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { join } from 'path'
 import AppModule from './app.module'
+import CreatedWithLocationInterceptor from './app/shared/created-with-location.interceptor'
 import JwtAuthGuard from './app/token/jwt-auth.guard'
 import HttpExceptionFilter from './filters/http.exception-filter'
+import UuidValidationGuard from './guards/uuid-params.validation.guard'
+import HttpLoggerInterceptor from './interceptors/http.logger.interceptor'
+import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
@@ -79,10 +83,17 @@ const bootstrap = async () => {
   const apiOptions = loadGrpcOptions('api', configService.get<string>('GRPC_API_PORT'))
   const httpOptions = configService.get<string>('HTTP_API_PORT', '1848')
 
-  app.useGlobalGuards(app.get(JwtAuthGuard))
+  const authGuard = app.get(JwtAuthGuard)
   app.useGlobalFilters(new HttpExceptionFilter())
+  app.useGlobalGuards(authGuard, app.get(UuidValidationGuard))
+  app.useGlobalInterceptors(
+    new HttpLoggerInterceptor(),
+    app.get(PrismaErrorInterceptor),
+    new CreatedWithLocationInterceptor(),
+  )
+  app.useGlobalPipes(new ValidationPipe({ transform: true }))
 
-  app.useWebSocketAdapter(new DyoWsAdapter(app))
+  app.useWebSocketAdapter(new DyoWsAdapter(app, authGuard))
 
   // agent
   app.connectMicroservice<MicroserviceOptions>({

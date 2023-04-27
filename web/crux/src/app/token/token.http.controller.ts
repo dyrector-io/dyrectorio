@@ -1,29 +1,13 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Param,
-  Post,
-  UseGuards,
-  UseInterceptors,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
-import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
 import UuidParams from 'src/decorators/api-params.decorator'
+import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
-import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import TokenAccessGuard from './guards/token.access.guard'
-import JwtAuthGuard, { IdentityFromRequest } from './jwt-auth.guard'
+import { IdentityFromRequest } from './jwt-auth.guard'
 import TokenValidationPipe from './pipes/token.pipe'
-import { GeneratedTokenDto, GenerateTokenDto, TokenDto } from './token.dto'
+import { GenerateTokenDto, GeneratedTokenDto, TokenDto } from './token.dto'
 import TokenService from './token.service'
 
 const PARAM_TOKEN_ID = 'tokenId'
@@ -34,13 +18,7 @@ const ROUTE_TOKEN_ID = ':tokenId'
 
 @Controller(ROUTE_TOKENS)
 @ApiTags(ROUTE_TOKENS)
-@UsePipes(
-  new ValidationPipe({
-    transform: true,
-  }),
-)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
-@UseGuards(JwtAuthGuard, UuidValidationGuard, TokenAccessGuard)
+@UseGuards(TokenAccessGuard)
 export default class TokenHttpController {
   constructor(private service: TokenService) {}
 

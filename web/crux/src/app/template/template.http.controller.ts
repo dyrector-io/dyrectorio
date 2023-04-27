@@ -1,29 +1,14 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Response,
-  Param,
-  Post,
-  Header,
-  UseGuards,
-  UseInterceptors,
-  HttpCode,
-} from '@nestjs/common'
+import { Body, Controller, Get, Header, HttpCode, Param, Post, Response } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import TemplateFileService from 'src/services/template.file.service'
 import { Response as ExpressResponse } from 'express'
-import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
 import UuidParams from 'src/decorators/api-params.decorator'
+import TemplateFileService from 'src/services/template.file.service'
+import { ProductDto } from '../product/product.dto'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
-import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
-import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
+import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import { CreateProductFromTemplateDto, TemplateDto } from './template.dto'
 import TemplateService from './template.service'
-import { ProductDto } from '../product/product.dto'
 
 const PARAM_TEMPLATE_ID = 'templateId'
 const TemplateId = () => Param(PARAM_TEMPLATE_ID)
@@ -33,8 +18,6 @@ const ROUTE_TEMPLATE_ID = ':templateId'
 
 @Controller(ROUTE_TEMPLATES)
 @ApiTags(ROUTE_TEMPLATES)
-@UseGuards(JwtAuthGuard, UuidValidationGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
 export default class TemplateHttpController {
   constructor(private service: TemplateService, private templateFileService: TemplateFileService) {}
 

@@ -10,18 +10,12 @@ import {
   Put,
   UseGuards,
   UseInterceptors,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
-import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
-import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
+import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import ImageAddToVersionTeamAccessGuard from './guards/image.add-to-version.team-access.guard'
 import ImageOrderImagesTeamAccessGuard from './guards/image.order-images.team-access.guard'
 import ImageTeamAccessGuard from './guards/image.team-access.guard'
@@ -42,14 +36,7 @@ const ROUTE_IMAGE_ID = ':imageId'
 
 @Controller('/products/:productId/versions/:versionId/images')
 @ApiTags('version/images')
-@UseGuards(JwtAuthGuard, UuidValidationGuard, ImageTeamAccessGuard)
-@UsePipes(
-  new ValidationPipe({
-    // TODO(@robot9706): Move to global pipes after removing gRPC
-    transform: true,
-  }),
-)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
+@UseGuards(ImageTeamAccessGuard)
 export default class ImageHttpController {
   constructor(private service: ImageService) {}
 

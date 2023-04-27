@@ -10,19 +10,13 @@ import {
   Query,
   UseGuards,
   UseInterceptors,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import { PaginationQuery } from 'src/shared/dtos/paginating'
 import UuidParams from 'src/decorators/api-params.decorator'
-import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
+import { PaginationQuery } from 'src/shared/dtos/paginating'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
-import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
-import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
+import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import {
   CreateDeploymentDto,
   DeploymentDetailsDto,
@@ -55,14 +49,7 @@ const ROUTE_INSTANCE_ID = ':instanceId'
 
 @Controller(ROUTE_DEPLOYMENTS)
 @ApiTags(ROUTE_DEPLOYMENTS)
-@UseGuards(JwtAuthGuard, UuidValidationGuard, DeployTeamAccessGuard)
-@UsePipes(
-  new ValidationPipe({
-    // TODO(@robot9706): Move to global pipes after removing gRPC
-    transform: true,
-  }),
-)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
+@UseGuards(DeployTeamAccessGuard)
 export default class DeployHttpController {
   constructor(private service: DeployService) {}
 

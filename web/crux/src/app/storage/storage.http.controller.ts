@@ -1,18 +1,14 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
-import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
-import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
+import { IdentityFromRequest } from '../token/jwt-auth.guard'
+import StorageTeamAccessGuard from './guards/storage.team-access.guard'
+import StorageDeleteValidationInterceptor from './interceptors/storage.delete.interceptor'
+import StorageUpdateValidationInterceptor from './interceptors/storage.update.interceptor'
 import { CreateStorageDto, StorageDetailsDto, StorageDto, StorageOptionDto, UpdateStorageDto } from './storage.dto'
 import StorageService from './storage.service'
-import StorageTeamAccessGuard from './guards/storage.team-access.guard'
-import StorageUpdateValidationInterceptor from './interceptors/storage.update.interceptor'
-import StorageDeleteValidationInterceptor from './interceptors/storage.delete.interceptor'
 
 const PARAM_STORAGE_ID = 'storageId'
 const StorageId = () => Param(PARAM_STORAGE_ID)
@@ -22,8 +18,7 @@ const ROUTE_STORAGE_ID = ':storageId'
 
 @Controller(ROUTE_STORAGES)
 @ApiTags(ROUTE_STORAGES)
-@UseGuards(JwtAuthGuard, UuidValidationGuard, StorageTeamAccessGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
+@UseGuards(StorageTeamAccessGuard)
 export default class StorageHttpController {
   constructor(private service: StorageService) {}
 

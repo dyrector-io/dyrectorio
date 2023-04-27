@@ -1,5 +1,4 @@
 import { HttpStatus, INestApplicationContext, Logger } from '@nestjs/common'
-import { NestApplication, NestContainer } from '@nestjs/core'
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host'
 import { AbstractWsAdapter } from '@nestjs/websockets'
 import { CLOSE_EVENT, CONNECTION_EVENT, ERROR_EVENT } from '@nestjs/websockets/constants'
@@ -44,14 +43,8 @@ export enum WebSocketReadyState {
   CLOSED_STATE = 3,
 }
 
-type NestApplicationWithContainer = NestApplication & {
-  container: NestContainer
-}
-
 export default class DyoWsAdapter extends AbstractWsAdapter {
   private readonly logger = new Logger(DyoWsAdapter.name)
-
-  private readonly authGuard: JwtAuthGuard
 
   private server: WebSocketServer
 
@@ -59,11 +52,8 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
 
   private routes: WsRoute[] = []
 
-  constructor(appContext: INestApplicationContext) {
+  constructor(appContext: INestApplicationContext, private readonly authGuard: JwtAuthGuard) {
     super(appContext)
-
-    const app = appContext as NestApplicationWithContainer
-    this.authGuard = app.get(JwtAuthGuard)
   }
 
   bindErrorHandler(server: any) {

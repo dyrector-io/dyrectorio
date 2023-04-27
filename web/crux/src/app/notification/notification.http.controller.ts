@@ -1,13 +1,9 @@
-import { Body, Controller, Delete, Get, Put, Param, Post, HttpCode, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, UseGuards } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
-import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
-import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
+import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import NotificationTeamAccessGuard from './guards/notification.team-access.guard'
 import {
   CreateNotificationDto,
@@ -25,8 +21,7 @@ const ROUTE_NOTIFICATION_ID = ':notificationId'
 
 @Controller(ROUTE_NOTIFICATIONS)
 @ApiTags(ROUTE_NOTIFICATIONS)
-@UseGuards(JwtAuthGuard, UuidValidationGuard, NotificationTeamAccessGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
+@UseGuards(NotificationTeamAccessGuard)
 export default class NotificationHttpController {
   constructor(private service: NotificationService) {}
 

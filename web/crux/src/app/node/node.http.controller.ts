@@ -1,13 +1,9 @@
-import { Body, Controller, Delete, Get, Header, HttpCode, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Header, HttpCode, Post, Put, UseGuards } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiProduces, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
-import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
-import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
-import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
-import JwtAuthGuard, { DisableAuth, IdentityFromRequest } from '../token/jwt-auth.guard'
+import { DisableAuth, IdentityFromRequest } from '../token/jwt-auth.guard'
 import NodeTeamAccessHttpGuard from './guards/node.team-access.http.guard'
 import { NodeId, PARAM_NODE_ID, ROUTE_NODES, ROUTE_NODE_ID } from './node.const'
 import {
@@ -24,8 +20,7 @@ import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
 
 @Controller(ROUTE_NODES)
 @ApiTags(ROUTE_NODES)
-@UseGuards(JwtAuthGuard, UuidValidationGuard, NodeTeamAccessHttpGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
+@UseGuards(NodeTeamAccessHttpGuard)
 export default class NodeHttpController {
   constructor(private service: NodeService) {}
 

@@ -1,22 +1,8 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  HttpCode,
-  Param,
-  Post,
-  UseGuards,
-  UseInterceptors,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common'
+import { Body, Controller, Delete, HttpCode, Param, Post, UseGuards } from '@nestjs/common'
 import { ApiBody, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
-import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
 import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
 import { ActivateTeamDto } from './team.dto'
 import TeamService from './team.service'
@@ -32,13 +18,6 @@ const ROUTE_TEAM_ID = ':teamId'
 
 @Controller(ROUTE_USERS_ME)
 @ApiTags(ROUTE_USERS_ME)
-@UsePipes(
-  new ValidationPipe({
-    // TODO(@robot9706): Move to global pipes after removing gRPC
-    transform: true,
-  }),
-)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
 @UseGuards(JwtAuthGuard, UuidValidationGuard)
 export default class UserHttpController {
   constructor(private service: TeamService) {}

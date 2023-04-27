@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { EMPTY, Observable, Subject, filter, first, map, mergeWith, of, takeUntil } from 'rxjs'
+import { WebSocket } from 'ws'
 import {
   SubscriptionMessage,
   WS_TYPE_SUBBED,
@@ -13,7 +14,6 @@ import {
   WsTransform,
   handlerKeyOf,
 } from './common'
-import { WebSocketReadyState } from './dyo.ws.adapter'
 
 export default class WsNamespace implements WsSubscription {
   private readonly logger: Logger
@@ -91,12 +91,7 @@ export default class WsNamespace implements WsSubscription {
 
     // When the connection is killed, we get an empty message,
     // a fake message is created so subscriptionOfContext still works for @WsUnsubscribe
-    // TODO (@robot9706): Find a more elegant solution
-    if (
-      !message &&
-      (client.readyState === WebSocketReadyState.CLOSED_STATE ||
-        client.readyState === WebSocketReadyState.CLOSING_STATE)
-    ) {
+    if (!message) {
       message = this.overwriteMessageType({
         type: WS_TYPE_UNSUBBED,
         data: {

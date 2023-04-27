@@ -1,26 +1,12 @@
-import {
-  Controller,
-  Get,
-  HttpCode,
-  PipeTransform,
-  Type,
-  UseGuards,
-  UseInterceptors,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common'
+import { Controller, Get, HttpCode, PipeTransform, Type, UseGuards, UseInterceptors } from '@nestjs/common'
 import { Delete, Post, Put } from '@nestjs/common/decorators/http/request-mapping.decorator'
 import { Body, Param } from '@nestjs/common/decorators/http/route-params.decorator'
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
-import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
 import UuidParams from 'src/decorators/api-params.decorator'
+import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
-import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
-import JwtAuthGuard, { IdentityFromRequest } from '../token/jwt-auth.guard'
+import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
 import UpdateRegistryInterceptor from './interceptors/registry.update.interceptor'
@@ -36,14 +22,7 @@ const ROUTE_REGISTRY_ID = ':registryId'
 
 @Controller(ROUTE_REGISTRIES)
 @ApiTags(ROUTE_REGISTRIES)
-@UsePipes(
-  new ValidationPipe({
-    // TODO(@robot9706): Move to global pipes after removing gRPC
-    transform: true,
-  }),
-)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
-@UseGuards(JwtAuthGuard, UuidValidationGuard, RegistryTeamAccessGuard)
+@UseGuards(RegistryTeamAccessGuard)
 export default class RegistryHttpController {
   constructor(private service: RegistryService) {}
 
