@@ -176,7 +176,6 @@ export default class RegistryMapper {
     })
   }
 
-  // TODO(@robot9706): Required by ImageMapper, remove when ImageMapper is removed
   typeToProto(type: RegistryTypeEnum): ProtoRegistryType {
     return protoRegistryTypeFromJSON(type.toUpperCase())
   }

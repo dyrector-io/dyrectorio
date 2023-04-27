@@ -94,6 +94,5 @@ export default class ProductHttpController {
   @UuidParams(PARAM_PRODUCT_ID)
   async deleteProduct(@ProductId() id: string): Promise<void> {
     return this.service.deleteProduct(id)
-    // TODO(@polaroi8d): exception if there is no product with the given Id
   }
 }

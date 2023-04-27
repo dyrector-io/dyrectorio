@@ -2,7 +2,7 @@ import { Controller, Delete, HttpCode, Post, UseGuards } from '@nestjs/common'
 import { ApiNoContentResponse, ApiTags } from '@nestjs/swagger'
 import { Observable } from 'rxjs'
 import UuidParams from 'src/decorators/api-params.decorator'
-import NodeTeamAccessHttpGuard from './guards/node.team-access.http.guard'
+import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
 import {
   Name,
   NodeId,
@@ -18,7 +18,7 @@ import NodeService from './node.service'
 
 @Controller(`${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_PREFIX}/${ROUTE_CONTAINERS}`)
 @ApiTags(ROUTE_NODES)
-@UseGuards(NodeTeamAccessHttpGuard)
+@UseGuards(NodeTeamAccessGuard)
 export default class NodePrefixContainerHttpController {
   constructor(private service: NodeService) {}
 

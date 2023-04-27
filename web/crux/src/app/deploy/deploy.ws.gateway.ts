@@ -71,8 +71,7 @@ export default class DeployWebSocketGateway {
 
   @WsAuthorize()
   async onAuthorize(@DeploymentId() deploymentId: string, @IdentityFromSocket() identity: Identity): Promise<boolean> {
-    // TODO(@robot9706): implement
-    return true
+    return await this.service.checkDeploymentIsInTheActiveTeam(deploymentId, identity)
   }
 
   @WsSubscribe()

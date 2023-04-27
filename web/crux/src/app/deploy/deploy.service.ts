@@ -64,6 +64,28 @@ export default class DeployService {
       .subscribe(it => this.deploymentImageEvents.next(it))
   }
 
+  async checkDeploymentIsInTheActiveTeam(deploymentId: string, identity: Identity): Promise<boolean> {
+    const deployments = await this.prisma.deployment.count({
+      where: {
+        id: deploymentId,
+        version: {
+          product: {
+            team: {
+              users: {
+                some: {
+                  userId: identity.id,
+                  active: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    return deployments > 0
+  }
+
   async getDeploymentDetails(deploymentId: string): Promise<DeploymentDetailsDto> {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
