@@ -1,6 +1,7 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor, PreconditionFailedException } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
+import PrismaService from 'src/services/prisma.service'
 import { UpdateProductDto } from '../product.dto'
 
 @Injectable()
@@ -20,7 +21,7 @@ export default class ProductUpdateValidationInterceptor implements NestIntercept
     })
 
     if (update.changelog && product.type !== 'simple') {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Only simple products can update their changelog.',
         property: 'changelog',
       })

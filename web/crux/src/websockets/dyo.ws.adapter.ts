@@ -1,4 +1,4 @@
-import { INestApplicationContext, Logger } from '@nestjs/common'
+import { HttpStatus, INestApplicationContext, Logger } from '@nestjs/common'
 import { NestApplication, NestContainer } from '@nestjs/core'
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host'
 import { AbstractWsAdapter } from '@nestjs/websockets'
@@ -15,14 +15,17 @@ import {
   fromEvent,
   mergeAll,
   mergeMap,
+  of,
   share,
   takeUntil,
 } from 'rxjs'
 import JwtAuthGuard, { AuthorizedHttpRequest } from 'src/app/token/jwt-auth.guard'
+import { WebSocketExceptionOptions } from 'src/exception/websocket-exception'
 import { v4 as uuid } from 'uuid'
 import { WebSocketServer } from 'ws'
 import {
   SubscriptionMessage,
+  WS_TYPE_ERROR,
   WS_TYPE_SUBSCRIBE,
   WS_TYPE_UNSUBSCRIBE,
   WsClient,
@@ -180,10 +183,18 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
         this.onClientMessage(client, data).pipe(
           filter(result => typeof result !== 'undefined' && result !== null),
           catchError(err => {
-            this.logger.debug(`Error while handling message`)
-            this.logger.debug(err)
-            // TODO(@m8vago): send dyo error
-            return EMPTY
+            const errorMsg = 'Error while handling message'
+            this.logger.error(errorMsg)
+            this.logger.error(err)
+            const message: WsMessage<WebSocketExceptionOptions> = {
+              type: WS_TYPE_ERROR,
+              data: {
+                status: HttpStatus.INTERNAL_SERVER_ERROR,
+                message: errorMsg,
+              },
+            }
+
+            return of(message)
           }),
         ),
       ),
@@ -243,8 +254,16 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
 
     if (!match) {
       this.logger.debug(`Subscription failed. No route for: ${path}`)
-      // TODO(@m8vago): send dyoerror
-      return EMPTY
+      const err: WsMessage<WebSocketExceptionOptions> = {
+        type: WS_TYPE_ERROR,
+        data: {
+          status: 404,
+          message: 'Route not found',
+          property: 'path',
+          value: path,
+        },
+      }
+      return of(err)
     }
 
     let res: Observable<WsMessage> = EMPTY
@@ -267,7 +286,7 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     client.connectionRequest = req as AuthorizedHttpRequest
     client.subscriptions = new Map()
     client.sendWsMessage = msg => {
-      if (!msg) {
+      if (!msg || client.readyState !== WebSocketReadyState.OPEN_STATE) {
         return
       }
 

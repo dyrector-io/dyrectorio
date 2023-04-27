@@ -1,13 +1,7 @@
-import {
-  BadRequestException,
-  CallHandler,
-  ConflictException,
-  ExecutionContext,
-  Injectable,
-  NestInterceptor,
-} from '@nestjs/common'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import { checkVersionMutability } from 'src/domain/version'
+import { CruxBadRequestException, CruxConflictException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
@@ -41,7 +35,7 @@ export default class OrderImagesValidationInterceptor implements NestInterceptor
     const { images } = version
 
     if (images.length !== body.length) {
-      throw new BadRequestException({
+      throw new CruxBadRequestException({
         message: 'Image count mismatch',
         property: 'body',
       })
@@ -49,8 +43,8 @@ export default class OrderImagesValidationInterceptor implements NestInterceptor
 
     const mismatchingImages = images.filter(it => !body.includes(it.id))
     if (mismatchingImages.length > 0) {
-      throw new BadRequestException({
-        message: 'Missing image id(s)',
+      throw new CruxBadRequestException({
+        message: 'Missing image ids',
         property: 'imageIds',
         value: mismatchingImages.map(it => it.id),
       })
@@ -58,7 +52,7 @@ export default class OrderImagesValidationInterceptor implements NestInterceptor
 
     const imageIds = new Set(body)
     if (imageIds.size !== body.length) {
-      throw new ConflictException({
+      throw new CruxConflictException({
         message: 'Duplicated image id(s)',
         property: 'body',
       })

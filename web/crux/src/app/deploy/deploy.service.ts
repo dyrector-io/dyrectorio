@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum, Prisma } from '@prisma/client'
-import { concatAll, EMPTY, filter, from, of, lastValueFrom, map, concatMap, Observable, Subject, tap } from 'rxjs'
+import { EMPTY, Observable, Subject, concatAll, concatMap, filter, from, lastValueFrom, of } from 'rxjs'
 import Deployment from 'src/domain/deployment'
-import { PreconditionFailedException } from 'src/exception/errors'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import { DeploymentProgressMessage } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
+import { PaginationQuery } from 'src/shared/dtos/paginating'
 import { toPrismaJson } from 'src/shared/mapper'
 import {
   ContainerConfigData,
@@ -14,8 +15,11 @@ import {
   MergedContainerConfigData,
   UniqueSecretKeyValue,
 } from 'src/shared/models'
-import { PaginationQuery } from 'src/shared/dtos/paginating'
 import AgentService from '../agent/agent.service'
+import { EditorLeftMessage, EditorMessage } from '../editor/editor.message'
+import EditorServiceProvider from '../editor/editor.service.provider'
+import { ImageEvent } from '../image/image.event'
+import ImageEventService from '../image/image.event.service'
 import ContainerMapper from '../shared/container.mapper'
 import {
   CreateDeploymentDto,
@@ -29,11 +33,7 @@ import {
   PatchDeploymentDto,
   PatchInstanceDto,
 } from './deploy.dto'
-import DeployMapper, { InstanceDetails } from './deploy.mapper'
-import { EditorLeftMessage, EditorMessage } from '../editor/editor.message'
-import EditorServiceProvider from '../editor/editor.service.provider'
-import ImageEventService from '../image/image.event.service'
-import { ImageEvent } from '../image/image.event'
+import DeployMapper from './deploy.mapper'
 
 @Injectable()
 export default class DeployService {
@@ -349,7 +349,7 @@ export default class DeployService {
     const publicKey = agent?.publicKey
 
     if (!publicKey) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Agent has no public key',
         property: 'publicKey',
         value: deployment.nodeId,
@@ -407,7 +407,7 @@ export default class DeployService {
     if (invalidSecretsUpdates.length > 0) {
       await this.prisma.$transaction(invalidSecretsUpdates)
 
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Some secrets are invalid',
         property: 'secrets',
         value: invalidSecrets.map(it => ({ ...it, secrets: undefined })),
@@ -607,7 +607,7 @@ export default class DeployService {
 
     const agent = this.agentService.getById(deployment.nodeId)
     if (!agent) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Node is unreachable',
         property: 'nodeId',
         value: deployment.nodeId,

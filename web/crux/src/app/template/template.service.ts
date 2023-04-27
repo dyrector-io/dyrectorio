@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { ReadStream } from 'fs'
-import { NotFoundException } from 'src/exception/errors'
+import { CruxNotFoundException } from 'src/exception/crux-exception'
 import {
   deploymentStrategyFromJSON,
   exposeStrategyFromJSON,
@@ -92,7 +92,7 @@ export default class TemplateService {
     try {
       return this.templateFileService.getTemplateImageStreamById(id)
     } catch (err) {
-      throw new NotFoundException({ message: 'Template image not found.', property: 'template', value: id })
+      throw new CruxNotFoundException({ message: 'Template image not found.', property: 'template', value: id })
     }
   }
 

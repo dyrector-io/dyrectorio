@@ -2,6 +2,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Observable, of } from 'rxjs'
 import TeamService from 'src/app/team/team.service'
 import { identityOfSocket } from 'src/app/token/jwt-auth.guard'
+import { CruxNotFoundException, CruxUnauthorizedException } from 'src/exception/crux-exception'
 import {
   SubscriptionMessage,
   SubscriptionRedirectMessage,
@@ -30,17 +31,15 @@ export default class NodeWsRedirectInterceptor implements NestInterceptor {
 
     const identity = identityOfSocket(context)
     if (!identity) {
-      // TODO(@m8vago): return dyo error
-      // handle jwt
-      // throw error
-      return null
+      throw new CruxUnauthorizedException()
     }
 
     const meta = await this.teamService.getUserMeta(identity)
     if (!meta.activeTeamId) {
-      // TODO(@m8vago): return dyo error
-      // throw error
-      return null
+      throw new CruxNotFoundException({
+        message: 'Active team not found.',
+        property: 'activeTeam',
+      })
     }
 
     const redirect: WsMessage<SubscriptionRedirectMessage> = {

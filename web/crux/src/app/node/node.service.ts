@@ -3,7 +3,6 @@ import { Identity } from '@ory/kratos-client'
 import { Observable, filter, firstValueFrom, map, mergeAll, mergeWith, of, timeout } from 'rxjs'
 import { Agent, AgentEvent } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
-import { PreconditionFailedException } from 'src/exception/errors'
 import {
   ContainerCommandRequest,
   ContainerIdentifier,
@@ -217,15 +216,7 @@ export default class NodeService {
       `Opening container log stream for container: ${nodeId} - ${Agent.containerPrefixNameOf(container)}}`,
     )
 
-    const agent = this.agentService.getById(nodeId)
-
-    if (!agent) {
-      throw new PreconditionFailedException({
-        message: 'Node is unreachable',
-        property: 'nodeId',
-        value: nodeId,
-      })
-    }
+    const agent = this.agentService.getByIdOrThrow(nodeId)
 
     const stream = agent.upsertContainerLogStream(container)
 

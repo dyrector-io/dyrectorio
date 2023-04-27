@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { Registry, RegistryTypeEnum } from '@prisma/client'
-import { InvalidArgumentException } from 'src/exception/errors'
+import { CruxBadRequestException } from 'src/exception/crux-exception'
 import {
   RegistryType as ProtoRegistryType,
   registryTypeFromJSON as protoRegistryTypeFromJSON,
@@ -85,7 +85,7 @@ export default class RegistryMapper {
           }
         : null
     if (!details) {
-      throw new InvalidArgumentException({
+      throw new CruxBadRequestException({
         message: 'Unknown registry type',
         property: 'type',
       })
@@ -169,7 +169,7 @@ export default class RegistryMapper {
       }
     }
 
-    throw new BadRequestException({
+    throw new CruxBadRequestException({
       message: 'Unknown registry type',
       property: 'type',
       value: request.type,

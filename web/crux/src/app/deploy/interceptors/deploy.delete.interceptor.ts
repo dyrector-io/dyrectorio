@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import { checkDeploymentDeletability } from 'src/domain/deployment'
-import { PreconditionFailedException } from 'src/exception/errors'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
@@ -19,7 +19,7 @@ export default class DeleteDeploymentValidationInterceptor implements NestInterc
     })
 
     if (!checkDeploymentDeletability(deployment.status)) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Invalid deployment status.',
         property: 'status',
         value: deployment.status,

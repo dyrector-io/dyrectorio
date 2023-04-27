@@ -1,19 +1,19 @@
-import { InvalidArgumentException } from 'src/exception/errors'
 import * as yup from 'yup'
 import {
-  ContainerConfigExposeStrategy,
-  ContainerDeploymentStrategyType,
-  ContainerLogDriverType,
-  ContainerNetworkMode,
-  ContainerRestartPolicyType,
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
   CONTAINER_LOG_DRIVER_VALUES,
   CONTAINER_NETWORK_MODE_VALUES,
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
+  ContainerConfigExposeStrategy,
+  ContainerDeploymentStrategyType,
+  ContainerLogDriverType,
+  ContainerNetworkMode,
+  ContainerRestartPolicyType,
   VolumeType,
 } from './models'
+import { CruxBadRequestException } from 'src/exception/crux-exception'
 
 export const nameRuleOptional = yup.string().trim().min(3).max(70)
 export const nameRule = yup.string().required().trim().min(3).max(70)
@@ -450,7 +450,7 @@ export const yupValidate = (schema: yup.AnySchema, candidate: any) => {
     schema.validateSync(candidate)
   } catch (err) {
     const validationError = err as yup.ValidationError
-    throw new InvalidArgumentException({
+    throw new CruxBadRequestException({
       message: 'Validation failed',
       property: validationError.path,
       value: validationError.errors,

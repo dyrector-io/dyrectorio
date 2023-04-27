@@ -1,9 +1,32 @@
-import { MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
+import { UseFilters, UseGuards } from '@nestjs/common'
+import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
+import { Observable, Subject, map, of, takeUntil } from 'rxjs'
+import { deploymentStatusToDb } from 'src/domain/deployment'
+import WsExceptionFilter from 'src/filters/ws.exception-filter'
 import { WsAuthorize, WsClient, WsMessage, WsSubscribe, WsSubscription, WsUnsubscribe } from 'src/websockets/common'
+import SocketClient from 'src/websockets/decorators/ws.client.decorator'
 import WsParam from 'src/websockets/decorators/ws.param.decorator'
-import { IdentityFromSocket } from '../token/jwt-auth.guard'
-import DeployService from './deploy.service'
+import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
+import SocketSubscription from 'src/websockets/decorators/ws.subscription.decorator'
+import {
+  EditorInitMessage,
+  EditorLeftMessage,
+  InputFocusChangeMessage,
+  InputFocusMessage,
+  WS_TYPE_BLUR_INPUT,
+  WS_TYPE_EDITOR_INIT,
+  WS_TYPE_EDITOR_JOINED,
+  WS_TYPE_EDITOR_LEFT,
+  WS_TYPE_FOCUS_INPUT,
+  WS_TYPE_INPUT_BLURED,
+  WS_TYPE_INPUT_FOCUSED,
+} from '../editor/editor.message'
+import EditorServiceProvider from '../editor/editor.service.provider'
+import JwtAuthGuard, { IdentityFromSocket } from '../token/jwt-auth.guard'
+import { ImageDeletedMessage, WS_TYPE_IMAGE_DELETED } from '../version/version.message'
+import { PatchDeploymentDto, PatchInstanceDto } from './deploy.dto'
+import DeployMapper from './deploy.mapper'
 import {
   DeploymentEventListMessage,
   DeploymentEventMessage,
@@ -28,34 +51,15 @@ import {
   WS_TYPE_PATCH_INSTANCE,
   WS_TYPE_PATCH_RECEIVED,
 } from './deploy.message'
-import { Observable, of, map, tap, finalize, Subject, takeUntil } from 'rxjs'
-import DeployMapper from './deploy.mapper'
-import { deploymentStatusToDb, containerStateToDb } from 'src/domain/deployment'
-import { PatchDeploymentDto, PatchInstanceDto } from './deploy.dto'
-import SocketClient from 'src/websockets/decorators/ws.client.decorator'
-import SocketSubscription from 'src/websockets/decorators/ws.subscription.decorator'
-import {
-  EditorInitMessage,
-  EditorLeftMessage,
-  InputFocusChangeMessage,
-  InputFocusMessage,
-  WS_TYPE_BLUR_INPUT,
-  WS_TYPE_EDITOR_INIT,
-  WS_TYPE_EDITOR_JOINED,
-  WS_TYPE_EDITOR_LEFT,
-  WS_TYPE_FOCUS_INPUT,
-  WS_TYPE_INPUT_BLURED,
-  WS_TYPE_INPUT_FOCUSED,
-} from '../editor/editor.message'
-import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
-import EditorServiceProvider from '../editor/editor.service.provider'
-import { ImageDeletedMessage, WS_TYPE_IMAGE_DELETED } from '../version/version.message'
+import DeployService from './deploy.service'
 
 const DeploymentId = () => WsParam('deploymentId')
 
 @WebSocketGateway({
   namespace: 'deployments/:deploymentId',
 })
+@UseFilters(WsExceptionFilter)
+@UseGuards(JwtAuthGuard)
 export default class DeployWebSocketGateway {
   private deploymentEventCompleters = new Map<string, Subject<unknown>>()
 
@@ -95,21 +99,18 @@ export default class DeployWebSocketGateway {
 
     this.service
       .subscribeToDeploymentEditEvents(deploymentId)
-      .pipe(
-        takeUntil(completer),
-      )
-      .subscribe(it => {
-        if (it.type === 'create' && it.instances) {
+      .pipe(takeUntil(completer))
+      .subscribe(event => {
+        if (event.type === 'create' && event.instances) {
           subscription.sendToAll({
             type: WS_TYPE_INSTANCES_ADDED,
-            data: it.instances.filter(it => it.deploymentId === deploymentId),
+            data: event.instances.filter(it => it.deploymentId === deploymentId),
           } as WsMessage<InstancesAddedMessage>)
-        }
-        if (it.type === 'delete') {
+        } else if (event.type === 'delete') {
           subscription.sendToAll({
             type: WS_TYPE_IMAGE_DELETED,
             data: {
-              imageId: it.imageId,
+              imageId: event.imageId,
             },
           } as WsMessage<ImageDeletedMessage>)
         }
@@ -149,12 +150,12 @@ export default class DeployWebSocketGateway {
     @DeploymentId() deploymentId: string,
   ): Promise<Observable<WsMessage<DeploymentEventListMessage> | WsMessage<DeploymentEventMessage>>> {
     const deployment = await this.service.getDeploymentDetails(deploymentId)
-    const events = await this.service.getDeploymentEvents(deploymentId)
+    const deploymentEvents = await this.service.getDeploymentEvents(deploymentId)
 
     if (deployment.status !== 'in-progress') {
       return of({
         type: WS_TYPE_DEPLOYMENT_EVENT_LIST,
-        data: events,
+        data: deploymentEvents,
       } as WsMessage<DeploymentEventListMessage>)
     }
 
@@ -162,7 +163,7 @@ export default class DeployWebSocketGateway {
 
     return observable.pipe(
       map(it => {
-        let events: DeploymentEventMessage[] = []
+        const events: DeploymentEventMessage[] = []
 
         // TODO(@robot9706): some kind of proper mapping
         if (it.log) {
@@ -275,15 +276,11 @@ export default class DeployWebSocketGateway {
   ): Promise<WsMessage<InstanceSecretsMessage>> {
     const secrets = await this.service.getInstanceSecrets(message.id)
 
-    if (!secrets.keys) {
-      return
-    }
-
     return {
       type: WS_TYPE_INSTANCE_SECRETS,
       data: {
         instanceId: message.id,
-        keys: secrets.keys,
+        keys: secrets.keys ?? [],
       },
     }
   }

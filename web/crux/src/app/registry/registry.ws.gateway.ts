@@ -1,10 +1,11 @@
-import { UseGuards } from '@nestjs/common'
+import { UseFilters, UseGuards } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
+import WsExceptionFilter from 'src/filters/ws.exception-filter'
 import { WsAuthorize, WsMessage, WsUnsubscribe } from 'src/websockets/common'
 import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
 import JwtAuthGuard, { IdentityFromSocket } from '../token/jwt-auth.guard'
-import { RegistryConnections } from './registry-api/registry-connections'
+import RegistryConnections from './registry-api/registry-connections'
 import { IMAGE_FILTER_TAKE } from './registry.const'
 import {
   FetchImageTagsMessage,
@@ -16,6 +17,7 @@ import {
 @WebSocketGateway({
   namespace: 'registries',
 })
+@UseFilters(WsExceptionFilter)
 @UseGuards(JwtAuthGuard)
 export default class RegistryWebSocketGateway {
   constructor(private readonly connections: RegistryConnections) {}

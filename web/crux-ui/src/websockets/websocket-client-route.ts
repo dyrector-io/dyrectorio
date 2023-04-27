@@ -152,6 +152,7 @@ class WebSocketClientRoute {
     }
 
     if (!this.sendMessage(msg)) {
+      this.logger.verbose('Failed to send subscribe message', this.state, '-> unsubscribed')
       this.state = 'unsubscribed'
     }
   }

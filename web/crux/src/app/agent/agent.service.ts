@@ -23,7 +23,7 @@ import AgentInstaller from 'src/domain/agent-installer'
 import Deployment, { DeploymentProgressEvent } from 'src/domain/deployment'
 import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
-import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
+import { CruxConflictException, CruxNotFoundException, CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerIdentifier,
@@ -69,7 +69,7 @@ export default class AgentService {
   getByIdOrThrow(id: string): Agent {
     const agent = this.getById(id)
     if (!agent) {
-      throw new NotFoundException({
+      throw new CruxNotFoundException({
         message: 'Agent not found',
         property: 'agent',
         value: id,
@@ -158,7 +158,7 @@ export default class AgentService {
 
   async discardInstaller(nodeId: string): Promise<Empty> {
     if (!this.installers.has(nodeId)) {
-      throw new NotFoundException({
+      throw new CruxNotFoundException({
         message: 'Installer not found',
         property: 'installer',
         value: nodeId,
@@ -362,7 +362,7 @@ export default class AgentService {
     if (this.agents.has(request.id)) {
       const agent = this.agents.get(request.id)
       if (!agent.updating) {
-        throw new AlreadyExistsException({
+        throw new CruxConflictException({
           message: 'Agent is already connected.',
           property: 'id',
         })
@@ -387,7 +387,7 @@ export default class AgentService {
       const installer = this.installers.get(node.id)
       if (installer) {
         if (installer.token !== connection.jwt) {
-          throw new UnauthenticatedException({
+          throw new CruxUnauthorizedException({
             message: 'Invalid token',
           })
         }
@@ -405,7 +405,7 @@ export default class AgentService {
         })
       } else {
         if (!node.token || node.token !== connection.jwt) {
-          throw new UnauthenticatedException({
+          throw new CruxUnauthorizedException({
             message: 'Invalid token',
           })
         }

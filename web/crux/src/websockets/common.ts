@@ -12,6 +12,7 @@ export type WsMessageWithParams = WsMessage & {
   params: Record<string, string>
 }
 
+export const WS_TYPE_ERROR = 'error'
 export const WS_TYPE_AUTHORIZE = 'authorize'
 export const WS_TYPE_SUBSCRIBE = 'subscribe'
 export const WS_TYPE_UNSUBSCRIBE = 'unsubscribe'

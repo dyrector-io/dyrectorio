@@ -1,5 +1,5 @@
 import { Node, Product, Team, Version } from '@prisma/client'
-import { InvalidArgumentException } from 'src/exception/errors'
+import { CruxBadRequestException } from 'src/exception/crux-exception'
 import { NodeConnectionStatus as ProtoNodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
 import {
   AuditDto,
@@ -69,7 +69,7 @@ export default class SharedMapper {
       case ProtoNodeConnectionStatus.UNREACHABLE:
         return 'unreachable'
       default:
-        throw new InvalidArgumentException({
+        throw new CruxBadRequestException({
           message: 'Invalid NodeConnectionStatus',
           property: 'status',
           value: status,

@@ -1,5 +1,5 @@
 import { finalize, Observable, startWith, Subject } from 'rxjs'
-import { PreconditionFailedException } from 'src/exception/errors'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
 import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
@@ -62,9 +62,10 @@ export default class ContainerStatusWatcher {
 
   onNodeStreamStarted(): ContainerStatusStreamCompleter {
     if (this.completer) {
-      throw new PreconditionFailedException({
-        message: `There is already a container status stream connection for prefix: ${this.prefix}`,
+      throw new CruxPreconditionFailedException({
+        message: `There is already a container status stream connection for prefix`,
         property: GrpcNodeConnection.META_FILTER_PREFIX,
+        value: this.prefix,
       })
     }
 

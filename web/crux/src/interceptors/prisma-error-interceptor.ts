@@ -1,17 +1,12 @@
-import {
-  BadRequestException,
-  CallHandler,
-  ConflictException,
-  ExecutionContext,
-  NestInterceptor,
-  NotFoundException,
-} from '@nestjs/common'
+import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { catchError, Observable } from 'rxjs'
+import { Observable, catchError } from 'rxjs'
 import {
-  AlreadyExistsException as GrpcAlreadyExistsException,
-  NotFoundException as GrpcNotFoundException,
-} from 'src/exception/errors'
+  CruxBadRequestException,
+  CruxConflictException,
+  CruxExceptionOptions,
+  CruxNotFoundException,
+} from 'src/exception/crux-exception'
 
 type NotFoundErrorMappings = { [P in Prisma.ModelName]: string }
 
@@ -36,21 +31,23 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
         const hasName = target && target.includes('name')
         const property = hasName ? 'name' : target?.toString() ?? 'unknown'
 
-        const error = {
+        const error: CruxExceptionOptions = {
           message: `${property} taken`,
           property,
         }
 
-        throw context.getType() === 'http' ? new ConflictException(error) : new GrpcAlreadyExistsException(error)
+        throw new CruxConflictException(error)
       } else if (err.code === NOT_FOUND) {
         const error = {
           property: this.prismaMessageToProperty(err.message),
           message: err.message,
         }
 
-        throw context.getType() === 'http' ? new NotFoundException(error) : new GrpcNotFoundException(error)
+        throw new CruxNotFoundException(error)
       } else if (err.code === UUID_INVALID) {
-        throw new BadRequestException()
+        throw new CruxBadRequestException({
+          message: 'Invalid uuid',
+        })
       }
 
       throw err

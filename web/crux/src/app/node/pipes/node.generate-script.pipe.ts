@@ -1,6 +1,6 @@
 import { Injectable, PipeTransform } from '@nestjs/common'
 import AgentService from 'src/app/agent/agent.service'
-import { AlreadyExistsException } from 'src/exception/errors'
+import { CruxConflictException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
@@ -19,7 +19,7 @@ export default class NodeGenerateScriptValidationPipe implements PipeTransform {
 
     const agent = this.agentService.getById(node.id)
     if (agent) {
-      throw new AlreadyExistsException({
+      throw new CruxConflictException({
         message: 'Node is already connected',
         property: 'id',
         value: node.id,

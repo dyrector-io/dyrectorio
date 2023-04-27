@@ -5,9 +5,10 @@ import { NestFactory } from '@nestjs/core'
 import { MicroserviceOptions, Transport } from '@nestjs/microservices'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { join } from 'path'
-import DyoWsAdapter from './websockets/dyo.ws.adapter'
 import AppModule from './app.module'
 import JwtAuthGuard from './app/token/jwt-auth.guard'
+import HttpExceptionFilter from './filters/http.exception-filter'
+import DyoWsAdapter from './websockets/dyo.ws.adapter'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -79,6 +80,7 @@ const bootstrap = async () => {
   const httpOptions = configService.get<string>('HTTP_API_PORT', '1848')
 
   app.useGlobalGuards(app.get(JwtAuthGuard))
+  app.useGlobalFilters(new HttpExceptionFilter())
 
   app.useWebSocketAdapter(new DyoWsAdapter(app))
 

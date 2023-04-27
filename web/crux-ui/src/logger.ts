@@ -76,7 +76,7 @@ export class Logger {
   }
 
   descend(tag: string): Logger {
-    return new Logger(`${this.tag}/${tag}`)
+    return new Logger(`${this.tag} ${tag}`)
   }
 
   static logLevelFromString(level: string): LogLevel {

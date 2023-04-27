@@ -1,20 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { Identity, Session } from '@ory/kratos-client'
+import { Identity } from '@ory/kratos-client'
 import { RegistryTypeEnum } from '@prisma/client'
 import { InviteMessage } from 'src/domain/notification-templates'
 import {
-  AlreadyExistsException,
-  MailServiceException,
-  NotFoundException,
-  PreconditionFailedException,
-} from 'src/exception/errors'
+  CruxConflictException,
+  CruxInternalServerErrorException,
+  CruxNotFoundException,
+  CruxPreconditionFailedException,
+} from 'src/exception/crux-exception'
 import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import EmailService from 'src/mailer/email.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
-import { emailOfIdentity, IdentityTraits, invitationExpired, nameOfIdentity } from 'src/shared/models'
+import { IdentityTraits, emailOfIdentity, invitationExpired, nameOfIdentity } from 'src/shared/models'
 import EmailBuilder, { InviteTemplateOptions } from '../../builders/email.builder'
 import {
   ActivateTeamDto,
@@ -313,7 +313,7 @@ export default class TeamService {
         },
       })
 
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Invitation link is expired. ',
         property: 'teamId',
         value: teamId,
@@ -441,7 +441,7 @@ export default class TeamService {
     }
 
     if (!deleted) {
-      throw new NotFoundException({
+      throw new CruxNotFoundException({
         message: 'User not found',
         property: 'userId',
         value: userId,
@@ -495,7 +495,7 @@ export default class TeamService {
       const userOnTeam = team.users.find(it => it.userId === user.id)
 
       if (userOnTeam) {
-        throw new AlreadyExistsException({
+        throw new CruxConflictException({
           message: 'User is already in the team',
           property: 'email',
         })
@@ -521,7 +521,7 @@ export default class TeamService {
 
     // Result
     if (!mailSent) {
-      throw new MailServiceException()
+      throw new CruxInternalServerErrorException({ message: 'Sending mail failed.' })
     }
 
     return user

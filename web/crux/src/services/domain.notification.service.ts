@@ -1,10 +1,9 @@
 import { HttpService } from '@nestjs/axios'
-import { Injectable, Logger } from '@nestjs/common'
+import { BadGatewayException, Injectable, Logger } from '@nestjs/common'
 import { NotificationEventTypeEnum, NotificationTypeEnum } from '@prisma/client'
 import { lastValueFrom } from 'rxjs'
 import NotificationTemplateBuilder from 'src/builders/notification.template.builder'
-import { getTemplate, NotificationMessageType, NotificationTemplate } from 'src/domain/notification-templates'
-import { InvalidArgumentException } from 'src/exception/errors'
+import { NotificationMessageType, NotificationTemplate, getTemplate } from 'src/domain/notification-templates'
 import { nameOrEmailOfIdentity } from '../shared/models'
 import KratosService from './kratos.service'
 import PrismaService from './prisma.service'
@@ -91,7 +90,7 @@ export default class DomainNotificationService {
       case 'successfulDeploy':
         return NotificationEventTypeEnum.deploymentCreated
       default:
-        throw new InvalidArgumentException({
+        throw new BadGatewayException({
           property: 'messageType',
           value: messageType,
           message: `Unknown NotificationMessageType '${messageType}'`,

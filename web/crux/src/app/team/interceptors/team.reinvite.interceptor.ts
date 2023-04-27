@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
-import { PreconditionFailedException } from 'src/exception/errors'
 import PrismaService from 'src/services/prisma.service'
 import { Observable } from 'rxjs'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 
 @Injectable()
 export default class TeamReinviteUserValidationInterceptor implements NestInterceptor {
@@ -23,7 +23,7 @@ export default class TeamReinviteUserValidationInterceptor implements NestInterc
     })
 
     if (invite.status === 'declined') {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Can not resend the invitation e-mail. The invitation was declined.',
         property: 'userId',
         value: userId,

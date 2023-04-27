@@ -1,7 +1,11 @@
 import { Logger } from '@nestjs/common'
 import { catchError, finalize, Observable, of, Subject, throwError, timeout, TimeoutError } from 'rxjs'
 import { NodeConnectionStatus } from 'src/app/shared/shared.dto'
-import { AlreadyExistsException, InternalException, PreconditionFailedException } from 'src/exception/errors'
+import {
+  CruxConflictException,
+  CruxInternalServerErrorException,
+  CruxPreconditionFailedException,
+} from 'src/exception/crux-exception'
 import { AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerCommandRequest,
@@ -84,9 +88,10 @@ export class Agent {
     this.throwWhenUpdating()
 
     if (this.deployments.has(deployment.id)) {
-      throw new AlreadyExistsException({
+      throw new CruxConflictException({
         message: 'Deployment is already running',
         property: 'id',
+        value: deployment.id,
       })
     }
 
@@ -270,7 +275,7 @@ export class Agent {
 
           return throwError(
             () =>
-              new InternalException({
+              new CruxInternalServerErrorException({
                 message: 'Agent container secrets timed out.',
               }),
           )
@@ -336,7 +341,7 @@ export class Agent {
 
   private throwWhenUpdating() {
     if (this.updating) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Node is updating',
         property: 'id',
         value: this.id,

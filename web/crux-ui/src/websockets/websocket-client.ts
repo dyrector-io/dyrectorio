@@ -1,6 +1,6 @@
 import { WS_RECONNECT_TIMEOUT } from '@app/const'
 import { Logger } from '@app/logger'
-import { DyoApiError, WS_TYPE_DYO_ERROR } from '@app/models'
+import { DyoApiError, WS_TYPE_ERROR } from '@app/models'
 import {
   SubscriptionMessage,
   SubscriptionRedirectMessage,
@@ -145,7 +145,7 @@ class WebSocketClient {
 
           this.logger.verbose('Receiving message:', type, message.data)
 
-          if (message.type === WS_TYPE_DYO_ERROR && this.errorHandler) {
+          if (message.type === WS_TYPE_ERROR && this.errorHandler) {
             this.errorHandler(message.data as DyoApiError)
           } else if (type === WS_TYPE_SUBBED || type === WS_TYPE_UNSUBBED || message.type === WS_TYPE_SUB_REDIRECT) {
             this.onSubscriptionMessage(message as WsMessage<SubscriptionMessage>)

@@ -1,7 +1,14 @@
-import { createParamDecorator, ExecutionContext, Injectable, Logger, SetMetadata } from '@nestjs/common'
+import {
+  createParamDecorator,
+  ExecutionContext,
+  Injectable,
+  Logger,
+  SetMetadata,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
-import { Identity, Session } from '@ory/kratos-client'
+import { Identity } from '@ory/kratos-client'
 import http from 'http'
 import KratosService from 'src/services/kratos.service'
 import { AuthPayload } from 'src/shared/models'
@@ -43,6 +50,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
         // check the cookie for a valid session
         const session = await this.kratos.getSessionByCookie(req.headers.cookie)
         req.identity = session.identity
+        req.sessionExpiresAt = new Date(session.expires_at).getTime()
         return true
       } catch {
         /* ignored */
@@ -52,9 +60,11 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
     const activated = await (super.canActivate(context) as Promise<boolean>)
 
     if (activated) {
-      const userId = req.user.data.sub
+      const jwt = req.user.data
+      const userId = jwt.sub
       try {
         req.identity = await this.kratos.getIdentityById(userId)
+        req.sessionExpiresAt = jwt.exp
       } catch {
         return false
       }
@@ -66,27 +76,22 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
   private canActivateWs(context: ExecutionContext): boolean {
     const client: WsClient = context.switchToWs().getClient()
     const req = client.connectionRequest as AuthorizedHttpRequest
-    if (req.session) {
-      const expiresAt = new Date(req.session.expires_at)
-      const now = new Date()
 
-      if (expiresAt.getTime() <= now.getTime()) {
-        this.logger.debug('WebSocket session expired')
-        client.close()
-        // TODO(@m8vago): send dyoerror?
-        return false
-      }
-      return true
+    const now = new Date().getTime()
+    const { sessionExpiresAt } = req
+
+    if (!sessionExpiresAt || sessionExpiresAt <= now) {
+      this.logger.debug('WebSocket session expired.')
+      client.close()
+      throw new UnauthorizedException()
     }
-
-    // TODO(@m8vago): handle jwt exp
 
     return !!req.identity
   }
 }
 
 export type AuthorizedHttpRequest = http.IncomingMessage & {
-  session: Session
+  sessionExpiresAt: number // epoch millis
   identity: Identity
   user: {
     data: AuthPayload

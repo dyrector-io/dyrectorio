@@ -1,5 +1,5 @@
-import { PreconditionFailedException } from '@nestjs/common'
 import { DeploymentStatusEnum, ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { checkDeploymentMutability } from './deployment'
 
 export type VersionIncreasabilityCheckDao = {
@@ -59,7 +59,7 @@ export const checkVersionMutability = (version: VersionMutabilityCheckDao) => {
   }
 
   if (!versionIsMutable(version)) {
-    throw new PreconditionFailedException({
+    throw new CruxPreconditionFailedException({
       message: 'Version is immutable',
       property: 'versionId',
       value: version.id,

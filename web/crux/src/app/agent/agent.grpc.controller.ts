@@ -4,9 +4,9 @@ import { Observable } from 'rxjs'
 import {
   AgentAbortUpdate,
   AgentCommand,
-  AgentController as GrpcAgentController,
   AgentControllerMethods,
   AgentInfo,
+  AgentController as GrpcAgentController,
 } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerLogMessage,
@@ -17,7 +17,6 @@ import {
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
-import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { NodeGrpcCall } from 'src/shared/grpc-node-connection'
 import AgentService from './agent.service'
@@ -26,7 +25,7 @@ import AgentAuthGuard from './guards/agent.auth.guard'
 @Controller()
 @AgentControllerMethods()
 @UseGuards(AgentAuthGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseInterceptors(GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class AgentController implements GrpcAgentController {
   constructor(private service: AgentService) {}
 

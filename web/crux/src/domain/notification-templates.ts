@@ -1,5 +1,5 @@
+import { InternalServerErrorException } from '@nestjs/common'
 import { NotificationTypeEnum } from '@prisma/client'
-import { InternalException } from 'src/exception/errors'
 
 const title = 'dyrector.io'
 
@@ -110,8 +110,10 @@ export const getTemplate = (notificationType: NotificationTypeEnum, message: str
     case 'teams':
       return getTeamsTemplate(message)
     default:
-      throw new InternalException({
-        message: 'Not supported message type',
+      throw new InternalServerErrorException({
+        message: 'Unsupported notification type',
+        property: 'notificationType',
+        value: notificationType,
       })
   }
 }

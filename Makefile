@@ -57,7 +57,7 @@ REMOTE=github.com/dyrector-io/dyrectorio/protobuf/go
 
 ## Compile the all grpc files
 .PHONY: protogen
-protogen:| proto-agent proto-crux proto-crux-ui
+protogen:| proto-agent proto-crux
 
 ## Generate agent grpc files
 .PHONY: go-lint
@@ -94,24 +94,6 @@ proto-crux:
 	cp -r protobuf/proto web/crux/ && \
 	cd ./web/crux/src/grpc && \
 	npx prettier -w "./**.ts"
-
-# Generate UI grpc files, note the single file
-.PHONY:  proto-crux-ui
-proto-crux-ui:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3 ash -c "\
-		mkdir -p ./web/crux-ui/src/models/grpc && \
-		protoc \
-			--experimental_allow_proto3_optional \
-			--plugin=/usr/local/lib/node_modules/ts-proto/protoc-gen-ts_proto \
-			--ts_proto_opt=esModuleInterop=true \
-			--ts_proto_opt=outputJsonMethods=true \
-			--ts_proto_opt=useDate=false \
-			--ts_proto_opt=outputServices=grpc-js \
-			--ts_proto_out=./web/crux-ui/src/models/grpc \
-			--ts_proto_opt=initializeFieldsAsUndefined=false \
-			protobuf/proto/crux.proto" && \
-	cd ./web/crux-ui/src/models/grpc && \
-	npx prettier -w "**.ts"
 
 ## make wonders happen - build everything -  !!!  token `|` is for parallel execution
 .PHONY: all

@@ -1,6 +1,7 @@
-import { UseGuards } from '@nestjs/common'
+import { UseFilters, UseGuards } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
+import WsExceptionFilter from 'src/filters/ws.exception-filter'
 import { WsAuthorize, WsClient, WsMessage, WsSubscribe, WsSubscription, WsUnsubscribe } from 'src/websockets/common'
 import SocketClient from 'src/websockets/decorators/ws.client.decorator'
 import WsParam from 'src/websockets/decorators/ws.param.decorator'
@@ -49,6 +50,7 @@ const VersionId = () => WsParam('versionId')
 @WebSocketGateway({
   namespace: 'versions/:versionId',
 })
+@UseFilters(WsExceptionFilter)
 @UseGuards(JwtAuthGuard)
 export default class VersionWebSocketGateway {
   constructor(

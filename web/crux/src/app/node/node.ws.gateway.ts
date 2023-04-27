@@ -1,7 +1,8 @@
-import { UseGuards, UseInterceptors } from '@nestjs/common'
+import { UseFilters, UseGuards, UseInterceptors } from '@nestjs/common'
 import { WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
 import { Observable, from, map, mergeAll } from 'rxjs'
+import WsExceptionFilter from 'src/filters/ws.exception-filter'
 import { WsAuthorize, WsMessage, WsSubscribe } from 'src/websockets/common'
 import WsParam from 'src/websockets/decorators/ws.param.decorator'
 import TeamService from '../team/team.service'
@@ -16,6 +17,7 @@ const TeamId = () => WsParam('teamId')
   namespace: 'teams/:teamId/nodes',
   redirectFrom: '/nodes',
 })
+@UseFilters(WsExceptionFilter)
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(NodeWsRedirectInterceptor)
 export default class NodeWebSocketGateway {
