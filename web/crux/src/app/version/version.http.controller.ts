@@ -12,7 +12,14 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBody,
+  ApiOperation,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -54,14 +61,28 @@ export default class VersionHttpController {
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: VersionDto, isArray: true, description: 'Fetch a list of versions that belong to a product.' })
+  @ApiOperation({
+    description:
+      "Returns an array containing the details of every version that belong to a product. `ProductId` refers to the product's ID. Details include the version's `name`, `id`, `type`, `audit` log details, `changelog`, and increasibility.",
+    summary: 'Fetch the details of all the versions under a product.',
+  })
+  @ApiOkResponse({
+    type: VersionDto,
+    isArray: true,
+    description: 'Returns an array with the data of every version of a product.',
+  })
   @UuidParams(PARAM_PRODUCT_ID)
   async getVersions(@ProductId() productId: string, @IdentityFromRequest() identity: Identity): Promise<VersionDto[]> {
     return await this.service.getVersionsByProductId(productId, identity)
   }
 
   @Get(ROUTE_VERSION_ID)
-  @ApiOkResponse({ type: VersionDetailsDto, description: 'Fetch the details of a version that belongs to a product.' })
+  @ApiOperation({
+    description:
+      "Returns an array containing the details of every version that belong to a product. `ProductId` refers to the product's ID, `versionId` refers to the version's ID. Details include the version's `name`, `id`, `type`, `audit` log details, `changelog`, increasibility, mutability, deletability, and all image related data, including `name`, `id`, `tag`, `order` and configuration data of the images.",
+    summary: 'Retrieve the details of a version of a product.',
+  })
+  @ApiOkResponse({ type: VersionDetailsDto, description: 'Details of a version under a product is fetched.' })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async getVersion(@ProductId() _productId: string, @VersionId() versionId: string): Promise<VersionDetailsDto> {
     return await this.service.getVersionDetails(versionId)
@@ -71,8 +92,13 @@ export default class VersionHttpController {
   @HttpCode(201)
   @CreatedWithLocation()
   @UseInterceptors(VersionCreateValidationInterceptor)
+  @ApiOperation({
+    description:
+      "Creates a new version to a product. `ProductId` refers to the product's ID. Request must include the `name` and `type` of the version, `changelog` is optionable. Response should include the `name`, `id`, `changelog`, increasibility, `type`, and `audit` log details of the version.",
+    summary: 'Create a new version.',
+  })
   @ApiBody({ type: CreateVersionDto })
-  @ApiCreatedResponse({ type: VersionDto, description: 'Create a new version to a product.' })
+  @ApiCreatedResponse({ type: VersionDto, description: 'New version created.' })
   @UuidParams(PARAM_PRODUCT_ID)
   async createVersion(
     @ProductId() productId: string,
@@ -89,7 +115,12 @@ export default class VersionHttpController {
 
   @Put(ROUTE_VERSION_ID)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Modify the name and changelog of a version.' })
+  @ApiOperation({
+    description:
+      "Updates a version's `changelog`. `ProductId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables.",
+    summary: 'Modify version.',
+  })
+  @ApiNoContentResponse({ description: 'Changelog of a version is updated.' })
   @UseInterceptors(VersionUpdateValidationInterceptor)
   @ApiBody({ type: UpdateVersionDto })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
@@ -104,7 +135,12 @@ export default class VersionHttpController {
 
   @Delete(ROUTE_VERSION_ID)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Delete version that belongs to a product.' })
+  @ApiOperation({
+    description:
+      "This call deletes a version. `ProductId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables.",
+    summary: 'Delete a version.',
+  })
+  @ApiNoContentResponse({ description: 'Version deleted.' })
   @UseInterceptors(VersionDeleteValidationInterceptor)
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async deleteVersion(@ProductId() _productId: string, @VersionId() versionId: string): Promise<void> {
@@ -113,8 +149,13 @@ export default class VersionHttpController {
 
   @Put(`${ROUTE_VERSION_ID}/default`)
   @HttpCode(204)
+  @ApiOperation({
+    description:
+      "This call turns a version into a default one, resulting other versions within this product later inherit images and configurations from it. `ProductId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables.",
+    summary: 'Turn version into a default one of the complex product other versions under it will inherit images from.',
+  })
   @ApiNoContentResponse({
-    description: 'Turn version into a default one of the complex product later versions will inherit images from.',
+    description: 'Version turned into default.',
   })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async setDefaultVersion(@ProductId() productId: string, @VersionId() versionId: string): Promise<void> {
@@ -124,9 +165,14 @@ export default class VersionHttpController {
   @Post(`${ROUTE_VERSION_ID}/increase`)
   @HttpCode(201)
   @CreatedWithLocation()
+  @ApiOperation({
+    description:
+      "Increases the default version of a product with a new version. `ProductId` refers to the product's ID, `versionId` refers to the version's ID, `name` refers to the name of the new version. All are required variables.",
+    summary: 'Increase a default version of a complex product with a new version.',
+  })
   @UseInterceptors(VersionIncreaseValidationInterceptor)
   @ApiBody({ type: IncreaseVersionDto })
-  @ApiCreatedResponse({ type: VersionDto, description: 'Increase version of a complex product with a new version.' })
+  @ApiCreatedResponse({ type: VersionDto, description: 'New version created.' })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async increaseVersion(
     @ProductId() productId: string,

@@ -1,5 +1,5 @@
 import { Controller, Get, HttpCode, UseGuards, UseInterceptors } from '@nestjs/common'
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ApiOkResponse, ApiTags, ApiOperation } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -16,7 +16,12 @@ export default class DashboardController {
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: DashboardDto, description: 'Fetch dashboard data of latest activities.' })
+  @ApiOperation({
+    description:
+      'Response should include `users`, number of `auditLogEntries`, `products`, `versions`, `deployments`, `failedDeployments`, details of `nodes`, `latestDeployments` and `auditLog` entries.',
+    summary: 'Fetch dashboard data of latest activities.',
+  })
+  @ApiOkResponse({ type: DashboardDto, description: 'Dashboard data listed.' })
   async getDashboard(@IdentityFromRequest() identity: Identity): Promise<DashboardDto> {
     return await this.service.getDashboard(identity)
   }
