@@ -56,15 +56,13 @@ export default class ProductHttpController {
   @Get()
   @HttpCode(200)
   @ApiOperation({
-    description:
-      "Returns a list of a team's products and their details.",
+    description: "Returns a list of a team's products and their details.",
     summary: 'Fetch details of products.',
   })
   @ApiOkResponse({
     type: ProductListItemDto,
     isArray: true,
-    description:
-      "Everything is OK.",
+    description: 'Everything is OK.',
   })
   @ApiNoContentResponse()
   @ApiBadRequestResponse({
@@ -76,17 +74,13 @@ export default class ProductHttpController {
 
   @Get(ROUTE_PRODUCT_ID)
   @HttpCode(200)
-<<<<<<< HEAD
-  @ApiOkResponse({ type: ProductDetailsDto, description: 'Return data of a product.' })
-  @UuidParams(PARAM_PRODUCT_ID)
-=======
   @ApiOperation({
     description:
       "Returns a products' details. The response should contain an array, consisting of the product's `name`, `id`, `type`, `description`, `deletability`, versions and version related data, including version `name` and `id`, `changelog`, increasibility.",
     summary: 'Fetch details of a product.',
   })
   @ApiOkResponse({ type: ProductDetailsDto, description: 'Everything is OK.' })
->>>>>>> 5d447b6a (feat(crux): improve openapi docs)
+  @UuidParams(PARAM_PRODUCT_ID)
   async getProductDetails(@ProductId() id: string): Promise<ProductDetailsDto> {
     return this.service.getProductDetails(id)
   }
@@ -95,7 +89,7 @@ export default class ProductHttpController {
   @HttpCode(201)
   @ApiOperation({
     description:
-      "Create a new product for a team. Newly created team has a `type` and a `name` as required variables, and optionally a `description` and a `changelog`.",
+      'Create a new product for a team. Newly created team has a `type` and a `name` as required variables, and optionally a `description` and a `changelog`.',
     summary: 'Create a new product for a team.',
   })
   @CreatedWithLocation()
@@ -117,7 +111,7 @@ export default class ProductHttpController {
   @HttpCode(204)
   @ApiOperation({
     description:
-      "Updates a product. `Name` is a required variable to identify which product is modified, `description` and `changelog` can be adjusted with this call.",
+      'Updates a product. `Name` is a required variable to identify which product is modified, `description` and `changelog` can be adjusted with this call.',
     summary: 'Update a product.',
   })
   @ApiNoContentResponse({ description: 'Product details are modified.' })
@@ -134,8 +128,7 @@ export default class ProductHttpController {
   @Delete(ROUTE_PRODUCT_ID)
   @HttpCode(204)
   @ApiOperation({
-    description:
-      "Deletes a product. Only the `name` is required.",
+    description: 'Deletes a product. Only the `name` is required.',
     summary: 'Delete a product.',
   })
   @ApiNoContentResponse({ description: 'Product deleted.' })
