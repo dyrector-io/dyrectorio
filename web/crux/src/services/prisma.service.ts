@@ -5,10 +5,7 @@ import { Prisma, PrismaClient } from '@prisma/client'
 export default class PrismaService extends PrismaClient<Prisma.PrismaClientOptions, 'query'> implements OnModuleInit {
   constructor() {
     super({
-      log: [
-        { emit: 'stdout', level: 'warn' },
-        { emit: 'stdout', level: 'error' },
-      ],
+      log: [{ emit: 'stdout', level: 'warn' }],
     })
   }
 
