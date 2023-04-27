@@ -1,16 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum, Prisma } from '@prisma/client'
-import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
+import { concatAll, EMPTY, filter, from, of, lastValueFrom, map, concatMap, Observable, Subject, tap } from 'rxjs'
 import Deployment from 'src/domain/deployment'
-import { InternalException, PreconditionFailedException } from 'src/exception/errors'
+import { PreconditionFailedException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
-import {
-  DeploymentEditEventMessage,
-  DeploymentProgressMessage,
-  IdRequest,
-  ServiceIdRequest,
-} from 'src/grpc/protobuf/proto/crux'
+import { DeploymentProgressMessage } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import { toPrismaJson } from 'src/shared/mapper'
 import {
@@ -21,14 +16,13 @@ import {
 } from 'src/shared/models'
 import { PaginationQuery } from 'src/shared/dtos/paginating'
 import AgentService from '../agent/agent.service'
-import { ImageDetails } from '../image/image.mapper'
-import ImageService from '../image/image.service'
 import ContainerMapper from '../shared/container.mapper'
 import {
   CreateDeploymentDto,
   DeploymentDetailsDto,
   DeploymentDto,
   DeploymentEventDto,
+  DeploymentImageEvent,
   DeploymentLogListDto,
   InstanceDto,
   InstanceSecretsDto,
@@ -38,31 +32,36 @@ import {
 import DeployMapper, { InstanceDetails } from './deploy.mapper'
 import { EditorLeftMessage, EditorMessage } from '../editor/editor.message'
 import EditorServiceProvider from '../editor/editor.service.provider'
+import ImageEventService from '../image/image.event.service'
+import { ImageEvent } from '../image/image.event'
 
 @Injectable()
 export default class DeployService {
   private readonly logger = new Logger(DeployService.name)
 
-  readonly instancesCreatedEvent = new Subject<InstancesCreatedEvent>()
-
-  readonly imageDeletedEvent: Observable<string>
+  private deploymentImageEvents = new Subject<DeploymentImageEvent>()
 
   constructor(
     private prisma: PrismaService,
     private agentService: AgentService,
-    imageService: ImageService,
+    imageEventService: ImageEventService,
     private mapper: DeployMapper,
     private containerMapper: ContainerMapper,
     private readonly editorServices: EditorServiceProvider,
   ) {
-    /*imageService.imagesAddedToVersionEvent
+    imageEventService
+      .watchEvents()
       .pipe(
-        map(it => from(this.onImagesAddedToVersion(it))),
+        concatMap(async it => {
+          const event = await this.transformImageEvent(it)
+          if (event.type === 'create') {
+            return from(this.onImageAddedToVersion(event))
+          }
+          return of(event)
+        }),
         concatAll(),
       )
-      .subscribe(it => this.instancesCreatedEvent.next(it))
-
-    this.imageDeletedEvent = imageService.imageDeletedFromVersionEvent*/
+      .subscribe(it => this.deploymentImageEvents.next(it))
   }
 
   async getDeploymentDetails(deploymentId: string): Promise<DeploymentDetailsDto> {
@@ -540,28 +539,8 @@ export default class DeployService {
     return runningDeployment.watchStatus()
   }
 
-  subscribeToDeploymentEditEvents(request: ServiceIdRequest): Observable<DeploymentEditEventMessage> {
-    return merge(
-      this.instancesCreatedEvent.pipe(
-        filter(it => it.deploymentIds.includes(request.id)),
-        map(
-          event =>
-            ({
-              instancesCreated: {
-                data: event.instances.map(it => this.mapper.instanceToProto(it)),
-              },
-            } as DeploymentEditEventMessage),
-        ),
-      ),
-      this.imageDeletedEvent.pipe(
-        map(
-          str =>
-            ({
-              imageIdDeleted: str,
-            } as DeploymentEditEventMessage),
-        ),
-      ),
-    )
+  subscribeToDeploymentEditEvents(deploymentId: string): Observable<DeploymentImageEvent> {
+    return this.deploymentImageEvents.pipe(filter(it => it.deploymentIds.includes(deploymentId)))
   }
 
   async getDeployments(identity: Identity): Promise<DeploymentDto[]> {
@@ -768,14 +747,24 @@ export default class DeployService {
     }
   }
 
-  private async onImagesAddedToVersion(images: ImageDetails[]): Promise<InstancesCreatedEvent> {
-    const versionId = images?.length > 0 ? images[0].versionId : null
-    if (!versionId) {
-      throw new InternalException({
-        message: 'ImagesAddedToVersionEvent generated with empty array',
-      })
-    }
+  private async transformImageEvent(event: ImageEvent): Promise<DeploymentImageEvent> {
+    const deployments = await this.prisma.deployment.findMany({
+      select: {
+        id: true,
+      },
+      where: {
+        versionId: event.versionId,
+      },
+    })
 
+    return {
+      ...event,
+      deploymentIds: deployments.map(it => it.id),
+    }
+  }
+
+  private async onImageAddedToVersion(event: DeploymentImageEvent): Promise<DeploymentImageEvent> {
+    const versionId = event.images?.length > 0 ? event.versionId : null
     const deployments = await this.prisma.deployment.findMany({
       select: {
         id: true,
@@ -787,7 +776,7 @@ export default class DeployService {
 
     const instances = await Promise.all(
       deployments.flatMap(deployment =>
-        images.map(it =>
+        event.images.map(it =>
           this.prisma.instance.create({
             include: {
               config: true,
@@ -809,7 +798,7 @@ export default class DeployService {
     )
 
     return {
-      deploymentIds: deployments.map(it => it.id),
+      ...event,
       instances,
     }
   }
@@ -836,9 +825,4 @@ export default class DeployService {
 
     return message
   }
-}
-
-type InstancesCreatedEvent = {
-  deploymentIds: string[]
-  instances: InstanceDetails[]
 }

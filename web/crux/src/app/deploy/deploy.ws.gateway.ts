@@ -12,6 +12,7 @@ import {
   InstanceMessage,
   InstanceSecretsMessage,
   InstanceUpdatedMessage,
+  InstancesAddedMessage,
   PatchDeploymentEnvMessage,
   PatchInstanceMessage,
   WS_TYPE_DEPLOYMENT_ENV_UPDATED,
@@ -20,13 +21,14 @@ import {
   WS_TYPE_GET_INSTANCE,
   WS_TYPE_GET_INSTANCE_SECRETS,
   WS_TYPE_INSTANCE,
+  WS_TYPE_INSTANCES_ADDED,
   WS_TYPE_INSTANCE_SECRETS,
   WS_TYPE_INSTANCE_UPDATED,
   WS_TYPE_PATCH_DEPLOYMENT_ENV,
   WS_TYPE_PATCH_INSTANCE,
   WS_TYPE_PATCH_RECEIVED,
 } from './deploy.message'
-import { Observable, of, map } from 'rxjs'
+import { Observable, of, map, tap, finalize, Subject, takeUntil } from 'rxjs'
 import DeployMapper from './deploy.mapper'
 import { deploymentStatusToDb, containerStateToDb } from 'src/domain/deployment'
 import { PatchDeploymentDto, PatchInstanceDto } from './deploy.dto'
@@ -47,6 +49,7 @@ import {
 } from '../editor/editor.message'
 import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
 import EditorServiceProvider from '../editor/editor.service.provider'
+import { ImageDeletedMessage, WS_TYPE_IMAGE_DELETED } from '../version/version.message'
 
 const DeploymentId = () => WsParam('deploymentId')
 
@@ -54,6 +57,8 @@ const DeploymentId = () => WsParam('deploymentId')
   namespace: 'deployments/:deploymentId',
 })
 export default class DeployWebSocketGateway {
+  private deploymentEventCompleters = new Map<string, Subject<unknown>>()
+
   constructor(
     private readonly service: DeployService,
     private readonly mapper: DeployMapper,
@@ -79,6 +84,37 @@ export default class DeployWebSocketGateway {
       data: me,
     })
 
+    const key = `${client.token}-${deploymentId}`
+    if (this.deploymentEventCompleters.has(key)) {
+      this.deploymentEventCompleters.get(key).next(undefined)
+      this.deploymentEventCompleters.delete(key)
+    }
+
+    const completer = new Subject<unknown>()
+    this.deploymentEventCompleters.set(key, completer)
+
+    this.service
+      .subscribeToDeploymentEditEvents(deploymentId)
+      .pipe(
+        takeUntil(completer),
+      )
+      .subscribe(it => {
+        if (it.type === 'create' && it.instances) {
+          subscription.sendToAll({
+            type: WS_TYPE_INSTANCES_ADDED,
+            data: it.instances.filter(it => it.deploymentId === deploymentId),
+          } as WsMessage<InstancesAddedMessage>)
+        }
+        if (it.type === 'delete') {
+          subscription.sendToAll({
+            type: WS_TYPE_IMAGE_DELETED,
+            data: {
+              imageId: it.imageId,
+            },
+          } as WsMessage<ImageDeletedMessage>)
+        }
+      })
+
     return {
       type: WS_TYPE_EDITOR_INIT,
       data: {
@@ -100,6 +136,12 @@ export default class DeployWebSocketGateway {
       data,
     }
     subscription.sendToAllExcept(client, message)
+
+    const key = `${client.token}-${deploymentId}`
+    if (this.deploymentEventCompleters.has(key)) {
+      this.deploymentEventCompleters.get(key).next(undefined)
+      this.deploymentEventCompleters.delete(key)
+    }
   }
 
   @SubscribeMessage(WS_TYPE_FETCH_DEPLOYMENT_EVENTS)

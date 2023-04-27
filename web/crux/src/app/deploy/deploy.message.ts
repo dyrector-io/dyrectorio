@@ -1,6 +1,8 @@
 import { InstanceContainerConfigData, UniqueKeyValue } from 'src/shared/models'
 import { DeploymentEventDto, InstanceDto } from './deploy.dto'
 import { ImageConfigProperty } from '../image/image.const'
+import { ImageEvent } from '../image/image.event'
+import { InstanceDetails } from './deploy.mapper'
 
 export const WS_TYPE_FETCH_DEPLOYMENT_EVENTS = 'fetch-deployment-events'
 
@@ -48,3 +50,6 @@ export type InstanceSecretsMessage = {
   instanceId: string
   keys: string[]
 }
+
+export const WS_TYPE_INSTANCES_ADDED = 'instances-added'
+export type InstancesAddedMessage = InstanceDetails[]

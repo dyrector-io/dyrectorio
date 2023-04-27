@@ -9,10 +9,11 @@ import ImageHttpController from './image.http.controller'
 import ImageMapper from './image.mapper'
 import ImageService from './image.service'
 import EditorModule from '../editor/editor.module'
+import ImageEventService from './image.event.service'
 
 @Module({
   imports: [RegistryModule, EditorModule],
-  exports: [ImageService, ImageMapper],
+  exports: [ImageService, ImageMapper, ImageEventService],
   providers: [
     PrismaService,
     ImageService,
@@ -21,6 +22,7 @@ import EditorModule from '../editor/editor.module'
     TeamRepository,
     RegistryMapper,
     KratosService,
+    ImageEventService,
   ],
   controllers: [ImageHttpController],
 })

@@ -24,13 +24,6 @@ service CruxNode {
       returns (stream common.ContainerLogMessage);
 }
 
-service CruxDeployment {
-  rpc SubscribeToDeploymentEditEvents(ServiceIdRequest)
-      returns (stream DeploymentEditEventMessage);
-}
-
-service CruxHealth { rpc getHealth(common.Empty) returns (HealthResponse); }
-
 /**
  *
  * Common messages
@@ -307,58 +300,4 @@ message DeploymentProgressMessage {
   optional common.InstanceDeploymentItem instance = 101;
 
   repeated string log = 1000;
-}
-
-message InstancesCreatedEventList { repeated InstanceResponse data = 1000; }
-
-message DeploymentEditEventMessage {
-  oneof data {
-    InstancesCreatedEventList instancesCreated = 200;
-    string imageIdDeleted = 201;
-  }
-}
-
-message InstanceResponse {
-  string id = 1;
-  AuditResponse audit = 2;
-
-  ImageResponse image = 100;
-  optional common.ContainerState state = 101;
-  optional InstanceContainerConfig config = 102;
-}
-
-message PatchInstanceRequest {
-  string id = 1;
-
-  optional InstanceContainerConfig config = 100;
-  optional string resetSection = 101;
-}
-
-enum DeploymentEventType {
-  DEPLOYMENT_EVENT_TYPE_UNSPECIFIED = 0;
-  DEPLOYMENT_LOG = 1;
-  DEPLOYMENT_STATUS = 2;
-  CONTAINER_STATUS = 3;
-}
-
-message DeploymentEventContainerState {
-  string instanceId = 1;
-  common.ContainerState state = 2;
-}
-
-message DeploymentEventLog { repeated string log = 1000; }
-
-// HEALTH
-
-enum ServiceStatus {
-  SERVICE_STATUS_UNSPECIFIED = 0;
-  UNAVAILABLE = 1;
-  DISRUPTED = 2;
-  OPERATIONAL = 3;
-}
-
-message HealthResponse {
-  ServiceStatus status = 100;
-  string cruxVersion = 101;
-  optional string lastMigration = 102;
 }

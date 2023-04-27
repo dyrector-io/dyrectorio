@@ -290,110 +290,6 @@ func (VersionType) EnumDescriptor() ([]byte, []int) {
 	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{4}
 }
 
-type DeploymentEventType int32
-
-const (
-	DeploymentEventType_DEPLOYMENT_EVENT_TYPE_UNSPECIFIED DeploymentEventType = 0
-	DeploymentEventType_DEPLOYMENT_LOG                    DeploymentEventType = 1
-	DeploymentEventType_DEPLOYMENT_STATUS                 DeploymentEventType = 2
-	DeploymentEventType_CONTAINER_STATUS                  DeploymentEventType = 3
-)
-
-// Enum value maps for DeploymentEventType.
-var (
-	DeploymentEventType_name = map[int32]string{
-		0: "DEPLOYMENT_EVENT_TYPE_UNSPECIFIED",
-		1: "DEPLOYMENT_LOG",
-		2: "DEPLOYMENT_STATUS",
-		3: "CONTAINER_STATUS",
-	}
-	DeploymentEventType_value = map[string]int32{
-		"DEPLOYMENT_EVENT_TYPE_UNSPECIFIED": 0,
-		"DEPLOYMENT_LOG":                    1,
-		"DEPLOYMENT_STATUS":                 2,
-		"CONTAINER_STATUS":                  3,
-	}
-)
-
-func (x DeploymentEventType) Enum() *DeploymentEventType {
-	p := new(DeploymentEventType)
-	*p = x
-	return p
-}
-
-func (x DeploymentEventType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (DeploymentEventType) Descriptor() protoreflect.EnumDescriptor {
-	return file_protobuf_proto_crux_proto_enumTypes[5].Descriptor()
-}
-
-func (DeploymentEventType) Type() protoreflect.EnumType {
-	return &file_protobuf_proto_crux_proto_enumTypes[5]
-}
-
-func (x DeploymentEventType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use DeploymentEventType.Descriptor instead.
-func (DeploymentEventType) EnumDescriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{5}
-}
-
-type ServiceStatus int32
-
-const (
-	ServiceStatus_SERVICE_STATUS_UNSPECIFIED ServiceStatus = 0
-	ServiceStatus_UNAVAILABLE                ServiceStatus = 1
-	ServiceStatus_DISRUPTED                  ServiceStatus = 2
-	ServiceStatus_OPERATIONAL                ServiceStatus = 3
-)
-
-// Enum value maps for ServiceStatus.
-var (
-	ServiceStatus_name = map[int32]string{
-		0: "SERVICE_STATUS_UNSPECIFIED",
-		1: "UNAVAILABLE",
-		2: "DISRUPTED",
-		3: "OPERATIONAL",
-	}
-	ServiceStatus_value = map[string]int32{
-		"SERVICE_STATUS_UNSPECIFIED": 0,
-		"UNAVAILABLE":                1,
-		"DISRUPTED":                  2,
-		"OPERATIONAL":                3,
-	}
-)
-
-func (x ServiceStatus) Enum() *ServiceStatus {
-	p := new(ServiceStatus)
-	*p = x
-	return p
-}
-
-func (x ServiceStatus) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (ServiceStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_protobuf_proto_crux_proto_enumTypes[6].Descriptor()
-}
-
-func (ServiceStatus) Type() protoreflect.EnumType {
-	return &file_protobuf_proto_crux_proto_enumTypes[6]
-}
-
-func (x ServiceStatus) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use ServiceStatus.Descriptor instead.
-func (ServiceStatus) EnumDescriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{6}
-}
-
 type ServiceIdRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2735,441 +2631,6 @@ func (x *DeploymentProgressMessage) GetLog() []string {
 	return nil
 }
 
-type InstancesCreatedEventList struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Data []*InstanceResponse `protobuf:"bytes,1000,rep,name=data,proto3" json:"data,omitempty"`
-}
-
-func (x *InstancesCreatedEventList) Reset() {
-	*x = InstancesCreatedEventList{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[35]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *InstancesCreatedEventList) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*InstancesCreatedEventList) ProtoMessage() {}
-
-func (x *InstancesCreatedEventList) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[35]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use InstancesCreatedEventList.ProtoReflect.Descriptor instead.
-func (*InstancesCreatedEventList) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{35}
-}
-
-func (x *InstancesCreatedEventList) GetData() []*InstanceResponse {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type DeploymentEditEventMessage struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Types that are assignable to Data:
-	//
-	//	*DeploymentEditEventMessage_InstancesCreated
-	//	*DeploymentEditEventMessage_ImageIdDeleted
-	Data isDeploymentEditEventMessage_Data `protobuf_oneof:"data"`
-}
-
-func (x *DeploymentEditEventMessage) Reset() {
-	*x = DeploymentEditEventMessage{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[36]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DeploymentEditEventMessage) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeploymentEditEventMessage) ProtoMessage() {}
-
-func (x *DeploymentEditEventMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[36]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeploymentEditEventMessage.ProtoReflect.Descriptor instead.
-func (*DeploymentEditEventMessage) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{36}
-}
-
-func (m *DeploymentEditEventMessage) GetData() isDeploymentEditEventMessage_Data {
-	if m != nil {
-		return m.Data
-	}
-	return nil
-}
-
-func (x *DeploymentEditEventMessage) GetInstancesCreated() *InstancesCreatedEventList {
-	if x, ok := x.GetData().(*DeploymentEditEventMessage_InstancesCreated); ok {
-		return x.InstancesCreated
-	}
-	return nil
-}
-
-func (x *DeploymentEditEventMessage) GetImageIdDeleted() string {
-	if x, ok := x.GetData().(*DeploymentEditEventMessage_ImageIdDeleted); ok {
-		return x.ImageIdDeleted
-	}
-	return ""
-}
-
-type isDeploymentEditEventMessage_Data interface {
-	isDeploymentEditEventMessage_Data()
-}
-
-type DeploymentEditEventMessage_InstancesCreated struct {
-	InstancesCreated *InstancesCreatedEventList `protobuf:"bytes,200,opt,name=instancesCreated,proto3,oneof"`
-}
-
-type DeploymentEditEventMessage_ImageIdDeleted struct {
-	ImageIdDeleted string `protobuf:"bytes,201,opt,name=imageIdDeleted,proto3,oneof"`
-}
-
-func (*DeploymentEditEventMessage_InstancesCreated) isDeploymentEditEventMessage_Data() {}
-
-func (*DeploymentEditEventMessage_ImageIdDeleted) isDeploymentEditEventMessage_Data() {}
-
-type InstanceResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Id     string                   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Audit  *AuditResponse           `protobuf:"bytes,2,opt,name=audit,proto3" json:"audit,omitempty"`
-	Image  *ImageResponse           `protobuf:"bytes,100,opt,name=image,proto3" json:"image,omitempty"`
-	State  *common.ContainerState   `protobuf:"varint,101,opt,name=state,proto3,enum=common.ContainerState,oneof" json:"state,omitempty"`
-	Config *InstanceContainerConfig `protobuf:"bytes,102,opt,name=config,proto3,oneof" json:"config,omitempty"`
-}
-
-func (x *InstanceResponse) Reset() {
-	*x = InstanceResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[37]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *InstanceResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*InstanceResponse) ProtoMessage() {}
-
-func (x *InstanceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[37]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use InstanceResponse.ProtoReflect.Descriptor instead.
-func (*InstanceResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{37}
-}
-
-func (x *InstanceResponse) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *InstanceResponse) GetAudit() *AuditResponse {
-	if x != nil {
-		return x.Audit
-	}
-	return nil
-}
-
-func (x *InstanceResponse) GetImage() *ImageResponse {
-	if x != nil {
-		return x.Image
-	}
-	return nil
-}
-
-func (x *InstanceResponse) GetState() common.ContainerState {
-	if x != nil && x.State != nil {
-		return *x.State
-	}
-	return common.ContainerState(0)
-}
-
-func (x *InstanceResponse) GetConfig() *InstanceContainerConfig {
-	if x != nil {
-		return x.Config
-	}
-	return nil
-}
-
-type PatchInstanceRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Id           string                   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Config       *InstanceContainerConfig `protobuf:"bytes,100,opt,name=config,proto3,oneof" json:"config,omitempty"`
-	ResetSection *string                  `protobuf:"bytes,101,opt,name=resetSection,proto3,oneof" json:"resetSection,omitempty"`
-}
-
-func (x *PatchInstanceRequest) Reset() {
-	*x = PatchInstanceRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[38]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *PatchInstanceRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PatchInstanceRequest) ProtoMessage() {}
-
-func (x *PatchInstanceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[38]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PatchInstanceRequest.ProtoReflect.Descriptor instead.
-func (*PatchInstanceRequest) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{38}
-}
-
-func (x *PatchInstanceRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *PatchInstanceRequest) GetConfig() *InstanceContainerConfig {
-	if x != nil {
-		return x.Config
-	}
-	return nil
-}
-
-func (x *PatchInstanceRequest) GetResetSection() string {
-	if x != nil && x.ResetSection != nil {
-		return *x.ResetSection
-	}
-	return ""
-}
-
-type DeploymentEventContainerState struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	InstanceId string                `protobuf:"bytes,1,opt,name=instanceId,proto3" json:"instanceId,omitempty"`
-	State      common.ContainerState `protobuf:"varint,2,opt,name=state,proto3,enum=common.ContainerState" json:"state,omitempty"`
-}
-
-func (x *DeploymentEventContainerState) Reset() {
-	*x = DeploymentEventContainerState{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[39]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DeploymentEventContainerState) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeploymentEventContainerState) ProtoMessage() {}
-
-func (x *DeploymentEventContainerState) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[39]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeploymentEventContainerState.ProtoReflect.Descriptor instead.
-func (*DeploymentEventContainerState) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{39}
-}
-
-func (x *DeploymentEventContainerState) GetInstanceId() string {
-	if x != nil {
-		return x.InstanceId
-	}
-	return ""
-}
-
-func (x *DeploymentEventContainerState) GetState() common.ContainerState {
-	if x != nil {
-		return x.State
-	}
-	return common.ContainerState(0)
-}
-
-type DeploymentEventLog struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Log []string `protobuf:"bytes,1000,rep,name=log,proto3" json:"log,omitempty"`
-}
-
-func (x *DeploymentEventLog) Reset() {
-	*x = DeploymentEventLog{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[40]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DeploymentEventLog) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeploymentEventLog) ProtoMessage() {}
-
-func (x *DeploymentEventLog) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[40]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeploymentEventLog.ProtoReflect.Descriptor instead.
-func (*DeploymentEventLog) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{40}
-}
-
-func (x *DeploymentEventLog) GetLog() []string {
-	if x != nil {
-		return x.Log
-	}
-	return nil
-}
-
-type HealthResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Status        ServiceStatus `protobuf:"varint,100,opt,name=status,proto3,enum=crux.ServiceStatus" json:"status,omitempty"`
-	CruxVersion   string        `protobuf:"bytes,101,opt,name=cruxVersion,proto3" json:"cruxVersion,omitempty"`
-	LastMigration *string       `protobuf:"bytes,102,opt,name=lastMigration,proto3,oneof" json:"lastMigration,omitempty"`
-}
-
-func (x *HealthResponse) Reset() {
-	*x = HealthResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[41]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *HealthResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*HealthResponse) ProtoMessage() {}
-
-func (x *HealthResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[41]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use HealthResponse.ProtoReflect.Descriptor instead.
-func (*HealthResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{41}
-}
-
-func (x *HealthResponse) GetStatus() ServiceStatus {
-	if x != nil {
-		return x.Status
-	}
-	return ServiceStatus_SERVICE_STATUS_UNSPECIFIED
-}
-
-func (x *HealthResponse) GetCruxVersion() string {
-	if x != nil {
-		return x.CruxVersion
-	}
-	return ""
-}
-
-func (x *HealthResponse) GetLastMigration() string {
-	if x != nil && x.LastMigration != nil {
-		return *x.LastMigration
-	}
-	return ""
-}
-
 var File_protobuf_proto_crux_proto protoreflect.FileDescriptor
 
 var file_protobuf_proto_crux_proto_rawDesc = []byte{
@@ -3572,140 +3033,55 @@ var file_protobuf_proto_crux_proto_rawDesc = []byte{
 	0x69, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x88, 0x01, 0x01, 0x12, 0x11, 0x0a, 0x03, 0x6c,
 	0x6f, 0x67, 0x18, 0xe8, 0x07, 0x20, 0x03, 0x28, 0x09, 0x52, 0x03, 0x6c, 0x6f, 0x67, 0x42, 0x09,
 	0x0a, 0x07, 0x5f, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x42, 0x0b, 0x0a, 0x09, 0x5f, 0x69, 0x6e,
-	0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x22, 0x48, 0x0a, 0x19, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e,
-	0x63, 0x65, 0x73, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c,
-	0x69, 0x73, 0x74, 0x12, 0x2b, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0xe8, 0x07, 0x20, 0x03,
-	0x28, 0x0b, 0x32, 0x16, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e,
-	0x63, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61,
-	0x22, 0x9f, 0x01, 0x0a, 0x1a, 0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x45,
-	0x64, 0x69, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12,
-	0x4e, 0x0a, 0x10, 0x69, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x73, 0x43, 0x72, 0x65, 0x61,
-	0x74, 0x65, 0x64, 0x18, 0xc8, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x63, 0x72, 0x75,
-	0x78, 0x2e, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x73, 0x43, 0x72, 0x65, 0x61, 0x74,
-	0x65, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x48, 0x00, 0x52, 0x10, 0x69,
-	0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x73, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x12,
-	0x29, 0x0a, 0x0e, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x49, 0x64, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65,
-	0x64, 0x18, 0xc9, 0x01, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x0e, 0x69, 0x6d, 0x61, 0x67,
-	0x65, 0x49, 0x64, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x64, 0x42, 0x06, 0x0a, 0x04, 0x64, 0x61,
-	0x74, 0x61, 0x22, 0xfc, 0x01, 0x0a, 0x10, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x29, 0x0a, 0x05, 0x61, 0x75, 0x64, 0x69, 0x74,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x41, 0x75,
-	0x64, 0x69, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x52, 0x05, 0x61, 0x75, 0x64,
-	0x69, 0x74, 0x12, 0x29, 0x0a, 0x05, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x18, 0x64, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x13, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x52, 0x05, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x12, 0x31, 0x0a,
-	0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x18, 0x65, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x16, 0x2e, 0x63,
-	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x53,
-	0x74, 0x61, 0x74, 0x65, 0x48, 0x00, 0x52, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x88, 0x01, 0x01,
-	0x12, 0x3a, 0x0a, 0x06, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x18, 0x66, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x1d, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65,
-	0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x48,
-	0x01, 0x52, 0x06, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x88, 0x01, 0x01, 0x42, 0x08, 0x0a, 0x06,
-	0x5f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x42, 0x09, 0x0a, 0x07, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69,
-	0x67, 0x22, 0xa7, 0x01, 0x0a, 0x14, 0x50, 0x61, 0x74, 0x63, 0x68, 0x49, 0x6e, 0x73, 0x74, 0x61,
-	0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x3a, 0x0a, 0x06, 0x63, 0x6f,
-	0x6e, 0x66, 0x69, 0x67, 0x18, 0x64, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x63, 0x72, 0x75,
-	0x78, 0x2e, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69,
-	0x6e, 0x65, 0x72, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x48, 0x00, 0x52, 0x06, 0x63, 0x6f, 0x6e,
-	0x66, 0x69, 0x67, 0x88, 0x01, 0x01, 0x12, 0x27, 0x0a, 0x0c, 0x72, 0x65, 0x73, 0x65, 0x74, 0x53,
-	0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x65, 0x20, 0x01, 0x28, 0x09, 0x48, 0x01, 0x52, 0x0c,
-	0x72, 0x65, 0x73, 0x65, 0x74, 0x53, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x88, 0x01, 0x01, 0x42,
-	0x09, 0x0a, 0x07, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x42, 0x0f, 0x0a, 0x0d, 0x5f, 0x72,
-	0x65, 0x73, 0x65, 0x74, 0x53, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x6d, 0x0a, 0x1d, 0x44,
-	0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x43, 0x6f,
-	0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x1e, 0x0a, 0x0a,
-	0x69, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x0a, 0x69, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x05,
-	0x73, 0x74, 0x61, 0x74, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x16, 0x2e, 0x63, 0x6f,
-	0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x53, 0x74,
-	0x61, 0x74, 0x65, 0x52, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x22, 0x27, 0x0a, 0x12, 0x44, 0x65,
-	0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x6f, 0x67,
-	0x12, 0x11, 0x0a, 0x03, 0x6c, 0x6f, 0x67, 0x18, 0xe8, 0x07, 0x20, 0x03, 0x28, 0x09, 0x52, 0x03,
-	0x6c, 0x6f, 0x67, 0x22, 0x9c, 0x01, 0x0a, 0x0e, 0x48, 0x65, 0x61, 0x6c, 0x74, 0x68, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2b, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73,
-	0x18, 0x64, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x13, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x53, 0x65,
-	0x72, 0x76, 0x69, 0x63, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x06, 0x73, 0x74, 0x61,
-	0x74, 0x75, 0x73, 0x12, 0x20, 0x0a, 0x0b, 0x63, 0x72, 0x75, 0x78, 0x56, 0x65, 0x72, 0x73, 0x69,
-	0x6f, 0x6e, 0x18, 0x65, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x63, 0x72, 0x75, 0x78, 0x56, 0x65,
-	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x29, 0x0a, 0x0d, 0x6c, 0x61, 0x73, 0x74, 0x4d, 0x69, 0x67,
-	0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x66, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x0d,
-	0x6c, 0x61, 0x73, 0x74, 0x4d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x88, 0x01, 0x01,
-	0x42, 0x10, 0x0a, 0x0e, 0x5f, 0x6c, 0x61, 0x73, 0x74, 0x4d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x2a, 0x71, 0x0a, 0x0c, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x54, 0x79,
-	0x70, 0x65, 0x12, 0x1d, 0x0a, 0x19, 0x52, 0x45, 0x47, 0x49, 0x53, 0x54, 0x52, 0x59, 0x5f, 0x54,
-	0x59, 0x50, 0x45, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10,
-	0x00, 0x12, 0x06, 0x0a, 0x02, 0x56, 0x32, 0x10, 0x01, 0x12, 0x07, 0x0a, 0x03, 0x48, 0x55, 0x42,
-	0x10, 0x02, 0x12, 0x0a, 0x0a, 0x06, 0x47, 0x49, 0x54, 0x4c, 0x41, 0x42, 0x10, 0x03, 0x12, 0x0a,
-	0x0a, 0x06, 0x47, 0x49, 0x54, 0x48, 0x55, 0x42, 0x10, 0x04, 0x12, 0x0a, 0x0a, 0x06, 0x47, 0x4f,
-	0x4f, 0x47, 0x4c, 0x45, 0x10, 0x05, 0x12, 0x0d, 0x0a, 0x09, 0x55, 0x4e, 0x43, 0x48, 0x45, 0x43,
-	0x4b, 0x45, 0x44, 0x10, 0x06, 0x2a, 0x59, 0x0a, 0x14, 0x4e, 0x6f, 0x64, 0x65, 0x43, 0x6f, 0x6e,
-	0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x21, 0x0a,
-	0x1d, 0x43, 0x4f, 0x4e, 0x4e, 0x45, 0x43, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54,
-	0x55, 0x53, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00,
-	0x12, 0x0f, 0x0a, 0x0b, 0x55, 0x4e, 0x52, 0x45, 0x41, 0x43, 0x48, 0x41, 0x42, 0x4c, 0x45, 0x10,
-	0x01, 0x12, 0x0d, 0x0a, 0x09, 0x43, 0x4f, 0x4e, 0x4e, 0x45, 0x43, 0x54, 0x45, 0x44, 0x10, 0x02,
-	0x2a, 0x3a, 0x0a, 0x08, 0x4e, 0x6f, 0x64, 0x65, 0x54, 0x79, 0x70, 0x65, 0x12, 0x19, 0x0a, 0x15,
-	0x4e, 0x4f, 0x44, 0x45, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43,
-	0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x44, 0x4f, 0x43, 0x4b, 0x45,
-	0x52, 0x10, 0x01, 0x12, 0x07, 0x0a, 0x03, 0x4b, 0x38, 0x53, 0x10, 0x02, 0x2a, 0x4d, 0x0a, 0x0e,
-	0x4e, 0x6f, 0x64, 0x65, 0x53, 0x63, 0x72, 0x69, 0x70, 0x74, 0x54, 0x79, 0x70, 0x65, 0x12, 0x20,
-	0x0a, 0x1c, 0x4e, 0x4f, 0x44, 0x45, 0x5f, 0x53, 0x43, 0x52, 0x49, 0x50, 0x54, 0x5f, 0x54, 0x59,
-	0x50, 0x45, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00,
-	0x12, 0x09, 0x0a, 0x05, 0x53, 0x48, 0x45, 0x4c, 0x4c, 0x10, 0x01, 0x12, 0x0e, 0x0a, 0x0a, 0x50,
-	0x4f, 0x57, 0x45, 0x52, 0x53, 0x48, 0x45, 0x4c, 0x4c, 0x10, 0x02, 0x2a, 0x49, 0x0a, 0x0b, 0x56,
-	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x12, 0x1c, 0x0a, 0x18, 0x56, 0x45,
-	0x52, 0x53, 0x49, 0x4f, 0x4e, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45,
-	0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x0f, 0x0a, 0x0b, 0x49, 0x4e, 0x43, 0x52,
-	0x45, 0x4d, 0x45, 0x4e, 0x54, 0x41, 0x4c, 0x10, 0x01, 0x12, 0x0b, 0x0a, 0x07, 0x52, 0x4f, 0x4c,
-	0x4c, 0x49, 0x4e, 0x47, 0x10, 0x02, 0x2a, 0x7d, 0x0a, 0x13, 0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79,
-	0x6d, 0x65, 0x6e, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x79, 0x70, 0x65, 0x12, 0x25, 0x0a,
-	0x21, 0x44, 0x45, 0x50, 0x4c, 0x4f, 0x59, 0x4d, 0x45, 0x4e, 0x54, 0x5f, 0x45, 0x56, 0x45, 0x4e,
+	0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x2a, 0x71, 0x0a, 0x0c, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
+	0x72, 0x79, 0x54, 0x79, 0x70, 0x65, 0x12, 0x1d, 0x0a, 0x19, 0x52, 0x45, 0x47, 0x49, 0x53, 0x54,
+	0x52, 0x59, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46,
+	0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x06, 0x0a, 0x02, 0x56, 0x32, 0x10, 0x01, 0x12, 0x07, 0x0a,
+	0x03, 0x48, 0x55, 0x42, 0x10, 0x02, 0x12, 0x0a, 0x0a, 0x06, 0x47, 0x49, 0x54, 0x4c, 0x41, 0x42,
+	0x10, 0x03, 0x12, 0x0a, 0x0a, 0x06, 0x47, 0x49, 0x54, 0x48, 0x55, 0x42, 0x10, 0x04, 0x12, 0x0a,
+	0x0a, 0x06, 0x47, 0x4f, 0x4f, 0x47, 0x4c, 0x45, 0x10, 0x05, 0x12, 0x0d, 0x0a, 0x09, 0x55, 0x4e,
+	0x43, 0x48, 0x45, 0x43, 0x4b, 0x45, 0x44, 0x10, 0x06, 0x2a, 0x59, 0x0a, 0x14, 0x4e, 0x6f, 0x64,
+	0x65, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x75,
+	0x73, 0x12, 0x21, 0x0a, 0x1d, 0x43, 0x4f, 0x4e, 0x4e, 0x45, 0x43, 0x54, 0x49, 0x4f, 0x4e, 0x5f,
+	0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49,
+	0x45, 0x44, 0x10, 0x00, 0x12, 0x0f, 0x0a, 0x0b, 0x55, 0x4e, 0x52, 0x45, 0x41, 0x43, 0x48, 0x41,
+	0x42, 0x4c, 0x45, 0x10, 0x01, 0x12, 0x0d, 0x0a, 0x09, 0x43, 0x4f, 0x4e, 0x4e, 0x45, 0x43, 0x54,
+	0x45, 0x44, 0x10, 0x02, 0x2a, 0x3a, 0x0a, 0x08, 0x4e, 0x6f, 0x64, 0x65, 0x54, 0x79, 0x70, 0x65,
+	0x12, 0x19, 0x0a, 0x15, 0x4e, 0x4f, 0x44, 0x45, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x55, 0x4e,
+	0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x44,
+	0x4f, 0x43, 0x4b, 0x45, 0x52, 0x10, 0x01, 0x12, 0x07, 0x0a, 0x03, 0x4b, 0x38, 0x53, 0x10, 0x02,
+	0x2a, 0x4d, 0x0a, 0x0e, 0x4e, 0x6f, 0x64, 0x65, 0x53, 0x63, 0x72, 0x69, 0x70, 0x74, 0x54, 0x79,
+	0x70, 0x65, 0x12, 0x20, 0x0a, 0x1c, 0x4e, 0x4f, 0x44, 0x45, 0x5f, 0x53, 0x43, 0x52, 0x49, 0x50,
 	0x54, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49,
-	0x45, 0x44, 0x10, 0x00, 0x12, 0x12, 0x0a, 0x0e, 0x44, 0x45, 0x50, 0x4c, 0x4f, 0x59, 0x4d, 0x45,
-	0x4e, 0x54, 0x5f, 0x4c, 0x4f, 0x47, 0x10, 0x01, 0x12, 0x15, 0x0a, 0x11, 0x44, 0x45, 0x50, 0x4c,
-	0x4f, 0x59, 0x4d, 0x45, 0x4e, 0x54, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x10, 0x02, 0x12,
-	0x14, 0x0a, 0x10, 0x43, 0x4f, 0x4e, 0x54, 0x41, 0x49, 0x4e, 0x45, 0x52, 0x5f, 0x53, 0x54, 0x41,
-	0x54, 0x55, 0x53, 0x10, 0x03, 0x2a, 0x60, 0x0a, 0x0d, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x1e, 0x0a, 0x1a, 0x53, 0x45, 0x52, 0x56, 0x49, 0x43,
-	0x45, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49,
-	0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x0f, 0x0a, 0x0b, 0x55, 0x4e, 0x41, 0x56, 0x41, 0x49,
-	0x4c, 0x41, 0x42, 0x4c, 0x45, 0x10, 0x01, 0x12, 0x0d, 0x0a, 0x09, 0x44, 0x49, 0x53, 0x52, 0x55,
-	0x50, 0x54, 0x45, 0x44, 0x10, 0x02, 0x12, 0x0f, 0x0a, 0x0b, 0x4f, 0x50, 0x45, 0x52, 0x41, 0x54,
-	0x49, 0x4f, 0x4e, 0x41, 0x4c, 0x10, 0x03, 0x32, 0x96, 0x02, 0x0a, 0x08, 0x43, 0x72, 0x75, 0x78,
-	0x4e, 0x6f, 0x64, 0x65, 0x12, 0x4d, 0x0a, 0x19, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62,
-	0x65, 0x4e, 0x6f, 0x64, 0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65,
-	0x6c, 0x12, 0x16, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x63, 0x72, 0x75, 0x78,
-	0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
-	0x65, 0x30, 0x01, 0x12, 0x5c, 0x0a, 0x13, 0x57, 0x61, 0x74, 0x63, 0x68, 0x43, 0x6f, 0x6e, 0x74,
-	0x61, 0x69, 0x6e, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x20, 0x2e, 0x63, 0x72, 0x75,
-	0x78, 0x2e, 0x57, 0x61, 0x74, 0x63, 0x68, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72,
-	0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x21, 0x2e, 0x63,
-	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x53,
-	0x74, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x73, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x30,
-	0x01, 0x12, 0x5d, 0x0a, 0x1c, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x43, 0x6f,
-	0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x4c, 0x6f, 0x67, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65,
-	0x6c, 0x12, 0x1e, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x57, 0x61, 0x74, 0x63, 0x68, 0x43, 0x6f,
-	0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x4c, 0x6f, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x1a, 0x1b, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61,
-	0x69, 0x6e, 0x65, 0x72, 0x4c, 0x6f, 0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x30, 0x01,
-	0x32, 0x6f, 0x0a, 0x0e, 0x43, 0x72, 0x75, 0x78, 0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65,
-	0x6e, 0x74, 0x12, 0x5d, 0x0a, 0x1f, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x54,
-	0x6f, 0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x45, 0x64, 0x69, 0x74, 0x45,
-	0x76, 0x65, 0x6e, 0x74, 0x73, 0x12, 0x16, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x53, 0x65, 0x72,
-	0x76, 0x69, 0x63, 0x65, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x20, 0x2e,
-	0x63, 0x72, 0x75, 0x78, 0x2e, 0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x45,
-	0x64, 0x69, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x30,
-	0x01, 0x32, 0x3e, 0x0a, 0x0a, 0x43, 0x72, 0x75, 0x78, 0x48, 0x65, 0x61, 0x6c, 0x74, 0x68, 0x12,
-	0x30, 0x0a, 0x09, 0x67, 0x65, 0x74, 0x48, 0x65, 0x61, 0x6c, 0x74, 0x68, 0x12, 0x0d, 0x2e, 0x63,
-	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x14, 0x2e, 0x63, 0x72,
-	0x75, 0x78, 0x2e, 0x48, 0x65, 0x61, 0x6c, 0x74, 0x68, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x42, 0x34, 0x5a, 0x32, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x64, 0x79, 0x72, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x2d, 0x69, 0x6f, 0x2f, 0x64, 0x79, 0x72, 0x65,
-	0x63, 0x74, 0x6f, 0x72, 0x69, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f,
-	0x67, 0x6f, 0x2f, 0x63, 0x72, 0x75, 0x78, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x45, 0x44, 0x10, 0x00, 0x12, 0x09, 0x0a, 0x05, 0x53, 0x48, 0x45, 0x4c, 0x4c, 0x10, 0x01, 0x12,
+	0x0e, 0x0a, 0x0a, 0x50, 0x4f, 0x57, 0x45, 0x52, 0x53, 0x48, 0x45, 0x4c, 0x4c, 0x10, 0x02, 0x2a,
+	0x49, 0x0a, 0x0b, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x12, 0x1c,
+	0x0a, 0x18, 0x56, 0x45, 0x52, 0x53, 0x49, 0x4f, 0x4e, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x55,
+	0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x0f, 0x0a, 0x0b,
+	0x49, 0x4e, 0x43, 0x52, 0x45, 0x4d, 0x45, 0x4e, 0x54, 0x41, 0x4c, 0x10, 0x01, 0x12, 0x0b, 0x0a,
+	0x07, 0x52, 0x4f, 0x4c, 0x4c, 0x49, 0x4e, 0x47, 0x10, 0x02, 0x32, 0x96, 0x02, 0x0a, 0x08, 0x43,
+	0x72, 0x75, 0x78, 0x4e, 0x6f, 0x64, 0x65, 0x12, 0x4d, 0x0a, 0x19, 0x53, 0x75, 0x62, 0x73, 0x63,
+	0x72, 0x69, 0x62, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x43, 0x68, 0x61,
+	0x6e, 0x6e, 0x65, 0x6c, 0x12, 0x16, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x53, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x63,
+	0x72, 0x75, 0x78, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73,
+	0x73, 0x61, 0x67, 0x65, 0x30, 0x01, 0x12, 0x5c, 0x0a, 0x13, 0x57, 0x61, 0x74, 0x63, 0x68, 0x43,
+	0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x20, 0x2e,
+	0x63, 0x72, 0x75, 0x78, 0x2e, 0x57, 0x61, 0x74, 0x63, 0x68, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69,
+	0x6e, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x21, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e,
+	0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x73, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x30, 0x01, 0x12, 0x5d, 0x0a, 0x1c, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62,
+	0x65, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x4c, 0x6f, 0x67, 0x43, 0x68, 0x61,
+	0x6e, 0x6e, 0x65, 0x6c, 0x12, 0x1e, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x57, 0x61, 0x74, 0x63,
+	0x68, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x4c, 0x6f, 0x67, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x1b, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x43, 0x6f,
+	0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x4c, 0x6f, 0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x30, 0x01, 0x42, 0x34, 0x5a, 0x32, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
+	0x6d, 0x2f, 0x64, 0x79, 0x72, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x2d, 0x69, 0x6f, 0x2f, 0x64, 0x79,
+	0x72, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x69, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
+	0x66, 0x2f, 0x67, 0x6f, 0x2f, 0x63, 0x72, 0x75, 0x78, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -3720,166 +3096,142 @@ func file_protobuf_proto_crux_proto_rawDescGZIP() []byte {
 	return file_protobuf_proto_crux_proto_rawDescData
 }
 
-var file_protobuf_proto_crux_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
-var file_protobuf_proto_crux_proto_msgTypes = make([]protoimpl.MessageInfo, 42)
+var file_protobuf_proto_crux_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_protobuf_proto_crux_proto_msgTypes = make([]protoimpl.MessageInfo, 35)
 var file_protobuf_proto_crux_proto_goTypes = []interface{}{
 	(RegistryType)(0),                        // 0: crux.RegistryType
 	(NodeConnectionStatus)(0),                // 1: crux.NodeConnectionStatus
 	(NodeType)(0),                            // 2: crux.NodeType
 	(NodeScriptType)(0),                      // 3: crux.NodeScriptType
 	(VersionType)(0),                         // 4: crux.VersionType
-	(DeploymentEventType)(0),                 // 5: crux.DeploymentEventType
-	(ServiceStatus)(0),                       // 6: crux.ServiceStatus
-	(*ServiceIdRequest)(nil),                 // 7: crux.ServiceIdRequest
-	(*IdRequest)(nil),                        // 8: crux.IdRequest
-	(*AuditResponse)(nil),                    // 9: crux.AuditResponse
-	(*CreateEntityResponse)(nil),             // 10: crux.CreateEntityResponse
-	(*UpdateEntityResponse)(nil),             // 11: crux.UpdateEntityResponse
-	(*VolumeLink)(nil),                       // 12: crux.VolumeLink
-	(*InitContainer)(nil),                    // 13: crux.InitContainer
-	(*InitContainerList)(nil),                // 14: crux.InitContainerList
-	(*LogConfig)(nil),                        // 15: crux.LogConfig
-	(*Port)(nil),                             // 16: crux.Port
-	(*PortList)(nil),                         // 17: crux.PortList
-	(*PortRange)(nil),                        // 18: crux.PortRange
-	(*PortRangeBinding)(nil),                 // 19: crux.PortRangeBinding
-	(*PortRangeBindingList)(nil),             // 20: crux.PortRangeBindingList
-	(*Volume)(nil),                           // 21: crux.Volume
-	(*VolumeList)(nil),                       // 22: crux.VolumeList
-	(*UniqueKeyList)(nil),                    // 23: crux.UniqueKeyList
-	(*UniqueKeyValue)(nil),                   // 24: crux.UniqueKeyValue
-	(*UniqueKeyValueList)(nil),               // 25: crux.UniqueKeyValueList
-	(*UniqueSecretKey)(nil),                  // 26: crux.UniqueSecretKey
-	(*UniqueSecretKeyList)(nil),              // 27: crux.UniqueSecretKeyList
-	(*UniqueSecretKeyValue)(nil),             // 28: crux.UniqueSecretKeyValue
-	(*UniqueSecretKeyValueList)(nil),         // 29: crux.UniqueSecretKeyValueList
-	(*Marker)(nil),                           // 30: crux.Marker
-	(*ContainerStorage)(nil),                 // 31: crux.ContainerStorage
-	(*DagentContainerConfig)(nil),            // 32: crux.DagentContainerConfig
-	(*CraneContainerConfig)(nil),             // 33: crux.CraneContainerConfig
-	(*CommonContainerConfig)(nil),            // 34: crux.CommonContainerConfig
-	(*ImageContainerConfig)(nil),             // 35: crux.ImageContainerConfig
-	(*InstanceContainerConfig)(nil),          // 36: crux.InstanceContainerConfig
-	(*ImageResponse)(nil),                    // 37: crux.ImageResponse
-	(*NodeEventMessage)(nil),                 // 38: crux.NodeEventMessage
-	(*WatchContainerStateRequest)(nil),       // 39: crux.WatchContainerStateRequest
-	(*WatchContainerLogRequest)(nil),         // 40: crux.WatchContainerLogRequest
-	(*DeploymentProgressMessage)(nil),        // 41: crux.DeploymentProgressMessage
-	(*InstancesCreatedEventList)(nil),        // 42: crux.InstancesCreatedEventList
-	(*DeploymentEditEventMessage)(nil),       // 43: crux.DeploymentEditEventMessage
-	(*InstanceResponse)(nil),                 // 44: crux.InstanceResponse
-	(*PatchInstanceRequest)(nil),             // 45: crux.PatchInstanceRequest
-	(*DeploymentEventContainerState)(nil),    // 46: crux.DeploymentEventContainerState
-	(*DeploymentEventLog)(nil),               // 47: crux.DeploymentEventLog
-	(*HealthResponse)(nil),                   // 48: crux.HealthResponse
-	(*timestamppb.Timestamp)(nil),            // 49: google.protobuf.Timestamp
-	(*common.UniqueKey)(nil),                 // 50: common.UniqueKey
-	(common.DriverType)(0),                   // 51: common.DriverType
-	(common.VolumeType)(0),                   // 52: common.VolumeType
-	(common.RestartPolicy)(0),                // 53: common.RestartPolicy
-	(common.NetworkMode)(0),                  // 54: common.NetworkMode
-	(common.DeploymentStrategy)(0),           // 55: common.DeploymentStrategy
-	(*common.HealthCheckConfig)(nil),         // 56: common.HealthCheckConfig
-	(*common.ResourceConfig)(nil),            // 57: common.ResourceConfig
-	(common.ExposeStrategy)(0),               // 58: common.ExposeStrategy
-	(*common.Ingress)(nil),                   // 59: common.Ingress
-	(*common.ConfigContainer)(nil),           // 60: common.ConfigContainer
-	(*common.ContainerIdentifier)(nil),       // 61: common.ContainerIdentifier
-	(common.DeploymentStatus)(0),             // 62: common.DeploymentStatus
-	(*common.InstanceDeploymentItem)(nil),    // 63: common.InstanceDeploymentItem
-	(common.ContainerState)(0),               // 64: common.ContainerState
-	(*common.Empty)(nil),                     // 65: common.Empty
-	(*common.ContainerStateListMessage)(nil), // 66: common.ContainerStateListMessage
-	(*common.ContainerLogMessage)(nil),       // 67: common.ContainerLogMessage
+	(*ServiceIdRequest)(nil),                 // 5: crux.ServiceIdRequest
+	(*IdRequest)(nil),                        // 6: crux.IdRequest
+	(*AuditResponse)(nil),                    // 7: crux.AuditResponse
+	(*CreateEntityResponse)(nil),             // 8: crux.CreateEntityResponse
+	(*UpdateEntityResponse)(nil),             // 9: crux.UpdateEntityResponse
+	(*VolumeLink)(nil),                       // 10: crux.VolumeLink
+	(*InitContainer)(nil),                    // 11: crux.InitContainer
+	(*InitContainerList)(nil),                // 12: crux.InitContainerList
+	(*LogConfig)(nil),                        // 13: crux.LogConfig
+	(*Port)(nil),                             // 14: crux.Port
+	(*PortList)(nil),                         // 15: crux.PortList
+	(*PortRange)(nil),                        // 16: crux.PortRange
+	(*PortRangeBinding)(nil),                 // 17: crux.PortRangeBinding
+	(*PortRangeBindingList)(nil),             // 18: crux.PortRangeBindingList
+	(*Volume)(nil),                           // 19: crux.Volume
+	(*VolumeList)(nil),                       // 20: crux.VolumeList
+	(*UniqueKeyList)(nil),                    // 21: crux.UniqueKeyList
+	(*UniqueKeyValue)(nil),                   // 22: crux.UniqueKeyValue
+	(*UniqueKeyValueList)(nil),               // 23: crux.UniqueKeyValueList
+	(*UniqueSecretKey)(nil),                  // 24: crux.UniqueSecretKey
+	(*UniqueSecretKeyList)(nil),              // 25: crux.UniqueSecretKeyList
+	(*UniqueSecretKeyValue)(nil),             // 26: crux.UniqueSecretKeyValue
+	(*UniqueSecretKeyValueList)(nil),         // 27: crux.UniqueSecretKeyValueList
+	(*Marker)(nil),                           // 28: crux.Marker
+	(*ContainerStorage)(nil),                 // 29: crux.ContainerStorage
+	(*DagentContainerConfig)(nil),            // 30: crux.DagentContainerConfig
+	(*CraneContainerConfig)(nil),             // 31: crux.CraneContainerConfig
+	(*CommonContainerConfig)(nil),            // 32: crux.CommonContainerConfig
+	(*ImageContainerConfig)(nil),             // 33: crux.ImageContainerConfig
+	(*InstanceContainerConfig)(nil),          // 34: crux.InstanceContainerConfig
+	(*ImageResponse)(nil),                    // 35: crux.ImageResponse
+	(*NodeEventMessage)(nil),                 // 36: crux.NodeEventMessage
+	(*WatchContainerStateRequest)(nil),       // 37: crux.WatchContainerStateRequest
+	(*WatchContainerLogRequest)(nil),         // 38: crux.WatchContainerLogRequest
+	(*DeploymentProgressMessage)(nil),        // 39: crux.DeploymentProgressMessage
+	(*timestamppb.Timestamp)(nil),            // 40: google.protobuf.Timestamp
+	(*common.UniqueKey)(nil),                 // 41: common.UniqueKey
+	(common.DriverType)(0),                   // 42: common.DriverType
+	(common.VolumeType)(0),                   // 43: common.VolumeType
+	(common.RestartPolicy)(0),                // 44: common.RestartPolicy
+	(common.NetworkMode)(0),                  // 45: common.NetworkMode
+	(common.DeploymentStrategy)(0),           // 46: common.DeploymentStrategy
+	(*common.HealthCheckConfig)(nil),         // 47: common.HealthCheckConfig
+	(*common.ResourceConfig)(nil),            // 48: common.ResourceConfig
+	(common.ExposeStrategy)(0),               // 49: common.ExposeStrategy
+	(*common.Ingress)(nil),                   // 50: common.Ingress
+	(*common.ConfigContainer)(nil),           // 51: common.ConfigContainer
+	(*common.ContainerIdentifier)(nil),       // 52: common.ContainerIdentifier
+	(common.DeploymentStatus)(0),             // 53: common.DeploymentStatus
+	(*common.InstanceDeploymentItem)(nil),    // 54: common.InstanceDeploymentItem
+	(*common.ContainerStateListMessage)(nil), // 55: common.ContainerStateListMessage
+	(*common.ContainerLogMessage)(nil),       // 56: common.ContainerLogMessage
 }
 var file_protobuf_proto_crux_proto_depIdxs = []int32{
-	49, // 0: crux.AuditResponse.createdAt:type_name -> google.protobuf.Timestamp
-	49, // 1: crux.AuditResponse.updatedAt:type_name -> google.protobuf.Timestamp
-	49, // 2: crux.CreateEntityResponse.createdAt:type_name -> google.protobuf.Timestamp
-	49, // 3: crux.UpdateEntityResponse.updatedAt:type_name -> google.protobuf.Timestamp
-	12, // 4: crux.InitContainer.volumes:type_name -> crux.VolumeLink
-	50, // 5: crux.InitContainer.command:type_name -> common.UniqueKey
-	50, // 6: crux.InitContainer.args:type_name -> common.UniqueKey
-	24, // 7: crux.InitContainer.environment:type_name -> crux.UniqueKeyValue
-	13, // 8: crux.InitContainerList.data:type_name -> crux.InitContainer
-	51, // 9: crux.LogConfig.driver:type_name -> common.DriverType
-	24, // 10: crux.LogConfig.options:type_name -> crux.UniqueKeyValue
-	16, // 11: crux.PortList.data:type_name -> crux.Port
-	18, // 12: crux.PortRangeBinding.internal:type_name -> crux.PortRange
-	18, // 13: crux.PortRangeBinding.external:type_name -> crux.PortRange
-	19, // 14: crux.PortRangeBindingList.data:type_name -> crux.PortRangeBinding
-	52, // 15: crux.Volume.type:type_name -> common.VolumeType
-	21, // 16: crux.VolumeList.data:type_name -> crux.Volume
-	50, // 17: crux.UniqueKeyList.data:type_name -> common.UniqueKey
-	24, // 18: crux.UniqueKeyValueList.data:type_name -> crux.UniqueKeyValue
-	26, // 19: crux.UniqueSecretKeyList.data:type_name -> crux.UniqueSecretKey
-	28, // 20: crux.UniqueSecretKeyValueList.data:type_name -> crux.UniqueSecretKeyValue
-	24, // 21: crux.Marker.deployment:type_name -> crux.UniqueKeyValue
-	24, // 22: crux.Marker.service:type_name -> crux.UniqueKeyValue
-	24, // 23: crux.Marker.ingress:type_name -> crux.UniqueKeyValue
-	15, // 24: crux.DagentContainerConfig.logConfig:type_name -> crux.LogConfig
-	53, // 25: crux.DagentContainerConfig.restartPolicy:type_name -> common.RestartPolicy
-	54, // 26: crux.DagentContainerConfig.networkMode:type_name -> common.NetworkMode
-	23, // 27: crux.DagentContainerConfig.networks:type_name -> crux.UniqueKeyList
-	25, // 28: crux.DagentContainerConfig.labels:type_name -> crux.UniqueKeyValueList
-	55, // 29: crux.CraneContainerConfig.deploymentStatregy:type_name -> common.DeploymentStrategy
-	56, // 30: crux.CraneContainerConfig.healthCheckConfig:type_name -> common.HealthCheckConfig
-	57, // 31: crux.CraneContainerConfig.resourceConfig:type_name -> common.ResourceConfig
-	30, // 32: crux.CraneContainerConfig.annotations:type_name -> crux.Marker
-	30, // 33: crux.CraneContainerConfig.labels:type_name -> crux.Marker
-	23, // 34: crux.CraneContainerConfig.customHeaders:type_name -> crux.UniqueKeyList
-	25, // 35: crux.CraneContainerConfig.extraLBAnnotations:type_name -> crux.UniqueKeyValueList
-	58, // 36: crux.CommonContainerConfig.expose:type_name -> common.ExposeStrategy
-	59, // 37: crux.CommonContainerConfig.ingress:type_name -> common.Ingress
-	60, // 38: crux.CommonContainerConfig.configContainer:type_name -> common.ConfigContainer
-	31, // 39: crux.CommonContainerConfig.storage:type_name -> crux.ContainerStorage
-	17, // 40: crux.CommonContainerConfig.ports:type_name -> crux.PortList
-	20, // 41: crux.CommonContainerConfig.portRanges:type_name -> crux.PortRangeBindingList
-	22, // 42: crux.CommonContainerConfig.volumes:type_name -> crux.VolumeList
-	23, // 43: crux.CommonContainerConfig.commands:type_name -> crux.UniqueKeyList
-	23, // 44: crux.CommonContainerConfig.args:type_name -> crux.UniqueKeyList
-	25, // 45: crux.CommonContainerConfig.environment:type_name -> crux.UniqueKeyValueList
-	14, // 46: crux.CommonContainerConfig.initContainers:type_name -> crux.InitContainerList
-	34, // 47: crux.ImageContainerConfig.common:type_name -> crux.CommonContainerConfig
-	32, // 48: crux.ImageContainerConfig.dagent:type_name -> crux.DagentContainerConfig
-	33, // 49: crux.ImageContainerConfig.crane:type_name -> crux.CraneContainerConfig
-	27, // 50: crux.ImageContainerConfig.secrets:type_name -> crux.UniqueSecretKeyList
-	34, // 51: crux.InstanceContainerConfig.common:type_name -> crux.CommonContainerConfig
-	32, // 52: crux.InstanceContainerConfig.dagent:type_name -> crux.DagentContainerConfig
-	33, // 53: crux.InstanceContainerConfig.crane:type_name -> crux.CraneContainerConfig
-	29, // 54: crux.InstanceContainerConfig.secrets:type_name -> crux.UniqueSecretKeyValueList
-	35, // 55: crux.ImageResponse.config:type_name -> crux.ImageContainerConfig
-	49, // 56: crux.ImageResponse.createdAt:type_name -> google.protobuf.Timestamp
+	40, // 0: crux.AuditResponse.createdAt:type_name -> google.protobuf.Timestamp
+	40, // 1: crux.AuditResponse.updatedAt:type_name -> google.protobuf.Timestamp
+	40, // 2: crux.CreateEntityResponse.createdAt:type_name -> google.protobuf.Timestamp
+	40, // 3: crux.UpdateEntityResponse.updatedAt:type_name -> google.protobuf.Timestamp
+	10, // 4: crux.InitContainer.volumes:type_name -> crux.VolumeLink
+	41, // 5: crux.InitContainer.command:type_name -> common.UniqueKey
+	41, // 6: crux.InitContainer.args:type_name -> common.UniqueKey
+	22, // 7: crux.InitContainer.environment:type_name -> crux.UniqueKeyValue
+	11, // 8: crux.InitContainerList.data:type_name -> crux.InitContainer
+	42, // 9: crux.LogConfig.driver:type_name -> common.DriverType
+	22, // 10: crux.LogConfig.options:type_name -> crux.UniqueKeyValue
+	14, // 11: crux.PortList.data:type_name -> crux.Port
+	16, // 12: crux.PortRangeBinding.internal:type_name -> crux.PortRange
+	16, // 13: crux.PortRangeBinding.external:type_name -> crux.PortRange
+	17, // 14: crux.PortRangeBindingList.data:type_name -> crux.PortRangeBinding
+	43, // 15: crux.Volume.type:type_name -> common.VolumeType
+	19, // 16: crux.VolumeList.data:type_name -> crux.Volume
+	41, // 17: crux.UniqueKeyList.data:type_name -> common.UniqueKey
+	22, // 18: crux.UniqueKeyValueList.data:type_name -> crux.UniqueKeyValue
+	24, // 19: crux.UniqueSecretKeyList.data:type_name -> crux.UniqueSecretKey
+	26, // 20: crux.UniqueSecretKeyValueList.data:type_name -> crux.UniqueSecretKeyValue
+	22, // 21: crux.Marker.deployment:type_name -> crux.UniqueKeyValue
+	22, // 22: crux.Marker.service:type_name -> crux.UniqueKeyValue
+	22, // 23: crux.Marker.ingress:type_name -> crux.UniqueKeyValue
+	13, // 24: crux.DagentContainerConfig.logConfig:type_name -> crux.LogConfig
+	44, // 25: crux.DagentContainerConfig.restartPolicy:type_name -> common.RestartPolicy
+	45, // 26: crux.DagentContainerConfig.networkMode:type_name -> common.NetworkMode
+	21, // 27: crux.DagentContainerConfig.networks:type_name -> crux.UniqueKeyList
+	23, // 28: crux.DagentContainerConfig.labels:type_name -> crux.UniqueKeyValueList
+	46, // 29: crux.CraneContainerConfig.deploymentStatregy:type_name -> common.DeploymentStrategy
+	47, // 30: crux.CraneContainerConfig.healthCheckConfig:type_name -> common.HealthCheckConfig
+	48, // 31: crux.CraneContainerConfig.resourceConfig:type_name -> common.ResourceConfig
+	28, // 32: crux.CraneContainerConfig.annotations:type_name -> crux.Marker
+	28, // 33: crux.CraneContainerConfig.labels:type_name -> crux.Marker
+	21, // 34: crux.CraneContainerConfig.customHeaders:type_name -> crux.UniqueKeyList
+	23, // 35: crux.CraneContainerConfig.extraLBAnnotations:type_name -> crux.UniqueKeyValueList
+	49, // 36: crux.CommonContainerConfig.expose:type_name -> common.ExposeStrategy
+	50, // 37: crux.CommonContainerConfig.ingress:type_name -> common.Ingress
+	51, // 38: crux.CommonContainerConfig.configContainer:type_name -> common.ConfigContainer
+	29, // 39: crux.CommonContainerConfig.storage:type_name -> crux.ContainerStorage
+	15, // 40: crux.CommonContainerConfig.ports:type_name -> crux.PortList
+	18, // 41: crux.CommonContainerConfig.portRanges:type_name -> crux.PortRangeBindingList
+	20, // 42: crux.CommonContainerConfig.volumes:type_name -> crux.VolumeList
+	21, // 43: crux.CommonContainerConfig.commands:type_name -> crux.UniqueKeyList
+	21, // 44: crux.CommonContainerConfig.args:type_name -> crux.UniqueKeyList
+	23, // 45: crux.CommonContainerConfig.environment:type_name -> crux.UniqueKeyValueList
+	12, // 46: crux.CommonContainerConfig.initContainers:type_name -> crux.InitContainerList
+	32, // 47: crux.ImageContainerConfig.common:type_name -> crux.CommonContainerConfig
+	30, // 48: crux.ImageContainerConfig.dagent:type_name -> crux.DagentContainerConfig
+	31, // 49: crux.ImageContainerConfig.crane:type_name -> crux.CraneContainerConfig
+	25, // 50: crux.ImageContainerConfig.secrets:type_name -> crux.UniqueSecretKeyList
+	32, // 51: crux.InstanceContainerConfig.common:type_name -> crux.CommonContainerConfig
+	30, // 52: crux.InstanceContainerConfig.dagent:type_name -> crux.DagentContainerConfig
+	31, // 53: crux.InstanceContainerConfig.crane:type_name -> crux.CraneContainerConfig
+	27, // 54: crux.InstanceContainerConfig.secrets:type_name -> crux.UniqueSecretKeyValueList
+	33, // 55: crux.ImageResponse.config:type_name -> crux.ImageContainerConfig
+	40, // 56: crux.ImageResponse.createdAt:type_name -> google.protobuf.Timestamp
 	0,  // 57: crux.ImageResponse.registryType:type_name -> crux.RegistryType
 	1,  // 58: crux.NodeEventMessage.status:type_name -> crux.NodeConnectionStatus
-	49, // 59: crux.NodeEventMessage.connectedAt:type_name -> google.protobuf.Timestamp
-	61, // 60: crux.WatchContainerLogRequest.container:type_name -> common.ContainerIdentifier
-	62, // 61: crux.DeploymentProgressMessage.status:type_name -> common.DeploymentStatus
-	63, // 62: crux.DeploymentProgressMessage.instance:type_name -> common.InstanceDeploymentItem
-	44, // 63: crux.InstancesCreatedEventList.data:type_name -> crux.InstanceResponse
-	42, // 64: crux.DeploymentEditEventMessage.instancesCreated:type_name -> crux.InstancesCreatedEventList
-	9,  // 65: crux.InstanceResponse.audit:type_name -> crux.AuditResponse
-	37, // 66: crux.InstanceResponse.image:type_name -> crux.ImageResponse
-	64, // 67: crux.InstanceResponse.state:type_name -> common.ContainerState
-	36, // 68: crux.InstanceResponse.config:type_name -> crux.InstanceContainerConfig
-	36, // 69: crux.PatchInstanceRequest.config:type_name -> crux.InstanceContainerConfig
-	64, // 70: crux.DeploymentEventContainerState.state:type_name -> common.ContainerState
-	6,  // 71: crux.HealthResponse.status:type_name -> crux.ServiceStatus
-	7,  // 72: crux.CruxNode.SubscribeNodeEventChannel:input_type -> crux.ServiceIdRequest
-	39, // 73: crux.CruxNode.WatchContainerState:input_type -> crux.WatchContainerStateRequest
-	40, // 74: crux.CruxNode.SubscribeContainerLogChannel:input_type -> crux.WatchContainerLogRequest
-	7,  // 75: crux.CruxDeployment.SubscribeToDeploymentEditEvents:input_type -> crux.ServiceIdRequest
-	65, // 76: crux.CruxHealth.getHealth:input_type -> common.Empty
-	38, // 77: crux.CruxNode.SubscribeNodeEventChannel:output_type -> crux.NodeEventMessage
-	66, // 78: crux.CruxNode.WatchContainerState:output_type -> common.ContainerStateListMessage
-	67, // 79: crux.CruxNode.SubscribeContainerLogChannel:output_type -> common.ContainerLogMessage
-	43, // 80: crux.CruxDeployment.SubscribeToDeploymentEditEvents:output_type -> crux.DeploymentEditEventMessage
-	48, // 81: crux.CruxHealth.getHealth:output_type -> crux.HealthResponse
-	77, // [77:82] is the sub-list for method output_type
-	72, // [72:77] is the sub-list for method input_type
-	72, // [72:72] is the sub-list for extension type_name
-	72, // [72:72] is the sub-list for extension extendee
-	0,  // [0:72] is the sub-list for field type_name
+	40, // 59: crux.NodeEventMessage.connectedAt:type_name -> google.protobuf.Timestamp
+	52, // 60: crux.WatchContainerLogRequest.container:type_name -> common.ContainerIdentifier
+	53, // 61: crux.DeploymentProgressMessage.status:type_name -> common.DeploymentStatus
+	54, // 62: crux.DeploymentProgressMessage.instance:type_name -> common.InstanceDeploymentItem
+	5,  // 63: crux.CruxNode.SubscribeNodeEventChannel:input_type -> crux.ServiceIdRequest
+	37, // 64: crux.CruxNode.WatchContainerState:input_type -> crux.WatchContainerStateRequest
+	38, // 65: crux.CruxNode.SubscribeContainerLogChannel:input_type -> crux.WatchContainerLogRequest
+	36, // 66: crux.CruxNode.SubscribeNodeEventChannel:output_type -> crux.NodeEventMessage
+	55, // 67: crux.CruxNode.WatchContainerState:output_type -> common.ContainerStateListMessage
+	56, // 68: crux.CruxNode.SubscribeContainerLogChannel:output_type -> common.ContainerLogMessage
+	66, // [66:69] is the sub-list for method output_type
+	63, // [63:66] is the sub-list for method input_type
+	63, // [63:63] is the sub-list for extension type_name
+	63, // [63:63] is the sub-list for extension extendee
+	0,  // [0:63] is the sub-list for field type_name
 }
 
 func init() { file_protobuf_proto_crux_proto_init() }
@@ -4308,90 +3660,6 @@ func file_protobuf_proto_crux_proto_init() {
 				return nil
 			}
 		}
-		file_protobuf_proto_crux_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*InstancesCreatedEventList); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_protobuf_proto_crux_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentEditEventMessage); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_protobuf_proto_crux_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*InstanceResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_protobuf_proto_crux_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PatchInstanceRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_protobuf_proto_crux_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentEventContainerState); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_protobuf_proto_crux_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentEventLog); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_protobuf_proto_crux_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*HealthResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
 	}
 	file_protobuf_proto_crux_proto_msgTypes[2].OneofWrappers = []interface{}{}
 	file_protobuf_proto_crux_proto_msgTypes[9].OneofWrappers = []interface{}{}
@@ -4406,22 +3674,15 @@ func file_protobuf_proto_crux_proto_init() {
 	file_protobuf_proto_crux_proto_msgTypes[31].OneofWrappers = []interface{}{}
 	file_protobuf_proto_crux_proto_msgTypes[32].OneofWrappers = []interface{}{}
 	file_protobuf_proto_crux_proto_msgTypes[34].OneofWrappers = []interface{}{}
-	file_protobuf_proto_crux_proto_msgTypes[36].OneofWrappers = []interface{}{
-		(*DeploymentEditEventMessage_InstancesCreated)(nil),
-		(*DeploymentEditEventMessage_ImageIdDeleted)(nil),
-	}
-	file_protobuf_proto_crux_proto_msgTypes[37].OneofWrappers = []interface{}{}
-	file_protobuf_proto_crux_proto_msgTypes[38].OneofWrappers = []interface{}{}
-	file_protobuf_proto_crux_proto_msgTypes[41].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_protobuf_proto_crux_proto_rawDesc,
-			NumEnums:      7,
-			NumMessages:   42,
+			NumEnums:      5,
+			NumMessages:   35,
 			NumExtensions: 0,
-			NumServices:   3,
+			NumServices:   1,
 		},
 		GoTypes:           file_protobuf_proto_crux_proto_goTypes,
 		DependencyIndexes: file_protobuf_proto_crux_proto_depIdxs,

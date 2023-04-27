@@ -8,19 +8,15 @@ import { ContainerConfigData } from 'src/shared/models'
 import EditorServiceProvider from '../editor/editor.service.provider'
 import { AddImagesDto, ImageDto, PatchImageDto } from './image.dto'
 import ImageMapper from './image.mapper'
+import ImageEventService from './image.event.service'
 
 @Injectable()
 export default class ImageService {
-  private readonly imageUpdatedEvent = new Subject<ImageDto>()
-
-  private readonly imagesAddedToVersionEvent = new Subject<ImageDto[]>()
-
-  private readonly imageDeletedFromVersionEvent = new Subject<string>()
-
   constructor(
     private prisma: PrismaService,
     private mapper: ImageMapper,
     private editorServices: EditorServiceProvider,
+    private eventService: ImageEventService,
   ) {}
 
   async getImagesByVersionId(versionId: string): Promise<ImageDto[]> {
@@ -109,7 +105,7 @@ export default class ImageService {
 
     const dtos = images.map(it => this.mapper.toDto(it))
 
-    this.imagesAddedToVersionEvent.next(dtos)
+    this.eventService.imagesAddedToVersion(versionId, dtos)
 
     return dtos
   }
@@ -149,7 +145,7 @@ export default class ImageService {
     })
 
     const dto = this.mapper.toDto(image)
-    this.imageUpdatedEvent.next(dto)
+    this.eventService.imageUpdated(image.versionId, dto)
   }
 
   async deleteImage(imageId: string): Promise<void> {
@@ -165,7 +161,7 @@ export default class ImageService {
     const editors = await this.editorServices.getService(image.versionId)
     editors?.onDeleteItem(imageId)
 
-    this.imageDeletedFromVersionEvent.next(imageId)
+    this.eventService.imageDeletedFromVersion(image.versionId, imageId)
   }
 
   async orderImages(request: string[], identity: Identity): Promise<void> {

@@ -34,7 +34,7 @@ import {
 } from './common'
 import WsRoute from './route'
 
-enum WebSocketReadtState {
+export enum WebSocketReadyState {
   CONNECTING_STATE = 0,
   OPEN_STATE = 1,
   CLOSING_STATE = 2,
@@ -191,7 +191,7 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     )
 
     const onResponse = (response: any) => {
-      if (client.readyState !== WebSocketReadtState.OPEN_STATE) {
+      if (client.readyState !== WebSocketReadyState.OPEN_STATE) {
         return
       }
 

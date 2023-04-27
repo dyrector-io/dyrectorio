@@ -12,6 +12,8 @@ import {
   BasicVersionDto,
   ContainerIdentifierDto,
 } from '../shared/shared.dto'
+import { ImageEvent } from '../image/image.event'
+import { InstanceDetails } from './deploy.mapper'
 
 const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete'] as const
 export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]
@@ -169,4 +171,9 @@ export class DeploymentLogListDto extends PaginatedList<DeploymentEventDto> {
   items: DeploymentEventDto[]
 
   total: number
+}
+
+export type DeploymentImageEvent = ImageEvent & {
+  deploymentIds?: string[]
+  instances?: InstanceDetails[]
 }

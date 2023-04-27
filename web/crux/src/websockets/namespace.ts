@@ -13,6 +13,7 @@ import {
   WsTransform,
   handlerKeyOf,
 } from './common'
+import { WebSocketReadyState } from './dyo.ws.adapter'
 
 export default class WsNamespace implements WsSubscription {
   private readonly logger: Logger
@@ -86,6 +87,22 @@ export default class WsNamespace implements WsSubscription {
     if (!resources) {
       this.logger.warn(`undefined resource for '${token}'`)
       return
+    }
+
+    // When the connection is killed, we get an empty message,
+    // a fake message is created so subscriptionOfContext still works for @WsUnsubscribe
+    // TODO (@robot9706): Find a more elegant solution
+    if (
+      !message &&
+      (client.readyState === WebSocketReadyState.CLOSED_STATE ||
+        client.readyState === WebSocketReadyState.CLOSING_STATE)
+    ) {
+      message = this.overwriteMessageType({
+        type: WS_TYPE_UNSUBBED,
+        data: {
+          path: this.path,
+        },
+      })
     }
 
     const { unsubscribe, completer } = resources

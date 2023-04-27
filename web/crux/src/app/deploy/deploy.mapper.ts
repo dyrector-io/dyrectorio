@@ -35,7 +35,6 @@ import {
   AuditResponse,
   InitContainer,
   InstanceContainerConfig as ProtoInstanceContainerConfig,
-  InstanceResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import {
   ContainerConfigData,
@@ -233,16 +232,6 @@ export default class DeployMapper {
     }
 
     return result
-  }
-
-  instanceToProto(instance: InstanceDetails): InstanceResponse {
-    return {
-      ...instance,
-      audit: AuditResponse.fromJSON(instance),
-      image: this.imageMapper.detailsToProto(instance.image),
-      state: this.containerStateToProto(instance.state),
-      config: this.instanceConfigToProto((instance.config ?? {}) as InstanceContainerConfigData),
-    }
   }
 
   instanceConfigToProto(config: InstanceContainerConfigData): ProtoInstanceContainerConfig {

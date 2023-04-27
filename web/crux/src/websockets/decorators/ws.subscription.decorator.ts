@@ -9,6 +9,10 @@ import {
   namespaceOf,
 } from '../common'
 
+type WebSocketGatewayMetadata = {
+  namespace: string
+}
+
 export const subscriptionOfContext = (context: ExecutionContext): WsSubscription => {
   const wsContext = context.switchToWs()
   const client: WsClient = wsContext.getClient()

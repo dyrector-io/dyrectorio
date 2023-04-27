@@ -7,10 +7,7 @@ import {
   ConfigContainer,
   ContainerIdentifier,
   ContainerLogMessage,
-  ContainerState,
-  containerStateFromJSON,
   ContainerStateListMessage,
-  containerStateToJSON,
   DeploymentStatus,
   deploymentStatusFromJSON,
   deploymentStatusToJSON,
@@ -20,7 +17,6 @@ import {
   DriverType,
   driverTypeFromJSON,
   driverTypeToJSON,
-  Empty,
   ExposeStrategy,
   exposeStrategyFromJSON,
   exposeStrategyToJSON,
@@ -272,96 +268,6 @@ export function versionTypeToJSON(object: VersionType): string {
   }
 }
 
-export enum DeploymentEventType {
-  DEPLOYMENT_EVENT_TYPE_UNSPECIFIED = 0,
-  DEPLOYMENT_LOG = 1,
-  DEPLOYMENT_STATUS = 2,
-  CONTAINER_STATUS = 3,
-  UNRECOGNIZED = -1,
-}
-
-export function deploymentEventTypeFromJSON(object: any): DeploymentEventType {
-  switch (object) {
-    case 0:
-    case 'DEPLOYMENT_EVENT_TYPE_UNSPECIFIED':
-      return DeploymentEventType.DEPLOYMENT_EVENT_TYPE_UNSPECIFIED
-    case 1:
-    case 'DEPLOYMENT_LOG':
-      return DeploymentEventType.DEPLOYMENT_LOG
-    case 2:
-    case 'DEPLOYMENT_STATUS':
-      return DeploymentEventType.DEPLOYMENT_STATUS
-    case 3:
-    case 'CONTAINER_STATUS':
-      return DeploymentEventType.CONTAINER_STATUS
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return DeploymentEventType.UNRECOGNIZED
-  }
-}
-
-export function deploymentEventTypeToJSON(object: DeploymentEventType): string {
-  switch (object) {
-    case DeploymentEventType.DEPLOYMENT_EVENT_TYPE_UNSPECIFIED:
-      return 'DEPLOYMENT_EVENT_TYPE_UNSPECIFIED'
-    case DeploymentEventType.DEPLOYMENT_LOG:
-      return 'DEPLOYMENT_LOG'
-    case DeploymentEventType.DEPLOYMENT_STATUS:
-      return 'DEPLOYMENT_STATUS'
-    case DeploymentEventType.CONTAINER_STATUS:
-      return 'CONTAINER_STATUS'
-    case DeploymentEventType.UNRECOGNIZED:
-    default:
-      return 'UNRECOGNIZED'
-  }
-}
-
-export enum ServiceStatus {
-  SERVICE_STATUS_UNSPECIFIED = 0,
-  UNAVAILABLE = 1,
-  DISRUPTED = 2,
-  OPERATIONAL = 3,
-  UNRECOGNIZED = -1,
-}
-
-export function serviceStatusFromJSON(object: any): ServiceStatus {
-  switch (object) {
-    case 0:
-    case 'SERVICE_STATUS_UNSPECIFIED':
-      return ServiceStatus.SERVICE_STATUS_UNSPECIFIED
-    case 1:
-    case 'UNAVAILABLE':
-      return ServiceStatus.UNAVAILABLE
-    case 2:
-    case 'DISRUPTED':
-      return ServiceStatus.DISRUPTED
-    case 3:
-    case 'OPERATIONAL':
-      return ServiceStatus.OPERATIONAL
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return ServiceStatus.UNRECOGNIZED
-  }
-}
-
-export function serviceStatusToJSON(object: ServiceStatus): string {
-  switch (object) {
-    case ServiceStatus.SERVICE_STATUS_UNSPECIFIED:
-      return 'SERVICE_STATUS_UNSPECIFIED'
-    case ServiceStatus.UNAVAILABLE:
-      return 'UNAVAILABLE'
-    case ServiceStatus.DISRUPTED:
-      return 'DISRUPTED'
-    case ServiceStatus.OPERATIONAL:
-      return 'OPERATIONAL'
-    case ServiceStatus.UNRECOGNIZED:
-    default:
-      return 'UNRECOGNIZED'
-  }
-}
-
 export interface ServiceIdRequest {
   id: string
 }
@@ -587,44 +493,6 @@ export interface DeploymentProgressMessage {
   status?: DeploymentStatus | undefined
   instance?: InstanceDeploymentItem | undefined
   log: string[]
-}
-
-export interface InstancesCreatedEventList {
-  data: InstanceResponse[]
-}
-
-export interface DeploymentEditEventMessage {
-  instancesCreated?: InstancesCreatedEventList | undefined
-  imageIdDeleted?: string | undefined
-}
-
-export interface InstanceResponse {
-  id: string
-  audit: AuditResponse | undefined
-  image: ImageResponse | undefined
-  state?: ContainerState | undefined
-  config?: InstanceContainerConfig | undefined
-}
-
-export interface PatchInstanceRequest {
-  id: string
-  config?: InstanceContainerConfig | undefined
-  resetSection?: string | undefined
-}
-
-export interface DeploymentEventContainerState {
-  instanceId: string
-  state: ContainerState
-}
-
-export interface DeploymentEventLog {
-  log: string[]
-}
-
-export interface HealthResponse {
-  status: ServiceStatus
-  cruxVersion: string
-  lastMigration?: string | undefined
 }
 
 export const CRUX_PACKAGE_NAME = 'crux'
@@ -1529,164 +1397,6 @@ export const DeploymentProgressMessage = {
   },
 }
 
-function createBaseInstancesCreatedEventList(): InstancesCreatedEventList {
-  return { data: [] }
-}
-
-export const InstancesCreatedEventList = {
-  fromJSON(object: any): InstancesCreatedEventList {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => InstanceResponse.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: InstancesCreatedEventList): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? InstanceResponse.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
-function createBaseDeploymentEditEventMessage(): DeploymentEditEventMessage {
-  return {}
-}
-
-export const DeploymentEditEventMessage = {
-  fromJSON(object: any): DeploymentEditEventMessage {
-    return {
-      instancesCreated: isSet(object.instancesCreated)
-        ? InstancesCreatedEventList.fromJSON(object.instancesCreated)
-        : undefined,
-      imageIdDeleted: isSet(object.imageIdDeleted) ? String(object.imageIdDeleted) : undefined,
-    }
-  },
-
-  toJSON(message: DeploymentEditEventMessage): unknown {
-    const obj: any = {}
-    message.instancesCreated !== undefined &&
-      (obj.instancesCreated = message.instancesCreated
-        ? InstancesCreatedEventList.toJSON(message.instancesCreated)
-        : undefined)
-    message.imageIdDeleted !== undefined && (obj.imageIdDeleted = message.imageIdDeleted)
-    return obj
-  },
-}
-
-function createBaseInstanceResponse(): InstanceResponse {
-  return { id: '', audit: undefined, image: undefined }
-}
-
-export const InstanceResponse = {
-  fromJSON(object: any): InstanceResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      image: isSet(object.image) ? ImageResponse.fromJSON(object.image) : undefined,
-      state: isSet(object.state) ? containerStateFromJSON(object.state) : undefined,
-      config: isSet(object.config) ? InstanceContainerConfig.fromJSON(object.config) : undefined,
-    }
-  },
-
-  toJSON(message: InstanceResponse): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
-    message.image !== undefined && (obj.image = message.image ? ImageResponse.toJSON(message.image) : undefined)
-    message.state !== undefined &&
-      (obj.state = message.state !== undefined ? containerStateToJSON(message.state) : undefined)
-    message.config !== undefined &&
-      (obj.config = message.config ? InstanceContainerConfig.toJSON(message.config) : undefined)
-    return obj
-  },
-}
-
-function createBasePatchInstanceRequest(): PatchInstanceRequest {
-  return { id: '' }
-}
-
-export const PatchInstanceRequest = {
-  fromJSON(object: any): PatchInstanceRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      config: isSet(object.config) ? InstanceContainerConfig.fromJSON(object.config) : undefined,
-      resetSection: isSet(object.resetSection) ? String(object.resetSection) : undefined,
-    }
-  },
-
-  toJSON(message: PatchInstanceRequest): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.config !== undefined &&
-      (obj.config = message.config ? InstanceContainerConfig.toJSON(message.config) : undefined)
-    message.resetSection !== undefined && (obj.resetSection = message.resetSection)
-    return obj
-  },
-}
-
-function createBaseDeploymentEventContainerState(): DeploymentEventContainerState {
-  return { instanceId: '', state: 0 }
-}
-
-export const DeploymentEventContainerState = {
-  fromJSON(object: any): DeploymentEventContainerState {
-    return {
-      instanceId: isSet(object.instanceId) ? String(object.instanceId) : '',
-      state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
-    }
-  },
-
-  toJSON(message: DeploymentEventContainerState): unknown {
-    const obj: any = {}
-    message.instanceId !== undefined && (obj.instanceId = message.instanceId)
-    message.state !== undefined && (obj.state = containerStateToJSON(message.state))
-    return obj
-  },
-}
-
-function createBaseDeploymentEventLog(): DeploymentEventLog {
-  return { log: [] }
-}
-
-export const DeploymentEventLog = {
-  fromJSON(object: any): DeploymentEventLog {
-    return { log: Array.isArray(object?.log) ? object.log.map((e: any) => String(e)) : [] }
-  },
-
-  toJSON(message: DeploymentEventLog): unknown {
-    const obj: any = {}
-    if (message.log) {
-      obj.log = message.log.map(e => e)
-    } else {
-      obj.log = []
-    }
-    return obj
-  },
-}
-
-function createBaseHealthResponse(): HealthResponse {
-  return { status: 0, cruxVersion: '' }
-}
-
-export const HealthResponse = {
-  fromJSON(object: any): HealthResponse {
-    return {
-      status: isSet(object.status) ? serviceStatusFromJSON(object.status) : 0,
-      cruxVersion: isSet(object.cruxVersion) ? String(object.cruxVersion) : '',
-      lastMigration: isSet(object.lastMigration) ? String(object.lastMigration) : undefined,
-    }
-  },
-
-  toJSON(message: HealthResponse): unknown {
-    const obj: any = {}
-    message.status !== undefined && (obj.status = serviceStatusToJSON(message.status))
-    message.cruxVersion !== undefined && (obj.cruxVersion = message.cruxVersion)
-    message.lastMigration !== undefined && (obj.lastMigration = message.lastMigration)
-    return obj
-  },
-}
-
 /** Services */
 
 export interface CruxNodeClient {
@@ -1739,68 +1449,6 @@ export function CruxNodeControllerMethods() {
 }
 
 export const CRUX_NODE_SERVICE_NAME = 'CruxNode'
-
-export interface CruxDeploymentClient {
-  subscribeToDeploymentEditEvents(
-    request: ServiceIdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Observable<DeploymentEditEventMessage>
-}
-
-export interface CruxDeploymentController {
-  subscribeToDeploymentEditEvents(
-    request: ServiceIdRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Observable<DeploymentEditEventMessage>
-}
-
-export function CruxDeploymentControllerMethods() {
-  return function (constructor: Function) {
-    const grpcMethods: string[] = ['subscribeToDeploymentEditEvents']
-    for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcMethod('CruxDeployment', method)(constructor.prototype[method], method, descriptor)
-    }
-    const grpcStreamMethods: string[] = []
-    for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcStreamMethod('CruxDeployment', method)(constructor.prototype[method], method, descriptor)
-    }
-  }
-}
-
-export const CRUX_DEPLOYMENT_SERVICE_NAME = 'CruxDeployment'
-
-export interface CruxHealthClient {
-  getHealth(request: Empty, metadata: Metadata, ...rest: any): Observable<HealthResponse>
-}
-
-export interface CruxHealthController {
-  getHealth(
-    request: Empty,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<HealthResponse> | Observable<HealthResponse> | HealthResponse
-}
-
-export function CruxHealthControllerMethods() {
-  return function (constructor: Function) {
-    const grpcMethods: string[] = ['getHealth']
-    for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcMethod('CruxHealth', method)(constructor.prototype[method], method, descriptor)
-    }
-    const grpcStreamMethods: string[] = []
-    for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcStreamMethod('CruxHealth', method)(constructor.prototype[method], method, descriptor)
-    }
-  }
-}
-
-export const CRUX_HEALTH_SERVICE_NAME = 'CruxHealth'
 
 function toTimestamp(date: Date): Timestamp {
   const seconds = date.getTime() / 1_000
