@@ -32,8 +32,6 @@ const PageHead = (props: PageHeadProps) => {
 
 export interface LayoutProps {
   title: string
-  // TODO(@m8vago): check after eslint update if it's still necessary
-  /* eslint-disable-next-line react/no-unused-prop-types */
   topBarContent?: React.ReactNode
   children: React.ReactNode
 }

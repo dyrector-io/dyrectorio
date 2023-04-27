@@ -204,8 +204,7 @@ export const versionIncreaseApiUrl = (productId: string, versionId: string) =>
   `${versionApiUrl(productId, versionId)}/increase`
 export const versionSetDefaultApiUrl = (productId: string, versionId: string) =>
   `${versionApiUrl(productId, versionId)}/default`
-// TODO: remove prodictId
-export const versionWsUrl = (productId: string, versionId: string) => `/versions/${versionId}`
+export const versionWsUrl = (versionId: string) => `/versions/${versionId}`
 
 // deployment
 export const versionDeploymentsUrl = (productId: string, versionId: string) =>

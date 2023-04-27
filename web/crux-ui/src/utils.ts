@@ -83,7 +83,7 @@ export const timestampToUTC = (timestamp: Timestamp): string => {
   return new Date(millis).toUTCString()
 }
 
-// TODO(@m8vago): check after react and update if there is still a hydration error with narrow spaces
+// TODO(@m8vago): check after react update if there is still a hydration error with narrow spaces
 export const utcDateToLocale = (date: string) => new Date(date).toLocaleString().replace(/\u202f/g, ' ')
 
 export const auditToLocaleDate = (audit: Audit) => utcDateToLocale(audit.updatedAt ?? audit.createdAt)
