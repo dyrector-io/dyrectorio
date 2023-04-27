@@ -1,5 +1,5 @@
 import { Controller, Get, HttpCode, Query, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common'
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -22,7 +22,12 @@ export default class AuditController {
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: AuditLogListDto, description: 'Fetch audit log.' })
+  @ApiOperation({
+    description:
+      'Request must include `skip`, `take`, and dates of `from` and `to`. Response should include an array of `items`: `createdAt` date, `userId`, `email`, `serviceCall`, and `data`.',
+    summary: 'Fetch audit log.',
+  })
+  @ApiOkResponse({ type: AuditLogListDto, description: 'Audit log details listed.' })
   async getAuditLog(
     @Query() query: AuditLogQueryDto,
     @IdentityFromRequest() identity: Identity,

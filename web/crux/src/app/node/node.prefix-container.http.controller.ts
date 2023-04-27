@@ -1,5 +1,5 @@
 import { Controller, Delete, HttpCode, Post, UseGuards, UseInterceptors } from '@nestjs/common'
-import { ApiNoContentResponse, ApiTags } from '@nestjs/swagger'
+import { ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Observable } from 'rxjs'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
@@ -30,7 +30,11 @@ export default class NodePrefixContainerHttpController {
 
   @Post(`${ROUTE_NAME}/start`)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Start a container deployed with dyrectorio on a node.' })
+  @ApiOperation({
+    description: 'Request must include `nodeId`, `prefix`, and `name`.',
+    summary: 'Start a container deployed with dyrectorio on a node.',
+  })
+  @ApiNoContentResponse({ description: 'Container started.' })
   @UuidParams(PARAM_NODE_ID)
   startContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string) {
     this.service.startContainer(nodeId, prefix, name)
@@ -38,7 +42,11 @@ export default class NodePrefixContainerHttpController {
 
   @Post(`${ROUTE_NAME}/stop`)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Stop a container deployed with dyrectorio on a node.' })
+  @ApiOperation({
+    description: 'Request must include `nodeId`, `prefix`, and `name`.',
+    summary: 'Stop a container deployed with dyrectorio on a node.',
+  })
+  @ApiNoContentResponse({ description: 'Container stopped.' })
   @UuidParams(PARAM_NODE_ID)
   stopContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string) {
     this.service.stopContainer(nodeId, prefix, name)
@@ -46,7 +54,11 @@ export default class NodePrefixContainerHttpController {
 
   @Post(`${ROUTE_NAME}/restart`)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Restart a container deployed with dyrectorio on a node.' })
+  @ApiOperation({
+    description: 'Request must include `nodeId`, `prefix`, and `name`.',
+    summary: 'Restart a container deployed with dyrectorio on a node.',
+  })
+  @ApiNoContentResponse({ description: 'Container restarted.' })
   @UuidParams(PARAM_NODE_ID)
   restartContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string) {
     this.service.restartContainer(nodeId, prefix, name)
@@ -54,7 +66,11 @@ export default class NodePrefixContainerHttpController {
 
   @Delete()
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Delete containers deployed with dyrectorio on a node.' })
+  @ApiOperation({
+    description: 'Request must include `nodeId`, and `prefix`.',
+    summary: 'Delete containers deployed with dyrectorio on a node.',
+  })
+  @ApiNoContentResponse({ description: 'Containers deleted.' })
   @UuidParams(PARAM_NODE_ID)
   deleteAllContainers(@NodeId() nodeId: string, @Prefix() prefix: string): Observable<void> {
     return this.service.deleteAllContainers(nodeId, prefix)
@@ -62,7 +78,11 @@ export default class NodePrefixContainerHttpController {
 
   @Delete(`${ROUTE_NAME}`)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Delete a container deployed with dyrectorio on a node.' })
+  @ApiOperation({
+    description: 'Request must include `nodeId`, `prefix`, and `name`.',
+    summary: 'Delete a container deployed with dyrectorio on a node.',
+  })
+  @ApiNoContentResponse({ description: 'Container deleted.' })
   @UuidParams(PARAM_NODE_ID)
   deleteContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Observable<void> {
     return this.service.deleteContainer(nodeId, prefix, name)
