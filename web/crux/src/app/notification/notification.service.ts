@@ -86,7 +86,6 @@ export default class NotificationService {
       },
     })
 
-    console.log('id', notification.id)
     return this.mapper.toDto(notification, identity)
   }
 
