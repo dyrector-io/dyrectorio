@@ -7,12 +7,12 @@ import KratosService from 'src/services/kratos.service'
 import DashboardMapper from './dashboard.mapper'
 import DashboardService from './dashboard.service'
 import TeamRepository from '../team/team.repository'
-import DashboardController from './dashboard.http.controller'
+import DashboardHttpController from './dashboard.http.controller'
 
 @Module({
   imports: [AuditModule, AgentModule],
   exports: [],
-  controllers: [DashboardController],
+  controllers: [DashboardHttpController],
   providers: [
     DashboardService,
     DashboardMapper,

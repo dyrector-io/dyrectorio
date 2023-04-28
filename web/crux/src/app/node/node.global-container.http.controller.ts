@@ -1,5 +1,5 @@
 import { Controller, Delete, Get, HttpCode, Post, Query, UseGuards } from '@nestjs/common'
-import { ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Observable } from 'rxjs'
 import UuidParams from 'src/decorators/api-params.decorator'
 import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
@@ -24,14 +24,23 @@ export default class NodeGlobalContainerHttpController {
 
   @Get(`${ROUTE_NODE_ID}/containers`)
   @HttpCode(200)
-  @ApiOkResponse({ type: ContainerDto, isArray: true })
+  @ApiOperation({
+    description:
+      'Request must include `nodeId` and `prefix`. Response should include `id`, `command`, `createdAt`, `state`, `status`, `imageName`, `imageTag` and `ports` of images.',
+    summary: 'Fetch data of containers running on a node.',
+  })
+  @ApiOkResponse({ type: ContainerDto, isArray: true, description: 'Fetch data of containers running on a node.' })
   async getContainers(@NodeId() nodeId: string, @Query('prefix') prefix?: string): Promise<ContainerDto[]> {
     return await this.service.getContainers(nodeId, prefix)
   }
 
   @Post(`${ROUTE_NAME}/start`)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Start containers on a node.' })
+  @ApiOperation({
+    description: 'Request must include `nodeId`, and the `name` of the container.',
+    summary: 'Start any container on a node.',
+  })
+  @ApiNoContentResponse({ description: 'Container started.' })
   @UuidParams(PARAM_NODE_ID)
   startContainer(@NodeId() nodeId: string, @Name() name: string) {
     this.service.startContainer(nodeId, GLOBAL_PREFIX, name)
@@ -39,7 +48,11 @@ export default class NodeGlobalContainerHttpController {
 
   @Post(`${ROUTE_NAME}/stop`)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Stop containers on a node.' })
+  @ApiOperation({
+    description: 'Request must include `nodeId`, and the `name` of the container.',
+    summary: 'Stop any container on a node.',
+  })
+  @ApiNoContentResponse({ description: 'Container stopped.' })
   @UuidParams(PARAM_NODE_ID)
   stopContainer(@NodeId() nodeId: string, @Name() name: string) {
     this.service.stopContainer(nodeId, GLOBAL_PREFIX, name)
@@ -47,7 +60,11 @@ export default class NodeGlobalContainerHttpController {
 
   @Post(`${ROUTE_NAME}/restart`)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Restart containers on a node.' })
+  @ApiOperation({
+    description: 'Request must include `nodeId`, and the `name` of the container.',
+    summary: 'Restart any container on a node.',
+  })
+  @ApiNoContentResponse({ description: 'Container restarted.' })
   @UuidParams(PARAM_NODE_ID)
   restartContainer(@NodeId() nodeId: string, @Name() name: string) {
     this.service.restartContainer(nodeId, GLOBAL_PREFIX, name)
@@ -55,7 +72,11 @@ export default class NodeGlobalContainerHttpController {
 
   @Delete(`${ROUTE_NAME}`)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Delete a specific container on a node.' })
+  @ApiOperation({
+    description: 'Request must include `nodeId`, and the `name` of the container.',
+    summary: 'Delete any container from a node.',
+  })
+  @ApiNoContentResponse({ description: 'Container deleted.' })
   @UuidParams(PARAM_NODE_ID)
   deleteContainer(@NodeId() nodeId: string, @Name() name: string): Observable<void> {
     return this.service.deleteContainer(nodeId, GLOBAL_PREFIX, name)

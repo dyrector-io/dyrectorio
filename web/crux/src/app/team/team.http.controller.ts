@@ -1,5 +1,12 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
@@ -31,7 +38,12 @@ export default class TeamHttpController {
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: TeamDto, isArray: true, description: 'Fetch data of teams.' })
+  @ApiOperation({
+    description:
+      'Data of teams consist of `name`, `id`, and `statistics`, including number of `users`, `products`, `nodes`, `versions`, and `deployments`.</br></br>Teams are the shared entity of multiple users. The purpose of teams is to separate users, nodes and products based on their needs within an organization. Team owners can assign roles. More details about teams here.',
+    summary: 'Fetch data of teams the user is a member of.',
+  })
+  @ApiOkResponse({ type: TeamDto, isArray: true, description: 'Data of teams listed.' })
   @TeamRoleRequired('none')
   async getTeams(@IdentityFromRequest() identity: Identity): Promise<TeamDto[]> {
     return await this.service.getTeams(identity)
@@ -39,7 +51,12 @@ export default class TeamHttpController {
 
   @Get(ROUTE_TEAM_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: TeamDetailsDto, description: 'Fetch data of a team.' })
+  @ApiOperation({
+    description:
+      "Request must include `teamId`, which is the ID of the team they'd like to get the data of. Data of teams consist of `name`, `id`, and `statistics`, including number of `users`, `products`, `nodes`, `versions`, and `deployments`. Response should include user details, as well, including `name`, `id`, `role`, `status`, `email`, and `lastLogin`.",
+    summary: 'Fetch data of a team the user is a member of.',
+  })
+  @ApiOkResponse({ type: TeamDetailsDto, description: 'Data of the team is listed.' })
   @UuidParams(PARAM_TEAM_ID)
   async getTeamById(@TeamId() teamId: string): Promise<TeamDetailsDto> {
     return await this.service.getTeamById(teamId)
@@ -47,12 +64,17 @@ export default class TeamHttpController {
 
   @Post()
   @HttpCode(201)
+  @ApiOperation({
+    description:
+      'Request must include `name`, which is going to be the name of the newly made team. Response should include `name`, `id`, and `statistics`, including number of `users`, `products`, `nodes`, `versions`, and `deployments`.',
+    summary: 'Create new team.',
+  })
   @CreatedWithLocation()
   @ApiBody({ type: CreateTeamDto })
   @ApiCreatedResponse({
     type: TeamDto,
     headers: API_CREATED_LOCATION_HEADERS,
-    description: 'Create new team.',
+    description: 'New team created.',
   })
   @TeamRoleRequired('none')
   async createTeam(
@@ -70,8 +92,12 @@ export default class TeamHttpController {
   @Put(ROUTE_TEAM_ID)
   @HttpCode(204)
   @ApiBody({ type: UpdateTeamDto })
+  @ApiOperation({
+    description: 'Request must include `teamId` and `name`. Admin access required for successful request.',
+    summary: "Modify a team's name.",
+  })
   @TeamRoleRequired('admin')
-  @ApiNoContentResponse({ description: 'Modify team.' })
+  @ApiNoContentResponse({ description: 'Team name modified.' })
   @UuidParams(PARAM_TEAM_ID)
   async updateTeam(
     @TeamId() teamId: string,
@@ -83,8 +109,12 @@ export default class TeamHttpController {
 
   @Delete(ROUTE_TEAM_ID)
   @HttpCode(204)
+  @ApiOperation({
+    description: 'Request must include `teamId`. Owner access required for successful request.',
+    summary: 'Delete a team.',
+  })
   @TeamRoleRequired('owner')
-  @ApiNoContentResponse({ description: 'Delete a team.' })
+  @ApiNoContentResponse({ description: 'Team deleted.' })
   @UuidParams(PARAM_TEAM_ID)
   async deleteTeam(@TeamId() teamId: string): Promise<void> {
     await this.service.deleteTeam(teamId)
@@ -95,11 +125,16 @@ export default class TeamHttpController {
   @Post(`${ROUTE_TEAM_ID}/${ROUTE_USERS}`)
   @HttpCode(201)
   @CreatedWithLocation()
+  @ApiOperation({
+    description:
+      "Request must include `teamId`, email and `firstName`. Admin access required for successful request.</br></br>Response should include new user's `name`, `id`, `role`, `status`, `email`, and `lastLogin`.",
+    summary: 'Add new user to a team.',
+  })
   @ApiBody({ type: InviteUserDto })
   @ApiCreatedResponse({
     type: UserDto,
     headers: API_CREATED_LOCATION_HEADERS,
-    description: 'Add new user to a team.',
+    description: 'New user added.',
   })
   @UseInterceptors(TeamInviteUserValitationInterceptor)
   @TeamRoleRequired('admin')
@@ -120,9 +155,13 @@ export default class TeamHttpController {
   @Put(`${ROUTE_TEAM_ID}/${ROUTE_USERS}/${ROUTE_USER_ID}/role`)
   @HttpCode(204)
   @ApiBody({ type: UpdateUserRoleDto })
+  @ApiOperation({
+    description: 'Request must include `teamId`, `userId` and `role`. Admin access required for successful request.',
+    summary: 'Edit user role.',
+  })
   @TeamRoleRequired('admin')
   @UseInterceptors(TeamOwnerImmutabilityValidationInterceptor)
-  @ApiNoContentResponse({ description: "Modify the role of a team's user." })
+  @ApiNoContentResponse({ description: "User's role modified." })
   @UuidParams(PARAM_TEAM_ID, PARAM_USER_ID)
   async updateUserRoleInTeam(
     @TeamId() teamId: string,
@@ -136,8 +175,12 @@ export default class TeamHttpController {
   @Delete(`${ROUTE_TEAM_ID}/${ROUTE_USERS}/${ROUTE_USER_ID}`)
   @HttpCode(204)
   @TeamRoleRequired('admin')
+  @ApiOperation({
+    description: 'Request must include `teamId`, `userId`. Admin access required for successful request.',
+    summary: 'Delete user from team.',
+  })
   @UseInterceptors(TeamOwnerImmutabilityValidationInterceptor)
-  @ApiNoContentResponse({ description: 'Delete a user from a team.' })
+  @ApiNoContentResponse({ description: 'User deleted from a team.' })
   @UuidParams(PARAM_TEAM_ID, PARAM_USER_ID)
   async deleteUserFromTeam(@TeamId() teamId: string, @UserId() userId: string): Promise<void> {
     await this.service.deleteUserFromTeam(teamId, userId)
@@ -146,8 +189,13 @@ export default class TeamHttpController {
   @Post(`${ROUTE_TEAM_ID}/${ROUTE_USERS}/${ROUTE_USER_ID}/reinvite`)
   @HttpCode(204)
   @UseInterceptors(TeamReinviteUserValidationInterceptor)
+  @ApiOperation({
+    description:
+      "This call sends a new invitation link to a user who hasn't accepted invitation to a team.</br></br>Request must include `teamId`, `userId`. Admin access required for successful request.",
+    summary: 'Reinvite user with a pending invite status to a team.',
+  })
   @TeamRoleRequired('admin')
-  @ApiNoContentResponse({ description: 'Send team invite to user with pending invite status.' })
+  @ApiNoContentResponse({ description: 'New invite link sent.' })
   @UuidParams(PARAM_TEAM_ID, PARAM_USER_ID)
   async reinviteUser(
     @TeamId() teamId: string,

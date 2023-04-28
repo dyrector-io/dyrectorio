@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Header, HttpCode, Param, Post, Response } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import { Response as ExpressResponse } from 'express'
 import UuidParams from 'src/decorators/api-params.decorator'
@@ -23,7 +23,11 @@ export default class TemplateHttpController {
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: TemplateDto, isArray: true, description: 'Return details of templates on the platform.' })
+  @ApiOperation({
+    description: 'Response should include `id`, `name`, `description` and `technologies` of templates.',
+    summary: 'Return details of templates on the platform.',
+  })
+  @ApiOkResponse({ type: TemplateDto, isArray: true, description: 'Template details listed.' })
   async getTemplates(): Promise<TemplateDto[]> {
     return this.templateFileService.getTemplates()
   }
@@ -31,8 +35,13 @@ export default class TemplateHttpController {
   @Post()
   @HttpCode(201)
   @CreatedWithLocation()
+  @ApiOperation({
+    description:
+      'Request must include `type`, `id`, and `name`. Response should include `id`, `name`, `description`, `type`, and `audit` log details of templates.',
+    summary: 'Create a new template.',
+  })
   @ApiBody({ type: CreateProductFromTemplateDto })
-  @ApiCreatedResponse({ type: ProductDto, description: 'Create a new template.' })
+  @ApiCreatedResponse({ type: ProductDto, description: 'New template created.' })
   async createProduct(
     @Body() request: CreateProductFromTemplateDto,
     @IdentityFromRequest() identity: Identity,
@@ -47,6 +56,10 @@ export default class TemplateHttpController {
 
   @Get(`${ROUTE_TEMPLATE_ID}/image`)
   @HttpCode(200)
+  @ApiOperation({
+    description: 'Request must include `templateId`.',
+    summary: 'Retrieve data of images of a template.',
+  })
   @Header('content-type', 'image/jpeg')
   @ApiOkResponse({ description: 'Retrieve data of an image of a template.' })
   @UuidParams(PARAM_TEMPLATE_ID)

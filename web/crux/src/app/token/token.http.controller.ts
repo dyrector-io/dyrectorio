@@ -1,5 +1,12 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
@@ -24,10 +31,14 @@ export default class TokenHttpController {
 
   @Get()
   @HttpCode(200)
+  @ApiOperation({
+    description: "Access token's support is to provide secure access to a user's profile.",
+    summary: 'Retrieve access token.',
+  })
   @ApiOkResponse({
     type: TokenDto,
     isArray: true,
-    description: 'Retrieve access token.',
+    description: 'Token fetched.',
   })
   async getTokens(@IdentityFromRequest() identity: Identity): Promise<TokenDto[]> {
     return this.service.getTokenList(identity)
@@ -35,7 +46,12 @@ export default class TokenHttpController {
 
   @Get(ROUTE_TOKEN_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: TokenDto, description: 'Fetch tokenID.' })
+  @ApiOperation({
+    description:
+      "Access token's details are `name`, `id`, and the time of creation and expiration. Request must include `tokenId`.",
+    summary: 'Fetch token details.',
+  })
+  @ApiOkResponse({ type: TokenDto, description: 'Token details listed.' })
   @UuidParams(PARAM_TOKEN_ID)
   async getToken(@TokenId() id: string, @IdentityFromRequest() identity: Identity): Promise<TokenDto> {
     return this.service.getToken(id, identity)
@@ -44,7 +60,11 @@ export default class TokenHttpController {
   @Post()
   @HttpCode(201)
   @CreatedWithLocation()
-  @ApiBody({ type: GenerateTokenDto, description: 'Create access token.' })
+  @ApiOperation({
+    description: 'Request must include `name` and `expirationInDays`.',
+    summary: 'Create access token.',
+  })
+  @ApiBody({ type: GenerateTokenDto, description: 'Token created.' })
   @ApiCreatedResponse({
     type: GeneratedTokenDto,
     headers: API_CREATED_LOCATION_HEADERS,
@@ -63,6 +83,10 @@ export default class TokenHttpController {
 
   @Delete(ROUTE_TOKEN_ID)
   @HttpCode(204)
+  @ApiOperation({
+    description: 'Request must include `tokenId`.',
+    summary: 'Create access token.',
+  })
   @ApiNoContentResponse({ description: 'Delete token.' })
   @UuidParams(PARAM_TOKEN_ID)
   async deleteToken(@TokenId() id: string): Promise<void> {

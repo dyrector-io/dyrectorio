@@ -1,7 +1,14 @@
 import { Controller, Get, HttpCode, PipeTransform, Type, UseGuards, UseInterceptors } from '@nestjs/common'
 import { Delete, Post, Put } from '@nestjs/common/decorators/http/request-mapping.decorator'
 import { Body, Param } from '@nestjs/common/decorators/http/route-params.decorator'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBody,
+  ApiOperation,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
@@ -28,14 +35,24 @@ export default class RegistryHttpController {
 
   @Get()
   @HttpCode(200)
-  @ApiOkResponse({ type: RegistryDto, isArray: true, description: 'Read data of registries.' })
+  @ApiOperation({
+    description:
+      'Lists the details of every registries available. Response is an array including the `name`, `id`, `type`, `description`, and `icon` of the registry.</br></br>Registries are 3rd party registries where the images of versions are located.',
+    summary: 'Fetch data of registries.',
+  })
+  @ApiOkResponse({ type: RegistryDto, isArray: true, description: 'Data of all registries within a team listed.' })
   async getRegistries(@IdentityFromRequest() identity: Identity): Promise<RegistryDto[]> {
     return await this.service.getRegistries(identity)
   }
 
   @Get(ROUTE_REGISTRY_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: RegistryDetailsDto, description: 'Retrieve data of a registry.' })
+  @ApiOperation({
+    description:
+      "Lists the details of a registry. `RegistryId` refers to the registry's ID. Response is an array including the `name`, `id`, `type`, `description`, `imageNamePrefix`, `inUse`, `icon`, and audit log info of the registry.",
+    summary: 'Fetch data of a registry.',
+  })
+  @ApiOkResponse({ type: RegistryDetailsDto, description: 'Data of a registry listed.' })
   @UuidParams(PARAM_REGISTRY_ID)
   async getRegistry(@RegistryId() id: string): Promise<RegistryDetailsDto> {
     return await this.service.getRegistryDetails(id)
@@ -44,11 +61,16 @@ export default class RegistryHttpController {
   @Post()
   @HttpCode(201)
   @CreatedWithLocation()
+  @ApiOperation({
+    description:
+      'To add a new registry, include the `name`, `type`, `description`, `details`, and `icon`. `Type`, `details`, and `name` are required. Response is an array including the `name`, `id`, `type`, `description`, `imageNamePrefix`, `inUse`, `icon`, and audit log info of the registry.',
+    summary: 'Add a new registry.',
+  })
   @ApiBody({ type: CreateRegistryDto })
   @ApiCreatedResponse({
     type: RegistryDetailsDto,
     headers: API_CREATED_LOCATION_HEADERS,
-    description: 'Add new registry.',
+    description: 'New registry added.',
   })
   @UseGuards(RegistryAccessValidationGuard)
   async createRegistry(
@@ -65,10 +87,15 @@ export default class RegistryHttpController {
 
   @Put(ROUTE_REGISTRY_ID)
   @HttpCode(204)
+  @ApiOperation({
+    description:
+      "Modify the `name`, `type`, `description`, `details`, and `icon`. `RegistryId` refers to the registry's ID. `RegistryId`, `type`, `details`, and `name` are required.",
+    summary: 'Modify the details of a registry.',
+  })
   @UseInterceptors(UpdateRegistryInterceptor)
   @UseGuards(RegistryAccessValidationGuard)
   @ApiBody({ type: UpdateRegistryDto })
-  @ApiNoContentResponse({ description: 'Modify a registry.' })
+  @ApiNoContentResponse({ description: 'Details of registry modified.' })
   @UuidParams(PARAM_REGISTRY_ID)
   async updateRegistry(
     @RegistryId() id: string,
@@ -80,7 +107,11 @@ export default class RegistryHttpController {
 
   @Delete(ROUTE_REGISTRY_ID)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Delete a registry.' })
+  @ApiOperation({
+    description: 'To delete a registry from dyrectorio, only `RegistryId`, `type`, `details`, and `name` are required.',
+    summary: 'Delete a registry from dyrectorio.',
+  })
+  @ApiNoContentResponse({ description: 'Registry deleted.' })
   @UuidParams(PARAM_REGISTRY_ID)
   async deleteRegistry(@RegistryId(DeleteRegistryValidationPipe) id: string): Promise<void> {
     await this.service.deleteRegistry(id)

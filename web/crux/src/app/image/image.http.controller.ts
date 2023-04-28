@@ -11,7 +11,14 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBody,
+  ApiOperation,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
@@ -42,10 +49,15 @@ export default class ImageHttpController {
 
   @Get()
   @HttpCode(200)
+  @ApiOperation({
+    description:
+      "Fetch details of images within a version. `ProductId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables.</br></br>Details come in an array, including `name`, `id`, `tag`, `order`, and config details of the image.",
+    summary: 'Fetch data of all images of a version.',
+  })
   @ApiOkResponse({
     type: ImageDto,
     isArray: true,
-    description: 'Retrieve the data of images that belong to a version.',
+    description: 'Data of images listed.',
   })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
   async getImagesByVersionId(@ProductId() _productId: string, @VersionId() versionId: string): Promise<ImageDto[]> {
@@ -54,7 +66,12 @@ export default class ImageHttpController {
 
   @Get(ROUTE_IMAGE_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: ImageDto, description: 'Retrieve the data of an image that belongs to a version.' })
+  @ApiOperation({
+    description:
+      "Fetch details of an images within a version. `ProductId` refers to the product's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required variables.</br></br>Details come in an array, including `name`, `id`, `tag`, `order`, and config details of the image.",
+    summary: 'Fetch data of an image of a version.',
+  })
+  @ApiOkResponse({ type: ImageDto, description: 'Data of an image listed.' })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async getImageDetails(
     @ProductId() _productId: string,
@@ -67,8 +84,13 @@ export default class ImageHttpController {
   @Post()
   @HttpCode(201)
   @CreatedWithLocation()
+  @ApiOperation({
+    description:
+      "Add new image to a version. `ProductId` refers to the product's ID, `versionId` refers to the version's ID, `registryId` refers to the registry's ID, `images` refers to the name(s) of the images you'd like to add. All are required variables.",
+    summary: 'Add an image to a version.',
+  })
   @ApiBody({ type: AddImagesDto, isArray: true })
-  @ApiCreatedResponse({ type: ImageDto, isArray: true, description: 'Add an image to a version.' })
+  @ApiCreatedResponse({ type: ImageDto, isArray: true, description: 'New image added.' })
   @UseGuards(ImageAddToVersionTeamAccessGuard)
   @UseInterceptors(ImageAddToVersionValidationInterceptor)
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID)
@@ -88,8 +110,13 @@ export default class ImageHttpController {
 
   @Patch(ROUTE_IMAGE_ID)
   @HttpCode(204)
+  @ApiOperation({
+    description:
+      "Modify and add configuration variables of an image. `ProductId` refers to the product's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required variables. `Tag` refers to the version of the image, `config` is an array of configuration variables.",
+    summary: 'Configure an image of a version.',
+  })
   @ApiBody({ type: PatchImageDto })
-  @ApiNoContentResponse({ description: 'Modify an image of a version.' })
+  @ApiNoContentResponse({ description: "Image's configure variables adjusted." })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async patchImage(
     @ProductId() _productId: string,
@@ -103,6 +130,11 @@ export default class ImageHttpController {
 
   @Delete(ROUTE_IMAGE_ID)
   @HttpCode(204)
+  @ApiOperation({
+    description:
+      "Delete an image. `ProductId` refers to the product's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required variables.",
+    summary: 'Delete an image from a version.',
+  })
   @ApiNoContentResponse({ description: 'Delete an image from a version.' })
   @UseInterceptors(DeleteImageValidationInterceptor)
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
@@ -116,7 +148,12 @@ export default class ImageHttpController {
 
   @Put('order')
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Update image order of a version.' })
+  @ApiOperation({
+    description:
+      "Edit image deployment order of a version. `ProductId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables. Request should include the names of images in an array.",
+    summary: 'Edit image deployment order of a version.',
+  })
+  @ApiNoContentResponse({ description: 'Deployment order modified.' })
   @ApiBody({ type: String, isArray: true })
   @UseGuards(ImageOrderImagesTeamAccessGuard)
   @UseInterceptors(OrderImagesValidationInterceptor)

@@ -1,5 +1,13 @@
 import { Body, Controller, Delete, Get, Header, HttpCode, Post, Put, UseGuards } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiProduces, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiProduces,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
@@ -26,10 +34,15 @@ export default class NodeHttpController {
 
   @Get()
   @HttpCode(200)
+  @ApiOperation({
+    description:
+      "Fetch data of deployment targets. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, and `name`.",
+    summary: 'Get data of nodes that belong to your team.',
+  })
   @ApiOkResponse({
     type: NodeDto,
     isArray: true,
-    description: 'Get data of nodes that belong to your team.',
+    description: 'Data of nodes listed.',
   })
   async getNodes(@IdentityFromRequest() identity: Identity): Promise<NodeDto[]> {
     return this.service.getNodes(identity)
@@ -37,7 +50,12 @@ export default class NodeHttpController {
 
   @Get(ROUTE_NODE_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: NodeDetailsDto, description: 'Fetch data of a node.' })
+  @ApiOperation({
+    description:
+      "Fetch data of a specific node. Request must include `nodeId`. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, `name`, `hasToken`, and agent installation details.",
+    summary: 'Get data of nodes that belong to your team.',
+  })
+  @ApiOkResponse({ type: NodeDetailsDto, description: 'Data of the node is listed.' })
   @UuidParams(PARAM_NODE_ID)
   async getNodeDetails(@NodeId() nodeId: string): Promise<NodeDetailsDto> {
     return this.service.getNodeDetails(nodeId)
@@ -45,9 +63,14 @@ export default class NodeHttpController {
 
   @Post()
   @HttpCode(201)
+  @ApiOperation({
+    description:
+      "Request must include the node's `name`. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, and `name`.",
+    summary: 'Create new node.',
+  })
   @CreatedWithLocation()
   @ApiBody({ type: CreateNodeDto })
-  @ApiCreatedResponse({ type: NodeDto, description: 'Create new node.' })
+  @ApiCreatedResponse({ type: NodeDto, description: 'New node created.' })
   async createNode(
     @Body() request: CreateNodeDto,
     @IdentityFromRequest() identity: Identity,
@@ -62,7 +85,11 @@ export default class NodeHttpController {
 
   @Put(ROUTE_NODE_ID)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Update data of a node.' })
+  @ApiOperation({
+    description: "Request must include the node's `name`, body can include `description` and `icon`.",
+    summary: 'Update details of a node.',
+  })
+  @ApiNoContentResponse({ description: 'Node details modified.' })
   @UuidParams(PARAM_NODE_ID)
   async updateNode(
     @NodeId() id: string,
@@ -74,7 +101,11 @@ export default class NodeHttpController {
 
   @Delete(ROUTE_NODE_ID)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Delete node.' })
+  @ApiOperation({
+    description: 'Request must include `nodeId`.',
+    summary: 'Delete node.',
+  })
+  @ApiNoContentResponse({ description: 'Node deleted.' })
   @UuidParams(PARAM_NODE_ID)
   async deleteNode(@NodeId() nodeId: string): Promise<void> {
     return this.service.deleteNode(nodeId)
@@ -82,7 +113,11 @@ export default class NodeHttpController {
 
   @Post(`${ROUTE_NODE_ID}/script`)
   @HttpCode(201)
-  @ApiOkResponse({ type: NodeInstallDto, description: 'Create node set up install script.' })
+  @ApiOperation({
+    description: 'Request must include `nodeId`, `type` and `scriptType`.',
+    summary: 'Create agent install script.',
+  })
+  @ApiOkResponse({ type: NodeInstallDto, description: 'Install script generated.' })
   @UuidParams(PARAM_NODE_ID)
   async generateScript(
     @NodeId(NodeGenerateScriptValidationPipe) nodeId: string,
@@ -94,7 +129,11 @@ export default class NodeHttpController {
 
   @Delete(`${ROUTE_NODE_ID}/script`)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Delete node set up install script.' })
+  @ApiOperation({
+    description: 'Request must include `nodeId`.',
+    summary: 'Delete node set up install script.',
+  })
+  @ApiNoContentResponse({ description: 'Agent install script deleted.' })
   async discardScript(@NodeId() nodeId: string): Promise<void> {
     return await this.service.discardScript(nodeId)
   }
@@ -102,7 +141,12 @@ export default class NodeHttpController {
   @Get(`${ROUTE_NODE_ID}/script`)
   @ApiOkResponse({ type: String })
   @ApiProduces('text/plain')
-  @ApiOkResponse({ type: NodeDetailsDto, description: 'Fetch install script.' })
+  @ApiOperation({
+    description:
+      'Request must include `nodeId`. Response should include `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, `name`, `hasToken`, and `install` details.',
+    summary: 'Fetch install script.',
+  })
+  @ApiOkResponse({ type: NodeDetailsDto, description: 'Install script listed.' })
   @Header('content-type', 'text/plain')
   @DisableAuth()
   @UuidParams(PARAM_NODE_ID)
@@ -112,7 +156,11 @@ export default class NodeHttpController {
 
   @Delete(`${ROUTE_NODE_ID}/token`)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: "Delete token that belongs to a node's install script." })
+  @ApiOperation({
+    description: 'Request must include `nodeId`.',
+    summary: "Revoke token that belongs to a node's install script.",
+  })
+  @ApiNoContentResponse({ description: 'Token revoked.' })
   @UuidParams(PARAM_NODE_ID)
   async revokeToken(@NodeId() nodeId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
     return await this.service.revokeToken(nodeId, identity)
@@ -120,7 +168,11 @@ export default class NodeHttpController {
 
   @Post(`${ROUTE_NODE_ID}/update`)
   @HttpCode(204)
-  @ApiNoContentResponse({ description: "Update node's data." })
+  @ApiOperation({
+    description: 'Request must include `nodeId`.',
+    summary: "Update node's data.",
+  })
+  @ApiNoContentResponse({ description: 'Node details modified.' })
   @UuidParams(PARAM_NODE_ID)
   updateNodeAgent(@NodeId() nodeId: string) {
     this.service.updateAgent(nodeId)

@@ -11,7 +11,14 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
-import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBody,
+  ApiOperation,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { PaginationQuery } from 'src/shared/dtos/paginating'
@@ -54,10 +61,15 @@ export default class DeployHttpController {
   constructor(private service: DeployService) {}
 
   @Get()
+  @ApiOperation({
+    description:
+      'Get details of deployments. Deployment details should include `id`, `prefix`, `status`, `note`, `audit` log details, product `name`, `id`, `type`, version `name`, `type`, `id`, and node `name`, `id`, `type`.',
+    summary: 'Fetch data of deployments.',
+  })
   @ApiOkResponse({
     type: DeploymentDto,
     isArray: true,
-    description: 'Fetch data of deployments.',
+    description: 'Details of deployments listed.',
   })
   async getDeployments(@IdentityFromRequest() identity: Identity): Promise<DeploymentDto[]> {
     return await this.service.getDeployments(identity)
@@ -65,7 +77,12 @@ export default class DeployHttpController {
 
   @Get(ROUTE_DEPLOYMENT_ID)
   @HttpCode(200)
-  @ApiOkResponse({ type: DeploymentDetailsDto, description: 'Retrieve data of a deployment.' })
+  @ApiOperation({
+    description:
+      'Get details of a certain deployment. Request must include `deploymentId`. Deployment details should include `id`, `prefix`, `environment`, `status`, `note`, `audit` log details, product `name`, `id`, `type`, version `name`, `type`, `id`, and node `name`, `id`, `type`.',
+    summary: 'Retrieve data of a deployment.',
+  })
+  @ApiOkResponse({ type: DeploymentDetailsDto, description: 'Data of a deployment is listed.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async getDeploymentDetails(@DeploymentId() deploymentId: string): Promise<DeploymentDetailsDto> {
     return await this.service.getDeploymentDetails(deploymentId)
@@ -73,10 +90,15 @@ export default class DeployHttpController {
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/events`)
   @HttpCode(200)
+  @ApiOperation({
+    description:
+      'Request must include `deploymentId`. Response should include `type`, `deploymentStatus`, `createdAt`, `log`, and `containerState` which consists of `state` and `instanceId`.',
+    summary: 'Fetch event log of a deployment.',
+  })
   @ApiOkResponse({
     type: DeploymentEventDto,
     isArray: true,
-    description: 'Fetch event log that belongs to a deployment.',
+    description: 'Event log listed.',
   })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async getDeploymentEvents(@DeploymentId() deploymentId: string): Promise<DeploymentEventDto[]> {
@@ -85,7 +107,12 @@ export default class DeployHttpController {
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)
   @HttpCode(200)
-  @ApiOkResponse({ type: InstanceDto, description: 'Get details of a deployed container.' })
+  @ApiOperation({
+    description:
+      'Request must include `deploymentId` and `instanceId`, which refers to the ID of a deployed container. Response should include `state`, `id`, `updatedAt`, and `image` details including `id`, `name`, `tag`, `order` and `config` variables.',
+    summary: 'Get details of a deployed container.',
+  })
+  @ApiOkResponse({ type: InstanceDto, description: 'Details of deployed container listed.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
   async getInstance(@DeploymentId() _deploymentId: string, @InstanceId() instanceId: string): Promise<InstanceDto> {
     return await this.service.getInstance(instanceId)
@@ -93,7 +120,12 @@ export default class DeployHttpController {
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}/secrets`)
   @HttpCode(200)
-  @ApiOkResponse({ type: InstanceSecretsDto, description: 'Fetch secrets of a deployed container.' })
+  @ApiOperation({
+    description:
+      'Request must include `deploymentId` and `instanceId`, which refers to the ID of a deployed container. Response should include container `prefix` and `name`, and `publicKey`, `keys`.',
+    summary: 'Fetch secrets of a deployed container.',
+  })
+  @ApiOkResponse({ type: InstanceSecretsDto, description: 'Secrets of a deployed container listed.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
   async getDeploymentSecrets(
     @DeploymentId() _deploymentId: string,
@@ -104,9 +136,14 @@ export default class DeployHttpController {
 
   @Post()
   @HttpCode(201)
+  @ApiOperation({
+    description:
+      'Request must include `versionId`, `nodeId`, and `prefix`, which refers to the ID of a deployed container. Response should include deployment `id`, `prefix`, `status`, `note`, and `audit` log details, as well as product `type`, `id`, `name`, version `type`, `id`, `name`, and node `type`, `id`, `name`.',
+    summary: 'Create new deployment.',
+  })
   @CreatedWithLocation()
   @ApiBody({ type: CreateDeploymentDto })
-  @ApiCreatedResponse({ type: DeploymentDto, description: 'Create new deployment.' })
+  @ApiCreatedResponse({ type: DeploymentDto, description: 'New deployment created.' })
   @UseGuards(DeployCreateTeamAccessGuard)
   @UseInterceptors(DeployCreateValidationInterceptor)
   async createDeployment(
@@ -123,8 +160,12 @@ export default class DeployHttpController {
 
   @Patch(ROUTE_DEPLOYMENT_ID)
   @HttpCode(204)
+  @ApiOperation({
+    description: 'Request must include `deploymentId`.',
+    summary: 'Update deployment.',
+  })
   @UseInterceptors(DeployPatchValidationInterceptor)
-  @ApiNoContentResponse({ description: 'Update deployment.' })
+  @ApiNoContentResponse({ description: 'Deployment modified.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async patchDeployment(
     @DeploymentId() deploymentId: string,
@@ -136,8 +177,13 @@ export default class DeployHttpController {
 
   @Patch(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)
   @HttpCode(204)
+  @ApiOperation({
+    description:
+      'Request must include `deploymentId` and `instanceId`. Response should include `config` variables in an array.',
+    summary: 'Update instance configuration.',
+  })
   @UseInterceptors(DeployPatchValidationInterceptor)
-  @ApiNoContentResponse({ description: 'Update instance configuration.' })
+  @ApiNoContentResponse({ description: 'Instance configuration updated.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
   async patchInstance(
     @DeploymentId() deploymentId: string,
@@ -150,8 +196,12 @@ export default class DeployHttpController {
 
   @Delete(ROUTE_DEPLOYMENT_ID)
   @HttpCode(204)
+  @ApiOperation({
+    description: 'Request must include `deploymentId`.',
+    summary: 'Delete deployment.',
+  })
   @UseInterceptors(DeleteDeploymentValidationInterceptor)
-  @ApiNoContentResponse({ description: 'Delete deployment.' })
+  @ApiNoContentResponse({ description: 'Deployment deleted.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async deleteDeployment(@DeploymentId() deploymentId: string): Promise<void> {
     await this.service.deleteDeployment(deploymentId)
@@ -159,8 +209,12 @@ export default class DeployHttpController {
 
   @Post(`${ROUTE_DEPLOYMENT_ID}/start`)
   @HttpCode(204)
+  @ApiOperation({
+    description: 'Request must include `deploymentId`.',
+    summary: 'Start deployment.',
+  })
   @UseInterceptors(DeployStartValidationInterceptor)
-  @ApiNoContentResponse({ description: 'Start deployment.' })
+  @ApiNoContentResponse({ description: 'Deployment initiated.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async startDeployment(
     @DeploymentId() deploymentId: string,
@@ -171,9 +225,14 @@ export default class DeployHttpController {
 
   @Post(`${ROUTE_DEPLOYMENT_ID}/copy`)
   @HttpCode(201)
+  @ApiOperation({
+    description:
+      'Request must include `deploymentId` and `force`, which is a boolean variable. Response should include deployment data: `id`, `prefix`, `status`, `note`, and miscellaneous details of `audit` log, `product`, `version`, and `node`.',
+    summary: 'Copy deployment.',
+  })
   @CreatedWithLocation()
   @UseInterceptors(DeployCopyValidationInterceptor)
-  @ApiCreatedResponse({ type: DeploymentDto, description: 'Copy deployment.' })
+  @ApiCreatedResponse({ type: DeploymentDto, description: 'Deployment copied.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async copyDeployment(
     @Query('force') _: boolean,
