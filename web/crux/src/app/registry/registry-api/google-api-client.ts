@@ -1,7 +1,7 @@
 import { JWT } from 'google-auth-library'
 import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
-import { RegistryApiClient } from './registry-api-client'
 import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
+import { RegistryApiClient } from './registry-api-client'
 import { RegistryImageTags } from '../registry.message'
 
 export type GoogleClientOptions = {

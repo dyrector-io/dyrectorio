@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { MessageMappingProperties } from '@nestjs/websockets'
-import { EMPTY, Observable, firstValueFrom, mergeMap, of } from 'rxjs'
+import { EMPTY, Observable, firstValueFrom, of } from 'rxjs'
 import {
   SubscriptionMessage,
   WS_TYPE_AUTHORIZE,

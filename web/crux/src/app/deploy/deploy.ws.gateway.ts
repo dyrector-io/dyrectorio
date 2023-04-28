@@ -2,7 +2,6 @@ import { UseFilters, UseGuards } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
 import { Observable, Subject, map, of, takeUntil } from 'rxjs'
-import { deploymentStatusToDb } from 'src/domain/deployment'
 import WsExceptionFilter from 'src/filters/ws.exception-filter'
 import { WsAuthorize, WsClient, WsMessage, WsSubscribe, WsSubscription, WsUnsubscribe } from 'src/websockets/common'
 import SocketClient from 'src/websockets/decorators/ws.client.decorator'
@@ -162,37 +161,9 @@ export default class DeployWebSocketGateway {
 
     return observable.pipe(
       map(it => {
-        const events: DeploymentEventMessage[] = []
-
-        // TODO(@robot9706): some kind of proper mapping
-        if (it.log) {
-          events.push({
-            type: 'log',
-            createdAt: new Date(),
-            log: it.log,
-          })
-        }
-        if (it.status) {
-          events.push({
-            type: 'deployment-status',
-            createdAt: new Date(),
-            deploymentStatus: this.mapper.statusToDto(deploymentStatusToDb(it.status)),
-          })
-        }
-        if (it.instance) {
-          events.push({
-            type: 'container-status',
-            createdAt: new Date(),
-            containerState: {
-              instanceId: it.instance.instanceId,
-              state: this.mapper.containerStateToDb(it.instance.state),
-            },
-          })
-        }
-
         const msg: WsMessage<DeploymentEventListMessage> = {
           type: WS_TYPE_DEPLOYMENT_EVENT_LIST,
-          data: events,
+          data: this.mapper.progressProtoToEventDto(it),
         }
 
         return msg

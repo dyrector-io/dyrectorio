@@ -11,6 +11,24 @@ export default class RegistryService {
 
   private readonly logger = new Logger(RegistryService.name)
 
+  async checkRegistryIsInTheActiveTeam(registryId: string, identity: Identity): Promise<boolean> {
+    const registries = await this.prisma.registry.count({
+      where: {
+        id: registryId,
+        team: {
+          users: {
+            some: {
+              userId: identity.id,
+              active: true,
+            },
+          },
+        },
+      },
+    })
+
+    return registries > 0
+  }
+
   async getRegistries(identity: Identity): Promise<RegistryDto[]> {
     const registries = await this.prisma.registry.findMany({
       where: {

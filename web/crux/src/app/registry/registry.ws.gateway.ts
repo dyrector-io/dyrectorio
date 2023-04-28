@@ -23,8 +23,8 @@ export default class RegistryWebSocketGateway {
   constructor(private readonly connections: RegistryConnections) {}
 
   @WsAuthorize()
-  async onAuthorize(@IdentityFromSocket() identity: Identity): Promise<boolean> {
-    // TODO(@robot9706): implement
+  async onAuthorize(): Promise<boolean> {
+    // Auth is handled in RegistryConnections getByRegistryId
     return true
   }
 

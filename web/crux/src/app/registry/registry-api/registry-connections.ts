@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { CruxBadRequestException } from 'src/exception/crux-exception'
+import { CruxBadRequestException, CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
 import { REGISTRY_HUB_CACHE_EXPIRATION } from '../registry.const'
 import {
@@ -106,7 +106,7 @@ export default class RegistryConnections {
           username: details.user,
           password: details.token,
         },
-        !!details.apiUrl
+        details.apiUrl
           ? {
               apiUrl: details.apiUrl,
               registryUrl: details.url,
@@ -119,7 +119,7 @@ export default class RegistryConnections {
       new GoogleRegistryClient(
         details.url,
         details.imageNamePrefix,
-        !!details.user
+        details.user
           ? {
               username: details.user,
               password: details.token,
@@ -149,8 +149,10 @@ export default class RegistryConnections {
       return
     }
 
-    // TODO(@robot9706): Auth
-    // await crux.getRegistryDetails(registryId)
+    const access = await this.service.checkRegistryIsInTheActiveTeam(registryId, identity)
+    if (!access) {
+      throw new CruxUnauthorizedException()
+    }
   }
 
   private getHubCacheForImageNamePrefix(registryId: string, prefix: string): HubApiCache {

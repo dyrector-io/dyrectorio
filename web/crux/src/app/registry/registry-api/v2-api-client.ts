@@ -1,6 +1,6 @@
+import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
 import { RegistryApiClient } from './registry-api-client'
 import { RegistryImageTags } from '../registry.message'
-import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
 
 export type RegistryV2ApiClientOptions = {
   username?: string

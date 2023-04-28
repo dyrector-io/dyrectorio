@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { ImageDto } from './image.dto'
 import { Observable, Subject } from 'rxjs'
+import { ImageDto } from './image.dto'
 import { ImageEvent } from './image.event'
 
 @Injectable()

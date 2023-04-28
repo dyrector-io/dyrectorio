@@ -1,8 +1,8 @@
 import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
+import { REGISTRY_GITHUB_URL } from 'src/shared/const'
 import { RegistryImageTags } from '../registry.message'
 import { RegistryApiClient } from './registry-api-client'
 import RegistryV2ApiClient, { registryCredentialsToBasicAuth, RegistryV2ApiClientOptions } from './v2-api-client'
-import { REGISTRY_GITHUB_URL } from 'src/shared/const'
 import { GithubNamespace } from '../registry.dto'
 
 class GithubRegistryClient implements RegistryApiClient {

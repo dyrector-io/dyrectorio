@@ -1,6 +1,5 @@
 import { Logger } from '@nestjs/common'
 import { EMPTY, Observable, Subject, filter, first, map, mergeWith, of, takeUntil } from 'rxjs'
-import { WebSocket } from 'ws'
 import {
   SubscriptionMessage,
   WS_TYPE_SUBBED,

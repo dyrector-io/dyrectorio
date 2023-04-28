@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { ContainerConfig } from '@prisma/client'
-import { Subject } from 'rxjs'
 import { containerNameFromImageName } from 'src/domain/deployment'
 import PrismaService from 'src/services/prisma.service'
 import { ContainerConfigData } from 'src/shared/models'

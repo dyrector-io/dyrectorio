@@ -1,4 +1,5 @@
 import * as yup from 'yup'
+import { CruxBadRequestException } from 'src/exception/crux-exception'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
@@ -13,7 +14,6 @@ import {
   ContainerRestartPolicyType,
   VolumeType,
 } from './models'
-import { CruxBadRequestException } from 'src/exception/crux-exception'
 
 export const nameRuleOptional = yup.string().trim().min(3).max(70)
 export const nameRule = yup.string().required().trim().min(3).max(70)
