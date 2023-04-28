@@ -20,7 +20,7 @@ export class TemplateDto {
 }
 
 export class CreateProductFromTemplateDto {
-  @IsUUID()
+  @IsString()
   id: string
 
   @IsString()

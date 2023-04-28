@@ -21,36 +21,39 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
     return next.handle().pipe(catchError(err => this.onError(context, err)))
   }
 
-  // TODO(@polaroi8d): not working, and remove gRPC error handling
-  onError(context: ExecutionContext, err: Error): any {
+  onError(_context: ExecutionContext, err: Error): any {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === UNIQUE_CONSTRAINT_FAILED) {
-        const meta = err.meta ?? ({} as any)
-        const { target } = meta
+      this.handlePrismaError(err)
+    }
 
-        const hasName = target && target.includes('name')
-        const property = hasName ? 'name' : target?.toString() ?? 'unknown'
+    throw err
+  }
 
-        const error: CruxExceptionOptions = {
-          message: `${property} taken`,
-          property,
-        }
+  private handlePrismaError(err: Prisma.PrismaClientKnownRequestError) {
+    if (err.code === UNIQUE_CONSTRAINT_FAILED) {
+      const meta = err.meta ?? ({} as any)
+      const { target } = meta
 
-        throw new CruxConflictException(error)
-      } else if (err.code === NOT_FOUND) {
-        const error = {
-          property: this.prismaMessageToProperty(err.message),
-          message: err.message,
-        }
+      const hasName = target && target.includes('name')
+      const property = hasName ? 'name' : target?.toString() ?? 'unknown'
 
-        throw new CruxNotFoundException(error)
-      } else if (err.code === UUID_INVALID) {
-        throw new CruxBadRequestException({
-          message: 'Invalid uuid',
-        })
+      const error: CruxExceptionOptions = {
+        message: `${property} taken`,
+        property,
       }
 
-      throw err
+      throw new CruxConflictException(error)
+    } else if (err.code === NOT_FOUND) {
+      const error = {
+        property: this.prismaMessageToProperty(err.message),
+        message: err.message,
+      }
+
+      throw new CruxNotFoundException(error)
+    } else if (err.code === UUID_INVALID) {
+      throw new CruxBadRequestException({
+        message: 'Invalid uuid',
+      })
     }
   }
 

@@ -7,7 +7,7 @@ import { NotificationDetailsDto, NotificationDto, NotificationEventTypeDto } fro
 
 @Injectable()
 export default class NotificationMapper {
-  listToDto(notification: Notification, createdByIdentity: Identity): NotificationDto {
+  toDto(notification: Notification, createdByIdentity: Identity): NotificationDto {
     return {
       id: notification.id,
       name: notification.name,
@@ -20,7 +20,7 @@ export default class NotificationMapper {
 
   detailsToDto(notification: NotificationWithEvents, createdByIdentity: Identity): NotificationDetailsDto {
     return {
-      ...this.listToDto(notification, createdByIdentity),
+      ...this.toDto(notification, createdByIdentity),
       enabledEvents: notification.events.map(ev => this.eventTypeToDto(ev.event)),
     }
   }

@@ -18,7 +18,7 @@ export default class UuidValidationGuard implements CanActivate {
     const params = this.reflector.get<string[]>(UUID_PARAMS, context.getHandler())
     const req = context.switchToHttp().getRequest()
 
-    // return if there is no given params
+    // return when there are no params defined
     if (!params) {
       return true
     }

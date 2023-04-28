@@ -78,7 +78,7 @@ export default class NotificationHttpController {
   }
 
   @Put(ROUTE_NOTIFICATION_ID)
-  @HttpCode(200)
+  @HttpCode(204)
   @ApiOperation({
     description:
       'Request must include `notificationId`, `type`, `enabledEvents`, `id`, `name`, `url`, and `active`. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',

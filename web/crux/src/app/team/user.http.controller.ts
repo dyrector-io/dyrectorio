@@ -21,6 +21,7 @@ export default class UserHttpController {
   constructor(private service: TeamService) {}
 
   @Post()
+  @HttpCode(200)
   @ApiOperation({
     description: 'Response includes the `user`, `activeTeamId`, `teams`, and `invitations`.',
     summary: 'Fetch the current user.',

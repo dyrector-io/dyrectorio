@@ -6,13 +6,13 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { join } from 'path'
 import AppModule from './app.module'
-import CreatedWithLocationInterceptor from './app/shared/created-with-location.interceptor'
 import JwtAuthGuard from './app/token/jwt-auth.guard'
+import DyoWsAdapter from './websockets/dyo.ws.adapter'
 import HttpExceptionFilter from './filters/http.exception-filter'
-import UuidValidationGuard from './guards/uuid-params.validation.guard'
 import HttpLoggerInterceptor from './interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
-import DyoWsAdapter from './websockets/dyo.ws.adapter'
+import CreatedWithLocationInterceptor from './app/shared/created-with-location.interceptor'
+import UuidValidationGuard from './guards/uuid-params.validation.guard'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -174,7 +174,6 @@ const bootstrap = async () => {
 
   await app.startAllMicroservices()
   logger.log(`gRPC agent services are running on: ${agentOptions.url}`)
-  logger.log(`gRPC API services are running on: ${apiOptions.url}`)
 
   await app.listen(httpOptions)
   logger.log(`HTTP API service is running on PORT: ${httpOptions}`)

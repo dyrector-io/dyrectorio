@@ -55,7 +55,7 @@ export class CreateNotificationDto {
     enum: NOTIFICATION_EVENT_TYPE_VALUES,
     isArray: true,
   })
-  @IsIn(NOTIFICATION_EVENT_TYPE_VALUES)
+  @IsIn(NOTIFICATION_EVENT_TYPE_VALUES, { each: true })
   enabledEvents: NotificationEventTypeDto[]
 }
 
@@ -77,6 +77,6 @@ export class UpdateNotificationDto {
     enum: NOTIFICATION_EVENT_TYPE_VALUES,
     isArray: true,
   })
-  @IsIn(NOTIFICATION_EVENT_TYPE_VALUES)
+  @IsIn(NOTIFICATION_EVENT_TYPE_VALUES, { each: true })
   enabledEvents: NotificationEventTypeDto[]
 }

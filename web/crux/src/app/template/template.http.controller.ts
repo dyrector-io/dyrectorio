@@ -2,7 +2,6 @@ import { Body, Controller, Get, Header, HttpCode, Param, Post, Response } from '
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import { Response as ExpressResponse } from 'express'
-import UuidParams from 'src/decorators/api-params.decorator'
 import TemplateFileService from 'src/services/template.file.service'
 import { ProductDto } from '../product/product.dto'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
@@ -38,7 +37,7 @@ export default class TemplateHttpController {
   @ApiOperation({
     description:
       'Request must include `type`, `id`, and `name`. Response should include `id`, `name`, `description`, `type`, and `audit` log details of templates.',
-    summary: 'Create a new template.',
+    summary: 'Creates a new product from the selected template.',
   })
   @ApiBody({ type: CreateProductFromTemplateDto })
   @ApiCreatedResponse({ type: ProductDto, description: 'New template created.' })
@@ -58,11 +57,10 @@ export default class TemplateHttpController {
   @HttpCode(200)
   @ApiOperation({
     description: 'Request must include `templateId`.',
-    summary: 'Retrieve data of images of a template.',
+    summary: 'Retrieves the image of the template',
   })
   @Header('content-type', 'image/jpeg')
   @ApiOkResponse({ description: 'Retrieve data of an image of a template.' })
-  @UuidParams(PARAM_TEMPLATE_ID)
   async getImage(@TemplateId() templateId: string, @Response() response: ExpressResponse) {
     const image = await this.service.getImageStream(templateId)
     image.pipe(response)

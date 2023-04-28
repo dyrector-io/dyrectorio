@@ -19,7 +19,9 @@ export default class HttpExceptionFilter extends CruxExceptionFilter {
       const res = exception.getResponse()
 
       this.logger.error(
-        `${exception.getStatus()} ${httpReq.url} ${typeof res === 'object' ? JSON.stringify(res) : res}`,
+        `${exception.getStatus()} ${httpReq.method} ${httpReq.url} ${
+          typeof res === 'object' ? JSON.stringify(res) : res
+        }`,
       )
 
       httpRes.status(status).json(res)

@@ -83,7 +83,7 @@ const NodesPage = (props: NodesPageProps) => {
         ...old,
         ...node,
       }
-      filters.items[index] = newNode
+      newNodes[index] = newNode
     }
 
     filters.setItems(newNodes)

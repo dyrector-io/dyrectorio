@@ -5,6 +5,7 @@ export default abstract class CruxExceptionFilter implements ExceptionFilter {
   constructor(protected readonly logger: Logger) {}
 
   catch(exception: Error, host: ArgumentsHost) {
+    this.logger.verbose('exception catched', exception)
     if (exception instanceof HttpException) {
       this.handleHttpException(exception, host)
     } else {
