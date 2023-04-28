@@ -8,7 +8,7 @@ import { MultiInputEditorOptions } from './use-multi-input-state'
 export type ItemEditorState = EditorState & MultiInputEditorOptions
 
 const transformInputFocusMessage = (message: WsMessage<any>, itemId: string) => {
-  const { type: type } = message
+  const { type } = message
 
   if (type === WS_TYPE_FOCUS_INPUT || type === WS_TYPE_BLUR_INPUT) {
     const msg = message as WsMessage<InputFocusMessage>

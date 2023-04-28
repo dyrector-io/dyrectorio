@@ -85,7 +85,10 @@ export default class WsNamespace implements WsSubscription {
     const resources = this.clients.get(token)
     if (!resources) {
       this.logger.warn(`undefined resource for '${token}'`)
-      return
+      return {
+        res: null,
+        shouldRemove: true,
+      }
     }
 
     // When the connection is killed, we get an empty message,

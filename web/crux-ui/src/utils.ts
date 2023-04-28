@@ -18,7 +18,6 @@ import { NextRouter } from 'next/router'
 import toast, { ToastOptions } from 'react-hot-toast'
 import { MessageType } from './elements/dyo-input'
 import { Audit, AxiosError, DyoApiError, DyoErrorDto, RegistryDetails } from './models'
-import { Timestamp } from './models/grpc/google/protobuf/timestamp'
 import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_NEW_PASSWORD, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
 
 export type AsyncVoidFunction = () => Promise<void>
@@ -71,16 +70,6 @@ export const terminalDateFormat = (date: Date): string => {
   )}/${date.getFullYear()} ${date.getHours().toLocaleString(undefined, numberFormat)}:${date
     .getMinutes()
     .toLocaleString(undefined, numberFormat)}:${date.getSeconds().toLocaleString(undefined, numberFormat)}`
-}
-
-export const timestampToUTC = (timestamp: Timestamp): string => {
-  if (!timestamp) {
-    return null
-  }
-
-  let millis = timestamp.seconds * 1_000
-  millis += timestamp.nanos / 1_000_000
-  return new Date(millis).toUTCString()
 }
 
 // TODO(@m8vago): check after react update if there is still a hydration error with narrow spaces
@@ -378,12 +367,6 @@ export const toastWarning = (message: string, opts?: ToastOptions) => {
       color: 'white',
     },
   })
-}
-
-export const toTimestamp = (date: Date): Timestamp => {
-  const seconds = date.getTime() / 1_000
-  const nanos = (date.getTime() % 1_000) * 1_000_000
-  return { seconds, nanos }
 }
 
 export const nullify = <T>(target: T): T => {

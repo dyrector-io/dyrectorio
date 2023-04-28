@@ -97,11 +97,13 @@ class RegistryV2ApiClient implements RegistryApiClient {
     let next = endpoint
     let res: Response = null
     while (next) {
+      // eslint-disable-next-line no-await-in-loop
       res = await fetcher(next)
       if (!res.ok) {
         return res
       }
 
+      // eslint-disable-next-line no-await-in-loop
       const body = await res.json()
       bodies.push(body)
 

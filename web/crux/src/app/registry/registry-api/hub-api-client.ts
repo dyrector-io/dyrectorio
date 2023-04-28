@@ -78,10 +78,12 @@ class HubApiClient implements RegistryApiClient {
     let rateTry = 0
 
     do {
+      // eslint-disable-next-line no-await-in-loop
       const res = await next()
       if (res.ok) {
         rateTry = 0
 
+        // eslint-disable-next-line no-await-in-loop
         const dto: HubApiPaginatedResponse = await res.json()
         result.push(...dto.results)
 

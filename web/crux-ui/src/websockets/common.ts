@@ -1,4 +1,4 @@
-import { DyoApiError } from '@app/models'
+import { WsErrorMessage } from '@app/models'
 
 export type WsMessage<T = any> = {
   type: string
@@ -28,7 +28,7 @@ export type WsConnectDto = {
 
 export type WsMessageCallback<T extends any> = (message: T) => void
 
-export type WsErrorHandler = (message: DyoApiError) => void
+export type WsErrorHandler = (message: WsErrorMessage) => void
 
 export type WebSocketSendMessage = (message: WsMessage) => boolean
 

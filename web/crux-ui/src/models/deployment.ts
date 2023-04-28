@@ -1,7 +1,6 @@
 import { Audit } from './audit'
 import { DeploymentStatus } from './common'
-import { ContainerIdentifier, ContainerState, InstanceContainerConfigData } from './container'
-import { UniqueKeyValue } from './grpc/protobuf/proto/crux'
+import { ContainerIdentifier, ContainerState, InstanceContainerConfigData, UniqueKeyValue } from './container'
 import { ImageConfigProperty, ImageDeletedMessage } from './image'
 import { Instance } from './instance'
 import { DyoNode } from './node'

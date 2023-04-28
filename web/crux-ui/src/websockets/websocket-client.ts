@@ -1,6 +1,6 @@
 import { WS_RECONNECT_TIMEOUT } from '@app/const'
 import { Logger } from '@app/logger'
-import { DyoApiError, WS_TYPE_ERROR } from '@app/models'
+import { WsErrorMessage, WS_TYPE_ERROR } from '@app/models'
 import {
   SubscriptionMessage,
   SubscriptionRedirectMessage,
@@ -42,7 +42,6 @@ class WebSocketClient {
 
     let route = this.routes.get(path)
     if (!route) {
-      console.log('route wasnt found', path, Array.from(this.redirectedRoutes.entries()))
       route = new WebSocketClientRoute(this.logger, it => this.sendWsMessage(it), path)
       this.routes.set(path, route)
     }
@@ -146,7 +145,7 @@ class WebSocketClient {
           this.logger.verbose('Receiving message:', type, message.data)
 
           if (message.type === WS_TYPE_ERROR && this.errorHandler) {
-            this.errorHandler(message.data as DyoApiError)
+            this.errorHandler(message.data as WsErrorMessage)
           } else if (type === WS_TYPE_SUBBED || type === WS_TYPE_UNSUBBED || message.type === WS_TYPE_SUB_REDIRECT) {
             this.onSubscriptionMessage(message as WsMessage<SubscriptionMessage>)
             return
