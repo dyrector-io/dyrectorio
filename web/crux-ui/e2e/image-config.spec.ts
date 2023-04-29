@@ -1,6 +1,7 @@
 import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_RECEIVED } from '@app/models'
 import { expect, Page, test, WebSocket } from '@playwright/test'
 import { imageConfigUrl, versionWsUrl } from '../src/routes'
+import { screenshotPath } from './utils/common'
 import { createImage, createProduct, createVersion } from './utils/products'
 import { waitSocket, waitSocketReceived, waitSocketSent } from './utils/websocket'
 
