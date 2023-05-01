@@ -26,7 +26,7 @@ export type WsConnectDto = {
   token?: string
 }
 
-export type WsMessageCallback<T extends any> = (message: T) => void
+export type WsMessageCallback<T = any> = (message: T) => void
 
 export type WsErrorHandler = (message: WsErrorMessage) => void
 

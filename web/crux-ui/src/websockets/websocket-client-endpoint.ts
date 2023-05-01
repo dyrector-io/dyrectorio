@@ -3,7 +3,7 @@ import { WebSocketClientOptions, WebSocketSendMessage, WsMessage, WsMessageCallb
 class WebSocketClientEndpoint {
   private sendClientMessage: WebSocketSendMessage = null
 
-  private callbacks: Map<string, Array<WsMessageCallback<object>>> = new Map()
+  private callbacks: Map<string, Array<WsMessageCallback>> = new Map()
 
   private sendables: Array<WsMessage<object>> = []
 
@@ -19,13 +19,13 @@ class WebSocketClientEndpoint {
     this.callbacks.clear()
   }
 
-  kill() {
+  close() {
     this.sendClientMessage = null
     this.callbacks.clear()
     this.sendables = []
   }
 
-  on<T extends object>(type: string, callback: (message: T) => void) {
+  on<T = any>(type: string, callback: (message: T) => void) {
     let callbacks = this.callbacks.get(type)
     if (!callbacks) {
       callbacks = []
@@ -48,6 +48,7 @@ class WebSocketClientEndpoint {
     }
 
     if (!this.sendClientMessage || !this.sendClientMessage(msg)) {
+      // not connected yet
       this.sendables.push(msg)
     }
   }
@@ -56,7 +57,7 @@ class WebSocketClientEndpoint {
     this.sendWsMessage({
       type,
       data: payload,
-    } as WsMessage<object>)
+    } as WsMessage)
   }
 
   onMessage(message: WsMessage) {
@@ -88,6 +89,7 @@ class WebSocketClientEndpoint {
       this.options.onOpen()
     }
 
+    // send saved messages
     this.flushSendables()
   }
 
@@ -101,7 +103,7 @@ class WebSocketClientEndpoint {
     }
   }
 
-  onError(ev) {
+  onError(ev: any) {
     if (this.options?.onError) {
       this.options.onError(ev)
     }
