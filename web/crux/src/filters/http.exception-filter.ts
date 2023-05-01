@@ -5,7 +5,7 @@ import CruxExceptionFilter from './crux.exception-filter'
 @Catch()
 export default class HttpExceptionFilter extends CruxExceptionFilter {
   constructor() {
-    super(new Logger(HttpExceptionFilter.name))
+    super(new Logger('HTTP'))
   }
 
   protected handleHttpException(exception: HttpException, host: ArgumentsHost) {
@@ -28,7 +28,7 @@ export default class HttpExceptionFilter extends CruxExceptionFilter {
       return
     }
 
-    this.logger.error(`DyoExceptionFilter was executed on a ${contextType} context`)
+    this.logger.error(`HttpExceptionFilter was executed on a ${contextType} context`)
     throw Error('Invalid context.')
   }
 }
