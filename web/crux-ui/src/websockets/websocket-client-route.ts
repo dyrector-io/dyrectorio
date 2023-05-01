@@ -11,7 +11,7 @@ class WebSocketClientRoute {
 
   private state: WebSocketClientRouteState = 'unsubscribed'
 
-  private endpoints: WebSocketClientEndpoint[] = []
+  private endpoints: Set<WebSocketClientEndpoint> = new Set()
 
   private redirect: string | null = null
 
@@ -41,13 +41,11 @@ class WebSocketClientRoute {
 
     this.state = 'unsubscribed'
     this.endpoints.forEach(it => it.close())
-    this.endpoints = []
+    this.endpoints.clear()
   }
 
   subscribe(endpoint: WebSocketClientEndpoint) {
-    if (!this.endpoints.includes(endpoint)) {
-      this.endpoints.push(endpoint)
-    }
+    this.endpoints.add(endpoint)
 
     if (this.state === 'subscribed') {
       // we are already subscribed
@@ -68,9 +66,9 @@ class WebSocketClientRoute {
    * returns if it should be removed
    */
   unsubscribe(endpoint: WebSocketClientEndpoint): boolean {
-    this.endpoints = this.endpoints.filter(it => it !== endpoint)
+    this.endpoints.delete(endpoint)
 
-    if (this.endpoints.length > 0) {
+    if (this.endpoints.size > 0) {
       // we have endpoints, we should not unsubscribe
 
       return false
@@ -96,7 +94,7 @@ class WebSocketClientRoute {
 
     this.state = 'subscribed'
 
-    if (this.endpoints.length < 1) {
+    if (this.endpoints.size < 1) {
       // we should not be subscribed as there are no endpoints
 
       this.sendSubscriptionMessage('unsubscribe')
@@ -114,7 +112,7 @@ class WebSocketClientRoute {
 
     this.state = 'unsubscribed'
 
-    if (this.endpoints.length > 0) {
+    if (this.endpoints.size > 0) {
       // we should be subscribed as we have endpoints
 
       this.sendSubscriptionMessage('subscribe')

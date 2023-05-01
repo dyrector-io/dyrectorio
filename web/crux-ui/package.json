@@ -30,7 +30,6 @@
   "dependencies": {
     "@headlessui/react": "^1.7.5",
     "@ory/kratos-client": "^0.11.0",
-    "@tailwindcss/line-clamp": "^0.4.2",
     "clsx": "^1.2.1",
     "formik": "^2.2.9",
     "next": "^13.0.6",
