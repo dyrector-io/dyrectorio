@@ -1,6 +1,7 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor, PreconditionFailedException } from '@nestjs/common'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import { checkVersionMutability, versionIsDeletable } from 'src/domain/version'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
@@ -37,7 +38,7 @@ export default class VersionDeleteValidationInterceptor implements NestIntercept
     checkVersionMutability(version)
 
     if (!versionIsDeletable(version)) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Version is not deletable',
         property: 'versionId',
         value: version.id,

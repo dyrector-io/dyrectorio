@@ -1,12 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { Notification, NotificationEvent, NotificationEventTypeEnum } from '@prisma/client'
+import { CruxBadRequestException } from 'src/exception/crux-exception'
 import { nameOrEmailOfIdentity } from 'src/shared/models'
 import { NotificationDetailsDto, NotificationDto, NotificationEventTypeDto } from './notification.dto'
 
 @Injectable()
 export default class NotificationMapper {
-  listToDto(notification: Notification, createdByIdentity: Identity): NotificationDto {
+  toDto(notification: Notification, createdByIdentity: Identity): NotificationDto {
     return {
       id: notification.id,
       name: notification.name,
@@ -19,7 +20,7 @@ export default class NotificationMapper {
 
   detailsToDto(notification: NotificationWithEvents, createdByIdentity: Identity): NotificationDetailsDto {
     return {
-      ...this.listToDto(notification, createdByIdentity),
+      ...this.toDto(notification, createdByIdentity),
       enabledEvents: notification.events.map(ev => this.eventTypeToDto(ev.event)),
     }
   }
@@ -35,7 +36,7 @@ export default class NotificationMapper {
       case NotificationEventTypeEnum.userInvited:
         return 'user-invited'
       default:
-        throw new BadRequestException({
+        throw new CruxBadRequestException({
           message: `Unknown NotificationEventType '${type}'`,
         })
     }
@@ -52,7 +53,7 @@ export default class NotificationMapper {
       case 'user-invited':
         return NotificationEventTypeEnum.userInvited
       default:
-        throw new BadRequestException({
+        throw new CruxBadRequestException({
           property: 'notificationType',
           value: type,
           message: `Unknown NotificationEventType '${type}'`,

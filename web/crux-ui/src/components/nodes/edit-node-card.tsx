@@ -15,13 +15,13 @@ import useWebSocket from '@app/hooks/use-websocket'
 import {
   CreateNode,
   NodeDetails,
+  NodeEventMessage,
   NodeInstall,
-  NodeStatusMessage,
   NodeType,
   UpdateNode,
   UpdateNodeAgentMessage,
-  WS_TYPE_NODE_STATUS,
-  WS_TYPE_UPDATE_NODE_AGENT,
+  WS_TYPE_NODE_EVENT,
+  WS_TYPE_UPDATE_AGENT,
 } from '@app/models'
 import { API_NODES, nodeApiUrl, nodeTokenApiUrl, WS_NODES } from '@app/routes'
 import { sendForm } from '@app/utils'
@@ -63,8 +63,8 @@ const EditNodeCard = (props: EditNodeCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const socket = useWebSocket(WS_NODES)
-  socket.on(WS_TYPE_NODE_STATUS, (message: NodeStatusMessage) => {
-    if (message.nodeId !== node.id) {
+  socket.on(WS_TYPE_NODE_EVENT, (message: NodeEventMessage) => {
+    if (message.id !== node.id) {
       return
     }
 
@@ -128,7 +128,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
   }
 
   const onUpdateNode = () => {
-    socket.send(WS_TYPE_UPDATE_NODE_AGENT, {
+    socket.send(WS_TYPE_UPDATE_AGENT, {
       id: node.id,
     } as UpdateNodeAgentMessage)
 

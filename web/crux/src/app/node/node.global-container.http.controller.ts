@@ -1,13 +1,8 @@
-import { Controller, Delete, HttpCode, Post, UseGuards, UseInterceptors } from '@nestjs/common'
-import { ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { Controller, Delete, Get, HttpCode, Post, Query, UseGuards } from '@nestjs/common'
+import { ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Observable } from 'rxjs'
-import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
 import UuidParams from 'src/decorators/api-params.decorator'
-import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
-import JwtAuthGuard from '../token/jwt-auth.guard'
-import NodeTeamAccessHttpGuard from './guards/node.team-access.http.guard'
+import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
 import {
   GLOBAL_PREFIX,
   Name,
@@ -18,14 +13,26 @@ import {
   ROUTE_NODES,
   ROUTE_NODE_ID,
 } from './node.const'
+import { ContainerDto } from './node.dto'
 import NodeService from './node.service'
 
 @Controller(`${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_CONTAINERS}`)
 @ApiTags(ROUTE_NODES)
-@UseGuards(JwtAuthGuard, UuidValidationGuard, NodeTeamAccessHttpGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
+@UseGuards(NodeTeamAccessGuard)
 export default class NodeGlobalContainerHttpController {
   constructor(private service: NodeService) {}
+
+  @Get(`${ROUTE_NODE_ID}/containers`)
+  @HttpCode(200)
+  @ApiOperation({
+    description:
+      'Request must include `nodeId` and `prefix`. Response should include `id`, `command`, `createdAt`, `state`, `status`, `imageName`, `imageTag` and `ports` of images.',
+    summary: 'Fetch data of containers running on a node.',
+  })
+  @ApiOkResponse({ type: ContainerDto, isArray: true, description: 'Fetch data of containers running on a node.' })
+  async getContainers(@NodeId() nodeId: string, @Query('prefix') prefix?: string): Promise<ContainerDto[]> {
+    return await this.service.getContainers(nodeId, prefix)
+  }
 
   @Post(`${ROUTE_NAME}/start`)
   @HttpCode(204)

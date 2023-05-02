@@ -75,7 +75,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
   const router = useRouter()
   const [deleteModalConfig, confirmDelete] = useConfirmation()
-  const versionSock = useWebSocket(versionWsUrl(product.id, version.id))
+  const versionSock = useWebSocket(versionWsUrl(version.id))
 
   const editor = useEditorState(versionSock)
   const editorState = useItemEditorState(editor, versionSock, image.id)

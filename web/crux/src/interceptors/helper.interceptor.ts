@@ -2,7 +2,7 @@ import { Handler } from '@grpc/grpc-js/build/src/server-call'
 import { ExecutionContext, Injectable } from '@nestjs/common'
 import { IdentityAwareServerSurfaceCall } from 'src/shared/user-access.guard'
 
-type GrpcCallLog = {
+export type GrpcCallLog = {
   userId: string
   serviceCall: string
   data: any

@@ -3,7 +3,7 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import { cwd } from 'process'
 import Handlebars from 'handlebars'
-import { InvalidArgumentException } from 'src/exception/errors'
+import { CruxBadRequestException } from 'src/exception/crux-exception'
 
 type TemplateEntry = {
   text?: string
@@ -25,7 +25,7 @@ export default class NotificationTemplateBuilder {
     }
 
     if (!templateText) {
-      throw new InvalidArgumentException({
+      throw new CruxBadRequestException({
         property: 'template',
         value: 'undefined',
         message: `Invalid template`,

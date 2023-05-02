@@ -1,6 +1,7 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor, PreconditionFailedException } from '@nestjs/common'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import { checkDeploymentMutability } from 'src/domain/deployment'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
@@ -20,7 +21,7 @@ export default class DeployPatchValidationInterceptor implements NestInterceptor
     })
 
     if (!checkDeploymentMutability(deployment.status, deployment.version.type)) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Invalid deployment status.',
         property: 'status',
         value: deployment.status,

@@ -47,7 +47,7 @@ export default class NotificationService {
     const userIds = notifications.map(r => r.createdBy)
     const identities = await this.kratos.getIdentitiesByIds(new Set(userIds))
 
-    return notifications.map(it => this.mapper.listToDto(it, identities.get(it.createdBy)))
+    return notifications.map(it => this.mapper.toDto(it, identities.get(it.createdBy)))
   }
 
   async getNotificationDetails(id: string): Promise<NotificationDetailsDto> {
@@ -86,7 +86,7 @@ export default class NotificationService {
       },
     })
 
-    return this.mapper.listToDto(notification, identity)
+    return this.mapper.toDto(notification, identity)
   }
 
   async updateNotification(id: string, request: UpdateNotificationDto, identity: Identity): Promise<NotificationDto> {
@@ -125,7 +125,7 @@ export default class NotificationService {
       },
     })
 
-    return this.mapper.listToDto(notification, identity)
+    return this.mapper.toDto(notification, identity)
   }
 
   async deleteNotification(id: string): Promise<void> {

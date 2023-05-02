@@ -1,6 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common'
-import { IncomingMessage } from 'http'
-import { Observable } from 'rxjs'
+import { Request, Response } from 'express'
+import { Observable, tap } from 'rxjs'
 
 /**
  * HTTP request controller logger. We are using this to get more information
@@ -10,11 +10,16 @@ import { Observable } from 'rxjs'
  */
 @Injectable()
 export default class HttpLoggerInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(HttpLoggerInterceptor.name)
+  private readonly logger = new Logger('HTTP')
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const request = context.getArgByIndex<IncomingMessage>(0)
-    this.logger.debug(`HTTP ${request.method} ${request.url} path called.`)
-    return next.handle()
+    return next.handle().pipe(
+      tap(() => {
+        const req: Request = context.switchToHttp().getRequest()
+        const res: Response = context.switchToHttp().getResponse()
+
+        this.logger.log(`${res.statusCode} ${req.method} ${req.url}`)
+      }),
+    )
   }
 }

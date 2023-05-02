@@ -20,6 +20,7 @@ import InterceptorGrpcHelperProvider from './interceptors/helper.interceptor'
 import EmailModule from './mailer/email.module'
 import PrismaService from './services/prisma.service'
 import StorageModule from './app/storage/storage.module'
+import UuidValidationGuard from './guards/uuid-params.validation.guard'
 
 @Module({
   imports: [
@@ -47,7 +48,7 @@ import StorageModule from './app/storage/storage.module'
     }),
   ],
   controllers: [],
-  providers: [PrismaService, ShutdownService, InterceptorGrpcHelperProvider],
+  providers: [PrismaService, ShutdownService, InterceptorGrpcHelperProvider, UuidValidationGuard],
 })
 class AppModule {}
 

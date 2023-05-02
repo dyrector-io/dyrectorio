@@ -3,11 +3,12 @@ import { Injectable } from '@nestjs/common'
 import { ProductTypeEnum } from '@prisma/client'
 import { versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/domain/version'
 import { VersionType, versionTypeToJSON } from 'src/grpc/protobuf/proto/crux'
-import DeployMapper, { DeploymentWithNode } from '../deploy/deploy.mapper'
+import DeployMapper from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import { NodeConnectionStatus } from '../shared/shared.dto'
 import SharedMapper from '../shared/shared.mapper'
 import { VersionDetailsDto, VersionDto } from './version.dto'
+import { DeploymentWithNode } from '../deploy/deploy.dto'
 
 @Injectable()
 export default class VersionMapper {

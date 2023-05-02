@@ -13,9 +13,11 @@ import TeamRepository from '../team/team.repository'
 import VersionHttpController from './version.http.controller'
 import VersionMapper from './version.mapper'
 import VersionService from './version.service'
+import VersionWebSocketGateway from './version.ws.gateway'
+import EditorModule from '../editor/editor.module'
 
 @Module({
-  imports: [ImageModule, HttpModule, SharedModule, DeployModule, AgentModule],
+  imports: [ImageModule, HttpModule, SharedModule, DeployModule, AgentModule, EditorModule],
   exports: [VersionService, VersionMapper],
   controllers: [VersionHttpController],
   providers: [
@@ -27,6 +29,7 @@ import VersionService from './version.service'
     NotificationTemplateBuilder,
     DomainNotificationService,
     KratosService,
+    VersionWebSocketGateway,
   ],
 })
 export default class VersionModule {}

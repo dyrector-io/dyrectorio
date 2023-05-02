@@ -18,7 +18,6 @@ import { NextRouter } from 'next/router'
 import toast, { ToastOptions } from 'react-hot-toast'
 import { MessageType } from './elements/dyo-input'
 import { Audit, AxiosError, DyoApiError, DyoErrorDto, RegistryDetails } from './models'
-import { Timestamp } from './models/grpc/google/protobuf/timestamp'
 import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_NEW_PASSWORD, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
 
 export type AsyncVoidFunction = () => Promise<void>
@@ -73,17 +72,7 @@ export const terminalDateFormat = (date: Date): string => {
     .toLocaleString(undefined, numberFormat)}:${date.getSeconds().toLocaleString(undefined, numberFormat)}`
 }
 
-export const timestampToUTC = (timestamp: Timestamp): string => {
-  if (!timestamp) {
-    return null
-  }
-
-  let millis = timestamp.seconds * 1_000
-  millis += timestamp.nanos / 1_000_000
-  return new Date(millis).toUTCString()
-}
-
-// TODO(@m8vago): check after react and update if there is still a hydration error with narrow spaces
+// TODO(@m8vago): check after react update if there is still a hydration error with narrow spaces
 export const utcDateToLocale = (date: string) => new Date(date).toLocaleString().replace(/\u202f/g, ' ')
 
 export const auditToLocaleDate = (audit: Audit) => utcDateToLocale(audit.updatedAt ?? audit.createdAt)
@@ -244,31 +233,6 @@ export const sendForm = async <Dto>(method: 'POST' | 'PUT', url: string, body: D
     body: JSON.stringify(body),
   })
 
-type Identifiable = {
-  id: string
-}
-
-type UpsertByIdOptions<T> = {
-  onUpdate?: (old: T) => T
-}
-
-export const upsertById = <T extends Identifiable>(curentItems: T[], item: T, options?: UpsertByIdOptions<T>): T[] => {
-  if (!item) {
-    return curentItems
-  }
-
-  const items = [...curentItems]
-  const index = items.findIndex(it => it.id === item.id)
-  if (index > -1) {
-    const current = items[index]
-    items[index] = options?.onUpdate?.call(this, current) ?? item
-  } else {
-    items.push(item)
-  }
-
-  return items
-}
-
 // routing
 export const anchorLinkOf = (router: NextRouter): string => {
   const url = router.asPath ?? ''
@@ -403,12 +367,6 @@ export const toastWarning = (message: string, opts?: ToastOptions) => {
       color: 'white',
     },
   })
-}
-
-export const toTimestamp = (date: Date): Timestamp => {
-  const seconds = date.getTime() / 1_000
-  const nanos = (date.getTime() % 1_000) * 1_000_000
-  return { seconds, nanos }
 }
 
 export const nullify = <T>(target: T): T => {

@@ -1,6 +1,7 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor, PreconditionFailedException } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
+import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
 export default class StorageDeleteValidationInterceptor implements NestInterceptor {
@@ -18,7 +19,7 @@ export default class StorageDeleteValidationInterceptor implements NestIntercept
       take: 1,
     })
     if (usedContainerConfig > 0) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         property: 'id',
         value: storageId,
         message: 'Storage is already in use.',
@@ -32,7 +33,7 @@ export default class StorageDeleteValidationInterceptor implements NestIntercept
       take: 1,
     })
     if (usedInstanceContainerConfig > 0) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         property: 'id',
         value: storageId,
         message: 'Storage is already in use.',

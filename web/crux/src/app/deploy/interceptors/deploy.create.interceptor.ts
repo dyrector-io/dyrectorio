@@ -1,12 +1,6 @@
-import {
-  CallHandler,
-  ConflictException,
-  ExecutionContext,
-  Injectable,
-  NestInterceptor,
-  PreconditionFailedException,
-} from '@nestjs/common'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
+import { CruxConflictException, CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 import { CreateDeploymentDto } from '../deploy.dto'
 
@@ -31,7 +25,7 @@ export default class DeployCreateValidationInterceptor implements NestIntercepto
     })
 
     if (existingDeployment) {
-      throw new ConflictException({
+      throw new CruxConflictException({
         message: 'There is already a deployment with preparing status for the version on that node',
         property: 'deploymentId',
         value: existingDeployment.id,
@@ -45,7 +39,7 @@ export default class DeployCreateValidationInterceptor implements NestIntercepto
     })
 
     if (images <= 0) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: "You can't create a deployment without having atleast one image",
         property: 'versionId',
         value: body.versionId,

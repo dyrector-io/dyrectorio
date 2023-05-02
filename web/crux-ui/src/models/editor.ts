@@ -13,13 +13,18 @@ export type InputEditors = {
   editorIds: string[]
 }
 
-export const WS_TYPE_EDITOR_IDENTITY = 'editor-identity'
+export const WS_TYPE_EDITOR_INIT = 'editor-init'
+export type EditorInitMessage = {
+  meId: string
+  editors: Editor[]
+}
+
 export const WS_TYPE_EDITOR_JOINED = 'editor-joined'
 export type EditorJoinedMessage = Editor
 
 export const WS_TYPE_EDITOR_LEFT = 'editor-left'
 export type EditorLeftMessage = {
-  userId: string
+  id: string
   focusedItemId?: string
   focusedInputId?: string
 }
@@ -32,15 +37,10 @@ export type InputFocusMessage = {
 }
 
 export const WS_TYPE_INPUT_FOCUSED = 'input-focused'
-export const WS_TYPE_INPUT_BLURED = 'input-blured'
+export const WS_TYPE_INPUT_BLURRED = 'input-blured'
 export type InputFocusChangeMessage = InputFocusMessage & {
   userId: string
   itemId: string
-}
-
-export const WS_TYPE_ALL_ITEM_EDITORS = 'all-item-editors'
-export type EditorsMessage = {
-  editors: Editor[]
 }
 
 export const editIdOf = (itemId: string, inputId: string) => `${itemId}-${inputId}`

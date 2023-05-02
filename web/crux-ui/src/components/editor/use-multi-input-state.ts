@@ -6,7 +6,7 @@ import {
   InputFocusMessage,
   WS_TYPE_BLUR_INPUT,
   WS_TYPE_FOCUS_INPUT,
-  WS_TYPE_INPUT_BLURED,
+  WS_TYPE_INPUT_BLURRED,
   WS_TYPE_INPUT_FOCUSED,
 } from '@app/models'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
@@ -223,7 +223,7 @@ const useMultiInputState = <T>(options: MultiInputStateOptions<T>): [MultiInputS
       dispatch(addUser(message.userId))
     })
 
-    sock.on(WS_TYPE_INPUT_BLURED, (message: InputFocusChangeMessage) => {
+    sock.on(WS_TYPE_INPUT_BLURRED, (message: InputFocusChangeMessage) => {
       if (!filterInputMessage(message, id)) {
         return
       }

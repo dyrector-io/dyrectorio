@@ -8,6 +8,8 @@ import TeamRepository from '../team/team.repository'
 import RegistryMapper from './registry.mapper'
 import RegistryService from './registry.service'
 import RegistryHttpController from './registry.http.controller'
+import RegistryWebSocketGateway from './registry.ws.gateway'
+import RegistryConnections from './registry-api/registry-connections'
 
 @Module({
   imports: [HttpModule, TeamModule],
@@ -20,6 +22,8 @@ import RegistryHttpController from './registry.http.controller'
     InterceptorGrpcHelperProvider,
     TeamRepository,
     KratosService,
+    RegistryWebSocketGateway,
+    RegistryConnections,
   ],
 })
 export default class RegistryModule {}

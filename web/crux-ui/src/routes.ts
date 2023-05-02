@@ -69,10 +69,10 @@ export const API_TOKENS = '/api/new/tokens'
 export const API_STORAGES = '/api/new/storages'
 export const API_STORAGES_OPTIONS = `${API_STORAGES}/options`
 
-export const API_HEALTH = '/api/new/health'
+export const WS_NODES = `/nodes`
+export const WS_REGISTRIES = `/registries`
 
-export const WS_NODES = `/api/nodes/connect`
-export const WS_REGISTRIES = `/api/registries/connect`
+export const API_HEALTH = '/api/new/health'
 
 export type CruxUrlParams = {
   anchor?: string
@@ -164,7 +164,7 @@ export const nodeApiUrl = (id: string) => `/api/new${nodeUrl(id)}`
 export const nodeScriptApiUrl = (id: string) => `${nodeApiUrl(id)}/script`
 export const nodeTokenApiUrl = (id: string) => `${nodeApiUrl(id)}/token`
 export const nodeUpdateApiUrl = (id: string) => `${nodeApiUrl(id)}/update`
-export const nodeWsUrl = (id: string) => `/api/nodes/${id}/connect`
+export const nodeWsUrl = (id: string) => `/nodes/${id}`
 
 // node-global-container
 export const nodeGlobalContainerListApiUrl = (nodeId: string) => `${nodeApiUrl(nodeId)}/containers`
@@ -204,7 +204,7 @@ export const versionIncreaseApiUrl = (productId: string, versionId: string) =>
   `${versionApiUrl(productId, versionId)}/increase`
 export const versionSetDefaultApiUrl = (productId: string, versionId: string) =>
   `${versionApiUrl(productId, versionId)}/default`
-export const versionWsUrl = (productId: string, versionId: string) => `/api${versionUrl(productId, versionId)}/connect`
+export const versionWsUrl = (versionId: string) => `/versions/${versionId}`
 
 // deployment
 export const versionDeploymentsUrl = (productId: string, versionId: string) =>
@@ -218,7 +218,7 @@ export const deploymentApiUrl = (deploymentId: string) => `${API_DEPLOYMENTS}/${
 
 export const deploymentEventsApiUrl = (deploymentId: string) => `${deploymentApiUrl(deploymentId)}/events`
 
-export const deploymentWsUrl = (deploymentId: string) => `/api${deploymentUrl(deploymentId)}/connect`
+export const deploymentWsUrl = (deploymentId: string) => `${deploymentUrl(deploymentId)}`
 
 export const deploymentDeployUrl = (deploymentId: string) => `${deploymentUrl(deploymentId)}/deploy`
 

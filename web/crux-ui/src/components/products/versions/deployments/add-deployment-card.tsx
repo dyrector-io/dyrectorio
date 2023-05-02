@@ -8,7 +8,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { CreateDeployment, DeploymentCreated, DyoApiError, Node, productNameToDeploymentPrefix } from '@app/models'
+import { CreateDeployment, DeploymentCreated, DyoApiError, DyoNode, productNameToDeploymentPrefix } from '@app/models'
 import { API_DEPLOYMENTS, API_NODES } from '@app/routes'
 import { fetcher, sendForm } from '@app/utils'
 import { createDeploymentSchema } from '@app/validations'
@@ -30,7 +30,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
   const { t } = useTranslation('versions')
 
-  const { data: nodes, error: fetchNodesError } = useSWR<Node[]>(API_NODES, fetcher)
+  const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(API_NODES, fetcher)
 
   useEffect(() => {
     if (nodes && nodes.length < 1) {
@@ -105,7 +105,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
           <DyoChips
             choices={nodes ?? []}
-            converter={(it: Node) => it.name}
+            converter={(it: DyoNode) => it.name}
             selection={nodes.find(it => it.id === formik.values.nodeId)}
             onSelectionChange={it => formik.setFieldValue('nodeId', it.id)}
           />

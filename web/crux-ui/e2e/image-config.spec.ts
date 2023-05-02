@@ -1,8 +1,9 @@
 import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_RECEIVED } from '@app/models'
 import { expect, Page, test, WebSocket } from '@playwright/test'
-import { imageConfigUrl } from '../src/routes'
+import { imageConfigUrl, versionWsUrl } from '../src/routes'
 import { screenshotPath } from './utils/common'
 import { createImage, createProduct, createVersion } from './utils/products'
+import { waitSocket, waitSocketReceived, waitSocketSent } from './utils/websocket'
 
 const setup = async (
   page: Page,
@@ -106,22 +107,10 @@ test.describe('Filters', () => {
   })
 })
 
-const wsPatchSent = async (ws: WebSocket, match?: (payload: any) => boolean) => {
-  const frameReceived = ws.waitForEvent('framereceived', data => {
-    const payload = JSON.parse(data.payload as string)
+const wsPatchSent = async (ws: WebSocket, route: string, match: (payload: any) => boolean = null) => {
+  const frameReceived = waitSocketReceived(ws, route, WS_TYPE_PATCH_RECEIVED)
 
-    return payload.type === WS_TYPE_PATCH_RECEIVED
-  })
-
-  await ws.waitForEvent('framesent', data => {
-    const payload = JSON.parse(data.payload as string)
-
-    if (payload.type !== WS_TYPE_PATCH_IMAGE) {
-      return false
-    }
-
-    return match ? match(payload.payload) : true
-  })
+  await waitSocketSent(ws, route, WS_TYPE_PATCH_IMAGE, match)
 
   await frameReceived
 }
@@ -137,11 +126,12 @@ test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the config field', async ({ page }) => {
     const { productId, versionId, imageId } = await setup(page, 'port-editor', '1.0.0', 'redis')
 
-    const sock = page.waitForEvent('websocket')
+    const sock = waitSocket(page)
     await page.goto(imageConfigUrl(productId, versionId, imageId))
     const ws = await sock
+    const wsRoute = versionWsUrl(versionId)
 
-    let wsSent = wsPatchSent(ws)
+    let wsSent = wsPatchSent(ws, wsRoute)
     const addPortsButton = await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
     await addPortsButton.click()
     await wsSent
@@ -152,7 +142,7 @@ test.describe('Image configurations', () => {
     const internalInput = page.locator('input[placeholder="Internal"]')
     const externalInput = page.locator('input[placeholder="External"]')
 
-    wsSent = wsPatchSent(ws, wsPatchMatchPorts(internal, external))
+    wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchPorts(internal, external))
     await internalInput.type(internal)
     await externalInput.type(external)
     await wsSent
@@ -166,9 +156,10 @@ test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the json editor', async ({ page }) => {
     const { productId, versionId, imageId } = await setup(page, 'port-json', '1.0.0', 'redis')
 
-    const sock = page.waitForEvent('websocket')
+    const sock = waitSocket(page)
     await page.goto(imageConfigUrl(productId, versionId, imageId))
     const ws = await sock
+    const wsRoute = versionWsUrl(versionId)
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
     await jsonEditorButton.click()
@@ -182,7 +173,7 @@ test.describe('Image configurations', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.ports = [{ internal: internalAsNumber, external: externalAsNumber }]
 
-    const wsSent = wsPatchSent(ws, wsPatchMatchPorts(internal, external))
+    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchPorts(internal, external))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 

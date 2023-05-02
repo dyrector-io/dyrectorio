@@ -3,7 +3,7 @@ import { HandlerType, ServerSurfaceCall } from '@grpc/grpc-js/build/src/server-c
 import { JwtService } from '@nestjs/jwt'
 import { Observable, Subject } from 'rxjs'
 import { AgentToken } from 'src/domain/agent'
-import { InvalidArgumentException } from 'src/exception/errors'
+import { CruxBadRequestException } from 'src/exception/crux-exception'
 import { NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
 
 const nestjsClientStreamEndCallWorkaround = () => {}
@@ -64,7 +64,7 @@ export default class GrpcNodeConnection {
   getMetaData(key: string): string {
     const value = this.metadata.getMap()[key]
     if (typeof value !== 'string') {
-      throw new InvalidArgumentException({
+      throw new CruxBadRequestException({
         message: 'Missing metadata.',
         property: key,
       })
@@ -78,7 +78,7 @@ export default class GrpcNodeConnection {
     if (key in map) {
       const value = map[key]
       if (typeof value !== 'string') {
-        throw new InvalidArgumentException({
+        throw new CruxBadRequestException({
           message: 'Missing metadata.',
           property: key,
         })

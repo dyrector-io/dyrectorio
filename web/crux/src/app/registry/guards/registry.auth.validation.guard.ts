@@ -3,8 +3,8 @@ import { CanActivate, ExecutionContext, HttpStatus, Injectable, Logger } from '@
 import { AxiosError } from 'axios'
 import { JWT } from 'google-auth-library'
 import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
-import { catchError, from, map, mergeMap, Observable, of, switchMap } from 'rxjs'
-import { InvalidArgumentException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
+import { Observable, catchError, from, map, mergeMap, of, switchMap } from 'rxjs'
+import { CruxBadRequestException, CruxNotFoundException, CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
 import { parsers } from 'www-authenticate'
 import {
@@ -65,14 +65,14 @@ export default class RegistryAccessValidationGuard implements CanActivate {
         this.logger.warn(error)
 
         if (!error.response || error.response.status !== HttpStatus.NOT_FOUND) {
-          throw new InvalidArgumentException({
+          throw new CruxBadRequestException({
             message: 'Failed to fetch hub prefix',
             property: 'imageNamePrefix',
             value: req.imageNamePrefix,
           })
         }
 
-        throw new NotFoundException({
+        throw new CruxNotFoundException({
           message: 'Hub organization with prefix not found',
           property: 'imageNamePrefix',
           value: req.imageNamePrefix,
@@ -99,7 +99,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
           this.logger.warn(error)
 
           if (!withCredentials || !error.response || error.response.status !== HttpStatus.UNAUTHORIZED) {
-            throw new InvalidArgumentException({
+            throw new CruxBadRequestException({
               message: 'Failed to fetch v2 registry',
               property: 'url',
               value: req.url,
@@ -117,7 +117,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
             .pipe(
               map(res => res.status === HttpStatus.OK),
               catchError(() => {
-                throw new UnauthenticatedException({
+                throw new CruxUnauthorizedException({
                   message: 'Failed to authenticate with the v2 registry',
                 })
               }),
@@ -147,7 +147,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
         mergeMap(response => {
           if (response.status !== HttpStatus.OK) {
             if (response.status === HttpStatus.NOT_FOUND) {
-              throw new InvalidArgumentException({
+              throw new CruxBadRequestException({
                 message: 'Gitlab namespace not found',
                 property: 'imageNamePrefix',
                 value: req.imageNamePrefix,
@@ -182,19 +182,19 @@ export default class RegistryAccessValidationGuard implements CanActivate {
           const res = error.response
           if (res) {
             if (res.status === HttpStatus.NOT_FOUND) {
-              throw new NotFoundException({
+              throw new CruxNotFoundException({
                 message: 'Gitlab namespace not found',
                 property: 'imageNamePrefix',
                 value: req.imageNamePrefix,
               })
             } else if (res.status === HttpStatus.FORBIDDEN || res.status === HttpStatus.UNAUTHORIZED) {
-              throw new UnauthenticatedException({
+              throw new CruxUnauthorizedException({
                 message: 'Failed to authenticate with the gitlab registry',
               })
             }
           }
 
-          throw new InvalidArgumentException({
+          throw new CruxBadRequestException({
             message: 'Failed to fetch gitlab prefix',
             property: 'imageNamePrefix',
             value: req.imageNamePrefix,
@@ -224,19 +224,19 @@ export default class RegistryAccessValidationGuard implements CanActivate {
           const res = error.response
           if (res) {
             if (res.status === HttpStatus.NOT_FOUND) {
-              throw new NotFoundException({
+              throw new CruxNotFoundException({
                 message: 'Github namespace not found',
                 property: 'imageNamePrefix',
                 value: req.imageNamePrefix,
               })
             } else if (res.status === HttpStatus.FORBIDDEN || res.status === HttpStatus.UNAUTHORIZED) {
-              throw new UnauthenticatedException({
+              throw new CruxUnauthorizedException({
                 message: 'Failed to authenticate with the github registry',
               })
             }
           }
 
-          throw new InvalidArgumentException({
+          throw new CruxBadRequestException({
             message: 'Failed to fetch github prefix',
             property: 'imageNamePrefix',
             value: req.imageNamePrefix,
@@ -270,7 +270,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
             this.logger.warn(error)
 
             if (!withCredentials || !error.response || error.response.status !== HttpStatus.UNAUTHORIZED) {
-              throw new InvalidArgumentException({
+              throw new CruxBadRequestException({
                 message: 'Failed to fetch google registry',
                 property: 'imageNamePrefix',
                 value: req.imageNamePrefix,
@@ -291,7 +291,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
               .pipe(
                 map(res => res.status === HttpStatus.OK),
                 catchError(() => {
-                  throw new UnauthenticatedException({
+                  throw new CruxUnauthorizedException({
                     message: 'Failed to authenticate with the google registry',
                   })
                 }),
@@ -302,7 +302,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
     return withCredentials
       ? from(client.getAccessToken()).pipe(
           catchError(() => {
-            throw new UnauthenticatedException({
+            throw new CruxUnauthorizedException({
               message: 'Failed to authenticate with the google registry',
             })
           }),
