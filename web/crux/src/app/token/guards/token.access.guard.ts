@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
-import { identityOfContext } from '../jwt-auth.guard'
+import { identityOfRequest } from '../jwt-auth.guard'
 
 @Injectable()
 export default class TokenAccessGuard implements CanActivate {
@@ -14,7 +14,7 @@ export default class TokenAccessGuard implements CanActivate {
       return true
     }
 
-    const identity = identityOfContext(context)
+    const identity = identityOfRequest(context)
 
     const token = await this.prisma.token.findUnique({
       select: {

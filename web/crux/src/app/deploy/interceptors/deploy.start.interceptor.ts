@@ -1,8 +1,8 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor, PreconditionFailedException } from '@nestjs/common'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import AgentService from 'src/app/agent/agent.service'
 import { checkDeploymentDeployability } from 'src/domain/deployment'
-import { NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 import { UniqueSecretKey, UniqueSecretKeyValue } from 'src/shared/models'
 import { deploymentSchema, yupValidate } from 'src/shared/validation'
@@ -35,14 +35,14 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
     })
 
     if (deployment.instances.length < 1) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'There is no instances to deploy',
         property: 'instances',
       })
     }
 
     if (!checkDeploymentDeployability(deployment.status, deployment.version.type)) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Invalid deployment status.',
         property: 'status',
         value: deployment.status,
@@ -52,8 +52,8 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
     yupValidate(deploymentSchema, deployment)
 
     const node = this.agentService.getById(deployment.nodeId)
-    if (!node || node.getConnectionStatus() !== NodeConnectionStatus.CONNECTED) {
-      throw new PreconditionFailedException({
+    if (!node?.connected) {
+      throw new CruxPreconditionFailedException({
         message: 'Node is unreachable',
         property: 'nodeId',
         value: deployment.nodeId,
@@ -78,7 +78,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
     })
 
     if (!secretsHaveValue) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Required secrets must have values!',
         property: 'deploymentId',
         value: deployment.id,

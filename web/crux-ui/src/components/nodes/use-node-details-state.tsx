@@ -5,16 +5,17 @@ import useWebSocket from '@app/hooks/use-websocket'
 import {
   Container,
   ContainerCommandMessage,
-  ContainerListMessage,
   ContainerOperation,
   containerPrefixNameOf,
+  ContainersStateListMessage,
   ContainerState,
   DeleteContainerMessage,
   NodeDetails,
+  WatchContainerStatusMessage,
+  WS_TYPE_CONTAINERS_STATE_LIST,
   WS_TYPE_CONTAINER_COMMAND,
-  WS_TYPE_CONTAINER_STATUS_LIST,
   WS_TYPE_DELETE_CONTAINER,
-  WS_TYPE_WATCH_CONTAINER_STATUS,
+  WS_TYPE_WATCH_CONTAINERS_STATE,
 } from '@app/models'
 import { nodeWsUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
@@ -76,16 +77,16 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
   })
 
   const sock = useWebSocket(nodeWsUrl(node.id), {
-    onOpen: () => sock.send(WS_TYPE_WATCH_CONTAINER_STATUS, {}),
+    onOpen: () => sock.send(WS_TYPE_WATCH_CONTAINERS_STATE, { prefix: '' } as WatchContainerStatusMessage),
   })
 
-  sock.on(WS_TYPE_CONTAINER_STATUS_LIST, (message: ContainerListMessage) => {
-    filters.setItems(message)
+  sock.on(WS_TYPE_CONTAINERS_STATE_LIST, (message: ContainersStateListMessage) => {
+    filters.setItems(message.containers)
 
     const newTargetStates = {
       ...containerTargetStates,
     }
-    message.forEach(container => {
+    message.containers.forEach(container => {
       const { state } = container
       const name = containerPrefixNameOf(container.id)
 

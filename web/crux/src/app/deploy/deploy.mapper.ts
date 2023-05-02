@@ -1,41 +1,38 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import {
   ContainerStateEnum,
   Deployment,
   DeploymentEvent,
   DeploymentEventTypeEnum,
   DeploymentStatusEnum,
-  Instance,
   InstanceContainerConfig,
-  Node,
-  Product,
   Storage,
-  Version,
 } from '@prisma/client'
+import { deploymentStatusToDb } from 'src/domain/deployment'
+import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import {
+  InitContainer as AgentInitContainer,
   CommonContainerConfig,
   CraneContainerConfig,
   DagentContainerConfig,
   ImportContainer,
-  InitContainer as AgentInitContainer,
   InstanceConfig,
 } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerState,
-  containerStateFromJSON,
-  containerStateToJSON,
   DeploymentStatus,
-  deploymentStatusFromJSON,
-  DeploymentStrategy as ProtoDeploymentStrategy,
-  ExposeStrategy as ProtoExposeStrategy,
   KeyValue,
   ListSecretsResponse,
+  DeploymentStrategy as ProtoDeploymentStrategy,
+  ExposeStrategy as ProtoExposeStrategy,
+  containerStateFromJSON,
+  containerStateToJSON,
+  deploymentStatusFromJSON,
 } from 'src/grpc/protobuf/proto/common'
 import {
-  AuditResponse,
+  DeploymentProgressMessage,
   InitContainer,
   InstanceContainerConfig as ProtoInstanceContainerConfig,
-  InstanceResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import {
   ContainerConfigData,
@@ -44,21 +41,26 @@ import {
   UniqueKey,
   UniqueKeyValue,
 } from 'src/shared/models'
-import ImageMapper, { ImageDetails } from '../image/image.mapper'
+import ImageMapper from '../image/image.mapper'
 import ContainerMapper from '../shared/container.mapper'
-import { BasicProperties, NodeConnectionStatus } from '../shared/shared.dto'
+import { NodeConnectionStatus } from '../shared/shared.dto'
 import SharedMapper from '../shared/shared.mapper'
 import {
+  DeploymentDetails,
   DeploymentDetailsDto,
   DeploymentDto,
   DeploymentEventDto,
   DeploymentEventTypeDto,
   DeploymentStatusDto,
   DeploymentWithBasicNodeDto,
+  DeploymentWithNode,
+  DeploymentWithNodeVersion,
   InstanceContainerConfigDto,
+  InstanceDetails,
   InstanceDto,
   InstanceSecretsDto,
 } from './deploy.dto'
+import { DeploymentEventMessage } from './deploy.message'
 
 @Injectable()
 export default class DeployMapper {
@@ -227,7 +229,7 @@ export default class DeployMapper {
         break
       }
       default:
-        throw new InternalServerErrorException({
+        throw new CruxInternalServerErrorException({
           message: 'Unsupported deployment event type!',
         })
     }
@@ -235,14 +237,33 @@ export default class DeployMapper {
     return result
   }
 
-  instanceToProto(instance: InstanceDetails): InstanceResponse {
-    return {
-      ...instance,
-      audit: AuditResponse.fromJSON(instance),
-      image: this.imageMapper.detailsToProto(instance.image),
-      state: this.containerStateToProto(instance.state),
-      config: this.instanceConfigToProto((instance.config ?? {}) as InstanceContainerConfigData),
+  progressProtoToEventDto(message: DeploymentProgressMessage): DeploymentEventMessage[] {
+    const events: DeploymentEventMessage[] = []
+    if (message.log) {
+      events.push({
+        type: 'log',
+        createdAt: new Date(),
+        log: message.log,
+      })
     }
+    if (message.status) {
+      events.push({
+        type: 'deployment-status',
+        createdAt: new Date(),
+        deploymentStatus: this.statusToDto(deploymentStatusToDb(message.status)),
+      })
+    }
+    if (message.instance) {
+      events.push({
+        type: 'container-status',
+        createdAt: new Date(),
+        containerState: {
+          instanceId: message.instance.instanceId,
+          state: this.containerStateToDb(message.instance.state),
+        },
+      })
+    }
+    return events
   }
 
   instanceConfigToProto(config: InstanceContainerConfigData): ProtoInstanceContainerConfig {
@@ -411,23 +432,4 @@ export default class DeployMapper {
       environment,
     }
   }
-}
-
-export type DeploymentWithNode = Deployment & {
-  node: Pick<Node, BasicProperties>
-}
-
-type DeploymentWithNodeVersion = DeploymentWithNode & {
-  version: Pick<Version, BasicProperties> & {
-    product: Pick<Product, BasicProperties>
-  }
-}
-
-export type InstanceDetails = Instance & {
-  image: ImageDetails
-  config?: InstanceContainerConfig
-}
-
-export type DeploymentDetails = DeploymentWithNodeVersion & {
-  instances: InstanceDetails[]
 }

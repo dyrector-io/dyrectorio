@@ -132,7 +132,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   const [tags, setTags] = useState<ImageTagsMap>({})
   const [viewMode, setViewMode] = useState<ViewMode>('list')
 
-  const versionSock = useWebSocket(versionWsUrl(productId, version.id), {
+  const versionSock = useWebSocket(versionWsUrl(version.id), {
     onSend: message => {
       if (message.type === WS_TYPE_PATCH_IMAGE) {
         setSaving(true)

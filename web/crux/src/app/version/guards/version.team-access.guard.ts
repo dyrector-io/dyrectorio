@@ -1,39 +1,18 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
-import { identityOfContext } from 'src/app/token/jwt-auth.guard'
-import PrismaService from 'src/services/prisma.service'
+import { identityOfRequest } from 'src/app/token/jwt-auth.guard'
+import VersionService from '../version.service'
 
 @Injectable()
 export default class VersionTeamAccessGuard implements CanActivate {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly service: VersionService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest()
     const productId = req.params.productId as string
     const versionId = req.params.versionId as string
 
-    const identity = identityOfContext(context)
+    const identity = identityOfRequest(context)
 
-    const versions = await this.prisma.product.count({
-      where: {
-        id: productId,
-        team: {
-          users: {
-            some: {
-              userId: identity.id,
-              active: true,
-            },
-          },
-        },
-        versions: !versionId
-          ? undefined
-          : {
-              some: {
-                id: versionId,
-              },
-            },
-      },
-    })
-
-    return versions > 0
+    return await this.service.checkProductOrVersionIsInTheActiveTeam(productId, versionId, identity)
   }
 }

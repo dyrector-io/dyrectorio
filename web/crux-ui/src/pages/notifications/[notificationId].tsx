@@ -105,7 +105,7 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
         <EditNotificationCard
           className="p-8"
           notification={notification}
-          onSubmitted={onSubmitted}
+          onNotificationEdited={onSubmitted}
           submitRef={submitRef}
         />
       )}

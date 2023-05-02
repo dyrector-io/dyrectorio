@@ -3,16 +3,13 @@ import {
   ContainerConfigData,
   InstanceContainerConfigData,
   MergedContainerConfigData,
-  UniqueSecretKeyValue,
   UniqueSecretKey,
+  UniqueSecretKeyValue,
 } from 'src/shared/models'
 
 @Injectable()
 export default class ContainerMapper {
-  public mergeSecrets(
-    instanceSecrets: UniqueSecretKeyValue[],
-    imageSecrets: UniqueSecretKey[],
-  ): UniqueSecretKeyValue[] {
+  mergeSecrets(instanceSecrets: UniqueSecretKeyValue[], imageSecrets: UniqueSecretKey[]): UniqueSecretKeyValue[] {
     imageSecrets = imageSecrets ?? []
     instanceSecrets = instanceSecrets ?? []
 
@@ -30,7 +27,7 @@ export default class ContainerMapper {
     return [...missing, ...instanceSecrets]
   }
 
-  public mergeConfigs(image: ContainerConfigData, instance: InstanceContainerConfigData): MergedContainerConfigData {
+  mergeConfigs(image: ContainerConfigData, instance: InstanceContainerConfigData): MergedContainerConfigData {
     return {
       // common
       name: instance.name ?? image.name,

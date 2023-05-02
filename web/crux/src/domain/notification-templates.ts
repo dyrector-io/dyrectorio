@@ -1,5 +1,5 @@
 import { NotificationTypeEnum } from '@prisma/client'
-import { InternalException } from 'src/exception/errors'
+import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
 const title = 'dyrector.io'
 
@@ -110,8 +110,10 @@ export const getTemplate = (notificationType: NotificationTypeEnum, message: str
     case 'teams':
       return getTeamsTemplate(message)
     default:
-      throw new InternalException({
-        message: 'Not supported message type',
+      throw new CruxInternalServerErrorException({
+        message: 'Unsupported notification type',
+        property: 'notificationType',
+        value: notificationType,
       })
   }
 }

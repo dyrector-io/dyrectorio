@@ -7,11 +7,10 @@ import { join } from 'path'
 import { cwd } from 'process'
 import { Subject } from 'rxjs'
 import { DagentTraefikOptionsDto, NodeScriptTypeDto } from 'src/app/node/node.dto'
-import { InvalidArgumentException, PreconditionFailedException } from 'src/exception/errors'
+import { CruxBadRequestException, CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
-import { NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
-import { Agent } from './agent'
+import { Agent, AgentEvent } from './agent'
 
 export default class AgentInstaller {
   private readonly logger = new Logger(AgentInstaller.name)
@@ -39,7 +38,7 @@ export default class AgentInstaller {
 
   verify() {
     if (this.expired) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Install script expired',
         property: 'expireAt',
       })
@@ -55,7 +54,7 @@ export default class AgentInstaller {
           this.nodeId
         }/script -Method GET | Select-Object -Expand Content | Invoke-Expression`
       default:
-        throw new InvalidArgumentException({
+        throw new CruxBadRequestException({
           message: 'Unknown script type',
           property: 'scriptType',
           value: this.scriptType,
@@ -91,7 +90,7 @@ export default class AgentInstaller {
     return this.scriptCompiler.compile(installScriptParams)
   }
 
-  complete(connection: GrpcNodeConnection, info: AgentInfo, eventChannel: Subject<NodeEventMessage>): Agent {
+  complete(connection: GrpcNodeConnection, info: AgentInfo, eventChannel: Subject<AgentEvent>): Agent {
     this.verify()
     return new Agent(connection, info, eventChannel)
   }
@@ -117,7 +116,7 @@ export default class AgentInstaller {
       case 'powershell':
         return '.ps1'
       default:
-        throw new InvalidArgumentException({
+        throw new CruxBadRequestException({
           message: 'Unknown script type',
           property: 'scriptType',
           value: scriptType,

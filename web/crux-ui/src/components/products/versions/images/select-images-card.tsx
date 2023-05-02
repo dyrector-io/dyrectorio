@@ -17,7 +17,7 @@ import {
   FindImageResultMessage,
   Registry,
   RegistryImages,
-  WS_TYPE_DYO_ERROR,
+  WS_TYPE_ERROR,
   WS_TYPE_FIND_IMAGE,
   WS_TYPE_FIND_IMAGE_RESULT,
 } from '@app/models'
@@ -64,7 +64,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
     }
   })
 
-  sock.on(WS_TYPE_DYO_ERROR, (_: DyoApiError) => {
+  sock.on(WS_TYPE_ERROR, (_: DyoApiError) => {
     setSearching(false)
   })
 

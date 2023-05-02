@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, SetMetadata } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { identityOfContext } from 'src/app/token/jwt-auth.guard'
+import { identityOfRequest } from 'src/app/token/jwt-auth.guard'
 import { userIsAdmin, userIsOwner } from 'src/domain/user'
 import PrismaService from 'src/services/prisma.service'
 
@@ -24,7 +24,7 @@ export default class TeamGuard implements CanActivate {
       return requiredRole === 'none'
     }
 
-    const identity = identityOfContext(context)
+    const identity = identityOfRequest(context)
 
     const userOnTeam = await this.prisma.usersOnTeams.findUniqueOrThrow({
       where: {

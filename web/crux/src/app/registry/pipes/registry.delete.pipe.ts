@@ -1,6 +1,6 @@
 import { Injectable, PipeTransform } from '@nestjs/common'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
-import { PreconditionFailedException } from 'src/exception/errors'
 
 @Injectable()
 export default class DeleteRegistryValidationPipe implements PipeTransform {
@@ -15,7 +15,7 @@ export default class DeleteRegistryValidationPipe implements PipeTransform {
     })
 
     if (used > 0) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         property: 'id',
         value: id,
         message: 'Registry is already in use.',

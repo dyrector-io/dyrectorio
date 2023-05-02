@@ -14,16 +14,13 @@ import {
   deploymentIsDeployable,
   DeploymentStatus,
   DEPLOYMENT_STATUS_VALUES,
-  GetNodeStatusListMessage,
+  NodeEventMessage,
   NodeStatus,
-  NodeStatusMessage,
   VersionDetails,
-  WS_TYPE_GET_NODE_STATUS_LIST,
-  WS_TYPE_NODE_STATUS,
-  WS_TYPE_NODE_STATUSES,
+  WS_TYPE_NODE_EVENT,
 } from '@app/models'
 import { deploymentDeployUrl, deploymentStartApiUrl, deploymentUrl, WS_NODES } from '@app/routes'
-import { distinct, utcDateToLocale } from '@app/utils'
+import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { NextRouter, useRouter } from 'next/dist/client/router'
@@ -95,28 +92,17 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const [nodeStatuses, setNodeStatuses] = useState<Record<string, NodeStatus>>({})
 
-  const nodeSock = useWebSocket(WS_NODES, {
-    onOpen: () =>
-      nodeSock.send(WS_TYPE_GET_NODE_STATUS_LIST, {
-        nodeIds: distinct(filters.items.map(it => it.node.id)),
-      } as GetNodeStatusListMessage),
-  })
+  const nodeSock = useWebSocket(WS_NODES)
 
-  const updateNodeStatuses = (message: NodeStatusMessage[]) => {
+  nodeSock.on(WS_TYPE_NODE_EVENT, (message: NodeEventMessage) => {
     const statuses = {
       ...nodeStatuses,
     }
 
-    message.forEach(it => {
-      statuses[it.nodeId] = it.status
-    })
+    statuses[message.id] = message.status
 
     setNodeStatuses(statuses)
-  }
-
-  nodeSock.on(WS_TYPE_NODE_STATUSES, updateNodeStatuses)
-
-  nodeSock.on(WS_TYPE_NODE_STATUS, (message: NodeStatusMessage) => updateNodeStatuses([message]))
+  })
 
   const headers = [
     ...['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it => t(it)),

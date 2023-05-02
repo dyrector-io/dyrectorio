@@ -1,6 +1,7 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor, PreconditionFailedException } from '@nestjs/common'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import { checkDeploymentCopiability } from 'src/domain/deployment'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
@@ -30,7 +31,7 @@ export default class DeployCopyValidationInterceptor implements NestInterceptor 
     })
 
     if (!checkDeploymentCopiability(deployment.status, deployment.version.type)) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Invalid deployment status.',
         property: 'status',
         value: deployment.status,
@@ -54,7 +55,7 @@ export default class DeployCopyValidationInterceptor implements NestInterceptor 
     })
 
     if (preparingDeployment) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'The node already has a preparing deployment with this prefix and version.',
         property: 'deploymentId',
         value: preparingDeployment.id,

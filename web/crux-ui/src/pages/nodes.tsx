@@ -10,9 +10,9 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
-import { Node, NodeStatus, NodeStatusMessage, WS_TYPE_NODE_STATUS } from '@app/models'
+import { DyoNode, NodeEventMessage, NodeStatus, WS_TYPE_NODE_EVENT } from '@app/models'
 import { API_NODES, nodeUrl, ROUTE_NODES, WS_NODES } from '@app/routes'
-import { upsertById, withContextAuthorization } from '@app/utils'
+import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
@@ -22,7 +22,7 @@ import toast from 'react-hot-toast'
 import { useSWRConfig } from 'swr'
 
 interface NodesPageProps {
-  nodes: Node[]
+  nodes: DyoNode[]
 }
 
 const nodeStatusFilters = ['connected', 'unreachable'] as const
@@ -36,10 +36,10 @@ const NodesPage = (props: NodesPageProps) => {
 
   const { mutate } = useSWRConfig()
 
-  const filters = useFilters<Node, NodeFilter>({
+  const filters = useFilters<DyoNode, NodeFilter>({
     filters: [
-      textFilterFor<Node>(it => [it.address, it.name, it.description, it.status, it.icon]),
-      enumFilterFor<Node, NodeStatus>(it => [it.status]),
+      textFilterFor<DyoNode>(it => [it.address, it.name, it.description, it.status, it.icon]),
+      enumFilterFor<DyoNode, NodeStatus>(it => [it.status]),
     ],
     initialData: nodes,
   })
@@ -53,37 +53,38 @@ const NodesPage = (props: NodesPageProps) => {
     },
   })
 
-  socket.on(WS_TYPE_NODE_STATUS, (message: NodeStatusMessage) => {
-    const newNode = {
-      id: message.nodeId,
-      name: '',
-      description: '',
-      type: 'docker',
-      address: message.address,
-      status: message.status,
-      createdAt: new Date().toUTCString(),
-      updating: message.updating,
-    } as Node
+  socket.on(WS_TYPE_NODE_EVENT, (message: NodeEventMessage) => {
+    const index = filters.items.findIndex(it => it.id === message.id)
+    if (index < 0) {
+      return
+    }
 
-    const newNodes = upsertById(filters.items, newNode, {
-      onUpdate: old => ({
-        ...old,
-        address: message.address ?? old.address,
-        status: message.status,
-      }),
-    })
+    const old = filters.items[index]
+    const node = {
+      ...old,
+      ...message,
+    }
+
+    const newNodes = [...filters.items]
+    newNodes[index] = node
 
     filters.setItems(newNodes)
   })
 
-  const onCreated = async (item: Node) => {
-    const newNodes = upsertById(filters.items, item, {
-      onUpdate: old => ({
-        ...item,
-        address: old.address,
-        status: item.status ?? old.status,
-      }),
-    })
+  const onNodeEdited = async (node: DyoNode) => {
+    const newNodes = [...filters.items]
+    const index = filters.items.findIndex(it => it.id === node.id)
+
+    if (index < 0) {
+      newNodes.push(node)
+    } else {
+      const old = filters.items[index]
+      const newNode = {
+        ...old,
+        ...node,
+      }
+      newNodes[index] = newNode
+    }
 
     filters.setItems(newNodes)
     await mutate(API_NODES, null)
@@ -99,7 +100,7 @@ const NodesPage = (props: NodesPageProps) => {
         <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
       </PageHeading>
 
-      {!creating ? null : <EditNodeCard className="mb-4" submitRef={submitRef} onNodeEdited={onCreated} />}
+      {!creating ? null : <EditNodeCard className="mb-4" submitRef={submitRef} onNodeEdited={onNodeEdited} />}
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
@@ -144,7 +145,7 @@ const NodesPage = (props: NodesPageProps) => {
 export default NodesPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const nodes = await getCruxFromContext<Node[]>(context, API_NODES)
+  const nodes = await getCruxFromContext<DyoNode[]>(context, API_NODES)
 
   return {
     props: {

@@ -1,6 +1,11 @@
 import { Logger } from '@nestjs/common'
 import { catchError, finalize, Observable, of, Subject, throwError, timeout, TimeoutError } from 'rxjs'
-import { AlreadyExistsException, InternalException, PreconditionFailedException } from 'src/exception/errors'
+import { NodeConnectionStatus } from 'src/app/shared/shared.dto'
+import {
+  CruxConflictException,
+  CruxInternalServerErrorException,
+  CruxPreconditionFailedException,
+} from 'src/exception/crux-exception'
 import { AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerCommandRequest,
@@ -10,13 +15,12 @@ import {
   Empty,
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
-import { DeploymentProgressMessage, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
+import { DeploymentProgressMessage } from 'src/grpc/protobuf/proto/crux'
 import { CONTAINER_DELETE_TIMEOUT, DEFAULT_CONTAINER_LOG_TAIL } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import ContainerLogStream, { ContainerLogStreamCompleter } from './container-log-stream'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
 import Deployment from './deployment'
-import { toTimestamp } from './utils'
 
 export class Agent {
   private static AGENT_UPDATE_TIMEOUT = 60 * 5 * 1000 // seconds
@@ -43,10 +47,14 @@ export class Agent {
 
   readonly publicKey: string
 
+  get connected() {
+    return this.getConnectionStatus() === 'connected'
+  }
+
   constructor(
     private connection: GrpcNodeConnection,
     info: AgentInfo,
-    private readonly eventChannel: Subject<NodeEventMessage>,
+    private readonly eventChannel: Subject<AgentEvent>,
   ) {
     this.id = connection.nodeId
     this.address = connection.address
@@ -55,7 +63,7 @@ export class Agent {
   }
 
   getConnectionStatus(): NodeConnectionStatus {
-    return !this.commandChannel.closed ? NodeConnectionStatus.CONNECTED : NodeConnectionStatus.UNREACHABLE
+    return !this.commandChannel.closed ? 'connected' : 'unreachable'
   }
 
   getDeployment(id: string): Deployment {
@@ -80,9 +88,10 @@ export class Agent {
     this.throwWhenUpdating()
 
     if (this.deployments.has(deployment.id)) {
-      throw new AlreadyExistsException({
+      throw new CruxConflictException({
         message: 'Deployment is already running',
         property: 'id',
+        value: deployment.id,
       })
     }
 
@@ -91,7 +100,7 @@ export class Agent {
     return deployment.start(this.commandChannel)
   }
 
-  upsertContainerStatusWatcher(prefix: string, oneShot?: boolean): ContainerStatusWatcher {
+  upsertContainerStatusWatcher(prefix: string, oneShot: boolean): ContainerStatusWatcher {
     this.throwWhenUpdating()
 
     let watcher = this.statusWatchers.get(prefix)
@@ -166,9 +175,9 @@ export class Agent {
     this.eventChannel.next({
       id: this.id,
       address: this.address,
-      status: NodeConnectionStatus.CONNECTED,
+      status: 'connected',
       version: this.version,
-      connectedAt: toTimestamp(this.connection.connectedAt),
+      connectedAt: this.connection.connectedAt,
       updating: false,
     })
 
@@ -184,7 +193,7 @@ export class Agent {
 
     this.eventChannel.next({
       id: this.id,
-      status: NodeConnectionStatus.UNREACHABLE,
+      status: 'unreachable',
     })
   }
 
@@ -193,7 +202,7 @@ export class Agent {
     return deployment.getStatus()
   }
 
-  onContainerStatusStreamStarted(prefix: string): [ContainerStatusWatcher, ContainerStatusStreamCompleter] {
+  onContainerStateStreamStarted(prefix: string): [ContainerStatusWatcher, ContainerStatusStreamCompleter] {
     const watcher = this.statusWatchers.get(prefix)
     if (!watcher) {
       return [null, null]
@@ -266,7 +275,7 @@ export class Agent {
 
           return throwError(
             () =>
-              new InternalException({
+              new CruxInternalServerErrorException({
                 message: 'Agent container secrets timed out.',
               }),
           )
@@ -307,7 +316,7 @@ export class Agent {
 
     this.eventChannel.next({
       id: this.id,
-      status: NodeConnectionStatus.CONNECTED,
+      status: 'connected',
       error,
       updating: false,
     })
@@ -332,7 +341,7 @@ export class Agent {
 
   private throwWhenUpdating() {
     if (this.updating) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Node is updating',
         property: 'id',
         value: this.id,
@@ -356,4 +365,14 @@ export type AgentToken = {
   sub: string
   iss: string
   iat: number
+}
+
+export type AgentEvent = {
+  id: string
+  status: NodeConnectionStatus
+  address?: string
+  version?: string
+  connectedAt?: Date
+  error?: string
+  updating?: boolean
 }

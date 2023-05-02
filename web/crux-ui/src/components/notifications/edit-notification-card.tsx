@@ -1,3 +1,4 @@
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
 import DyoForm from '@app/elements/dyo-form'
@@ -25,12 +26,12 @@ import { NotificationEventList } from './notification-event-list'
 interface EditNotificationCardProps {
   notification?: NotificationDetails
   submitRef: MutableRefObject<() => Promise<any>>
-  onSubmitted: (notifcation: NotificationDetails) => void
+  onNotificationEdited: (notifcation: NotificationDetails) => void
   className?: string
 }
 
 const EditNotificationCard = (props: EditNotificationCardProps) => {
-  const { notification: propsNotification, submitRef, onSubmitted, className } = props
+  const { notification: propsNotification, submitRef, onNotificationEdited, className } = props
 
   const { t } = useTranslation('notifications')
 
@@ -78,7 +79,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
 
         setNotification(result)
         setSubmitting(false)
-        onSubmitted(result as NotificationDetails)
+        onNotificationEdited(result as NotificationDetails)
       } else {
         setSubmitting(false)
         handleApiError(res, setFieldError)
@@ -152,6 +153,8 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
             onChanged={value => formik.setFieldValue('enabledEvents', value, false)}
           />
         </div>
+
+        <DyoButton className="hidden" type="submit" />
       </DyoForm>
     </DyoCard>
   )

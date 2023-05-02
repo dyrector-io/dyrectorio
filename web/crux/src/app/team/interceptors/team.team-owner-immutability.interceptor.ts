@@ -1,12 +1,6 @@
-import {
-  CallHandler,
-  ExecutionContext,
-  ForbiddenException,
-  Injectable,
-  NestInterceptor,
-  NotFoundException,
-} from '@nestjs/common'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
+import { CruxForbiddenException, CruxNotFoundException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
@@ -40,13 +34,13 @@ export default class TeamOwnerImmutabilityValidationInterceptor implements NestI
       })
 
       if (!invitation) {
-        throw new NotFoundException({
+        throw new CruxNotFoundException({
           property: 'userId',
           message: 'Invitation not found',
         })
       }
     } else if (userOnTeam.role === 'owner') {
-      throw new ForbiddenException({
+      throw new CruxForbiddenException({
         message: 'Can not modify the team owner',
       })
     }

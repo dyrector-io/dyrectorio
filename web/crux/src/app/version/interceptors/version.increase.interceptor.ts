@@ -1,7 +1,7 @@
 import { ProductTypeEnum, VersionTypeEnum } from '.prisma/client'
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
-import { AlreadyExistsException, PreconditionFailedException } from 'src/exception/errors'
+import { CruxConflictException, CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
@@ -37,7 +37,7 @@ export default class VersionIncreaseValidationPipe implements NestInterceptor {
     })
 
     if (version.type === VersionTypeEnum.rolling) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Can not increase a rolling version.',
         property: 'id',
         value: versionId,
@@ -45,7 +45,7 @@ export default class VersionIncreaseValidationPipe implements NestInterceptor {
     }
 
     if (version.product.type === ProductTypeEnum.simple) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Can not increase version of a simple product.',
         property: 'id',
         value: versionId,
@@ -53,7 +53,7 @@ export default class VersionIncreaseValidationPipe implements NestInterceptor {
     }
 
     if (version._count.children > 0) {
-      throw new AlreadyExistsException({
+      throw new CruxConflictException({
         message: 'This version already has a child version',
         property: 'id',
         value: versionId,

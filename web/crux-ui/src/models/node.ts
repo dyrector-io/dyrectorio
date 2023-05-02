@@ -15,7 +15,7 @@ export type NodeConnection = {
   version?: string
 }
 
-export type Node = NodeConnection & {
+export type DyoNode = NodeConnection & {
   id: string
   name: string
   description?: string
@@ -30,12 +30,12 @@ export type NodeInstall = {
   expireAt: string
 }
 
-export type NodeDetails = Node & {
+export type NodeDetails = DyoNode & {
   hasToken: boolean
   install?: NodeInstall
 }
 
-export const nodeConnectionOf = (node: Node): NodeConnection => ({
+export const nodeConnectionOf = (node: DyoNode): NodeConnection => ({
   address: node.address,
   status: node.status,
   connectedAt: node.connectedAt,
@@ -68,14 +68,9 @@ export type NodeDeleteContainer = {
 
 // ws
 
-export const WS_TYPE_GET_NODE_STATUS_LIST = 'get-node-status-list'
-export type GetNodeStatusListMessage = {
-  nodeIds: string[]
-}
-
-export const WS_TYPE_NODE_STATUS = 'node-status'
-export type NodeStatusMessage = {
-  nodeId: string
+export const WS_TYPE_NODE_EVENT = 'event'
+export type NodeEventMessage = {
+  id: string
   status: NodeStatus
   address?: string
   version?: string
@@ -84,32 +79,18 @@ export type NodeStatusMessage = {
   updating?: boolean
 }
 
-export const WS_TYPE_NODE_STATUSES = 'node-status-list'
-
-export const WS_TYPE_WATCH_CONTAINER_STATUS = 'watch-container-status'
-export const WS_TYPE_STOP_WATCHING_CONTAINER_STATUS = 'stop-watching-container-status'
+export const WS_TYPE_WATCH_CONTAINERS_STATE = 'watch-containers-state'
 export type WatchContainerStatusMessage = {
   prefix?: string
 }
 
-export const WS_TYPE_CONTAINER_STATUS_LIST = 'container-status-list'
-export type ContainerListMessage = Container[]
-
-export const WS_TYPE_DELETE_CONTAINER = 'delete-containers'
-export type DeleteContainerMessage = {
-  container: ContainerIdentifier
+export const WS_TYPE_CONTAINERS_STATE_LIST = 'containers-state-list'
+export type ContainersStateListMessage = {
+  prefix: string
+  containers: Container[]
 }
 
-export const WS_TYPE_UPDATE_NODE_AGENT = 'update-node-agent'
-export type UpdateNodeAgentMessage = {
-  id: string
-}
-
-export const WS_TYPE_CONTAINER_COMMAND = 'container-command'
-export type ContainerCommandMessage = ContainerCommand
-
-export const WS_TYPE_WATCH_CONTAINER_LOG = 'container-log-watch'
-export const WS_TYPE_STOP_WATCHING_CONTAINER_LOG = 'stop-container-log-watch'
+export const WS_TYPE_WATCH_CONTAINER_LOG = 'watch-container-log'
 export type WatchContainerLogMessage = {
   container: ContainerIdentifier
 }
@@ -118,3 +99,16 @@ export const WS_TYPE_CONTAINER_LOG = 'container-log'
 export type ContainerLogMessage = {
   log: string
 }
+
+export const WS_TYPE_DELETE_CONTAINER = 'delete-container'
+export type DeleteContainerMessage = {
+  container: ContainerIdentifier
+}
+
+export const WS_TYPE_UPDATE_AGENT = 'update-agent'
+export type UpdateNodeAgentMessage = {
+  id: string
+}
+
+export const WS_TYPE_CONTAINER_COMMAND = 'container-command'
+export type ContainerCommandMessage = ContainerCommand

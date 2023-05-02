@@ -1,6 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
-import { PreconditionFailedException } from 'src/exception/errors'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 import { UpdateRegistryDto } from '../registry.dto'
 import RegistryMapper from '../registry.mapper'
@@ -38,7 +38,7 @@ export default class UpdateRegistryInterceptor implements NestInterceptor {
 
     blackList.forEach(it => {
       if (details[it] !== registry[it]) {
-        throw new PreconditionFailedException({
+        throw new CruxPreconditionFailedException({
           property: 'id',
           value: id,
           message: 'Registry is already in use.',

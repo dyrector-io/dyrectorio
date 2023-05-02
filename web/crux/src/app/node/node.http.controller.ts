@@ -1,38 +1,20 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Header,
-  HttpCode,
-  Post,
-  Put,
-  Query,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common'
+import { Body, Controller, Delete, Get, Header, HttpCode, Post, Put, UseGuards } from '@nestjs/common'
 import {
   ApiBody,
-  ApiOperation,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiProduces,
   ApiTags,
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import { Observable, timeout } from 'rxjs'
-import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import UuidValidationGuard from 'src/guards/uuid-params.validation.guard'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
-import CreatedWithLocationInterceptor from '../shared/created-with-location.interceptor'
-import JwtAuthGuard, { DisableAuth, IdentityFromRequest } from '../token/jwt-auth.guard'
-import NodeTeamAccessHttpGuard from './guards/node.team-access.http.guard'
+import { DisableAuth, IdentityFromRequest } from '../token/jwt-auth.guard'
+import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
 import { NodeId, PARAM_NODE_ID, ROUTE_NODES, ROUTE_NODE_ID } from './node.const'
 import {
-  ContainerStatus,
   CreateNodeDto,
   NodeDetailsDto,
   NodeDto,
@@ -46,8 +28,7 @@ import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
 
 @Controller(ROUTE_NODES)
 @ApiTags(ROUTE_NODES)
-@UseGuards(JwtAuthGuard, UuidValidationGuard, NodeTeamAccessHttpGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, CreatedWithLocationInterceptor)
+@UseGuards(NodeTeamAccessGuard)
 export default class NodeHttpController {
   constructor(private service: NodeService) {}
 
@@ -158,6 +139,7 @@ export default class NodeHttpController {
   }
 
   @Get(`${ROUTE_NODE_ID}/script`)
+  @ApiOkResponse({ type: String })
   @ApiProduces('text/plain')
   @ApiOperation({
     description:
@@ -192,20 +174,7 @@ export default class NodeHttpController {
   })
   @ApiNoContentResponse({ description: 'Node details modified.' })
   @UuidParams(PARAM_NODE_ID)
-  async updateNodeAgent(@NodeId() nodeId: string): Promise<void> {
-    this.service.updateNodeAgent(nodeId)
-  }
-
-  @Get(`${ROUTE_NODE_ID}/container`)
-  @HttpCode(200)
-  @ApiOperation({
-    description:
-      'Request must include `nodeId` and `prefix`. Response should include `id`, `command`, `createdAt`, `state`, `status`, `imageName`, `imageTag` and `ports` of images.',
-    summary: 'Fetch data of containers running on a node.',
-  })
-  @ApiOkResponse({ type: ContainerStatus, isArray: true, description: 'Fetch data of containers running on a node.' })
-  @UuidParams(PARAM_NODE_ID)
-  async getContainerStatus(@NodeId() nodeId: string, @Query('prefix') prefix: string): Promise<Observable<any>> {
-    return this.service.handleWatchContainerStatusDto(nodeId, prefix).pipe(timeout(5000))
+  updateNodeAgent(@NodeId() nodeId: string) {
+    this.service.updateAgent(nodeId)
   }
 }

@@ -1,17 +1,12 @@
-import {
-  BadRequestException,
-  CallHandler,
-  ConflictException,
-  ExecutionContext,
-  NestInterceptor,
-  NotFoundException,
-} from '@nestjs/common'
+import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { catchError, Observable } from 'rxjs'
+import { Observable, catchError } from 'rxjs'
 import {
-  AlreadyExistsException as GrpcAlreadyExistsException,
-  NotFoundException as GrpcNotFoundException,
-} from 'src/exception/errors'
+  CruxBadRequestException,
+  CruxConflictException,
+  CruxExceptionOptions,
+  CruxNotFoundException,
+} from 'src/exception/crux-exception'
 
 type NotFoundErrorMappings = { [P in Prisma.ModelName]: string }
 
@@ -26,34 +21,39 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
     return next.handle().pipe(catchError(err => this.onError(context, err)))
   }
 
-  // TODO(@polaroi8d): not working, and remove gRPC error handling
-  onError(context: ExecutionContext, err: Error): any {
+  onError(_context: ExecutionContext, err: Error): any {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === UNIQUE_CONSTRAINT_FAILED) {
-        const meta = err.meta ?? ({} as any)
-        const { target } = meta
+      this.handlePrismaError(err)
+    }
 
-        const hasName = target && target.includes('name')
-        const property = hasName ? 'name' : target?.toString() ?? 'unknown'
+    throw err
+  }
 
-        const error = {
-          message: `${property} taken`,
-          property,
-        }
+  private handlePrismaError(err: Prisma.PrismaClientKnownRequestError) {
+    if (err.code === UNIQUE_CONSTRAINT_FAILED) {
+      const meta = err.meta ?? ({} as any)
+      const { target } = meta
 
-        throw context.getType() === 'http' ? new ConflictException(error) : new GrpcAlreadyExistsException(error)
-      } else if (err.code === NOT_FOUND) {
-        const error = {
-          property: this.prismaMessageToProperty(err.message),
-          message: err.message,
-        }
+      const hasName = target && target.includes('name')
+      const property = hasName ? 'name' : target?.toString() ?? 'unknown'
 
-        throw context.getType() === 'http' ? new NotFoundException(error) : new GrpcNotFoundException(error)
-      } else if (err.code === UUID_INVALID) {
-        throw new BadRequestException()
+      const error: CruxExceptionOptions = {
+        message: `${property} taken`,
+        property,
       }
 
-      throw err
+      throw new CruxConflictException(error)
+    } else if (err.code === NOT_FOUND) {
+      const error = {
+        property: this.prismaMessageToProperty(err.message),
+        message: err.message,
+      }
+
+      throw new CruxNotFoundException(error)
+    } else if (err.code === UUID_INVALID) {
+      throw new CruxBadRequestException({
+        message: 'Invalid uuid',
+      })
     }
   }
 

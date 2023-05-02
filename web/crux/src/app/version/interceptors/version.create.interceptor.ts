@@ -1,7 +1,7 @@
 import { ProductTypeEnum } from '.prisma/client'
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
-import { PreconditionFailedException } from 'src/exception/errors'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
@@ -19,7 +19,7 @@ export default class VersionCreateValidationInterceptor implements NestIntercept
     })
 
     if (product.type === ProductTypeEnum.simple) {
-      throw new PreconditionFailedException({
+      throw new CruxPreconditionFailedException({
         message: 'Can not add version to a simple product.',
         property: 'productId',
         value: productId,

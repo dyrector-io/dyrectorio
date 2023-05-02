@@ -1,5 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
-import { identityOfContext } from 'src/app/token/jwt-auth.guard'
+import { identityOfRequest } from 'src/app/token/jwt-auth.guard'
 import PrismaService from 'src/services/prisma.service'
 import { AddImagesDto } from '../image.dto'
 
@@ -13,7 +13,7 @@ export default class ImageAddToVersionTeamAccessGuard implements CanActivate {
     const versionId = req.params.versionId as string
     const body = req.body as AddImagesDto[]
 
-    const identity = identityOfContext(context)
+    const identity = identityOfRequest(context)
 
     const regIds = body.map(it => it.registryId)
     const registries = await this.prisma.registry.count({

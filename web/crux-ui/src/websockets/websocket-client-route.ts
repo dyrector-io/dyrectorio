@@ -1,175 +1,182 @@
 import { Logger } from '@app/logger'
-import { WebSocketClientSendMessage, WsConnectDto, WsMessage } from './common'
-import Mutex from './mutex'
+import { SubscriptionMessage, SubscriptionMessageType, WebSocketSendMessage, WsMessage } from './common'
 import WebSocketClientEndpoint from './websocket-client-endpoint'
 
-type WebSocketClientRouteState = 'subscribed' | 'unsubscribed' | 'subscribing' | 'unsubscribing'
+type WebSocketClientRouteState = 'subscribed' | 'unsubscribed' | 'in-progress'
 
 class WebSocketClientRoute {
   private logger: Logger
 
-  private sendClientMessage: WebSocketClientSendMessage
-
-  private lock = new Mutex()
-
-  private freeLock: VoidFunction = null
+  private readonly sendClientMessage: WebSocketSendMessage
 
   private state: WebSocketClientRouteState = 'unsubscribed'
 
-  private endpoints: WebSocketClientEndpoint[] = []
+  private endpoints: Set<WebSocketClientEndpoint> = new Set()
 
-  get subscribed() {
-    return this.state === 'subscribed'
+  private redirect: string | null = null
+
+  get path(): string {
+    return this.endpointPath
   }
 
-  constructor(
-    logger: Logger,
-    wsSendMessage: (message: WsMessage<object>, route: WebSocketClientRoute) => boolean,
-    public url: string,
-  ) {
-    this.logger = logger.descend(`Route - ${url}`)
-    this.sendClientMessage = msg => wsSendMessage(msg, this)
+  get redirectedFrom(): string | null {
+    return this.redirect
   }
 
-  forEachEndpoint(callback: (it: WebSocketClientEndpoint) => void) {
-    this.endpoints.forEach(callback)
-  }
+  constructor(logger: Logger, private readonly sendMessage: WebSocketSendMessage, private endpointPath: string) {
+    this.logger = logger.derive(endpointPath)
 
-  addEndpoint(endpoint: WebSocketClientEndpoint, token: string) {
-    if (!this.endpoints.includes(endpoint)) {
-      this.endpoints.push(endpoint)
+    this.sendClientMessage = msg => {
+      this.endpoints.forEach(it => it.options?.onSend?.call(null, msg))
 
-      if (this.subscribed) {
-        endpoint.onOpen(this.sendClientMessage)
-      } else {
-        this.subscribe(token)
-      }
+      return sendMessage({
+        type: `${this.path}/${msg.type}`,
+        data: msg.data,
+      })
     }
   }
 
-  kill() {
-    this.endpoints.forEach(it => it.kill())
-    this.endpoints = []
+  clear() {
+    // closing connection
+
+    this.state = 'unsubscribed'
+    this.endpoints.forEach(it => it.close())
+    this.endpoints.clear()
   }
 
-  /**
-   * @param token existing token
-   * @returns [newToken, connectUrl]
-   */
-  async subscribe(token: string): Promise<[string, string]> {
+  subscribe(endpoint: WebSocketClientEndpoint) {
+    this.endpoints.add(endpoint)
+
     if (this.state === 'subscribed') {
-      return [token, null]
+      // we are already subscribed
+
+      endpoint.onSubscribed(this.sendClientMessage)
+      return
     }
 
-    const free = await this.lock.aquire()
-    this.state = 'subscribing'
-
-    const defaultHeaders = {
-      'Content-Type': 'application/json',
+    if (this.state !== 'unsubscribed') {
+      // we are in between states
+      return
     }
 
-    const res = await fetch(this.url, {
-      method: 'POST',
-      headers: !token
-        ? defaultHeaders
-        : {
-            ...defaultHeaders,
-            Authorization: token,
-          },
-    })
-
-    if (!res.ok) {
-      this.state = 'unsubscribed'
-      free()
-
-      this.logger.error('Failed to subscribe')
-      this.logger.error(await res.json())
-
-      return [null, null]
-    }
-
-    if (res.status === 200) {
-      // this is the first subscription
-
-      const dto = (await res.json()) as WsConnectDto
-      this.freeLock = free
-      token = dto.token
-    }
-
-    let connectUrl = this.url
-    if (res.redirected) {
-      connectUrl = new URL(res.url).pathname
-    }
-
-    if (!this.freeLock) {
-      // it's not the first subscription so there is no need to ws connect
-
-      this.state = 'subscribed'
-      await this.onOpen(token)
-      free()
-    }
-
-    return [token, connectUrl]
+    this.sendSubscriptionMessage('subscribe')
   }
 
   /**
-   * @param endpoint
-   * @returns true when should remove the route
+   * returns true if it should be removed
    */
-  async unsubscribe(endpoint: WebSocketClientEndpoint, token: string): Promise<boolean> {
-    this.endpoints = this.endpoints.filter(it => it !== endpoint)
+  unsubscribe(endpoint: WebSocketClientEndpoint): boolean {
+    this.endpoints.delete(endpoint)
 
-    if (this.endpoints.length > 0) {
+    if (this.endpoints.size > 0) {
+      // we have endpoints, we should not unsubscribe
+
       return false
     }
 
     if (this.state === 'unsubscribed') {
-      return this.endpoints.length < 1
+      // we are not subscribed, the route can be safely removed
+
+      return true
     }
 
-    this.state = 'unsubscribing'
+    if (this.state !== 'subscribed') {
+      // were in between states, so we wait for the subscription result
+      return false
+    }
 
-    const free = await this.lock.aquire()
+    this.sendSubscriptionMessage('unsubscribe')
+    return false
+  }
 
-    await fetch(this.url, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token,
-      },
-    })
+  onSubscribed() {
+    this.logger.debug('Subscribed')
 
-    this.state = 'unsubscribed'
-    free()
+    this.state = 'subscribed'
 
+    if (this.endpoints.size < 1) {
+      // we should not be subscribed as there are no endpoints
+
+      this.sendSubscriptionMessage('unsubscribe')
+      return
+    }
+
+    this.endpoints.forEach(it => it.onSubscribed(this.sendClientMessage))
+  }
+
+  /**
+   * returns true if it should be removed
+   */
+  onUnsubscribed(): boolean {
     this.logger.debug('Unsubscribed')
 
-    return this.endpoints.length < 1
-  }
+    this.state = 'unsubscribed'
 
-  async onOpen(token: string) {
-    if (this.freeLock) {
-      // the route was used as the first connection
+    if (this.endpoints.size > 0) {
+      // we should be subscribed as we have endpoints
 
-      this.state = 'subscribed'
-      this.logger.debug('Subscribed')
-
-      this.freeLock()
-      this.freeLock = null
-    } else if (!this.subscribed) {
-      // when the socket is open but can't subscribe
-      const [newToken] = await this.subscribe(token)
-      if (!newToken) {
-        return
-      }
+      this.sendSubscriptionMessage('subscribe')
+      return false
     }
 
-    this.endpoints.forEach(it => it.onOpen(this.sendClientMessage))
+    return true
   }
 
-  onClose() {
+  onRedirect(redirect: string) {
+    this.logger.debug('Redirected to ', redirect)
+
+    // save the original path
+    this.redirect = this.endpointPath
+    this.endpointPath = redirect
+
+    // repeat the subscription message with the correct path
+    this.sendSubscriptionMessage('subscribe')
+  }
+
+  onMessage(message: WsMessage) {
+    if (!message.type.startsWith(this.path)) {
+      // it's not for this route
+      // TODO(@m8vago): create a map in the websocket-client for the route prefixes and use that for routing
+      return
+    }
+
+    // strip the basepath
+    message.type = message.type.substring(this.path.length + 1)
+
+    // notify the endpoints
+    this.endpoints.forEach(it => it.onMessage(message))
+  }
+
+  onError(ev: any) {
+    this.endpoints.forEach(it => it.onError(ev))
+  }
+
+  onSocketOpen() {
+    // the connection is ready
+
+    this.sendSubscriptionMessage('subscribe')
+  }
+
+  onSocketClose() {
+    // connection lost
     this.state = 'unsubscribed'
     this.endpoints.forEach(it => it.onClose())
+  }
+
+  private sendSubscriptionMessage(type: SubscriptionMessageType): void {
+    this.state = 'in-progress'
+
+    const msg: WsMessage<SubscriptionMessage> = {
+      type,
+      data: {
+        path: this.path,
+      },
+    }
+
+    if (!this.sendMessage(msg)) {
+      this.logger.verbose('Failed to send subscription message', this.state, '-> unsubscribed')
+      this.state = 'unsubscribed'
+    }
   }
 }
 

@@ -3,15 +3,19 @@ import { Type } from 'class-transformer'
 import { IsDate, IsIn, IsOptional, IsString, IsUUID } from 'class-validator'
 import { ContainerState, CONTAINER_STATE_VALUES, UniqueKeyValue, UniqueSecretKeyValue } from 'src/shared/models'
 import { PaginatedList } from 'src/shared/dtos/paginating'
+import { Deployment, Instance, InstanceContainerConfig, Node, Product, Version } from '@prisma/client'
 import { ContainerConfigDto, ImageDto } from '../image/image.dto'
 import {
   AuditDto,
   BasicNodeDto,
   BasicNodeWithStatus,
   BasicProductDto,
+  BasicProperties,
   BasicVersionDto,
   ContainerIdentifierDto,
 } from '../shared/shared.dto'
+import { ImageDetails } from '../image/image.mapper'
+import { ImageEvent } from '../image/image.event'
 
 const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete'] as const
 export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]
@@ -169,4 +173,28 @@ export class DeploymentLogListDto extends PaginatedList<DeploymentEventDto> {
   items: DeploymentEventDto[]
 
   total: number
+}
+
+export type DeploymentImageEvent = ImageEvent & {
+  deploymentIds?: string[]
+  instances?: InstanceDetails[]
+}
+
+export type DeploymentWithNode = Deployment & {
+  node: Pick<Node, BasicProperties>
+}
+
+export type DeploymentWithNodeVersion = DeploymentWithNode & {
+  version: Pick<Version, BasicProperties> & {
+    product: Pick<Product, BasicProperties>
+  }
+}
+
+export type InstanceDetails = Instance & {
+  image: ImageDetails
+  config?: InstanceContainerConfig
+}
+
+export type DeploymentDetails = DeploymentWithNodeVersion & {
+  instances: InstanceDetails[]
 }

@@ -1,7 +1,7 @@
 import { Translate } from 'next-translate'
 import toast from 'react-hot-toast'
 import { fromApiError } from './error-responses'
-import { DyoErrorDto, DyoErrorMessage } from './models'
+import { DyoErrorDto, WsErrorMessage } from './models'
 
 type Translation = {
   input?: string
@@ -59,10 +59,16 @@ export const apiErrorHandler =
 
 export const defaultApiErrorHandler = (t: Translate) => apiErrorHandler(defaultTranslator(t))
 
-export const wsErrorHandler = (translator: Translator) => (message: DyoErrorMessage) => {
+export const wsErrorHandler = (translator: Translator) => (message: WsErrorMessage) => {
   const toaster = text => toast.error(text)
 
-  const translation = translator(message.error, message.status, message)
+  // TODO(@m8vago): get rid of DyoApiError's error property and use the status and 'property' fields instead
+  const translation = translator(message.property, message.status, {
+    error: '',
+    description: message.message,
+    property: message.property,
+    value: message.value,
+  })
   toaster(translation.toast)
 }
 

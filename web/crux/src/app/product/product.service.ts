@@ -132,8 +132,6 @@ export default class ProductService {
   }
 
   async deleteProduct(id: string): Promise<void> {
-    // TODO Have to delete all releations regarding to this product eg.: versions, deployments, images
-    // @Levente: We should check cascades for this
     await this.prisma.product.delete({
       where: {
         id,

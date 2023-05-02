@@ -1,13 +1,13 @@
-import { WebSocketClientOptions, WebSocketClientSendMessage, WsMessage, WsMessageCallback } from './common'
+import { WebSocketClientOptions, WebSocketSendMessage, WsMessage, WsMessageCallback } from './common'
 
 class WebSocketClientEndpoint {
-  private sendClientMessage: WebSocketClientSendMessage = null
+  private sendClientMessage: WebSocketSendMessage = null
 
-  private callbacks: Map<string, Array<WsMessageCallback<object>>> = new Map()
+  private callbacks: Map<string, Array<WsMessageCallback>> = new Map()
 
   private sendables: Array<WsMessage<object>> = []
 
-  constructor(readonly url: string) {}
+  constructor(readonly path: string) {}
 
   readyStateChanged: (readyState: number) => void
 
@@ -19,13 +19,13 @@ class WebSocketClientEndpoint {
     this.callbacks.clear()
   }
 
-  kill() {
+  close() {
     this.sendClientMessage = null
-    this.callbacks = new Map()
+    this.callbacks.clear()
     this.sendables = []
   }
 
-  on<T extends object>(type: string, callback: (message: T) => void) {
+  on<T = any>(type: string, callback: (message: T) => void) {
     let callbacks = this.callbacks.get(type)
     if (!callbacks) {
       callbacks = []
@@ -48,18 +48,19 @@ class WebSocketClientEndpoint {
     }
 
     if (!this.sendClientMessage || !this.sendClientMessage(msg)) {
+      // not connected yet
       this.sendables.push(msg)
     }
   }
 
-  send(type: string, payload: object) {
+  send(type: string, data: object) {
     this.sendWsMessage({
       type,
-      payload,
-    } as WsMessage<object>)
+      data,
+    } as WsMessage)
   }
 
-  onMessage(message: WsMessage<object>) {
+  onMessage(message: WsMessage) {
     let msg = { ...message }
 
     const { transformReceive } = this.options ?? {}
@@ -74,10 +75,10 @@ class WebSocketClientEndpoint {
     this.options?.onReceive?.call(null, msg)
 
     const callbacks = this.callbacks.get(msg.type)
-    callbacks?.forEach(it => it(msg.payload))
+    callbacks?.forEach(it => it(msg.data))
   }
 
-  onOpen(sendClientMessage: WebSocketClientSendMessage): void {
+  onSubscribed(sendClientMessage: WebSocketSendMessage): void {
     this.sendClientMessage = sendClientMessage
 
     if (this.readyStateChanged) {
@@ -88,6 +89,7 @@ class WebSocketClientEndpoint {
       this.options.onOpen()
     }
 
+    // send saved messages
     this.flushSendables()
   }
 
@@ -101,7 +103,7 @@ class WebSocketClientEndpoint {
     }
   }
 
-  onError(ev) {
+  onError(ev: any) {
     if (this.options?.onError) {
       this.options.onError(ev)
     }

@@ -45,7 +45,9 @@ const NotificationsPage = (props: NotificationsPageProps) => {
       <PageHeading pageLink={pageLink}>
         <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
       </PageHeading>
-      {creating && <EditNotificationCard onSubmitted={onSubmitted} submitRef={submitRef} className="mb-8 px-8 py-6" />}
+      {creating && (
+        <EditNotificationCard onNotificationEdited={onSubmitted} submitRef={submitRef} className="mb-8 px-8 py-6" />
+      )}
       {notifications.length ? (
         <>
           <DyoLabel className="w-full px-2 text-xl" textColor="text-bright">

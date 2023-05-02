@@ -1,25 +1,55 @@
-import { Status } from '@grpc/grpc-js/build/src/constants'
-import { RpcException } from '@nestjs/microservices'
+import { HttpException, HttpStatus } from '@nestjs/common'
 
-export type BaseGrpcExceptionOptions = {
-  status: Status
+export type CruxExceptionOptions = {
   message: string
+  property?: string
+  value?: any
 }
 
-export default class BaseGrpcException extends RpcException {
-  constructor(error: BaseGrpcExceptionOptions) {
-    super(BaseGrpcException.formatMessage(error))
+export class CruxException extends HttpException {
+  constructor(status: HttpStatus, options: CruxExceptionOptions) {
+    super(options, status)
   }
+}
 
-  private static formatMessage(error: BaseGrpcExceptionOptions) {
-    const { status, message, ...props } = error
+export class CruxBadRequestException extends CruxException {
+  constructor(options: CruxExceptionOptions) {
+    super(HttpStatus.BAD_REQUEST, options)
+  }
+}
 
-    return {
-      code: status,
-      message: JSON.stringify({
-        message,
-        details: props ?? undefined,
-      }),
-    }
+export class CruxUnauthorizedException extends CruxException {
+  constructor(options?: Pick<CruxExceptionOptions, 'message'>) {
+    super(HttpStatus.UNAUTHORIZED, { message: options?.message ?? 'Unauthorized.' })
+  }
+}
+
+export class CruxForbiddenException extends CruxException {
+  constructor(options?: Pick<CruxExceptionOptions, 'message'>) {
+    super(HttpStatus.FORBIDDEN, { message: options?.message ?? 'Forbidden.' })
+  }
+}
+
+export class CruxNotFoundException extends CruxException {
+  constructor(options: CruxExceptionOptions) {
+    super(HttpStatus.NOT_FOUND, options)
+  }
+}
+
+export class CruxConflictException extends CruxException {
+  constructor(options: CruxExceptionOptions) {
+    super(HttpStatus.CONFLICT, options)
+  }
+}
+
+export class CruxPreconditionFailedException extends CruxException {
+  constructor(options: CruxExceptionOptions) {
+    super(HttpStatus.PRECONDITION_FAILED, options)
+  }
+}
+
+export class CruxInternalServerErrorException extends CruxException {
+  constructor(options: CruxExceptionOptions) {
+    super(HttpStatus.INTERNAL_SERVER_ERROR, options)
   }
 }

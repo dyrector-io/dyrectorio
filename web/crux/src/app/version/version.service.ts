@@ -5,10 +5,11 @@ import { VersionMessage } from 'src/domain/notification-templates'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import AgentService from '../agent/agent.service'
+import { EditorLeftMessage, EditorMessage } from '../editor/editor.message'
+import EditorServiceProvider from '../editor/editor.service.provider'
 import ImageMapper from '../image/image.mapper'
 import { CreateVersionDto, IncreaseVersionDto, UpdateVersionDto, VersionDetailsDto, VersionDto } from './version.dto'
 import VersionMapper from './version.mapper'
-import SharedMapper from '../shared/shared.mapper'
 
 @Injectable()
 export default class VersionService {
@@ -18,8 +19,57 @@ export default class VersionService {
     private imageMapper: ImageMapper,
     private notificationService: DomainNotificationService,
     private agentService: AgentService,
-    private sharedMapper: SharedMapper,
+    private readonly editorServices: EditorServiceProvider,
   ) {}
+
+  async checkProductOrVersionIsInTheActiveTeam(
+    productId: string,
+    versionId: string | null,
+    identity: Identity,
+  ): Promise<boolean> {
+    const versions = await this.prisma.product.count({
+      where: {
+        id: productId,
+        team: {
+          users: {
+            some: {
+              userId: identity.id,
+              active: true,
+            },
+          },
+        },
+        versions: !versionId
+          ? undefined
+          : {
+              some: {
+                id: versionId,
+              },
+            },
+      },
+    })
+
+    return versions > 0
+  }
+
+  async checkVersionIsInTheActiveTeam(versionId: string, identity: Identity): Promise<boolean> {
+    const versions = await this.prisma.version.count({
+      where: {
+        id: versionId,
+        product: {
+          team: {
+            users: {
+              some: {
+                userId: identity.id,
+                active: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    return versions > 0
+  }
 
   async getVersionsByProductId(productId: string, user: Identity): Promise<VersionDto[]> {
     const versions = await this.prisma.version.findMany({
@@ -79,7 +129,7 @@ export default class VersionService {
     const statusLookup = new Map(
       [...nodes].map(it => {
         const node = this.agentService.getById(it)
-        const status = node ? this.sharedMapper.nodeStatusToDto(node.getConnectionStatus()) : 'unreachable'
+        const status = node?.getConnectionStatus() ?? 'unreachable'
         return [it, status]
       }),
     )
@@ -413,6 +463,7 @@ export default class VersionService {
 
       return version
     }) // End of Prisma transaction
+
     await this.notificationService.sendNotification({
       identityId: identity.id,
       messageType: 'version',
@@ -420,5 +471,28 @@ export default class VersionService {
     })
 
     return this.mapper.toDto(increasedVersion)
+  }
+
+  async onEditorJoined(
+    versionId: string,
+    clientToken: string,
+    identity: Identity,
+  ): Promise<[EditorMessage, EditorMessage[]]> {
+    const editors = await this.editorServices.getOrCreateService(versionId)
+
+    const me = editors.onClientJoin(clientToken, identity)
+
+    return [me, editors.getEditors()]
+  }
+
+  async onEditorLeft(versionId: string, clientToken: string): Promise<EditorLeftMessage> {
+    const editors = await this.editorServices.getOrCreateService(versionId)
+    const message = editors.onClientLeft(clientToken)
+
+    if (editors.editorCount < 1) {
+      this.editorServices.free(versionId)
+    }
+
+    return message
   }
 }

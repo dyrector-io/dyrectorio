@@ -13,14 +13,14 @@ import {
   deploymentIsMutable,
   deploymentLogVisible,
   DeploymentRoot,
+  DyoNode,
   GetInstanceMessage,
   ImageDeletedMessage,
   Instance,
   InstanceMessage,
   InstancesAddedMessage,
   InstanceUpdatedMessage,
-  Node,
-  NodeStatusMessage,
+  NodeEventMessage,
   ProductDetails,
   VersionDetails,
   WS_TYPE_DEPLOYMENT_ENV_UPDATED,
@@ -29,7 +29,7 @@ import {
   WS_TYPE_INSTANCE,
   WS_TYPE_INSTANCES_ADDED,
   WS_TYPE_INSTANCE_UPDATED,
-  WS_TYPE_NODE_STATUS,
+  WS_TYPE_NODE_EVENT,
   WS_TYPE_PATCH_DEPLOYMENT_ENV,
   WS_TYPE_PATCH_INSTANCE,
   WS_TYPE_PATCH_RECEIVED,
@@ -48,7 +48,7 @@ export type DeploymentStateOptions = {
 export type DeploymentState = {
   deployment: DeploymentDetails
   product: ProductDetails
-  node: Node
+  node: DyoNode
   version: VersionDetails
   instances: Instance[]
   mutable: boolean
@@ -99,8 +99,8 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const showDeploymentLog = deploymentLogVisible(deployment.status)
 
   const nodesSock = useWebSocket(WS_NODES)
-  nodesSock.on(WS_TYPE_NODE_STATUS, (message: NodeStatusMessage) => {
-    if (message.nodeId !== node.id) {
+  nodesSock.on(WS_TYPE_NODE_EVENT, (message: NodeEventMessage) => {
+    if (message.id !== node.id) {
       return
     }
 

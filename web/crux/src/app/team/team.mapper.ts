@@ -24,12 +24,12 @@ export default class TeamMapper {
     }
   }
 
-  toUserMetaDto(teams: MetaTeam[], invitations: MetaInvitation[], session: Session): UserMetaDto {
+  toUserMetaDto(teams: MetaTeam[], invitations: MetaInvitation[], identity: Identity): UserMetaDto {
     const activeTeam = teams.find(it => it.active)
 
     return {
       activeTeamId: activeTeam?.teamId,
-      user: !activeTeam ? null : this.userToDto(activeTeam, session.identity, session),
+      user: !activeTeam ? null : this.userToDto(activeTeam, identity, null),
       teams: teams.map(it => it.team),
       invitations: invitations.map(it => it.team),
     }

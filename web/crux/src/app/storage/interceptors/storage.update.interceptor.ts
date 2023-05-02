@@ -1,6 +1,7 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor, PreconditionFailedException } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
+import PrismaService from 'src/services/prisma.service'
 import { UpdateStorageDto } from '../storage.dto'
 
 type Blacklist = Array<keyof Storage>
@@ -41,7 +42,7 @@ export default class StorageUpdateValidationInterceptor implements NestIntercept
 
     blacklistedFields.forEach(it => {
       if (update[it] !== storage[it]) {
-        throw new PreconditionFailedException({
+        throw new CruxPreconditionFailedException({
           property: 'id',
           value: storageId,
           message: 'Storage is already in use.',

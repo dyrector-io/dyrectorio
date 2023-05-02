@@ -18,6 +18,13 @@ export type IdentityTraitsName = {
   last?: string
 }
 
+export type JwtToken = {
+  exp: number
+  iss: string
+  iat: number
+  data: AuthPayload
+}
+
 export type AuthPayload = {
   sub: string
   nonce?: string
