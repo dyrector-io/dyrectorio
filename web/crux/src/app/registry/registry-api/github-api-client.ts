@@ -1,9 +1,13 @@
-import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
+import {
+  CruxExceptionOptions,
+  CruxInternalServerErrorException,
+  CruxUnauthorizedException,
+} from 'src/exception/crux-exception'
 import { REGISTRY_GITHUB_URL } from 'src/shared/const'
+import { GithubNamespace } from '../registry.dto'
 import { RegistryImageTags } from '../registry.message'
 import { RegistryApiClient } from './registry-api-client'
-import RegistryV2ApiClient, { registryCredentialsToBasicAuth, RegistryV2ApiClientOptions } from './v2-api-client'
-import { GithubNamespace } from '../registry.dto'
+import RegistryV2ApiClient, { RegistryV2ApiClientOptions, registryCredentialsToBasicAuth } from './v2-api-client'
 
 class GithubRegistryClient implements RegistryApiClient {
   private basicAuthHeaders: HeadersInit
@@ -27,10 +31,12 @@ class GithubRegistryClient implements RegistryApiClient {
     )
 
     if (!res.ok) {
-      const errorMessage = `Github packages request failed with status: ${res.status} ${res.statusText}`
+      const excOptions: CruxExceptionOptions = {
+        message: `Github packages request failed with status: ${res.status} ${res.statusText}`,
+      }
       throw res.status === 401
-        ? new UnauthorizedException(errorMessage)
-        : new InternalServerErrorException(errorMessage)
+        ? new CruxUnauthorizedException(excOptions)
+        : new CruxInternalServerErrorException(excOptions)
     }
 
     const json = (await res.json()) as { name: string }[]
@@ -46,10 +52,12 @@ class GithubRegistryClient implements RegistryApiClient {
       },
     )
     if (!tokenRes.ok) {
-      const errorMessage = `Github auth request failed with status: ${tokenRes.status} ${tokenRes.statusText}`
+      const excOptions: CruxExceptionOptions = {
+        message: `Github auth request failed with status: ${tokenRes.status} ${tokenRes.statusText}`,
+      }
       throw tokenRes.status === 401
-        ? new UnauthorizedException(errorMessage)
-        : new InternalServerErrorException(errorMessage)
+        ? new CruxUnauthorizedException(excOptions)
+        : new CruxInternalServerErrorException(excOptions)
     }
 
     const token = ((await tokenRes.json()) as { token: string })?.token
@@ -63,10 +71,13 @@ class GithubRegistryClient implements RegistryApiClient {
 
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(fetcher, `/${this.imageNamePrefix}/${image}/tags/list`)
     if (!res.ok) {
-      const errorMessage = `Github tags request failed with status: ${res.status} ${res.statusText}`
+      const excOptions: CruxExceptionOptions = {
+        message: `Github tags request failed with status: ${res.status} ${res.statusText}`,
+      }
+
       throw res.status === 401
-        ? new UnauthorizedException(errorMessage)
-        : new InternalServerErrorException(errorMessage)
+        ? new CruxUnauthorizedException(excOptions)
+        : new CruxInternalServerErrorException(excOptions)
     }
 
     const json = (await res.json()) as RegistryImageTags[]

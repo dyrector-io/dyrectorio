@@ -18,7 +18,7 @@ import {
   WS_TYPE_EDITOR_JOINED,
   WS_TYPE_EDITOR_LEFT,
   WS_TYPE_FOCUS_INPUT,
-  WS_TYPE_INPUT_BLURED,
+  WS_TYPE_INPUT_BLURRED,
   WS_TYPE_INPUT_FOCUSED,
 } from '../editor/editor.message'
 import EditorServiceProvider from '../editor/editor.service.provider'
@@ -292,7 +292,7 @@ export default class DeployWebSocketGateway {
     const data = editors.onBlur(client.token, message)
 
     const res: WsMessage<InputFocusChangeMessage> = {
-      type: WS_TYPE_INPUT_BLURED,
+      type: WS_TYPE_INPUT_BLURRED,
       data,
     }
 

@@ -1,10 +1,10 @@
 import { Metadata } from '@grpc/grpc-js'
 import { ServerSurfaceCall } from '@grpc/grpc-js/build/src/server-call'
 import { CanActivate, createParamDecorator, ExecutionContext, Injectable } from '@nestjs/common'
-import { UnauthorizedException } from '@nestjs/common/exceptions'
 import { Reflector } from '@nestjs/core'
 import { Identity } from '@ory/kratos-client'
 import { DISABLE_AUTH } from 'src/app/token/jwt-auth.guard'
+import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 
@@ -25,7 +25,7 @@ export default class UserAccessGuard<Req> implements CanActivate {
     const metadata = context.getArgByIndex<Metadata>(1)
     const cookie = metadata.getMap().cookie as string
     if (!cookie) {
-      throw new UnauthorizedException()
+      throw new CruxUnauthorizedException()
     }
 
     try {

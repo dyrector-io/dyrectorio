@@ -1,4 +1,8 @@
-import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
+import {
+  CruxExceptionOptions,
+  CruxInternalServerErrorException,
+  CruxUnauthorizedException,
+} from 'src/exception/crux-exception'
 import { RegistryImageTags } from '../registry.message'
 import HubApiCache from './caches/hub-api-cache'
 import { RegistryApiClient } from './registry-api-client'
@@ -104,10 +108,12 @@ class HubApiClient implements RegistryApiClient {
 
         rateTry += 1
       } else {
-        const errorMessage = `${endpoint} request failed with status: ${res.status} ${res.statusText}`
+        const excOptions: CruxExceptionOptions = {
+          message: `${endpoint} request failed with status: ${res.status} ${res.statusText}`,
+        }
         throw res.status === 401
-          ? new UnauthorizedException(errorMessage)
-          : new InternalServerErrorException(errorMessage)
+          ? new CruxUnauthorizedException(excOptions)
+          : new CruxInternalServerErrorException(excOptions)
       }
     } while (next)
 

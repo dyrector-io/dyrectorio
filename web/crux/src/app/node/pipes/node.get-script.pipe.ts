@@ -1,5 +1,6 @@
-import { Injectable, UnauthorizedException, PipeTransform } from '@nestjs/common'
+import { Injectable, PipeTransform } from '@nestjs/common'
 import AgentService from 'src/app/agent/agent.service'
+import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
@@ -24,8 +25,6 @@ export default class NodeGetScriptValidationPipe implements PipeTransform {
     }
 
     // throwing intentionally ambigous exceptions, so an attacker can not guess node ids
-    throw new UnauthorizedException({
-      message: 'Unauthorized',
-    })
+    throw new CruxUnauthorizedException()
   }
 }

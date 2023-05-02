@@ -1,6 +1,10 @@
-import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
-import { RegistryApiClient } from './registry-api-client'
+import {
+  CruxExceptionOptions,
+  CruxInternalServerErrorException,
+  CruxUnauthorizedException,
+} from 'src/exception/crux-exception'
 import { RegistryImageTags } from '../registry.message'
+import { RegistryApiClient } from './registry-api-client'
 
 export type RegistryV2ApiClientOptions = {
   username?: string
@@ -16,7 +20,9 @@ class RegistryV2ApiClient implements RegistryApiClient {
   constructor(private url: string, options?: RegistryV2ApiClientOptions) {
     if (options?.username) {
       if (!options.password) {
-        throw new UnauthorizedException(`Invalid authentication parameters for: ${url}`)
+        throw new CruxUnauthorizedException({
+          message: `Invalid authentication parameters for: ${url}`,
+        })
       }
 
       this.headers = {
@@ -30,10 +36,12 @@ class RegistryV2ApiClient implements RegistryApiClient {
   async version() {
     const res = await this.fetch('/')
     if (!res.ok) {
-      const errorMessage = `Version request failed with status: ${res.status} ${res.statusText}`
+      const excOptions: CruxExceptionOptions = {
+        message: `Version request failed with status: ${res.status} ${res.statusText}`,
+      }
       throw res.status === 401
-        ? new UnauthorizedException(errorMessage)
-        : new InternalServerErrorException(errorMessage)
+        ? new CruxUnauthorizedException(excOptions)
+        : new CruxInternalServerErrorException(excOptions)
     }
 
     return res
@@ -42,10 +50,12 @@ class RegistryV2ApiClient implements RegistryApiClient {
   async catalog(text: string, take: number): Promise<string[]> {
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this.fetch(it), '/_catalog')
     if (!res.ok) {
-      const errorMessage = `Catalog request failed with status: ${res.status} ${res.statusText}`
+      const excOptions: CruxExceptionOptions = {
+        message: `Catalog request failed with status: ${res.status} ${res.statusText}`,
+      }
       throw res.status === 401
-        ? new UnauthorizedException(errorMessage)
-        : new InternalServerErrorException(errorMessage)
+        ? new CruxUnauthorizedException(excOptions)
+        : new CruxInternalServerErrorException(excOptions)
     }
 
     const json = (await res.json()) as { repositories: string }[]
@@ -56,10 +66,12 @@ class RegistryV2ApiClient implements RegistryApiClient {
   async tags(image: string): Promise<RegistryImageTags> {
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this.fetch(it), `/${image}/tags/list`)
     if (!res.ok) {
-      const errorMessage = `Tags request failed with status: ${res.status} ${res.statusText}`
+      const excOptions: CruxExceptionOptions = {
+        message: `Tags request failed with status: ${res.status} ${res.statusText}`,
+      }
       throw res.status === 401
-        ? new UnauthorizedException(errorMessage)
-        : new InternalServerErrorException(errorMessage)
+        ? new CruxUnauthorizedException(excOptions)
+        : new CruxInternalServerErrorException(excOptions)
     }
 
     const json = (await res.json()) as RegistryImageTags[]

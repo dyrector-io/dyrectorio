@@ -75,7 +75,7 @@ export class Logger {
     }
   }
 
-  descend(tag: string): Logger {
+  derive(tag: string): Logger {
     return new Logger(`${this.tag} ${tag}`)
   }
 

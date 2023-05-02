@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import {
   ContainerStateEnum,
   Deployment,
@@ -8,24 +8,26 @@ import {
   InstanceContainerConfig,
   Storage,
 } from '@prisma/client'
+import { deploymentStatusToDb } from 'src/domain/deployment'
+import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import {
+  InitContainer as AgentInitContainer,
   CommonContainerConfig,
   CraneContainerConfig,
   DagentContainerConfig,
   ImportContainer,
-  InitContainer as AgentInitContainer,
   InstanceConfig,
 } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerState,
-  containerStateFromJSON,
-  containerStateToJSON,
   DeploymentStatus,
-  deploymentStatusFromJSON,
-  DeploymentStrategy as ProtoDeploymentStrategy,
-  ExposeStrategy as ProtoExposeStrategy,
   KeyValue,
   ListSecretsResponse,
+  DeploymentStrategy as ProtoDeploymentStrategy,
+  ExposeStrategy as ProtoExposeStrategy,
+  containerStateFromJSON,
+  containerStateToJSON,
+  deploymentStatusFromJSON,
 } from 'src/grpc/protobuf/proto/common'
 import {
   DeploymentProgressMessage,
@@ -39,7 +41,6 @@ import {
   UniqueKey,
   UniqueKeyValue,
 } from 'src/shared/models'
-import { deploymentStatusToDb } from 'src/domain/deployment'
 import ImageMapper from '../image/image.mapper'
 import ContainerMapper from '../shared/container.mapper'
 import { NodeConnectionStatus } from '../shared/shared.dto'
@@ -228,7 +229,7 @@ export default class DeployMapper {
         break
       }
       default:
-        throw new InternalServerErrorException({
+        throw new CruxInternalServerErrorException({
           message: 'Unsupported deployment event type!',
         })
     }

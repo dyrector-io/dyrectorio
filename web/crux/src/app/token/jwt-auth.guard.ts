@@ -1,15 +1,9 @@
-import {
-  createParamDecorator,
-  ExecutionContext,
-  Injectable,
-  Logger,
-  SetMetadata,
-  UnauthorizedException,
-} from '@nestjs/common'
+import { createParamDecorator, ExecutionContext, Injectable, Logger, SetMetadata } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
 import { Identity } from '@ory/kratos-client'
 import http from 'http'
+import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import KratosService from 'src/services/kratos.service'
 import { JwtToken } from 'src/shared/models'
 import { WsClient } from 'src/websockets/common'
@@ -103,7 +97,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
     if (!sessionExpiresAt || sessionExpiresAt <= now) {
       this.logger.debug('WebSocket session expired.')
       client.close()
-      throw new UnauthorizedException()
+      throw new CruxUnauthorizedException()
     }
 
     return !!req.identity

@@ -5,9 +5,9 @@ import { WsMessage } from '@app/websockets/common'
 import { useState } from 'react'
 
 const filterWsNodeId = (nodeId: string) => (message: WsMessage<any>) => {
-  const { data: payload } = message
+  const { data } = message
 
-  if (payload?.nodeId !== nodeId) {
+  if (data?.nodeId !== nodeId) {
     return null
   }
 

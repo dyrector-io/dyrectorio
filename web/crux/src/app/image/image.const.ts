@@ -1,3 +1,5 @@
+// TODO: move this to the container domain
+
 export const COMMON_CONFIG_PROPERTIES = [
   'name',
   'environment',

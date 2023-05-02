@@ -216,6 +216,7 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     const subscription = client.subscriptions.get(namespace)
     if (!subscription) {
       this.logger.debug(`Subscription not found for ${namespace} for client ${client.token}`)
+      return null
     }
 
     return subscription.onMessage(client, message)

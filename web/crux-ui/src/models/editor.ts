@@ -37,7 +37,7 @@ export type InputFocusMessage = {
 }
 
 export const WS_TYPE_INPUT_FOCUSED = 'input-focused'
-export const WS_TYPE_INPUT_BLURED = 'input-blured'
+export const WS_TYPE_INPUT_BLURRED = 'input-blured'
 export type InputFocusChangeMessage = InputFocusMessage & {
   userId: string
   itemId: string

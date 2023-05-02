@@ -8,7 +8,7 @@ import {
   WS_TYPE_EDITOR_INIT,
   WS_TYPE_EDITOR_JOINED,
   WS_TYPE_EDITOR_LEFT,
-  WS_TYPE_INPUT_BLURED,
+  WS_TYPE_INPUT_BLURRED,
   WS_TYPE_INPUT_FOCUSED,
 } from '@app/models'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
@@ -81,7 +81,7 @@ const useEditorState = (sock: WebSocketClientEndpoint): EditorState => {
     setEditors(newEditors)
   })
 
-  sock.on(WS_TYPE_INPUT_BLURED, (message: InputFocusChangeMessage) => {
+  sock.on(WS_TYPE_INPUT_BLURRED, (message: InputFocusChangeMessage) => {
     const index = editors.findIndex(it => it.id === message.userId)
     if (index < 0) {
       return

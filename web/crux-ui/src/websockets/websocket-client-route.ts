@@ -24,7 +24,7 @@ class WebSocketClientRoute {
   }
 
   constructor(logger: Logger, private readonly sendMessage: WebSocketSendMessage, private endpointPath: string) {
-    this.logger = logger.descend(endpointPath)
+    this.logger = logger.derive(endpointPath)
 
     this.sendClientMessage = msg => {
       this.endpoints.forEach(it => it.options?.onSend?.call(null, msg))
@@ -63,7 +63,7 @@ class WebSocketClientRoute {
   }
 
   /**
-   * returns if it should be removed
+   * returns true if it should be removed
    */
   unsubscribe(endpoint: WebSocketClientEndpoint): boolean {
     this.endpoints.delete(endpoint)
@@ -105,7 +105,7 @@ class WebSocketClientRoute {
   }
 
   /**
-   * returns if it should be removed
+   * returns true if it should be removed
    */
   onUnsubscribed(): boolean {
     this.logger.debug('Unsubscribed')
@@ -125,18 +125,18 @@ class WebSocketClientRoute {
   onRedirect(redirect: string) {
     this.logger.debug('Redirected to ', redirect)
 
-    // save the original url
+    // save the original path
     this.redirect = this.endpointPath
     this.endpointPath = redirect
 
-    // repeate the subscription message with the correct path
+    // repeat the subscription message with the correct path
     this.sendSubscriptionMessage('subscribe')
   }
 
   onMessage(message: WsMessage) {
     if (!message.type.startsWith(this.path)) {
       // it's not for this route
-
+      // TODO(@m8vago): create a map in the websocket-client for the route prefixes and use that for routing
       return
     }
 

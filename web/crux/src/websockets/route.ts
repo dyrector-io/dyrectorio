@@ -129,6 +129,7 @@ export default class WsRoute {
     const { token } = client
     if (this.callbacks.has(token)) {
       this.logger.error(`Client already connected ${token}`)
+      // TODO(@m8vago): check when this error could occour
       throw new Error('Duplicated client')
     }
 
@@ -164,6 +165,8 @@ export default class WsRoute {
     const subscriptionPaths = Array.from(client.subscriptions.keys())
 
     Array.from(subscriptionPaths).forEach(it => this.removeClientFromNamespace(client, it, null))
+
+    this.callbacks.delete(client.token)
   }
 
   private upsertNamespace(match: WsRouteMatch): WsNamespace {

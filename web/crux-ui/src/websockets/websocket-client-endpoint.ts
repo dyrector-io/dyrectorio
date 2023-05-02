@@ -53,10 +53,10 @@ class WebSocketClientEndpoint {
     }
   }
 
-  send(type: string, payload: object) {
+  send(type: string, data: object) {
     this.sendWsMessage({
       type,
-      data: payload,
+      data,
     } as WsMessage)
   }
 

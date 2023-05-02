@@ -1,5 +1,5 @@
-import { InternalServerErrorException } from '@nestjs/common'
 import { NotificationTypeEnum } from '@prisma/client'
+import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
 const title = 'dyrector.io'
 
@@ -110,7 +110,7 @@ export const getTemplate = (notificationType: NotificationTypeEnum, message: str
     case 'teams':
       return getTeamsTemplate(message)
     default:
-      throw new InternalServerErrorException({
+      throw new CruxInternalServerErrorException({
         message: 'Unsupported notification type',
         property: 'notificationType',
         value: notificationType,
