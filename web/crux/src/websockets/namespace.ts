@@ -21,7 +21,7 @@ export default class WsNamespace implements WsSubscription {
 
   private readonly path: string
 
-  private readonly params: Record<string, string>
+  readonly params: Record<string, string>
 
   constructor(match: WsRouteMatch) {
     this.path = match.path
@@ -32,6 +32,9 @@ export default class WsNamespace implements WsSubscription {
 
   close() {
     this.clients.forEach(it => it.client.subscriptions.delete(this.path))
+    this.clients.clear()
+
+    this.logger.verbose('Closed')
   }
 
   getParameter(name: string): string {
@@ -102,14 +105,18 @@ export default class WsNamespace implements WsSubscription {
       })
     }
 
-    const { unsubscribe, completer } = resources
-
-    if (unsubscribe) {
-      unsubscribe(message)
-    }
+    const { unsubscribe, transform, completer } = resources
 
     completer.next(undefined)
     this.clients.delete(token)
+
+    if (unsubscribe) {
+      transform(unsubscribe(message))
+        .pipe(first())
+        .subscribe(() => client.subscriptions.delete(this.path))
+    } else {
+      client.subscriptions.delete(this.path)
+    }
 
     this.logger.verbose(`${token} unsubscribed`)
 

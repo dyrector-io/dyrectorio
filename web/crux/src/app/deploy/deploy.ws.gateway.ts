@@ -163,7 +163,7 @@ export default class DeployWebSocketGateway {
       map(it => {
         const msg: WsMessage<DeploymentEventListMessage> = {
           type: WS_TYPE_DEPLOYMENT_EVENT_LIST,
-          data: this.mapper.progressProtoToEventDto(it),
+          data: it,
         }
 
         return msg

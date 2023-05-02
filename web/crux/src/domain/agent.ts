@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common'
+import { DeploymentStatusEnum } from '@prisma/client'
 import { catchError, finalize, Observable, of, Subject, throwError, timeout, TimeoutError } from 'rxjs'
 import { NodeConnectionStatus } from 'src/app/shared/shared.dto'
 import {
@@ -11,11 +12,10 @@ import {
   ContainerCommandRequest,
   ContainerIdentifier,
   DeleteContainersRequest,
-  DeploymentStatus,
+  DeploymentStatusMessage,
   Empty,
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
-import { DeploymentProgressMessage } from 'src/grpc/protobuf/proto/crux'
 import { CONTAINER_DELETE_TIMEOUT, DEFAULT_CONTAINER_LOG_TAIL } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import ContainerLogStream, { ContainerLogStreamCompleter } from './container-log-stream'
@@ -84,7 +84,7 @@ export class Agent {
     return false
   }
 
-  deploy(deployment: Deployment): Observable<DeploymentProgressMessage> {
+  deploy(deployment: Deployment): Observable<DeploymentStatusMessage> {
     this.throwWhenUpdating()
 
     if (this.deployments.has(deployment.id)) {
@@ -197,7 +197,7 @@ export class Agent {
     })
   }
 
-  onDeploymentFinished(deployment: Deployment): DeploymentStatus {
+  onDeploymentFinished(deployment: Deployment): DeploymentStatusEnum {
     this.deployments.delete(deployment.id)
     return deployment.getStatus()
   }

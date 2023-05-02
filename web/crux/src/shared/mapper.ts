@@ -1,7 +1,7 @@
-import { Prisma, VersionTypeEnum } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { JsonNull } from 'prisma'
-import { VersionType, versionTypeFromJSON } from 'src/grpc/protobuf/proto/crux'
 
+// eslint-disable-next-line import/prefer-default-export
 export const toPrismaJson = <T>(val: T): T | JsonNull => {
   if (!val) {
     return Prisma.JsonNull
@@ -9,5 +9,3 @@ export const toPrismaJson = <T>(val: T): T | JsonNull => {
 
   return val
 }
-
-export const versionTypeToProto = (type: VersionTypeEnum): VersionType => versionTypeFromJSON(type.toUpperCase())

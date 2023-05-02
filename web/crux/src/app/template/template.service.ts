@@ -96,7 +96,7 @@ export default class TemplateService {
     }
   }
 
-  private idify<T extends { id: string }>(object: T): T {
+  private idify<T extends object>(object: T): T {
     return { ...object, id: v4() }
   }
 

@@ -8,7 +8,7 @@ export type WsMessage<T = any> = {
   data: T
 }
 
-export type WsMessageWithParams = WsMessage & {
+export type WsMessageWithParams<T = any> = WsMessage<T> & {
   params: Record<string, string>
 }
 
@@ -39,9 +39,6 @@ export type WsRouteMatch<Params = Record<string, string>> = {
   params: Params
 }
 
-export type WsRouteAuthorizer = (client: WsClient, match: WsRouteMatch) => boolean
-export type WsNamespaceSubscriptionEvent = (client: WsClient) => Observable<WsMessage> | null
-
 export type MetadataInfo = {
   value: any
   callback: any
@@ -49,8 +46,8 @@ export type MetadataInfo = {
 
 export type WsClientCallbacks = {
   authorize: WsCallback<WsMessageWithParams>
-  subscribe?: WsCallback
-  unsubscribe?: WsCallback
+  subscribe: WsCallback | null
+  unsubscribe: WsCallback | null
   handlers: Map<string, WsCallback>
   transform: WsTransform
 }

@@ -1,11 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum, Prisma } from '@prisma/client'
-import { EMPTY, Observable, Subject, concatAll, concatMap, filter, from, lastValueFrom, of } from 'rxjs'
+import { EMPTY, Observable, Subject, concatAll, concatMap, filter, from, lastValueFrom, map, of } from 'rxjs'
 import Deployment from 'src/domain/deployment'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
-import { DeploymentProgressMessage } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import { PaginationQuery } from 'src/shared/dtos/paginating'
 import { toPrismaJson } from 'src/shared/mapper'
@@ -34,6 +33,7 @@ import {
   PatchInstanceDto,
 } from './deploy.dto'
 import DeployMapper from './deploy.mapper'
+import { DeploymentEventListMessage } from './deploy.message'
 
 @Injectable()
 export default class DeployService {
@@ -537,7 +537,7 @@ export default class DeployService {
     })
   }
 
-  async subscribeToDeploymentEvents(id: string): Promise<Observable<DeploymentProgressMessage>> {
+  async subscribeToDeploymentEvents(id: string): Promise<Observable<DeploymentEventListMessage>> {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id,
@@ -558,7 +558,7 @@ export default class DeployService {
       return EMPTY
     }
 
-    return runningDeployment.watchStatus()
+    return runningDeployment.watchStatus().pipe(map(it => this.mapper.progressEventToEventDto(it)))
   }
 
   subscribeToDeploymentEditEvents(deploymentId: string): Observable<DeploymentImageEvent> {
