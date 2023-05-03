@@ -7,7 +7,11 @@ import { join } from 'path'
 import { cwd } from 'process'
 import { Subject } from 'rxjs'
 import { DagentTraefikOptionsDto, NodeScriptTypeDto } from 'src/app/node/node.dto'
-import { CruxBadRequestException, CruxPreconditionFailedException } from 'src/exception/crux-exception'
+import {
+  CruxBadRequestException,
+  CruxInternalServerErrorException,
+  CruxPreconditionFailedException,
+} from 'src/exception/crux-exception'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { Agent, AgentEvent } from './agent'
@@ -46,15 +50,15 @@ export default class AgentInstaller {
   }
 
   getCommand(): string {
+    const scriptUrl = `${this.configService.get<string>('CRUX_UI_URL')}/api/nodes/${this.nodeId}/script`
+
     switch (this.scriptType) {
       case 'shell':
-        return `curl -sL ${this.configService.get<string>('CRUX_UI_URL')}/api/new/nodes/${this.nodeId}/script | sh -`
+        return `curl -sL ${scriptUrl} | sh -`
       case 'powershell':
-        return `Invoke-WebRequest -Uri ${this.configService.get<string>('CRUX_UI_URL')}/api/new/nodes/${
-          this.nodeId
-        }/script -Method GET | Select-Object -Expand Content | Invoke-Expression`
+        return `Invoke-WebRequest -Uri ${scriptUrl} -Method GET | Select-Object -Expand Content | Invoke-Expression`
       default:
-        throw new CruxBadRequestException({
+        throw new CruxInternalServerErrorException({
           message: 'Unknown script type',
           property: 'scriptType',
           value: this.scriptType,

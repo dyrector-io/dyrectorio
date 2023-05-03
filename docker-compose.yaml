@@ -61,7 +61,7 @@ services:
       - traefik.http.routers.crux.tls=true
       - traefik.http.routers.crux.tls.domains[0].main=${DOMAIN}
       - traefik.http.routers.crux.tls.certresolver=letsencrypt
-      - traefik.http.routers.crux-http.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/new`)
+      - traefik.http.routers.crux-http.rule=Host(`${DOMAIN}`) && (PathPrefix(`/api`) && !PathPrefix(`/api/auth`) && !PathPrefix(`/api/status`))
       - traefik.http.routers.crux-http.entrypoints=websecure
       - traefik.http.routers.crux-http.service=crux-http
       - traefik.http.services.crux-http.loadbalancer.server.port=1848
@@ -69,7 +69,7 @@ services:
       - traefik.http.routers.crux-http.tls=true
       - traefik.http.routers.crux-http.tls.domains[0].main=${DOMAIN}
       - traefik.http.routers.crux-http.tls.certresolver=letsencrypt
-      - traefik.http.middlewares.crux-strip.stripprefix.prefixes=/api/new
+      - traefik.http.middlewares.crux-strip.stripprefix.prefixes=/api
     # ports:
     #   - 1848:1848 # http API
 
