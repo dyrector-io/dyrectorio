@@ -56,13 +56,12 @@ func GetCrux(state *State, args *ArgsFlags) containerbuilder.Builder {
 		WithCmd([]string{"serve"}).
 		WithLabels(map[string]string{
 			"traefik.enable": "true",
-			"traefik.http.routers.crux.rule": fmt.Sprintf("(Host(`localhost`) && PathPrefix(`/api/new`)) || "+
-				"(Host(`%s`) && PathPrefix(`/api/new`)) || "+
-				"(Host(`%s`) && PathPrefix(`/api/new`))",
+			"traefik.http.routers.crux.rule": fmt.Sprintf("((Host(`localhost`) || Host(`%s`) || Host(`%s`)) && "+
+				"PathPrefix(`/api`) && !PathPrefix(`/api/auth`) && !PathPrefix(`/api/status`) ",
 				state.Containers.Traefik.Name, state.InternalHostDomain),
 			"traefik.http.routers.crux.entrypoints":                    "web",
 			"traefik.http.services.crux.loadbalancer.server.port":      fmt.Sprintf("%d", defaultCruxHTTPPort),
-			"traefik.http.middlewares.crux-strip.stripprefix.prefixes": "/api/new",
+			"traefik.http.middlewares.crux-strip.stripprefix.prefixes": "/api",
 			"traefik.http.routers.crux.middlewares":                    "crux-strip",
 			"com.docker.compose.project":                               args.Prefix,
 			"com.docker.compose.service":                               state.Containers.Crux.Name,

@@ -9,7 +9,7 @@ http:
       entryPoints:
         - web
     crux:
-      rule: Host(`{{ env "TRAEFIK_HOST" }}`) && PathPrefix(`/api/new`)
+      rule: Host(`{{ env "TRAEFIK_HOST" }}`) && PathPrefix(`/api`) && !PathPrefix(`/api/auth`) && !PathPrefix(`/api/status`)
       service: crux
       entryPoints:
         - web
@@ -19,7 +19,7 @@ http:
   middlewares:
     crux-strip-prefix:
       stripprefix:
-        prefixes: /api/new
+        prefixes: /api
 
   services:
     crux-ui:
