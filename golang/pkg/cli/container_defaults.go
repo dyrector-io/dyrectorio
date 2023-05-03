@@ -56,7 +56,7 @@ func GetCrux(state *State, args *ArgsFlags) containerbuilder.Builder {
 		WithCmd([]string{"serve"}).
 		WithLabels(map[string]string{
 			"traefik.enable": "true",
-			"traefik.http.routers.crux.rule": fmt.Sprintf("((Host(`localhost`) || Host(`%s`) || Host(`%s`)) && "+
+			"traefik.http.routers.crux.rule": fmt.Sprintf("(Host(`localhost`) || Host(`%s`) || Host(`%s`)) && "+
 				"PathPrefix(`/api`) && !PathPrefix(`/api/auth`) && !PathPrefix(`/api/status`) ",
 				state.Containers.Traefik.Name, state.InternalHostDomain),
 			"traefik.http.routers.crux.entrypoints":                    "web",
