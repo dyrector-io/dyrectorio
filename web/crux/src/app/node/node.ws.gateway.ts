@@ -5,9 +5,9 @@ import { Observable, from, map, mergeAll } from 'rxjs'
 import WsExceptionFilter from 'src/filters/ws.exception-filter'
 import { WsAuthorize, WsMessage, WsSubscribe } from 'src/websockets/common'
 import WsParam from 'src/websockets/decorators/ws.param.decorator'
+import WsRedirectInterceptor from 'src/websockets/interceptors/ws.redirect.interceptor'
 import TeamService from '../team/team.service'
 import JwtAuthGuard, { IdentityFromSocket } from '../token/jwt-auth.guard'
-import NodeWsRedirectInterceptor from './interceptors/node.ws.redirect.interceptor'
 import { NodeEventMessage, WS_TYPE_NODE_EVENT } from './node.message'
 import NodeService from './node.service'
 
@@ -19,7 +19,7 @@ const TeamId = () => WsParam('teamId')
 })
 @UseFilters(WsExceptionFilter)
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(NodeWsRedirectInterceptor)
+@UseInterceptors(WsRedirectInterceptor)
 export default class NodeWebSocketGateway {
   constructor(private readonly service: NodeService, private readonly teamService: TeamService) {}
 

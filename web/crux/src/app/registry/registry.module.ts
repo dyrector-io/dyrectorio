@@ -9,7 +9,7 @@ import RegistryMapper from './registry.mapper'
 import RegistryService from './registry.service'
 import RegistryHttpController from './registry.http.controller'
 import RegistryWebSocketGateway from './registry.ws.gateway'
-import RegistryConnections from './registry-api/registry-connections'
+import RegistryClientProvider from './registry-client.provider'
 
 @Module({
   imports: [HttpModule, TeamModule],
@@ -23,7 +23,7 @@ import RegistryConnections from './registry-api/registry-connections'
     TeamRepository,
     KratosService,
     RegistryWebSocketGateway,
-    RegistryConnections,
+    RegistryClientProvider,
   ],
 })
 export default class RegistryModule {}

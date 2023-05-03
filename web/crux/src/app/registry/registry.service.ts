@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
+import { Observable, Subject } from 'rxjs'
 import PrismaService from 'src/services/prisma.service'
 import TeamRepository from '../team/team.repository'
 import { CreateRegistryDto, RegistryDetailsDto, RegistryDto, UpdateRegistryDto } from './registry.dto'
@@ -7,21 +8,16 @@ import RegistryMapper from './registry.mapper'
 
 @Injectable()
 export default class RegistryService {
+  private readonly registryChangedEvent = new Subject<string>()
+
   constructor(private teamRepository: TeamRepository, private prisma: PrismaService, private mapper: RegistryMapper) {}
 
-  private readonly logger = new Logger(RegistryService.name)
-
-  async checkRegistryIsInTheActiveTeam(registryId: string, identity: Identity): Promise<boolean> {
+  async checkRegistryIsInTeam(teamId: string, registryId: string): Promise<boolean> {
     const registries = await this.prisma.registry.count({
       where: {
         id: registryId,
         team: {
-          users: {
-            some: {
-              userId: identity.id,
-              active: true,
-            },
-          },
+          id: teamId,
         },
       },
     })
@@ -94,6 +90,8 @@ export default class RegistryService {
       },
     })
 
+    this.registryChangedEvent.next(registry.id)
+
     return this.mapper.detailsToDto(registry)
   }
 
@@ -103,5 +101,11 @@ export default class RegistryService {
         id,
       },
     })
+
+    this.registryChangedEvent.next(id)
+  }
+
+  watchRegistryEvents(): Observable<string> {
+    return this.registryChangedEvent.asObservable()
   }
 }

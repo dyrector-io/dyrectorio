@@ -20,22 +20,16 @@ import {
 } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerState,
-  DeploymentStatus,
+  DeploymentStatusMessage,
   KeyValue,
   ListSecretsResponse,
   DeploymentStrategy as ProtoDeploymentStrategy,
   ExposeStrategy as ProtoExposeStrategy,
-  containerStateFromJSON,
   containerStateToJSON,
-  deploymentStatusFromJSON,
 } from 'src/grpc/protobuf/proto/common'
 import {
-  DeploymentProgressMessage,
-  InitContainer,
-  InstanceContainerConfig as ProtoInstanceContainerConfig,
-} from 'src/grpc/protobuf/proto/crux'
-import {
   ContainerConfigData,
+  InitContainer,
   InstanceContainerConfigData,
   MergedContainerConfigData,
   UniqueKey,
@@ -237,7 +231,7 @@ export default class DeployMapper {
     return result
   }
 
-  progressProtoToEventDto(message: DeploymentProgressMessage): DeploymentEventMessage[] {
+  progressEventToEventDto(message: DeploymentStatusMessage): DeploymentEventMessage[] {
     const events: DeploymentEventMessage[] = []
     if (message.log) {
       events.push({
@@ -246,13 +240,15 @@ export default class DeployMapper {
         log: message.log,
       })
     }
-    if (message.status) {
+
+    if (message.deploymentStatus) {
       events.push({
         type: 'deployment-status',
         createdAt: new Date(),
-        deploymentStatus: this.statusToDto(deploymentStatusToDb(message.status)),
+        deploymentStatus: this.statusToDto(deploymentStatusToDb(message.deploymentStatus)),
       })
     }
+
     if (message.instance) {
       events.push({
         type: 'container-status',
@@ -263,16 +259,8 @@ export default class DeployMapper {
         },
       })
     }
-    return events
-  }
 
-  instanceConfigToProto(config: InstanceContainerConfigData): ProtoInstanceContainerConfig {
-    return {
-      common: this.imageMapper.commonConfigToProto(config),
-      dagent: this.imageMapper.dagentConfigToProto(config),
-      crane: this.imageMapper.craneConfigToProto(config),
-      secrets: !config.secrets ? null : { data: config.secrets },
-    }
+    return events
   }
 
   deploymentToAgentInstanceConfig(deployment: Deployment): InstanceConfig {
@@ -282,19 +270,6 @@ export default class DeployMapper {
         env: this.jsonToPipedFormat((deployment.environment as UniqueKeyValue[]) ?? []),
       },
     }
-  }
-
-  statusToProto(status: DeploymentStatusEnum): DeploymentStatus {
-    switch (status) {
-      case DeploymentStatusEnum.inProgress:
-        return DeploymentStatus.IN_PROGRESS
-      default:
-        return deploymentStatusFromJSON(status.toUpperCase())
-    }
-  }
-
-  containerStateToProto(state?: ContainerStateEnum): ContainerState {
-    return state ? containerStateFromJSON(state.toUpperCase()) : null
   }
 
   containerStateToDb(state?: ContainerState): ContainerStateEnum {

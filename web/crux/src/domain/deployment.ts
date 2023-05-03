@@ -1,15 +1,14 @@
+import { ContainerStateEnum, DeploymentEventTypeEnum, DeploymentStatusEnum, VersionTypeEnum } from '.prisma/client'
 import { Logger } from '@nestjs/common'
 import { Observable, Subject } from 'rxjs'
 import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
-import { DeploymentProgressMessage } from 'src/grpc/protobuf/proto/crux'
 import {
   ContainerState,
-  containerStateToJSON,
-  DeploymentStatus as ProtoDeploymentStatus,
   DeploymentStatusMessage,
+  DeploymentStatus as ProtoDeploymentStatus,
+  containerStateToJSON,
   deploymentStatusToJSON,
 } from 'src/grpc/protobuf/proto/common'
-import { ContainerStateEnum, DeploymentEventTypeEnum, DeploymentStatusEnum, VersionTypeEnum } from '.prisma/client'
 import { MergedContainerConfigData } from 'src/shared/models'
 
 export type DeploymentProgressContainerEvent = {
@@ -81,9 +80,9 @@ export type DeploymentNotification = {
 }
 
 export default class Deployment {
-  private statusChannel = new Subject<DeploymentProgressMessage>()
+  private statusChannel = new Subject<DeploymentStatusMessage>()
 
-  private status = ProtoDeploymentStatus.PREPARING
+  private status: DeploymentStatusEnum = 'preparing'
 
   readonly id: string
 
@@ -99,12 +98,12 @@ export default class Deployment {
     return this.status
   }
 
-  start(commandChannel: Subject<AgentCommand>): Observable<DeploymentProgressMessage> {
-    this.status = ProtoDeploymentStatus.IN_PROGRESS
+  start(commandChannel: Subject<AgentCommand>): Observable<DeploymentStatusMessage> {
+    this.status = 'inProgress'
     this.statusChannel.next({
-      id: this.id,
       log: [],
-      status: ProtoDeploymentStatus.IN_PROGRESS,
+      deploymentStatus: ProtoDeploymentStatus.IN_PROGRESS,
+      instance: null,
     })
 
     commandChannel.next({
@@ -118,10 +117,10 @@ export default class Deployment {
     const events: DeploymentProgressEvent[] = []
 
     if (progress.deploymentStatus) {
-      this.status = progress.deploymentStatus
+      this.status = deploymentStatusToDb(progress.deploymentStatus)
       events.push({
         type: DeploymentEventTypeEnum.deploymentStatus,
-        value: deploymentStatusToDb(progress.deploymentStatus),
+        value: this.status,
       })
     }
 
@@ -144,12 +143,7 @@ export default class Deployment {
       })
     }
 
-    this.statusChannel.next({
-      id: this.id,
-      log: progress.log,
-      instance: progress.instance,
-      status: progress.deploymentStatus,
-    })
+    this.statusChannel.next(progress)
 
     return events
   }
@@ -158,7 +152,7 @@ export default class Deployment {
     this.statusChannel.complete()
   }
 
-  watchStatus(): Observable<DeploymentProgressMessage> {
+  watchStatus(): Observable<DeploymentStatusMessage> {
     return this.statusChannel.asObservable()
   }
 
