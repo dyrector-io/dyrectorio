@@ -30,18 +30,17 @@ import {
   ContainerLogMessage,
   ContainerStateListMessage,
   DeleteContainersRequest,
-  DeploymentStatus,
   DeploymentStatusMessage,
   Empty,
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
-import { NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { JWT_EXPIRATION } from '../../shared/const'
 import ImageMapper from '../image/image.mapper'
 import { DagentTraefikOptionsDto, NodeScriptTypeDto } from '../node/node.dto'
+import { NodeConnectionStatus } from '../shared/shared.dto'
 
 @Injectable()
 export default class AgentService {
@@ -209,7 +208,7 @@ export default class AgentService {
         this.onDeploymentFinished(agent.id, deployment, status)
 
         const messageType: NotificationMessageType =
-          deployment.getStatus() === DeploymentStatus.SUCCESSFUL ? 'successfulDeploy' : 'failedDeploy'
+          deployment.getStatus() === 'successful' ? 'successfulDeploy' : 'failedDeploy'
         await this.notificationService.sendNotification({
           identityId: deployment.notification.accessedBy,
           messageType,
@@ -332,7 +331,7 @@ export default class AgentService {
   }
 
   private async onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
-    if (status === NodeConnectionStatus.UNREACHABLE) {
+    if (status === 'unreachable') {
       this.logger.log(`Left: ${agent.id}`)
       agent.onDisconnected()
       this.agents.delete(agent.id)
@@ -347,7 +346,7 @@ export default class AgentService {
           status: DeploymentStatusEnum.failed,
         },
       })
-    } else if (status === NodeConnectionStatus.CONNECTED) {
+    } else if (status === 'connected') {
       this.agentCount.inc()
       agent.onConnected()
     } else {
@@ -455,7 +454,7 @@ export default class AgentService {
     })
   }
 
-  private async onDeploymentFinished(nodeId: string, finishedDeployment: Deployment, status: DeploymentStatus) {
+  private async onDeploymentFinished(nodeId: string, finishedDeployment: Deployment, status: DeploymentStatusEnum) {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       select: {
         status: true,
@@ -480,7 +479,7 @@ export default class AgentService {
       },
     })
 
-    const finalStatus = status === DeploymentStatus.SUCCESSFUL ? 'successful' : 'failed'
+    const finalStatus = status === 'successful' ? 'successful' : 'failed'
 
     if (deployment.status !== finalStatus) {
       // update status for sure

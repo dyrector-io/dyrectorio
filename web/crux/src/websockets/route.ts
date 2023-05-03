@@ -53,6 +53,8 @@ export default class WsRoute {
     this.namespaces.forEach(it => it.close())
     this.namespaces.clear()
     this.callbacks.clear()
+
+    this.logger.verbose('Closed')
   }
 
   matches(messageType: string): WsRouteMatch | null {
@@ -196,7 +198,6 @@ export default class WsRoute {
     const { res, shouldRemove } = ns.onUnsubscribe(client, message)
     if (shouldRemove) {
       this.namespaces.delete(namespacePath)
-
       this.logger.verbose(`Namespace deleted ${namespacePath}`)
     }
 

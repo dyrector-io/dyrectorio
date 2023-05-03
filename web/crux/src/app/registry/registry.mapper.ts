@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Registry, RegistryTypeEnum } from '@prisma/client'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
-import {
-  RegistryType as ProtoRegistryType,
-  registryTypeFromJSON as protoRegistryTypeFromJSON,
-} from 'src/grpc/protobuf/proto/crux'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
 import { BasicProperties } from '../shared/shared.dto'
 import {
@@ -174,10 +170,6 @@ export default class RegistryMapper {
       property: 'type',
       value: request.type,
     })
-  }
-
-  typeToProto(type: RegistryTypeEnum): ProtoRegistryType {
-    return protoRegistryTypeFromJSON(type.toUpperCase())
   }
 }
 

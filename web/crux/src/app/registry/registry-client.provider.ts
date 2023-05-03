@@ -1,67 +1,52 @@
 import { Injectable } from '@nestjs/common'
-import { Identity } from '@ory/kratos-client'
-import { CruxBadRequestException, CruxUnauthorizedException } from 'src/exception/crux-exception'
+import { CruxBadRequestException, CruxForbiddenException } from 'src/exception/crux-exception'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
-import { REGISTRY_HUB_CACHE_EXPIRATION } from '../registry.const'
+import HubApiCache from './registry-clients/caches/hub-api-cache'
+import GithubRegistryClient from './registry-clients/github-api-client'
+import { GitlabRegistryClient } from './registry-clients/gitlab-api-client'
+import { GoogleRegistryClient } from './registry-clients/google-api-client'
+import HubApiClient from './registry-clients/hub-api-client'
+import { RegistryApiClient } from './registry-clients/registry-api-client'
+import RegistryV2ApiClient from './registry-clients/v2-api-client'
+import { REGISTRY_HUB_CACHE_EXPIRATION } from './registry.const'
 import {
   GithubRegistryDetailsDto,
   GitlabRegistryDetailsDto,
   GoogleRegistryDetailsDto,
   HubRegistryDetailsDto,
   V2RegistryDetailsDto,
-} from '../registry.dto'
-import RegistryService from '../registry.service'
-import HubApiCache from './caches/hub-api-cache'
-import GithubRegistryClient from './github-api-client'
-import { GitlabRegistryClient } from './gitlab-api-client'
-import { GoogleRegistryClient } from './google-api-client'
-import HubApiClient from './hub-api-client'
-import { RegistryApiClient } from './registry-api-client'
-import RegistryV2ApiClient from './v2-api-client'
+} from './registry.dto'
+import RegistryService from './registry.service'
 
 @Injectable()
-export default class RegistryConnections {
-  private hubCaches: Map<string, HubApiCache> = new Map() // imageNamePrefix to cache
+export default class RegistryClientProvider {
+  private hubCaches: Map<string, HubApiCache> = new Map() // prefix to cache
 
   private registryIdToHubCache: Map<string, string> = new Map()
 
   private clients: Map<string, RegistryApiClient> = new Map()
 
-  private authorized: Map<string, string[]> = new Map() // identityId to registyIds
+  private registriesByTeam: Map<string, string[]> = new Map() // teamId to registyIds
 
-  constructor(private readonly service: RegistryService) {}
-
-  invalidate(registryId: string) {
-    this.clients.delete(registryId)
-
-    const hubImageNamePrefix = this.registryIdToHubCache.get(registryId)
-    if (!hubImageNamePrefix) {
-      return
-    }
-
-    this.registryIdToHubCache.delete(registryId)
-
-    const cache = this.hubCaches.get(hubImageNamePrefix)
-    if (!cache) {
-      return
-    }
-
-    cache.clients -= 1
-    if (cache.clients > 0) {
-      return
-    }
-
-    this.hubCaches.delete(hubImageNamePrefix)
+  constructor(private readonly service: RegistryService) {
+    service.watchRegistryEvents().subscribe(it => this.invalidate(it))
   }
 
-  resetAuthorization(identity: Identity) {
-    this.authorized.delete(identity.id)
+  removeClientsByTeam(teamId: string) {
+    const registries = this.registriesByTeam.get(teamId)
+    if (!registries) {
+      return
+    }
+
+    this.registriesByTeam.delete(teamId)
+
+    registries.forEach(registryId => this.invalidate(registryId, REGISTRY_HUB_CACHE_EXPIRATION * 60 * 1000))
   }
 
-  async getByRegistryId(registryId: string, identity: Identity): Promise<RegistryApiClient> {
+  async getByRegistryId(teamId: string, registryId: string): Promise<RegistryApiClient> {
     let client = this.clients.get(registryId)
     if (client) {
-      await this.authorize(registryId, identity)
+      await this.authorize(teamId, registryId)
       return client
     }
 
@@ -140,18 +125,54 @@ export default class RegistryConnections {
 
     this.clients.set(registry.id, client)
 
+    const teamRegistries = this.registriesByTeam.get(teamId) ?? []
+
+    teamRegistries.push(registryId)
+
     return client
   }
 
-  private async authorize(registryId: string, identity: Identity): Promise<void> {
-    const authorizedRegistries = this.authorized.get(identity.id)
+  private invalidate(registryId: string, delay: number | null = null) {
+    this.clients.delete(registryId)
+
+    const organization = this.registryIdToHubCache.get(registryId)
+    if (!organization) {
+      return
+    }
+
+    this.registryIdToHubCache.delete(registryId)
+
+    if (delay) {
+      setTimeout(() => this.checkAndRemoveHubCache(organization), delay)
+      return
+    }
+
+    this.checkAndRemoveHubCache(organization)
+  }
+
+  private checkAndRemoveHubCache(org: string) {
+    const cache = this.hubCaches.get(org)
+    if (!cache) {
+      return
+    }
+
+    cache.clients -= 1
+    if (cache.clients > 0) {
+      return
+    }
+
+    this.hubCaches.delete(org)
+  }
+
+  private async authorize(teamId: string, registryId: string): Promise<void> {
+    const authorizedRegistries = this.registriesByTeam.get(teamId)
     if (authorizedRegistries && authorizedRegistries.includes(registryId)) {
       return
     }
 
-    const access = await this.service.checkRegistryIsInTheActiveTeam(registryId, identity)
+    const access = await this.service.checkRegistryIsInTeam(teamId, registryId)
     if (!access) {
-      throw new CruxUnauthorizedException()
+      throw new CruxForbiddenException()
     }
   }
 
