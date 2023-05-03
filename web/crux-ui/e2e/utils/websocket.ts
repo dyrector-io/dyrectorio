@@ -1,7 +1,8 @@
 import { WsMessage } from '@app/websockets/common'
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { Page, WebSocket } from 'playwright'
 
-export const waitSocket = (page: Page) => page.waitForEvent('websocket', it => it.url().endsWith('/api/new'))
+export const waitSocket = (page: Page) => page.waitForEvent('websocket', it => it.url().endsWith('/api'))
 
 export const waitSocketReceived = (
   ws: WebSocket,

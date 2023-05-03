@@ -46,33 +46,33 @@ export const API_CREATE_ACCOUNT = '/api/auth/create-account'
 
 export const API_STATUS = '/api/status'
 
-export const API_REGISTRIES = '/api/new/registries'
-export const API_PRODUCTS = '/api/new/products'
-export const API_NODES = '/api/new/nodes'
-export const API_DEPLOYMENTS = '/api/new/deployments'
+export const API_REGISTRIES = '/api/registries'
+export const API_PRODUCTS = '/api/products'
+export const API_NODES = '/api/nodes'
+export const API_DEPLOYMENTS = '/api/deployments'
 
-export const API_TEAMS = '/api/new/teams'
-export const API_USERS_ME = '/api/new/users/me'
+export const API_TEAMS = '/api/teams'
+export const API_USERS_ME = '/api/users/me'
 export const API_USERS_ME_ACTIVE_TEAM = `${API_USERS_ME}/active-team`
 export const API_USERS_ME_INVITATIONS = `${API_USERS_ME}/invitations`
 
-export const API_NOTIFICATIONS = '/api/new/notifications'
+export const API_NOTIFICATIONS = '/api/notifications'
 
-export const API_AUDIT = `/api/new/audit-log`
+export const API_AUDIT = `/api/audit-log`
 
-export const API_TEMPLATES = `/api/new/templates`
+export const API_TEMPLATES = `/api/templates`
 
-export const API_DASHBOARD = '/api/new/dashboard'
+export const API_DASHBOARD = '/api/dashboard'
 
-export const API_TOKENS = '/api/new/tokens'
+export const API_TOKENS = '/api/tokens'
 
-export const API_STORAGES = '/api/new/storages'
+export const API_STORAGES = '/api/storages'
 export const API_STORAGES_OPTIONS = `${API_STORAGES}/options`
 
 export const WS_NODES = `/nodes`
 export const WS_REGISTRIES = `/registries`
 
-export const API_HEALTH = '/api/new/health'
+export const API_HEALTH = '/api/health'
 
 export type CruxUrlParams = {
   anchor?: string
@@ -160,7 +160,7 @@ export const registryApiUrl = (id: string) => `${API_REGISTRIES}/${id}`
 // node
 export const nodeUrl = (id: string) => `${ROUTE_NODES}/${id}`
 export const nodeInspectUrl = (id: string, prefix?: string) => `${nodeUrl(id)}?prefix=${prefix}`
-export const nodeApiUrl = (id: string) => `/api/new${nodeUrl(id)}`
+export const nodeApiUrl = (id: string) => `${API_NODES}/${id}`
 export const nodeScriptApiUrl = (id: string) => `${nodeApiUrl(id)}/script`
 export const nodeTokenApiUrl = (id: string) => `${nodeApiUrl(id)}/token`
 export const nodeUpdateApiUrl = (id: string) => `${nodeApiUrl(id)}/update`

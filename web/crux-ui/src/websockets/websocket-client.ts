@@ -295,7 +295,7 @@ class WebSocketClient {
     const { location } = window
     // TODO create some warning when we are in production build but the connection is insecure
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-    return `${protocol}//${location.host}/api/new`
+    return `${protocol}//${location.host}/api`
   }
 }
 
