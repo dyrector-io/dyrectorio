@@ -4,11 +4,24 @@ on:
   pull_request:
 
 jobs:
-  triage:
+  check_pr_title:
     permissions:
       contents: read
       pull-requests: write
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/labeler@v4
+
+  label_based_on_title:
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: github/issue-labeler@v3.1
+      with:
+        configuration-path: .github/title_labeler.yml
+        include-title: 1
+        repo-token: "${{ github.token }}"
+        enable-versioned-regex: 0
 

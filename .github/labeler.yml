@@ -1,25 +1,29 @@
-'source:web': 'web'
-'source:documentation': 'docs'
+'source:web':
+  - 'web/**'
+'source:documentation':
+  - 'docs/**'
 'source:agent':
-  - 'golang/pkg/crane'
-  - 'golang/pkg/dagent'
-  - 'golang/cmd/crane'
-  - 'golang/cmd/dagent'
-'source:ci': '.github/workflows'
+  - 'golang/pkg/crane/**'
+  - 'golang/pkg/dagent/**'
+  - 'golang/cmd/crane/**'
+  - 'golang/cmd/dagent/**'
+'source:ci':
+  - '.github/workflows/**'
 'source:build':
   - '**/Makefile'
-  - 'images'
+  - 'images/**'
   - '**/Dockerfile'
-  - 'golang/build'
+  - 'golang/build/**'
 'source:kratos':
-  - 'web/kratos'
+  - 'web/kratos/**'
 'source:proto':
-  - 'proto'
+  - 'proto/**'
   - '**/*.proto'
 'source:cli':
-  - 'golang/pkg/cli'
-  - 'golang/cmd/dyo'
-'lang:makefile': '**/Makefile'
+  - 'golang/pkg/cli/**'
+  - 'golang/cmd/dyo/**'
+'lang:makefile':
+  - '**/Makefile'
 'lang:sql':
   - '**/*.prisma'
   - '**/*.sql'
@@ -27,7 +31,8 @@
   - '**/*.sh'
   - '**/*.sh.hbr'
   - '**/*.ps1.hbr'
-'lang:golang': '**/*.go'
+'lang:golang':
+  - '**/*.go'
 'lang:typescript':
   - '**/*.ts'
   - '**/*.js'
