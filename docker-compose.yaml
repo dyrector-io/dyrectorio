@@ -65,11 +65,9 @@ services:
       - traefik.http.routers.crux-http.entrypoints=websecure
       - traefik.http.routers.crux-http.service=crux-http
       - traefik.http.services.crux-http.loadbalancer.server.port=1848
-      - traefik.http.routers.crux-http.middlewares=crux-strip
       - traefik.http.routers.crux-http.tls=true
       - traefik.http.routers.crux-http.tls.domains[0].main=${DOMAIN}
       - traefik.http.routers.crux-http.tls.certresolver=letsencrypt
-      - traefik.http.middlewares.crux-strip.stripprefix.prefixes=/api
     # ports:
     #   - 1848:1848 # http API
 

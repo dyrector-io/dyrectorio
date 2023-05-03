@@ -57,6 +57,7 @@ const bootstrap = async () => {
   const app = await NestFactory.create(AppModule, {
     logger: parseLogLevelFromEnv(logger, process.env.LOG_LEVEL, process.env.NODE_ENV),
   })
+  app.setGlobalPrefix('/api')
   const configService = app.get(ConfigService)
 
   app.enableShutdownHooks()
@@ -64,7 +65,7 @@ const bootstrap = async () => {
   // Swagger
   const config = createSwaggerConfig(configService)
   const document = SwaggerModule.createDocument(app, config)
-  SwaggerModule.setup('swagger', app, document)
+  SwaggerModule.setup('/api/swagger', app, document)
 
   const agentOptions = loadGrpcOptions('agent', configService.get<string>('GRPC_AGENT_PORT'))
   const httpOptions = configService.get<string>('HTTP_API_PORT', '1848')
