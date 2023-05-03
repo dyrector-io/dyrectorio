@@ -16,3 +16,4 @@ LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio
 
 ENTRYPOINT ["/usr/bin/app/kratos/entrypoint.sh"]
 CMD ["serve", "-c", "/etc/config/kratos/kratos.yaml", "--watch-courier"]
+
