@@ -45,6 +45,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           config-preset: conventionalcommits
+      - name: Run title validation
+        # if it's not a PR we skip
+        if: ${{ github.event_name == 'pull_request' }}
+        working-directory: .github/workflows
+        run: sh -x title_validation.sh '${{ github.event.pull_request.title }}'
 
   gather_changes:
     runs-on: ubuntu-22.04
