@@ -3,7 +3,7 @@ import { Logger, LogLevel, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { MicroserviceOptions, Transport } from '@nestjs/microservices'
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import { SwaggerModule } from '@nestjs/swagger'
 import { join } from 'path'
 import AppModule from './app.module'
 import CreatedWithLocationInterceptor from './app/shared/created-with-location.interceptor'
@@ -12,8 +12,8 @@ import HttpExceptionFilter from './filters/http.exception-filter'
 import UuidValidationGuard from './guards/uuid-params.validation.guard'
 import HttpLoggerInterceptor from './interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
-import DyoWsAdapter from './websockets/dyo.ws.adapter'
 import createSwaggerConfig from './swagger'
+import DyoWsAdapter from './websockets/dyo.ws.adapter'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
