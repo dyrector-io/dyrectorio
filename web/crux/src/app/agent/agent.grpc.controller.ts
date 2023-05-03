@@ -16,16 +16,16 @@ import {
   Empty,
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
-import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { NodeGrpcCall } from 'src/shared/grpc-node-connection'
 import AgentService from './agent.service'
 import AgentAuthGuard from './guards/agent.auth.guard'
+import AgentErrorInterceptor from './interceptors/agent.error.interceptor'
 
 @Controller()
 @AgentControllerMethods()
 @UseGuards(AgentAuthGuard)
-@UseInterceptors(GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseInterceptors(AgentErrorInterceptor, PrismaErrorInterceptor)
 export default class AgentController implements GrpcAgentController {
   constructor(private service: AgentService) {}
 

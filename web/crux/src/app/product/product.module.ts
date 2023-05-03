@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
-import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import KratosService from 'src/services/kratos.service'
 import TeamModule from '../team/team.module'
 import TeamRepository from '../team/team.repository'
@@ -15,13 +14,6 @@ import SharedModule from '../shared/shared.module'
   imports: [VersionModule, TeamModule, TokenModule, SharedModule],
   exports: [ProductMapper, ProductService],
   controllers: [ProductHttpController],
-  providers: [
-    PrismaService,
-    ProductService,
-    ProductMapper,
-    InterceptorGrpcHelperProvider,
-    TeamRepository,
-    KratosService,
-  ],
+  providers: [PrismaService, ProductService, ProductMapper, TeamRepository, KratosService],
 })
 export default class ProductModule {}

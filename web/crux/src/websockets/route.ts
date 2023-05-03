@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { MessageMappingProperties } from '@nestjs/websockets'
-import { EMPTY, Observable, firstValueFrom, of } from 'rxjs'
+import { EMPTY, Observable, firstValueFrom, of, tap } from 'rxjs'
 import {
   SubscriptionMessage,
   WS_TYPE_AUTHORIZE,
@@ -95,7 +95,13 @@ export default class WsRoute {
     }
     const authorizationRes = transform(authorize(authMessage))
     if (redirect) {
-      return authorizationRes
+      return authorizationRes.pipe(
+        tap(it => {
+          if (typeof it === 'boolean') {
+            throw new Error('Missing WsRedirectInterceptor')
+          }
+        }),
+      )
     }
 
     const authorized = (await firstValueFrom(authorizationRes)) as boolean

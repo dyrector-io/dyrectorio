@@ -14,6 +14,7 @@ import HttpLoggerInterceptor from './interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import createSwaggerConfig from './swagger'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
+import AuditLoggerInterceptor from './interceptors/audit-logger.interceptor'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -77,6 +78,7 @@ const bootstrap = async () => {
     new HttpLoggerInterceptor(),
     app.get(PrismaErrorInterceptor),
     new CreatedWithLocationInterceptor(),
+    app.get(AuditLoggerInterceptor),
   )
   app.useGlobalPipes(new ValidationPipe({ transform: true }))
 
