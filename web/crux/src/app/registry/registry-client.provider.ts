@@ -32,7 +32,7 @@ export default class RegistryClientProvider {
     service.watchRegistryEvents().subscribe(it => this.invalidate(it))
   }
 
-  free(teamId: string) {
+  removeClientsByTeam(teamId: string) {
     const registries = this.registriesByTeam.get(teamId)
     if (!registries) {
       return
@@ -125,10 +125,7 @@ export default class RegistryClientProvider {
 
     this.clients.set(registry.id, client)
 
-    let teamRegistries = this.registriesByTeam.get(teamId)
-    if (!teamRegistries) {
-      teamRegistries = []
-    }
+    const teamRegistries = this.registriesByTeam.get(teamId) ?? []
 
     teamRegistries.push(registryId)
 
