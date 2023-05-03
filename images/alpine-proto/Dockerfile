@@ -32,3 +32,4 @@ RUN curl -L -o /usr/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://
 WORKDIR /usr/work
 
 LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/tree/develop/images/alpine-proto"
+
