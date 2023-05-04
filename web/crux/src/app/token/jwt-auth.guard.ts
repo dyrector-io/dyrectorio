@@ -48,8 +48,8 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
         req.sessionExpiresAt = new Date(session.expires_at).getTime()
         this.logger.verbose(`Authorized. Kratos cookie was found legit.`)
         return true
-      } catch {
-        /* ignored */
+      } catch (err) {
+        this.logger.verbose('Failed to authorize with kratos by cookie', err)
       }
     }
 
