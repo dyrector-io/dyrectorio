@@ -133,14 +133,6 @@ Besides the self-hosted instance, you can check out the platform's alpha at [app
 
 dyrectorio consists of an agent (GoLang) and a platform (UI developed in React.js, Next.js. Backend developed in Node.js, Nest.js). There are two types of agents communicating with the platform: one for Docker and another for Kubernetes. Communication takes place in gRPC with TLS encryption. The data is managed in a PostgreSQL database which we use with Prisma ORM.
 
-<p align="center">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="docs/how-it-works-dark.png">
-      <source media="(prefers-color-scheme: light)" srcset="docs/how-it-works-light.png">
-      <img alt="dyrector.io official logo" src="docs/how-it-works-dark.png" width="600">
-    </picture>
-</p>
-
 ## FAQ
 
 -   Can we use dyrectorio without containerization?
