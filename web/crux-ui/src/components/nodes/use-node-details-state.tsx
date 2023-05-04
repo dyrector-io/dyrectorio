@@ -20,7 +20,7 @@ import {
 import { nodeWsUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PaginationSettings } from '../shared/paginator'
 import useNodeState from './use-node-state'
 
@@ -56,7 +56,6 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
 
   const [section, setSection] = useState<NodeDetailsSection>('containers')
   const [node, setNode] = useNodeState(options.node)
-  const watchingContainers = useRef<boolean>(false)
   const [containerTargetStates, setContainertargetStates] = useState<ContainerTargetStates>({})
   const [pagination, setPagination] = useState<PaginationSettings>({
     pageNumber: 0,
@@ -77,21 +76,18 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     ],
   })
 
-  const sock = useWebSocket(nodeWsUrl(node.id), {
-    onOpen: () => sock.send(WS_TYPE_WATCH_CONTAINERS_STATE, { prefix: '' } as WatchContainerStatusMessage),
-  })
-
-  // TODO(@robot9706): :<
+  const sock = useWebSocket(nodeWsUrl(node.id))
   useEffect(() => {
-    if (!watchingContainers.current && node.status === 'connected') {
+    if (node.status === 'connected') {
       sock.send(WS_TYPE_WATCH_CONTAINERS_STATE, { prefix: '' } as WatchContainerStatusMessage)
-      watchingContainers.current = true
     }
-    if (watchingContainers.current && node.status !== 'connected') {
+  }, [node.status, sock])
+
+  useEffect(() => {
+    if (node.status !== 'connected' && filters.items.length > 0) {
       filters.setItems([])
-      watchingContainers.current = false
     }
-  }, [node])
+  }, [node.status, filters])
 
   sock.on(WS_TYPE_CONTAINERS_STATE_LIST, (message: ContainersStateListMessage) => {
     filters.setItems(message.containers)

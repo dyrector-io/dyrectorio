@@ -1,10 +1,17 @@
 import useWebSocket from '@app/hooks/use-websocket'
-import { DyoNode, NodeConnection, nodeConnectionOf, NodeDetails, WS_TYPE_NODE_EVENT } from '@app/models'
+import {
+  DyoNode,
+  NodeConnection,
+  nodeConnectionOf,
+  NodeDetails,
+  NodeEventMessage,
+  WS_TYPE_NODE_EVENT,
+} from '@app/models'
 import { WS_NODES } from '@app/routes'
 import { WsMessage } from '@app/websockets/common'
 import { useState } from 'react'
 
-const filterWsNodeId = (nodeId: string) => (message: WsMessage<any>) => {
+const filterWsNodeId = (nodeId: string) => (message: WsMessage<Pick<NodeEventMessage, 'id'>>) => {
   const { data } = message
 
   if (data?.id !== nodeId) {
