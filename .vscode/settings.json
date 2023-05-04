@@ -1,7 +1,5 @@
 {
-    "go.buildFlags": [
-        "-tags=unit,integration"
-    ],
+    "go.buildFlags": ["-tags=unit,integration"],
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,
@@ -11,11 +9,8 @@
         "**/Thumbs.db": true,
         "**/node_modules": true
     },
-    "eslint.workingDirectories": [
-        "web/crux",
-        "web/crux-ui"
-    ],
+    "eslint.workingDirectories": ["web/crux", "web/crux-ui"],
     "gopls": {
-	    "formatting.gofumpt": true,
+        "formatting.gofumpt": true
     }
 }

@@ -2,6 +2,7 @@
   - 'web/**'
 'source:documentation':
   - 'docs/**'
+  - '**/*.md'
 'source:agent':
   - 'golang/pkg/crane/**'
   - 'golang/pkg/dagent/**'
@@ -36,4 +37,3 @@
 'lang:typescript':
   - '**/*.ts'
   - '**/*.js'
-
