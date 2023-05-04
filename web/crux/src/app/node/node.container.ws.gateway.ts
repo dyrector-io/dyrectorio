@@ -33,11 +33,6 @@ export default class NodeContainerWebSocketGateway {
     return this.service.checkNodeIsInTheActiveTeam(nodeId, identity)
   }
 
-  @SubscribeMessage('update-agent')
-  updateAgent(@NodeId() nodeId: string) {
-    this.service.updateAgent(nodeId)
-  }
-
   @SubscribeMessage('container-command')
   containerCommand(@NodeId() nodeId: string, @SocketMessage() message: ContainerCommandMessage): void {
     const { container, operation } = message
