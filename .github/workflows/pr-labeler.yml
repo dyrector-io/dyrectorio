@@ -13,8 +13,7 @@ jobs:
     steps:
       - uses: actions/labeler@v4
         with:
-          repo-token: '${{ github.token }}'
-          configuration-path: .github/config/source_lang_label.yml
+          configuration-path: .github/config/labeler.yml
 
   label_based_on_title:
     permissions:
@@ -27,3 +26,4 @@ jobs:
           configuration-path: .github/config/title_label_config.yml
           include-title: 1
           repo-token: '${{ github.token }}'
+          enable-versioned-regex: 0
