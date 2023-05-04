@@ -13,6 +13,7 @@ jobs:
     steps:
       - uses: actions/labeler@v4
         with:
+          repo-token: '${{ github.token }}'
           configuration-path: .github/config/source_lang_label.yml
 
   label_based_on_title:
