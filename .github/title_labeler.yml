@@ -10,4 +10,8 @@
   - '^techdebt'
 'pr:test':
   - '^test'
+'pr:build':
+  - '^build'
+'pr:refactor':
+  - '^refactor'
 

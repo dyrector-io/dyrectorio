@@ -44,6 +44,10 @@ export class ContainerMessage {
   ports: ContainerPortDto[]
 }
 
+export type UpdateNodeMessage = {
+  id: string
+}
+
 export type ContainerOperation = 'start' | 'stop' | 'restart'
 
 // containers state
