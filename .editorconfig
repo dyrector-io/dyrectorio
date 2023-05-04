@@ -20,6 +20,7 @@ max_line_length = 120
 
 [*.{yml,yaml}]
 indent_size = 2
+quote_type = single
 
 # Shell
 # https://google.github.io/styleguide/shell.xml#Indentation
