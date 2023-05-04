@@ -47,7 +47,7 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
     timer.current = setInterval(updateRunningSince, interval.current)
     updateRunningSince()
     return () => clearInterval(timer.current)
-  }, [])
+  }, [node])
 
   return (
     <DyoCard className={clsx(className ?? 'p-6')}>

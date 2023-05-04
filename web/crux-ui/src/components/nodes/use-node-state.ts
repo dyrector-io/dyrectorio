@@ -7,7 +7,7 @@ import { useState } from 'react'
 const filterWsNodeId = (nodeId: string) => (message: WsMessage<any>) => {
   const { data } = message
 
-  if (data?.nodeId !== nodeId) {
+  if (data?.id !== nodeId) {
     return null
   }
 
