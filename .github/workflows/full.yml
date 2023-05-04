@@ -49,7 +49,7 @@ jobs:
         # if it's not a PR we skip
         if: ${{ github.event_name == 'pull_request' }}
         working-directory: .github/workflows
-        run: sh -x title_validation.sh '${{ github.event.pull_request.title }}'
+        run: sh -x pr_title_validation.sh '${{ github.event.pull_request.title }}'
 
   gather_changes:
     runs-on: ubuntu-22.04
@@ -215,7 +215,7 @@ jobs:
 
   go_build:
     runs-on: ubuntu-22.04
-    needs: [go_security, go_lint, go_test,go_integration, gather_changes]
+    needs: [go_security, go_lint, go_test, go_integration, gather_changes]
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
     defaults:
