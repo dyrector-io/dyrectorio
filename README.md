@@ -123,19 +123,19 @@ Read more about the CLI in the [documentation](https://docs.dyrector.io/get-star
 
 ## Non-development
 
-You can set up dyrectorio for self-hosting purposes with the [docker-compose](https://github.com/dyrector-io/dyrectorio/blob/develop/docker-compose.yaml) file located in the root folder.
+You can set up dyrector.io for self-hosting purposes with the [docker-compose](https://github.com/dyrector-io/dyrectorio/blob/develop/docker-compose.yaml) file located in the root folder.
 
 ## Hosted version (SaaS)
 
-Besides the self-hosted instance, you can check out the platform's alpha at [app.dyrectorio.com](https://app.dyrector.io). The platform is still in the works, we might reset the database, so it's not recommended for production yet. In case you are interested about using dyrectorio in production, reach out to us via [email](hello@dyrector.io) and we'll set up a stable instance for you.
+Besides the self-hosted instance, you can check out the platform's alpha at [app.dyrectorio.com](https://app.dyrector.io). The platform is still in the works, we might reset the database, so it's not recommended for production yet. In case you are interested about using dyrector.io in production, reach out to us via [email](hello@dyrector.io) and we'll set up a stable instance for you.
 
 ## How it works
 
-dyrectorio consists of an agent (GoLang) and a platform (UI developed in React.js, Next.js. Backend developed in Node.js, Nest.js). There are two types of agents communicating with the platform: one for Docker and another for Kubernetes. Communication takes place in gRPC with TLS encryption. The data is managed in a PostgreSQL database which we use with Prisma ORM.
+dyrector.io consists of an agent (GoLang) and a platform (UI developed in React.js, Next.js. Backend developed in Node.js, Nest.js). There are two types of agents communicating with the platform: one for Docker and another for Kubernetes. Communication takes place in gRPC with TLS encryption. The data is managed in a PostgreSQL database which we use with Prisma ORM.
 
 ## FAQ
 
--   Can we use dyrectorio without containerization?
+-   Can we use dyrector.io without containerization?
 
     Unfortunately, we're unable to support applications that don't run in a containerization environment.
 
@@ -159,7 +159,7 @@ dyrectorio consists of an agent (GoLang) and a platform (UI developed in React.j
 
 Also, follow us on GitHub Discussions, our [Blog](https://blog.dyrector.io), and on [Twitter](https://twitter.com/dyrectorio). You can chat with the team and other members on [Discord](https://discord.gg/pZWbd4fxga).
 
-dyrectorio is Open Source - This repository, and most of our other open source projects, are licensed under the Apache 2.0.
+dyrector.io is Open Source - This repository, and most of our other open source projects, are licensed under the Apache 2.0.
 
 Join our Discord and connect with other members to share and learn together.
 Send a pull request to any of our open source repositories on Github. Check our contribution guide and our developers guide for more details about how to contribute. We're looking forward to your contribution!
