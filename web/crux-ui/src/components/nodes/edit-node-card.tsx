@@ -80,7 +80,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       status: message.status,
       hasToken: message.status === 'connected' || node.hasToken,
       updating: message.updating ?? node.updating,
-      install: null,
+      install: message.status === 'connected' ? null : node.install,
     } as NodeDetails
 
     setNode(newNode)

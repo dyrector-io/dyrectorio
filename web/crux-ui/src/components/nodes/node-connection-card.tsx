@@ -1,12 +1,13 @@
-import { HOUR_IN_SECONDS, SECOND_IN_MILLIS } from '@app/const'
+import { SECOND_IN_MILLIS } from '@app/const'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import TimeLabel from '@app/elements/time-label'
+import useInterval from '@app/hooks/use-interval'
 import { DyoNode } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import NodeStatusIndicator from './node-status-indicator'
 
 interface NodeConnectionCardProps {
@@ -20,34 +21,20 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
 
   const { node, className, showName } = props
 
-  const [runningSince, setRunningSince] = useState(null)
-
-  const timer = useRef(null)
-  const interval = useRef(SECOND_IN_MILLIS)
+  const [runningSince, setRunningSince] = useState<number>(null)
 
   const updateRunningSince = () => {
-    if (node.status !== 'connected') {
+    if (node.status !== 'connected' || !node.connectedAt) {
       setRunningSince(null)
-    } else {
-      const now = new Date().getTime()
-      const secondsSinceConnected = node.connectedAt
-        ? (now - new Date(node.connectedAt).getTime()) / SECOND_IN_MILLIS
-        : null
-
-      if (secondsSinceConnected > HOUR_IN_SECONDS && interval.current === SECOND_IN_MILLIS) {
-        clearInterval(timer.current)
-        timer.current = setInterval(updateRunningSince, (interval.current = SECOND_IN_MILLIS * 60))
-      }
-
-      setRunningSince(secondsSinceConnected)
+      return
     }
+
+    const now = Date.now()
+    const seconds = (now - new Date(node.connectedAt).getTime()) / 1000
+    setRunningSince(Math.ceil(seconds))
   }
 
-  useEffect(() => {
-    timer.current = setInterval(updateRunningSince, interval.current)
-    updateRunningSince()
-    return () => clearInterval(timer.current)
-  }, [])
+  useInterval(updateRunningSince, SECOND_IN_MILLIS)
 
   return (
     <DyoCard className={clsx(className ?? 'p-6')}>

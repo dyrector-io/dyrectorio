@@ -194,6 +194,9 @@ export class Agent {
     this.eventChannel.next({
       id: this.id,
       status: 'unreachable',
+      address: null,
+      version: null,
+      connectedAt: null,
     })
   }
 

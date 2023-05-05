@@ -22,7 +22,7 @@ import NodeService from './node.service'
 export default class NodeGlobalContainerHttpController {
   constructor(private service: NodeService) {}
 
-  @Get(`${ROUTE_NODE_ID}/containers`)
+  @Get()
   @HttpCode(200)
   @ApiOperation({
     description:

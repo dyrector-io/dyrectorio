@@ -2,6 +2,7 @@ import { Controller, Get } from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { HealthDto } from './health.dto'
 import HealthService from './health.service'
+import { DisableAuth } from '../token/jwt-auth.guard'
 
 const ROUTE_HEALTH = 'health'
 
@@ -19,6 +20,7 @@ export default class HealthHttpController {
     type: HealthDto,
     description: 'Service status.',
   })
+  @DisableAuth()
   async getHealth(): Promise<HealthDto> {
     return this.service.getCruxHealth()
   }
