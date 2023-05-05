@@ -1,7 +1,6 @@
 import { HttpModule } from '@nestjs/axios'
 import { Module } from '@nestjs/common'
 import NotificationTemplateBuilder from 'src/builders/notification.template.builder'
-import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
@@ -24,7 +23,6 @@ import EditorModule from '../editor/editor.module'
     VersionService,
     VersionMapper,
     PrismaService,
-    InterceptorGrpcHelperProvider,
     TeamRepository,
     NotificationTemplateBuilder,
     DomainNotificationService,

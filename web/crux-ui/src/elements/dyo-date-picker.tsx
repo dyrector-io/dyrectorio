@@ -25,6 +25,7 @@ const DyoDatePicker = forwardRef((props: ReactDatePickerProps<never, boolean>, r
       weekStartsOn: 1 /* Monday */,
       firstWeekContainsDate: 4,
     },
+    match: {}, // Date picker requires locale.match, but doesn't use it
   } as Locale
 
   const { className, ...rest } = props

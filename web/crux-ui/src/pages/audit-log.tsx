@@ -10,7 +10,7 @@ import DyoDatePicker from '@app/elements/dyo-date-picker'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { AuditLog, AuditLogList, AuditLogQuery, beautifyAuditLogEvent } from '@app/models'
+import { AuditLog, AuditLogList, AuditLogQuery } from '@app/models'
 import { auditApiUrl, ROUTE_AUDIT } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
@@ -47,6 +47,9 @@ const AuditLogPage = () => {
 
   const fetchData = async () => {
     const { from, to } = filter
+    if (!from || !to) {
+      return
+    }
 
     const query: AuditLogQuery = {
       skip: pagination.pageNumber * pagination.pageSize,
@@ -110,7 +113,7 @@ const AuditLogPage = () => {
     </div>,
     <div className="font-semibold min-w-max">{log.email}</div>,
     <div className="min-w-max">{utcDateToLocale(log.createdAt)}</div>,
-    <div>{beautifyAuditLogEvent(log.serviceCall)}</div>,
+    <div>{log.serviceCall}</div>,
     <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
       {JSON.stringify(log.data)}
     </div>,
@@ -165,7 +168,7 @@ const AuditLogPage = () => {
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
         >
-          <span className="text-bright font-semibold pl-4">{beautifyAuditLogEvent(showInfo.serviceCall)}</span>
+          <span className="text-bright font-semibold pl-4">{showInfo.serviceCall}</span>
           <JsonEditor className="overflow-y-auto mt-8 p-4" disabled value={showInfo.data} />
         </DyoModal>
       )}

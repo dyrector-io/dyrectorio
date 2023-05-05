@@ -4,7 +4,9 @@ import { Observable, tap } from 'rxjs'
 import TeamRepository from 'src/app/team/team.repository'
 import { AuditLogLevelOption, AUDIT_LOGGER_LEVEL } from 'src/decorators/audit-logger.decorator'
 import PrismaService from 'src/services/prisma.service'
-import InterceptorGrpcHelperProvider from './helper.interceptor'
+import { identityOfRequest } from 'src/app/token/jwt-auth.guard'
+import { WS_TYPE_SUBSCRIBE, WS_TYPE_UNSUBSCRIBE, WsMessage } from 'src/websockets/common'
+import AuditLoggerService from 'src/app/shared/audit.logger.service'
 
 /**
  * Audit Logger Interceptor helps to log every activity to a database and only
@@ -14,33 +16,58 @@ import InterceptorGrpcHelperProvider from './helper.interceptor'
 export default class AuditLoggerInterceptor implements NestInterceptor {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly helper: InterceptorGrpcHelperProvider,
     private readonly teamRepository: TeamRepository,
     private readonly reflector: Reflector,
+    private readonly service: AuditLoggerService,
   ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
-    const level = this.reflector.get<AuditLogLevelOption>(AUDIT_LOGGER_LEVEL, context.getHandler()) ?? 'all'
+    const auditLevel = this.reflector.get<AuditLogLevelOption>(AUDIT_LOGGER_LEVEL, context.getHandler())
+    const level = auditLevel ?? 'all'
 
     if (level === 'disabled') {
       return next.handle()
     }
 
-    const result = this.helper.mapToGrpcObject(context)
+    if (context.getType() === 'http') {
+      const user = identityOfRequest(context)
+      if (!user) {
+        return next.handle()
+      }
 
-    // Check the team is existing with the given accessedBy Id
-    const activeTeam = await this.teamRepository.getActiveTeamByUserId(result.userId)
+      const request = context.switchToHttp().getRequest()
+      const {
+        route: {
+          methods: { get },
+        },
+      } = request
 
-    return next.handle().pipe(
-      tap(async () => {
-        await this.prisma.auditLog.create({
-          data: {
-            ...result,
-            teamId: activeTeam.teamId,
-            data: level === 'no-data' ? undefined : result.data,
-          },
-        })
-      }),
-    )
+      if (get && !auditLevel) {
+        return next.handle()
+      }
+
+      return next.handle().pipe(
+        tap(async () => {
+          await this.service.createHttpAudit(level, user, request)
+        }),
+      )
+    }
+
+    if (context.getType() === 'ws') {
+      const wsContext = context.switchToWs()
+      const { type } = wsContext.getData() as WsMessage<any>
+
+      if (type === WS_TYPE_SUBSCRIBE || type === WS_TYPE_UNSUBSCRIBE) {
+        return next.handle()
+      }
+
+      return next.handle().pipe(
+        tap(async () => {
+          await this.service.createWsAudit(level, wsContext)
+        }),
+      )
+    }
+
+    return next.handle()
   }
 }

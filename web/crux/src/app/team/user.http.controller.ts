@@ -2,6 +2,7 @@ import { Body, Controller, Delete, HttpCode, Param, Post } from '@nestjs/common'
 import { ApiBody, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import { ActivateTeamDto } from './team.dto'
 import TeamService from './team.service'
@@ -22,6 +23,7 @@ export default class UserHttpController {
 
   @Post()
   @HttpCode(200)
+  @AuditLogLevel('disabled')
   @ApiOperation({
     description: 'Response includes the `user`, `activeTeamId`, `teams`, and `invitations`.',
     summary: 'Fetch the current user.',

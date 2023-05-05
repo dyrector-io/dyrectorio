@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common'
-import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import RegistryMapper from '../registry/registry.mapper'
@@ -18,7 +17,6 @@ import ImageEventService from './image.event.service'
     PrismaService,
     ImageService,
     ImageMapper,
-    InterceptorGrpcHelperProvider,
     TeamRepository,
     RegistryMapper,
     KratosService,

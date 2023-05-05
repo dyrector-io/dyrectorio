@@ -7,7 +7,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoList } from '@app/elements/dyo-list'
-import { AuditLog, beautifyAuditLogEvent, Dashboard } from '@app/models'
+import { AuditLog, Dashboard } from '@app/models'
 import { API_DASHBOARD, deploymentUrl, ROUTE_DASHBOARD } from '@app/routes'
 import { fetcher, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
@@ -80,7 +80,7 @@ const DashboardPage = (props: DashboardPageProps) => {
     <UserDefaultAvatar className="ml-auto" />,
     <div className="font-semibold min-w-max">{log.email}</div>,
     <div className="min-w-max">{utcDateToLocale(log.createdAt)}</div>,
-    <div>{beautifyAuditLogEvent(log.serviceCall)}</div>,
+    <div>{log.serviceCall}</div>,
     <div className="max-w-4xl truncate">{JSON.stringify(log.data)}</div>,
   ]
   /* eslint-enable react/jsx-key */

@@ -1,12 +1,16 @@
-import { UseFilters, UseGuards } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
-import WsExceptionFilter from 'src/filters/ws.exception-filter'
 import { WsAuthorize, WsClient, WsMessage, WsSubscribe, WsSubscription, WsUnsubscribe } from 'src/websockets/common'
 import SocketClient from 'src/websockets/decorators/ws.client.decorator'
 import WsParam from 'src/websockets/decorators/ws.param.decorator'
 import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
 import SocketSubscription from 'src/websockets/decorators/ws.subscription.decorator'
+import {
+  UseGlobalWsFilters,
+  UseGlobalWsGuards,
+  UseGlobalWsInterceptors,
+} from 'src/websockets/decorators/ws.gateway.decorators'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import {
   EditorInitMessage,
   EditorLeftMessage,
@@ -23,7 +27,7 @@ import {
 import EditorServiceProvider from '../editor/editor.service.provider'
 import { PatchImageDto } from '../image/image.dto'
 import ImageService from '../image/image.service'
-import JwtAuthGuard, { IdentityFromSocket } from '../token/jwt-auth.guard'
+import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import {
   AddImagesMessage,
   DeleteImageMessage,
@@ -50,8 +54,9 @@ const VersionId = () => WsParam('versionId')
 @WebSocketGateway({
   namespace: 'versions/:versionId',
 })
-@UseFilters(WsExceptionFilter)
-@UseGuards(JwtAuthGuard)
+@UseGlobalWsFilters()
+@UseGlobalWsGuards()
+@UseGlobalWsInterceptors()
 export default class VersionWebSocketGateway {
   constructor(
     private readonly service: VersionService,
@@ -193,6 +198,7 @@ export default class VersionWebSocketGateway {
   }
 
   @SubscribeMessage(WS_TYPE_FOCUS_INPUT)
+  @AuditLogLevel('disabled')
   async onFocusInput(
     @SocketClient() client: WsClient,
     @VersionId() versionId: string,
@@ -215,6 +221,7 @@ export default class VersionWebSocketGateway {
   }
 
   @SubscribeMessage(WS_TYPE_BLUR_INPUT)
+  @AuditLogLevel('disabled')
   async onBlurInput(
     @SocketClient() client: WsClient,
     @VersionId() versionId: string,
