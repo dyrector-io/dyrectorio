@@ -1,0 +1,16 @@
+"pr:chore":
+  - "^chore"
+"pr:doc":
+  - "^doc"
+"pr:fix":
+  - "^fix"
+"pr:feat":
+  - "^feat"
+"pr:techdebt":
+  - "^techdebt"
+"pr:test":
+  - "^test"
+"pr:build":
+  - "^build"
+"pr:refactor":
+  - "^refactor"
