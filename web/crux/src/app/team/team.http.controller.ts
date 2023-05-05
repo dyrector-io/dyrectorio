@@ -40,10 +40,10 @@ export default class TeamHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      'Data of teams consist of `name`, `id`, and `statistics`, including number of `users`, `products`, `nodes`, `versions`, and `deployments`.</br></br>Teams are the shared entity of multiple users. The purpose of teams is to separate users, nodes and products based on their needs within an organization. Team owners can assign roles. More details about teams here.',
+      'List of teams consist of `name`, `id`, and `statistics`, including number of `users`, `products`, `nodes`, `versions`, and `deployments`.</br></br>Teams are the shared entity of multiple users. The purpose of teams is to separate users, nodes and products based on their needs within an organization. Team owners can assign roles. More details about teams here.',
     summary: 'Fetch data of teams the user is a member of.',
   })
-  @ApiOkResponse({ type: TeamDto, isArray: true, description: 'Data of teams listed.' })
+  @ApiOkResponse({ type: TeamDto, isArray: true, description: 'List of teams and their statistics.' })
   @TeamRoleRequired('none')
   async getTeams(@IdentityFromRequest() identity: Identity): Promise<TeamDto[]> {
     return await this.service.getTeams(identity)
@@ -53,10 +53,10 @@ export default class TeamHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      "Request must include `teamId`, which is the ID of the team they'd like to get the data of. Data of teams consist of `name`, `id`, and `statistics`, including number of `users`, `products`, `nodes`, `versions`, and `deployments`. Response should include user details, as well, including `name`, `id`, `role`, `status`, `email`, and `lastLogin`.",
+      "Get the details of a team. Request must include `teamId`, which is the ID of the team they'd like to get the data of. Data of teams consist of `name`, `id`, and `statistics`, including number of `users`, `products`, `nodes`, `versions`, and `deployments`. Response should include user details, as well, including `name`, `id`, `role`, `status`, `email`, and `lastLogin`.",
     summary: 'Fetch data of a team the user is a member of.',
   })
-  @ApiOkResponse({ type: TeamDetailsDto, description: 'Data of the team is listed.' })
+  @ApiOkResponse({ type: TeamDetailsDto, description: 'Details of the team.' })
   @UuidParams(PARAM_TEAM_ID)
   async getTeamById(@TeamId() teamId: string): Promise<TeamDetailsDto> {
     return await this.service.getTeamById(teamId)
@@ -93,7 +93,7 @@ export default class TeamHttpController {
   @HttpCode(204)
   @ApiBody({ type: UpdateTeamDto })
   @ApiOperation({
-    description: 'Request must include `teamId` and `name`. Admin access required for successful request.',
+    description: 'Request must include `teamId` and `name`. Admin access required for a successful request.',
     summary: "Modify a team's name.",
   })
   @TeamRoleRequired('admin')
@@ -111,7 +111,7 @@ export default class TeamHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Request must include `teamId`. Owner access required for successful request.',
-    summary: 'Delete a team.',
+    summary: 'Deletes a team.',
   })
   @TeamRoleRequired('owner')
   @ApiNoContentResponse({ description: 'Team deleted.' })
@@ -127,14 +127,14 @@ export default class TeamHttpController {
   @CreatedWithLocation()
   @ApiOperation({
     description:
-      "Request must include `teamId`, email and `firstName`. Admin access required for successful request.</br></br>Response should include new user's `name`, `id`, `role`, `status`, `email`, and `lastLogin`.",
-    summary: 'Add new user to a team.',
+      "Request must include `teamId`, email and `firstName`. Admin access required for a successful request.</br></br>Response should include new user's `name`, `id`, `role`, `status`, `email`, and `lastLogin`. Admin access required for a successful request.",
+    summary: 'Invite a new user to the team.',
   })
   @ApiBody({ type: InviteUserDto })
   @ApiCreatedResponse({
     type: UserDto,
     headers: API_CREATED_LOCATION_HEADERS,
-    description: 'New user added.',
+    description: 'User invited.',
   })
   @UseInterceptors(TeamInviteUserValitationInterceptor)
   @TeamRoleRequired('admin')
@@ -156,7 +156,8 @@ export default class TeamHttpController {
   @HttpCode(204)
   @ApiBody({ type: UpdateUserRoleDto })
   @ApiOperation({
-    description: 'Request must include `teamId`, `userId` and `role`. Admin access required for successful request.',
+    description:
+      'Promotes or demotes the user. Request must include `teamId`, `userId` and `role`. Admin access required for a successful request.',
     summary: 'Edit user role.',
   })
   @TeamRoleRequired('admin')
@@ -176,11 +177,12 @@ export default class TeamHttpController {
   @HttpCode(204)
   @TeamRoleRequired('admin')
   @ApiOperation({
-    description: 'Request must include `teamId`, `userId`. Admin access required for successful request.',
-    summary: 'Delete user from team.',
+    description:
+      'Removes the user from the team. Request must include `teamId`, `userId`. Admin access required for a successful request.',
+    summary: 'Remove a user from the team.',
   })
   @UseInterceptors(TeamOwnerImmutabilityValidationInterceptor)
-  @ApiNoContentResponse({ description: 'User deleted from a team.' })
+  @ApiNoContentResponse({ description: 'User removed from a team.' })
   @UuidParams(PARAM_TEAM_ID, PARAM_USER_ID)
   async deleteUserFromTeam(@TeamId() teamId: string, @UserId() userId: string): Promise<void> {
     await this.service.deleteUserFromTeam(teamId, userId)
@@ -191,7 +193,7 @@ export default class TeamHttpController {
   @UseInterceptors(TeamReinviteUserValidationInterceptor)
   @ApiOperation({
     description:
-      "This call sends a new invitation link to a user who hasn't accepted invitation to a team.</br></br>Request must include `teamId`, `userId`. Admin access required for successful request.",
+      "This call sends a new invitation link to a user who hasn't accepted invitation to a team.</br></br>Request must include `teamId`, `userId`. Admin access required for a successful request.",
     summary: 'Reinvite user with a pending invite status to a team.',
   })
   @TeamRoleRequired('admin')

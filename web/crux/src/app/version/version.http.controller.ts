@@ -39,13 +39,13 @@ export default class VersionHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      "Returns an array containing the details of every version that belong to a product. `ProductId` refers to the product's ID. Details include the version's `name`, `id`, `type`, `audit` log details, `changelog`, and increasibility.",
-    summary: 'Fetch the details of all the versions under a product.',
+      "Returns an array containing the every version that belong to a product. `productId` refers to the product's ID. Details include the version's `name`, `id`, `type`, `audit` log details, `changelog`, and increasibility.",
+    summary: 'Fetch the list of all the versions under a product.',
   })
   @ApiOkResponse({
     type: VersionDto,
     isArray: true,
-    description: 'Returns an array with the data of every version of a product.',
+    description: 'Returns an array with the every version of a product.',
   })
   @UuidParams(PARAM_PRODUCT_ID)
   async getVersions(@ProductId() productId: string, @IdentityFromRequest() identity: Identity): Promise<VersionDto[]> {
@@ -55,7 +55,7 @@ export default class VersionHttpController {
   @Get(ROUTE_VERSION_ID)
   @ApiOperation({
     description:
-      "Returns an array containing the details of every version that belong to a product. `ProductId` refers to the product's ID, `versionId` refers to the version's ID. Details include the version's `name`, `id`, `type`, `audit` log details, `changelog`, increasibility, mutability, deletability, and all image related data, including `name`, `id`, `tag`, `order` and configuration data of the images.",
+      "Returns the details of a version in the product. `productId` refers to the product's ID, `versionId` refers to the version's ID. Details include the version's `name`, `id`, `type`, `audit` log details, `changelog`, increasibility, mutability, deletability, and all image related data, including `name`, `id`, `tag`, `order` and configuration data of the images.",
     summary: 'Retrieve the details of a version of a product.',
   })
   @ApiOkResponse({ type: VersionDetailsDto, description: 'Details of a version under a product is fetched.' })
@@ -70,7 +70,7 @@ export default class VersionHttpController {
   @UseInterceptors(VersionCreateValidationInterceptor)
   @ApiOperation({
     description:
-      "Creates a new version to a product. `ProductId` refers to the product's ID. Request must include the `name` and `type` of the version, `changelog` is optionable. Response should include the `name`, `id`, `changelog`, increasibility, `type`, and `audit` log details of the version.",
+      "Creates a new version in a product. `productId` refers to the product's ID. Request must include the `name` and `type` of the version, `changelog` is optionable. Response should include the `name`, `id`, `changelog`, increasibility, `type`, and `audit` log details of the version.",
     summary: 'Create a new version.',
   })
   @ApiBody({ type: CreateVersionDto })
@@ -93,7 +93,7 @@ export default class VersionHttpController {
   @HttpCode(204)
   @ApiOperation({
     description:
-      "Updates a version's `changelog`. `ProductId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables.",
+      "Updates a version's `name` and `changelog`. `productId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables.",
     summary: 'Modify version.',
   })
   @ApiNoContentResponse({ description: 'Changelog of a version is updated.' })
@@ -113,7 +113,7 @@ export default class VersionHttpController {
   @HttpCode(204)
   @ApiOperation({
     description:
-      "This call deletes a version. `ProductId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables.",
+      "This call deletes a version. `productId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables.",
     summary: 'Delete a version.',
   })
   @ApiNoContentResponse({ description: 'Version deleted.' })
@@ -127,8 +127,9 @@ export default class VersionHttpController {
   @HttpCode(204)
   @ApiOperation({
     description:
-      "This call turns a version into a default one, resulting other versions within this product later inherit images and configurations from it. `ProductId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables.",
-    summary: 'Turn version into a default one of the complex product other versions under it will inherit images from.',
+      "This call turns a version into the default one, resulting other versions within this product later inherit images, deployments and their configurations from it. `productId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables.",
+    summary:
+      'Turn version into a default one of the complex product other versions under it will inherit images and deployments from.',
   })
   @ApiNoContentResponse({
     description: 'Version turned into default.',
@@ -143,8 +144,8 @@ export default class VersionHttpController {
   @CreatedWithLocation()
   @ApiOperation({
     description:
-      "Increases the default version of a product with a new version. `ProductId` refers to the product's ID, `versionId` refers to the version's ID, `name` refers to the name of the new version. All are required variables.",
-    summary: 'Increase a default version of a complex product with a new version.',
+      "Increases the version of a product with a new child version. `productId` refers to the product's ID, `versionId` refers to the version's ID, `name` refers to the name of the new version. All are required variables.",
+    summary: 'Increase a the version of a complex product with a new version.',
   })
   @UseInterceptors(VersionIncreaseValidationInterceptor)
   @ApiBody({ type: IncreaseVersionDto })
