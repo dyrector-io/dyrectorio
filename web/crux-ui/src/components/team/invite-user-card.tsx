@@ -4,9 +4,9 @@ import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { defaultApiErrorHandler } from '@app/errors'
+import { apiErrorHandler, defaultTranslator } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { InviteUser, TeamDetails, User } from '@app/models'
+import { DyoErrorDto, InviteUser, TeamDetails, User } from '@app/models'
 import { teamUserListApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { inviteUserSchema } from '@app/validations'
@@ -27,7 +27,15 @@ const InviteUserCard = (props: InviteUserCardProps) => {
 
   const { t } = useTranslation('teams')
 
-  const handleApiError = defaultApiErrorHandler(t)
+  const handleApiError = apiErrorHandler((stringId: string, status: number, dto: DyoErrorDto) => {
+    if (dto.property === 'captcha') {
+      return {
+        toast: dto.description,
+      }
+    }
+
+    return defaultTranslator(t)(stringId, status, dto)
+  })
 
   const recaptcha = useRef<ReCAPTCHA>()
   const formik = useDyoFormik({
