@@ -59,13 +59,11 @@ func GetCrux(state *State, args *ArgsFlags) containerbuilder.Builder {
 			"traefik.http.routers.crux.rule": fmt.Sprintf("(Host(`localhost`) || Host(`%s`) || Host(`%s`)) && "+
 				"PathPrefix(`/api`) && !PathPrefix(`/api/auth`) && !PathPrefix(`/api/status`) ",
 				state.Containers.Traefik.Name, state.InternalHostDomain),
-			"traefik.http.routers.crux.entrypoints":                    "web",
-			"traefik.http.services.crux.loadbalancer.server.port":      fmt.Sprintf("%d", defaultCruxHTTPPort),
-			"traefik.http.middlewares.crux-strip.stripprefix.prefixes": "/api",
-			"traefik.http.routers.crux.middlewares":                    "crux-strip",
-			"com.docker.compose.project":                               args.Prefix,
-			"com.docker.compose.service":                               state.Containers.Crux.Name,
-			label.DyrectorioOrg + label.ContainerPrefix:                args.Prefix,
+			"traefik.http.routers.crux.entrypoints":               "web",
+			"traefik.http.services.crux.loadbalancer.server.port": fmt.Sprintf("%d", defaultCruxHTTPPort),
+			"com.docker.compose.project":                          args.Prefix,
+			"com.docker.compose.service":                          state.Containers.Crux.Name,
+			label.DyrectorioOrg + label.ContainerPrefix:           args.Prefix,
 		}).
 		WithPreStartHooks(getCruxInitContainer(state, args))
 
