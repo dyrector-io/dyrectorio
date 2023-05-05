@@ -216,8 +216,6 @@ export const deploymentUrl = (deploymentId: string) => `${ROUTE_DEPLOYMENTS}/${d
 
 export const deploymentApiUrl = (deploymentId: string) => `${API_DEPLOYMENTS}/${deploymentId}`
 
-export const deploymentEventsApiUrl = (deploymentId: string) => `${deploymentApiUrl(deploymentId)}/events`
-
 export const deploymentWsUrl = (deploymentId: string) => `${deploymentUrl(deploymentId)}`
 
 export const deploymentDeployUrl = (deploymentId: string) => `${deploymentUrl(deploymentId)}/deploy`

@@ -32,13 +32,13 @@ export default class TokenHttpController {
   @Get()
   @HttpCode(200)
   @ApiOperation({
-    description: "Access token's support is to provide secure access to a user's profile.",
-    summary: 'Retrieve access token.',
+    description: "Access token's support is to provide secure access to the HTTP api without a cookie.",
+    summary: 'List of tokens.',
   })
   @ApiOkResponse({
     type: TokenDto,
     isArray: true,
-    description: 'Token fetched.',
+    description: 'Token list fetched.',
   })
   async getTokens(@IdentityFromRequest() identity: Identity): Promise<TokenDto[]> {
     return this.service.getTokenList(identity)
@@ -85,7 +85,7 @@ export default class TokenHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Request must include `tokenId`.',
-    summary: 'Create access token.',
+    summary: 'Delete an access token.',
   })
   @ApiNoContentResponse({ description: 'Delete token.' })
   @UuidParams(PARAM_TOKEN_ID)

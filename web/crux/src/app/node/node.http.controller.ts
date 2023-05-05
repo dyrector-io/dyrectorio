@@ -55,7 +55,7 @@ export default class NodeHttpController {
       "Fetch data of a specific node. Request must include `nodeId`. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, `name`, `hasToken`, and agent installation details.",
     summary: 'Get data of nodes that belong to your team.',
   })
-  @ApiOkResponse({ type: NodeDetailsDto, description: 'Data of the node is listed.' })
+  @ApiOkResponse({ type: NodeDetailsDto, description: 'Data of the node.' })
   @UuidParams(PARAM_NODE_ID)
   async getNodeDetails(@NodeId() nodeId: string): Promise<NodeDetailsDto> {
     return this.service.getNodeDetails(nodeId)
@@ -146,7 +146,7 @@ export default class NodeHttpController {
       'Request must include `nodeId`. Response should include `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, `name`, `hasToken`, and `install` details.',
     summary: 'Fetch install script.',
   })
-  @ApiOkResponse({ type: NodeDetailsDto, description: 'Install script listed.' })
+  @ApiOkResponse({ type: NodeDetailsDto, description: 'Install script.' })
   @Header('content-type', 'text/plain')
   @DisableAuth()
   @UuidParams(PARAM_NODE_ID)
@@ -158,7 +158,7 @@ export default class NodeHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Request must include `nodeId`.',
-    summary: "Revoke token that belongs to a node's install script.",
+    summary: "Revoke the node's access token.",
   })
   @ApiNoContentResponse({ description: 'Token revoked.' })
   @UuidParams(PARAM_NODE_ID)
