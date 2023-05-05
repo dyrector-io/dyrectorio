@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common'
-import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import PrismaService from 'src/services/prisma.service'
 import HealthHttpController from './health.http.controller'
 import HealthService from './health.service'
@@ -8,6 +7,6 @@ import HealthService from './health.service'
   imports: [],
   exports: [],
   controllers: [HealthHttpController],
-  providers: [PrismaService, InterceptorGrpcHelperProvider, HealthService],
+  providers: [PrismaService, HealthService],
 })
 export default class HealthModule {}

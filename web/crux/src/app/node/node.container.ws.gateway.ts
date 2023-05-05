@@ -1,11 +1,14 @@
-import { UseFilters } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
 import { Observable, map } from 'rxjs'
-import WsExceptionFilter from 'src/filters/ws.exception-filter'
 import { WsAuthorize, WsMessage } from 'src/websockets/common'
 import WsParam from 'src/websockets/decorators/ws.param.decorator'
 import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
+import {
+  UseGlobalWsFilters,
+  UseGlobalWsGuards,
+  UseGlobalWsInterceptors,
+} from 'src/websockets/decorators/ws.gateway.decorators'
 import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import {
   ContainerCommandMessage,
@@ -24,7 +27,9 @@ const NodeId = () => WsParam('nodeId')
 @WebSocketGateway({
   namespace: 'nodes/:nodeId',
 })
-@UseFilters(WsExceptionFilter)
+@UseGlobalWsFilters()
+@UseGlobalWsGuards()
+@UseGlobalWsInterceptors()
 export default class NodeContainerWebSocketGateway {
   constructor(private readonly service: NodeService) {}
 

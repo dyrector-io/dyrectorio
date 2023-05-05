@@ -3,7 +3,6 @@ import { PassportModule } from '@nestjs/passport'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
 import KratosService from 'src/services/kratos.service'
-import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import PrismaService from 'src/services/prisma.service'
 import TokenService from './token.service'
 import JwtStrategy from './jwt.strategy'
@@ -28,7 +27,7 @@ import TokenHttpController from './token.http.controller'
     }),
   ],
   controllers: [TokenHttpController],
-  providers: [InterceptorGrpcHelperProvider, TokenService, JwtStrategy, KratosService, PrismaService, TokenMapper],
+  providers: [TokenService, JwtStrategy, KratosService, PrismaService, TokenMapper],
   exports: [],
 })
 export default class TokenModule {}

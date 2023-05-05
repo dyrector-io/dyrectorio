@@ -1,13 +1,17 @@
-import { UseFilters, UseGuards } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
 import { Observable, Subject, map, of, takeUntil } from 'rxjs'
-import WsExceptionFilter from 'src/filters/ws.exception-filter'
 import { WsAuthorize, WsClient, WsMessage, WsSubscribe, WsSubscription, WsUnsubscribe } from 'src/websockets/common'
 import SocketClient from 'src/websockets/decorators/ws.client.decorator'
 import WsParam from 'src/websockets/decorators/ws.param.decorator'
 import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
 import SocketSubscription from 'src/websockets/decorators/ws.subscription.decorator'
+import {
+  UseGlobalWsFilters,
+  UseGlobalWsGuards,
+  UseGlobalWsInterceptors,
+} from 'src/websockets/decorators/ws.gateway.decorators'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import {
   EditorInitMessage,
   EditorLeftMessage,
@@ -22,10 +26,9 @@ import {
   WS_TYPE_INPUT_FOCUSED,
 } from '../editor/editor.message'
 import EditorServiceProvider from '../editor/editor.service.provider'
-import JwtAuthGuard, { IdentityFromSocket } from '../token/jwt-auth.guard'
+import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import { ImageDeletedMessage, WS_TYPE_IMAGE_DELETED } from '../version/version.message'
 import { PatchDeploymentDto, PatchInstanceDto } from './deploy.dto'
-import DeployMapper from './deploy.mapper'
 import {
   DeploymentEventListMessage,
   DeploymentEventMessage,
@@ -57,16 +60,13 @@ const DeploymentId = () => WsParam('deploymentId')
 @WebSocketGateway({
   namespace: 'deployments/:deploymentId',
 })
-@UseFilters(WsExceptionFilter)
-@UseGuards(JwtAuthGuard)
+@UseGlobalWsFilters()
+@UseGlobalWsGuards()
+@UseGlobalWsInterceptors()
 export default class DeployWebSocketGateway {
   private deploymentEventCompleters = new Map<string, Subject<unknown>>()
 
-  constructor(
-    private readonly service: DeployService,
-    private readonly mapper: DeployMapper,
-    private readonly editorServices: EditorServiceProvider,
-  ) {}
+  constructor(private readonly service: DeployService, private readonly editorServices: EditorServiceProvider) {}
 
   @WsAuthorize()
   async onAuthorize(@DeploymentId() deploymentId: string, @IdentityFromSocket() identity: Identity): Promise<boolean> {
@@ -256,6 +256,7 @@ export default class DeployWebSocketGateway {
   }
 
   @SubscribeMessage(WS_TYPE_FOCUS_INPUT)
+  @AuditLogLevel('disabled')
   async onFocusInput(
     @SocketClient() client: WsClient,
     @DeploymentId() deploymentId: string,
@@ -278,6 +279,7 @@ export default class DeployWebSocketGateway {
   }
 
   @SubscribeMessage(WS_TYPE_BLUR_INPUT)
+  @AuditLogLevel('disabled')
   async onBlurInput(
     @SocketClient() client: WsClient,
     @DeploymentId() deploymentId: string,

@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+  UseInterceptors,
+  Request,
+} from '@nestjs/common'
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -10,6 +22,9 @@ import {
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
+import AuditLoggerService from 'src/app/shared/audit.logger.service'
+import { Request as ExpressRequest } from 'express'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import TeamGuard, { TeamRoleRequired } from './guards/team.guard'
@@ -34,7 +49,7 @@ const ROUTE_USER_ID = ':userId'
 @ApiTags(ROUTE_TEAMS)
 @UseGuards(TeamGuard)
 export default class TeamHttpController {
-  constructor(private service: TeamService) {}
+  constructor(private service: TeamService, private auditLoggerService: AuditLoggerService) {}
 
   @Get()
   @HttpCode(200)
@@ -64,6 +79,7 @@ export default class TeamHttpController {
 
   @Post()
   @HttpCode(201)
+  @AuditLogLevel('disabled')
   @ApiOperation({
     description:
       'Request must include `name`, which is going to be the name of the newly made team. Response should include `name`, `id`, and `statistics`, including number of `users`, `products`, `nodes`, `versions`, and `deployments`.',
@@ -80,8 +96,11 @@ export default class TeamHttpController {
   async createTeam(
     @Body() request: CreateTeamDto,
     @IdentityFromRequest() identity: Identity,
+    @Request() httpRequest: ExpressRequest,
   ): Promise<CreatedResponse<TeamDto>> {
     const team = await this.service.createTeam(request, identity)
+
+    await this.auditLoggerService.createHttpAudit('all', identity, httpRequest)
 
     return {
       url: `/${ROUTE_TEAMS}/${team.id}`,

@@ -4,7 +4,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
 import { makeGaugeProvider } from '@willsoto/nestjs-prometheus'
 import NotificationTemplateBuilder from 'src/builders/notification.template.builder'
-import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
@@ -38,7 +37,6 @@ import AgentService from './agent.service'
   providers: [
     AgentService,
     PrismaService,
-    InterceptorGrpcHelperProvider,
     TeamRepository,
     NotificationTemplateBuilder,
     DomainNotificationService,

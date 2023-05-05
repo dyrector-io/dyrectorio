@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common'
-import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import AgentModule from '../agent/agent.module'
@@ -16,14 +15,6 @@ import EditorModule from '../editor/editor.module'
   imports: [AgentModule, ImageModule, SharedModule, EditorModule],
   exports: [DeployService, DeployMapper],
   controllers: [DeployHttpController],
-  providers: [
-    PrismaService,
-    DeployService,
-    DeployMapper,
-    InterceptorGrpcHelperProvider,
-    TeamRepository,
-    KratosService,
-    DeployWebSocketGateway,
-  ],
+  providers: [PrismaService, DeployService, DeployMapper, TeamRepository, KratosService, DeployWebSocketGateway],
 })
 export default class DeployModule {}
