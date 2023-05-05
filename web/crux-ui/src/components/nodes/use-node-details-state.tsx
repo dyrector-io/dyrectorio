@@ -20,7 +20,7 @@ import {
 import { nodeWsUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PaginationSettings } from '../shared/paginator'
 import useNodeState from './use-node-state'
 
@@ -76,9 +76,18 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     ],
   })
 
-  const sock = useWebSocket(nodeWsUrl(node.id), {
-    onOpen: () => sock.send(WS_TYPE_WATCH_CONTAINERS_STATE, { prefix: '' } as WatchContainerStatusMessage),
-  })
+  const sock = useWebSocket(nodeWsUrl(node.id))
+  useEffect(() => {
+    if (node.status === 'connected') {
+      sock.send(WS_TYPE_WATCH_CONTAINERS_STATE, { prefix: '' } as WatchContainerStatusMessage)
+    }
+  }, [node.status, sock])
+
+  useEffect(() => {
+    if (node.status !== 'connected' && filters.items.length > 0) {
+      filters.setItems([])
+    }
+  }, [node.status, filters])
 
   sock.on(WS_TYPE_CONTAINERS_STATE_LIST, (message: ContainersStateListMessage) => {
     filters.setItems(message.containers)
