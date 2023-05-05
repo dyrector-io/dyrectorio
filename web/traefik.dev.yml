@@ -13,14 +13,7 @@ http:
       service: crux
       entryPoints:
         - web
-      middlewares:
-        - crux-strip-prefix
-
-  middlewares:
-    crux-strip-prefix:
-      stripprefix:
-        prefixes: /api
-
+        
   services:
     crux-ui:
       loadBalancer:
