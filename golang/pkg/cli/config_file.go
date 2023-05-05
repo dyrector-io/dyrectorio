@@ -103,8 +103,8 @@ type Options struct {
 	MailSlurperSMTPPort            uint   `yaml:"mailSlurperSMTPPort" env-default:"1025"`
 	MailSlurperWebPort             uint   `yaml:"mailSlurperWebPort" env-default:"4436"`
 	MailSlurperWebPort2            uint   `yaml:"mailSlurperWebPort2" env-default:"4437"`
-	FromName                       string `yaml:"FROM_NAME" env-default:"dyrectorio Platform"`
-	FromEmail                      string `yaml:"FROM_EMAIL" env-default:"noreply@dyrectorio.com"`
+	MailFromName                   string `yaml:"mailFromName" env-default:"dyrector.io - Platform"`
+	MailFromEmail                  string `yaml:"mailFromEmail" env-default:"noreply@example.com"`
 }
 
 const (
