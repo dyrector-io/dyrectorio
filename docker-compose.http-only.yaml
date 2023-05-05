@@ -5,23 +5,20 @@
 services:
   # If you plan to deploy where a proxy is already in place, feel free to remove the traefik service
   traefik:
+    container_name: traefik
     image: docker.io/library/traefik:2.9
     command:
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-    ports:
-      - "80:80"
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+    ports: ['80:80']
     volumes:
-      - "letsencrypt:/letsencrypt"
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      # - "/run/podman/podman.sock:/var/run/docker.sock:ro"
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
     restart: unless-stopped
-
   crux:
+    container_name: crux
     image: ghcr.io/dyrector-io/dyrectorio/web/crux:${DYO_VERSION:-stable}
-    command:
-      - serve
+    command: [serve]
     environment:
       - TZ=${TIMEZONE:-UTC}
       - NODE_ENV=${NODE_ENV}
@@ -59,37 +56,35 @@ services:
       - traefik.http.routers.crux-http.entrypoints=web
       - traefik.http.routers.crux-http.service=crux-http
       - traefik.http.services.crux-http.loadbalancer.server.port=1848
-    # ports:
-    #   - 1848:1848 # http API
-
+      # ports:
+      #   - 1848:1848 # http API
   crux-migrate:
+    container_name: crux-migrate
     image: ghcr.io/dyrector-io/dyrectorio/web/crux:${DYO_VERSION:-stable}
-    command:
-      - migrate
+    command: [migrate]
     environment:
       - TZ=${TIMEZONE:-UTC}
       - DATABASE_URL=postgresql://crux:${CRUX_POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public&connect_timeout=5
     depends_on:
       crux-postgres:
         condition: service_healthy
-    restart: "no"
-
+    restart: 'no'
   crux-postgres:
+    container_name: crux-postgres
     image: docker.io/library/postgres:13-alpine
     environment:
       - POSTGRES_PASSWORD=${CRUX_POSTGRES_PASSWORD}
       - POSTGRES_USER=crux
       - POSTGRES_DB=crux
     restart: unless-stopped
-    volumes:
-      - crux-db:/var/lib/postgresql/data
+    volumes: ['crux-db:/var/lib/postgresql/data']
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [CMD-SHELL, pg_isready -U crux]
       interval: 5s
       timeout: 5s
       retries: 5
-
   crux-ui:
+    container_name: crux-ui
     image: ghcr.io/dyrector-io/dyrectorio/web/crux-ui:${DYO_VERSION:-stable}
     environment:
       - TZ=${TIMEZONE:-UTC}
@@ -112,8 +107,8 @@ services:
       - traefik.http.routers.crux-ui.rule=Host(`${DOMAIN}`)
       - traefik.http.routers.crux-ui.entrypoints=web
       - traefik.http.services.crux-ui.loadbalancer.server.port=3000
-
   kratos:
+    container_name: kratos
     image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
     environment:
       - SQA_OPT_OUT=true
@@ -150,8 +145,8 @@ services:
       - traefik.http.middlewares.kratos-strip.stripprefix.prefixes=/kratos
       - traefik.http.middlewares.kratos-ratelimit.ratelimit.average=100
       - traefik.http.routers.kratos.middlewares=kratos-strip,kratos-ratelimit
-
   kratos-migrate:
+    container_name: kratos-migrate
     image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
     command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
     environment:
@@ -159,34 +154,31 @@ services:
       - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
     depends_on:
       kratos-postgres:
-        condition: service_started
-    restart: "no"
-
+        condition: service_healthy
+    restart: 'no'
   kratos-postgres:
+    container_name: kratos-postgres
     image: docker.io/library/postgres:13-alpine
     environment:
       - POSTGRES_PASSWORD=${KRATOS_POSTGRES_PASSWORD}
       - POSTGRES_USER=kratos
       - POSTGRES_DB=kratos
     restart: unless-stopped
-    volumes:
-      - kratos-db:/var/lib/postgresql/data
+    volumes: ['kratos-db:/var/lib/postgresql/data']
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [CMD-SHELL, pg_isready -U kratos]
       interval: 5s
       timeout: 5s
       retries: 5
-
   # This is insecure, do not use this in production or on the public internet
   # example URI: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true
   mailslurper:
+    container_name: mailslurper
     image: docker.io/oryd/mailslurper:smtps-latest
     ports: # port 1025 is used internally for smtp, you do not have to expose that
       - 4436:4436 # web UI
       - 4437:4437 # http API
     restart: unless-stopped
-
 volumes:
-  letsencrypt:
   crux-db:
   kratos-db:
