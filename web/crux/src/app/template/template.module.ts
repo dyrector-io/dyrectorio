@@ -1,7 +1,6 @@
 import { HttpModule } from '@nestjs/axios'
 import { Module } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
-import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import TemplateFileService from 'src/services/template.file.service'
 import KratosService from 'src/services/kratos.service'
 import ProductModule from '../product/product.module'
@@ -27,6 +26,6 @@ import DeployModule from '../deploy/deploy.module'
   ],
   exports: [TemplateService],
   controllers: [TemplateHttpController],
-  providers: [TemplateService, InterceptorGrpcHelperProvider, PrismaService, TemplateFileService, KratosService],
+  providers: [TemplateService, PrismaService, TemplateFileService, KratosService],
 })
 export default class TemplateModule {}

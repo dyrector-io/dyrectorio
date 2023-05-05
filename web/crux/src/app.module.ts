@@ -16,11 +16,12 @@ import TeamModule from './app/team/team.module'
 import TemplateModule from './app/template/template.module'
 import VersionModule from './app/version/version.module'
 import ShutdownService from './application.shutdown.service'
-import InterceptorGrpcHelperProvider from './interceptors/helper.interceptor'
 import EmailModule from './mailer/email.module'
 import PrismaService from './services/prisma.service'
 import StorageModule from './app/storage/storage.module'
 import UuidValidationGuard from './guards/uuid-params.validation.guard'
+import AuditLoggerInterceptor from './interceptors/audit-logger.interceptor'
+import SharedModule from './app/shared/shared.module'
 
 @Module({
   imports: [
@@ -46,9 +47,10 @@ import UuidValidationGuard from './guards/uuid-params.validation.guard'
     PrometheusModule.register({
       controller: MetricsController,
     }),
+    SharedModule,
   ],
   controllers: [],
-  providers: [PrismaService, ShutdownService, InterceptorGrpcHelperProvider, UuidValidationGuard],
+  providers: [PrismaService, ShutdownService, UuidValidationGuard, AuditLoggerInterceptor],
 })
 class AppModule {}
 

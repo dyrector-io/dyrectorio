@@ -1,13 +1,16 @@
-import { UseFilters, UseGuards, UseInterceptors } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
-import WsExceptionFilter from 'src/filters/ws.exception-filter'
 import { WsAuthorize, WsMessage } from 'src/websockets/common'
 import WsParam from 'src/websockets/decorators/ws.param.decorator'
 import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
+import {
+  UseGlobalWsFilters,
+  UseGlobalWsGuards,
+  UseGlobalWsInterceptors,
+} from 'src/websockets/decorators/ws.gateway.decorators'
 import WsRedirectInterceptor from 'src/websockets/interceptors/ws.redirect.interceptor'
 import TeamService from '../team/team.service'
-import JwtAuthGuard, { IdentityFromSocket } from '../token/jwt-auth.guard'
+import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import RegistryClientProvider from './registry-client.provider'
 import { IMAGE_FILTER_TAKE } from './registry.const'
 import {
@@ -23,9 +26,9 @@ const TeamId = () => WsParam('teamId')
   namespace: 'teams/:teamId/registries',
   redirectFrom: '/registries',
 })
-@UseFilters(WsExceptionFilter)
-@UseGuards(JwtAuthGuard)
-@UseInterceptors(WsRedirectInterceptor)
+@UseGlobalWsFilters()
+@UseGlobalWsGuards()
+@UseGlobalWsInterceptors(WsRedirectInterceptor)
 export default class RegistryWebSocketGateway {
   constructor(private readonly registryClients: RegistryClientProvider, private readonly teamService: TeamService) {}
 

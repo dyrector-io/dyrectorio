@@ -8,7 +8,6 @@ import {
   CruxNotFoundException,
   CruxPreconditionFailedException,
 } from 'src/exception/crux-exception'
-import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import EmailService from 'src/mailer/email.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
@@ -39,7 +38,6 @@ export default class TeamService {
     private kratos: KratosService,
     private emailService: EmailService,
     private mapper: TeamMapper,
-    private auditHelper: InterceptorGrpcHelperProvider,
     private emailBuilder: EmailBuilder,
     private notificationService: DomainNotificationService,
   ) {}
@@ -110,14 +108,6 @@ export default class TeamService {
             type: RegistryTypeEnum.hub,
           },
         },
-        // Add audit log manually
-        // TODO(@m8vago): add this back when the audit-log gets restored
-        // auditLog: {
-        //   create: {
-        //     ...this.auditHelper.mapServerCallToGrpcLog(request, call),
-        //     userId: identity.id,
-        //   },
-        // },
       },
       include: this.teamRepository.teamInclude,
     })
