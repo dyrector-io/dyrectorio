@@ -14,8 +14,6 @@
 Imagine that Heroku meets Portainer and then gets combined with fly.io – that’s dyrector.io. It enables teams to build up their software delivery pipeline like building blocks.
 </p>
 
-<a href="https://www.producthunt.com/posts/dyrector-io-platform?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-dyrector&#0045;io&#0045;platform" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=380073&theme=light" alt="dyrector&#0046;io&#0032;platform - dyrector&#0046;io&#0032;is&#0032;a&#0032;self&#0045;hosted&#0032;container&#0032;management&#0032;platform&#0046; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-
 <p align="center">
   <a href="https://github.com/dyrector-io/dyrectorio/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/dyrector-io/dyrectorio" alt="GitHub tag (latest by date)"/></a>
     <a href="./LICENSE" target="_blank"><img src="https://img.shields.io/badge/licence-Apache%202.0-brightgreen.svg?style=flat)" alt="License"/></a>
@@ -27,45 +25,55 @@ Imagine that Heroku meets Portainer and then gets combined with fly.io – that�
 </p>
 </div>
 
-https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a7e4-c6ec4f727b7f.mp4
-
 ## Overview
 
-dyrector.io is an open-source container management platform that helps software teams to manage releases & deployments efficiently. While non-specialists are enabled to manage these processes in a simplified, self-service manner, specialists can customize and manage containerized apps faster through the platform.
-
-dyrectorio is the platform where:
-
--   **DevOps & System Engineers** can build and manage robust cloud infrastructure
--   **Engineers** can focus more on developing the product because self-service deployments are faster
--   **Stakeholders** can deliver new functions and products with a higher velocity
--   **CTOs & Technical Managers** can reduce time-to-market, manage cloud costs more efficiently and maintain team productivity.
+dyrector.io helps engineer & DevOps teams and individual developers to shift their focus from maintaining and setting up their containerized applications to developing their software. The platform achieves this by offering continuous delivery and version management capabilities to your OCI containers.
 
 > **Warning**
-> dyrector.io platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
+> The platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
 
 Join our Discord and connect with other members to share and learn together. If you like the project, give us a Star.
 
-<a href="https://discord.gg/pZWbd4fxga" target="_blank"><img src="https://discordapp.com/api/guilds/797082431902449694/widget.png?style=banner2" alt="dyrectorio Discord server Banner"/></a>
+## 🌊 Use cases
+
+#### 🚢 Container utilization without commands
+
+Interact with containers in Docker, Podman & Kubernetes without any experience to these technologies. Deploy, start, stop, and restart containers running locally or in remote infrastructures via the platform.
+
+#### ⛴️ Configuration Abstractions & JSON editing
+
+Configuration screen lets you to filter out the unnecessary common, Docker or Kubernetes variables to avoid misconfiguration. JSON editing is still available.
+
+#### ⛵️ Multi-Instance Deployments
+
+Trigger deployments of the same stack to multiple environments from one interface using the same or various configurations.
+
+#### 🛳️ Instant sandbox environments
+
+Turn your local setup into a test & demo environment by deploying your container to it via the platform.
+
+## Demo
+
+https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a7e4-c6ec4f727b7f.mp4
 
 ## Key features
 
--   Kubernetes and Docker support
+-   Kubernetes, Docker and Podman support
 -   Multi-instance deployment
 -   Instant test environments from any branches
 -   Environment management
 -   Secret and configuration management
--   Auto-generated changelogs and release notes (WIP)
+-   Auto-generated changelogs and release notes
 -   Workflow support
--   Scheduled releases (WIP)
+-   Scheduled releases
 -   Audit log
 -   Container Registry integrations
--   Fine-grained RBAC (WIP)
+-   Fine-grained RBAC
 -   ChatOps & notification solutions
--   Proud Ory Kratos users
 
 ## Getting Started
 
-Our CLI tool lets you run and manage the whole dyrector.io project's containers, you will have a fully-featured platform locally.
+Our CLI tool lets you run and manage the entire, fully functional stack on your on-prem or cloud infrastructure.
 
 Stack:
 
@@ -76,16 +84,16 @@ Stack:
 -   Migrations
 -   SMTP mail test server
 
-### Prerequirements
+### Requirements
 
--   Docker installed on your system (Podman works, too).
--   Go Compiler to run the CLI from its source code. (Precompiled binaries are planned)
+-   Docker or Podman installed on your system.
+-   Go Compiler to run the CLI from its source code. (Precompiled binaries are in the works.)
 
 ### Option 1: Go install
 
 1. Execute `go install github.com/dyrector-io/dyrectorio/golang/cmd/dyo@develop`
 2. Execute `dyo up`
-3. After you navigated to `localhost:8000` (this is the default traefik port) you will see a Login screen
+3. After you navigated to `localhost:8000` (this is the default Traefik port) you will see a Login screen
 4. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
 5. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
 6. Open your e-mail message and using the link inside you can activate your account
@@ -100,12 +108,12 @@ Stack:
 
 ## Development
 
-1. Read the CLI documentation first(see the end of this section)
+1. Read the CLI documentation first (See the end of this section)
 2. Decide which part of the project you want to work on, in this case it is crux, crux-ui or both
-3. Modify the CLI's settings file if you need it.
+3. Modify the CLI's settings file if necessary
 4. Execute the correct CLI command using the appropriate flags to turn off crux or crux-ui services
 5. Start crux or crux-ui with the appropriate `npm` command, usually `npm run start`
-6. After you navigated to `localhost:8000` (this is the default traefik port) you will see a Login screen
+6. After you navigated to `localhost:8000` (this is the default Traefik port) you will see a Login screen
 7. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
 8. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
 9. Open your e-mail message and using the link inside you can activate your account
@@ -115,37 +123,15 @@ Read more about the CLI in the [documentation](https://docs.dyrector.io/get-star
 
 ## Non-development
 
-You can set up dyrectorio for self-hosting purposes with the [docker-compose](https://github.com/dyrector-io/dyrectorio/blob/develop/docker-compose.yaml) file located in the root folder.
+You can set up dyrector.io for self-hosting purposes with the [docker-compose](https://github.com/dyrector-io/dyrectorio/blob/develop/docker-compose.yaml) file located in the root folder.
 
 ## Hosted version (SaaS)
 
-Besides the self-hosted instance of dyrectorio, you can check out the platform's alpha at [app.dyrectorio.com](https://app.dyrector.io). The platform is still in progress, we might reset the database, so it's not recommended for production yet. In case you are interested about using dyrectorio in production, reach out to us via email and we'll set up a stable instance for you.
+Besides the self-hosted instance, you can check out the platform's alpha at [app.dyrectorio.com](https://app.dyrector.io). The platform is still in the works, we might reset the database, so it's not recommended for production yet. In case you are interested about using dyrector.io in production, reach out to us via [email](hello@dyrector.io) and we'll set up a stable instance for you.
 
 ## How it works
 
 dyrector.io consists of an agent (GoLang) and a platform (UI developed in React.js, Next.js. Backend developed in Node.js, Nest.js). There are two types of agents communicating with the platform: one for Docker and another for Kubernetes. Communication takes place in gRPC with TLS encryption. The data is managed in a PostgreSQL database which we use with Prisma ORM.
-
-<p align="center">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="docs/how-it-works-dark.png">
-      <source media="(prefers-color-scheme: light)" srcset="docs/how-it-works-light.png">
-      <img alt="dyrector.io official logo" src="docs/how-it-works-dark.png" width="600">
-    </picture>
-</p>
-
-## Use cases
-
-### Multi-Instance Deployments
-
-Trigger deployments of the same application to multiple environments from one place using the same or various configurations.
-
-### Docker & Kubernetes utilization without specialists
-
-Both Docker and Kubernetes require specialized staff to manage. Via dyrector.io, your team’s non-specialist staff can contribute to the process, as well.
-
-### Instant test environments
-
-Seamless testing whenever your team wants to test the application, without waiting for a SysAdmin to set up an environment.
 
 ## FAQ
 
@@ -167,11 +153,11 @@ Seamless testing whenever your team wants to test the application, without waiti
 
 -   How do I get in touch with the Support Team?
 
-    You can contact dyrector.io support directly by reaching out to us via email at help@dyrector.io. Developers can get in touch via our Community Discord server.
+    You can contact us directly by reaching out to us via email at help@dyrector.io. Developers can get in touch via our Community Discord server.
 
 ## Community
 
-Also, follow dyrector.io on GitHub Discussions, our [Blog](https://blog.dyrector.io), and on [Twitter](https://twitter.com/dyrectorio). You can chat with the team and other members on [Discord](https://discord.gg/pZWbd4fxga).
+Also, follow us on GitHub Discussions, our [Blog](https://blog.dyrector.io), and on [Twitter](https://twitter.com/dyrectorio). You can chat with the team and other members on [Discord](https://discord.gg/pZWbd4fxga).
 
 dyrector.io is Open Source - This repository, and most of our other open source projects, are licensed under the Apache 2.0.
 
@@ -235,6 +221,3 @@ We’d love to hear your thoughts on this project. Feel free to drop us a note!
 dyrector.io is open source software under the [Apache License 2.0](LICENSE). Complete license and copyright information can be found in the source code.
 
 > Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-
-<!-- analytics -->
-<img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=3d12c087-3c93-4c59-823e-5db80ce36e91" />
