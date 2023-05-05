@@ -328,10 +328,8 @@ func GetKratos(state *State, args *ArgsFlags) containerbuilder.Builder {
 		WithNetworkAliases(state.Containers.Kratos.Name).
 		WithLabels(map[string]string{
 			"traefik.enable": "true",
-			"traefik.http.routers.kratos.rule": fmt.Sprintf("(Host(`localhost`) && PathPrefix(`/kratos`)) || "+
-				"(Host(`%s`) && PathPrefix(`/kratos`)) || "+
-				"(Host(`%s`) && PathPrefix(`/kratos`))",
-				state.Containers.Traefik.Name, state.InternalHostDomain),
+			"traefik.http.routers.kratos.rule": fmt.Sprintf("(Host(`localhost`) || Host(`%s`) || Host(`%s`)) && "+
+				"PathPrefix(`/kratos`)", state.Containers.Traefik.Name, state.InternalHostDomain),
 			"traefik.http.routers.kratos.entrypoints":                    "web",
 			"traefik.http.services.kratos.loadbalancer.server.port":      fmt.Sprintf("%d", defaultKratosPublicPort),
 			"traefik.http.middlewares.kratos-strip.stripprefix.prefixes": "/kratos",

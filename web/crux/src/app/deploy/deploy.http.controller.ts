@@ -110,7 +110,7 @@ export default class DeployHttpController {
   @ApiOperation({
     description:
       'Request must include `deploymentId` and `instanceId`, which refers to the ID of a deployed container. Response should include `state`, `id`, `updatedAt`, and `image` details including `id`, `name`, `tag`, `order` and `config` variables.',
-    summary: 'Get details of a deployed container.',
+    summary: 'Get details of an instance.',
   })
   @ApiOkResponse({ type: InstanceDto, description: 'Details of deployed container listed.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
@@ -123,7 +123,7 @@ export default class DeployHttpController {
   @ApiOperation({
     description:
       'Request must include `deploymentId` and `instanceId`, which refers to the ID of a deployed container. Response should include container `prefix` and `name`, and `publicKey`, `keys`.',
-    summary: 'Fetch secrets of a deployed container.',
+    summary: 'Fetch secrets of an instance',
   })
   @ApiOkResponse({ type: InstanceSecretsDto, description: 'Secrets of a deployed container listed.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { Configuration, FrontendApi, Identity, IdentityApi, Session } from '@ory/kratos-client'
 import { randomUUID } from 'crypto'
 import { IdentityTraits, KratosInvitation, KRATOS_IDENTITY_SCHEMA } from 'src/shared/models'
+import { setDefaultResultOrder } from 'dns'
 
 @Injectable()
 export default class KratosService {
@@ -11,6 +12,10 @@ export default class KratosService {
   private frontend: FrontendApi
 
   constructor(config: ConfigService) {
+    if (config.get<string>('NODE_ENV') !== 'production') {
+      setDefaultResultOrder('ipv4first')
+    }
+
     this.identity = new IdentityApi(new Configuration({ basePath: config.get<string>('KRATOS_ADMIN_URL') }))
     this.frontend = new FrontendApi(new Configuration({ basePath: config.get<string>('KRATOS_URL') }))
   }
