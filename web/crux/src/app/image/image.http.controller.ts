@@ -68,7 +68,7 @@ export default class ImageHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      "Fetch details of an images within a version. `productId` refers to the product's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required parameters.</br></br>An image consists `name`, `id`, `tag`, `order`, and config details of the image.",
+      "Fetch details of an image within a version. `productId` refers to the product's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required parameters.</br></br>Image details consists `name`, `id`, `tag`, `order`, and the config of the image.",
     summary: 'Fetch data of an image of a version.',
   })
   @ApiOkResponse({ type: ImageDto, description: 'Data of an image.' })

@@ -48,7 +48,7 @@ export default class NotificationHttpController {
   @ApiOperation({
     description:
       'Request must include `notificationId` parameter. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
-    summary: 'Fetch details of a notificatio.',
+    summary: 'Fetch details of a notification.',
   })
   @ApiOkResponse({ type: NotificationDetailsDto, description: 'Details of notification listed.' })
   async getNotificationDetails(@NotificationId() notificationId: string): Promise<NotificationDetailsDto> {
