@@ -143,6 +143,10 @@ test-integration:
 	cd golang && \
 	make test-integration
 
+.PHONY: format
+format:
+	yamlfmt .
+
 ## Generate video with gource, needs ffmpeg and gource installed
 .PHONY: gource
 gource:

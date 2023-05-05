@@ -1,5 +1,4 @@
 version: '3.3'
-
 services:
   crux-ui:
     container_name: crux-ui
@@ -14,10 +13,8 @@ services:
     restart: unless-stopped
     networks:
       - crux-intranet
-
 volumes:
   crux-ui-certs:
-
 networks:
   crux-intranet:
     name: crux-intranet
