@@ -18,7 +18,7 @@ export default class HealthHttpController {
   })
   @ApiOkResponse({
     type: HealthDto,
-    description: 'Service status listed.',
+    description: 'Service status.',
   })
   @DisableAuth()
   async getHealth(): Promise<HealthDto> {

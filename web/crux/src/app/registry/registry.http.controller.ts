@@ -37,7 +37,7 @@ export default class RegistryHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      'Lists the details of every registries available. Response is an array including the `name`, `id`, `type`, `description`, and `icon` of the registry.</br></br>Registries are 3rd party registries where the images of versions are located.',
+      'Lists every registries available in the active team. Response is an array including the `name`, `id`, `type`, `description`, and `icon` of the registry.</br></br>Registries are 3rd party registries where the container images are stored.',
     summary: 'Fetch data of registries.',
   })
   @ApiOkResponse({ type: RegistryDto, isArray: true, description: 'Data of all registries within a team listed.' })
@@ -49,7 +49,7 @@ export default class RegistryHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      "Lists the details of a registry. `RegistryId` refers to the registry's ID. Response is an array including the `name`, `id`, `type`, `description`, `imageNamePrefix`, `inUse`, `icon`, and audit log info of the registry.",
+      "Lists the details of a registry. `registryId` refers to the registry's ID. Response is an array including the `name`, `id`, `type`, `description`, `imageNamePrefix`, `inUse`, `icon`, and audit log info of the registry.",
     summary: 'Fetch data of a registry.',
   })
   @ApiOkResponse({ type: RegistryDetailsDto, description: 'Data of a registry listed.' })
@@ -64,13 +64,13 @@ export default class RegistryHttpController {
   @ApiOperation({
     description:
       'To add a new registry, include the `name`, `type`, `description`, `details`, and `icon`. `Type`, `details`, and `name` are required. Response is an array including the `name`, `id`, `type`, `description`, `imageNamePrefix`, `inUse`, `icon`, and audit log info of the registry.',
-    summary: 'Add a new registry.',
+    summary: 'Create a new registry.',
   })
   @ApiBody({ type: CreateRegistryDto })
   @ApiCreatedResponse({
     type: RegistryDetailsDto,
     headers: API_CREATED_LOCATION_HEADERS,
-    description: 'New registry added.',
+    description: 'New registry created.',
   })
   @UseGuards(RegistryAccessValidationGuard)
   async createRegistry(
@@ -89,13 +89,13 @@ export default class RegistryHttpController {
   @HttpCode(204)
   @ApiOperation({
     description:
-      "Modify the `name`, `type`, `description`, `details`, and `icon`. `RegistryId` refers to the registry's ID. `RegistryId`, `type`, `details`, and `name` are required.",
+      "Modify the `name`, `type`, `description`, `details`, and `icon`. `registryId` refers to the registry's ID. `registryId`, `type`, `details`, and `name` are required.",
     summary: 'Modify the details of a registry.',
   })
   @UseInterceptors(UpdateRegistryInterceptor)
   @UseGuards(RegistryAccessValidationGuard)
   @ApiBody({ type: UpdateRegistryDto })
-  @ApiNoContentResponse({ description: 'Details of registry modified.' })
+  @ApiNoContentResponse({ description: 'Registry modified.' })
   @UuidParams(PARAM_REGISTRY_ID)
   async updateRegistry(
     @RegistryId() id: string,
@@ -108,7 +108,7 @@ export default class RegistryHttpController {
   @Delete(ROUTE_REGISTRY_ID)
   @HttpCode(204)
   @ApiOperation({
-    description: 'To delete a registry from dyrectorio, only `RegistryId`, `type`, `details`, and `name` are required.',
+    description: 'Deletes a registry with the specified `registryId`',
     summary: 'Delete a registry from dyrectorio.',
   })
   @ApiNoContentResponse({ description: 'Registry deleted.' })

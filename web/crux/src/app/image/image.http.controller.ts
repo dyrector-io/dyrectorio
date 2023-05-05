@@ -68,10 +68,10 @@ export default class ImageHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      "Fetch details of an images within a version. `ProductId` refers to the product's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required variables.</br></br>Details come in an array, including `name`, `id`, `tag`, `order`, and config details of the image.",
+      "Fetch details of an image within a version. `productId` refers to the product's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required parameters.</br></br>Image details consists `name`, `id`, `tag`, `order`, and the config of the image.",
     summary: 'Fetch data of an image of a version.',
   })
-  @ApiOkResponse({ type: ImageDto, description: 'Data of an image listed.' })
+  @ApiOkResponse({ type: ImageDto, description: 'Data of an image.' })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async getImageDetails(
     @ProductId() _productId: string,
@@ -86,8 +86,8 @@ export default class ImageHttpController {
   @CreatedWithLocation()
   @ApiOperation({
     description:
-      "Add new image to a version. `ProductId` refers to the product's ID, `versionId` refers to the version's ID, `registryId` refers to the registry's ID, `images` refers to the name(s) of the images you'd like to add. All are required variables.",
-    summary: 'Add an image to a version.',
+      "Add new images to a version. `productId` refers to the product's ID, `versionId` refers to the version's ID, `registryId` refers to the registry's ID, `images` refers to the name(s) of the images you'd like to add. All are required variables.",
+    summary: 'Add images to a version.',
   })
   @ApiBody({ type: AddImagesDto, isArray: true })
   @ApiCreatedResponse({ type: ImageDto, isArray: true, description: 'New image added.' })
@@ -112,11 +112,11 @@ export default class ImageHttpController {
   @HttpCode(204)
   @ApiOperation({
     description:
-      "Modify and add configuration variables of an image. `ProductId` refers to the product's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required variables. `Tag` refers to the version of the image, `config` is an array of configuration variables.",
+      "Modify the configuration variables of an image. `productId` refers to the product's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required variables. `Tag` refers to the version of the image, `config` is an object of configuration variables.",
     summary: 'Configure an image of a version.',
   })
   @ApiBody({ type: PatchImageDto })
-  @ApiNoContentResponse({ description: "Image's configure variables adjusted." })
+  @ApiNoContentResponse({ description: "Image's configure variables updated." })
   @UuidParams(PARAM_PRODUCT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async patchImage(
     @ProductId() _productId: string,
@@ -132,7 +132,7 @@ export default class ImageHttpController {
   @HttpCode(204)
   @ApiOperation({
     description:
-      "Delete an image. `ProductId` refers to the product's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required variables.",
+      "Delete an image. `productId` refers to the product's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required variables.",
     summary: 'Delete an image from a version.',
   })
   @ApiNoContentResponse({ description: 'Delete an image from a version.' })
@@ -150,10 +150,10 @@ export default class ImageHttpController {
   @HttpCode(204)
   @ApiOperation({
     description:
-      "Edit image deployment order of a version. `ProductId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables. Request should include the names of images in an array.",
+      "Edit image deployment order of a version. `productId` refers to the product's ID, `versionId` refers to the version's ID. Both are required variables. Request should include the IDs of the images in an array.",
     summary: 'Edit image deployment order of a version.',
   })
-  @ApiNoContentResponse({ description: 'Deployment order modified.' })
+  @ApiNoContentResponse({ description: 'Image order modified.' })
   @ApiBody({ type: String, isArray: true })
   @UseGuards(ImageOrderImagesTeamAccessGuard)
   @UseInterceptors(OrderImagesValidationInterceptor)

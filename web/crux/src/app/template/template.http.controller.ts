@@ -24,9 +24,9 @@ export default class TemplateHttpController {
   @HttpCode(200)
   @ApiOperation({
     description: 'Response should include `id`, `name`, `description` and `technologies` of templates.',
-    summary: 'Return details of templates on the platform.',
+    summary: 'Return list of templates on the platform.',
   })
-  @ApiOkResponse({ type: TemplateDto, isArray: true, description: 'Template details listed.' })
+  @ApiOkResponse({ type: TemplateDto, isArray: true, description: 'Templates listed.' })
   async getTemplates(): Promise<TemplateDto[]> {
     return this.templateFileService.getTemplates()
   }
@@ -40,7 +40,7 @@ export default class TemplateHttpController {
     summary: 'Creates a new product from the selected template.',
   })
   @ApiBody({ type: CreateProductFromTemplateDto })
-  @ApiCreatedResponse({ type: ProductDto, description: 'New template created.' })
+  @ApiCreatedResponse({ type: ProductDto, description: 'New product created.' })
   async createProduct(
     @Body() request: CreateProductFromTemplateDto,
     @IdentityFromRequest() identity: Identity,
@@ -57,7 +57,7 @@ export default class TemplateHttpController {
   @HttpCode(200)
   @ApiOperation({
     description: 'Request must include `templateId`.',
-    summary: 'Retrieves the image of the template',
+    summary: 'Retrieves the picture of the template',
   })
   @Header('content-type', 'image/jpeg')
   @ApiOkResponse({ description: 'Retrieve data of an image of a template.' })

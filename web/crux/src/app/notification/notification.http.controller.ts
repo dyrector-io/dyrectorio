@@ -38,7 +38,7 @@ export default class NotificationHttpController {
     description: 'Response should include `type`, `id`, `name`, `url`, `active`, and `creatorName`.',
     summary: 'Retrieve notifications that belong to a team.',
   })
-  @ApiOkResponse({ type: NotificationDto, isArray: true, description: 'Notification details listed.' })
+  @ApiOkResponse({ type: NotificationDto, isArray: true, description: 'Notifications listed.' })
   async getNotifications(@IdentityFromRequest() identity: Identity): Promise<NotificationDto[]> {
     return this.service.getNotifications(identity)
   }
@@ -50,7 +50,7 @@ export default class NotificationHttpController {
       'Request must include `notificationId` parameter. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
     summary: 'Fetch details of a notification.',
   })
-  @ApiOkResponse({ type: NotificationDetailsDto, description: 'Data of notification listed.' })
+  @ApiOkResponse({ type: NotificationDetailsDto, description: 'Details of notification listed.' })
   async getNotificationDetails(@NotificationId() notificationId: string): Promise<NotificationDetailsDto> {
     return this.service.getNotificationDetails(notificationId)
   }

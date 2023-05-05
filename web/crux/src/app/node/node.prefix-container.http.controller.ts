@@ -62,7 +62,7 @@ export default class NodePrefixContainerHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Request must include `nodeId`, and `prefix`.',
-    summary: 'Delete containers deployed with dyrectorio on a node.',
+    summary: 'Delete containers deployed with dyrectorio, with the specified prefix on a node.',
   })
   @ApiNoContentResponse({ description: 'Containers deleted.' })
   @UuidParams(PARAM_NODE_ID)
@@ -74,7 +74,7 @@ export default class NodePrefixContainerHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Request must include `nodeId`, `prefix`, and `name`.',
-    summary: 'Delete a container deployed with dyrectorio on a node.',
+    summary: 'Delete a container deployed with dyrectorio, with the specified prefix and name on a node.',
   })
   @ApiNoContentResponse({ description: 'Container deleted.' })
   @UuidParams(PARAM_NODE_ID)
