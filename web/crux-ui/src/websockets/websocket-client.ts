@@ -63,7 +63,7 @@ class WebSocketClient {
   remove(endpoint: WebSocketClientEndpoint) {
     const { path } = endpoint
 
-    this.logger.debug('Disconnecting:', path)
+    this.logger.debug('Remove endpoint:', path)
 
     endpoint.close()
 
