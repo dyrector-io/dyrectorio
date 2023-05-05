@@ -110,7 +110,7 @@ Stack:
 
 1. Read the CLI documentation first (See the end of this section)
 2. Decide which part of the project you want to work on, in this case it is crux, crux-ui or both
-3. Modify the CLI's settings file if needed
+3. Modify the CLI's settings file if necessary
 4. Execute the correct CLI command using the appropriate flags to turn off crux or crux-ui services
 5. Start crux or crux-ui with the appropriate `npm` command, usually `npm run start`
 6. After you navigated to `localhost:8000` (this is the default Traefik port) you will see a Login screen
