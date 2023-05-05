@@ -13,10 +13,10 @@ import {
 } from '@nestjs/common'
 import {
   ApiBody,
-  ApiOperation,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
@@ -28,7 +28,6 @@ import {
   CreateDeploymentDto,
   DeploymentDetailsDto,
   DeploymentDto,
-  DeploymentEventDto,
   DeploymentLogListDto,
   InstanceDto,
   InstanceSecretsDto,
