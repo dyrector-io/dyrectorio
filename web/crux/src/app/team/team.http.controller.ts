@@ -93,7 +93,7 @@ export default class TeamHttpController {
   @HttpCode(204)
   @ApiBody({ type: UpdateTeamDto })
   @ApiOperation({
-    description: 'Request must include `teamId` and `name`. Admin access required for successful request.',
+    description: 'Request must include `teamId` and `name`. Admin access required for a successful request.',
     summary: "Modify a team's name.",
   })
   @TeamRoleRequired('admin')
@@ -127,7 +127,7 @@ export default class TeamHttpController {
   @CreatedWithLocation()
   @ApiOperation({
     description:
-      "Request must include `teamId`, email and `firstName`. Admin access required for successful request.</br></br>Response should include new user's `name`, `id`, `role`, `status`, `email`, and `lastLogin`. Admin access required for successful request.",
+      "Request must include `teamId`, email and `firstName`. Admin access required for a successful request.</br></br>Response should include new user's `name`, `id`, `role`, `status`, `email`, and `lastLogin`. Admin access required for a successful request.",
     summary: 'Invite a new user to the team.',
   })
   @ApiBody({ type: InviteUserDto })
@@ -157,7 +157,7 @@ export default class TeamHttpController {
   @ApiBody({ type: UpdateUserRoleDto })
   @ApiOperation({
     description:
-      'Promotes or demotes the user. Request must include `teamId`, `userId` and `role`. Admin access required for successful request.',
+      'Promotes or demotes the user. Request must include `teamId`, `userId` and `role`. Admin access required for a successful request.',
     summary: 'Edit user role.',
   })
   @TeamRoleRequired('admin')
@@ -178,7 +178,7 @@ export default class TeamHttpController {
   @TeamRoleRequired('admin')
   @ApiOperation({
     description:
-      'Removes the user from the team. Request must include `teamId`, `userId`. Admin access required for successful request.',
+      'Removes the user from the team. Request must include `teamId`, `userId`. Admin access required for a successful request.',
     summary: 'Remove a user from the team.',
   })
   @UseInterceptors(TeamOwnerImmutabilityValidationInterceptor)
@@ -193,7 +193,7 @@ export default class TeamHttpController {
   @UseInterceptors(TeamReinviteUserValidationInterceptor)
   @ApiOperation({
     description:
-      "This call sends a new invitation link to a user who hasn't accepted invitation to a team.</br></br>Request must include `teamId`, `userId`. Admin access required for successful request.",
+      "This call sends a new invitation link to a user who hasn't accepted invitation to a team.</br></br>Request must include `teamId`, `userId`. Admin access required for a successful request.",
     summary: 'Reinvite user with a pending invite status to a team.',
   })
   @TeamRoleRequired('admin')
