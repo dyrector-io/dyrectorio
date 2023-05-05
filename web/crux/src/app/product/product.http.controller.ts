@@ -33,17 +33,14 @@ export default class ProductHttpController {
   @HttpCode(200)
   @ApiOperation({
     description: "Returns a list of a team's products and their details.",
-    summary: 'Fetch details of products.',
+    summary: 'Fetch the products list.',
   })
   @ApiOkResponse({
     type: ProductListItemDto,
     isArray: true,
-    description: 'Everything is OK.',
+    description: 'List of products',
   })
   @ApiNoContentResponse()
-  @ApiBadRequestResponse({
-    description: 'Provided bad parmaters',
-  })
   async getProducts(@IdentityFromRequest() identity: Identity): Promise<ProductListItemDto[]> {
     return this.service.getProducts(identity)
   }
@@ -52,10 +49,10 @@ export default class ProductHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      "Returns a products' details. The response should contain an array, consisting of the product's `name`, `id`, `type`, `description`, `deletability`, versions and version related data, including version `name` and `id`, `changelog`, increasibility.",
+      "Returns a product's details. The response should contain an array, consisting of the product's `name`, `id`, `type`, `description`, `deletability`, versions and version related data, including version `name` and `id`, `changelog`, increasibility.",
     summary: 'Fetch details of a product.',
   })
-  @ApiOkResponse({ type: ProductDetailsDto, description: 'Everything is OK.' })
+  @ApiOkResponse({ type: ProductDetailsDto, description: 'Details of a product.' })
   @UuidParams(PARAM_PRODUCT_ID)
   async getProductDetails(@ProductId() id: string): Promise<ProductDetailsDto> {
     return this.service.getProductDetails(id)
@@ -87,7 +84,7 @@ export default class ProductHttpController {
   @HttpCode(204)
   @ApiOperation({
     description:
-      'Updates a product. `Name` is a required variable to identify which product is modified, `description` and `changelog` can be adjusted with this call.',
+      'Updates a product. `productId` is a required variable to identify which product is modified, `name`, `description` and `changelog` can be adjusted with this call.',
     summary: 'Update a product.',
   })
   @ApiNoContentResponse({ description: 'Product details are modified.' })
@@ -104,7 +101,7 @@ export default class ProductHttpController {
   @Delete(ROUTE_PRODUCT_ID)
   @HttpCode(204)
   @ApiOperation({
-    description: 'Deletes a product. Only the `name` is required.',
+    description: 'Deletes a product with the specified `productId`',
     summary: 'Delete a product.',
   })
   @ApiNoContentResponse({ description: 'Product deleted.' })

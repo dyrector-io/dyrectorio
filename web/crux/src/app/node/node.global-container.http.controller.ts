@@ -27,7 +27,7 @@ export default class NodeGlobalContainerHttpController {
   @ApiOperation({
     description:
       'Request must include `nodeId` and `prefix`. Response should include `id`, `command`, `createdAt`, `state`, `status`, `imageName`, `imageTag` and `ports` of images.',
-    summary: 'Fetch data of containers running on a node.',
+    summary: 'Fetch data of all containers on a node.',
   })
   @ApiOkResponse({ type: ContainerDto, isArray: true, description: 'Fetch data of containers running on a node.' })
   async getContainers(@NodeId() nodeId: string, @Query('prefix') prefix?: string): Promise<ContainerDto[]> {
@@ -38,7 +38,7 @@ export default class NodeGlobalContainerHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Request must include `nodeId`, and the `name` of the container.',
-    summary: 'Start any container on a node.',
+    summary: 'Start the specific container on a node.',
   })
   @ApiNoContentResponse({ description: 'Container started.' })
   @UuidParams(PARAM_NODE_ID)
@@ -50,7 +50,7 @@ export default class NodeGlobalContainerHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Request must include `nodeId`, and the `name` of the container.',
-    summary: 'Stop any container on a node.',
+    summary: 'Stop the specific container on a node.',
   })
   @ApiNoContentResponse({ description: 'Container stopped.' })
   @UuidParams(PARAM_NODE_ID)
@@ -62,7 +62,7 @@ export default class NodeGlobalContainerHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Request must include `nodeId`, and the `name` of the container.',
-    summary: 'Restart any container on a node.',
+    summary: 'Restart the specific container on a node.',
   })
   @ApiNoContentResponse({ description: 'Container restarted.' })
   @UuidParams(PARAM_NODE_ID)
@@ -74,7 +74,7 @@ export default class NodeGlobalContainerHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Request must include `nodeId`, and the `name` of the container.',
-    summary: 'Delete any container from a node.',
+    summary: 'Delete the specific container from a node.',
   })
   @ApiNoContentResponse({ description: 'Container deleted.' })
   @UuidParams(PARAM_NODE_ID)
