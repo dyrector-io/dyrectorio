@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop, no-constant-condition */
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
+import { JsonNull } from 'prisma'
 import { Timestamp } from 'src/grpc/google/protobuf/timestamp'
 
 export type PrismaTransactionClient = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>
@@ -76,3 +77,11 @@ export const typedQuery =
   <T>() =>
   <U extends T>(query: U): U =>
     query
+
+export const toPrismaJson = <T>(val: T): T | JsonNull => {
+  if (!val) {
+    return Prisma.JsonNull
+  }
+
+  return val
+}

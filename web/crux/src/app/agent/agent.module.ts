@@ -7,6 +7,7 @@ import NotificationTemplateBuilder from 'src/builders/notification.template.buil
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
+import ContainerModule from '../container/container.module'
 import ImageModule from '../image/image.module'
 import SharedModule from '../shared/shared.module'
 import TeamRepository from '../team/team.repository'
@@ -31,6 +32,7 @@ import AgentService from './agent.service'
     }),
     SharedModule,
     ImageModule,
+    ContainerModule,
   ],
   exports: [AgentService],
   controllers: [AgentController],

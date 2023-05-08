@@ -1,8 +1,8 @@
 import { ISendMailOptions } from '@nestjs-modules/mailer'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { KratosInvitation } from 'src/shared/models'
 import NotificationTemplateBuilder from './notification.template.builder'
+import { KratosInvitation } from 'src/domain/identity'
 
 type InviteTemplate = {
   subject: string

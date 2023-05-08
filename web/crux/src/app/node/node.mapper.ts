@@ -10,11 +10,11 @@ import {
   ContainerState as ProtoContainerState,
   containerStateToJSON,
 } from 'src/grpc/protobuf/proto/common'
-import { ContainerState } from 'src/shared/models'
 import AgentService from '../agent/agent.service'
 import { NodeType } from '../shared/shared.dto'
 import { ContainerDto, ContainerOperationDto, NodeDetailsDto, NodeDto, NodeInstallDto } from './node.dto'
 import { ContainersStateListMessage } from './node.message'
+import { ContainerState } from 'src/domain/container'
 
 @Injectable()
 export default class NodeMapper {

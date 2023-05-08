@@ -8,6 +8,14 @@ import {
   InstanceContainerConfig,
   Storage,
 } from '@prisma/client'
+import {
+  ContainerConfigData,
+  InitContainer,
+  InstanceContainerConfigData,
+  MergedContainerConfigData,
+  UniqueKey,
+  UniqueKeyValue,
+} from 'src/domain/container'
 import { deploymentStatusToDb } from 'src/domain/deployment'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import {
@@ -27,16 +35,8 @@ import {
   ExposeStrategy as ProtoExposeStrategy,
   containerStateToJSON,
 } from 'src/grpc/protobuf/proto/common'
-import {
-  ContainerConfigData,
-  InitContainer,
-  InstanceContainerConfigData,
-  MergedContainerConfigData,
-  UniqueKey,
-  UniqueKeyValue,
-} from 'src/shared/models'
+import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
-import ContainerMapper from '../shared/container.mapper'
 import { NodeConnectionStatus } from '../shared/shared.dto'
 import SharedMapper from '../shared/shared.mapper'
 import {
@@ -131,7 +131,7 @@ export default class DeployMapper {
     }
 
     return {
-      ...this.imageMapper.containerConfigDataToDto(it as ContainerConfigData),
+      ...this.containerMapper.configDataToDto(it as ContainerConfigData),
       secrets: it.secrets,
     }
   }
@@ -141,7 +141,7 @@ export default class DeployMapper {
     currentConfig: InstanceContainerConfigData,
     patch: InstanceContainerConfigDto,
   ): InstanceContainerConfigData {
-    const config = this.imageMapper.configDtoToContainerConfigData(currentConfig as ContainerConfigData, patch)
+    const config = this.containerMapper.configDtoToConfigData(currentConfig as ContainerConfigData, patch)
 
     if (config.labels) {
       const currentLabels = currentConfig.labels ?? imageConfig.labels ?? {}
@@ -175,7 +175,7 @@ export default class DeployMapper {
   }
 
   instanceConfigDataToDb(config: InstanceContainerConfigData): Omit<InstanceContainerConfig, 'id' | 'instanceId'> {
-    const imageConfig = this.imageMapper.containerConfigDataToDb(config)
+    const imageConfig = this.containerMapper.configDataToDb(config)
     return {
       ...imageConfig,
       tty: config.tty,
@@ -184,11 +184,11 @@ export default class DeployMapper {
     }
   }
 
-  instanceContainerConfigDataToDb(
-    config: InstanceContainerConfigData,
-  ): Omit<InstanceContainerConfig, 'id' | 'instanceId'> {
-    return this.imageMapper.containerConfigDataToDb(config)
-  }
+  // instanceContainerConfigDataToDb(
+  //   config: InstanceContainerConfigData,
+  // ): Omit<InstanceContainerConfig, 'id' | 'instanceId'> {
+  //   return this.imageMapper.containerConfigDataToDb(config)
+  // }
 
   eventTypeToDto(it: DeploymentEventTypeEnum): DeploymentEventTypeDto {
     switch (it) {

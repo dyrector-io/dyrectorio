@@ -38,7 +38,7 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { JWT_EXPIRATION } from '../../shared/const'
-import ImageMapper from '../image/image.mapper'
+import ContainerMapper from '../container/container.mapper'
 import { DagentTraefikOptionsDto, NodeScriptTypeDto } from '../node/node.dto'
 import { NodeConnectionStatus } from '../shared/shared.dto'
 
@@ -58,7 +58,7 @@ export default class AgentService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private notificationService: DomainNotificationService,
-    private imageMapper: ImageMapper,
+    private containerMapper: ContainerMapper,
   ) {}
 
   getById(id: string): Agent {
@@ -127,7 +127,7 @@ export default class AgentService {
 
       const token: AgentToken = {
         iat: Math.floor(now / 1000),
-        iss: undefined,
+        iss: undefined, // this gets filled by JwtService by the sign() call
         sub: nodeId,
       }
 
@@ -555,7 +555,7 @@ export default class AgentService {
 
       const configUpserts = Array.from(finishedDeployment.mergedConfigs).map(it => {
         const [key, config] = it
-        const dbConfig = this.imageMapper.containerConfigDataToDb(config)
+        const dbConfig = this.containerMapper.configDataToDb(config)
 
         return prisma.instanceContainerConfig.upsert({
           where: {

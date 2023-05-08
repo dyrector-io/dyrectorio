@@ -1,14 +1,112 @@
 import { Injectable } from '@nestjs/common'
+import { ContainerConfig } from '@prisma/client'
 import {
   ContainerConfigData,
   InstanceContainerConfigData,
   MergedContainerConfigData,
+  UniqueKeyValue,
   UniqueSecretKey,
   UniqueSecretKeyValue,
-} from 'src/shared/models'
+} from 'src/domain/container'
+import { toPrismaJson } from 'src/domain/utils'
+import { ContainerConfigDto, PartialContainerConfigDto, UniqueKeyValueDto } from './container.dto'
 
 @Injectable()
 export default class ContainerMapper {
+  uniqueKeyValueDtoToDb(it: UniqueKeyValueDto): UniqueKeyValue {
+    return it
+  }
+
+  configDataToDto(config: ContainerConfigData): ContainerConfigDto {
+    return {
+      ...config,
+      capabilities: null,
+      storage: !config.storageSet
+        ? null
+        : {
+            storageId: config.storageId,
+            bucket: config.storageConfig?.bucket,
+            path: config.storageConfig?.path,
+          },
+    }
+  }
+
+  configDtoToConfigData(current: ContainerConfigData, patch: PartialContainerConfigDto): ContainerConfigData {
+    const storagePatch =
+      'storage' in patch
+        ? {
+            storageSet: !!patch.storage?.storageId,
+            storageId: patch.storage?.storageId ?? null,
+            storageConfig: patch.storage?.storageId
+              ? {
+                  path: patch.storage.path,
+                  bucket: patch.storage.bucket,
+                }
+              : null,
+          }
+        : undefined
+
+    return {
+      ...current,
+      ...patch,
+      capabilities: undefined, // TODO (@m8vago, @nandor-magyar): Remove this line, when capabilites are ready
+      annotations: !patch.annotations
+        ? current.annotations
+        : {
+            ...(current.annotations ?? {}),
+            ...patch.annotations,
+          },
+      labels: !patch.labels
+        ? current.labels
+        : {
+            ...(current.labels ?? {}),
+            ...patch.labels,
+          },
+      ...storagePatch,
+    }
+  }
+
+  configDataToDb(config: Partial<ContainerConfigData>): Omit<ContainerConfig, 'id' | 'imageId'> {
+    return {
+      name: config.name,
+      expose: config.expose,
+      ingress: toPrismaJson(config.ingress),
+      configContainer: toPrismaJson(config.configContainer),
+      user: config.user ? config.user : null,
+      tty: config.tty !== null ? config.tty : false,
+      ports: toPrismaJson(config.ports),
+      portRanges: toPrismaJson(config.portRanges),
+      volumes: toPrismaJson(config.volumes),
+      commands: toPrismaJson(config.commands),
+      args: toPrismaJson(config.args),
+      environment: toPrismaJson(config.environment),
+      secrets: toPrismaJson(config.secrets),
+      initContainers: toPrismaJson(config.initContainers),
+      logConfig: toPrismaJson(config.logConfig),
+      storageSet: config.storageSet,
+      storageId: config.storageId,
+      storageConfig: toPrismaJson(config.storageConfig),
+
+      // dagent
+      restartPolicy: config.restartPolicy,
+      networkMode: config.networkMode,
+      networks: toPrismaJson(config.networks),
+      dockerLabels: toPrismaJson(config.dockerLabels),
+
+      // crane
+      deploymentStrategy: config.deploymentStrategy,
+      healthCheckConfig: toPrismaJson(config.healthCheckConfig),
+      resourceConfig: toPrismaJson(config.resourceConfig),
+      proxyHeaders: config.proxyHeaders !== null ? config.proxyHeaders : false,
+      useLoadBalancer: config.useLoadBalancer !== null ? config.useLoadBalancer : false,
+      customHeaders: toPrismaJson(config.customHeaders),
+      extraLBAnnotations: toPrismaJson(config.extraLBAnnotations),
+      capabilities: toPrismaJson(config.capabilities),
+      annotations: toPrismaJson(config.annotations),
+      labels: toPrismaJson(config.labels),
+    }
+  }
+
   mergeSecrets(instanceSecrets: UniqueSecretKeyValue[], imageSecrets: UniqueSecretKey[]): UniqueSecretKeyValue[] {
     imageSecrets = imageSecrets ?? []
     instanceSecrets = instanceSecrets ?? []

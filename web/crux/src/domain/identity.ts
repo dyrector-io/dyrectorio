@@ -1,5 +1,5 @@
 import { Identity } from '@ory/kratos-client'
-import { TEAM_INVITATION_EXPIRATION } from '../const'
+import { TEAM_INVITATION_EXPIRATION } from '../shared/const'
 
 export const KRATOS_IDENTITY_SCHEMA = 'default'
 

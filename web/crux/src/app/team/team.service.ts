@@ -13,7 +13,6 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
-import { IdentityTraits, emailOfIdentity, invitationExpired, nameOfIdentity } from 'src/shared/models'
 import EmailBuilder, { InviteTemplateOptions } from '../../builders/email.builder'
 import {
   ActivateTeamDto,
@@ -27,6 +26,7 @@ import {
 import TeamMapper, { TeamWithUsers } from './team.mapper'
 import TeamRepository from './team.repository'
 import { UserDto, UserMetaDto } from './user.dto'
+import { IdentityTraits, emailOfIdentity, invitationExpired, nameOfIdentity } from 'src/domain/identity'
 
 @Injectable()
 export default class TeamService {

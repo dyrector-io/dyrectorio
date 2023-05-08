@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Configuration, FrontendApi, Identity, IdentityApi, Session } from '@ory/kratos-client'
 import { randomUUID } from 'crypto'
-import { IdentityTraits, KratosInvitation, KRATOS_IDENTITY_SCHEMA } from 'src/shared/models'
 import { setDefaultResultOrder } from 'dns'
+import { IdentityTraits, KRATOS_IDENTITY_SCHEMA, KratosInvitation } from 'src/domain/identity'
 
 @Injectable()
 export default class KratosService {
@@ -12,7 +12,10 @@ export default class KratosService {
   private frontend: FrontendApi
 
   constructor(config: ConfigService) {
-    if (config.get<string>('NODE_ENV') !== 'production') {
+    const dnsResultOrder = config.get<string>('DNS_DEFAULT_RESULT_ORDER')
+    if (dnsResultOrder) {
+      setDefaultResultOrder(dnsResultOrder === 'ipv4first' ? 'ipv4first' : 'verbatim')
+    } else if (config.get<string>('NODE_ENV') !== 'production') {
       setDefaultResultOrder('ipv4first')
     }
 

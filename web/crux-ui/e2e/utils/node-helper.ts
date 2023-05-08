@@ -1,4 +1,5 @@
 import { deploymentDeployUrl, productUrl, ROUTE_DEPLOYMENTS, ROUTE_NODES, versionUrl } from '@app/routes'
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { expect, Page } from '@playwright/test'
 import { exec, ExecOptions } from 'child_process'
 import { DAGENT_NODE, screenshotPath } from './common'
@@ -24,7 +25,9 @@ export const installDagent = async (page: Page) => {
   const commandInput = await page.locator('input[readonly]')
   const curl = await commandInput.inputValue()
 
-  exec(curl, getInstallScriptExecSettings(), logCmdOutput)
+  const installScriptSettings = getInstallScriptExecSettings()
+  console.info('Executing install script', installScriptSettings)
+  exec(curl, installScriptSettings, logCmdOutput)
 
   await page.waitForSelector('img[src="/circle-green.svg"]')
 

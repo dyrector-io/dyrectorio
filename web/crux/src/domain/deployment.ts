@@ -9,7 +9,7 @@ import {
   containerStateToJSON,
   deploymentStatusToJSON,
 } from 'src/grpc/protobuf/proto/common'
-import { MergedContainerConfigData } from 'src/shared/models'
+import { MergedContainerConfigData } from './container'
 
 export type DeploymentProgressContainerEvent = {
   instanceId: string

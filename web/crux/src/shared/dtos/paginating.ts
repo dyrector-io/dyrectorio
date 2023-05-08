@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsInt } from 'class-validator'
+import { IsInt, ValidateNested } from 'class-validator'
 
 export class PaginationQuery {
   @IsInt()
@@ -15,7 +15,9 @@ export class PaginationQuery {
 }
 
 export class PaginatedList<T> {
+  @ValidateNested({ each: true })
   items: T[]
 
+  @IsInt()
   total: number
 }
