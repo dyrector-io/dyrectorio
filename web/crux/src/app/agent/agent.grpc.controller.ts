@@ -1,6 +1,7 @@
 import { Metadata } from '@grpc/grpc-js'
-import { Controller, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Controller, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common'
 import { Observable } from 'rxjs'
+import GrpcExceptionFilter from 'src/filters/grpc.exception-filter'
 import {
   AgentAbortUpdate,
   AgentCommand,
@@ -20,12 +21,12 @@ import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { NodeGrpcCall } from 'src/shared/grpc-node-connection'
 import AgentService from './agent.service'
 import AgentAuthGuard from './guards/agent.auth.guard'
-import AgentErrorInterceptor from './interceptors/agent.error.interceptor'
 
 @Controller()
 @AgentControllerMethods()
+@UseFilters(GrpcExceptionFilter)
 @UseGuards(AgentAuthGuard)
-@UseInterceptors(AgentErrorInterceptor, PrismaErrorInterceptor)
+@UseInterceptors(PrismaErrorInterceptor)
 export default class AgentController implements GrpcAgentController {
   constructor(private service: AgentService) {}
 
@@ -37,7 +38,7 @@ export default class AgentController implements GrpcAgentController {
     return this.service.handleDeploymentStatus(call.connection, request)
   }
 
-  containerState(request: Observable<ContainerStateListMessage>, _: Metadata, call): Observable<Empty> {
+  containerState(request: Observable<ContainerStateListMessage>, _: Metadata, call: NodeGrpcCall): Observable<Empty> {
     return this.service.handleContainerState(call.connection, request)
   }
 
