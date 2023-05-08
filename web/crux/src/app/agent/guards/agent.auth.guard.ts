@@ -7,7 +7,7 @@ import GrpcNodeConnection, { NodeGrpcCall } from 'src/shared/grpc-node-connectio
 export default class AgentAuthGuard implements CanActivate {
   constructor(private jwt: JwtService) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const metadata = context.getArgByIndex<Metadata>(1)
     const call = context.getArgByIndex<NodeGrpcCall>(2)
 
