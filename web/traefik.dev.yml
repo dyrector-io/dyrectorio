@@ -1,6 +1,5 @@
 log:
   level: DEBUG
-
 http:
   routers:
     crux-ui:
@@ -13,13 +12,11 @@ http:
       service: crux
       entryPoints:
         - web
-        
   services:
     crux-ui:
       loadBalancer:
         servers:
           - url: http://{{ env "TRAEFIK_HOST" }}:3000/
-
     crux:
       loadBalancer:
         servers:

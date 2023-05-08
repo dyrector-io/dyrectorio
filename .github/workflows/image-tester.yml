@@ -1,26 +1,17 @@
 name: tester_image_builder_pipeline
-
 on:
   push:
-    branches:
-      - develop
-    paths:
-      - images/playwright/**
-      - .github/workflows/image-tester.yml
+    branches: [develop]
+    paths: [images/playwright/**, .github/workflows/image-tester.yml]
   pull_request:
-    paths:
-      - images/playwright/**
-      - .github/workflows/image-tester.yml
-
+    paths: [images/playwright/**, .github/workflows/image-tester.yml]
 permissions:
   contents: read
   pull-requests: read
   packages: write
-
 env:
   GITHUB_REGISTRY: ghcr.io
   TESTER_IMAGE_NAME: dyrector-io/dyrectorio/playwright
-
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -38,7 +29,6 @@ jobs:
         with:
           name: tester
           path: ./tester.zstd
-
   push:
     runs-on: ubuntu-22.04
     needs: build
@@ -68,4 +58,4 @@ jobs:
         run: |
           cosign sign --key cosign.key ${GITHUB_REGISTRY}/${TESTER_IMAGE_NAME}:latest
         env:
-          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
