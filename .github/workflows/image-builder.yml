@@ -1,27 +1,18 @@
 name: builder_image_builder_pipeline
-
 on:
   push:
-    branches:
-      - develop
-    paths:
-      - images/proto/**
-      - .github/workflows/image-builder.yml
+    branches: [develop]
+    paths: [images/proto/**, .github/workflows/image-builder.yml]
   pull_request:
-    paths:
-      - images/proto/**
-      - .github/workflows/image-builder.yml
-
+    paths: [images/proto/**, .github/workflows/image-builder.yml]
 permissions:
   contents: read
   pull-requests: read
   packages: write
-
 env:
   GITHUB_REGISTRY: ghcr.io
   BUILDER_IMAGE_NAME: dyrector-io/dyrectorio/alpine-proto
   VERSION: 3.16-5
-
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -39,7 +30,6 @@ jobs:
         with:
           name: builder
           path: ./builder.zstd
-
   push:
     runs-on: ubuntu-22.04
     needs: build
@@ -69,4 +59,4 @@ jobs:
         run: |
           cosign sign --key cosign.key ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION}
         env:
-          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}

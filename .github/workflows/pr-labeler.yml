@@ -1,9 +1,7 @@
 name: pull_request_labeler
-
 on:
   pull_request:
     types: [edited, opened, synchronize, reopened]
-
 jobs:
   label_based_on_source_lang:
     permissions:
@@ -14,7 +12,6 @@ jobs:
       - uses: actions/labeler@v4
         with:
           configuration-path: .github/config/labeler.yml
-
   label_based_on_title:
     permissions:
       contents: read
@@ -25,5 +22,5 @@ jobs:
         with:
           configuration-path: .github/config/title_label_config.yml
           include-title: 1
-          repo-token: '${{ github.token }}'
+          repo-token: ${{ github.token }}
           enable-versioned-regex: 0

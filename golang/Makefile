@@ -24,6 +24,7 @@ GOAIR=v1.42.0
 GOSEC=v2.15.0
 GOLANGCI=v1.51.2
 GOFUMPT=v0.4.0
+YAMLFMT=v0.9.0
 
 GOOS?=linux
 
@@ -123,6 +124,8 @@ install-go-tools:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI} && \
 	go install github.com/securego/gosec/v2/cmd/gosec@${GOSEC}
 	go install mvdan.cc/gofumpt@${GOFUMPT}
+	go install github.com/google/yamlfmt/cmd/yamlfmt@${YAMLFMT}
+
 
 .PHONY: compile-agents
 compile-agents: compile-crane compile-dagent
