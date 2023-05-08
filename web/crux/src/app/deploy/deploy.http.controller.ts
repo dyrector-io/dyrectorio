@@ -21,7 +21,6 @@ import {
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
-import { PaginationQuery } from 'src/shared/dtos/paginating'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import {
@@ -29,6 +28,7 @@ import {
   DeploymentDetailsDto,
   DeploymentDto,
   DeploymentLogListDto,
+  DeploymentLogPaginationQuery,
   InstanceDto,
   InstanceSecretsDto,
   PatchDeploymentDto,
@@ -239,7 +239,7 @@ export default class DeployHttpController {
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async deploymentLog(
     @DeploymentId() deploymentId: string,
-    @Query() query: PaginationQuery,
+    @Query() query: DeploymentLogPaginationQuery,
   ): Promise<DeploymentLogListDto> {
     return this.service.getDeploymentLog(deploymentId, query)
   }
