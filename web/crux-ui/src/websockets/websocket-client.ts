@@ -61,7 +61,7 @@ class WebSocketClient {
   }
 
   remove(endpoint: WebSocketClientEndpoint) {
-    const { path } = endpoint
+    const path = this.redirectedRoutes.get(endpoint.path) ?? endpoint.path
 
     this.logger.debug('Remove endpoint:', path)
 
@@ -72,16 +72,8 @@ class WebSocketClient {
       const shouldRemove = route.unsubscribe(endpoint)
 
       if (shouldRemove) {
-        this.routes.delete(path)
-        if (route.redirectedFrom) {
-          this.redirectedRoutes.delete(route.redirectedFrom)
-        }
+        this.removeRoute(route)
       }
-    }
-
-    if (this.routes.size < 1) {
-      this.logger.debug('There is no routes open. Closing connection.')
-      this.close()
     }
   }
 
@@ -90,17 +82,37 @@ class WebSocketClient {
     this.routes.clear()
     this.redirectedRoutes.clear()
 
-    if (!this.socket) {
-      return
-    }
-
-    this.socket.close()
-    this.socket = null
+    this.clearSocket()
     this.logger.debug('Connection closed.')
   }
 
   setErrorHandler(handler: WsErrorHandler) {
     this.errorHandler = handler
+  }
+
+  private removeRoute(route: WebSocketClientRoute) {
+    const { path } = route
+    this.routes.delete(path)
+
+    if (route.redirectedFrom) {
+      this.redirectedRoutes.delete(route.redirectedFrom)
+    }
+
+    if (this.routes.size < 1) {
+      this.logger.debug('There is no routes open. Closing connection.')
+      this.close()
+    }
+  }
+
+  private clearSocket() {
+    if (!this.socket) {
+      return
+    }
+
+    const ws = this.socket
+    this.socket = null
+    ws.close()
+    this.destroyListeners?.call(null)
   }
 
   private async connect(): Promise<boolean> {
@@ -181,10 +193,7 @@ class WebSocketClient {
       if (shouldRemove) {
         // no more endpoints
 
-        this.routes.delete(route.path)
-        if (route.redirectedFrom) {
-          this.redirectedRoutes.delete(route.redirectedFrom)
-        }
+        this.removeRoute(route)
       }
     }
   }
@@ -272,8 +281,7 @@ class WebSocketClient {
         this.routes.forEach(r => r.onMessage(message))
       }
 
-      this.socket?.close()
-      this.destroyListeners?.call(null)
+      this.clearSocket()
       this.socket = new WebSocket(WebSocketClient.assembleWsUrl())
 
       const ws = this.socket
