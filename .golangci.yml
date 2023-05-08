@@ -2,7 +2,6 @@ run:
   timeout: 3m
   skip-dirs:
     - internal/cache
-
 linters-settings:
   depguard:
     list-type: blacklist
@@ -44,11 +43,11 @@ linters-settings:
   goimports:
     local-prefixes: github.com/golangci/golangci-lint,github.com/dyrector-io/dyrectorio
   gomnd:
-   checks:
-     - argument
-     - case
-     - condition
-     - return
+    checks:
+      - argument
+      - case
+      - condition
+      - return
   govet:
     check-shadowing: true
   lll:
@@ -68,8 +67,6 @@ linters-settings:
     go: "1.18"
     checks:
       - all
-
-
 linters:
   # please, do not use `enable-all`: it's deprecated and will be removed soon.
   # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
@@ -119,12 +116,9 @@ linters:
     - unparam
     - unused
     - whitespace
-
 issues:
   # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
     - path: _test\.go
       linters:
         - gomnd
-
-

@@ -1,17 +1,13 @@
 version: v0.10.1
-
 serve:
   public:
     base_url: ${KRATOS_URL}
-
   admin:
     base_url: ${KRATOS_ADMIN_URL}
-
 selfservice:
   default_browser_return_url: ${CRUX_UI_URL}
   allowed_return_urls:
     - ${CRUX_UI_URL}
-
   methods:
     password:
       enabled: true
@@ -19,31 +15,25 @@ selfservice:
       enabled: false
     code:
       enabled: true
-
   flows:
     error:
       ui_url: ${CRUX_UI_URL}/error
-
     settings:
       ui_url: ${CRUX_UI_URL}/auth/settings
       privileged_session_max_age: 5m
-
     recovery:
       enabled: true
       ui_url: ${CRUX_UI_URL}/auth/recovery
       use: code
-
     verification:
       enabled: true
       ui_url: ${CRUX_UI_URL}/auth/verify
       use: code
       after:
         default_browser_return_url: ${CRUX_UI_URL}
-
     logout:
       after:
         default_browser_return_url: ${CRUX_UI_URL}/auth/login
-
     login:
       ui_url: ${CRUX_UI_URL}/auth/login
       lifespan: 10m
@@ -52,7 +42,6 @@ selfservice:
           default_browser_return_url: ${CRUX_UI_URL}
           hooks:
             - hook: require_verified_address
-
     registration:
       lifespan: 10m
       ui_url: ${CRUX_UI_URL}/auth/registration
@@ -60,7 +49,6 @@ selfservice:
         password:
           hooks:
             - hook: session
-
 hashers:
   argon2:
     parallelism: 1
@@ -68,13 +56,11 @@ hashers:
     iterations: 2
     salt_length: 16
     key_length: 16
-
 identity:
   default_schema_id: default
   schemas:
     - id: default
       url: file:///etc/config/kratos/identity.schema.json
-
 courier:
   smtp:
     from_name: ${FROM_NAME}

@@ -1,6 +1,0 @@
-# deprecated, delete these after 0.4 is out
-
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: dyrectorio
