@@ -1,9 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { devices, PlaywrightTestConfig } from '@playwright/test'
-import dns from 'dns'
 import path from 'path'
-
-dns.setDefaultResultOrder('ipv4first')
 
 const baseURL = process.env.E2E_BASE_URL || 'http://172.17.0.1:8000'
 
