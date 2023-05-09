@@ -1,8 +1,8 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsDate, IsIn, IsOptional, IsString, IsUUID } from 'class-validator'
+import { IsDate, IsIn, IsInt, IsOptional, IsString, IsUUID } from 'class-validator'
 import { ContainerState, CONTAINER_STATE_VALUES, UniqueKeyValue, UniqueSecretKeyValue } from 'src/shared/models'
-import { PaginatedList } from 'src/shared/dtos/paginating'
+import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
 import { Deployment, Instance, InstanceContainerConfig, Node, Product, Version } from '@prisma/client'
 import { ContainerConfigDto, ImageDto } from '../image/image.dto'
 import {
@@ -90,6 +90,8 @@ export class DeploymentDetailsDto extends DeploymentDto {
   publicKey?: string | null
 
   instances: InstanceDto[]
+
+  lastTry: number
 }
 
 export class CreateDeploymentDto {
@@ -173,6 +175,14 @@ export class DeploymentLogListDto extends PaginatedList<DeploymentEventDto> {
   items: DeploymentEventDto[]
 
   total: number
+}
+
+export class DeploymentLogPaginationQuery extends PaginationQuery {
+  @IsInt()
+  @IsOptional()
+  @Type(() => Number)
+  @ApiProperty()
+  readonly try?: number
 }
 
 export type DeploymentImageEvent = ImageEvent & {

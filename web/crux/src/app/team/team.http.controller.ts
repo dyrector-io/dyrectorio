@@ -23,7 +23,6 @@ import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
-import AuditLoggerService from 'src/app/shared/audit.logger.service'
 import { Request as ExpressRequest } from 'express'
 import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -49,7 +48,7 @@ const ROUTE_USER_ID = ':userId'
 @ApiTags(ROUTE_TEAMS)
 @UseGuards(TeamGuard)
 export default class TeamHttpController {
-  constructor(private service: TeamService, private auditLoggerService: AuditLoggerService) {}
+  constructor(private service: TeamService) {}
 
   @Get()
   @HttpCode(200)
@@ -98,9 +97,7 @@ export default class TeamHttpController {
     @IdentityFromRequest() identity: Identity,
     @Request() httpRequest: ExpressRequest,
   ): Promise<CreatedResponse<TeamDto>> {
-    const team = await this.service.createTeam(request, identity)
-
-    await this.auditLoggerService.createHttpAudit('all', identity, httpRequest)
+    const team = await this.service.createTeam(request, identity, httpRequest)
 
     return {
       url: `/${ROUTE_TEAMS}/${team.id}`,
@@ -128,6 +125,7 @@ export default class TeamHttpController {
 
   @Delete(ROUTE_TEAM_ID)
   @HttpCode(204)
+  @AuditLogLevel('disabled')
   @ApiOperation({
     description: 'Request must include `teamId`. Owner access required for successful request.',
     summary: 'Deletes a team.',

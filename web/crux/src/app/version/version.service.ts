@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { DeploymentStatusEnum } from '@prisma/client'
+import { DeploymentStatusEnum, Prisma } from '@prisma/client'
 import { VersionMessage } from 'src/domain/notification-templates'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
@@ -8,7 +8,14 @@ import AgentService from '../agent/agent.service'
 import { EditorLeftMessage, EditorMessage } from '../editor/editor.message'
 import EditorServiceProvider from '../editor/editor.service.provider'
 import ImageMapper from '../image/image.mapper'
-import { CreateVersionDto, IncreaseVersionDto, UpdateVersionDto, VersionDetailsDto, VersionDto } from './version.dto'
+import {
+  CreateVersionDto,
+  IncreaseVersionDto,
+  UpdateVersionDto,
+  VersionDetailsDto,
+  VersionDto,
+  VersionListQuery,
+} from './version.dto'
 import VersionMapper from './version.mapper'
 
 @Injectable()
@@ -73,7 +80,15 @@ export default class VersionService {
     return versions > 0
   }
 
-  async getVersionsByProductId(productId: string, user: Identity): Promise<VersionDto[]> {
+  async getVersionsByProductId(productId: string, user: Identity, query?: VersionListQuery): Promise<VersionDto[]> {
+    const filter: Prisma.VersionWhereInput = {
+      name: query?.nameContains
+        ? {
+            contains: query.nameContains,
+          }
+        : undefined,
+    }
+
     const versions = await this.prisma.version.findMany({
       include: {
         children: true,
@@ -91,6 +106,7 @@ export default class VersionService {
             },
           },
         },
+        ...filter,
       },
     })
 

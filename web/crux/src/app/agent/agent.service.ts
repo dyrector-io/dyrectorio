@@ -197,7 +197,7 @@ export default class AgentService {
         this.logger.verbose(`Deployment update - ${deploymentId}`)
 
         const events = deployment.onUpdate(it)
-        return from(this.createDeploymentEvents(deployment.id, events)).pipe(map(() => Empty))
+        return from(this.createDeploymentEvents(deployment.id, deployment.tries, events)).pipe(map(() => Empty))
       }),
       catchError(async (err: Error) => {
         this.logger.error(`Error during deployment: ${err.message}`, err.stack)
@@ -432,7 +432,7 @@ export default class AgentService {
     return agent.onConnected()
   }
 
-  private async createDeploymentEvents(id: string, events: DeploymentProgressEvent[]) {
+  private async createDeploymentEvents(id: string, tryCount: number, events: DeploymentProgressEvent[]) {
     const statusChanges = events.filter(it => it.type === DeploymentEventTypeEnum.deploymentStatus)
     if (statusChanges.length > 0) {
       const last = statusChanges[statusChanges.length - 1]
@@ -450,6 +450,7 @@ export default class AgentService {
       data: events.map(it => ({
         ...it,
         deploymentId: id,
+        tryCount,
       })),
     })
   }

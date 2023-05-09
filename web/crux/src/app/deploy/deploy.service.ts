@@ -6,7 +6,6 @@ import Deployment from 'src/domain/deployment'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import PrismaService from 'src/services/prisma.service'
-import { PaginationQuery } from 'src/shared/dtos/paginating'
 import { toPrismaJson } from 'src/shared/mapper'
 import {
   ContainerConfigData,
@@ -27,6 +26,7 @@ import {
   DeploymentEventDto,
   DeploymentImageEvent,
   DeploymentLogListDto,
+  DeploymentLogPaginationQuery,
   InstanceDto,
   InstanceSecretsDto,
   PatchDeploymentDto,
@@ -466,6 +466,16 @@ export default class DeployService {
       }),
     )
 
+    const tries = deployment.tries + 1
+    await this.prisma.deployment.update({
+      where: {
+        id: deployment.id,
+      },
+      data: {
+        tries,
+      },
+    })
+
     const deploy = new Deployment(
       {
         id: deployment.id,
@@ -521,6 +531,7 @@ export default class DeployService {
         nodeName: deployment.node.name,
       },
       mergedConfigs,
+      tries,
     )
 
     this.logger.debug(`Starting deployment: ${deploy.id}`)
@@ -744,11 +755,12 @@ export default class DeployService {
     return this.mapper.toDto(newDeployment)
   }
 
-  async getDeploymentLog(deploymentId: string, query: PaginationQuery): Promise<DeploymentLogListDto> {
-    const { skip, take } = query
+  async getDeploymentLog(deploymentId: string, query: DeploymentLogPaginationQuery): Promise<DeploymentLogListDto> {
+    const { skip, take, try: tryCount } = query
 
     const where: Prisma.DeploymentEventWhereInput = {
       deploymentId,
+      tryCount,
     }
 
     const [events, total] = await this.prisma.$transaction([

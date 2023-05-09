@@ -14,6 +14,7 @@ import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
 import { IdentityTraits, emailOfIdentity, invitationExpired, nameOfIdentity } from 'src/shared/models'
+import { Request as ExpressRequest } from 'express'
 import EmailBuilder, { InviteTemplateOptions } from '../../builders/email.builder'
 import {
   ActivateTeamDto,
@@ -27,6 +28,7 @@ import {
 import TeamMapper, { TeamWithUsers } from './team.mapper'
 import TeamRepository from './team.repository'
 import { UserDto, UserMetaDto } from './user.dto'
+import AuditLoggerService from '../shared/audit.logger.service'
 
 @Injectable()
 export default class TeamService {
@@ -40,6 +42,7 @@ export default class TeamService {
     private mapper: TeamMapper,
     private emailBuilder: EmailBuilder,
     private notificationService: DomainNotificationService,
+    private auditLoggerService: AuditLoggerService,
   ) {}
 
   async checkUserActiveTeam(teamId: string, identity: Identity): Promise<boolean> {
@@ -80,7 +83,7 @@ export default class TeamService {
     return this.mapper.toUserMetaDto(teams, invitations, identity)
   }
 
-  async createTeam(request: CreateTeamDto, identity: Identity): Promise<TeamDto> {
+  async createTeam(request: CreateTeamDto, identity: Identity, httpRequest: ExpressRequest): Promise<TeamDto> {
     // If the user doesn't have an active team, make the current one active
     const userHasTeam = await this.teamRepository.userHasTeam(identity.id)
 
@@ -111,6 +114,8 @@ export default class TeamService {
       },
       include: this.teamRepository.teamInclude,
     })
+
+    await this.auditLoggerService.createHttpAudit('all', identity, httpRequest)
 
     return this.mapper.toDto(team)
   }
