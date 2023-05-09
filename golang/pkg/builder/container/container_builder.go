@@ -503,28 +503,6 @@ func execHooks(dc *DockerContainerBuilder, hooks []LifecycleFunc) error {
 	return nil
 }
 
-// checked by the new pull
-// func needToPullImage(ctx context.Context, logger io.StringWriter, imageName string) (bool, error) {
-// 	ref, err := reference.ParseNamed(imageName)
-// 	if err != nil {
-// 		return false, err
-// 	}
-
-// 	imageExists, err := imageHelper.Exists(ctx, logger, reference.FamiliarString(ref))
-// 	if err != nil {
-// 		return false, err
-// 	}
-// 	if imageExists {
-// 		return false, nil
-// 	}
-
-// 	imageExists, err = imageHelper.Exists(ctx, logger, ref.String())
-// 	if err != nil {
-// 		return false, err
-// 	}
-// 	return !imageExists, nil
-// }
-
 func portListToNatBinding(portRanges []PortRangeBinding, portList []PortBinding) map[nat.Port][]nat.PortBinding {
 	portMap := make(map[nat.Port][]nat.PortBinding)
 

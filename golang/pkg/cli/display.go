@@ -113,7 +113,7 @@ func DockerPullProgressDisplayer(header string, respIn io.ReadCloser) error {
 	return nil
 }
 
-var spinChars = []string{"⢹", "⢺", "⢼", "⣸", "⣇", "⡧", "⡗", "⡏"}
+var spinChars = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 
 func spinner(n int) string {
 	return spinChars[n%len(spinChars)]
