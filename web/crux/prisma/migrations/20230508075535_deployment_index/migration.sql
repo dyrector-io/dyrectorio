@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Deployment" ADD COLUMN     "tries" INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE "DeploymentEvent" ADD COLUMN     "tryCount" INTEGER NOT NULL DEFAULT 0;
