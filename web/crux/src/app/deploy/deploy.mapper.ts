@@ -184,12 +184,6 @@ export default class DeployMapper {
     }
   }
 
-  // instanceContainerConfigDataToDb(
-  //   config: InstanceContainerConfigData,
-  // ): Omit<InstanceContainerConfig, 'id' | 'instanceId'> {
-  //   return this.imageMapper.containerConfigDataToDb(config)
-  // }
-
   eventTypeToDto(it: DeploymentEventTypeEnum): DeploymentEventTypeDto {
     switch (it) {
       case 'deploymentStatus':

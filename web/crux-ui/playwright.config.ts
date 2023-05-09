@@ -5,7 +5,7 @@ import path from 'path'
 
 dns.setDefaultResultOrder('ipv4first')
 
-const baseURL = process.env.E2E_BASE_URL || 'http://localhost:8000'
+const baseURL = process.env.E2E_BASE_URL || 'http://172.17.0.1:8000'
 
 // Reference: https://playwright.dev/docs/test-configuration
 const config: PlaywrightTestConfig = {
@@ -17,12 +17,12 @@ const config: PlaywrightTestConfig = {
   retries: 0,
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: path.join(__dirname, 'e2e_results/'),
-  // webServer: {
-  //   command: 'npm run prod',
-  //   url: baseURL,
-  //   timeout: 60 * 1000, // 1 min
-  //   reuseExistingServer: true,
-  // },
+  webServer: {
+    command: 'npm run prod',
+    url: baseURL,
+    timeout: 60 * 1000, // 1 min
+    reuseExistingServer: true,
+  },
   workers: process.env.CI ? 4 : undefined,
   use: {
     // Use baseURL so to make navigations relative.

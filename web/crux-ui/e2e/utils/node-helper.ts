@@ -25,9 +25,7 @@ export const installDagent = async (page: Page) => {
   const commandInput = await page.locator('input[readonly]')
   const curl = await commandInput.inputValue()
 
-  const installScriptSettings = getInstallScriptExecSettings()
-  console.info('Executing install script', installScriptSettings)
-  exec(curl, installScriptSettings, logCmdOutput)
+  exec(curl, getInstallScriptExecSettings(), logCmdOutput)
 
   await page.waitForSelector('img[src="/circle-green.svg"]')
 
