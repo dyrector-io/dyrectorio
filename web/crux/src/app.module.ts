@@ -22,7 +22,7 @@ import ShutdownService from './services/application.shutdown.service'
 import EmailModule from './mailer/email.module'
 import PrismaService from './services/prisma.service'
 import UuidValidationGuard from './guards/uuid-params.validation.guard'
-import configModuleConfig from './config/config.config'
+import appConfig from './config/app.config'
 import pinoLoggerConfig from './config/pino.logger.config'
 
 @Module({
@@ -41,7 +41,7 @@ import pinoLoggerConfig from './config/pino.logger.config'
     TemplateModule,
     DashboardModule,
     StorageModule,
-    ConfigModule.forRoot(configModuleConfig),
+    ConfigModule.forRoot(appConfig),
     EmailModule,
     PrometheusModule.register({
       controller: MetricsController,
