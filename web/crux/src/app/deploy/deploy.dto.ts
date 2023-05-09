@@ -3,7 +3,7 @@ import { Deployment, Instance, InstanceContainerConfig, Node, Product, Version }
 import { Type } from 'class-transformer'
 import { IsDate, IsIn, IsInt, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator'
 import { CONTAINER_STATE_VALUES, ContainerState } from 'src/domain/container'
-import { PaginatedList } from 'src/shared/dtos/paginating'
+import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
 import { ContainerConfigDto, UniqueKeyValueDto, UniqueSecretKeyValueDto } from '../container/container.dto'
 import { ImageDto } from '../image/image.dto'
 import { ImageEvent } from '../image/image.event'
@@ -101,6 +101,8 @@ export class DeploymentDetailsDto extends DeploymentDto {
 
   @ValidateNested()
   instances: InstanceDto[]
+
+  lastTry: number
 }
 
 export class CreateDeploymentDto {
@@ -189,6 +191,14 @@ export class DeploymentLogListDto extends PaginatedList<DeploymentEventDto> {
 
   @IsInt()
   total: number
+}
+
+export class DeploymentLogPaginationQuery extends PaginationQuery {
+  @IsInt()
+  @IsOptional()
+  @Type(() => Number)
+  @ApiProperty()
+  readonly try?: number
 }
 
 export type DeploymentImageEvent = ImageEvent & {

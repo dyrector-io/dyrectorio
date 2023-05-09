@@ -264,6 +264,7 @@ model Deployment {
   environment Json?
   versionId   String               @db.Uuid
   nodeId      String               @db.Uuid
+  tries       Int                  @default(0)
 
   version Version @relation(fields: [versionId], references: [id], onDelete: Cascade)
   node    Node    @relation(fields: [nodeId], references: [id], onDelete: Cascade)
@@ -336,6 +337,7 @@ model DeploymentEvent {
   type         DeploymentEventTypeEnum
   value        Json
   deploymentId String                  @db.Uuid
+  tryCount     Int                     @default(0)
 
   deployment Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
 }

@@ -13,7 +13,6 @@ import { toPrismaJson } from 'src/domain/utils'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import PrismaService from 'src/services/prisma.service'
-import { PaginationQuery } from 'src/shared/dtos/paginating'
 import AgentService from '../agent/agent.service'
 import ContainerMapper from '../container/container.mapper'
 import { EditorLeftMessage, EditorMessage } from '../editor/editor.message'
@@ -27,6 +26,7 @@ import {
   DeploymentEventDto,
   DeploymentImageEvent,
   DeploymentLogListDto,
+  DeploymentLogPaginationQuery,
   InstanceDto,
   InstanceSecretsDto,
   PatchDeploymentDto,
@@ -468,6 +468,16 @@ export default class DeployService {
       }),
     )
 
+    const tries = deployment.tries + 1
+    await this.prisma.deployment.update({
+      where: {
+        id: deployment.id,
+      },
+      data: {
+        tries,
+      },
+    })
+
     const deploy = new Deployment(
       {
         id: deployment.id,
@@ -523,6 +533,7 @@ export default class DeployService {
         nodeName: deployment.node.name,
       },
       mergedConfigs,
+      tries,
     )
 
     this.logger.debug(`Starting deployment: ${deploy.id}`)
@@ -746,11 +757,12 @@ export default class DeployService {
     return this.mapper.toDto(newDeployment)
   }
 
-  async getDeploymentLog(deploymentId: string, query: PaginationQuery): Promise<DeploymentLogListDto> {
-    const { skip, take } = query
+  async getDeploymentLog(deploymentId: string, query: DeploymentLogPaginationQuery): Promise<DeploymentLogListDto> {
+    const { skip, take, try: tryCount } = query
 
     const where: Prisma.DeploymentEventWhereInput = {
       deploymentId,
+      tryCount,
     }
 
     const [events, total] = await this.prisma.$transaction([
@@ -828,23 +840,24 @@ export default class DeployService {
   }
 
   async onEditorJoined(
-    versionId: string,
+    deploymentId: string,
     clientToken: string,
     identity: Identity,
   ): Promise<[EditorMessage, EditorMessage[]]> {
-    const editors = await this.editorServices.getOrCreateService(versionId)
+    const editors = await this.editorServices.getOrCreateService(deploymentId)
 
     const me = editors.onClientJoin(clientToken, identity)
 
     return [me, editors.getEditors()]
   }
 
-  async onEditorLeft(versionId: string, clientToken: string): Promise<EditorLeftMessage> {
-    const editors = await this.editorServices.getOrCreateService(versionId)
+  async onEditorLeft(deploymentId: string, clientToken: string): Promise<EditorLeftMessage> {
+    const editors = await this.editorServices.getOrCreateService(deploymentId)
     const message = editors.onClientLeft(clientToken)
 
     if (editors.editorCount < 1) {
-      this.editorServices.free(versionId)
+      this.logger.verbose(`All editors left removing ${deploymentId}`)
+      this.editorServices.free(deploymentId)
     }
 
     return message

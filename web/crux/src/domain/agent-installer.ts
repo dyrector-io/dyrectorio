@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NodeTypeEnum } from '@prisma/client'
 import { readFileSync } from 'fs'
@@ -17,8 +16,6 @@ import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { Agent, AgentEvent } from './agent'
 
 export default class AgentInstaller {
-  private readonly logger = new Logger(AgentInstaller.name)
-
   scriptCompiler: ScriptCompiler
 
   constructor(

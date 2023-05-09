@@ -90,6 +90,7 @@ export default class Deployment {
     private readonly request: VersionDeployRequest,
     public notification: DeploymentNotification,
     public mergedConfigs: Map<string, MergedContainerConfigData>,
+    public readonly tries: number,
   ) {
     this.id = request.id
   }

@@ -98,6 +98,7 @@ export default class DeployMapper {
   toDetailsDto(deployment: DeploymentDetails, publicKey?: string): DeploymentDetailsDto {
     return {
       ...this.toDto(deployment),
+      lastTry: deployment.tries,
       publicKey,
       environment: deployment.environment as UniqueKeyValue[],
       instances: deployment.instances.map(it => this.instanceToDto(it)),
