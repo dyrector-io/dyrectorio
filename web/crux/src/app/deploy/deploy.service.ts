@@ -838,23 +838,24 @@ export default class DeployService {
   }
 
   async onEditorJoined(
-    versionId: string,
+    deploymentId: string,
     clientToken: string,
     identity: Identity,
   ): Promise<[EditorMessage, EditorMessage[]]> {
-    const editors = await this.editorServices.getOrCreateService(versionId)
+    const editors = await this.editorServices.getOrCreateService(deploymentId)
 
     const me = editors.onClientJoin(clientToken, identity)
 
     return [me, editors.getEditors()]
   }
 
-  async onEditorLeft(versionId: string, clientToken: string): Promise<EditorLeftMessage> {
-    const editors = await this.editorServices.getOrCreateService(versionId)
+  async onEditorLeft(deploymentId: string, clientToken: string): Promise<EditorLeftMessage> {
+    const editors = await this.editorServices.getOrCreateService(deploymentId)
     const message = editors.onClientLeft(clientToken)
 
     if (editors.editorCount < 1) {
-      this.editorServices.free(versionId)
+      this.logger.verbose(`All editors left removing ${deploymentId}`)
+      this.editorServices.free(deploymentId)
     }
 
     return message

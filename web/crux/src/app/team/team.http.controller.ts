@@ -133,6 +133,7 @@ export default class TeamHttpController {
   @TeamRoleRequired('owner')
   @ApiNoContentResponse({ description: 'Team deleted.' })
   @UuidParams(PARAM_TEAM_ID)
+  @AuditLogLevel('disabled')
   async deleteTeam(@TeamId() teamId: string): Promise<void> {
     await this.service.deleteTeam(teamId)
   }
