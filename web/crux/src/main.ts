@@ -77,10 +77,7 @@ const bootstrap = async () => {
   })
 
   await app.startAllMicroservices()
-  // logger.log(`gRPC agent services are running on: ${agentOptions.url}`)
-
   await app.listen(httpOptions)
-  // logger.log(`HTTP API service is running on PORT: ${httpOptions}`)
 }
 
 bootstrap()
