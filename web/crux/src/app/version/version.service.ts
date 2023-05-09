@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { VersionMessage } from 'src/domain/notification-templates'
@@ -13,6 +13,8 @@ import VersionMapper from './version.mapper'
 
 @Injectable()
 export default class VersionService {
+  private readonly logger = new Logger(VersionService.name)
+
   constructor(
     private prisma: PrismaService,
     private mapper: VersionMapper,
@@ -490,6 +492,7 @@ export default class VersionService {
     const message = editors.onClientLeft(clientToken)
 
     if (editors.editorCount < 1) {
+      this.logger.verbose(`All editors left removing ${versionId}`)
       this.editorServices.free(versionId)
     }
 

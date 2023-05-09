@@ -7,6 +7,7 @@ import http from 'http'
 import {
   EMPTY,
   Observable,
+  Subject,
   catchError,
   filter,
   first,
@@ -14,6 +15,7 @@ import {
   fromEvent,
   mergeAll,
   mergeMap,
+  mergeWith,
   of,
   share,
   takeUntil,
@@ -22,6 +24,7 @@ import JwtAuthGuard, { AuthorizedHttpRequest } from 'src/app/token/jwt-auth.guar
 import { WebSocketExceptionOptions } from 'src/exception/websocket-exception'
 import { v4 as uuid } from 'uuid'
 import { WebSocketServer } from 'ws'
+import WsClientSetup from './client-setup'
 import {
   SubscriptionMessage,
   WS_TYPE_ERROR,
@@ -145,30 +148,39 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     handlers: MessageMappingProperties[],
     transform: WsTransform,
   ): Promise<void> {
-    const authorized = await client.authorized
-    if (!authorized) {
+    const { setup } = client
+    const bound = await setup.bound()
+    if (!bound) {
       return
     }
     // this is called once per client per gateway, the handlers itself contains the code
     // for the ws context creation, thus they are essential for pipes, guards, interceptors, etc. to work
     // the order of calls per gateway is the same as the gateway creation so we can use our routes list
 
-    const route = this.routes[client.boundRoutes++]
+    const route = this.routes[setup.boundRoutes++]
 
     this.logger.verbose(`Binding ${client.token} to ${route.path}`)
 
     route.onClientBind(client, handlers, transform)
+
+    if (setup.finished(this.routes.length)) {
+      client.setup = null
+    }
   }
 
-  async bindClientMessageHandlers(client: WsClient): Promise<void> {
-    const authorized = await client.authorized
+  async bindClientMessageHandlers(client: WsClient): Promise<boolean> {
+    const { setup } = client
+
+    const authorized = await setup.authorized
     if (!authorized) {
-      return
+      return false
     }
 
     const onClose = fromEvent(client, CLOSE_EVENT).pipe(share(), first())
 
-    const onReceive = fromEvent(client, 'message').pipe(
+    const onReceiveSub = new Subject<any>()
+    const onReceive = onReceiveSub.pipe(
+      mergeWith(fromEvent(client, 'message')),
       mergeMap(data =>
         this.onClientMessage(client, data).pipe(
           filter(result => typeof result !== 'undefined' && result !== null),
@@ -199,7 +211,13 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
       client.send(JSON.stringify(response))
     }
 
-    onReceive.subscribe(onResponse)
+    const subscribe = () => {
+      onReceive.subscribe(onResponse)
+      return onReceiveSub
+    }
+
+    setup.bind(subscribe)
+    return true
   }
 
   onClientMessage(client: WsClient, buffer: any): Observable<WsMessage> {
@@ -273,7 +291,6 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
 
   private onClientConnect(client: WsClient, req: http.IncomingMessage) {
     client.token = uuid()
-    client.boundRoutes = 0
     client.connectionRequest = req as AuthorizedHttpRequest
     client.subscriptions = new Map()
     client.sendWsMessage = msg => {
@@ -285,8 +302,13 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     }
     client.on(CLOSE_EVENT, () => this.onClientDisconnect(client))
 
-    client.authorized = this.authorize(client)
-    this.bindClientMessageHandlers(client)
+    client.setup = new WsClientSetup(
+      client,
+      client.token,
+      () => this.authorize(client),
+      () => this.bindClientMessageHandlers(client),
+    )
+    client.setup.start()
 
     this.logger.log(`Connected ${client.token} clients: ${this.server?.clients?.size}`)
   }
@@ -295,6 +317,8 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     this.logger.log(`Disconnected ${client.token} clients: ${this.server?.clients?.size}`)
 
     this.routes.forEach(it => it.onClientDisconnect(client))
+
+    client.setup?.onClientDisconnect()
   }
 
   private findRouteByPath(path: string): [WsRoute, WsRouteMatch] {

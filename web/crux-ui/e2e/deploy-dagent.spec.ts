@@ -1,12 +1,16 @@
 import { versionUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { screenshotPath } from './utils/common'
-import { deployWithDagent } from './utils/node-helper'
+import { deployWithDagent, installDagent } from './utils/node-helper'
 import { createImage, createProduct, createVersion } from './utils/products'
 
 const prefix = 'pw-first'
 const prefixTwo = 'pw-second'
 const image = 'nginx'
+
+test('setup dagent', async ({ page }, testInfo) => {
+  await installDagent(page)
+})
 
 test('Deploy to node should be successful', async ({ page }, testInfo) => {
   const productId = await createProduct(page, 'PW-DEPLOY-TEST', 'Complex')

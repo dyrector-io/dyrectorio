@@ -34,7 +34,7 @@ const globalSetup = async (config: FullConfig) => {
   await page.context().storageState({ path: storageState as string })
 
   // setup a deployable node
-  await installDagent(page)
+  // await installDagent(page)
 
   await browser.close()
 }

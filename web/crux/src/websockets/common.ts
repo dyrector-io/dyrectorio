@@ -2,6 +2,7 @@ import { SubscribeMessage } from '@nestjs/websockets'
 import { Observable } from 'rxjs'
 import { AuthorizedHttpRequest } from 'src/app/token/jwt-auth.guard'
 import { WebSocket } from 'ws'
+import WsClientSetup from './client-setup'
 
 export type WsMessage<T = any> = {
   type: string
@@ -61,9 +62,9 @@ export interface WsSubscription {
 
 export type WsClient = WebSocket & {
   token: string
-  authorized: Promise<boolean>
+  setup: WsClientSetup
   connectionRequest: AuthorizedHttpRequest
-  boundRoutes: number
+  flushRecivedMessages: VoidFunction
   sendWsMessage: (message: WsMessage) => void
   subscriptions: Map<string, WsSubscription>
 }
