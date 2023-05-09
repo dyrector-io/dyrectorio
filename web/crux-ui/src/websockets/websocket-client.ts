@@ -94,8 +94,10 @@ class WebSocketClient {
     const { path } = route
     this.routes.delete(path)
 
-    if (route.redirectedFrom) {
-      this.redirectedRoutes.delete(route.redirectedFrom)
+    const { redirectedFrom } = route
+    if (redirectedFrom) {
+      this.redirectedRoutes.delete(redirectedFrom)
+      this.logger.verbose('Route redirection deleted', redirectedFrom)
     }
 
     if (this.routes.size < 1) {

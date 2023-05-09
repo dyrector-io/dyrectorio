@@ -64,7 +64,6 @@ export type WsClient = WebSocket & {
   token: string
   setup: WsClientSetup
   connectionRequest: AuthorizedHttpRequest
-  flushRecivedMessages: VoidFunction
   sendWsMessage: (message: WsMessage) => void
   subscriptions: Map<string, WsSubscription>
 }

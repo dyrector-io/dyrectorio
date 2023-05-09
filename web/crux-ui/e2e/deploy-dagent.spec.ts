@@ -1,7 +1,7 @@
 import { versionUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { screenshotPath } from './utils/common'
-import { deployWithDagent, installDagent } from './utils/node-helper'
+import { deployWithDagent } from './utils/node-helper'
 import { createImage, createProduct, createVersion } from './utils/products'
 
 const prefix = 'pw-first'
