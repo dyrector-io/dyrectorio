@@ -1,4 +1,5 @@
 import { deploymentDeployUrl, productUrl, ROUTE_DEPLOYMENTS, ROUTE_NODES, versionUrl } from '@app/routes'
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { expect, Page } from '@playwright/test'
 import { exec, ExecOptions } from 'child_process'
 import { DAGENT_NODE, screenshotPath } from './common'

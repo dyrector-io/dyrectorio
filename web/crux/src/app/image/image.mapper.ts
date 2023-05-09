@@ -9,6 +9,7 @@ import {
   Registry,
   RestartPolicy,
 } from '@prisma/client'
+import { ContainerConfigData, ContainerLogDriverType, ContainerVolumeType, Volume } from 'src/domain/container'
 import { Volume as ProtoVolume } from 'src/grpc/protobuf/proto/agent'
 import {
   DriverType,
@@ -22,14 +23,14 @@ import {
   networkModeToJSON,
   volumeTypeFromJSON,
 } from 'src/grpc/protobuf/proto/common'
-import { toPrismaJson } from 'src/shared/mapper'
-import { ContainerConfigData, ContainerConfigVolume, ContainerLogDriverType, VolumeType } from 'src/shared/models'
+import { toPrismaJson } from 'src/domain/utils'
+import ContainerMapper from '../container/container.mapper'
 import RegistryMapper from '../registry/registry.mapper'
-import { ContainerConfigDto, ImageDto } from './image.dto'
+import { ImageDto } from './image.dto'
 
 @Injectable()
 export default class ImageMapper {
-  constructor(private registryMapper: RegistryMapper) {}
+  constructor(private registryMapper: RegistryMapper, private readonly containerMapper: ContainerMapper) {}
 
   toDto(it: ImageDetails): ImageDto {
     return {
@@ -38,101 +39,8 @@ export default class ImageMapper {
       tag: it.tag,
       order: it.order,
       registry: this.registryMapper.toDto(it.registry),
-      config: this.containerConfigDataToDto(it.config as any as ContainerConfigData),
+      config: this.containerMapper.configDataToDto(it.config as any as ContainerConfigData),
       createdAt: it.createdAt,
-    }
-  }
-
-  configDtoToContainerConfigData(
-    current: ContainerConfigData,
-    patch: Partial<ContainerConfigDto>,
-  ): ContainerConfigData {
-    const storagePatch =
-      'storage' in patch
-        ? {
-            storageSet: !!patch.storage?.storageId,
-            storageId: patch.storage?.storageId ?? null,
-            storageConfig: patch.storage?.storageId
-              ? {
-                  path: patch.storage.path,
-                  bucket: patch.storage.bucket,
-                }
-              : null,
-          }
-        : undefined
-
-    return {
-      ...current,
-      ...patch,
-      capabilities: undefined, // TODO (@m8vago, @nandor-magyar): Remove this line, when capabilites are ready
-      annotations: !patch.annotations
-        ? current.annotations
-        : {
-            ...(current.annotations ?? {}),
-            ...patch.annotations,
-          },
-      labels: !patch.labels
-        ? current.labels
-        : {
-            ...(current.labels ?? {}),
-            ...patch.labels,
-          },
-      ...storagePatch,
-    }
-  }
-
-  containerConfigDataToDb(config: Partial<ContainerConfigData>): Omit<ContainerConfig, 'id' | 'imageId'> {
-    return {
-      name: config.name,
-      expose: config.expose,
-      ingress: toPrismaJson(config.ingress),
-      configContainer: toPrismaJson(config.configContainer),
-      user: config.user ? config.user : null,
-      tty: config.tty !== null ? config.tty : false,
-      ports: toPrismaJson(config.ports),
-      portRanges: toPrismaJson(config.portRanges),
-      volumes: toPrismaJson(config.volumes),
-      commands: toPrismaJson(config.commands),
-      args: toPrismaJson(config.args),
-      environment: toPrismaJson(config.environment),
-      secrets: toPrismaJson(config.secrets),
-      initContainers: toPrismaJson(config.initContainers),
-      logConfig: toPrismaJson(config.logConfig),
-      storageSet: config.storageSet,
-      storageId: config.storageId,
-      storageConfig: toPrismaJson(config.storageConfig),
-
-      // dagent
-      restartPolicy: config.restartPolicy,
-      networkMode: config.networkMode,
-      networks: toPrismaJson(config.networks),
-      dockerLabels: toPrismaJson(config.dockerLabels),
-
-      // crane
-      deploymentStrategy: config.deploymentStrategy,
-      healthCheckConfig: toPrismaJson(config.healthCheckConfig),
-      resourceConfig: toPrismaJson(config.resourceConfig),
-      proxyHeaders: config.proxyHeaders !== null ? config.proxyHeaders : false,
-      useLoadBalancer: config.useLoadBalancer !== null ? config.useLoadBalancer : false,
-      customHeaders: toPrismaJson(config.customHeaders),
-      extraLBAnnotations: toPrismaJson(config.extraLBAnnotations),
-      capabilities: toPrismaJson(config.capabilities),
-      annotations: toPrismaJson(config.annotations),
-      labels: toPrismaJson(config.labels),
-    }
-  }
-
-  containerConfigDataToDto(config: ContainerConfigData): ContainerConfigDto {
-    return {
-      ...config,
-      capabilities: null,
-      storage: !config.storageSet
-        ? null
-        : {
-            storageId: config.storageId,
-            bucket: config.storageConfig?.bucket,
-            path: config.storageConfig?.path,
-          },
     }
   }
 
@@ -311,7 +219,7 @@ export default class ImageMapper {
     }
   }
 
-  volumesToProto(volumes: ContainerConfigVolume[]): ProtoVolume[] {
+  volumesToProto(volumes: Volume[]): ProtoVolume[] {
     if (!volumes) {
       return null
     }
@@ -319,7 +227,7 @@ export default class ImageMapper {
     return volumes.map(it => ({ ...it, type: this.volumeTypeToProto(it.type) }))
   }
 
-  volumeTypeToProto(it?: VolumeType): ProtoVolumeType {
+  volumeTypeToProto(it?: ContainerVolumeType): ProtoVolumeType {
     if (!it) {
       return ProtoVolumeType.RO
     }

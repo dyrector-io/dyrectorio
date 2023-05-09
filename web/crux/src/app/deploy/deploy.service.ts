@@ -2,23 +2,23 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum, Prisma } from '@prisma/client'
 import { EMPTY, Observable, Subject, concatAll, concatMap, filter, from, lastValueFrom, map, of } from 'rxjs'
-import Deployment from 'src/domain/deployment'
-import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
-import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
-import PrismaService from 'src/services/prisma.service'
-import { toPrismaJson } from 'src/shared/mapper'
 import {
   ContainerConfigData,
   InstanceContainerConfigData,
   MergedContainerConfigData,
   UniqueSecretKeyValue,
-} from 'src/shared/models'
+} from 'src/domain/container'
+import Deployment from 'src/domain/deployment'
+import { toPrismaJson } from 'src/domain/utils'
+import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
+import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
+import PrismaService from 'src/services/prisma.service'
 import AgentService from '../agent/agent.service'
+import ContainerMapper from '../container/container.mapper'
 import { EditorLeftMessage, EditorMessage } from '../editor/editor.message'
 import EditorServiceProvider from '../editor/editor.service.provider'
 import { ImageEvent } from '../image/image.event'
 import ImageEventService from '../image/image.event.service'
-import ContainerMapper from '../shared/container.mapper'
 import {
   CreateDeploymentDto,
   DeploymentDetailsDto,
@@ -254,7 +254,9 @@ export default class DeployService {
       data: {
         note: req.note ?? undefined,
         prefix: req.prefix ?? undefined,
-        environment: req.environment ?? undefined,
+        environment: req.environment
+          ? req.environment.map(it => this.containerMapper.uniqueKeyValueDtoToDb(it))
+          : undefined,
         updatedBy: identity.id,
       },
     })
@@ -286,7 +288,7 @@ export default class DeployService {
       req.config,
     )
 
-    const config = this.mapper.instanceConfigDataToDb(configData)
+    const config = this.containerMapper.configDataToDb(configData)
 
     await this.prisma.deployment.update({
       where: {

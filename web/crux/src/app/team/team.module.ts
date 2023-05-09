@@ -10,17 +10,15 @@ import PrismaService from 'src/services/prisma.service'
 import SharedModule from '../shared/shared.module'
 import TeamHttpController from './team.http.controller'
 import TeamMapper from './team.mapper'
-import TeamRepository from './team.repository'
 import TeamService from './team.service'
 import UserHttpController from './user.http.controller'
 
 @Module({
   imports: [HttpModule, EmailModule, SharedModule],
-  exports: [TeamRepository, TeamService],
+  exports: [TeamService],
   controllers: [TeamHttpController, UserHttpController],
   providers: [
     TeamService,
-    TeamRepository,
     PrismaService,
     EmailService,
     KratosService,

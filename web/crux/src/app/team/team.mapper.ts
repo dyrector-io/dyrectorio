@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Identity, Session } from '@ory/kratos-client'
 import { Team, UserInvitation, UsersOnTeams } from '@prisma/client'
-import { IdentityTraits, invitationExpired, nameOfIdentity } from 'src/shared/models'
+import { IdentityTraits, invitationExpired, nameOfIdentity } from 'src/domain/identity'
 import SharedMapper from '../shared/shared.mapper'
 import { TeamDetailsDto, TeamDto, TeamStatisticsDto } from './team.dto'
 import { UserDto, UserMetaDto } from './user.dto'

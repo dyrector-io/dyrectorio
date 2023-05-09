@@ -1,6 +1,6 @@
-import { InstanceContainerConfigData, UniqueKeyValue } from 'src/shared/models'
-import { DeploymentEventDto, InstanceDetails, InstanceDto } from './deploy.dto'
+import { InstanceContainerConfigData, UniqueKeyValue } from 'src/domain/container'
 import { ImageConfigProperty } from '../image/image.const'
+import { DeploymentEventDto, InstanceDetails, InstanceDto } from './deploy.dto'
 
 export const WS_TYPE_FETCH_DEPLOYMENT_EVENTS = 'fetch-deployment-events'
 

@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { Configuration, FrontendApi, Identity, IdentityApi, Session } from '@ory/kratos-client'
 import { randomUUID } from 'crypto'
 import { setDefaultResultOrder } from 'dns'
-import { IdentityTraits, KRATOS_IDENTITY_SCHEMA, KratosInvitation } from 'src/shared/models'
+import { IdentityTraits, KRATOS_IDENTITY_SCHEMA, KratosInvitation } from 'src/domain/identity'
 
 @Injectable()
 export default class KratosService {

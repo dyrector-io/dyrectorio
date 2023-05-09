@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { RegistryTypeEnum } from '@prisma/client'
+import { Request as ExpressRequest } from 'express'
+import { IdentityTraits, emailOfIdentity, invitationExpired, nameOfIdentity } from 'src/domain/identity'
 import { InviteMessage } from 'src/domain/notification-templates'
 import {
   CruxConflictException,
@@ -13,9 +15,8 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
-import { IdentityTraits, emailOfIdentity, invitationExpired, nameOfIdentity } from 'src/shared/models'
-import { Request as ExpressRequest } from 'express'
 import EmailBuilder, { InviteTemplateOptions } from '../../builders/email.builder'
+import AuditLoggerService from '../shared/audit.logger.service'
 import {
   ActivateTeamDto,
   CreateTeamDto,
@@ -28,7 +29,6 @@ import {
 import TeamMapper, { TeamWithUsers } from './team.mapper'
 import TeamRepository from './team.repository'
 import { UserDto, UserMetaDto } from './user.dto'
-import AuditLoggerService from '../shared/audit.logger.service'
 
 @Injectable()
 export default class TeamService {

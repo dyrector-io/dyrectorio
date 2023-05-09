@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { ReadStream } from 'fs'
+import { ContainerConfigData, ContainerVolumeType } from 'src/domain/container'
+import { toPrismaJson } from 'src/domain/utils'
 import { CruxNotFoundException } from 'src/exception/crux-exception'
 import {
   deploymentStrategyFromJSON,
@@ -11,8 +13,6 @@ import {
 import PrismaService from 'src/services/prisma.service'
 import TemplateFileService, { TemplateContainerConfig, TemplateImage } from 'src/services/template.file.service'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
-import { toPrismaJson } from 'src/shared/mapper'
-import { ContainerConfigData, VolumeType } from 'src/shared/models'
 import { v4 } from 'uuid'
 import ImageMapper from '../image/image.mapper'
 import { CreateProductDto, ProductDto } from '../product/product.dto'
@@ -130,7 +130,7 @@ export default class TemplateService {
         ? toPrismaJson(
             config.volumes.map(it => ({
               ...this.idify(it),
-              type: it.type ? (it.type as VolumeType) : 'rwo',
+              type: it.type ? (it.type as ContainerVolumeType) : 'rwo',
             })),
           )
         : [],
