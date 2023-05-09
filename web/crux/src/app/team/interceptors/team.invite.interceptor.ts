@@ -8,6 +8,7 @@ import {
 } from 'src/exception/crux-exception'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
+import { UserInvitationStatusEnum } from '@prisma/client'
 import { InviteUserDto } from '../team.dto'
 
 @Injectable()
@@ -29,17 +30,19 @@ export default class TeamInviteUserValitationInterceptor implements NestIntercep
 
     if (this.recaptcha.captchaEnabled()) {
       if (!body.captcha) {
-        throw new CruxBadRequestException({ message: 'Missing captcha.' })
+        throw new CruxBadRequestException({ message: 'Missing captcha.', property: 'captcha' })
       }
 
+      let captchaValid = false
       try {
-        const captchaValid = await this.recaptcha.validateCaptcha(body.captcha)
-        if (!captchaValid) {
-          throw new CruxBadRequestException({ message: 'Invalid captcha.' })
-        }
+        captchaValid = await this.recaptcha.validateCaptcha(body.captcha)
       } catch (err) {
         this.logger.error(err)
-        throw new CruxInternalServerErrorException({ message: `Failed to validate captcha.` })
+        throw new CruxInternalServerErrorException({ message: `Failed to validate captcha.`, property: 'captcha' })
+      }
+
+      if (!captchaValid) {
+        throw new CruxBadRequestException({ message: 'Invalid captcha.', property: 'captcha' })
       }
     }
 
@@ -53,6 +56,22 @@ export default class TeamInviteUserValitationInterceptor implements NestIntercep
     if (userOnTeam) {
       throw new CruxConflictException({
         message: 'User is already in the team',
+        property: 'email',
+      })
+    }
+
+    const invitation = await this.prisma.userInvitation.count({
+      where: {
+        userId: user.id,
+        teamId,
+        email: body.email,
+        status: UserInvitationStatusEnum.pending,
+      },
+      take: 1,
+    })
+    if (invitation > 0) {
+      throw new CruxConflictException({
+        message: 'User is already invited',
         property: 'email',
       })
     }
