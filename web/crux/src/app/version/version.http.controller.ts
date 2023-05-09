@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -16,7 +28,14 @@ import VersionCreateValidationInterceptor from './interceptors/version.create.in
 import VersionDeleteValidationInterceptor from './interceptors/version.delete.interceptor'
 import VersionIncreaseValidationInterceptor from './interceptors/version.increase.interceptor'
 import VersionUpdateValidationInterceptor from './interceptors/version.update.interceptor'
-import { CreateVersionDto, IncreaseVersionDto, UpdateVersionDto, VersionDetailsDto, VersionDto } from './version.dto'
+import {
+  CreateVersionDto,
+  IncreaseVersionDto,
+  UpdateVersionDto,
+  VersionDetailsDto,
+  VersionDto,
+  VersionListQuery,
+} from './version.dto'
 import VersionService from './version.service'
 
 const PARAM_PRODUCT_ID = 'productId'
@@ -48,8 +67,12 @@ export default class VersionHttpController {
     description: 'Returns an array with the every version of a product.',
   })
   @UuidParams(PARAM_PRODUCT_ID)
-  async getVersions(@ProductId() productId: string, @IdentityFromRequest() identity: Identity): Promise<VersionDto[]> {
-    return await this.service.getVersionsByProductId(productId, identity)
+  async getVersions(
+    @ProductId() productId: string,
+    @IdentityFromRequest() identity: Identity,
+    @Query() query: VersionListQuery,
+  ): Promise<VersionDto[]> {
+    return await this.service.getVersionsByProductId(productId, identity, query)
   }
 
   @Get(ROUTE_VERSION_ID)
