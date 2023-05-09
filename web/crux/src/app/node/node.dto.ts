@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsBoolean, IsDate, IsEmail, IsIn, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator'
+import { ContainerState } from 'src/domain/container'
 import {
   BasicNodeDto,
   NODE_CONNECTION_STATUS_VALUES,
@@ -8,7 +9,6 @@ import {
   NodeConnectionStatus,
   NodeType,
 } from '../shared/shared.dto'
-import { ContainerState } from 'src/domain/container'
 
 export const NODE_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
 export type NodeScriptTypeDto = (typeof NODE_SCRIPT_TYPE_VALUES)[number]

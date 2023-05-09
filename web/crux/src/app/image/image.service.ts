@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { ContainerConfig } from '@prisma/client'
+import { ContainerConfigData } from 'src/domain/container'
 import { containerNameFromImageName } from 'src/domain/deployment'
 import PrismaService from 'src/services/prisma.service'
+import ContainerMapper from '../container/container.mapper'
 import EditorServiceProvider from '../editor/editor.service.provider'
 import { AddImagesDto, ImageDto, PatchImageDto } from './image.dto'
-import ImageMapper from './image.mapper'
 import ImageEventService from './image.event.service'
-import ContainerMapper from '../container/container.mapper'
-import { ContainerConfigData } from 'src/domain/container'
+import ImageMapper from './image.mapper'
 
 @Injectable()
 export default class ImageService {

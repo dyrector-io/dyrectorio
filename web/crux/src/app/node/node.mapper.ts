@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Node, NodeTypeEnum } from '@prisma/client'
 import { AgentEvent } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
+import { ContainerState } from 'src/domain/container'
 import { fromTimestamp } from 'src/domain/utils'
 import {
   ContainerOperation,
@@ -14,7 +15,6 @@ import AgentService from '../agent/agent.service'
 import { NodeType } from '../shared/shared.dto'
 import { ContainerDto, ContainerOperationDto, NodeDetailsDto, NodeDto, NodeInstallDto } from './node.dto'
 import { ContainersStateListMessage } from './node.message'
-import { ContainerState } from 'src/domain/container'
 
 @Injectable()
 export default class NodeMapper {

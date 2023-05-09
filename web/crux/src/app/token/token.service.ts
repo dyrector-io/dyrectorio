@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { Identity } from '@ory/kratos-client'
+import { AuthPayload } from 'src/domain/identity'
 import PrismaService from 'src/services/prisma.service'
 import { v4 as uuid } from 'uuid'
-import { GenerateTokenDto, TokenDto, GeneratedTokenDto } from './token.dto'
+import { GenerateTokenDto, GeneratedTokenDto, TokenDto } from './token.dto'
 import TokenMapper from './token.mapper'
-import { AuthPayload } from 'src/domain/identity'
 
 @Injectable()
 export default class TokenService {

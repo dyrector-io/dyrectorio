@@ -2,12 +2,18 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum, Prisma } from '@prisma/client'
 import { EMPTY, Observable, Subject, concatAll, concatMap, filter, from, lastValueFrom, map, of } from 'rxjs'
+import {
+  ContainerConfigData,
+  InstanceContainerConfigData,
+  MergedContainerConfigData,
+  UniqueSecretKeyValue,
+} from 'src/domain/container'
 import Deployment from 'src/domain/deployment'
+import { toPrismaJson } from 'src/domain/utils'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import PrismaService from 'src/services/prisma.service'
 import { PaginationQuery } from 'src/shared/dtos/paginating'
-import { toPrismaJson } from 'src/domain/utils'
 import AgentService from '../agent/agent.service'
 import ContainerMapper from '../container/container.mapper'
 import { EditorLeftMessage, EditorMessage } from '../editor/editor.message'
@@ -28,12 +34,6 @@ import {
 } from './deploy.dto'
 import DeployMapper from './deploy.mapper'
 import { DeploymentEventListMessage } from './deploy.message'
-import {
-  ContainerConfigData,
-  InstanceContainerConfigData,
-  MergedContainerConfigData,
-  UniqueSecretKeyValue,
-} from 'src/domain/container'
 
 @Injectable()
 export default class DeployService {

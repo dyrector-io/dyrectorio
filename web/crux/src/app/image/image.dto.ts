@@ -1,4 +1,3 @@
-import { PartialType } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsDate, IsNumber, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator'
 import { ContainerConfigDto, PartialContainerConfigDto } from '../container/container.dto'

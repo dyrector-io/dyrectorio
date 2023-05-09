@@ -1,5 +1,16 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger'
-import { IsBoolean, IsIn, IsInt, IsOptional, IsPositive, IsString, IsUUID, Max, Min, ValidateNested } from 'class-validator'
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsPositive,
+  IsString,
+  IsUUID,
+  Max,
+  Min,
+  ValidateNested,
+} from 'class-validator'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,

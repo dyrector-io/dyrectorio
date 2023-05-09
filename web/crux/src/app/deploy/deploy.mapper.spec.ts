@@ -1,6 +1,6 @@
-import { ContainerConfigData, InstanceContainerConfigData } from 'src/shared/models'
+import { ContainerConfigData, InstanceContainerConfigData } from 'src/domain/container'
+import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
-import ContainerMapper from '../shared/container.mapper'
 import SharedMapper from '../shared/shared.mapper'
 import { PatchInstanceDto } from './deploy.dto'
 import DeployMapper from './deploy.mapper'
@@ -11,8 +11,8 @@ describe('DeployMapper', () => {
   let deployMapper: DeployMapper = null
 
   beforeEach(() => {
-    imageMapper = new ImageMapper(null)
     containerMapper = new ContainerMapper()
+    imageMapper = new ImageMapper(null, containerMapper)
     deployMapper = new DeployMapper(new SharedMapper(), imageMapper, containerMapper)
   })
 
