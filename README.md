@@ -10,10 +10,6 @@
 
 <div align="center">dyrector.io is a self-hosted container management platform.
 
-<p>
-Imagine that Heroku meets Portainer and then gets combined with fly.io – that’s dyrector.io. It enables teams to build up their software delivery pipeline like building blocks.
-</p>
-
 <p align="center">
   <a href="https://github.com/dyrector-io/dyrectorio/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/dyrector-io/dyrectorio" alt="GitHub tag (latest by date)"/></a>
     <a href="./LICENSE" target="_blank"><img src="https://img.shields.io/badge/licence-Apache%202.0-brightgreen.svg?style=flat)" alt="License"/></a>
