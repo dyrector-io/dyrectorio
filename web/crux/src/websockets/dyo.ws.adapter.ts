@@ -181,8 +181,8 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     const onReceiveSub = new Subject<any>()
     const onReceive = onReceiveSub.pipe(
       mergeWith(fromEvent(client, 'message')),
-      mergeMap(data =>
-        this.onClientMessage(client, data).pipe(
+      mergeMap(buffer =>
+        this.onClientMessage(client, buffer).pipe(
           filter(result => typeof result !== 'undefined' && result !== null),
           catchError(err => {
             const errorMsg = 'Error while handling message'
@@ -318,7 +318,7 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
 
     this.routes.forEach(it => it.onClientDisconnect(client))
 
-    client.setup?.onClientDisconnect()
+    client?.setup?.onClientDisconnect()
   }
 
   private findRouteByPath(path: string): [WsRoute, WsRouteMatch] {

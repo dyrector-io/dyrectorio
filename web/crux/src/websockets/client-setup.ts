@@ -1,13 +1,13 @@
 import { Logger } from '@nestjs/common'
 import { Subject } from 'rxjs'
-import { WebSocket } from 'ws'
+import { WebSocket, RawData } from 'ws'
 
 type WsInitializer = () => Promise<boolean>
 
 export default class WsClientSetup {
   private readonly logger: Logger
 
-  private messages: any[] = []
+  private messages: ProcessableMessage[] = []
 
   private clearReceiver: VoidFunction
 
@@ -31,7 +31,16 @@ export default class WsClientSetup {
   ) {
     this.logger = new Logger(`${WsClientSetup.name} ${token}`)
 
-    const receiver = msg => this.messages.push(msg)
+    const receiver: (buffer: RawData, isBinary: boolean) => void = (buffer, binary) => {
+      if (binary) {
+        return
+      }
+
+      this.messages.push({
+        data: buffer.toString(),
+      })
+    }
+
     this.clearReceiver = () => client.removeListener('message', receiver)
 
     client.addListener('message', receiver)
@@ -83,4 +92,8 @@ export default class WsClientSetup {
 
     this.logger.verbose('disconnected')
   }
+}
+
+type ProcessableMessage = {
+  data: string
 }

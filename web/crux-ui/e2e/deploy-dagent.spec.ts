@@ -8,10 +8,6 @@ const prefix = 'pw-first'
 const prefixTwo = 'pw-second'
 const image = 'nginx'
 
-test('setup dagent', async ({ page }, testInfo) => {
-  await installDagent(page)
-})
-
 test('Deploy to node should be successful', async ({ page }, testInfo) => {
   const productId = await createProduct(page, 'PW-DEPLOY-TEST', 'Complex')
   const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
