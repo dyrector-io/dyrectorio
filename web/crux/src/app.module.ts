@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { PrometheusModule } from '@willsoto/nestjs-prometheus'
+import { LoggerModule } from 'nestjs-pino'
 import AgentModule from './app/agent/agent.module'
 import AuditModule from './app/audit/audit.module'
 import DashboardModule from './app/dashboard/dashboard.module'
@@ -17,10 +18,12 @@ import StorageModule from './app/storage/storage.module'
 import TeamModule from './app/team/team.module'
 import TemplateModule from './app/template/template.module'
 import VersionModule from './app/version/version.module'
-import ShutdownService from './application.shutdown.service'
-import UuidValidationGuard from './guards/uuid-params.validation.guard'
+import ShutdownService from './services/application.shutdown.service'
 import EmailModule from './mailer/email.module'
 import PrismaService from './services/prisma.service'
+import UuidValidationGuard from './guards/uuid-params.validation.guard'
+import configModuleConfig from './config/config.config'
+import pinoLoggerConfig from './config/pino.logger.config'
 
 @Module({
   imports: [
@@ -38,19 +41,15 @@ import PrismaService from './services/prisma.service'
     TemplateModule,
     DashboardModule,
     StorageModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-      cache: true,
-    }),
+    ConfigModule.forRoot(configModuleConfig),
     EmailModule,
     PrometheusModule.register({
       controller: MetricsController,
     }),
     SharedModule,
+    LoggerModule.forRoot(pinoLoggerConfig),
   ],
   controllers: [],
   providers: [PrismaService, ShutdownService, UuidValidationGuard],
 })
-class AppModule {}
-
-export default AppModule
+export default class AppModule {}

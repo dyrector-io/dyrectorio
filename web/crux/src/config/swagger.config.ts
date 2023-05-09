@@ -1,8 +1,8 @@
 import { ConfigService } from '@nestjs/config'
 import { DocumentBuilder, OpenAPIObject } from '@nestjs/swagger'
 
-const createSwaggerConfig = (configService: ConfigService): Omit<OpenAPIObject, 'paths'> => {
-  const config = new DocumentBuilder()
+const createSwaggerConfig = (configService: ConfigService): Omit<OpenAPIObject, 'paths'> =>
+  new DocumentBuilder()
     .setTitle('dyrectorio platform API')
     .setDescription('The dyrectorio platform API documentation.')
     .setVersion(configService.get<string>('npm_package_version'))
@@ -63,8 +63,6 @@ const createSwaggerConfig = (configService: ConfigService): Omit<OpenAPIObject, 
       'storages',
       'Storages are S3 compatible memory storages. They can be used for file injection. More details in dyrectorio platform [documentation](https://docs.dyrector.io/features/storage).',
     )
-
-  return config.build()
-}
+    .build()
 
 export default createSwaggerConfig
