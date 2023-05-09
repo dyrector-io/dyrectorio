@@ -107,7 +107,6 @@ install-cli: single-arch-check compile-cli
 	endif
 	cp build/out/cli-$(GOARCHS) $(GOBIN)/
 
-
 .PHONY: compile-crane
 compile-crane:
 	cd cmd/crane && \
@@ -120,12 +119,11 @@ compile-dagent:
 
 .PHONY: install-go-tools
 install-go-tools:
-	go install github.com/cosmtrek/air@${GOAIR} && \
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI} && \
+	go install github.com/cosmtrek/air@${GOAIR}
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI}
 	go install github.com/securego/gosec/v2/cmd/gosec@${GOSEC}
 	go install mvdan.cc/gofumpt@${GOFUMPT}
 	go install github.com/google/yamlfmt/cmd/yamlfmt@${YAMLFMT}
-
 
 .PHONY: compile-agents
 compile-agents: compile-crane compile-dagent
