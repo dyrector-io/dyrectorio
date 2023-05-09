@@ -1,5 +1,5 @@
-import * as yup from 'yup'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
+import * as yup from 'yup'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
@@ -7,13 +7,14 @@ import {
   CONTAINER_NETWORK_MODE_VALUES,
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
-  ContainerConfigExposeStrategy,
   ContainerDeploymentStrategyType,
+  ContainerExposeStrategy,
   ContainerLogDriverType,
   ContainerNetworkMode,
   ContainerRestartPolicyType,
-  VolumeType,
-} from './models'
+  ContainerVolumeType,
+  PORT_MAX,
+} from './container'
 
 export const nameRuleOptional = yup.string().trim().min(3).max(70)
 export const nameRule = yup.string().required().trim().min(3).max(70)
@@ -51,7 +52,10 @@ export const uniqueKeysOnlySchema = yup
   .ensure()
   .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
 
-const portNumberBaseRule = yup.number().positive().lessThan(65536)
+const portNumberBaseRule = yup
+  .number()
+  .positive()
+  .lessThan(PORT_MAX + 1)
 const portNumberOptionalRule = portNumberBaseRule.nullable()
 const portNumberRule = portNumberBaseRule.required()
 
@@ -66,13 +70,13 @@ const ingressRule = yup
   .nullable()
 
 const exposeRule = yup
-  .mixed<ContainerConfigExposeStrategy>()
+  .mixed<ContainerExposeStrategy>()
   .oneOf([...CONTAINER_EXPOSE_STRATEGY_VALUES])
   .default('none')
   .required()
 
 const instanceExposeRule = yup
-  .mixed<ContainerConfigExposeStrategy>()
+  .mixed<ContainerExposeStrategy>()
   .oneOf([...CONTAINER_EXPOSE_STRATEGY_VALUES, null])
   .nullable()
 
@@ -113,7 +117,7 @@ const logDriverRule = yup
   .default('none')
 
 const volumeTypeRule = yup
-  .mixed<VolumeType>()
+  .mixed<ContainerVolumeType>()
   .oneOf([...CONTAINER_VOLUME_TYPE_VALUES])
   .default('rwo')
 

@@ -1,6 +1,6 @@
 import { Injectable, Scope } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { nameOfIdentity } from 'src/shared/models'
+import { nameOfIdentity } from 'src/domain/identity'
 import EditorColorProvider from './editor.color.provider'
 import { EditorLeftMessage, EditorMessage, InputFocusChangeMessage, InputFocusMessage } from './editor.message'
 

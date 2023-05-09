@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsBoolean, IsDate, IsEmail, IsIn, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator'
-import { ContainerState } from 'src/shared/models'
+import { ContainerState } from 'src/domain/container'
 import {
   BasicNodeDto,
   NODE_CONNECTION_STATUS_VALUES,

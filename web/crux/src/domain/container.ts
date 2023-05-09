@@ -1,10 +1,31 @@
 import { NetworkMode } from '@prisma/client'
-import { UniqueKey, UniqueKeyValue, UniqueSecretKey, UniqueSecretKeyValue } from './common'
+
+export const PORT_MIN = 0
+export const PORT_MAX = 65535
+
+export type UniqueKey = {
+  id: string
+  key: string
+}
+
+export type UniqueKeyValue = UniqueKey & {
+  value: string
+}
+
+export type UniqueSecretKey = UniqueKey & {
+  required: boolean
+}
+
+export type UniqueSecretKeyValue = UniqueKeyValue &
+  UniqueSecretKey & {
+    encrypted: boolean
+    publicKey?: string
+  }
 
 export const CONTAINER_STATE_VALUES = ['created', 'restarting', 'running', 'removing', 'paused', 'exited', 'dead']
 export type ContainerState = (typeof CONTAINER_STATE_VALUES)[number]
 
-export type ContainerConfigPort = {
+export type Port = {
   id: string
   internal: number
   external?: number
@@ -15,7 +36,7 @@ export type PortRange = {
   to: number
 }
 
-export type ContainerConfigPortRange = {
+export type ContainerPortRange = {
   id: string
   internal: PortRange
   external: PortRange
@@ -33,23 +54,23 @@ export const CONTAINER_DEPLOYMENT_STRATEGY_VALUES = ['recreate', 'rolling'] as c
 export type ContainerDeploymentStrategyType = (typeof CONTAINER_DEPLOYMENT_STRATEGY_VALUES)[number]
 
 export const CONTAINER_EXPOSE_STRATEGY_VALUES = ['none', 'expose', 'exposeWithTls'] as const
-export type ContainerConfigExposeStrategy = (typeof CONTAINER_EXPOSE_STRATEGY_VALUES)[number]
+export type ContainerExposeStrategy = (typeof CONTAINER_EXPOSE_STRATEGY_VALUES)[number]
 
 export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rwo', 'rwx', 'mem', 'tmp'] as const
-export type VolumeType = (typeof CONTAINER_VOLUME_TYPE_VALUES)[number]
+export type ContainerVolumeType = (typeof CONTAINER_VOLUME_TYPE_VALUES)[number]
 
-export type ContainerConfigIngress = {
+export type Ingress = {
   name: string
   host: string
   uploadLimit?: string
 }
 
-export type ContainerConfigVolume = {
+export type Volume = {
   id: string
   name: string
   path: string
   size?: string
-  type?: VolumeType
+  type?: ContainerVolumeType
   class?: string
 }
 
@@ -69,29 +90,29 @@ export const CONTAINER_LOG_DRIVER_VALUES = [
 ] as const
 export type ContainerLogDriverType = (typeof CONTAINER_LOG_DRIVER_VALUES)[number]
 
-export type ContainerConfigLog = {
+export type Log = {
   driver: ContainerLogDriverType
   options: UniqueKeyValue[]
 }
 
-export type ContainerConfigHealthCheck = {
+export type HealthCheck = {
   port?: number
   livenessProbe?: string
   readinessProbe?: string
   startupProbe?: string
 }
 
-export type ContainerConfigResource = {
+export type Resource = {
   cpu?: string
   memory?: string
 }
 
-export type ContainerConfigResourceConfig = {
-  limits?: ContainerConfigResource
-  requests?: ContainerConfigResource
+export type ResourceConfig = {
+  limits?: Resource
+  requests?: Resource
 }
 
-export type ContainerConfigContainer = {
+export type Container = {
   image: string
   volume: string
   path: string
@@ -131,14 +152,14 @@ export type ContainerConfigData = {
   name: string
   environment?: UniqueKeyValue[]
   secrets?: UniqueSecretKey[]
-  ingress?: ContainerConfigIngress
-  expose: ContainerConfigExposeStrategy
+  ingress?: Ingress
+  expose: ContainerExposeStrategy
   user?: number
   tty: boolean
-  configContainer?: ContainerConfigContainer
-  ports?: ContainerConfigPort[]
-  portRanges?: ContainerConfigPortRange[]
-  volumes?: ContainerConfigVolume[]
+  configContainer?: Container
+  ports?: Port[]
+  portRanges?: ContainerPortRange[]
+  volumes?: Volume[]
   commands?: UniqueKey[]
   args?: UniqueKey[]
   initContainers?: InitContainer[]
@@ -148,7 +169,7 @@ export type ContainerConfigData = {
   storageConfig?: Storage
 
   // dagent
-  logConfig?: ContainerConfigLog
+  logConfig?: Log
   restartPolicy: ContainerRestartPolicyType
   networkMode: NetworkMode
   networks?: UniqueKey[]
@@ -160,8 +181,8 @@ export type ContainerConfigData = {
   proxyHeaders: boolean
   useLoadBalancer: boolean
   extraLBAnnotations?: UniqueKeyValue[]
-  healthCheckConfig?: ContainerConfigHealthCheck
-  resourceConfig?: ContainerConfigResourceConfig
+  healthCheckConfig?: HealthCheck
+  resourceConfig?: ResourceConfig
   annotations?: Marker
   labels?: Marker
 }
