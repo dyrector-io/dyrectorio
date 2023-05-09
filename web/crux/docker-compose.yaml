@@ -1,5 +1,4 @@
 version: '3.3'
-
 services:
   crux-migrate:
     container_name: crux-migrate
@@ -13,7 +12,6 @@ services:
     command: migrate
     networks:
       - crux-intranet
-
   crux:
     container_name: crux
     depends_on:
@@ -36,10 +34,8 @@ services:
     command: serve
     networks:
       - crux-intranet
-
 volumes:
   crux-db:
-
 networks:
   crux-intranet:
     name: crux-intranet

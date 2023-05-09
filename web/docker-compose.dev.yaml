@@ -15,7 +15,6 @@ services:
     restart: unless-stopped
     networks:
       - crux-intranet
-
   kratos-postgres:
     container_name: crux-kratos-postgres
     image: postgres:13.3-alpine3.14
@@ -28,7 +27,6 @@ services:
       - kratos-db:/var/lib/postgresql/data
     networks:
       - crux-intranet
-
   kratos-migrate:
     container_name: crux-kratos-migrate
     image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION}
@@ -40,7 +38,6 @@ services:
     command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
     networks:
       - crux-intranet
-
   kratos:
     container_name: crux-kratos
     image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION}
@@ -76,7 +73,6 @@ services:
       - traefik.http.routers.kratos.middlewares=kratos-strip
     networks:
       - crux-intranet
-
   mailslurper:
     container_name: crux-mailslurper
     restart: unless-stopped
@@ -87,7 +83,6 @@ services:
       - 4437:4437
     networks:
       - crux-intranet
-
   crux-traefik:
     container_name: crux-traefik
     image: traefik:v2.8
@@ -114,7 +109,6 @@ services:
       - crux-intranet
 volumes:
   kratos-db:
-
 networks:
   crux-intranet:
     name: crux-intranet

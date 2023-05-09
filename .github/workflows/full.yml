@@ -1,19 +1,13 @@
 name: product_builder_pipeline
-
 on:
   push:
-    branches:
-      - develop
-      - main
-    tags:
-      - "*"
+    branches: [develop, main]
+    tags: ['*']
   pull_request:
-
 permissions:
   contents: read
   pull-requests: read
   packages: read
-
 env:
   GITHUB_REGISTRY: ghcr.io
   DOCKERHUB_REGISTRY: docker.io/dyrectorio
@@ -28,7 +22,6 @@ env:
   KRATOS_WORKING_DIRECTORY: web/kratos
   GOLANG_WORKING_DIRECTORY: golang
   BUILDER_IMAGE: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
-
 jobs:
   conventional_commits:
     runs-on: ubuntu-22.04
@@ -50,7 +43,6 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         working-directory: .github/workflows
         run: sh -x pr_title_validation.sh '${{ github.event.pull_request.title }}'
-
   gather_changes:
     runs-on: ubuntu-22.04
     needs: conventional_commits
@@ -83,7 +75,6 @@ jobs:
         id: settag
         working-directory: .github/workflows
         run: ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }} ${{ github.sha }} $GITHUB_BASE_REF
-
         # if tag isn't the version set in package.json, job will fail
       - name: Check tag version correctness
         if: github.ref_type == 'tag'
@@ -91,7 +82,6 @@ jobs:
         run: |
           ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_WORKING_DIRECTORY }}
           ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}
-
   # agents scope
   go_lint:
     runs-on: ubuntu-22.04
@@ -121,7 +111,6 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Run golangci-lint
         run: make lint
-
   go_security:
     runs-on: ubuntu-22.04
     needs: gather_changes
@@ -143,14 +132,13 @@ jobs:
           key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-golang-
-        # fixes: fatal: unsafe repository
+          # fixes: fatal: unsafe repository
       - name: Adding workspace
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Load go mod
         run: go mod tidy
       - name: Run gosec
         run: make security
-
   go_integration:
     runs-on: ubuntu-22.04
     needs: gather_changes
@@ -172,7 +160,7 @@ jobs:
           key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-golang-
-        # fixes: fatal: unsafe repository
+          # fixes: fatal: unsafe repository
       - name: Adding workspace
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Load go mod
@@ -181,7 +169,6 @@ jobs:
         run: make k3d-init
       - name: Run integration tests
         run: make k3d-test
-
   go_test:
     runs-on: ubuntu-22.04
     needs: gather_changes
@@ -212,10 +199,14 @@ jobs:
         run: make test-unit-with-coverage
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3
-
   go_build:
     runs-on: ubuntu-22.04
-    needs: [go_security, go_lint, go_test, go_integration, gather_changes]
+    needs:
+      - go_security
+      - go_lint
+      - go_test
+      - go_integration
+      - gather_changes
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
     defaults:
@@ -267,7 +258,6 @@ jobs:
         with:
           name: cli
           path: ${{ env.GOLANG_WORKING_DIRECTORY }}/cli.zstd
-
   # crux scope
   crux_lint:
     runs-on: ubuntu-22.04
@@ -285,7 +275,6 @@ jobs:
         run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
       - name: Linting the code
         run: npm run lint
-
   crux_test:
     runs-on: ubuntu-22.04
     needs: gather_changes
@@ -309,7 +298,6 @@ jobs:
         run: |
           npm run build --if-present
           npm prune --production
-
   crux_build:
     runs-on: ubuntu-22.04
     needs: [crux_test, crux_lint, gather_changes]
@@ -330,7 +318,6 @@ jobs:
         with:
           name: crux
           path: ${{ env.CRUX_WORKING_DIRECTORY }}/crux.zstd
-
   # crux-ui scope
   crux-ui_lint:
     runs-on: ubuntu-22.04
@@ -348,7 +335,6 @@ jobs:
         run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
       - name: Lint
         run: npm run lint
-
   crux-ui_build:
     runs-on: ubuntu-22.04
     needs: [crux-ui_lint, gather_changes]
@@ -369,7 +355,6 @@ jobs:
         with:
           name: crux-ui
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/crux-ui.zstd
-
   # kratos scope
   kratos_build:
     runs-on: ubuntu-22.04
@@ -392,24 +377,20 @@ jobs:
         with:
           name: kratos
           path: ${{ env.KRATOS_WORKING_DIRECTORY }}/kratos.zstd
-
   # e2e scope
   e2e:
     runs-on: ubuntu-22.04
     # runs-on: self-hosted
     container:
       image: ghcr.io/dyrector-io/dyrectorio/playwright:latest
-      volumes:
-        - /var/run/docker.sock:/var/run/docker
+      volumes: ['/var/run/docker.sock:/var/run/docker']
     needs:
-      [
-        go_build,
-        crux_build,
-        crux-ui_build,
-        kratos_build,
-        gather_changes,
-        conventional_commits,
-      ]
+      - go_build
+      - crux_build
+      - crux-ui_build
+      - kratos_build
+      - gather_changes
+      - conventional_commits
     if: |
       always() &&
       (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
@@ -447,7 +428,6 @@ jobs:
       - name: crux - docker load
         if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
         run: zstd -dc artifacts/crux.zstd | docker load
-
       - name: crux-ui - artifact download
         if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag') }}
         uses: actions/download-artifact@v3
@@ -457,7 +437,6 @@ jobs:
       - name: crux-ui - docker load
         if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag') }}
         run: zstd -dc artifacts/crux-ui.zstd | docker load
-
       - name: kratos - artifact download
         if: ${{ (needs.gather_changes.outputs.kratos == 'true') || (github.ref_type == 'tag') }}
         uses: actions/download-artifact@v3
@@ -467,7 +446,6 @@ jobs:
       - name: kratos - docker load
         if: ${{ (needs.gather_changes.outputs.kratos == 'true') || (github.ref_type == 'tag') }}
         run: zstd -dc artifacts/kratos.zstd | docker load
-
       - name: cli - artifact download
         if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
         uses: actions/download-artifact@v3
@@ -492,11 +470,11 @@ jobs:
           # DEBUG: pw:api
           HUB_PROXY_URL: ${{ secrets.HUB_PROXY_URL }}
           HUB_PROXY_TOKEN: ${{ secrets.HUB_PROXY_TOKEN }}
-          E2E_BASE_URL: "http://dyo-e2e_traefik:8000"
-          MAILSLURPER_URL: "http://dyo-e2e_mailslurper:4437"
-          CRUX_UI_URL: "http://dyo-e2e_traefik:8000"
-          KRATOS_URL: "http://dyo-e2e_kratos:4433"
-          KRATOS_ADMIN_URL: "http://dyo-e2e_kratos:4434"
+          E2E_BASE_URL: http://dyo-e2e_traefik:8000
+          MAILSLURPER_URL: http://dyo-e2e_mailslurper:4437
+          CRUX_UI_URL: http://dyo-e2e_traefik:8000
+          KRATOS_URL: http://dyo-e2e_kratos:4433
+          KRATOS_ADMIN_URL: http://dyo-e2e_kratos:4434
           CI: true
         run: |
           npm ci --include=dev
@@ -527,7 +505,6 @@ jobs:
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e_results
       - name: Teardown using cli
         run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --debug down
-
   go_push:
     permissions:
       packages: write
@@ -601,8 +578,7 @@ jobs:
           cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }}
           cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }}
         env:
-          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
-
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
   crux_push:
     permissions:
       packages: write
@@ -653,8 +629,7 @@ jobs:
           cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
           cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.tag }}
         env:
-          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
-
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
   crux-ui_push:
     permissions:
       packages: write
@@ -705,8 +680,7 @@ jobs:
           cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
           cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.tag }}
         env:
-          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
-
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
   kratos_push:
     permissions:
       packages: write
@@ -757,4 +731,4 @@ jobs:
           cosign sign --key cosign.key ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
           cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.tag }}
         env:
-          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}

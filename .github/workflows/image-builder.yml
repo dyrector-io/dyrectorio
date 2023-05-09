@@ -1,50 +1,38 @@
 name: builder_image_builder_pipeline
-
 on:
   push:
-    branches:
-      - develop
-    paths:
-      - images/proto/**
-      - .github/workflows/image-builder.yml
+    branches: [develop]
+    paths: [images/alpine-proto/**, .github/workflows/image-builder.yml]
   pull_request:
-    paths:
-      - images/proto/**
-      - .github/workflows/image-builder.yml
-
+    paths: [images/alpine-proto/**, .github/workflows/image-builder.yml]
 permissions:
   contents: read
   pull-requests: read
   packages: write
-
 env:
   GITHUB_REGISTRY: ghcr.io
   BUILDER_IMAGE_NAME: dyrector-io/dyrectorio/alpine-proto
-  VERSION: 3.16-5
-
+  VERSION: 3.17-4
 jobs:
   build:
     runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Docker build
-        run: docker build -f ./images/alpine-proto/Dockerfile -t ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION} .
-      - name: Docker save
-        run: docker save ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION} | gzip -f > builder.zstd
+      - name: Add requirements and build the image
+        run: |
+          sudo apt update
+          sudo apt install zstd golang docker.io containerd runc
+          docker build -f ./images/alpine-proto/Dockerfile -t ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION} .
+          docker save ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION} | gzip -f > builder.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
           name: builder
           path: ./builder.zstd
-
   push:
     runs-on: ubuntu-22.04
     needs: build
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
     if: github.ref_name == 'develop'
     environment: Workflow - Protected
     steps:
@@ -53,8 +41,12 @@ jobs:
         with:
           name: builder
           path: artifacts
-      - name: Docker load
-        run: zcat artifacts/builder.zstd | docker load
+      - name: Add requirements
+        run: |
+          sudo apt update
+          sudo apt install zstd golang docker.io containerd runc
+          go install github.com/sigstore/cosign/v2/cmd/cosign@v2.0.2
+          zcat artifacts/builder.zstd | docker load
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -67,6 +59,6 @@ jobs:
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION}
+          ~/go/bin/cosign sign --key cosign.key ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION}
         env:
-          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
