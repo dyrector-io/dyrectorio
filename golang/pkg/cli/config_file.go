@@ -33,6 +33,7 @@ type State struct {
 	*Containers
 }
 
+// ArgsFlags are commandline arguments
 type ArgsFlags struct {
 	SettingsWrite       bool
 	SettingsExists      bool
@@ -51,6 +52,7 @@ type ArgsFlags struct {
 	Silent              bool
 }
 
+// Containers contain container/service specific settings
 type Containers struct {
 	Crux           ContainerSettings
 	CruxMigrate    ContainerSettings
@@ -63,6 +65,7 @@ type Containers struct {
 	MailSlurper    ContainerSettings
 }
 
+// ContainerSettings are container specific settings
 type ContainerSettings struct {
 	Image    string
 	Name     string
@@ -70,7 +73,7 @@ type ContainerSettings struct {
 	CruxAddr string
 }
 
-// Settings file will be read/written as this struct
+// SettingsFile will be read/written as this struct
 type SettingsFile struct {
 	// version as in image tag like "latest" or "stable"
 	Version string `yaml:"version" env-default:"stable"`
@@ -79,10 +82,10 @@ type SettingsFile struct {
 	Options
 }
 
+// Options are "globals" for the SettingsFile struct
 type Options struct {
 	TimeZone                       string `yaml:"timezone" env-default:"UTC"`
 	CruxAgentGrpcPort              uint   `yaml:"crux-agentgrpc-port" env-default:"5000"`
-	CruxGrpcPort                   uint   `yaml:"crux-grpc-port" env-default:"5001"`
 	CruxHTTPPort                   uint   `yaml:"crux-http-port" env-default:"1848"`
 	CruxUIPort                     uint   `yaml:"crux-ui-port" env-default:"3000"`
 	CruxSecret                     string `yaml:"crux-secret"`
@@ -138,7 +141,7 @@ const (
 	localhost        = "localhost"
 )
 
-// Check if the settings file is exists
+// SettingsExists is a check if the settings file is exists
 func SettingsExists(settingsPath string) bool {
 	settingsFilePath := SettingsFileLocation(settingsPath)
 
@@ -231,6 +234,7 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 	return state
 }
 
+// DisabledServiceSettings modifies the setting if the crux-ui is disabled
 func DisabledServiceSettings(state *State, args *ArgsFlags) *State {
 	if args.CruxUIDisabled {
 		state.CruxUI.CruxAddr = localhost
@@ -241,6 +245,7 @@ func DisabledServiceSettings(state *State, args *ArgsFlags) *State {
 	return state
 }
 
+// SettingsPath returns the full path to the settingsfile
 func SettingsPath() string {
 	userConfDir, err := os.UserConfigDir()
 	if err != nil {
@@ -250,7 +255,7 @@ func SettingsPath() string {
 	return path.Join(userConfDir, CLIDirName, SettingsFileName)
 }
 
-// Save the settings
+// SaveSettings saves the settings
 func SaveSettings(state *State, args *ArgsFlags) {
 	settingsPath := SettingsPath()
 
@@ -311,7 +316,7 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	return state
 }
 
-// This function will check if an image with the given custom tag is existing
+// TryImage function will check if an image with the given custom tag is existing
 // on the local system, otherwise will fall back and pull
 // This func is for testing locally built docker images
 func TryImage(dockerImage, specialTag string) string {
@@ -368,9 +373,6 @@ func CheckAndUpdatePorts(state *State, args *ArgsFlags) {
 		portMap[CruxAgentGrpcPort] = getAvailablePort(portMap, state.SettingsFile.Options.CruxAgentGrpcPort,
 			CruxAgentGrpcPort, &args.SettingsWrite)
 		state.SettingsFile.Options.CruxAgentGrpcPort = portMap[CruxAgentGrpcPort]
-		portMap[CruxGrpcPort] = getAvailablePort(portMap, state.SettingsFile.Options.CruxGrpcPort,
-			CruxGrpcPort, &args.SettingsWrite)
-		state.SettingsFile.Options.CruxGrpcPort = portMap[CruxGrpcPort]
 	}
 	if !args.CruxUIDisabled {
 		portMap[CruxUIPort] = getAvailablePort(portMap, state.SettingsFile.Options.CruxUIPort,
