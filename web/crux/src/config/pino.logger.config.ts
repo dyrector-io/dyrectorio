@@ -17,7 +17,7 @@ const pinoLoggerConfig = {
               options: {
                 singleLine: true,
                 ignore: 'pid,hostname',
-                translateTime: 'mm/dd/yyyy h:MM:ss',
+                translateTime: 'yyyy-mm-dd h:MM:ss',
                 messageFormat: '[{res.statusCode} | {context} | {req.headers.host}{req.url}] {msg} [{responseTime} ms]',
                 errorLikeObjectKeys: ['err', 'error'],
               },
