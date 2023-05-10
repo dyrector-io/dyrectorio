@@ -14,9 +14,6 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
-	"github.com/google/go-containerregistry/pkg/authn"
-	"github.com/google/go-containerregistry/pkg/crane"
-	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
 
 	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/api/types"
@@ -24,15 +21,11 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/errdefs"
 	"github.com/docker/docker/pkg/jsonmessage"
-	"github.com/opencontainers/go-digest"
+	"github.com/google/go-containerregistry/pkg/authn"
+	"github.com/google/go-containerregistry/pkg/crane"
+	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
 	"github.com/rs/zerolog/log"
 )
-
-type target struct {
-	name   string
-	digest digest.Digest
-	size   int64
-}
 
 // PullResponse is not explicit
 type PullResponse struct {
@@ -208,7 +201,7 @@ func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePu
 	if err != nil {
 		return err
 	}
-	defer responseBody.Close()
+	logdefer.LogDeferredErr(responseBody.Close, log.Warn(), "error in defer when closing pull response body:")
 
 	return displayFn(fmt.Sprintf("Pull %v status:", imageName), responseBody)
 }
