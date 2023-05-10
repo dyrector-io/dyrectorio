@@ -29,7 +29,6 @@ const (
 
 const (
 	defaultCruxAgentGrpcPort   = 5000
-	defaultCruxGrpcPort        = 5001
 	defaultCruxHTTPPort        = 1848
 	defaultCruxUIPort          = 3000
 	defaultTraefikWebPort      = 8000
@@ -42,7 +41,7 @@ const (
 	defaultPostgresPort        = 5432
 )
 
-// Crux services: db migrations and crux api service
+// GetCrux services: db migrations and crux api service
 func GetCrux(state *State, args *ArgsFlags) containerbuilder.Builder {
 	crux := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(TryImage(fmt.Sprintf("%s:%s", state.Crux.Image, state.SettingsFile.Version), args.SpecialImageTag)).
@@ -73,10 +72,6 @@ func GetCrux(state *State, args *ArgsFlags) containerbuilder.Builder {
 				{
 					ExposedPort: defaultCruxAgentGrpcPort,
 					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.CruxAgentGrpcPort)),
-				},
-				{
-					ExposedPort: defaultCruxGrpcPort,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.CruxGrpcPort)),
 				},
 				{
 					ExposedPort: defaultCruxHTTPPort,
@@ -173,15 +168,11 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 	}
 }
 
+// GetCruxUI returns a configured crux-ui service
 func GetCruxUI(state *State, args *ArgsFlags) containerbuilder.Builder {
 	traefikHost := localhost
 	if args.FullyContainerized {
 		traefikHost = state.Containers.Traefik.Name
-	}
-
-	cruxAPIAddress := fmt.Sprintf("CRUX_API_ADDRESS=%s:%d", state.CruxUI.CruxAddr, state.SettingsFile.CruxGrpcPort)
-	if args.CruxDisabled {
-		cruxAPIAddress = fmt.Sprintf("CRUX_API_ADDRESS=%s:%d", state.InternalHostDomain, state.SettingsFile.CruxGrpcPort)
 	}
 
 	cruxUI := containerbuilder.NewDockerBuilder(context.Background()).
@@ -200,7 +191,6 @@ func GetCruxUI(state *State, args *ArgsFlags) containerbuilder.Builder {
 			fmt.Sprintf("KRATOS_ADMIN_URL=http://%s:%d",
 				state.Containers.Kratos.Name,
 				state.SettingsFile.KratosAdminPort),
-			cruxAPIAddress,
 			"DISABLE_RECAPTCHA=true",
 		}).
 		WithNetworks([]string{state.SettingsFile.Network}).
@@ -233,7 +223,7 @@ func GetCruxUI(state *State, args *ArgsFlags) containerbuilder.Builder {
 	return cruxUI.WithForcePullImage()
 }
 
-// Return Traefik services container
+// GetTraefik returns a traefik services container
 func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 	envDockerHost := os.Getenv("DOCKER_HOST")
 
