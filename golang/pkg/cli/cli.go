@@ -9,6 +9,8 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/version"
 )
 
+// InitCLI returns the configuration flags of the program
+//
 //nolint:funlen
 func InitCLI() *ucli.App {
 	return &ucli.App{
