@@ -185,20 +185,12 @@ func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePu
 		return cliErr
 	}
 
-	if localPriority {
-		exists, err := Exists(ctx, nil, imageName)
-		if err != nil {
-			return err
-		}
-		if exists {
-			// hard-exit; without status
-			return nil
-		}
-	}
-
 	if !forcePull {
 		if localRemoteMatch, err := checkRemote(ctx, cli, distributionRef,
-			encodedAuth, displayFn); errors.Is(err, ErrImageNotFound) || localRemoteMatch {
+			encodedAuth, displayFn); errors.Is(err, ErrImageNotFound) {
+			if localPriority && !localRemoteMatch {
+				return nil
+			}
 			return err
 		}
 	}

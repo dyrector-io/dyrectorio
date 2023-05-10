@@ -121,7 +121,8 @@ func TestVersionCheck(t *testing.T) {
 
 	for _, tC := range testCases {
 		_, err := containerRuntime.VersionCheck(context.TODO(), newMockClient(tC.MockClientVersion, tC.Info))
-		if errors.Is(err, errExternal) {
+		// if the we expect external error there is no strict error matching
+		if errors.Is(tC.ErrExpected, errExternal) {
 			assert.Error(t, err)
 		} else {
 			assert.ErrorIs(t, err, tC.ErrExpected)
