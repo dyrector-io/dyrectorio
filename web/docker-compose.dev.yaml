@@ -62,6 +62,8 @@ services:
       - LOG_LEAK_SENSITIVE_VALUES=${KRATOS_LOG_LEAK_SENSITIVE_VALUES}
       - SECRETS_COOKIE=${COOKIE_SECRET}
       - COURIER_SMTP_CONNECTION_URI=${SMTP_URI}
+      - FROM_NAME=${FROM_NAME}
+      - FROM_EMAIL=${FROM_EMAIL}
     restart: unless-stopped
     command: serve -c /etc/config/kratos/kratos.yaml --watch-courier
     labels:
