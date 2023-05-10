@@ -5,20 +5,26 @@ information or check our official [documentation](https://docs.dyrector.io/) sit
 
 ## Project structure
 
-- `certs/` - Generated certificates, created for testing and local development purpose
+- `assets/` - TBD
 - `prisma/`
   - `/migrations` - Your migration history is the story of the changes to your data model, and is represented by a this
     folder with a sub-folder and migration.sql file for each migration.
-- `/proto` - gRPC proto files for communicate against the `dagent` and `crux-ui`
-- `/scripts` - every development related script
-- `/containerization ` -
-- `/src` -
+- `/proto` - gRPC proto files for communicate against the `agent`
+- `/src`
+
   - `/app` - NestJS core application, each model has it's own folder with service, controller and repository serivces.
-  - `/config` - Config related files
-  - `/domain` - Internal logic of the application
-  - `/exception` - Errors and Exceptions
-  - `/proto` - Generated proto typescript from .proto files
-  - `/shared` - NestJS shared resources
+  - `builders/` -
+  - `decorators/` -
+  - `domain/` - Internal logic of the application
+  - `exception/` - Errors and Exceptions
+  - `filters/` - Custom filters
+  - `grpc/` -
+  - `guards/` - Custom guards
+  - `interceptors/` -
+  - `mailer/` -
+  - `services/` -
+  - `shared/` - NestJS shared resources
+  - `websockets/` -
 
 ## Technology stack
 
