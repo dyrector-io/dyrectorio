@@ -30,8 +30,8 @@ func spawnInitContainer(
 	targetVolumes := []mount.Mount{}
 
 	for _, v := range cont.Volumes {
-		linkedVolume, ok := mountMap[v.Name]
-		if !ok {
+		linkedVolume := FindVolumeInMountMap(v.Name, mountMap)
+		if linkedVolume == nil {
 			return fmt.Errorf("linked volume not found: %s", v.Name)
 		}
 		targetVolumes = append(targetVolumes,

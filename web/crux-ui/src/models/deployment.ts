@@ -181,7 +181,7 @@ export const deploymentLogVisible = (status: DeploymentStatus) => {
   }
 }
 
-export const productNameToDeploymentPrefix = (name: string) => name.replaceAll(/( |\.)/g, '-').toLocaleLowerCase()
+export const productNameToDeploymentPrefix = (name: string) => name.replaceAll(/( |\.)/g, '-').toLowerCase()
 
 export const lastDeploymentStatusOfEvents = (events: DeploymentEvent[]): DeploymentStatus | null =>
   events

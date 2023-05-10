@@ -205,9 +205,9 @@ export default class VersionService {
       })
 
       if (defaultVersion) {
-        const images = defaultVersion.images.map(
-          async image =>
-            await prisma.image.create({
+        const newImages = await Promise.all(
+          defaultVersion.images.map(async image => {
+            const newImage = await prisma.image.create({
               select: {
                 id: true,
               },
@@ -222,8 +222,20 @@ export default class VersionService {
                   },
                 },
               },
-            }),
+            })
+
+            return [image.id, newImage.id]
+          }),
         )
+
+        const imageMap = newImages.reduce((prev, current) => {
+          const [imageId, newImageId] = current
+
+          return {
+            ...prev,
+            [imageId]: newImageId,
+          }
+        }, {})
 
         const deployments = await Promise.all(
           defaultVersion.deployments.map(async deployment => {
@@ -252,6 +264,7 @@ export default class VersionService {
                     ...it,
                     id: undefined,
                     deploymentId: newDeployment.id,
+                    imageId: imageMap[it.imageId],
                     config: it.config
                       ? {
                           create: {
@@ -267,7 +280,6 @@ export default class VersionService {
           }),
         )
 
-        await Promise.all(images)
         await Promise.all(deployments)
       }
 
