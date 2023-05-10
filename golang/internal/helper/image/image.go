@@ -201,7 +201,7 @@ func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePu
 	if err != nil {
 		return err
 	}
-	logdefer.LogDeferredErr(responseBody.Close, log.Warn(), "error in defer when closing pull response body:")
+	defer logdefer.LogDeferredErr(responseBody.Close, log.Warn(), "error in defer when closing pull response body:")
 
 	return displayFn(fmt.Sprintf("Pull %v status:", imageName), responseBody)
 }

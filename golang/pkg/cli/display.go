@@ -78,8 +78,9 @@ func DockerPullProgressDisplayer(header string, respIn io.ReadCloser) error {
 			if err == io.EOF {
 				if !localMatchesRemote {
 					log.Info().Msgf("%s ✓ pull complete ", header)
+				} else {
+					log.Info().Msgf("%s ✓ up-to-date", header)
 				}
-				log.Info().Msgf("%s ✓ up-to-date", header)
 
 				break
 			}
