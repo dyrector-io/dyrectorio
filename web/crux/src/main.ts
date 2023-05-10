@@ -39,10 +39,14 @@ const bootstrap = async () => {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   })
-  app.useLogger(app.get(Logger))
-  app.setGlobalPrefix('/api')
+
   const configService = app.get(ConfigService)
 
+  if (configService.get<string>('NODE_ENV') === 'production') {
+    app.useLogger(app.get(Logger))
+  }
+
+  app.setGlobalPrefix('/api')
   app.enableShutdownHooks()
 
   // Swagger
