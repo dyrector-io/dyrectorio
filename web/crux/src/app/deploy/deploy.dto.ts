@@ -148,7 +148,8 @@ export class DeploymentEventContainerStateDto {
 
   @ApiProperty({ enum: CONTAINER_STATE_VALUES })
   @IsIn(CONTAINER_STATE_VALUES)
-  state: ContainerState
+  @IsOptional()
+  state?: ContainerState
 }
 
 export class DeploymentEventDto {

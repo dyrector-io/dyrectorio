@@ -30,8 +30,13 @@ export const deploymentStatusToDb = (status: ProtoDeploymentStatus): DeploymentS
   }
 }
 
-export const containerStateToDb = (state: ContainerState): ContainerStateEnum =>
-  containerStateToJSON(state).toLowerCase() as ContainerStateEnum
+export const containerStateToDb = (state: ContainerState): ContainerStateEnum => {
+  if (!state || state === ContainerState.UNRECOGNIZED) {
+    return null
+  }
+
+  return containerStateToJSON(state).toLowerCase() as ContainerStateEnum
+}
 
 export const containerNameFromImageName = (imageName: string): string => {
   const index = imageName.lastIndexOf('/')
