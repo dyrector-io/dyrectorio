@@ -1,5 +1,5 @@
 import { ServerCredentials } from '@grpc/grpc-js'
-import { ValidationPipe, Logger, LoggerService } from '@nestjs/common'
+import { ValidationPipe, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { MicroserviceOptions, Transport } from '@nestjs/microservices'
@@ -15,7 +15,6 @@ import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import createSwaggerConfig from './config/swagger.config'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
 import AuditLoggerInterceptor from './interceptors/audit-logger.interceptor'
-import pinoLoggerConfig from './config/pino.logger.config'
 import { PRODUCTION } from './shared/const'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
