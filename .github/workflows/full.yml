@@ -17,6 +17,7 @@ env:
   CRANE_IMAGE_NAME: dyrector-io/dyrectorio/agent/crane
   CLI_IMAGE_NAME: dyrector-io/dyrectorio/cli/dyo
   KRATOS_IMAGE_NAME: dyrector-io/dyrectorio/web/kratos
+  WORKFLOWS_WORKING_DIRECTORY: .github/workflows
   CRUX_WORKING_DIRECTORY: web/crux
   CRUX_UI_WORKING_DIRECTORY: web/crux-ui
   KRATOS_WORKING_DIRECTORY: web/kratos
@@ -41,7 +42,7 @@ jobs:
       - name: Run title validation
         # if it's not a PR we skip
         if: ${{ github.event_name == 'pull_request' }}
-        working-directory: .github/workflows
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
         run: sh -x pr_title_validation.sh '${{ github.event.pull_request.title }}'
   gather_changes:
     runs-on: ubuntu-22.04
@@ -73,12 +74,12 @@ jobs:
               - '.github/workflows/full.yml'
       - name: Setting a buildtag
         id: settag
-        working-directory: .github/workflows
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
         run: ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }} ${{ github.sha }} $GITHUB_BASE_REF
         # if tag isn't the version set in package.json, job will fail
       - name: Check tag version correctness
         if: github.ref_type == 'tag'
-        working-directory: .github/workflows
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
         run: |
           ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_WORKING_DIRECTORY }}
           ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -309,6 +310,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      # fixes: fatal: unsafe repository
+      - name: Adding workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Install jq
+        if: (github.ref_name != 'main' || github.ref_type != 'tag')
+        uses: dcarbone/install-jq-action@v1.0.1
+      - name: Update package version
+        if: (github.ref_name != 'main' || github.ref_type != 'tag')
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
+        run: ./update-package-version.sh ../../${{ env.CRUX_WORKING_DIRECTORY }}/package.json ${{ github.sha }}
       - name: Docker build
         run: docker build -t ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
       - name: Docker save
@@ -346,6 +357,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      # fixes: fatal: unsafe repository
+      - name: Adding workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Install jq
+        if: (github.ref_name != 'main' || github.ref_type != 'tag')
+        uses: dcarbone/install-jq-action@v1.0.1
+      - name: Update package version
+        if: (github.ref_name != 'main' || github.ref_type != 'tag')
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
+        run: ./update-package-version.sh ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}/package.json ${{ github.sha }}
       - name: Docker build
         run: docker build -t ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
       - name: Docker save

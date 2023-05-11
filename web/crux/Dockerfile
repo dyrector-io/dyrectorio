@@ -15,6 +15,7 @@ RUN npm run build
 
 # Stage 2
 FROM node:19.2-alpine3.17 AS RUNNER
+
 ENV NODE_ENV production
 ENV TZ UTC
 
@@ -32,7 +33,9 @@ COPY ./proto ./proto
 
 USER node
 
-EXPOSE 5000-5001
+EXPOSE 5000
+EXPOSE 1848
+
 LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/web/crux"
 
 # Start
