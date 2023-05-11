@@ -1,11 +1,11 @@
 import { ServerCredentials } from '@grpc/grpc-js'
-import { ValidationPipe } from '@nestjs/common'
+import { ValidationPipe, Logger, LoggerService } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { MicroserviceOptions, Transport } from '@nestjs/microservices'
 import { SwaggerModule } from '@nestjs/swagger'
 import { join } from 'path'
-import { Logger } from 'nestjs-pino'
+import { Logger as PinoLogger } from 'nestjs-pino'
 import AppModule from './app.module'
 import CreatedWithLocationInterceptor from './app/shared/created-with-location.interceptor'
 import JwtAuthGuard from './app/token/jwt-auth.guard'
@@ -15,6 +15,8 @@ import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import createSwaggerConfig from './config/swagger.config'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
 import AuditLoggerInterceptor from './interceptors/audit-logger.interceptor'
+import pinoLoggerConfig from './config/pino.logger.config'
+import { PRODUCTION } from './shared/const'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -38,16 +40,19 @@ const loadGrpcOptions = (certPrefix: GrpcClient, portEnv: string): GrpcOptions =
 const bootstrap = async () => {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
+    // Using Nestjs Logger Service for default logging
+    logger: new Logger(),
   })
 
   const configService = app.get(ConfigService)
-
-  if (configService.get<string>('NODE_ENV') === 'production') {
-    app.useLogger(app.get(Logger))
-  }
-
   app.setGlobalPrefix('/api')
   app.enableShutdownHooks()
+
+  // If it's in production, we inject the PinoLogger Logger Service instead of the default one
+  // because we need to log in JSON format to stdout
+  if (configService.get<string>('NODE_ENV') === PRODUCTION) {
+    app.useLogger(app.get(PinoLogger))
+  }
 
   // Swagger
   const config = createSwaggerConfig(configService)

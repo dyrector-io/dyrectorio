@@ -142,6 +142,7 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 	return []string{
 		fmt.Sprintf("TZ=%s", state.SettingsFile.TimeZone),
 		fmt.Sprintf("NODE_ENV=%s", "development"),
+		fmt.Sprintf("LOG_LEVEL=%s", "debug"),
 		fmt.Sprintf("DATABASE_URL=postgresql://%s:%s@%s:%d/%s?schema=public",
 			state.SettingsFile.CruxPostgresUser,
 			state.SettingsFile.CruxPostgresPassword,

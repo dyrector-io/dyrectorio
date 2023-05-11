@@ -13,6 +13,7 @@ import {
 } from 'src/exception/crux-exception'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import { PRODUCTION } from 'src/shared/const'
 import { Agent, AgentEvent } from './agent'
 
 export default class AgentInstaller {
@@ -70,7 +71,7 @@ export default class AgentInstaller {
     const configLocalDeploymentNetwork = this.configService.get<string>('LOCAL_DEPLOYMENT_NETWORK')
     const disableForcePull = this.configService.get<boolean>('AGENT_INSTALL_SCRIPT_DISABLE_PULL', false)
     const agentImageTag = this.configService.get<string>('CRUX_AGENT_IMAGE', 'stable')
-    const debugMode = process.env.NODE_ENV !== 'production'
+    const debugMode = process.env.NODE_ENV !== PRODUCTION
 
     const installScriptParams: InstallScriptConfig = {
       name: this.nodeName.toLowerCase().replace(/\s/g, ''),
