@@ -158,4 +158,4 @@ sent by kratos. You can access it from your browser at http://0.0.0.0:4436
 
 ## More info about kratos
 
-https://www.ory.sh/kratos/docs/concepts/index
+https://www.ory.sh/docs/kratos
