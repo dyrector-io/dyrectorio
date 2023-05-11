@@ -23,8 +23,8 @@ import (
 )
 
 const (
-	PostgresImage    = "docker.io/library/postgres:13-alpine"
-	MailSlurperImage = "docker.io/oryd/mailslurper:smtps-latest"
+	postgresImage    = "docker.io/library/postgres:13-alpine"
+	mailSlurperImage = "docker.io/oryd/mailslurper:smtps-latest"
 )
 
 const (
@@ -36,8 +36,8 @@ const (
 	defaultKratosPublicPort    = 4433
 	defaultKratosAdminPort     = 4434
 	defaultMailSlurperSMTPPort = 1025
-	defaultMailSlurperWebPort  = 4436
-	defaultMailSlurperWebPort2 = 4437
+	defaultMailSlurperUIPort   = 4436
+	defaultMailSlurperAPIPort  = 4437
 	defaultPostgresPort        = 5432
 )
 
@@ -305,7 +305,7 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 	return traefik
 }
 
-// Return Kratos services' containers
+// GetKratos returns Kratos services' containers
 func GetKratos(state *State, args *ArgsFlags) containerbuilder.Builder {
 	kratos := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(TryImage(fmt.Sprintf("%s:%s", state.Kratos.Image, state.SettingsFile.Version), args.SpecialImageTag)).
@@ -313,7 +313,7 @@ func GetKratos(state *State, args *ArgsFlags) containerbuilder.Builder {
 		WithName(state.Containers.Kratos.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
-		WithEnv(GetKratosEnvs(state, args)).
+		WithEnv(getKratosEnvs(state)).
 		WithNetworks([]string{state.SettingsFile.Network}).
 		WithNetworkAliases(state.Containers.Kratos.Name).
 		WithLabels(map[string]string{
@@ -391,7 +391,8 @@ func getKratosInitContainer(state *State, args *ArgsFlags) containerbuilder.Life
 	}
 }
 
-func GetKratosEnvs(state *State, args *ArgsFlags) []string {
+// getKratosEnvs returns kratos service's environmental variables
+func getKratosEnvs(state *State) []string {
 	traefikHost := localhost
 
 	return []string{
@@ -426,10 +427,10 @@ func GetKratosEnvs(state *State, args *ArgsFlags) []string {
 	}
 }
 
-// Return Mailslurper services container
+// GetMailSlurper returns the mailslurper service's container
 func GetMailSlurper(state *State, args *ArgsFlags) containerbuilder.Builder {
 	mailslurper := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage(MailSlurperImage).
+		WithImage(mailSlurperImage).
 		WithLogWriter(nil).
 		WithName(state.Containers.MailSlurper.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
@@ -451,21 +452,21 @@ func GetMailSlurper(state *State, args *ArgsFlags) containerbuilder.Builder {
 					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.MailSlurperSMTPPort)),
 				},
 				{
-					ExposedPort: defaultMailSlurperWebPort,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.MailSlurperWebPort)),
+					ExposedPort: defaultMailSlurperUIPort,
+					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.MailSlurperUIPort)),
 				},
 				{
-					ExposedPort: defaultMailSlurperWebPort2,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.MailSlurperWebPort2)),
+					ExposedPort: defaultMailSlurperAPIPort,
+					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.MailSlurperAPIPort)),
 				},
 			})
 	}
 	return mailslurper
 }
 
-// Return Postgres services' containers
+// GetCruxPostgres returns crux's Postgres services' containers
 func GetCruxPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
-	cruxPostgres := GetBasePostgres(state).
+	cruxPostgres := getBasePostgres(state).
 		WithName(state.Containers.CruxPostgres.Name).
 		WithNetworkAliases(state.Containers.CruxPostgres.Name).
 		WithEnv([]string{
@@ -497,8 +498,9 @@ func GetCruxPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 	return cruxPostgres
 }
 
+// GetKratosPostgres returns crux's Postgres services' containers
 func GetKratosPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
-	kratosPostgres := GetBasePostgres(state).
+	kratosPostgres := getBasePostgres(state).
 		WithEnv([]string{
 			fmt.Sprintf("POSTGRES_USER=%s", state.SettingsFile.KratosPostgresUser),
 			fmt.Sprintf("POSTGRES_PASSWORD=%s", state.SettingsFile.KratosPostgresPassword),
@@ -532,12 +534,12 @@ func GetKratosPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 	return kratosPostgres
 }
 
-// To remove some code duplication
-func GetBasePostgres(state *State) containerbuilder.Builder {
+// getBasePostgres removes some code duplication
+func getBasePostgres(state *State) containerbuilder.Builder {
 	basePostgres := containerbuilder.
 		NewDockerBuilder(state.Ctx).
 		WithLogWriter(nil).
-		WithImage(PostgresImage).
+		WithImage(postgresImage).
 		WithNetworks([]string{state.SettingsFile.Network}).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithForcePullImage().
@@ -546,7 +548,7 @@ func GetBasePostgres(state *State) containerbuilder.Builder {
 	return basePostgres
 }
 
-// Copy config file to Traefik Container
+// CopyTraefikConfiguration copies a config file to Traefik Container
 func CopyTraefikConfiguration(ctx context.Context, name, internalHostDomain string, cruxPort, cruxUIPort uint) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {

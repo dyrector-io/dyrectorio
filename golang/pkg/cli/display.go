@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// PrintWelcomeMessage prints a welcome mesage before the command runs
 func PrintWelcomeMessage(settingsPath string) {
 	log.Info().Msgf("The config file is located at %s, where you can turn this message off.", settingsPath)
 	log.Info().Msgf("If you have any questions head to our Discord - https://discord.gg/pZWbd4fxga ! We're happy to help!")
@@ -14,6 +15,7 @@ func PrintWelcomeMessage(settingsPath string) {
 		"give us a star - https://github.com/dyrector-io/dyrectorio")
 }
 
+// PrintInfo tells the user not to use in prod and prints postgres information if crux is disabled
 func PrintInfo(state *State, args *ArgsFlags) {
 	log.Warn().Msg("🦩🦩🦩 Use the CLI tool only for NON-PRODUCTION purposes. 🦩🦩🦩")
 
@@ -29,21 +31,23 @@ func PrintInfo(state *State, args *ArgsFlags) {
 	log.Info().Msgf("Stack is ready. The UI should be available at http://localhost:%d location.",
 		state.SettingsFile.Options.TraefikWebPort)
 	log.Info().Msgf("The e-mail service should be available at http://localhost:%d location.",
-		state.SettingsFile.Options.MailSlurperWebPort)
+		state.SettingsFile.Options.MailSlurperUIPort)
 	log.Info().Msg("Happy deploying! 🎬")
 }
 
+// NotifyOnce makes sure user only gets some information only once
 func NotifyOnce(name string, notifyFunc func()) {
 	targetDir, err := os.UserCacheDir()
 	if err != nil {
-		log.Trace().Err(err).Msgf("cache folder is not available to store temporal info, using tmp directory")
+		log.Trace().Err(err).Msgf("cache folder is not available to store temporary info, using tmp directory")
 		targetDir = os.TempDir()
 	}
+
 	notificationPath := path.Join(targetDir, CLIDirName, "."+name)
 	if _, err := os.Stat(notificationPath); err != nil {
 		err = os.WriteFile(notificationPath, []byte{}, os.ModePerm)
 		if err != nil {
-			log.Trace().Err(err).Msgf("cache folder is not available to store temporal info")
+			log.Trace().Err(err).Msgf("cache folder is not available to store temporary info")
 		}
 	}
 	notifyFunc()
