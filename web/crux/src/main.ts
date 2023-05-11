@@ -7,7 +7,6 @@ import { SwaggerModule } from '@nestjs/swagger'
 import { join } from 'path'
 import { Logger as PinoLogger } from 'nestjs-pino'
 import AppModule from './app.module'
-import CreatedWithLocationInterceptor from './app/shared/created-with-location.interceptor'
 import JwtAuthGuard from './app/token/jwt-auth.guard'
 import HttpExceptionFilter from './filters/http.exception-filter'
 import UuidValidationGuard from './guards/uuid-params.validation.guard'
@@ -16,6 +15,7 @@ import createSwaggerConfig from './config/swagger.config'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
 import AuditLoggerInterceptor from './interceptors/audit-logger.interceptor'
 import { PRODUCTION } from './shared/const'
+import CreatedWithLocationInterceptor from './shared/interceptor/created-with-location.interceptor'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 

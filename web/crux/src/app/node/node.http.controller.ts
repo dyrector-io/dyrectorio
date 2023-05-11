@@ -10,7 +10,7 @@ import {
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
-import { CreatedResponse, CreatedWithLocation } from '../shared/created-with-location.decorator'
+import { CreatedResponse, CreatedWithLocation } from '../../shared/interceptor/created-with-location.decorator'
 import { DisableAuth, IdentityFromRequest } from '../token/jwt-auth.guard'
 import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
 import { NodeId, PARAM_NODE_ID, ROUTE_NODES, ROUTE_NODE_ID } from './node.const'

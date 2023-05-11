@@ -2,25 +2,21 @@ import { Version } from '.prisma/client'
 import { Injectable } from '@nestjs/common'
 import { ProductTypeEnum } from '@prisma/client'
 import { versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/domain/version'
+import { auditToDto } from 'src/shared/shared.mapper'
 import { DeploymentWithNode } from '../deploy/deploy.dto'
 import DeployMapper from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
-import { NodeConnectionStatus } from '../shared/shared.dto'
-import SharedMapper from '../shared/shared.mapper'
+import { NodeConnectionStatus } from '../../shared/dtos/shared.dto'
 import { VersionDetailsDto, VersionDto } from './version.dto'
 
 @Injectable()
 export default class VersionMapper {
-  constructor(
-    private sharedMapper: SharedMapper,
-    private deployMapper: DeployMapper,
-    private imageMapper: ImageMapper,
-  ) {}
+  constructor(private deployMapper: DeployMapper, private imageMapper: ImageMapper) {}
 
   toDto(it: VersionWithChildren): VersionDto {
     return {
       id: it.id,
-      audit: this.sharedMapper.auditToDto(it),
+      audit: auditToDto(it),
       name: it.name,
       type: it.type,
       changelog: it.changelog,
@@ -35,7 +31,7 @@ export default class VersionMapper {
       name: version.name,
       changelog: version.changelog,
       default: version.default,
-      audit: this.sharedMapper.auditToDto(version),
+      audit: auditToDto(version),
       type: version.type,
       mutable: versionIsMutable(version),
       deletable: versionIsDeletable(version),

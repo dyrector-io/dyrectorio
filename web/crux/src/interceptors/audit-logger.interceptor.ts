@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { Observable, tap } from 'rxjs'
-import AuditLoggerService from 'src/app/shared/audit.logger.service'
+import AuditLoggerService from 'src/shared/audit.logger.service'
 import { identityOfRequest } from 'src/app/token/jwt-auth.guard'
 import { AUDIT_LOGGER_LEVEL, AuditLogLevelOption } from 'src/decorators/audit-logger.decorator'
 import { WS_TYPE_SUBSCRIBE, WS_TYPE_UNSUBSCRIBE, WsMessage } from 'src/websockets/common'

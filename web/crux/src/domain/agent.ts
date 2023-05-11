@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { catchError, finalize, Observable, of, Subject, throwError, timeout, TimeoutError } from 'rxjs'
-import { NodeConnectionStatus } from 'src/app/shared/shared.dto'
+import { NodeConnectionStatus } from 'src/shared/dtos/shared.dto'
 import {
   CruxConflictException,
   CruxInternalServerErrorException,

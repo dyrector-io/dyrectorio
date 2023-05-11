@@ -9,7 +9,6 @@ import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import ContainerModule from '../container/container.module'
 import ImageModule from '../image/image.module'
-import SharedModule from '../shared/shared.module'
 import TeamRepository from '../team/team.repository'
 import AgentController from './agent.grpc.controller'
 import AgentService from './agent.service'
@@ -30,7 +29,6 @@ import AgentService from './agent.service'
         },
       }),
     }),
-    SharedModule,
     ImageModule,
     ContainerModule,
   ],

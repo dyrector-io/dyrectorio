@@ -1,7 +1,6 @@
 import { ContainerConfigData, InstanceContainerConfigData } from 'src/domain/container'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
-import SharedMapper from '../shared/shared.mapper'
 import { PatchInstanceDto } from './deploy.dto'
 import DeployMapper from './deploy.mapper'
 
@@ -13,7 +12,7 @@ describe('DeployMapper', () => {
   beforeEach(() => {
     containerMapper = new ContainerMapper()
     imageMapper = new ImageMapper(null, containerMapper)
-    deployMapper = new DeployMapper(new SharedMapper(), imageMapper, containerMapper)
+    deployMapper = new DeployMapper(imageMapper, containerMapper)
   })
 
   const fullImage: ContainerConfigData = {

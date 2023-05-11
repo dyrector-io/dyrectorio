@@ -3,7 +3,7 @@ import { Type } from 'class-transformer'
 import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { DeploymentWithBasicNodeDto } from '../deploy/deploy.dto'
 import { ImageDto } from '../image/image.dto'
-import { AuditDto, BasicVersionDto, VersionTypeDto, VERSION_TYPE_VALUES } from '../shared/shared.dto'
+import { AuditDto, BasicVersionDto, VersionTypeDto, VERSION_TYPE_VALUES } from '../../shared/dtos/shared.dto'
 
 export class VersionDto extends BasicVersionDto {
   @Type(() => AuditDto)

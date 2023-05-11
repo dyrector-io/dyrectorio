@@ -35,10 +35,16 @@ import {
   ExposeStrategy as ProtoExposeStrategy,
   containerStateToJSON,
 } from 'src/grpc/protobuf/proto/common'
+import {
+  auditToDto,
+  nodeToBasicDto,
+  nodeToBasicWithStatusDto,
+  productToBasicDto,
+  versionToBasicDto,
+} from 'src/shared/shared.mapper'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
-import { NodeConnectionStatus } from '../shared/shared.dto'
-import SharedMapper from '../shared/shared.mapper'
+import { NodeConnectionStatus } from '../../shared/dtos/shared.dto'
 import {
   DeploymentDetails,
   DeploymentDetailsDto,
@@ -58,11 +64,7 @@ import { DeploymentEventMessage } from './deploy.message'
 
 @Injectable()
 export default class DeployMapper {
-  constructor(
-    private sharedMapper: SharedMapper,
-    private imageMapper: ImageMapper,
-    private containerMapper: ContainerMapper,
-  ) {}
+  constructor(private imageMapper: ImageMapper, private containerMapper: ContainerMapper) {}
 
   statusToDto(it: DeploymentStatusEnum): DeploymentStatusDto {
     switch (it) {
@@ -79,7 +81,7 @@ export default class DeployMapper {
       prefix: it.prefix,
       status: this.statusToDto(it.status),
       updatedAt: it.updatedAt ?? it.createdAt,
-      node: this.sharedMapper.nodeToBasicWithStatusDto(it.node, nodeStatus),
+      node: nodeToBasicWithStatusDto(it.node, nodeStatus),
     }
   }
 
@@ -88,10 +90,10 @@ export default class DeployMapper {
       id: it.id,
       prefix: it.prefix,
       status: this.statusToDto(it.status),
-      audit: this.sharedMapper.auditToDto(it),
-      node: this.sharedMapper.nodeToBasicDto(it.node),
-      product: this.sharedMapper.productToBasicDto(it.version.product),
-      version: this.sharedMapper.versionToBasicDto(it.version),
+      audit: auditToDto(it),
+      node: nodeToBasicDto(it.node),
+      product: productToBasicDto(it.version.product),
+      version: versionToBasicDto(it.version),
     }
   }
 

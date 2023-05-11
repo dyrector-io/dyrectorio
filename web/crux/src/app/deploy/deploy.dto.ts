@@ -16,7 +16,7 @@ import {
   BasicProperties,
   BasicVersionDto,
   ContainerIdentifierDto,
-} from '../shared/shared.dto'
+} from '../../shared/dtos/shared.dto'
 
 const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete'] as const
 export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]

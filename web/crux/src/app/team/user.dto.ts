@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsDate, IsEmail, IsOptional, IsString, IsUUID } from 'class-validator'
-import { BasicTeamDto } from '../shared/shared.dto'
+import { BasicTeamDto } from '../../shared/dtos/shared.dto'
 
 export const USER_ROLE_VALUES = ['owner', 'admin', 'user'] as const
 export type UserRoleDto = (typeof USER_ROLE_VALUES)[number]

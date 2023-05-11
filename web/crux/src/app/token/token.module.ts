@@ -4,11 +4,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
+import AuditLoggerService from 'src/shared/audit.logger.service'
+import AuditLoggerInterceptor from 'src/interceptors/audit-logger.interceptor'
 import TokenService from './token.service'
 import JwtStrategy from './jwt.strategy'
 import TokenMapper from './token.mapper'
 import TeamModule from '../team/team.module'
 import TokenHttpController from './token.http.controller'
+import TeamRepository from '../team/team.repository'
 
 @Module({
   imports: [
@@ -27,7 +30,16 @@ import TokenHttpController from './token.http.controller'
     }),
   ],
   controllers: [TokenHttpController],
-  providers: [TokenService, JwtStrategy, KratosService, PrismaService, TokenMapper],
+  providers: [
+    TokenService,
+    JwtStrategy,
+    KratosService,
+    PrismaService,
+    TokenMapper,
+    TeamRepository,
+    AuditLoggerService,
+    AuditLoggerInterceptor,
+  ],
   exports: [],
 })
 export default class TokenModule {}

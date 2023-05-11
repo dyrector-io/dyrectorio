@@ -5,7 +5,7 @@ import { AuditLogLevelOption } from 'src/decorators/audit-logger.decorator'
 import { Identity } from '@ory/kratos-client'
 import { Request as ExpressRequest } from 'express'
 import { WsClient, WsMessage } from 'src/websockets/common'
-import PrismaService from '../../services/prisma.service'
+import PrismaService from '../services/prisma.service'
 
 @Injectable()
 export default class AuditLoggerService {

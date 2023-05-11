@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsEmail, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
-import { BasicTeamDto } from '../shared/shared.dto'
+import { BasicTeamDto } from '../../shared/dtos/shared.dto'
 import { UserDto, UserRoleDto, USER_ROLE_VALUES } from './user.dto'
 
 export class CreateTeamDto {

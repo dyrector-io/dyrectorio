@@ -8,7 +8,7 @@ import {
   NODE_TYPE_VALUES,
   NodeConnectionStatus,
   NodeType,
-} from '../shared/shared.dto'
+} from '../../shared/dtos/shared.dto'
 
 export const NODE_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
 export type NodeScriptTypeDto = (typeof NODE_SCRIPT_TYPE_VALUES)[number]

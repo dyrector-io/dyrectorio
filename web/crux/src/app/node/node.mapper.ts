@@ -12,7 +12,7 @@ import {
   containerStateToJSON,
 } from 'src/grpc/protobuf/proto/common'
 import AgentService from '../agent/agent.service'
-import { NodeType } from '../shared/shared.dto'
+import { NodeType } from '../../shared/dtos/shared.dto'
 import { ContainerDto, ContainerOperationDto, NodeDetailsDto, NodeDto, NodeInstallDto } from './node.dto'
 import { ContainersStateListMessage } from './node.message'
 

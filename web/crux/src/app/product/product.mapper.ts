@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common'
 import { Product } from '.prisma/client'
+import { auditToDto } from 'src/shared/shared.mapper'
 import VersionMapper, { VersionWithChildren } from '../version/version.mapper'
 import { ProductListItemDto, ProductDetailsDto, ProductDto } from './product.dto'
-import SharedMapper from '../shared/shared.mapper'
 
 @Injectable()
 export default class ProductMapper {
-  constructor(private sharedMapper: SharedMapper, private versionMapper: VersionMapper) {}
+  constructor(private versionMapper: VersionMapper) {}
 
   toDto(it: Product): ProductDto {
     return {
       id: it.id,
       name: it.name,
       type: it.type,
-      audit: this.sharedMapper.auditToDto(it),
+      audit: auditToDto(it),
       description: it.description,
     }
   }
