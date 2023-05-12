@@ -4,6 +4,7 @@ on:
     branches: [develop, main]
     tags: ['*']
   pull_request:
+    types: [edited, opened, synchronize, reopened]
 permissions:
   contents: read
   pull-requests: read
