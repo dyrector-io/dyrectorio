@@ -313,8 +313,13 @@ jobs:
       - name: Generate prisma & build the application
         run: |
           npx prisma generate
+      # fixes: fatal: unsafe repository
+      - name: Adding workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Running unit tests
-        run: npm run test
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
       - name: Build the application
         run: |
           npm run build --if-present
