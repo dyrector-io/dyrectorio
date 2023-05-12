@@ -22,7 +22,7 @@ jobs:
       pull-requests: write
     needs: check_repository_origin
     runs-on: ubuntu-22.04
-    if: ${{ needs.check_repository_origin.outputs.fork == 'false' }}
+    if: needs.check_repository_origin.outputs.fork == 'false'
     steps:
       - uses: actions/labeler@v4
         with:
@@ -33,7 +33,7 @@ jobs:
       pull-requests: write
     needs: check_repository_origin
     runs-on: ubuntu-22.04
-    if: ${{ needs.check_repository_origin.outputs.fork == 'false' }}
+    if: needs.check_repository_origin.outputs.fork == 'false'
     steps:
       - uses: github/issue-labeler@v3.1
         with:
