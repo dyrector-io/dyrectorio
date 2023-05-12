@@ -1,3 +1,5 @@
+// dyrector.io command line application, helps with development, testing, and demonstration.
+// NOT FOR PRODUCTION USE
 package main
 
 import (
