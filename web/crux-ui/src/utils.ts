@@ -64,12 +64,14 @@ export const terminalDateFormat = (date: Date): string => {
     useGrouping: true,
   }
 
-  return `${date.getDate().toLocaleString(undefined, numberFormat)}/${(date.getMonth() + 1).toLocaleString(
-    undefined,
-    numberFormat,
-  )}/${date.getFullYear()} ${date.getHours().toLocaleString(undefined, numberFormat)}:${date
-    .getMinutes()
-    .toLocaleString(undefined, numberFormat)}:${date.getSeconds().toLocaleString(undefined, numberFormat)}`
+  const year = date.getFullYear()
+  const month = (date.getMonth() + 1).toLocaleString(undefined, numberFormat)
+  const day = date.getDate().toLocaleString(undefined, numberFormat)
+  const hours = date.getHours().toLocaleString(undefined, numberFormat)
+  const minutes = date.getMinutes().toLocaleString(undefined, numberFormat)
+  const seconds = date.getSeconds().toLocaleString(undefined, numberFormat)
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
 // TODO(@m8vago): check after react update if there is still a hydration error with narrow spaces
