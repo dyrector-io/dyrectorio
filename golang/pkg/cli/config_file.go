@@ -1,16 +1,13 @@
 package cli
 
 import (
-	"bufio"
 	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"net"
 	"os"
 	"path"
-	"strconv"
 	"strings"
 
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
@@ -35,21 +32,20 @@ type State struct {
 
 // ArgsFlags are commandline arguments
 type ArgsFlags struct {
-	SettingsWrite       bool
-	SettingsExists      bool
-	SettingsFilePath    string
-	Command             string
-	ImageTag            string
-	Prefix              string
-	SpecialImageTag     string
-	DisableForcepull    bool
-	DisablePodmanChecks bool
-	CruxDisabled        bool
-	CruxUIDisabled      bool
-	LocalAgent          bool
-	FullyContainerized  bool
-	Network             string
-	Silent              bool
+	SettingsWrite      bool
+	SettingsExists     bool
+	SettingsFilePath   string
+	Command            string
+	ImageTag           string
+	Prefix             string
+	SpecialImageTag    string
+	DisableForcepull   bool
+	CruxDisabled       bool
+	CruxUIDisabled     bool
+	LocalAgent         bool
+	FullyContainerized bool
+	Network            string
+	Silent             bool
 }
 
 // Containers contain container/service specific settings
@@ -105,39 +101,24 @@ type Options struct {
 	KratosPostgresPassword         string `yaml:"kratosPostgresPassword"`
 	KratosSecret                   string `yaml:"kratosSecret"`
 	MailSlurperSMTPPort            uint   `yaml:"mailSlurperSMTPPort" env-default:"1025"`
-	MailSlurperWebPort             uint   `yaml:"mailSlurperWebPort" env-default:"4436"`
-	MailSlurperWebPort2            uint   `yaml:"mailSlurperWebPort2" env-default:"4437"`
+	MailSlurperUIPort              uint   `yaml:"mailSlurperUIPort" env-default:"4436"`
+	MailSlurperAPIPort             uint   `yaml:"mailSlurperAPIPort" env-default:"4437"`
 	MailFromName                   string `yaml:"mailFromName" env-default:"dyrector.io - Platform"`
 	MailFromEmail                  string `yaml:"mailFromEmail" env-default:"noreply@example.com"`
 }
 
 const (
+	// SettingsFileName is the filename we use for storing configuration
 	SettingsFileName = "settings.yaml"
-	CLIDirName       = "dyo-cli"
+	// CLIDirName is the directory where we save the configuration file under the users configuration directory
+	CLIDirName = "dyo-cli"
 )
 
 const (
-	CruxAgentGrpcPort   = "CruxAgentGrpcPort"
-	CruxGrpcPort        = "CruxGrpcPort"
-	CruxUIPort          = "CruxUIPort"
-	KratosAdminPort     = "KratosAdminPort"
-	KratosPublicPort    = "KratosPublicPort"
-	KratosPostgresPort  = "KratosPostgresPort"
-	MailSlurperSMTPPort = "MailSlurperSMTPPort"
-	MailSlurperWebPort  = "MailSlurperWebPort"
-	MailSlurperWebPort2 = "MailSlurperWebPort2"
-	CruxPostgresPort    = "CruxPostgresPort"
-	TraefikWebPort      = "TraeficWebPort"
-	TraefikUIPort       = "TraefikUIPort"
-)
-
-const (
-	ParseBase        = 10
-	ParseBitSize     = 32
-	FilePerms        = 0o600
-	DirPerms         = 0o750
-	SecretLength     = 32
-	BufferMultiplier = 2
+	filePerms        = 0o600
+	dirPerms         = 0o750
+	secretLength     = 32
+	bufferMultiplier = 2
 	localhost        = "localhost"
 )
 
@@ -155,7 +136,7 @@ func SettingsExists(settingsPath string) bool {
 	}
 }
 
-// Assemble the location of the settings file
+// SettingsFileLocation is assembling the location of the settings file
 func SettingsFileLocation(settingsPath string) string {
 	if settingsPath == "" {
 		userConfDir, err := os.UserConfigDir()
@@ -169,7 +150,7 @@ func SettingsFileLocation(settingsPath string) string {
 	return settingsPath
 }
 
-// Reading and parsing the settings.yaml
+// SettingsFileDefaults creating, reading and parsing the settings.yaml
 func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 	settingsFile := SettingsFile{}
 	if args.SettingsExists {
@@ -212,7 +193,7 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 		log.Fatal().Stack().Err(err).Send()
 	}
 
-	EnsureNetworkExists(state, args)
+	EnsureNetworkExists(state)
 
 	if args.Network != "" {
 		state.SettingsFile.Network = args.Network
@@ -262,7 +243,7 @@ func SaveSettings(state *State, args *ArgsFlags) {
 	// If settingsPath is default, we create the directory for it
 	if args.SettingsFilePath == settingsPath {
 		if _, err := os.Stat(path.Dir(settingsPath)); errors.Is(err, os.ErrNotExist) {
-			err = os.MkdirAll(path.Dir(settingsPath), DirPerms)
+			err = os.MkdirAll(path.Dir(settingsPath), dirPerms)
 			if err != nil {
 				log.Fatal().Err(err).Stack().Send()
 			}
@@ -281,7 +262,7 @@ func SaveSettings(state *State, args *ArgsFlags) {
 		log.Fatal().Err(err).Stack().Send()
 	}
 
-	err = os.WriteFile(args.SettingsFilePath, filedata, FilePerms)
+	err = os.WriteFile(args.SettingsFilePath, filedata, filePerms)
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
@@ -289,7 +270,7 @@ func SaveSettings(state *State, args *ArgsFlags) {
 	args.SettingsWrite = false
 }
 
-// There are options which are not filled out by default, we need to initialize values
+// LoadDefaultsOnEmpty There are options which are not filled out by default, we need to initialize values
 func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	// Set Docker Image location
 	state.Crux.Image = "ghcr.io/dyrector-io/dyrectorio/web/crux"
@@ -297,10 +278,10 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	state.Kratos.Image = "ghcr.io/dyrector-io/dyrectorio/web/kratos"
 
 	// Load defaults
-	state.SettingsFile.CruxSecret = util.Fallback(state.SettingsFile.CruxSecret, RandomChars(SecretLength))
-	state.SettingsFile.CruxPostgresPassword = util.Fallback(state.SettingsFile.CruxPostgresPassword, RandomChars(SecretLength))
-	state.SettingsFile.KratosPostgresPassword = util.Fallback(state.SettingsFile.KratosPostgresPassword, RandomChars(SecretLength))
-	state.SettingsFile.KratosSecret = util.Fallback(state.SettingsFile.KratosSecret, RandomChars(SecretLength))
+	state.SettingsFile.CruxSecret = util.Fallback(state.SettingsFile.CruxSecret, randomChars())
+	state.SettingsFile.CruxPostgresPassword = util.Fallback(state.SettingsFile.CruxPostgresPassword, randomChars())
+	state.SettingsFile.KratosPostgresPassword = util.Fallback(state.SettingsFile.KratosPostgresPassword, randomChars())
+	state.SettingsFile.KratosSecret = util.Fallback(state.SettingsFile.KratosSecret, randomChars())
 
 	// Generate names
 	state.Containers.Traefik.Name = fmt.Sprintf("%s_traefik", args.Prefix)
@@ -314,6 +295,13 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	state.Containers.MailSlurper.Name = fmt.Sprintf("%s_mailslurper", args.Prefix)
 
 	return state
+}
+
+// CheckSettings makes sure your state is correct
+func CheckSettings(state *State, args *ArgsFlags) {
+	if args.SettingsWrite {
+		SaveSettings(state, args)
+	}
 }
 
 // TryImage function will check if an image with the given custom tag is existing
@@ -347,8 +335,9 @@ func TryImage(dockerImage, specialTag string) string {
 	return fullDockerImage
 }
 
-func RandomChars(bufflength uint) string {
-	buffer := make([]byte, bufflength*BufferMultiplier)
+// randomChars creates random char string used for password creation
+func randomChars() string {
+	buffer := make([]byte, secretLength*bufferMultiplier)
 	_, err := rand.Read(buffer)
 	if err != nil {
 		log.Error().Err(err).Stack().Send()
@@ -364,108 +353,5 @@ func RandomChars(bufflength uint) string {
 			"/", ""),
 		"=", "")
 
-	return result[0:bufflength]
-}
-
-func CheckAndUpdatePorts(state *State, args *ArgsFlags) {
-	portMap := map[string]uint{}
-	if !args.CruxDisabled {
-		portMap[CruxAgentGrpcPort] = getAvailablePort(portMap, state.SettingsFile.Options.CruxAgentGrpcPort,
-			CruxAgentGrpcPort, &args.SettingsWrite)
-		state.SettingsFile.Options.CruxAgentGrpcPort = portMap[CruxAgentGrpcPort]
-	}
-	if !args.CruxUIDisabled {
-		portMap[CruxUIPort] = getAvailablePort(portMap, state.SettingsFile.Options.CruxUIPort,
-			CruxUIPort, &args.SettingsWrite)
-		state.SettingsFile.Options.CruxUIPort = portMap[CruxUIPort]
-	}
-
-	portMap[CruxPostgresPort] = getAvailablePort(portMap, state.SettingsFile.Options.CruxPostgresPort,
-		CruxPostgresPort, &args.SettingsWrite)
-	state.SettingsFile.Options.CruxPostgresPort = portMap[CruxPostgresPort]
-	portMap[KratosAdminPort] = getAvailablePort(portMap, state.SettingsFile.Options.KratosAdminPort,
-		KratosAdminPort, &args.SettingsWrite)
-	state.SettingsFile.Options.KratosAdminPort = portMap[KratosAdminPort]
-	portMap[KratosPublicPort] = getAvailablePort(portMap, state.SettingsFile.Options.KratosPublicPort,
-		KratosPublicPort, &args.SettingsWrite)
-	state.SettingsFile.Options.KratosPublicPort = portMap[KratosPublicPort]
-	portMap[KratosPostgresPort] = getAvailablePort(portMap, state.SettingsFile.Options.KratosPostgresPort,
-		KratosPostgresPort, &args.SettingsWrite)
-	state.SettingsFile.Options.KratosPostgresPort = portMap[KratosPostgresPort]
-	portMap[MailSlurperSMTPPort] = getAvailablePort(portMap, state.SettingsFile.Options.MailSlurperSMTPPort,
-		MailSlurperSMTPPort, &args.SettingsWrite)
-	state.SettingsFile.Options.MailSlurperSMTPPort = portMap[MailSlurperSMTPPort]
-	portMap[MailSlurperWebPort] = getAvailablePort(portMap, state.SettingsFile.Options.MailSlurperWebPort,
-		MailSlurperWebPort, &args.SettingsWrite)
-	state.SettingsFile.Options.MailSlurperWebPort = portMap[MailSlurperWebPort]
-	portMap[MailSlurperWebPort2] = getAvailablePort(portMap, state.SettingsFile.Options.MailSlurperWebPort2,
-		MailSlurperWebPort2, &args.SettingsWrite)
-	state.SettingsFile.Options.MailSlurperWebPort2 = portMap[MailSlurperWebPort2]
-	portMap[TraefikWebPort] = getAvailablePort(portMap, state.SettingsFile.Options.TraefikWebPort,
-		TraefikWebPort, &args.SettingsWrite)
-	state.SettingsFile.Options.TraefikWebPort = portMap[TraefikWebPort]
-	portMap[TraefikUIPort] = getAvailablePort(portMap, state.SettingsFile.Options.TraefikUIPort,
-		TraefikUIPort, &args.SettingsWrite)
-	state.SettingsFile.Options.TraefikUIPort = portMap[TraefikUIPort]
-}
-
-func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string, changed *bool) uint {
-	for {
-		err := portIsAvailable(portMap, portNum)
-		if err != nil {
-			log.Error().Err(err).Str("value", portDesc).Send()
-			portNum = scanPort(portNum)
-			log.Info().Msgf("New PORT %d binded successfully for %s.", portNum, portDesc)
-			*changed = true
-			continue
-		}
-		break
-	}
-	return portNum
-}
-
-func scanPort(portNum uint) uint {
-	log.Info().Msg("Type another port: ")
-
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		newPort, err := strconv.ParseUint(scanner.Text(), ParseBase, ParseBitSize)
-		if err != nil || (newPort > 0 && newPort <= 1023) || newPort == 0 {
-			log.Error().Err(err).Send()
-			log.Info().Msg("Type another port: ")
-			continue
-		}
-		return uint(newPort)
-	}
-	return portNum
-}
-
-func portIsAvailable(portMap map[string]uint, portNum uint) error {
-	err := portIsAvailableOnHost(portNum)
-	if err == nil {
-		err = externalPortIsDuplicated(portMap, portNum)
-	}
-	return err
-}
-
-func portIsAvailableOnHost(portNum uint) error {
-	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", portNum))
-	if err != nil {
-		return fmt.Errorf("can`t bind, %w", err)
-	}
-
-	err = ln.Close()
-	if err != nil {
-		return fmt.Errorf("can`t close, %w", err)
-	}
-	return nil
-}
-
-func externalPortIsDuplicated(portMap map[string]uint, candidatePort uint) error {
-	for desc, port := range portMap {
-		if port == candidatePort {
-			return fmt.Errorf("port %d is used by %s", port, desc)
-		}
-	}
-	return nil
+	return result[0:secretLength]
 }
