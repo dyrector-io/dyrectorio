@@ -4,16 +4,16 @@ on:
     types: [edited, opened, synchronize, reopened]
 jobs:
   check_repository_origin:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Check if PR is from a fork
         run: |
           if [ "${{ github.event.pull_request.head.repo.full_name }}" == "${{ github.event.pull_request.base.repo.full_name }}" ]; then
             echo "Pull Request is from the original repository."
-            echo "::set-output name=fork::false"
+            echo "fork=false" >> $GITHUB_OUTPUT
             else
           echo "Pull Request is from a forked repository."
-            echo "::set-output name=fork::true"
+          echo "fork=true" >> $GITHUB_OUTPUT
           fi
 
   label_based_on_source_lang:
