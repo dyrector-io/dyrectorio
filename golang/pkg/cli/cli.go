@@ -1,3 +1,4 @@
+// Package cli is the package behind dyo command line executable
 package cli
 
 import (
@@ -150,21 +151,20 @@ func run(cCtx *ucli.Context) error {
 	}
 
 	args := ArgsFlags{
-		SettingsWrite:       cCtx.Bool("write"),
-		SettingsFilePath:    SettingsFileLocation(cCtx.String("config")),
-		SettingsExists:      SettingsExists(cCtx.String("config")),
-		DisableForcepull:    cCtx.Bool("disable-forcepull"),
-		ImageTag:            cCtx.String("imagetag"),
-		Prefix:              cCtx.String("prefix"),
-		SpecialImageTag:     cCtx.String("local-imagetag"),
-		DisablePodmanChecks: cCtx.Bool("disable-podman-checks"),
-		FullyContainerized:  cCtx.Bool("expect-container-env"),
-		Network:             cCtx.String("network"),
-		Silent:              cCtx.Bool("silent"),
-		CruxDisabled:        cCtx.Bool("disable-crux"),
-		CruxUIDisabled:      cCtx.Bool("disable-crux-ui"),
-		LocalAgent:          cCtx.Bool("local-agent"),
-		Command:             cCtx.Command.Name,
+		SettingsWrite:      cCtx.Bool("write"),
+		SettingsFilePath:   SettingsFileLocation(cCtx.String("config")),
+		SettingsExists:     SettingsExists(cCtx.String("config")),
+		DisableForcepull:   cCtx.Bool("disable-forcepull"),
+		ImageTag:           cCtx.String("imagetag"),
+		Prefix:             cCtx.String("prefix"),
+		SpecialImageTag:    cCtx.String("local-imagetag"),
+		FullyContainerized: cCtx.Bool("expect-container-env"),
+		Network:            cCtx.String("network"),
+		Silent:             cCtx.Bool("silent"),
+		CruxDisabled:       cCtx.Bool("disable-crux"),
+		CruxUIDisabled:     cCtx.Bool("disable-crux-ui"),
+		LocalAgent:         cCtx.Bool("local-agent"),
+		Command:            cCtx.Command.Name,
 	}
 
 	initialState := State{
