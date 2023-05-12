@@ -1,6 +1,134 @@
 # CHANGELOG
 
 
+<a name="0.4.1"></a>
+## [0.4.1](https://github.com/dyrector-io/dyrectorio/compare/0.4.0...0.4.1) (2023-05-11)
+
+### Fix
+
+* **(ci):** check_version.sh sh compilance ([#603](https://github.com/dyrector-io/dyrectorio/issues/603))
+* **(ci):** rebuild everything on release ([#601](https://github.com/dyrector-io/dyrectorio/issues/601))
+
+
+<a name="0.4.0"></a>
+## [0.4.0](https://github.com/dyrector-io/dyrectorio/compare/0.3.4...0.4.0) (2023-05-11)
+
+### Chore
+
+* add offline bundle Makefile target ([#558](https://github.com/dyrector-io/dyrectorio/issues/558))
+
+### Doc
+
+* refactor the README.md & add some FAQs from users ([#523](https://github.com/dyrector-io/dyrectorio/issues/523))
+
+### Docs
+
+* add CLI docs link to readme ([#595](https://github.com/dyrector-io/dyrectorio/issues/595))
+* remove unused texts from README.md ([#593](https://github.com/dyrector-io/dyrectorio/issues/593))
+* **(web):** improve descriptions of the api ([#579](https://github.com/dyrector-io/dyrectorio/issues/579))
+* change for to where in README ([#528](https://github.com/dyrector-io/dyrectorio/issues/528))
+
+### Feat
+
+* **(web):** container config annotations ([#587](https://github.com/dyrector-io/dyrectorio/issues/587))
+* **(web):** deployment and event index ([#585](https://github.com/dyrector-io/dyrectorio/issues/585))
+* **(web):** team invite captcha error ([#581](https://github.com/dyrector-io/dyrectorio/issues/581))
+* introduce yamlfmt and apply formatting ([#580](https://github.com/dyrector-io/dyrectorio/issues/580))
+* **(web):** http and ws audit log ([#570](https://github.com/dyrector-io/dyrectorio/issues/570))
+* **(ci):** add .md files to documentation source ([#572](https://github.com/dyrector-io/dyrectorio/issues/572))
+* **(ci):** add PR labeling based on title ([#562](https://github.com/dyrector-io/dyrectorio/issues/562))
+* **(ci):** validate title of the PR ([#557](https://github.com/dyrector-io/dyrectorio/issues/557))
+* **(crux):** OpenAPI description and summary extensions  ([#560](https://github.com/dyrector-io/dyrectorio/issues/560))
+* **(crux):** OpenAPI description improvements ([#549](https://github.com/dyrector-io/dyrectorio/issues/549))
+* **(crux):** validate all HTTP UUID Params ([#532](https://github.com/dyrector-io/dyrectorio/issues/532))
+* **(ci):** add pr labeler ([#556](https://github.com/dyrector-io/dyrectorio/issues/556))
+* **(crux):** deployment events api ([#544](https://github.com/dyrector-io/dyrectorio/issues/544))
+* **(crux-ui):** signup page responsive ([#547](https://github.com/dyrector-io/dyrectorio/issues/547))
+* **(web):** team invite recaptcha ([#541](https://github.com/dyrector-io/dyrectorio/issues/541))
+* **(web):** health http api ([#527](https://github.com/dyrector-io/dyrectorio/issues/527))
+* **(crux):** node container status list ([#526](https://github.com/dyrector-io/dyrectorio/issues/526))
+* **(web):** implemented nodes http api ([#520](https://github.com/dyrector-io/dyrectorio/issues/520))
+* **(web):** storage http api ([#515](https://github.com/dyrector-io/dyrectorio/issues/515))
+* **(web):** implement template and notification http apis ([#513](https://github.com/dyrector-io/dyrectorio/issues/513))
+* **(cli):** add silent mode, hiding welcome message ([#518](https://github.com/dyrector-io/dyrectorio/issues/518))
+* container runtime version check ([#491](https://github.com/dyrector-io/dyrectorio/issues/491))
+* **(web):** refactor gRPC to HTTP API ([#506](https://github.com/dyrector-io/dyrectorio/issues/506))
+* storage ([#493](https://github.com/dyrector-io/dyrectorio/issues/493))
+* **(web):** add kratos rate limit ([#482](https://github.com/dyrector-io/dyrectorio/issues/482))
+* implement Audit and Dashboard APIs ([#495](https://github.com/dyrector-io/dyrectorio/issues/495))
+* add production ready compose file ([#483](https://github.com/dyrector-io/dyrectorio/issues/483))
+* **(web):** send cookies in grpc metadata ([#485](https://github.com/dyrector-io/dyrectorio/issues/485))
+* **(crux):** add deployment events API & path image ([#484](https://github.com/dyrector-io/dyrectorio/issues/484))
+* **(web):** copy deployments from default version ([#481](https://github.com/dyrector-io/dyrectorio/issues/481))
+* **(web):** reset container field buttons ([#467](https://github.com/dyrector-io/dyrectorio/issues/467))
+* **(crux):** swagger [@ApiBody](https://github.com/ApiBody)({}) DTO generator ([#463](https://github.com/dyrector-io/dyrectorio/issues/463))
+* **(crux-ui):** select initial config filters based on node type ([#476](https://github.com/dyrector-io/dyrectorio/issues/476))
+
+### Fix
+
+* improver release target in makefile ([#600](https://github.com/dyrector-io/dyrectorio/issues/600))
+* **(web):** finetuning in docker-compose ([#599](https://github.com/dyrector-io/dyrectorio/issues/599))
+* minor fixes ([#597](https://github.com/dyrector-io/dyrectorio/issues/597))
+* **(cli):** invalid gRPC port ([#596](https://github.com/dyrector-io/dyrectorio/issues/596))
+* **(web):** websocket connection issues ([#591](https://github.com/dyrector-io/dyrectorio/issues/591))
+* **(crux):** team delete audit fix & version list name filter ([#592](https://github.com/dyrector-io/dyrectorio/issues/592))
+* **(ci):** image builder ([#586](https://github.com/dyrector-io/dyrectorio/issues/586))
+* **(crux):** nestjs clientStream workaround ([#590](https://github.com/dyrector-io/dyrectorio/issues/590))
+* rename emails ([#582](https://github.com/dyrector-io/dyrectorio/issues/582))
+* production compose database healthcheck user ([#577](https://github.com/dyrector-io/dyrectorio/issues/577))
+* nodejs dns resolution ([#576](https://github.com/dyrector-io/dyrectorio/issues/576))
+* **(web):** node page connection bugs ([#574](https://github.com/dyrector-io/dyrectorio/issues/574))
+* reorder some of the sections in the README.md ([#573](https://github.com/dyrector-io/dyrectorio/issues/573))
+* swagger path ([#569](https://github.com/dyrector-io/dyrectorio/issues/569))
+* labeler refactor ([#575](https://github.com/dyrector-io/dyrectorio/issues/575))
+* **(crux):** node update ([#568](https://github.com/dyrector-io/dyrectorio/issues/568))
+* **(ci):** labeling by title ([#571](https://github.com/dyrector-io/dyrectorio/issues/571))
+* **(ci):** PR labeling based on changes ([#565](https://github.com/dyrector-io/dyrectorio/issues/565))
+* **(crux):** add missing optionals to DTOs ([#554](https://github.com/dyrector-io/dyrectorio/issues/554))
+* **(web):** move notifications & add API optionals ([#551](https://github.com/dyrector-io/dyrectorio/issues/551))
+* respect dynamic email configuration & cli fixes ([#550](https://github.com/dyrector-io/dyrectorio/issues/550))
+* **(crux-ui):** instance config editor bugs ([#543](https://github.com/dyrector-io/dyrectorio/issues/543))
+* **(crux-ui):** hydration errors ([#546](https://github.com/dyrector-io/dyrectorio/issues/546))
+* **(crux):** api schema errors ([#542](https://github.com/dyrector-io/dyrectorio/issues/542))
+* **(web):** minor ui bugs ([#531](https://github.com/dyrector-io/dyrectorio/issues/531))
+* changelog should be optional ([#539](https://github.com/dyrector-io/dyrectorio/issues/539))
+* node get script open-api return type ([#540](https://github.com/dyrector-io/dyrectorio/issues/540))
+* **(crux):** OpenAPI improvements  ([#536](https://github.com/dyrector-io/dyrectorio/issues/536))
+* controller route params ([#538](https://github.com/dyrector-io/dyrectorio/issues/538))
+* createdBy mapping ([#537](https://github.com/dyrector-io/dyrectorio/issues/537))
+* createdBy mapping
+* improve the CLI Docker Engine Server errror message ([#533](https://github.com/dyrector-io/dyrectorio/issues/533))
+* run log and trace when the pipeline failed ([#529](https://github.com/dyrector-io/dyrectorio/issues/529))
+* **(agent):** import container ([#524](https://github.com/dyrector-io/dyrectorio/issues/524))
+* **(crux):** jwt identity ([#530](https://github.com/dyrector-io/dyrectorio/issues/530))
+* **(cli):** add missing protocol for CRUX_UI_URL ([#521](https://github.com/dyrector-io/dyrectorio/issues/521))
+* dyrectorio compose traefik has missing labels ([#516](https://github.com/dyrector-io/dyrectorio/issues/516))
+* **(cli):** crux unreachable via localhost using cli ([#514](https://github.com/dyrector-io/dyrectorio/issues/514))
+* **(ci):** image push upon pipeline completion ([#510](https://github.com/dyrector-io/dyrectorio/issues/510))
+* **(crux):** joining script for nodes when using podman ([#499](https://github.com/dyrector-io/dyrectorio/issues/499))
+* agent version, add missing env ([#494](https://github.com/dyrector-io/dyrectorio/issues/494))
+* **(crux):** grpc identity illegal characters ([#492](https://github.com/dyrector-io/dyrectorio/issues/492))
+* **(crux-ui):** flaky image config test ([#486](https://github.com/dyrector-io/dyrectorio/issues/486))
+* **(crux):** token delete access guard & unique key & ui delete ([#477](https://github.com/dyrector-io/dyrectorio/issues/477))
+* **(ci):** pipeline set output tag syntax error
+* change to tags to use stable everywhere ([#496](https://github.com/dyrector-io/dyrectorio/issues/496))
+
+### Refactor
+
+* remove /new tag from crux api ([#567](https://github.com/dyrector-io/dyrectorio/issues/567))
+* **(web):** registry connections ([#566](https://github.com/dyrector-io/dyrectorio/issues/566))
+* **(web):** move websocket to crux ([#548](https://github.com/dyrector-io/dyrectorio/issues/548))
+* golang integration tests ([#525](https://github.com/dyrector-io/dyrectorio/issues/525))
+* **(web):** Teams http api ([#522](https://github.com/dyrector-io/dyrectorio/issues/522))
+* **(web):** deployment http api ([#519](https://github.com/dyrector-io/dyrectorio/issues/519))
+* add Container better builder interfacing ([#517](https://github.com/dyrector-io/dyrectorio/issues/517))
+* **(web):** image endpoints ([#512](https://github.com/dyrector-io/dyrectorio/issues/512))
+* **(crux-ui):** wait for url ([#501](https://github.com/dyrector-io/dyrectorio/issues/501))
+* **(cli):** add dynamic prefix, removed swallowed params ([#509](https://github.com/dyrector-io/dyrectorio/issues/509))
+* change dynamic crane manifests & dynamic tags ([#508](https://github.com/dyrector-io/dyrectorio/issues/508))
+* container management ([#488](https://github.com/dyrector-io/dyrectorio/issues/488))
+
+
 <a name="0.3.4"></a>
 ## [0.3.4](https://github.com/dyrector-io/dyrectorio/compare/0.3.3...0.3.4) (2023-02-17)
 
@@ -154,6 +282,11 @@
 * add codeowners to repository ([#255](https://github.com/dyrector-io/dyrectorio/issues/255))
 * **(crux):** upgrade prisma client version to 4.4.0 ([#226](https://github.com/dyrector-io/dyrectorio/issues/226))
 * remove outdated descriptions from README.mds ([#223](https://github.com/dyrector-io/dyrectorio/issues/223))
+
+### Docs
+
+* edit readmes ([#374](https://github.com/dyrector-io/dyrectorio/issues/374))
+* add resolution for IDP ([#322](https://github.com/dyrector-io/dyrectorio/issues/322))
 
 ### Feat
 
@@ -506,6 +639,17 @@
 
 <a name="0.0.1"></a>
 ## 0.0.1 (2022-07-15)
+
+### Ci
+
+* agent pipeline with tests & signing ([#3](https://github.com/dyrector-io/dyrectorio/issues/3))
+* add web-crux workflow
+* add lint to auth, apply suggested linter changes
+* add basic CI functions for frontend, backend, agent and auth services
+
+### Docs
+
+* add comments to dev compose and registry v2 client
 
 ### Feat
 

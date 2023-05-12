@@ -105,8 +105,8 @@ build-proto-image:
 
 .PHONY: release
 release:
-	echo "Version will be: $(version)"
-	echo "Do you want to continue?"
+	$(info Do you want to continue?)
+	$(info Version will be: $(version))
 	read
 
 	git checkout develop
@@ -118,16 +118,16 @@ release:
 	git add CHANGELOG.md
 
 ## Change version of crux
-	jq '.version = "$(version)" | .packages[""].version = "$(version)"' web/crux/package.json > web/crux/package.json.tmp
+	jq '.version = "$(version)"' web/crux/package.json  > web/crux/package.json.tmp
 	mv web/crux/package.json.tmp web/crux/package.json
-	jq '.version = "$(version)" | .packages[""].version = "$(version)"' web/crux/package-lock.json > web/crux/package-lock.json.tmp
+	jq '.version = "$(version)"' web/crux/package-lock.json  > web/crux/package-lock.json.tmp
 	mv web/crux/package-lock.json.tmp web/crux/package-lock.json
 	git add web/crux/
 
 ## Change version of crux-ui
-	jq '.version = "$(version)" | .packages[""].version = "$(version)"' web/crux-ui/package.json > web/crux-ui/package.json.tmp
+	jq '.version = "$(version)"' web/crux-ui/package.json > web/crux-ui/package.json.tmp
 	mv web/crux-ui/package.json.tmp web/crux-ui/package.json
-	jq '.version = "$(version)" | .packages[""].version = "$(version)"' web/crux-ui/package-lock.json > web/crux-ui/package-lock.json.tmp
+	jq '.version = "$(version)"' web/crux-ui/package-lock.json > web/crux-ui/package-lock.json.tmp
 	mv web/crux-ui/package-lock.json.tmp web/crux-ui/package-lock.json
 	git add web/crux-ui/
 

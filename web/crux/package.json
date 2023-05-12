@@ -1,6 +1,6 @@
 {
   "name": "crux",
-  "version": "0.3.4",
+  "version": "0.4.1",
   "description": "Open-source delivery platform that helps developers to deliver applications efficiently by simplifying software releases and operations in any environment.",
   "author": "dyrector.io",
   "private": true,
@@ -109,10 +109,5 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.0.4"
-  },
-  "packages": {
-    "": {
-      "version": "0.3.4"
-    }
   }
 }
