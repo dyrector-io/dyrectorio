@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import {
   ContainerStateEnum,
   Deployment,
@@ -35,13 +35,6 @@ import {
   ExposeStrategy as ProtoExposeStrategy,
   containerStateToJSON,
 } from 'src/grpc/protobuf/proto/common'
-import {
-  auditToDto,
-  nodeToBasicDto,
-  nodeToBasicWithStatusDto,
-  productToBasicDto,
-  versionToBasicDto,
-} from 'src/shared/shared.mapper'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
 import { NodeConnectionStatus } from '../../shared/dtos/shared.dto'
@@ -61,10 +54,23 @@ import {
   InstanceSecretsDto,
 } from './deploy.dto'
 import { DeploymentEventMessage } from './deploy.message'
+import ProductMapper from '../product/product.mapper'
+import AuditMapper from '../audit/audit.mapper'
+import VersionMapper from '../version/version.mapper'
+import NodeMapper from '../node/node.mapper'
 
 @Injectable()
 export default class DeployMapper {
-  constructor(private imageMapper: ImageMapper, private containerMapper: ContainerMapper) {}
+  constructor(
+    @Inject(forwardRef(() => ImageMapper))
+    private imageMapper: ImageMapper,
+    private containerMapper: ContainerMapper,
+    @Inject(forwardRef(() => ProductMapper))
+    private productMapper: ProductMapper,
+    private auditMapper: AuditMapper,
+    private versionMapper: VersionMapper,
+    private nodeMapper: NodeMapper,
+  ) {}
 
   statusToDto(it: DeploymentStatusEnum): DeploymentStatusDto {
     switch (it) {
@@ -81,7 +87,7 @@ export default class DeployMapper {
       prefix: it.prefix,
       status: this.statusToDto(it.status),
       updatedAt: it.updatedAt ?? it.createdAt,
-      node: nodeToBasicWithStatusDto(it.node, nodeStatus),
+      node: this.nodeMapper.toBasicWithStatusDto(it.node, nodeStatus),
     }
   }
 
@@ -90,10 +96,10 @@ export default class DeployMapper {
       id: it.id,
       prefix: it.prefix,
       status: this.statusToDto(it.status),
-      audit: auditToDto(it),
-      node: nodeToBasicDto(it.node),
-      product: productToBasicDto(it.version.product),
-      version: versionToBasicDto(it.version),
+      audit: this.auditMapper.toDto(it),
+      node: this.nodeMapper.toBasicDto(it.node),
+      product: this.productMapper.toBasicDto(it.version.product),
+      version: this.versionMapper.toBasicDto(it.version),
     }
   }
 

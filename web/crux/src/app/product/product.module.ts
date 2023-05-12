@@ -10,6 +10,7 @@ import ProductMapper from './product.mapper'
 import ProductService from './product.service'
 import ProductHttpController from './product.http.controller'
 import TokenModule from '../token/token.module'
+import AuditMapper from '../audit/audit.mapper'
 
 @Module({
   imports: [VersionModule, TeamModule, TokenModule],
@@ -23,6 +24,7 @@ import TokenModule from '../token/token.module'
     KratosService,
     AuditLoggerInterceptor,
     AuditLoggerService,
+    AuditMapper,
   ],
 })
 export default class ProductModule {}

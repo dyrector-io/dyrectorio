@@ -12,7 +12,13 @@ import {
   containerStateToJSON,
 } from 'src/grpc/protobuf/proto/common'
 import AgentService from '../agent/agent.service'
-import { NodeType } from '../../shared/dtos/shared.dto'
+import {
+  BasicNodeDto,
+  BasicNodeWithStatus,
+  BasicProperties,
+  NodeConnectionStatus,
+  NodeType,
+} from '../../shared/dtos/shared.dto'
 import { ContainerDto, ContainerOperationDto, NodeDetailsDto, NodeDto, NodeInstallDto } from './node.dto'
 import { ContainersStateListMessage } from './node.message'
 
@@ -28,6 +34,23 @@ export default class NodeMapper {
       icon: node.icon,
       type: node.type,
       ...this.toAgentEvent(node),
+    }
+  }
+
+  toBasicDto(it: Pick<Node, BasicProperties>): BasicNodeDto {
+    return {
+      id: it.id,
+      name: it.name,
+      type: it.type,
+    }
+  }
+
+  toBasicWithStatusDto(it: Pick<Node, BasicProperties>, status: NodeConnectionStatus): BasicNodeWithStatus {
+    return {
+      id: it.id,
+      name: it.name,
+      type: it.type,
+      status,
     }
   }
 

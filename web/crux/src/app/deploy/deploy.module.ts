@@ -12,6 +12,10 @@ import DeployHttpController from './deploy.http.controller'
 import DeployMapper from './deploy.mapper'
 import DeployService from './deploy.service'
 import DeployWebSocketGateway from './deploy.ws.gateway'
+import ProductMapper from '../product/product.mapper'
+import VersionMapper from '../version/version.mapper'
+import AuditMapper from '../audit/audit.mapper'
+import NodeMapper from '../node/node.mapper'
 
 @Module({
   imports: [AgentModule, ImageModule, EditorModule, ContainerModule],
@@ -26,6 +30,10 @@ import DeployWebSocketGateway from './deploy.ws.gateway'
     DeployWebSocketGateway,
     AuditLoggerInterceptor,
     AuditLoggerService,
+    VersionMapper,
+    ProductMapper,
+    AuditMapper,
+    NodeMapper,
   ],
 })
 export default class DeployModule {}

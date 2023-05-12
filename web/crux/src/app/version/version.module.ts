@@ -15,6 +15,7 @@ import VersionMapper from './version.mapper'
 import VersionService from './version.service'
 import VersionWebSocketGateway from './version.ws.gateway'
 import EditorModule from '../editor/editor.module'
+import AuditMapper from '../audit/audit.mapper'
 
 @Module({
   imports: [ImageModule, HttpModule, DeployModule, AgentModule, EditorModule],
@@ -31,6 +32,7 @@ import EditorModule from '../editor/editor.module'
     VersionWebSocketGateway,
     AuditLoggerService,
     AuditLoggerInterceptor,
+    AuditMapper,
   ],
 })
 export default class VersionModule {}

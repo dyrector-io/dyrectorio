@@ -39,3 +39,10 @@ export class AuditLogListDto extends PaginatedList<AuditLogDto> {
 
   total: number
 }
+
+export type Audit = {
+  createdBy: string
+  createdAt: Date
+  updatedBy?: string
+  updatedAt: Date
+}
