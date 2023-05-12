@@ -23,7 +23,9 @@ import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './contai
 import Deployment from './deployment'
 
 export class Agent {
-  private static AGENT_UPDATE_TIMEOUT = 60 * 5 * 1000 // seconds
+  public static SECRET_TIMEOUT = 5000
+
+  private static AGENT_UPDATE_TIMEOUT = 60 * 5 * 1000
 
   private commandChannel = new Subject<AgentCommand>()
 
@@ -272,7 +274,7 @@ export class Agent {
         this.secretsWatchers.delete(key)
       }),
       timeout({
-        each: 5000,
+        each: Agent.SECRET_TIMEOUT,
         with: () => {
           this.secretsWatchers.delete(key)
 
