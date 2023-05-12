@@ -80,7 +80,7 @@ jobs:
           echo REF_TYPE ${{ github.ref_type }}
           echo REF_HASH ${{ github.sha }}
           echo REF_BASE ${{ github.base_ref }}
-          ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }} ${{ github.sha }} $GITHUB_BASE_REF
+          ./pipeline_set_output_tag.sh ${{ github.ref_type }} ${{ github.ref_name }} ${{ github.sha }} ${{ github.base_ref }}
         # if tag isn't the version set in package.json, job will fail
       - name: Check tag version correctness
         if: github.ref_type == 'tag'
