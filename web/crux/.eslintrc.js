@@ -39,5 +39,6 @@ module.exports = {
     'import/no-extraneous-dependencies': 'off',
     'class-methods-use-this': 'off',
     'max-classes-per-file': 'off',
+    'import/no-cycle': 'off',
   },
 }
