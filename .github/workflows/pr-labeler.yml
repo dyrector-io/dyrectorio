@@ -3,11 +3,26 @@ on:
   pull_request:
     types: [edited, opened, synchronize, reopened]
 jobs:
+  check_repository_origin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if PR is from a fork
+        run: |
+          if [ "${{ github.event.pull_request.head.repo.full_name }}" == "${{ github.event.pull_request.base.repo.full_name }}" ]; then
+            echo "Pull Request is from the original repository."
+            echo "::set-output name=fork::false"
+            else
+          echo "Pull Request is from a forked repository."
+            echo "::set-output name=fork::true"
+          fi
+
   label_based_on_source_lang:
     permissions:
       contents: read
       pull-requests: write
+    needs: check_repository_origin
     runs-on: ubuntu-22.04
+    if: ${{ needs.check_repository_origin.outputs.fork == 'false' }}
     steps:
       - uses: actions/labeler@v4
         with:
@@ -16,7 +31,9 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    needs: check_repository_origin
     runs-on: ubuntu-22.04
+    if: ${{ needs.check_repository_origin.outputs.fork == 'false' }}
     steps:
       - uses: github/issue-labeler@v3.1
         with:
