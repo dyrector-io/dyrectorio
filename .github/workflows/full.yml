@@ -17,11 +17,12 @@ env:
   CRANE_IMAGE_NAME: dyrector-io/dyrectorio/agent/crane
   CLI_IMAGE_NAME: dyrector-io/dyrectorio/cli/dyo
   KRATOS_IMAGE_NAME: dyrector-io/dyrectorio/web/kratos
+  WORKFLOWS_WORKING_DIRECTORY: .github/workflows
   CRUX_WORKING_DIRECTORY: web/crux
   CRUX_UI_WORKING_DIRECTORY: web/crux-ui
   KRATOS_WORKING_DIRECTORY: web/kratos
   GOLANG_WORKING_DIRECTORY: golang
-  BUILDER_IMAGE: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+  BUILDER_IMAGE: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
 jobs:
   conventional_commits:
     runs-on: ubuntu-22.04
@@ -41,7 +42,7 @@ jobs:
       - name: Run title validation
         # if it's not a PR we skip
         if: ${{ github.event_name == 'pull_request' }}
-        working-directory: .github/workflows
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
         run: sh -x pr_title_validation.sh '${{ github.event.pull_request.title }}'
   gather_changes:
     runs-on: ubuntu-22.04
@@ -74,7 +75,7 @@ jobs:
               - '.github/workflows/full.yml'
       - name: Setting a buildtag
         id: settag
-        working-directory: .github/workflows
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
         run: |
           echo REF_NAME ${{ github.ref_name }}
           echo REF_TYPE ${{ github.ref_type }}
@@ -84,7 +85,7 @@ jobs:
         # if tag isn't the version set in package.json, job will fail
       - name: Check tag version correctness
         if: github.ref_type == 'tag'
-        working-directory: .github/workflows
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
         run: |
           ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_WORKING_DIRECTORY }}
           ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -98,7 +99,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -126,7 +127,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -154,7 +155,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -184,7 +185,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -219,7 +220,7 @@ jobs:
       - go_integration
       - gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -277,7 +278,7 @@ jobs:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout the repository
@@ -293,7 +294,7 @@ jobs:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout the repository
@@ -313,13 +314,20 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [crux_test, crux_lint, gather_changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     defaults:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      # fixes: fatal: unsafe repository
+      - name: Adding workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Update package version
+        if: (github.ref_name != 'main' || github.ref_type != 'tag')
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
+        run: ./update-package-version.sh ../../${{ env.CRUX_WORKING_DIRECTORY }}/package.json ${{ github.sha }}
       - name: Docker build
         run: docker build -t ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
       - name: Docker save
@@ -334,7 +342,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -350,13 +358,20 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [crux-ui_lint, gather_changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      # fixes: fatal: unsafe repository
+      - name: Adding workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Update package version
+        if: (github.ref_name != 'main' || github.ref_type != 'tag')
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
+        run: ./update-package-version.sh ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}/package.json ${{ github.sha }}
       - name: Docker build
         run: docker build -t ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
       - name: Docker save
@@ -371,7 +386,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     defaults:
       run:
         working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
@@ -521,7 +536,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     needs: [go_build, e2e, gather_changes]
     if: |
       always() &&
@@ -595,7 +610,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     needs: [crux_build, e2e, gather_changes]
     if: |
       always() &&
@@ -646,7 +661,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     needs: [crux-ui_build, e2e, gather_changes]
     if: |
       always() &&
@@ -697,7 +712,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4
     needs: [kratos_build, e2e, gather_changes]
     if: |
       always() &&
