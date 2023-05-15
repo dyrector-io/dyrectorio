@@ -229,7 +229,7 @@ describe('WsNamespace', () => {
       }
     })
 
-    it('should return UnsubscribeResult with an null when the client is not subscribed', () => {
+    it('should return UnsubscribeResult with a null when the client is not subscribed', () => {
       const result = namespace.onUnsubscribe(client, unsubscribeMessage)
 
       expect(result.res).toBe(null)
