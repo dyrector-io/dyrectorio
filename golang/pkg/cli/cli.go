@@ -161,7 +161,7 @@ func run(cCtx *ucli.Context) error {
 		SettingsFilePath:      SettingsFileLocation(cCtx.String(FlagConfigPath)),
 		SettingsExists:        SettingsExists(cCtx.String(FlagConfigPath)),
 		ImageTag:              cCtx.String(FlagImageTag),
-		Prefix:                cCtx.String(FlagImageTag),
+		Prefix:                cCtx.String(FlagPrefix),
 		PrioritizeLocalImages: cCtx.Bool(FlagPrioritizeLocalImages),
 		FullyContainerized:    cCtx.Bool(FlagExpectContainerEnv),
 		Network:               cCtx.String(FlagNetwork),
