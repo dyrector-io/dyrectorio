@@ -64,7 +64,7 @@ func TestNewPull(t *testing.T) {
 	ctx := context.Background()
 	img := "nginx:alpine"
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
-	err := image.CustomImagePull(ctx, img, "", false, cli.DockerPullProgressDisplayer)
+	err := image.CustomImagePull(ctx, img, "", false, false, cli.DockerPullProgressDisplayer)
 	assert.Nilf(t, err, "expected err to be nil for a valid image name")
 }
 
@@ -81,7 +81,7 @@ func TestPullFullQualifiedImage(t *testing.T) {
 		return nil
 	})
 
-	err := image.CustomImagePull(ctx, img, "", false, cb)
+	err := image.CustomImagePull(ctx, img, "", false, false, cb)
 	assert.Nilf(t, err, "expected err to be nil for a valid image name")
 	assert.Truef(t, called, "display func is called")
 
@@ -95,6 +95,6 @@ func TestPrettyPullFullQualifiedInvalidImage(t *testing.T) {
 	img := "nginx:invalid-non-existent-tag"
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
 
-	err := image.CustomImagePull(ctx, img, "", false, cli.DockerPullProgressDisplayer)
+	err := image.CustomImagePull(ctx, img, "", false, false, cli.DockerPullProgressDisplayer)
 	assert.ErrorIs(t, err, image.ErrImageNotFound, "expected err to be notfound for a invalid image name")
 }

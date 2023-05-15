@@ -168,7 +168,7 @@ func Pull(ctx context.Context, logger io.StringWriter, expandedImageName, authCr
 	return err
 }
 
-func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePull bool, displayFn PullDisplayFn) error {
+func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePull, localPriority bool, displayFn PullDisplayFn) error {
 	distributionRef, nameErr := reference.ParseNormalizedNamed(imageName)
 	switch {
 	case nameErr != nil:
@@ -184,6 +184,18 @@ func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePu
 	if cliErr != nil {
 		return cliErr
 	}
+
+	if localPriority {
+		exists, err := Exists(ctx, nil, imageName)
+		if err != nil {
+			return err
+		}
+		if exists {
+			// hard-exit; without status
+			return nil
+		}
+	}
+
 	if !forcePull {
 		if localRemoteMatch, err := checkRemote(ctx, cli, distributionRef,
 			encodedAuth, displayFn); errors.Is(err, ErrImageNotFound) || localRemoteMatch {

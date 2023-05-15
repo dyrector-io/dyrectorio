@@ -90,9 +90,9 @@
                 // main
                 // "--prefix", "dyo-stable",
                 // non-containarized develop
-                "--disable-crux", "--disable-crux-ui","--prefix", "dyo-latest",
+                // "--disable-crux", "--disable-crux-ui","--prefix", "dyo-latest",
                 // containerized develop
-                // "--imagetag",  "latest", "--prefix","dyo-latest",
+                "--image-tag",  "latest", "--prefix","dyo-latest",
                 "up"
             ],
             "program": "${workspaceFolder}/golang/cmd/dyo",

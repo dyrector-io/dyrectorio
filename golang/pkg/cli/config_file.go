@@ -31,15 +31,16 @@ type State struct {
 
 // ArgsFlags are commandline arguments
 type ArgsFlags struct {
-	SettingsWrite    bool
-	SettingsExists   bool
-	SettingsFilePath string
-	Command          string
-	ImageTag         string
-	Prefix           string
-	CruxDisabled     bool
-	CruxUIDisabled   bool
-	LocalAgent       bool
+	SettingsWrite         bool
+	SettingsExists        bool
+	SettingsFilePath      string
+	Command               string
+	ImageTag              string
+	Prefix                string
+	CruxDisabled          bool
+	CruxUIDisabled        bool
+	LocalAgent            bool
+	PrioritizeLocalImages bool
 	// pipeline mode
 	FullyContainerized bool
 	Network            string
@@ -170,7 +171,7 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 		log.Fatal().Stack().Err(err).Send()
 	}
 
-	err = containerRuntime.VersionCheck(initialState.Ctx, cli)
+	_, err = containerRuntime.VersionCheck(initialState.Ctx, cli)
 	if err != nil {
 		switch {
 		case errors.Is(err, containerRuntime.ErrServerIsOutdated):

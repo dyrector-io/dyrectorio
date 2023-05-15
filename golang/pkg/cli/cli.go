@@ -10,6 +10,23 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/version"
 )
 
+// flags
+const (
+	FlagDisableCrux           = "disable-crux"
+	FlagDisableCruxUI         = "disable-crux-ui"
+	FlagLocalAgent            = "local-agent"
+	FlagWrite                 = "write"
+	FlagDebug                 = "debug"
+	FlagPrioritizeLocalImages = "prioritize-local-images"
+	FlagDisablePodmanChecks   = "disable-podman-checks"
+	FlagConfigPath            = "config"
+	FlagPrefix                = "prefix"
+	FlagImageTag              = "image-tag"
+	FlagSilent                = "silent"
+	FlagExpectContainerEnv    = "expect-container-env"
+	FlagNetwork               = "network"
+)
+
 // InitCLI returns the configuration flags of the program
 //
 //nolint:funlen
@@ -33,10 +50,15 @@ func InitCLI() *ucli.App {
 				Usage:   "Stop the stack",
 				Action:  run,
 			},
+			{
+				Name:    VersionCommand,
+				Aliases: []string{"v"},
+				Action:  run,
+			},
 		},
 		Flags: []ucli.Flag{
 			&ucli.BoolFlag{
-				Name:     "disable-crux",
+				Name:     FlagDisableCrux,
 				Aliases:  []string{"dc"},
 				Value:    false,
 				Usage:    "disable crux(backend) service",
@@ -44,7 +66,7 @@ func InitCLI() *ucli.App {
 				EnvVars:  []string{"DISABLE_CRUX"},
 			},
 			&ucli.BoolFlag{
-				Name:     "disable-crux-ui",
+				Name:     FlagDisableCruxUI,
 				Aliases:  []string{"dcu"},
 				Value:    false,
 				Usage:    "disable crux-ui(frontend) service",
@@ -52,7 +74,7 @@ func InitCLI() *ucli.App {
 				EnvVars:  []string{"DISABLE_CRUXUI"},
 			},
 			&ucli.BoolFlag{
-				Name:    "local-agent",
+				Name:    FlagLocalAgent,
 				Aliases: []string{"la"},
 				Value:   false,
 				Usage: "will set crux env to make dagent connect to localhost instead of container network," +
@@ -61,34 +83,34 @@ func InitCLI() *ucli.App {
 				EnvVars:  []string{"LOCAL_AGENT"},
 			},
 			&ucli.BoolFlag{
-				Name:     "write",
+				Name:     FlagWrite,
 				Aliases:  []string{"w"},
 				Value:    false,
 				Usage:    "enables writing configuration, storing current state",
 				Required: false,
 			},
 			&ucli.BoolFlag{
-				Name:     "debug",
+				Name:     FlagDebug,
 				Value:    false,
 				Usage:    "enables debug messages",
 				Required: false,
 			},
 			&ucli.BoolFlag{
-				Name:     "disable-forcepull",
+				Name:     FlagPrioritizeLocalImages,
 				Value:    false,
-				Usage:    "try to use images locally available",
+				Usage:    "prioritize local instead of remote images",
 				Required: false,
-				EnvVars:  []string{"DISABLE_FORCEPULL"},
+				EnvVars:  []string{"PRIORITIZE_LOCAL_IMAGES"},
 			},
 			&ucli.BoolFlag{
-				Name:     "disable-podman-checks",
+				Name:     FlagDisablePodmanChecks,
 				Value:    false,
 				Usage:    "disabling podman checks, useful when you run the CLI in a container",
 				Required: false,
 				EnvVars:  []string{"DISABLE_PODMAN_CHECKS"},
 			},
 			&ucli.StringFlag{
-				Name:        "config",
+				Name:        FlagConfigPath,
 				Aliases:     []string{"c"},
 				Value:       "",
 				DefaultText: SettingsPath(),
@@ -97,14 +119,14 @@ func InitCLI() *ucli.App {
 				EnvVars:     []string{"DYO_CONFIG"},
 			},
 			&ucli.StringFlag{
-				Name:     "imagetag",
+				Name:     FlagImageTag,
 				Value:    "",
 				Usage:    "image tag, it will override the config",
 				Required: false,
 				EnvVars:  []string{"DYO_IMAGE_TAG"},
 			},
 			&ucli.StringFlag{
-				Name:        "prefix",
+				Name:        FlagPrefix,
 				Value:       "dyo-stable",
 				Aliases:     []string{"p"},
 				DefaultText: "dyo-stable",
@@ -113,21 +135,21 @@ func InitCLI() *ucli.App {
 				EnvVars:     []string{"PREFIX"},
 			},
 			&ucli.StringFlag{
-				Name:     "network",
+				Name:     FlagNetwork,
 				Value:    "",
 				Usage:    "custom network, overriding the configuration",
 				Required: false,
 				EnvVars:  []string{"DYO_NETWORK"},
 			},
 			&ucli.BoolFlag{
-				Name:     "expect-container-env",
+				Name:     FlagExpectContainerEnv,
 				Value:    false,
-				Usage:    "when both the stack and observer are running inside containers, like during e2e tests",
+				Usage:    "everything runs inside containers eg. e2e tests, nothing is exposed to the host",
 				Required: false,
 				EnvVars:  []string{"DYO_FULLY_CONTAINERIZED"},
 			},
 			&ucli.BoolFlag{
-				Name:    "silent",
+				Name:    FlagSilent,
 				Aliases: []string{"s"},
 				Value:   false,
 				Usage:   "hides the welcome message and minimizes chattiness",
@@ -143,18 +165,19 @@ func run(cCtx *ucli.Context) error {
 	}
 
 	args := ArgsFlags{
-		SettingsWrite:      cCtx.Bool("write"),
-		SettingsFilePath:   SettingsFileLocation(cCtx.String("config")),
-		SettingsExists:     SettingsExists(cCtx.String("config")),
-		ImageTag:           cCtx.String("imagetag"),
-		Prefix:             cCtx.String("prefix"),
-		FullyContainerized: cCtx.Bool("expect-container-env"),
-		Network:            cCtx.String("network"),
-		Silent:             cCtx.Bool("silent"),
-		CruxDisabled:       cCtx.Bool("disable-crux"),
-		CruxUIDisabled:     cCtx.Bool("disable-crux-ui"),
-		LocalAgent:         cCtx.Bool("local-agent"),
-		Command:            cCtx.Command.Name,
+		SettingsWrite:         cCtx.Bool("write"),
+		SettingsFilePath:      SettingsFileLocation(cCtx.String("config")),
+		SettingsExists:        SettingsExists(cCtx.String("config")),
+		ImageTag:              cCtx.String("imagetag"),
+		Prefix:                cCtx.String("prefix"),
+		PrioritizeLocalImages: cCtx.Bool("prioritize-local-images"),
+		FullyContainerized:    cCtx.Bool("expect-container-env"),
+		Network:               cCtx.String("network"),
+		Silent:                cCtx.Bool("silent"),
+		CruxDisabled:          cCtx.Bool(FlagDisableCrux),
+		CruxUIDisabled:        cCtx.Bool(FlagDisableCruxUI),
+		LocalAgent:            cCtx.Bool(FlagLocalAgent),
+		Command:               cCtx.Command.Name,
 	}
 
 	initialState := State{
