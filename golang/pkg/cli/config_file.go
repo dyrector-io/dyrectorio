@@ -31,16 +31,16 @@ type State struct {
 
 // ArgsFlags are commandline arguments
 type ArgsFlags struct {
-	SettingsWrite         bool
-	SettingsExists        bool
-	SettingsFilePath      string
-	Command               string
-	ImageTag              string
-	Prefix                string
-	CruxDisabled          bool
-	CruxUIDisabled        bool
-	LocalAgent            bool
-	PrioritizeLocalImages bool
+	SettingsWrite     bool
+	SettingsExists    bool
+	SettingsFilePath  string
+	Command           string
+	ImageTag          string
+	Prefix            string
+	CruxDisabled      bool
+	CruxUIDisabled    bool
+	LocalAgent        bool
+	PreferLocalImages bool
 	// pipeline mode
 	FullyContainerized bool
 	Network            string

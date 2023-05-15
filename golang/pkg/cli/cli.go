@@ -12,18 +12,18 @@ import (
 
 // flags
 const (
-	FlagDisableCrux           = "disable-crux"
-	FlagDisableCruxUI         = "disable-crux-ui"
-	FlagLocalAgent            = "local-agent"
-	FlagWrite                 = "write"
-	FlagDebug                 = "debug"
-	FlagPrioritizeLocalImages = "prioritize-local-images"
-	FlagConfigPath            = "config"
-	FlagPrefix                = "prefix"
-	FlagImageTag              = "image-tag"
-	FlagSilent                = "silent"
-	FlagExpectContainerEnv    = "expect-container-env"
-	FlagNetwork               = "network"
+	FlagDisableCrux        = "disable-crux"
+	FlagDisableCruxUI      = "disable-crux-ui"
+	FlagLocalAgent         = "local-agent"
+	FlagWrite              = "write"
+	FlagDebug              = "debug"
+	FlagPreferLocalImages  = "prefer-local-images"
+	FlagConfigPath         = "config"
+	FlagPrefix             = "prefix"
+	FlagImageTag           = "image-tag"
+	FlagSilent             = "silent"
+	FlagExpectContainerEnv = "expect-container-env"
+	FlagNetwork            = "network"
 )
 
 // InitCLI returns the configuration flags of the program
@@ -95,7 +95,7 @@ func InitCLI() *ucli.App {
 				Required: false,
 			},
 			&ucli.BoolFlag{
-				Name:     FlagPrioritizeLocalImages,
+				Name:     FlagPreferLocalImages,
 				Value:    false,
 				Usage:    "prioritize local instead of remote images",
 				Required: false,
@@ -157,19 +157,19 @@ func run(cCtx *ucli.Context) error {
 	}
 
 	args := ArgsFlags{
-		SettingsWrite:         cCtx.Bool(FlagWrite),
-		SettingsFilePath:      SettingsFileLocation(cCtx.String(FlagConfigPath)),
-		SettingsExists:        SettingsExists(cCtx.String(FlagConfigPath)),
-		ImageTag:              cCtx.String(FlagImageTag),
-		Prefix:                cCtx.String(FlagPrefix),
-		PrioritizeLocalImages: cCtx.Bool(FlagPrioritizeLocalImages),
-		FullyContainerized:    cCtx.Bool(FlagExpectContainerEnv),
-		Network:               cCtx.String(FlagNetwork),
-		Silent:                cCtx.Bool(FlagSilent),
-		CruxDisabled:          cCtx.Bool(FlagDisableCrux),
-		CruxUIDisabled:        cCtx.Bool(FlagDisableCruxUI),
-		LocalAgent:            cCtx.Bool(FlagLocalAgent),
-		Command:               cCtx.Command.Name,
+		SettingsWrite:      cCtx.Bool(FlagWrite),
+		SettingsFilePath:   SettingsFileLocation(cCtx.String(FlagConfigPath)),
+		SettingsExists:     SettingsExists(cCtx.String(FlagConfigPath)),
+		ImageTag:           cCtx.String(FlagImageTag),
+		Prefix:             cCtx.String(FlagPrefix),
+		PreferLocalImages:  cCtx.Bool(FlagPreferLocalImages),
+		FullyContainerized: cCtx.Bool(FlagExpectContainerEnv),
+		Network:            cCtx.String(FlagNetwork),
+		Silent:             cCtx.Bool(FlagSilent),
+		CruxDisabled:       cCtx.Bool(FlagDisableCrux),
+		CruxUIDisabled:     cCtx.Bool(FlagDisableCruxUI),
+		LocalAgent:         cCtx.Bool(FlagLocalAgent),
+		Command:            cCtx.Command.Name,
 	}
 
 	initialState := State{
