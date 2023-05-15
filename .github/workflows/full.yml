@@ -17,11 +17,11 @@ env:
   CRANE_IMAGE_NAME: dyrector-io/dyrectorio/agent/crane
   CLI_IMAGE_NAME: dyrector-io/dyrectorio/cli/dyo
   KRATOS_IMAGE_NAME: dyrector-io/dyrectorio/web/kratos
+  WORKFLOWS_WORKING_DIRECTORY: .github/workflows
   CRUX_WORKING_DIRECTORY: web/crux
   CRUX_UI_WORKING_DIRECTORY: web/crux-ui
   KRATOS_WORKING_DIRECTORY: web/kratos
   GOLANG_WORKING_DIRECTORY: golang
-  BUILDER_IMAGE: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
 jobs:
   conventional_commits:
     runs-on: ubuntu-22.04
@@ -41,11 +41,21 @@ jobs:
       - name: Run title validation
         # if it's not a PR we skip
         if: ${{ github.event_name == 'pull_request' }}
-        working-directory: .github/workflows
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
         run: sh -x pr_title_validation.sh '${{ github.event.pull_request.title }}'
+  # Validate the YAML documents
+  yaml_lint:
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run YAML linting
+        run: yamlfmt -lint .
   gather_changes:
     runs-on: ubuntu-22.04
-    needs: conventional_commits
+    needs: [conventional_commits, yaml_lint]
     outputs:
       agents: ${{ steps.filter.outputs.agents }}
       crux: ${{ steps.filter.outputs.crux }}
@@ -74,7 +84,7 @@ jobs:
               - '.github/workflows/full.yml'
       - name: Setting a buildtag
         id: settag
-        working-directory: .github/workflows
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
         run: |
           echo REF_NAME ${{ github.ref_name }}
           echo REF_TYPE ${{ github.ref_type }}
@@ -84,7 +94,7 @@ jobs:
         # if tag isn't the version set in package.json, job will fail
       - name: Check tag version correctness
         if: github.ref_type == 'tag'
-        working-directory: .github/workflows
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
         run: |
           ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_WORKING_DIRECTORY }}
           ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -98,7 +108,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -126,7 +136,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -154,7 +164,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -184,7 +194,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -219,7 +229,7 @@ jobs:
       - go_integration
       - gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -277,7 +287,7 @@ jobs:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout the repository
@@ -293,7 +303,7 @@ jobs:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout the repository
@@ -313,13 +323,20 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [crux_test, crux_lint, gather_changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     defaults:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      # fixes: fatal: unsafe repository
+      - name: Adding workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Update package version
+        if: (github.ref_name != 'main' || github.ref_type != 'tag')
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
+        run: ./update-package-version.sh ../../${{ env.CRUX_WORKING_DIRECTORY }}/package.json ${{ github.sha }}
       - name: Docker build
         run: docker build -t ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
       - name: Docker save
@@ -334,7 +351,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -350,13 +367,20 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [crux-ui_lint, gather_changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      # fixes: fatal: unsafe repository
+      - name: Adding workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Update package version
+        if: (github.ref_name != 'main' || github.ref_type != 'tag')
+        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
+        run: ./update-package-version.sh ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}/package.json ${{ github.sha }}
       - name: Docker build
         run: docker build -t ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
       - name: Docker save
@@ -371,7 +395,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     defaults:
       run:
         working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
@@ -409,6 +433,7 @@ jobs:
       (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
       (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
       needs.conventional_commits.result == 'success' &&
+      needs.yaml_lint.result == 'success' &&
       needs.gather_changes.result == 'success'
     steps:
       - name: Checkout the repository
@@ -481,11 +506,11 @@ jobs:
           # DEBUG: pw:api
           HUB_PROXY_URL: ${{ secrets.HUB_PROXY_URL }}
           HUB_PROXY_TOKEN: ${{ secrets.HUB_PROXY_TOKEN }}
-          E2E_BASE_URL: http://dyo-e2e_traefik:8000
-          MAILSLURPER_URL: http://dyo-e2e_mailslurper:4437
-          CRUX_UI_URL: http://dyo-e2e_traefik:8000
-          KRATOS_URL: http://dyo-e2e_kratos:4433
-          KRATOS_ADMIN_URL: http://dyo-e2e_kratos:4434
+          E2E_BASE_URL: 'http://dyo-e2e_traefik:8000'
+          MAILSLURPER_URL: 'http://dyo-e2e_mailslurper:4437'
+          CRUX_UI_URL: 'http://dyo-e2e_traefik:8000'
+          KRATOS_URL: 'http://dyo-e2e_kratos:4433'
+          KRATOS_ADMIN_URL: 'http://dyo-e2e_kratos:4434'
           CI: true
         run: |
           npm ci --include=dev
@@ -521,7 +546,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     needs: [go_build, e2e, gather_changes]
     if: |
       always() &&
@@ -582,12 +607,12 @@ jobs:
           docker push -a ${DOCKERHUB_REGISTRY}/dyo
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
-          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
-          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }}
+          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }} )
+          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }} )
+          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }} )
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
   crux_push:
@@ -595,7 +620,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     needs: [crux_build, e2e, gather_changes]
     if: |
       always() &&
@@ -637,8 +662,8 @@ jobs:
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.tag }}
+          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.tag }} )
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
   crux-ui_push:
@@ -646,7 +671,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     needs: [crux-ui_build, e2e, gather_changes]
     if: |
       always() &&
@@ -688,8 +713,8 @@ jobs:
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.tag }}
+          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.tag }} )
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
   kratos_push:
@@ -697,7 +722,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     needs: [kratos_build, e2e, gather_changes]
     if: |
       always() &&
@@ -739,7 +764,7 @@ jobs:
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.tag }}
+          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.tag }} )
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
