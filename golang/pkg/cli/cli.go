@@ -18,7 +18,6 @@ const (
 	FlagWrite                 = "write"
 	FlagDebug                 = "debug"
 	FlagPrioritizeLocalImages = "prioritize-local-images"
-	FlagDisablePodmanChecks   = "disable-podman-checks"
 	FlagConfigPath            = "config"
 	FlagPrefix                = "prefix"
 	FlagImageTag              = "image-tag"
@@ -102,13 +101,6 @@ func InitCLI() *ucli.App {
 				Required: false,
 				EnvVars:  []string{"PRIORITIZE_LOCAL_IMAGES"},
 			},
-			&ucli.BoolFlag{
-				Name:     FlagDisablePodmanChecks,
-				Value:    false,
-				Usage:    "disabling podman checks, useful when you run the CLI in a container",
-				Required: false,
-				EnvVars:  []string{"DISABLE_PODMAN_CHECKS"},
-			},
 			&ucli.StringFlag{
 				Name:        FlagConfigPath,
 				Aliases:     []string{"c"},
@@ -160,20 +152,20 @@ func InitCLI() *ucli.App {
 
 func run(cCtx *ucli.Context) error {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	if cCtx.Bool("debug") {
+	if cCtx.Bool(FlagDebug) {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
 	args := ArgsFlags{
-		SettingsWrite:         cCtx.Bool("write"),
-		SettingsFilePath:      SettingsFileLocation(cCtx.String("config")),
-		SettingsExists:        SettingsExists(cCtx.String("config")),
-		ImageTag:              cCtx.String("imagetag"),
-		Prefix:                cCtx.String("prefix"),
-		PrioritizeLocalImages: cCtx.Bool("prioritize-local-images"),
-		FullyContainerized:    cCtx.Bool("expect-container-env"),
-		Network:               cCtx.String("network"),
-		Silent:                cCtx.Bool("silent"),
+		SettingsWrite:         cCtx.Bool(FlagWrite),
+		SettingsFilePath:      SettingsFileLocation(cCtx.String(FlagConfigPath)),
+		SettingsExists:        SettingsExists(cCtx.String(FlagConfigPath)),
+		ImageTag:              cCtx.String(FlagImageTag),
+		Prefix:                cCtx.String(FlagImageTag),
+		PrioritizeLocalImages: cCtx.Bool(FlagPrioritizeLocalImages),
+		FullyContainerized:    cCtx.Bool(FlagExpectContainerEnv),
+		Network:               cCtx.String(FlagNetwork),
+		Silent:                cCtx.Bool(FlagSilent),
 		CruxDisabled:          cCtx.Bool(FlagDisableCrux),
 		CruxUIDisabled:        cCtx.Bool(FlagDisableCruxUI),
 		LocalAgent:            cCtx.Bool(FlagLocalAgent),
