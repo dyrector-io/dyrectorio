@@ -60,11 +60,12 @@ export interface WsSubscription {
   sendToAllExcept(except: WsClient, message: WsMessage): void
 }
 
+export type WsSendClientMessage = (message: WsMessage) => void
 export type WsClient = WebSocket & {
   token: string
   setup: WsClientSetup
   connectionRequest: AuthorizedHttpRequest
-  sendWsMessage: (message: WsMessage) => void
+  sendWsMessage: WsSendClientMessage
   subscriptions: Map<string, WsSubscription>
 }
 
