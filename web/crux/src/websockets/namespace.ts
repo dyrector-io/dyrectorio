@@ -4,6 +4,7 @@ import {
   SubscriptionMessage,
   WS_TYPE_SUBBED,
   WS_TYPE_UNSUBBED,
+  WS_TYPE_UNSUBSCRIBE,
   WsCallback,
   WsClient,
   WsClientCallbacks,
@@ -46,6 +47,10 @@ export default class WsNamespace implements WsSubscription {
     callbacks: WsClientCallbacks,
     message: WsMessage<SubscriptionMessage>,
   ): Observable<WsMessage> {
+    if (this.clients.has(client.token)) {
+      return EMPTY
+    }
+
     const { subscribe, handlers, transform, unsubscribe } = callbacks
 
     const resources: ClientResources = {
@@ -90,19 +95,19 @@ export default class WsNamespace implements WsSubscription {
       this.logger.warn(`undefined resource for '${token}'`)
       return {
         res: null,
-        shouldRemove: true,
+        shouldRemove: this.clients.size < 1,
       }
     }
 
     // When the connection is killed, we get an empty message,
     // a fake message is created so subscriptionOfContext still works for @WsUnsubscribe
     if (!message) {
-      message = this.overwriteMessageType({
-        type: WS_TYPE_UNSUBBED,
+      message = {
+        type: WS_TYPE_UNSUBSCRIBE,
         data: {
           path: this.path,
         },
-      })
+      }
     }
 
     const { unsubscribe, transform, completer } = resources
