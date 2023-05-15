@@ -4,6 +4,7 @@ import { Configuration, FrontendApi, Identity, IdentityApi, Session } from '@ory
 import { randomUUID } from 'crypto'
 import { setDefaultResultOrder } from 'dns'
 import { IdentityTraits, KRATOS_IDENTITY_SCHEMA, KratosInvitation } from 'src/domain/identity'
+import { PRODUCTION } from 'src/shared/const'
 
 @Injectable()
 export default class KratosService {
@@ -15,7 +16,7 @@ export default class KratosService {
     const dnsResultOrder = config.get<string>('DNS_DEFAULT_RESULT_ORDER')
     if (dnsResultOrder) {
       setDefaultResultOrder(dnsResultOrder === 'ipv4first' ? 'ipv4first' : 'verbatim')
-    } else if (config.get<string>('NODE_ENV') !== 'production') {
+    } else if (config.get<string>('NODE_ENV') !== PRODUCTION) {
       setDefaultResultOrder('ipv4first')
     }
 

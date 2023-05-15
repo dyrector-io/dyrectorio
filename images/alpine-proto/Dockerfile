@@ -12,7 +12,7 @@ RUN mkdir -p $GOPATH/src && \
     mkdir -p $GOPATH/cache && \
     mkdir -p $GOPATH/pkg
 
-RUN apk add nodejs npm alpine-sdk protoc protobuf-dev rsync docker git cosign zstd openssl1.1-compat bash
+RUN apk add nodejs npm alpine-sdk protoc protobuf-dev rsync docker git cosign zstd openssl1.1-compat bash jq
 
 RUN npm i -g \
         ts-proto@1.138.0 \
