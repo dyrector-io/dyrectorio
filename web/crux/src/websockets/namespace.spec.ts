@@ -1,8 +1,10 @@
-import { firstValueFrom, of, toArray } from 'rxjs'
+import { EMPTY, Subject, firstValueFrom, of, startWith, toArray } from 'rxjs'
 import {
   SubscriptionMessage,
   WS_TYPE_SUBBED,
   WS_TYPE_SUBSCRIBE,
+  WS_TYPE_UNSUBBED,
+  WS_TYPE_UNSUBSCRIBE,
   WsClient,
   WsClientCallbacks,
   WsMessage,
@@ -26,10 +28,18 @@ describe('WsNamespace', () => {
 
   let routeMatch: WsRouteMatch
   let namespace: WsNamespace
+  let subscribeMessage: WsMessage<SubscriptionMessage>
 
   beforeEach(() => {
     routeMatch = matchForSubpath(null)
     namespace = new WsNamespace(routeMatch)
+
+    subscribeMessage = {
+      type: WS_TYPE_SUBSCRIBE,
+      data: {
+        path: routeMatch.path,
+      },
+    }
   })
 
   describe('getParameter', () => {
@@ -52,7 +62,6 @@ describe('WsNamespace', () => {
     let client: WsClient
     let callbacks: WsClientCallbacks
 
-    let subscribeMessage: WsMessage<SubscriptionMessage>
     let successfulSubscribeMessage: WsMessage<SubscriptionMessage>
 
     const subscribeCallbackFirstMessage: WsMessage = {
@@ -71,13 +80,6 @@ describe('WsNamespace', () => {
       client = {} as WsClient
       client.token = 'client-token'
       client.subscriptions = new Map()
-
-      subscribeMessage = {
-        type: WS_TYPE_SUBSCRIBE,
-        data: {
-          path: routeMatch.path,
-        },
-      }
 
       successfulSubscribeMessage = {
         type: WS_TYPE_SUBBED,
@@ -176,6 +178,169 @@ describe('WsNamespace', () => {
       actual.forEach(it => {
         expect(it).not.toBeUndefined()
         expect(it).not.toBeNull()
+      })
+    })
+
+    describe('when already subscribed', () => {
+      beforeEach(() => {
+        namespace.onSubscribe(client, callbacks, subscribeMessage)
+      })
+
+      it('should return EMPTY observable', () => {
+        const actual = namespace.onSubscribe(client, callbacks, subscribeMessage)
+
+        expect(actual).toBe(EMPTY)
+      })
+    })
+  })
+
+  describe('onUnsubscribe', () => {
+    let client: WsClient
+    let callbacks: WsClientCallbacks
+
+    let unsubscribeMessage: WsMessage<SubscriptionMessage>
+    let successfulUnsubscribeMessage: WsMessage<SubscriptionMessage>
+
+    beforeEach(() => {
+      client = {} as WsClient
+      client.token = 'client-token'
+      client.subscriptions = new Map()
+
+      unsubscribeMessage = {
+        type: WS_TYPE_UNSUBSCRIBE,
+        data: {
+          path: routeMatch.path,
+        },
+      }
+
+      successfulUnsubscribeMessage = {
+        type: WS_TYPE_UNSUBBED,
+        data: {
+          path: routeMatch.path,
+        },
+      }
+
+      callbacks = {
+        authorize: jest.fn(),
+        transform: jest.fn(it => it),
+        handlers: new Map(),
+        subscribe: null,
+        unsubscribe: null,
+      }
+    })
+
+    it('should return UnsubscribeResult with a null when the client is not subscribed', () => {
+      const result = namespace.onUnsubscribe(client, unsubscribeMessage)
+
+      expect(result.res).toBe(null)
+    })
+
+    it('should return UnsubscribeResult with shouldRemove true when the client is not subscribed and there is no other client subscribed', () => {
+      const result = namespace.onUnsubscribe(client, unsubscribeMessage)
+
+      expect(result.shouldRemove).toBe(true)
+    })
+
+    it("should complete the onSubscribe call's stream", () => {
+      callbacks.subscribe = jest.fn(() => new Subject<WsMessage>())
+
+      const stream = namespace.onSubscribe(client, callbacks, subscribeMessage)
+      const subscription = stream.subscribe(() => {})
+
+      namespace.onUnsubscribe(client, unsubscribeMessage)
+
+      expect(subscription.closed).toBe(true)
+    })
+
+    it('should call the unsubscribe callback', () => {
+      const unsubscribe = jest.fn(() => new Subject<WsMessage>())
+      callbacks.unsubscribe = unsubscribe
+      namespace.onSubscribe(client, callbacks, subscribeMessage)
+
+      namespace.onUnsubscribe(client, unsubscribeMessage)
+
+      expect(unsubscribe).toBeCalled()
+    })
+
+    it('should call the unsubscribe callback with a fake subscription message when the message is not provided (client disconnects)', () => {
+      const unsubscribe = jest.fn<any, [WsMessage<SubscriptionMessage>]>(() => new Subject<WsMessage>())
+      callbacks.unsubscribe = unsubscribe
+      namespace.onSubscribe(client, callbacks, subscribeMessage)
+
+      namespace.onUnsubscribe(client, null)
+
+      expect(unsubscribe).toBeCalled()
+      expect(unsubscribe.mock.lastCall[0]).toEqual(unsubscribeMessage)
+    })
+
+    it('should call the transform when the unsubscribe callback is present', () => {
+      const unsubscribe = jest.fn(() => new Subject<WsMessage>())
+      callbacks.unsubscribe = unsubscribe
+
+      const transform = jest.fn(it => it)
+      callbacks.transform = transform
+      namespace.onSubscribe(client, callbacks, subscribeMessage)
+
+      namespace.onUnsubscribe(client, unsubscribeMessage)
+
+      expect(transform).toBeCalled()
+    })
+
+    it("should remove the namespace from the client's subscriptions when the unsubscribe callback is present", () => {
+      const unsubSubject = new Subject<WsMessage>()
+      const unsubscribe = jest.fn(() => unsubSubject.asObservable().pipe(startWith(undefined)))
+      callbacks.unsubscribe = unsubscribe
+      namespace.onSubscribe(client, callbacks, subscribeMessage)
+
+      namespace.onUnsubscribe(client, unsubscribeMessage)
+
+      unsubSubject.complete()
+      expect(client.subscriptions.has(routeMatch.path)).toBe(false)
+    })
+
+    describe('with another client subscribed', () => {
+      let subscribedClient: WsClient
+
+      beforeEach(() => {
+        subscribedClient = {} as WsClient
+        subscribedClient.token = 'subscribed-client-token'
+        subscribedClient.subscriptions = new Map()
+
+        namespace.onSubscribe(subscribedClient, callbacks, subscribeMessage)
+      })
+
+      it('should return UnsubscribeResult with shouldRemove false when the client is not subscribed', () => {
+        const result = namespace.onUnsubscribe(client, unsubscribeMessage)
+
+        expect(result.shouldRemove).toBe(false)
+      })
+
+      it('should return UnsubscribeResult with shouldRemove false', () => {
+        namespace.onSubscribe(client, callbacks, subscribeMessage)
+
+        const result = namespace.onUnsubscribe(client, unsubscribeMessage)
+
+        expect(result.shouldRemove).toBe(false)
+      })
+
+      it('should return UnsubscribeResult with an observable containing the correct unsubbed message', () => {
+        const result = namespace.onUnsubscribe(subscribedClient, unsubscribeMessage)
+
+        expect(result.res).toEqual(successfulUnsubscribeMessage)
+      })
+
+      it('should return UnsubscribeResult with shouldRemove true, when this was the last client', () => {
+        const result = namespace.onUnsubscribe(subscribedClient, unsubscribeMessage)
+
+        expect(result.shouldRemove).toBe(true)
+      })
+
+      it("should delete the path from the client's subscription", async () => {
+        expect(subscribedClient.subscriptions.get(routeMatch.path)).toEqual(namespace)
+
+        namespace.onUnsubscribe(subscribedClient, unsubscribeMessage)
+
+        expect(subscribedClient.subscriptions.has(routeMatch.path)).toBe(false)
       })
     })
   })
