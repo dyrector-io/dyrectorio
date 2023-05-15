@@ -8,15 +8,11 @@ import { ContainerConfigDto, UniqueKeyValueDto, UniqueSecretKeyValueDto } from '
 import { ImageDto } from '../image/image.dto'
 import { ImageEvent } from '../image/image.event'
 import { ImageDetails } from '../image/image.mapper'
-import {
-  AuditDto,
-  BasicNodeDto,
-  BasicNodeWithStatus,
-  BasicProductDto,
-  BasicProperties,
-  BasicVersionDto,
-  ContainerIdentifierDto,
-} from '../../shared/dtos/shared.dto'
+import { BasicProperties, ContainerIdentifierDto } from '../../shared/dtos/shared.dto'
+import { AuditDto } from '../audit/audit.dto'
+import { BasicProductDto } from '../product/product.dto'
+import { BasicVersionDto } from '../version/version.dto'
+import { BasicNodeDto, BasicNodeWithStatus } from '../node/node.dto'
 
 const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete'] as const
 export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]

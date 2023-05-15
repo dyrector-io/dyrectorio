@@ -4,7 +4,7 @@ import NotificationTemplateBuilder from 'src/builders/notification.template.buil
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
-import AuditLoggerService from 'src/shared/audit.logger.service'
+import AuditLoggerService from 'src/shared/service/audit.logger.service'
 import AuditLoggerInterceptor from 'src/interceptors/audit-logger.interceptor'
 import AgentModule from '../agent/agent.module'
 import TeamModule from '../team/team.module'

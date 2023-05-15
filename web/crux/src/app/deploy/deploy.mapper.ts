@@ -37,7 +37,6 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
-import { NodeConnectionStatus } from '../../shared/dtos/shared.dto'
 import {
   DeploymentDetails,
   DeploymentDetailsDto,
@@ -58,6 +57,7 @@ import ProductMapper from '../product/product.mapper'
 import AuditMapper from '../audit/audit.mapper'
 import VersionMapper from '../version/version.mapper'
 import NodeMapper from '../node/node.mapper'
+import { NodeConnectionStatus } from '../node/node.dto'
 
 @Injectable()
 export default class DeployMapper {

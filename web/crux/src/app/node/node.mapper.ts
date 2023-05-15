@@ -12,14 +12,18 @@ import {
   containerStateToJSON,
 } from 'src/grpc/protobuf/proto/common'
 import AgentService from '../agent/agent.service'
+import { BasicProperties } from '../../shared/dtos/shared.dto'
 import {
   BasicNodeDto,
   BasicNodeWithStatus,
-  BasicProperties,
+  ContainerDto,
+  ContainerOperationDto,
   NodeConnectionStatus,
+  NodeDetailsDto,
+  NodeDto,
+  NodeInstallDto,
   NodeType,
-} from '../../shared/dtos/shared.dto'
-import { ContainerDto, ContainerOperationDto, NodeDetailsDto, NodeDto, NodeInstallDto } from './node.dto'
+} from './node.dto'
 import { ContainersStateListMessage } from './node.message'
 
 @Injectable()

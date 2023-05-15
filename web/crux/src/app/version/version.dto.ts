@@ -1,9 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator'
+import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator'
 import { DeploymentWithBasicNodeDto } from '../deploy/deploy.dto'
 import { ImageDto } from '../image/image.dto'
-import { AuditDto, BasicVersionDto, VersionTypeDto, VERSION_TYPE_VALUES } from '../../shared/dtos/shared.dto'
+import { AuditDto } from '../audit/audit.dto'
+
+export const VERSION_TYPE_VALUES = ['incremental', 'rolling'] as const
+export type VersionTypeDto = (typeof VERSION_TYPE_VALUES)[number]
+
+export class BasicVersionDto {
+  @IsUUID()
+  id: string
+
+  @IsString()
+  name: string
+
+  @ApiProperty({ enum: VERSION_TYPE_VALUES })
+  @IsIn(VERSION_TYPE_VALUES)
+  type: VersionTypeDto
+}
 
 export class VersionDto extends BasicVersionDto {
   @Type(() => AuditDto)

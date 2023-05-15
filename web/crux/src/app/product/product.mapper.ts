@@ -1,8 +1,8 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import { Product } from '.prisma/client'
-import { BasicProductDto, BasicProperties } from 'src/shared/dtos/shared.dto'
+import { BasicProperties } from 'src/shared/dtos/shared.dto'
 import VersionMapper, { VersionWithChildren } from '../version/version.mapper'
-import { ProductListItemDto, ProductDetailsDto, ProductDto } from './product.dto'
+import { ProductListItemDto, ProductDetailsDto, ProductDto, BasicProductDto } from './product.dto'
 import AuditMapper from '../audit/audit.mapper'
 
 @Injectable()

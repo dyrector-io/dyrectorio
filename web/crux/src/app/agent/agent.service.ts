@@ -39,8 +39,7 @@ import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { JWT_EXPIRATION } from '../../shared/const'
 import ContainerMapper from '../container/container.mapper'
-import { DagentTraefikOptionsDto, NodeScriptTypeDto } from '../node/node.dto'
-import { NodeConnectionStatus } from '../../shared/dtos/shared.dto'
+import { DagentTraefikOptionsDto, NodeConnectionStatus, NodeScriptTypeDto } from '../node/node.dto'
 
 @Injectable()
 export default class AgentService {

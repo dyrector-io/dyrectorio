@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { AuditDto } from 'src/shared/dtos/shared.dto'
-import { Audit } from './audit.dto'
+import { AuditDto } from './audit.dto'
 
 @Injectable()
 export default class AuditMapper {
@@ -12,4 +11,11 @@ export default class AuditMapper {
       updatedBy: it.updatedBy ? it.updatedBy : it.createdBy,
     }
   }
+}
+
+type Audit = {
+  createdAt: Date
+  createdBy: string
+  updatedAt: Date
+  updatedBy: string
 }
