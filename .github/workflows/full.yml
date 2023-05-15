@@ -4,6 +4,7 @@ on:
     branches: [develop, main]
     tags: ['*']
   pull_request:
+    types: [edited, opened, synchronize, reopened]
 permissions:
   contents: read
   pull-requests: read
@@ -501,7 +502,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
+          password: ${{ github.token }}
       - name: Setup using cli
         run: |
           docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --disable-forcepull --imagetag ${{ needs.gather_changes.outputs.tag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --expect-container-env --debug -p dyo-e2e up
