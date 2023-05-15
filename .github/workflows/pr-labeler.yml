@@ -3,13 +3,18 @@ on:
   pull_request:
     types: [edited, opened, synchronize, reopened]
 jobs:
-  # Check if the pull request is a fork.
+  # Check if the pull request is a fork
+  # We can assign labels to a pull request only if it originates from the original repository. If a
+  # contributor forks the repository and creates a pull request from their forked version, the labeler
+  # actions do not have permission to access the PR's content, thus unable to automatically add
+  # labels. In such cases, the repository maintainers will need to add labels manually until a
+  # better solution is found.
   check_repository_origin:
     runs-on: ubuntu-22.04
     outputs:
       fork: ${{ steps.check_repository_origin.outputs.fork }}
     steps:
-      - name: Check if PR is from a fork
+      - name: Check the Pull Request origin
         id: check_repository_origin
         run: |
           if [ "${{ github.event.pull_request.head.repo.full_name }}" == "${{ github.event.pull_request.base.repo.full_name }}" ]; then
@@ -31,14 +36,14 @@ jobs:
       - uses: actions/labeler@v4
         with:
           configuration-path: .github/config/labeler.yml
-  #  Add scope and pr type labels
+  #  Add scope & type labels to the PR
   label_based_on_title:
     permissions:
       contents: read
       pull-requests: write
     needs: check_repository_origin
     runs-on: ubuntu-22.04
-    if: ${{ (needs.check_repository_origin.outputs.fork == 'false') }}
+    if: ${{ needs.check_repository_origin.outputs.fork == 'false' }}
     steps:
       - uses: github/issue-labeler@v3.1
         with:
