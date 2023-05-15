@@ -37,8 +37,8 @@ export default class WsNamespace implements WsSubscription {
     this.logger.verbose('Closed')
   }
 
-  getParameter(name: string): string {
-    return this.params[name]
+  getParameter(name: string): string | null {
+    return this.params[name] ?? null
   }
 
   onSubscribe(
