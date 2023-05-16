@@ -687,7 +687,25 @@ export const mergeJsonConfigToImageContainerConfig = (
   }
 }
 
-const portToString = (port: ContainerPort): string => `${port.internal}->${port.external}`
+export const portToString = (port: ContainerPort): string => {
+  const { internal, external } = port
+  const NONE = 'None'
+  const SIGN_BETWEEN_PORTS = '->'
+
+  if (internal && external) {
+    return `${external}${SIGN_BETWEEN_PORTS}${internal}`
+  }
+
+  if (internal) {
+    return `${NONE}${SIGN_BETWEEN_PORTS}${internal}`
+  }
+
+  if (external) {
+    return `${external}${SIGN_BETWEEN_PORTS}${NONE}`
+  }
+
+  throw new Error('Missing Port Information, provide either an internal or external port number.')
+}
 
 export const containerPortsToString = (ports: ContainerPort[], truncateAfter: number = 2): string => {
   ports = ports.sort((one, other) => one.internal - other.internal)
