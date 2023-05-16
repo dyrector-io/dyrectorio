@@ -38,7 +38,7 @@ func mapInstanceConfig(in *agent.InstanceConfig) v1.InstanceConfig {
 	}
 
 	if in.Environment != nil {
-		instanceConfig.Environment = in.Environment.Env
+		instanceConfig.Environment = in.Environment
 	}
 
 	return instanceConfig

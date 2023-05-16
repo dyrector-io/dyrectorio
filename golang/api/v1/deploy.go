@@ -75,13 +75,13 @@ type InstanceConfig struct {
 	// name of the instance eg. configmaps
 	Name string `json:"name"`
 	// variables for instance; configmaps: name-common, name must be defined
-	Environment []string `json:"environment,omitempty"`
+	Environment map[string]string `json:"environment,omitempty"`
 	// not-in-use/unimplemented; registry is taken from containerConfig
 	Registry string `json:"registry"`
 	// not-in-use/unimplemented; git repository prefix
 	RepositoryPreName string `json:"repositoryPreName"`
 	// namespace global envs
-	SharedEnvironment []string `json:"sharedEnvironment,omitempty"`
+	SharedEnvironment map[string]string `json:"sharedEnvironment,omitempty"`
 	// use preexisting namespaced envs
 	UseSharedEnvs bool `json:"useSharedEnvs" validate:"excluded_with=SharedEnvironment"`
 }
@@ -144,7 +144,7 @@ type ContainerConfig struct {
 	// volumes
 	Volumes []Volume `json:"volumes,omitempty" binding:"dive"`
 	// environment variables list
-	Environment []string `json:"environment"`
+	Environment map[string]string `json:"environment"`
 	// Secrets
 	Secrets map[string]string `json:"secrets,omitempty"`
 	// the type of the runtime text provided eg. dotnet-appsettings

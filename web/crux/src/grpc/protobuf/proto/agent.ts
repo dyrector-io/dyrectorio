@@ -130,10 +130,6 @@ export interface ListSecretsRequest {
 }
 
 /** Deploys a single container */
-export interface Environment {
-  env: string[]
-}
-
 export interface InstanceConfig {
   /**
    * prefix mapped into host folder structure,
@@ -142,10 +138,15 @@ export interface InstanceConfig {
   prefix: string
   /** mount path of instance (docker only) */
   mountPath?: string | undefined
-  /** environment variable map (piped) */
-  environment?: Environment | undefined
+  /** environment variable map */
+  environment: { [key: string]: string }
   /** registry repo prefix */
   repositoryPrefix?: string | undefined
+}
+
+export interface InstanceConfig_EnvironmentEntry {
+  key: string
+  value: string
 }
 
 export interface RegistryAuth {
@@ -289,9 +290,14 @@ export interface CommonContainerConfig {
   volumes: Volume[]
   commands: string[]
   args: string[]
-  environment: string[]
+  environment: { [key: string]: string }
   secrets: { [key: string]: string }
   initContainers: InitContainer[]
+}
+
+export interface CommonContainerConfig_EnvironmentEntry {
+  key: string
+  value: string
 }
 
 export interface CommonContainerConfig_SecretsEntry {
@@ -499,28 +505,8 @@ export const ListSecretsRequest = {
   },
 }
 
-function createBaseEnvironment(): Environment {
-  return { env: [] }
-}
-
-export const Environment = {
-  fromJSON(object: any): Environment {
-    return { env: Array.isArray(object?.env) ? object.env.map((e: any) => String(e)) : [] }
-  },
-
-  toJSON(message: Environment): unknown {
-    const obj: any = {}
-    if (message.env) {
-      obj.env = message.env.map(e => e)
-    } else {
-      obj.env = []
-    }
-    return obj
-  },
-}
-
 function createBaseInstanceConfig(): InstanceConfig {
-  return { prefix: '' }
+  return { prefix: '', environment: {} }
 }
 
 export const InstanceConfig = {
@@ -528,7 +514,12 @@ export const InstanceConfig = {
     return {
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
       mountPath: isSet(object.mountPath) ? String(object.mountPath) : undefined,
-      environment: isSet(object.environment) ? Environment.fromJSON(object.environment) : undefined,
+      environment: isObject(object.environment)
+        ? Object.entries(object.environment).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
       repositoryPrefix: isSet(object.repositoryPrefix) ? String(object.repositoryPrefix) : undefined,
     }
   },
@@ -537,9 +528,30 @@ export const InstanceConfig = {
     const obj: any = {}
     message.prefix !== undefined && (obj.prefix = message.prefix)
     message.mountPath !== undefined && (obj.mountPath = message.mountPath)
-    message.environment !== undefined &&
-      (obj.environment = message.environment ? Environment.toJSON(message.environment) : undefined)
+    obj.environment = {}
+    if (message.environment) {
+      Object.entries(message.environment).forEach(([k, v]) => {
+        obj.environment[k] = v
+      })
+    }
     message.repositoryPrefix !== undefined && (obj.repositoryPrefix = message.repositoryPrefix)
+    return obj
+  },
+}
+
+function createBaseInstanceConfig_EnvironmentEntry(): InstanceConfig_EnvironmentEntry {
+  return { key: '', value: '' }
+}
+
+export const InstanceConfig_EnvironmentEntry = {
+  fromJSON(object: any): InstanceConfig_EnvironmentEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: InstanceConfig_EnvironmentEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
     return obj
   },
 }
@@ -1099,7 +1111,7 @@ function createBaseCommonContainerConfig(): CommonContainerConfig {
     volumes: [],
     commands: [],
     args: [],
-    environment: [],
+    environment: {},
     secrets: {},
     initContainers: [],
   }
@@ -1122,7 +1134,12 @@ export const CommonContainerConfig = {
       volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => Volume.fromJSON(e)) : [],
       commands: Array.isArray(object?.commands) ? object.commands.map((e: any) => String(e)) : [],
       args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
-      environment: Array.isArray(object?.environment) ? object.environment.map((e: any) => String(e)) : [],
+      environment: isObject(object.environment)
+        ? Object.entries(object.environment).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
       secrets: isObject(object.secrets)
         ? Object.entries(object.secrets).reduce<{ [key: string]: string }>((acc, [key, value]) => {
             acc[key] = String(value)
@@ -1172,10 +1189,11 @@ export const CommonContainerConfig = {
     } else {
       obj.args = []
     }
+    obj.environment = {}
     if (message.environment) {
-      obj.environment = message.environment.map(e => e)
-    } else {
-      obj.environment = []
+      Object.entries(message.environment).forEach(([k, v]) => {
+        obj.environment[k] = v
+      })
     }
     obj.secrets = {}
     if (message.secrets) {
@@ -1188,6 +1206,23 @@ export const CommonContainerConfig = {
     } else {
       obj.initContainers = []
     }
+    return obj
+  },
+}
+
+function createBaseCommonContainerConfig_EnvironmentEntry(): CommonContainerConfig_EnvironmentEntry {
+  return { key: '', value: '' }
+}
+
+export const CommonContainerConfig_EnvironmentEntry = {
+  fromJSON(object: any): CommonContainerConfig_EnvironmentEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: CommonContainerConfig_EnvironmentEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
     return obj
   },
 }
