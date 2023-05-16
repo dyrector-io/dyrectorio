@@ -12,7 +12,7 @@ import {
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
-import { CreatedResponse, CreatedWithLocation } from '../../shared/interceptor/created-with-location.decorator'
+import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'

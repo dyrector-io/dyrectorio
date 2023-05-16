@@ -7,17 +7,16 @@ import EmailService from 'src/mailer/email.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
-import AuditLoggerService from 'src/shared/service/audit.logger.service'
-import AuditLoggerInterceptor from 'src/interceptors/audit-logger.interceptor'
-import RecaptchaService from 'src/shared/service/recaptcha.service'
+import RecaptchaService from 'src/app/team/recaptcha.service'
 import TeamHttpController from './team.http.controller'
 import TeamMapper from './team.mapper'
 import TeamService from './team.service'
 import UserHttpController from './user.http.controller'
 import TeamRepository from './team.repository'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
-  imports: [HttpModule, EmailModule],
+  imports: [HttpModule, EmailModule, AuditLoggerModule],
   exports: [TeamService],
   controllers: [TeamHttpController, UserHttpController],
   providers: [
@@ -30,8 +29,6 @@ import TeamRepository from './team.repository'
     EmailBuilder,
     NotificationTemplateBuilder,
     DomainNotificationService,
-    AuditLoggerService,
-    AuditLoggerInterceptor,
     RecaptchaService,
   ],
 })

@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
-import AuditLoggerInterceptor from 'src/interceptors/audit-logger.interceptor'
-import AuditLoggerService from 'src/shared/service/audit.logger.service'
 import ContainerModule from '../container/container.module'
 import EditorModule from '../editor/editor.module'
 import RegistryMapper from '../registry/registry.mapper'
@@ -12,9 +10,10 @@ import ImageEventService from './image.event.service'
 import ImageHttpController from './image.http.controller'
 import ImageMapper from './image.mapper'
 import ImageService from './image.service'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
-  imports: [RegistryModule, EditorModule, ContainerModule],
+  imports: [RegistryModule, EditorModule, ContainerModule, AuditLoggerModule],
   exports: [ImageService, ImageMapper, ImageEventService],
   providers: [
     PrismaService,
@@ -24,8 +23,6 @@ import ImageService from './image.service'
     RegistryMapper,
     KratosService,
     ImageEventService,
-    AuditLoggerInterceptor,
-    AuditLoggerService,
   ],
   controllers: [ImageHttpController],
 })

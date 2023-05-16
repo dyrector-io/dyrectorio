@@ -1,6 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
-import RecaptchaService from 'src/shared/service/recaptcha.service'
+import RecaptchaService from 'src/app/team/recaptcha.service'
 import {
   CruxBadRequestException,
   CruxConflictException,

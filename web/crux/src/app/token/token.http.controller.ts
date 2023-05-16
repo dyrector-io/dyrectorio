@@ -10,7 +10,7 @@ import {
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
-import { CreatedResponse, CreatedWithLocation } from '../../shared/interceptor/created-with-location.decorator'
+import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
 import TokenAccessGuard from './guards/token.access.guard'
 import { IdentityFromRequest } from './jwt-auth.guard'
 import TokenValidationPipe from './pipes/token.pipe'

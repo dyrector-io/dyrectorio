@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer'
 import { IsDate } from 'class-validator'
 import { ContainerState } from 'src/domain/container'
-import { ContainerIdentifierDto } from '../../shared/dtos/shared.dto'
 import { NodeConnectionStatus } from './node.dto'
+import { ContainerIdentifierDto } from '../container/container.dto'
 
 export const WS_TYPE_NODE_EVENT = 'event'
 export class NodeEventMessage {

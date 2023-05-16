@@ -3,8 +3,6 @@ import { Module } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import TemplateFileService from 'src/services/template.file.service'
 import KratosService from 'src/services/kratos.service'
-import AuditLoggerService from 'src/shared/service/audit.logger.service'
-import AuditLoggerInterceptor from 'src/interceptors/audit-logger.interceptor'
 import ProductModule from '../product/product.module'
 import TemplateService from './template.service'
 import TemplateHttpController from './template.http.controller'
@@ -15,6 +13,7 @@ import ImageModule from '../image/image.module'
 import AgentModule from '../agent/agent.module'
 import DeployModule from '../deploy/deploy.module'
 import TeamRepository from '../team/team.repository'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
   imports: [
@@ -26,17 +25,10 @@ import TeamRepository from '../team/team.repository'
     ImageModule,
     AgentModule,
     DeployModule,
+    AuditLoggerModule,
   ],
   exports: [TemplateService],
   controllers: [TemplateHttpController],
-  providers: [
-    TemplateService,
-    PrismaService,
-    TemplateFileService,
-    KratosService,
-    TeamRepository,
-    AuditLoggerService,
-    AuditLoggerInterceptor,
-  ],
+  providers: [TemplateService, PrismaService, TemplateFileService, KratosService, TeamRepository],
 })
 export default class TemplateModule {}

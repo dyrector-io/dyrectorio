@@ -4,11 +4,16 @@ import { Type } from 'class-transformer'
 import { IsDate, IsIn, IsInt, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator'
 import { CONTAINER_STATE_VALUES, ContainerState } from 'src/domain/container'
 import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
-import { ContainerConfigDto, UniqueKeyValueDto, UniqueSecretKeyValueDto } from '../container/container.dto'
+import {
+  ContainerConfigDto,
+  ContainerIdentifierDto,
+  UniqueKeyValueDto,
+  UniqueSecretKeyValueDto,
+} from '../container/container.dto'
 import { ImageDto } from '../image/image.dto'
 import { ImageEvent } from '../image/image.event'
 import { ImageDetails } from '../image/image.mapper'
-import { BasicProperties, ContainerIdentifierDto } from '../../shared/dtos/shared.dto'
+import { BasicProperties } from '../../shared/dtos/shared.dto'
 import { AuditDto } from '../audit/audit.dto'
 import { BasicProductDto } from '../product/product.dto'
 import { BasicVersionDto } from '../version/version.dto'

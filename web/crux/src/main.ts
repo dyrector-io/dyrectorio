@@ -13,9 +13,9 @@ import UuidValidationGuard from './guards/uuid-params.validation.guard'
 import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import createSwaggerConfig from './config/swagger.config'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
-import AuditLoggerInterceptor from './interceptors/audit-logger.interceptor'
+import AuditLoggerInterceptor from './app/audit.logger/audit.logger.interceptor'
 import { PRODUCTION } from './shared/const'
-import CreatedWithLocationInterceptor from './shared/interceptor/created-with-location.interceptor'
+import CreatedWithLocationInterceptor from './interceptors/created-with-location.interceptor'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 

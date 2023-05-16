@@ -9,7 +9,7 @@ import {
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
-import { CreatedResponse, CreatedWithLocation } from '../../shared/interceptor/created-with-location.decorator'
+import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import StorageTeamAccessGuard from './guards/storage.team-access.guard'
 import StorageDeleteValidationInterceptor from './interceptors/storage.delete.interceptor'

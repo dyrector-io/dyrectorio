@@ -4,8 +4,6 @@ import NotificationTemplateBuilder from 'src/builders/notification.template.buil
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
-import AuditLoggerService from 'src/shared/service/audit.logger.service'
-import AuditLoggerInterceptor from 'src/interceptors/audit-logger.interceptor'
 import AgentModule from '../agent/agent.module'
 import TeamModule from '../team/team.module'
 import TeamRepository from '../team/team.repository'
@@ -16,9 +14,10 @@ import NodeMapper from './node.mapper'
 import NodePrefixContainerHttpController from './node.prefix-container.http.controller'
 import NodeService from './node.service'
 import NodeWebSocketGateway from './node.ws.gateway'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
-  imports: [AgentModule, TeamModule, HttpModule],
+  imports: [AgentModule, TeamModule, HttpModule, AuditLoggerModule],
   exports: [NodeMapper],
   controllers: [NodeHttpController, NodePrefixContainerHttpController, NodeGlobalContainerHttpController],
   providers: [
@@ -31,8 +30,6 @@ import NodeWebSocketGateway from './node.ws.gateway'
     KratosService,
     NodeWebSocketGateway,
     NodeContainerWebSocketGateway,
-    AuditLoggerInterceptor,
-    AuditLoggerService,
   ],
 })
 export default class NodeModule {}

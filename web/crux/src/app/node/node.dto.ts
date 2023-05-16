@@ -12,6 +12,7 @@ import {
   ValidateNested,
 } from 'class-validator'
 import { ContainerState } from 'src/domain/container'
+import { ContainerIdentifierDto } from '../container/container.dto'
 
 export const NODE_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
 export type NodeScriptTypeDto = (typeof NODE_SCRIPT_TYPE_VALUES)[number]
@@ -144,15 +145,6 @@ export class NodeGenerateScriptDto {
   @ValidateNested()
   @IsOptional()
   dagentTraefik?: DagentTraefikOptionsDto
-}
-
-export class ContainerIdentifierDto {
-  @IsString()
-  @IsOptional()
-  prefix?: string
-
-  @IsString()
-  name: string
 }
 
 export type ContainerOperationDto = 'start' | 'stop' | 'restart'

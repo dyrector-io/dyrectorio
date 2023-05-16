@@ -16,7 +16,7 @@ import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
 import EmailBuilder, { InviteTemplateOptions } from '../../builders/email.builder'
-import AuditLoggerService from '../../shared/service/audit.logger.service'
+import AuditLoggerService from '../audit.logger/audit.logger.service'
 import {
   ActivateTeamDto,
   CreateTeamDto,

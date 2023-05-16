@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
-import AuditLoggerService from 'src/shared/service/audit.logger.service'
-import AuditLoggerInterceptor from 'src/interceptors/audit-logger.interceptor'
 import AgentModule from '../agent/agent.module'
 import ContainerModule from '../container/container.module'
 import EditorModule from '../editor/editor.module'
@@ -16,9 +14,10 @@ import ProductMapper from '../product/product.mapper'
 import VersionMapper from '../version/version.mapper'
 import AuditMapper from '../audit/audit.mapper'
 import NodeMapper from '../node/node.mapper'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
-  imports: [AgentModule, ImageModule, EditorModule, ContainerModule],
+  imports: [AgentModule, ImageModule, EditorModule, ContainerModule, AuditLoggerModule],
   exports: [DeployService, DeployMapper],
   controllers: [DeployHttpController],
   providers: [
@@ -28,8 +27,6 @@ import NodeMapper from '../node/node.mapper'
     TeamRepository,
     KratosService,
     DeployWebSocketGateway,
-    AuditLoggerInterceptor,
-    AuditLoggerService,
     VersionMapper,
     ProductMapper,
     AuditMapper,
