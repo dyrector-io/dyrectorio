@@ -10,9 +10,10 @@ import ImageEventService from './image.event.service'
 import ImageHttpController from './image.http.controller'
 import ImageMapper from './image.mapper'
 import ImageService from './image.service'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
-  imports: [RegistryModule, EditorModule, ContainerModule],
+  imports: [RegistryModule, EditorModule, ContainerModule, AuditLoggerModule],
   exports: [ImageService, ImageMapper, ImageEventService],
   providers: [
     PrismaService,
