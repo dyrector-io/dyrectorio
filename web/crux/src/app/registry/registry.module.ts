@@ -9,10 +9,10 @@ import RegistryService from './registry.service'
 import RegistryHttpController from './registry.http.controller'
 import RegistryWebSocketGateway from './registry.ws.gateway'
 import RegistryClientProvider from './registry-client.provider'
-import SharedModule from '../shared/shared.module'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
-  imports: [HttpModule, TeamModule, SharedModule],
+  imports: [HttpModule, TeamModule, AuditLoggerModule],
   exports: [RegistryMapper, RegistryService],
   controllers: [RegistryHttpController],
   providers: [
