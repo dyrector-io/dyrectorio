@@ -139,7 +139,12 @@ export default class WsNamespace implements WsSubscription {
   onMessage(client: WsClient, message: WsMessage): Observable<WsMessage> {
     const handlerKey = handlerKeyOf(message)
 
-    const { handlers, transform, completer } = this.clients.get(client.token)
+    const resources = this.clients.get(client.token)
+    if (!resources) {
+      return EMPTY
+    }
+
+    const { handlers, transform, completer } = resources
     const handler = handlers.get(handlerKey)
     if (!handler) {
       this.logger.error(`Handler not found for: ${handlerKey}`)
