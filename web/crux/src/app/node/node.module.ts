@@ -14,10 +14,10 @@ import NodeMapper from './node.mapper'
 import NodePrefixContainerHttpController from './node.prefix-container.http.controller'
 import NodeService from './node.service'
 import NodeWebSocketGateway from './node.ws.gateway'
-import SharedModule from '../shared/shared.module'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
-  imports: [AgentModule, TeamModule, HttpModule, SharedModule],
+  imports: [AgentModule, TeamModule, HttpModule, AuditLoggerModule],
   exports: [NodeMapper],
   controllers: [NodeHttpController, NodePrefixContainerHttpController, NodeGlobalContainerHttpController],
   providers: [

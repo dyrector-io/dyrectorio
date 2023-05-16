@@ -13,7 +13,6 @@ import NodeModule from './app/node/node.module'
 import NotificationModule from './app/notification/notification.module'
 import ProductModule from './app/product/product.module'
 import RegistryModule from './app/registry/registry.module'
-import SharedModule from './app/shared/shared.module'
 import StorageModule from './app/storage/storage.module'
 import TeamModule from './app/team/team.module'
 import TemplateModule from './app/template/template.module'
@@ -46,7 +45,6 @@ import pinoLoggerConfig from './config/pino.logger.config'
     PrometheusModule.register({
       controller: MetricsController,
     }),
-    SharedModule,
     LoggerModule.forRoot(pinoLoggerConfig),
   ],
   controllers: [],

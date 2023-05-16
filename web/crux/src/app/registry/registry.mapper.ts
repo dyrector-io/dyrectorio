@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Registry, RegistryTypeEnum } from '@prisma/client'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
-import { BasicProperties } from '../shared/shared.dto'
+import { BasicProperties } from '../../shared/dtos/shared.dto'
 import {
   BasicRegistryDto,
   CreateRegistryDto,

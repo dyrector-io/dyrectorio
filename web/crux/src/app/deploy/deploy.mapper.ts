@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import {
   ContainerStateEnum,
   Deployment,
@@ -37,8 +37,6 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
-import { NodeConnectionStatus } from '../shared/shared.dto'
-import SharedMapper from '../shared/shared.mapper'
 import {
   DeploymentDetails,
   DeploymentDetailsDto,
@@ -55,13 +53,23 @@ import {
   InstanceSecretsDto,
 } from './deploy.dto'
 import { DeploymentEventMessage } from './deploy.message'
+import ProductMapper from '../product/product.mapper'
+import AuditMapper from '../audit/audit.mapper'
+import VersionMapper from '../version/version.mapper'
+import NodeMapper from '../node/node.mapper'
+import { NodeConnectionStatus } from '../node/node.dto'
 
 @Injectable()
 export default class DeployMapper {
   constructor(
-    private sharedMapper: SharedMapper,
+    @Inject(forwardRef(() => ImageMapper))
     private imageMapper: ImageMapper,
     private containerMapper: ContainerMapper,
+    @Inject(forwardRef(() => ProductMapper))
+    private productMapper: ProductMapper,
+    private auditMapper: AuditMapper,
+    private versionMapper: VersionMapper,
+    private nodeMapper: NodeMapper,
   ) {}
 
   statusToDto(it: DeploymentStatusEnum): DeploymentStatusDto {
@@ -79,7 +87,7 @@ export default class DeployMapper {
       prefix: it.prefix,
       status: this.statusToDto(it.status),
       updatedAt: it.updatedAt ?? it.createdAt,
-      node: this.sharedMapper.nodeToBasicWithStatusDto(it.node, nodeStatus),
+      node: this.nodeMapper.toBasicWithStatusDto(it.node, nodeStatus),
     }
   }
 
@@ -88,10 +96,10 @@ export default class DeployMapper {
       id: it.id,
       prefix: it.prefix,
       status: this.statusToDto(it.status),
-      audit: this.sharedMapper.auditToDto(it),
-      node: this.sharedMapper.nodeToBasicDto(it.node),
-      product: this.sharedMapper.productToBasicDto(it.version.product),
-      version: this.sharedMapper.versionToBasicDto(it.version),
+      audit: this.auditMapper.toDto(it),
+      node: this.nodeMapper.toBasicDto(it.node),
+      product: this.productMapper.toBasicDto(it.version.product),
+      version: this.versionMapper.toBasicDto(it.version),
     }
   }
 

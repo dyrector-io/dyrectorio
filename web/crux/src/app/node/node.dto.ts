@@ -1,17 +1,49 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsBoolean, IsDate, IsEmail, IsIn, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator'
-import { ContainerState } from 'src/domain/container'
 import {
-  BasicNodeDto,
-  NODE_CONNECTION_STATUS_VALUES,
-  NODE_TYPE_VALUES,
-  NodeConnectionStatus,
-  NodeType,
-} from '../shared/shared.dto'
+  IsBoolean,
+  IsDate,
+  IsEmail,
+  IsIn,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from 'class-validator'
+import { ContainerState } from 'src/domain/container'
+import { ContainerIdentifierDto } from '../container/container.dto'
 
 export const NODE_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
 export type NodeScriptTypeDto = (typeof NODE_SCRIPT_TYPE_VALUES)[number]
+
+export const NODE_CONNECTION_STATUS_VALUES = ['unreachable', 'connected'] as const
+export type NodeConnectionStatus = (typeof NODE_CONNECTION_STATUS_VALUES)[number]
+
+export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
+export type NodeType = (typeof NODE_TYPE_VALUES)[number]
+
+export class BasicNodeDto {
+  @IsUUID()
+  id: string
+
+  @IsString()
+  name: string
+
+  @ApiProperty({ enum: NODE_TYPE_VALUES })
+  @IsIn(NODE_TYPE_VALUES)
+  type: NodeType
+}
+
+export class BasicNodeWithStatus extends BasicNodeDto {
+  @IsString()
+  @IsIn(NODE_CONNECTION_STATUS_VALUES)
+  @ApiProperty({
+    enum: NODE_CONNECTION_STATUS_VALUES,
+  })
+  @IsOptional()
+  status?: NodeConnectionStatus
+}
 
 export class NodeDto extends BasicNodeDto {
   @IsString()
@@ -113,15 +145,6 @@ export class NodeGenerateScriptDto {
   @ValidateNested()
   @IsOptional()
   dagentTraefik?: DagentTraefikOptionsDto
-}
-
-export class ContainerIdentifierDto {
-  @IsString()
-  @IsOptional()
-  prefix?: string
-
-  @IsString()
-  name: string
 }
 
 export type ContainerOperationDto = 'start' | 'stop' | 'restart'

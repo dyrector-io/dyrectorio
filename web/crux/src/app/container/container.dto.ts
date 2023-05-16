@@ -384,3 +384,11 @@ export class ContainerConfigDto {
 }
 
 export class PartialContainerConfigDto extends PartialType(ContainerConfigDto) {}
+
+export class ContainerIdentifierDto {
+  @IsString()
+  prefix: string
+
+  @IsString()
+  name: string
+}
