@@ -226,3 +226,15 @@ test('Docker generate script should show Traefik options', async ({ page }) => {
   await page.click('button:text-is("Generate script")')
   await expect(await page.locator('p:has-text("ACME email is a required field")')).not.toBeVisible()
 })
+
+test('Container list should show containers on the node screen', async ({ page }) => {
+  await page.goto(ROUTE_NODES)
+
+  const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
+  await nodeButton.click()
+
+  await page.locator('input[placeholder="Search"]').type(`dagent`)
+
+  const nodeContainerRow = await page.locator(`span:text-is("dagent") >> xpath=../..`)
+  await expect(nodeContainerRow).toHaveCount(1)
+})
