@@ -7,7 +7,6 @@ import { sendForm } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import { useRouter } from 'next/router'
 
 interface TeamSelectionCardProps {
   className?: string
