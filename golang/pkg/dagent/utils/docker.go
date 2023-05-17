@@ -278,9 +278,7 @@ func DeployImage(ctx context.Context,
 
 	logDeployInfo(dog, deployImageRequest, expandedImageName, containerName)
 
-	envMap := MergeStringMapUnique(
-		mapper.PipeSeparatedToStringMap(&deployImageRequest.InstanceConfig.Environment),
-		mapper.PipeSeparatedToStringMap(&deployImageRequest.ContainerConfig.Environment))
+	envMap := MergeStringMapUnique(deployImageRequest.InstanceConfig.Environment, deployImageRequest.ContainerConfig.Environment)
 	secret, err := crypt.DecryptSecrets(deployImageRequest.ContainerConfig.Secrets, &cfg.CommonConfiguration)
 	if err != nil {
 		return fmt.Errorf("deployment failed, secret error: %w", err)

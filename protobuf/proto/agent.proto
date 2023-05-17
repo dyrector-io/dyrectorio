@@ -82,8 +82,6 @@ message ListSecretsRequest {
  * Deploys a single container
  *
  */
-message Environment { repeated string env = 1; }
-
 message InstanceConfig {
   /*
   prefix mapped into host folder structure,
@@ -91,7 +89,7 @@ message InstanceConfig {
   */
   string prefix = 1;
   optional string mountPath = 2;        // mount path of instance (docker only)
-  optional Environment environment = 3; // environment variable map (piped)
+  map<string, string> environment = 3; // environment variable map
   optional string repositoryPrefix = 4; // registry repo prefix
 }
 
@@ -204,7 +202,7 @@ message CommonContainerConfig {
   repeated Volume volumes = 1002;
   repeated string commands = 1003;
   repeated string args = 1004;
-  repeated string environment = 1005;
+  map<string, string> environment = 1005;
   map<string, string> secrets = 1006;
   repeated InitContainer initContainers = 1007;
 }

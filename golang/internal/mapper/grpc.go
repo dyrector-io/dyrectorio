@@ -26,7 +26,8 @@ import (
 
 func mapInstanceConfig(in *agent.InstanceConfig) v1.InstanceConfig {
 	instanceConfig := v1.InstanceConfig{
-		ContainerPreName: in.Prefix,
+		ContainerPreName:  in.Prefix,
+		SharedEnvironment: map[string]string{},
 	}
 
 	if in.RepositoryPrefix != nil {
@@ -38,7 +39,7 @@ func mapInstanceConfig(in *agent.InstanceConfig) v1.InstanceConfig {
 	}
 
 	if in.Environment != nil {
-		instanceConfig.Environment = in.Environment.Env
+		instanceConfig.Environment = in.Environment
 	}
 
 	return instanceConfig

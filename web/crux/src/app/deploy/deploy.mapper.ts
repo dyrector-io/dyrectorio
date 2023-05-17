@@ -269,9 +269,7 @@ export default class DeployMapper {
   deploymentToAgentInstanceConfig(deployment: Deployment): InstanceConfig {
     return {
       prefix: deployment.prefix,
-      environment: {
-        env: this.jsonToPipedFormat((deployment.environment as UniqueKeyValue[]) ?? []),
-      },
+      environment: this.mapKeyValueToMap((deployment.environment as UniqueKeyValue[]) ?? []),
     }
   }
 
@@ -282,7 +280,7 @@ export default class DeployMapper {
   commonConfigToAgentProto(config: MergedContainerConfigData, storage?: Storage): CommonContainerConfig {
     return {
       name: config.name,
-      environment: this.jsonToPipedFormat(config.environment),
+      environment: this.mapKeyValueToMap(config.environment),
       secrets: this.mapKeyValueToMap(config.secrets),
       commands: this.mapUniqueKeyToStringArray(config.commands),
       expose: this.imageMapper.exposeStrategyToProto(config.expose) ?? ProtoExposeStrategy.NONE_ES,
@@ -380,14 +378,6 @@ export default class DeployMapper {
     }
 
     return list.map(it => it.key)
-  }
-
-  private jsonToPipedFormat(environment: UniqueKeyValue[]): string[] {
-    if (!environment) {
-      return []
-    }
-
-    return environment.map(it => `${it.key}|${it.value}`)
   }
 
   private storageToImportContainer(config: MergedContainerConfigData, storage: Storage): ImportContainer {

@@ -43,10 +43,10 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 			ContainerPreName:  "test-prefix",
 			MountPath:         "/path/to/mount",
 			Name:              "",
-			Environment:       []string{"Env1", "Val1", "Env2", "Val2"},
+			Environment:       map[string]string{"Evn1": "Val1", "Env2": "Val2"},
 			Registry:          "",
 			RepositoryPreName: "repo-prefix",
-			SharedEnvironment: []string(nil),
+			SharedEnvironment: map[string]string {},
 			UseSharedEnvs:     false,
 		},
 		ContainerConfig: v1.ContainerConfig{
@@ -56,7 +56,7 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 			PortRanges:         []builder.PortRangeBinding{{Internal: builder.PortRange{From: 0x0, To: 0x18}, External: builder.PortRange{From: 0x40, To: 0x80}}},
 			Mounts:             []string(nil),
 			Volumes:            []v1.Volume{{Name: "test-vol", Path: "/Path/to/volume", Size: "512GB", Type: "666", Class: "test-storage-class"}},
-			Environment:        []string{"ENV1", "VAL1", "ENV2", "VAL2"},
+			Environment:        map[string]string{"ENV1": "VAL1", "ENV2": "VAL2"},
 			Secrets:            map[string]string{"secret1": "value1"},
 			RuntimeConfigType:  "",
 			Expose:             true,
@@ -195,7 +195,7 @@ func testDeployRequest() *agent.DeployRequest {
 			Commands:    []string{"make", "test"},
 			User:        &uid,
 			Args:        []string{"--name", "test-arg"},
-			Environment: []string{"ENV1", "VAL1", "ENV2", "VAL2"},
+			Environment: map[string]string{"ENV1": "VAL1", "ENV2": "VAL2"},
 			Secrets:     map[string]string{"secret1": "value1"},
 			TTY:         &b,
 			Ports: []*agent.Port{
@@ -240,9 +240,7 @@ func testDeployRequest() *agent.DeployRequest {
 			Prefix:           "test-prefix",
 			MountPath:        &mntPath,
 			RepositoryPrefix: &repoPrefix,
-			Environment: &agent.Environment{
-				Env: []string{"Env1", "Val1", "Env2", "Val2"},
-			},
+			Environment:      map[string]string{"Evn1": "Val1", "Env2": "Val2"},
 		},
 	}
 }
