@@ -18,7 +18,7 @@ class MailSlurper {
 
   async getMail(filters?: MailFilterOptions, timeout: number = MAILSLURPER_TIMEOUT): Promise<Mail> {
     const startedAt = new Date().getTime()
-    let result: Mail = null
+    const result: Mail = null
 
     const timeoutReached = () => {
       const now = new Date().getTime()
