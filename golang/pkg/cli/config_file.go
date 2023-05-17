@@ -10,7 +10,6 @@ import (
 	"path"
 	"strings"
 
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 
 	containerRuntime "github.com/dyrector-io/dyrectorio/golang/internal/runtime/container"
@@ -32,17 +31,16 @@ type State struct {
 
 // ArgsFlags are commandline arguments
 type ArgsFlags struct {
-	SettingsWrite      bool
-	SettingsExists     bool
-	SettingsFilePath   string
-	Command            string
-	ImageTag           string
-	Prefix             string
-	SpecialImageTag    string
-	DisableForcepull   bool
-	CruxDisabled       bool
-	CruxUIDisabled     bool
-	LocalAgent         bool
+	SettingsWrite    bool
+	SettingsExists   bool
+	SettingsFilePath string
+	Command          string
+	ImageTag         string
+	Prefix           string
+	CruxDisabled     bool
+	CruxUIDisabled   bool
+	LocalAgent       bool
+	// pipeline mode
 	FullyContainerized bool
 	Network            string
 	Silent             bool
@@ -278,10 +276,10 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	state.Kratos.Image = "ghcr.io/dyrector-io/dyrectorio/web/kratos"
 
 	// Load defaults
-	state.SettingsFile.CruxSecret = util.Fallback(state.SettingsFile.CruxSecret, randomChars())
-	state.SettingsFile.CruxPostgresPassword = util.Fallback(state.SettingsFile.CruxPostgresPassword, randomChars())
-	state.SettingsFile.KratosPostgresPassword = util.Fallback(state.SettingsFile.KratosPostgresPassword, randomChars())
-	state.SettingsFile.KratosSecret = util.Fallback(state.SettingsFile.KratosSecret, randomChars())
+	state.SettingsFile.CruxSecret = util.Fallback(state.SettingsFile.CruxSecret, RandomChars(secretLength))
+	state.SettingsFile.CruxPostgresPassword = util.Fallback(state.SettingsFile.CruxPostgresPassword, RandomChars(secretLength))
+	state.SettingsFile.KratosPostgresPassword = util.Fallback(state.SettingsFile.KratosPostgresPassword, RandomChars(secretLength))
+	state.SettingsFile.KratosSecret = util.Fallback(state.SettingsFile.KratosSecret, RandomChars(secretLength))
 
 	// Generate names
 	state.Containers.Traefik.Name = fmt.Sprintf("%s_traefik", args.Prefix)
@@ -304,40 +302,8 @@ func CheckSettings(state *State, args *ArgsFlags) {
 	}
 }
 
-// TryImage function will check if an image with the given custom tag is existing
-// on the local system, otherwise will fall back and pull
-// This func is for testing locally built docker images
-func TryImage(dockerImage, specialTag string) string {
-	fullDockerImage, err := imageHelper.ExpandImageName(dockerImage)
-	if err != nil {
-		log.Err(err).Stack().Send()
-	}
-
-	imageName := fullDockerImage
-	if specialTag != "" {
-		imageName, err = imageHelper.ExpandImageNameWithTag(fullDockerImage, specialTag)
-		if err != nil {
-			log.Err(err).Stack().Send()
-		}
-	}
-
-	exists, err := imageHelper.Exists(context.TODO(), nil, imageName)
-	if err != nil {
-		log.Err(err).Stack().Send()
-	}
-
-	if exists {
-		log.Debug().Str("image", imageName).Msg("found, won't pull")
-		return imageName
-	}
-
-	log.Debug().Str("image", dockerImage).Msg("not found, will pull")
-	return fullDockerImage
-}
-
-// randomChars creates random char string used for password creation
-func randomChars() string {
-	buffer := make([]byte, secretLength*bufferMultiplier)
+func RandomChars(bufflength uint) string {
+	buffer := make([]byte, bufflength*bufferMultiplier)
 	_, err := rand.Read(buffer)
 	if err != nil {
 		log.Error().Err(err).Stack().Send()

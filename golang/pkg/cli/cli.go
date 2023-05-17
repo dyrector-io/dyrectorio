@@ -113,14 +113,6 @@ func InitCLI() *ucli.App {
 				EnvVars:     []string{"PREFIX"},
 			},
 			&ucli.StringFlag{
-				Name:  "local-imagetag",
-				Value: "",
-				Usage: "special local image tag, CLI will try to find it and use it, otherwise " +
-					"it will fall back to config",
-				Required: false,
-				EnvVars:  []string{"DYO_LOCAL_IMAGE_TAG"},
-			},
-			&ucli.StringFlag{
 				Name:     "network",
 				Value:    "",
 				Usage:    "custom network, overriding the configuration",
@@ -154,10 +146,8 @@ func run(cCtx *ucli.Context) error {
 		SettingsWrite:      cCtx.Bool("write"),
 		SettingsFilePath:   SettingsFileLocation(cCtx.String("config")),
 		SettingsExists:     SettingsExists(cCtx.String("config")),
-		DisableForcepull:   cCtx.Bool("disable-forcepull"),
 		ImageTag:           cCtx.String("imagetag"),
 		Prefix:             cCtx.String("prefix"),
-		SpecialImageTag:    cCtx.String("local-imagetag"),
 		FullyContainerized: cCtx.Bool("expect-container-env"),
 		Network:            cCtx.String("network"),
 		Silent:             cCtx.Bool("silent"),

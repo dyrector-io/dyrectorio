@@ -44,7 +44,8 @@ const (
 // GetCrux services: db migrations and crux api service
 func GetCrux(state *State, args *ArgsFlags) containerbuilder.Builder {
 	crux := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage(TryImage(fmt.Sprintf("%s:%s", state.Crux.Image, state.SettingsFile.Version), args.SpecialImageTag)).
+		WithPullDisplayFunc(DockerPullProgressDisplayer).
+		WithImage(fmt.Sprintf("%s:%s", state.Crux.Image, state.SettingsFile.Version)).
 		WithLogWriter(nil).
 		WithName(state.Containers.Crux.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
@@ -80,11 +81,7 @@ func GetCrux(state *State, args *ArgsFlags) containerbuilder.Builder {
 			})
 	}
 
-	if args.DisableForcepull {
-		return crux
-	}
-
-	return crux.WithForcePullImage()
+	return crux
 }
 
 func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.LifecycleFunc {
@@ -92,8 +89,9 @@ func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.Lifecy
 		containerName string, containerId *string, mountList []mount.Mount, logger *io.StringWriter,
 	) error {
 		cruxMigrate := containerbuilder.NewDockerBuilder(context.Background()).
-			WithImage(TryImage(fmt.Sprintf("%s:%s", state.Crux.Image, state.SettingsFile.Version), args.SpecialImageTag)).
+			WithImage(fmt.Sprintf("%s:%s", state.Crux.Image, state.SettingsFile.Version)).
 			WithLogWriter(nil).
+			WithPullDisplayFunc(DockerPullProgressDisplayer).
 			WithName(state.Containers.CruxMigrate.Name).
 			WithoutConflict().
 			WithEnv([]string{
@@ -113,10 +111,6 @@ func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.Lifecy
 				"com.docker.compose.service":                state.Containers.CruxMigrate.Name,
 				label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 			})
-
-		if !args.DisableForcepull {
-			cruxMigrate = cruxMigrate.WithForcePullImage()
-		}
 
 		cont, res, err := cruxMigrate.CreateAndStartWaitUntilExit()
 		if err != nil {
@@ -163,7 +157,7 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 		fmt.Sprintf("FROM_NAME=%s", state.SettingsFile.MailFromName),
 		fmt.Sprintf("FROM_EMAIL=%s", state.SettingsFile.MailFromEmail),
 		fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", state.Containers.MailSlurper.Name),
-		fmt.Sprintf("AGENT_INSTALL_SCRIPT_DISABLE_PULL=%t", args.DisableForcepull),
+		fmt.Sprintf("AGENT_INSTALL_SCRIPT_DISABLE_PULL=%t", true),
 		"DISABLE_RECAPTCHA=true",
 	}
 }
@@ -176,8 +170,9 @@ func GetCruxUI(state *State, args *ArgsFlags) containerbuilder.Builder {
 	}
 
 	cruxUI := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage(TryImage(fmt.Sprintf("%s:%s", state.CruxUI.Image, state.SettingsFile.Version), args.SpecialImageTag)).
+		WithImage(fmt.Sprintf("%s:%s", state.CruxUI.Image, state.SettingsFile.Version)).
 		WithLogWriter(nil).
+		WithPullDisplayFunc(DockerPullProgressDisplayer).
 		WithName(state.Containers.CruxUI.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
@@ -216,11 +211,7 @@ func GetCruxUI(state *State, args *ArgsFlags) containerbuilder.Builder {
 			})
 	}
 
-	if args.DisableForcepull {
-		return cruxUI
-	}
-
-	return cruxUI.WithForcePullImage()
+	return cruxUI
 }
 
 // GetTraefik returns a traefik services container
@@ -261,6 +252,7 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 	traefik := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage("docker.io/library/traefik:v2.9").
 		WithLogWriter(nil).
+		WithPullDisplayFunc(DockerPullProgressDisplayer).
 		WithName(state.Containers.Traefik.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
@@ -308,8 +300,9 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 // GetKratos returns Kratos services' containers
 func GetKratos(state *State, args *ArgsFlags) containerbuilder.Builder {
 	kratos := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage(TryImage(fmt.Sprintf("%s:%s", state.Kratos.Image, state.SettingsFile.Version), args.SpecialImageTag)).
+		WithImage(fmt.Sprintf("%s:%s", state.Kratos.Image, state.SettingsFile.Version)).
 		WithLogWriter(nil).
+		WithPullDisplayFunc(DockerPullProgressDisplayer).
 		WithName(state.Containers.Kratos.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
@@ -344,11 +337,7 @@ func GetKratos(state *State, args *ArgsFlags) containerbuilder.Builder {
 			})
 	}
 
-	if args.DisableForcepull {
-		return kratos
-	}
-
-	return kratos.WithForcePullImage()
+	return kratos
 }
 
 func getKratosInitContainer(state *State, args *ArgsFlags) containerbuilder.LifecycleFunc {
@@ -356,8 +345,9 @@ func getKratosInitContainer(state *State, args *ArgsFlags) containerbuilder.Life
 		containerId *string, mountList []mount.Mount, logger *io.StringWriter,
 	) error {
 		kratosMigrate := containerbuilder.NewDockerBuilder(context.Background()).
-			WithImage(TryImage(fmt.Sprintf("%s:%s", state.Kratos.Image, state.SettingsFile.Version), args.SpecialImageTag)).
+			WithImage(fmt.Sprintf("%s:%s", state.Kratos.Image, state.SettingsFile.Version)).
 			WithLogWriter(nil).
+			WithPullDisplayFunc(DockerPullProgressDisplayer).
 			WithName(state.Containers.KratosMigrate.Name).
 			WithoutConflict().
 			WithEnv([]string{
@@ -377,10 +367,6 @@ func getKratosInitContainer(state *State, args *ArgsFlags) containerbuilder.Life
 				"com.docker.compose.service":                state.Containers.KratosMigrate.Name,
 				label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 			})
-
-		if !args.DisableForcepull {
-			kratosMigrate = kratosMigrate.WithForcePullImage()
-		}
 
 		cont, res, err := kratosMigrate.CreateAndStartWaitUntilExit()
 		if err != nil {
@@ -432,10 +418,10 @@ func GetMailSlurper(state *State, args *ArgsFlags) containerbuilder.Builder {
 	mailslurper := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(mailSlurperImage).
 		WithLogWriter(nil).
+		WithPullDisplayFunc(DockerPullProgressDisplayer).
 		WithName(state.Containers.MailSlurper.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
-		WithForcePullImage().
 		WithNetworks([]string{state.SettingsFile.Network}).
 		WithNetworkAliases(state.Containers.MailSlurper.Name).
 		WithLabels(map[string]string{
@@ -539,10 +525,10 @@ func getBasePostgres(state *State) containerbuilder.Builder {
 	basePostgres := containerbuilder.
 		NewDockerBuilder(state.Ctx).
 		WithLogWriter(nil).
+		WithPullDisplayFunc(DockerPullProgressDisplayer).
 		WithImage(postgresImage).
 		WithNetworks([]string{state.SettingsFile.Network}).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
-		WithForcePullImage().
 		WithoutConflict()
 
 	return basePostgres

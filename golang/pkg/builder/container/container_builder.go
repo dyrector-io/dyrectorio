@@ -9,7 +9,6 @@ import (
 	"io"
 	"strings"
 
-	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -50,6 +49,7 @@ type Builder interface {
 	WithLogWriter(logger io.StringWriter) Builder
 	WithoutConflict() Builder
 	WithForcePullImage() Builder
+	WithPullDisplayFunc(imageHelper.PullDisplayFn) Builder
 	WithExtraHosts(hosts []string) Builder
 	WithPreCreateHooks(hooks ...LifecycleFunc) Builder
 	WithPostCreateHooks(hooks ...LifecycleFunc) Builder
@@ -86,6 +86,7 @@ type DockerContainerBuilder struct {
 	tty             bool
 	user            *int64
 	forcePull       bool
+	pullDisplayFn   imageHelper.PullDisplayFn
 	logger          io.StringWriter
 	extraHosts      []string
 	hooksPreCreate  []LifecycleFunc
@@ -257,6 +258,12 @@ func (dc *DockerContainerBuilder) WithForcePullImage() Builder {
 	return dc
 }
 
+// Sets the builder to force pull the image before creating the container.
+func (dc *DockerContainerBuilder) WithPullDisplayFunc(fn imageHelper.PullDisplayFn) Builder {
+	dc.pullDisplayFn = fn
+	return dc
+}
+
 // Sets the builder to use extra hosts when creating the container.
 // Hosts must be defined in a "HOSTNAME:IP" format.
 func (dc *DockerContainerBuilder) WithExtraHosts(hosts []string) Builder {
@@ -290,19 +297,13 @@ func (dc *DockerContainerBuilder) WithPostStartHooks(hooks ...LifecycleFunc) Bui
 
 // Creates the container using the configuration given by 'With...' functions.
 func (dc *DockerContainerBuilder) Create() (Container, error) {
-	expandedImageName, err := imageHelper.ExpandImageName(dc.imageWithTag)
-	if err != nil {
-		dc.logWrite(fmt.Sprintf("Failed to parse image with tag ('%s'): %s", dc.imageWithTag, err.Error()))
-		return nil, err
-	}
-
-	if err = prepareImage(dc, expandedImageName); err != nil {
+	if err := dc.prepareImage(); err != nil {
 		dc.logWrite(fmt.Sprintf("Failed to prepare image: %s", err.Error()))
 		return nil, err
 	}
 
 	if dc.withoutConflict {
-		err = dockerHelper.DeleteContainerByName(dc.ctx, dc.containerName)
+		err := dockerHelper.DeleteContainerByName(dc.ctx, dc.containerName)
 		if err != nil {
 			dc.logWrite(fmt.Sprintf("Failed to resolve conflict during creating the container: %v", err))
 			return nil, err
@@ -341,7 +342,9 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 	policy.Name = string(dc.restartPolicy)
 	hostConfig.RestartPolicy = policy
 
-	dc.logWrite(fmt.Sprintf("Provided networkMode: %s", dc.networkMode))
+	if dc.networkMode != "" {
+		dc.logWrite(fmt.Sprintf("Provided networkMode: %s", dc.networkMode))
+	}
 	if nw := container.NetworkMode(dc.networkMode); !nw.IsPrivate() {
 		hostConfig.NetworkMode = nw
 	} else {
@@ -351,7 +354,7 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 		}
 
 		dc.networkIDs = networkIDs
-		dc.logWrite(fmt.Sprintln("Container network: ", dc.networkIDs))
+		dc.logWrite(fmt.Sprintf("Container network: %v", dc.networkIDs))
 	}
 
 	var name string
@@ -428,17 +431,16 @@ func (dc *DockerContainerBuilder) CreateAndStartWaitUntilExit() (Container, *Wai
 	return cont, res, err
 }
 
-func prepareImage(dc *DockerContainerBuilder, imageName string) error {
-	pullRequired, err := needToPullImage(dc.ctx, dc.logger, imageName)
+func (dc *DockerContainerBuilder) prepareImage() error {
+	expandedImageName, err := imageHelper.ExpandImageName(dc.imageWithTag)
 	if err != nil {
+		dc.logWrite(fmt.Sprintf("Failed to parse image with tag ('%s'): %s", dc.imageWithTag, err.Error()))
 		return err
 	}
 
-	if pullRequired || dc.forcePull {
-		err = imageHelper.Pull(dc.ctx, dc.logger, imageName, dc.registryAuth)
-		if err != nil && err.Error() != "EOF" {
-			return fmt.Errorf("image pull error: %s", err.Error())
-		}
+	err = imageHelper.CustomImagePull(dc.ctx, expandedImageName, dc.registryAuth, dc.forcePull, dc.pullDisplayFn)
+	if err != nil && err.Error() != "EOF" {
+		return fmt.Errorf("image pull error: %s", err.Error())
 	}
 
 	return nil
@@ -501,26 +503,27 @@ func execHooks(dc *DockerContainerBuilder, hooks []LifecycleFunc) error {
 	return nil
 }
 
-func needToPullImage(ctx context.Context, logger io.StringWriter, imageName string) (bool, error) {
-	ref, err := reference.ParseNamed(imageName)
-	if err != nil {
-		return false, err
-	}
+// checked by the new pull
+// func needToPullImage(ctx context.Context, logger io.StringWriter, imageName string) (bool, error) {
+// 	ref, err := reference.ParseNamed(imageName)
+// 	if err != nil {
+// 		return false, err
+// 	}
 
-	imageExists, err := imageHelper.Exists(ctx, logger, reference.FamiliarString(ref))
-	if err != nil {
-		return false, err
-	}
-	if imageExists {
-		return false, nil
-	}
+// 	imageExists, err := imageHelper.Exists(ctx, logger, reference.FamiliarString(ref))
+// 	if err != nil {
+// 		return false, err
+// 	}
+// 	if imageExists {
+// 		return false, nil
+// 	}
 
-	imageExists, err = imageHelper.Exists(ctx, logger, ref.String())
-	if err != nil {
-		return false, err
-	}
-	return !imageExists, nil
-}
+// 	imageExists, err = imageHelper.Exists(ctx, logger, ref.String())
+// 	if err != nil {
+// 		return false, err
+// 	}
+// 	return !imageExists, nil
+// }
 
 func portListToNatBinding(portRanges []PortRangeBinding, portList []PortBinding) map[nat.Port][]nat.PortBinding {
 	portMap := make(map[nat.Port][]nat.PortBinding)
