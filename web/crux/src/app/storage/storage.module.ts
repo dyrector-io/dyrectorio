@@ -7,9 +7,10 @@ import TeamRepository from '../team/team.repository'
 import StorageService from './storage.service'
 import StorageMapper from './storage.mapper'
 import StorageHttpController from './storage.http.controller'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
-  imports: [HttpModule, TeamModule],
+  imports: [HttpModule, TeamModule, AuditLoggerModule],
   exports: [StorageMapper, StorageService],
   controllers: [StorageHttpController],
   providers: [StorageService, PrismaService, StorageMapper, TeamRepository, KratosService],

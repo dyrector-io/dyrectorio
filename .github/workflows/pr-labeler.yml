@@ -24,6 +24,15 @@ jobs:
             echo "Pull Request is from a forked repository."
             echo "fork=true" >> $GITHUB_OUTPUT
           fi
+  # Auto assigne reviewers and PR author
+  add-reviews:
+    needs: check_repository_origin
+    runs-on: ubuntu-22.04
+    if: ${{ needs.check_repository_origin.outputs.fork == 'false' }}
+    steps:
+      - uses: kentaro-m/auto-assign-action@v1.2.5
+        with:
+          configuration-path: .github/config/auto-assign.yml
   # Add source labels to the PR
   label_based_on_source_lang:
     permissions:

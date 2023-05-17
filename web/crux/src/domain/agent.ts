@@ -1,7 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { catchError, finalize, Observable, of, Subject, throwError, timeout, TimeoutError } from 'rxjs'
-import { NodeConnectionStatus } from 'src/app/shared/shared.dto'
 import {
   CruxConflictException,
   CruxInternalServerErrorException,
@@ -18,12 +17,15 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import { CONTAINER_DELETE_TIMEOUT, DEFAULT_CONTAINER_LOG_TAIL } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import { NodeConnectionStatus } from 'src/app/node/node.dto'
 import ContainerLogStream, { ContainerLogStreamCompleter } from './container-log-stream'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
 import Deployment from './deployment'
 
 export class Agent {
-  private static AGENT_UPDATE_TIMEOUT = 60 * 5 * 1000 // seconds
+  public static SECRET_TIMEOUT = 5000
+
+  private static AGENT_UPDATE_TIMEOUT = 60 * 5 * 1000
 
   private commandChannel = new Subject<AgentCommand>()
 
@@ -272,7 +274,7 @@ export class Agent {
         this.secretsWatchers.delete(key)
       }),
       timeout({
-        each: 5000,
+        each: Agent.SECRET_TIMEOUT,
         with: () => {
           this.secretsWatchers.delete(key)
 

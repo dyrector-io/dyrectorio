@@ -2,18 +2,22 @@ import { Injectable } from '@nestjs/common'
 import { Identity, Session } from '@ory/kratos-client'
 import { Team, UserInvitation, UsersOnTeams } from '@prisma/client'
 import { IdentityTraits, invitationExpired, nameOfIdentity } from 'src/domain/identity'
-import SharedMapper from '../shared/shared.mapper'
-import { TeamDetailsDto, TeamDto, TeamStatisticsDto } from './team.dto'
+import { BasicTeamDto, TeamDetailsDto, TeamDto, TeamStatisticsDto } from './team.dto'
 import { UserDto, UserMetaDto } from './user.dto'
 
 @Injectable()
 export default class TeamMapper {
-  constructor(private sharedMapper: SharedMapper) {}
-
   toDto(team: TeamWithStatistics): TeamDto {
     return {
-      ...this.sharedMapper.teamToBasicDto(team),
+      ...this.toBasicDto(team),
       statistics: this.statisticsToDto(team),
+    }
+  }
+
+  toBasicDto(it: Pick<Team, 'id' | 'name'>): BasicTeamDto {
+    return {
+      id: it.id,
+      name: it.name,
     }
   }
 

@@ -2,7 +2,7 @@ import { Metadata } from '@grpc/grpc-js'
 import { HandlerType, ServerSurfaceCall } from '@grpc/grpc-js/build/src/server-call'
 import { JwtService } from '@nestjs/jwt'
 import { Observable, Subject } from 'rxjs'
-import { NodeConnectionStatus } from 'src/app/shared/shared.dto'
+import { NodeConnectionStatus } from 'src/app/node/node.dto'
 import { AgentToken } from 'src/domain/agent'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 

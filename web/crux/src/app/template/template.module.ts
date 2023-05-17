@@ -12,6 +12,8 @@ import RegistryModule from '../registry/registry.module'
 import ImageModule from '../image/image.module'
 import AgentModule from '../agent/agent.module'
 import DeployModule from '../deploy/deploy.module'
+import TeamRepository from '../team/team.repository'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
   imports: [
@@ -23,9 +25,10 @@ import DeployModule from '../deploy/deploy.module'
     ImageModule,
     AgentModule,
     DeployModule,
+    AuditLoggerModule,
   ],
   exports: [TemplateService],
   controllers: [TemplateHttpController],
-  providers: [TemplateService, PrismaService, TemplateFileService, KratosService],
+  providers: [TemplateService, PrismaService, TemplateFileService, KratosService, TeamRepository],
 })
 export default class TemplateModule {}
