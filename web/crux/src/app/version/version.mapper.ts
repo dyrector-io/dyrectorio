@@ -1,31 +1,41 @@
 import { Version } from '.prisma/client'
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import { ProductTypeEnum } from '@prisma/client'
 import { versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/domain/version'
 import { DeploymentWithNode } from '../deploy/deploy.dto'
 import DeployMapper from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
-import { NodeConnectionStatus } from '../shared/shared.dto'
-import SharedMapper from '../shared/shared.mapper'
-import { VersionDetailsDto, VersionDto } from './version.dto'
+import { BasicProperties } from '../../shared/dtos/shared.dto'
+import { BasicVersionDto, VersionDetailsDto, VersionDto } from './version.dto'
+import AuditMapper from '../audit/audit.mapper'
+import { NodeConnectionStatus } from '../node/node.dto'
 
 @Injectable()
 export default class VersionMapper {
   constructor(
-    private sharedMapper: SharedMapper,
+    @Inject(forwardRef(() => DeployMapper))
     private deployMapper: DeployMapper,
     private imageMapper: ImageMapper,
+    private auditMapper: AuditMapper,
   ) {}
 
   toDto(it: VersionWithChildren): VersionDto {
     return {
       id: it.id,
-      audit: this.sharedMapper.auditToDto(it),
+      audit: this.auditMapper.toDto(it),
       name: it.name,
       type: it.type,
       changelog: it.changelog,
       default: it.default,
       increasable: versionIsIncreasable(it),
+    }
+  }
+
+  toBasicDto(it: Pick<Version, BasicProperties>): BasicVersionDto {
+    return {
+      id: it.id,
+      name: it.name,
+      type: it.type,
     }
   }
 
@@ -35,7 +45,7 @@ export default class VersionMapper {
       name: version.name,
       changelog: version.changelog,
       default: version.default,
-      audit: this.sharedMapper.auditToDto(version),
+      audit: this.auditMapper.toDto(version),
       type: version.type,
       mutable: versionIsMutable(version),
       deletable: versionIsDeletable(version),

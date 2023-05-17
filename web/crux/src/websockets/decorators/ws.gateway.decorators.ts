@@ -1,7 +1,7 @@
 import { UseGuards, UseInterceptors, UseFilters, ExceptionFilter, CanActivate, NestInterceptor } from '@nestjs/common'
 import JwtAuthGuard from 'src/app/token/jwt-auth.guard'
 import WsExceptionFilter from 'src/filters/ws.exception-filter'
-import AuditLoggerInterceptor from 'src/interceptors/audit-logger.interceptor'
+import AuditLoggerInterceptor from 'src/app/audit.logger/audit.logger.interceptor'
 
 /* eslint-disable @typescript-eslint/ban-types */
 export const UseGlobalWsFilters = (...filters: (ExceptionFilter | Function)[]) =>

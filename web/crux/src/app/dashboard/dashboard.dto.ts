@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer'
 import { IsDate } from 'class-validator'
 import { AuditLogDto } from '../audit/audit.dto'
-import { BasicNodeDto } from '../shared/shared.dto'
+import { BasicNodeDto } from '../node/node.dto'
 
 export class DashboardDeploymentDto {
   id: string
