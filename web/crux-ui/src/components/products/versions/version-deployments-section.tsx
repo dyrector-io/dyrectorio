@@ -149,6 +149,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             />
           </div>
         )}
+
         <div className="mr-2 inline-block">
           <Image
             src="/note.svg"
@@ -159,6 +160,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
           />
         </div>
+
         <Image
           src="/copy.svg"
           alt={t('common:copy')}

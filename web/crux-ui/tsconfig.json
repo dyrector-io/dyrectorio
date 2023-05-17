@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2017",
+    "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "baseUrl": "./",
     "paths": {
@@ -21,10 +21,8 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "typeRoots": ["node_modules/yup"],
-    "outDir": "./dist"
+    "typeRoots": ["node_modules/yup"]
   },
-  "types": ["node", "jest"],
   "exclude": ["node_modules"],
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "gtag.js"]
 }

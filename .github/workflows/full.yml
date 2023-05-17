@@ -299,7 +299,7 @@ jobs:
         run: npm run lint
   crux_test:
     runs-on: ubuntu-22.04
-    needs: [gather_changes, crux_lint]
+    needs: gather_changes
     defaults:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
@@ -362,7 +362,7 @@ jobs:
         run: npm run lint
   crux-ui_unit_test:
     runs-on: ubuntu-22.04
-    needs: [gather_changes, crux-ui_lint]
+    needs: gather_changes
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
