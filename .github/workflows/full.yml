@@ -375,7 +375,7 @@ jobs:
       - name: Install dependencies
         run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
       - name: Running unit tests
-        run: npm run test:unit
+        run: npm run test
   crux-ui_build:
     runs-on: ubuntu-22.04
     needs: [crux-ui_lint, crux-ui_unit_test, gather_changes]
