@@ -311,15 +311,11 @@ jobs:
         uses: actions/checkout@v3
       - name: Install dependencies
         run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
-      - name: Generate prisma & build the application
+      - name: Generate prisma
         run: |
           npx prisma generate
       - name: Running unit tests
         run: npm run test
-      - name: Build the application
-        run: |
-          npm run build --if-present
-          npm prune --production
   crux_build:
     runs-on: ubuntu-22.04
     needs: [crux_test, crux_lint, gather_changes]
@@ -364,9 +360,25 @@ jobs:
         run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
       - name: Lint
         run: npm run lint
+  crux-ui_unit_test:
+    runs-on: ubuntu-22.04
+    needs: gather_changes
+    defaults:
+      run:
+        working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+    if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
+      - name: Running unit tests
+        run: npm run test
   crux-ui_build:
     runs-on: ubuntu-22.04
-    needs: [crux-ui_lint, gather_changes]
+    needs: [crux-ui_lint, crux-ui_unit_test, gather_changes]
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
     defaults:
