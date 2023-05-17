@@ -1,0 +1,12 @@
+addAssignees: author
+
+addReviewers: true
+
+reviewers:
+  - m8vago
+  - robot9706
+  - polaroi8d
+  - nandor-magyar
+  - c3ppc3pp
+
+runOnDraft: true
