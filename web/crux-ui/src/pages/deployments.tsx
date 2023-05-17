@@ -72,6 +72,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     'common:prefix',
     'common:updatedAt',
     'common:status',
+    'common:actions',
   ]
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
   const headerClasses = [
@@ -88,7 +89,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     <span>{item.prefix}</span>,
     <span suppressHydrationWarning>{auditToLocaleDate(item.audit)}</span>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
-    <div className="flex flex-row">
+    <div className="flex justify-center">
       <div className="mr-2 inline-block">
         <Link href={deploymentUrl(item.id)} passHref>
           <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} className="cursor-pointer" />

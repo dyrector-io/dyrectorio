@@ -113,7 +113,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     defaultHeaderClass,
     clsx('text-center', defaultHeaderClass),
     defaultHeaderClass,
-    clsx('rounded-tr-lg text-right pr-6', defaultHeaderClass),
+    clsx('rounded-tr-lg text-center pr-6', defaultHeaderClass),
   ]
 
   const itemTemplate = (item: DeploymentByVersion) => {
@@ -128,7 +128,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       item.prefix,
       <DeploymentStatusTag className="w-fit m-auto" status={item.status} />,
       <>{utcDateToLocale(item.updatedAt)}</>,
-      <div className="flex flex-row">
+      <div className="flex justify-center">
         <Link className="mr-2 inline-block cursor-pointer" href={deploymentUrl(item.id)} passHref>
           <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} />
         </Link>
@@ -149,7 +149,6 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             />
           </div>
         )}
-
         <div className="mr-2 inline-block">
           <Image
             src="/note.svg"
@@ -160,7 +159,6 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
           />
         </div>
-
         <Image
           src="/copy.svg"
           alt={t('common:copy')}
