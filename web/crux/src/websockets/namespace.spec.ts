@@ -13,7 +13,7 @@ import {
 import WsNamespace from './namespace'
 
 describe('WsNamespace', () => {
-  const PATH = '/path'
+  const PATH = '/path/a-guid'
   const ID_PARAM = 'id'
   const ID_PARAM_VALUE = 'a-guid'
   const PARAMS: Record<string, string> = {
@@ -29,6 +29,9 @@ describe('WsNamespace', () => {
   let routeMatch: WsRouteMatch
   let namespace: WsNamespace
   let subscribeMessage: WsMessage<SubscriptionMessage>
+  let validMessage: WsMessage
+
+  const HANDLER_PATH = 'subpath'
 
   beforeEach(() => {
     routeMatch = matchForSubpath(null)
@@ -38,6 +41,13 @@ describe('WsNamespace', () => {
       type: WS_TYPE_SUBSCRIBE,
       data: {
         path: routeMatch.path,
+      },
+    }
+
+    validMessage = {
+      type: `${routeMatch.path}/${HANDLER_PATH}`,
+      data: {
+        valid: 'message',
       },
     }
   })
@@ -252,6 +262,19 @@ describe('WsNamespace', () => {
       expect(subscription.closed).toBe(true)
     })
 
+    it("should complete the onMessage call's stream", () => {
+      callbacks.handlers.set(HANDLER_PATH, () => new Subject<WsMessage>())
+
+      namespace.onSubscribe(client, callbacks, subscribeMessage)
+
+      const stream = namespace.onMessage(client, validMessage)
+      const subscription = stream.subscribe(() => {})
+
+      namespace.onUnsubscribe(client, unsubscribeMessage)
+
+      expect(subscription.closed).toBe(true)
+    })
+
     it('should call the unsubscribe callback', () => {
       const unsubscribe = jest.fn(() => new Subject<WsMessage>())
       callbacks.unsubscribe = unsubscribe
@@ -341,6 +364,238 @@ describe('WsNamespace', () => {
         namespace.onUnsubscribe(subscribedClient, unsubscribeMessage)
 
         expect(subscribedClient.subscriptions.has(routeMatch.path)).toBe(false)
+      })
+    })
+  })
+
+  describe('onMessage', () => {
+    let client: WsClient
+    let callbacks: WsClientCallbacks
+
+    beforeEach(() => {
+      client = {} as WsClient
+      client.token = 'client-token'
+      client.subscriptions = new Map()
+
+      callbacks = {
+        authorize: jest.fn(),
+        transform: jest.fn(it => it),
+        handlers: new Map(),
+        subscribe: null,
+        unsubscribe: null,
+      }
+    })
+
+    it('should return an EMPTY observable when the client is not subscribed', () => {
+      const actual = namespace.onMessage(client, validMessage)
+
+      expect(actual).toBe(EMPTY)
+    })
+
+    describe('when subscribed', () => {
+      beforeEach(() => {
+        callbacks.handlers.set(
+          HANDLER_PATH,
+          jest.fn(() => null),
+        )
+
+        namespace.onSubscribe(client, callbacks, subscribeMessage)
+      })
+
+      it('should return EMPTY observable when there is no handler for the subpath', () => {
+        const invalidMessage: WsMessage = {
+          type: `${routeMatch.path}/invalid`,
+          data: {
+            invalid: 'message',
+          },
+        }
+
+        const actual = namespace.onMessage(client, invalidMessage)
+
+        expect(actual).toBe(EMPTY)
+      })
+
+      it('should return EMPTY when the handler returns null', () => {
+        callbacks.handlers.set(
+          HANDLER_PATH,
+          jest.fn(() => null),
+        )
+
+        const actual = namespace.onMessage(client, validMessage)
+
+        expect(actual).toBe(EMPTY)
+      })
+
+      it('should return the an observable with the message returned by the handler', async () => {
+        const expected: WsMessage = {
+          type: `${routeMatch.path}/response`,
+          data: {
+            response: 'message',
+          },
+        }
+
+        callbacks.handlers.set(
+          HANDLER_PATH,
+          jest.fn(() => of(expected)),
+        )
+
+        const actualObs = namespace.onMessage(client, validMessage)
+        const actual = await firstValueFrom(actualObs)
+
+        expect(actual).toEqual(expected)
+      })
+
+      it('should filter undefined and null messages in the response observable', async () => {
+        const responseMessage: WsMessage = {
+          type: 'response',
+          data: {
+            response: 'message',
+          },
+        }
+
+        const allMessages: WsMessage[] = [null, { ...responseMessage }, undefined]
+
+        callbacks.handlers.set(
+          HANDLER_PATH,
+          jest.fn(() => of(...allMessages)),
+        )
+
+        const result = namespace.onMessage(client, validMessage)
+        const resultObs = result.pipe(toArray())
+
+        const actual = await firstValueFrom(resultObs)
+
+        const expected: WsMessage[] = [
+          {
+            ...responseMessage,
+            type: `${routeMatch.path}/${responseMessage.type}`,
+          },
+        ]
+
+        expect(actual.length).toEqual(expected.length)
+        actual.forEach(it => {
+          expect(it).not.toBeUndefined()
+          expect(it).not.toBeNull()
+        })
+      })
+
+      it('should pass the valid response message with the correct path to the returned observable', async () => {
+        const responseMessage: WsMessage = {
+          type: 'response',
+          data: {
+            response: 'message',
+          },
+        }
+
+        const allMessages: WsMessage[] = [null, { ...responseMessage }, undefined]
+
+        callbacks.handlers.set(
+          HANDLER_PATH,
+          jest.fn(() => of(...allMessages)),
+        )
+
+        const result = namespace.onMessage(client, validMessage)
+        const resultObs = result.pipe(toArray())
+
+        const actual = await firstValueFrom(resultObs)
+
+        const expected: WsMessage[] = [
+          {
+            ...responseMessage,
+            type: `${routeMatch.path}/${responseMessage.type}`,
+          },
+        ]
+
+        expect(actual.length).toEqual(expected.length)
+        expected.forEach(it => expect(actual).toContainEqual(it))
+      })
+    })
+  })
+
+  describe('sending to clients', () => {
+    let oneClient: WsClient
+    let otherClient: WsClient
+
+    let oneSendMessage: jest.Mock
+    let otherSendMessage: jest.Mock
+
+    let message: WsMessage
+    let sentMessage: WsMessage
+
+    beforeEach(() => {
+      oneClient = {} as WsClient
+      oneClient.token = 'one-client'
+      oneClient.subscriptions = new Map()
+      oneSendMessage = jest.fn()
+      oneClient.sendWsMessage = oneSendMessage
+
+      otherClient = {} as WsClient
+      otherClient.token = 'other-client'
+      otherClient.subscriptions = new Map()
+      otherSendMessage = jest.fn()
+      otherClient.sendWsMessage = otherSendMessage
+
+      message = {
+        type: 'subpath',
+        data: {
+          test: 'message',
+        },
+      }
+
+      sentMessage = {
+        ...message,
+        type: `${PATH}/${message.type}`,
+      }
+
+      const oneCallbacks: WsClientCallbacks = {
+        authorize: jest.fn(),
+        handlers: new Map(),
+        subscribe: null,
+        transform: jest.fn(it => it),
+        unsubscribe: null,
+      }
+
+      const otherCallbacks: WsClientCallbacks = {
+        authorize: jest.fn(),
+        handlers: new Map(),
+        subscribe: null,
+        transform: jest.fn(it => it),
+        unsubscribe: null,
+      }
+
+      namespace.onSubscribe(oneClient, oneCallbacks, subscribeMessage)
+      namespace.onSubscribe(otherClient, otherCallbacks, subscribeMessage)
+    })
+
+    describe('sendToAll', () => {
+      it("should call each subscribed clients' send method", () => {
+        namespace.sendToAll(message)
+
+        expect(oneClient.sendWsMessage).toBeCalled()
+        expect(otherClient.sendWsMessage).toBeCalled()
+      })
+
+      it('should send the message with the correct path to each client', () => {
+        namespace.sendToAll(message)
+
+        expect(oneClient.sendWsMessage).toBeCalledWith(sentMessage)
+        expect(otherClient.sendWsMessage).toBeCalledWith(sentMessage)
+      })
+    })
+
+    describe('sendToAllExcept', () => {
+      it("should call all but the specified subscribed clients' send method", () => {
+        namespace.sendToAllExcept(otherClient, message)
+
+        expect(oneClient.sendWsMessage).toBeCalled()
+        expect(otherClient.sendWsMessage).not.toBeCalled()
+      })
+
+      it('should send the message with the correct path to all but the specified client', () => {
+        namespace.sendToAllExcept(oneClient, message)
+
+        expect(oneClient.sendWsMessage).not.toBeCalledWith(sentMessage)
+        expect(otherClient.sendWsMessage).toBeCalledWith(sentMessage)
       })
     })
   })
