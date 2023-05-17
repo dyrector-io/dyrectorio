@@ -10,7 +10,6 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
-	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
@@ -104,7 +103,7 @@ func (d *DeployFacade) PreDeploy() error {
 			if err := d.configmap.deployConfigMapData(
 				d.namespace.name,
 				d.params.InstanceConfig.ContainerPreName+"-shared",
-				mapper.PipeSeparatedToStringMap(&d.params.InstanceConfig.SharedEnvironment),
+				d.params.InstanceConfig.SharedEnvironment,
 			); err != nil {
 				log.Error().Err(err).Stack().Msg("Namespace global config map error")
 				return err
@@ -116,7 +115,7 @@ func (d *DeployFacade) PreDeploy() error {
 		if err := d.configmap.deployConfigMapData(
 			d.namespace.name,
 			d.params.InstanceConfig.Name+"-common",
-			mapper.PipeSeparatedToStringMap(&d.params.InstanceConfig.Environment),
+			d.params.InstanceConfig.Environment,
 		); err != nil {
 			log.Error().Err(err).Stack().Msg("Common config map error")
 			return err
@@ -127,7 +126,7 @@ func (d *DeployFacade) PreDeploy() error {
 		if err := d.configmap.deployConfigMapData(
 			d.namespace.name,
 			d.params.ContainerConfig.Container,
-			mapper.PipeSeparatedToStringMap(&d.params.ContainerConfig.Environment),
+			d.params.ContainerConfig.Environment,
 		); err != nil {
 			log.Error().Err(err).Stack().Msg("Container config map error")
 			return err
