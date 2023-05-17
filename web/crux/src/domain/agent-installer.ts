@@ -14,6 +14,7 @@ import {
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { PRODUCTION } from 'src/shared/const'
+import { getAgentVersionFromPackage } from 'src/shared/package'
 import { Agent, AgentEvent } from './agent'
 
 export default class AgentInstaller {
@@ -70,7 +71,7 @@ export default class AgentInstaller {
     const configLocalDeployment = this.configService.get<string>('LOCAL_DEPLOYMENT')
     const configLocalDeploymentNetwork = this.configService.get<string>('LOCAL_DEPLOYMENT_NETWORK')
     const disableForcePull = this.configService.get<boolean>('AGENT_INSTALL_SCRIPT_DISABLE_PULL', false)
-    const agentImageTag = this.configService.get<string>('CRUX_AGENT_IMAGE', 'stable')
+    const agentImageTag = this.configService.get<string>('CRUX_AGENT_IMAGE', getAgentVersionFromPackage())
     const debugMode = process.env.NODE_ENV !== PRODUCTION
 
     const installScriptParams: InstallScriptConfig = {

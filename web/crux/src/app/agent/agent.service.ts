@@ -37,7 +37,9 @@ import {
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
-import { JWT_EXPIRATION } from '../../shared/const'
+import packageInfo, { getAgentVersionFromPackage } from 'src/shared/package'
+import { major, minor } from 'semver'
+import { JWT_EXPIRATION, PRODUCTION } from '../../shared/const'
 import ContainerMapper from '../container/container.mapper'
 import { DagentTraefikOptionsDto, NodeConnectionStatus, NodeScriptTypeDto } from '../node/node.dto'
 
@@ -269,7 +271,7 @@ export default class AgentService {
   updateAgent(id: string) {
     const agent = this.getByIdOrThrow(id)
 
-    agent.update(this.configService.get<string>('CRUX_AGENT_IMAGE') ?? 'stable')
+    agent.update(this.configService.get<string>('CRUX_AGENT_IMAGE') ?? getAgentVersionFromPackage())
   }
 
   updateAborted(connection: GrpcNodeConnection, request: AgentAbortUpdate): Empty {
@@ -357,6 +359,18 @@ export default class AgentService {
     connection: GrpcNodeConnection,
     request: AgentInfo,
   ): Promise<Observable<AgentCommand>> {
+    if (!this.agentVersionSupported(request.version)) {
+      this.logger.warn(
+        `Agent ('${request.id}') connected with unsupported version '${request.version}', package is '${packageInfo.version}'`,
+      )
+
+      return of({
+        close: {
+          reason: CloseReason.SHUTDOWN,
+        },
+      } as AgentCommand)
+    }
+
     if (this.agents.has(request.id)) {
       const agent = this.agents.get(request.id)
       if (!agent.updating) {
@@ -579,5 +593,20 @@ export default class AgentService {
   private logServiceInfo(): void {
     this.logger.debug(`Agents: ${this.agents.size}`)
     this.agents.forEach(it => it.debugInfo(this.logger))
+  }
+
+  private agentVersionSupported(version: string): boolean {
+    if (this.configService.get<string>('NODE_ENV') !== PRODUCTION) {
+      return true
+    }
+
+    if (!version.includes('-')) {
+      return false
+    }
+
+    const agentVersion = version.split('-')[0]
+    const packageVersion = packageInfo.version
+
+    return major(agentVersion) === major(packageVersion) && minor(agentVersion) === minor(packageVersion)
   }
 }
