@@ -9,6 +9,8 @@ import JwtStrategy from './jwt.strategy'
 import TokenMapper from './token.mapper'
 import TeamModule from '../team/team.module'
 import TokenHttpController from './token.http.controller'
+import TeamRepository from '../team/team.repository'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
   imports: [
@@ -25,9 +27,10 @@ import TokenHttpController from './token.http.controller'
       }),
       inject: [ConfigService],
     }),
+    AuditLoggerModule,
   ],
   controllers: [TokenHttpController],
-  providers: [TokenService, JwtStrategy, KratosService, PrismaService, TokenMapper],
+  providers: [TokenService, JwtStrategy, KratosService, PrismaService, TokenMapper, TeamRepository],
   exports: [],
 })
 export default class TokenModule {}

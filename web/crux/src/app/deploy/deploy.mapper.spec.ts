@@ -1,19 +1,42 @@
+import { Test, TestingModule } from '@nestjs/testing'
 import { ContainerConfigData, InstanceContainerConfigData } from 'src/domain/container'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
-import SharedMapper from '../shared/shared.mapper'
 import { PatchInstanceDto } from './deploy.dto'
 import DeployMapper from './deploy.mapper'
+import ProductMapper from '../product/product.mapper'
+import VersionMapper from '../version/version.mapper'
+import AuditMapper from '../audit/audit.mapper'
+import NodeMapper from '../node/node.mapper'
+import AgentService from '../agent/agent.service'
+import RegistryMapper from '../registry/registry.mapper'
 
 describe('DeployMapper', () => {
-  let imageMapper: ImageMapper = null
   let containerMapper: ContainerMapper = null
   let deployMapper: DeployMapper = null
 
-  beforeEach(() => {
-    containerMapper = new ContainerMapper()
-    imageMapper = new ImageMapper(null, containerMapper)
-    deployMapper = new DeployMapper(new SharedMapper(), imageMapper, containerMapper)
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [],
+      controllers: [],
+      providers: [
+        AuditMapper,
+        RegistryMapper,
+        VersionMapper,
+        ContainerMapper,
+        ProductMapper,
+        NodeMapper,
+        ImageMapper,
+        DeployMapper,
+        {
+          provide: AgentService,
+          useValue: jest.mocked(AgentService),
+        },
+      ],
+    }).compile()
+
+    containerMapper = module.get<ContainerMapper>(ContainerMapper)
+    deployMapper = module.get<DeployMapper>(DeployMapper)
   })
 
   const fullImage: ContainerConfigData = {

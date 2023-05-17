@@ -8,12 +8,13 @@ import ProductMapper from './product.mapper'
 import ProductService from './product.service'
 import ProductHttpController from './product.http.controller'
 import TokenModule from '../token/token.module'
-import SharedModule from '../shared/shared.module'
+import AuditMapper from '../audit/audit.mapper'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
-  imports: [VersionModule, TeamModule, TokenModule, SharedModule],
+  imports: [VersionModule, TeamModule, TokenModule, AuditLoggerModule],
   exports: [ProductMapper, ProductService],
   controllers: [ProductHttpController],
-  providers: [PrismaService, ProductService, ProductMapper, TeamRepository, KratosService],
+  providers: [PrismaService, ProductService, ProductMapper, TeamRepository, KratosService, AuditMapper],
 })
 export default class ProductModule {}

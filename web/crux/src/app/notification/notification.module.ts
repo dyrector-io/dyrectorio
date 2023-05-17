@@ -7,9 +7,10 @@ import PrismaService from 'src/services/prisma.service'
 import NotificationHttpController from './notification.http.controller'
 import NotificationService from './notification.service'
 import NotificationMapper from './notification.mapper'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
-  imports: [HttpModule, TeamModule],
+  imports: [HttpModule, TeamModule, AuditLoggerModule],
   exports: [],
   controllers: [NotificationHttpController],
   providers: [PrismaService, NotificationService, NotificationMapper, TeamRepository, KratosService],
