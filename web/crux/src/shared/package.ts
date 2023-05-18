@@ -1,10 +1,10 @@
-import { major, minor } from 'semver'
+import { coerce, major, minor } from 'semver'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../../package.json')
 
 export const getAgentVersionFromPackage = () => {
-  const packageVersion = pkg?.version
+  const packageVersion = coerce(pkg?.version)
 
   return packageVersion ? `${major(packageVersion)}.${minor(packageVersion)}` : 'stable'
 }

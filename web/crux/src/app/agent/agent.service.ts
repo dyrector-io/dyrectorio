@@ -38,7 +38,7 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import packageInfo, { getAgentVersionFromPackage } from 'src/shared/package'
-import { major, minor } from 'semver'
+import { coerce, major, minor } from 'semver'
 import { JWT_EXPIRATION, PRODUCTION } from '../../shared/const'
 import ContainerMapper from '../container/container.mapper'
 import { DagentTraefikOptionsDto, NodeConnectionStatus, NodeScriptTypeDto } from '../node/node.dto'
@@ -604,9 +604,13 @@ export default class AgentService {
       return false
     }
 
-    const agentVersion = version.split('-')[0]
-    const packageVersion = packageInfo.version
+    const agentVersion = coerce(version)
+    if (!agentVersion) {
+      return false
+    }
 
-    return major(agentVersion) === major(packageVersion) && minor(agentVersion) === minor(packageVersion)
+    const majorMinor = `${major(agentVersion)}.${minor(agentVersion)}`
+
+    return getAgentVersionFromPackage() === majorMinor
   }
 }
