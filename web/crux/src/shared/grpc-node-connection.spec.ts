@@ -1,6 +1,5 @@
 import { Metadata } from '@grpc/grpc-js'
 import GrpcNodeConnection, { NodeGrpcCall } from './grpc-node-connection'
-import exp from 'constants'
 
 describe('GrpcNodeConnection', () => {
   let call: NodeGrpcCall
