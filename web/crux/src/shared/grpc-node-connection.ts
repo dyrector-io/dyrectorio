@@ -41,8 +41,12 @@ export default class GrpcNodeConnection {
       call.end = nestjsClientStreamEndCallWorkaround
     }
 
-    this.jwt = this.getMetaData(GrpcNodeConnection.META_NODE_TOKEN)
-    this.address = call.getPeer()
+    this.jwt = this.getStringMetadataOrThrow(GrpcNodeConnection.META_NODE_TOKEN)
+
+    const xRealIp = this.getFirstItemOfStringArrayMetadata('x-real-ip')
+    const xForwarderFor = this.getFirstItemOfStringArrayMetadata('x-forwarded-for')
+
+    this.address = xRealIp ?? xForwarderFor ?? call.getPeer()
 
     call.connection = this
     call.on('close', () => this.onClose())
@@ -61,7 +65,7 @@ export default class GrpcNodeConnection {
     return this.statusChannel.asObservable()
   }
 
-  getMetaData(key: string): string {
+  getStringMetadataOrThrow(key: string): string {
     const value = this.metadata.getMap()[key]
     if (typeof value !== 'string') {
       throw new CruxBadRequestException({
@@ -73,21 +77,21 @@ export default class GrpcNodeConnection {
     return value
   }
 
-  getMetaDataOrDefault(key: string): string {
+  getStringMetadata(key: string): string | null {
     const map = this.metadata.getMap()
-    if (key in map) {
-      const value = map[key]
-      if (typeof value !== 'string') {
-        throw new CruxBadRequestException({
-          message: 'Missing metadata.',
-          property: key,
-        })
-      }
-
-      return value
+    const value = map[key]
+    if (!value) {
+      return null
     }
 
-    return undefined
+    if (typeof value !== 'string') {
+      throw new CruxBadRequestException({
+        message: 'Invalid metadata.',
+        property: key,
+      })
+    }
+
+    return value
   }
 
   private onClose() {
@@ -96,6 +100,15 @@ export default class GrpcNodeConnection {
     this.call.removeAllListeners()
     this.statusChannel.complete()
     this.call.connection = null
+  }
+
+  private getFirstItemOfStringArrayMetadata(key: string): string | null {
+    const value = this.metadata.get(key)
+    if (!value || value.length < 1) {
+      return null
+    }
+
+    return value[0] as string
   }
 }
 
