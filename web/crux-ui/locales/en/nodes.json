@@ -48,7 +48,7 @@
   "optionalLeaveEmptyForDefaults": "Optional, leave empty for default paths",
   "update": "Update",
   "updateError": "Failed to update agent: {{error}}",
-  "ports": "Ports",
+  "ports": "Ports (External -> Internal)",
   "traefik": "Install Traefik reverse proxy",
   "installTraefik": "Install Traefik",
   "traefikAcmeEmail": "Traefik ACME email",
