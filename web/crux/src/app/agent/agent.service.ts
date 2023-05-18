@@ -183,7 +183,7 @@ export default class AgentService {
   ): Observable<Empty> {
     const agent = this.getByIdOrThrow(connection.nodeId)
 
-    const deploymentId = connection.getMetaData(GrpcNodeConnection.META_DEPLOYMENT_ID)
+    const deploymentId = connection.getStringMetadataOrThrow(GrpcNodeConnection.META_DEPLOYMENT_ID)
     this.logger.debug(`Opening deployment status channel: ${deploymentId}`)
 
     const deployment = agent.getDeployment(deploymentId)
@@ -228,7 +228,7 @@ export default class AgentService {
     request: Observable<ContainerStateListMessage>,
   ): Observable<Empty> {
     const agent = this.getByIdOrThrow(connection.nodeId)
-    const prefix = connection.getMetaData(GrpcNodeConnection.META_FILTER_PREFIX)
+    const prefix = connection.getStringMetadataOrThrow(GrpcNodeConnection.META_FILTER_PREFIX)
 
     const [watcher, completer] = agent.onContainerStateStreamStarted(prefix)
     if (!watcher) {
@@ -294,8 +294,8 @@ export default class AgentService {
   handleContainerLog(connection: GrpcNodeConnection, request: Observable<ContainerLogMessage>): Observable<Empty> {
     const agent = this.getByIdOrThrow(connection.nodeId)
 
-    const containerPrefix = connection.getMetaDataOrDefault(GrpcNodeConnection.META_CONTAINER_PREFIX)
-    const containerName = connection.getMetaDataOrDefault(GrpcNodeConnection.META_CONTAINER_NAME)
+    const containerPrefix = connection.getStringMetadata(GrpcNodeConnection.META_CONTAINER_PREFIX)
+    const containerName = connection.getStringMetadata(GrpcNodeConnection.META_CONTAINER_NAME)
 
     const container: ContainerIdentifier = {
       prefix: containerPrefix ?? '',
