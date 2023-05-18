@@ -24,10 +24,8 @@ type GrpcOptions = {
   credentials: ServerCredentials
 }
 
-type GrpcClient = 'api' | 'agent'
-
-const loadGrpcOptions = (certPrefix: GrpcClient, portEnv: string): GrpcOptions => {
-  const port = portEnv ? Number(portEnv) : certPrefix === 'agent' ? 5000 : 5001
+const loadGrpcOptions = (portEnv: string): GrpcOptions => {
+  const port = portEnv ? Number(portEnv) : 5000
 
   return {
     // tls termination occurs at the reverse proxy
@@ -58,7 +56,7 @@ const bootstrap = async () => {
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('/api/swagger', app, document)
 
-  const agentOptions = loadGrpcOptions('agent', configService.get<string>('GRPC_AGENT_PORT'))
+  const agentOptions = loadGrpcOptions(configService.get<string>('GRPC_AGENT_PORT'))
   const httpOptions = configService.get<string>('HTTP_API_PORT', '1848')
 
   const authGuard = app.get(JwtAuthGuard)
