@@ -1,20 +1,10 @@
+import { ConfigService } from '@nestjs/config'
 import { coerce, major, minor } from 'semver'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pkg = require('../../package.json')
+export const getPackageVersion = (config: ConfigService) => config.get<string>('npm_package_version')
 
-export const getAgentVersionFromPackage = () => {
-  const packageVersion = coerce(pkg?.version)
+export const getAgentVersionFromPackage = (config: ConfigService) => {
+  const packageVersion = coerce(getPackageVersion(config))
 
   return packageVersion ? `${major(packageVersion)}.${minor(packageVersion)}` : 'stable'
 }
-
-export type PackageInfo = {
-  version: string
-}
-
-const packageInfo: PackageInfo = {
-  version: pkg.version,
-}
-
-export default packageInfo

@@ -71,7 +71,10 @@ export default class AgentInstaller {
     const configLocalDeployment = this.configService.get<string>('LOCAL_DEPLOYMENT')
     const configLocalDeploymentNetwork = this.configService.get<string>('LOCAL_DEPLOYMENT_NETWORK')
     const disableForcePull = this.configService.get<boolean>('AGENT_INSTALL_SCRIPT_DISABLE_PULL', false)
-    const agentImageTag = this.configService.get<string>('CRUX_AGENT_IMAGE', getAgentVersionFromPackage())
+    const agentImageTag = this.configService.get<string>(
+      'CRUX_AGENT_IMAGE',
+      getAgentVersionFromPackage(this.configService),
+    )
     const debugMode = process.env.NODE_ENV !== PRODUCTION
 
     const installScriptParams: InstallScriptConfig = {
@@ -95,7 +98,7 @@ export default class AgentInstaller {
 
   complete(connection: GrpcNodeConnection, info: AgentInfo, eventChannel: Subject<AgentEvent>): Agent {
     this.verify()
-    return new Agent(connection, info, eventChannel)
+    return new Agent(connection, info, eventChannel, false)
   }
 
   loadScriptAndCompiler(nodeType: NodeTypeEnum, scriptType: NodeScriptTypeDto): void {

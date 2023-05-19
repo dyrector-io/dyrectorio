@@ -37,7 +37,7 @@ import {
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
-import packageInfo, { getAgentVersionFromPackage } from 'src/shared/package'
+import { getAgentVersionFromPackage, getPackageVersion } from 'src/shared/package'
 import { coerce, major, minor } from 'semver'
 import { JWT_EXPIRATION, PRODUCTION } from '../../shared/const'
 import ContainerMapper from '../container/container.mapper'
@@ -271,7 +271,7 @@ export default class AgentService {
   updateAgent(id: string) {
     const agent = this.getByIdOrThrow(id)
 
-    agent.update(this.configService.get<string>('CRUX_AGENT_IMAGE') ?? getAgentVersionFromPackage())
+    agent.update(this.getAgentImageTag())
   }
 
   updateAborted(connection: GrpcNodeConnection, request: AgentAbortUpdate): Empty {
@@ -280,6 +280,11 @@ export default class AgentService {
     const agent = this.getByIdOrThrow(connection.nodeId)
 
     agent.onUpdateAborted(request.error)
+
+    if (agent.outdated) {
+      this.logger.warn(`Agent is outdated, shutting down`)
+      agent.close(CloseReason.SHUTDOWN)
+    }
 
     return Empty
   }
@@ -359,19 +364,8 @@ export default class AgentService {
     connection: GrpcNodeConnection,
     request: AgentInfo,
   ): Promise<Observable<AgentCommand>> {
-    if (!this.agentVersionSupported(request.version)) {
-      this.logger.warn(
-        `Agent ('${request.id}') connected with unsupported version '${request.version}', package is '${packageInfo.version}'`,
-      )
-
-      return of({
-        close: {
-          reason: CloseReason.SHUTDOWN,
-        },
-      } as AgentCommand)
-    }
-
-    if (this.agents.has(request.id)) {
+    const updatedAgent = this.agents.has(request.id)
+    if (updatedAgent) {
       const agent = this.agents.get(request.id)
       if (!agent.updating) {
         throw new CruxConflictException({
@@ -384,6 +378,24 @@ export default class AgentService {
 
       agent.close(CloseReason.SELF_DESTRUCT)
       this.agents.delete(request.id)
+    }
+
+    const outdated = !this.agentVersionSupported(request.version)
+    if (outdated) {
+      this.logger.warn(
+        `Agent ('${request.id}') connected with unsupported version '${
+          request.version
+        }', package is '${getPackageVersion(this.configService)}'`,
+      )
+    }
+
+    if (updatedAgent && outdated) {
+      this.logger.warn(`Updated agent ('${request.id}') is outdated, shutting down`)
+      return of({
+        close: {
+          reason: CloseReason.SHUTDOWN,
+        },
+      })
     }
 
     let agent: Agent
@@ -421,7 +433,7 @@ export default class AgentService {
             message: 'Invalid token',
           })
         }
-        agent = new Agent(connection, request, eventChannel)
+        agent = new Agent(connection, request, eventChannel, outdated)
 
         await prisma.node.update({
           where: { id: node.id },
@@ -442,7 +454,14 @@ export default class AgentService {
     this.agentCount.inc()
     this.logServiceInfo()
 
-    return agent.onConnected()
+    const commandChannel = agent.onConnected()
+
+    if (outdated) {
+      agent.onUpdateStarted()
+      return commandChannel.pipe(startWith(agent.getUpdateCommand(this.getAgentImageTag())))
+    }
+
+    return commandChannel
   }
 
   private async createDeploymentEvents(id: string, tryCount: number, events: DeploymentProgressEvent[]) {
@@ -611,6 +630,10 @@ export default class AgentService {
 
     const majorMinor = `${major(agentVersion)}.${minor(agentVersion)}`
 
-    return getAgentVersionFromPackage() === majorMinor
+    return getAgentVersionFromPackage(this.configService) === majorMinor
+  }
+
+  private getAgentImageTag() {
+    return this.configService.get<string>('CRUX_AGENT_IMAGE') ?? getAgentVersionFromPackage(this.configService)
   }
 }

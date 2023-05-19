@@ -3,17 +3,15 @@ import { JwtService } from '@nestjs/jwt'
 import { Test, TestingModule } from '@nestjs/testing'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
-import { AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
+import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import { getToken } from '@willsoto/nestjs-prometheus'
 import { PRODUCTION } from 'src/shared/const'
-import { Subject, toArray, firstValueFrom } from 'rxjs'
+import { Subject, firstValueFrom } from 'rxjs'
+import { major, minor } from 'semver'
+import { Agent } from 'src/domain/agent'
 import AgentService from './agent.service'
 import ContainerMapper from '../container/container.mapper'
 import { NodeConnectionStatus } from '../node/node.dto'
-
-jest.mock('../../../package.json', () => ({
-  version: '1.2.3',
-}))
 
 const GrpcNodeConnectionMock = jest.fn().mockImplementation(() => ({
   nodeId: 'agent-id',
@@ -23,7 +21,7 @@ const GrpcNodeConnectionMock = jest.fn().mockImplementation(() => ({
   status: jest.fn().mockReturnValue(new Subject<NodeConnectionStatus>()),
 }))
 
-const mockModules = (env: string) => [
+const mockModules = (env: string, packageVersion: string) => [
   {
     provide: getToken('agent_online_count'),
     useValue: {
@@ -62,7 +60,18 @@ const mockModules = (env: string) => [
   {
     provide: ConfigService,
     useValue: {
-      get: jest.fn().mockReturnValue(env),
+      get: jest.fn().mockImplementation(key => {
+        if (key === 'NODE_ENV') {
+          return env
+        }
+        if (key === 'npm_package_version') {
+          return packageVersion
+        }
+        if (key === 'CRUX_AGENT_IMAGE') {
+          return `${major(packageVersion)}.${minor(packageVersion)}`
+        }
+        throw new Error(`Unexpected ConfigService key '${key}'`)
+      }),
     },
   },
   {
@@ -84,7 +93,7 @@ describe('AgentService', () => {
       const module: TestingModule = await Test.createTestingModule({
         imports: [],
         controllers: [],
-        providers: mockModules(PRODUCTION),
+        providers: mockModules(PRODUCTION, '1.2.3'),
       }).compile()
 
       agentService = module.get<AgentService>(AgentService)
@@ -103,42 +112,22 @@ describe('AgentService', () => {
       expect(agentSub.closed).toBe(false)
     })
 
-    it('handleConnect should close connection if an agent has a non supported version', async () => {
+    it('handleConnect should update an outdated agent', async () => {
       const info: AgentInfo = {
         id: 'agent-id',
-        version: '1.3.4-githash (1234-5-67)',
+        version: '2.3.4-githash (1234-5-67)',
         publicKey: 'key',
       }
 
       const agentObs = agentService.handleConnect(new GrpcNodeConnectionMock(), info)
-      const commands = await firstValueFrom(agentObs.pipe(toArray()))
+      const commands = await firstValueFrom(agentObs)
 
-      expect(commands).toEqual([
-        {
-          close: {
-            reason: CloseReason.SHUTDOWN,
-          },
+      expect(commands).toEqual({
+        update: {
+          tag: '1.2',
+          timeoutSeconds: Agent.AGENT_UPDATE_TIMEOUT,
         },
-      ])
-    })
-
-    it('handleConnect should close connection if an agent has an invalid version format', async () => {
-      const info: AgentInfo = {
-        id: 'agent-id',
-        version: 'dev-n/a',
-        publicKey: 'key',
-      }
-
-      const agentObs = agentService.handleConnect(new GrpcNodeConnectionMock(), info)
-      const commands = await firstValueFrom(agentObs.pipe(toArray()))
-
-      expect(commands).toEqual([
-        {
-          close: {
-            reason: CloseReason.SHUTDOWN,
-          },
-        },
-      ])
+      })
     })
   })
 
@@ -149,7 +138,7 @@ describe('AgentService', () => {
       const module: TestingModule = await Test.createTestingModule({
         imports: [],
         controllers: [],
-        providers: mockModules('development'),
+        providers: mockModules('development', '1.2.3'),
       }).compile()
 
       agentService = module.get<AgentService>(AgentService)
