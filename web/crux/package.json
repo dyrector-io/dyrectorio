@@ -30,9 +30,8 @@
     "test:ci": "jest --config ./jest.config.js --collectCoverage --coverageDirectory=\"./coverage\" --ci --reporters=default --reporters=jest-junit --watchAll=false",
     "test:crux": "npm run docker:up && npx prisma migrate deploy && jest -i && npm docker:down",
     "ts-node": "ts-node --compiler-options { \"module\": \"CommonJS\"}",
-    "database:up": "docker-compose -f docker-compose.database.yaml up -d",
-    "database:down": "docker-compose -f docker-compose.database.yaml down",
-    "prismagen": "prisma generate"
+    "prisma:gen": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"

@@ -123,19 +123,23 @@ Unit tests:
 
 End-to-end tests:
 1. Run `make upd` in the repo's root folder.
+  - Save your `DATABASE_URL=<connection_string>` environment variable for later
 2. Go to the `web/crux` directory: `cd web/crux`
 3. Build the package `npm run build`
-3. Copy the _env.example_ file as _.env_ `cp env.example .env`
-4. On Linux,  uncomment the `DNS_DEFAULT_RESULT_ORDER=ipv4first` line in the _.env_ file
-5. On Linux change the `CRUX_AGENT_ADDRESS` variable's value to `172.17.0.1:5000`
-  - On Mac / Windows you may have to edit your host file to be sure the `host.docker.internal` domain resolves to docker's bridge network.
+4. Copy the _env.example_ file as _.env_ `cp .env.example .env`
+5. On Linux:
+  - Uncomment the `DNS_DEFAULT_RESULT_ORDER=ipv4first` line in the _.env_ file
+  - Change the `CRUX_AGENT_ADDRESS` variable's value to `172.17.0.1:5000`
+5. On Mac / Windows you may have to edit your OS's hosts file to be sure the `host.docker.internal` domain resolves to docker's bridge network.
   - Alternatively you can use your machine's LAN IP.
-6. Start the backend in production mode with `npm run start:prod`
-7. Repeat steps 2-4 in the `web/crux-ui` folder in a different terminal
-8. Start the frontend in production mode with `npm run start:prod`
-9. Be sure that `chromium` is installed on your system
+6. Deploy the database with `npm run prisma:migrate`
+7. Start the backend in production mode with `npm run start:prod`
+8. Repeat steps 3-4 in the `web/crux-ui` folder in a different terminal
+9. Start the frontend in production mode with `npm run start:prod`
+10. Be sure that `chromium` is installed on your system
+  - You may have to run `npx playwright install-deps`
   - More info: https://playwright.dev/docs/intro
-10. In a different terminal go to the `/web/crux-ui` folder and run `npm run test:e2e`
+11. In a different terminal go to the `/web/crux-ui` folder and run `npm run test:e2e`
   - If you want to run a specific test file from the `/web/crux-ui/e2e` folder you can do it with `npx playwright test <file_name>`
 
 ## Non-development
@@ -215,7 +219,7 @@ Patch version is raised if:
 
 Install the generator
 
-```
+``` 
 go get -u github.com/git-chglog/git-chglog/cmd/git-chglog
 ```
 
