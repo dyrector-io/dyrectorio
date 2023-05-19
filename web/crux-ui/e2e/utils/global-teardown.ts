@@ -58,7 +58,6 @@ const globalTeardown = async (config: FullConfig) => {
   const frontend = kratosFrontendFromConfig(config)
   const cookie = await getUserSessionToken(frontend)
   if (!cookie) {
-    logInfo('skipped', 'No session found.')
     return
   }
 

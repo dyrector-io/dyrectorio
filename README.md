@@ -117,6 +117,26 @@ Stack:
 
 Read more about the CLI in the [documentation](https://docs.dyrector.io/get-started/cli).
 
+## Testing
+Unit tests:
+- Run `npm run test` in the `web/crux` or `web/crux-ui` folder.
+
+End-to-end tests:
+1. Run `make upd` in the repo's root folder.
+2. Go to the `web/crux` directory: `cd web/crux`
+3. Build the package `npm run build`
+3. Copy the _env.example_ file as _.env_ `cp env.example .env`
+4. On linux,  uncomment the `DNS_DEFAULT_RESULT_ORDER=ipv4first` line in the _.env_ file
+5. On linux change the `CRUX_AGENT_ADDRESS` variable's value to `172.17.0.1:5000`
+  - On Mac / Windows you may have to edit your host file to be sure the `host.docker.internal` domain resolve's to docker's bridge network.
+  - Alternatively you can use your machine's LAN ip.
+6. Start the backend in production mode with `npm run start:prod`
+7. Repeat steps 2-4 in the `web/crux-ui` folder in a different terminal
+8. Start the frontend in production mode with `npm run start:prod`
+9. Be sure that chromium is installed on your system
+10. In a different terminal go to the `/web/crux-ui` folder and run `npm run test:e2e`
+  - If you want to run a specific test file from the `/web/crux-ui/e2e` folder you can do it with `npx playwright test <file_name>`
+
 ## Non-development
 
 You can set up dyrector.io for self-hosting purposes with the [docker-compose](https://github.com/dyrector-io/dyrectorio/blob/develop/docker-compose.yaml) file located in the root folder.
