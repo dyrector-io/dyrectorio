@@ -125,21 +125,22 @@ End-to-end tests:
 1. Run `make upd` in the repo's root folder.
   - Save your `DATABASE_URL=<connection_string>` environment variable for later
 2. Go to the `web/crux` directory: `cd web/crux`
-3. Build the package `npm run build`
-4. Copy the _env.example_ file as _.env_ `cp .env.example .env`
-5. On Linux:
+3. Install dependencies `npm install`
+4. Build the package `npm run build`
+5. Copy the _env.example_ file as _.env_ `cp .env.example .env`
+6. On Linux:
   - Uncomment the `DNS_DEFAULT_RESULT_ORDER=ipv4first` line in the _.env_ file
   - Change the `CRUX_AGENT_ADDRESS` variable's value to `172.17.0.1:5000`
-5. On Mac / Windows you may have to edit your OS's hosts file to be sure the `host.docker.internal` domain resolves to docker's bridge network.
+6. On Mac / Windows you may have to edit your OS's hosts file to be sure the `host.docker.internal` domain resolves to docker's bridge network.
   - Alternatively you can use your machine's LAN IP.
-6. Deploy the database with `npm run prisma:migrate`
-7. Start the backend in production mode with `npm run start:prod`
-8. Repeat steps 3-4 in the `web/crux-ui` folder in a different terminal
-9. Start the frontend in production mode with `npm run start:prod`
-10. Be sure that `chromium` is installed on your system
+7. Deploy the database with `npm run prisma:migrate`
+8. Start the backend in production mode with `npm run start:prod`
+9. Repeat steps 3-5 in the `web/crux-ui` folder in a different terminal
+10. Start the frontend in production mode with `npm run start:prod`
+11. Be sure that `chromium` is installed on your system
   - You may have to run `npx playwright install-deps`
   - More info: https://playwright.dev/docs/intro
-11. In a different terminal go to the `/web/crux-ui` folder and run `npm run test:e2e`
+12. In a different terminal go to the `/web/crux-ui` folder and run `npm run test:e2e`
   - If you want to run a specific test file from the `/web/crux-ui/e2e` folder you can do it with `npx playwright test <file_name>`
 
 ## Non-development
