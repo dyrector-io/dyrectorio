@@ -120,12 +120,13 @@ Read more about the CLI in the [documentation](https://docs.dyrector.io/get-star
 ## Testing
 Unit tests:
 - Run `npm run test` in the `web/crux` or `web/crux-ui` folder.
+- Do not forget to run `npm ci` before the first run
 
 End-to-end tests:
 1. Run `make upd` in the repo's root folder.
   - Save your `DATABASE_URL=<connection_string>` environment variable for later
 2. Go to the `web/crux` directory: `cd web/crux`
-3. Install dependencies `npm install`
+3. Install dependencies `npm ci`
 4. Build the package `npm run build`
 5. Copy the _env.example_ file as _.env_ `cp .env.example .env`
 6. On Linux:
