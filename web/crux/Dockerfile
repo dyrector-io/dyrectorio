@@ -10,7 +10,7 @@ COPY ./package.json ./package-lock.json ./tsconfig.build.json ./tsconfig.json ./
 COPY ./prisma ./prisma
 COPY ./src ./src
 
-RUN npm ci --no-fund && npm run prismagen
+RUN npm ci --no-fund && npm run prisma:gen
 RUN npm run build
 
 # Stage 2
