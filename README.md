@@ -221,7 +221,7 @@ Patch version is raised if:
 
 Install the generator
 
-``` 
+```
 go get -u github.com/git-chglog/git-chglog/cmd/git-chglog
 ```
 
