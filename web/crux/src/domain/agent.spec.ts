@@ -15,7 +15,7 @@ import { Agent, AgentEvent } from './agent'
 
 const AGENT_ID = 'agent-id'
 const AGENT_ADDRESS = '127.0.0.1:1234'
-const AGENT_VERSION = 'agent-version'
+const AGENT_VERSION = '1.2.3'
 const AGENT_PUBLIC_KEY = 'public-key'
 
 const GrpcNodeConnectionMock = jest.fn().mockImplementation(() => ({
@@ -58,6 +58,7 @@ describe('agent', () => {
         publicKey: AGENT_PUBLIC_KEY,
       },
       eventChannel,
+      false,
     )
   })
 
@@ -231,7 +232,7 @@ describe('agent', () => {
       expect(commandChannelActual).toEqual({
         update: {
           tag: 'update-tag',
-          timeoutSeconds: 60 * 5 * 1000,
+          timeoutSeconds: Agent.AGENT_UPDATE_TIMEOUT,
         },
       })
     })
