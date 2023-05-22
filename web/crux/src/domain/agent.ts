@@ -25,7 +25,7 @@ import Deployment from './deployment'
 export class Agent {
   public static SECRET_TIMEOUT = 5000
 
-  private static AGENT_UPDATE_TIMEOUT = 60 * 5 * 1000
+  public static AGENT_UPDATE_TIMEOUT = 60 * 5
 
   private commandChannel = new Subject<AgentCommand>()
 
@@ -57,6 +57,7 @@ export class Agent {
     private connection: GrpcNodeConnection,
     info: AgentInfo,
     private readonly eventChannel: Subject<AgentEvent>,
+    readonly outdated: boolean,
   ) {
     this.id = connection.nodeId
     this.address = connection.address
@@ -78,7 +79,7 @@ export class Agent {
     }
 
     const now = new Date().getTime()
-    if (now - this.updateStartedAt < Agent.AGENT_UPDATE_TIMEOUT) {
+    if (now - this.updateStartedAt < Agent.AGENT_UPDATE_TIMEOUT * 1000) {
       return true
     }
 
@@ -87,7 +88,7 @@ export class Agent {
   }
 
   deploy(deployment: Deployment): Observable<DeploymentStatusMessage> {
-    this.throwWhenUpdating()
+    this.throwBeforeCommand()
 
     if (this.deployments.has(deployment.id)) {
       throw new CruxConflictException({
@@ -103,7 +104,7 @@ export class Agent {
   }
 
   upsertContainerStatusWatcher(prefix: string, oneShot: boolean): ContainerStatusWatcher {
-    this.throwWhenUpdating()
+    this.throwBeforeCommand()
 
     let watcher = this.statusWatchers.get(prefix)
     if (!watcher) {
@@ -116,7 +117,7 @@ export class Agent {
   }
 
   upsertContainerLogStream(container: ContainerIdentifier): ContainerLogStream {
-    this.throwWhenUpdating()
+    this.throwBeforeCommand()
 
     const key = Agent.containerPrefixNameOf(container)
     let stream = this.logStreams.get(key)
@@ -141,7 +142,7 @@ export class Agent {
   }
 
   sendContainerCommand(command: ContainerCommandRequest) {
-    this.throwWhenUpdating()
+    this.throwBeforeCommand()
 
     this.commandChannel.next({
       containerCommand: command,
@@ -149,7 +150,7 @@ export class Agent {
   }
 
   deleteContainers(request: DeleteContainersRequest): Observable<Empty> {
-    this.throwWhenUpdating()
+    this.throwBeforeCommand()
 
     const reqId = Agent.containerDeleteRequestToRequestId(request)
     const result = new Subject<Empty>()
@@ -249,7 +250,7 @@ export class Agent {
   }
 
   getContainerSecrets(prefix: string, name: string): Observable<ListSecretsResponse> {
-    this.throwWhenUpdating()
+    this.throwBeforeCommand()
 
     const key = Agent.containerPrefixNameOf({
       prefix,
@@ -303,17 +304,31 @@ export class Agent {
     this.secretsWatchers.delete(key)
   }
 
-  update(imageTag: string) {
-    this.throwWhenUpdating()
-
+  onUpdateStarted() {
     this.updateStartedAt = new Date().getTime()
+  }
 
-    this.commandChannel.next({
+  getUpdateCommand(imageTag: string): AgentCommand {
+    return {
       update: {
         tag: imageTag,
         timeoutSeconds: Agent.AGENT_UPDATE_TIMEOUT,
       },
-    } as AgentCommand)
+    }
+  }
+
+  update(imageTag: string) {
+    if (this.updating) {
+      throw new CruxPreconditionFailedException({
+        message: 'Node is already updating',
+        property: 'id',
+        value: this.id,
+      })
+    }
+
+    this.onUpdateStarted()
+
+    this.commandChannel.next(this.getUpdateCommand(imageTag))
   }
 
   onUpdateAborted(error?: string) {
@@ -344,10 +359,18 @@ export class Agent {
     this.deployments.forEach(it => it.debugInfo(logger))
   }
 
-  private throwWhenUpdating() {
+  private throwBeforeCommand() {
     if (this.updating) {
       throw new CruxPreconditionFailedException({
         message: 'Node is updating',
+        property: 'id',
+        value: this.id,
+      })
+    }
+
+    if (this.outdated) {
+      throw new CruxPreconditionFailedException({
+        message: 'Node is outdated',
         property: 'id',
         value: this.id,
       })
