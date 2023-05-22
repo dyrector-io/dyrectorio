@@ -158,7 +158,6 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 		fmt.Sprintf("CRUX_UI_URL=http://%s:%d", traefikHost, state.SettingsFile.TraefikWebPort),
 		fmt.Sprintf("CRUX_AGENT_ADDRESS=%s", cruxAgentAddr),
 		"LOCAL_DEPLOYMENT=true",
-		fmt.Sprintf("CRUX_AGENT_IMAGE=%s", state.SettingsFile.Version),
 		fmt.Sprintf("LOCAL_DEPLOYMENT_NETWORK=%s", state.SettingsFile.Network),
 		fmt.Sprintf("JWT_SECRET=%s", state.SettingsFile.CruxSecret),
 		fmt.Sprintf("FROM_NAME=%s", state.SettingsFile.MailFromName),
