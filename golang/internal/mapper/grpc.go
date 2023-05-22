@@ -434,19 +434,27 @@ func mapContainerPorts(in *[]dockerTypes.Port) []*common.ContainerStateItemPort 
 	return ports
 }
 
-func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList, svc *corev1.ServiceList) []*common.ContainerStateItem {
+func MapKubeDeploymentListToCruxStateItems(
+	deployments *appsv1.DeploymentList,
+	podsByDeployment map[string][]corev1.Pod,
+	svc *corev1.ServiceList,
+) []*common.ContainerStateItem {
 	stateItems := []*common.ContainerStateItem{}
 	svcMap := createServiceMap(svc)
 
 	for i := range deployments.Items {
 		deployment := deployments.Items[i]
+		pods, podsFound := podsByDeployment[deployment.Name]
+		if len(pods) > 1 {
+			log.Warn().Str("deployment", deployment.Name).Int("numberOfPods", len(pods)).Msg("More than one pod found for deployment")
+		}
 
 		stateItem := &common.ContainerStateItem{
 			Id: &common.ContainerIdentifier{
 				Prefix: deployment.Namespace,
 				Name:   deployment.Name,
 			},
-			State: mapKubeStatusToCruxContainerState(deployment.Status),
+			State: common.ContainerState_DEAD,
 			CreatedAt: timestamppb.New(
 				time.UnixMilli(deployment.GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
 			),
@@ -476,6 +484,10 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList, s
 				stateItem.ImageName = name
 				stateItem.ImageTag = tag
 			}
+		}
+
+		if podsFound && len(pods) == 1 {
+			stateItem.State = mapKubeStatusToCruxContainerState(pods[0].Status.ContainerStatuses[0].State)
 		}
 
 		stateItems = append(stateItems, stateItem)
@@ -514,9 +526,19 @@ func mapServicePorts(svc *corev1.Service) []*common.ContainerStateItemPort {
 }
 
 // do better mapping this is quick something
-func mapKubeStatusToCruxContainerState(status appsv1.DeploymentStatus) common.ContainerState {
-	if status.ReadyReplicas > 0 {
+func mapKubeStatusToCruxContainerState(state corev1.ContainerState) common.ContainerState {
+	if state.Running != nil {
 		return common.ContainerState_RUNNING
 	}
+	if state.Terminated != nil {
+		return common.ContainerState_EXITED
+	}
+	if state.Waiting != nil {
+		if state.Waiting.Reason == "CrashLoopBackOff" {
+			return common.ContainerState_RESTARTING
+		}
+		return common.ContainerState_CREATED
+	}
+
 	return common.ContainerState_DEAD
 }

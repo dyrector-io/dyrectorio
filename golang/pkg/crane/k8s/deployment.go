@@ -192,6 +192,22 @@ func (d *Deployment) Scale(namespace, name string, target int) error {
 	return err
 }
 
+func (d *Deployment) GetPods(namespace, name string) ([]coreV1.Pod, error) {
+	client, err := NewClient(d.appConfig).GetClientSet()
+	if err != nil {
+		return nil, err
+	}
+
+	pods, err := client.CoreV1().Pods(namespace).List(d.ctx, metaV1.ListOptions{
+		LabelSelector: fmt.Sprintf("app=%s", name),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return pods.Items, nil
+}
+
 // builds the container using the builder interface, with healthchecks, volumes, configs, ports...
 func buildContainer(p *deploymentParams,
 	cfg *config.Configuration,
