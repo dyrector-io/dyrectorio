@@ -11,10 +11,10 @@ case $(uname) in
     ;;
 esac
 
-if [ $ROOTLESS = "false" ]; then
-  if [ $(id -u) -ne 0 ]; then
+if [ "$ROOTLESS" = "false" ]; then
+  if [ "$(id -u)" -ne 0 ]; then
     echo "Installation process needs root privileges" 1>&2
-{{!-- this will quit the non-root script & restart the script as root --}}
+    # This will quit the non-root script & restart the script as root
     exec sudo -s "$0"
   fi
 fi
@@ -28,7 +28,7 @@ case $(uname) in
     ;;
   MINGW*)
     PLATFORM="WINDOWS"
-    if ! [ -z ${MSYS_NO_PATHCONV+x} ]; then
+    if [ -n "${MSYS_NO_PATHCONV+x}" ]; then
         ORIGINAL_PATHCONV_CONFIG=$MSYS_NO_PATHCONV
     fi
 
@@ -36,53 +36,53 @@ case $(uname) in
     HOST_DOCKER_SOCK_PATH="${HOST_DOCKER_SOCK_PATH:-//var/run/docker.sock}"
     ;;
   *)
-    echo "Not Suppported OS"
+    echo "Not Supported OS"
     exit 1
     ;;
 esac
 
 set_environment() {
-# Set folder for persisting data
+  # Set folder for persisting data
   PERSISTENCE_FOLDER_FROM_CRUX="{{#if rootPath}}{{{rootPath}}}{{/if}}"
-  if [ -z ${PERSISTENCE_FOLDER:-} ]; then
-    if [ -z ${PERSISTENCE_FOLDER_FROM_CRUX:-} ]; then
+  if [ -z "${PERSISTENCE_FOLDER:-}" ]; then
+    if [ -z "${PERSISTENCE_FOLDER_FROM_CRUX:-}" ]; then
       case $PLATFORM in
-      OSX*)
-        echo "Detected: Mac OS X"
-        PERSISTENCE_FOLDER=~/.dyrectorio-persistence/
-        ;;
-      LINUX*)
-        echo "Detected: Linux"
-        if [ $ROOTLESS = "false" ]; then
-          PERSISTENCE_FOLDER=/srv/dyrectorio-persistence/
-        else
+        OSX*)
+          echo "Detected: Mac OS X"
           PERSISTENCE_FOLDER=~/.dyrectorio-persistence/
-        fi
-        ;;
-      WINDOWS*)
-        echo "Detected: Windows(mingw64)"
-        PERSISTENCE_FOLDER=C:/.dyrectorio-persistence
-        ;;
-      *)
-        echo "Not supported OS and PERSISTENCE_FOLDER is not set!"
-        exit 1
-        ;;
+          ;;
+        LINUX*)
+          echo "Detected: Linux"
+          if [ "$ROOTLESS" = "false" ]; then
+            PERSISTENCE_FOLDER=/srv/dyrectorio-persistence/
+          else
+            PERSISTENCE_FOLDER=~/.dyrectorio-persistence/
+          fi
+          ;;
+        WINDOWS*)
+          echo "Detected: Windows(mingw64)"
+          PERSISTENCE_FOLDER="C:/.dyrectorio-persistence"
+          ;;
+        *)
+          echo "Not supported OS and PERSISTENCE_FOLDER is not set!"
+          exit 1
+          ;;
       esac
     else
       PERSISTENCE_FOLDER=$PERSISTENCE_FOLDER_FROM_CRUX
     fi
   fi
 
-  mkdir -p $PERSISTENCE_FOLDER
+  mkdir -p "$PERSISTENCE_FOLDER"
 
-  if [ $PLATFORM = "WINDOWS" ]; then
-    PERSISTENCE_FOLDER_TMP=${PERSISTENCE_FOLDER,}
-    PERSISTENCE_FOLDER="/run/desktop/mnt/host/${PERSISTENCE_FOLDER_TMP//:/''}"
+  if [ "$PLATFORM" = "WINDOWS" ]; then
+    PERSISTENCE_FOLDER_TMP=$(echo "$PERSISTENCE_FOLDER" | tr '[:upper:]' '[:lower:]')
+    PERSISTENCE_FOLDER=$(echo "/run/desktop/mnt/host/${PERSISTENCE_FOLDER_TMP}" | tr -d ":")
   fi
 
-  if [ -z ${CRI_EXECUTABLE:-} ]; then
-    if [ -z "$(which docker)" ]; then
-      if [ -z "$(which podman)" ]; then
+  if [ -z "${CRI_EXECUTABLE:-}" ]; then
+    if ! command -v docker >/dev/null 2>&1; then
+      if ! command -v podman >/dev/null 2>&1; then
         echo "Docker is required, make sure it is installed and available in PATH!"
         exit 1
       else
@@ -93,12 +93,12 @@ set_environment() {
     fi
   fi
 
-  if [ -z ${HOST_DOCKER_SOCK_PATH:-} ]; then
-    if [ -z ${DOCKER_HOST:-} ]; then
+  if [ -z "${HOST_DOCKER_SOCK_PATH:-}" ]; then
+    if [ -z "${DOCKER_HOST:-}" ]; then
       HOST_DOCKER_SOCK_PATH="/var/run/docker.sock"
     else
-      if [ ${DOCKER_HOST:0:7} = "unix://" ]; then
-        HOST_DOCKER_SOCK_PATH=${DOCKER_HOST:7}
+      if [ $(echo "$DOCKER_HOST" | cut -b -7) = "unix://" ]; then
+        HOST_DOCKER_SOCK_PATH="$DOCKER_HOST"
       else
         echo "Invalid DOCKER_HOST variable please set HOST_DOCKER_SOCK_PATH if your socket is in a custom location otherwise unset DOCKER_HOST!"
         exit 1
@@ -112,7 +112,7 @@ dagent_clean() {
     set +e
     echo "Stopping existing dyrector.io agent (dagent)..."
     $CRI_EXECUTABLE stop dagent
-    if [ $? -ne 0 ]; then
+    if ! $CRI_EXECUTABLE stop dagent; then
       set -e
       $CRI_EXECUTABLE kill dagent
     fi
@@ -123,7 +123,7 @@ dagent_clean() {
     set +e
     echo "Removing existing dyrector.io agent (dagent)..."
     $CRI_EXECUTABLE rm dagent
-    if [ $? -ne 0 ]; then
+    if $CRI_EXECUTABLE rm dagent; then
       set -e
       $CRI_EXECUTABLE rm -f dagent
     fi
@@ -134,7 +134,7 @@ dagent_clean() {
 dagent_install() {
   echo "Installing dyrector.io agent (dagent)..."
 
-  if [ {{disableForcePull}} != true ]; then
+  if {{disableForcePull}}; then
     $CRI_EXECUTABLE pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:{{agentImageTag}}
   fi
 
@@ -150,21 +150,21 @@ dagent_install() {
     -e TRAEFIK_ACME_MAIL='{{traefik.acmeEmail}}' \
     -e TRAEFIK_TLS='true' \
     {{/if}}
-    -e DATA_MOUNT_PATH=$PERSISTENCE_FOLDER \
+    -e DATA_MOUNT_PATH="$PERSISTENCE_FOLDER" \
     {{#if debugMode}}
     -e DEBUG='true' \
     {{/if}}
-    -e HOST_DOCKER_SOCK_PATH=$HOST_DOCKER_SOCK_PATH \
+    -e HOST_DOCKER_SOCK_PATH="$HOST_DOCKER_SOCK_PATH" \
     --add-host=host.docker.internal:host-gateway \
     --name 'dagent' \
-    -v $PERSISTENCE_FOLDER/:/srv/dagent \
-    -v $HOST_DOCKER_SOCK_PATH:/var/run/docker.sock \
+    -v "$PERSISTENCE_FOLDER/":/srv/dagent \
+    -v "$HOST_DOCKER_SOCK_PATH":/var/run/docker.sock \
     -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:{{agentImageTag}}
 
-  if [ -z ${ORIGINAL_PATHCONV_CONFIG+x} ]; then
+  if [ -z "${ORIGINAL_PATHCONV_CONFIG+x}" ]; then
     unset MSYS_NO_PATHCONV
   else
-    export MSYS_NO_PATHCONV=$ORIGINAL_PATHCONV_CONFIG
+    export MSYS_NO_PATHCONV="$ORIGINAL_PATHCONV_CONFIG"
   fi
 }
 
