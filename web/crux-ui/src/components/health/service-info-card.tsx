@@ -24,7 +24,7 @@ const ServiceInfoCard = (props: ServiceStatusCardProps) => {
           {name}
         </DyoHeading>
 
-        <ServiceStatusIndicator className="ml-auto pl-8 py-auto" status={info.status} />
+        <ServiceStatusIndicator className="ml-auto" status={info.status} />
       </div>
 
       <ServiceStatusTag className="mx-auto mt-12" status={info.status} />

@@ -1,17 +1,17 @@
-import DyoIcon from '@app/elements/dyo-icon'
+import DyoIndicator from '@app/elements/dyo-indicator'
 import { NodeStatus } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 
-const statusToAssetName = (status: NodeStatus) => {
+const statusToColor = (status: NodeStatus) => {
   switch (status) {
     case 'unreachable':
-      return 'circle-red'
+      return 'bg-dyo-red'
     case 'connected':
-      return 'circle-green'
+      return 'bg-dyo-green'
     case 'outdated':
-      return 'circle-turquoise'
+      return 'bg-dyo-purple'
     default:
-      return 'circle-orange'
+      return 'bg-warning-orange'
   }
 }
 
@@ -25,7 +25,7 @@ const NodeStatusIndicator = (props: NodeStatusStatusIndicatorProps) => {
 
   const { t } = useTranslation('common')
 
-  return <DyoIcon className={className} src={`/${statusToAssetName(status)}.svg`} alt={t(`nodeStatuses.${status}`)} />
+  return <DyoIndicator className={className} color={statusToColor(status)} title={t(`nodeStatuses.${status}`)} />
 }
 
 export default NodeStatusIndicator
