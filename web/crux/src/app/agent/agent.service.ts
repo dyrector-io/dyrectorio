@@ -359,8 +359,7 @@ export default class AgentService {
     connection: GrpcNodeConnection,
     request: AgentInfo,
   ): Promise<Observable<AgentCommand>> {
-    const updatedAgent = this.agents.has(request.id)
-    if (updatedAgent) {
+    if (this.agents.has(request.id)) {
       const agent = this.agents.get(request.id)
       if (!agent.updating) {
         throw new CruxConflictException({
@@ -382,15 +381,6 @@ export default class AgentService {
           request.version
         }', package is '${getPackageVersion(this.configService)}'`,
       )
-    }
-
-    if (updatedAgent && outdated) {
-      this.logger.warn(`Updated agent ('${request.id}') is outdated, shutting down`)
-      return of({
-        close: {
-          reason: CloseReason.SHUTDOWN,
-        },
-      })
     }
 
     let agent: Agent

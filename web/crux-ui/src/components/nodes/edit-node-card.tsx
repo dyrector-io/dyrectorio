@@ -17,6 +17,7 @@ import {
   NodeDetails,
   NodeEventMessage,
   NodeInstall,
+  nodeIsUpdateable,
   NodeType,
   UpdateNode,
   UpdateNodeAgentMessage,
@@ -267,7 +268,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
                   secondary
                   danger={node.status === 'outdated'}
                   onClick={onUpdateNode}
-                  disabled={(node.status !== 'connected' && node.status !== 'outdated') || node.updating}
+                  disabled={!nodeIsUpdateable(node)}
                 >
                   <span className="flex">
                     {t('update')}

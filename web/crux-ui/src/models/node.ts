@@ -112,3 +112,6 @@ export type UpdateNodeAgentMessage = {
 
 export const WS_TYPE_CONTAINER_COMMAND = 'container-command'
 export type ContainerCommandMessage = ContainerCommand
+
+export const nodeIsUpdateable = (node: NodeDetails) =>
+  (node.status === 'connected' || node.status === 'outdated') && !node.updating
