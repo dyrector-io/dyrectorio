@@ -98,7 +98,7 @@ set_environment() {
       HOST_DOCKER_SOCK_PATH="/var/run/docker.sock"
     else
       if [ $(echo "$DOCKER_HOST" | cut -b -7) = "unix://" ]; then
-        HOST_DOCKER_SOCK_PATH="$DOCKER_HOST"
+        HOST_DOCKER_SOCK_PATH=$(echo "$DOCKER_HOST" | cut -b 7-)
       else
         echo "Invalid DOCKER_HOST variable please set HOST_DOCKER_SOCK_PATH if your socket is in a custom location otherwise unset DOCKER_HOST!"
         exit 1
