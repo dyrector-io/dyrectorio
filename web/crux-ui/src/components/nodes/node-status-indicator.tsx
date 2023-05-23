@@ -8,6 +8,8 @@ const statusToAssetName = (status: NodeStatus) => {
       return 'circle-red'
     case 'connected':
       return 'circle-green'
+    case 'outdated':
+      return 'circle-turquoise'
     default:
       return 'circle-orange'
   }

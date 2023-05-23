@@ -178,7 +178,7 @@ export class Agent {
     this.eventChannel.next({
       id: this.id,
       address: this.address,
-      status: 'connected',
+      status: this.outdated ? 'outdated' : 'connected',
       version: this.version,
       connectedAt: this.connection.connectedAt,
       updating: false,
@@ -304,20 +304,7 @@ export class Agent {
     this.secretsWatchers.delete(key)
   }
 
-  onUpdateStarted() {
-    this.updateStartedAt = new Date().getTime()
-  }
-
-  getUpdateCommand(imageTag: string): AgentCommand {
-    return {
-      update: {
-        tag: imageTag,
-        timeoutSeconds: Agent.AGENT_UPDATE_TIMEOUT,
-      },
-    }
-  }
-
-  update(imageTag: string) {
+  update(tag: string) {
     if (this.updating) {
       throw new CruxPreconditionFailedException({
         message: 'Node is already updating',
@@ -326,9 +313,14 @@ export class Agent {
       })
     }
 
-    this.onUpdateStarted()
+    this.updateStartedAt = new Date().getTime()
 
-    this.commandChannel.next(this.getUpdateCommand(imageTag))
+    this.commandChannel.next({
+      update: {
+        tag,
+        timeoutSeconds: Agent.AGENT_UPDATE_TIMEOUT,
+      },
+    })
   }
 
   onUpdateAborted(error?: string) {
@@ -336,7 +328,7 @@ export class Agent {
 
     this.eventChannel.next({
       id: this.id,
-      status: 'connected',
+      status: this.outdated ? 'outdated' : 'connected',
       error,
       updating: false,
     })

@@ -281,11 +281,6 @@ export default class AgentService {
 
     agent.onUpdateAborted(request.error)
 
-    if (agent.outdated) {
-      this.logger.warn(`Agent is outdated, shutting down`)
-      agent.close(CloseReason.SHUTDOWN)
-    }
-
     return Empty
   }
 
@@ -454,14 +449,7 @@ export default class AgentService {
     this.agentCount.inc()
     this.logServiceInfo()
 
-    const commandChannel = agent.onConnected()
-
-    if (outdated) {
-      agent.onUpdateStarted()
-      return commandChannel.pipe(startWith(agent.getUpdateCommand(this.getAgentImageTag())))
-    }
-
-    return commandChannel
+    return agent.onConnected()
   }
 
   private async createDeploymentEvents(id: string, tryCount: number, events: DeploymentProgressEvent[]) {

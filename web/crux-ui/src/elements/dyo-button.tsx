@@ -12,6 +12,7 @@ export interface DyoButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButt
   color?: string
   textColor?: string
   href?: string
+  danger?: boolean
 }
 
 const DyoButton = (props: DyoButtonProps) => {
@@ -29,10 +30,15 @@ const DyoButton = (props: DyoButtonProps) => {
     disabled,
     children,
     type,
+    danger,
     ...forwaredProps
   } = props
 
-  const defaultColor = secondary
+  const defaultColor = danger
+    ? outlined
+      ? 'ring-error-red'
+      : 'bg-error-red'
+    : secondary
     ? outlined
       ? 'ring-warning-orange'
       : 'bg-warning-orange'

@@ -6,7 +6,7 @@ export type NodeType = typeof NODE_TYPE_VALUES[number]
 export const NODE_INSTALL_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
 export type NodeInstallScriptType = typeof NODE_INSTALL_SCRIPT_TYPE_VALUES[number]
 
-export type NodeStatus = 'unreachable' | 'connected'
+export type NodeStatus = 'unreachable' | 'connected' | 'outdated'
 
 export type NodeConnection = {
   address?: string
