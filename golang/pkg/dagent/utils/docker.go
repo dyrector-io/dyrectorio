@@ -290,16 +290,18 @@ func DeployImage(ctx context.Context,
 
 	matchedContainer, err := dockerHelper.GetContainerByName(ctx, containerName)
 	if err != nil {
-		dog.WriteContainerState("", fmt.Sprintf("Failed to find container: %s", containerName))
+		dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED, err.Error(), fmt.Sprintf("Failed to find container: %s", containerName))
 		return err
 	}
 
 	if matchedContainer != nil {
-		dog.WriteContainerState(matchedContainer.State)
+		dog.WriteContainerState(mapper.MapDockerStateToCruxContainerState(matchedContainer.State), matchedContainer.State)
 
 		err = dockerHelper.DeleteContainerByID(ctx, dog, matchedContainer.ID)
 		if err != nil {
-			dog.WriteContainerState("", fmt.Sprintf("Failed to delete container (%s): %s", containerName, err.Error()))
+			dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED,
+				err.Error(),
+				fmt.Sprintf("Failed to delete container (%s): %s", containerName, err.Error()))
 			return err
 		}
 	}
@@ -335,17 +337,22 @@ func DeployImage(ctx context.Context,
 
 	cont, err := builder.CreateAndStart()
 	if err != nil {
-		dog.WriteContainerState("", fmt.Sprintf("Failed to start container (%s): %s", containerName, err.Error()))
+		dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED,
+			err.Error(),
+			fmt.Sprintf("Failed to start container (%s): %s", containerName, err.Error()))
 		return err
 	}
 
 	matchedContainer, err = dockerHelper.GetContainerByID(ctx, *cont.GetContainerID())
 	if err != nil || matchedContainer == nil {
-		dog.WriteContainerState("", fmt.Sprintf("Failed to find container (%s): %s", containerName, err.Error()))
+		dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED,
+			err.Error(),
+			fmt.Sprintf("Failed to find container (%s): %s", containerName, err.Error()))
 		return err
 	}
 
-	dog.WriteContainerState(matchedContainer.State, "Started container: "+containerName)
+	dog.WriteContainerState(mapper.MapDockerStateToCruxContainerState(matchedContainer.State),
+		matchedContainer.State, "Started container: "+containerName)
 
 	if versionData != nil {
 		DraftRelease(deployImageRequest.InstanceConfig.ContainerPreName, *versionData, v1.DeployVersionResponse{}, cfg)

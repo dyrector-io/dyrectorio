@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -10,7 +11,6 @@ import (
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
-	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 
@@ -408,7 +408,8 @@ func MapContainerState(in []dockerTypes.Container, prefix string) []*common.Cont
 			},
 			Command:   it.Command,
 			CreatedAt: timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
-			State:     dogger.MapContainerState(it.State),
+			State:     MapDockerStateToCruxContainerState(it.State),
+			Reason:    it.State,
 			Status:    it.Status,
 			Ports:     mapContainerPorts(&it.Ports),
 			ImageName: imageName[0],
@@ -454,7 +455,7 @@ func MapKubeDeploymentListToCruxStateItems(
 				Prefix: deployment.Namespace,
 				Name:   deployment.Name,
 			},
-			State: common.ContainerState_DEAD,
+			State: common.ContainerState_CONTAINER_STATE_UNSPECIFIED,
 			CreatedAt: timestamppb.New(
 				time.UnixMilli(deployment.GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
 			),
@@ -487,7 +488,7 @@ func MapKubeDeploymentListToCruxStateItems(
 		}
 
 		if podsFound && len(pods) == 1 {
-			stateItem.State = mapKubeStatusToCruxContainerState(pods[0].Status.ContainerStatuses[0].State)
+			mapKubeStatusToCruxContainerState(stateItem, pods[0].Status.ContainerStatuses[0].State)
 		}
 
 		stateItems = append(stateItems, stateItem)
@@ -525,20 +526,46 @@ func mapServicePorts(svc *corev1.Service) []*common.ContainerStateItemPort {
 	return res
 }
 
-// do better mapping this is quick something
-func mapKubeStatusToCruxContainerState(state corev1.ContainerState) common.ContainerState {
-	if state.Running != nil {
-		return common.ContainerState_RUNNING
+func mapKubeStatusToCruxContainerState(stateItem *common.ContainerStateItem, kubeContainerState corev1.ContainerState) error {
+	if kubeContainerState.Running != nil {
+		stateItem.State = common.ContainerState_RUNNING
+		stateItem.Reason = kubeContainerState.Running.String()
+
+		return nil
 	}
-	if state.Terminated != nil {
-		return common.ContainerState_EXITED
+	if kubeContainerState.Terminated != nil {
+		stateItem.State = common.ContainerState_EXITED
+		stateItem.Reason = kubeContainerState.Terminated.Reason
+
+		return nil
 	}
-	if state.Waiting != nil {
-		if state.Waiting.Reason == "CrashLoopBackOff" {
-			return common.ContainerState_RESTARTING
-		}
-		return common.ContainerState_CREATED
+	if kubeContainerState.Waiting != nil {
+		stateItem.State = common.ContainerState_WAITING
+		stateItem.Reason = kubeContainerState.Waiting.Reason
+
+		return nil
 	}
 
-	return common.ContainerState_DEAD
+	return fmt.Errorf("Unknown pod container state: %s", kubeContainerState.String())
+}
+
+func MapDockerStateToCruxContainerState(state string) common.ContainerState {
+	switch state {
+	case "created":
+		return common.ContainerState_WAITING
+	case "restarting":
+		return common.ContainerState_WAITING
+	case "running":
+		return common.ContainerState_RUNNING
+	case "removing":
+		return common.ContainerState_WAITING
+	case "paused":
+		return common.ContainerState_WAITING
+	case "exited":
+		return common.ContainerState_EXITED
+	case "dead":
+		return common.ContainerState_EXITED
+	default:
+		return common.ContainerState_CONTAINER_STATE_UNSPECIFIED
+	}
 }

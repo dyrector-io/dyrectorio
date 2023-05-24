@@ -91,7 +91,7 @@ func (dog *DeploymentLogger) WriteDeploymentStatus(status common.DeploymentStatu
 	}
 }
 
-func (dog *DeploymentLogger) WriteContainerState(containerState string, messages ...string) {
+func (dog *DeploymentLogger) WriteContainerState(containerState common.ContainerState, reason string, messages ...string) {
 	prefix := fmt.Sprintf("%s - %s", dog.requestID, containerState)
 
 	for i := range messages {
@@ -103,7 +103,8 @@ func (dog *DeploymentLogger) WriteContainerState(containerState string, messages
 		instance := &common.DeploymentStatusMessage_Instance{
 			Instance: &common.InstanceDeploymentItem{
 				InstanceId: dog.requestID,
-				State:      MapContainerState(containerState),
+				State:      containerState,
+				Reason:     reason,
 			},
 		}
 

@@ -277,6 +277,7 @@ model Instance {
   id           String              @id @default(uuid()) @db.Uuid
   updatedAt    DateTime            @updatedAt @db.Timestamptz(6)
   state        ContainerStateEnum?
+  reason       String?
   deploymentId String              @db.Uuid
   imageId      String              @db.Uuid
 
@@ -415,13 +416,9 @@ enum VersionTypeEnum {
 }
 
 enum ContainerStateEnum {
-  created
-  restarting
   running
-  removing
-  paused
+  waiting
   exited
-  dead
 }
 
 enum DeploymentStatusEnum {

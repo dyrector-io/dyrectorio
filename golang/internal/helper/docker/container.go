@@ -12,6 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
 func DeleteContainerByName(ctx context.Context, nameFilter string) error {
@@ -50,7 +51,7 @@ func deleteContainerByIDAndState(ctx context.Context, dog *dogger.DeploymentLogg
 		fallthrough
 	case "exited", "dead", "created":
 		if dog != nil {
-			dog.WriteContainerState("removing", "Removing container: "+id)
+			dog.WriteContainerState(common.ContainerState_WAITING, state, "Removing container: "+id)
 		}
 
 		if err = cli.ContainerRemove(ctx, id, types.ContainerRemoveOptions{}); err != nil {

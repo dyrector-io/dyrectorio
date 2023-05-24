@@ -14,6 +14,7 @@ import { MergedContainerConfigData } from './container'
 export type DeploymentProgressContainerEvent = {
   instanceId: string
   state: ContainerStateEnum
+  reason: string
 }
 
 export type DeploymentProgressEvent = {
@@ -136,6 +137,7 @@ export default class Deployment {
         value: {
           instanceId: progress.instance.instanceId,
           state: containerStateToDb(progress.instance.state),
+          reason: progress.instance.reason,
         },
       })
     }

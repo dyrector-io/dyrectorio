@@ -10,13 +10,9 @@ message Empty {}
 // Deployment
 enum ContainerState {
   CONTAINER_STATE_UNSPECIFIED = 0;
-  CREATED = 1;
-  RESTARTING = 2;
-  RUNNING = 3;
-  REMOVING = 4;
-  PAUSED = 5;
-  EXITED = 6;
-  DEAD = 7;
+  RUNNING = 1;
+  WAITING = 2;
+  EXITED = 3;
 }
 
 enum DeploymentStatus {
@@ -32,6 +28,7 @@ enum DeploymentStatus {
 message InstanceDeploymentItem {
   string instanceId = 100;
   ContainerState state = 101;
+  string reason = 102;
 }
 
 message DeploymentStatusMessage {
@@ -59,6 +56,9 @@ message ContainerStateItem {
   google.protobuf.Timestamp createdAt = 102;
   /* The 'State' of the container (Created, Running, etc) */
   ContainerState state = 103;
+  /* The 'reason' behind 'state'. */
+  string reason = 107;
+
   /*
    * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
    * etc). Unused but left here for reverse compatibility with the legacy

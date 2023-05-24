@@ -185,6 +185,8 @@ export class ContainerDto {
 
   state: ContainerState
 
+  reason: string
+
   status: string
 
   imageName: string

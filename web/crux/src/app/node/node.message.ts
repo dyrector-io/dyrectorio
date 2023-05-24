@@ -42,6 +42,8 @@ export class ContainerMessage {
 
   state: ContainerState
 
+  reason: string
+
   ports: ContainerPortDto[]
 }
 

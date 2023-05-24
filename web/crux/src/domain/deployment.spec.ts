@@ -35,13 +35,9 @@ describe('DomainDeployment', () => {
   })
 
   it('test containerStateToDb', () => {
-    expect(containerStateToDb(ContainerState.CREATED)).toEqual('created')
-    expect(containerStateToDb(ContainerState.DEAD)).toEqual('dead')
-    expect(containerStateToDb(ContainerState.EXITED)).toEqual('exited')
-    expect(containerStateToDb(ContainerState.PAUSED)).toEqual('paused')
-    expect(containerStateToDb(ContainerState.REMOVING)).toEqual('removing')
-    expect(containerStateToDb(ContainerState.RESTARTING)).toEqual('restarting')
     expect(containerStateToDb(ContainerState.RUNNING)).toEqual('running')
+    expect(containerStateToDb(ContainerState.WAITING)).toEqual('waiting')
+    expect(containerStateToDb(ContainerState.EXITED)).toEqual('exited')
 
     expect(containerStateToDb(ContainerState.UNRECOGNIZED)).toEqual(null)
     expect(containerStateToDb(null)).toEqual(null)

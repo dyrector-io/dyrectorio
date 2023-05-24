@@ -103,6 +103,7 @@ export default class NodeMapper {
           imageTag: it.imageTag,
           ports: it.ports,
           state: this.containerStateToDto(it.state),
+          reason: it.reason,
           date: fromTimestamp(it.createdAt),
         })) ?? [],
     }
@@ -114,6 +115,7 @@ export default class NodeMapper {
       command: it.command,
       createdAt: fromTimestamp(it.createdAt),
       state: this.containerStateToDto(it.state),
+      reason: it.reason,
       status: it.status,
       imageName: it.imageName,
       imageTag: it.imageTag,
