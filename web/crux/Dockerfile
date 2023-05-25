@@ -1,7 +1,6 @@
 # Stage 1
 FROM docker.io/library/node:19.2-alpine3.17 AS BUILDER
 
-ENV NODE_ENV production
 WORKDIR /app
 
 RUN apk --update add openssl1.1-compat
@@ -14,7 +13,8 @@ RUN npm run prisma:gen
 
 COPY ./src ./src
 
-RUN npm run build
+RUN npm run build && \
+    npm prune --production
 
 # Stage 2
 FROM docker.io/library/node:19.2-alpine3.17 AS RUNNER

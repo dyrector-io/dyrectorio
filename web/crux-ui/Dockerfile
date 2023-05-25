@@ -2,14 +2,14 @@
 FROM docker.io/library/node:19.2-alpine AS BUILDER
 WORKDIR /app
 
-ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
 COPY ./package.json ./package-lock.json ./
 RUN npm ci --no-fund
 
 COPY . .
-RUN npm run build
+RUN npm run build && \
+    npm prune --production
 
 # stage 2, run the app
 FROM docker.io/library/node:19.2-alpine AS RUNNER
