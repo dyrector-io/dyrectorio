@@ -1,14 +1,15 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
 import { Observable, map } from 'rxjs'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { WsAuthorize, WsMessage } from 'src/websockets/common'
-import WsParam from 'src/websockets/decorators/ws.param.decorator'
-import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
 import {
   UseGlobalWsFilters,
   UseGlobalWsGuards,
   UseGlobalWsInterceptors,
 } from 'src/websockets/decorators/ws.gateway.decorators'
+import WsParam from 'src/websockets/decorators/ws.param.decorator'
+import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
 import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import {
   ContainerCommandMessage,
@@ -50,6 +51,7 @@ export default class NodeContainerWebSocketGateway {
     }
   }
 
+  @AuditLogLevel('disabled')
   @SubscribeMessage('watch-containers-state')
   watchContainersState(
     @NodeId() nodeId: string,
@@ -67,6 +69,7 @@ export default class NodeContainerWebSocketGateway {
     )
   }
 
+  @AuditLogLevel('disabled')
   @SubscribeMessage('watch-container-log')
   watchContainerLog(
     @NodeId() nodeId: string,
