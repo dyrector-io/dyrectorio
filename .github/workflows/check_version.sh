@@ -13,10 +13,10 @@ elif [ "${path: -3}" = .go ]; then
   expected_version="Version = \"$version\""
 else
   echo Invalid file $path
-  exit 2
+  exit 1
 fi
 
-#get rid of unnecessary spaces
+# get rid of unnecessary spaces
 package_version=$(echo $package_version)
 
 if [ "$expected_version" != "$package_version" ]; then
