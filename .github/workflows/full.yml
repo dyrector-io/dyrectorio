@@ -840,4 +840,3 @@ jobs:
       - name: Rollout restart
         run: |
           kubectl -n dyo-staging rollout restart crux-api
-
