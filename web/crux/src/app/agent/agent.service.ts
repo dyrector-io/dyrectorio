@@ -281,11 +281,6 @@ export default class AgentService {
 
     agent.onUpdateAborted(request.error)
 
-    if (agent.outdated) {
-      this.logger.warn(`Agent is outdated, shutting down`)
-      agent.close(CloseReason.SHUTDOWN)
-    }
-
     return Empty
   }
 
@@ -364,10 +359,9 @@ export default class AgentService {
     connection: GrpcNodeConnection,
     request: AgentInfo,
   ): Promise<Observable<AgentCommand>> {
-    const updatedAgent = this.agents.has(request.id)
+    const updatedAgent = this.agents.get(request.id)
     if (updatedAgent) {
-      const agent = this.agents.get(request.id)
-      if (!agent.updating) {
+      if (!updatedAgent.updating) {
         throw new CruxConflictException({
           message: 'Agent is already connected.',
           property: 'id',
@@ -376,8 +370,8 @@ export default class AgentService {
 
       this.logger.verbose(`Updated agent connected for '${request.id}'`)
 
-      agent.close(CloseReason.SELF_DESTRUCT)
-      this.agents.delete(request.id)
+      updatedAgent.close(CloseReason.SELF_DESTRUCT)
+      this.agents.delete(updatedAgent.id)
     }
 
     const outdated = !this.agentVersionSupported(request.version)
@@ -387,15 +381,6 @@ export default class AgentService {
           request.version
         }', package is '${getPackageVersion(this.configService)}'`,
       )
-    }
-
-    if (updatedAgent && outdated) {
-      this.logger.warn(`Updated agent ('${request.id}') is outdated, shutting down`)
-      return of({
-        close: {
-          reason: CloseReason.SHUTDOWN,
-        },
-      })
     }
 
     let agent: Agent
@@ -454,14 +439,7 @@ export default class AgentService {
     this.agentCount.inc()
     this.logServiceInfo()
 
-    const commandChannel = agent.onConnected()
-
-    if (outdated) {
-      agent.onUpdateStarted()
-      return commandChannel.pipe(startWith(agent.getUpdateCommand(this.getAgentImageTag())))
-    }
-
-    return commandChannel
+    return agent.onConnected()
   }
 
   private async createDeploymentEvents(id: string, tryCount: number, events: DeploymentProgressEvent[]) {

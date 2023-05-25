@@ -26,7 +26,7 @@ export default class NodePrefixContainerHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Request must include `nodeId`, `prefix`, and `name`.',
-    summary: 'Start a container deployed with dyrectorio on a node.',
+    summary: 'Start a container deployed with dyrector.io on a node.',
   })
   @ApiNoContentResponse({ description: 'Container started.' })
   @UuidParams(PARAM_NODE_ID)
@@ -38,7 +38,7 @@ export default class NodePrefixContainerHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Request must include `nodeId`, `prefix`, and `name`.',
-    summary: 'Stop a container deployed with dyrectorio on a node.',
+    summary: 'Stop a container deployed with dyrector.io on a node.',
   })
   @ApiNoContentResponse({ description: 'Container stopped.' })
   @UuidParams(PARAM_NODE_ID)
@@ -50,7 +50,7 @@ export default class NodePrefixContainerHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Request must include `nodeId`, `prefix`, and `name`.',
-    summary: 'Restart a container deployed with dyrectorio on a node.',
+    summary: 'Restart a container deployed with dyrector.io on a node.',
   })
   @ApiNoContentResponse({ description: 'Container restarted.' })
   @UuidParams(PARAM_NODE_ID)
@@ -62,7 +62,7 @@ export default class NodePrefixContainerHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Request must include `nodeId`, and `prefix`.',
-    summary: 'Delete containers deployed with dyrectorio, with the specified prefix on a node.',
+    summary: 'Delete containers deployed with dyrector.io, with the specified prefix on a node.',
   })
   @ApiNoContentResponse({ description: 'Containers deleted.' })
   @UuidParams(PARAM_NODE_ID)
@@ -74,7 +74,7 @@ export default class NodePrefixContainerHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Request must include `nodeId`, `prefix`, and `name`.',
-    summary: 'Delete a container deployed with dyrectorio, with the specified prefix and name on a node.',
+    summary: 'Delete a container deployed with dyrector.io, with the specified prefix and name on a node.',
   })
   @ApiNoContentResponse({ description: 'Container deleted.' })
   @UuidParams(PARAM_NODE_ID)

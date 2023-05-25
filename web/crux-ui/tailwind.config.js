@@ -18,6 +18,8 @@ module.exports = {
         'dyo-violet': '#a78bfa',
         'dyo-orange': '#fb923c',
         'dyo-sky': '#38bdf8',
+        'dyo-red': '#d33833',
+        'dyo-gray': '#909090',
         bright: '#d0d2d6',
         'bright-muted': '#676d7d',
         'light-eased': '#b4b7bd',
