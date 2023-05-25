@@ -1,14 +1,14 @@
-import DyoIcon from '@app/elements/dyo-icon'
+import DyoIndicator from '@app/elements/dyo-indicator'
 import useTranslation from 'next-translate/useTranslation'
 
-const assetOfStatus = (present?: boolean) => {
+const colorOfStatus = (present?: boolean) => {
   switch (present) {
     case false:
-      return '/circle-red.svg'
+      return 'bg-dyo-red'
     case true:
-      return '/circle-green.svg'
+      return 'bg-dyo-green'
     default:
-      return '/circle-gray.svg'
+      return 'bg-dyo-gray'
   }
 }
 
@@ -32,7 +32,7 @@ const SecretStatus = (props: SecretStatusProps) => {
   const { t } = useTranslation('common')
   const { className, present } = props
 
-  return <DyoIcon className={className} alt={t(altOfStatus(present))} src={assetOfStatus(present)} />
+  return <DyoIndicator className={className} color={colorOfStatus(present)} title={t(altOfStatus(present))} />
 }
 
 export default SecretStatus
