@@ -815,3 +815,29 @@ jobs:
           cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.tag }} )
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+  crux_test_deploy:
+    runs-on: ubuntu-22.04
+    # needs: [crux_push]
+    steps:
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        id: install
+      - name: Set up kubelogin for non-interactive login
+        uses: azure/use-kubelogin@v1
+        with:
+          kubelogin-version: 'v0.0.24'
+      - name: Login into Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Set kubectl context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}'
+          cluster-name: ${{ secrets.AZURE_CLUSTER_NAME }}
+          admin: 'false'
+          use-kubelogin: 'true'
+      - name: Rollout restart
+        run: |
+          kubectl -n dyo-staging rollout restart crux-api
+
