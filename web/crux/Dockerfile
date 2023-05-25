@@ -1,5 +1,5 @@
 # Stage 1
-FROM node:19.2-alpine3.17 AS BUILDER
+FROM docker.io/library/node:19.2-alpine3.17 AS BUILDER
 
 ENV NODE_ENV production
 WORKDIR /app
@@ -7,14 +7,17 @@ WORKDIR /app
 RUN apk --update add openssl1.1-compat
 
 COPY ./package.json ./package-lock.json ./tsconfig.build.json ./tsconfig.json ./
+RUN npm ci --no-fund
+
 COPY ./prisma ./prisma
+RUN npm run prismagen
+
 COPY ./src ./src
 
-RUN npm ci --no-fund && npm run prisma:gen
 RUN npm run build
 
 # Stage 2
-FROM node:19.2-alpine3.17 AS RUNNER
+FROM docker.io/library/node:19.2-alpine3.17 AS RUNNER
 
 ENV NODE_ENV production
 ENV TZ UTC

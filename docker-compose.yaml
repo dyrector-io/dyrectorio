@@ -25,6 +25,7 @@ services:
     command: [serve]
     environment:
       - TZ=${TIMEZONE:-UTC}
+      - LOG_LEVEL=${LOG_LEVEL:-debug}
       - DATABASE_URL=postgresql://crux:${CRUX_POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
       - KRATOS_ADMIN_URL=http://kratos:4434
       - KRATOS_URL=http://kratos:4433
