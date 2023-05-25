@@ -143,6 +143,7 @@ export default class DeployWebSocketGateway {
     }
   }
 
+  @AuditLogLevel('disabled')
   @SubscribeMessage(WS_TYPE_FETCH_DEPLOYMENT_EVENTS)
   async fetchEvents(
     @DeploymentId() deploymentId: string,
@@ -230,6 +231,7 @@ export default class DeployWebSocketGateway {
     }
   }
 
+  @AuditLogLevel('disabled')
   @SubscribeMessage(WS_TYPE_GET_INSTANCE)
   async getInstance(@SocketMessage() message: GetInstanceMessage): Promise<WsMessage<InstanceMessage>> {
     const instance = await this.service.getInstance(message.id)
@@ -240,6 +242,7 @@ export default class DeployWebSocketGateway {
     }
   }
 
+  @AuditLogLevel('disabled')
   @SubscribeMessage(WS_TYPE_GET_INSTANCE_SECRETS)
   async getInstanceSecrets(
     @SocketMessage() message: GetInstanceSecretsMessage,
@@ -255,8 +258,8 @@ export default class DeployWebSocketGateway {
     }
   }
 
-  @SubscribeMessage(WS_TYPE_FOCUS_INPUT)
   @AuditLogLevel('disabled')
+  @SubscribeMessage(WS_TYPE_FOCUS_INPUT)
   async onFocusInput(
     @SocketClient() client: WsClient,
     @DeploymentId() deploymentId: string,
@@ -278,8 +281,8 @@ export default class DeployWebSocketGateway {
     subscription.sendToAllExcept(client, res)
   }
 
-  @SubscribeMessage(WS_TYPE_BLUR_INPUT)
   @AuditLogLevel('disabled')
+  @SubscribeMessage(WS_TYPE_BLUR_INPUT)
   async onBlurInput(
     @SocketClient() client: WsClient,
     @DeploymentId() deploymentId: string,

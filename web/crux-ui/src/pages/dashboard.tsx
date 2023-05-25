@@ -7,7 +7,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoList } from '@app/elements/dyo-list'
-import { AuditLog, Dashboard } from '@app/models'
+import { AuditLog, auditToMethod, Dashboard } from '@app/models'
 import { API_DASHBOARD, deploymentUrl, ROUTE_DASHBOARD } from '@app/routes'
 import { fetcher, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
@@ -18,7 +18,7 @@ import Image from 'next/image'
 import useSWR from 'swr'
 
 const headerClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
-const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-2/12', '']
+const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-32', 'w-2/12', '']
 
 type DashboardPageProps = Dashboard
 
@@ -74,13 +74,17 @@ const DashboardPage = (props: DashboardPageProps) => {
     </DyoCard>
   )
 
-  const listHeaders = ['', ...['common:email', 'common:date', 'common:event', 'common:data'].map(it => t(it))]
+  const listHeaders = [
+    '',
+    ...['common:email', 'common:date', 'common:method', 'common:event', 'common:data'].map(it => t(it)),
+  ]
 
   const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
     <UserDefaultAvatar className="ml-auto" />,
     <div className="font-semibold min-w-max">{log.email}</div>,
     <div className="min-w-max">{utcDateToLocale(log.createdAt)}</div>,
-    <div>{log.serviceCall}</div>,
+    <div>{auditToMethod(log)}</div>,
+    <div>{log.event}</div>,
     <div className="max-w-4xl truncate">{JSON.stringify(log.data)}</div>,
   ]
   /* eslint-enable react/jsx-key */

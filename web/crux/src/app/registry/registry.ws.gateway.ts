@@ -19,6 +19,7 @@ import {
   FindImageResultMessage,
   RegistryImageTagsMessage,
 } from './registry.message'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 
 const TeamId = () => WsParam('teamId')
 
@@ -37,6 +38,7 @@ export default class RegistryWebSocketGateway {
     return await this.teamService.checkUserActiveTeam(teamId, identity)
   }
 
+  @AuditLogLevel('disabled')
   @SubscribeMessage('find-image')
   async findImage(
     @TeamId() teamId: string,
@@ -58,6 +60,7 @@ export default class RegistryWebSocketGateway {
     } as WsMessage<FindImageResultMessage>
   }
 
+  @AuditLogLevel('disabled')
   @SubscribeMessage('fetch-image-tags')
   async fetchImageTags(
     @TeamId() teamId: string,

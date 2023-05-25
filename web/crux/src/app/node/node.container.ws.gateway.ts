@@ -21,6 +21,7 @@ import {
   WatchContainersStateMessage,
 } from './node.message'
 import NodeService from './node.service'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 
 const NodeId = () => WsParam('nodeId')
 
@@ -50,6 +51,7 @@ export default class NodeContainerWebSocketGateway {
     }
   }
 
+  @AuditLogLevel('disabled')
   @SubscribeMessage('watch-containers-state')
   watchContainersState(
     @NodeId() nodeId: string,
@@ -67,6 +69,7 @@ export default class NodeContainerWebSocketGateway {
     )
   }
 
+  @AuditLogLevel('disabled')
   @SubscribeMessage('watch-container-log')
   watchContainerLog(
     @NodeId() nodeId: string,

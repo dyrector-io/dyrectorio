@@ -10,7 +10,7 @@ import DyoDatePicker from '@app/elements/dyo-date-picker'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { AuditLog, AuditLogList, AuditLogQuery } from '@app/models'
+import { AuditLog, AuditLogList, AuditLogQuery, auditToMethod } from '@app/models'
 import { auditApiUrl, ROUTE_AUDIT } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
@@ -24,7 +24,7 @@ type AuditFilter = {
 }
 
 const headerClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
-const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-2/12', '', 'w-20']
+const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-32', 'w-2/12', '', 'w-20']
 const sixdays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
 const endOfToday = new Date()
@@ -104,7 +104,9 @@ const AuditLogPage = () => {
 
   const listHeaders = [
     '',
-    ...['common:email', 'common:date', 'common:event', 'common:data', 'common:actions'].map(it => t(it)),
+    ...['common:email', 'common:date', 'common:method', 'common:event', 'common:data', 'common:actions'].map(it =>
+      t(it),
+    ),
   ]
 
   const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
@@ -113,7 +115,8 @@ const AuditLogPage = () => {
     </div>,
     <div className="font-semibold min-w-max">{log.email}</div>,
     <div className="min-w-max">{utcDateToLocale(log.createdAt)}</div>,
-    <div>{log.serviceCall}</div>,
+    <div>{auditToMethod(log)}</div>,
+    <div>{log.event}</div>,
     <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
       {JSON.stringify(log.data)}
     </div>,
@@ -168,7 +171,8 @@ const AuditLogPage = () => {
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
         >
-          <span className="text-bright font-semibold pl-4">{showInfo.serviceCall}</span>
+          <span className="text-bright font-semibold pl-4">{auditToMethod(showInfo)}</span>
+          <span className="text-bright font-semibold pl-4">{showInfo.event}</span>
           <JsonEditor className="overflow-y-auto mt-8 p-4" disabled value={showInfo.data} />
         </DyoModal>
       )}
