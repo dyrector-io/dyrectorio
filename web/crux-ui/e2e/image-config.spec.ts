@@ -1,9 +1,8 @@
-import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_RECEIVED } from '@app/models'
-import { expect, Page, test, WebSocket } from '@playwright/test'
+import { expect, Page, test } from '@playwright/test'
 import { imageConfigUrl, versionWsUrl } from '../src/routes'
 import { screenshotPath } from './utils/common'
 import { createImage, createProject, createVersion } from './utils/projects'
-import { waitSocket, waitSocketReceived, waitSocketSent } from './utils/websocket'
+import { waitSocket, wsPatchSent } from './utils/websocket'
 
 const setup = async (
   page: Page,
@@ -107,14 +106,6 @@ test.describe('Filters', () => {
     await expect(configField).toHaveCount(0)
   })
 })
-
-const wsPatchSent = async (ws: WebSocket, route: string, match: (payload: any) => boolean = null) => {
-  const frameReceived = waitSocketReceived(ws, route, WS_TYPE_PATCH_RECEIVED)
-
-  await waitSocketSent(ws, route, WS_TYPE_PATCH_IMAGE, match)
-
-  await frameReceived
-}
 
 const wsPatchMatchPorts = (internalPort: string, externalPort?: string) => (payload: any) => {
   const internal = Number.parseInt(internalPort, 10)
