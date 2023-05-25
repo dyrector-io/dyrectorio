@@ -359,9 +359,9 @@ export default class AgentService {
     connection: GrpcNodeConnection,
     request: AgentInfo,
   ): Promise<Observable<AgentCommand>> {
-    if (this.agents.has(request.id)) {
-      const agent = this.agents.get(request.id)
-      if (!agent.updating) {
+    const updatedAgent = this.agents.get(request.id)
+    if (updatedAgent) {
+      if (!updatedAgent.updating) {
         throw new CruxConflictException({
           message: 'Agent is already connected.',
           property: 'id',
@@ -370,8 +370,8 @@ export default class AgentService {
 
       this.logger.verbose(`Updated agent connected for '${request.id}'`)
 
-      agent.close(CloseReason.SELF_DESTRUCT)
-      this.agents.delete(request.id)
+      updatedAgent.close(CloseReason.SELF_DESTRUCT)
+      this.agents.delete(updatedAgent.id)
     }
 
     const outdated = !this.agentVersionSupported(request.version)
