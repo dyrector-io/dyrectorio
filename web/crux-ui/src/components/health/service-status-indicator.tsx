@@ -1,17 +1,17 @@
-import DyoIcon from '@app/elements/dyo-icon'
+import DyoIndicator from '@app/elements/dyo-indicator'
 import { ServiceStatus } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 
-const statusToAssetName = (status: ServiceStatus) => {
+const statusToColor = (status: ServiceStatus) => {
   switch (status) {
     case 'operational':
-      return 'circle-green'
+      return 'bg-dyo-green'
     case 'disrupted':
-      return 'circle-orange'
+      return 'bg-warning-orange'
     case 'unavailable':
-      return 'circle-red'
+      return 'bg-dyo-red'
     default:
-      return 'circle-red'
+      return 'bg-dyo-red'
   }
 }
 
@@ -25,7 +25,7 @@ const ServiceStatusIndicator = (props: ServiceStatusIndicatorProps) => {
 
   const { t } = useTranslation('status')
 
-  return <DyoIcon className={className} src={`/${statusToAssetName(status)}.svg`} alt={t(`status.${status}`)} />
+  return <DyoIndicator className={className} color={statusToColor(status)} title={t(`status.${status}`)} />
 }
 
 export default ServiceStatusIndicator

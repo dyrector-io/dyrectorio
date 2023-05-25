@@ -17,7 +17,7 @@ import { ContainerIdentifierDto } from '../container/container.dto'
 export const NODE_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
 export type NodeScriptTypeDto = (typeof NODE_SCRIPT_TYPE_VALUES)[number]
 
-export const NODE_CONNECTION_STATUS_VALUES = ['unreachable', 'connected'] as const
+export const NODE_CONNECTION_STATUS_VALUES = ['unreachable', 'connected', 'outdated'] as const
 export type NodeConnectionStatus = (typeof NODE_CONNECTION_STATUS_VALUES)[number]
 
 export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const

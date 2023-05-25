@@ -10,7 +10,7 @@ COPY ./package.json ./package-lock.json ./tsconfig.build.json ./tsconfig.json ./
 RUN npm ci --no-fund
 
 COPY ./prisma ./prisma
-RUN npm run prismagen
+RUN npm run prisma:gen
 
 COPY ./src ./src
 

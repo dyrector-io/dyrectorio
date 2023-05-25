@@ -27,7 +27,7 @@ export const installDagent = async (page: Page) => {
 
   exec(curl, getInstallScriptExecSettings(), logCmdOutput)
 
-  await page.waitForSelector('img[src="/circle-green.svg"]')
+  await page.waitForSelector('div.bg-dyo-green')
 
   await page.screenshot({ path: screenshotPath('node-dagent-install-successful'), fullPage: true })
 }
