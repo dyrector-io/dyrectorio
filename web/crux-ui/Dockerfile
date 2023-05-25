@@ -31,4 +31,4 @@ EXPOSE 3000
 ENV PORT 3000
 LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/web/crux-ui"
 
-ENTRYPOINT [ "npm", "run", "prod"]
+ENTRYPOINT [ "npm", "run", "start:prod"]
