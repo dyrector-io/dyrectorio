@@ -116,7 +116,7 @@ export default class StorageHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Deletes a storage Request must include `storageId`.',
-    summary: 'Delete a storage from dyrectorio.',
+    summary: 'Delete a storage from dyrector.io.',
   })
   @UseInterceptors(StorageDeleteValidationInterceptor)
   @ApiNoContentResponse({ description: 'Storage deleted.' })
