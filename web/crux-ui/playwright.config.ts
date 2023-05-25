@@ -1,8 +1,12 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { devices, PlaywrightTestConfig } from '@playwright/test'
+// eslint-disable-next-line import/no-extraneous-dependencies
+import dotenv from 'dotenv'
 import path from 'path'
 
-const baseURL = process.env.E2E_BASE_URL || 'http://172.17.0.1:8000'
+dotenv.config()
+
+const baseURL = process.env.E2E_BASE_URL || 'http://localhost:8000'
 
 // Reference: https://playwright.dev/docs/test-configuration
 const config: PlaywrightTestConfig = {
@@ -11,11 +15,11 @@ const config: PlaywrightTestConfig = {
   timeout: 2 * 60 * 1000, // 2 min
   expect: { timeout: 10 * 1000 }, // We double the default(5s), since some test runners are not THAT fast :)
   testDir: path.join(__dirname, 'e2e'),
-  retries: 0,
+  retries: 3,
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: path.join(__dirname, 'e2e_results/'),
   webServer: {
-    command: 'npm run prod',
+    command: 'npm run start:prod',
     url: baseURL,
     timeout: 60 * 1000, // 1 min
     reuseExistingServer: true,

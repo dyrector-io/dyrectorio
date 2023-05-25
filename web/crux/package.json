@@ -28,11 +28,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:ci": "jest --config ./jest.config.js --collectCoverage --coverageDirectory=\"./coverage\" --ci --reporters=default --reporters=jest-junit --watchAll=false",
-    "test:crux": "npm run docker:up && npx prisma migrate deploy && jest -i && npm docker:down",
     "ts-node": "ts-node --compiler-options { \"module\": \"CommonJS\"}",
-    "database:up": "docker-compose -f docker-compose.database.yaml up -d",
-    "database:down": "docker-compose -f docker-compose.database.yaml down",
-    "prismagen": "prisma generate"
+    "prisma:gen": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"
@@ -74,7 +72,6 @@
     "pino-http": "^8.3.3",
     "prom-client": "^14.2.0",
     "reflect-metadata": "^0.1.13",
-    "rimraf": "^5.0.0",
     "rxjs": "^7.8.1",
     "semver": "^7.5.1",
     "uuid": "^9.0.0",
@@ -107,6 +104,7 @@
     "pino-pretty": "^10.0.0",
     "prettier": "^2.8.8",
     "prisma": "4.13.0",
+    "rimraf": "^5.0.1",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
