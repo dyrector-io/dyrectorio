@@ -92,7 +92,7 @@
                 // non-containarized develop
                 // "--disable-crux", "--disable-crux-ui","--prefix", "dyo-latest",
                 // containerized develop
-                "--image-tag",  "latest", "--prefix","dyo-latest",
+                "--image-tag",  "latest", "--prefix","dyo-latest", "--prefer-local-images",
                 "up"
             ],
             "program": "${workspaceFolder}/golang/cmd/dyo",

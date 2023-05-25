@@ -29,7 +29,7 @@ import (
 type Builder interface {
 	WithClient(client client.APIClient) Builder
 	WithImage(imageWithTag string) Builder
-	WithLocalImagePriority(localPriority bool) Builder
+	WithLocalImagePriority() Builder
 	WithEnv(env []string) Builder
 	WithPortBindings(portList []PortBinding) Builder
 	WithPortRanges(portRanges []PortRangeBinding) Builder
@@ -69,7 +69,7 @@ type DockerContainerBuilder struct {
 	networkAliases  []string
 	containerName   string
 	imageWithTag    string
-	localPriority   bool
+	localImage      bool
 	envList         []string
 	labels          map[string]string
 	logConfig       *container.LogConfig
@@ -174,8 +174,8 @@ func (dc *DockerContainerBuilder) WithImage(imageWithTag string) Builder {
 }
 
 // Sets the image of a container in a "image:tag" format where image can be a fully qualified name.
-func (dc *DockerContainerBuilder) WithLocalImagePriority(localPriority bool) Builder {
-	dc.localPriority = localPriority
+func (dc *DockerContainerBuilder) WithLocalImagePriority() Builder {
+	dc.localImage = true
 	return dc
 }
 
@@ -446,7 +446,7 @@ func (dc *DockerContainerBuilder) prepareImage() error {
 		return err
 	}
 
-	err = imageHelper.CustomImagePull(dc.ctx, expandedImageName, dc.registryAuth, dc.forcePull, dc.localPriority, dc.pullDisplayFn)
+	err = imageHelper.CustomImagePull(dc.ctx, expandedImageName, dc.registryAuth, dc.forcePull, dc.localImage, dc.pullDisplayFn)
 	if err != nil && err.Error() != "EOF" {
 		return fmt.Errorf("image pull error: %s", err.Error())
 	}

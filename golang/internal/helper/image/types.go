@@ -16,8 +16,18 @@ type RegistryAuth struct {
 
 // errors
 var (
-	ErrImageNotFound = errors.New("image not found locally, nor remotely")
+	ErrLocalImageNotFound = errors.New("image not found locally")
+	ErrImageNotFound      = errors.New("image not found locally, nor remotely")
 )
+
+type CheckError struct {
+	ImageID string
+	Msg     string
+}
+
+func (e *CheckError) Error() string {
+	return e.Msg
+}
 
 type PullDisplayFn func(header string, dockerResponse io.ReadCloser) error
 

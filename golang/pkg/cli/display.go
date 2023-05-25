@@ -66,6 +66,11 @@ type status struct {
 }
 
 func DockerPullProgressDisplayer(header string, respIn io.ReadCloser) error {
+	if respIn == nil {
+		log.Info().Msgf("%s ✓ up-to-date", header)
+		return nil
+	}
+
 	dec := json.NewDecoder(respIn)
 	stat := map[string]*status{}
 
@@ -75,7 +80,6 @@ func DockerPullProgressDisplayer(header string, respIn io.ReadCloser) error {
 		if err := dec.Decode(&jm); err != nil {
 			if err == io.EOF {
 				log.Info().Msgf("%s ✓ pull complete ", header)
-
 				return nil
 			}
 		}

@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"runtime"
-	"strings"
 	"time"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
@@ -20,7 +19,6 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/errdefs"
-	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
@@ -37,6 +35,17 @@ type PullResponse struct {
 	} `json:"progressDetail"`
 	Progress string `json:"progress"`
 }
+
+type remoteCheck struct {
+	client          client.APIClient
+	distributionRef reference.Named
+	encodedAuth     string
+}
+
+var (
+	errDigestMismatch  = errors.New("digest mismatch")
+	errDigestsMatching = errors.New("digests already matching")
+)
 
 func GetRegistryURL(reg *string, registryAuth *RegistryAuth) string {
 	if registryAuth != nil {
@@ -168,7 +177,8 @@ func Pull(ctx context.Context, logger io.StringWriter, expandedImageName, authCr
 	return err
 }
 
-func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePull, localPriority bool, displayFn PullDisplayFn) error {
+// CustomImagePull is a client side `smart` Pull, that only pulls if the digests are not matching
+func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePull, preferLocal bool, displayFn PullDisplayFn) error {
 	distributionRef, nameErr := reference.ParseNormalizedNamed(imageName)
 	switch {
 	case nameErr != nil:
@@ -186,12 +196,24 @@ func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePu
 	}
 
 	if !forcePull {
-		needPull, err := checkRemote(ctx, cli, distributionRef,
-			encodedAuth, displayFn)
-		if errors.Is(err, ErrImageNotFound) || localPriority || !needPull {
-			return nil
+		err := checkRemote(ctx, remoteCheck{
+			client:          cli,
+			distributionRef: distributionRef,
+			encodedAuth:     encodedAuth,
+		})
+		if err != nil {
+			if preferLocal &&
+				(errors.Is(err, errDigestMismatch) && !errors.Is(err, ErrLocalImageNotFound)) {
+				log.Debug().Msgf("using local image")
+				return nil
+			}
+			if errors.Is(err, errDigestsMatching) {
+				return nil
+			}
+			if !(errors.Is(err, errDigestMismatch) || errors.Is(err, ErrImageNotFound)) {
+				return err
+			}
 		}
-		return err
 	}
 	options := types.ImagePullOptions{
 		RegistryAuth:  encodedAuth,
@@ -209,53 +231,51 @@ func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePu
 	return displayFn(fmt.Sprintf("Pull %v status:", imageName), responseBody)
 }
 
-func checkRemote(ctx context.Context, cli client.APIClient,
-	distributionRef reference.Named, encodedAuth string, displayFn PullDisplayFn,
-) (needPull bool, err error) {
+// check local and remote registry for container image and do digest comparison
+func checkRemote(ctx context.Context, check remoteCheck) (err error) {
 	localImageNotFound := false
-	insp, _, err := cli.ImageInspectWithRaw(ctx, distributionRef.String())
+	insp, _, err := check.client.ImageInspectWithRaw(ctx, check.distributionRef.String())
 	if err != nil {
 		if errdefs.IsNotFound(err) {
 			localImageNotFound = true
 		} else {
-			return false, err
+			return err
 		}
 	}
 
 	craneOpts := []crane.Option{}
 
-	if encodedAuth != "" {
-		craneOpts = append(craneOpts, crane.WithAuth(authn.FromConfig(authn.AuthConfig{Auth: encodedAuth})))
+	if check.encodedAuth != "" {
+		craneOpts = append(craneOpts, crane.WithAuth(authn.FromConfig(authn.AuthConfig{Auth: check.encodedAuth})))
 	}
-	remoteDigest, err := crane.Digest(distributionRef.String(), craneOpts...)
+	remoteDigest, err := crane.Digest(check.distributionRef.String(), craneOpts...)
 	if err != nil {
 		if localImageNotFound {
 			if manifestErr, ok := err.(*transport.Error); ok {
 				if manifestErr.StatusCode == http.StatusNotFound {
-					return false, ErrImageNotFound
+					return errors.Join(ErrImageNotFound, ErrLocalImageNotFound)
 				}
 			}
 
-			return false, err
+			return err
 		}
 	}
 
 	log.Debug().Msgf("%v in %v",
-		fmt.Sprintf("%v@%v", reference.FamiliarName(reference.TrimNamed(distributionRef)), remoteDigest), insp.RepoDigests)
-	if insp.ID != "" &&
-		util.Contains(insp.RepoDigests, fmt.Sprintf("%v@%v", reference.FamiliarName(reference.TrimNamed(distributionRef)), remoteDigest)) {
-		marshalledBytes, marsErr := json.Marshal(
-			jsonmessage.JSONMessage{Status: ProgressStatusMatching, ID: distributionRef.String()})
-		if marsErr != nil {
-			return false, fmt.Errorf("err while marshaling status (image already exists): %w", marsErr)
+		fmt.Sprintf("%v@%v", reference.FamiliarName(reference.TrimNamed(check.distributionRef)), remoteDigest), insp.RepoDigests)
+	if !util.Contains(insp.RepoDigests,
+		fmt.Sprintf("%v@%v", reference.FamiliarName(reference.TrimNamed(check.distributionRef)), remoteDigest)) {
+		if insp.ID == "" {
+			return errors.Join(errDigestMismatch, ErrLocalImageNotFound)
 		}
 
-		r := io.NopCloser(strings.NewReader(string(marshalledBytes)))
-		defer logdefer.LogDeferredErr(r.Close, log.Warn(), "failed to close already exists status readcloser")
-		return false, displayFn(fmt.Sprintf("Pull %v status:", distributionRef.String()), r)
+		return errDigestMismatch
 	}
 
-	return false, nil
+	if localImageNotFound {
+		return ErrLocalImageNotFound
+	}
+	return errDigestsMatching
 }
 
 func ExpandImageName(imageWithTag string) (string, error) {
