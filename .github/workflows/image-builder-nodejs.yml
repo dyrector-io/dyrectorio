@@ -1,0 +1,70 @@
+name: builder_image_nodejs
+on:
+  push:
+    branches: [develop]
+    paths: [images/builder-nodejs/**, .github/workflows/image-builder-nodejs.yml]
+  pull_request:
+    paths: [images/builder-nodejs/**, .github/workflows/image-builder-nodejs.yml]
+permissions:
+  contents: read
+  pull-requests: read
+  packages: write
+env:
+  GITHUB_REGISTRY: ghcr.io
+  BUILDER_IMAGE_NAME: dyrector-io/dyrectorio/builder-images/nodejs
+  VERSION: 1
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Add requirements and build the image
+        run: |
+          sudo apt update
+          sudo apt install zstd golang docker.io containerd runc
+      - name: Docker build
+        run: |
+          docker build -f ./images/builder-nodejs/Dockerfile -t ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION} .
+      - name: Docker export image
+        run: |
+          docker save ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION} | gzip -f > builder.zstd
+      - name: Artifact upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: builder
+          path: ./builder.zstd
+  push:
+    runs-on: ubuntu-22.04
+    needs: build
+    if: github.ref_name == 'develop'
+    environment: Workflow - Protected
+    steps:
+      - name: Artifact download
+        uses: actions/download-artifact@v3
+        with:
+          name: builder
+          path: artifacts
+      - name: Add requirements
+        run: |
+          sudo apt update
+          sudo apt install zstd golang docker.io containerd runc
+          go install github.com/sigstore/cosign/v2/cmd/cosign@v2.0.2
+      - name: Load docker image
+        run: |
+          zcat artifacts/builder.zstd | docker load
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+      - name: Docker push
+        run: docker push ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION}
+      - name: Write signing key to disk
+        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+      - name: Sign container image
+        run: |
+          ~/go/bin/cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION} )
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
