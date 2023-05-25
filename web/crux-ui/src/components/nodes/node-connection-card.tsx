@@ -56,7 +56,7 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
 
         <DyoLabel>{t('status')}</DyoLabel>
         <div className="flex flex-row">
-          <NodeStatusIndicator className="my-auto mr-4" status={node.status} />
+          <NodeStatusIndicator className="my-auto mr-2" status={node.status} />
 
           <span className="text-light-eased">{t(`common:nodeStatuses.${node.status}`)}</span>
         </div>

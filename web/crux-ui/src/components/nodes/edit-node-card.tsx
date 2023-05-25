@@ -17,6 +17,7 @@ import {
   NodeDetails,
   NodeEventMessage,
   NodeInstall,
+  nodeIsUpdateable,
   NodeType,
   UpdateNode,
   UpdateNodeAgentMessage,
@@ -265,8 +266,9 @@ const EditNodeCard = (props: EditNodeCardProps) => {
                 <DyoButton
                   className="px-6 mt-4 ml-4 mr-auto"
                   secondary
+                  danger={node.status === 'outdated'}
                   onClick={onUpdateNode}
-                  disabled={node.status !== 'connected' || node.updating}
+                  disabled={!nodeIsUpdateable(node)}
                 >
                   <span className="flex">
                     {t('update')}

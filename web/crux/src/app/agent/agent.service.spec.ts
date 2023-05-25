@@ -8,7 +8,6 @@ import { getToken } from '@willsoto/nestjs-prometheus'
 import { PRODUCTION } from 'src/shared/const'
 import { Subject, firstValueFrom } from 'rxjs'
 import { major, minor } from 'semver'
-import { Agent } from 'src/domain/agent'
 import AgentService from './agent.service'
 import ContainerMapper from '../container/container.mapper'
 import { NodeConnectionStatus } from '../node/node.dto'
@@ -112,21 +111,24 @@ describe('AgentService', () => {
       expect(agentSub.closed).toBe(false)
     })
 
-    it('handleConnect should update an outdated agent', async () => {
+    it('handleConnect should let an agent connect with and incorrect version and mark it as outdated', async () => {
       const info: AgentInfo = {
         id: 'agent-id',
         version: '2.3.4-githash (1234-5-67)',
         publicKey: 'key',
       }
 
-      const agentObs = agentService.handleConnect(new GrpcNodeConnectionMock(), info)
-      const commands = await firstValueFrom(agentObs)
+      const events = await agentService.getNodeEventsByTeam('team-id')
+      const eventPromise = firstValueFrom(events)
 
-      expect(commands).toEqual({
-        update: {
-          tag: '1.2',
-          timeoutSeconds: Agent.AGENT_UPDATE_TIMEOUT,
-        },
+      const agentObs = agentService.handleConnect(new GrpcNodeConnectionMock(), info)
+      const agentSub = agentObs.subscribe(() => {})
+
+      expect(agentSub.closed).toBe(false)
+
+      const eventActual = await eventPromise
+      expect(eventActual).toMatchObject({
+        status: 'outdated',
       })
     })
   })

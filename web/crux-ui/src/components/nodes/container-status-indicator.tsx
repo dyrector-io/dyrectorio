@@ -1,19 +1,19 @@
-import DyoIcon from '@app/elements/dyo-icon'
+import DyoIndicator from '@app/elements/dyo-indicator'
 import { ContainerState } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 
-const statusToAssetName = (status: ContainerState) => {
+const statusToColor = (status: ContainerState) => {
   switch (status) {
     case 'exited':
     case 'running':
-      return 'circle-green'
+      return 'bg-dyo-green'
     case 'dead':
     case 'restarting':
-      return 'circle-red'
+      return 'bg-dyo-red'
     case 'removing':
-      return 'circle-red-orange'
+      return 'bg-error-red'
     default:
-      return 'circle-orange'
+      return 'bg-warning-orange'
   }
 }
 
@@ -28,10 +28,10 @@ const ContainerStatusIndicator = (props: ContainerStatusIndicatorProps) => {
   const { t } = useTranslation('common')
 
   return (
-    <DyoIcon
+    <DyoIndicator
       className={className}
-      src={state ? `/${statusToAssetName(state)}.svg` : `/circle-bright.svg`}
-      alt={state ? t(`containerStatuses.${state}`) : t('errors:notFound')}
+      color={statusToColor(state)}
+      title={state ? t(`containerStatuses.${state}`) : t('errors:notFound')}
     />
   )
 }
