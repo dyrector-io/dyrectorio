@@ -284,13 +284,13 @@ func DeployImage(ctx context.Context,
 		return fmt.Errorf("deployment failed, secret error: %w", err)
 	}
 
-	envMap = MergeStringMapUnique(envMap, mapper.ByteMapToStringMap(secret))
-	envList := EnvMapToSlice(envMap)
+	envList := EnvMapToSlice(MergeStringMapUnique(envMap, mapper.ByteMapToStringMap(secret)))
 	mountList := buildMountList(cfg, dog, deployImageRequest)
 
 	matchedContainer, err := dockerHelper.GetContainerByName(ctx, containerName)
 	if err != nil {
-		dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED, err.Error(), fmt.Sprintf("Failed to find container: %s", containerName))
+		dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED,
+			err.Error(), fmt.Sprintf("Failed to find container: %s", containerName))
 		return err
 	}
 

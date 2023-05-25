@@ -22,7 +22,7 @@ export type UniqueSecretKeyValue = UniqueKeyValue &
     publicKey?: string
   }
 
-export const CONTAINER_STATE_VALUES = ['created', 'restarting', 'running', 'removing', 'paused', 'exited', 'dead']
+export const CONTAINER_STATE_VALUES = ['running', 'waiting', 'exited']
 export type ContainerState = (typeof CONTAINER_STATE_VALUES)[number]
 
 export type Port = {

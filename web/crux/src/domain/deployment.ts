@@ -1,19 +1,19 @@
-import { ContainerStateEnum, DeploymentEventTypeEnum, DeploymentStatusEnum, VersionTypeEnum } from '.prisma/client'
+import { DeploymentEventTypeEnum, DeploymentStatusEnum, VersionTypeEnum } from '.prisma/client'
 import { Logger } from '@nestjs/common'
 import { Observable, Subject } from 'rxjs'
 import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
-  ContainerState,
+  ContainerState as ProtoContainerState,
   DeploymentStatusMessage,
   DeploymentStatus as ProtoDeploymentStatus,
   containerStateToJSON,
   deploymentStatusToJSON,
 } from 'src/grpc/protobuf/proto/common'
-import { MergedContainerConfigData } from './container'
+import { ContainerState, MergedContainerConfigData } from './container'
 
 export type DeploymentProgressContainerEvent = {
   instanceId: string
-  state: ContainerStateEnum
+  state: ContainerState
   reason: string
 }
 
@@ -31,12 +31,12 @@ export const deploymentStatusToDb = (status: ProtoDeploymentStatus): DeploymentS
   }
 }
 
-export const containerStateToDb = (state: ContainerState): ContainerStateEnum => {
-  if (!state || state === ContainerState.UNRECOGNIZED) {
+export const containerStateToDto = (state: ProtoContainerState): ContainerState => {
+  if (!state || state === ProtoContainerState.UNRECOGNIZED) {
     return null
   }
 
-  return containerStateToJSON(state).toLowerCase() as ContainerStateEnum
+  return containerStateToJSON(state).toLowerCase() as ContainerState
 }
 
 export const containerNameFromImageName = (imageName: string): string => {
@@ -136,7 +136,7 @@ export default class Deployment {
         type: DeploymentEventTypeEnum.containerStatus,
         value: {
           instanceId: progress.instance.instanceId,
-          state: containerStateToDb(progress.instance.state),
+          state: containerStateToDto(progress.instance.state),
           reason: progress.instance.reason,
         },
       })

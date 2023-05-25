@@ -488,7 +488,11 @@ func MapKubeDeploymentListToCruxStateItems(
 		}
 
 		if podsFound && len(pods) == 1 {
-			mapKubeStatusToCruxContainerState(stateItem, pods[0].Status.ContainerStatuses[0].State)
+			err := mapKubeStatusToCruxContainerState(stateItem, pods[0].Status.ContainerStatuses[0].State)
+			if err != nil {
+				log.Error().Stack().Err(err).Msg("Failed to map k8s pod info")
+				continue
+			}
 		}
 
 		stateItems = append(stateItems, stateItem)
@@ -546,7 +550,7 @@ func mapKubeStatusToCruxContainerState(stateItem *common.ContainerStateItem, kub
 		return nil
 	}
 
-	return fmt.Errorf("Unknown pod container state: %s", kubeContainerState.String())
+	return fmt.Errorf("unknown pod container state: %s", kubeContainerState.String())
 }
 
 func MapDockerStateToCruxContainerState(state string) common.ContainerState {

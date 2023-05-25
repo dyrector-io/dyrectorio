@@ -82,11 +82,6 @@ export class InstanceDto {
   @ValidateNested()
   image: ImageDto
 
-  @ApiProperty({ enum: CONTAINER_STATE_VALUES })
-  @IsIn(CONTAINER_STATE_VALUES)
-  @IsOptional()
-  state?: ContainerState | null
-
   @IsOptional()
   @ValidateNested()
   config?: InstanceContainerConfigDto | null
