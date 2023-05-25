@@ -109,7 +109,7 @@ export default class RegistryHttpController {
   @HttpCode(204)
   @ApiOperation({
     description: 'Deletes a registry with the specified `registryId`',
-    summary: 'Delete a registry from dyrectorio.',
+    summary: 'Delete a registry from dyrector.io.',
   })
   @ApiNoContentResponse({ description: 'Registry deleted.' })
   @UuidParams(PARAM_REGISTRY_ID)
