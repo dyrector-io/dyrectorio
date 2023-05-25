@@ -64,7 +64,7 @@ export default class NodeMapper {
     return {
       id: node.id,
       address: agent?.address,
-      status: agent?.getConnectionStatus() ?? 'unreachable',
+      status: agent?.outdated ? 'outdated' : agent?.getConnectionStatus() ?? 'unreachable',
       connectedAt: node.connectedAt ?? null,
       version: agent?.version,
       updating: agent?.updating,
