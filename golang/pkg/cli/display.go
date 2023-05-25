@@ -69,20 +69,14 @@ func DockerPullProgressDisplayer(header string, respIn io.ReadCloser) error {
 	dec := json.NewDecoder(respIn)
 	stat := map[string]*status{}
 
-	localMatchesRemote := false
-
 	var pulled, pulling, waiting int
 	for i := 0; ; i++ {
 		var jm jsonmessage.JSONMessage
 		if err := dec.Decode(&jm); err != nil {
 			if err == io.EOF {
-				if !localMatchesRemote {
-					log.Info().Msgf("%s ✓ pull complete ", header)
-				} else {
-					log.Info().Msgf("%s ✓ up-to-date", header)
-				}
+				log.Info().Msgf("%s ✓ pull complete ", header)
 
-				break
+				return nil
 			}
 		}
 
@@ -92,7 +86,8 @@ func DockerPullProgressDisplayer(header string, respIn io.ReadCloser) error {
 		}
 		switch {
 		case phase == imageHelper.LayerProgressStatusMatching:
-			localMatchesRemote = true
+			log.Info().Msgf("%s ✓ up-to-date", header)
+			return nil
 		case phase == imageHelper.LayerProgressStatusStarting ||
 			phase == imageHelper.LayerProgressStatusWaiting:
 			stat[jm.ID].Total = jm.Progress.Total
@@ -111,7 +106,6 @@ func DockerPullProgressDisplayer(header string, respIn io.ReadCloser) error {
 			}
 		}
 	}
-	return nil
 }
 
 var spinChars = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}

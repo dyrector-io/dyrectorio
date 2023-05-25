@@ -186,13 +186,12 @@ func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePu
 	}
 
 	if !forcePull {
-		if localRemoteMatch, err := checkRemote(ctx, cli, distributionRef,
-			encodedAuth, displayFn); errors.Is(err, ErrImageNotFound) {
-			if localPriority && !localRemoteMatch {
-				return nil
-			}
-			return err
+		needPull, err := checkRemote(ctx, cli, distributionRef,
+			encodedAuth, displayFn)
+		if errors.Is(err, ErrImageNotFound) || localPriority || !needPull {
+			return nil
 		}
+		return err
 	}
 	options := types.ImagePullOptions{
 		RegistryAuth:  encodedAuth,
@@ -212,7 +211,7 @@ func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePu
 
 func checkRemote(ctx context.Context, cli client.APIClient,
 	distributionRef reference.Named, encodedAuth string, displayFn PullDisplayFn,
-) (localRemoteMatch bool, err error) {
+) (needPull bool, err error) {
 	localImageNotFound := false
 	insp, _, err := cli.ImageInspectWithRaw(ctx, distributionRef.String())
 	if err != nil {
@@ -253,7 +252,7 @@ func checkRemote(ctx context.Context, cli client.APIClient,
 
 		r := io.NopCloser(strings.NewReader(string(marshalledBytes)))
 		defer logdefer.LogDeferredErr(r.Close, log.Warn(), "failed to close already exists status readcloser")
-		return true, displayFn(fmt.Sprintf("Pull %v status:", distributionRef.String()), r)
+		return false, displayFn(fmt.Sprintf("Pull %v status:", distributionRef.String()), r)
 	}
 
 	return false, nil
