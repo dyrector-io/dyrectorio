@@ -105,6 +105,7 @@ export default class VersionWebSocketGateway {
     subscription.sendToAllExcept(client, message)
   }
 
+  @AuditLogLevel('disabled')
   @SubscribeMessage('get-image')
   async getImage(@SocketMessage() message: GetImageMessage): Promise<WsMessage<ImageMessage>> {
     const data = await this.imageService.getImageDetails(message.id)
@@ -197,8 +198,8 @@ export default class VersionWebSocketGateway {
     subscription.sendToAllExcept(client, res)
   }
 
-  @SubscribeMessage(WS_TYPE_FOCUS_INPUT)
   @AuditLogLevel('disabled')
+  @SubscribeMessage(WS_TYPE_FOCUS_INPUT)
   async onFocusInput(
     @SocketClient() client: WsClient,
     @VersionId() versionId: string,
@@ -220,8 +221,8 @@ export default class VersionWebSocketGateway {
     subscription.sendToAllExcept(client, res)
   }
 
-  @SubscribeMessage(WS_TYPE_BLUR_INPUT)
   @AuditLogLevel('disabled')
+  @SubscribeMessage(WS_TYPE_BLUR_INPUT)
   async onBlurInput(
     @SocketClient() client: WsClient,
     @VersionId() versionId: string,

@@ -1,5 +1,6 @@
+import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsDate, IsOptional, IsString, IsUUID } from 'class-validator'
+import { IsDate, IsIn, IsOptional, IsString, IsUUID } from 'class-validator'
 import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
 
 export class AuditDto {
@@ -20,6 +21,7 @@ export class AuditDto {
 
 export class AuditLogQueryDto extends PaginationQuery {
   @IsOptional()
+  @IsString()
   readonly filter?: string
 
   @Type(() => Date)
@@ -30,6 +32,12 @@ export class AuditLogQueryDto extends PaginationQuery {
   @IsDate()
   readonly to: Date
 }
+
+export const AUDIT_LOG_CONTEXT_VALUES = ['http', 'ws', 'rpc'] as const
+export type AuditLogContextDto = (typeof AUDIT_LOG_CONTEXT_VALUES)[number]
+
+export const AUDIT_LOG_REQUEST_METHOD_VALUES = ['get', 'post', 'put', 'patch', 'delete'] as const
+export type AuditLogRequestMethodDto = (typeof AUDIT_LOG_REQUEST_METHOD_VALUES)[number]
 
 export class AuditLogDto {
   @Type(() => Date)
@@ -42,8 +50,16 @@ export class AuditLogDto {
   @IsString()
   email: string
 
+  @ApiProperty({ enum: AUDIT_LOG_CONTEXT_VALUES })
+  @IsIn(AUDIT_LOG_CONTEXT_VALUES)
+  context: AuditLogContextDto
+
+  @ApiProperty({ enum: AUDIT_LOG_REQUEST_METHOD_VALUES })
+  @IsIn(AUDIT_LOG_REQUEST_METHOD_VALUES)
+  method?: AuditLogRequestMethodDto
+
   @IsString()
-  serviceCall: string
+  event: string
 
   @IsOptional()
   data?: object

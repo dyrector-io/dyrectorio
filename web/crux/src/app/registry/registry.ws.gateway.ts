@@ -1,13 +1,14 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { WsAuthorize, WsMessage } from 'src/websockets/common'
-import WsParam from 'src/websockets/decorators/ws.param.decorator'
-import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
 import {
   UseGlobalWsFilters,
   UseGlobalWsGuards,
   UseGlobalWsInterceptors,
 } from 'src/websockets/decorators/ws.gateway.decorators'
+import WsParam from 'src/websockets/decorators/ws.param.decorator'
+import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
 import WsRedirectInterceptor from 'src/websockets/interceptors/ws.redirect.interceptor'
 import TeamService from '../team/team.service'
 import { IdentityFromSocket } from '../token/jwt-auth.guard'
@@ -37,6 +38,7 @@ export default class RegistryWebSocketGateway {
     return await this.teamService.checkUserActiveTeam(teamId, identity)
   }
 
+  @AuditLogLevel('disabled')
   @SubscribeMessage('find-image')
   async findImage(
     @TeamId() teamId: string,
@@ -58,6 +60,7 @@ export default class RegistryWebSocketGateway {
     } as WsMessage<FindImageResultMessage>
   }
 
+  @AuditLogLevel('disabled')
   @SubscribeMessage('fetch-image-tags')
   async fetchImageTags(
     @TeamId() teamId: string,

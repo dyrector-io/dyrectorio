@@ -41,7 +41,9 @@ export default class AuditService {
         select: {
           createdAt: true,
           userId: true,
-          serviceCall: true,
+          event: true,
+          context: true,
+          method: true,
           data: true,
         },
       }),
@@ -77,7 +79,7 @@ export default class AuditService {
           },
         },
         {
-          serviceCall: {
+          event: {
             contains: `%${filter}%`,
             mode: 'insensitive',
           },

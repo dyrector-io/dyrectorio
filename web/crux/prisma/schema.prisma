@@ -225,7 +225,7 @@ model ContainerConfig {
   args            Json?
   initContainers  Json?
   storageSet      Boolean?
-  storageId       String? @unique @db.Uuid
+  storageId       String?        @unique @db.Uuid
   storageConfig   Json?
 
   //Dagent
@@ -249,7 +249,7 @@ model ContainerConfig {
   image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId String @unique @db.Uuid
 
-  storage   Storage? @relation(fields: [storageId], references: [id], onDelete: Cascade)
+  storage Storage? @relation(fields: [storageId], references: [id], onDelete: Cascade)
 }
 
 model Deployment {
@@ -306,7 +306,7 @@ model InstanceContainerConfig {
   args            Json?
   initContainers  Json?
   storageSet      Boolean?
-  storageId       String? @unique @db.Uuid
+  storageId       String?         @unique @db.Uuid
   storageConfig   Json?
 
   //Dagent
@@ -328,7 +328,7 @@ model InstanceContainerConfig {
   labels             Json?
 
   instance Instance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
-  storage   Storage? @relation(fields: [storageId], references: [id], onDelete: Cascade)
+  storage  Storage? @relation(fields: [storageId], references: [id], onDelete: Cascade)
 }
 
 model DeploymentEvent {
@@ -342,13 +342,29 @@ model DeploymentEvent {
   deployment Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
 }
 
+enum AuditLogContextEnum {
+  http
+  ws
+  rpc
+}
+
+enum AuditLogRequestMethodEnum {
+  get
+  post
+  put
+  patch
+  delete
+}
+
 model AuditLog {
-  id          String   @id @default(uuid()) @db.Uuid
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  userId      String   @db.Uuid
-  teamId      String   @db.Uuid
-  serviceCall String
-  data        Json?
+  id        String                    @id @default(uuid()) @db.Uuid
+  createdAt DateTime                  @default(now()) @db.Timestamptz(6)
+  userId    String                    @db.Uuid
+  teamId    String                    @db.Uuid
+  context   AuditLogContextEnum
+  method    AuditLogRequestMethodEnum?
+  event     String
+  data      Json?
 
   team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
 }
@@ -458,20 +474,20 @@ enum NotificationEventTypeEnum {
 }
 
 model Storage {
-  id              String                 @id @default(uuid()) @db.Uuid
-  createdAt       DateTime               @default(now()) @db.Timestamptz(6)
-  createdBy       String                 @db.Uuid
-  updatedAt       DateTime?              @updatedAt @db.Timestamptz(6)
-  updatedBy       String?                @db.Uuid
-  name            String                 @db.VarChar(70)
-  description     String?
-  icon            String?
-  url             String
-  accessKey       String?
-  secretKey       String?
+  id          String    @id @default(uuid()) @db.Uuid
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  createdBy   String    @db.Uuid
+  updatedAt   DateTime? @updatedAt @db.Timestamptz(6)
+  updatedBy   String?   @db.Uuid
+  name        String    @db.VarChar(70)
+  description String?
+  icon        String?
+  url         String
+  accessKey   String?
+  secretKey   String?
 
-  team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  teamId String  @db.Uuid
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String @db.Uuid
 
   containerConfigs ContainerConfig[]
   instanceConfigs  InstanceContainerConfig[]

@@ -1,6 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { Observable, tap } from 'rxjs'
+import { Request as ExpressRequest } from 'express'
+import { Observable, concatMap, of, tap } from 'rxjs'
 import AuditLoggerService from 'src/app/audit.logger/audit.logger.service'
 import { identityOfRequest } from 'src/app/token/jwt-auth.guard'
 import { AUDIT_LOGGER_LEVEL, AuditLogLevelOption } from 'src/decorators/audit-logger.decorator'
@@ -15,52 +16,69 @@ export default class AuditLoggerInterceptor implements NestInterceptor {
   constructor(private readonly reflector: Reflector, private readonly service: AuditLoggerService) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
-    const auditLevel = this.reflector.get<AuditLogLevelOption>(AUDIT_LOGGER_LEVEL, context.getHandler())
-    const level = auditLevel ?? 'all'
+    const level = this.reflector.get<AuditLogLevelOption>(AUDIT_LOGGER_LEVEL, context.getHandler())
 
     if (level === 'disabled') {
       return next.handle()
     }
 
     if (context.getType() === 'http') {
-      const user = identityOfRequest(context)
-      if (!user) {
-        return next.handle()
-      }
-
-      const request = context.switchToHttp().getRequest()
-      const {
-        route: {
-          methods: { get },
-        },
-      } = request
-
-      if (get && !auditLevel) {
-        return next.handle()
-      }
-
-      return next.handle().pipe(
-        tap(async () => {
-          await this.service.createHttpAudit(level, user, request)
-        }),
-      )
+      return await this.logHttp(context, next, level)
     }
 
     if (context.getType() === 'ws') {
-      const wsContext = context.switchToWs()
-      const { type } = wsContext.getData() as WsMessage<any>
-
-      if (type === WS_TYPE_SUBSCRIBE || type === WS_TYPE_UNSUBSCRIBE) {
-        return next.handle()
-      }
-
-      return next.handle().pipe(
-        tap(async () => {
-          await this.service.createWsAudit(level, wsContext)
-        }),
-      )
+      return await this.logWebSocket(context, next, level)
     }
 
     return next.handle()
+  }
+
+  private async logHttp(
+    context: ExecutionContext,
+    next: CallHandler,
+    level: AuditLogLevelOption | null,
+  ): Promise<Observable<any>> {
+    const user = identityOfRequest(context)
+    if (!user) {
+      return next.handle()
+    }
+
+    const req: ExpressRequest = context.switchToHttp().getRequest()
+
+    if (!level && req.method === 'GET') {
+      return next.handle()
+    }
+
+    return next.handle().pipe(
+      tap(async () => {
+        await this.service.createHttpAudit(level, user, req)
+      }),
+    )
+  }
+
+  private async logWebSocket(
+    context: ExecutionContext,
+    next: CallHandler,
+    level: AuditLogLevelOption,
+  ): Promise<Observable<any>> {
+    const wsContext = context.switchToWs()
+    const { type } = wsContext.getData() as WsMessage<any>
+
+    if (type === WS_TYPE_SUBSCRIBE || type === WS_TYPE_UNSUBSCRIBE) {
+      return next.handle()
+    }
+
+    return next.handle().pipe(
+      // log only the first
+      concatMap((it, index) =>
+        index === 0
+          ? of(it).pipe(
+              tap(async () => {
+                await this.service.createWsAudit(level, wsContext)
+              }),
+            )
+          : of(it),
+      ),
+    )
   }
 }
