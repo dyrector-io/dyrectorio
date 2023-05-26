@@ -19,7 +19,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import { defaultApiErrorHandler } from '@app/errors'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import {
-  BaseImageConfigFilterType,
+  ALL_CONFIG_PROPERTIES,
   DeploymentDetails,
   DeploymentRoot,
   ImageConfigProperty,
@@ -27,6 +27,7 @@ import {
   InstanceContainerConfigData,
   InstanceJsonContainerConfig,
   mergeConfigs,
+  MergedContainerConfigData,
   mergeJsonConfigToInstanceContainerConfig,
   NodeDetails,
   ProductDetails,
@@ -84,8 +85,16 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     deploymentState,
   })
 
+  const configToFilters = (
+    current: ImageConfigProperty[],
+    mergedConfig: MergedContainerConfigData,
+  ): ImageConfigProperty[] => {
+    const newFilters = ALL_CONFIG_PROPERTIES.filter(it => !!mergedConfig[it])
+    return current.concat(newFilters.filter(it => current.indexOf(it) < 0))
+  }
+
   const patch = useRef<Partial<InstanceContainerConfigData>>({})
-  const [filters, setFilters] = useState<ImageConfigProperty[]>([])
+  const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], state.config))
   const [viewState, setViewState] = useState<ViewState>('editor')
   const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() =>
     getMergedContainerConfigFieldErrors(mergeConfigs(instance.image.config, state.config)),
@@ -98,13 +107,6 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   const editor = useEditorState(deploymentState.sock)
   const editorState = useItemEditorState(editor, deploymentState.sock, instance.id)
 
-  const baseFilter: BaseImageConfigFilterType | BaseImageConfigFilterType[] =
-    deployment.node.type === 'docker'
-      ? ['common', 'dagent']
-      : deployment.node.type === 'k8s'
-      ? ['common', 'crane']
-      : 'all'
-
   useEffect(() => {
     const reactNode = (
       <>
@@ -116,6 +118,10 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
     setTopBarContent(reactNode)
   }, [editorState.editors])
+
+  useEffect(() => {
+    setFilters(current => configToFilters(current, state.config))
+  }, [state.config])
 
   const onChange = (newConfig: Partial<InstanceContainerConfigData>) => {
     actions.updateConfig(newConfig)
@@ -218,7 +224,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
           {getViewStateButtons()}
         </div>
-        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} initialBaseFilter={baseFilter} />}
+        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} filters={filters} />}
       </DyoCard>
 
       {viewState === 'editor' && (
