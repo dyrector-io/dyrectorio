@@ -838,7 +838,7 @@ jobs:
         with:
           resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}'
           cluster-name: ${{ secrets.AZURE_CLUSTER_NAME }}
-          admin: 'false'
+          admin: 'true'
           use-kubelogin: 'true'
       - name: Rollout restart
         run: |
