@@ -64,6 +64,7 @@ jobs:
       kratos: ${{ steps.filter.outputs.kratos }}
       tag: ${{ steps.settag.outputs.tag }}
       version: ${{ steps.settag.outputs.version }}
+      minorversion: ${{ steps.settag.outputs.minorversion }}
       release: ${{ steps.release.outputs.release }}
     steps:
       - uses: actions/checkout@v3
@@ -607,14 +608,25 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Write signing key to disk
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+      - name: Docker tag
+        run: |
+          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }}
+      - name: Add minor version tag
+        if: github.ref_type == 'tag'
+        run: |
+          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.minorversion }}
+          docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.minorversion }}
+          docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.minorversion }}
+          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
+          docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
+          docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:{{ needs.gather_changes.outputs.minorversion }}
       - name: Docker push
         run: |
           docker push -a ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}
           docker push -a ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}
           docker push -a ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}
-          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }}
-          docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }}
-          docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }}
           docker push -a ${DOCKERHUB_REGISTRY}/crane
           docker push -a ${DOCKERHUB_REGISTRY}/dagent
           docker push -a ${DOCKERHUB_REGISTRY}/dyo
@@ -666,10 +678,17 @@ jobs:
           registry: docker.io
           username: dyrectorio
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Docker push
+      - name: Docker tag
+        run: |
+          docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.tag }}
+      - name: Add minor version tag
+        if: github.ref_type == 'tag'
+        run: |
+          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.minorversion }}
+          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
+      - name: Docker tag
         run: |
           docker push -a ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}
-          docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.tag }}
           docker push -a ${DOCKERHUB_REGISTRY}/crux
       - name: Write signing key to disk
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
@@ -717,10 +736,17 @@ jobs:
           registry: docker.io
           username: dyrectorio
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Docker tag
+        run: |
+          docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.tag }}
+      - name: Add minor version tag
+        if: github.ref_type == 'tag'
+        run: |
+          docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.minorversion }}
+          docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
       - name: Docker push
         run: |
           docker push -a ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}
-          docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.tag }}
           docker push -a ${DOCKERHUB_REGISTRY}/crux-ui
       - name: Write signing key to disk
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
@@ -768,10 +794,17 @@ jobs:
           registry: docker.io
           username: dyrectorio
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Docker tag
+        run: |
+          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.tag }}
+      - name: Add minor version tag
+        if: github.ref_type == 'tag'
+        run: |
+          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.minorversion }}
+          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
       - name: Docker push
         run: |
           docker push -a ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}
-          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.tag }}
           docker push -a ${DOCKERHUB_REGISTRY}/kratos
       - name: Write signing key to disk
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
