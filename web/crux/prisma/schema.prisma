@@ -413,12 +413,6 @@ enum VersionTypeEnum {
   rolling
 }
 
-enum ContainerStateEnum {
-  running
-  waiting
-  exited
-}
-
 enum DeploymentStatusEnum {
   preparing
   inProgress
