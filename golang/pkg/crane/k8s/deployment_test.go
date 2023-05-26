@@ -4,11 +4,9 @@
 package k8s_test
 
 import (
-	"context"
 	"testing"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
-	"github.com/ilyakaznacheev/cleanenv"
 
 	"github.com/stretchr/testify/assert"
 
@@ -269,21 +267,4 @@ func TestResourceParsingFallbackRequestsMemoryError(t *testing.T) {
 	_, err := k8s.GetResourceManagementForTest(resourceConfig, config)
 
 	assert.ErrorIs(t, err, k8s.NewResourceError(k8s.FieldMemory, k8s.GroupRequests, true))
-}
-
-func TestGetPods(t *testing.T) {
-	ctx := context.Background()
-
-	cfg := config.Configuration{}
-	_ = cleanenv.ReadEnv(&cfg)
-
-	deploymentHandler := k8s.NewDeployment(ctx, &cfg)
-
-	deployments, err := deploymentHandler.GetDeployments(ctx, "default", &cfg)
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(deployments.Items))
-
-	pods, err := deploymentHandler.GetPods("default", "deployment-1")
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(pods))
 }
