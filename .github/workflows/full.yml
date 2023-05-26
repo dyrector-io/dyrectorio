@@ -818,6 +818,7 @@ jobs:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
   crux_test_deploy:
     runs-on: ubuntu-22.04
+    environment: staging
     # needs: [crux_push]
     steps:
       - name: Install kubectl
