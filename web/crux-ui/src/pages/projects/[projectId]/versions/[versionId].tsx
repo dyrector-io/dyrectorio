@@ -7,6 +7,7 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import LoadingIndicator from '@app/elements/loading-indicator'
+import { defaultApiErrorHandler } from '@app/errors'
 import { EditableVersion, ProjectDetails, VersionDetails } from '@app/models'
 import { projectApiUrl, projectUrl, ROUTE_PROJECTS, versionApiUrl, versionUrl } from '@app/routes'
 import { anchorLinkOf, redirectTo, searchParamsOf, withContextAuthorization } from '@app/utils'
@@ -26,6 +27,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
   const { project, version: propsVersion } = props
 
   const { t } = useTranslation('versions')
+  const handleApiError = defaultApiErrorHandler(t)
   const router = useRouter()
 
   const [allVersions, setAllVersions] = useState(project.versions)
@@ -35,11 +37,19 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
   const submitRef = useRef<() => Promise<any>>()
 
-  const onVersionEdited = (newVersion: EditableVersion) => {
+  const onVersionEdited = async (newVersion: EditableVersion) => {
+    const res = await fetch(versionApiUrl(project.id, newVersion.id))
+    let details: VersionDetails | EditableVersion = newVersion
+    if (res.ok) {
+      details = (await res.json()) as VersionDetails
+    } else {
+      handleApiError(res)
+    }
+
     setEditing(false)
     setVersion({
       ...version,
-      ...newVersion,
+      ...details,
     })
 
     const newAllVersion = [...allVersions]
