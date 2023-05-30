@@ -19,6 +19,7 @@ import useConfirmation from '@app/hooks/use-confirmation'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
+  configToFilters,
   ContainerConfigData,
   DeleteImageMessage,
   ImageConfigProperty,
@@ -64,12 +65,13 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const { t } = useTranslation('images')
   const { image, product, version } = props
 
-  const [filters, setFilters] = useState<ImageConfigProperty[]>([])
   const [config, setConfig] = useState<ContainerConfigData>(image.config)
   const [viewState, setViewState] = useState<ViewState>('editor')
   const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() => getContainerConfigFieldErrors(image.config))
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
+
+  const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], config))
 
   const patch = useRef<Partial<ContainerConfigData>>({})
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
@@ -91,6 +93,10 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
 
     setTopBarContent(reactNode)
   }, [editorState.editors])
+
+  useEffect(() => {
+    setFilters(current => configToFilters(current, config))
+  }, [config])
 
   const onChange = (newConfig: Partial<ContainerConfigData>) => {
     const value = { ...config, ...newConfig }
@@ -220,7 +226,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
           {getViewStateButtons()}
         </div>
 
-        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} initialBaseFilter="all" />}
+        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} filters={filters} />}
       </DyoCard>
 
       {viewState === 'editor' && (

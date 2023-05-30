@@ -56,14 +56,15 @@ test.describe('View state', () => {
 })
 
 test.describe('Filters', () => {
-  test('All should be selected by default', async ({ page }) => {
+  test('None should be selected by default', async ({ page }) => {
     const { productId, versionId, imageId } = await setup(page, 'filter-all', '1.0.0', 'redis')
 
     await page.goto(imageConfigUrl(productId, versionId, imageId))
 
     const allButton = await page.locator('button:has-text("All")')
 
-    await expect(allButton).toHaveClass(/bg-dyo-turquoise/)
+    await expect(allButton).toHaveClass(/border-dyo-turquoise/)
+    await expect(allButton).not.toHaveClass(/bg-dyo-turquoise/)
   })
 
   test('All should not be selected if one of the main filters are not selected', async ({ page }) => {
@@ -130,6 +131,8 @@ test.describe('Image configurations', () => {
     await page.goto(imageConfigUrl(productId, versionId, imageId))
     const ws = await sock
     const wsRoute = versionWsUrl(versionId)
+
+    await page.locator('button:has-text("Ports")').click()
 
     let wsSent = wsPatchSent(ws, wsRoute)
     const addPortsButton = await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()

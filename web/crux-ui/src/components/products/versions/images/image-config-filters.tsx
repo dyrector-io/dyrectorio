@@ -9,7 +9,6 @@ import {
 } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useState } from 'react'
 
 type FilterSet = Record<BaseImageConfigFilterType, ImageConfigProperty[]>
 
@@ -22,36 +21,29 @@ export const filterSet: FilterSet = {
 
 interface ImageConfigFilterProps {
   onChange: (filters: ImageConfigProperty[]) => void
-  initialBaseFilter: BaseImageConfigFilterType | BaseImageConfigFilterType[]
+  filters: ImageConfigProperty[]
 }
 
 const ImageConfigFilters = (props: ImageConfigFilterProps) => {
-  const { onChange, initialBaseFilter } = props
+  const { onChange, filters } = props
 
   const { t } = useTranslation('container')
-
-  const mergeFilters = (filters: BaseImageConfigFilterType | BaseImageConfigFilterType[]) =>
-    Array.isArray(filters) ? filters.flatMap(it => filterSet[it]) : filterSet[filters]
-
-  const [filters, setFilters] = useState<ImageConfigProperty[]>(mergeFilters(initialBaseFilter))
 
   const onBaseFilterChanged = (value: BaseImageConfigFilterType) => {
     const baseFilters = filterSet[value]
     const select = filters.filter(it => baseFilters.includes(it)).length === baseFilters.length
 
     if (select) {
-      setFilters(filters.filter(it => !baseFilters.includes(it)))
+      onChange(filters.filter(it => !baseFilters.includes(it)))
     } else {
-      setFilters([...filters, ...baseFilters.filter(it => !filters.includes(it))])
+      onChange([...filters, ...baseFilters.filter(it => !filters.includes(it))])
     }
   }
 
   const onFilterChanged = (value: ImageConfigProperty) => {
     const newFilters = filters.indexOf(value) !== -1 ? filters.filter(it => it !== value) : [...filters, value]
-    setFilters(newFilters)
+    onChange(newFilters)
   }
-
-  useEffect(() => onChange(filters), [filters, onChange])
 
   const getBorderColor = (type: BaseImageConfigFilterType): string => {
     switch (type) {
