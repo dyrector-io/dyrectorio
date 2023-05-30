@@ -105,17 +105,19 @@ build-proto-image:
 
 .PHONY: release
 release:
-	$(info Do you want to continue?)
-	$(info Version will be: $(version))
+	$(info Do you want to continue? Version will be: $(version))
 	read
 
 	git checkout develop
 	git pull
 	git checkout -b "release/$(version)"
 
-# ## Create changelog
+## Create changelog
 	git-chglog --next-tag $(version) -o CHANGELOG.md
 	git add CHANGELOG.md
+
+## Change the golang version
+	sed 's/Version *=.*/Version = "$(version)"/' golang/internal/version/version.go > temp_file && mv temp_file golang/internal/version/version.go
 
 ## Change version of crux
 	jq '.version = "$(version)"' web/crux/package.json  > web/crux/package.json.tmp
@@ -134,9 +136,6 @@ release:
 ## Finalizing changes
 	git commit -m "release: $(version)"
 	git tag -sm "$(version)" $(version)
-
-## Generating bundle
-	@echo "After the pipeline completes and the images are tagged run: 'make version=$(version) bundle' , upload the result to: https://github.com/dyrector-io/dyrectorio/releases"
 
 .PHONY: test-integration
 test-integration:

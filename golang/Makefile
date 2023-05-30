@@ -4,16 +4,12 @@ PACKAGE := github.com/dyrector-io/dyrectorio/golang
 ORG_REGISTRY := ghcr.io/dyrector-io/dyrectorio
 DOCKER_REGISTRY := docker.io/dyrectorio
 AGENT_REGISTRY_URL := ${ORG_REGISTRY}/agent
-VCS_VERSION=$(shell git describe --exact-match --tags 2> /dev/null || git rev-parse --short HEAD)
 ORG_GOLANG_HASH="$(shell git rev-parse --short HEAD:../golang)"
 
 # UTC timestamps for builds
 BUILD_TIMESTAMP="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ" | tr -d "[:blank:]")"
 
-vcs_version=$(or $(VCS_VERSION),$(ORG_GOLANG_HASH))
-
-LDFLAGS := -ldflags "-X '${PACKAGE}/internal/version.Version=${VCS_VERSION}'\
-  -X '${PACKAGE}/internal/version.BuildTimestamp=${BUILD_TIMESTAMP}'\
+LDFLAGS := -ldflags "-X '${PACKAGE}/internal/version.BuildTimestamp=${BUILD_TIMESTAMP}'\
   -X '${PACKAGE}/internal/version.CommitHash=${ORG_GOLANG_HASH}'\
   -extldflags '-static'"
 
@@ -146,22 +142,22 @@ build-cli:
 .PHONY: build-dagent
 build-dagent:
 	cd build && \
-	docker build --build-arg AGENT_BINARY=dagent --platform=linux/amd64 -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${AGENT_REGISTRY_URL}/dagent:$(vcs_version) -t ${DOCKER_REGISTRY}/dagent:$(image_version) .
+	docker build --build-arg AGENT_BINARY=dagent --platform=linux/amd64 -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${DOCKER_REGISTRY}/dagent:$(image_version) .
 
 .PHONY: build-crane
 build-crane:
 	cd build && \
-	docker build --build-arg AGENT_BINARY=crane --platform=linux/amd64 -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${AGENT_REGISTRY_URL}/crane:$(vcs_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
+	docker build --build-arg AGENT_BINARY=crane --platform=linux/amd64 -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
 
 .PHONY: build-dagent
 build-multi-dagent: compile-dagent
 	cd build && \
-	docker buildx build --build-arg AGENT_BINARY=dagent --platform=linux/amd64,linux/arm64 --push -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${AGENT_REGISTRY_URL}/dagent:$(vcs_version) -t ${DOCKER_REGISTRY}/dagent:$(image_version) .
+	docker buildx build --build-arg AGENT_BINARY=dagent --platform=linux/amd64,linux/arm64 --push -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${DOCKER_REGISTRY}/dagent:$(image_version) .
 
 .PHONY: build-crane
 build-multi-crane: compile-crane
 	cd build && \
-	docker buildx build  --build-arg AGENT_BINARY=crane --platform=linux/amd64,linux/arm64 --push -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${AGENT_REGISTRY_URL}/crane:$(vcs_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
+	docker buildx build  --build-arg AGENT_BINARY=crane --platform=linux/amd64,linux/arm64 --push -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
 
 .PHONY: cli-compile-build-push
 cbpcli:	compile-cli build-cli push-cli
@@ -191,13 +187,11 @@ push-cli:
 .PHONY: push-crane
 push-crane:
 	docker push ${AGENT_REGISTRY_URL}/crane:$(image_version)
-	docker push ${AGENT_REGISTRY_URL}/crane:$(vcs_version)
 	docker push ${DOCKER_REGISTRY}/crane:$(image_version)
 
 .PHONY: push-dagent
 push-dagent:
 	docker push ${AGENT_REGISTRY_URL}/dagent:$(image_version)
-	docker push ${AGENT_REGISTRY_URL}/dagent:$(vcs_version)
 	docker push ${DOCKER_REGISTRY}/dagent:$(image_version)
 
 .PHONY: push-agents
