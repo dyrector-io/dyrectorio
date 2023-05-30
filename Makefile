@@ -117,7 +117,7 @@ release:
 	git add CHANGELOG.md
 
 ## Change the golang version
-	sed 's/Version *=.*/Version        = "$(version)"/' golang/internal/version/version.go > temp_file && mv temp_file golang/internal/version/version.go
+	sed 's/Version *=.*/Version = "$(version)"/' golang/internal/version/version.go > temp_file && mv temp_file golang/internal/version/version.go
 
 ## Change version of crux
 	jq '.version = "$(version)"' web/crux/package.json  > web/crux/package.json.tmp
