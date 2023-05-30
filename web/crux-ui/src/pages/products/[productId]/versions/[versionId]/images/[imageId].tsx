@@ -19,7 +19,7 @@ import useConfirmation from '@app/hooks/use-confirmation'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
-  ALL_CONFIG_PROPERTIES,
+  configToFilters,
   ContainerConfigData,
   DeleteImageMessage,
   ImageConfigProperty,
@@ -71,10 +71,6 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
 
-  const configToFilters = (current: ImageConfigProperty[], configData: ContainerConfigData): ImageConfigProperty[] => {
-    const newFilters = ALL_CONFIG_PROPERTIES.filter(it => !!configData[it])
-    return current.concat(newFilters.filter(it => current.indexOf(it) < 0))
-  }
   const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], config))
 
   const patch = useRef<Partial<ContainerConfigData>>({})

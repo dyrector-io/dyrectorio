@@ -19,7 +19,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import { defaultApiErrorHandler } from '@app/errors'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import {
-  ALL_CONFIG_PROPERTIES,
+  configToFilters,
   DeploymentDetails,
   DeploymentRoot,
   ImageConfigProperty,
@@ -27,7 +27,6 @@ import {
   InstanceContainerConfigData,
   InstanceJsonContainerConfig,
   mergeConfigs,
-  MergedContainerConfigData,
   mergeJsonConfigToInstanceContainerConfig,
   NodeDetails,
   ProductDetails,
@@ -84,14 +83,6 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     instance,
     deploymentState,
   })
-
-  const configToFilters = (
-    current: ImageConfigProperty[],
-    mergedConfig: MergedContainerConfigData,
-  ): ImageConfigProperty[] => {
-    const newFilters = ALL_CONFIG_PROPERTIES.filter(it => !!mergedConfig[it])
-    return current.concat(newFilters.filter(it => current.indexOf(it) < 0))
-  }
 
   const patch = useRef<Partial<InstanceContainerConfigData>>({})
   const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], state.config))
