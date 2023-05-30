@@ -21,7 +21,7 @@ export default class DeployTeamAccessGuard implements CanActivate {
       where: {
         id: deploymentId,
         version: {
-          product: {
+          project: {
             team: {
               users: {
                 some: {

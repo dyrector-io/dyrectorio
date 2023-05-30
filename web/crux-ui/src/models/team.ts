@@ -7,14 +7,14 @@ export type UpdateTeam = CreateTeam
 
 export type TeamStatistics = {
   users: number
-  products: number
+  projects: number
   nodes: number
   versions: number
   deployments: number
 }
 export const DEFAULT_TEAM_STATISTICS: TeamStatistics = {
   users: 1,
-  products: 0,
+  projects: 0,
   nodes: 0,
   versions: 0,
   deployments: 0,

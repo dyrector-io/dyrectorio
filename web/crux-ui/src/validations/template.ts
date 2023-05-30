@@ -1,4 +1,4 @@
-import { ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
+import { ProjectType, PROJECT_TYPE_VALUES } from '@app/models'
 import * as yup from 'yup'
 import { descriptionRule, nameRule } from './common'
 
@@ -6,5 +6,5 @@ import { descriptionRule, nameRule } from './common'
 export const applyTemplateSchema = yup.object().shape({
   name: nameRule,
   description: descriptionRule,
-  type: yup.mixed<ProductType>().oneOf([...PRODUCT_TYPE_VALUES]),
+  type: yup.mixed<ProjectType>().oneOf([...PROJECT_TYPE_VALUES]),
 })

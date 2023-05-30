@@ -29,11 +29,11 @@ export default class DashboardMapper {
     return deployments.map(it => ({
       id: it.id,
       changelog: it.version.changelog,
-      product: it.version.product.name,
+      project: it.version.project.name,
       node: it.node.name,
       version: it.version.name,
       deployedAt: it.createdAt,
-      productId: it.version.product.id,
+      projectId: it.version.project.id,
       versionId: it.version.id,
     }))
   }
@@ -46,7 +46,7 @@ type LatestDeployment = {
     id: string
     name: string
     changelog: string
-    product: {
+    project: {
       id: string
       name: string
     }

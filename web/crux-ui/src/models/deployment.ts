@@ -4,7 +4,7 @@ import { ContainerIdentifier, ContainerState, InstanceContainerConfigData, Uniqu
 import { ImageConfigProperty, ImageDeletedMessage } from './image'
 import { Instance } from './instance'
 import { DyoNode } from './node'
-import { BasicProduct, ProductDetails } from './product'
+import { BasicProject, ProjectDetails } from './project'
 import { BasicVersion, VersionDetails, VersionType } from './version'
 
 export type Deployment = {
@@ -14,7 +14,7 @@ export type Deployment = {
   status: DeploymentStatus
   note?: string
   node: DyoNode
-  product: BasicProduct
+  project: BasicProject
   version: BasicVersion
 }
 
@@ -24,8 +24,8 @@ export type DeploymentDetails = Deployment & {
   instances: Instance[]
 }
 
-export type DeploymentRoot = Omit<DeploymentDetails, 'product' | 'version' | 'node'> & {
-  product: ProductDetails
+export type DeploymentRoot = Omit<DeploymentDetails, 'project' | 'version' | 'node'> & {
+  project: ProjectDetails
   version: VersionDetails
   node: DyoNode
 }
@@ -181,7 +181,7 @@ export const deploymentLogVisible = (status: DeploymentStatus) => {
   }
 }
 
-export const productNameToDeploymentPrefix = (name: string) => name.replaceAll(/( |\.)/g, '-').toLowerCase()
+export const projectNameToDeploymentPrefix = (name: string) => name.replaceAll(/( |\.)/g, '-').toLowerCase()
 
 export const lastDeploymentStatusOfEvents = (events: DeploymentEvent[]): DeploymentStatus | null =>
   events

@@ -16,7 +16,7 @@ export default class DeployCreateTeamAccessGuard implements CanActivate {
     const version = await this.prisma.version.count({
       where: {
         id: body.versionId,
-        product: {
+        project: {
           team: {
             users: {
               some: {

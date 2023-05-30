@@ -1,4 +1,4 @@
-import { ProductTypeEnum } from '.prisma/client'
+import { ProjectTypeEnum } from '.prisma/client'
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import { checkVersionMutability } from 'src/domain/version'
@@ -15,7 +15,7 @@ export default class VersionUpdateValidationInterceptor implements NestIntercept
 
     const version = await this.prisma.version.findUniqueOrThrow({
       include: {
-        product: {
+        project: {
           select: {
             id: true,
             type: true,
@@ -39,9 +39,9 @@ export default class VersionUpdateValidationInterceptor implements NestIntercept
 
     checkVersionMutability(version)
 
-    if (version.product.type === ProductTypeEnum.simple) {
+    if (version.project.type === ProjectTypeEnum.simple) {
       throw new CruxPreconditionFailedException({
-        message: 'Can not update version of a simple product.',
+        message: 'Can not update version of a simple project.',
         property: 'id',
         value: versionId,
       })

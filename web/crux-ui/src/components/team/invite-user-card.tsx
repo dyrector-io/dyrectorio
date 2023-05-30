@@ -18,7 +18,7 @@ interface InviteUserCardProps {
   className?: string
   team: TeamDetails
   recaptchaSiteKey?: string
-  onUserInvited: (product: User) => void
+  onUserInvited: (project: User) => void
   submitRef?: MutableRefObject<() => Promise<any>>
 }
 

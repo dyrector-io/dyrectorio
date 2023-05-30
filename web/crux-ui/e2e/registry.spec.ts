@@ -1,7 +1,7 @@
 import { ROUTE_REGISTRIES } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { clearInput, screenshotPath } from './utils/common'
-import { createProduct } from './utils/products'
+import { createProject } from './utils/projects'
 
 test('adding a new registry should work', async ({ page }) => {
   await page.goto(ROUTE_REGISTRIES)
@@ -59,7 +59,7 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   await page.locator('text=Save').click()
   await page.waitForSelector(`h3:text-is("${registryName}")`)
 
-  await createProduct(page, 'UNCHECKED_PRODUCT', 'Simple')
+  await createProject(page, 'unchecked-project', 'Simple')
 
   await page.locator('button:has-text("Add image")').click()
   await expect(page.locator('h4:has-text("Add image")')).toHaveCount(1)

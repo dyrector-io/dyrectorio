@@ -7,7 +7,7 @@ export const REGISTRY_GITLAB_URLS = {
   registryUrl: 'registry.gitlab.com',
 }
 
-export const SIMPLE_PRODUCT_VERSION_NAME = 'rolling'
+export const SIMPLE_PROJECT_VERSION_NAME = 'rolling'
 
 const DAY_IN_MILLIS = 24 * 60 * 60 * 1000
 export const TEAM_INVITATION_EXPIRATION = 7 * DAY_IN_MILLIS

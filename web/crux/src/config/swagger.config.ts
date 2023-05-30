@@ -16,26 +16,26 @@ const createSwaggerConfig = (configService: ConfigService): Omit<OpenAPIObject, 
       'jwt',
     )
     .addTag(
-      'products',
-      'There are two kinds of products in dyrector.io: Simple and Complex. Simple products make up one deployable unit without versioning, while Complex products come with multiple rolling or incremental versions. More details in dyrector.io platform [documentation](https://docs.dyrector.io/tutorials/create-your-product).',
+      'projects',
+      'There are two kinds of projects in dyrector.io: Simple and Complex. Simple projects make up one deployable unit without versioning, while Complex projects come with multiple rolling or incremental versions. More details in dyrector.io platform [documentation](https://docs.dyrector.io/tutorials/create-your-project).',
     )
     .addTag(
       'versions',
-      'Versions belong to products. While Simple Products are technically versionless, they act as a rolling version of a Complex Product.</br></br>The purpose of versions is to separate different variations of your product. They can be either rolling or incremental. One Complex Product can have multiple versions of both types. More details about rolling and incremental versions in dyrector.io platform [documentation](https://docs.dyrector.io/get-started/components#product).',
+      'Versions belong to projects. While Simple Projects are technically versionless, they act as a rolling version of a Complex Project.</br></br>The purpose of versions is to separate different variations of your project. They can be either rolling or incremental. One Complex Project can have multiple versions of both types. More details about rolling and incremental versions in dyrector.io platform [documentation](https://docs.dyrector.io/get-started/components#project).',
     )
-    .addTag('version/images', "Images make up a Complex Product's version, or a Simple Product.")
+    .addTag('version/images', "Images make up a Complex Project's version, or a Simple Project.")
     .addTag(
       'registries',
       'Registries are 3rd party registries where the images of versions are located. Learn more about registries in dyrector.io platform [documentation](https://docs.dyrector.io/get-started/components#registry).',
     )
     .addTag(
       'teams',
-      'Teams are the shared entity of multiple users. The purpose of teams is to separate users, nodes and products based on their needs within an organization. Team owners can assign roles. More details about teams in dyrector.io platform [documentation](https://docs.dyrector.io/get-started/components#team).',
+      'Teams are the shared entity of multiple users. The purpose of teams is to separate users, nodes and projects based on their needs within an organization. Team owners can assign roles. More details about teams in dyrector.io platform [documentation](https://docs.dyrector.io/get-started/components#team).',
     )
     .addTag('users/me', 'users/me cover endpoints related to your user profile.')
     .addTag(
       'deployments',
-      'Deployments are the process that gets the installation of your versions or Simple Products done on the node of your choice. More details about deployments in dyrector.io platform [documentation](https://docs.dyrector.io/get-started/components#deployment).',
+      'Deployments are the process that gets the installation of your versions or Simple Projects done on the node of your choice. More details about deployments in dyrector.io platform [documentation](https://docs.dyrector.io/get-started/components#deployment).',
     )
     .addTag(
       'tokens',
@@ -56,7 +56,7 @@ const createSwaggerConfig = (configService: ConfigService): Omit<OpenAPIObject, 
     )
     .addTag(
       'templates',
-      'Templates are preset applications that can be turned into a product right away. They can be deployed with minimal configuration. More details about templates in dyrector.io platform [documentation](https://docs.dyrector.io/features/templates).',
+      'Templates are preset applications that can be turned into a project right away. They can be deployed with minimal configuration. More details about templates in dyrector.io platform [documentation](https://docs.dyrector.io/features/templates).',
     )
     .addTag('dashboard', 'Dashboard summarizes the latest activities of a team.')
     .addTag(

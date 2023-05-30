@@ -10,7 +10,7 @@ import DeployHttpController from './deploy.http.controller'
 import DeployMapper from './deploy.mapper'
 import DeployService from './deploy.service'
 import DeployWebSocketGateway from './deploy.ws.gateway'
-import ProductMapper from '../product/product.mapper'
+import ProjectMapper from '../project/project.mapper'
 import VersionMapper from '../version/version.mapper'
 import AuditMapper from '../audit/audit.mapper'
 import NodeMapper from '../node/node.mapper'
@@ -28,7 +28,7 @@ import AuditLoggerModule from '../audit.logger/audit.logger.module'
     KratosService,
     DeployWebSocketGateway,
     VersionMapper,
-    ProductMapper,
+    ProjectMapper,
     AuditMapper,
     NodeMapper,
   ],

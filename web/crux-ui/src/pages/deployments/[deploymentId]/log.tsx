@@ -17,7 +17,7 @@ import {
   deploymentDeployUrl,
   deploymentUrl,
   nodeWsUrl,
-  productUrl,
+  projectUrl,
   ROUTE_DEPLOYMENTS,
   versionUrl,
 } from '@app/routes'
@@ -64,12 +64,12 @@ const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
 
   const sublinks: BreadcrumbLink[] = [
     {
-      name: deployment.product.name,
-      url: productUrl(deployment.product.id),
+      name: deployment.project.name,
+      url: projectUrl(deployment.project.id),
     },
     {
       name: deployment.version.name,
-      url: versionUrl(deployment.product.id, deployment.version.id),
+      url: versionUrl(deployment.project.id, deployment.version.id),
     },
     {
       name: t('deployment'),

@@ -1,4 +1,4 @@
-import { ProductTypeEnum, VersionTypeEnum } from '.prisma/client'
+import { ProjectTypeEnum, VersionTypeEnum } from '.prisma/client'
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import { CruxConflictException, CruxPreconditionFailedException } from 'src/exception/crux-exception'
@@ -17,7 +17,7 @@ export default class VersionIncreaseValidationPipe implements NestInterceptor {
         id: versionId,
       },
       include: {
-        product: {
+        project: {
           select: {
             id: true,
             type: true,
@@ -44,9 +44,9 @@ export default class VersionIncreaseValidationPipe implements NestInterceptor {
       })
     }
 
-    if (version.product.type === ProductTypeEnum.simple) {
+    if (version.project.type === ProjectTypeEnum.simple) {
       throw new CruxPreconditionFailedException({
-        message: 'Can not increase version of a simple product.',
+        message: 'Can not increase version of a simple project.',
         property: 'id',
         value: versionId,
       })

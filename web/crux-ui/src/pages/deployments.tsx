@@ -1,6 +1,6 @@
 import { Layout } from '@app/components/layout'
-import DeploymentStatusTag from '@app/components/products/versions/deployments/deployment-status-tag'
-import useCopyDeploymentModal from '@app/components/products/versions/deployments/use-copy-deployment-confirmation-modal'
+import DeploymentStatusTag from '@app/components/projects/versions/deployments/deployment-status-tag'
+import useCopyDeploymentModal from '@app/components/projects/versions/deployments/use-copy-deployment-confirmation-modal'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
@@ -12,7 +12,7 @@ import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Deployment, deploymentIsCopiable, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
-import { API_DEPLOYMENTS, deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
+import { API_DEPLOYMENTS, deploymentUrl, nodeUrl, projectUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
 import { auditToLocaleDate, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
@@ -54,7 +54,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
 
   const filters = useFilters<Deployment, DeploymentFilter>({
     filters: [
-      textFilterFor<Deployment>(it => [it.product.name, it.version.name, it.node.name, it.prefix]),
+      textFilterFor<Deployment>(it => [it.project.name, it.version.name, it.node.name, it.prefix]),
       enumFilterFor<Deployment, DeploymentStatus>(it => [it.status]),
     ],
     initialData: deployments,
@@ -66,7 +66,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   }
 
   const headers = [
-    'common:product',
+    'common:project',
     'common:version',
     'common:node',
     'common:prefix',
@@ -83,8 +83,8 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   ]
 
   const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [
-    <Link href={productUrl(item.product.id)}>{item.product.name}</Link>,
-    <Link href={versionUrl(item.product.id, item.version.id)}>{item.version.name}</Link>,
+    <Link href={projectUrl(item.project.id)}>{item.project.name}</Link>,
+    <Link href={versionUrl(item.project.id, item.version.id)}>{item.version.name}</Link>,
     <Link href={nodeUrl(item.node.id)}>{item.node.name}</Link>,
     <span>{item.prefix}</span>,
     <span suppressHydrationWarning>{auditToLocaleDate(item.audit)}</span>,

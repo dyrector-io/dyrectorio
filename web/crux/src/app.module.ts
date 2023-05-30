@@ -11,7 +11,7 @@ import ImageModule from './app/image/image.module'
 import MetricsController from './app/metrics/metrics.controller'
 import NodeModule from './app/node/node.module'
 import NotificationModule from './app/notification/notification.module'
-import ProductModule from './app/product/product.module'
+import ProjectModule from './app/project/project.module'
 import RegistryModule from './app/registry/registry.module'
 import StorageModule from './app/storage/storage.module'
 import TeamModule from './app/team/team.module'
@@ -26,7 +26,7 @@ import pinoLoggerConfig from './config/pino.logger.config'
 
 @Module({
   imports: [
-    ProductModule,
+    ProjectModule,
     RegistryModule,
     NodeModule,
     VersionModule,

@@ -3,21 +3,21 @@ import { expect, test } from '@playwright/test'
 import { DAGENT_NODE, screenshotPath } from './utils/common'
 import { deployWithDagent } from './utils/node-helper'
 import {
-  addDeploymentToSimpleProduct,
+  addDeploymentToSimpleProject,
   addDeploymentToVersion,
-  addImageToSimpleProduct,
+  addImageToSimpleProject,
   createImage,
-  createProduct,
+  createProject,
   createVersion,
-} from './utils/products'
+} from './utils/projects'
 
 const image = 'nginx'
 
-test.describe('Simple product', () => {
+test.describe('Simple project', () => {
   test('preparing deployment should be mutable', async ({ page }) => {
-    const productId = await createProduct(page, 'PW-SIMPLE-MUTABILITY-1', 'Simple')
-    await addImageToSimpleProduct(page, productId, image)
-    await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, 'pw-simple-preparing')
+    const projectId = await createProject(page, 'PW-SIMPLE-MUTABILITY-1', 'Simple')
+    await addImageToSimpleProject(page, projectId, image)
+    await addDeploymentToSimpleProject(page, projectId, DAGENT_NODE, 'pw-simple-preparing')
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
     await page.locator("img[src='/view_tile.svg']").click()
@@ -27,12 +27,12 @@ test.describe('Simple product', () => {
   })
 
   test('successful deployment should be mutable', async ({ page }, testInfo) => {
-    const productId = await createProduct(page, 'PW-SIMPLE-MUTABILITY-2', 'Simple')
-    await addImageToSimpleProduct(page, productId, image)
+    const projectId = await createProject(page, 'PW-SIMPLE-MUTABILITY-2', 'Simple')
+    await addImageToSimpleProject(page, projectId, image)
 
     const prefix = 'pw-simp-mut'
 
-    const deploymentId = await deployWithDagent(page, prefix, productId, '', false, testInfo.title)
+    const deploymentId = await deployWithDagent(page, prefix, projectId, '', false, testInfo.title)
 
     await page.goto(deploymentUrl(deploymentId))
 
@@ -46,13 +46,13 @@ test.describe('Simple product', () => {
   })
 })
 
-test.describe('Complex product incremental version', () => {
+test.describe('Complex project incremental version', () => {
   test('preparing deployment should be mutable', async ({ page }) => {
-    const productId = await createProduct(page, 'PW-COMP-MUTABILITY-1', 'Complex')
-    const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
-    await createImage(page, productId, versionId, image)
+    const projectId = await createProject(page, 'PW-COMP-MUTABILITY-1', 'Complex')
+    const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
+    await createImage(page, projectId, versionId, image)
 
-    const { id } = await addDeploymentToVersion(page, productId, versionId, DAGENT_NODE)
+    const { id } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE)
 
     await page.goto(deploymentUrl(id))
 
@@ -64,14 +64,14 @@ test.describe('Complex product incremental version', () => {
   })
 
   test('successful deployment should be immutable', async ({ page }, testInfo) => {
-    const productId = await createProduct(page, 'PW-COMP-MUTABILITY-2', 'Complex')
-    const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
-    await createImage(page, productId, versionId, image)
+    const projectId = await createProject(page, 'PW-COMP-MUTABILITY-2', 'Complex')
+    const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
+    await createImage(page, projectId, versionId, image)
 
     const deploymentId = await deployWithDagent(
       page,
       'pw-complex-mutability',
-      productId,
+      projectId,
       versionId,
       false,
       testInfo.title,
@@ -87,20 +87,20 @@ test.describe('Complex product incremental version', () => {
   })
 
   test('obsolete deployment should be immutable', async ({ page }, testInfo) => {
-    const productId = await createProduct(page, 'PW-COMP-MUTABILITY-3', 'Complex')
-    const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
-    await createImage(page, productId, versionId, image)
+    const projectId = await createProject(page, 'PW-COMP-MUTABILITY-3', 'Complex')
+    const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
+    await createImage(page, projectId, versionId, image)
 
     const deploymentId = await deployWithDagent(
       page,
       'pw-complex-mutability-obsolete',
-      productId,
+      projectId,
       versionId,
       false,
       `${testInfo.title}1`,
     )
 
-    await deployWithDagent(page, 'pw-complex-mutability-obsolete', productId, versionId, false, `${testInfo.title}2`)
+    await deployWithDagent(page, 'pw-complex-mutability-obsolete', projectId, versionId, false, `${testInfo.title}2`)
 
     await page.goto(deploymentUrl(deploymentId))
 
