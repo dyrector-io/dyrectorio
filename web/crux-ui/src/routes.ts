@@ -146,7 +146,7 @@ const urlQuery = (url: string, query: object) => {
 export const auditApiUrl = (query: AuditLogQuery) => urlQuery(API_AUDIT, query)
 
 // auth
-export const verificationUrl = (email: string) => `${ROUTE_VERIFICATION}?email=${email}`
+export const verificationUrl = (email: string) => `${ROUTE_VERIFICATION}?email=${encodeURIComponent(email)}`
 
 // project
 export const projectUrl = (id: string, params?: VersionUrlParams) => appendUrlParams(`${ROUTE_PROJECTS}/${id}`, params)
