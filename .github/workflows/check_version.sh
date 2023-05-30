@@ -3,16 +3,16 @@
 version=$1
 path=$2
 
-if [ "${path: -5}" = .json ]; then
+if [ "$(echo "$path" | rev | cut -c -5 | rev)" = .json ]; then
   # json
-  package_version=$(cat $path | grep -Eo '"version": "[[:digit:]]+\.[[:digit:]+\.[[:digit:]]+"')
+  package_version=$(grep -Eo '"version": "[[:digit:]]+\.[[:digit:]+\.[[:digit:]]+"' "$path")
   expected_version="\"version\": \"$version\""
-elif [ "${path: -3}" = .go ]; then
+elif [ "$(echo "$path" | rev | cut -c -3 | rev)" = .go ]; then
   # go
-  package_version=$(cat $path | grep -Eo 'Version[[:blank:]]+= "[[:digit:]]+\.[[:digit:]+\.[[:digit:]]+"')
+  package_version=$(grep -Eo 'Version[[:blank:]]+= "[[:digit:]]+\.[[:digit:]+\.[[:digit:]]+"' "$path")
   expected_version="Version = \"$version\""
 else
-  echo Invalid file $path
+  echo Invalid file "$path"
   exit 1
 fi
 
@@ -20,7 +20,7 @@ fi
 package_version=$(echo $package_version)
 
 if [ "$expected_version" != "$package_version" ]; then
-  echo Invalid "$package_version", expected "$expected_version" in $path
+  echo Invalid "$package_version", expected "$expected_version" in "$path"
   exit 1
 fi
 
