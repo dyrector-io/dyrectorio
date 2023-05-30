@@ -1,4 +1,5 @@
 import { SECOND_IN_MILLIS } from '@app/const'
+import DyoBadge from '@app/elements/dyo-badge'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
@@ -39,12 +40,16 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
   return (
     <DyoCard className={clsx(className ?? 'p-6')}>
       {!showName ? null : (
-        <DyoHeading
-          className={clsx('text-xl text-bright font-semibold my-auto mr-auto', node.icon ? 'ml-4' : null)}
-          element="h3"
-        >
-          {node.name}
-        </DyoHeading>
+        <div className="flex flex-row">
+          {node.icon ? <DyoBadge icon={node.icon} /> : null}
+
+          <DyoHeading
+            className={clsx('text-xl text-bright font-semibold my-auto mr-auto', node.icon ? 'ml-4' : null)}
+            element="h3"
+          >
+            {node.name}
+          </DyoHeading>
+        </div>
       )}
 
       <div className="grid grid-cols-2 justify-between items-center">
