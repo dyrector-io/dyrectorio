@@ -16,9 +16,6 @@ else
   exit 1
 fi
 
-# get rid of unnecessary spaces
-package_version=$(echo $package_version)
-
 if [ "$expected_version" != "$package_version" ]; then
   echo Invalid "$package_version", expected "$expected_version" in "$path"
   exit 1
