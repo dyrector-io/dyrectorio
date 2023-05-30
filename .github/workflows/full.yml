@@ -98,8 +98,9 @@ jobs:
         if: github.ref_type == 'tag'
         working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
         run: |
-          ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_WORKING_DIRECTORY }}
-          ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}
+          ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_WORKING_DIRECTORY }}/package.json
+          ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}/package.json
+          ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.GOLANG_WORKING_DIRECTORY }}/internal/version/version.go
       - name: Release
         id: release
         if: ${{ github.ref_type == 'tag' || github.ref_name == 'develop' || github.ref_name == 'main' }}
