@@ -102,12 +102,10 @@ func DockerPullProgressDisplayer(header string, respIn io.ReadCloser) error {
 		case phase == imageHelper.LayerProgressStatusComplete || phase == imageHelper.LayerProgressStatusExists:
 			pulled++
 		}
-		if phase != imageHelper.LayerProgressStatusUnknown {
-			if len(stat) > 1 {
-				log.Info().Msgf("%v %s layers: %d/%d", header, spinner(i), pulled, len(stat))
-				tm.MoveCursorUp(1)
-				tm.Flush()
-			}
+		if phase != imageHelper.LayerProgressStatusUnknown && len(stat) > 1 {
+			log.Info().Msgf("%v %s layers: %d/%d", header, spinner(i), pulled, len(stat))
+			tm.MoveCursorUp(1)
+			tm.Flush()
 		}
 	}
 }
