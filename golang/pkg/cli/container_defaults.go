@@ -127,6 +127,7 @@ func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.Lifecy
 }
 
 func getCruxEnvs(state *State, args *ArgsFlags) []string {
+	envs := []string{}
 	host := localhost
 	traefikHost := localhost
 	if args.FullyContainerized {
@@ -134,11 +135,18 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 		traefikHost = state.Containers.Traefik.Name
 	}
 
+	// this is a pipeline configuration
+	if !args.CruxDisabled && args.FullyContainerized {
+		envs = append(envs,
+			fmt.Sprintf("CRUX_AGENT_IMAGE=%s", "latest"),
+		)
+	}
+
 	cruxAgentAddr := fmt.Sprintf("%s:%d", state.Containers.Crux.Name, defaultCruxAgentGrpcPort)
 	if args.LocalAgent {
 		cruxAgentAddr = fmt.Sprintf("%s:%d", host, state.SettingsFile.CruxAgentGrpcPort)
 	}
-	return []string{
+	envs = append(envs,
 		fmt.Sprintf("TZ=%s", state.SettingsFile.TimeZone),
 		fmt.Sprintf("NODE_ENV=%s", "development"),
 		fmt.Sprintf("LOG_LEVEL=%s", "debug"),
@@ -163,8 +171,8 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 		fmt.Sprintf("FROM_EMAIL=%s", state.SettingsFile.MailFromEmail),
 		fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", state.Containers.MailSlurper.Name),
 		fmt.Sprintf("AGENT_INSTALL_SCRIPT_DISABLE_PULL=%t", true),
-		"DISABLE_RECAPTCHA=true",
-	}
+		"DISABLE_RECAPTCHA=true")
+	return envs
 }
 
 // GetCruxUI returns a configured crux-ui service
