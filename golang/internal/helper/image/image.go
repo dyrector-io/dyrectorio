@@ -216,10 +216,8 @@ func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePu
 		}
 	}
 	options := types.ImagePullOptions{
-		RegistryAuth:  encodedAuth,
-		PrivilegeFunc: nil,
-		All:           false,
-		Platform:      runtime.GOOS,
+		RegistryAuth: encodedAuth,
+		Platform:     runtime.GOOS,
 	}
 
 	responseBody, err := cli.ImagePull(ctx, imageName, options)
