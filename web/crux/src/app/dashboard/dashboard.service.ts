@@ -33,11 +33,11 @@ export default class DashboardService {
 
     const users = await this.prisma.usersOnTeams.count(teamFilter)
     const auditLogEntries = await this.prisma.auditLog.count(teamFilter)
-    const products = await this.prisma.product.count(teamFilter)
+    const projects = await this.prisma.project.count(teamFilter)
 
     const versions = await this.prisma.version.count({
       where: {
-        product: {
+        project: {
           teamId: team.teamId,
         },
       },
@@ -46,7 +46,7 @@ export default class DashboardService {
     const deployments = await this.prisma.deployment.count({
       where: {
         version: {
-          product: {
+          project: {
             teamId: team.teamId,
           },
         },
@@ -56,7 +56,7 @@ export default class DashboardService {
     const failedDeployments = await this.prisma.deployment.count({
       where: {
         version: {
-          product: {
+          project: {
             teamId: team.teamId,
           },
         },
@@ -75,7 +75,7 @@ export default class DashboardService {
     const latestDeployments = await this.prisma.deployment.findMany({
       where: {
         version: {
-          product: {
+          project: {
             teamId: team.teamId,
           },
         },
@@ -88,7 +88,7 @@ export default class DashboardService {
             name: true,
             id: true,
             changelog: true,
-            product: {
+            project: {
               select: {
                 id: true,
                 name: true,
@@ -123,7 +123,7 @@ export default class DashboardService {
     return {
       users,
       auditLogEntries,
-      products,
+      projects,
       versions,
       deployments,
       failedDeployments,

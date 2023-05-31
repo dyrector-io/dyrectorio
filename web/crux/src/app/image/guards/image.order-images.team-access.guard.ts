@@ -8,7 +8,7 @@ export default class ImageOrderImagesTeamAccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest()
-    const productId = req.params.productId as string
+    const projectId = req.params.projectId as string
     const versionId = req.params.versionId as string
     const body = req.body as string[]
 
@@ -22,8 +22,8 @@ export default class ImageOrderImagesTeamAccessGuard implements CanActivate {
         },
         version: {
           id: versionId,
-          product: {
-            id: productId,
+          project: {
+            id: projectId,
             team: {
               users: {
                 some: {

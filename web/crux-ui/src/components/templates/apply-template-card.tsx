@@ -8,8 +8,8 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { Product, ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
-import { CreateProductFromTemplate, Template } from '@app/models/template'
+import { Project, ProjectType, PROJECT_TYPE_VALUES } from '@app/models'
+import { CreateProjectFromTemplate, Template } from '@app/models/template'
 import { API_TEMPLATES } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { applyTemplateSchema } from '@app/validations'
@@ -19,7 +19,7 @@ import { MutableRefObject } from 'react'
 interface ApplyTemplateCardProps {
   className?: string
   template: Template
-  onTemplateApplied: (productId: string) => Promise<void>
+  onTemplateApplied: (projectId: string) => Promise<void>
   submitRef?: MutableRefObject<() => Promise<any>>
 }
 
@@ -34,14 +34,14 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
     initialValues: {
       name: propsTemplate.name,
       description: propsTemplate.description,
-      type: 'simple' as ProductType,
+      type: 'simple' as ProjectType,
     },
     validationSchema: applyTemplateSchema,
     enableReinitialize: true,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
-      const body: CreateProductFromTemplate = {
+      const body: CreateProjectFromTemplate = {
         id: propsTemplate.id,
         ...values,
       }
@@ -50,7 +50,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
 
       if (res.ok) {
         const json = await res.json()
-        const result = json as Product
+        const result = json as Project
 
         setSubmitting(false)
         await onTemplateApplied(result.id)
@@ -77,7 +77,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
           name="name"
           type="name"
           required
-          label={t('productName')}
+          label={t('projectName')}
           onChange={formik.handleChange}
           value={formik.values.name}
           message={formik.errors.name}
@@ -95,9 +95,9 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
         <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('type')}</DyoLabel>
         <DyoChips
           className="text-bright"
-          choices={PRODUCT_TYPE_VALUES}
+          choices={PROJECT_TYPE_VALUES}
           selection={formik.values.type}
-          converter={it => t(`products:${it}`)}
+          converter={it => t(`projects:${it}`)}
           onSelectionChange={type => {
             formik.setFieldValue('type', type, false)
           }}

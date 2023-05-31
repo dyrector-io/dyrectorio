@@ -69,7 +69,7 @@ export default class DeployService {
       where: {
         id: deploymentId,
         version: {
-          product: {
+          project: {
             team: {
               users: {
                 some: {
@@ -95,7 +95,7 @@ export default class DeployService {
         node: true,
         version: {
           include: {
-            product: true,
+            project: true,
           },
         },
         instances: {
@@ -154,7 +154,7 @@ export default class DeployService {
         id: request.versionId,
       },
       include: {
-        product: true,
+        project: true,
         parent: true,
         images: true,
       },
@@ -181,7 +181,7 @@ export default class DeployService {
         node: true,
         version: {
           include: {
-            product: true,
+            project: true,
           },
         },
       },
@@ -343,7 +343,7 @@ export default class DeployService {
       include: {
         version: {
           include: {
-            product: {
+            project: {
               select: {
                 name: true,
               },
@@ -528,7 +528,7 @@ export default class DeployService {
       },
       {
         accessedBy: identity.id,
-        productName: deployment.version.product.name,
+        projectName: deployment.version.project.name,
         versionName: deployment.version.name,
         nodeName: deployment.node.name,
       },
@@ -582,7 +582,7 @@ export default class DeployService {
     const deployments = await this.prisma.deployment.findMany({
       where: {
         version: {
-          product: {
+          project: {
             team: {
               users: {
                 some: {
@@ -600,7 +600,7 @@ export default class DeployService {
             id: true,
             name: true,
             type: true,
-            product: {
+            project: {
               select: {
                 id: true,
                 name: true,
@@ -695,7 +695,7 @@ export default class DeployService {
         node: true,
         version: {
           include: {
-            product: true,
+            project: true,
           },
         },
       },

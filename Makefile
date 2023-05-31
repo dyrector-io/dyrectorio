@@ -45,16 +45,6 @@ bundle:
 	zip -r dyrectorio-offline-bundle-$(BUNDLEVER).zip offline
 	mv .env_bak .env || true
 
-## compile docs
-.PHONY: docs
-docs:
-	protoc -I. --doc_out=./docs --doc_opt=markdown,docs.md  proto/*.proto
-
-UID := $(shell id -u)
-GID := $(shell id -g)
-PWD := $(shell pwd)
-REMOTE=github.com/dyrector-io/dyrectorio/protobuf/go
-
 ## Compile the all grpc files
 .PHONY: protogen
 protogen:| proto-agent proto-crux
@@ -94,10 +84,6 @@ proto-crux:
 	cp -r protobuf/proto web/crux/ && \
 	cd ./web/crux/src/grpc && \
 	npx prettier -w "./**.ts"
-
-## make wonders happen - build everything -  !!!  token `|` is for parallel execution
-.PHONY: all
-all: | protogen docs
 
 .PHONY: build-proto-image
 build-proto-image:

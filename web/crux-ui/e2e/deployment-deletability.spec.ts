@@ -1,16 +1,16 @@
-import { deploymentUrl, productUrl } from '@app/routes'
+import { deploymentUrl, projectUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { deployWithDagent } from './utils/node-helper'
-import { createImage, createProduct, createVersion } from './utils/products'
+import { createImage, createProject, createVersion } from './utils/projects'
 
 test('In progress deployment should be not deletable', async ({ page }) => {
-  const productName = 'PRODUCT-TEST1-DELETE'
+  const projectName = 'project-delete-test-1'
 
-  const productId = await createProduct(page, productName, 'Complex')
-  const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
-  await createImage(page, productId, versionId, 'nginx')
+  const projectId = await createProject(page, projectName, 'Complex')
+  const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
+  await createImage(page, projectId, versionId, 'nginx')
 
-  const deploymentId = await deployWithDagent(page, 'pw-complex-deletability', productId, versionId, true)
+  const deploymentId = await deployWithDagent(page, 'pw-complex-deletability', projectId, versionId, true)
 
   await page.goto(deploymentUrl(deploymentId))
 
@@ -19,13 +19,13 @@ test('In progress deployment should be not deletable', async ({ page }) => {
 })
 
 test('Delete deployment should work', async ({ page }, testInfo) => {
-  const productName = 'PRODUCT-TEST2-DELETE'
+  const projectName = 'project-delete-test-2'
 
-  const productId = await createProduct(page, productName, 'Complex')
-  const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
-  await createImage(page, productId, versionId, 'nginx')
+  const projectId = await createProject(page, projectName, 'Complex')
+  const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
+  await createImage(page, projectId, versionId, 'nginx')
 
-  const deploymentId = await deployWithDagent(page, 'pw-complex-delete', productId, versionId, false, testInfo.title)
+  const deploymentId = await deployWithDagent(page, 'pw-complex-delete', projectId, versionId, false, testInfo.title)
 
   await page.goto(deploymentUrl(deploymentId))
 
@@ -36,5 +36,5 @@ test('Delete deployment should work', async ({ page }, testInfo) => {
   await page.waitForSelector('h4:has-text("Are you sure you want to delete Deployment?")')
 
   await page.locator('button:has-text("Delete")').nth(1).click()
-  await page.waitForURL(`${productUrl(productId)}**`)
+  await page.waitForURL(`${projectUrl(projectId)}**`)
 })

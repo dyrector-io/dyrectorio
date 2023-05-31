@@ -1,4 +1,4 @@
-import { ProductType } from './product'
+import { ProjectType } from './project'
 
 export type Template = {
   id: string
@@ -7,6 +7,6 @@ export type Template = {
   technologies: string[]
 }
 
-export type CreateProductFromTemplate = Omit<Template, 'technologies'> & {
-  type: ProductType
+export type CreateProjectFromTemplate = Omit<Template, 'technologies'> & {
+  type: ProjectType
 }

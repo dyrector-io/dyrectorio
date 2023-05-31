@@ -2,21 +2,21 @@ import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_RECEIVED } from '@app/models'
 import { expect, Page, test, WebSocket } from '@playwright/test'
 import { imageConfigUrl, versionWsUrl } from '../src/routes'
 import { screenshotPath } from './utils/common'
-import { createImage, createProduct, createVersion } from './utils/products'
+import { createImage, createProject, createVersion } from './utils/projects'
 import { waitSocket, waitSocketReceived, waitSocketSent } from './utils/websocket'
 
 const setup = async (
   page: Page,
-  productName: string,
+  projectNAme: string,
   versionName: string,
   imageName: string,
-): Promise<{ productId: string; versionId: string; imageId: string }> => {
-  const productId = await createProduct(page, productName, 'Complex')
-  const versionId = await createVersion(page, productId, versionName, 'Incremental')
-  const imageId = await createImage(page, productId, versionId, imageName)
+): Promise<{ projectId: string; versionId: string; imageId: string }> => {
+  const projectId = await createProject(page, projectNAme, 'Complex')
+  const versionId = await createVersion(page, projectId, versionName, 'Incremental')
+  const imageId = await createImage(page, projectId, versionId, imageName)
 
   return {
-    productId,
+    projectId,
     versionId,
     imageId,
   }
@@ -24,9 +24,9 @@ const setup = async (
 
 test.describe('View state', () => {
   test('Editor state should show the configuration fields', async ({ page }) => {
-    const { productId, versionId, imageId } = await setup(page, 'editor-state-conf', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'editor-state-conf', '1.0.0', 'redis')
 
-    await page.goto(imageConfigUrl(productId, versionId, imageId))
+    await page.goto(imageConfigUrl(projectId, versionId, imageId))
 
     const editorButton = await page.waitForSelector('button:has-text("Editor")')
 
@@ -40,9 +40,9 @@ test.describe('View state', () => {
   })
 
   test('JSON state should show the json editor', async ({ page }) => {
-    const { productId, versionId, imageId } = await setup(page, 'editor-state-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'editor-state-json', '1.0.0', 'redis')
 
-    await page.goto(imageConfigUrl(productId, versionId, imageId))
+    await page.goto(imageConfigUrl(projectId, versionId, imageId))
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
 
@@ -57,9 +57,9 @@ test.describe('View state', () => {
 
 test.describe('Filters', () => {
   test('None should be selected by default', async ({ page }) => {
-    const { productId, versionId, imageId } = await setup(page, 'filter-all', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'filter-all', '1.0.0', 'redis')
 
-    await page.goto(imageConfigUrl(productId, versionId, imageId))
+    await page.goto(imageConfigUrl(projectId, versionId, imageId))
 
     const allButton = await page.locator('button:has-text("All")')
 
@@ -68,9 +68,9 @@ test.describe('Filters', () => {
   })
 
   test('All should not be selected if one of the main filters are not selected', async ({ page }) => {
-    const { productId, versionId, imageId } = await setup(page, 'filter-select', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'filter-select', '1.0.0', 'redis')
 
-    await page.goto(imageConfigUrl(productId, versionId, imageId))
+    await page.goto(imageConfigUrl(projectId, versionId, imageId))
 
     await page.locator(`button:has-text("Common")`).first().click()
 
@@ -80,9 +80,9 @@ test.describe('Filters', () => {
   })
 
   test('Main filter should not be selected if one of its sub filters are not selected', async ({ page }) => {
-    const { productId, versionId, imageId } = await setup(page, 'sub-filter', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'sub-filter', '1.0.0', 'redis')
 
-    await page.goto(imageConfigUrl(productId, versionId, imageId))
+    await page.goto(imageConfigUrl(projectId, versionId, imageId))
 
     const subFilter = await page.locator(`button:has-text("Network mode")`)
 
@@ -94,9 +94,9 @@ test.describe('Filters', () => {
   })
 
   test('Config field should be invisible if its sub filter is not selected', async ({ page }) => {
-    const { productId, versionId, imageId } = await setup(page, 'sub-deselect', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'sub-deselect', '1.0.0', 'redis')
 
-    await page.goto(imageConfigUrl(productId, versionId, imageId))
+    await page.goto(imageConfigUrl(projectId, versionId, imageId))
 
     const subFilter = await page.locator(`button:has-text("Deployment strategy")`)
 
@@ -125,10 +125,10 @@ const wsPatchMatchPorts = (internalPort: string, externalPort?: string) => (payl
 
 test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the config field', async ({ page }) => {
-    const { productId, versionId, imageId } = await setup(page, 'port-editor', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'port-editor', '1.0.0', 'redis')
 
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(productId, versionId, imageId))
+    await page.goto(imageConfigUrl(projectId, versionId, imageId))
     const ws = await sock
     const wsRoute = versionWsUrl(versionId)
 
@@ -157,10 +157,10 @@ test.describe('Image configurations', () => {
   })
 
   test('Port should be saved after adding it from the json editor', async ({ page }) => {
-    const { productId, versionId, imageId } = await setup(page, 'port-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'port-json', '1.0.0', 'redis')
 
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(productId, versionId, imageId))
+    await page.goto(imageConfigUrl(projectId, versionId, imageId))
     const ws = await sock
     const wsRoute = versionWsUrl(versionId)
 

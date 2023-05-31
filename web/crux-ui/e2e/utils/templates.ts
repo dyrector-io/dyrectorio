@@ -1,13 +1,13 @@
 /* eslint-disable import/prefer-default-export */
 /* eslint-disable import/no-extraneous-dependencies */
-import { ROUTE_PRODUCTS, ROUTE_TEMPLATES } from '@app/routes'
+import { ROUTE_PROJECTS, ROUTE_TEMPLATES } from '@app/routes'
 import { Page } from '@playwright/test'
 
-export const createProductFromTemplate = async (
+export const createProjectFromTemplate = async (
   page: Page,
   templateName: string,
-  productName: string,
-  productType: 'Simple' | 'Complex',
+  projectName: string,
+  projectType: 'Simple' | 'Complex',
 ): Promise<string> => {
   await page.goto(ROUTE_TEMPLATES)
   await page.waitForURL(ROUTE_TEMPLATES)
@@ -18,13 +18,13 @@ export const createProductFromTemplate = async (
 
   await addButton.click()
 
-  await page.waitForSelector(`h4:has-text("Create a Product from template '${templateName}'")`)
+  await page.waitForSelector(`h4:has-text("Create a Project from template '${templateName}'")`)
 
-  await page.locator('input[name=name]').fill(productName)
-  await page.locator(`form >> text=${productType}`).click()
+  await page.locator('input[name=name]').fill(projectName)
+  await page.locator(`form >> text=${projectType}`).click()
 
   await page.locator('text=Add >> nth=0').click()
-  await page.waitForURL(`${ROUTE_PRODUCTS}/**`)
+  await page.waitForURL(`${ROUTE_PROJECTS}/**`)
 
   return page.url().split('/').pop()
 }

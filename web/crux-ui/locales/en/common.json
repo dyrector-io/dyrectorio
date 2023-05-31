@@ -65,7 +65,7 @@
   "areYouSureDeleteName": "Are you sure you want to delete {{name}}?",
   "areYouSure": "Are you sure?",
 
-  "products": "Products",
+  "projects": "Projects",
   "config": "Config",
   "registries": "Registries",
   "nodes": "Nodes",
@@ -91,7 +91,7 @@
   "node": "Node",
   "registry": "Registry",
   "deployment": "Deployment",
-  "product": "Product",
+  "project": "Project",
   "version": "Version",
 
   "prefix": "Prefix",

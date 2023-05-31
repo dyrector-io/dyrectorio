@@ -75,7 +75,7 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
   private static readonly NOT_FOUND_ERRORS: NotFoundErrorMappings = {
     Registry: 'registry',
     Node: 'node',
-    Product: 'product',
+    Project: 'project',
     Version: 'version',
     Image: 'image',
     ContainerConfig: 'containerConfig',

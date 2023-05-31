@@ -22,7 +22,7 @@ export const ROUTE_TEAMS = '/teams'
 export const ROUTE_AUDIT = '/audit-log'
 export const ROUTE_TEAMS_CREATE = '/teams/create'
 
-export const ROUTE_PRODUCTS = '/products'
+export const ROUTE_PROJECTS = '/projects'
 export const ROUTE_DEPLOYMENTS = '/deployments'
 
 export const ROUTE_NODES = '/nodes'
@@ -47,7 +47,7 @@ export const API_CREATE_ACCOUNT = '/api/auth/create-account'
 export const API_STATUS = '/api/status'
 
 export const API_REGISTRIES = '/api/registries'
-export const API_PRODUCTS = '/api/products'
+export const API_PROJECTS = '/api/projects'
 export const API_NODES = '/api/nodes'
 export const API_DEPLOYMENTS = '/api/deployments'
 
@@ -148,10 +148,10 @@ export const auditApiUrl = (query: AuditLogQuery) => urlQuery(API_AUDIT, query)
 // auth
 export const verificationUrl = (email: string) => `${ROUTE_VERIFICATION}?email=${email}`
 
-// product
-export const productUrl = (id: string, params?: VersionUrlParams) => appendUrlParams(`${ROUTE_PRODUCTS}/${id}`, params)
-export const productApiUrl = (id: string) => `${API_PRODUCTS}/${id}`
-export const productVersionsApiUrl = (productId: string) => `${productApiUrl(productId)}/versions`
+// project
+export const projectUrl = (id: string, params?: VersionUrlParams) => appendUrlParams(`${ROUTE_PROJECTS}/${id}`, params)
+export const projectApiUrl = (id: string) => `${API_PROJECTS}/${id}`
+export const projectVersionsApiUrl = (projectId: string) => `${projectApiUrl(projectId)}/versions`
 
 // registry
 export const registryUrl = (id: string) => `${ROUTE_REGISTRIES}/${id}`
@@ -195,22 +195,22 @@ export type VersionUrlParams = {
   section?: VersionSectionsState
 }
 
-export const versionUrl = (productId: string, versionId: string, params?: VersionUrlParams) =>
-  appendUrlParams(`${productUrl(productId)}/versions/${versionId}`, params)
+export const versionUrl = (projectId: string, versionId: string, params?: VersionUrlParams) =>
+  appendUrlParams(`${projectUrl(projectId)}/versions/${versionId}`, params)
 
-export const versionApiUrl = (productId: string, versionId: string) =>
-  `${productApiUrl(productId)}/versions/${versionId}`
-export const versionIncreaseApiUrl = (productId: string, versionId: string) =>
-  `${versionApiUrl(productId, versionId)}/increase`
-export const versionSetDefaultApiUrl = (productId: string, versionId: string) =>
-  `${versionApiUrl(productId, versionId)}/default`
+export const versionApiUrl = (projectId: string, versionId: string) =>
+  `${projectApiUrl(projectId)}/versions/${versionId}`
+export const versionIncreaseApiUrl = (projectId: string, versionId: string) =>
+  `${versionApiUrl(projectId, versionId)}/increase`
+export const versionSetDefaultApiUrl = (projectId: string, versionId: string) =>
+  `${versionApiUrl(projectId, versionId)}/default`
 export const versionWsUrl = (versionId: string) => `/versions/${versionId}`
 
 // deployment
-export const versionDeploymentsUrl = (productId: string, versionId: string) =>
-  `${versionUrl(productId, versionId)}/deployments`
-export const versionDeploymentsApiUrl = (productId: string, versionId: string) =>
-  `/api${versionDeploymentsUrl(productId, versionId)}`
+export const versionDeploymentsUrl = (projectId: string, versionId: string) =>
+  `${versionUrl(projectId, versionId)}/deployments`
+export const versionDeploymentsApiUrl = (projectId: string, versionId: string) =>
+  `/api${versionDeploymentsUrl(projectId, versionId)}`
 
 export const deploymentUrl = (deploymentId: string) => `${ROUTE_DEPLOYMENTS}/${deploymentId}`
 
@@ -248,17 +248,17 @@ export const notificationApiUrl = (id: string) => `${API_NOTIFICATIONS}/${id}`
 export const notificationApiHookUrl = (id: string) => `${notificationApiUrl(id)}/test`
 
 // image config
-export const imageConfigUrl = (productId: string, versionId: string, imageId: string) =>
-  `${versionUrl(productId, versionId)}/images/${imageId}`
+export const imageConfigUrl = (projectId: string, versionId: string, imageId: string) =>
+  `${versionUrl(projectId, versionId)}/images/${imageId}`
 
-export const versionImagesApiUrl = (productId: string, versionId: string) =>
-  `${versionApiUrl(productId, versionId)}/images`
+export const versionImagesApiUrl = (projectId: string, versionId: string) =>
+  `${versionApiUrl(projectId, versionId)}/images`
 
-export const versionImagesOrderApiUrl = (productId: string, versionId: string) =>
-  `${versionImagesApiUrl(productId, versionId)}/order`
+export const versionImagesOrderApiUrl = (projectId: string, versionId: string) =>
+  `${versionImagesApiUrl(projectId, versionId)}/order`
 
-export const imageApiUrl = (productId: string, versionId: string, imageId: string) =>
-  `${versionImagesApiUrl(productId, versionId)}/${imageId}`
+export const imageApiUrl = (projectId: string, versionId: string, imageId: string) =>
+  `${versionImagesApiUrl(projectId, versionId)}/${imageId}`
 
 // instance
 export const instanceConfigUrl = (deploymentId: string, instanceId: string) =>

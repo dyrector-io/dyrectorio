@@ -42,10 +42,10 @@ export default class TeamMapper {
   private statisticsToDto(team: TeamWithStatistics): TeamStatisticsDto {
     return {
       users: team._count.users + team._count.invitations,
-      products: team._count.products,
+      projects: team._count.projects,
       nodes: team._count.nodes,
-      versions: team.products.flatMap(it => it._count.versions).reduce((prev, it) => prev + it, 0),
-      deployments: team.products
+      versions: team.projects.flatMap(it => it._count.versions).reduce((prev, it) => prev + it, 0),
+      deployments: team.projects
         .flatMap(it => it.versions)
         .flatMap(it => it._count.deployments)
         .reduce((prev, it) => prev + it, 0),
@@ -114,14 +114,14 @@ export type TeamWithUsers = Team & {
 
 type TeamStatistics = {
   registries: number
-  products: number
+  projects: number
   nodes: number
   users: number
   invitations: number
 }
 
 type TeamWithStatistics = Team & {
-  products: {
+  projects: {
     _count: {
       versions: number
     }
