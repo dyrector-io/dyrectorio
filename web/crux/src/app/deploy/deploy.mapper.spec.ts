@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { ContainerConfigData, InstanceContainerConfigData } from 'src/domain/container'
+import { DeploymentStatusEnum, NodeTypeEnum, ProductTypeEnum, VersionTypeEnum } from '.prisma/client'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
-import { PatchInstanceDto } from './deploy.dto'
+import { DeploymentDto, DeploymentWithNodeVersion, PatchInstanceDto } from './deploy.dto'
 import DeployMapper from './deploy.mapper'
 import ProjectMapper from '../project/project.mapper'
 import VersionMapper from '../version/version.mapper'
@@ -683,5 +684,69 @@ describe('DeployMapper', () => {
 
       expect(actual).toEqual(expected)
     })
+  })
+
+  it('toDto should return deployment information as well as audit, node and product', () => {
+    const input: DeploymentWithNodeVersion = {
+      id: 'deployment-id',
+      prefix: 'deployment-prefix',
+      note: 'deployment note',
+      status: DeploymentStatusEnum.inProgress,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: 'created-by',
+      updatedBy: 'updated-by',
+      node: {
+        id: 'deployment-node-id',
+        name: 'deployment node',
+        type: NodeTypeEnum.docker,
+      },
+      version: {
+        id: 'deployment-version-id',
+        name: 'deployment version',
+        type: VersionTypeEnum.rolling,
+        product: {
+          id: 'deployment-product-id',
+          name: 'deployment product',
+          type: ProductTypeEnum.simple,
+        },
+      },
+      environment: {},
+      versionId: 'deployment-version-id',
+      nodeId: 'deployment-node-id',
+      tries: 1,
+    }
+
+    const expected: DeploymentDto = {
+      id: 'deployment-id',
+      prefix: 'deployment-prefix',
+      note: 'deployment note',
+      status: 'in-progress',
+      audit: {
+        createdAt: input.createdAt,
+        updatedAt: input.updatedAt,
+        createdBy: 'created-by',
+        updatedBy: 'updated-by',
+      },
+      node: {
+        id: 'deployment-node-id',
+        name: 'deployment node',
+        type: 'docker',
+      },
+      product: {
+        id: 'deployment-product-id',
+        name: 'deployment product',
+        type: 'simple',
+      },
+      version: {
+        id: 'deployment-version-id',
+        name: 'deployment version',
+        type: 'rolling',
+      },
+    }
+
+    const actual = deployMapper.toDto(input)
+
+    expect(actual).toEqual(expected)
   })
 })
