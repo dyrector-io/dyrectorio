@@ -22,7 +22,7 @@ export default class VersionDeleteValidationInterceptor implements NestIntercept
             status: true,
           },
         },
-        product: {
+        project: {
           select: {
             type: true,
           },

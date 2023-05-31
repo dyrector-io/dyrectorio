@@ -1,6 +1,6 @@
 import { Version } from '.prisma/client'
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
-import { ProductTypeEnum } from '@prisma/client'
+import { ProjectTypeEnum } from '@prisma/client'
 import { versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/domain/version'
 import { DeploymentWithNode } from '../deploy/deploy.dto'
 import DeployMapper from '../deploy/deploy.mapper'
@@ -63,8 +63,8 @@ export type VersionWithChildren = Version & {
 }
 
 export type VersionDetails = VersionWithChildren & {
-  product: {
-    type: ProductTypeEnum
+  project: {
+    type: ProjectTypeEnum
   }
   images: ImageDetails[]
   deployments: DeploymentWithNode[]

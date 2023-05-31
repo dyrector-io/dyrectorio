@@ -31,12 +31,12 @@ export default class TeamRepository {
       select: {
         users: true,
         invitations: true,
-        products: true,
+        projects: true,
         nodes: true,
         registries: true,
       },
     },
-    products: {
+    projects: {
       select: {
         _count: {
           select: {

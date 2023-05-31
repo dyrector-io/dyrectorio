@@ -1,7 +1,7 @@
 import { deploymentContainerLogUrl, deploymentDeployUrl, nodeContainerLogUrl, ROUTE_NODES } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { DAGENT_NODE, screenshotPath } from './utils/common'
-import { addDeploymentToSimpleProduct, addImageToSimpleProduct, createProduct } from './utils/products'
+import { addDeploymentToSimpleProject, addImageToSimpleProject, createProject } from './utils/projects'
 
 test('Install dagent should be successful', async ({ page }) => {
   await page.goto(ROUTE_NODES)
@@ -113,9 +113,9 @@ test('Container log should appear after a successful deployment', async ({ page 
   const prefix = 'pw-deploy-log'
   const imageName = 'nginx'
 
-  const productId = await createProduct(page, 'PW-DEPLOY-LOG-TEST', 'Simple')
-  await addImageToSimpleProduct(page, productId, imageName)
-  const { url, id: deploymentId } = await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, prefix)
+  const projectId = await createProject(page, 'PW-DEPLOY-LOG-TEST', 'Simple')
+  await addImageToSimpleProject(page, projectId, imageName)
+  const { url, id: deploymentId } = await addDeploymentToSimpleProject(page, projectId, DAGENT_NODE, prefix)
 
   await page.goto(url)
 
@@ -150,9 +150,9 @@ test('Container log should appear on a node container', async ({ page }) => {
   const prefix = 'pw-node-deploy-log'
   const imageName = 'nginx'
 
-  const productId = await createProduct(page, 'PW-NODE-DEPLOY-LOG-TEST', 'Simple')
-  await addImageToSimpleProduct(page, productId, imageName)
-  const { url, id: deploymentId } = await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, prefix)
+  const porjectId = await createProject(page, 'PW-NODE-DEPLOY-LOG-TEST', 'Simple')
+  await addImageToSimpleProject(page, porjectId, imageName)
+  const { url, id: deploymentId } = await addDeploymentToSimpleProject(page, porjectId, DAGENT_NODE, prefix)
 
   await page.goto(url)
 

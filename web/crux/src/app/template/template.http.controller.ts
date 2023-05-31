@@ -3,10 +3,10 @@ import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } fro
 import { Identity } from '@ory/kratos-client'
 import { Response as ExpressResponse } from 'express'
 import TemplateFileService from 'src/services/template.file.service'
-import { ProductDto } from '../product/product.dto'
+import { ProjectDto } from '../project/project.dto'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
-import { CreateProductFromTemplateDto, TemplateDto } from './template.dto'
+import { CreateProjectFromTemplateDto, TemplateDto } from './template.dto'
 import TemplateService from './template.service'
 
 const PARAM_TEMPLATE_ID = 'templateId'
@@ -37,19 +37,19 @@ export default class TemplateHttpController {
   @ApiOperation({
     description:
       'Request must include `type`, `id`, and `name`. Response should include `id`, `name`, `description`, `type`, and `audit` log details of templates.',
-    summary: 'Creates a new product from the selected template.',
+    summary: 'Creates a new project from the selected template.',
   })
-  @ApiBody({ type: CreateProductFromTemplateDto })
-  @ApiCreatedResponse({ type: ProductDto, description: 'New product created.' })
-  async createProduct(
-    @Body() request: CreateProductFromTemplateDto,
+  @ApiBody({ type: CreateProjectFromTemplateDto })
+  @ApiCreatedResponse({ type: ProjectDto, description: 'New project created.' })
+  async createProject(
+    @Body() request: CreateProjectFromTemplateDto,
     @IdentityFromRequest() identity: Identity,
-  ): Promise<CreatedResponse<ProductDto>> {
-    const product = await this.service.createProductFromTemplate(request, identity)
+  ): Promise<CreatedResponse<ProjectDto>> {
+    const project = await this.service.createProjectFromTemplate(request, identity)
 
     return {
-      url: `/products/${product.id}`,
-      body: product,
+      url: `/projects/${project.id}`,
+      body: project,
     }
   }
 

@@ -6,7 +6,7 @@ import { BasicNodeDto } from '../node/node.dto'
 export class DashboardDeploymentDto {
   id: string
 
-  product: string
+  project: string
 
   version: string
 
@@ -18,7 +18,7 @@ export class DashboardDeploymentDto {
   @Type(() => Date)
   deployedAt: Date
 
-  productId: string
+  projectId: string
 
   versionId: string
 }
@@ -28,7 +28,7 @@ export class DashboardDto {
 
   auditLogEntries: number
 
-  products: number
+  projects: number
 
   versions: number
 

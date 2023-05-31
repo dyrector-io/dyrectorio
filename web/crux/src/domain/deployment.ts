@@ -79,7 +79,7 @@ export const checkDeploymentDeployability = (status: DeploymentStatusEnum, type:
 
 export type DeploymentNotification = {
   accessedBy: string
-  productName: string
+  projectName: string
   versionName: string
   nodeName: string
 }

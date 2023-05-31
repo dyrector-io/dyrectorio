@@ -3,7 +3,7 @@ import { AuditLog } from './audit'
 export type Dashboard = {
   users: number
   auditLogEntries: number
-  products: number
+  projects: number
   versions: number
   deployments: number
   failedDeployments: number
@@ -21,11 +21,11 @@ export type DashboardActiveNodes = {
 
 export type DashboardDeployment = {
   id: string
-  product: string
+  project: string
   version: string
   node: string
   changelog: string
   deployedAt: string
-  productId: string
+  projectId: string
   versionId: string
 }

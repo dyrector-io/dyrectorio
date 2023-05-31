@@ -1,6 +1,6 @@
 import { Layout } from '@app/components/layout'
-import DeploymentContainerStatusList from '@app/components/products/versions/deployments/deployment-container-status-list'
-import DeploymentDetailsCard from '@app/components/products/versions/deployments/deployment-details-card'
+import DeploymentContainerStatusList from '@app/components/projects/versions/deployments/deployment-container-status-list'
+import DeploymentDetailsCard from '@app/components/projects/versions/deployments/deployment-details-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import EventsTerminal from '@app/components/shared/events-terminal'
 import PageHeading from '@app/components/shared/page-heading'
@@ -20,8 +20,8 @@ import {
   deploymentUrl,
   deploymentWsUrl,
   nodeInspectUrl,
-  productUrl,
-  ROUTE_PRODUCTS,
+  projectUrl,
+  ROUTE_PROJECTS,
   versionUrl,
 } from '@app/routes'
 import { terminalDateFormat, withContextAuthorization } from '@app/utils'
@@ -49,7 +49,7 @@ const DeployPage = (props: DeployPageProps) => {
     ...propsDeployment,
     status,
   }
-  const { product, version } = deployment
+  const { project, version } = deployment
 
   const sock = useWebSocket(deploymentWsUrl(deployment.id), {
     onOpen: () => {
@@ -79,17 +79,17 @@ const DeployPage = (props: DeployPageProps) => {
 
   const pageLink: BreadcrumbLink = {
     name: t('common:deployments'),
-    url: ROUTE_PRODUCTS,
+    url: ROUTE_PROJECTS,
   }
 
   const sublinks: BreadcrumbLink[] = [
     {
-      name: product.name,
-      url: productUrl(product.id),
+      name: project.name,
+      url: projectUrl(project.id),
     },
     {
       name: version.name,
-      url: versionUrl(product.id, version.id),
+      url: versionUrl(project.id, version.id),
     },
     {
       name: t('common:deployment'),
@@ -116,7 +116,7 @@ const DeployPage = (props: DeployPageProps) => {
   return (
     <Layout
       title={t('deploysNameDeploy', {
-        product: product.name,
+        project: project.name,
         version: version.name,
         name: deployment.node.name,
       })}

@@ -1,4 +1,4 @@
-import { deploymentDeployUrl, productUrl, ROUTE_DEPLOYMENTS, ROUTE_NODES, versionUrl } from '@app/routes'
+import { deploymentDeployUrl, projectUrl, ROUTE_DEPLOYMENTS, ROUTE_NODES, versionUrl } from '@app/routes'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { expect, Page } from '@playwright/test'
 import { exec, ExecOptions } from 'child_process'
@@ -35,15 +35,15 @@ export const installDagent = async (page: Page) => {
 export const deployWithDagent = async (
   page: Page,
   prefix: string,
-  productId: string,
+  projectId: string,
   versionId?: string,
   ignoreResult?: boolean,
   testName?: string,
 ): Promise<string> => {
   if (versionId) {
-    await page.goto(versionUrl(productId, versionId))
+    await page.goto(versionUrl(projectId, versionId))
   } else {
-    await page.goto(productUrl(productId))
+    await page.goto(projectUrl(projectId))
   }
 
   await page.locator('button:has-text("Add deployment")').click()

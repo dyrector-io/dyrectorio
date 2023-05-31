@@ -214,7 +214,7 @@ export default class AgentService {
           identityId: deployment.notification.accessedBy,
           messageType,
           message: {
-            subject: deployment.notification.productName,
+            subject: deployment.notification.projectName,
             version: deployment.notification.versionName,
             node: deployment.notification.nodeName,
           } as DeployMessage,

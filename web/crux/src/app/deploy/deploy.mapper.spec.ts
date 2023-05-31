@@ -4,7 +4,7 @@ import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
 import { PatchInstanceDto } from './deploy.dto'
 import DeployMapper from './deploy.mapper'
-import ProductMapper from '../product/product.mapper'
+import ProjectMapper from '../project/project.mapper'
 import VersionMapper from '../version/version.mapper'
 import AuditMapper from '../audit/audit.mapper'
 import NodeMapper from '../node/node.mapper'
@@ -24,7 +24,7 @@ describe('DeployMapper', () => {
         RegistryMapper,
         VersionMapper,
         ContainerMapper,
-        ProductMapper,
+        ProjectMapper,
         NodeMapper,
         ImageMapper,
         DeployMapper,

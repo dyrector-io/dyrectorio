@@ -1,56 +1,56 @@
-import { deploymentUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
+import { deploymentUrl, projectUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
 import { DAGENT_NODE, waitForURLExcept } from './utils/common'
 import { deployWithDagent } from './utils/node-helper'
 import { createNode } from './utils/nodes'
 import {
-  addDeploymentToSimpleProduct,
+  addDeploymentToSimpleProject,
   addDeploymentToVersion,
-  addImageToSimpleProduct,
+  addImageToSimpleProject,
   createImage,
-  createProduct,
+  createProject,
   createVersion,
-} from './utils/products'
+} from './utils/projects'
 
 const setup = async (
   page: Page,
   nodeName: string,
-  productName: string,
+  projectName: string,
   type: 'Simple' | 'Complex' = 'Simple',
-): Promise<{ nodeId: string; productId: string }> => {
+): Promise<{ nodeId: string; projectId: string }> => {
   const nodeId = await createNode(page, nodeName)
-  const productId = await createProduct(page, productName, type)
+  const projectId = await createProject(page, projectName, type)
 
   return {
     nodeId,
-    productId,
+    projectId,
   }
 }
 
-test.describe('Simple product', () => {
+test.describe('Simple project', () => {
   test('preparing deployment should be not copiable on deployment list', async ({ page }) => {
     const nodeName = 'NODE-TEST1'
-    const productName = 'PRODUCT-COPY-TEST1'
+    const projectName = 'project-copy-test-1'
 
-    const { productId } = await setup(page, nodeName, productName)
-    await addImageToSimpleProduct(page, productId, 'nginx')
-    await addDeploymentToSimpleProduct(page, productId, nodeName, null)
+    const { projectId } = await setup(page, nodeName, projectName)
+    await addImageToSimpleProject(page, projectId, 'nginx')
+    await addDeploymentToSimpleProject(page, projectId, nodeName, null)
 
     await page.goto(ROUTE_DEPLOYMENTS)
 
-    const copyButton = await page.locator(`[alt="Copy"]:right-of(a:has-text("${productName}"))`).first()
+    const copyButton = await page.locator(`[alt="Copy"]:right-of(a:has-text("${projectName}"))`).first()
     await expect(copyButton).toHaveClass(/cursor-not-allowed/)
   })
 
-  test('preparing deployment should be not copiable on deployment list in product', async ({ page }) => {
+  test('preparing deployment should be not copiable on deployment list in project', async ({ page }) => {
     const nodeName = 'NODE-TEST2'
-    const productName = 'PRODUCT-COPY-TEST2'
+    const projectName = 'project-copy-test-2'
 
-    const { productId } = await setup(page, nodeName, productName)
-    await addImageToSimpleProduct(page, productId, 'nginx')
-    await addDeploymentToSimpleProduct(page, productId, nodeName, null)
+    const { projectId } = await setup(page, nodeName, projectName)
+    await addImageToSimpleProject(page, projectId, 'nginx')
+    await addDeploymentToSimpleProject(page, projectId, nodeName, null)
 
-    await page.goto(productUrl(productId))
+    await page.goto(projectUrl(projectId))
 
     await page.locator('button:has-text("Deployments")').click()
 
@@ -60,11 +60,11 @@ test.describe('Simple product', () => {
   })
 
   test('preparing deployment should be not copiable on deployment details page', async ({ page }) => {
-    const productName = 'PRODUCT-COPY-TEST3'
+    const projectName = 'project-copy-test-3'
 
-    const { productId } = await setup(page, DAGENT_NODE, productName)
-    await addImageToSimpleProduct(page, productId, 'nginx')
-    const { url } = await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, null)
+    const { projectId } = await setup(page, DAGENT_NODE, projectName)
+    await addImageToSimpleProject(page, projectId, 'nginx')
+    const { url } = await addDeploymentToSimpleProject(page, projectId, DAGENT_NODE, null)
 
     await page.goto(url)
 
@@ -74,14 +74,14 @@ test.describe('Simple product', () => {
   })
 
   test('successful deployment should be not copiable on deployment details page', async ({ page }, testInfo) => {
-    const productName = 'PRODUCT-COPY-TEST4'
+    const projectName = 'project-copy-test-4'
 
-    const productId = await createProduct(page, productName, 'Simple')
-    await addImageToSimpleProduct(page, productId, 'nginx')
+    const projectId = await createProject(page, projectName, 'Simple')
+    await addImageToSimpleProject(page, projectId, 'nginx')
 
     const prefix = 'pw-simp-copy'
 
-    const deploymentId = await deployWithDagent(page, prefix, productId, '', false, testInfo.title)
+    const deploymentId = await deployWithDagent(page, prefix, projectId, '', false, testInfo.title)
 
     await page.goto(deploymentUrl(deploymentId))
 
@@ -89,30 +89,30 @@ test.describe('Simple product', () => {
   })
 })
 
-test.describe('Complex product', () => {
+test.describe('Complex project', () => {
   test('preparing deployment should be not copiable on deployment list', async ({ page }) => {
-    const productName = 'PRODUCT-COPY-TEST5'
+    const projectName = 'project-copy-test-5'
 
-    const { productId } = await setup(page, DAGENT_NODE, productName, 'Complex')
-    const versionId = await createVersion(page, productId, '1.0.0', 'Incremental')
-    await createImage(page, productId, versionId, 'nginx')
-    await addDeploymentToVersion(page, productId, versionId, DAGENT_NODE)
+    const { projectId } = await setup(page, DAGENT_NODE, projectName, 'Complex')
+    const versionId = await createVersion(page, projectId, '1.0.0', 'Incremental')
+    await createImage(page, projectId, versionId, 'nginx')
+    await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE)
 
     await page.goto(ROUTE_DEPLOYMENTS)
 
-    const copyButton = await page.locator(`[alt="Copy"]:right-of(a:has-text("${productName}"))`).first()
+    const copyButton = await page.locator(`[alt="Copy"]:right-of(a:has-text("${projectName}"))`).first()
     await expect(copyButton).toHaveClass(/cursor-not-allowed/)
   })
 
-  test('preparing deployment should be not copiable on deployment list in product', async ({ page }) => {
-    const productName = 'PRODUCT-COPY-TEST6'
+  test('preparing deployment should be not copiable on deployment list in project', async ({ page }) => {
+    const projectName = 'project-copy-test-6'
 
-    const { productId } = await setup(page, DAGENT_NODE, productName, 'Complex')
-    const versionId = await createVersion(page, productId, '1.0.0', 'Incremental')
-    await createImage(page, productId, versionId, 'nginx')
-    await addDeploymentToVersion(page, productId, versionId, DAGENT_NODE)
+    const { projectId } = await setup(page, DAGENT_NODE, projectName, 'Complex')
+    const versionId = await createVersion(page, projectId, '1.0.0', 'Incremental')
+    await createImage(page, projectId, versionId, 'nginx')
+    await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE)
 
-    await page.goto(versionUrl(productId, versionId, { section: 'deployments' }))
+    await page.goto(versionUrl(projectId, versionId, { section: 'deployments' }))
 
     await page.waitForSelector('button:has-text("Add image")')
 
@@ -120,13 +120,13 @@ test.describe('Complex product', () => {
   })
 
   test('preparing deployment should be not copiable on deployment details page', async ({ page }) => {
-    const productName = 'PRODUCT-COPY-TEST7'
+    const projectName = 'project-copy-test-7'
 
-    const { productId } = await setup(page, DAGENT_NODE, productName, 'Complex')
-    const versionId = await createVersion(page, productId, '1.0.0', 'Incremental')
-    await createImage(page, productId, versionId, 'nginx')
+    const { projectId } = await setup(page, DAGENT_NODE, projectName, 'Complex')
+    const versionId = await createVersion(page, projectId, '1.0.0', 'Incremental')
+    await createImage(page, projectId, versionId, 'nginx')
 
-    const { id } = await addDeploymentToVersion(page, productId, versionId, DAGENT_NODE)
+    const { id } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE)
 
     await page.goto(deploymentUrl(id))
 
@@ -136,16 +136,16 @@ test.describe('Complex product', () => {
   })
 
   test('should be able to copy successful deployment', async ({ page }, testInfo) => {
-    const productName = 'PRODUCT-COPY-TEST8'
+    const projectName = 'project-copy-test-8'
 
-    const productId = await createProduct(page, productName, 'Complex')
-    const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
-    await createImage(page, productId, versionId, 'nginx')
+    const projectId = await createProject(page, projectName, 'Complex')
+    const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
+    await createImage(page, projectId, versionId, 'nginx')
 
     const deploymentId = await deployWithDagent(
       page,
       'pw-complex-copibility',
-      productId,
+      projectId,
       versionId,
       false,
       testInfo.title,
@@ -163,22 +163,22 @@ test.describe('Complex product', () => {
   })
 
   test('should be able to copy obsolete deployment', async ({ page }, testInfo) => {
-    const productName = 'PRODUCT-COPY-TEST9'
+    const projectName = 'project-copy-test-9'
 
-    const productId = await createProduct(page, productName, 'Complex')
-    const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
-    await createImage(page, productId, versionId, 'nginx')
+    const projectId = await createProject(page, projectName, 'Complex')
+    const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
+    await createImage(page, projectId, versionId, 'nginx')
 
     const deploymentId = await deployWithDagent(
       page,
       'pw-complex-copibility-obsolete',
-      productId,
+      projectId,
       versionId,
       false,
       `${testInfo.title}1`,
     )
 
-    await deployWithDagent(page, 'pw-complex-copibility-obsolete', productId, versionId, false, `${testInfo.title}2`)
+    await deployWithDagent(page, 'pw-complex-copibility-obsolete', projectId, versionId, false, `${testInfo.title}2`)
 
     await page.goto(deploymentUrl(deploymentId))
 
@@ -197,17 +197,17 @@ test.describe('Complex product', () => {
   test('Can copy deployment while there is a preparing deployment on the same node with different prefix and should not overwrite it', async ({
     page,
   }, testInfo) => {
-    const productName = 'PRODUCT-COPY-TEST11'
-    const productId = await createProduct(page, productName, 'Complex')
-    const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
+    const projectName = 'project-copy-test-11'
+    const projectId = await createProject(page, projectName, 'Complex')
+    const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
 
-    await createImage(page, productId, versionId, 'nginx')
+    await createImage(page, projectId, versionId, 'nginx')
 
-    await addDeploymentToVersion(page, productId, versionId, DAGENT_NODE, 'pw-complex-first')
+    await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, 'pw-complex-first')
 
-    await deployWithDagent(page, 'pw-complex-second', productId, versionId, false, testInfo.title)
+    await deployWithDagent(page, 'pw-complex-second', projectId, versionId, false, testInfo.title)
 
-    await page.goto(versionUrl(productId, versionId))
+    await page.goto(versionUrl(projectId, versionId))
 
     await page.locator('button:has-text("Deployments")').click()
 
@@ -217,7 +217,7 @@ test.describe('Complex product', () => {
     await copy.click()
     await waitForURLExcept(page, { startsWith: `${ROUTE_DEPLOYMENTS}/`, except: currentUrl })
 
-    await page.goto(versionUrl(productId, versionId))
+    await page.goto(versionUrl(projectId, versionId))
 
     await page.locator('button:has-text("Deployments")').click()
 

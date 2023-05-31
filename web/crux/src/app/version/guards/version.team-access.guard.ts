@@ -8,11 +8,11 @@ export default class VersionTeamAccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest()
-    const productId = req.params.productId as string
+    const projectId = req.params.projectId as string
     const versionId = req.params.versionId as string
 
     const identity = identityOfRequest(context)
 
-    return await this.service.checkProductOrVersionIsInTheActiveTeam(productId, versionId, identity)
+    return await this.service.checkProjectOrVersionIsInTheActiveTeam(projectId, versionId, identity)
   }
 }

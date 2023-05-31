@@ -7,8 +7,8 @@ import {
   ROUTE_LOGOUT,
   ROUTE_NODES,
   ROUTE_NOTIFICATIONS,
-  ROUTE_PRODUCTS,
   ROUTE_PROFILE,
+  ROUTE_PROJECTS,
   ROUTE_REGISTRIES,
   ROUTE_STORAGES,
   ROUTE_TEAMS,
@@ -29,11 +29,11 @@ export const Sidebar = (props: SidebarProps) => {
 
   const { t } = useTranslation('common')
 
-  const productOptions = [
+  const projectOptions = [
     {
-      icon: <DyoIcon src="/products.svg" alt={t('products')} />,
-      text: 'products',
-      link: ROUTE_PRODUCTS,
+      icon: <DyoIcon src="/projects.svg" alt={t('projects')} />,
+      text: 'projects',
+      link: ROUTE_PROJECTS,
     },
     {
       icon: <DyoIcon src="/deploy.svg" alt={t('deployments')} />,
@@ -114,7 +114,7 @@ export const Sidebar = (props: SidebarProps) => {
           </NavButton>
         </div>
 
-        <NavSection className="mt-6" title={t('product')} options={productOptions} />
+        <NavSection className="mt-6" title={t('project')} options={projectOptions} />
 
         <NavSection className="mt-6" title={t('components')} options={componentOptions} />
 

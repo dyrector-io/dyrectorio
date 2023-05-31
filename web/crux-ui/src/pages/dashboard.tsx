@@ -144,8 +144,8 @@ const DashboardPage = (props: DashboardPageProps) => {
                   <DyoCard className="flex flex-col p-4 mb-4 break-inside-avoid" key={it.id}>
                     <div className="flex flex-row justify-between">
                       <div className="flex flex-row justify-start">
-                        <DyoLabel textColor="text-light-eased mb-4">{`${t('common:product')}:`}</DyoLabel>
-                        <span className="text-bright font-semibold ml-2 text-ellipsis break-words">{it.product}</span>
+                        <DyoLabel textColor="text-light-eased mb-4">{`${t('common:project')}:`}</DyoLabel>
+                        <span className="text-bright font-semibold ml-2 text-ellipsis break-words">{it.project}</span>
                       </div>
                       <DyoLabel textColor="text-light-eased ml-2">{utcDateToLocale(it.deployedAt)}</DyoLabel>
                     </div>

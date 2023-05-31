@@ -54,7 +54,7 @@ export default class TeamHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      'List of teams consist of `name`, `id`, and `statistics`, including number of `users`, `products`, `nodes`, `versions`, and `deployments`.</br></br>Teams are the shared entity of multiple users. The purpose of teams is to separate users, nodes and products based on their needs within an organization. Team owners can assign roles. More details about teams here.',
+      'List of teams consist of `name`, `id`, and `statistics`, including number of `users`, `projects`, `nodes`, `versions`, and `deployments`.</br></br>Teams are the shared entity of multiple users. The purpose of teams is to separate users, nodes and projects based on their needs within an organization. Team owners can assign roles. More details about teams here.',
     summary: 'Fetch data of teams the user is a member of.',
   })
   @ApiOkResponse({ type: TeamDto, isArray: true, description: 'List of teams and their statistics.' })
@@ -67,7 +67,7 @@ export default class TeamHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      "Get the details of a team. Request must include `teamId`, which is the ID of the team they'd like to get the data of. Data of teams consist of `name`, `id`, and `statistics`, including number of `users`, `products`, `nodes`, `versions`, and `deployments`. Response should include user details, as well, including `name`, `id`, `role`, `status`, `email`, and `lastLogin`.",
+      "Get the details of a team. Request must include `teamId`, which is the ID of the team they'd like to get the data of. Data of teams consist of `name`, `id`, and `statistics`, including number of `users`, `projects`, `nodes`, `versions`, and `deployments`. Response should include user details, as well, including `name`, `id`, `role`, `status`, `email`, and `lastLogin`.",
     summary: 'Fetch data of a team the user is a member of.',
   })
   @ApiOkResponse({ type: TeamDetailsDto, description: 'Details of the team.' })
@@ -81,7 +81,7 @@ export default class TeamHttpController {
   @AuditLogLevel('disabled')
   @ApiOperation({
     description:
-      'Request must include `name`, which is going to be the name of the newly made team. Response should include `name`, `id`, and `statistics`, including number of `users`, `products`, `nodes`, `versions`, and `deployments`.',
+      'Request must include `name`, which is going to be the name of the newly made team. Response should include `name`, `id`, and `statistics`, including number of `users`, `projects`, `nodes`, `versions`, and `deployments`.',
     summary: 'Create new team.',
   })
   @CreatedWithLocation()

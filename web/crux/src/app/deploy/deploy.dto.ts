@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger'
-import { Deployment, Instance, InstanceContainerConfig, Node, Product, Version } from '@prisma/client'
+import { Deployment, Instance, InstanceContainerConfig, Node, Project, Version } from '@prisma/client'
 import { Type } from 'class-transformer'
 import { IsDate, IsIn, IsInt, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator'
 import { CONTAINER_STATE_VALUES, ContainerState } from 'src/domain/container'
@@ -15,7 +15,7 @@ import { ImageEvent } from '../image/image.event'
 import { ImageDetails } from '../image/image.mapper'
 import { BasicProperties } from '../../shared/dtos/shared.dto'
 import { AuditDto } from '../audit/audit.dto'
-import { BasicProductDto } from '../product/product.dto'
+import { BasicProjectDto } from '../project/project.dto'
 import { BasicVersionDto } from '../version/version.dto'
 import { BasicNodeDto, BasicNodeWithStatus } from '../node/node.dto'
 
@@ -43,7 +43,7 @@ export class DeploymentDto extends BasicDeploymentDto {
   audit: AuditDto
 
   @ValidateNested()
-  product: BasicProductDto
+  project: BasicProjectDto
 
   @ValidateNested()
   version: BasicVersionDto
@@ -214,7 +214,7 @@ export type DeploymentWithNode = Deployment & {
 
 export type DeploymentWithNodeVersion = DeploymentWithNode & {
   version: Pick<Version, BasicProperties> & {
-    product: Pick<Product, BasicProperties>
+    project: Pick<Project, BasicProperties>
   }
 }
 

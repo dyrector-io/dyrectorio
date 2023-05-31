@@ -1,7 +1,7 @@
 {
   "statistics": "Statistics",
   "auditLogEntries": "Audit log entries",
-  "products": "Products",
+  "projects": "Projects",
   "versions": "Versions",
   "failedDeployments": "Failed deployments",
   "activeNodes": "Active nodes",

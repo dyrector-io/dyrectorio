@@ -6,7 +6,7 @@ import TemplateCard from '@app/components/templates/template-card'
 import DyoButton from '@app/elements/dyo-button'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { Template } from '@app/models'
-import { API_TEMPLATES, productUrl, ROUTE_TEMPLATES } from '@app/routes'
+import { API_TEMPLATES, projectUrl, ROUTE_TEMPLATES } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
@@ -40,9 +40,9 @@ const TemplatesPage = (props: TemplatesPageProps) => {
     window.scrollTo(0, 0)
   }
 
-  const onTemplateApplied = async productId => {
+  const onTemplateApplied = async projectId => {
     setApplying(null)
-    await router.push(productUrl(productId))
+    await router.push(projectUrl(projectId))
   }
 
   return (

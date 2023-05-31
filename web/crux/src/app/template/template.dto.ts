@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsIn, IsOptional, IsString, IsUUID } from 'class-validator'
-import { PRODUCT_TYPE_VALUES, ProductTypeDto } from '../product/product.dto'
+import { PROJECT_TYPE_VALUES, ProjectTypeDto } from '../project/project.dto'
 
 export class TemplateDto {
   @IsUUID()
@@ -19,7 +19,7 @@ export class TemplateDto {
   technologies: string[]
 }
 
-export class CreateProductFromTemplateDto {
+export class CreateProjectFromTemplateDto {
   @IsString()
   id: string
 
@@ -30,7 +30,7 @@ export class CreateProductFromTemplateDto {
   @IsOptional()
   description?: string
 
-  @ApiProperty({ enum: PRODUCT_TYPE_VALUES })
-  @IsIn(PRODUCT_TYPE_VALUES)
-  type: ProductTypeDto
+  @ApiProperty({ enum: PROJECT_TYPE_VALUES })
+  @IsIn(PROJECT_TYPE_VALUES)
+  type: ProjectTypeDto
 }

@@ -2,13 +2,13 @@ import EditorBadge from '@app/components/editor/editor-badge'
 import useEditorState from '@app/components/editor/use-editor-state'
 import useItemEditorState from '@app/components/editor/use-item-editor-state'
 import { Layout } from '@app/components/layout'
-import useInstanceState from '@app/components/products/versions/deployments/instances/use-instance-state'
-import useDeploymentState from '@app/components/products/versions/deployments/use-deployment-state'
-import CommonConfigSection from '@app/components/products/versions/images/config/common-config-section'
-import CraneConfigSection from '@app/components/products/versions/images/config/crane-config-section'
-import DagentConfigSection from '@app/components/products/versions/images/config/dagent-config-section'
-import EditImageJson from '@app/components/products/versions/images/edit-image-json'
-import ImageConfigFilters from '@app/components/products/versions/images/image-config-filters'
+import useInstanceState from '@app/components/projects/versions/deployments/instances/use-instance-state'
+import useDeploymentState from '@app/components/projects/versions/deployments/use-deployment-state'
+import CommonConfigSection from '@app/components/projects/versions/images/config/common-config-section'
+import CraneConfigSection from '@app/components/projects/versions/images/config/crane-config-section'
+import DagentConfigSection from '@app/components/projects/versions/images/config/dagent-config-section'
+import EditImageJson from '@app/components/projects/versions/images/edit-image-json'
+import ImageConfigFilters from '@app/components/projects/versions/images/image-config-filters'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { INSTANCE_WS_REQUEST_DELAY } from '@app/const'
@@ -29,7 +29,7 @@ import {
   mergeConfigs,
   mergeJsonConfigToInstanceContainerConfig,
   NodeDetails,
-  ProductDetails,
+  ProjectDetails,
   VersionDetails,
   ViewState,
 } from '@app/models'
@@ -38,9 +38,9 @@ import {
   deploymentUrl,
   instanceConfigUrl,
   nodeApiUrl,
-  productApiUrl,
-  productUrl,
-  ROUTE_PRODUCTS,
+  projectApiUrl,
+  projectUrl,
+  ROUTE_PROJECTS,
   versionApiUrl,
   versionUrl,
 } from '@app/routes'
@@ -62,7 +62,7 @@ interface InstanceDetailsPageProps {
 const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   const { t } = useTranslation('images')
   const { deployment, instanceId } = props
-  const { product, version } = deployment
+  const { project, version } = deployment
 
   const onApiError = defaultApiErrorHandler(t)
   const onWsError = (error: Error) => {
@@ -150,17 +150,17 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
   const pageLink: BreadcrumbLink = {
     name: t('common:container'),
-    url: ROUTE_PRODUCTS,
+    url: ROUTE_PROJECTS,
   }
 
   const sublinks: BreadcrumbLink[] = [
     {
-      name: product.name,
-      url: productUrl(product.id),
+      name: project.name,
+      url: projectUrl(project.id),
     },
     {
       name: version.name,
-      url: versionUrl(product.id, version.id),
+      url: versionUrl(project.id, version.id),
     },
     {
       name: t('common:deployment'),
@@ -289,17 +289,17 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   const instanceId = context.query.instanceId as string
 
   const deploymentDetails = await getCruxFromContext<DeploymentDetails>(context, deploymentApiUrl(deploymentId))
-  const product = await getCruxFromContext<ProductDetails>(context, productApiUrl(deploymentDetails.product.id))
+  const project = await getCruxFromContext<ProjectDetails>(context, projectApiUrl(deploymentDetails.project.id))
   const node = await getCruxFromContext<NodeDetails>(context, nodeApiUrl(deploymentDetails.node.id))
 
   const version = await getCruxFromContext<VersionDetails>(
     context,
-    versionApiUrl(deploymentDetails.product.id, deploymentDetails.version.id),
+    versionApiUrl(deploymentDetails.project.id, deploymentDetails.version.id),
   )
 
   const deployment: DeploymentRoot = {
     ...deploymentDetails,
-    product,
+    project,
     version,
     node,
   }

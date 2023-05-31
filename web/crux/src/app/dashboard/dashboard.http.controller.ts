@@ -14,7 +14,7 @@ export default class DashboardHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      'Response should include `users`, number of `auditLogEntries`, `products`, `versions`, `deployments`, `failedDeployments`, details of `nodes`, `latestDeployments` and `auditLog` entries.',
+      'Response should include `users`, number of `auditLogEntries`, `projects`, `versions`, `deployments`, `failedDeployments`, details of `nodes`, `latestDeployments` and `auditLog` entries.',
     summary: 'Fetch dashboard data of latest activities.',
   })
   @ApiOkResponse({ type: DashboardDto, description: 'Dashboard data listed.' })

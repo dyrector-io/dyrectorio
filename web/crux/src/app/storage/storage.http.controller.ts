@@ -68,7 +68,7 @@ export default class StorageHttpController {
   })
   @ApiOkResponse({ type: StorageDetailsDto, description: 'Storage details.' })
   @UuidParams(PARAM_STORAGE_ID)
-  async getProductDetails(@StorageId() id: string): Promise<StorageDetailsDto> {
+  async getStorageDetails(@StorageId() id: string): Promise<StorageDetailsDto> {
     return this.service.getStorageDetails(id)
   }
 
@@ -82,7 +82,7 @@ export default class StorageHttpController {
   @CreatedWithLocation()
   @ApiBody({ type: CreateStorageDto })
   @ApiCreatedResponse({ type: StorageDetailsDto, description: 'New storage created.' })
-  async createProduct(
+  async createStorage(
     @Body() request: CreateStorageDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreatedResponse<StorageDetailsDto>> {
@@ -104,7 +104,7 @@ export default class StorageHttpController {
   @UseInterceptors(StorageUpdateValidationInterceptor)
   @ApiNoContentResponse({ description: 'Storage updated.' })
   @UuidParams(PARAM_STORAGE_ID)
-  async updateProduct(
+  async updateStorage(
     @StorageId() id: string,
     @Body() request: UpdateStorageDto,
     @IdentityFromRequest() identity: Identity,
@@ -121,7 +121,7 @@ export default class StorageHttpController {
   @UseInterceptors(StorageDeleteValidationInterceptor)
   @ApiNoContentResponse({ description: 'Storage deleted.' })
   @UuidParams(PARAM_STORAGE_ID)
-  async deleteProduct(@StorageId() id: string): Promise<void> {
+  async deleteStorage(@StorageId() id: string): Promise<void> {
     return this.service.deleteStorage(id)
   }
 }
