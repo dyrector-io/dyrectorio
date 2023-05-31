@@ -277,10 +277,10 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	state.Kratos.Image = "ghcr.io/dyrector-io/dyrectorio/web/kratos"
 
 	// Load defaults
-	state.SettingsFile.CruxSecret = util.Fallback(state.SettingsFile.CruxSecret, RandomChars(secretLength))
-	state.SettingsFile.CruxPostgresPassword = util.Fallback(state.SettingsFile.CruxPostgresPassword, RandomChars(secretLength))
-	state.SettingsFile.KratosPostgresPassword = util.Fallback(state.SettingsFile.KratosPostgresPassword, RandomChars(secretLength))
-	state.SettingsFile.KratosSecret = util.Fallback(state.SettingsFile.KratosSecret, RandomChars(secretLength))
+	state.SettingsFile.CruxSecret = util.Fallback(state.SettingsFile.CruxSecret, randomChars())
+	state.SettingsFile.CruxPostgresPassword = util.Fallback(state.SettingsFile.CruxPostgresPassword, randomChars())
+	state.SettingsFile.KratosPostgresPassword = util.Fallback(state.SettingsFile.KratosPostgresPassword, randomChars())
+	state.SettingsFile.KratosSecret = util.Fallback(state.SettingsFile.KratosSecret, randomChars())
 
 	// Generate names
 	state.Containers.Traefik.Name = fmt.Sprintf("%s_traefik", args.Prefix)
@@ -303,8 +303,9 @@ func CheckSettings(state *State, args *ArgsFlags) {
 	}
 }
 
-func RandomChars(bufflength uint) string {
-	buffer := make([]byte, bufflength*bufferMultiplier)
+// randomChars creates random char string used for password creation
+func randomChars() string {
+	buffer := make([]byte, secretLength*bufferMultiplier)
 	_, err := rand.Read(buffer)
 	if err != nil {
 		log.Error().Err(err).Stack().Send()
