@@ -100,7 +100,7 @@ func Exists(ctx context.Context, logger io.StringWriter, expandedImageName strin
 		if logger != nil {
 			_, err = logger.WriteString("Failed to list images")
 			if err != nil {
-				//nolint
+				//nolint:forbidigo
 				fmt.Printf("Failed to write log: %s", err.Error())
 			}
 		}
@@ -167,7 +167,7 @@ func Pull(ctx context.Context, logger io.StringWriter, expandedImageName, authCr
 				lastLog = time.Now()
 			}
 			if logErr != nil {
-				//nolint
+				//nolint:forbidigo
 				fmt.Printf("Failed to write log: %s", logErr.Error())
 			}
 		}

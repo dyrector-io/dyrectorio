@@ -13,7 +13,7 @@ import (
 func GetAllNetworks(ctx context.Context) ([]types.NetworkResource, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	return cli.NetworkList(ctx, types.NetworkListOptions{})
 }
@@ -21,7 +21,7 @@ func GetAllNetworks(ctx context.Context) ([]types.NetworkResource, error) {
 func CreateNetwork(ctx context.Context, name, driver string) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	networks, err := cli.NetworkList(ctx, types.NetworkListOptions{
@@ -56,7 +56,7 @@ func CreateNetwork(ctx context.Context, name, driver string) error {
 func DeleteNetworkByID(ctx context.Context, networkID string) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	return cli.NetworkRemove(ctx, networkID)

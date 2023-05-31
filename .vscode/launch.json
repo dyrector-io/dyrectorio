@@ -63,7 +63,7 @@
             "request": "launch",
             "buildFlags": "",
             "env": {
-                "KUBECONFIG": "${workspaceFolder}/golang/k3d.yaml"
+                "KUBECONFIG": "${workspaceFolder}/golang/k3d-auth.yaml"
             },
             "mode": "debug",
             "program": "${workspaceFolder}/golang/cmd/crane",

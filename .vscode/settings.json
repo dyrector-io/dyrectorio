@@ -12,5 +12,8 @@
     "eslint.workingDirectories": ["web/crux", "web/crux-ui"],
     "gopls": {
         "formatting.gofumpt": true
+    },
+    "yaml.schemas": {
+        "https://json.schemastore.org/golangci-lint.json": "file:///home/nandor/projects/dyrectorio/dyo-pub/.golangci.yml"
     }
 }

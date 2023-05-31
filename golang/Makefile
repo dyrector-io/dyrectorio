@@ -132,7 +132,7 @@ security:
 # golangci for linting
 .PHONY: lint
 lint:
-	golangci-lint run  ./...
+	golangci-lint run -c ../.golangci.yml ./...
 
 .PHONY: build-cli
 build-cli:
@@ -216,13 +216,13 @@ k3d-init: k3d-check
 .PHONY: k3d-init-ext
 k3d-init-ext: k3d-check
 	k3d cluster create --api-port 172.17.0.1:6443 crane-test && \
-	k3d kubeconfig get crane-test > k3d.yaml && \
-	KUBECONFIG=$(PWD)/k3d.yaml kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/bundle.yaml
+	k3d kubeconfig get crane-test > k3d-auth.yaml && \
+	KUBECONFIG=$(PWD)/k3d-auth.yaml kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/bundle.yaml
 
 # config k3d
 .PHONY: k3d-config
 k3d-config:
-	k3d kubeconfig get crane-test > k3d.yaml
+	k3d kubeconfig get crane-test > k3d-auth.yaml
 
 .PHONY: k3d-start
 k3d-start:
@@ -235,7 +235,7 @@ k3d-stop:
 # make sure to have k3s set and configured
 .PHONY: k3d-test
 k3d-test: k3d-config
-	export KUBECONFIG='$(PWD)/k3d.yaml'
+	export KUBECONFIG='$(PWD)/k3d-auth.yaml'
 	go test -tags=integration -race ./pkg/crane/...
 
 k3d-rm:
