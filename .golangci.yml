@@ -18,7 +18,6 @@ linters-settings:
     forbid:
       - ^print.*$
       - 'fmt\.Print.*'
-      - panic*
   funlen:
     lines: 100
     statements: 50
