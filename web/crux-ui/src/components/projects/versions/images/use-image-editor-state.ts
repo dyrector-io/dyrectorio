@@ -14,11 +14,8 @@ import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import { useRef, useState } from 'react'
 import { ImagesActions, ImagesState, selectTagsOfImage } from './use-images-state'
 
-export type ImageEditorSection = 'tag' | 'config' | 'json'
-
 export type ImageEditorState = {
   image: VersionImage
-  section: ImageEditorSection
   tags: string[]
   parseError: string
   deleteModal: DyoConfirmationModalConfig
@@ -26,7 +23,6 @@ export type ImageEditorState = {
 }
 
 export type ImageEditorActions = {
-  selectSection: (section: ImageEditorSection) => void
   selectTag: (tag: string) => void
   onPatch: (config: Partial<ContainerConfigData>) => void
   deleteImage: VoidFunction
@@ -43,7 +39,6 @@ export type ImageEditorStateOptions = {
 const useImageEditorState = (options: ImageEditorStateOptions): [ImageEditorState, ImageEditorActions] => {
   const { image, imagesState, imagesActions, sock } = options
 
-  const [section, setSection] = useState<ImageEditorSection>('config')
   const [deleteModal, confirmDelete] = useConfirmation()
   const [parseError, setParseError] = useState<string>(null)
 
@@ -51,14 +46,6 @@ const useImageEditorState = (options: ImageEditorStateOptions): [ImageEditorStat
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
   const tags = selectTagsOfImage(imagesState, image)
-
-  const selectSection = (it: ImageEditorSection) => {
-    if (it === 'tag') {
-      imagesActions.fetchImageTags(image)
-    }
-
-    setSection(it)
-  }
 
   const selectTag = (tag: string) => imagesActions.selectTagForImage(image, tag)
 
@@ -92,14 +79,12 @@ const useImageEditorState = (options: ImageEditorStateOptions): [ImageEditorStat
   return [
     {
       image,
-      section,
       tags,
       deleteModal,
       parseError,
       imageEditorSock: sock,
     },
     {
-      selectSection,
       selectTag,
       onPatch,
       deleteImage,
