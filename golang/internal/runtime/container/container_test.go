@@ -106,7 +106,7 @@ func TestVersionCheck(t *testing.T) {
 			MockClientVersion: "4.4.0",
 			ErrExpected:       containerRuntime.ErrServerUnknown,
 		},
-		// We don't check the specific error there, since it is not covered by the pakcage but by an external dependency.
+		// We don't check the specific error there, since it is not covered by the package but by an external dependency.
 		{
 			Info:              getDockerInfoDocker(),
 			MockClientVersion: "a.b.c",
