@@ -38,7 +38,7 @@ test.describe('Simple project', () => {
 
     await page.goto(ROUTE_DEPLOYMENTS)
 
-    const copyButton = await page.locator(`[alt="Copy"]:right-of(div:has-text("${projectId}"))`).first()
+    const copyButton = await page.locator(`[alt="Copy"]:right-of(div:has-text("${projectName}"))`).first()
     await expect(copyButton).toHaveClass(/cursor-not-allowed/)
   })
 

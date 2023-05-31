@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { ContainerConfigData, InstanceContainerConfigData } from 'src/domain/container'
-import { DeploymentStatusEnum, NodeTypeEnum, ProductTypeEnum, VersionTypeEnum } from '.prisma/client'
+import { DeploymentStatusEnum, NodeTypeEnum, ProjectTypeEnum, VersionTypeEnum } from '.prisma/client'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
 import { DeploymentDto, DeploymentWithNodeVersion, PatchInstanceDto } from './deploy.dto'
@@ -705,10 +705,10 @@ describe('DeployMapper', () => {
         id: 'deployment-version-id',
         name: 'deployment version',
         type: VersionTypeEnum.rolling,
-        product: {
-          id: 'deployment-product-id',
-          name: 'deployment product',
-          type: ProductTypeEnum.simple,
+        project: {
+          id: 'deployment-project-id',
+          name: 'deployment project',
+          type: ProjectTypeEnum.simple,
         },
       },
       environment: {},
@@ -733,9 +733,9 @@ describe('DeployMapper', () => {
         name: 'deployment node',
         type: 'docker',
       },
-      product: {
-        id: 'deployment-product-id',
-        name: 'deployment product',
+      project: {
+        id: 'deployment-project-id',
+        name: 'deployment project',
         type: 'simple',
       },
       version: {

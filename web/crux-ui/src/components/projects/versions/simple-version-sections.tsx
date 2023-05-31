@@ -10,7 +10,7 @@ interface SimpleVersionSectionsProps {
   setTopBarContent: (node: React.ReactNode) => void
 }
 
-export const SimpleVersionSections = (props: SimpleVersionSectionsProps) => {
+const SimpleVersionSections = (props: SimpleVersionSectionsProps) => {
   const { project, version, setSaving, setTopBarContent } = props
 
   const router = useRouter()
@@ -32,3 +32,5 @@ export const SimpleVersionSections = (props: SimpleVersionSectionsProps) => {
     />
   )
 }
+
+export default SimpleVersionSections
