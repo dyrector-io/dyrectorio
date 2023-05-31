@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"runtime"
 	"time"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
@@ -217,7 +216,6 @@ func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePu
 	}
 	options := types.ImagePullOptions{
 		RegistryAuth: encodedAuth,
-		Platform:     runtime.GOOS,
 	}
 
 	responseBody, err := cli.ImagePull(ctx, imageName, options)
