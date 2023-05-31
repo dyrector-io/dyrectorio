@@ -63,6 +63,7 @@ export type ImagesState = {
   editor: EditorState
   viewMode: ViewMode
   versionSock: WebSocketClientEndpoint
+  version: VersionDetails
 }
 
 // actions
@@ -123,12 +124,12 @@ export const selectTagsOfImage = (state: ImagesState, image: VersionImage): stri
 }
 
 export const useImagesState = (options: ImagesStateOptions): [ImagesState, ImagesActions] => {
-  const { projectId, version, initialSection } = options
+  const { projectId, version: optionsVersion, initialSection } = options
 
   const [saving, setSaving] = useState(false)
   const [section, setSection] = useState(initialSection)
   const [addSection, setAddSection] = useState<VersionAddSection>('none')
-  const [images, setImages] = useState(version.images)
+  const [version, setVersion] = useState(optionsVersion)
   const [tags, setTags] = useState<ImageTagsMap>({})
   const [viewMode, setViewMode] = useState<ViewMode>('list')
 
@@ -151,7 +152,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
     onOpen: () =>
       refreshImageTags(
         registriesSock,
-        images.filter(it => it.registry.type !== 'unchecked'),
+        version.images.filter(it => it.registry.type !== 'unchecked'),
       ),
   })
 
@@ -172,28 +173,28 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
     const ids = [...message]
 
     const newImages = ids.map((id, index) => {
-      const image = images.find(it => it.id === id)
+      const image = version.images.find(it => it.id === id)
       return {
         ...image,
         order: index,
       }
     })
 
-    setImages(newImages)
+    setVersion({ ...version, images: newImages })
   })
 
   versionSock.on(WS_TYPE_IMAGES_ADDED, (message: ImagesAddedMessage) => {
-    const newImages = [...images, ...message.images]
-    setImages(newImages)
+    const newImages = [...version.images, ...message.images]
+    setVersion({ ...version, images: newImages })
   })
 
   versionSock.on(WS_TYPE_IMAGE, (message: ImageMessage) => {
-    const newImages = [...images, message]
-    setImages(newImages)
+    const newImages = [...version.images, message]
+    setVersion({ ...version, images: newImages })
   })
 
   versionSock.on(WS_TYPE_IMAGE_UPDATED, (message: ImageUpdateMessage) => {
-    const index = images.findIndex(it => it.id === message.id)
+    const index = version.images.findIndex(it => it.id === message.id)
     if (index < 0) {
       versionSock.send(WS_TYPE_GET_IMAGE, {
         id: message.id,
@@ -201,17 +202,17 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
       return
     }
 
-    const oldImage = images[index]
+    const oldImage = version.images[index]
     const image = mergeImagePatch(oldImage, message)
 
-    const newImages = [...images]
+    const newImages = [...version.images]
     newImages[index] = image
 
-    setImages(newImages)
+    setVersion({ ...version, images: newImages })
   })
 
   versionSock.on(WS_TYPE_IMAGE_DELETED, (message: DeleteImageMessage) =>
-    setImages(images.filter(it => it.id !== message.imageId)),
+    setVersion({ ...version, images: version.images.filter(it => it.id !== message.imageId) }),
   )
 
   const selectAddSection = (newAddSection: VersionAddSection) => {
@@ -243,7 +244,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
       order: index,
     }))
 
-    setImages(newImages)
+    setVersion({ ...version, images: newImages })
     setAddSection('none')
     setSection('images')
   }
@@ -269,7 +270,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   const selectViewMode = (mode: ViewMode) => setViewMode(mode)
 
   const selectTagForImage = (image: VersionImage, tag: string) => {
-    const newImages = [...images]
+    const newImages = [...version.images]
     const index = newImages.findIndex(it => it.id === image.id)
 
     if (index < 0) {
@@ -281,7 +282,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
       tag,
     }
 
-    setImages(newImages)
+    setVersion({ ...version, images: newImages })
 
     versionSock.send(WS_TYPE_PATCH_IMAGE, {
       id: image.id,
@@ -290,7 +291,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   }
 
   const updateImageConfig = (image: VersionImage, config: Partial<ContainerConfigData>) => {
-    const newImages = [...images]
+    const newImages = [...version.images]
     const index = newImages.findIndex(it => it.id === image.id)
 
     if (index < 0) {
@@ -305,11 +306,23 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
       },
     }
 
-    setImages(newImages)
+    setVersion({ ...version, images: newImages })
   }
 
   return [
-    { projectId, versionId: version.id, addSection, section, images, editor, saving, tags, viewMode, versionSock },
+    {
+      projectId,
+      versionId: version.id,
+      addSection,
+      section,
+      version,
+      images: version.images,
+      editor,
+      saving,
+      tags,
+      viewMode,
+      versionSock,
+    },
     {
       selectAddSection,
       discardAddSection,
