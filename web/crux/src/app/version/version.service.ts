@@ -31,14 +31,14 @@ export default class VersionService {
     private readonly editorServices: EditorServiceProvider,
   ) {}
 
-  async checkProductOrVersionIsInTheActiveTeam(
-    productId: string,
+  async checkProjectOrVersionIsInTheActiveTeam(
+    projectId: string,
     versionId: string | null,
     identity: Identity,
   ): Promise<boolean> {
-    const versions = await this.prisma.product.count({
+    const versions = await this.prisma.project.count({
       where: {
-        id: productId,
+        id: projectId,
         team: {
           users: {
             some: {
@@ -64,7 +64,7 @@ export default class VersionService {
     const versions = await this.prisma.version.count({
       where: {
         id: versionId,
-        product: {
+        project: {
           team: {
             users: {
               some: {
@@ -80,7 +80,7 @@ export default class VersionService {
     return versions > 0
   }
 
-  async getVersionsByProductId(productId: string, user: Identity, query?: VersionListQuery): Promise<VersionDto[]> {
+  async getVersionsByProjectId(projectId: string, user: Identity, query?: VersionListQuery): Promise<VersionDto[]> {
     const filter: Prisma.VersionWhereInput = {
       name: query?.nameContains
         ? {
@@ -95,8 +95,8 @@ export default class VersionService {
         parent: true,
       },
       where: {
-        product: {
-          id: productId,
+        project: {
+          id: projectId,
           team: {
             users: {
               some: {
@@ -119,7 +119,7 @@ export default class VersionService {
         id: versionId,
       },
       include: {
-        product: {
+        project: {
           select: {
             type: true,
           },
@@ -155,11 +155,11 @@ export default class VersionService {
     return this.mapper.detailsToDto(version, statusLookup)
   }
 
-  async createVersion(productId: string, req: CreateVersionDto, identity: Identity): Promise<VersionDto> {
+  async createVersion(projectId: string, req: CreateVersionDto, identity: Identity): Promise<VersionDto> {
     const version = await this.prisma.$transaction(async prisma => {
       const defaultVersion = await prisma.version.findFirst({
         where: {
-          productId,
+          projectId,
           default: true,
         },
         select: {
@@ -183,7 +183,7 @@ export default class VersionService {
 
       const newVersion = await prisma.version.create({
         data: {
-          productId,
+          projectId,
           name: req.name,
           changelog: req.changelog,
           type: req.type,
@@ -191,7 +191,7 @@ export default class VersionService {
           createdBy: identity.id,
         },
         include: {
-          product: {
+          project: {
             select: {
               name: true,
             },
@@ -289,7 +289,7 @@ export default class VersionService {
     await this.notificationService.sendNotification({
       identityId: identity.id,
       messageType: 'version',
-      message: { subject: version.product.name, version: version.name } as VersionMessage,
+      message: { subject: version.project.name, version: version.name } as VersionMessage,
     })
 
     return this.mapper.toDto(version)
@@ -308,7 +308,7 @@ export default class VersionService {
     })
   }
 
-  async setDefaultVersion(productId: string, versionId: string): Promise<void> {
+  async setDefaultVersion(projectId: string, versionId: string): Promise<void> {
     await this.prisma.$transaction(async prisma => {
       await prisma.version.update({
         where: {
@@ -318,7 +318,7 @@ export default class VersionService {
           default: true,
         },
         select: {
-          productId: true,
+          projectId: true,
         },
       })
 
@@ -327,7 +327,7 @@ export default class VersionService {
           NOT: {
             id: versionId,
           },
-          productId,
+          projectId,
         },
         data: {
           default: false,
@@ -393,7 +393,7 @@ export default class VersionService {
     const increasedVersion = await this.prisma.$transaction(async prisma => {
       const version = await prisma.version.create({
         data: {
-          productId: parentVersion.productId,
+          projectId: parentVersion.projectId,
           name: request.name,
           changelog: request.changelog,
           default: false,
@@ -406,7 +406,7 @@ export default class VersionService {
               versionId: true,
             },
           },
-          product: {
+          project: {
             select: {
               name: true,
             },
@@ -497,7 +497,7 @@ export default class VersionService {
     await this.notificationService.sendNotification({
       identityId: identity.id,
       messageType: 'version',
-      message: { subject: increasedVersion.product.name, version: increasedVersion.name } as VersionMessage,
+      message: { subject: increasedVersion.project.name, version: increasedVersion.name } as VersionMessage,
     })
 
     return this.mapper.toDto(increasedVersion)

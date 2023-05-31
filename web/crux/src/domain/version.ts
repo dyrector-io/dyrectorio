@@ -1,4 +1,4 @@
-import { DeploymentStatusEnum, ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
+import { DeploymentStatusEnum, ProjectTypeEnum, VersionTypeEnum } from '@prisma/client'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { checkDeploymentMutability } from './deployment'
 
@@ -13,8 +13,8 @@ export type VersionMutabilityCheckDao = VersionIncreasabilityCheckDao & {
 }
 
 export type VersionDeletabilityCheckDao = VersionMutabilityCheckDao & {
-  product: {
-    type: ProductTypeEnum
+  project: {
+    type: ProjectTypeEnum
   }
 }
 
@@ -38,7 +38,7 @@ export const versionIsMutable = (version: VersionMutabilityCheckDao): boolean =>
 }
 
 // - 'rolling' versions are deletable if they don't have any immutable (inProgress) deployment
-//   or they aren't part of a simple product
+//   or they aren't part of a simple project
 // - an 'incremental' version is deletable, unless it has any immutable deployment
 //   or it's not increasable
 export const versionIsDeletable = (version: VersionDeletabilityCheckDao): boolean => {
@@ -47,7 +47,7 @@ export const versionIsDeletable = (version: VersionDeletabilityCheckDao): boolea
   }
 
   if (version.type === 'rolling') {
-    return version.product.type === 'complex'
+    return version.project.type === 'complex'
   }
 
   return versionIsIncreasable(version)

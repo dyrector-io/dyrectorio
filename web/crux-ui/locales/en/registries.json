@@ -26,7 +26,7 @@
   "userName": "User name",
 
   "tips": {
-    "common": "Registries contain the images you can select to create new Products.",
+    "common": "Registries contain the images you can select to use in your Projects and Versions.",
     "v2": "Here you can add Docker API V2 compatible registries.",
     "hub": "Here you're able to add public Docker Hub registries.",
     "gitlab": "Add your GitLab Registry.",

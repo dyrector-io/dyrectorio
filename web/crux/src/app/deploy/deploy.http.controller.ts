@@ -62,7 +62,7 @@ export default class DeployHttpController {
   @Get()
   @ApiOperation({
     description:
-      'Get the list of deployments. A deployment should include `id`, `prefix`, `status`, `note`, `audit` log details, product `name`, `id`, `type`, version `name`, `type`, `id`, and node `name`, `id`, `type`.',
+      'Get the list of deployments. A deployment should include `id`, `prefix`, `status`, `note`, `audit` log details, project `name`, `id`, `type`, version `name`, `type`, `id`, and node `name`, `id`, `type`.',
     summary: 'Fetch the list of deployments.',
   })
   @ApiOkResponse({
@@ -78,7 +78,7 @@ export default class DeployHttpController {
   @HttpCode(200)
   @ApiOperation({
     description:
-      'Get details of a certain deployment. Request must include `deploymentId`. Deployment details should include `id`, `prefix`, `environment`, `status`, `note`, `audit` log details, product `name`, `id`, `type`, version `name`, `type`, `id`, and node `name`, `id`, `type`.',
+      'Get details of a certain deployment. Request must include `deploymentId`. Deployment details should include `id`, `prefix`, `environment`, `status`, `note`, `audit` log details, project `name`, `id`, `type`, version `name`, `type`, `id`, and node `name`, `id`, `type`.',
     summary: 'Retrieve details of a deployment.',
   })
   @ApiOkResponse({ type: DeploymentDetailsDto, description: 'Details of a deployment.' })
@@ -120,7 +120,7 @@ export default class DeployHttpController {
   @HttpCode(201)
   @ApiOperation({
     description:
-      'Request must include `versionId`, `nodeId`, and `prefix`, which refers to the ID of a version, a node and the prefix of the deployment. Response should include deployment `id`, `prefix`, `status`, `note`, and `audit` log details, as well as product `type`, `id`, `name`, version `type`, `id`, `name`, and node `type`, `id`, `name`.',
+      'Request must include `versionId`, `nodeId`, and `prefix`, which refers to the ID of a version, a node and the prefix of the deployment. Response should include deployment `id`, `prefix`, `status`, `note`, and `audit` log details, as well as project `type`, `id`, `name`, version `type`, `id`, `name`, and node `type`, `id`, `name`.',
     summary: 'Create new deployment.',
   })
   @CreatedWithLocation()
@@ -209,7 +209,7 @@ export default class DeployHttpController {
   @HttpCode(201)
   @ApiOperation({
     description:
-      'Request must include `deploymentId` and `force`, which is when true will overwrite the existing preparing deployment. Response should include deployment data: `id`, `prefix`, `status`, `note`, and miscellaneous details of `audit` log, `product`, `version`, and `node`.',
+      'Request must include `deploymentId` and `force`, which is when true will overwrite the existing preparing deployment. Response should include deployment data: `id`, `prefix`, `status`, `note`, and miscellaneous details of `audit` log, `project`, `version`, and `node`.',
     summary: 'Copy deployment.',
   })
   @CreatedWithLocation()

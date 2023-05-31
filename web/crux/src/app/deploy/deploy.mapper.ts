@@ -53,7 +53,7 @@ import {
   InstanceSecretsDto,
 } from './deploy.dto'
 import { DeploymentEventMessage } from './deploy.message'
-import ProductMapper from '../product/product.mapper'
+import ProjectMapper from '../project/project.mapper'
 import AuditMapper from '../audit/audit.mapper'
 import VersionMapper from '../version/version.mapper'
 import NodeMapper from '../node/node.mapper'
@@ -65,8 +65,8 @@ export default class DeployMapper {
     @Inject(forwardRef(() => ImageMapper))
     private imageMapper: ImageMapper,
     private containerMapper: ContainerMapper,
-    @Inject(forwardRef(() => ProductMapper))
-    private productMapper: ProductMapper,
+    @Inject(forwardRef(() => ProjectMapper))
+    private projectMapper: ProjectMapper,
     private auditMapper: AuditMapper,
     private versionMapper: VersionMapper,
     private nodeMapper: NodeMapper,
@@ -98,7 +98,7 @@ export default class DeployMapper {
       status: this.statusToDto(it.status),
       audit: this.auditMapper.toDto(it),
       node: this.nodeMapper.toBasicDto(it.node),
-      product: this.productMapper.toBasicDto(it.version.product),
+      project: this.projectMapper.toBasicDto(it.version.project),
       version: this.versionMapper.toBasicDto(it.version),
     }
   }

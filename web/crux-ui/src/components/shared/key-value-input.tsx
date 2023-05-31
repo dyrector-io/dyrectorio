@@ -10,7 +10,7 @@ import { v4 as uuid } from 'uuid'
 import * as yup from 'yup'
 import MultiInput from '../editor/multi-input'
 import { ItemEditorState } from '../editor/use-item-editor-state'
-import ConfigSectionLabel from '../products/versions/images/config/config-section-label'
+import ConfigSectionLabel from '../projects/versions/images/config/config-section-label'
 
 const EMPTY_KEY_VALUE_PAIR = {
   id: uuid(),

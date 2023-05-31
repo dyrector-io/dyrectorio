@@ -1,6 +1,6 @@
 {
-  "deploysName": "Products - {{product}} - Versions - {{version}} - Deployments - {{name}}",
-  "deploysNameDeploy": "Products - {{product}} - Versions - {{version}} - Deployments - {{name}} - Deploy",
+  "deploysName": "Projects - {{project}} - Versions - {{version}} - Deployments - {{name}}",
+  "deploysNameDeploy": "Projects - {{project}} - Versions - {{version}} - Deployments - {{name}} - Deploy",
   "log": "Log",
   "environmentConfig": "Environment config",
   "created": "Created",

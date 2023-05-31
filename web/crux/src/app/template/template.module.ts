@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import TemplateFileService from 'src/services/template.file.service'
 import KratosService from 'src/services/kratos.service'
-import ProductModule from '../product/product.module'
+import ProjectModule from '../project/project.module'
 import TemplateService from './template.service'
 import TemplateHttpController from './template.http.controller'
 import VersionModule from '../version/version.module'
@@ -18,7 +18,7 @@ import AuditLoggerModule from '../audit.logger/audit.logger.module'
 @Module({
   imports: [
     HttpModule,
-    ProductModule,
+    ProjectModule,
     VersionModule,
     TeamModule,
     RegistryModule,

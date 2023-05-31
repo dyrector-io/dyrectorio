@@ -22,7 +22,7 @@ export class TeamStatisticsDto {
   users: number
 
   @IsNumber()
-  products: number
+  projects: number
 
   @IsNumber()
   nodes: number

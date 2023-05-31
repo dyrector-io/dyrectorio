@@ -1,7 +1,7 @@
 {
   "name": "Name",
-  "applyTemplate": "Create a Product from template '{{name}}'",
-  "productName": "Product name",
+  "applyTemplate": "Create a Project from template '{{name}}'",
+  "projectName": "Project name",
   "description": "Description",
   "type": "Type",
   "templateImage": "Template image"

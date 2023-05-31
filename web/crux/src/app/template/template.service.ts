@@ -12,15 +12,15 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import PrismaService from 'src/services/prisma.service'
 import TemplateFileService, { TemplateContainerConfig, TemplateImage } from 'src/services/template.file.service'
-import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
+import { SIMPLE_PROJECT_VERSION_NAME } from 'src/shared/const'
 import { v4 } from 'uuid'
 import ImageMapper from '../image/image.mapper'
-import { CreateProductDto, ProductDto } from '../product/product.dto'
-import ProductService from '../product/product.service'
+import { CreateProjectDto, ProjectDto } from '../project/project.dto'
+import ProjectService from '../project/project.service'
 import RegistryService from '../registry/registry.service'
 import { CreateVersionDto } from '../version/version.dto'
 import VersionService from '../version/version.service'
-import { CreateProductFromTemplateDto } from './template.dto'
+import { CreateProjectFromTemplateDto } from './template.dto'
 
 const VERSION_NAME = '1.0.0'
 
@@ -28,14 +28,14 @@ const VERSION_NAME = '1.0.0'
 export default class TemplateService {
   constructor(
     private prisma: PrismaService,
-    private productService: ProductService,
+    private projectService: ProjectService,
     private templateFileService: TemplateFileService,
     private registryService: RegistryService,
     private versionService: VersionService,
     private imageMapper: ImageMapper,
   ) {}
 
-  async createProductFromTemplate(req: CreateProductFromTemplateDto, identity: Identity): Promise<ProductDto> {
+  async createProjectFromTemplate(req: CreateProjectFromTemplateDto, identity: Identity): Promise<ProjectDto> {
     const template = await this.templateFileService.getTemplateById(req.id)
 
     if (template.registries && template.registries.length > 0) {
@@ -75,17 +75,17 @@ export default class TemplateService {
       await Promise.all(createRegistries)
     }
 
-    const createProductReq: CreateProductDto = {
+    const createProjectReq: CreateProjectDto = {
       name: req.name,
       description: req.description,
       type: req.type,
     }
 
-    const product = await this.productService.createProduct(createProductReq, identity)
+    const project = await this.projectService.createProject(createProjectReq, identity)
 
-    await this.createVersion(template.images, product, identity)
+    await this.createVersion(template.images, project, identity)
 
-    return product
+    return project
   }
 
   async getImageStream(id: string): Promise<ReadStream> {
@@ -138,21 +138,21 @@ export default class TemplateService {
     }
   }
 
-  private async createVersion(templateImages: TemplateImage[], product: ProductDto, identity: Identity): Promise<void> {
-    const { id: productId } = product
+  private async createVersion(templateImages: TemplateImage[], project: ProjectDto, identity: Identity): Promise<void> {
+    const { id: projectId } = project
 
     let version =
-      product.type === 'complex'
+      project.type === 'complex'
         ? await this.prisma.version.findFirst({
             where: {
               name: VERSION_NAME,
-              productId: product.id,
+              projectId: project.id,
             },
           })
         : await this.prisma.version.findFirst({
             where: {
-              name: SIMPLE_PRODUCT_VERSION_NAME,
-              productId: product.id,
+              name: SIMPLE_PROJECT_VERSION_NAME,
+              projectId: project.id,
             },
           })
 
@@ -163,7 +163,7 @@ export default class TemplateService {
         changelog: null,
       }
 
-      const newVersion = await this.versionService.createVersion(productId, createReq, identity)
+      const newVersion = await this.versionService.createVersion(projectId, createReq, identity)
       version = await this.prisma.version.findFirst({
         where: {
           id: newVersion.id,

@@ -1,4 +1,4 @@
-import { ProductTypeEnum } from '.prisma/client'
+import { ProjectTypeEnum } from '.prisma/client'
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
@@ -10,19 +10,19 @@ export default class VersionCreateValidationInterceptor implements NestIntercept
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest()
-    const productId = req.params.productId as string
+    const projectId = req.params.projectId as string
 
-    const product = await this.prisma.product.findUniqueOrThrow({
+    const project = await this.prisma.project.findUniqueOrThrow({
       where: {
-        id: productId,
+        id: projectId,
       },
     })
 
-    if (product.type === ProductTypeEnum.simple) {
+    if (project.type === ProjectTypeEnum.simple) {
       throw new CruxPreconditionFailedException({
-        message: 'Can not add version to a simple product.',
-        property: 'productId',
-        value: productId,
+        message: 'Can not add version to a simple project.',
+        property: 'projectId',
+        value: projectId,
       })
     }
 

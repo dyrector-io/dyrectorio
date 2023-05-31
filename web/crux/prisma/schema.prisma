@@ -18,7 +18,7 @@ model Team {
   updatedBy String?   @db.Uuid
 
   registries    Registry[]
-  products      Product[]
+  projects      Project[]
   nodes         Node[]
   users         UsersOnTeams[]
   invitations   UserInvitation[]
@@ -112,7 +112,7 @@ model Registry {
   @@unique([name, teamId])
 }
 
-model Product {
+model Project {
   id          String          @id @default(uuid()) @db.Uuid
   createdAt   DateTime        @default(now()) @db.Timestamptz(6)
   createdBy   String          @db.Uuid
@@ -120,7 +120,7 @@ model Product {
   updatedBy   String?         @db.Uuid
   name        String          @db.VarChar(70)
   description String?
-  type        ProductTypeEnum @default(simple)
+  type        ProjectTypeEnum @default(simple)
 
   versions Version[]
   team     Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
@@ -139,15 +139,15 @@ model Version {
   changelog String?
   default   Boolean         @default(false)
   type      VersionTypeEnum @default(incremental)
-  productId String          @db.Uuid
+  projectId String          @db.Uuid
 
-  product     Product                   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  project     Project                   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   images      Image[]
   deployments Deployment[]
   parent      VersionsOnParentVersion?  @relation("child")
   children    VersionsOnParentVersion[] @relation("parent")
 
-  @@unique([productId, name])
+  @@unique([projectId, name])
 }
 
 model VersionsOnParentVersion {
@@ -404,7 +404,7 @@ model NotificationEvent {
   @@unique([event, notificationId])
 }
 
-enum ProductTypeEnum {
+enum ProjectTypeEnum {
   simple
   complex
 }

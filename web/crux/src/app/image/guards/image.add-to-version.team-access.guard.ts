@@ -9,7 +9,7 @@ export default class ImageAddToVersionTeamAccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest()
-    const productId = req.params.productId as string
+    const projectId = req.params.projectId as string
     const versionId = req.params.versionId as string
     const body = req.body as AddImagesDto[]
 
@@ -28,9 +28,9 @@ export default class ImageAddToVersionTeamAccessGuard implements CanActivate {
               active: true,
             },
           },
-          products: {
+          projects: {
             some: {
-              id: productId,
+              id: projectId,
               versions: {
                 some: {
                   id: versionId,

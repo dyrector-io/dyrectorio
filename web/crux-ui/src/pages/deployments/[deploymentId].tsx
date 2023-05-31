@@ -1,11 +1,11 @@
 import EditorBadge from '@app/components/editor/editor-badge'
 import { Layout } from '@app/components/layout'
 import NodeConnectionCard from '@app/components/nodes/node-connection-card'
-import DeploymentDetailsSection from '@app/components/products/versions/deployments/deployment-details-section'
-import EditDeploymentCard from '@app/components/products/versions/deployments/edit-deployment-card'
-import EditDeploymentInstances from '@app/components/products/versions/deployments/edit-deployment-instances'
-import useDeploymentState from '@app/components/products/versions/deployments/use-deployment-state'
-import { startDeployment } from '@app/components/products/versions/version-deployments-section'
+import DeploymentDetailsSection from '@app/components/projects/versions/deployments/deployment-details-section'
+import EditDeploymentCard from '@app/components/projects/versions/deployments/edit-deployment-card'
+import EditDeploymentInstances from '@app/components/projects/versions/deployments/edit-deployment-instances'
+import useDeploymentState from '@app/components/projects/versions/deployments/use-deployment-state'
+import { startDeployment } from '@app/components/projects/versions/version-deployments-section'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
@@ -20,7 +20,7 @@ import {
   DeploymentRoot,
   mergeConfigs,
   NodeDetails,
-  ProductDetails,
+  ProjectDetails,
   VersionDetails,
 } from '@app/models'
 import {
@@ -28,9 +28,9 @@ import {
   deploymentDeployUrl,
   deploymentUrl,
   nodeApiUrl,
-  productApiUrl,
-  productUrl,
-  ROUTE_PRODUCTS,
+  projectApiUrl,
+  projectUrl,
+  ROUTE_PROJECTS,
   versionApiUrl,
   versionUrl,
 } from '@app/routes'
@@ -71,7 +71,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     onWsError,
   })
 
-  const { product, version, deployment, node } = state
+  const { project, version, deployment, node } = state
 
   const onCopyDeployment = async () => {
     const url = await actions.onCopyDeployment()
@@ -118,17 +118,17 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   const pageLink: BreadcrumbLink = {
     name: t('common:deployments'),
-    url: ROUTE_PRODUCTS,
+    url: ROUTE_PROJECTS,
   }
 
   const sublinks: BreadcrumbLink[] = [
     {
-      name: product.name,
-      url: productUrl(product.id),
+      name: project.name,
+      url: projectUrl(project.id),
     },
     {
       name: version.name,
-      url: versionUrl(product.id, version.id),
+      url: versionUrl(project.id, version.id),
     },
     {
       name: t('common:deployment'),
@@ -142,7 +142,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(productUrl(product.id, { section: 'deployments' }))
+      router.replace(projectUrl(project.id, { section: 'deployments' }))
     } else {
       toast(t('errors:oops'))
     }
@@ -151,7 +151,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   return (
     <Layout
       title={t('deploysName', {
-        product: product.name,
+        project: project.name,
         version: version.name,
         name: node.name,
       })}
@@ -234,16 +234,16 @@ export const getDeploymentRoot = async (context: NextPageContext) => {
   const deploymentId = context.query.deploymentId as string
 
   const deployment = await getCruxFromContext<DeploymentDetails>(context, deploymentApiUrl(deploymentId))
-  const product = await getCruxFromContext<ProductDetails>(context, productApiUrl(deployment.product.id))
+  const project = await getCruxFromContext<ProjectDetails>(context, projectApiUrl(deployment.project.id))
   const node = await getCruxFromContext<NodeDetails>(context, nodeApiUrl(deployment.node.id))
   const version = await getCruxFromContext<VersionDetails>(
     context,
-    versionApiUrl(deployment.product.id, deployment.version.id),
+    versionApiUrl(deployment.project.id, deployment.version.id),
   )
 
   return {
     ...deployment,
-    product,
+    project,
     version,
     node: await node,
   } as DeploymentRoot
