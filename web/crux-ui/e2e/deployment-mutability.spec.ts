@@ -20,10 +20,12 @@ test.describe('Simple project', () => {
     await addDeploymentToSimpleProject(page, projectId, DAGENT_NODE, 'pw-simple-preparing')
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
-    await page.locator("img[src='/view_tile.svg']").click()
 
-    await page.waitForSelector('input[id=name]')
-    await expect(await page.locator('input[id=name]')).toBeEditable()
+    const configButton = await page.locator(`[alt="Settings"]:right-of(div:has-text("${image}"))`).first()
+    await configButton.click()
+
+    await page.waitForSelector('input[id="common.containerName"]')
+    await expect(await page.locator('input[id="common.containerName"]')).toBeEditable()
   })
 
   test('successful deployment should be mutable', async ({ page }, testInfo) => {
@@ -39,10 +41,12 @@ test.describe('Simple project', () => {
     await page.screenshot({ path: screenshotPath('simple-prod-successful-deployment'), fullPage: true })
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
-    await page.locator("img[src='/view_tile.svg']").click()
 
-    await page.waitForSelector('input[id=name]')
-    await expect(await page.locator('input[id=name]')).toBeEditable()
+    const configButton = await page.locator(`[alt="Settings"]:right-of(div:has-text("${image}"))`).first()
+    await configButton.click()
+
+    await page.waitForSelector('input[id="common.containerName"]')
+    await expect(await page.locator('input[id="common.containerName"]')).toBeEditable()
   })
 })
 
@@ -57,10 +61,12 @@ test.describe('Complex project incremental version', () => {
     await page.goto(deploymentUrl(id))
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
-    await page.locator("img[src='/view_tile.svg']").click()
 
-    await page.waitForSelector('input[id=name]')
-    await expect(await page.locator('input[id=name]')).toBeEditable()
+    const configButton = await page.locator(`[alt="Settings"]:right-of(div:has-text("${image}"))`).first()
+    await configButton.click()
+
+    await page.waitForSelector('input[id="common.containerName"]')
+    await expect(await page.locator('input[id="common.containerName"]')).toBeEditable()
   })
 
   test('successful deployment should be immutable', async ({ page }, testInfo) => {
@@ -80,10 +86,12 @@ test.describe('Complex project incremental version', () => {
     await page.goto(deploymentUrl(deploymentId))
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(0)
-    await page.locator("img[src='/view_tile.svg']").click()
 
-    await page.waitForSelector('input[id=name]')
-    await expect(await page.locator('input[id=name]')).toBeDisabled()
+    const configButton = await page.locator(`[alt="Settings"]:right-of(div:has-text("${image}"))`).first()
+    await configButton.click()
+
+    await page.waitForSelector('input[id="common.containerName"]')
+    await expect(await page.locator('input[id="common.containerName"]')).toBeDisabled()
   })
 
   test('obsolete deployment should be immutable', async ({ page }, testInfo) => {
@@ -105,9 +113,11 @@ test.describe('Complex project incremental version', () => {
     await page.goto(deploymentUrl(deploymentId))
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(0)
-    await page.locator("img[src='/view_tile.svg']").click()
 
-    await page.waitForSelector('input[id=name]')
-    await expect(await page.locator('input[id=name]')).toBeDisabled()
+    const configButton = await page.locator(`[alt="Settings"]:right-of(div:has-text("${image}"))`).first()
+    await configButton.click()
+
+    await page.waitForSelector('input[id="common.containerName"]')
+    await expect(await page.locator('input[id="common.containerName"]')).toBeDisabled()
   })
 })
