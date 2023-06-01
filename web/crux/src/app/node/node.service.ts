@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { Observable, filter, firstValueFrom, map, mergeAll, mergeWith, of, timeout } from 'rxjs'
-import { Agent, AgentEvent } from 'src/domain/agent'
+import { Agent, AgentConnectionMessage } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
 import {
   ContainerCommandRequest,
@@ -23,7 +23,7 @@ import {
   NodeInstallDto,
   UpdateNodeDto,
 } from './node.dto'
-import NodeMapper from './node.mapper'
+import NodeMapper, { NodeWithConnectionEvent } from './node.mapper'
 import {
   ContainerLogMessage,
   ContainersStateListMessage,
@@ -83,9 +83,25 @@ export default class NodeService {
       where: {
         id,
       },
+      include: {
+        events: {
+          take: 1,
+          where: {
+            event: 'connected',
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+      },
     })
 
-    return this.mapper.detailsToDto(node)
+    const details: NodeWithConnectionEvent = {
+      ...node,
+      connectionEvent: node.events.length > 0 ? node.events[0] : null,
+    }
+
+    return this.mapper.detailsToDto(details)
   }
 
   async createNode(req: CreateNodeDto, identity: Identity): Promise<NodeDto> {
@@ -117,7 +133,7 @@ export default class NodeService {
       },
     })
 
-    this.agentService.kick(id)
+    this.agentService.kick(id, 'delete-node')
   }
 
   async updateNode(id: string, req: UpdateNodeDto, identity: Identity): Promise<void> {
@@ -183,10 +199,10 @@ export default class NodeService {
       },
     })
 
-    this.agentService.kick(id)
+    this.agentService.kick(id, 'revoke-token')
   }
 
-  async subscribeToNodeEvents(teamId: string): Promise<Observable<AgentEvent>> {
+  async subscribeToNodeEvents(teamId: string): Promise<Observable<AgentConnectionMessage>> {
     const nodes = await this.prisma.node.findMany({
       where: {
         team: {
@@ -195,7 +211,7 @@ export default class NodeService {
       },
     })
 
-    const currentEvents = nodes.map(it => this.mapper.toAgentEvent(it))
+    const currentEvents = nodes.map(it => this.mapper.toConnectionMessage(it))
 
     const events = await this.agentService.getNodeEventsByTeam(teamId)
     return events.pipe(mergeWith(of(currentEvents).pipe(mergeAll())))

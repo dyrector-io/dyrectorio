@@ -11,6 +11,7 @@ import { major, minor } from 'semver'
 import AgentService from './agent.service'
 import ContainerMapper from '../container/container.mapper'
 import { NodeConnectionStatus } from '../node/node.dto'
+import AuditLoggerService from '../audit.logger/audit.logger.service'
 
 const GrpcNodeConnectionMock = jest.fn().mockImplementation(() => ({
   nodeId: 'agent-id',
@@ -19,6 +20,8 @@ const GrpcNodeConnectionMock = jest.fn().mockImplementation(() => ({
   jwt: 'node-jwt',
   status: jest.fn().mockReturnValue(new Subject<NodeConnectionStatus>()),
 }))
+
+const createAgentEventsMock = jest.fn()
 
 const mockModules = (env: string, packageVersion: string) => [
   {
@@ -41,6 +44,9 @@ const mockModules = (env: string, packageVersion: string) => [
               }),
               update: jest.fn(),
             },
+            agentEvents: {
+              create: jest.fn(),
+            },
           }).then(() => {
             resolve(null)
           })
@@ -49,6 +55,9 @@ const mockModules = (env: string, packageVersion: string) => [
         findUniqueOrThrow: jest.fn().mockReturnValue({
           id: 'team-id',
         }),
+      },
+      agentEvents: {
+        create: createAgentEventsMock,
       },
     },
   },
@@ -81,10 +90,18 @@ const mockModules = (env: string, packageVersion: string) => [
     provide: ContainerMapper,
     useValue: jest.mocked(ContainerMapper),
   },
+  {
+    provide: AuditLoggerService,
+    useValue: jest.mocked(AuditLoggerService),
+  },
   AgentService,
 ]
 
 describe('AgentService', () => {
+  beforeEach(() => {
+    createAgentEventsMock.mockReset()
+  })
+
   describe('production environment', () => {
     let agentService: AgentService = null
 
@@ -98,17 +115,23 @@ describe('AgentService', () => {
       agentService = module.get<AgentService>(AgentService)
     })
 
-    it('handleConnect should let an agent connect with the correct version', () => {
+    it('handleConnect should let an agent connect with the correct version', async () => {
       const info: AgentInfo = {
         id: 'agent-id',
         version: '1.2.3-githash (1234-5-67)',
         publicKey: 'key',
       }
 
+      const events = await agentService.getNodeEventsByTeam('team-id')
+      const eventPromise = firstValueFrom(events)
+
       const agentObs = agentService.handleConnect(new GrpcNodeConnectionMock(), info)
       const agentSub = agentObs.subscribe(() => {})
 
+      await eventPromise
       expect(agentSub.closed).toBe(false)
+
+      expect(createAgentEventsMock).toHaveBeenCalled()
     })
 
     it('handleConnect should let an agent connect with and incorrect version and mark it as outdated', async () => {
@@ -130,6 +153,8 @@ describe('AgentService', () => {
       expect(eventActual).toMatchObject({
         status: 'outdated',
       })
+
+      expect(createAgentEventsMock).toHaveBeenCalled()
     })
   })
 
@@ -153,10 +178,16 @@ describe('AgentService', () => {
         publicKey: 'key',
       }
 
+      const events = await agentService.getNodeEventsByTeam('team-id')
+      const eventPromise = firstValueFrom(events)
+
       const agentObs = agentService.handleConnect(new GrpcNodeConnectionMock(), info)
       const agentSub = agentObs.subscribe(() => {})
 
+      await eventPromise
       expect(agentSub.closed).toEqual(false)
+
+      expect(createAgentEventsMock).toHaveBeenCalled()
     })
   })
 })

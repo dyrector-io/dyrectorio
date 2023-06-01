@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { Node, NodeTypeEnum } from '@prisma/client'
-import { AgentEvent } from 'src/domain/agent'
+import { AgentEvents, Node, NodeTypeEnum } from '@prisma/client'
+import { AgentConnectionMessage } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { ContainerState } from 'src/domain/container'
 import { fromTimestamp } from 'src/domain/utils'
@@ -26,6 +26,10 @@ import {
 } from './node.dto'
 import { ContainersStateListMessage } from './node.message'
 
+export type NodeWithConnectionEvent = Node & {
+  connectionEvent: AgentEvents
+}
+
 @Injectable()
 export default class NodeMapper {
   constructor(private agentService: AgentService) {}
@@ -37,7 +41,7 @@ export default class NodeMapper {
       description: node.description,
       icon: node.icon,
       type: node.type,
-      ...this.toAgentEvent(node),
+      ...this.toConnectionMessage(node),
     }
   }
 
@@ -58,7 +62,7 @@ export default class NodeMapper {
     }
   }
 
-  toAgentEvent(node: Node): AgentEvent {
+  toConnectionMessage(node: Node): AgentConnectionMessage {
     const agent = this.agentService.getById(node.id)
 
     return {
@@ -71,13 +75,14 @@ export default class NodeMapper {
     }
   }
 
-  detailsToDto(node: Node): NodeDetailsDto {
+  detailsToDto(node: NodeWithConnectionEvent): NodeDetailsDto {
     const installer = this.agentService.getInstallerByNodeId(node.id)
 
     return {
       ...this.toDto(node),
       hasToken: !!node.token,
       install: installer ? this.installerToDto(installer) : null,
+      lastConnectionAt: node.connectionEvent?.createdAt ?? null,
     }
   }
 

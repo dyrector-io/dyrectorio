@@ -1,15 +1,13 @@
-import { SECOND_IN_MILLIS } from '@app/const'
 import DyoBadge from '@app/elements/dyo-badge'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import TimeLabel from '@app/elements/time-label'
-import useInterval from '@app/hooks/use-interval'
 import { DyoNode } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { useState } from 'react'
 import NodeStatusIndicator from './node-status-indicator'
+import useNodeUptime from './use-node-uptime'
 
 interface NodeConnectionCardProps {
   className?: string
@@ -22,20 +20,7 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
 
   const { node, className, showName } = props
 
-  const [runningSince, setRunningSince] = useState<number>(null)
-
-  const updateRunningSince = () => {
-    if (node.status !== 'connected' || !node.connectedAt) {
-      setRunningSince(null)
-      return
-    }
-
-    const now = Date.now()
-    const seconds = (now - new Date(node.connectedAt).getTime()) / 1000
-    setRunningSince(Math.ceil(seconds))
-  }
-
-  useInterval(updateRunningSince, SECOND_IN_MILLIS)
+  const runningSince = useNodeUptime(node)
 
   return (
     <DyoCard className={clsx(className ?? 'p-6')}>

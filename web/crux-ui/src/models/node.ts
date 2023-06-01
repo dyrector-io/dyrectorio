@@ -8,6 +8,8 @@ export type NodeInstallScriptType = typeof NODE_INSTALL_SCRIPT_TYPE_VALUES[numbe
 
 export type NodeStatus = 'unreachable' | 'connected' | 'outdated'
 
+export type NodeEventType = 'connected' | 'kicked' | 'left'
+
 export type NodeConnection = {
   address?: string
   status: NodeStatus
@@ -33,6 +35,7 @@ export type NodeInstall = {
 export type NodeDetails = DyoNode & {
   hasToken: boolean
   install?: NodeInstall
+  lastConnectionAt?: string
 }
 
 export const nodeConnectionOf = (node: DyoNode): NodeConnection => ({

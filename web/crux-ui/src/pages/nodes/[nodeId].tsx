@@ -3,6 +3,8 @@ import DyoNodeCard from '@app/components/nodes/dyo-node-card'
 import EditNodeCard from '@app/components/nodes/edit-node-card'
 import NodeConnectionCard from '@app/components/nodes/node-connection-card'
 import NodeContainersList from '@app/components/nodes/node-containers-list'
+import NodeInformationCard from '@app/components/nodes/node-information-card'
+import NodeSectionsHeading from '@app/components/nodes/node-sections-heading'
 import useNodeDetailsState from '@app/components/nodes/use-node-details-state'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
@@ -88,15 +90,29 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
         <EditNodeCard node={node} onNodeEdited={actions.onNodeEdited} submitRef={submitRef} />
       ) : (
         <>
-          <div className="flex flex-row gap-4 mb-4">
-            <DyoNodeCard className="w-2/3 p-6" node={node} hideConnectionInfo />
+          {state.section === 'containers' ? (
+            <div className="flex flex-row gap-4 mb-4">
+              <DyoNodeCard className="w-2/3 p-6" node={node} hideConnectionInfo />
 
-            <NodeConnectionCard className="w-1/3 px-6 py-4" node={node} />
-          </div>
+              <NodeConnectionCard className="w-1/3 px-6 py-4" node={node} />
+            </div>
+          ) : (
+            <DyoNodeCard className="p-6" node={node} hideConnectionInfo />
+          )}
 
-          <Filters setTextFilter={it => state.filters.setFilter({ text: it })} />
+          <NodeSectionsHeading section={state.section} setSection={actions.setSection} />
 
-          <NodeContainersList state={state} actions={actions} />
+          {state.section === 'containers' ? (
+            <>
+              <Filters setTextFilter={it => state.filters.setFilter({ text: it })} />
+
+              <NodeContainersList state={state} actions={actions} />
+            </>
+          ) : (
+            <div className="flex flex-row">
+              <NodeInformationCard className="flex-1" node={node} onNodeEdited={actions.onNodeEdited} />
+            </div>
+          )}
         </>
       )}
 

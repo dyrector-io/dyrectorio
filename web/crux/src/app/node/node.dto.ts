@@ -23,6 +23,9 @@ export type NodeConnectionStatus = (typeof NODE_CONNECTION_STATUS_VALUES)[number
 export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
 export type NodeType = (typeof NODE_TYPE_VALUES)[number]
 
+export const NODE_EVENT_TYPE_VALUES = ['connected', 'kicked', 'left', 'update'] as const
+export type NodeEventType = (typeof NODE_EVENT_TYPE_VALUES)[number]
+
 export class BasicNodeDto {
   @IsUUID()
   id: string
@@ -98,8 +101,12 @@ export class NodeDetailsDto extends NodeDto {
 
   @IsOptional()
   @ValidateNested()
-  @IsOptional()
   install?: NodeInstallDto
+
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  lastConnectionAt?: Date
 }
 
 export class CreateNodeDto {

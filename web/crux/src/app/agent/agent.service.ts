@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
-import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
+import { AgentEventTypeEnum, DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
 import { InjectMetric } from '@willsoto/nestjs-prometheus'
 import { Gauge } from 'prom-client'
 import {
@@ -18,7 +18,7 @@ import {
   startWith,
   takeUntil,
 } from 'rxjs'
-import { Agent, AgentEvent, AgentToken } from 'src/domain/agent'
+import { Agent, AgentConnectionMessage, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import Deployment, { DeploymentProgressEvent } from 'src/domain/deployment'
 import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
@@ -42,6 +42,7 @@ import { coerce, major, minor } from 'semver'
 import { JWT_EXPIRATION, PRODUCTION } from '../../shared/const'
 import ContainerMapper from '../container/container.mapper'
 import { DagentTraefikOptionsDto, NodeConnectionStatus, NodeScriptTypeDto } from '../node/node.dto'
+import { AgentKickReason } from './agent.dto'
 
 @Injectable()
 export default class AgentService {
@@ -51,7 +52,7 @@ export default class AgentService {
 
   private agents: Map<string, Agent> = new Map()
 
-  private eventChannelByTeamId: Map<string, Subject<AgentEvent>> = new Map()
+  private eventChannelByTeamId: Map<string, Subject<AgentConnectionMessage>> = new Map()
 
   constructor(
     @InjectMetric('agent_online_count') private agentCount: Gauge<string>,
@@ -90,7 +91,7 @@ export default class AgentService {
     return installer
   }
 
-  async getNodeEventsByTeam(teamId: string): Promise<Subject<AgentEvent>> {
+  async getNodeEventsByTeam(teamId: string): Promise<Subject<AgentConnectionMessage>> {
     const team = await this.prisma.team.findUniqueOrThrow({
       where: {
         id: teamId,
@@ -109,7 +110,7 @@ export default class AgentService {
     return channel
   }
 
-  async sendNodeEventToTeam(teamId: string, event: AgentEvent) {
+  async sendNodeEventToTeam(teamId: string, event: AgentConnectionMessage) {
     const channel = await this.getNodeEventsByTeam(teamId)
     channel.next(event)
   }
@@ -170,9 +171,13 @@ export default class AgentService {
     return Empty
   }
 
-  kick(nodeId: string) {
+  kick(nodeId: string, reason: AgentKickReason) {
     const agent = this.getById(nodeId)
     agent?.close(CloseReason.SHUTDOWN)
+
+    this.createAgentAudit(nodeId, 'kicked', {
+      reason,
+    })
   }
 
   handleConnect(connection: GrpcNodeConnection, request: AgentInfo): Observable<AgentCommand> {
@@ -270,8 +275,14 @@ export default class AgentService {
 
   updateAgent(id: string) {
     const agent = this.getByIdOrThrow(id)
+    const tag = this.getAgentImageTag()
 
-    agent.update(this.getAgentImageTag())
+    agent.update(tag)
+
+    this.createAgentAudit(id, 'update', {
+      fromVersion: agent.version,
+      tag,
+    })
   }
 
   updateAborted(connection: GrpcNodeConnection, request: AgentAbortUpdate): Empty {
@@ -333,6 +344,8 @@ export default class AgentService {
 
   private async onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === 'unreachable') {
+      this.createAgentAudit(agent.id, 'left')
+
       this.logger.log(`Left: ${agent.id}`)
       agent.onDisconnected()
       this.agents.delete(agent.id)
@@ -438,6 +451,8 @@ export default class AgentService {
     this.logger.log(`Agent joined with id: ${request.id}, key: ${!!agent.publicKey}`)
     this.agentCount.inc()
     this.logServiceInfo()
+
+    this.createAgentAudit(agent.id, 'connected', request)
 
     return agent.onConnected()
   }
@@ -584,6 +599,16 @@ export default class AgentService {
       })
 
       await Promise.all(configUpserts)
+    })
+  }
+
+  private async createAgentAudit(nodeId: string, event: AgentEventTypeEnum, data?: any) {
+    await this.prisma.agentEvents.create({
+      data: {
+        nodeId,
+        event,
+        data: data ?? undefined,
+      },
     })
   }
 

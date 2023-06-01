@@ -12,6 +12,7 @@ import ImageModule from '../image/image.module'
 import TeamRepository from '../team/team.repository'
 import AgentController from './agent.grpc.controller'
 import AgentService from './agent.service'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import AgentService from './agent.service'
     }),
     ImageModule,
     ContainerModule,
+    AuditLoggerModule,
   ],
   exports: [AgentService],
   controllers: [AgentController],

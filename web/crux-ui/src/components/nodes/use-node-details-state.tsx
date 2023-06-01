@@ -24,7 +24,7 @@ import { useEffect, useState } from 'react'
 import { PaginationSettings } from '../shared/paginator'
 import useNodeState from './use-node-state'
 
-export type NodeDetailsSection = 'editing' | 'containers'
+export type NodeDetailsSection = 'editing' | 'containers' | 'logs'
 
 export type ContainerTargetStates = { [key: string]: ContainerState } // containerName to targetState
 
@@ -40,6 +40,7 @@ export type NodeDetailsState = {
 
 export type NodeDetailsActions = {
   onNodeEdited: (node: NodeDetails, shouldClose?: boolean) => void
+  setSection: (section: NodeDetailsSection) => void
   setEditing: (editing: boolean) => void
   setPagination: (pagination: PaginationSettings) => void
   onStartContainer: (container: Container) => void
@@ -56,6 +57,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
   const { t } = useTranslation('common')
 
   const [section, setSection] = useState<NodeDetailsSection>('containers')
+  const [editing, setEditing] = useState<boolean>(false)
   const [node, setNode] = useNodeState(options.node)
   const [containerTargetStates, setContainertargetStates] = useState<ContainerTargetStates>({})
   const [pagination, setPagination] = useState<PaginationSettings>({
@@ -134,8 +136,6 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     setNode(newNode)
   }
 
-  const setEditing = (editing: boolean) => setSection(editing ? 'editing' : 'containers')
-
   const sendContainerCommand = (container: Container, operation: ContainerOperation) => {
     sock.send(WS_TYPE_CONTAINER_COMMAND, {
       container: container.id,
@@ -191,7 +191,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
 
   return [
     {
-      section,
+      section: editing ? 'editing' : section,
       node,
       pagination,
       containerTargetStates,
@@ -201,6 +201,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     },
     {
       onNodeEdited,
+      setSection,
       setEditing,
       setPagination,
       onStartContainer,

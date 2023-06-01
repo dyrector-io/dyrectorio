@@ -84,6 +84,7 @@ model Node {
   teamId         String        @db.Uuid
 
   deployments Deployment[]
+  events      AgentEvents[]
 
   @@unique([name, teamId])
 }
@@ -345,6 +346,7 @@ enum AuditLogContextEnum {
   http
   ws
   rpc
+  agent
 }
 
 enum AuditLogRequestMethodEnum {
@@ -401,6 +403,16 @@ model NotificationEvent {
   notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
 
   @@unique([event, notificationId])
+}
+
+model AgentEvents {
+  id             String               @id @default(uuid()) @db.Uuid
+  nodeId         String               @db.Uuid
+  createdAt      DateTime             @default(now()) @db.Timestamptz(6)
+  event          AgentEventTypeEnum
+  data           Json?
+
+  node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)  
 }
 
 enum ProjectTypeEnum {
@@ -460,6 +472,13 @@ enum NotificationEventTypeEnum {
   versionCreated
   nodeAdded
   userInvited
+}
+
+enum AgentEventTypeEnum {
+  connected
+  left
+  kicked
+  update
 }
 
 model Storage {
