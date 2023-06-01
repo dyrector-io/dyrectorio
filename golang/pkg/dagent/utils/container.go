@@ -114,7 +114,6 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 		WithoutConflict().
 		WithNetworkMode("host").
 		WithCmd(command).
-		WithForcePullImage().
 		WithExtraHosts([]string{"host.docker.internal:host-gateway"}).
 		WithoutConflict()
 

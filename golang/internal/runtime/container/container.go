@@ -7,6 +7,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/hashicorp/go-version"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -42,38 +43,38 @@ var (
 	ErrCannotSatisfyVersionConstraint = errors.New("cannot satisfy version constraint")
 )
 
-func VersionCheck(ctx context.Context, cli DockerInfoInterface) error {
+func VersionCheck(ctx context.Context, cli DockerInfoInterface) (*zerolog.Event, error) {
 	serverVersion, err := cli.ServerVersion(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	runtime, err := GetContainerRuntime(ctx, cli)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	switch runtime {
 	case Podman:
-		log.Info().Str("version", serverVersion.Version).Msg("Podman")
+		ev := log.Info().Str("Version", serverVersion.Version).Str("Runtime", "Podman")
 
 		err = SatisfyVersion(MinimumPodmanServerVersion, RecommendedPodmanServerVersion, serverVersion.Version)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		return nil
+		return ev, nil
 
 	case Docker:
-		log.Info().Str("version", serverVersion.Version).Msg("Docker")
+		ev := log.Info().Str("Version", serverVersion.Version).Str("Runtime", "Docker")
 
 		err = SatisfyVersion(MinimumDockerServerVersion, RecommendedDockerServerVersion, serverVersion.Version)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		return nil
+		return ev, nil
 
 	default:
-		return ErrServerUnknown
+		return nil, ErrServerUnknown
 	}
 }
 
