@@ -2,39 +2,27 @@ package image
 
 import (
 	"context"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"os"
-	"runtime"
+	"net/http"
 	"time"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
+	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 
-	"github.com/docker/cli/cli/command"
-	configtypes "github.com/docker/cli/cli/config/types"
-	"github.com/docker/cli/cli/trust"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
-	registrytypes "github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/jsonmessage"
-	"github.com/docker/docker/registry"
-	"github.com/opencontainers/go-digest"
+	"github.com/docker/docker/errdefs"
+	"github.com/google/go-containerregistry/pkg/authn"
+	"github.com/google/go-containerregistry/pkg/crane"
+	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
 	"github.com/rs/zerolog/log"
-	notaryClient "github.com/theupdateframework/notary/client"
-	"github.com/theupdateframework/notary/tuf/data"
 )
-
-type target struct {
-	name   string
-	digest digest.Digest
-	size   int64
-}
 
 // PullResponse is not explicit
 type PullResponse struct {
@@ -46,6 +34,17 @@ type PullResponse struct {
 	} `json:"progressDetail"`
 	Progress string `json:"progress"`
 }
+
+type remoteCheck struct {
+	client          client.APIClient
+	distributionRef reference.Named
+	encodedAuth     string
+}
+
+var (
+	errDigestMismatch  = errors.New("digest mismatch")
+	errDigestsMatching = errors.New("digests already matching")
+)
 
 func GetRegistryURL(reg *string, registryAuth *RegistryAuth) string {
 	if registryAuth != nil {
@@ -87,7 +86,7 @@ func GetImageByReference(ctx context.Context, ref string) (*types.ImageSummary, 
 	return nil, errors.New("found more than 1 image with the same reference")
 }
 
-// Exists check local references using a filter, this uses exact matching
+// Exists checks local references using a filter, this uses exact matching
 func Exists(ctx context.Context, logger io.StringWriter, expandedImageName string) (bool, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -101,7 +100,7 @@ func Exists(ctx context.Context, logger io.StringWriter, expandedImageName strin
 		if logger != nil {
 			_, err = logger.WriteString("Failed to list images")
 			if err != nil {
-				//nolint
+				//nolint:forbidigo
 				fmt.Printf("Failed to write log: %s", err.Error())
 			}
 		}
@@ -119,7 +118,7 @@ func Exists(ctx context.Context, logger io.StringWriter, expandedImageName strin
 }
 
 // force pulls the given image name
-// TODO(nandor-magyar): the output from docker is not really nice, should be improved
+// TODO(@nandor-magyar): the output from docker is not really nice, should be improved
 func Pull(ctx context.Context, logger io.StringWriter, expandedImageName, authCreds string) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -168,7 +167,7 @@ func Pull(ctx context.Context, logger io.StringWriter, expandedImageName, authCr
 				lastLog = time.Now()
 			}
 			if logErr != nil {
-				//nolint
+				//nolint:forbidigo
 				fmt.Printf("Failed to write log: %s", logErr.Error())
 			}
 		}
@@ -177,257 +176,102 @@ func Pull(ctx context.Context, logger io.StringWriter, expandedImageName, authCr
 	return err
 }
 
-func PrettyImagePull(ctx context.Context, remote string) (*PullStatus, error) {
-	distributionRef, err := reference.ParseNormalizedNamed(remote)
+// CustomImagePull is a client side `smart` Pull, that only pulls if the digests are not matching
+func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePull, preferLocal bool, displayFn PullDisplayFn) error {
+	distributionRef, nameErr := reference.ParseNormalizedNamed(imageName)
 	switch {
-	case err != nil:
-		return nil, err
+	case nameErr != nil:
+		return nameErr
 	case reference.IsNameOnly(distributionRef):
 		distributionRef = reference.TagNameOnly(distributionRef)
 		if tagged, ok := distributionRef.(reference.Tagged); ok {
-			fmt.Fprintf(os.Stdout, "Using default tag: %s\n", tagged.Tag())
+			log.Info().Msgf("Using default tag for image %s", tagged.String())
 		}
 	}
 
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return nil, err
-	}
-	imgRefAndAuth, err := trust.GetImageReferencesAndAuth(ctx, nil, ResolveAuthFn(), distributionRef.String())
-	if err != nil {
-		return nil, err
+	cli, cliErr := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if cliErr != nil {
+		return cliErr
 	}
 
-	// Check if reference has a digest
-	_, isCanonical := distributionRef.(reference.Canonical)
-	if !isCanonical {
-		return trustedPull(ctx, cli, &imgRefAndAuth)
-	}
-	status := PullStatus{}
-	err = imagePullPrivileged(ctx, cli, &imgRefAndAuth, &status)
-	return &status, err
-}
-
-func ResolveAuthFn() func(ctx context.Context, index *registrytypes.IndexInfo) types.AuthConfig {
-	return func(ctx context.Context, index *registrytypes.IndexInfo) types.AuthConfig {
-		return ResolveAuthConfig(ctx, "", index)
-	}
-}
-
-func ResolveAuthConfig(_ context.Context, config string, index *registrytypes.IndexInfo) types.AuthConfig {
-	return types.AuthConfig{}
-}
-
-func MergePulls(p1, p2 *PullStatus) *PullStatus {
-	p1.LayerCompl += p2.LayerCompl
-	p1.LayerCount += p2.LayerCount
-
-	p1.SumProgress = float64(p1.LayerCompl) / float64(p1.LayerCount)
-	return p1
-}
-
-func trustedPull(ctx context.Context, cli client.APIClient, imgRefAndAuth *trust.ImageRefAndAuth) (*PullStatus, error) {
-	refs, err := getTrustedPullTargets(imgRefAndAuth)
-	if err != nil {
-		return nil, err
-	}
-
-	ref := imgRefAndAuth.Reference()
-	status := PullStatus{}
-	for i, r := range refs {
-		displayTag := r.name
-		if displayTag != "" {
-			displayTag = ":" + displayTag
-		}
-		log.Debug().Msgf("Pull (%d of %d): %s%s@%s\n", i+1, len(refs), reference.FamiliarName(ref), displayTag, r.digest)
-		trustedRef, err := reference.WithDigest(reference.TrimNamed(ref), r.digest)
+	if !forcePull {
+		err := checkRemote(ctx, remoteCheck{
+			client:          cli,
+			distributionRef: distributionRef,
+			encodedAuth:     encodedAuth,
+		})
 		if err != nil {
-			return nil, err
-		}
-		updatedImgRefAndAuth, err := trust.GetImageReferencesAndAuth(ctx, nil, ResolveAuthFn(), trustedRef.String())
-		if err != nil {
-			return nil, err
-		}
-		err = imagePullPrivileged(ctx, cli, &updatedImgRefAndAuth, &status)
-		if err != nil {
-			return nil, err
-		}
-
-		tagged, err := reference.WithTag(reference.TrimNamed(ref), r.name)
-		if err != nil {
-			return nil, err
-		}
-
-		if err := TagTrusted(ctx, cli, trustedRef, tagged); err != nil {
-			return nil, err
-		}
-	}
-	return &status, nil
-}
-
-// TagTrusted tags a trusted ref
-func TagTrusted(ctx context.Context, cli client.APIClient, trustedRef reference.Canonical, ref reference.NamedTagged) error {
-	// Use familiar references when interacting with client and output
-	familiarRef := reference.FamiliarString(ref)
-	trustedFamiliarRef := reference.FamiliarString(trustedRef)
-
-	fmt.Fprintf(os.Stderr, "Tagging %s as %s\n", trustedFamiliarRef, familiarRef)
-
-	return cli.ImageTag(ctx, trustedFamiliarRef, familiarRef)
-}
-
-func imagePullPrivileged(ctx context.Context, cli client.APIClient, imgRefAndAuth *trust.ImageRefAndAuth, status *PullStatus) error {
-	ref := reference.FamiliarString(imgRefAndAuth.Reference())
-
-	encodedAuth, err := command.EncodeAuthToBase64(*imgRefAndAuth.AuthConfig())
-	if err != nil {
-		return err
-	}
-	requestPrivilege := RegistryAuthenticationPrivilegedFunc(imgRefAndAuth.RepoInfo().Index, "pull")
-	options := types.ImagePullOptions{
-		RegistryAuth:  encodedAuth,
-		PrivilegeFunc: requestPrivilege,
-		All:           false,
-		Platform:      runtime.GOOS,
-	}
-
-	responseBody, err := cli.ImagePull(ctx, ref, options)
-	if err != nil {
-		return err
-	}
-	defer logdefer.LogDeferredErr(responseBody.Close, log.Warn(), "image pull body close error")
-
-	return JSONStreamToStatusStream(responseBody, status)
-}
-
-type DigestStatus struct {
-	digest string
-	status int64
-}
-
-type PullStatus struct {
-	RefsChan    map[string]chan DigestStatus
-	LayerCount  int
-	LayerCompl  int
-	SumProgress float64
-}
-
-func JSONStreamToStatusStream(respStream io.ReadCloser, stat *PullStatus) error {
-	var (
-		dec = json.NewDecoder(respStream)
-		ids = make(map[string]uint)
-	)
-
-	for {
-		var jm jsonmessage.JSONMessage
-		if err := dec.Decode(&jm); err != nil {
-			if err == io.EOF {
-				break
+			if preferLocal &&
+				(errors.Is(err, errDigestMismatch) && !errors.Is(err, ErrLocalImageNotFound)) {
+				log.Debug().Msgf("using local image")
+				return nil
 			}
+			if errors.Is(err, errDigestsMatching) {
+				return nil
+			}
+			if !(errors.Is(err, errDigestMismatch) || errors.Is(err, ErrImageNotFound)) {
+				return err
+			}
+		}
+	}
+	options := types.ImagePullOptions{
+		RegistryAuth: encodedAuth,
+	}
+
+	responseBody, err := cli.ImagePull(ctx, imageName, options)
+	if err != nil {
+		return err
+	}
+	defer logdefer.LogDeferredErr(responseBody.Close, log.Warn(), "error in defer when closing pull response body:")
+
+	return displayFn(fmt.Sprintf("Pull %v status:", imageName), responseBody)
+}
+
+// check local and remote registry for container image and do digest comparison
+func checkRemote(ctx context.Context, check remoteCheck) (err error) {
+	localImageNotFound := false
+	insp, _, err := check.client.ImageInspectWithRaw(ctx, check.distributionRef.String())
+	if err != nil {
+		if errdefs.IsNotFound(err) {
+			localImageNotFound = true
+		} else {
 			return err
 		}
-		stat.LayerCount = len(ids)
-		if jm.ID != "" && (jm.Progress != nil || jm.ProgressMessage != "") {
-			_, ok := ids[jm.ID]
-			if !ok {
-				line := uint(len(ids))
-				ids[jm.ID] = line
-				stat.RefsChan[jm.ID] <- DigestStatus{jm.ID, jm.Progress.Current}
-			}
-			if jm.Progress.Current == jm.Progress.Total {
-				stat.LayerCompl++
-			}
-		}
-		log.Info().Msgf("%v", stat)
 	}
 
-	return nil
-}
+	craneOpts := []crane.Option{}
 
-func GetDefaultAuthConfig(checkCredStore bool, serverAddress string, isDefaultRegistry bool) (types.AuthConfig, error) {
-	if !isDefaultRegistry {
-		serverAddress = registry.ConvertToHostname(serverAddress)
+	if check.encodedAuth != "" {
+		craneOpts = append(craneOpts, crane.WithAuth(authn.FromConfig(authn.AuthConfig{Auth: check.encodedAuth})))
 	}
-	authconfig := configtypes.AuthConfig{}
-	authconfig.ServerAddress = serverAddress
-	authconfig.IdentityToken = ""
-	res := types.AuthConfig(authconfig)
-	return res, nil
-}
-
-func RegistryAuthenticationPrivilegedFunc(index *registrytypes.IndexInfo, cmdName string) types.RequestPrivilegeFunc {
-	return func() (string, error) {
-		indexServer := registry.GetAuthConfigKey(index)
-		isDefaultRegistry := indexServer == registry.IndexServer
-		authConfig, err := GetDefaultAuthConfig(true, indexServer, isDefaultRegistry)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to retrieve stored credentials for %s, error: %s.\n", indexServer, err)
-		}
-		return command.EncodeAuthToBase64(authConfig)
-	}
-}
-
-func getTrustedPullTargets(refAndAuth *trust.ImageRefAndAuth) ([]target, error) {
-	notaryRepo, repoErr := trust.GetNotaryRepository(
-		io.NopCloser(nil), &io.PipeWriter{}, command.UserAgent(),
-		refAndAuth.RepoInfo(), refAndAuth.AuthConfig(), trust.ActionsPullOnly...)
-	if repoErr != nil {
-		return nil, errors.Join(repoErr, fmt.Errorf("error establishing connection to trust repository"))
-	}
-
-	ref := refAndAuth.Reference()
-	tagged, isTagged := ref.(reference.NamedTagged)
-	if !isTagged {
-		// List all targets
-		targets, err := notaryRepo.ListTargets(trust.ReleasesRole, data.CanonicalTargetsRole)
-		if err != nil {
-			return nil, trust.NotaryError(ref.Name(), err)
-		}
-		var refs []target
-		for _, tgt := range targets {
-			t, err := convertTarget(tgt.Target)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "skipping target for %q\n", reference.FamiliarName(ref))
-				continue
-			}
-			// Only list tags in the top level targets role or the releases delegation role - ignore
-			// all other delegation roles
-			if tgt.Role != trust.ReleasesRole && tgt.Role != data.CanonicalTargetsRole {
-				continue
-			}
-			refs = append(refs, t)
-		}
-		if len(refs) == 0 {
-			return nil, trust.NotaryError(ref.Name(), fmt.Errorf("no trusted tags for %s", ref.Name()))
-		}
-		return refs, nil
-	}
-
-	t, err := notaryRepo.GetTargetByName(tagged.Tag(), trust.ReleasesRole, data.CanonicalTargetsRole)
+	remoteDigest, err := crane.Digest(check.distributionRef.String(), craneOpts...)
 	if err != nil {
-		return nil, trust.NotaryError(ref.Name(), err)
-	}
-	// Only get the tag if it's in the top level targets role or the releases delegation role
-	// ignore it if it's in any other delegation roles
-	if t.Role != trust.ReleasesRole && t.Role != data.CanonicalTargetsRole {
-		return nil, trust.NotaryError(ref.Name(), fmt.Errorf("no trust data for %s", tagged.Tag()))
+		if localImageNotFound {
+			if manifestErr, ok := err.(*transport.Error); ok {
+				if manifestErr.StatusCode == http.StatusNotFound {
+					return errors.Join(ErrImageNotFound, ErrLocalImageNotFound)
+				}
+			}
+
+			return err
+		}
 	}
 
-	log.Debug().Msgf("retrieving target for %s role", t.Role)
-	r, err := convertTarget(t.Target)
-	return []target{r}, err
-}
+	log.Debug().Msgf("%v in %v",
+		fmt.Sprintf("%v@%v", reference.FamiliarName(reference.TrimNamed(check.distributionRef)), remoteDigest), insp.RepoDigests)
+	if !util.Contains(insp.RepoDigests,
+		fmt.Sprintf("%v@%v", reference.FamiliarName(reference.TrimNamed(check.distributionRef)), remoteDigest)) {
+		if insp.ID == "" {
+			return errors.Join(errDigestMismatch, ErrLocalImageNotFound)
+		}
 
-func convertTarget(t notaryClient.Target) (target, error) {
-	h, ok := t.Hashes["sha256"]
-	if !ok {
-		return target{}, errors.New("no valid hash, expecting sha256")
+		return errDigestMismatch
 	}
-	return target{
-		name:   t.Name,
-		digest: digest.NewDigestFromHex("sha256", hex.EncodeToString(h)),
-		size:   t.Length,
-	}, nil
+
+	if localImageNotFound {
+		return ErrLocalImageNotFound
+	}
+	return errDigestsMatching
 }
 
 func ExpandImageName(imageWithTag string) (string, error) {
@@ -471,7 +315,7 @@ func ExpandImageNameWithTag(image, tag string) (string, error) {
 	return ref.String(), nil
 }
 
-func SplitImageName(expandedImageName string) (name, tag string, err error) {
+func SplitImageName(expandedImageName string) (imageName, tag string, tagError error) {
 	ref, err := reference.ParseNamed(expandedImageName)
 	if err != nil {
 		return "", "", err

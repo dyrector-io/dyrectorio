@@ -10,7 +10,6 @@ import (
 	"path"
 	"strings"
 
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 
 	containerRuntime "github.com/dyrector-io/dyrectorio/golang/internal/runtime/container"
@@ -32,17 +31,17 @@ type State struct {
 
 // ArgsFlags are commandline arguments
 type ArgsFlags struct {
-	SettingsWrite      bool
-	SettingsExists     bool
-	SettingsFilePath   string
-	Command            string
-	ImageTag           string
-	Prefix             string
-	SpecialImageTag    string
-	DisableForcepull   bool
-	CruxDisabled       bool
-	CruxUIDisabled     bool
-	LocalAgent         bool
+	SettingsWrite     bool
+	SettingsExists    bool
+	SettingsFilePath  string
+	Command           string
+	ImageTag          string
+	Prefix            string
+	CruxDisabled      bool
+	CruxUIDisabled    bool
+	LocalAgent        bool
+	PreferLocalImages bool
+	// pipeline mode
 	FullyContainerized bool
 	Network            string
 	Silent             bool
@@ -172,7 +171,7 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 		log.Fatal().Stack().Err(err).Send()
 	}
 
-	err = containerRuntime.VersionCheck(initialState.Ctx, cli)
+	_, err = containerRuntime.VersionCheck(initialState.Ctx, cli)
 	if err != nil {
 		switch {
 		case errors.Is(err, containerRuntime.ErrServerIsOutdated):
@@ -302,37 +301,6 @@ func CheckSettings(state *State, args *ArgsFlags) {
 	if args.SettingsWrite {
 		SaveSettings(state, args)
 	}
-}
-
-// TryImage function will check if an image with the given custom tag is existing
-// on the local system, otherwise will fall back and pull
-// This func is for testing locally built docker images
-func TryImage(dockerImage, specialTag string) string {
-	fullDockerImage, err := imageHelper.ExpandImageName(dockerImage)
-	if err != nil {
-		log.Err(err).Stack().Send()
-	}
-
-	imageName := fullDockerImage
-	if specialTag != "" {
-		imageName, err = imageHelper.ExpandImageNameWithTag(fullDockerImage, specialTag)
-		if err != nil {
-			log.Err(err).Stack().Send()
-		}
-	}
-
-	exists, err := imageHelper.Exists(context.TODO(), nil, imageName)
-	if err != nil {
-		log.Err(err).Stack().Send()
-	}
-
-	if exists {
-		log.Debug().Str("image", imageName).Msg("found, won't pull")
-		return imageName
-	}
-
-	log.Debug().Str("image", dockerImage).Msg("not found, will pull")
-	return fullDockerImage
 }
 
 // randomChars creates random char string used for password creation

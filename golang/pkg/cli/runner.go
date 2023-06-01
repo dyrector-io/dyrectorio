@@ -14,6 +14,7 @@ import (
 
 	dockerhelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
+	"github.com/dyrector-io/dyrectorio/golang/internal/runtime/container"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 )
 
@@ -42,10 +43,11 @@ const (
 	containerNetDriver = "bridge"
 )
 
-// UpCommand and DownCommand is the magic words we use to bring up/down the stack
+// commands
 const (
-	UpCommand   = "up"
-	DownCommand = "down"
+	UpCommand      = "up"
+	DownCommand    = "down"
+	VersionCommand = "version"
 )
 
 type traefikFileProviderData struct {
@@ -88,6 +90,16 @@ func ProcessCommand(ctx context.Context, initialState *State, args *ArgsFlags) {
 	case DownCommand:
 		StopContainers(ctx, args)
 		log.Info().Msg("Stack is stopped. Hope you had fun! 🎬")
+	case VersionCommand:
+		cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+		if err != nil {
+			log.Fatal().Err(err).Msg("Could not connect to docker socket.")
+		}
+		out, err := container.VersionCheck(ctx, cli)
+		if err != nil {
+			log.Fatal().Err(err).Msg("Version error")
+		}
+		out.Msg("")
 	default:
 		log.Fatal().Msg("Invalid command")
 	}
