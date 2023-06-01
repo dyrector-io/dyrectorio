@@ -25,7 +25,7 @@ func PreflightChecks(cfg *config.Configuration) {
 		log.Fatal().Stack().Err(err).Send()
 	}
 
-	err = containerRuntime.VersionCheck(ctx, cli)
+	_, err = containerRuntime.VersionCheck(ctx, cli)
 	if err != nil {
 		if errors.Is(err, containerRuntime.ErrServerIsOutdated) {
 			log.Warn().Stack().Err(err).Msg("Server version is outdated, please consider updating.")

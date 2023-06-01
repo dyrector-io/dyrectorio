@@ -54,34 +54,80 @@ func getDockerInfoInvalid() *types.Info {
 	}
 }
 
+type VersionTestCase struct {
+	Info              *types.Info
+	MockClientVersion string
+	ErrExpected       error
+}
+
+// TODO(@nandor-magyar): this should be refactored into an iterated test case, this kind of repetition is undesired
 func TestVersionCheck(t *testing.T) {
-	assert.Nil(t, containerRuntime.VersionCheck(context.TODO(), newMockClient("23.0.0", getDockerInfoDocker())))
-	assert.Nil(t, containerRuntime.VersionCheck(context.TODO(), newMockClient("4.4.0", getDockerInfoPodman())))
+	errExternal := errors.New("externalError")
+	testCases := []VersionTestCase{
+		// no errors
+		{
+			Info:              getDockerInfoDocker(),
+			MockClientVersion: "23.0.0",
+			ErrExpected:       nil,
+		},
+		{
+			Info:              getDockerInfoPodman(),
+			MockClientVersion: "4.4.0",
+			ErrExpected:       nil,
+		},
+		// server outdated errors
+		{
+			Info:              getDockerInfoDocker(),
+			MockClientVersion: "20.10.0",
+			ErrExpected:       containerRuntime.ErrServerIsOutdated,
+		},
+		{
+			Info:              getDockerInfoPodman(),
+			MockClientVersion: "4.0.0",
+			ErrExpected:       containerRuntime.ErrServerIsOutdated,
+		},
+		{
+			Info:              getDockerInfoDocker(),
+			MockClientVersion: "19.03.0",
+			ErrExpected:       containerRuntime.ErrServerVersionIsNotSupported,
+		},
+		{
+			Info:              getDockerInfoPodman(),
+			MockClientVersion: "3.4.0",
+			ErrExpected:       containerRuntime.ErrServerVersionIsNotSupported,
+		},
+		{
+			Info:              getDockerInfoInvalid(),
+			MockClientVersion: "23.0.0",
+			ErrExpected:       containerRuntime.ErrServerUnknown,
+		},
+		{
+			Info:              getDockerInfoInvalid(),
+			MockClientVersion: "4.4.0",
+			ErrExpected:       containerRuntime.ErrServerUnknown,
+		},
+		// We don't check the specific error there, since it is not covered by the package but by an external dependency.
+		{
+			Info:              getDockerInfoDocker(),
+			MockClientVersion: "a.b.c",
+			ErrExpected:       errExternal,
+		},
+		{
+			Info:              getDockerInfoDocker(),
+			MockClientVersion: "a.b.c",
+			ErrExpected:       errExternal,
+		},
+	}
 
-	assert.ErrorIs(t, containerRuntime.ErrServerIsOutdated,
-		containerRuntime.VersionCheck(context.TODO(), newMockClient("20.10.0", getDockerInfoDocker())),
-	)
-	assert.ErrorIs(t, containerRuntime.ErrServerIsOutdated,
-		containerRuntime.VersionCheck(context.TODO(), newMockClient("4.0.0", getDockerInfoPodman())),
-	)
-
-	assert.ErrorIs(t, containerRuntime.ErrServerVersionIsNotSupported,
-		containerRuntime.VersionCheck(context.TODO(), newMockClient("19.03.0", getDockerInfoDocker())),
-	)
-	assert.ErrorIs(t, containerRuntime.ErrServerVersionIsNotSupported,
-		containerRuntime.VersionCheck(context.TODO(), newMockClient("3.4.0", getDockerInfoPodman())),
-	)
-
-	assert.ErrorIs(t, containerRuntime.ErrServerUnknown,
-		containerRuntime.VersionCheck(context.TODO(), newMockClient("23.0.0", getDockerInfoInvalid())),
-	)
-	assert.ErrorIs(t, containerRuntime.ErrServerUnknown,
-		containerRuntime.VersionCheck(context.TODO(), newMockClient("4.4.0", getDockerInfoInvalid())),
-	)
-
-	// We don't check the specific error there, since it is not covered by the pakcage but by an external dependency.
-	assert.Error(t, containerRuntime.VersionCheck(context.TODO(), newMockClient("a.b.c", getDockerInfoDocker())))
-	assert.Error(t, containerRuntime.VersionCheck(context.TODO(), newMockClient("a.b.c", getDockerInfoPodman())))
+	for _, tC := range testCases {
+		_, err := containerRuntime.VersionCheck(context.TODO(), newMockClient(tC.MockClientVersion, tC.Info))
+		// if the we expect external error there is no strict error matching
+		if errors.Is(tC.ErrExpected, errExternal) {
+			assert.Error(t, err)
+		} else {
+			assert.ErrorIs(t, err, tC.ErrExpected)
+		}
+	}
 }
 
 func TestSatisfyVersion(t *testing.T) {

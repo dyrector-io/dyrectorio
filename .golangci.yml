@@ -14,7 +14,10 @@ linters-settings:
   dupl:
     threshold: 100
   forbidigo:
-    exclude_godoc_examples: true
+    exclude_godoc_examples: false
+    forbid:
+      - ^print.*$
+      - 'fmt\.Print.*'
   funlen:
     lines: 100
     statements: 50
