@@ -18,10 +18,10 @@ if [ $github_ref_type = "branch" ]; then
     ;;
   esac
 
-  if [ -z $github_base_ref ] || [ $github_base_ref != "" ]; then
-    DOCKERIMAGETAG="latest"
-  elif [ $github_base_ref = "main" ]; then
+  if [ $github_base_ref = "main" ]; then
     DOCKERIMAGETAG="stable"
+  elif [ $github_base_ref != "" ]; then
+    DOCKERIMAGETAG="latest"
   fi
 fi
 

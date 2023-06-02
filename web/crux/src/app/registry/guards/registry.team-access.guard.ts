@@ -19,7 +19,7 @@ export default class RegistryTeamAccessGuard implements CanActivate {
 
     const registries = await this.prisma.registry.count({
       where: {
-        id: req.id,
+        id: registryId,
         team: {
           users: {
             some: {

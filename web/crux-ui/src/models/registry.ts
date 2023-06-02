@@ -34,7 +34,7 @@ export type HubRegistryDetails = RegistryDetailsBase & HubRegistryDetailsDto
 type V2RegistryDetailsDto = {
   type: 'v2'
   url: string
-  private: boolean
+  private?: boolean
   user?: string
   token?: string
 }
@@ -45,7 +45,7 @@ type GitlabRegistryDetailsDto = {
   imageNamePrefix: string
   user: string
   token: string
-  selfManaged: boolean
+  selfManaged?: boolean
   namespace: RegistryNamespace
   url?: string
   apiUrl?: string
@@ -65,7 +65,7 @@ type GoogleRegistryDetailsDto = {
   type: 'google'
   url: string
   imageNamePrefix: string
-  private: boolean
+  private?: boolean
   user?: string
   token?: string
 }
@@ -295,7 +295,6 @@ export const registryCreateToDto = (ui: CreateRegistry): CreateRegistryDto => ({
           url: ui.url,
           user: ui.user,
           token: ui.token,
-          private: ui.private,
         }
       : ui.type === 'gitlab'
       ? {
@@ -306,7 +305,6 @@ export const registryCreateToDto = (ui: CreateRegistry): CreateRegistryDto => ({
           url: ui.selfManaged ? ui.url : null,
           apiUrl: ui.selfManaged ? ui.apiUrl : null,
           namespace: ui.namespace,
-          selfManaged: ui.selfManaged,
         }
       : ui.type === 'github'
       ? {
@@ -323,7 +321,6 @@ export const registryCreateToDto = (ui: CreateRegistry): CreateRegistryDto => ({
           imageNamePrefix: ui.imageNamePrefix,
           user: ui.user,
           token: ui.token,
-          private: ui.private,
         }
       : ui.type === 'unchecked'
       ? {
