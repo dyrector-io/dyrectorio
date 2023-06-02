@@ -1,44 +1,59 @@
-import { Type } from 'class-transformer'
-import { IsDate } from 'class-validator'
-import { AuditLogDto } from '../audit/audit.dto'
-import { BasicNodeDto } from '../node/node.dto'
+import { IsBoolean, IsInt, IsOptional, IsUUID, ValidateNested } from 'class-validator'
 
-export class DashboardDeploymentDto {
-  id: string
+export class OnboardingItemDto {
+  @IsBoolean()
+  done: boolean
 
-  project: string
+  @IsUUID()
+  @IsOptional()
+  resourceId?: string
+}
 
-  version: string
+export class OnboardingDto {
+  @ValidateNested()
+  signUp: OnboardingItemDto
 
-  node: string
+  @ValidateNested()
+  createTeam: OnboardingItemDto
 
-  changelog: string
+  @ValidateNested()
+  createNode: OnboardingItemDto
 
-  @IsDate()
-  @Type(() => Date)
-  deployedAt: Date
+  @ValidateNested()
+  createProject: OnboardingItemDto
 
-  projectId: string
+  @ValidateNested()
+  createVersion: OnboardingItemDto
 
-  versionId: string
+  @ValidateNested()
+  addImages: OnboardingItemDto
+
+  @ValidateNested()
+  addDeployment: OnboardingItemDto
+
+  @ValidateNested()
+  deploy: OnboardingItemDto
 }
 
 export class DashboardDto {
+  @IsInt()
   users: number
 
-  auditLogEntries: number
+  @IsInt()
+  auditLog: number
 
+  @IsInt()
   projects: number
 
+  @IsInt()
   versions: number
 
+  @IsInt()
   deployments: number
 
+  @IsInt()
   failedDeployments: number
 
-  nodes: BasicNodeDto[]
-
-  latestDeployments: DashboardDeploymentDto[]
-
-  auditLog: AuditLogDto[]
+  @ValidateNested()
+  onboarding: OnboardingDto
 }

@@ -13,7 +13,7 @@ import {
   WS_TYPE_WATCH_CONTAINER_LOG,
 } from '@app/models'
 import {
-  deploymentContainerLogUrl,
+  deploymentLogUrl,
   deploymentDeployUrl,
   deploymentUrl,
   nodeWsUrl,
@@ -29,12 +29,11 @@ import { getDeploymentRoot } from '../[deploymentId]'
 
 interface InstanceLogPageProps {
   deployment: DeploymentRoot
-  prefix: string
-  name: string
 }
 
 const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
-  const { deployment, prefix, name } = props
+  const { deployment } = props
+  const { prefix } = deployment
 
   const { t } = useTranslation('common')
 
@@ -45,7 +44,7 @@ const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
       const request: WatchContainerLogMessage = {
         container: {
           prefix,
-          name,
+          name: null,
         },
       }
 
@@ -81,10 +80,7 @@ const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
     },
     {
       name: t('log'),
-      url: deploymentContainerLogUrl(deployment.id, {
-        prefix,
-        name,
-      }),
+      url: deploymentLogUrl(deployment.id),
     },
   ]
 
@@ -108,15 +104,11 @@ const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
 export default DeploymentContainerLogPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const { prefix, name } = context.query
-
   const deployment = await getDeploymentRoot(context)
 
   return {
     props: {
       deployment,
-      prefix: prefix ?? null,
-      name: name ?? null,
     },
   }
 }

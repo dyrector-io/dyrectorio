@@ -11,7 +11,7 @@ import {
   WS_TYPE_CONTAINERS_STATE_LIST,
   WS_TYPE_WATCH_CONTAINERS_STATE,
 } from '@app/models'
-import { deploymentContainerLogUrl, nodeWsUrl } from '@app/routes'
+import { deploymentLogUrl, nodeContainerLogUrl, nodeWsUrl } from '@app/routes'
 import { timeAgo, utcNow } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
@@ -72,7 +72,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     const created = new Date(container.date).getTime()
     const seconds = Math.floor((now - created) / 1000)
 
-    const logUrl = deploymentContainerLogUrl(deployment.id, container.id)
+    const logUrl = nodeContainerLogUrl(deployment.id, container.id)
 
     /* eslint-disable react/jsx-key */
     return [

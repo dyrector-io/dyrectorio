@@ -7,10 +7,11 @@ interface DyoIconProps {
   src: string
   alt: string
   size?: 'sm' | 'md' | 'lg'
+  onClick?: VoidFunction
 }
 
 const DyoIcon = (props: DyoIconProps) => {
-  const { className, imageClassName, src, alt, size: propsSize = 'sm' } = props
+  const { className, imageClassName, src, alt, size: propsSize = 'sm', onClick } = props
   const size = propsSize === 'sm' ? 16 : propsSize === 'md' ? 24 : 32
 
   return (
@@ -22,11 +23,16 @@ const DyoIcon = (props: DyoIconProps) => {
       }}
     >
       <Image
-        className={clsx('aspect-square object-contain object-center', imageClassName)}
+        className={clsx(
+          'aspect-square object-contain object-center',
+          imageClassName,
+          onClick ? 'cursor-pointer' : null,
+        )}
         src={src}
         alt={alt}
         width={size}
         height={size}
+        onClick={onClick}
       />
     </span>
   )

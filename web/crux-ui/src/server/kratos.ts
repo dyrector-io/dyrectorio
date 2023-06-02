@@ -14,9 +14,14 @@ const adminConfig = new Configuration({
 const identities = new IdentityApi(adminConfig)
 const meta = new MetadataApi(adminConfig)
 
-export const identityWasRecovered = async (session: Session): Promise<string> => {
+export const identityWasRecovered = (session: Session): string => {
   const metadata = session.identity.metadata_public as IdentityPublicMetadata
   return metadata?.recovered
+}
+
+export const identityOnboardingDisabled = (session: Session): boolean => {
+  const metadata = session.identity.metadata_public as IdentityPublicMetadata
+  return metadata.disableOnboarding ?? false
 }
 
 const updateMetadata = async (session: Session, metadata: Partial<IdentityPublicMetadata>): Promise<void> => {

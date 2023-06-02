@@ -1,4 +1,18 @@
-import { AuditLog } from './audit'
+export type OnboardingItem = {
+  done: boolean
+  resourceId?: string
+}
+
+export type Onboarding = {
+  signUp: OnboardingItem
+  createTeam: OnboardingItem
+  createNode: OnboardingItem
+  createProject: OnboardingItem
+  createVersion: OnboardingItem
+  addImages: OnboardingItem
+  addDeployment: OnboardingItem
+  deploy: OnboardingItem
+}
 
 export type Dashboard = {
   users: number
@@ -7,9 +21,7 @@ export type Dashboard = {
   versions: number
   deployments: number
   failedDeployments: number
-  nodes: DashboardActiveNodes[]
-  latestDeployments: DashboardDeployment[]
-  auditLog: AuditLog[]
+  onboarding: Onboarding
 }
 
 export type DashboardActiveNodes = {

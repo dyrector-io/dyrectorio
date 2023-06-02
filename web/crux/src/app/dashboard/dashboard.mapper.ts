@@ -1,58 +1,76 @@
+import { DeploymentStatusEnum } from '.prisma/client'
 import { Injectable } from '@nestjs/common'
-import { Node } from '@prisma/client'
-import AgentService from '../agent/agent.service'
-import { NodeDto } from '../node/node.dto'
-import { DashboardDeploymentDto } from './dashboard.dto'
+import { OnboardingDto, OnboardingItemDto } from './dashboard.dto'
 
 @Injectable()
 export default class DashboardMapper {
-  constructor(private agentService: AgentService) {}
-
-  nodesToDto(nodes: ActiveNode[]): NodeDto[] {
-    return nodes.flatMap(it => {
-      const agent = this.agentService.getById(it.id)
-
-      if (!agent?.connected) {
-        return []
-      }
-
+  resourceToOnboardItem(resource: ResourceWithId | null): OnboardingItemDto {
+    if (!resource) {
       return {
-        address: agent.address,
-        version: agent.version,
-        name: it.name,
-        id: it.id,
+        done: false,
       }
-    })
+    }
+
+    return {
+      done: true,
+      resourceId: resource.id,
+    }
   }
 
-  deploymentsToDto(deployments: LatestDeployment[]): DashboardDeploymentDto[] {
-    return deployments.map(it => ({
-      id: it.id,
-      changelog: it.version.changelog,
-      project: it.version.project.name,
-      node: it.node.name,
-      version: it.version.name,
-      deployedAt: it.createdAt,
-      projectId: it.version.project.id,
-      versionId: it.version.id,
-    }))
+  teamToOnboard(team: DashboardTeam): OnboardingDto {
+    const project: DashboardProject = team.projects.find(Boolean)
+    let version: DashboardVersion = null
+    let image: ResourceWithId = null
+    let deployment: DashboardDeployment = null
+
+    if (project) {
+      version = project.versions.find(Boolean)
+      if (version) {
+        image = version.images.find(Boolean)
+        deployment = version.deployments.find(Boolean)
+      }
+    }
+
+    const onboard: OnboardingDto = {
+      signUp: {
+        done: true,
+      },
+      createTeam: {
+        done: true,
+        resourceId: team.id,
+      },
+      createNode: this.resourceToOnboardItem(team.nodes.find(Boolean)),
+      createProject: this.resourceToOnboardItem(project),
+      createVersion: this.resourceToOnboardItem(version),
+      addImages: this.resourceToOnboardItem(image),
+      addDeployment: this.resourceToOnboardItem(deployment),
+      deploy: {
+        done: deployment && deployment.status !== 'preparing',
+      },
+    }
+
+    return onboard
   }
 }
 
-type ActiveNode = Pick<Node, 'id' | 'name'>
-type LatestDeployment = {
+type ResourceWithId = {
   id: string
-  version: {
-    id: string
-    name: string
-    changelog: string
-    project: {
-      id: string
-      name: string
-    }
-  }
-  createdAt: Date
-  node: {
-    name: string
-  }
+}
+
+type DashboardDeployment = ResourceWithId & {
+  status: DeploymentStatusEnum
+}
+
+type DashboardVersion = ResourceWithId & {
+  images: ResourceWithId[]
+  deployments: DashboardDeployment[]
+}
+
+type DashboardProject = ResourceWithId & {
+  versions: DashboardVersion[]
+}
+
+type DashboardTeam = ResourceWithId & {
+  nodes: ResourceWithId[]
+  projects: DashboardProject[]
 }
