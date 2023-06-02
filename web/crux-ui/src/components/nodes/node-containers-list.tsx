@@ -28,8 +28,10 @@ interface NodeContainersListProps {
 
 const NodeContainersList = (props: NodeContainersListProps) => {
   const { state, actions } = props
-  const { pagination } = state
-  const containers = state.filters.filtered
+  const {
+    filters: { filtered: containers },
+    pageItems,
+  } = state
 
   const { t } = useTranslation('nodes')
 
@@ -116,10 +118,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
         headerClassName={headerClasses}
         columnWidths={columnWidths}
         itemClassName={itemClasses}
-        data={containers.slice(
-          pagination.pageNumber * pagination.pageSize,
-          pagination.pageNumber * pagination.pageSize + pagination.pageSize,
-        )}
+        data={pageItems}
         itemBuilder={itemBuilder}
         footer={
           <Paginator
