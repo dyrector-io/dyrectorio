@@ -11,7 +11,7 @@ import {
   WS_TYPE_CONTAINERS_STATE_LIST,
   WS_TYPE_WATCH_CONTAINERS_STATE,
 } from '@app/models'
-import { deploymentLogUrl, nodeContainerLogUrl, nodeWsUrl } from '@app/routes'
+import { nodeContainerLogUrl, nodeWsUrl } from '@app/routes'
 import { timeAgo, utcNow } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'

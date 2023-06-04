@@ -13,8 +13,8 @@ import {
   WS_TYPE_WATCH_CONTAINER_LOG,
 } from '@app/models'
 import {
-  deploymentLogUrl,
   deploymentDeployUrl,
+  deploymentLogUrl,
   deploymentUrl,
   nodeWsUrl,
   projectUrl,
