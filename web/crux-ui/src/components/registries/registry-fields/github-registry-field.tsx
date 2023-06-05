@@ -20,7 +20,7 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
           href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"
           target="_blank"
         >
-          {t('tips.pat-info')}
+          {t('tips.patInfo')}
         </Link>
       </DyoLabel>
 

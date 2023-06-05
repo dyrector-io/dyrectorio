@@ -21,7 +21,7 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
           href="https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html"
           target="_blank"
         >
-          {t('tips.pat-info')}
+          {t('tips.patInfo')}
         </Link>
       </DyoLabel>
 
