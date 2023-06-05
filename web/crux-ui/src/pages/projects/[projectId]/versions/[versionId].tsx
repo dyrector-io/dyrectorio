@@ -46,18 +46,10 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
   })
 
   const onVersionEdited = async (newVersion: EditableVersion) => {
-    const res = await fetch(versionApiUrl(project.id, newVersion.id))
-    let details: VersionDetails | EditableVersion = newVersion
-    if (res.ok) {
-      details = (await res.json()) as VersionDetails
-    } else {
-      handleApiError(res)
-    }
-
     setEditing(false)
     setVersion({
       ...version,
-      ...details,
+      ...newVersion,
     })
 
     const newAllVersion = [...allVersions]
