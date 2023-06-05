@@ -283,8 +283,6 @@ export const nodeContainerLogUrl = (nodeId: string, params: ContainerLogParams) 
     anchor: null,
   })
 
-export const deploymentLogUrl = (deploymentId: string) => `${deploymentUrl(deploymentId)}/log`
-
 // storage
 export const storageUrl = (id: string) => `${ROUTE_STORAGES}/${id}`
 export const storageApiUrl = (id: string) => `${API_STORAGES}/${id}`

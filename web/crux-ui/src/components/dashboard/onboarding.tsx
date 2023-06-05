@@ -3,7 +3,6 @@ import DyoIcon from '@app/elements/dyo-icon'
 import { Onboarding as OnboardingDto, OnboardingItem } from '@app/models'
 import {
   deploymentDeployUrl,
-  deploymentLogUrl,
   deploymentUrl,
   imageConfigUrl,
   nodeUrl,
@@ -84,7 +83,7 @@ const onboardItemToHref = (
       return null
     }
 
-    return item.done ? deploymentLogUrl(deploymentId) : deploymentDeployUrl(deploymentId)
+    return item.done ? deploymentDeployUrl(deploymentId) : deploymentUrl(deploymentId)
   }
 
   return null
