@@ -1,4 +1,4 @@
-name: product_builder_pipeline
+name: product_builder
 on:
   push:
     branches: [develop, main]
@@ -48,7 +48,8 @@ jobs:
   yaml_lint:
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      # yamlfmt resides here because alpine doesn't provide yamlfmt package
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -111,7 +112,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -139,7 +140,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -167,7 +168,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -197,7 +198,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -232,7 +233,7 @@ jobs:
       - go_integration
       - gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -290,7 +291,7 @@ jobs:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
     if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout the repository
@@ -306,7 +307,7 @@ jobs:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
     if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout the repository
@@ -322,7 +323,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [crux_test, crux_lint, gather_changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
     defaults:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
@@ -350,7 +351,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -369,7 +370,7 @@ jobs:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
     if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout the repository
@@ -382,7 +383,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [crux-ui_lint, crux-ui_unit_test, gather_changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -410,7 +411,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
     defaults:
       run:
         working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
@@ -561,7 +562,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
     needs: [go_build, e2e, gather_changes]
     if: |
       always() &&
@@ -646,7 +647,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
     needs: [crux_build, e2e, gather_changes]
     if: |
       always() &&
@@ -704,7 +705,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
     needs: [crux-ui_build, e2e, gather_changes]
     if: |
       always() &&
@@ -762,7 +763,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-5
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
     needs: [kratos_build, e2e, gather_changes]
     if: |
       always() &&
