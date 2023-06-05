@@ -135,7 +135,7 @@ const NodesPage = (props: NodesPageProps) => {
           </DyoWrap>
         </>
       ) : (
-        <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32 w-8/12 m-auto">
+        <DyoHeading element="h3" className="text-md text-center text-light-eased w-8/12 m-auto">
           <p className="pb-8">{t('noItems')}</p>
           <Link className="pt-32" href="https://docs.dyrector.io/tutorials/register-your-node" target="_blabnk">
             {t('description')}
