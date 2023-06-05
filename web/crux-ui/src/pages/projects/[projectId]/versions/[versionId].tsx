@@ -1,8 +1,9 @@
 import { Layout } from '@app/components/layout'
 import ProjectVersionsSection from '@app/components/projects/project-versions-section'
 import EditVersionCard from '@app/components/projects/versions/edit-version-card'
+import { useImagesState } from '@app/components/projects/versions/images/use-images-state'
 import VersionDetailsCard from '@app/components/projects/versions/version-details-card'
-import VersionSections from '@app/components/projects/versions/version-sections'
+import VersionSections, { parseVersionSectionState } from '@app/components/projects/versions/version-sections'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
@@ -35,7 +36,14 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
   const submitRef = useRef<() => Promise<any>>()
 
-  const onVersionEdited = (newVersion: EditableVersion) => {
+  const initialSection = parseVersionSectionState(router.query.section as string, 'images')
+  const [state, actions] = useImagesState({
+    initialSection,
+    projectId: project.id,
+    version,
+  })
+
+  const onVersionEdited = async (newVersion: EditableVersion) => {
     setEditing(false)
     setVersion({
       ...version,
@@ -117,7 +125,8 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
       ) : (
         <VersionSections
           project={project}
-          version={version}
+          state={state}
+          actions={actions}
           setSaving={setSaving}
           setTopBarContent={setTopBarContent}
         />

@@ -134,7 +134,7 @@ dagent_clean() {
 dagent_install() {
   echo "Installing dyrector.io agent (dagent)..."
 
-  if {{disableForcePull}}; then
+  if ! {{disableForcePull}}; then
     $CRI_EXECUTABLE pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:{{agentImageTag}}
   fi
 

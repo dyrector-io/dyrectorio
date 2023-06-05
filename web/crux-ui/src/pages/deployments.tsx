@@ -12,14 +12,13 @@ import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Deployment, deploymentIsCopiable, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
-import { API_DEPLOYMENTS, deploymentUrl, nodeUrl, projectUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
+import { API_DEPLOYMENTS, deploymentUrl, ROUTE_DEPLOYMENTS } from '@app/routes'
 import { auditToLocaleDate, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 
@@ -77,25 +76,27 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
   const headerClasses = [
     clsx('rounded-tl-lg', defaultHeaderClass),
-    ...Array.from({ length: headers.length - 2 }).map(() => defaultHeaderClass),
+    ...Array.from({ length: headers.length - 3 }).map(() => defaultHeaderClass),
     clsx('text-center', defaultHeaderClass),
-    clsx('rounded-tr-lg', defaultHeaderClass),
+    clsx('text-center rounded-tr-lg', defaultHeaderClass),
   ]
 
+  const onCellClick = (data: Deployment, row: number, col: number) => {
+    if (col >= headers.length - 1) {
+      return
+    }
+
+    router.push(deploymentUrl(data.id))
+  }
+
   const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [
-    <Link href={projectUrl(item.project.id)}>{item.project.name}</Link>,
-    <Link href={versionUrl(item.project.id, item.version.id)}>{item.version.name}</Link>,
-    <Link href={nodeUrl(item.node.id)}>{item.node.name}</Link>,
+    item.project.name,
+    item.version.name,
+    item.node.name,
     <span>{item.prefix}</span>,
     <span suppressHydrationWarning>{auditToLocaleDate(item.audit)}</span>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
     <div className="flex justify-center">
-      <div className="mr-2 inline-block">
-        <Link href={deploymentUrl(item.id)} passHref>
-          <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} className="cursor-pointer" />
-        </Link>
-      </div>
-
       <div className="mr-2 inline-block">
         <Image
           src="/note.svg"
@@ -147,6 +148,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
               data={filters.filtered}
               noSeparator
               itemBuilder={itemTemplate}
+              cellClick={onCellClick}
             />
           </DyoCard>
         </>

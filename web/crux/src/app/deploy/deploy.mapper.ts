@@ -95,6 +95,7 @@ export default class DeployMapper {
     return {
       id: it.id,
       prefix: it.prefix,
+      note: it.note,
       status: this.statusToDto(it.status),
       audit: this.auditMapper.toDto(it),
       node: this.nodeMapper.toBasicDto(it.node),

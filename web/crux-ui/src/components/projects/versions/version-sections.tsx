@@ -1,12 +1,12 @@
 import EditorBadge from '@app/components/editor/editor-badge'
-import { ProjectDetails, VersionDetails, VERSION_SECTIONS_STATE_VALUES } from '@app/models'
+import { ProjectDetails, VERSION_SECTIONS_STATE_VALUES } from '@app/models'
 import { deploymentUrl } from '@app/routes'
 import { parseStringUnionType } from '@app/utils'
 import { useRouter } from 'next/dist/client/router'
 import React, { useEffect, useRef } from 'react'
 import AddDeploymentCard from './deployments/add-deployment-card'
 import SelectImagesCard from './images/select-images-card'
-import { useImagesState, VersionSection } from './images/use-images-state'
+import { ImagesActions, ImagesState, VersionSection } from './images/use-images-state'
 import VersionDeploymentsSection from './version-deployments-section'
 import VersionImagesSection from './version-images-section'
 import VersionReorderImagesSection from './version-reorder-images-section'
@@ -17,23 +17,16 @@ export const parseVersionSectionState = (section: string, fallback: VersionSecti
 
 interface VersionSectionsProps {
   project: ProjectDetails
-  version: VersionDetails
+  state: ImagesState
+  actions: ImagesActions
   setSaving: (saving: boolean) => void
   setTopBarContent: (node: React.ReactNode) => void
 }
 
 const VersionSections = (props: VersionSectionsProps) => {
-  const { version, setSaving, setTopBarContent, project } = props
+  const { state, actions, setSaving, setTopBarContent, project } = props
 
   const router = useRouter()
-
-  const initialSection = parseVersionSectionState(router.query.section as string, 'images')
-
-  const [state, actions] = useImagesState({
-    initialSection,
-    projectId: project.id,
-    version,
-  })
 
   const { editors } = state.editor
 
@@ -59,7 +52,7 @@ const VersionSections = (props: VersionSectionsProps) => {
     <>
       {state.addSection === 'none' ? (
         <VersionSectionsHeading
-          versionMutable={!version.mutable}
+          versionMutable={!state.version.mutable}
           state={state}
           actions={actions}
           saveImageOrderRef={saveImageOrderRef}
@@ -70,16 +63,16 @@ const VersionSections = (props: VersionSectionsProps) => {
         <AddDeploymentCard
           className="mb-4 p-8"
           projectName={project.name}
-          versionId={version.id}
+          versionId={state.version.id}
           onAdd={onAddDeployment}
           onDiscard={actions.discardAddSection}
         />
       )}
 
       {state.section === 'images' ? (
-        <VersionImagesSection disabled={!version.mutable} state={state} actions={actions} />
+        <VersionImagesSection disabled={!state.version.mutable} state={state} actions={actions} />
       ) : state.section === 'deployments' ? (
-        <VersionDeploymentsSection version={version} />
+        <VersionDeploymentsSection version={state.version} />
       ) : (
         <VersionReorderImagesSection images={state.images} saveRef={saveImageOrderRef} onSave={actions.orderImages} />
       )}

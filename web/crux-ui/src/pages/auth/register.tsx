@@ -85,7 +85,7 @@ const RegisterPage = (props: RegisterPageProps) => {
       })
 
       if (res.ok) {
-        router.replace(`${ROUTE_VERIFICATION}/?email=${values.email}`)
+        router.replace(`${ROUTE_VERIFICATION}/?email=${encodeURIComponent(values.email)}`)
       } else {
         recaptcha.current?.reset()
 

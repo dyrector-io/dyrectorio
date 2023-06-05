@@ -4,7 +4,7 @@ import ProjectDetailsCard from '@app/components/projects/project-details-card'
 import ProjectVersionsSection from '@app/components/projects/project-versions-section'
 import EditVersionCard from '@app/components/projects/versions/edit-version-card'
 import IncreaseVersionCard from '@app/components/projects/versions/increase-version-card'
-import VersionSections from '@app/components/projects/versions/version-sections'
+import SimpleVersionSections from '@app/components/projects/versions/simple-version-sections'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu, DetailsPageTexts } from '@app/components/shared/page-menu'
@@ -186,7 +186,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
       )}
 
       {simpleProject ? (
-        <VersionSections
+        <SimpleVersionSections
           project={project}
           version={simpleProjectVersionDetails}
           setSaving={setSaving}

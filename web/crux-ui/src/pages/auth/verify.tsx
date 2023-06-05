@@ -187,7 +187,7 @@ export default VerifyPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const flow = context.query.flow as string
-  const email = context.query.email as string
+  const email = context.query.email ? decodeURIComponent(context.query.email as string) : null
 
   const session = await obtainSessionFromRequest(context.req)
   if (session && userVerified(session.identity)) {

@@ -16,6 +16,7 @@ export type DyoListProps<T> = {
   data: T[]
   noSeparator?: boolean
   itemBuilder?: DyoListItemBuilder<T>
+  cellClick?: (data: T, rowIndex: number, columnIndex: number) => void
 }
 
 export const DyoList = <T,>(props: DyoListProps<T>) => {
@@ -31,6 +32,7 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
     data: propsData,
     noSeparator,
     itemBuilder,
+    cellClick,
   } = props
 
   const isArrayOfStringArrays = it =>
@@ -86,7 +88,7 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
         ) : null}
         <div className="table-row-group">
           {data.map((row, rowIndex) => (
-            <div className="table-row" key={`${key}-${rowIndex}`}>
+            <div className={clsx('table-row', cellClick ? 'cursor-pointer' : null)} key={`${key}-${rowIndex}`}>
               {row.map((_, colIndex) => (
                 <div
                   key={`${key}-${colIndex}-${rowIndex}`}
@@ -95,6 +97,7 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
                     !noSeparator ? 'border-t-2 border-light-grey' : null,
                     itemClassNames[colIndex] ?? 'h-12 min-h-min text-light-eased p-2',
                   )}
+                  onClick={cellClick ? () => cellClick(propsData[rowIndex], rowIndex, colIndex) : undefined}
                 >
                   {row[colIndex]}
                 </div>

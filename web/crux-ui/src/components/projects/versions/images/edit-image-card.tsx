@@ -1,5 +1,4 @@
 import useItemEditorState from '@app/components/editor/use-item-editor-state'
-import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoImgButton from '@app/elements/dyo-img-button'
 import DyoMessage from '@app/elements/dyo-message'
@@ -12,10 +11,8 @@ import {
 } from '@app/models'
 import { containerConfigSchema, getValidationError } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import EditImageConfig from './edit-image-config'
 import EditImageHeading from './edit-image-heading'
 import EditImageJson from './edit-image-json'
-import EditImageTags from './edit-image-tags'
 import useImageEditorState from './use-image-editor-state'
 import { ImagesActions, ImagesState } from './use-images-state'
 
@@ -40,53 +37,18 @@ const EditImageCard = (props: EditImageCardProps) => {
   })
 
   const editorState = useItemEditorState(editor, versionSock, image.id)
-
-  const { section } = state
-  const { selectSection } = actions
-
   const errorMessage = state.parseError ?? getValidationError(containerConfigSchema, image.config)?.message
 
   return (
     <>
       <DyoCard className="flex flex-col flex-grow px-6 pb-6 pt-4 h-full">
         <div className="flex mb-2 flex-row items-start">
-          <EditImageHeading imageName={image.name} imageTag={image.tag} containerName={image.config.name} />
-
-          <DyoButton
-            text
-            thin
-            textColor="text-bright"
-            underlined={section === 'tag'}
-            onClick={() => selectSection('tag')}
-            className="ml-auto"
-            heightClassName="pb-2"
-          >
-            {t('tag')}
-          </DyoButton>
-
-          <DyoButton
-            text
-            thin
-            textColor="text-bright"
-            underlined={section === 'config'}
-            onClick={() => selectSection('config')}
-            className="mx-8"
-            heightClassName="pb-2"
-          >
-            {t('config')}
-          </DyoButton>
-
-          <DyoButton
-            text
-            thin
-            textColor="text-bright"
-            underlined={section === 'json'}
-            onClick={() => selectSection('json')}
-            className="mr-0"
-            heightClassName="pb-2"
-          >
-            {t('json')}
-          </DyoButton>
+          <EditImageHeading
+            className="flex-1"
+            imageName={image.name}
+            imageTag={image.tag}
+            containerName={image.config.name}
+          />
 
           {disabled ? null : (
             <DyoImgButton
@@ -103,32 +65,16 @@ const EditImageCard = (props: EditImageCardProps) => {
         ) : null}
 
         <div className="flex flex-col mt-2 h-128">
-          {section === 'tag' ? (
-            <EditImageTags
-              disabled={disabled}
-              selected={image.tag}
-              tags={state.image.registry.type === 'unchecked' ? null : state.tags}
-              onTagSelected={actions.selectTag}
-            />
-          ) : section === 'config' ? (
-            <EditImageConfig
-              disabled={disabled}
-              config={image.config}
-              editorOptions={editorState}
-              onPatch={actions.onPatch}
-            />
-          ) : (
-            <EditImageJson
-              disabled={disabled}
-              config={image.config}
-              editorOptions={editorState}
-              onPatch={(it: JsonContainerConfig) =>
-                actions.onPatch(mergeJsonConfigToImageContainerConfig(image.config, it))
-              }
-              onParseError={actions.setParseError}
-              convertConfigToJson={imageConfigToJsonContainerConfig}
-            />
-          )}
+          <EditImageJson
+            disabled={disabled}
+            config={image.config}
+            editorOptions={editorState}
+            onPatch={(it: JsonContainerConfig) =>
+              actions.onPatch(mergeJsonConfigToImageContainerConfig(image.config, it))
+            }
+            onParseError={actions.setParseError}
+            convertConfigToJson={imageConfigToJsonContainerConfig}
+          />
         </div>
       </DyoCard>
 

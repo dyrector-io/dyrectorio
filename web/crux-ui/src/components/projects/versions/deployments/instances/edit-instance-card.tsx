@@ -1,5 +1,4 @@
 import useItemEditorState from '@app/components/editor/use-item-editor-state'
-import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoMessage from '@app/elements/dyo-message'
 import {
@@ -8,11 +7,9 @@ import {
   InstanceJsonContainerConfig,
   mergeJsonConfigToInstanceContainerConfig,
 } from '@app/models'
-import useTranslation from 'next-translate/useTranslation'
 import EditImageHeading from '../../images/edit-image-heading'
 import EditImageJson from '../../images/edit-image-json'
 import { DeploymentState } from '../use-deployment-state'
-import EditInstanceConfig from './edit-instance-config'
 import useInstanceState from './use-instance-state'
 
 interface EditInstanceCardProps {
@@ -21,7 +18,6 @@ interface EditInstanceCardProps {
 }
 
 const EditInstanceCard = (props: EditInstanceCardProps) => {
-  const { t } = useTranslation('images')
   const { instance, deploymentState } = props
   const { editor, sock } = deploymentState
 
@@ -30,8 +26,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
     deploymentState,
   })
 
-  const { config } = state
-  const { selection, errorMessage } = state
+  const { config, errorMessage } = state
 
   const editorState = useItemEditorState(editor, sock, instance.id)
 
@@ -43,28 +38,6 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
           imageTag={instance.image.tag}
           containerName={instance.image.config.name}
         />
-
-        <DyoButton
-          text
-          thin
-          textColor="text-bright"
-          underlined={selection === 'config'}
-          onClick={() => actions.selectTab('config')}
-          className="ml-auto mr-8"
-        >
-          {t('config')}
-        </DyoButton>
-
-        <DyoButton
-          text
-          thin
-          textColor="text-bright"
-          underlined={selection === 'json'}
-          onClick={() => actions.selectTab('json')}
-          className="mr-0"
-        >
-          {t('json')}
-        </DyoButton>
       </div>
 
       {errorMessage ? (
@@ -72,27 +45,16 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
       ) : null}
 
       <div className="flex flex-col mt-2 h-128">
-        {selection === 'config' ? (
-          <EditInstanceConfig
-            disabled={!deploymentState.mutable}
-            config={config ?? {}}
-            publicKey={deploymentState.deployment.publicKey}
-            definedSecrets={state.definedSecrets}
-            editorOptions={editorState}
-            onPatch={it => actions.onPatch(instance.id, it)}
-          />
-        ) : (
-          <EditImageJson
-            disabled={!deploymentState.mutable}
-            config={config}
-            editorOptions={editorState}
-            onPatch={(it: InstanceJsonContainerConfig) =>
-              actions.onPatch(instance.id, mergeJsonConfigToInstanceContainerConfig(config, it))
-            }
-            onParseError={actions.onParseError}
-            convertConfigToJson={instanceConfigToJsonInstanceConfig}
-          />
-        )}
+        <EditImageJson
+          disabled={!deploymentState.mutable}
+          config={config}
+          editorOptions={editorState}
+          onPatch={(it: InstanceJsonContainerConfig) =>
+            actions.onPatch(instance.id, mergeJsonConfigToInstanceContainerConfig(config, it))
+          }
+          onParseError={actions.onParseError}
+          convertConfigToJson={instanceConfigToJsonInstanceConfig}
+        />
       </div>
     </DyoCard>
   )

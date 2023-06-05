@@ -6,7 +6,6 @@
   "imageNameAndTag": "Image name and tag",
   "containerName": "Container name",
   "tag": "Tag",
-  "config": "Config",
   "json": "JSON",
   "editor": "Editor",
   "filterMinChars": "Minimum filter length is {{length}} character",
