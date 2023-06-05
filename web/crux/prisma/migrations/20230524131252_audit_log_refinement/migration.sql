@@ -7,8 +7,14 @@ CREATE TYPE "AuditLogRequestMethodEnum" AS ENUM ('get', 'post', 'put', 'patch', 
 -- Create temp table
 SELECT al."id", al."createdAt" , al."userId" , al."teamId" , 
 	'' as "context",
-	lower(substr(al."serviceCall", 1, strpos(al."serviceCall", ' ') - 1)) as "method",
-	substr(al."serviceCall", strpos(al."serviceCall", ' ') + 1)  as "event",
+	case
+	  when strpos(al."serviceCall", ' ') - 1 < 0 then 'rpc'
+	  else lower(substr(al."serviceCall", 1, strpos(al."serviceCall", ' ') - 1))
+	end as "method",
+	case
+	  when strpos(al."serviceCall", ' ') - 1 < 0 then al."serviceCall"
+	  else substr(al."serviceCall", strpos(al."serviceCall", ' ') + 1)
+	end as "event",
 	al."data" 
 into _prisma_migrations_auditLog
 FROM "AuditLog" al;
