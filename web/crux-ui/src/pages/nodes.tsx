@@ -17,6 +17,7 @@ import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
+import Link from 'next/link'
 import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useSWRConfig } from 'swr'
@@ -134,8 +135,11 @@ const NodesPage = (props: NodesPageProps) => {
           </DyoWrap>
         </>
       ) : (
-        <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
-          {t('noItems')}
+        <DyoHeading element="h3" className="text-md text-center text-light-eased w-8/12 m-auto">
+          <p className="pb-8">{t('noItems')}</p>
+          <Link className="pt-32" href="https://docs.dyrector.io/tutorials/register-your-node" target="_blabnk">
+            {t('description')}
+          </Link>
         </DyoHeading>
       )}
     </Layout>

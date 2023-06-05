@@ -89,12 +89,21 @@ proto-crux:
 build-proto-image:
 	docker build -t ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4 -f images/alpine-proto/Dockerfile --progress plain .
 
+.PHONY: branch-check
+branch-check:
+	@branch=$$(git rev-parse --abbrev-ref HEAD); \
+	if [ "$$branch" = "main" ] || [ "$$branch" = "develop" ]; then \
+		echo main; \
+	else \
+		echo "!!! WARNING: You are not on the main or develop branch!"; \
+	fi
+
+# use on the branch to-release (develop or main for hotfixes)
 .PHONY: release
-release:
-	$(info Do you want to continue? Version will be: $(version))
+release: branch-check
+	$(info Do you want to continue? Version will be: $(version) from branch: $(shell git rev-parse --abbrev-ref HEAD))
 	read
 
-	git checkout develop
 	git pull
 	git checkout -b "release/$(version)"
 
@@ -122,6 +131,9 @@ release:
 ## Finalizing changes
 	git commit -m "release: $(version)"
 	git tag -sm "$(version)" $(version)
+
+	git checkout -
+	git merge --ff-only release/$(version)
 
 .PHONY: test-integration
 test-integration:
