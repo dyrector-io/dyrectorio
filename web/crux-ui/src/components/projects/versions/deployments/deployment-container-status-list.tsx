@@ -72,7 +72,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     const created = new Date(container.date).getTime()
     const seconds = Math.floor((now - created) / 1000)
 
-    const logUrl = nodeContainerLogUrl(deployment.id, container.id)
+    const logUrl = nodeContainerLogUrl(deployment.node.id, container.id)
 
     /* eslint-disable react/jsx-key */
     return [
