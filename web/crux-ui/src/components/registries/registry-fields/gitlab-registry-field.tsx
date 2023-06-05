@@ -16,13 +16,15 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
     <>
       <DyoLabel className="mt-2">
         {t('tips.gitlab')}
+        {t('tips.patInfo')}
         <Link
-          className="ml-1"
+          className="ml-1 text-blue-300"
           href="https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html"
           target="_blank"
         >
-          {t('tips.patInfo')}
+          {t('here')}
         </Link>
+        .
       </DyoLabel>
 
       <DyoInput

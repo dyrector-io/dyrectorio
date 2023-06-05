@@ -27,9 +27,11 @@ const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails
     <>
       <DyoLabel className="mt-2">
         {t('tips.google')}
-        <Link className="ml-1" href="https://cloud.google.com/artifact-registry/docs" target="_blank">
-          {t('tips.registryInfo')}
+        {t('tips.registryInfo')}
+        <Link className="ml-1 text-blue-300" href="https://cloud.google.com/artifact-registry/docs" target="_blank">
+          {t('here')}
         </Link>
+        .
       </DyoLabel>
       <DyoInput
         className="max-w-lg"
