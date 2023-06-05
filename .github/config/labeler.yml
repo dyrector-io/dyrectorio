@@ -5,7 +5,9 @@ source:agent:
   - golang/pkg/dagent/**
   - golang/cmd/crane/**
   - golang/cmd/dagent/**
-source:ci: [.github/workflows/**]
+source:ci:
+  - .github/workflows/**
+  - .github/config/**
 source:build:
   - '**/Makefile'
   - images/**
@@ -18,4 +20,5 @@ lang:makefile: ['**/Makefile']
 lang:sql: ['**/*.prisma', '**/*.sql']
 lang:shell: ['**/*.sh', '**/*.sh.hbr', '**/*.ps1.hbr']
 lang:golang: ['**/*.go']
-lang:typescript: ['**/*.ts', '**/*.js']
+lang:typescript: ['**/*.ts', '**/*.tsx']
+lang:javascript: ['**/*.js', '**/*.jsx']
