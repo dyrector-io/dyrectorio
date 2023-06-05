@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+<a name="0.4.2"></a>
+## [0.4.2](https://github.com/dyrector-io/dyrectorio/compare/0.4.1...0.4.2) (2023-06-05)
+
+### Fix
+
+* **(web):** registry create, pagination, node page and instance secrets ([#656](https://github.com/dyrector-io/dyrectorio/issues/656))
+
+
 <a name="0.4.1"></a>
 ## [0.4.1](https://github.com/dyrector-io/dyrectorio/compare/0.4.0...0.4.1) (2023-05-11)
 
@@ -566,7 +574,11 @@
 
 
 <a name="v0.1.1"></a>
-## [v0.1.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.0...v0.1.1) (2022-08-03)
+## [v0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...v0.1.1) (2022-08-03)
+
+
+<a name="0.1.1"></a>
+## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.0...0.1.1) (2022-08-03)
 
 ### Chore
 
@@ -583,7 +595,11 @@
 
 
 <a name="v0.1.0"></a>
-## [v0.1.0](https://github.com/dyrector-io/dyrectorio/compare/0.0.1...v0.1.0) (2022-08-01)
+## [v0.1.0](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...v0.1.0) (2022-08-01)
+
+
+<a name="0.1.0"></a>
+## [0.1.0](https://github.com/dyrector-io/dyrectorio/compare/0.0.1...0.1.0) (2022-08-01)
 
 ### Chore
 
