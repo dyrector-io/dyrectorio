@@ -5,7 +5,9 @@ source:agent:
   - golang/pkg/dagent/**
   - golang/cmd/crane/**
   - golang/cmd/dagent/**
-source:ci: [.github/workflows/**]
+source:ci:
+  - .github/workflows/**
+  - .github/config/**
 source:build:
   - '**/Makefile'
   - images/**
