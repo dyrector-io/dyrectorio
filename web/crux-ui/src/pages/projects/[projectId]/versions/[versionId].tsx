@@ -8,7 +8,6 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import LoadingIndicator from '@app/elements/loading-indicator'
-import { defaultApiErrorHandler } from '@app/errors'
 import { EditableVersion, ProjectDetails, VersionDetails } from '@app/models'
 import { projectApiUrl, projectUrl, ROUTE_PROJECTS, versionApiUrl, versionUrl } from '@app/routes'
 import { anchorLinkOf, redirectTo, searchParamsOf, withContextAuthorization } from '@app/utils'
@@ -28,7 +27,6 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
   const { project, version: propsVersion } = props
 
   const { t } = useTranslation('versions')
-  const handleApiError = defaultApiErrorHandler(t)
   const router = useRouter()
 
   const [allVersions, setAllVersions] = useState(project.versions)
