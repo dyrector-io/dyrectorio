@@ -164,7 +164,7 @@ export default class DeployMapper {
       }
     }
 
-    let secrets = !patch.secrets ? undefined : patch.secrets
+    let secrets = !patch.secrets ? currentConfig.secrets : patch.secrets
     if (secrets && !currentConfig.secrets && imageConfig.secrets) {
       secrets = this.containerMapper.mergeSecrets(secrets, imageConfig.secrets)
     }

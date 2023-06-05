@@ -45,11 +45,6 @@ export default class ContainerStatusWatcher {
   }
 
   watch(): Observable<ContainerStateListMessage> {
-    this.stream.next({
-      prefix: this.prefix,
-      data: [],
-    })
-
     return this.stream.pipe(
       // necessary, because of: https://github.com/nestjs/nest/issues/8111
       startWith({

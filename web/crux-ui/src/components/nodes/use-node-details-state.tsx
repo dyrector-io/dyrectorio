@@ -35,6 +35,7 @@ export type NodeDetailsState = {
   filters: FilterConfig<Container, TextFilter>
   pagination: PaginationSettings
   confirmationModal: DyoConfirmationModalConfig
+  pageItems: Container[]
 }
 
 export type NodeDetailsActions = {
@@ -76,6 +77,11 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     ],
   })
 
+  const currentPageNumber =
+    pagination.pageNumber * pagination.pageSize >= filters.filtered.length
+      ? Math.floor(filters.filtered.length / pagination.pageSize)
+      : pagination.pageNumber
+
   const sock = useWebSocket(nodeWsUrl(node.id))
   useEffect(() => {
     if (node.status === 'connected') {
@@ -88,6 +94,15 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
       filters.setItems([])
     }
   }, [node.status, filters])
+
+  useEffect(() => {
+    if (currentPageNumber !== pagination.pageNumber) {
+      setPagination({
+        ...pagination,
+        pageNumber: currentPageNumber,
+      })
+    }
+  }, [filters.filtered])
 
   sock.on(WS_TYPE_CONTAINERS_STATE_LIST, (message: ContainersStateListMessage) => {
     filters.setItems(message.containers)
@@ -168,6 +183,11 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     } as DeleteContainerMessage)
   }
 
+  const pageItems = filters.filtered.slice(
+    currentPageNumber * pagination.pageSize,
+    currentPageNumber * pagination.pageSize + pagination.pageSize,
+  )
+
   return [
     {
       section,
@@ -176,6 +196,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
       containerTargetStates,
       filters,
       confirmationModal,
+      pageItems,
     },
     {
       onNodeEdited,
