@@ -15,7 +15,7 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
     <>
       <DyoLabel className="text-light mt-2">
         {t('tips.github')}
-        {t('tips.patInfo')}
+        {t('tips.learnMorePat')}
         <Link
           className="ml-1 text-blue-300"
           href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"

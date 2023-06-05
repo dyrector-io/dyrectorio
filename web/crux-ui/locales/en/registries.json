@@ -33,8 +33,8 @@
     "github": "Add your GitHub Registry.",
     "google": "Add your Google Registry.",
     "unchecked": "Add a registry without authentication. This type does not provide image nor tag browsing.",
-    "patInfo": "Learn more about personal access token",
-    "registryInfo": "Learn more about the registry",
+    "learnMorePat": "Learn more about personal access token",
+    "learnMoreRegistry": "Learn more about the registry",
     "here": "here"
   },
 
