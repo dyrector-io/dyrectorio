@@ -4,6 +4,7 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import { GithubRegistryDetails, GITHUB_NAMESPACE_VALUES, RegistryNamespace } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
+import Link from 'next/link'
 
 const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails>) => {
   const { formik } = props
@@ -12,7 +13,16 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
 
   return (
     <>
-      <DyoLabel className="text-light mt-2">{t('tips.github')}</DyoLabel>
+      <DyoLabel className="text-light mt-2">
+        {t('tips.github')}
+        <Link
+          className="ml-1"
+          href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"
+          target="_blank"
+        >
+          {t('tips.pat-info')}
+        </Link>
+      </DyoLabel>
 
       <DyoInput
         className="max-w-lg"
