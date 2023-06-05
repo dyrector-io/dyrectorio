@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { ProjectTypeEnum, VersionTypeEnum } from '@prisma/client'
 import PrismaService from 'src/services/prisma.service'
-import { SIMPLE_PROJECT_VERSION_NAME } from 'src/shared/const'
+import { VERSIONLESS_PROJECT_VERSION_NAME } from 'src/shared/const'
 import TeamRepository from '../team/team.repository'
 import { CreateProjectDto, ProjectDetailsDto, ProjectListItemDto, UpdateProjectDto } from './project.dto'
 import ProjectMapper from './project.mapper'
@@ -78,10 +78,10 @@ export default class ProjectService {
         teamId: team.teamId,
         createdBy: identity.id,
         versions:
-          request.type === ProjectTypeEnum.simple
+          request.type === ProjectTypeEnum.versionless
             ? {
                 create: {
-                  name: SIMPLE_PROJECT_VERSION_NAME,
+                  name: VERSIONLESS_PROJECT_VERSION_NAME,
                   createdBy: identity.id,
                   type: VersionTypeEnum.rolling,
                   default: true,
@@ -113,7 +113,7 @@ export default class ProjectService {
         description: req.description,
         updatedBy: identity.id,
         versions:
-          currentProject.type === ProjectTypeEnum.simple
+          currentProject.type === ProjectTypeEnum.versionless
             ? {
                 updateMany: {
                   data: {

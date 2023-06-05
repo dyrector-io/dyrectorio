@@ -708,7 +708,7 @@ describe('DeployMapper', () => {
         project: {
           id: 'deployment-project-id',
           name: 'deployment project',
-          type: ProjectTypeEnum.simple,
+          type: ProjectTypeEnum.versionless,
         },
       },
       environment: {},
@@ -736,7 +736,7 @@ describe('DeployMapper', () => {
       project: {
         id: 'deployment-project-id',
         name: 'deployment project',
-        type: 'simple',
+        type: 'versionless',
       },
       version: {
         id: 'deployment-version-id',

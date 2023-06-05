@@ -12,7 +12,7 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import PrismaService from 'src/services/prisma.service'
 import TemplateFileService, { TemplateContainerConfig, TemplateImage } from 'src/services/template.file.service'
-import { SIMPLE_PROJECT_VERSION_NAME } from 'src/shared/const'
+import { VERSIONLESS_PROJECT_VERSION_NAME } from 'src/shared/const'
 import { v4 } from 'uuid'
 import ImageMapper from '../image/image.mapper'
 import { CreateProjectDto, ProjectDto } from '../project/project.dto'
@@ -142,7 +142,7 @@ export default class TemplateService {
     const { id: projectId } = project
 
     let version =
-      project.type === 'complex'
+      project.type === 'versioned'
         ? await this.prisma.version.findFirst({
             where: {
               name: VERSION_NAME,
@@ -151,7 +151,7 @@ export default class TemplateService {
           })
         : await this.prisma.version.findFirst({
             where: {
-              name: SIMPLE_PROJECT_VERSION_NAME,
+              name: VERSIONLESS_PROJECT_VERSION_NAME,
               projectId: project.id,
             },
           })

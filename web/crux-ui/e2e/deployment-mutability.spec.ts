@@ -3,9 +3,9 @@ import { expect, test } from '@playwright/test'
 import { DAGENT_NODE, screenshotPath } from './utils/common'
 import { deployWithDagent } from './utils/node-helper'
 import {
-  addDeploymentToSimpleProject,
   addDeploymentToVersion,
-  addImageToSimpleProject,
+  addDeploymentToVersionlessProject,
+  addImageToVersionlessProject,
   createImage,
   createProject,
   createVersion,
@@ -13,11 +13,11 @@ import {
 
 const image = 'nginx'
 
-test.describe('Simple project', () => {
+test.describe('Versionless Project', () => {
   test('preparing deployment should be mutable', async ({ page }) => {
-    const projectId = await createProject(page, 'PW-SIMPLE-MUTABILITY-1', 'Simple')
-    await addImageToSimpleProject(page, projectId, image)
-    await addDeploymentToSimpleProject(page, projectId, DAGENT_NODE, 'pw-simple-preparing')
+    const projectId = await createProject(page, 'versionless-mutability-1', 'versionless')
+    await addImageToVersionlessProject(page, projectId, image)
+    await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, 'versionless-preparing')
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
@@ -29,16 +29,16 @@ test.describe('Simple project', () => {
   })
 
   test('successful deployment should be mutable', async ({ page }, testInfo) => {
-    const projectId = await createProject(page, 'PW-SIMPLE-MUTABILITY-2', 'Simple')
-    await addImageToSimpleProject(page, projectId, image)
+    const projectId = await createProject(page, 'versionless-mutability-2', 'versionless')
+    await addImageToVersionlessProject(page, projectId, image)
 
-    const prefix = 'pw-simp-mut'
+    const prefix = 'succ-versionless-mutability'
 
     const deploymentId = await deployWithDagent(page, prefix, projectId, '', false, testInfo.title)
 
     await page.goto(deploymentUrl(deploymentId))
 
-    await page.screenshot({ path: screenshotPath('simple-prod-successful-deployment'), fullPage: true })
+    await page.screenshot({ path: screenshotPath('versionless-prod-successful-deployment'), fullPage: true })
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
@@ -50,9 +50,9 @@ test.describe('Simple project', () => {
   })
 })
 
-test.describe('Complex project incremental version', () => {
+test.describe('Versioned Project incremental version', () => {
   test('preparing deployment should be mutable', async ({ page }) => {
-    const projectId = await createProject(page, 'PW-COMP-MUTABILITY-1', 'Complex')
+    const projectId = await createProject(page, 'versioned-mutability-1', 'versioned')
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
     await createImage(page, projectId, versionId, image)
 
@@ -70,13 +70,13 @@ test.describe('Complex project incremental version', () => {
   })
 
   test('successful deployment should be immutable', async ({ page }, testInfo) => {
-    const projectId = await createProject(page, 'PW-COMP-MUTABILITY-2', 'Complex')
+    const projectId = await createProject(page, 'versioned-mutability-2', 'versioned')
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
     await createImage(page, projectId, versionId, image)
 
     const deploymentId = await deployWithDagent(
       page,
-      'pw-complex-mutability',
+      'versioned-mutability',
       projectId,
       versionId,
       false,
@@ -95,20 +95,20 @@ test.describe('Complex project incremental version', () => {
   })
 
   test('obsolete deployment should be immutable', async ({ page }, testInfo) => {
-    const projectId = await createProject(page, 'PW-COMP-MUTABILITY-3', 'Complex')
+    const projectId = await createProject(page, 'version-mutability-3', 'versioned')
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
     await createImage(page, projectId, versionId, image)
 
     const deploymentId = await deployWithDagent(
       page,
-      'pw-complex-mutability-obsolete',
+      'versioned-mutability-obsolete',
       projectId,
       versionId,
       false,
       `${testInfo.title}1`,
     )
 
-    await deployWithDagent(page, 'pw-complex-mutability-obsolete', projectId, versionId, false, `${testInfo.title}2`)
+    await deployWithDagent(page, 'versioned-mutability-obsolete', projectId, versionId, false, `${testInfo.title}2`)
 
     await page.goto(deploymentUrl(deploymentId))
 

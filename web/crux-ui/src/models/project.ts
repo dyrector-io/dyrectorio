@@ -1,7 +1,7 @@
 import { Audit } from './audit'
 import { Version } from './version'
 
-export const PROJECT_TYPE_VALUES = ['simple', 'complex'] as const
+export const PROJECT_TYPE_VALUES = ['versionless', 'versioned'] as const
 export type ProjectType = typeof PROJECT_TYPE_VALUES[number]
 
 export type BasicProject = {
@@ -38,7 +38,7 @@ export type CreateProject = UpdateProject & {
 export const projectDetailsToEditableProject = (project: ProjectDetails) =>
   ({
     ...project,
-    changelog: project.type === 'simple' ? project.versions[0].changelog : null,
+    changelog: project.type === 'versionless' ? project.versions[0].changelog : null,
   } as EditableProject)
 
 export const updateProjectDetailsWithEditableProject = (project: ProjectDetails, edit: EditableProject) => {
@@ -47,7 +47,7 @@ export const updateProjectDetailsWithEditableProject = (project: ProjectDetails,
     ...edit,
   }
 
-  if (project.type === 'simple') {
+  if (project.type === 'versionless') {
     const version = project.versions[0]
 
     newProject.versions = [

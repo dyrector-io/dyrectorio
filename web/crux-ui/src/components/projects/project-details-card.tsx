@@ -18,7 +18,7 @@ const ProjectDetailsCard = (props: ProjectDetailsCardProps) => {
 
   const { t } = useTranslation('projects')
 
-  const version = project.type === 'simple' ? project.versions[0] : null
+  const version = project.type === 'versionless' ? project.versions[0] : null
 
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
@@ -44,7 +44,7 @@ const ProjectDetailsCard = (props: ProjectDetailsCardProps) => {
                 {auditToLocaleDate(project.audit)}
               </span>
 
-              <ProjectTypeTag className="mt-2 ml-auto" type={project.type} />
+              <ProjectTypeTag className="ml-auto mt-2" type={project.type} />
             </div>
           </div>
 

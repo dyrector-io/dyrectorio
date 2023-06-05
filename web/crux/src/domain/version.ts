@@ -38,7 +38,7 @@ export const versionIsMutable = (version: VersionMutabilityCheckDao): boolean =>
 }
 
 // - 'rolling' versions are deletable if they don't have any immutable (inProgress) deployment
-//   or they aren't part of a simple project
+//   or they aren't part of a versionless project
 // - an 'incremental' version is deletable, unless it has any immutable deployment
 //   or it's not increasable
 export const versionIsDeletable = (version: VersionDeletabilityCheckDao): boolean => {
@@ -47,7 +47,7 @@ export const versionIsDeletable = (version: VersionDeletabilityCheckDao): boolea
   }
 
   if (version.type === 'rolling') {
-    return version.project.type === 'complex'
+    return version.project.type === 'versioned'
   }
 
   return versionIsIncreasable(version)

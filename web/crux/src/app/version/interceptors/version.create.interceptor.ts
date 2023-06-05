@@ -18,9 +18,9 @@ export default class VersionCreateValidationInterceptor implements NestIntercept
       },
     })
 
-    if (project.type === ProjectTypeEnum.simple) {
+    if (project.type === ProjectTypeEnum.versionless) {
       throw new CruxPreconditionFailedException({
-        message: 'Can not add version to a simple project.',
+        message: 'Can not add version to a versionless project.',
         property: 'projectId',
         value: projectId,
       })

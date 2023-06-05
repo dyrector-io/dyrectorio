@@ -2,13 +2,13 @@ import { projectUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
 import { createProjectFromTemplate } from './utils/templates'
 
-const testSimpleTemplate = async (
+const testVersionlessTemplate = async (
   page: Page,
   templateName: string,
   projectName: string,
   expectedImages: number,
 ): Promise<string> => {
-  const projectId = await createProjectFromTemplate(page, templateName, projectName, 'Simple')
+  const projectId = await createProjectFromTemplate(page, templateName, projectName, 'versionless')
 
   await expect(page).toHaveURL(projectUrl(projectId))
 
@@ -19,13 +19,13 @@ const testSimpleTemplate = async (
   return projectId
 }
 
-const testComplexTemplate = async (
+const testVersionedTemplate = async (
   page: Page,
   templateName: string,
   projectName: string,
   expectedImages: number,
 ): Promise<string> => {
-  const projectId = await createProjectFromTemplate(page, templateName, projectName, 'Complex')
+  const projectId = await createProjectFromTemplate(page, templateName, projectName, 'versioned')
 
   await expect(page).toHaveURL(projectUrl(projectId))
 
@@ -39,50 +39,50 @@ const testComplexTemplate = async (
   return projectId
 }
 
-test('creating a simple project from a template should work (Google)', async ({ page }) => {
-  await testSimpleTemplate(page, 'Google Microservices Demo', 'Google-simple', 12)
+test('creating a versionless project from a template should work (Google)', async ({ page }) => {
+  await testVersionlessTemplate(page, 'Google Microservices Demo', 'Google-versionless', 12)
 })
 
-test('creating a complex project from a template should work (Google)', async ({ page }) => {
-  await testComplexTemplate(page, 'Google Microservices Demo', 'Google-complex', 12)
+test('creating a versioned project from a template should work (Google)', async ({ page }) => {
+  await testVersionedTemplate(page, 'Google Microservices Demo', 'Google-versioned', 12)
 })
 
-test('creating a simple project from a template should work (Strapi)', async ({ page }) => {
-  await testSimpleTemplate(page, 'Strapi', 'Strapi-simple', 2)
+test('creating a versionless project from a template should work (Strapi)', async ({ page }) => {
+  await testVersionlessTemplate(page, 'Strapi', 'Strapi-versionless', 2)
 })
 
-test('creating a complex project from a template should work (Strapi)', async ({ page }) => {
-  await testComplexTemplate(page, 'Strapi', 'Strapi-complex', 2)
+test('creating a versioned project from a template should work (Strapi)', async ({ page }) => {
+  await testVersionedTemplate(page, 'Strapi', 'Strapi-versioned', 2)
 })
 
-test('creating a simple project from a template should work (Gitlab)', async ({ page }) => {
-  await testSimpleTemplate(page, 'Self-managed GitLab', 'Gitlab-simple', 1)
+test('creating a versionless project from a template should work (Gitlab)', async ({ page }) => {
+  await testVersionlessTemplate(page, 'Self-managed GitLab', 'Gitlab-versionless', 1)
 })
 
-test('creating a complex project from a template should work (Gitlab)', async ({ page }) => {
-  await testComplexTemplate(page, 'Self-managed GitLab', 'Gitlab-complex', 1)
+test('creating a versioned project from a template should work (Gitlab)', async ({ page }) => {
+  await testVersionedTemplate(page, 'Self-managed GitLab', 'Gitlab-versioned', 1)
 })
 
-test('creating a simple project from a template should work (WordPress)', async ({ page }) => {
-  await testSimpleTemplate(page, 'WordPress', 'WordPress-simple', 2)
+test('creating a versionless project from a template should work (WordPress)', async ({ page }) => {
+  await testVersionlessTemplate(page, 'WordPress', 'WordPress-versionless', 2)
 })
 
-test('creating a complex project from a template should work (WordPress)', async ({ page }) => {
-  await testComplexTemplate(page, 'WordPress', 'WordPress-complex', 2)
+test('creating a versioned project from a template should work (WordPress)', async ({ page }) => {
+  await testVersionedTemplate(page, 'WordPress', 'WordPress-versioned', 2)
 })
 
-test('creating a simple project from a template should work (LinkAce)', async ({ page }) => {
-  await testSimpleTemplate(page, 'LinkAce', 'LinkAce-simple', 2)
+test('creating a versionless project from a template should work (LinkAce)', async ({ page }) => {
+  await testVersionlessTemplate(page, 'LinkAce', 'LinkAce-versionless', 2)
 })
 
-test('creating a complex project from a template should work (LinkAce)', async ({ page }) => {
-  await testComplexTemplate(page, 'LinkAce', 'LinkAce-complex', 2)
+test('creating a versioned project from a template should work (LinkAce)', async ({ page }) => {
+  await testVersionedTemplate(page, 'LinkAce', 'LinkAce-versioned', 2)
 })
 
-test('creating a simple project from a template should work (Gitea)', async ({ page }) => {
-  await testSimpleTemplate(page, 'Gitea', 'Gitea-simple', 2)
+test('creating a versionless project from a template should work (Gitea)', async ({ page }) => {
+  await testVersionlessTemplate(page, 'Gitea', 'Gitea-versionless', 2)
 })
 
-test('creating a complex project from a template should work (Gitea)', async ({ page }) => {
-  await testComplexTemplate(page, 'Gitea', 'Gitea-complex', 2)
+test('creating a versioned project from a template should work (Gitea)', async ({ page }) => {
+  await testVersionedTemplate(page, 'Gitea', 'Gitea-versioned', 2)
 })

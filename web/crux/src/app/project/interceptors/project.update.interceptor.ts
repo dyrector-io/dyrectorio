@@ -20,9 +20,9 @@ export default class ProjectUpdateValidationInterceptor implements NestIntercept
       },
     })
 
-    if (update.changelog && project.type !== 'simple') {
+    if (update.changelog && project.type !== 'versionless') {
       throw new CruxPreconditionFailedException({
-        message: 'Only simple projects can update their changelog.',
+        message: 'Only versionless projects can update their changelog.',
         property: 'changelog',
       })
     }

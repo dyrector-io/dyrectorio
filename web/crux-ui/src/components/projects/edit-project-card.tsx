@@ -1,14 +1,14 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
+import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { CreateProject, EditableProject, Project, PROJECT_TYPE_VALUES, UpdateProject } from '@app/models'
+import { CreateProject, EditableProject, Project, UpdateProject } from '@app/models'
 import { API_PROJECTS, projectApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createProjectSchema, updateProjectSchema } from '@app/validations'
@@ -33,14 +33,14 @@ const EditProjectCard = (props: EditProjectCardProps) => {
       name: '',
       description: '',
       audit: null,
-      type: 'complex',
+      type: 'versioned',
       changelog: '',
     },
   )
 
   const editing = !!project.id
 
-  const changelogVisible = editing && project.type === 'simple'
+  const changelogVisible = editing && project.type === 'versionless'
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -116,18 +116,14 @@ const EditProjectCard = (props: EditProjectCardProps) => {
         />
 
         {editing ? null : (
-          <>
-            <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('type')}</DyoLabel>
-            <DyoChips
-              className="text-bright"
-              choices={PROJECT_TYPE_VALUES}
-              selection={formik.values.type}
-              converter={it => t(it)}
-              onSelectionChange={type => {
-                formik.setFieldValue('type', type, false)
-              }}
-            />
-          </>
+          <DyoToggle
+            className="justify-self-start mt-8"
+            name="type"
+            nameChecked={t('versioning')}
+            nameUnchecked={t('versioning')}
+            checked={formik.values.type === 'versioned'}
+            onCheckedChange={it => formik.setFieldValue('type', it ? 'versioned' : 'versionless')}
+          />
         )}
 
         {!changelogVisible ? null : (

@@ -1,12 +1,13 @@
+import { ProjectType } from '@app/models'
 import { expect, Page, test } from '@playwright/test'
 import { createNode } from './utils/nodes'
-import { addDeploymentToSimpleProject, addImageToSimpleProject, createProject } from './utils/projects'
+import { addDeploymentToVersionlessProject, addImageToVersionlessProject, createProject } from './utils/projects'
 
 const setup = async (
   page: Page,
   nodeName: string,
   projectName: string,
-  type: 'Simple' | 'Complex' = 'Simple',
+  type: ProjectType = 'versionless',
 ): Promise<{ nodeId: string; projectId: string }> => {
   const nodeId = await createNode(page, nodeName)
   const projectId = await createProject(page, projectName, type)
@@ -24,9 +25,9 @@ test('Can create multiple preparings to the same node with different prefixes', 
   const prefixOther = 'prefix-other'
 
   const { projectId } = await setup(page, nodeName, projectName)
-  await addImageToSimpleProject(page, projectId, 'nginx')
-  const one = await addDeploymentToSimpleProject(page, projectId, nodeName, prefixOne)
-  const other = await addDeploymentToSimpleProject(page, projectId, nodeName, prefixOther)
+  await addImageToVersionlessProject(page, projectId, 'nginx')
+  const one = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOne)
+  const other = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOther)
 
   await page.goto(one.url)
   await page.waitForSelector(`label:has-text("Prefix: ${prefixOne}")`)
@@ -43,13 +44,13 @@ test('Can not create multiple preparings to the same node with the same prefix',
   const prefixOne = 'prefix-one'
 
   const { projectId } = await setup(page, nodeName, projectName)
-  await addImageToSimpleProject(page, projectId, 'nginx')
-  const one = await addDeploymentToSimpleProject(page, projectId, nodeName, prefixOne)
+  await addImageToVersionlessProject(page, projectId, 'nginx')
+  const one = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOne)
   await page.goto(one.url)
   await page.waitForSelector(`label:has-text("Prefix: ${prefixOne}")`)
   await expect(await page.locator(`label:has-text("Prefix: ${prefixOne}")`)).toHaveCount(1)
 
-  const other = await addDeploymentToSimpleProject(page, projectId, nodeName, prefixOne)
+  const other = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOne)
 
   expect(other.id, one.id)
   await page.goto(other.url)
