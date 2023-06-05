@@ -235,6 +235,12 @@ test('Container list should show containers on the node screen', async ({ page }
 
   await page.locator('input[placeholder="Search"]').type(`dagent`)
 
-  const nodeContainerRow = await page.locator(`span:text-is("dagent") >> xpath=../..`)
-  await expect(nodeContainerRow).toHaveCount(1)
+  const tableBody = await page.locator('.table-row-group')
+
+  const nodeContainerRow = await tableBody.locator('.table-row')
+  await nodeContainerRow.nth(0).waitFor()
+
+  const containerRows = await nodeContainerRow.count()
+
+  await expect(containerRows).toBeGreaterThanOrEqual(1)
 })

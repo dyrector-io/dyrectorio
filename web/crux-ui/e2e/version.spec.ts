@@ -77,7 +77,7 @@ test('Change default version should work', async ({ page }) => {
 })
 
 test('Increase version should work', async ({ page }) => {
-  const projectId = await createProject(page, 'Pincrease-version', 'versioned')
+  const projectId = await createProject(page, 'increase-version', 'versioned')
   const versionOne = await createVersion(page, projectId, '1.0.0', 'Incremental')
   await createImage(page, projectId, versionOne, 'nginx')
   await addDeploymentToVersion(page, projectId, versionOne, DAGENT_NODE)
