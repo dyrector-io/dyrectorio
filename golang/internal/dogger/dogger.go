@@ -174,24 +174,3 @@ func (dog *DeploymentLogger) WriteDockerPull(header string, respIn io.ReadCloser
 		}
 	}
 }
-
-func MapContainerState(state string) common.ContainerState {
-	switch state {
-	case "created":
-		return common.ContainerState_CREATED
-	case "restarting":
-		return common.ContainerState_RESTARTING
-	case "running":
-		return common.ContainerState_RUNNING
-	case "removing":
-		return common.ContainerState_REMOVING
-	case "paused":
-		return common.ContainerState_PAUSED
-	case "exited":
-		return common.ContainerState_EXITED
-	case "dead":
-		return common.ContainerState_DEAD
-	default:
-		return common.ContainerState_CONTAINER_STATE_UNSPECIFIED
-	}
-}
