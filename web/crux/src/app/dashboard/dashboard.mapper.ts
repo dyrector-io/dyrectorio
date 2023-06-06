@@ -4,19 +4,6 @@ import { OnboardingDto, OnboardingItemDto } from './dashboard.dto'
 
 @Injectable()
 export default class DashboardMapper {
-  resourceToOnboardItem(resource: ResourceWithId | null): OnboardingItemDto {
-    if (!resource) {
-      return {
-        done: false,
-      }
-    }
-
-    return {
-      done: true,
-      resourceId: resource.id,
-    }
-  }
-
   teamToOnboard(team: DashboardTeam): OnboardingDto {
     const project: DashboardProject = team.projects.find(Boolean)
     let version: DashboardVersion = null
@@ -45,11 +32,24 @@ export default class DashboardMapper {
       addImages: this.resourceToOnboardItem(image),
       addDeployment: this.resourceToOnboardItem(deployment),
       deploy: {
-        done: deployment && deployment.status !== 'preparing',
+        done: (deployment && deployment.status !== 'preparing') ?? false,
       },
     }
 
     return onboard
+  }
+
+  private resourceToOnboardItem(resource: ResourceWithId | null): OnboardingItemDto {
+    if (!resource) {
+      return {
+        done: false,
+      }
+    }
+
+    return {
+      done: true,
+      resourceId: resource.id,
+    }
   }
 }
 
@@ -70,7 +70,7 @@ type DashboardProject = ResourceWithId & {
   versions: DashboardVersion[]
 }
 
-type DashboardTeam = ResourceWithId & {
+export type DashboardTeam = ResourceWithId & {
   nodes: ResourceWithId[]
   projects: DashboardProject[]
 }
