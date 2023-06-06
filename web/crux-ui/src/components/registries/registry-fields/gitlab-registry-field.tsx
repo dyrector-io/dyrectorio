@@ -5,6 +5,7 @@ import DyoSwitch from '@app/elements/dyo-switch'
 import { GitlabRegistryDetails, GITLAB_NAMESPACE_VALUES, RegistryNamespace } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
+import Link from 'next/link'
 
 const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails>) => {
   const { formik } = props
@@ -13,7 +14,18 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
 
   return (
     <>
-      <DyoLabel className="text-light mt-2">{t('tips.gitlab')}</DyoLabel>
+      <DyoLabel className="mt-2">
+        {t('tips.gitlab')}
+        <span className="ml-1">{t('tips.learnMorePat')}</span>
+        <Link
+          className="ml-1 text-blue-300"
+          href="https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html"
+          target="_blank"
+        >
+          {t('here')}
+        </Link>
+        .
+      </DyoLabel>
 
       <DyoInput
         className="max-w-lg"
