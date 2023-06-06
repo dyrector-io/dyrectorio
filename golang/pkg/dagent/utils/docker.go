@@ -257,6 +257,10 @@ func buildMountList(cfg *config.Configuration, dog *dogger.DeploymentLogger, dep
 	return mountList
 }
 
+func writeDoggerError(dog *dogger.DeploymentLogger, msg string, err error) {
+	dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED, err.Error(), msg)
+}
+
 func DeployImage(ctx context.Context,
 	dog *dogger.DeploymentLogger,
 	deployImageRequest *v1.DeployImageRequest,
@@ -289,8 +293,7 @@ func DeployImage(ctx context.Context,
 
 	matchedContainer, err := dockerHelper.GetContainerByName(ctx, containerName)
 	if err != nil {
-		dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED,
-			err.Error(), fmt.Sprintf("Failed to find container: %s", containerName))
+		writeDoggerError(dog, fmt.Sprintf("Failed to find container: %s", containerName), err)
 		return err
 	}
 
@@ -299,9 +302,7 @@ func DeployImage(ctx context.Context,
 
 		err = dockerHelper.DeleteContainerByID(ctx, dog, matchedContainer.ID)
 		if err != nil {
-			dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED,
-				err.Error(),
-				fmt.Sprintf("Failed to delete container (%s): %s", containerName, err.Error()))
+			writeDoggerError(dog, fmt.Sprintf("Failed to delete container (%s): %s", containerName, err.Error()), err)
 			return err
 		}
 	}
@@ -310,7 +311,7 @@ func DeployImage(ctx context.Context,
 	networkMode, networks := setNetwork(deployImageRequest)
 	labels, err := setImageLabels(expandedImageName, deployImageRequest, cfg)
 	if err != nil {
-		return fmt.Errorf("error building lables: %w", err)
+		return fmt.Errorf("error building labels: %w", err)
 	}
 
 	builder.WithImage(expandedImageName).
@@ -337,17 +338,13 @@ func DeployImage(ctx context.Context,
 
 	cont, err := builder.CreateAndStart()
 	if err != nil {
-		dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED,
-			err.Error(),
-			fmt.Sprintf("Failed to start container (%s): %s", containerName, err.Error()))
+		writeDoggerError(dog, fmt.Sprintf("Failed to start container (%s): %s", containerName, err.Error()), err)
 		return err
 	}
 
 	matchedContainer, err = dockerHelper.GetContainerByID(ctx, *cont.GetContainerID())
 	if err != nil || matchedContainer == nil {
-		dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED,
-			err.Error(),
-			fmt.Sprintf("Failed to find container (%s): %s", containerName, err.Error()))
+		writeDoggerError(dog, fmt.Sprintf("Failed to find container (%s): %s", containerName, err.Error()), err)
 		return err
 	}
 
