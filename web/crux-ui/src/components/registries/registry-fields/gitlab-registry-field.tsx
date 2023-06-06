@@ -16,7 +16,7 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
     <>
       <DyoLabel className="mt-2">
         {t('tips.gitlab')}
-        {t('tips.learnMorePat')}
+        <span className="ml-1">{t('tips.learnMorePat')}</span>
         <Link
           className="ml-1 text-blue-300"
           href="https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html"

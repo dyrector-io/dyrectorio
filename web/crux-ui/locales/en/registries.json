@@ -35,6 +35,7 @@
     "unchecked": "Add a registry without authentication. This type does not provide image nor tag browsing.",
     "learnMorePat": "Learn more about personal access token",
     "learnMoreRegistry": "Learn more about the registry",
+    "githubTokenReason": "Github allow downloads, while access to the complete listing of all tags, which we extensively utilize, requires authentication.",
     "here": "here"
   },
 
