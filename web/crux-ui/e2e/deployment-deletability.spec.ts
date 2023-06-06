@@ -6,11 +6,11 @@ import { createImage, createProject, createVersion } from './utils/projects'
 test('In progress deployment should be not deletable', async ({ page }) => {
   const projectName = 'project-delete-test-1'
 
-  const projectId = await createProject(page, projectName, 'Complex')
+  const projectId = await createProject(page, projectName, 'versioned')
   const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
   await createImage(page, projectId, versionId, 'nginx')
 
-  const deploymentId = await deployWithDagent(page, 'pw-complex-deletability', projectId, versionId, true)
+  const deploymentId = await deployWithDagent(page, 'versioned-deletability', projectId, versionId, true)
 
   await page.goto(deploymentUrl(deploymentId))
 
@@ -21,11 +21,11 @@ test('In progress deployment should be not deletable', async ({ page }) => {
 test('Delete deployment should work', async ({ page }, testInfo) => {
   const projectName = 'project-delete-test-2'
 
-  const projectId = await createProject(page, projectName, 'Complex')
+  const projectId = await createProject(page, projectName, 'versioned')
   const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
   await createImage(page, projectId, versionId, 'nginx')
 
-  const deploymentId = await deployWithDagent(page, 'pw-complex-delete', projectId, versionId, false, testInfo.title)
+  const deploymentId = await deployWithDagent(page, 'versioned-delete', projectId, versionId, false, testInfo.title)
 
   await page.goto(deploymentUrl(deploymentId))
 

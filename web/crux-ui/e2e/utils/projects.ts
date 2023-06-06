@@ -1,15 +1,18 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import { ProjectType } from '@app/models'
 import { projectUrl, ROUTE_DEPLOYMENTS, ROUTE_PROJECTS, versionUrl } from '@app/routes'
 import { expect, Page } from '@playwright/test'
 
-export const createProject = async (page: Page, name: string, type: 'Simple' | 'Complex') => {
+export const createProject = async (page: Page, name: string, type: ProjectType) => {
   await page.goto(ROUTE_PROJECTS)
 
   await page.locator('button:has-text("Add")').click()
   await expect(page.locator('h4:has-text("New project")')).toHaveCount(1)
 
   await page.locator('input[name=name] >> visible=true').fill(name)
-  await page.locator(`form >> text=${type}`).click()
+  if (type === 'versionless') {
+    await page.locator(`button[role=switch]:right-of(:text("Versioning"))`).click()
+  }
 
   await page.locator('button:has-text("Save")').click()
 
@@ -18,10 +21,10 @@ export const createProject = async (page: Page, name: string, type: 'Simple' | '
   await project.click()
   await page.waitForURL(`${ROUTE_PROJECTS}/**`)
 
-  if (type === 'Simple') {
+  if (type === 'versionless') {
     await page.waitForSelector(`span:has-text("Changelog")`)
   } else {
-    // Complex
+    // Versioned
     await page.waitForSelector(`button:has-text("Add version")`)
   }
 
@@ -75,7 +78,7 @@ export const createImage = async (page: Page, projectId: string, versionId: stri
   return page.url().split('/').pop()
 }
 
-export const addImageToComplexVersion = async (page: Page, projectId: string, versionId: string, image: string) => {
+export const addImageToVersion = async (page: Page, projectId: string, versionId: string, image: string) => {
   await page.goto(versionUrl(projectId, versionId))
 
   await page.locator('button:has-text("Add image")').click()
@@ -94,7 +97,7 @@ export const addImageToComplexVersion = async (page: Page, projectId: string, ve
   await page.waitForSelector(`a:has-text("${image}")`)
 }
 
-export const addImageToSimpleProject = async (page: Page, projectId: string, image: string) => {
+export const addImageToVersionlessProject = async (page: Page, projectId: string, image: string) => {
   await page.goto(projectUrl(projectId))
 
   await page.locator('button:has-text("Add image")').click()
@@ -113,7 +116,7 @@ export const addImageToSimpleProject = async (page: Page, projectId: string, ima
   await page.waitForSelector(`a:has-text("${image}")`)
 }
 
-export const addDeploymentToSimpleProject = async (
+export const addDeploymentToVersionlessProject = async (
   page: Page,
   projectId: string,
   nodeName: string,

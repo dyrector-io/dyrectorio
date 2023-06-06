@@ -120,7 +120,7 @@ model Project {
   updatedBy   String?         @db.Uuid
   name        String          @db.VarChar(70)
   description String?
-  type        ProjectTypeEnum @default(simple)
+  type        ProjectTypeEnum
 
   versions Version[]
   team     Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
@@ -405,8 +405,8 @@ model NotificationEvent {
 }
 
 enum ProjectTypeEnum {
-  simple
-  complex
+  versionless
+  versioned
 }
 
 enum VersionTypeEnum {

@@ -15,17 +15,17 @@ const DyoTag = (props: DyoTagProps) => {
   const textColor = propsTextColor ?? 'text-dyo-turquoise'
 
   return (
-    <div
+    <span
       className={clsx(
         className,
         color,
         textColor,
         !solid && 'bg-opacity-10',
-        'rounded-full bg-opacity-10 text-xs font-semibold px-8 py-0.5 mt-auto',
+        'rounded-full bg-opacity-10 text-xs font-semibold h-fit px-8 py-0.5',
       )}
     >
       {children}
-    </div>
+    </span>
   )
 }
 

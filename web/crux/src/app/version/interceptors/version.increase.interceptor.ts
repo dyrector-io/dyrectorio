@@ -44,9 +44,9 @@ export default class VersionIncreaseValidationPipe implements NestInterceptor {
       })
     }
 
-    if (version.project.type === ProjectTypeEnum.simple) {
+    if (version.project.type === ProjectTypeEnum.versionless) {
       throw new CruxPreconditionFailedException({
-        message: 'Can not increase version of a simple project.',
+        message: 'Can not increase version of a versionless project.',
         property: 'id',
         value: versionId,
       })

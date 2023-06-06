@@ -4,18 +4,18 @@ import { screenshotPath } from './utils/common'
 import { deployWithDagent } from './utils/node-helper'
 import { createImage, createProject, createVersion } from './utils/projects'
 
-const prefix = 'pw-first'
-const prefixTwo = 'pw-second'
+const prefix = 'first'
+const prefixTwo = 'second'
 const image = 'nginx'
 
 test('Deploy to node should be successful', async ({ page }, testInfo) => {
-  const projectId = await createProject(page, 'PW-DEPLOY-TEST', 'Complex')
+  const projectId = await createProject(page, 'deploy-test', 'versioned')
   const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
   await createImage(page, projectId, versionId, image)
 
   await deployWithDagent(page, prefix, projectId, versionId, false, testInfo.title)
 
-  await page.screenshot({ path: screenshotPath('successful-deployment'), fullPage: true })
+  await page.screenshot({ path: screenshotPath('succ-deployment'), fullPage: true })
 
   const deployStatus = page.getByText('Successful')
   await deployStatus.waitFor()
@@ -24,7 +24,7 @@ test('Deploy to node should be successful', async ({ page }, testInfo) => {
 })
 
 test('Second successful deployment should make the first deployment obsolete', async ({ page }, testInfo) => {
-  const projectId = await createProject(page, 'PW-OBSOLETE', 'Complex')
+  const projectId = await createProject(page, 'obsolete', 'versioned')
   const versionId = await createVersion(page, projectId, '1.0.0', 'Incremental')
   await createImage(page, projectId, versionId, image)
 

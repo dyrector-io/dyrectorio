@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 /* eslint-disable import/no-extraneous-dependencies */
+import { ProjectType } from '@app/models'
 import { ROUTE_PROJECTS, ROUTE_TEMPLATES } from '@app/routes'
 import { Page } from '@playwright/test'
 
@@ -7,7 +8,7 @@ export const createProjectFromTemplate = async (
   page: Page,
   templateName: string,
   projectName: string,
-  projectType: 'Simple' | 'Complex',
+  projectType: ProjectType,
 ): Promise<string> => {
   await page.goto(ROUTE_TEMPLATES)
   await page.waitForURL(ROUTE_TEMPLATES)
@@ -21,7 +22,9 @@ export const createProjectFromTemplate = async (
   await page.waitForSelector(`h4:has-text("Create a Project from template '${templateName}'")`)
 
   await page.locator('input[name=name]').fill(projectName)
-  await page.locator(`form >> text=${projectType}`).click()
+  if (projectType === 'versioned') {
+    await page.locator(`button[role=switch]:right-of(:text("Versioning"))`).click()
+  }
 
   await page.locator('text=Add >> nth=0').click()
   await page.waitForURL(`${ROUTE_PROJECTS}/**`)

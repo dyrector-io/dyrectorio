@@ -152,7 +152,7 @@ export default class VersionHttpController {
     description:
       "This call turns a version into the default one, resulting other versions within this project later inherit images, deployments and their configurations from it. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.",
     summary:
-      'Turn version into a default one of the complex project other versions under it will inherit images and deployments from.',
+      'Turn version into a default one of the versioned project other versions under it will inherit images and deployments from.',
   })
   @ApiNoContentResponse({
     description: 'Version turned into default.',
@@ -168,7 +168,7 @@ export default class VersionHttpController {
   @ApiOperation({
     description:
       "Increases the version of a project with a new child version. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `name` refers to the name of the new version. All are required variables.",
-    summary: 'Increase a the version of a complex project with a new version.',
+    summary: 'Increase a the version of a versioned project with a new version.',
   })
   @UseInterceptors(VersionIncreaseValidationInterceptor)
   @ApiBody({ type: IncreaseVersionDto })

@@ -4,7 +4,7 @@ import ProjectDetailsCard from '@app/components/projects/project-details-card'
 import ProjectVersionsSection from '@app/components/projects/project-versions-section'
 import EditVersionCard from '@app/components/projects/versions/edit-version-card'
 import IncreaseVersionCard from '@app/components/projects/versions/increase-version-card'
-import SimpleVersionSections from '@app/components/projects/versions/simple-version-sections'
+import VersionlessProjectSections from '@app/components/projects/versions/versionless-project-sections'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu, DetailsPageTexts } from '@app/components/shared/page-menu'
@@ -38,11 +38,11 @@ import toast from 'react-hot-toast'
 
 interface ProjectDetailsPageProps {
   project: ProjectDetails
-  simpleProjectVersionDetails?: VersionDetails
+  versionlessProjectVersionDetails?: VersionDetails
 }
 
 const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
-  const { project: propsProject, simpleProjectVersionDetails } = props
+  const { project: propsProject, versionlessProjectVersionDetails } = props
 
   const { t } = useTranslation('projects')
   const router = useRouter()
@@ -55,7 +55,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
 
   const submitRef = useRef<() => Promise<any>>()
 
-  const simpleProject = project.type === 'simple'
+  const versionless = project.type === 'versionless'
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -147,7 +147,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
 
         <DetailsPageMenu
           texts={pageMenuTexts}
-          onAdd={simpleProject ? null : onAddVersion}
+          onAdd={versionless ? null : onAddVersion}
           onDelete={project.deletable ? onDelete : null}
           editing={editState !== 'version-list'}
           setEditing={editing => setEditState(editing ? 'edit-project' : 'version-list')}
@@ -160,7 +160,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
       </PageHeading>
 
       {editState === 'version-list' ? (
-        <ProjectDetailsCard project={project} className={clsx('p-6', simpleProject ? 'mb-4' : null)} />
+        <ProjectDetailsCard project={project} className={clsx('p-6', versionless ? 'mb-4' : null)} />
       ) : editState === 'edit-project' ? (
         <EditProjectCard
           className="mb-8 px-8 py-6"
@@ -185,10 +185,10 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
         />
       )}
 
-      {simpleProject ? (
-        <SimpleVersionSections
+      {versionless ? (
+        <VersionlessProjectSections
           project={project}
-          version={simpleProjectVersionDetails}
+          version={versionlessProjectVersionDetails}
           setSaving={setSaving}
           setTopBarContent={setTopBarContent}
         />
@@ -215,13 +215,13 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 
   const props: ProjectDetailsPageProps = {
     project,
-    simpleProjectVersionDetails: null,
+    versionlessProjectVersionDetails: null,
   }
 
-  if (project.type === 'simple') {
+  if (project.type === 'versionless') {
     const version = project.versions[0]
 
-    props.simpleProjectVersionDetails = await getCruxFromContext<VersionDetails>(
+    props.versionlessProjectVersionDetails = await getCruxFromContext<VersionDetails>(
       context,
       versionApiUrl(projectId, version.id),
     )

@@ -59,7 +59,7 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   await page.locator('text=Save').click()
   await page.waitForSelector(`h3:text-is("${registryName}")`)
 
-  await createProject(page, 'unchecked-project', 'Simple')
+  await createProject(page, 'unchecked-project', 'versionless')
 
   await page.locator('button:has-text("Add image")').click()
   await expect(page.locator('h4:has-text("Add image")')).toHaveCount(1)

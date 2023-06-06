@@ -39,9 +39,9 @@ export default class VersionUpdateValidationInterceptor implements NestIntercept
 
     checkVersionMutability(version)
 
-    if (version.project.type === ProjectTypeEnum.simple) {
+    if (version.project.type === ProjectTypeEnum.versionless) {
       throw new CruxPreconditionFailedException({
-        message: 'Can not update version of a simple project.',
+        message: 'Can not update the version of a versionless project.',
         property: 'id',
         value: versionId,
       })

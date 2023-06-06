@@ -1,14 +1,13 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
-import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
+import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { Project, ProjectType, PROJECT_TYPE_VALUES } from '@app/models'
+import { Project, ProjectType } from '@app/models'
 import { CreateProjectFromTemplate, Template } from '@app/models/template'
 import { API_TEMPLATES } from '@app/routes'
 import { sendForm } from '@app/utils'
@@ -34,7 +33,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
     initialValues: {
       name: propsTemplate.name,
       description: propsTemplate.description,
-      type: 'simple' as ProjectType,
+      type: 'versionless' as ProjectType,
     },
     validationSchema: applyTemplateSchema,
     enableReinitialize: true,
@@ -92,15 +91,13 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
           value={formik.values.description}
         />
 
-        <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('type')}</DyoLabel>
-        <DyoChips
-          className="text-bright"
-          choices={PROJECT_TYPE_VALUES}
-          selection={formik.values.type}
-          converter={it => t(`projects:${it}`)}
-          onSelectionChange={type => {
-            formik.setFieldValue('type', type, false)
-          }}
+        <DyoToggle
+          className="justify-self-start mt-8"
+          name="type"
+          nameChecked={t('projects:versioning')}
+          nameUnchecked={t('projects:versioning')}
+          checked={formik.values.type === 'versioned'}
+          onCheckedChange={it => formik.setFieldValue('type', it ? 'versioned' : 'versionless')}
         />
 
         <DyoButton className="hidden" type="submit" />
