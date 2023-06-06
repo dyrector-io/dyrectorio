@@ -11,8 +11,8 @@ interface DyoTagProps {
 const DyoTag = (props: DyoTagProps) => {
   const { className, textColor: propsTextColor, color: propsColor, solid, children } = props
 
-  const color = propsColor ?? ''
-  const textColor = propsTextColor ?? ''
+  const color = propsColor ?? 'bg-dyo-turquoise'
+  const textColor = propsTextColor ?? 'text-dyo-turquoise'
 
   return (
     <span
