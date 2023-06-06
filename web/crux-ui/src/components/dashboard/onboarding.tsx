@@ -16,45 +16,39 @@ import {
 import useTranslation from 'next-translate/useTranslation'
 import OnboardingEntry from './onboarding-entry'
 
-const onboardItemToHref = (
-  onboarding: OnboardingDto,
-  key: keyof OnboardingDto,
-  item: OnboardingItem,
-): string | null => {
-  if (key === 'createTeam') {
+type OnbardingLinkFactory = (onboarding: OnboardingDto, item: OnboardingItem) => string | null
+const onboardingLinkFactories: Record<keyof OnboardingDto, OnbardingLinkFactory> = {
+  signUp: () => null,
+  createTeam: (onboarding, item) => {
     if (!onboarding.signUp.done) {
       return null
     }
 
     return item.done ? teamUrl(onboarding.createTeam.resourceId) : ROUTE_TEAMS_CREATE
-  }
-
-  if (key === 'createNode') {
+  },
+  createNode: (onboarding, item) => {
     if (!onboarding.createTeam.done) {
       return null
     }
 
     return item.done ? nodeUrl(item.resourceId) : ROUTE_NODES
-  }
-
-  if (key === 'createProject') {
+  },
+  createProject: (onboarding, item) => {
     if (!onboarding.createNode.done) {
       return null
     }
 
     return item.done ? projectUrl(item.resourceId) : ROUTE_PROJECTS
-  }
-
-  if (key === 'createVersion') {
+  },
+  createVersion: (onboarding, item) => {
     const projectId = onboarding.createProject.resourceId
     if (!projectId) {
       return null
     }
 
     return item.done ? versionUrl(projectId, item.resourceId) : projectUrl(projectId)
-  }
-
-  if (key === 'addImages') {
+  },
+  addImages: (onboarding, item) => {
     const projectId = onboarding.createProject.resourceId
     const versionId = onboarding.createVersion.resourceId
     if (!versionId) {
@@ -64,9 +58,8 @@ const onboardItemToHref = (
     return item.done
       ? imageConfigUrl(projectId, versionId, item.resourceId)
       : versionUrl(projectId, versionId, { section: 'images' })
-  }
-
-  if (key === 'addDeployment') {
+  },
+  addDeployment: (onboarding, item) => {
     if (!onboarding.addImages.done) {
       return null
     }
@@ -75,18 +68,15 @@ const onboardItemToHref = (
     const versionId = onboarding.createVersion.resourceId
 
     return item.done ? deploymentUrl(item.resourceId) : versionUrl(projectId, versionId, { section: 'deployments' })
-  }
-
-  if (key === 'deploy') {
+  },
+  deploy: (onboarding, item) => {
     const deploymentId = onboarding.addDeployment.resourceId
     if (!deploymentId) {
       return null
     }
 
     return item.done ? deploymentDeployUrl(deploymentId) : deploymentUrl(deploymentId)
-  }
-
-  return null
+  },
 }
 
 type OnboardingProps = {
@@ -109,6 +99,8 @@ const Onboarding = (props: OnboardingProps) => {
           const first = index === 0
           const last = index === lastOnboardIndex
 
+          const linkFactory = onboardingLinkFactories[key]
+
           return (
             <OnboardingEntry
               key={key}
@@ -117,7 +109,7 @@ const Onboarding = (props: OnboardingProps) => {
               step={index + 1}
               nextStep={index === nextOnboardIndex}
               line={first ? 'bottom' : last ? 'top' : 'vertical'}
-              href={onboardItemToHref(onboarding, key as keyof OnboardingDto, value)}
+              href={linkFactory(onboarding, value)}
             />
           )
         })}

@@ -3,9 +3,10 @@ import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoIcon from '@app/elements/dyo-icon'
 import { DyoLabel } from '@app/elements/dyo-label'
+import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
+import useConfirmation from '@app/hooks/use-confirmation'
 import { Dashboard } from '@app/models'
 import { API_DASHBOARD, API_USERS_ME_PREFERENCES_ONBOARDING, ROUTE_DASHBOARD } from '@app/routes'
 import { fetcher, withContextAuthorization } from '@app/utils'
@@ -27,20 +28,22 @@ const DashboardPage = (props: DashboardPageProps) => {
 
   const { dashboard: propsDashboard, onboardingDisabled: propsOnboardingDisabled } = props
 
+  const handleApiError = defaultApiErrorHandler(t)
+
   const { data } = useSWR<Dashboard>(API_DASHBOARD, fetcher)
 
   const dashboard = data ?? propsDashboard
 
   const [onboardingDisabled, setOnboardingDisabled] = useState(propsOnboardingDisabled)
 
-  const selfLink: BreadcrumbLink = {
-    name: t('common:dashboard'),
-    url: ROUTE_DASHBOARD,
-  }
+  const [confirmHideOnboardingConfig, confirmHideOnboarding] = useConfirmation()
 
-  const handleApiError = defaultApiErrorHandler(t)
+  const hideOnboarding = async () => {
+    const confirmed = await confirmHideOnboarding()
+    if (!confirmed) {
+      return
+    }
 
-  const onToggleOnboarding = async () => {
     const res = await fetch(API_USERS_ME_PREFERENCES_ONBOARDING, { method: onboardingDisabled ? 'PUT' : 'DELETE' })
     if (!res.ok) {
       handleApiError(res)
@@ -48,6 +51,11 @@ const DashboardPage = (props: DashboardPageProps) => {
     }
 
     setOnboardingDisabled(!onboardingDisabled)
+  }
+
+  const selfLink: BreadcrumbLink = {
+    name: t('common:dashboard'),
+    url: ROUTE_DASHBOARD,
   }
 
   const getStatisticIcon = (it: string) => {
@@ -109,23 +117,30 @@ const DashboardPage = (props: DashboardPageProps) => {
         </div>
 
         <div className="flex flex-col">
-          {onboardingDisabled ? (
-            <DyoIcon className="justify-self-end" src="/help.svg" alt={t('common:help')} onClick={onToggleOnboarding} />
-          ) : (
+          {onboardingDisabled ? null : (
             <>
               <DyoLabel className="mb-2 mt-4 text-lg" textColor="text-light">
                 {t('onboarding')}
               </DyoLabel>
 
-              <Onboarding onboarding={dashboard.onboarding} onClose={onToggleOnboarding} />
+              <Onboarding onboarding={dashboard.onboarding} onClose={hideOnboarding} />
 
               <div className="bg-dyo-turquoise text-dyo-turquoise text-right rounded-md bg-opacity-10 p-4 ml-auto mt-4">
-                {t('youCanHideOnboard')}
+                {t('whenReadyToHideOnboard')}
               </div>
             </>
           )}
         </div>
       </div>
+
+      <DyoConfirmationModal
+        config={confirmHideOnboardingConfig}
+        title={t('common:areYouSure')}
+        description={t('areYouSureHideOnboarding')}
+        confirmText={t('hide')}
+        className="w-1/4"
+        cancelColor="bg-warning-orange"
+      />
     </Layout>
   )
 }

@@ -6,7 +6,9 @@
   "failedDeployments": "Failed deployments",
   "onboarding": "Onboarding",
   "done": "Done",
-  "youCanHideOnboard": "When you are ready to hide the onboarding tips, just click the `x` on the top-right corner.",
+  "whenReadyToHideOnboard": "When you are ready to hide the onboarding tips, just click the x on the top-right corner.",
+  "areYouSureHideOnboarding": "Are you sure you want to hide the onboaring tips? You can turn it back on under the profile menu.",
+  "hide": "Hide",
   "onboardingItems": {
     "signUp": {
       "title": "Sign up to dyrector.io",
@@ -14,11 +16,11 @@
     },
     "createTeam":  {
       "title": "Create a Team",
-      "description": "Create your first team. You can add more by clicking on the `Teams` menu."
+      "description": "Create your first team. You can add more by clicking on the Teams menu."
     },
     "createNode":  {
       "title": "Create a Node",
-      "description": "Nodes are the targets for your deployments. You can create a Docker or a Kubernetes node on the `Node` page."
+      "description": "Nodes are the targets for your deployments. You can create a Docker or a Kubernetes node on the Node page."
     },
     "createProject":  {
       "title": "Create the first Project",
@@ -26,11 +28,11 @@
     },
     "createVersion":  {
       "title": "Create a version",
-      "description": "A version can be `Incremental` or `Rolling`. Incremental versions are going to be the releases of your application. Rolling versions are the continuous deployments of an application, or the infrastucture: databases, proxies."
+      "description": "A version can be Incremental or Rolling. Incremental versions are going to be the releases of your application. Rolling versions are the continuous deployments of an application, or the infrastucture: databases, proxies."
     },
     "addImages":  {
       "title": "Add images to your version",
-      "description": "Add container images from a registry. You can add your private or public registries on the `Registry` page."
+      "description": "Add container images from a registry. You can add your private or public registries on the Registry page."
     },
     "addDeployment":  {
       "title": "Add the first deployment",
