@@ -15,6 +15,7 @@ const config: PlaywrightTestConfig = {
   timeout: 2 * 60 * 1000, // 2 min
   expect: { timeout: 10 * 1000 }, // We double the default(5s), since some test runners are not THAT fast :)
   testDir: path.join(__dirname, 'e2e'),
+  // With 3 retries it runs for ages on the pipeline. One is the sweet spot.
   retries: 1,
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: path.join(__dirname, 'e2e_results/'),

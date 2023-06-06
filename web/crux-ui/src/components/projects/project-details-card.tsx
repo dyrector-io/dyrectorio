@@ -44,7 +44,7 @@ const ProjectDetailsCard = (props: ProjectDetailsCardProps) => {
                 {auditToLocaleDate(project.audit)}
               </span>
 
-              <ProjectTypeTag className="ml-auto mt-2" type={project.type} />
+              <ProjectTypeTag className="mt-2 ml-auto" type={project.type} />
             </div>
           </div>
 
