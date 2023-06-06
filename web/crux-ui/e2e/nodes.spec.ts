@@ -134,7 +134,7 @@ test('Container log should appear after a successful deployment', async ({ page 
   const showLogs = containerRow.locator('span:text-is("Show logs")')
 
   await showLogs.click()
-  await page.waitForURL(`${ROUTE_NODES}nodes/**/log**`)
+  await page.waitForURL(`${ROUTE_NODES}/**/log**`)
 
   await page.waitForSelector('div.font-roboto')
   const terminal = page.locator('div.font-roboto')
