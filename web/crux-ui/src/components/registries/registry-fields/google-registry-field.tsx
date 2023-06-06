@@ -6,6 +6,7 @@ import DyoTextArea from '@app/elements/dyo-text-area'
 import { GoogleRegistryDetails } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
+import Link from 'next/link'
 
 const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails>) => {
   const { formik } = props
@@ -24,8 +25,14 @@ const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails
 
   return (
     <>
-      <DyoLabel className="text-light mt-2">{t('tips.google')}</DyoLabel>
-
+      <DyoLabel className="mt-2">
+        {t('tips.google')}
+        <span className="ml-1">{t('tips.learnMoreRegistry')}</span>
+        <Link className="ml-1 text-blue-300" href="https://cloud.google.com/artifact-registry/docs" target="_blank">
+          {t('here')}
+        </Link>
+        .
+      </DyoLabel>
       <DyoInput
         className="max-w-lg"
         grow
