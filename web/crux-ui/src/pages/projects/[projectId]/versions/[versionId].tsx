@@ -142,7 +142,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   const versionId = context.query.versionId as string
 
   const project = await getCruxFromContext<ProjectDetails>(context, projectApiUrl(projectId))
-  if (project.type === 'simple') {
+  if (project.type === 'versionless') {
     return redirectTo(`${projectUrl(project.id)}${searchParamsOf(context)}`)
   }
 

@@ -17,13 +17,13 @@ const createSwaggerConfig = (configService: ConfigService): Omit<OpenAPIObject, 
     )
     .addTag(
       'projects',
-      'There are two kinds of projects in dyrector.io: Simple and Complex. Simple projects make up one deployable unit without versioning, while Complex projects come with multiple rolling or incremental versions. More details in dyrector.io platform [documentation](https://docs.dyrector.io/tutorials/create-your-project).',
+      'There are two kinds of projects in dyrector.io: Versionless and Versioned. Versionless projects make up one deployable unit without versioning, while Versioned projects come with multiple rolling or incremental versions. More details in dyrector.io platform [documentation](https://docs.dyrector.io/tutorials/create-your-project).',
     )
     .addTag(
       'versions',
-      'Versions belong to projects. While Simple Projects are technically versionless, they act as a rolling version of a Complex Project.</br></br>The purpose of versions is to separate different variations of your project. They can be either rolling or incremental. One Complex Project can have multiple versions of both types. More details about rolling and incremental versions in dyrector.io platform [documentation](https://docs.dyrector.io/get-started/components#project).',
+      'Versions belong to projects. While Versionless Projects seemingly do not have a version, they act as a rolling version of a Versioned Project.</br></br>The purpose of versions is to separate different variations of your project. They can be either rolling or incremental. One Versioned Project can have multiple versions of both types. More details about rolling and incremental versions in dyrector.io platform [documentation](https://docs.dyrector.io/get-started/components#project).',
     )
-    .addTag('version/images', "Images make up a Complex Project's version, or a Simple Project.")
+    .addTag('version/images', "Images make up a Versioned Project's version, or a Versionless Project.")
     .addTag(
       'registries',
       'Registries are 3rd party registries where the images of versions are located. Learn more about registries in dyrector.io platform [documentation](https://docs.dyrector.io/get-started/components#registry).',
@@ -35,7 +35,7 @@ const createSwaggerConfig = (configService: ConfigService): Omit<OpenAPIObject, 
     .addTag('users/me', 'users/me cover endpoints related to your user profile.')
     .addTag(
       'deployments',
-      'Deployments are the process that gets the installation of your versions or Simple Projects done on the node of your choice. More details about deployments in dyrector.io platform [documentation](https://docs.dyrector.io/get-started/components#deployment).',
+      'Deployments are the process that gets the installation of your versions or Versionless Projects done on the node of your choice. More details about deployments in dyrector.io platform [documentation](https://docs.dyrector.io/get-started/components#deployment).',
     )
     .addTag(
       'tokens',

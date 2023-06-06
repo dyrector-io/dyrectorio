@@ -1,12 +1,13 @@
+import { ProjectType } from '@app/models'
 import { deploymentUrl, projectUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
 import { DAGENT_NODE, waitForURLExcept } from './utils/common'
 import { deployWithDagent } from './utils/node-helper'
 import { createNode } from './utils/nodes'
 import {
-  addDeploymentToSimpleProject,
+  addDeploymentToVersionlessProject,
   addDeploymentToVersion,
-  addImageToSimpleProject,
+  addImageToVersionlessProject,
   createImage,
   createProject,
   createVersion,
@@ -16,7 +17,7 @@ const setup = async (
   page: Page,
   nodeName: string,
   projectName: string,
-  type: 'Simple' | 'Complex' = 'Simple',
+  type: ProjectType = 'versionless',
 ): Promise<{ nodeId: string; projectId: string }> => {
   const nodeId = await createNode(page, nodeName)
   const projectId = await createProject(page, projectName, type)
@@ -27,14 +28,14 @@ const setup = async (
   }
 }
 
-test.describe('Simple project', () => {
+test.describe('Versionless Project', () => {
   test('preparing deployment should be not copiable on deployment list', async ({ page }) => {
     const nodeName = 'NODE-TEST1'
     const projectName = 'project-copy-test-1'
 
     const { projectId } = await setup(page, nodeName, projectName)
-    await addImageToSimpleProject(page, projectId, 'nginx')
-    await addDeploymentToSimpleProject(page, projectId, nodeName, null)
+    await addImageToVersionlessProject(page, projectId, 'nginx')
+    await addDeploymentToVersionlessProject(page, projectId, nodeName, null)
 
     await page.goto(ROUTE_DEPLOYMENTS)
 
@@ -47,8 +48,8 @@ test.describe('Simple project', () => {
     const projectName = 'project-copy-test-2'
 
     const { projectId } = await setup(page, nodeName, projectName)
-    await addImageToSimpleProject(page, projectId, 'nginx')
-    await addDeploymentToSimpleProject(page, projectId, nodeName, null)
+    await addImageToVersionlessProject(page, projectId, 'nginx')
+    await addDeploymentToVersionlessProject(page, projectId, nodeName, null)
 
     await page.goto(projectUrl(projectId))
 
@@ -63,8 +64,8 @@ test.describe('Simple project', () => {
     const projectName = 'project-copy-test-3'
 
     const { projectId } = await setup(page, DAGENT_NODE, projectName)
-    await addImageToSimpleProject(page, projectId, 'nginx')
-    const { url } = await addDeploymentToSimpleProject(page, projectId, DAGENT_NODE, null)
+    await addImageToVersionlessProject(page, projectId, 'nginx')
+    const { url } = await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, null)
 
     await page.goto(url)
 
@@ -76,10 +77,10 @@ test.describe('Simple project', () => {
   test('successful deployment should be not copiable on deployment details page', async ({ page }, testInfo) => {
     const projectName = 'project-copy-test-4'
 
-    const projectId = await createProject(page, projectName, 'Simple')
-    await addImageToSimpleProject(page, projectId, 'nginx')
+    const projectId = await createProject(page, projectName, 'versionless')
+    await addImageToVersionlessProject(page, projectId, 'nginx')
 
-    const prefix = 'pw-simp-copy'
+    const prefix = 'succ-versionless-copy'
 
     const deploymentId = await deployWithDagent(page, prefix, projectId, '', false, testInfo.title)
 
@@ -89,11 +90,11 @@ test.describe('Simple project', () => {
   })
 })
 
-test.describe('Complex project', () => {
+test.describe('Versioned Project', () => {
   test('preparing deployment should be not copiable on deployment list', async ({ page }) => {
     const projectName = 'project-copy-test-5'
 
-    const { projectId } = await setup(page, DAGENT_NODE, projectName, 'Complex')
+    const { projectId } = await setup(page, DAGENT_NODE, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '1.0.0', 'Incremental')
     await createImage(page, projectId, versionId, 'nginx')
     await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE)
@@ -107,7 +108,7 @@ test.describe('Complex project', () => {
   test('preparing deployment should be not copiable on deployment list in project', async ({ page }) => {
     const projectName = 'project-copy-test-6'
 
-    const { projectId } = await setup(page, DAGENT_NODE, projectName, 'Complex')
+    const { projectId } = await setup(page, DAGENT_NODE, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '1.0.0', 'Incremental')
     await createImage(page, projectId, versionId, 'nginx')
     await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE)
@@ -122,7 +123,7 @@ test.describe('Complex project', () => {
   test('preparing deployment should be not copiable on deployment details page', async ({ page }) => {
     const projectName = 'project-copy-test-7'
 
-    const { projectId } = await setup(page, DAGENT_NODE, projectName, 'Complex')
+    const { projectId } = await setup(page, DAGENT_NODE, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '1.0.0', 'Incremental')
     await createImage(page, projectId, versionId, 'nginx')
 
@@ -138,13 +139,13 @@ test.describe('Complex project', () => {
   test('should be able to copy successful deployment', async ({ page }, testInfo) => {
     const projectName = 'project-copy-test-8'
 
-    const projectId = await createProject(page, projectName, 'Complex')
+    const projectId = await createProject(page, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
     await createImage(page, projectId, versionId, 'nginx')
 
     const deploymentId = await deployWithDagent(
       page,
-      'pw-complex-copibility',
+      'versioned-copibility',
       projectId,
       versionId,
       false,
@@ -159,26 +160,26 @@ test.describe('Complex project', () => {
     await page.locator('button:has-text("Copy")').click()
     await waitForURLExcept(page, { startsWith: `${ROUTE_DEPLOYMENTS}/`, except: currentUrl })
 
-    await expect(await page.locator('div.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
+    await expect(await page.locator('.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
 
   test('should be able to copy obsolete deployment', async ({ page }, testInfo) => {
     const projectName = 'project-copy-test-9'
 
-    const projectId = await createProject(page, projectName, 'Complex')
+    const projectId = await createProject(page, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
     await createImage(page, projectId, versionId, 'nginx')
 
     const deploymentId = await deployWithDagent(
       page,
-      'pw-complex-copibility-obsolete',
+      'versioned-copibility-obsolete',
       projectId,
       versionId,
       false,
       `${testInfo.title}1`,
     )
 
-    await deployWithDagent(page, 'pw-complex-copibility-obsolete', projectId, versionId, false, `${testInfo.title}2`)
+    await deployWithDagent(page, 'versioned-copibility-obsolete', projectId, versionId, false, `${testInfo.title}2`)
 
     await page.goto(deploymentUrl(deploymentId))
 
@@ -188,7 +189,7 @@ test.describe('Complex project', () => {
     await page.locator('button:has-text("Copy")').click()
     await waitForURLExcept(page, { startsWith: `${ROUTE_DEPLOYMENTS}/`, except: currentUrl })
 
-    await expect(await page.locator('div.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
+    await expect(await page.locator('.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
 
   // TODO (@m8vago): 'In Progress deployment should be not copiable'
@@ -198,20 +199,20 @@ test.describe('Complex project', () => {
     page,
   }, testInfo) => {
     const projectName = 'project-copy-test-11'
-    const projectId = await createProject(page, projectName, 'Complex')
+    const projectId = await createProject(page, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
 
     await createImage(page, projectId, versionId, 'nginx')
 
-    await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, 'pw-complex-first')
+    await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, 'versioned-first')
 
-    await deployWithDagent(page, 'pw-complex-second', projectId, versionId, false, testInfo.title)
+    await deployWithDagent(page, 'versioned-second', projectId, versionId, false, testInfo.title)
 
     await page.goto(versionUrl(projectId, versionId))
 
     await page.locator('button:has-text("Deployments")').click()
 
-    const copy = await page.locator(`[alt="Copy"]:right-of(:text("pw-complex-second"))`).first()
+    const copy = await page.locator(`[alt="Copy"]:right-of(:text("versioned-second"))`).first()
 
     const currentUrl = page.url()
     await copy.click()
@@ -221,6 +222,6 @@ test.describe('Complex project', () => {
 
     await page.locator('button:has-text("Deployments")').click()
 
-    await expect(await page.locator('div.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(2)
+    await expect(await page.locator('.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(2)
   })
 })

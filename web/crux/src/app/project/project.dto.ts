@@ -4,7 +4,7 @@ import { IsBoolean, IsIn, IsNumber, IsOptional, IsString, IsUUID } from 'class-v
 import { VersionDto } from '../version/version.dto'
 import { AuditDto } from '../audit/audit.dto'
 
-export const PROJECT_TYPE_VALUES = ['simple', 'complex'] as const
+export const PROJECT_TYPE_VALUES = ['versionless', 'versioned'] as const
 export type ProjectTypeDto = (typeof PROJECT_TYPE_VALUES)[number]
 
 export class BasicProjectDto {

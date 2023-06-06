@@ -24,29 +24,34 @@ import UuidValidationGuard from './guards/uuid-params.validation.guard'
 import appConfig from './config/app.config'
 import pinoLoggerConfig from './config/pino.logger.config'
 
+const imports = [
+  ProjectModule,
+  RegistryModule,
+  NodeModule,
+  VersionModule,
+  ImageModule,
+  TeamModule,
+  DeployModule,
+  AgentModule,
+  AuditModule,
+  HealthModule,
+  NotificationModule,
+  TemplateModule,
+  DashboardModule,
+  StorageModule,
+  ConfigModule.forRoot(appConfig),
+  EmailModule,
+  PrometheusModule.register({
+    controller: MetricsController,
+  }),
+]
+
+if (process.env.NODE_ENV === 'production') {
+  imports.push(LoggerModule.forRoot(pinoLoggerConfig))
+}
+
 @Module({
-  imports: [
-    ProjectModule,
-    RegistryModule,
-    NodeModule,
-    VersionModule,
-    ImageModule,
-    TeamModule,
-    DeployModule,
-    AgentModule,
-    AuditModule,
-    HealthModule,
-    NotificationModule,
-    TemplateModule,
-    DashboardModule,
-    StorageModule,
-    ConfigModule.forRoot(appConfig),
-    EmailModule,
-    PrometheusModule.register({
-      controller: MetricsController,
-    }),
-    LoggerModule.forRoot(pinoLoggerConfig),
-  ],
+  imports,
   controllers: [],
   providers: [PrismaService, ShutdownService, UuidValidationGuard],
 })

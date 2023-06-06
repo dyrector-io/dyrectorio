@@ -7,11 +7,11 @@ import { waitSocket, waitSocketReceived, waitSocketSent } from './utils/websocke
 
 const setup = async (
   page: Page,
-  projectNAme: string,
+  projectName: string,
   versionName: string,
   imageName: string,
 ): Promise<{ projectId: string; versionId: string; imageId: string }> => {
-  const projectId = await createProject(page, projectNAme, 'Complex')
+  const projectId = await createProject(page, projectName, 'versioned')
   const versionId = await createVersion(page, projectId, versionName, 'Incremental')
   const imageId = await createImage(page, projectId, versionId, imageName)
 

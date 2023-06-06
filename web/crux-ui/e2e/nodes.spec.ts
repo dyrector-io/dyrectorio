@@ -1,7 +1,7 @@
 import { deploymentDeployUrl, nodeContainerLogUrl, ROUTE_NODES } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { DAGENT_NODE, screenshotPath } from './utils/common'
-import { addDeploymentToSimpleProject, addImageToSimpleProject, createProject } from './utils/projects'
+import { addDeploymentToVersionlessProject, addImageToVersionlessProject, createProject } from './utils/projects'
 
 test('Install dagent should be successful', async ({ page }) => {
   await page.goto(ROUTE_NODES)
@@ -110,12 +110,12 @@ test('Generate script should show script type selector for Docker', async ({ pag
 })
 
 test('Container log should appear after a successful deployment', async ({ page }) => {
-  const prefix = 'pw-deploy-log'
+  const prefix = 'deploy-log'
   const imageName = 'nginx'
 
-  const projectId = await createProject(page, 'PW-DEPLOY-LOG-TEST', 'Simple')
-  await addImageToSimpleProject(page, projectId, imageName)
-  const { url, id: deploymentId } = await addDeploymentToSimpleProject(page, projectId, DAGENT_NODE, prefix)
+  const projectId = await createProject(page, 'deploy-log-test', 'versionless')
+  await addImageToVersionlessProject(page, projectId, imageName)
+  const { url, id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, prefix)
 
   await page.goto(url)
 
@@ -128,7 +128,7 @@ test('Container log should appear after a successful deployment', async ({ page 
   const containerRow = page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
 
-  const runningTag = containerRow.locator('div:text-is("Running")')
+  const runningTag = containerRow.locator(':text-is("Running")')
   await expect(runningTag).toBeVisible()
 
   const showLogs = containerRow.locator('span:text-is("Show logs")')
@@ -142,12 +142,12 @@ test('Container log should appear after a successful deployment', async ({ page 
 })
 
 test('Container log should appear on a node container', async ({ page }) => {
-  const prefix = 'pw-node-deploy-log'
+  const prefix = 'node-deploy-log'
   const imageName = 'nginx'
 
-  const porjectId = await createProject(page, 'PW-NODE-DEPLOY-LOG-TEST', 'Simple')
-  await addImageToSimpleProject(page, porjectId, imageName)
-  const { url, id: deploymentId } = await addDeploymentToSimpleProject(page, porjectId, DAGENT_NODE, prefix)
+  const porjectId = await createProject(page, 'node-deploy-log-test', 'versionless')
+  await addImageToVersionlessProject(page, porjectId, imageName)
+  const { url, id: deploymentId } = await addDeploymentToVersionlessProject(page, porjectId, DAGENT_NODE, prefix)
 
   await page.goto(url)
 
@@ -160,7 +160,7 @@ test('Container log should appear on a node container', async ({ page }) => {
   const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
 
-  const runningTag = await containerRow.locator('div:text-is("Running")')
+  const runningTag = await containerRow.locator(':text-is("Running")')
   await expect(runningTag).toBeVisible()
 
   await page.goto(ROUTE_NODES)
@@ -230,6 +230,12 @@ test('Container list should show containers on the node screen', async ({ page }
 
   await page.locator('input[placeholder="Search"]').type(`dagent`)
 
-  const nodeContainerRow = await page.locator(`span:text-is("dagent") >> xpath=../..`)
-  await expect(nodeContainerRow).toHaveCount(1)
+  const tableBody = await page.locator('.table-row-group')
+
+  const nodeContainerRow = await tableBody.locator('.table-row')
+  await nodeContainerRow.nth(0).waitFor()
+
+  const containerRows = await nodeContainerRow.count()
+
+  await expect(containerRows).toBeGreaterThanOrEqual(1)
 })

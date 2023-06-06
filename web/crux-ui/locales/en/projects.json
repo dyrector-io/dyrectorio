@@ -13,8 +13,9 @@
   "versions": "Versions",
   "changelog": "Changelog",
 
-  "simple": "Simple",
-  "complex": "Complex",
+  "versioning": "Versioning",
+  "versionless": "Versionless",
+  "versioned": "Versioned",
   "all": "All",
 
   "addVersion": "Add version",

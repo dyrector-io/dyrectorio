@@ -3,14 +3,14 @@ import { useRouter } from 'next/router'
 import { useImagesState } from './images/use-images-state'
 import VersionSections, { parseVersionSectionState } from './version-sections'
 
-interface SimpleVersionSectionsProps {
+interface VersionlessProjectSectionsProps {
   project: ProjectDetails
   version: VersionDetails
   setSaving: (saving: boolean) => void
   setTopBarContent: (node: React.ReactNode) => void
 }
 
-const SimpleVersionSections = (props: SimpleVersionSectionsProps) => {
+const VersionlessProjectSections = (props: VersionlessProjectSectionsProps) => {
   const { project, version, setSaving, setTopBarContent } = props
 
   const router = useRouter()
@@ -33,4 +33,4 @@ const SimpleVersionSections = (props: SimpleVersionSectionsProps) => {
   )
 }
 
-export default SimpleVersionSections
+export default VersionlessProjectSections
