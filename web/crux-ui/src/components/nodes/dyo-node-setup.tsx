@@ -68,7 +68,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
       type: node.type,
       rootPath: '',
       scriptType: 'shell',
-      traefik: null,
+      dagentTraefik: null,
     },
     validationSchema: nodeGenerateScriptSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -134,10 +134,10 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
               <div className="flex flex-row mb-2">
                 <DyoLabel className="my-auto mx-4">{t('installTraefik')}</DyoLabel>
 
-                <DyoSwitch name="traefik" checked={!!formik.values.traefik} onCheckedChange={onTraefikChanged} />
+                <DyoSwitch name="traefik" checked={!!formik.values.dagentTraefik} onCheckedChange={onTraefikChanged} />
               </div>
 
-              {formik.values.traefik && (
+              {formik.values.dagentTraefik && (
                 <div className="ml-2 mb-2">
                   <DyoLabel className="text-lg mb-2.5" textColor="text-bright">
                     {t('traefikAcmeEmail')}
@@ -147,9 +147,9 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                     name="traefik.acmeEmail"
                     className="max-w-lg mb-2.5"
                     grow
-                    value={formik.values.traefik.acmeEmail ?? ''}
+                    value={formik.values.dagentTraefik.acmeEmail ?? ''}
                     onChange={formik.handleChange}
-                    message={formik.errors.traefik ? formik.errors.traefik.acmeEmail : null}
+                    message={formik.errors.dagentTraefik ? formik.errors.dagentTraefik.acmeEmail : null}
                   />
                 </div>
               )}
