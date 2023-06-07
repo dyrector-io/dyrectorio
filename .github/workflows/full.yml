@@ -254,17 +254,17 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Load go mod
         run: go mod tidy
-      - name: Compile
-        run: |
-          make compile-cli
-          make compile-agents
+      - name: Compile CLI
+        run: make compile-cli
+      - name: Compile agents
+        run: make compile-agents
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Setup binfmt
         run: make binfmt
-      - name: Build
+      - name: Build CLI & agents
         run: |
           make build-cli
           make build-agents
@@ -620,9 +620,17 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
-    needs: [gather_changes,go_push]
+    needs: [gather_changes, go_push]
     if: |
-      always()
+      always() &&
+      (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
+      needs.e2e.result == 'success' &&
+      needs.go_build.result == 'success' &&
+      (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
+      (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
+      (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
+      needs.conventional_commits.result == 'success' &&
+      needs.gather_changes.result == 'success'
     steps:
       - name: Login to GHCR
         uses: docker/login-action@v2

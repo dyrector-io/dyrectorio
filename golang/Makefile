@@ -95,8 +95,7 @@ single-arch-check:
 .PHONY: compile-cli
 compile-cli:
 	cd cmd/dyo && \
-	$(foreach arch, $(GOARCHS), $(foreach os,$(GOOS), ${GOPARAMS} GOARCH=$(arch) GOOS=${os} go build ${LDFLAGS} -o ../../build/out/dyo-${os}-${a
-rch}${OUT_EXT};))
+	$(foreach arch, $(GOARCHS), $(foreach os, $(GOOS), ${GOPARAMS} GOARCH=$(arch) GOOS=${os} go build ${LDFLAGS} -o ../../build/out/dyo-${os}-${arch}${OUT_EXT};))
 
 .PHONY: install-cli
 install-cli: single-arch-check compile-cli
@@ -108,13 +107,12 @@ install-cli: single-arch-check compile-cli
 .PHONY: compile-crane
 compile-crane:
 	cd cmd/crane && \
-	$(foreach arch, $(GOARCHS), $(foreach os,$(GOOS), ${GOPARAMS} GOARCH=$(arch) GOOS=${os} go build ${LDFLAGS} -o ../../build/out/crane-${os}-$
-{arch}${OUT_EXT};))
+	$(foreach arch, $(GOARCHS), $(foreach os, $(GOOS), ${GOPARAMS} GOARCH=$(arch) GOOS=${os} go build ${LDFLAGS} -o ../../build/out/crane-${os}-${arch}${OUT_EXT};))
 
 .PHONY: compile-dagent
 compile-dagent:
-	$(foreach arch, $(GOARCHS), $(foreach os,$(GOOS), ${GOPARAMS} GOARCH=$(arch) GOOS=${os} go build ${LDFLAGS} -o ../../build/out/dagent-${os}-
-${arch}${OUT_EXT};))
+	cd cmd/dagent && \
+	$(foreach arch, $(GOARCHS), $(foreach os, $(GOOS), ${GOPARAMS} GOARCH=$(arch) GOOS=${os} go build ${LDFLAGS} -o ../../build/out/dagent-${os}-${arch}${OUT_EXT};))
 
 .PHONY: install-go-tools
 install-go-tools:
@@ -140,13 +138,12 @@ lint:
 .PHONY: build-cli
 build-cli:
 	cd build && \
-	docker buildx build  --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64 --load -t ${ORG_REGISTRY}/cli/dyo:$(image_ve
-rsion) -t ${DOCKER_REGISTRY}/dyo:$(image_version) -f cli/Dockerfile .
+	docker buildx build  --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64 --load -t ${ORG_REGISTRY}/cli/dyo:$(image_version) -t ${DOCKER_REGISTRY}/dyo:$(image_version) -f cli/Dockerfile .
 
 .PHONY: build-cli-push
 build-cli-push:
-       cd build && \
-       docker buildx build  --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64,linux/arm64 --push -t ${ORG_REGISTRY}/cli/dyo:$(image_version) -t ${DOCKER_REGISTRY}/dyo:$(image_version) -f cli/Dockerfile .
+	cd build && \
+	docker buildx build  --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64,linux/arm64 --push -t ${ORG_REGISTRY}/cli/dyo:$(image_version) -t ${DOCKER_REGISTRY}/dyo:$(image_version) -f cli/Dockerfile .
 
 .PHONY: build-dagent
 build-dagent: compile-dagent
@@ -156,20 +153,17 @@ build-dagent: compile-dagent
 .PHONY: build-crane
 build-crane: compile-crane
 	cd build && \
-	docker buildx build  --build-arg AGENT_BINARY=crane --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64 --load -t ${A
-GENT_REGISTRY_URL}/crane:$(image_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
+	docker buildx build  --build-arg AGENT_BINARY=crane --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64 --load -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
 
 PHONY: build-dagent-multi-push
 build-dagent-multi-push: compile-dagent
 	cd build && \
-	docker buildx build --build-arg AGENT_BINARY=dagent --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64,linux/arm64 -
--push -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${DOCKER_REGISTRY}/dagent:$(image_version) .
+	docker buildx build --build-arg AGENT_BINARY=dagent --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64,linux/arm64 --push -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${DOCKER_REGISTRY}/dagent:$(image_version) .
 
 .PHONY: build-crane-multi-push
 build-crane-multi-push: compile-crane
 	cd build && \
-	docker buildx build  --build-arg AGENT_BINARY=crane --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64,linux/arm64 -
--push -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
+	docker buildx build  --build-arg AGENT_BINARY=crane --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64,linux/arm64 --push -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
 
 .PHONY: cli-compile-build-push
 cbpcli:	compile-cli build-cli push-cli
@@ -182,7 +176,7 @@ cbpcli:	cli-compile-build-push
 build-agents: build-dagent build-crane
 
 .PHONY: build-both-push-both
-build-both-push-both: build-both-push-both: build-crane-multi-push build-dagent-multi-push
+build-both-push-both: build-crane-multi-push build-dagent-multi-push
 
 # short alias for the previous target
 .PHONY: bbpb
