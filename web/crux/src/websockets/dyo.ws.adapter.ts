@@ -38,6 +38,8 @@ import {
   namespaceOf,
 } from './common'
 import WsRoute from './route'
+import { IncomingMessage } from 'http'
+import { OutgoingHttpHeaders } from 'http2'
 
 export enum WebSocketReadyState {
   CONNECTING_STATE = 0,
@@ -65,13 +67,42 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     return server
   }
 
+  verifyClient(
+    info: { origin: string; secure: boolean; req: IncomingMessage },
+    callback: (res: boolean, code?: number, message?: string, headers?: OutgoingHttpHeaders) => void,
+  ) {
+    const { req } = info
+
+    const ctx = new ExecutionContextHost([req], null, this.verifyClient)
+
+    this.authGuard
+      .canActivate(ctx)
+      .then(authorized => {
+        this.logger.debug(
+          `Connection ${authorized ? 'authorized' : 'unauthorized'} - ${req.socket.remoteAddress}`,
+        )
+        callback(authorized)
+      })
+      .catch(err => {
+        this.logger.error(err)
+        callback(false)
+      })
+  }
+
+  createWebSocketServerOptions(httpServer: http.Server) {
+    const verifyClient = this.verifyClient.bind(this)
+
+    return {
+      server: httpServer,
+      verifyClient,
+    }
+  }
+
   create(_port: number, options?: Record<string, any> & { namespace?: string; server?: any }) {
     if (!options.server) {
       const httpServer = this.httpServer as http.Server
       this.server = this.bindErrorHandler(
-        new WebSocketServer({
-          server: httpServer,
-        }),
+        new WebSocketServer(this.createWebSocketServerOptions(httpServer)),
       )
       this.server.on(CONNECTION_EVENT, (client, req) => this.onClientConnect(client as WsClient, req))
 
@@ -124,25 +155,6 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     return super.close(server)
   }
 
-  private async authorize(client: WsClient): Promise<boolean> {
-    const ctx = new ExecutionContextHost([client.connectionRequest], null, this.authorize)
-    let authorized = false
-    try {
-      authorized = await this.authGuard.canActivate(ctx)
-    } catch {
-      /* empty */
-    }
-
-    if (!authorized) {
-      client.close()
-    }
-
-    this.logger.debug(
-      `Connection ${authorized ? 'authorized' : 'unauthorized'} - ${client.connectionRequest.socket.remoteAddress}`,
-    )
-    return authorized
-  }
-
   async bindMessageHandlers(
     client: WsClient,
     handlers: MessageMappingProperties[],
@@ -170,11 +182,6 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
 
   async bindClientMessageHandlers(client: WsClient): Promise<boolean> {
     const { setup } = client
-
-    const authorized = await setup.authorized
-    if (!authorized) {
-      return false
-    }
 
     const onClose = fromEvent(client, CLOSE_EVENT).pipe(share(), first())
 
@@ -305,7 +312,6 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     client.setup = new WsClientSetup(
       client,
       client.token,
-      () => this.authorize(client),
       () => this.bindClientMessageHandlers(client),
     )
     client.setup.start()

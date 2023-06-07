@@ -12,6 +12,7 @@ import {
 } from './common'
 import WebSocketClientEndpoint from './websocket-client-endpoint'
 import WebSocketClientRoute from './websocket-client-route'
+import { delay } from '@app/utils'
 
 class WebSocketClient {
   private logger = new Logger('WebSocketClient') // need to be explicit string because of production build uglification
@@ -130,7 +131,13 @@ class WebSocketClient {
     }
 
     // try to connect
-    this.connectionAttempt = this.createConnectionAttempt()
+    const now = Date.now()
+    const elapsed = now - this.lastAttempt
+    if (elapsed < WS_RECONNECT_TIMEOUT) {
+      this.connectionAttempt = delay(WS_RECONNECT_TIMEOUT - elapsed).then(() => this.createConnectionAttempt())
+    } else {
+      this.connectionAttempt = this.createConnectionAttempt()
+    }
 
     const result = await this.connectionAttempt
     this.connectionAttempt = null
