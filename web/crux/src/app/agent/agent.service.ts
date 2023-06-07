@@ -603,13 +603,21 @@ export default class AgentService {
   }
 
   private async createAgentAudit(nodeId: string, event: AgentEventTypeEnum, data?: any) {
-    await this.prisma.agentEvents.create({
-      data: {
-        nodeId,
-        event,
-        data: data ?? undefined,
-      },
-    })
+    try {
+      await this.prisma.agentEvents.create({
+        data: {
+          nodeId,
+          event,
+          data: data ?? undefined,
+        },
+      })
+    } catch (err) {
+      if (event === 'kicked' || event === 'left') {
+        // When an agent is deleted we cannot insert an AgentEvent for it anymore
+        return
+      }
+      throw err
+    }
   }
 
   private logServiceInfo(): void {
