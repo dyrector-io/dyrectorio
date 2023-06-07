@@ -80,6 +80,7 @@ export type ChangePassword = {
 
 export type IdentityPublicMetadata = {
   recovered: string
+  disableOnboarding?: boolean
 }
 
 export type IdentityTraitsName = {

@@ -12,5 +12,6 @@
   "expiresAt": "Expires at",
   "newToken": "New token",
   "expirationIn": "Expiration in",
-  "newTokenTips": "Here is your newly created token, make sure to copy it now. You won’t be able to see it again!"
+  "newTokenTips": "Here is your newly created token, make sure to copy it now. You won’t be able to see it again!",
+  "onboarding": "Onboarding tips"
 }

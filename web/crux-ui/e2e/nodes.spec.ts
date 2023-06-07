@@ -1,4 +1,4 @@
-import { deploymentContainerLogUrl, deploymentDeployUrl, nodeContainerLogUrl, ROUTE_NODES } from '@app/routes'
+import { deploymentDeployUrl, nodeContainerLogUrl, ROUTE_NODES } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { DAGENT_NODE, screenshotPath } from './utils/common'
 import { addDeploymentToVersionlessProject, addImageToVersionlessProject, createProject } from './utils/projects'
@@ -134,12 +134,7 @@ test('Container log should appear after a successful deployment', async ({ page 
   const showLogs = containerRow.locator('span:text-is("Show logs")')
 
   await showLogs.click()
-  await page.waitForURL(
-    deploymentContainerLogUrl(deploymentId, {
-      prefix,
-      name: imageName,
-    }),
-  )
+  await page.waitForURL(`${ROUTE_NODES}/**/log**`)
 
   await page.waitForSelector('div.font-roboto')
   const terminal = page.locator('div.font-roboto')

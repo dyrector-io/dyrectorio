@@ -1,135 +1,118 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { DeploymentStatusEnum } from '@prisma/client'
 import PrismaService from 'src/services/prisma.service'
-import AuditService from '../audit/audit.service'
 import { DashboardDto } from './dashboard.dto'
 import DashboardMapper from './dashboard.mapper'
 
 @Injectable()
 export default class DashboardService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly mapper: DashboardMapper,
-    private readonly auditService: AuditService,
-  ) {}
+  constructor(private readonly prisma: PrismaService, private readonly mapper: DashboardMapper) {}
 
   public async getDashboard(identity: Identity): Promise<DashboardDto> {
-    const team = await this.prisma.usersOnTeams.findFirstOrThrow({
-      select: {
-        teamId: true,
-      },
+    const team = await this.prisma.team.findFirstOrThrow({
       where: {
-        active: true,
-        userId: identity.id,
-      },
-    })
-
-    const teamFilter = {
-      where: {
-        teamId: team.teamId,
-      },
-    }
-
-    const users = await this.prisma.usersOnTeams.count(teamFilter)
-    const auditLogEntries = await this.prisma.auditLog.count(teamFilter)
-    const projects = await this.prisma.project.count(teamFilter)
-
-    const versions = await this.prisma.version.count({
-      where: {
-        project: {
-          teamId: team.teamId,
-        },
-      },
-    })
-
-    const deployments = await this.prisma.deployment.count({
-      where: {
-        version: {
-          project: {
-            teamId: team.teamId,
-          },
-        },
-      },
-    })
-
-    const failedDeployments = await this.prisma.deployment.count({
-      where: {
-        version: {
-          project: {
-            teamId: team.teamId,
-          },
-        },
-        status: DeploymentStatusEnum.failed,
-      },
-    })
-
-    const activeNodes = await this.prisma.node.findMany({
-      ...teamFilter,
-      select: {
-        id: true,
-        name: true,
-      },
-    })
-
-    const latestDeployments = await this.prisma.deployment.findMany({
-      where: {
-        version: {
-          project: {
-            teamId: team.teamId,
+        users: {
+          some: {
+            active: true,
+            userId: identity.id,
           },
         },
       },
       select: {
         id: true,
-        createdAt: true,
-        version: {
+        _count: {
           select: {
-            name: true,
+            users: true,
+            auditLog: true,
+            projects: true,
+          },
+        },
+        nodes: {
+          select: {
             id: true,
-            changelog: true,
-            project: {
+          },
+          take: 1,
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
+        projects: {
+          select: {
+            id: true,
+            versions: {
               select: {
                 id: true,
-                name: true,
+                images: {
+                  select: {
+                    id: true,
+                  },
+                  take: 1,
+                  orderBy: {
+                    createdAt: 'asc',
+                  },
+                },
+                deployments: {
+                  select: {
+                    id: true,
+                    status: true,
+                  },
+                  take: 1,
+                  orderBy: {
+                    createdAt: 'asc',
+                  },
+                },
+              },
+              take: 1,
+              orderBy: {
+                createdAt: 'asc',
               },
             },
           },
-        },
-        node: {
-          select: {
-            name: true,
+          take: 1,
+          orderBy: {
+            createdAt: 'asc',
           },
         },
       },
-      take: 2,
-      orderBy: { createdAt: 'desc' },
     })
 
-    const auditTo = new Date()
-    const auditFrom = new Date(auditTo)
-    auditFrom.setMonth(auditTo.getMonth() - 1)
-
-    const auditLog = await this.auditService.getAuditLog(
-      {
-        skip: 0,
-        take: 10,
-        from: auditFrom,
-        to: auditTo,
+    const versions = this.prisma.version.count({
+      where: {
+        project: {
+          teamId: team.id,
+        },
       },
-      identity,
-    )
+    })
+
+    const deployments = this.prisma.deployment.count({
+      where: {
+        version: {
+          project: {
+            teamId: team.id,
+          },
+        },
+      },
+    })
+
+    const failedDeployments = this.prisma.deployment.count({
+      where: {
+        status: 'failed',
+        version: {
+          project: {
+            teamId: team.id,
+          },
+        },
+      },
+    })
+
+    const onboard = this.mapper.teamToOnboard(team)
 
     return {
-      users,
-      auditLogEntries,
-      projects,
-      versions,
-      deployments,
-      failedDeployments,
-      nodes: this.mapper.nodesToDto(activeNodes),
-      latestDeployments: this.mapper.deploymentsToDto(latestDeployments),
-      auditLog: auditLog.items,
+      ...team._count,
+      versions: await versions,
+      deployments: await deployments,
+      failedDeployments: await failedDeployments,
+      onboarding: onboard,
     }
   }
 }

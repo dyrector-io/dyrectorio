@@ -1,57 +1,82 @@
+import Onboarding from '@app/components/dashboard/onboarding'
 import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
-import UserDefaultAvatar from '@app/components/team/user-default-avatar'
-import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { DyoList } from '@app/elements/dyo-list'
-import { AuditLog, auditToMethod, Dashboard } from '@app/models'
-import { API_DASHBOARD, deploymentUrl, ROUTE_DASHBOARD } from '@app/routes'
-import { fetcher, utcDateToLocale, withContextAuthorization } from '@app/utils'
+import { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import { defaultApiErrorHandler } from '@app/errors'
+import useConfirmation from '@app/hooks/use-confirmation'
+import { Dashboard } from '@app/models'
+import { API_DASHBOARD, API_USERS_ME_PREFERENCES_ONBOARDING, ROUTE_DASHBOARD } from '@app/routes'
+import { fetcher, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import clsx from 'clsx'
+import { identityOnboardingDisabled, obtainSessionFromRequest } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
+import { useState } from 'react'
 import useSWR from 'swr'
 
-const headerClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
-const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-32', 'w-2/12', '']
-
-type DashboardPageProps = Dashboard
+type DashboardPageProps = {
+  dashboard: Dashboard
+  onboardingDisabled: boolean
+}
 
 const DashboardPage = (props: DashboardPageProps) => {
   const { t, lang } = useTranslation('dashboard')
+
+  const { dashboard: propsDashboard, onboardingDisabled: propsOnboardingDisabled } = props
+
+  const handleApiError = defaultApiErrorHandler(t)
+
   const { data } = useSWR<Dashboard>(API_DASHBOARD, fetcher)
 
-  const dashboard = data ?? props
+  const dashboard = data ?? propsDashboard
+
+  const [onboardingDisabled, setOnboardingDisabled] = useState(propsOnboardingDisabled)
+
+  const [confirmHideOnboardingConfig, confirmHideOnboarding] = useConfirmation()
+
+  const hideOnboarding = async () => {
+    const confirmed = await confirmHideOnboarding()
+    if (!confirmed) {
+      return
+    }
+
+    const res = await fetch(API_USERS_ME_PREFERENCES_ONBOARDING, { method: onboardingDisabled ? 'PUT' : 'DELETE' })
+    if (!res.ok) {
+      handleApiError(res)
+      return
+    }
+
+    setOnboardingDisabled(!onboardingDisabled)
+  }
 
   const selfLink: BreadcrumbLink = {
     name: t('common:dashboard'),
     url: ROUTE_DASHBOARD,
   }
 
-  const getStatisticIcon = (property: string) => {
-    switch (property) {
-      case 'auditLogEntries':
+  const getStatisticIcon = (it: string) => {
+    switch (it) {
+      case 'auditLog':
         return 'audits'
       case 'failedDeployments':
         return 'failed-deployments'
       default:
-        return property
+        return it
     }
   }
 
-  const getStatisticLabel = (property: string) => {
-    switch (property) {
+  const getStatisticLabel = (it: string) => {
+    switch (it) {
       case 'users':
         return 'common:users'
       case 'deployments':
         return 'common:deployments'
       default:
-        return property
+        return it
     }
   }
 
@@ -74,21 +99,6 @@ const DashboardPage = (props: DashboardPageProps) => {
     </DyoCard>
   )
 
-  const listHeaders = [
-    '',
-    ...['common:email', 'common:date', 'common:method', 'common:event', 'common:data'].map(it => t(it)),
-  ]
-
-  const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
-    <UserDefaultAvatar className="ml-auto" />,
-    <div className="font-semibold min-w-max">{log.email}</div>,
-    <div className="min-w-max">{utcDateToLocale(log.createdAt)}</div>,
-    <div>{auditToMethod(log)}</div>,
-    <div>{log.event}</div>,
-    <div className="max-w-4xl truncate">{JSON.stringify(log.data)}</div>,
-  ]
-  /* eslint-enable react/jsx-key */
-
   return (
     <Layout title={t('common:dashboard')}>
       <PageHeading pageLink={selfLink} />
@@ -106,99 +116,31 @@ const DashboardPage = (props: DashboardPageProps) => {
           </div>
         </div>
 
-        <div className="flex flex-row">
-          {dashboard.nodes.length > 0 && (
-            <div className={clsx('flex flex-col mr-4', dashboard.nodes.length > 1 ? 'min-w-[50%]' : null)}>
-              <DyoLabel className="mb-2 mt-4 text-lg" textColor="text-light">
-                {t('activeNodes')}
-              </DyoLabel>
-
-              <div className={clsx('columns-1', dashboard.nodes.length > 1 ? 'lg:columns-2' : null, 'gap-4')}>
-                {dashboard.nodes.map(it => (
-                  <DyoCard className="flex flex-col p-4 break-inside-avoid mb-4" key={it.id}>
-                    <DyoLabel className="font-semibold text-ellipsis break-words" textColor="text-bright">
-                      {it.name}
-                    </DyoLabel>
-
-                    <div className="flex flex-row justify-start my-4">
-                      <DyoLabel textColor="text-light-eased">{`${t('common:address')}:`}</DyoLabel>
-                      <span className="text-bright ml-2 font-semibold">{it.address}</span>
-                    </div>
-                    <div className="flex flex-row justify-start">
-                      <DyoLabel textColor="text-light-eased">{`${t('common:version')}:`}</DyoLabel>
-                      <span className="text-bright font-semibold ml-2">{it.version}</span>
-                    </div>
-                  </DyoCard>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {dashboard.latestDeployments.length > 0 && (
-            <div className="flex flex-col w-full">
-              <DyoLabel className="mb-2 mt-4 text-lg" textColor="text-light">
-                {t('lastDeploys')}
-              </DyoLabel>
-              <div className={clsx('columns-1', dashboard.nodes.length > 1 ? null : 'lg:columns-2')}>
-                {dashboard.latestDeployments.map(it => (
-                  <DyoCard className="flex flex-col p-4 mb-4 break-inside-avoid" key={it.id}>
-                    <div className="flex flex-row justify-between">
-                      <div className="flex flex-row justify-start">
-                        <DyoLabel textColor="text-light-eased mb-4">{`${t('common:project')}:`}</DyoLabel>
-                        <span className="text-bright font-semibold ml-2 text-ellipsis break-words">{it.project}</span>
-                      </div>
-                      <DyoLabel textColor="text-light-eased ml-2">{utcDateToLocale(it.deployedAt)}</DyoLabel>
-                    </div>
-
-                    <div className="flex flex-row justify-start">
-                      <DyoLabel textColor="text-light-eased mb-4">{`${t('common:version')}:`}</DyoLabel>
-                      <span className="text-bright font-semibold ml-2 text-ellipsis break-words">{it.version}</span>
-                    </div>
-
-                    <div className="flex flex-row justify-start">
-                      <DyoLabel textColor="text-light-eased mb-4">{`${t('common:node')}:`}</DyoLabel>
-                      <span className="text-bright font-semibold ml-2 text-ellipsis break-words">{it.node}</span>
-                    </div>
-
-                    <div className="flex flex-col">
-                      <DyoLabel textColor="text-light-eased mb-2">{`${t('common:changelog')}`}</DyoLabel>
-                      <DyoExpandableText
-                        text={it.changelog ? it.changelog : t('common:emptyChangelog')}
-                        lineClamp={4}
-                        modalTitle={t('common:changelog')}
-                        className="text-sm text-light-eased"
-                        marginClassName="mb-4"
-                      />
-                    </div>
-
-                    <div className="flex justify-end">
-                      <DyoButton className="px-4" outlined href={deploymentUrl(it.id)}>
-                        <div className="flex flex-row items-center gap-2">{t('common:view')}</div>
-                      </DyoButton>
-                    </div>
-                  </DyoCard>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
         <div className="flex flex-col">
-          <DyoLabel className="mb-2 mt-4 text-lg" textColor="text-light">
-            {t('lastAuditLogs')}
-          </DyoLabel>
-          <DyoCard className="overflow-auto">
-            <DyoList
-              noSeparator
-              headerClassName={headerClassName}
-              columnWidths={columnWidths}
-              data={dashboard.auditLog}
-              headers={listHeaders}
-              itemBuilder={itemTemplate}
-            />
-          </DyoCard>
+          {onboardingDisabled ? null : (
+            <>
+              <DyoLabel className="mb-2 mt-4 text-lg" textColor="text-light">
+                {t('onboarding')}
+              </DyoLabel>
+
+              <Onboarding onboarding={dashboard.onboarding} onClose={hideOnboarding} />
+
+              <div className="bg-dyo-turquoise text-dyo-turquoise text-right rounded-md bg-opacity-10 p-4 ml-auto mt-4">
+                {t('whenReadyToHideOnboard')}
+              </div>
+            </>
+          )}
         </div>
       </div>
+
+      <DyoConfirmationModal
+        config={confirmHideOnboardingConfig}
+        title={t('common:areYouSure')}
+        description={t('areYouSureHideOnboarding')}
+        confirmText={t('hide')}
+        className="w-1/4"
+        cancelColor="bg-warning-orange"
+      />
     </Layout>
   )
 }
@@ -207,9 +149,14 @@ export default DashboardPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const dashboard = await getCruxFromContext<Dashboard>(context, API_DASHBOARD)
+  const session = await obtainSessionFromRequest(context.req)
+  const onboardingDisabled = identityOnboardingDisabled(session)
 
   return {
-    props: dashboard,
+    props: {
+      dashboard,
+      onboardingDisabled,
+    },
   }
 }
 

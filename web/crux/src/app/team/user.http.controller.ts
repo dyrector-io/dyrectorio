@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, HttpCode, Param, Post } from '@nestjs/common'
+import { Body, Controller, Delete, HttpCode, Param, Post, Put } from '@nestjs/common'
 import { ApiBody, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
@@ -15,6 +15,8 @@ const ROUTE_USERS_ME = 'users/me'
 const ROUTE_ACTIVE_TEAM = 'active-team'
 const ROUTE_INVITATIONS = 'invitations'
 const ROUTE_TEAM_ID = ':teamId'
+const ROUTE_PREFERENCES = 'preferences'
+const ROUTE_ONBOARDING = 'onboarding'
 
 @Controller(ROUTE_USERS_ME)
 @ApiTags(ROUTE_USERS_ME)
@@ -67,5 +69,27 @@ export default class UserHttpController {
   @UuidParams(PARAM_TEAM_ID)
   async declineTeamInvitation(@TeamId() teamId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
     await this.service.declineTeamInvitation(teamId, identity)
+  }
+
+  @Put(`${ROUTE_PREFERENCES}/${ROUTE_ONBOARDING}`)
+  @HttpCode(204)
+  @ApiOperation({
+    description: 'Enable onboarding tips.',
+    summary: 'Sets the onboarding tips to visible for the user.',
+  })
+  @ApiNoContentResponse({ description: 'Enabled.' })
+  async enableOnboardingTips(@IdentityFromRequest() identity: Identity): Promise<void> {
+    await this.service.enableOnboarding(identity)
+  }
+
+  @Delete(`${ROUTE_PREFERENCES}/${ROUTE_ONBOARDING}`)
+  @HttpCode(204)
+  @ApiOperation({
+    description: 'Disable onboarding tips.',
+    summary: 'Sets the onboarding tips to hidden for the user.',
+  })
+  @ApiNoContentResponse({ description: 'Disabled.' })
+  async disableOnboardingTips(@IdentityFromRequest() identity: Identity): Promise<void> {
+    await this.service.disableOnboarding(identity)
   }
 }

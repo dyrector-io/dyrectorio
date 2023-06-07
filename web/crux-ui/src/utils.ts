@@ -286,7 +286,7 @@ export const setupContextSession = async (context: GetServerSidePropsContext | N
     return redirectTo(ROUTE_LOGIN)
   }
 
-  const recovered = await identityWasRecovered(session)
+  const recovered = identityWasRecovered(session)
   if (recovered) {
     return redirectTo(ROUTE_NEW_PASSWORD)
   }

@@ -117,4 +117,29 @@ export default class KratosService {
     })
     return req.data
   }
+
+  async enableOnboarding(userId: string): Promise<void> {
+    await this.identity.patchIdentity({
+      id: userId,
+      jsonPatch: [
+        {
+          op: 'remove',
+          path: '/metadata_public/disableOnboarding',
+        },
+      ],
+    })
+  }
+
+  async disableOnboarding(userId: string): Promise<void> {
+    await this.identity.patchIdentity({
+      id: userId,
+      jsonPatch: [
+        {
+          op: 'add',
+          path: '/metadata_public/disableOnboarding',
+          value: true,
+        },
+      ],
+    })
+  }
 }

@@ -55,6 +55,7 @@ export const API_TEAMS = '/api/teams'
 export const API_USERS_ME = '/api/users/me'
 export const API_USERS_ME_ACTIVE_TEAM = `${API_USERS_ME}/active-team`
 export const API_USERS_ME_INVITATIONS = `${API_USERS_ME}/invitations`
+export const API_USERS_ME_PREFERENCES_ONBOARDING = `${API_USERS_ME}/preferences/onboarding`
 
 export const API_NOTIFICATIONS = '/api/notifications'
 
@@ -272,16 +273,15 @@ export const tokensApiUrl = (tokenId: string) => `${API_TOKENS}/${tokenId}`
 
 // log
 export type ContainerLogParams = {
-  anchor?: VersionUrlAnchor
   prefix?: string
   name?: string
 }
 
 export const nodeContainerLogUrl = (nodeId: string, params: ContainerLogParams) =>
-  appendUrlParams(`${nodeUrl(nodeId)}/log`, params)
-
-export const deploymentContainerLogUrl = (deploymentId: string, params: ContainerLogParams) =>
-  appendUrlParams(`${deploymentUrl(deploymentId)}/log`, params)
+  appendUrlParams(`${nodeUrl(nodeId)}/log`, {
+    ...params,
+    anchor: null,
+  })
 
 // storage
 export const storageUrl = (id: string) => `${ROUTE_STORAGES}/${id}`
