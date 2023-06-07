@@ -1,22 +1,19 @@
-FROM busybox:uclibc as busybox
 
+# this image is meant to build with buildx
 FROM gcr.io/distroless/static
 
+ARG TARGETOS
+ARG TARGETARCH
+ARG AGENT_BINARY
+ARG REVISION
 
-LABEL company=dyrector.io
-LABEL maintainer=nandor-magyar
-
-COPY --from=busybox /bin/sh  /bin/sh
-COPY --from=busybox /bin/arch  /bin/arch
-COPY --from=busybox /bin/echo  /bin/echo
-
-ARG AGENT_BINARY=dagent
-
-COPY ./scripts/start-agent.sh /
-
-COPY ./out/$AGENT_BINARY-amd64 /agent-amd64
-COPY ./out/$AGENT_BINARY-arm64 /agent-arm64
-
+LABEL org.opencontainers.image.title="Agent component for dyrector.io"
+LABEL org.opencontainers.image.vendor="dyrector.io"
 LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/agent/$AGENT_BINARY"
+LABEL org.opencontainers.image.revision="$REVISION"
+LABEL org.opencontainers.image.documentation="https://docs.dyrector.io"
 
-ENTRYPOINT ["/start-agent.sh"]
+
+COPY ./out/$AGENT_BINARY-$TARGETOS-$TARGETARCH /agent
+
+CMD ["/agent"]

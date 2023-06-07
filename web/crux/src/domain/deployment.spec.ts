@@ -54,36 +54,41 @@ describe('DomainDeployment', () => {
     expect(containerNameFromImageName('/other/container:tag')).toEqual('container:tag')
   })
 
-  it.each(DEPLOYMENT_STATUSES_VERSION_TYPES)(
-    'checkDeploymentCopiability should be true when status is not inProgress or preparing and the version is not rolling (%p and %p)',
-    (status: DeploymentStatusEnum, type: VersionTypeEnum) => {
-      expect(checkDeploymentCopiability(status, type)).toEqual(
-        type !== 'rolling' && status !== 'inProgress' && status !== 'preparing',
-      )
-    },
-  )
+  describe('checkDeploymentCopiability', () => {
+    it.each(DEPLOYMENT_STATUSES_VERSION_TYPES)(
+      'should be true when status is not inProgress or preparing and the version is not rolling (%p and %p)',
+      (status: DeploymentStatusEnum, type: VersionTypeEnum) => {
+        expect(checkDeploymentCopiability(status, type)).toEqual(
+          type !== 'rolling' && status !== 'inProgress' && status !== 'preparing',
+        )
+      },
+    )
 
-  it.each(DEPLOYMENT_STATUSES)('test checkDeploymentCopiability for %p and %p', (status: DeploymentStatusEnum) => {
-    expect(checkDeploymentDeletability(status)).toEqual(status !== 'inProgress')
+    it.each(DEPLOYMENT_STATUSES)('%p and %p', (status: DeploymentStatusEnum) => {
+      expect(checkDeploymentDeletability(status)).toEqual(status !== 'inProgress')
+    })
   })
 
-  it.each(DEPLOYMENT_STATUSES_VERSION_TYPES)(
-    'checkDeploymentMutability should return true if status is deploying or if the status is successful or failed and the version is rolling (%p and %p)',
-    (status: DeploymentStatusEnum, type: VersionTypeEnum) => {
-      expect(checkDeploymentMutability(status, type)).toEqual(
-        status === 'preparing' || ((status === 'successful' || status === 'failed') && type === 'rolling'),
-      )
-    },
-  )
+  describe('checkDeploymentMutability', () => {
+    it.each(DEPLOYMENT_STATUSES_VERSION_TYPES)(
+      'should return true if status is deploying or if the status is successful or failed and the version is rolling (%p and %p)',
+      (status: DeploymentStatusEnum, type: VersionTypeEnum) => {
+        expect(checkDeploymentMutability(status, type)).toEqual(
+          status === 'preparing' || status === 'failed' || (status === 'successful' && type === 'rolling'),
+        )
+      },
+    )
 
-  it.each(DEPLOYMENT_STATUSES_VERSION_TYPES)(
-    'checkDeploymentMutability should return true if status is preparing, is obsolete or is successful or failed and the type is rolling (%p and %p)',
-    (status: DeploymentStatusEnum, type: VersionTypeEnum) => {
-      expect(checkDeploymentDeployability(status, type)).toEqual(
-        status === 'preparing' ||
-          status === 'obsolete' ||
-          ((status === 'successful' || status === 'failed') && type === 'rolling'),
-      )
-    },
-  )
+    it.each(DEPLOYMENT_STATUSES_VERSION_TYPES)(
+      'should return true if status is preparing, is obsolete or is successful or failed and the type is rolling (%p and %p)',
+      (status: DeploymentStatusEnum, type: VersionTypeEnum) => {
+        expect(checkDeploymentDeployability(status, type)).toEqual(
+          status === 'preparing' ||
+            status === 'obsolete' ||
+            status === 'failed' ||
+            (status === 'successful' && type === 'rolling'),
+        )
+      },
+    )
+  })
 })

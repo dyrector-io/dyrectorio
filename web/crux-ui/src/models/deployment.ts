@@ -143,9 +143,9 @@ export type InstanceSecretsMessage = {
 export const deploymentIsMutable = (status: DeploymentStatus, type: VersionType): boolean => {
   switch (status) {
     case 'preparing':
+    case 'failed':
       return true
     case 'successful':
-    case 'failed':
       return type === 'rolling'
     default:
       return false
@@ -155,10 +155,10 @@ export const deploymentIsMutable = (status: DeploymentStatus, type: VersionType)
 export const deploymentIsDeployable = (status: DeploymentStatus, type: VersionType): boolean => {
   switch (status) {
     case 'preparing':
+    case 'failed':
     case 'obsolete':
       return true
     case 'successful':
-    case 'failed':
       return type === 'rolling'
     default:
       return false

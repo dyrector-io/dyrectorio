@@ -521,4 +521,12 @@ export default class TeamService {
 
     return user
   }
+
+  async enableOnboarding(identity: Identity): Promise<void> {
+    await this.kratos.enableOnboarding(identity.id)
+  }
+
+  async disableOnboarding(identity: Identity): Promise<void> {
+    await this.kratos.disableOnboarding(identity.id)
+  }
 }

@@ -128,7 +128,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(ROUTE_LOGIN)
   }
 
-  const recovered = await identityWasRecovered(session)
+  const recovered = identityWasRecovered(session)
   if (!recovered) {
     return redirectTo(ROUTE_INDEX)
   }
