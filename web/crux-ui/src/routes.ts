@@ -1,6 +1,7 @@
 import { AuditLogQuery, ContainerIdentifier, ContainerOperation, VersionSectionsState } from './models'
 
 // Routes:
+export const ROUTE_DOCS = 'https://docs.dyrector.io'
 export const ROUTE_INDEX = '/'
 export const ROUTE_STATUS = '/status'
 export const ROUTE_404 = '/404'
@@ -143,11 +144,18 @@ const urlQuery = (url: string, query: object) => {
   return url
 }
 
+// auth
+export const verificationUrl = (email: string, options?: { restart?: boolean }) => {
+  const url = `${ROUTE_VERIFICATION}?email=${encodeURIComponent(email)}`
+  if (!options?.restart) {
+    return url
+  }
+
+  return `${url}&restart=true`
+}
+
 // audit
 export const auditApiUrl = (query: AuditLogQuery) => urlQuery(API_AUDIT, query)
-
-// auth
-export const verificationUrl = (email: string) => `${ROUTE_VERIFICATION}?email=${encodeURIComponent(email)}`
 
 // project
 export const projectUrl = (id: string, params?: VersionUrlParams) => appendUrlParams(`${ROUTE_PROJECTS}/${id}`, params)

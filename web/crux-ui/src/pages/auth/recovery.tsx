@@ -131,7 +131,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
 
           {!sent ? null : (
             <>
-              <p className="w-80 mx-auto mt-4">{t('codeSentToEmail', formik.values)}</p>
+              <p className="w-80 text-center mx-auto mt-4">{t('codeSentToEmail', formik.values)}</p>
 
               <DyoInput
                 label={t('common:code')}

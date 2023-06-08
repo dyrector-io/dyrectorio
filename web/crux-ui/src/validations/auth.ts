@@ -8,8 +8,12 @@ export const registerSchema = yup.object().shape({
   lastName: identityNameRule.min(0),
 })
 
-export const verifySchema = yup.object().shape({
+export const verifyEmailSchema = yup.object().shape({
   email: yup.string().email().required(),
+})
+
+export const verifyCodeSchema = yup.object().shape({
+  code: yup.string().required(),
 })
 
 export const passwordSchema = yup.object().shape({

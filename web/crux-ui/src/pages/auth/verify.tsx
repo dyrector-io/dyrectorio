@@ -6,10 +6,11 @@ import DyoForm from '@app/elements/dyo-form'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
+import LoadingIndicator from '@app/elements/loading-indicator'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTimer from '@app/hooks/use-timer'
 import { DyoErrorDto, VerifyEmail } from '@app/models'
-import { API_VERIFICATION, ROUTE_INDEX, ROUTE_SETTINGS } from '@app/routes'
+import { API_VERIFICATION, ROUTE_INDEX, ROUTE_SETTINGS, verificationUrl } from '@app/routes'
 import {
   findAttributes,
   findError,
@@ -21,10 +22,10 @@ import {
   upsertDyoError,
   withContextErrorHandling,
 } from '@app/utils'
-import { verifySchema } from '@app/validations'
+import { verifyCodeSchema, verifyEmailSchema } from '@app/validations'
 import { VerificationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
-import kratos, { forwardCookie, obtainSessionFromRequest, userVerified } from '@server/kratos'
+import kratos, { forwardCookie, obtainSessionFromRequest, verifiableEmailOfIdentity } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -34,7 +35,7 @@ import toast from 'react-hot-toast'
 
 interface VerifyProps {
   email: string
-  flow: VerificationFlow
+  flow?: VerificationFlow
   recaptchaSiteKey?: string
 }
 
@@ -47,23 +48,27 @@ const VerifyPage = (props: VerifyProps) => {
   const recaptcha = useRef<ReCAPTCHA>()
   const [flow, setFlow] = useState(propsFlow)
   const [errors, setErrors] = useState<DyoErrorDto[]>([])
-  const [countdown, startCountdown] = useTimer(-1, recaptchaSiteKey ? () => recaptcha.current.reset() : null)
+  const [countdown, startCountdown] = useTimer(-1, recaptchaSiteKey ? () => recaptcha.current?.reset() : null)
+
+  const implictEmailSent = !flow
+  const flowEmailSent = flow?.state === 'sent_email'
+
+  const passedChallenge = flow?.state === 'passed_challenge'
 
   useEffect(() => {
-    if (flow.state === 'passed_challenge') {
+    if (passedChallenge) {
       router.push(ROUTE_INDEX)
     }
-  }, [flow.state, router])
+  }, [passedChallenge, router])
 
-  const sent = flow.state === 'sent_email'
-  const { ui } = flow
+  const ui = flow?.ui
 
   const formik = useDyoFormik({
     initialValues: {
-      email: email ?? '',
-      code: '',
+      email: !flowEmailSent ? email ?? '' : null,
+      code: flowEmailSent ? findAttributes(ui, 'code')?.value ?? '' : null,
     },
-    validationSchema: verifySchema,
+    validationSchema: !flowEmailSent ? verifyEmailSchema : verifyCodeSchema,
     onSubmit: async values => {
       const captcha = await recaptcha.current?.executeAsync()
 
@@ -71,14 +76,14 @@ const VerifyPage = (props: VerifyProps) => {
         flow: flow.id,
         csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
         captcha,
-        email: !sent ? values.email : null,
-        code: sent ? values.code.trim() : null,
+        email: !flowEmailSent ? values.email : null,
+        code: flowEmailSent ? values.code.trim() : null,
       }
 
       const res = await sendForm('POST', API_VERIFICATION, data)
 
       if (res.ok) {
-        if (!sent) {
+        if (!flowEmailSent) {
           startCountdown(AUTH_RESEND_DELAY)
         }
 
@@ -110,75 +115,108 @@ const VerifyPage = (props: VerifyProps) => {
     formik.submitForm()
   }
 
+  const restartVerification = () => {
+    router.replace(verificationUrl(email, { restart: true }))
+    router.reload()
+  }
+
+  const emailAvailable = !!formik.values.email
   const submitDisabled = countdown > 0
 
-  const uiMessage = findUiMessage(ui, 'error')
+  const uiMessage = ui ? findUiMessage(ui, 'error') : null
+
+  const restartVerificationButton = (
+    <DyoButton className="mt-8" secondary onClick={restartVerification}>
+      {t('restartVerification')}
+    </DyoButton>
+  )
 
   return (
     <SingleFormLayout title={t('verification')}>
-      <DyoCard className="text-bright p-8 m-auto">
-        <DyoSingleFormHeading className="max-w-xs">{t('verification')}</DyoSingleFormHeading>
+      {passedChallenge ? (
+        <LoadingIndicator />
+      ) : (
+        <DyoCard className="text-bright p-8 m-auto">
+          <DyoSingleFormHeading className="max-w-xs">{t('verification')}</DyoSingleFormHeading>
 
-        <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-          <DyoInput
-            hidden={sent}
-            label={t('common:email')}
-            name="email"
-            type="email"
-            onChange={formik.handleChange}
-            value={formik.values.email}
-            message={findMessage(ui, 'email')}
-          />
+          {implictEmailSent ? (
+            <div className="flex flex-col w-80 mx-auto text-center">
+              <p className="mt-4">{t('emailWasSent', formik.values)}</p>
+              <p className="mt-4">{t('ifYouCantFind')}</p>
 
-          {!sent ? null : (
+              {restartVerificationButton}
+            </div>
+          ) : (
             <>
-              <p className="w-80 mx-auto mt-4">{t('codeSentToEmail', formik.values)}</p>
+              <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+                {flowEmailSent ? null : (
+                  <DyoInput
+                    label={t('common:email')}
+                    name="email"
+                    type="email"
+                    onChange={formik.handleChange}
+                    value={formik.values.email}
+                    message={findMessage(ui, 'email')}
+                  />
+                )}
 
-              <DyoInput
-                label={t('common:code')}
-                name="code"
-                type="text"
-                onChange={formik.handleChange}
-                value={formik.values.code}
-                message={findMessage(ui, 'code')}
+                {!flowEmailSent ? null : (
+                  <>
+                    {formik.values.email ? (
+                      <p className="w-80 text-center mx-auto mt-4">{t('codeSentToEmail', formik.values)}</p>
+                    ) : (
+                      <p className="w-80 text-center mx-auto mt-4">{t('pleaseClickVerify')}</p>
+                    )}
+
+                    <DyoInput
+                      label={t('common:code')}
+                      name="code"
+                      type="text"
+                      onChange={formik.handleChange}
+                      value={formik.values.code}
+                      message={findMessage(ui, 'code')}
+                    />
+
+                    <DyoButton className="mt-8" type="submit">
+                      {t('verify')}
+                    </DyoButton>
+                  </>
+                )}
+
+                {!flowEmailSent ? (
+                  <DyoButton className="mt-8" disabled={submitDisabled} type="submit">
+                    {t('common:send')}
+                  </DyoButton>
+                ) : emailAvailable ? (
+                  <DyoButton
+                    className="mt-8"
+                    color="bg-warning-orange"
+                    disabled={submitDisabled}
+                    type="button"
+                    onClick={resendEmail}
+                  >
+                    {`${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim()}
+                  </DyoButton>
+                ) : (
+                  restartVerificationButton
+                )}
+              </DyoForm>
+
+              {uiMessage ? <DyoMessage message={uiMessage} messageType="error" /> : null}
+
+              <DyoMessage
+                message={findError(errors, 'captcha', it =>
+                  t(`errors:${it.error}`, {
+                    name: it.value,
+                  }),
+                )}
+                messageType="error"
               />
-
-              <DyoButton className="mt-8" type="submit">
-                {t('verify')}
-              </DyoButton>
             </>
           )}
-
-          {!sent ? (
-            <DyoButton className="mt-8" disabled={submitDisabled} type="submit">
-              {t('common:send')}
-            </DyoButton>
-          ) : (
-            <DyoButton
-              className="mt-8"
-              color="bg-warning-orange"
-              disabled={submitDisabled}
-              type="button"
-              onClick={resendEmail}
-            >
-              {`${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim()}
-            </DyoButton>
-          )}
-        </DyoForm>
-
-        {uiMessage ? <DyoMessage message={uiMessage} messageType="error" /> : null}
-
-        <DyoMessage
-          message={findError(errors, 'captcha', it =>
-            t(`errors:${it.error}`, {
-              name: it.value,
-            }),
-          )}
-          messageType="error"
-        />
-
-        {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
-      </DyoCard>
+          {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
+        </DyoCard>
+      )}
     </SingleFormLayout>
   )
 }
@@ -187,11 +225,37 @@ export default VerifyPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const flow = context.query.flow as string
-  const email = context.query.email ? decodeURIComponent(context.query.email as string) : null
+  const restart = context.query.restart === 'true'
 
-  const session = await obtainSessionFromRequest(context.req)
-  if (session && userVerified(session.identity)) {
-    return redirectTo(ROUTE_SETTINGS)
+  const queryEmail = context.query.email ? decodeURIComponent(context.query.email as string) : null
+
+  let email: string | null = queryEmail
+  let sent = false
+
+  if (!flow && !restart) {
+    const session = await obtainSessionFromRequest(context.req)
+
+    if (session) {
+      const verifiableEmail = verifiableEmailOfIdentity(session.identity)
+      if (!verifiableEmail || verifiableEmail.verified) {
+        return redirectTo(ROUTE_SETTINGS)
+      }
+
+      sent = verifiableEmail.status === 'sent'
+      if (!queryEmail) {
+        email = session.identity.traits.email ?? null
+      }
+    }
+  }
+
+  const recaptchaSiteKey = captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY
+  if (sent) {
+    return {
+      props: {
+        email,
+        recaptchaSiteKey,
+      },
+    }
   }
 
   const { cookie } = context.req.headers
@@ -206,9 +270,9 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 
   return {
     props: {
-      email: email ?? session?.identity?.traits?.email ?? null,
+      email,
       flow: kratosRes.data,
-      recaptchaSiteKey: captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY,
+      recaptchaSiteKey,
     },
   }
 }

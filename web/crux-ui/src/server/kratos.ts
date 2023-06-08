@@ -1,7 +1,15 @@
 import { HEADER_SET_COOKIE } from '@app/const'
 import { missingParameter } from '@app/error-responses'
 import { DEFAULT_SERVICE_INFO, IdentityPublicMetadata, ServiceInfo } from '@app/models'
-import { Configuration, FrontendApi, Identity, IdentityApi, MetadataApi, Session } from '@ory/kratos-client'
+import {
+  Configuration,
+  FrontendApi,
+  Identity,
+  IdentityApi,
+  MetadataApi,
+  Session,
+  VerifiableIdentityAddress,
+} from '@ory/kratos-client'
 import http from 'http'
 import { NextApiRequest, NextPageContext } from 'next'
 
@@ -21,7 +29,7 @@ export const identityWasRecovered = (session: Session): string => {
 
 export const identityOnboardingDisabled = (session: Session): boolean => {
   const metadata = session.identity.metadata_public as IdentityPublicMetadata
-  return metadata.disableOnboarding ?? false
+  return metadata?.disableOnboarding ?? false
 }
 
 const updateMetadata = async (session: Session, metadata: Partial<IdentityPublicMetadata>): Promise<void> => {
@@ -90,11 +98,13 @@ export const getKratosServiceStatus = async (): Promise<ServiceInfo> => {
   }
 }
 
-export const userVerified = (user: Identity) => {
+export const verifiableEmailOfIdentity = (user: Identity): VerifiableIdentityAddress | null => {
   const email = user.traits.email as string
   const verifiable = user.verifiable_addresses ?? []
-  return verifiable.find(it => it.value === email)?.verified
+  return verifiable.find(it => it.value === email)
 }
+
+export const userVerified = (user: Identity) => verifiableEmailOfIdentity(user)?.verified
 
 export const cookieOf = (request: http.IncomingMessage): string => {
   const { cookie } = request.headers
