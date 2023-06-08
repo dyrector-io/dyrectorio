@@ -1,4 +1,4 @@
-name: deploy
+name: deploy_staging
 on:
   workflow_run:
     workflows:
@@ -13,6 +13,7 @@ permissions:
   actions: read
 jobs:
   restart_deployments:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-22.04
     container:
       image: bitnami/kubectl:1.26
