@@ -5,8 +5,8 @@ import { DAGENT_NODE, waitForURLExcept } from './utils/common'
 import { deployWithDagent } from './utils/node-helper'
 import { createNode } from './utils/nodes'
 import {
-  addDeploymentToVersionlessProject,
   addDeploymentToVersion,
+  addDeploymentToVersionlessProject,
   addImageToVersionlessProject,
   createImage,
   createProject,

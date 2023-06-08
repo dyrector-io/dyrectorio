@@ -35,7 +35,15 @@ const NodeContainersList = (props: NodeContainersListProps) => {
 
   const { t } = useTranslation('nodes')
 
-  const headers = ['common:name', 'images:imageTag', 'common:state', 'common:createdAt', 'ports', 'common:actions']
+  const headers = [
+    'common:name',
+    'images:imageTag',
+    'common:state',
+    'common:reason',
+    'common:createdAt',
+    'ports',
+    'common:actions',
+  ]
 
   const itemBuilder = (container: Container) => {
     const name = containerPrefixNameOf(container.id)
@@ -45,7 +53,8 @@ const NodeContainersList = (props: NodeContainersListProps) => {
       <span>{name}</span>,
       <span className="block overflow-hidden truncate">{imageName(container.imageName, container.imageTag)}</span>,
       <ContainerStatusTag className="inline-block" state={container.state} />,
-      <span>{utcDateToLocale(container.date)}</span>,
+      <span>{container.reason}</span>,
+      <span>{utcDateToLocale(container.createdAt)}</span>,
       !container.ports ? null : (
         <span className="block overflow-hidden truncate">{containerPortsToString(container.ports)}</span>
       ),
@@ -97,7 +106,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
     ]
   }
 
-  const columnWidths = ['w-2/12', 'w-4/12', 'w-1/12', '', '', 'w-1/12']
+  const columnWidths = ['w-2/12', 'w-4/12', 'w-1/12', 'w-1/12', '', '', 'w-1/12']
   const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),

@@ -11,8 +11,8 @@ import {
   ContainerState as ProtoContainerState,
   containerStateToJSON,
 } from 'src/grpc/protobuf/proto/common'
-import AgentService from '../agent/agent.service'
 import { BasicProperties } from '../../shared/dtos/shared.dto'
+import AgentService from '../agent/agent.service'
 import {
   BasicNodeDto,
   BasicNodeWithStatus,
@@ -101,10 +101,11 @@ export default class NodeMapper {
           id: it.id,
           imageName: it.imageName,
           imageTag: it.imageTag,
+          command: it.command,
           ports: it.ports,
           state: this.containerStateToDto(it.state),
           reason: it.reason,
-          date: fromTimestamp(it.createdAt),
+          createdAt: fromTimestamp(it.createdAt),
         })) ?? [],
     }
   }
@@ -116,7 +117,6 @@ export default class NodeMapper {
       createdAt: fromTimestamp(it.createdAt),
       state: this.containerStateToDto(it.state),
       reason: it.reason,
-      status: it.status,
       imageName: it.imageName,
       imageTag: it.imageTag,
       ports:

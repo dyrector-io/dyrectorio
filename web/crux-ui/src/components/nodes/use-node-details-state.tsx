@@ -70,9 +70,10 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
         it.id.name,
         it.id.prefix,
         it.state,
+        it.reason,
         it.imageName,
         it.imageTag,
-        utcDateToLocale(it.date),
+        utcDateToLocale(it.createdAt),
       ]),
     ],
   })

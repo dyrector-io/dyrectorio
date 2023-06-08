@@ -27,16 +27,21 @@ import {
   InstanceConfig,
 } from 'src/grpc/protobuf/proto/agent'
 import {
-  ContainerState as ProtoContainerState,
   DeploymentStatusMessage,
   KeyValue,
   ListSecretsResponse,
+  ContainerState as ProtoContainerState,
   DeploymentStrategy as ProtoDeploymentStrategy,
   ExposeStrategy as ProtoExposeStrategy,
   containerStateToJSON,
 } from 'src/grpc/protobuf/proto/common'
+import AuditMapper from '../audit/audit.mapper'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
+import { NodeConnectionStatus } from '../node/node.dto'
+import NodeMapper from '../node/node.mapper'
+import ProjectMapper from '../project/project.mapper'
+import VersionMapper from '../version/version.mapper'
 import {
   DeploymentDetails,
   DeploymentDetailsDto,
@@ -53,11 +58,6 @@ import {
   InstanceSecretsDto,
 } from './deploy.dto'
 import { DeploymentEventMessage } from './deploy.message'
-import ProjectMapper from '../project/project.mapper'
-import AuditMapper from '../audit/audit.mapper'
-import VersionMapper from '../version/version.mapper'
-import NodeMapper from '../node/node.mapper'
-import { NodeConnectionStatus } from '../node/node.dto'
 
 @Injectable()
 export default class DeployMapper {
@@ -274,7 +274,7 @@ export default class DeployMapper {
   }
 
   containerStateToDto(state?: ProtoContainerState): ContainerState {
-    return state ? containerStateToJSON(state).toLowerCase() : null
+    return state ? (containerStateToJSON(state).toLowerCase() as ContainerState) : null
   }
 
   commonConfigToAgentProto(config: MergedContainerConfigData, storage?: Storage): CommonContainerConfig {

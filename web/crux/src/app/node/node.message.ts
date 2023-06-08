@@ -1,8 +1,7 @@
 import { Type } from 'class-transformer'
 import { IsDate } from 'class-validator'
-import { ContainerState } from 'src/domain/container'
-import { NodeConnectionStatus } from './node.dto'
 import { ContainerIdentifierDto } from '../container/container.dto'
+import { ContainerDto, NodeConnectionStatus } from './node.dto'
 
 export const WS_TYPE_NODE_EVENT = 'event'
 export class NodeEventMessage {
@@ -23,30 +22,6 @@ export class NodeEventMessage {
   updating?: boolean
 }
 
-export class ContainerPortDto {
-  internal: number
-
-  external: number
-}
-
-export class ContainerMessage {
-  id: ContainerIdentifierDto
-
-  imageName: string
-
-  imageTag: string
-
-  @IsDate()
-  @Type(() => Date)
-  date: Date
-
-  state: ContainerState
-
-  reason: string
-
-  ports: ContainerPortDto[]
-}
-
 export type UpdateNodeMessage = {
   id: string
 }
@@ -63,7 +38,7 @@ export const WS_TYPE_CONTAINERS_STATE_LIST = 'containers-state-list'
 export class ContainersStateListMessage {
   prefix: string
 
-  containers: ContainerMessage[]
+  containers: ContainerDto[]
 }
 
 // container log

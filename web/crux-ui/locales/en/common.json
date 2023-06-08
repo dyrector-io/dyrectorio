@@ -39,6 +39,7 @@
   "type": "Type",
   "status": "Status",
   "state": "State",
+  "reason": "Reason",
   "loading": "Loading...",
   "noNameFound": "No {{name}} found",
   "yourTeams": "Your teams",

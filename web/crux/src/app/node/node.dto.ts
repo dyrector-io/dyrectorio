@@ -11,7 +11,7 @@ import {
   IsUUID,
   ValidateNested,
 } from 'class-validator'
-import { ContainerState } from 'src/domain/container'
+import { CONTAINER_STATE_VALUES, ContainerState } from 'src/domain/container'
 import { ContainerIdentifierDto } from '../container/container.dto'
 
 export const NODE_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
@@ -183,11 +183,12 @@ export class ContainerDto {
   @IsDate()
   createdAt: Date
 
+  @ApiProperty({ enum: CONTAINER_STATE_VALUES })
+  @IsIn(CONTAINER_STATE_VALUES)
   state: ContainerState
 
+  // kubernetes reason (like crashloop backoff) or docker state
   reason: string
-
-  status: string
 
   imageName: string
 

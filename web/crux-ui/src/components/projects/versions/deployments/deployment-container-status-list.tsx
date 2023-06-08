@@ -32,8 +32,9 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
         prefix: deployment.prefix,
         name: it.config?.name ?? it.image.config.name,
       },
-      date: it.image.createdAt,
+      createdAt: it.image.createdAt,
       state: null,
+      reason: null,
       imageName: it.image.name,
       imageTag: it.image.tag,
       ports: [],
@@ -69,7 +70,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
 
   const itemTemplate = (container: Container) => {
     const now = utcNow()
-    const created = new Date(container.date).getTime()
+    const created = new Date(container.createdAt).getTime()
     const seconds = Math.floor((now - created) / 1000)
 
     const logUrl = nodeContainerLogUrl(deployment.node.id, container.id)
@@ -81,6 +82,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       <span>{`${container.imageName}:${container.imageTag}`}</span>,
       <span>{timeAgo(t, seconds)}</span>,
       <ContainerStatusTag className="inline-block" state={container.state} />,
+      <span>{container.reason}</span>,
       container.state && (
         <Link href={logUrl} passHref>
           <span className="cursor-pointer text-dyo-blue">{t('showLogs')}</span>
