@@ -96,7 +96,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
     },
   })
 
-  const onTraefikChanged = it => formik.setFieldValue('traefik', it ? {} : null)
+  const onTraefikChanged = it => formik.setFieldValue('dagentTraefik', it ? {} : null)
 
   const onTypeChanged = it => {
     if (it === 'k8s') {
