@@ -58,7 +58,7 @@ export type NodeGenerateScript = {
   type: NodeType
   rootPath?: string
   scriptType: NodeInstallScriptType
-  traefik?: NodeInstallTraefik
+  dagentTraefik?: NodeInstallTraefik
 }
 
 export type NodeDeleteContainer = {

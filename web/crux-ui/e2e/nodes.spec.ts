@@ -216,7 +216,7 @@ test('Docker generate script should show Traefik options', async ({ page }) => {
   await page.click('button:text-is("Generate script")')
   await expect(await page.locator('p:has-text("ACME email is a required field")')).toBeVisible()
 
-  const acmeEmailInput = await page.locator('input[name="traefik.acmeEmail"]')
+  const acmeEmailInput = await page.locator('input[name="dagentTraefik.acmeEmail"]')
   await acmeEmailInput.type('a@b.c')
   await page.click('button:text-is("Generate script")')
   await expect(await page.locator('p:has-text("ACME email is a required field")')).not.toBeVisible()
