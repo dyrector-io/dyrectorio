@@ -56,7 +56,7 @@ func VersionCheck(ctx context.Context, cli DockerInfoInterface) (*zerolog.Event,
 
 	switch runtime {
 	case Podman:
-		ev := log.Info().Str("Version", serverVersion.Version).Str("Runtime", "Podman")
+		ev := log.Info().Str("Runtime version", serverVersion.Version).Str("Runtime", "Podman")
 
 		err = SatisfyVersion(MinimumPodmanServerVersion, RecommendedPodmanServerVersion, serverVersion.Version)
 		if err != nil {
@@ -65,7 +65,7 @@ func VersionCheck(ctx context.Context, cli DockerInfoInterface) (*zerolog.Event,
 		return ev, nil
 
 	case Docker:
-		ev := log.Info().Str("Version", serverVersion.Version).Str("Runtime", "Docker")
+		ev := log.Info().Str("Runtime version", serverVersion.Version).Str("Runtime", "Docker")
 
 		err = SatisfyVersion(MinimumDockerServerVersion, RecommendedDockerServerVersion, serverVersion.Version)
 		if err != nil {
