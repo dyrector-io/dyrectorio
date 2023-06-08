@@ -226,7 +226,7 @@ model ContainerConfig {
   args            Json?
   initContainers  Json?
   storageSet      Boolean?
-  storageId       String?        @unique @db.Uuid
+  storageId       String?        @db.Uuid
   storageConfig   Json?
 
   //Dagent
