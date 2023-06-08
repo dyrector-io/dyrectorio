@@ -16,7 +16,7 @@ import {
   ROUTE_SETTINGS_CHANGE_PASSWORD,
   ROUTE_SETTINGS_EDIT_PROFILE,
   ROUTE_SETTINGS_TOKENS,
-  ROUTE_VERIFICATION,
+  verificationUrl,
 } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
@@ -115,12 +115,10 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 
   const { identity } = session
   const { email } = identity.traits
-  const verifiable = identity.verifiable_addresses?.filter(it => it.value === email && !it.verified)
+  const verifiable = identity.verifiable_addresses?.find(it => it.value === email && !it.verified)
 
-  if ((verifiable?.length ?? 0) > 0) {
-    const address = verifiable[0]
-
-    return redirectTo(`${ROUTE_VERIFICATION}?email=${address.value}`)
+  if (verifiable) {
+    return redirectTo(verificationUrl(verifiable.value))
   }
 
   return {

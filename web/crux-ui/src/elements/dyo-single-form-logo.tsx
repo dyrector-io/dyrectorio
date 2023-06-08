@@ -5,7 +5,7 @@ const DyoSingleFormLogo = () => {
   const { t } = useTranslation('common')
 
   return (
-    <div className="mx-auto mt-auto mb-4">
+    <div className="mx-auto mb-4">
       <Image src="/dyrector_io_logo_white.svg" alt={t('dyoWhiteLogo')} width={280} height={112} />
     </div>
   )

@@ -12,6 +12,7 @@ const Footer = (props: React.HTMLProps<HTMLDivElement>) => {
       <div className="flex items-stretch text-sm">
         <span className="text-light pr-2">Copyright © {new Date().getFullYear()}</span>
       </div>
+
       <div className="flex items-stretch text-sm">
         <span className="text-light pr-2">
           <Link href="https://github.com/dyrector-io/dyrectorio" passHref target="_blank">

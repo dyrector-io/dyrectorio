@@ -11,7 +11,7 @@ import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
 import { DyoNode, NodeEventMessage, NodeStatus, WS_TYPE_NODE_EVENT } from '@app/models'
-import { API_NODES, nodeUrl, ROUTE_NODES, WS_NODES } from '@app/routes'
+import { API_NODES, nodeUrl, ROUTE_DOCS, ROUTE_NODES, WS_NODES } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
@@ -137,7 +137,8 @@ const NodesPage = (props: NodesPageProps) => {
       ) : (
         <DyoHeading element="h3" className="text-md text-center text-light-eased w-8/12 m-auto">
           <p className="pb-8">{t('noItems')}</p>
-          <Link className="pt-32" href="https://docs.dyrector.io/tutorials/register-your-node" target="_blabnk">
+
+          <Link className="pt-32" href={`${ROUTE_DOCS}/tutorials/register-your-node`} target="_blank">
             {t('description')}
           </Link>
         </DyoHeading>
