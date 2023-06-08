@@ -48,18 +48,18 @@ const VerifyPage = (props: VerifyProps) => {
   const recaptcha = useRef<ReCAPTCHA>()
   const [flow, setFlow] = useState(propsFlow)
   const [errors, setErrors] = useState<DyoErrorDto[]>([])
-  const [countdown, startCountdown] = useTimer(-1, recaptchaSiteKey ? () => recaptcha.current.reset() : null)
+  const [countdown, startCountdown] = useTimer(-1, recaptchaSiteKey ? () => recaptcha.current?.reset() : null)
 
   const implictEmailSent = !flow
   const flowEmailSent = flow?.state === 'sent_email'
 
-  const passedChallange = flow?.state === 'passed_challenge'
+  const passedChallenge = flow?.state === 'passed_challenge'
 
   useEffect(() => {
-    if (passedChallange) {
+    if (passedChallenge) {
       router.push(ROUTE_INDEX)
     }
-  }, [passedChallange, router])
+  }, [passedChallenge, router])
 
   const ui = flow?.ui
 
@@ -133,7 +133,7 @@ const VerifyPage = (props: VerifyProps) => {
 
   return (
     <SingleFormLayout title={t('verification')}>
-      {passedChallange ? (
+      {passedChallenge ? (
         <LoadingIndicator />
       ) : (
         <DyoCard className="text-bright p-8 m-auto">
