@@ -3,7 +3,7 @@ import {
   identityWasRecovered,
   IncomingMessageWithSession,
   obtainSessionFromRequest,
-  userVerified,
+  verifiableEmailOfIdentity,
 } from '@server/kratos'
 import { FormikErrors, FormikHandlers, FormikState } from 'formik'
 import {
@@ -18,7 +18,7 @@ import { NextRouter } from 'next/router'
 import toast, { ToastOptions } from 'react-hot-toast'
 import { MessageType } from './elements/dyo-input'
 import { Audit, AxiosError, DyoApiError, DyoErrorDto, RegistryDetails } from './models'
-import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_NEW_PASSWORD, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
+import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_NEW_PASSWORD, ROUTE_STATUS, verificationUrl } from './routes'
 
 export type AsyncVoidFunction = () => Promise<void>
 
@@ -291,8 +291,9 @@ export const setupContextSession = async (context: GetServerSidePropsContext | N
     return redirectTo(ROUTE_NEW_PASSWORD)
   }
 
-  if (!userVerified(session.identity)) {
-    return redirectTo(ROUTE_VERIFICATION)
+  const verifiableEmail = verifiableEmailOfIdentity(session.identity)
+  if (verifiableEmail && !verifiableEmail.verified) {
+    return redirectTo(verificationUrl(verifiableEmail.value))
   }
 
   req.session = session

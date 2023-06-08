@@ -81,7 +81,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
 
             {container.state && (
               <Link href={nodeContainerLogUrl(state.node.id, container.id)} passHref>
-                <Image src="/note-text-outline.svg" alt="log" width={24} height={24} />
+                <Image src="/note.svg" alt="log" width={24} height={24} />
               </Link>
             )}
 

@@ -2,5 +2,9 @@
   "title": "Account verification",
   "verification": "Account verification",
   "codeSentToEmail": "A verification code was sent to '{{email}}'. Please check your e-mails.",
-  "verify": "Verify"
+  "emailWasSent": "An e-mail was sent to {{email}}. Please click on the link in the e-mail to continue the verification.",
+  "ifYouCantFind": "If you can not find the e-mail, click the button below to restart the verification flow.",
+  "pleaseClickVerify": "Please click the verify button to complete the verification.",
+  "verify": "Verify",
+  "restartVerification": "Restart verification"
 }

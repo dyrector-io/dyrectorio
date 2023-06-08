@@ -11,6 +11,7 @@ import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { DyoErrorDto, Login } from '@app/models'
 import {
   API_AUTH_LOGIN,
+  ROUTE_DOCS,
   ROUTE_INDEX,
   ROUTE_RECOVERY,
   ROUTE_REGISTER,
@@ -94,7 +95,7 @@ const LoginPage = (props: LoginPageProps) => {
     <SingleFormLayout title={t('common:logIn')}>
       <DyoSingleFormLogo />
 
-      <DyoCard className=" text-bright p-8 mx-auto">
+      <DyoCard className="text-bright p-8 mt-8">
         <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoSingleFormHeading>{t('common:logIn')}</DyoSingleFormHeading>
 
@@ -144,11 +145,19 @@ const LoginPage = (props: LoginPageProps) => {
         </div>
       </DyoCard>
 
-      <div className="flex justify-center  text-bright mt-8 mb-auto">
+      <div className="flex justify-center  text-bright mt-8">
         <p className="mr-2">{t('dontHaveAnAccount')}</p>
 
         <Link className="font-bold underline" href={ROUTE_REGISTER}>
           {t('common:signUp')}
+        </Link>
+      </div>
+
+      <div className="flex justify-center  text-bright mt-4">
+        <p className="mr-2">{t('newToDyo')}</p>
+
+        <Link className="font-bold underline" href={ROUTE_DOCS} target="_blank">
+          {t('common:documentation').toLowerCase()}
         </Link>
       </div>
     </SingleFormLayout>

@@ -9,7 +9,7 @@ import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { DyoErrorDto, Register } from '@app/models'
-import { API_AUTH_REGISTER, ROUTE_LOGIN, ROUTE_SETTINGS, ROUTE_VERIFICATION } from '@app/routes'
+import { API_AUTH_REGISTER, ROUTE_LOGIN, ROUTE_SETTINGS, verificationUrl } from '@app/routes'
 import {
   findAttributes,
   findError,
@@ -85,7 +85,7 @@ const RegisterPage = (props: RegisterPageProps) => {
       })
 
       if (res.ok) {
-        router.replace(`${ROUTE_VERIFICATION}/?email=${encodeURIComponent(values.email)}`)
+        router.replace(verificationUrl(values.email))
       } else {
         recaptcha.current?.reset()
 
@@ -106,13 +106,31 @@ const RegisterPage = (props: RegisterPageProps) => {
     <SingleFormLayout title={t('signUp')}>
       <DyoSingleFormLogo />
 
-      <DyoCard className="p-8 mt-16 mx-auto w-full md:w-1/2 lg:w-1/3 2xl:w-5/12 2xl:max-w-4xl">
+      <DyoCard className="p-8 mt-8">
         <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoSingleFormHeading>{t('signUp')}</DyoSingleFormHeading>
 
-          <div className="flex flex-wrap flex-col 2xl:flex-row">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
             <DyoInput
-              containerClassName="order-1 2xl:w-1/2 2xl:order-1 2xl:pr-2"
+              label={t('common:firstName')}
+              name="firstName"
+              onChange={formik.handleChange}
+              value={formik.values.firstName}
+              message={formik.errors.firstName}
+              messageType="error"
+            />
+
+            <DyoInput
+              label={t('common:lastName')}
+              name="lastName"
+              onChange={formik.handleChange}
+              value={formik.values.lastName}
+              message={formik.errors.lastName}
+              messageType="error"
+            />
+
+            <DyoInput
+              containerClassName="col-span-2"
               grow
               label={t('common:email')}
               name="email"
@@ -123,19 +141,6 @@ const RegisterPage = (props: RegisterPageProps) => {
             />
 
             <DyoInput
-              containerClassName="order-2 2xl:w-1/2 2xl:order-1 2xl:pl-2"
-              grow
-              label={t('common:firstName')}
-              name="firstName"
-              onChange={formik.handleChange}
-              value={formik.values.firstName}
-              message={formik.errors.firstName}
-              messageType="error"
-            />
-
-            <DyoInput
-              containerClassName="order-4 2xl:w-1/2 2xl:order-1 2xl:pr-2"
-              grow
               label={t('common:password')}
               name="password"
               type="password"
@@ -145,19 +150,6 @@ const RegisterPage = (props: RegisterPageProps) => {
             />
 
             <DyoInput
-              containerClassName="order-3 2xl:w-1/2 2xl:order-1 2xl:pl-2"
-              grow
-              label={t('common:lastName')}
-              name="lastName"
-              onChange={formik.handleChange}
-              value={formik.values.lastName}
-              message={formik.errors.lastName}
-              messageType="error"
-            />
-
-            <DyoInput
-              containerClassName="order-5 2xl:w-1/2 2xl:order-1 2xl:pr-2"
-              grow
               label={t('common:confirmPass')}
               name="confirmPassword"
               type="password"
@@ -188,10 +180,10 @@ const RegisterPage = (props: RegisterPageProps) => {
             {t('createAcc')}
           </DyoButton>
 
-          <p className="text-bright mt-8">
-            {t(`privacyPolicyText`)}
-            <a href="https://dyrectorio.com/privacy" target="_blank" rel="noreferrer">
-              {t('privacyPolicyLinkText')}
+          <p className="text-bright text-center self-center max-w-xl mt-8">
+            {t(`whenYouRegister`)}
+            <a className="font-bold" href="https://dyrectorio.com/privacy" target="_blank" rel="noreferrer">
+              {t('privacyPolicy')}
             </a>
             .
           </p>
@@ -200,7 +192,7 @@ const RegisterPage = (props: RegisterPageProps) => {
         </DyoForm>
       </DyoCard>
 
-      <div className="flex justify-center text-bright mt-8 mb-auto">
+      <div className="flex justify-center text-bright mt-8">
         <p className="mr-2">{t('alreadyUser')}</p>
 
         <Link className="font-bold underline" href={ROUTE_LOGIN}>

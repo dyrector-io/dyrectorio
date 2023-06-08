@@ -72,7 +72,7 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
     <SingleFormLayout title={t('createAccount')}>
       <DyoSingleFormLogo />
 
-      <DyoCard className="p-8 mx-auto mb-auto">
+      <DyoCard className="p-8 mt-8">
         <form className="flex flex-col items-center" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoSingleFormHeading>{t('createAccount')}</DyoSingleFormHeading>
 
