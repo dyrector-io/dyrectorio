@@ -86,17 +86,6 @@ export default class NodeService {
       where: {
         id,
       },
-      include: {
-        events: {
-          take: 1,
-          where: {
-            event: 'connected',
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-        },
-      },
     })
 
     return this.mapper.detailsToDto(node)
@@ -332,7 +321,7 @@ export default class NodeService {
   async getAuditLog(nodeId: string, query: NodeAuditLogQueryDto): Promise<NodeAuditLogListDto> {
     const { skip, take, from, to } = query
 
-    const where: Prisma.AgentEventsWhereInput = {
+    const where: Prisma.AgentEventWhereInput = {
       nodeId,
       AND: {
         createdAt: {
@@ -343,7 +332,7 @@ export default class NodeService {
     }
 
     const [auditLog, total] = await this.prisma.$transaction([
-      this.prisma.agentEvents.findMany({
+      this.prisma.agentEvent.findMany({
         where,
         orderBy: {
           createdAt: 'desc',
@@ -356,7 +345,7 @@ export default class NodeService {
           data: true,
         },
       }),
-      this.prisma.agentEvents.count({ where }),
+      this.prisma.agentEvent.count({ where }),
     ])
 
     return {

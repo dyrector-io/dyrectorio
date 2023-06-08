@@ -25,7 +25,7 @@ type AuditFilter = {
 
 const headerClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
 const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-32', 'w-2/12', '', 'w-20']
-const sixdays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
+const sixDays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
 
 const AuditLogPage = () => {
@@ -35,7 +35,7 @@ const AuditLogPage = () => {
   const [total, setTotal] = useState(0)
   const [data, setData] = useState<AuditLog[]>([])
   const [filter, setFilter] = useState<AuditFilter>({
-    from: new Date(endOfToday.getTime() - sixdays),
+    from: new Date(endOfToday.getTime() - sixDays),
     to: new Date(endOfToday),
     filter: null,
   })
@@ -50,7 +50,7 @@ const AuditLogPage = () => {
     const query: AuditLogQuery = {
       skip: pagination.pageNumber * pagination.pageSize,
       take: pagination.pageSize,
-      from: (from ?? new Date(endOfToday.getTime() - sixdays)).toISOString(),
+      from: (from ?? new Date(endOfToday.getTime() - sixDays)).toISOString(),
       to: (to ?? endOfToday).toISOString(),
       filter: !filter.filter || filter.filter.trim() === '' ? null : filter.filter,
     }

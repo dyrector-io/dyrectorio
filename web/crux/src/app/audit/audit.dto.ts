@@ -33,7 +33,7 @@ export class AuditLogQueryDto extends PaginationQuery {
   readonly to: Date
 }
 
-export const AUDIT_LOG_CONTEXT_VALUES = ['http', 'ws', 'rpc', 'agent'] as const
+export const AUDIT_LOG_CONTEXT_VALUES = ['http', 'ws', 'rpc'] as const
 export type AuditLogContextDto = (typeof AUDIT_LOG_CONTEXT_VALUES)[number]
 
 export const AUDIT_LOG_REQUEST_METHOD_VALUES = ['get', 'post', 'put', 'patch', 'delete'] as const

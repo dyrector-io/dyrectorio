@@ -11,7 +11,6 @@ import { major, minor } from 'semver'
 import AgentService from './agent.service'
 import ContainerMapper from '../container/container.mapper'
 import { NodeConnectionStatus } from '../node/node.dto'
-import AuditLoggerService from '../audit.logger/audit.logger.service'
 
 const GrpcNodeConnectionMock = jest.fn().mockImplementation(() => ({
   nodeId: 'agent-id',
@@ -21,7 +20,7 @@ const GrpcNodeConnectionMock = jest.fn().mockImplementation(() => ({
   status: jest.fn().mockReturnValue(new Subject<NodeConnectionStatus>()),
 }))
 
-const createAgentEventsMock = jest.fn()
+const createAgentEventMock = jest.fn()
 
 const mockModules = (env: string, packageVersion: string) => [
   {
@@ -44,7 +43,7 @@ const mockModules = (env: string, packageVersion: string) => [
               }),
               update: jest.fn(),
             },
-            agentEvents: {
+            agentEvent: {
               create: jest.fn(),
             },
           }).then(() => {
@@ -56,8 +55,8 @@ const mockModules = (env: string, packageVersion: string) => [
           id: 'team-id',
         }),
       },
-      agentEvents: {
-        create: createAgentEventsMock,
+      agentEvent: {
+        create: createAgentEventMock,
       },
     },
   },
@@ -90,16 +89,12 @@ const mockModules = (env: string, packageVersion: string) => [
     provide: ContainerMapper,
     useValue: jest.mocked(ContainerMapper),
   },
-  {
-    provide: AuditLoggerService,
-    useValue: jest.mocked(AuditLoggerService),
-  },
   AgentService,
 ]
 
 describe('AgentService', () => {
   beforeEach(() => {
-    createAgentEventsMock.mockReset()
+    createAgentEventMock.mockReset()
   })
 
   describe('production environment', () => {
@@ -131,7 +126,7 @@ describe('AgentService', () => {
       await eventPromise
       expect(agentSub.closed).toBe(false)
 
-      expect(createAgentEventsMock).toHaveBeenCalled()
+      expect(createAgentEventMock).toHaveBeenCalled()
     })
 
     it('handleConnect should let an agent connect with and incorrect version and mark it as outdated', async () => {
@@ -154,7 +149,7 @@ describe('AgentService', () => {
         status: 'outdated',
       })
 
-      expect(createAgentEventsMock).toHaveBeenCalled()
+      expect(createAgentEventMock).toHaveBeenCalled()
     })
   })
 
@@ -187,7 +182,7 @@ describe('AgentService', () => {
       await eventPromise
       expect(agentSub.closed).toEqual(false)
 
-      expect(createAgentEventsMock).toHaveBeenCalled()
+      expect(createAgentEventMock).toHaveBeenCalled()
     })
   })
 })

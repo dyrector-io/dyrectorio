@@ -25,7 +25,7 @@ interface NodeAuditListProps {
 
 const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
 const columnWidths = ['w-2/12', 'w-48', '', 'w-24']
-const sixdays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
+const sixDays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
 
 const NodeAuditList = (props: NodeAuditListProps) => {
@@ -38,7 +38,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
   const [total, setTotal] = useState(0)
   const [data, setData] = useState<NodeAuditLog[]>([])
   const [filter, setFilter] = useState<NodeAuditFilter>({
-    from: new Date(endOfToday.getTime() - sixdays),
+    from: new Date(endOfToday.getTime() - sixDays),
     to: new Date(endOfToday),
   })
   const [pagination, setPagination] = useState<PaginationSettings>(defaultPagination)
@@ -50,7 +50,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
     const query: NodeAuditLogQuery = {
       skip: pagination.pageNumber * pagination.pageSize,
       take: pagination.pageSize,
-      from: (from ?? new Date(endOfToday.getTime() - sixdays)).toISOString(),
+      from: (from ?? new Date(endOfToday.getTime() - sixDays)).toISOString(),
       to: (to ?? endOfToday).toISOString(),
     }
 
@@ -94,7 +94,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
 
   const itemTemplate = (log: NodeAuditLog) => /* eslint-disable react/jsx-key */ [
     <div className="pl-4 min-w-max">{utcDateToLocale(log.createdAt)}</div>,
-    <div>{t(`auditEvents.${log.event}`)}</div>,
+    t(`auditEvents.${log.event}`),
     <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
       {log.data && JSON.stringify(log.data)}
     </div>,

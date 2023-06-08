@@ -84,7 +84,7 @@ model Node {
   teamId         String        @db.Uuid
 
   deployments Deployment[]
-  events      AgentEvents[]
+  events      AgentEvent[]
 
   @@unique([name, teamId])
 }
@@ -404,7 +404,7 @@ model NotificationEvent {
   @@unique([event, notificationId])
 }
 
-model AgentEvents {
+model AgentEvent {
   id             String               @id @default(uuid()) @db.Uuid
   nodeId         String               @db.Uuid
   createdAt      DateTime             @default(now()) @db.Timestamptz(6)
