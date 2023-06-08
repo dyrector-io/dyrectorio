@@ -1,0 +1,22 @@
+name: deploy
+on: push
+  # workflow_run:
+  #   workflows:
+  #     - "product_builder_pipeline"
+  #   branches:
+  #     - "develop"
+  #   types:
+  #     - completed
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+jobs:
+ crux_deploy:
+    runs-on: ubuntu-22.04
+    container:
+      image: bitnami/kubectl:1.26
+    steps:
+      - name: Rollout restart
+        run: |
+          kubectl --token=${{ secrets.AZURE_KUBE_TOKEN }} -n dyo-staging rollout restart crux-api
