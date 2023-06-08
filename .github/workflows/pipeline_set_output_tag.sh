@@ -13,7 +13,7 @@ DOCKERIMAGETAG="$github_sha"
 VERSION="v0.0.0"
 MINORVERSION="v0.0.0"
 
-if [ $github_ref_type = "branch" ]; then
+if [ "$github_ref_type" = "branch" ]; then
   case $github_ref_name in
     "main") DOCKERIMAGETAG="stable"
     ;;
@@ -28,12 +28,12 @@ if [ $github_ref_type = "branch" ]; then
   fi
 fi
 
-if [ $github_ref_type = "tag" ]; then
+if [ "$github_ref_type" = "tag" ]; then
   DOCKERIMAGETAG=$github_ref_name
   VERSION=$github_ref_name
-  MINORVERSION=$(echo $github_ref_name| cut -d. -f1-2)
+  MINORVERSION=$(echo "$github_ref_name"| cut -d. -f1-2)
 fi
 
-echo "tag=$DOCKERIMAGETAG" >> $GITHUB_OUTPUT
-echo "version=$VERSION" >> $GITHUB_OUTPUT
-echo "minorversion=$MINORVERSION" >> $GITHUB_OUTPUT
+echo "tag=$DOCKERIMAGETAG" >> "$GITHUB_OUTPUT"
+echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+echo "minorversion=$MINORVERSION" >> "$GITHUB_OUTPUT"
