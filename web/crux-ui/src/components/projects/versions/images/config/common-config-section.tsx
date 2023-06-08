@@ -509,7 +509,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     type="number"
                     onPatch={it =>
                       onPatch({
-                        internal: toNumber(it, null),
+                        internal: toNumber(it),
                       })
                     }
                     editorOptions={editorOptions}
