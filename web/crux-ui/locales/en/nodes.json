@@ -59,5 +59,12 @@
   "traefikAcmeEmail": "Traefik ACME email",
   "whatIsTraefik": "What is Traefik?",
   "traefikExplanation": "Traefik is a reverse proxy which lets users deploy services to subdomains as well as use HTTPS.",
-  "in-progress": "In progress"
+  "in-progress": "In progress",
+
+  "auditEvents": {
+    "connected": "Connected",
+    "left": "Left",
+    "kicked": "Kicked",
+    "update": "Update"
+  }
 }

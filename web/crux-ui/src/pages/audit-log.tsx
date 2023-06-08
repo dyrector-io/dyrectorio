@@ -46,15 +46,12 @@ const AuditLogPage = () => {
 
   const fetchData = async () => {
     const { from, to } = filter
-    if (!from || !to) {
-      return
-    }
 
     const query: AuditLogQuery = {
       skip: pagination.pageNumber * pagination.pageSize,
       take: pagination.pageSize,
-      from: from.toISOString(),
-      to: to.toISOString(),
+      from: (from ?? new Date(endOfToday.getTime() - sixdays)).toISOString(),
+      to: (to ?? endOfToday).toISOString(),
       filter: !filter.filter || filter.filter.trim() === '' ? null : filter.filter,
     }
 
