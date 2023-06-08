@@ -31,18 +31,18 @@ export type ContainerTargetStates = { [key: string]: ContainerState } // contain
 export type NodeDetailsState = {
   section: NodeDetailsSection
   node: NodeDetails
-  containerTargetStates: ContainerTargetStates
-  filters: FilterConfig<Container, TextFilter>
-  pagination: PaginationSettings
   confirmationModal: DyoConfirmationModalConfig
-  pageItems: Container[]
+  containerTargetStates: ContainerTargetStates
+  containerFilters: FilterConfig<Container, TextFilter>
+  containerPagination: PaginationSettings
+  containerItems: Container[]
 }
 
 export type NodeDetailsActions = {
   onNodeEdited: (node: NodeDetails, shouldClose?: boolean) => void
   setSection: (section: NodeDetailsSection) => void
   setEditing: (editing: boolean) => void
-  setPagination: (pagination: PaginationSettings) => void
+  setContainerPagination: (pagination: PaginationSettings) => void
   onStartContainer: (container: Container) => void
   onStopContainer: (container: Container) => void
   onRestartContainer: (container: Container) => void
@@ -59,13 +59,24 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
   const [section, setSection] = useState<NodeDetailsSection>('containers')
   const [editing, setEditing] = useState<boolean>(false)
   const [node, setNode] = useNodeState(options.node)
+  const [confirmationModal, confirm] = useConfirmation()
+
+  const sock = useWebSocket(nodeWsUrl(node.id))
+
+  const onNodeEdited = (newNode: NodeDetails, shouldClose?: boolean) => {
+    if (shouldClose) {
+      setSection('containers')
+    }
+
+    setNode(newNode)
+  }
+
   const [containerTargetStates, setContainertargetStates] = useState<ContainerTargetStates>({})
-  const [pagination, setPagination] = useState<PaginationSettings>({
+  const [containerPagination, setContainerPagination] = useState<PaginationSettings>({
     pageNumber: 0,
     pageSize: 10,
   })
-  const [confirmationModal, confirm] = useConfirmation()
-  const filters = useFilters<Container, TextFilter>({
+  const containerFilters = useFilters<Container, TextFilter>({
     initialData: [],
     filters: [
       textFilterFor<Container>(it => [
@@ -81,11 +92,10 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
   })
 
   const currentPageNumber =
-    pagination.pageNumber * pagination.pageSize >= filters.filtered.length
-      ? Math.floor(filters.filtered.length / pagination.pageSize)
-      : pagination.pageNumber
+    containerPagination.pageNumber * containerPagination.pageSize >= containerFilters.filtered.length
+      ? Math.floor(containerFilters.filtered.length / containerPagination.pageSize)
+      : containerPagination.pageNumber
 
-  const sock = useWebSocket(nodeWsUrl(node.id))
   useEffect(() => {
     if (node.status === 'connected') {
       sock.send(WS_TYPE_WATCH_CONTAINERS_STATE, { prefix: '' } as WatchContainerStatusMessage)
@@ -93,22 +103,22 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
   }, [node.status, sock])
 
   useEffect(() => {
-    if (node.status !== 'connected' && filters.items.length > 0) {
-      filters.setItems([])
+    if (node.status !== 'connected' && containerFilters.items.length > 0) {
+      containerFilters.setItems([])
     }
-  }, [node.status, filters])
+  }, [node.status, containerFilters])
 
   useEffect(() => {
-    if (currentPageNumber !== pagination.pageNumber) {
-      setPagination({
-        ...pagination,
+    if (currentPageNumber !== containerPagination.pageNumber) {
+      setContainerPagination({
+        ...containerPagination,
         pageNumber: currentPageNumber,
       })
     }
-  }, [filters.filtered])
+  }, [containerFilters.filtered])
 
   sock.on(WS_TYPE_CONTAINERS_STATE_LIST, (message: ContainersStateListMessage) => {
-    filters.setItems(message.containers)
+    containerFilters.setItems(message.containers)
 
     const newTargetStates = {
       ...containerTargetStates,
@@ -127,14 +137,6 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
       setContainertargetStates(newTargetStates)
     }
   })
-
-  const onNodeEdited = (newNode: NodeDetails, shouldClose?: boolean) => {
-    if (shouldClose) {
-      setSection('containers')
-    }
-
-    setNode(newNode)
-  }
 
   const sendContainerCommand = (container: Container, operation: ContainerOperation) => {
     sock.send(WS_TYPE_CONTAINER_COMMAND, {
@@ -184,26 +186,26 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     } as DeleteContainerMessage)
   }
 
-  const pageItems = filters.filtered.slice(
-    currentPageNumber * pagination.pageSize,
-    currentPageNumber * pagination.pageSize + pagination.pageSize,
+  const containerItems = containerFilters.filtered.slice(
+    currentPageNumber * containerPagination.pageSize,
+    currentPageNumber * containerPagination.pageSize + containerPagination.pageSize,
   )
 
   return [
     {
       section: editing ? 'editing' : section,
       node,
-      pagination,
       containerTargetStates,
-      filters,
+      containerFilters,
+      containerPagination,
+      containerItems,
       confirmationModal,
-      pageItems,
     },
     {
       onNodeEdited,
       setSection,
       setEditing,
-      setPagination,
+      setContainerPagination,
       onStartContainer,
       onStopContainer,
       onRestartContainer,

@@ -171,12 +171,13 @@ export default class AgentService {
     return Empty
   }
 
-  kick(nodeId: string, reason: AgentKickReason) {
+  kick(nodeId: string, reason: AgentKickReason, user?: string) {
     const agent = this.getById(nodeId)
     agent?.close(CloseReason.SHUTDOWN)
 
     this.createAgentAudit(nodeId, 'kicked', {
       reason,
+      user,
     })
   }
 
@@ -344,7 +345,7 @@ export default class AgentService {
 
   private async onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === 'unreachable') {
-      this.createAgentAudit(agent.id, 'left')
+      const agentEventPromise = this.createAgentAudit(agent.id, 'left')
 
       this.logger.log(`Left: ${agent.id}`)
       agent.onDisconnected()
@@ -360,6 +361,8 @@ export default class AgentService {
           status: DeploymentStatusEnum.failed,
         },
       })
+
+      await agentEventPromise
     } else if (status === 'connected') {
       this.agentCount.inc()
       agent.onConnected()

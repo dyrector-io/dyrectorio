@@ -239,3 +239,26 @@ test('Container list should show containers on the node screen', async ({ page }
 
   await expect(containerRows).toBeGreaterThanOrEqual(1)
 })
+
+test('Deleting node', async ({ page }) => {
+  const name = 'PW_DELETE_NODE'
+
+  await page.goto(ROUTE_NODES)
+
+  await page.locator('button:has-text("Add")').click()
+
+  await page.locator('input[name=name] >> visible=true').fill(name)
+
+  await page.locator('button:has-text("Save")').click()
+
+  await page.locator(`h3:has-text("${name}")`).click()
+  await page.waitForURL(`${ROUTE_NODES}/**`)
+
+  await page.locator('button:has-text("Delete")').click()
+
+  await page.locator('button:has-text("Delete"):left-of(:has-text("Cancel"))').click()
+
+  await page.goto(ROUTE_NODES)
+
+  await expect(await page.locator(`h3:has-text("${name}")`).count()).toEqual(0)
+})

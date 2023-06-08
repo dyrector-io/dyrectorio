@@ -69,6 +69,24 @@ export type NodeDeleteContainer = {
   prefix?: string
 }
 
+export type NodeAuditLogQuery = {
+  skip: number
+  take: number
+  from: string
+  to: string
+}
+
+export type NodeAuditLog = {
+  createdAt: string
+  event: string
+  data?: object
+}
+
+export type NodeAuditLogList = {
+  items: NodeAuditLog[]
+  total: number
+}
+
 // ws
 
 export const WS_TYPE_NODE_EVENT = 'event'

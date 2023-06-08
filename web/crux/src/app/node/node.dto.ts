@@ -12,6 +12,7 @@ import {
   ValidateNested,
 } from 'class-validator'
 import { CONTAINER_STATE_VALUES, ContainerState } from 'src/domain/container'
+import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
 import { ContainerIdentifierDto } from '../container/container.dto'
 
 export const NODE_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
@@ -102,11 +103,6 @@ export class NodeDetailsDto extends NodeDto {
   @IsOptional()
   @ValidateNested()
   install?: NodeInstallDto
-
-  @IsDate()
-  @Type(() => Date)
-  @IsOptional()
-  lastConnectionAt?: Date
 }
 
 export class CreateNodeDto {
@@ -202,4 +198,33 @@ export class ContainerDto {
   imageTag: string
 
   ports: ContainerPort[]
+}
+
+export class NodeAuditLogQueryDto extends PaginationQuery {
+  @Type(() => Date)
+  @IsDate()
+  readonly from: Date
+
+  @Type(() => Date)
+  @IsDate()
+  readonly to: Date
+}
+
+export class NodeAuditLogDto {
+  @Type(() => Date)
+  @IsDate()
+  createdAt: Date
+
+  @IsString()
+  event: string
+
+  @IsOptional()
+  data?: object
+}
+
+export class NodeAuditLogListDto extends PaginatedList<NodeAuditLogDto> {
+  @Type(() => NodeAuditLogDto)
+  items: NodeAuditLogDto[]
+
+  total: number
 }

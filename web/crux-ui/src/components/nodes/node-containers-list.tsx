@@ -29,8 +29,8 @@ interface NodeContainersListProps {
 const NodeContainersList = (props: NodeContainersListProps) => {
   const { state, actions } = props
   const {
-    filters: { filtered: containers },
-    pageItems,
+    containerFilters: { filtered: containers },
+    containerItems,
   } = state
 
   const { t } = useTranslation('nodes')
@@ -127,11 +127,11 @@ const NodeContainersList = (props: NodeContainersListProps) => {
         headerClassName={headerClasses}
         columnWidths={columnWidths}
         itemClassName={itemClasses}
-        data={pageItems}
+        data={containerItems}
         itemBuilder={itemBuilder}
         footer={
           <Paginator
-            onChanged={actions.setPagination}
+            onChanged={actions.setContainerPagination}
             length={containers.length}
             defaultPagination={{
               pageNumber: 0,
