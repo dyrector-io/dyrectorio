@@ -15,6 +15,7 @@ import (
 	dockerhelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
 	"github.com/dyrector-io/dyrectorio/golang/internal/runtime/container"
+	"github.com/dyrector-io/dyrectorio/golang/internal/version"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 )
 
@@ -99,6 +100,7 @@ func ProcessCommand(ctx context.Context, initialState *State, args *ArgsFlags) {
 		if err != nil {
 			log.Fatal().Err(err).Msg("Version error")
 		}
+		out.Str("CLI version", version.Version)
 		out.Msg("")
 	default:
 		log.Fatal().Msg("Invalid command")
