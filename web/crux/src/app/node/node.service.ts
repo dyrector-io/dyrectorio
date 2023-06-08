@@ -328,6 +328,13 @@ export default class NodeService {
           gte: from,
           lte: to,
         },
+        ...(query.filterEventType
+          ? {
+              AND: {
+                event: query.filterEventType,
+              },
+            }
+          : null),
       },
     }
 

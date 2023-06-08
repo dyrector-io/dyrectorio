@@ -208,6 +208,11 @@ export class NodeAuditLogQueryDto extends PaginationQuery {
   @Type(() => Date)
   @IsDate()
   readonly to: Date
+
+  @IsString()
+  @IsIn(NODE_EVENT_TYPE_VALUES)
+  @IsOptional()
+  readonly filterEventType?: NodeEventType
 }
 
 export class NodeAuditLogDto {

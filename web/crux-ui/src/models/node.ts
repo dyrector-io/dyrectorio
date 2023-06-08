@@ -1,3 +1,4 @@
+import { PaginationQuery } from './common'
 import { Container, ContainerCommand, ContainerIdentifier } from './container'
 
 export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
@@ -8,7 +9,8 @@ export type NodeInstallScriptType = typeof NODE_INSTALL_SCRIPT_TYPE_VALUES[numbe
 
 export type NodeStatus = 'unreachable' | 'connected' | 'outdated'
 
-export type NodeEventType = 'connected' | 'kicked' | 'left'
+export const NODE_EVENT_TYPE_VALUES = ['connected', 'kicked', 'left', 'update'] as const
+export type NodeEventType = typeof NODE_EVENT_TYPE_VALUES[number]
 
 export type NodeConnection = {
   address?: string
@@ -69,11 +71,8 @@ export type NodeDeleteContainer = {
   prefix?: string
 }
 
-export type NodeAuditLogQuery = {
-  skip: number
-  take: number
-  from: string
-  to: string
+export type NodeAuditLogQuery = PaginationQuery & {
+  filterEventType?: NodeEventType
 }
 
 export type NodeAuditLog = {

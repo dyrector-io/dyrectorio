@@ -1,11 +1,19 @@
 import Paginator, { PaginationSettings } from '@app/components/shared/paginator'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoChips from '@app/elements/dyo-chips'
 import DyoDatePicker from '@app/elements/dyo-date-picker'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { DyoNode, NodeAuditLog, NodeAuditLogList, NodeAuditLogQuery } from '@app/models'
+import {
+  DyoNode,
+  NodeAuditLog,
+  NodeAuditLogList,
+  NodeAuditLogQuery,
+  NodeEventType,
+  NODE_EVENT_TYPE_VALUES,
+} from '@app/models'
 import { nodeAuditApiUrl } from '@app/routes'
 import { getEndOfToday, utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
@@ -17,6 +25,7 @@ import JsonEditor from '../shared/json-editor'
 type NodeAuditFilter = {
   from: Date
   to: Date
+  eventType: NodeEventType
 }
 
 interface NodeAuditListProps {
@@ -40,6 +49,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
   const [filter, setFilter] = useState<NodeAuditFilter>({
     from: new Date(endOfToday.getTime() - sixDays),
     to: new Date(endOfToday),
+    eventType: null,
   })
   const [pagination, setPagination] = useState<PaginationSettings>(defaultPagination)
   const throttle = useThrottling(1000)
@@ -52,8 +62,8 @@ const NodeAuditList = (props: NodeAuditListProps) => {
       take: pagination.pageSize,
       from: (from ?? new Date(endOfToday.getTime() - sixDays)).toISOString(),
       to: (to ?? endOfToday).toISOString(),
+      filterEventType: filter.eventType,
     }
-
     const res = await fetch(nodeAuditApiUrl(node.id, query))
 
     if (res.ok) {
@@ -66,14 +76,9 @@ const NodeAuditList = (props: NodeAuditListProps) => {
   }
 
   useEffect(() => {
-    throttle(fetchData)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter])
-
-  useEffect(() => {
     throttle(fetchData, true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination])
+  }, [pagination, filter])
 
   const [showInfo, setShowInfo] = useState<NodeAuditLog>(null)
   const onShowInfoClick = (logEntry: NodeAuditLog) => setShowInfo(logEntry)
@@ -120,7 +125,15 @@ const NodeAuditList = (props: NodeAuditListProps) => {
           {t('common:filters')}
         </DyoHeading>
 
-        <div className="flex items-center mt-4">
+        <div className="flex flex-row items-center mt-4">
+          <DyoChips
+            className="mr-4"
+            choices={['none', ...NODE_EVENT_TYPE_VALUES]}
+            converter={it => t(`auditEvents.${it}`)}
+            selection={filter.eventType ?? 'none'}
+            onSelectionChange={it => setFilter({ ...filter, eventType: it === 'none' ? null : (it as NodeEventType) })}
+          />
+
           <DyoDatePicker
             selectsRange
             startDate={filter.from}

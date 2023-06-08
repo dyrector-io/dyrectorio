@@ -62,6 +62,7 @@
   "in-progress": "In progress",
 
   "auditEvents": {
+    "none": "None",
     "connected": "Connected",
     "left": "Left",
     "kicked": "Kicked",
