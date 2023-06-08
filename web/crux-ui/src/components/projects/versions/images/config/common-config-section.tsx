@@ -140,7 +140,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               <div className="flex flex-row gap-4 items-start">
                 <ConfigSectionLabel
                   className="mt-2.5"
-                  disabled={disabled || !resetableConfig.user}
+                  disabled={disabled || resetableConfig.user === null}
                   onResetSection={() => onResetSection('user')}
                 >
                   {t('common.user').toUpperCase()}

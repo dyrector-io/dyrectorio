@@ -394,12 +394,18 @@ export const nullify = <T>(target: T): T => {
   return notEmpty ? target : null
 }
 
-export const toNumber = (value: string, defaultValue: number = 0): number => {
+export const toNumber = (value: string): number => {
   if (!value) {
     return null
   }
 
-  return Number.isNaN(value) ? defaultValue : Number(value)
+  const parsedValue = Number(value)
+
+  if (Number.isNaN(parsedValue)) {
+    return NaN
+  }
+
+  return parsedValue
 }
 
 export const getEndOfToday = () => {
