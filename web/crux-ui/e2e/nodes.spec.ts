@@ -262,3 +262,21 @@ test('Deleting node', async ({ page }) => {
 
   await expect(await page.locator(`h3:has-text("${name}")`).count()).toEqual(0)
 })
+
+test('Logs should show agent events', async ({ page }) => {
+  await page.goto(ROUTE_NODES)
+
+  const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
+  await nodeButton.click()
+
+  await page.locator('input[placeholder="Search"]').type(`dagent`)
+
+  await page.locator('button:has-text("Logs")').click()
+
+  const tableBody = await page.locator('.table-row-group')
+
+  const nodeContainerRow = await tableBody.locator('.table-row')
+  await nodeContainerRow.nth(0).waitFor()
+
+  await expect(await nodeContainerRow.locator('div:has-text("Connected")')).toBeVisible()
+})
