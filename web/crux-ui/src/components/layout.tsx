@@ -81,14 +81,10 @@ export const SingleFormLayout = (props: LayoutProps) => {
     <>
       <PageHead title={title} />
 
-      <main className="flex flex-row h-full bg-dark">
-        <div className="h-screen" />
+      <main className="flex flex-col w-screen h-screen bg-dark">
+        <div className="flex flex-col h-full justify-center items-center">{children}</div>
 
-        <div className="flex flex-col w-full px-7 pt-4">
-          <div className="flex flex-col h-full">{children}</div>
-
-          <Footer className="mt-auto" />
-        </div>
+        <Footer className="mx-7" />
       </main>
     </>
   )

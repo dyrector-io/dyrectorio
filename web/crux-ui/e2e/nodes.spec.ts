@@ -173,7 +173,7 @@ test('Container log should appear on a node container', async ({ page }) => {
   const nodeContainerRow = await page.locator(`span:text-is("${prefix}-${imageName}") >> xpath=../..`)
   await expect(nodeContainerRow).toHaveCount(1)
 
-  const logButton = await nodeContainerRow.locator('img[src*="/note-text-outline.svg"]')
+  const logButton = await nodeContainerRow.locator('img[src*="/note.svg"]')
   await expect(logButton).toBeVisible()
 
   const nodeId = page.url().split('/').pop()

@@ -3,6 +3,7 @@ import {
   ROUTE_AUDIT,
   ROUTE_DASHBOARD,
   ROUTE_DEPLOYMENTS,
+  ROUTE_DOCS,
   ROUTE_INDEX,
   ROUTE_LOGOUT,
   ROUTE_NODES,
@@ -18,7 +19,7 @@ import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import Link from 'next/link'
 import NavButton from './nav-button'
-import { NavSection } from './nav-section'
+import { MenuOption, NavSection } from './nav-section'
 
 export interface SidebarProps {
   className?: string
@@ -29,7 +30,7 @@ export const Sidebar = (props: SidebarProps) => {
 
   const { t } = useTranslation('common')
 
-  const projectOptions = [
+  const projectOptions: MenuOption[] = [
     {
       icon: <DyoIcon src="/projects.svg" alt={t('projects')} />,
       text: 'projects',
@@ -42,7 +43,7 @@ export const Sidebar = (props: SidebarProps) => {
     },
   ]
 
-  const componentOptions = [
+  const componentOptions: MenuOption[] = [
     {
       icon: <DyoIcon src="/servers.svg" alt={t('nodes')} />,
       text: 'nodes',
@@ -70,7 +71,7 @@ export const Sidebar = (props: SidebarProps) => {
     },
   ]
 
-  const settingsOptions = [
+  const settingsOptions: MenuOption[] = [
     {
       icon: <DyoIcon src="/audit.svg" alt={t('audit')} />,
       text: 'audit',
@@ -85,6 +86,12 @@ export const Sidebar = (props: SidebarProps) => {
       icon: <DyoIcon src="/profile.svg" alt={t('profile')} />,
       text: 'profile',
       link: ROUTE_PROFILE,
+    },
+    {
+      icon: <DyoIcon src="/documentation.svg" alt={t('documentation')} />,
+      text: 'documentation',
+      link: ROUTE_DOCS,
+      target: '_blank',
     },
     {
       icon: <DyoIcon src="/logout.svg" alt={t('logout')} />,
