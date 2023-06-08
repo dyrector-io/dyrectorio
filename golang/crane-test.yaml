@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-1
+  namespace: default
+  labels:
+    app: deployment-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deployment-1
+  template:
+    metadata:
+      labels:
+        app: deployment-1
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 84m
+            limits:
+              cpu: "1"
+              memory: 256Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-2
+  namespace: default
+  labels:
+    app: deployment-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deployment-2
+  template:
+    metadata:
+      labels:
+        app: deployment-2
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 84m
+            limits:
+              cpu: "1"
+              memory: 256Mi

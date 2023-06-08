@@ -6,13 +6,9 @@ export const protobufPackage = 'common'
 /** Deployment */
 export enum ContainerState {
   CONTAINER_STATE_UNSPECIFIED = 0,
-  CREATED = 1,
-  RESTARTING = 2,
-  RUNNING = 3,
-  REMOVING = 4,
-  PAUSED = 5,
-  EXITED = 6,
-  DEAD = 7,
+  RUNNING = 1,
+  WAITING = 2,
+  EXITED = 3,
   UNRECOGNIZED = -1,
 }
 
@@ -22,26 +18,14 @@ export function containerStateFromJSON(object: any): ContainerState {
     case 'CONTAINER_STATE_UNSPECIFIED':
       return ContainerState.CONTAINER_STATE_UNSPECIFIED
     case 1:
-    case 'CREATED':
-      return ContainerState.CREATED
-    case 2:
-    case 'RESTARTING':
-      return ContainerState.RESTARTING
-    case 3:
     case 'RUNNING':
       return ContainerState.RUNNING
-    case 4:
-    case 'REMOVING':
-      return ContainerState.REMOVING
-    case 5:
-    case 'PAUSED':
-      return ContainerState.PAUSED
-    case 6:
+    case 2:
+    case 'WAITING':
+      return ContainerState.WAITING
+    case 3:
     case 'EXITED':
       return ContainerState.EXITED
-    case 7:
-    case 'DEAD':
-      return ContainerState.DEAD
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -53,20 +37,12 @@ export function containerStateToJSON(object: ContainerState): string {
   switch (object) {
     case ContainerState.CONTAINER_STATE_UNSPECIFIED:
       return 'CONTAINER_STATE_UNSPECIFIED'
-    case ContainerState.CREATED:
-      return 'CREATED'
-    case ContainerState.RESTARTING:
-      return 'RESTARTING'
     case ContainerState.RUNNING:
       return 'RUNNING'
-    case ContainerState.REMOVING:
-      return 'REMOVING'
-    case ContainerState.PAUSED:
-      return 'PAUSED'
+    case ContainerState.WAITING:
+      return 'WAITING'
     case ContainerState.EXITED:
       return 'EXITED'
-    case ContainerState.DEAD:
-      return 'DEAD'
     case ContainerState.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
@@ -546,6 +522,7 @@ export interface Empty {}
 export interface InstanceDeploymentItem {
   instanceId: string
   state: ContainerState
+  reason: string
 }
 
 export interface DeploymentStatusMessage {
@@ -570,6 +547,8 @@ export interface ContainerStateItem {
   createdAt: Timestamp | undefined
   /** The 'State' of the container (Created, Running, etc) */
   state: ContainerState
+  /** The 'reason' behind 'state'. */
+  reason: string
   /**
    * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
    * etc). Unused but left here for reverse compatibility with the legacy
@@ -666,7 +645,7 @@ export const Empty = {
 }
 
 function createBaseInstanceDeploymentItem(): InstanceDeploymentItem {
-  return { instanceId: '', state: 0 }
+  return { instanceId: '', state: 0, reason: '' }
 }
 
 export const InstanceDeploymentItem = {
@@ -674,6 +653,7 @@ export const InstanceDeploymentItem = {
     return {
       instanceId: isSet(object.instanceId) ? String(object.instanceId) : '',
       state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
+      reason: isSet(object.reason) ? String(object.reason) : '',
     }
   },
 
@@ -681,6 +661,7 @@ export const InstanceDeploymentItem = {
     const obj: any = {}
     message.instanceId !== undefined && (obj.instanceId = message.instanceId)
     message.state !== undefined && (obj.state = containerStateToJSON(message.state))
+    message.reason !== undefined && (obj.reason = message.reason)
     return obj
   },
 }
@@ -764,6 +745,7 @@ function createBaseContainerStateItem(): ContainerStateItem {
     command: '',
     createdAt: undefined,
     state: 0,
+    reason: '',
     status: '',
     imageName: '',
     imageTag: '',
@@ -778,6 +760,7 @@ export const ContainerStateItem = {
       command: isSet(object.command) ? String(object.command) : '',
       createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
       state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
+      reason: isSet(object.reason) ? String(object.reason) : '',
       status: isSet(object.status) ? String(object.status) : '',
       imageName: isSet(object.imageName) ? String(object.imageName) : '',
       imageTag: isSet(object.imageTag) ? String(object.imageTag) : '',
@@ -791,6 +774,7 @@ export const ContainerStateItem = {
     message.command !== undefined && (obj.command = message.command)
     message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
     message.state !== undefined && (obj.state = containerStateToJSON(message.state))
+    message.reason !== undefined && (obj.reason = message.reason)
     message.status !== undefined && (obj.status = message.status)
     message.imageName !== undefined && (obj.imageName = message.imageName)
     message.imageTag !== undefined && (obj.imageTag = message.imageTag)

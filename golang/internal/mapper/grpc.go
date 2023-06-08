@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -10,7 +11,6 @@ import (
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
-	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 
@@ -408,7 +408,8 @@ func MapContainerState(in []dockerTypes.Container, prefix string) []*common.Cont
 			},
 			Command:   it.Command,
 			CreatedAt: timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
-			State:     dogger.MapContainerState(it.State),
+			State:     MapDockerStateToCruxContainerState(it.State),
+			Reason:    it.State,
 			Status:    it.Status,
 			Ports:     mapContainerPorts(&it.Ports),
 			ImageName: imageName[0],
@@ -434,19 +435,27 @@ func mapContainerPorts(in *[]dockerTypes.Port) []*common.ContainerStateItemPort 
 	return ports
 }
 
-func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList, svc *corev1.ServiceList) []*common.ContainerStateItem {
+func MapKubeDeploymentListToCruxStateItems(
+	deployments *appsv1.DeploymentList,
+	podsByDeployment map[string][]corev1.Pod,
+	svc *corev1.ServiceList,
+) []*common.ContainerStateItem {
 	stateItems := []*common.ContainerStateItem{}
 	svcMap := createServiceMap(svc)
 
 	for i := range deployments.Items {
 		deployment := deployments.Items[i]
+		pods, podsFound := podsByDeployment[deployment.Name]
+		if len(pods) > 1 {
+			log.Warn().Str("deployment", deployment.Name).Int("numberOfPods", len(pods)).Msg("More than one pod found for deployment")
+		}
 
 		stateItem := &common.ContainerStateItem{
 			Id: &common.ContainerIdentifier{
 				Prefix: deployment.Namespace,
 				Name:   deployment.Name,
 			},
-			State: mapKubeStatusToCruxContainerState(deployment.Status),
+			State: common.ContainerState_CONTAINER_STATE_UNSPECIFIED,
 			CreatedAt: timestamppb.New(
 				time.UnixMilli(deployment.GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
 			),
@@ -475,6 +484,14 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList, s
 
 				stateItem.ImageName = name
 				stateItem.ImageTag = tag
+			}
+		}
+
+		if podsFound && len(pods) == 1 {
+			err := mapKubeStatusToCruxContainerState(stateItem, pods[0].Status.ContainerStatuses[0].State)
+			if err != nil {
+				log.Error().Stack().Err(err).Msg("Failed to map k8s pod info")
+				continue
 			}
 		}
 
@@ -513,10 +530,46 @@ func mapServicePorts(svc *corev1.Service) []*common.ContainerStateItemPort {
 	return res
 }
 
-// do better mapping this is quick something
-func mapKubeStatusToCruxContainerState(status appsv1.DeploymentStatus) common.ContainerState {
-	if status.ReadyReplicas > 0 {
-		return common.ContainerState_RUNNING
+func mapKubeStatusToCruxContainerState(stateItem *common.ContainerStateItem, kubeContainerState corev1.ContainerState) error {
+	if kubeContainerState.Running != nil {
+		stateItem.State = common.ContainerState_RUNNING
+		stateItem.Reason = kubeContainerState.Running.String()
+
+		return nil
 	}
-	return common.ContainerState_DEAD
+	if kubeContainerState.Terminated != nil {
+		stateItem.State = common.ContainerState_EXITED
+		stateItem.Reason = kubeContainerState.Terminated.Reason
+
+		return nil
+	}
+	if kubeContainerState.Waiting != nil {
+		stateItem.State = common.ContainerState_WAITING
+		stateItem.Reason = kubeContainerState.Waiting.Reason
+
+		return nil
+	}
+
+	return fmt.Errorf("unknown pod container state: %s", kubeContainerState.String())
+}
+
+func MapDockerStateToCruxContainerState(state string) common.ContainerState {
+	switch state {
+	case "created":
+		return common.ContainerState_WAITING
+	case "restarting":
+		return common.ContainerState_WAITING
+	case "running":
+		return common.ContainerState_RUNNING
+	case "removing":
+		return common.ContainerState_WAITING
+	case "paused":
+		return common.ContainerState_WAITING
+	case "exited":
+		return common.ContainerState_EXITED
+	case "dead":
+		return common.ContainerState_EXITED
+	default:
+		return common.ContainerState_CONTAINER_STATE_UNSPECIFIED
+	}
 }

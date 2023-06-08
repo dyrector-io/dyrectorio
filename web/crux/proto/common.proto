@@ -10,13 +10,9 @@ message Empty {}
 // Deployment
 enum ContainerState {
   CONTAINER_STATE_UNSPECIFIED = 0;
-  CREATED = 1;
-  RESTARTING = 2;
-  RUNNING = 3;
-  REMOVING = 4;
-  PAUSED = 5;
-  EXITED = 6;
-  DEAD = 7;
+  RUNNING = 1;
+  WAITING = 2;
+  EXITED = 3;
 }
 
 enum DeploymentStatus {
@@ -32,6 +28,7 @@ enum DeploymentStatus {
 message InstanceDeploymentItem {
   string instanceId = 100;
   ContainerState state = 101;
+  string reason = 102;
 }
 
 message DeploymentStatusMessage {
@@ -68,12 +65,13 @@ message ContainerStateItem {
   string imageName = 105;
   string imageTag = 106;
 
+  /* The 'reason' behind 'state'. */
+  string reason = 107;
+
   repeated ContainerStateItemPort ports = 1000;
 }
 
-message ContainerLogMessage {
-  string log = 100;
-}
+message ContainerLogMessage { string log = 100; }
 
 enum NetworkMode {
   NETWORK_MODE_UNSPECIFIED = 0;

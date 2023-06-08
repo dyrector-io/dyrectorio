@@ -91,7 +91,7 @@ func (dog *DeploymentLogger) WriteDeploymentStatus(status common.DeploymentStatu
 	}
 }
 
-func (dog *DeploymentLogger) WriteContainerState(containerState string, messages ...string) {
+func (dog *DeploymentLogger) WriteContainerState(containerState common.ContainerState, reason string, messages ...string) {
 	prefix := fmt.Sprintf("%s - %s", dog.requestID, containerState)
 
 	for i := range messages {
@@ -103,7 +103,8 @@ func (dog *DeploymentLogger) WriteContainerState(containerState string, messages
 		instance := &common.DeploymentStatusMessage_Instance{
 			Instance: &common.InstanceDeploymentItem{
 				InstanceId: dog.requestID,
-				State:      MapContainerState(containerState),
+				State:      containerState,
+				Reason:     reason,
 			},
 		}
 
@@ -171,26 +172,5 @@ func (dog *DeploymentLogger) WriteDockerPull(header string, respIn io.ReadCloser
 			pulled++
 			dog.Write(fmt.Sprintf("%v layers: %d/%d, %s %s", header, pulled, len(stat), jm.ID, jm.Status))
 		}
-	}
-}
-
-func MapContainerState(state string) common.ContainerState {
-	switch state {
-	case "created":
-		return common.ContainerState_CREATED
-	case "restarting":
-		return common.ContainerState_RESTARTING
-	case "running":
-		return common.ContainerState_RUNNING
-	case "removing":
-		return common.ContainerState_REMOVING
-	case "paused":
-		return common.ContainerState_PAUSED
-	case "exited":
-		return common.ContainerState_EXITED
-	case "dead":
-		return common.ContainerState_DEAD
-	default:
-		return common.ContainerState_CONTAINER_STATE_UNSPECIFIED
 	}
 }

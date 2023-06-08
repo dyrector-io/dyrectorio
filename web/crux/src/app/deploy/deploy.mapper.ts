@@ -1,6 +1,5 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import {
-  ContainerStateEnum,
   Deployment,
   DeploymentEvent,
   DeploymentEventTypeEnum,
@@ -10,6 +9,7 @@ import {
 } from '@prisma/client'
 import {
   ContainerConfigData,
+  ContainerState,
   InitContainer,
   InstanceContainerConfigData,
   MergedContainerConfigData,
@@ -27,16 +27,21 @@ import {
   InstanceConfig,
 } from 'src/grpc/protobuf/proto/agent'
 import {
-  ContainerState,
   DeploymentStatusMessage,
   KeyValue,
   ListSecretsResponse,
+  ContainerState as ProtoContainerState,
   DeploymentStrategy as ProtoDeploymentStrategy,
   ExposeStrategy as ProtoExposeStrategy,
   containerStateToJSON,
 } from 'src/grpc/protobuf/proto/common'
+import AuditMapper from '../audit/audit.mapper'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
+import { NodeConnectionStatus } from '../node/node.dto'
+import NodeMapper from '../node/node.mapper'
+import ProjectMapper from '../project/project.mapper'
+import VersionMapper from '../version/version.mapper'
 import {
   DeploymentDetails,
   DeploymentDetailsDto,
@@ -53,11 +58,6 @@ import {
   InstanceSecretsDto,
 } from './deploy.dto'
 import { DeploymentEventMessage } from './deploy.message'
-import ProjectMapper from '../project/project.mapper'
-import AuditMapper from '../audit/audit.mapper'
-import VersionMapper from '../version/version.mapper'
-import NodeMapper from '../node/node.mapper'
-import { NodeConnectionStatus } from '../node/node.dto'
 
 @Injectable()
 export default class DeployMapper {
@@ -119,7 +119,6 @@ export default class DeployMapper {
       id: it.id,
       updatedAt: it.updatedAt,
       image: this.imageMapper.toDto(it.image),
-      state: it.state,
       config: this.instanceConfigToDto(it.config as any as InstanceContainerConfigData),
     }
   }
@@ -222,7 +221,7 @@ export default class DeployMapper {
       }
       // TODO(@m8vago): rename to containerState
       case DeploymentEventTypeEnum.containerStatus: {
-        const value = event.value as { instanceId: string; state: ContainerStateEnum }
+        const value = event.value as { instanceId: string; state: ContainerState }
         result.containerState = value
         break
       }
@@ -259,7 +258,7 @@ export default class DeployMapper {
         createdAt: new Date(),
         containerState: {
           instanceId: message.instance.instanceId,
-          state: this.containerStateToDb(message.instance.state),
+          state: this.containerStateToDto(message.instance.state),
         },
       })
     }
@@ -274,8 +273,8 @@ export default class DeployMapper {
     }
   }
 
-  containerStateToDb(state?: ContainerState): ContainerStateEnum {
-    return state ? (containerStateToJSON(state).toLowerCase() as ContainerStateEnum) : null
+  containerStateToDto(state?: ProtoContainerState): ContainerState {
+    return state ? (containerStateToJSON(state).toLowerCase() as ContainerState) : null
   }
 
   commonConfigToAgentProto(config: MergedContainerConfigData, storage?: Storage): CommonContainerConfig {

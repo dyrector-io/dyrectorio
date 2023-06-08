@@ -276,7 +276,6 @@ model Deployment {
 model Instance {
   id           String              @id @default(uuid()) @db.Uuid
   updatedAt    DateTime            @updatedAt @db.Timestamptz(6)
-  state        ContainerStateEnum?
   deploymentId String              @db.Uuid
   imageId      String              @db.Uuid
 
@@ -412,16 +411,6 @@ enum ProjectTypeEnum {
 enum VersionTypeEnum {
   incremental
   rolling
-}
-
-enum ContainerStateEnum {
-  created
-  restarting
-  running
-  removing
-  paused
-  exited
-  dead
 }
 
 enum DeploymentStatusEnum {

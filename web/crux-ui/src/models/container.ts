@@ -16,8 +16,9 @@ export type Container = {
   id: ContainerIdentifier
   imageName: string
   imageTag: string
-  date: string
+  createdAt: string
   state: ContainerState
+  reason: string // kubernetes reason (like crashloop backoff) or docker state
   ports: ContainerPort[]
 }
 

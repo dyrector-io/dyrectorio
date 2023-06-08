@@ -1,3 +1,4 @@
+import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_RECEIVED } from '@app/models'
 import { WsMessage } from '@app/websockets/common'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Page, WebSocket } from 'playwright'
@@ -53,3 +54,11 @@ export const waitSocketSent = (
           return true
         },
   )
+
+export const wsPatchSent = async (ws: WebSocket, route: string, match: (payload: any) => boolean = null) => {
+  const frameReceived = waitSocketReceived(ws, route, WS_TYPE_PATCH_RECEIVED)
+
+  await waitSocketSent(ws, route, WS_TYPE_PATCH_IMAGE, match)
+
+  await frameReceived
+}

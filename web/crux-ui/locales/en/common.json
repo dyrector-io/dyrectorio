@@ -40,6 +40,7 @@
   "type": "Type",
   "status": "Status",
   "state": "State",
+  "reason": "Reason",
   "loading": "Loading...",
   "noNameFound": "No {{name}} found",
   "yourTeams": "Your teams",
@@ -136,13 +137,9 @@
   },
 
   "containerStatuses": {
-    "created": "Created",
-    "restarting": "Restarting",
     "running": "Running",
-    "removing": "Removing",
-    "paused": "Paused",
-    "exited": "Exited",
-    "dead": "Dead"
+    "waiting": "Waiting",
+    "exited": "Exited"
   },
 
   "secretStatuses": {

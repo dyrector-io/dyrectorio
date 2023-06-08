@@ -463,7 +463,6 @@ export default class VersionService {
 
               const createdInstance = await prisma.instance.create({
                 data: {
-                  state: instance.state,
                   deploymentId: createdDeploy.id,
                   imageId,
                 },

@@ -11,6 +11,8 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
 
+	corev1 "k8s.io/api/core/v1"
+
 	common "github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
@@ -19,7 +21,7 @@ func GetDeployments(ctx context.Context, namespace string) []*common.ContainerSt
 	client := k8s.NewClient(cfg)
 
 	deploymentHandler := k8s.NewDeployment(ctx, cfg)
-	list, err := deploymentHandler.GetDeployments(ctx, namespace, cfg)
+	deployments, err := deploymentHandler.GetDeployments(ctx, namespace, cfg)
 	if err != nil {
 		log.Error().Err(err).Stack().Send()
 		return nil
@@ -31,7 +33,19 @@ func GetDeployments(ctx context.Context, namespace string) []*common.ContainerSt
 		log.Error().Err(err).Stack().Send()
 	}
 
-	return mapper.MapKubeDeploymentListToCruxStateItems(list, svc)
+	podsByDeployment := make(map[string][]corev1.Pod)
+	for i := 0; i < len(deployments.Items); i++ {
+		deployment := deployments.Items[i]
+		pods, err := deploymentHandler.GetPods(namespace, deployment.Name)
+		if err != nil {
+			log.Error().Err(err).Stack().Send()
+			return nil
+		}
+
+		podsByDeployment[deployment.Name] = pods
+	}
+
+	return mapper.MapKubeDeploymentListToCruxStateItems(deployments, podsByDeployment, svc)
 }
 
 func GetSecretsList(ctx context.Context, prefix, name string) ([]string, error) {

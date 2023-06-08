@@ -172,7 +172,6 @@ export default class DeployService {
           createMany: {
             data: version.images.map(it => ({
               imageId: it.id,
-              state: null,
             })),
           },
         },
@@ -707,7 +706,6 @@ export default class DeployService {
           data: {
             deploymentId: newDeployment.id,
             imageId: it.imageId,
-            state: null,
             config: it.config
               ? {
                   create: {
@@ -826,7 +824,6 @@ export default class DeployService {
             data: {
               deploymentId: deployment.id,
               imageId: it.id,
-              state: null,
             },
           }),
         ),

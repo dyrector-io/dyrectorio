@@ -6,7 +6,7 @@ import {
   checkDeploymentDeployability,
   checkDeploymentMutability,
   containerNameFromImageName,
-  containerStateToDb,
+  containerStateToDto,
   deploymentStatusToDb,
 } from './deployment'
 
@@ -35,17 +35,13 @@ describe('DomainDeployment', () => {
   })
 
   it('test containerStateToDb', () => {
-    expect(containerStateToDb(ContainerState.CREATED)).toEqual('created')
-    expect(containerStateToDb(ContainerState.DEAD)).toEqual('dead')
-    expect(containerStateToDb(ContainerState.EXITED)).toEqual('exited')
-    expect(containerStateToDb(ContainerState.PAUSED)).toEqual('paused')
-    expect(containerStateToDb(ContainerState.REMOVING)).toEqual('removing')
-    expect(containerStateToDb(ContainerState.RESTARTING)).toEqual('restarting')
-    expect(containerStateToDb(ContainerState.RUNNING)).toEqual('running')
+    expect(containerStateToDto(ContainerState.RUNNING)).toEqual('running')
+    expect(containerStateToDto(ContainerState.WAITING)).toEqual('waiting')
+    expect(containerStateToDto(ContainerState.EXITED)).toEqual('exited')
 
-    expect(containerStateToDb(ContainerState.UNRECOGNIZED)).toEqual(null)
-    expect(containerStateToDb(null)).toEqual(null)
-    expect(containerStateToDb(undefined)).toEqual(null)
+    expect(containerStateToDto(ContainerState.UNRECOGNIZED)).toEqual(null)
+    expect(containerStateToDto(null)).toEqual(null)
+    expect(containerStateToDto(undefined)).toEqual(null)
   })
 
   it('test containerNameFromImageName', () => {

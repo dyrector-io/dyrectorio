@@ -224,6 +224,7 @@ k3d-init-ext: k3d-check
 	k3d cluster create --api-port 172.17.0.1:6443 crane-test && \
 	k3d kubeconfig get crane-test > k3d-auth.yaml && \
 	KUBECONFIG=$(PWD)/k3d-auth.yaml kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/bundle.yaml
+	KUBECONFIG=$(PWD)/k3d-auth.yaml kubectl apply -f ./crane-test.yaml
 
 # config k3d
 .PHONY: k3d-config

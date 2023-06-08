@@ -112,7 +112,7 @@ func TestDoggerContainerStatus(t *testing.T) {
 	}
 	dogger := dogger.NewDeploymentLogger(context.Background(), &deploymentId, ts, cfg)
 
-	dogger.WriteContainerState("state", "hello")
+	dogger.WriteContainerState(common.ContainerState_RUNNING, "reason", "hello")
 
 	assertDoggerMessage(t, ts, []string{"hello"})
 }
