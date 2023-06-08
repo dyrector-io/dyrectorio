@@ -22,7 +22,6 @@ const UncheckedRegistryFields = (props: EditRegistryTypeProps<UncheckedRegistryD
         onChange={formik.handleChange}
         value={formik.values.url}
         message={formik.errors.url}
-        disabled={formik.values.inUse}
       />
     </>
   )

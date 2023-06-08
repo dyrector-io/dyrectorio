@@ -16,7 +16,6 @@ import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
-import UpdateRegistryInterceptor from './interceptors/registry.update.interceptor'
 import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
 import { CreateRegistryDto, RegistryDetailsDto, RegistryDto, UpdateRegistryDto } from './registry.dto'
 import RegistryService from './registry.service'
@@ -92,7 +91,6 @@ export default class RegistryHttpController {
       "Modify the `name`, `type`, `description`, `details`, and `icon`. `registryId` refers to the registry's ID. `registryId`, `type`, `details`, and `name` are required.",
     summary: 'Modify the details of a registry.',
   })
-  @UseInterceptors(UpdateRegistryInterceptor)
   @UseGuards(RegistryAccessValidationGuard)
   @ApiBody({ type: UpdateRegistryDto })
   @ApiNoContentResponse({ description: 'Registry modified.' })

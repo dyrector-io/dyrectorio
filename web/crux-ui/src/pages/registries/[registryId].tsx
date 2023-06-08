@@ -43,8 +43,6 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
 
     if (res.ok) {
       router.back()
-    } else if (res.status === 412) {
-      toastWarning(t('inUse'))
     } else {
       handleApiError(res)
     }
