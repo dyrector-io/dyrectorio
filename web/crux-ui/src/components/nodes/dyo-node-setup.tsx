@@ -144,7 +144,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                   </DyoLabel>
 
                   <DyoInput
-                    name="traefik.acmeEmail"
+                    name="dagentTraefik.acmeEmail"
                     className="max-w-lg mb-2.5"
                     grow
                     value={formik.values.dagentTraefik.acmeEmail ?? ''}
