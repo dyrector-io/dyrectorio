@@ -53,7 +53,7 @@ export default class ImageMapper {
       expose: config.expose,
       ingress: toPrismaJson(config.ingress),
       configContainer: toPrismaJson(config.configContainer),
-      user: config.user ? config.user : null,
+      user: config.user ?? (config.user === 0 ? config.user : null),
       tty: config.tty ?? false,
       ports: toPrismaJson(config.ports),
       portRanges: toPrismaJson(config.portRanges),
