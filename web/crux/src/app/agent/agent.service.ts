@@ -420,7 +420,7 @@ export default class AgentService {
         agent = installer.complete(connection, request, eventChannel)
         this.installers.delete(node.id)
 
-        await this.prisma.node.update({
+        await prisma.node.update({
           where: { id: node.id },
           data: {
             token: installer.token,
