@@ -21,6 +21,8 @@ class WebSocketClient {
 
   private connectionAttempt?: Promise<boolean>
 
+  private connectionAttemptDelay = 0
+
   private lastAttempt = 0
 
   private destroyListeners?: VoidFunction
@@ -131,16 +133,12 @@ class WebSocketClient {
     }
 
     // try to connect
-    const now = Date.now()
-    const elapsed = now - this.lastAttempt
-    if (elapsed < WS_RECONNECT_TIMEOUT) {
-      this.connectionAttempt = delay(WS_RECONNECT_TIMEOUT - elapsed).then(() => this.createConnectionAttempt())
-    } else {
-      this.connectionAttempt = this.createConnectionAttempt()
-    }
-
+    this.connectionAttempt = this.createConnectionAttempt()
     const result = await this.connectionAttempt
+
+    this.connectionAttemptDelay = result ? 0 : WS_RECONNECT_TIMEOUT
     this.connectionAttempt = null
+
     return result
   }
 
@@ -227,12 +225,7 @@ class WebSocketClient {
     }
 
     const now = Date.now()
-    const elapsed = now - this.lastAttempt
-    if (elapsed < WS_RECONNECT_TIMEOUT) {
-      // try again if we can't connect in time
-      setTimeout(() => this.reconnect(), WS_RECONNECT_TIMEOUT - elapsed)
-      return
-    }
+    this.connectionAttemptDelay = now - this.lastAttempt
 
     this.logger.debug('Reconnecting...')
     this.connect()
@@ -241,7 +234,7 @@ class WebSocketClient {
   private createConnectionAttempt(): Promise<boolean> {
     this.lastAttempt = Date.now()
 
-    return new Promise<boolean>(resolve => {
+    const attempt = () => new Promise<boolean>(resolve => {
       this.logger.debug('Connecting...')
       let resolved = false
 
@@ -306,6 +299,8 @@ class WebSocketClient {
         ws.removeEventListener('message', onMessage)
       }
     })
+
+    return this.connectionAttemptDelay > 0 ? delay(this.connectionAttemptDelay).then(() => attempt()) : attempt()
   }
 
   private static assembleWsUrl() {
