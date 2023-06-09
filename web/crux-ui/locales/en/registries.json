@@ -57,8 +57,9 @@
 
   "altDefaultRegistryPicture": "Picture of registry",
   "errors": {
+    "preconditionFailed": "This registry is already in use",
     "invalidArgument": "Registry with the given URL does not exist"
   },
   "unknownRegistryType": "Unknown registry type: {{registryType}}",
-  "registryAlreadyInUse": "This registry is already in use. Modifying the url or the credentials may broke existing deployments."
+  "registryAlreadyInUse": "This registry is already in use. Modifying the url or the credentials may break existing deployments."
 }
