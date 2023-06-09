@@ -31,7 +31,6 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
-	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
@@ -98,7 +97,7 @@ func CopyToContainer(ctx context.Context, name string, meta v1.UploadFileData, f
 }
 
 func WriteContainerFile(ctx context.Context, cli *client.Client,
-	container, filename string, meta v1.UploadFileData, fileSize int64, data io.Reader,
+	cont, filename string, meta v1.UploadFileData, fileSize int64, data io.Reader,
 ) error {
 	var buf bytes.Buffer
 	tarWriter := tar.NewWriter(&buf)
@@ -124,7 +123,7 @@ func WriteContainerFile(ctx context.Context, cli *client.Client,
 	log.Debug().Int64("bytes", tarHeader.Size).Str("path", filepath.Join(meta.FilePath, filename)).Msg("Writing file")
 	reader := bytes.NewReader(buf.Bytes())
 
-	err := cli.CopyToContainer(ctx, container, meta.FilePath, reader, types.CopyToContainerOptions{})
+	err := cli.CopyToContainer(ctx, cont, meta.FilePath, reader, types.CopyToContainerOptions{})
 	return err
 }
 
@@ -254,7 +253,7 @@ func DeployImage(ctx context.Context,
 		}
 	}
 
-	builder := containerbuilder.NewDockerBuilder(ctx)
+	builder := container.NewDockerBuilder(ctx)
 	networkMode, networks := setNetwork(deployImageRequest)
 	labels, err := setImageLabels(expandedImageName, deployImageRequest, cfg)
 	if err != nil {
@@ -314,10 +313,10 @@ func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, 
 	return networkMode, deployImageRequest.ContainerConfig.Networks
 }
 
-func WithInitContainers(dc containerbuilder.Builder, containerConfig *v1.ContainerConfig,
+func WithInitContainers(dc container.Builder, containerConfig *v1.ContainerConfig,
 	dog *dogger.DeploymentLogger, cfg *config.Configuration,
 ) {
-	initFuncs := []containerbuilder.LifecycleFunc{}
+	initFuncs := []container.LifecycleFunc{}
 	if containerConfig.ImportContainer != nil {
 		initFuncs = append(initFuncs,
 			func(ctx context.Context, client client.APIClient,
@@ -555,9 +554,9 @@ func SecretList(ctx context.Context, prefix, name string) ([]string, error) {
 		return nil, nil
 	}
 
-	container := containers[0]
+	cont := containers[0]
 
-	if val, ok := GetOrganizationLabel(container.Labels, label.SecretKeys); ok {
+	if val, ok := GetOrganizationLabel(cont.Labels, label.SecretKeys); ok {
 		return strings.Split(val, ","), nil
 	}
 
@@ -570,7 +569,7 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 	prefix := command.Container.Prefix
 	name := command.Container.Name
 
-	container, err := GetContainerByPrefixAndName(ctx, prefix, name)
+	cont, err := GetContainerByPrefixAndName(ctx, prefix, name)
 	if err != nil {
 		return err
 	}
@@ -581,11 +580,11 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 	}
 
 	if operation == common.ContainerOperation_START_CONTAINER {
-		err = cli.ContainerStart(ctx, container.ID, types.ContainerStartOptions{})
+		err = cli.ContainerStart(ctx, cont.ID, types.ContainerStartOptions{})
 	} else if operation == common.ContainerOperation_STOP_CONTAINER {
-		err = cli.ContainerStop(ctx, container.ID, dockerContainer.StopOptions{})
+		err = cli.ContainerStop(ctx, cont.ID, dockerContainer.StopOptions{})
 	} else if operation == common.ContainerOperation_RESTART_CONTAINER {
-		err = cli.ContainerRestart(ctx, container.ID, dockerContainer.StopOptions{})
+		err = cli.ContainerRestart(ctx, cont.ID, dockerContainer.StopOptions{})
 	} else {
 		log.Error().Str("operation", operation.String()).Str("prefix", prefix).Str("name", name).Msg("Unknown operation")
 	}
@@ -709,12 +708,12 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 	prefix := request.Container.Prefix
 	name := request.Container.Name
 
-	container, err := GetContainerByPrefixAndName(ctx, prefix, name)
+	cont, err := GetContainerByPrefixAndName(ctx, prefix, name)
 	if err != nil {
 		return nil, fmt.Errorf("container not found: %w", err)
 	}
 
-	containerID := container.ID
+	containerID := cont.ID
 	enableEcho := containerID != self.ID
 
 	log.Trace().Str("prefix", prefix).Str("name", name).Str("selfContainerId", self.ID).Msgf("Container log echo enabled: %t", enableEcho)
