@@ -381,10 +381,11 @@ export default class DeployMapper {
   }
 
   private storageToImportContainer(config: MergedContainerConfigData, storage: Storage): ImportContainer {
+    const url = /^(http)s?/.test(storage.url) ? storage.url : `https://${storage.url}`
     let environment: { [key: string]: string } = {
       RCLONE_CONFIG_S3_TYPE: 's3',
       RCLONE_CONFIG_S3_PROVIDER: 'Other',
-      RCLONE_CONFIG_S3_ENDPOINT: storage.url,
+      RCLONE_CONFIG_S3_ENDPOINT: url,
     }
     if (storage.accessKey && storage.secretKey) {
       environment = {
