@@ -151,8 +151,8 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   containerClassName="max-w-lg mb-3"
                   labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
                   grow
-                  value={config.user ?? ''}
-                  placeholder={t('common.placeholders.userIdNumber')}
+                  value={!config.user || config.user === -1 ? '' : config.user}
+                  placeholder={t('common.placeholders.defaultUser')}
                   onPatch={it => onChange({ user: toNumber(it) })}
                   editorOptions={editorOptions}
                   message={fieldErrors.find(it => it.path?.startsWith('user'))?.message}

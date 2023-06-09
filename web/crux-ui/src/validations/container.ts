@@ -284,7 +284,7 @@ const containerConfigBaseSchema = yup.object().shape({
   environments: uniqueKeyValuesSchema.default([]).nullable(),
   ingress: ingressRule,
   expose: exposeRule,
-  user: yup.number().default(null).min(0).max(2147483647).nullable(),
+  user: yup.number().default(null).min(-1).max(2147483647).nullable(),
   tty: yup.boolean().default(false).required(),
   configContainer: configContainerRule,
   ports: portConfigRule,

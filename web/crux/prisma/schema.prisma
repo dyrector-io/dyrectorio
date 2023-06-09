@@ -217,7 +217,7 @@ model ContainerConfig {
   expose          ExposeStrategy
   ingress         Json?
   configContainer Json?
-  user            Int?
+  user            Int            @default(-1)
   tty             Boolean
   ports           Json?
   portRanges      Json?
@@ -297,7 +297,7 @@ model InstanceContainerConfig {
   expose          ExposeStrategy?
   ingress         Json?
   configContainer Json?
-  user            Int?
+  user            Int             @default(-1)
   tty             Boolean?
   ports           Json?
   portRanges      Json?
@@ -357,10 +357,10 @@ enum AuditLogRequestMethodEnum {
 }
 
 model AuditLog {
-  id        String                    @id @default(uuid()) @db.Uuid
-  createdAt DateTime                  @default(now()) @db.Timestamptz(6)
-  userId    String                    @db.Uuid
-  teamId    String                    @db.Uuid
+  id        String                     @id @default(uuid()) @db.Uuid
+  createdAt DateTime                   @default(now()) @db.Timestamptz(6)
+  userId    String                     @db.Uuid
+  teamId    String                     @db.Uuid
   context   AuditLogContextEnum
   method    AuditLogRequestMethodEnum?
   event     String

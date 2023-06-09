@@ -72,7 +72,8 @@ export default class ContainerMapper {
       expose: config.expose,
       ingress: toPrismaJson(config.ingress),
       configContainer: toPrismaJson(config.configContainer),
-      user: config.user ?? (config.user === 0 ? config.user : null),
+      // Set user to the given value, if not null or use 0 if specifically 0, otherwise set to default: -1
+      user: config.user || config.user === 0 ? (config.user === 0 ? 0 : config.user) : -1,
       tty: config.tty !== null ? config.tty : false,
       ports: toPrismaJson(config.ports),
       portRanges: toPrismaJson(config.portRanges),

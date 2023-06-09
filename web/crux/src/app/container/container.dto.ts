@@ -273,7 +273,7 @@ export class ContainerConfigDto {
 
   @IsOptional()
   @IsInt()
-  @Min(0)
+  @Min(-1)
   @Max(2147483647)
   user?: number
 

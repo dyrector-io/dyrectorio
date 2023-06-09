@@ -56,7 +56,7 @@
     "placeholders": {
       "port": "Port",
       "path": "Path",
-      "userIdNumber": "Id number",
+      "defaultUser": "Container defined",
       "ingressName": "Ingress name",
       "ingressHost": "Ingress host",
       "ingressUploadLimit": "Ingress upload limit"
