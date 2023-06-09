@@ -30,6 +30,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
+	"github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
@@ -73,61 +74,7 @@ func GetContainerLogs(name string, skip, take uint) []string {
 	}
 	defer logdefer.LogDeferredErr(logs.Close, log.Warn(), "error closing container log reader")
 
-	return ReadDockerLogsFromReadCloser(logs, int(skip), int(take))
-}
-
-func ReadDockerLogsFromReadCloser(logs io.ReadCloser, skip, take int) []string {
-	output := make([]string, 0)
-	eofReached := false
-
-	// [8]byte{STREAM_TYPE, 0, 0, 0, SIZE1, SIZE2, SIZE3, SIZE4}[]byte{OUTPUT}
-	//
-	// STREAM_TYPE can be 1 for stdout and 2 for stderr
-	//
-	// SIZE1, SIZE2, SIZE3, and SIZE4 are four bytes of uint32 encoded as big endian.
-	// This is the size of OUTPUT.
-	//
-	// for more info see: docker's Client.ContainerLogs()
-	const headerSize = 8
-	header := make([]byte, headerSize)
-	for !eofReached {
-		_, err := logs.Read(header)
-		if err != nil {
-			if err != io.EOF {
-				panic(err)
-			}
-
-			break
-		}
-
-		count := binary.BigEndian.Uint32(header[4:])
-		data := make([]byte, count)
-		_, err = logs.Read(data)
-
-		if err != nil {
-			if err != io.EOF {
-				panic(err)
-			}
-
-			eofReached = true
-		}
-
-		output = append(output, string(data))
-	}
-
-	length := len(output)
-
-	skip = length - skip
-	if skip < 0 {
-		skip = 0
-	}
-
-	take = skip - take
-	if take < 0 {
-		take = 0
-	}
-
-	return output[take:skip]
+	return container.ReadDockerLogsFromReadCloser(logs, int(skip), int(take))
 }
 
 func CopyToContainer(ctx context.Context, name string, meta v1.UploadFileData, fileHeader *multipart.FileHeader) error {
