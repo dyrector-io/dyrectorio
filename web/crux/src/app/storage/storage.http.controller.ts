@@ -13,7 +13,6 @@ import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import StorageTeamAccessGuard from './guards/storage.team-access.guard'
 import StorageDeleteValidationInterceptor from './interceptors/storage.delete.interceptor'
-import StorageUpdateValidationInterceptor from './interceptors/storage.update.interceptor'
 import { CreateStorageDto, StorageDetailsDto, StorageDto, StorageOptionDto, UpdateStorageDto } from './storage.dto'
 import StorageService from './storage.service'
 
@@ -101,7 +100,6 @@ export default class StorageHttpController {
       'Updates a storage. Request must include `storageId`, `name`, and `url`. Request body may include `description`, `icon`, `accesKey`, and `secretKey`.',
     summary: 'Modify a storage.',
   })
-  @UseInterceptors(StorageUpdateValidationInterceptor)
   @ApiNoContentResponse({ description: 'Storage updated.' })
   @UuidParams(PARAM_STORAGE_ID)
   async updateStorage(

@@ -102,7 +102,6 @@ const EditStorageCard = (props: EditStorageCardProps) => {
               onChange={formik.handleChange}
               value={formik.values.name}
               message={formik.errors.name}
-              disabled={formik.values.inUse}
             />
             {formik.values.inUse && (
               <DyoLabel className="mt-2" textColor="text-sm text-warning-orange">
@@ -137,7 +136,6 @@ const EditStorageCard = (props: EditStorageCardProps) => {
             onChange={formik.handleChange}
             value={formik.values.url}
             message={formik.errors.url}
-            disabled={formik.values.inUse}
           />
 
           <DyoInput
@@ -149,7 +147,6 @@ const EditStorageCard = (props: EditStorageCardProps) => {
             onChange={formik.handleChange}
             value={formik.values.accessKey}
             message={formik.errors.accessKey}
-            disabled={formik.values.inUse}
           />
 
           <DyoInput
@@ -161,7 +158,6 @@ const EditStorageCard = (props: EditStorageCardProps) => {
             onChange={formik.handleChange}
             value={formik.values.secretKey}
             message={formik.errors.secretKey}
-            disabled={formik.values.inUse}
           />
         </div>
 

@@ -19,7 +19,6 @@ const HubRegistryFields = (props: EditRegistryTypeProps<HubRegistryDetails>) => 
         name="imageNamePrefix"
         type="text"
         label={t('orgOrUser')}
-        disabled={formik.values.inUse}
         onChange={formik.handleChange}
         value={formik.values.imageNamePrefix}
         message={formik.errors.imageNamePrefix}

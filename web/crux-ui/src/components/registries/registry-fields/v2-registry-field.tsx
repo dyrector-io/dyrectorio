@@ -23,7 +23,6 @@ const V2RegistryFields = (props: EditRegistryTypeProps<V2RegistryDetails>) => {
         onChange={formik.handleChange}
         value={formik.values.url}
         message={formik.errors.url}
-        disabled={formik.values.inUse}
       />
 
       <div className="flex mt-8">
@@ -32,7 +31,6 @@ const V2RegistryFields = (props: EditRegistryTypeProps<V2RegistryDetails>) => {
         <DyoSwitch
           fieldName="private"
           checked={formik.values.private}
-          disabled={formik.values.inUse}
           setFieldValue={(field: string, value: boolean, shouldValidate?: boolean | undefined) => {
             if (!value) {
               formik.setFieldValue('user', '', false)
@@ -54,7 +52,6 @@ const V2RegistryFields = (props: EditRegistryTypeProps<V2RegistryDetails>) => {
             onChange={formik.handleChange}
             value={formik.values.user}
             message={formik.errors.user}
-            disabled={formik.values.inUse}
           />
 
           <DyoInput

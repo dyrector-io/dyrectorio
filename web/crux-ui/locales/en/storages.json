@@ -7,6 +7,6 @@
     "bucket": "Bucket",
     "accessKey": "Access key",
     "secretKey": "Secret key",
-    "storageAlreadyInUse": "This storage is already in use. You may not be able to edit some of its properties.",
+    "storageAlreadyInUse": "This storage is already in use. Modifying the url or the credentials may break existing deployments.",
     "inUse": "This storage is already in use."
 }
