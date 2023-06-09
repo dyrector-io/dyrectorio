@@ -192,13 +192,15 @@ export default class DeployWebSocketGateway {
 
     await this.service.patchInstance(deploymentId, message.instanceId, cruxReq, identity)
 
-    subscription.sendToAllExcept(client, {
+    const updateMessage: WsMessage<InstanceUpdatedMessage> = {
       type: WS_TYPE_INSTANCE_UPDATED,
       data: {
         instanceId: message.instanceId,
-        ...message.config,
+        ...cruxReq.config,
       },
-    } as WsMessage<InstanceUpdatedMessage>)
+    }
+
+    subscription.sendToAllExcept(client, updateMessage)
 
     return {
       type: WS_TYPE_PATCH_RECEIVED,
