@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { ContainerConfigData, InstanceContainerConfigData } from 'src/domain/container'
-import { DeploymentStatusEnum, NodeTypeEnum, ProjectTypeEnum, VersionTypeEnum } from '.prisma/client'
+import { ContainerConfigData, InstanceContainerConfigData, MergedContainerConfigData } from 'src/domain/container'
+import { DeploymentStatusEnum, NodeTypeEnum, ProjectTypeEnum, VersionTypeEnum, Storage } from '.prisma/client'
+import { CommonContainerConfig, ImportContainer } from 'src/grpc/protobuf/proto/agent'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
 import { DeploymentDto, DeploymentWithNodeVersion, PatchInstanceDto } from './deploy.dto'
@@ -748,5 +749,76 @@ describe('DeployMapper', () => {
     const actual = deployMapper.toDto(input)
 
     expect(actual).toEqual(expected)
+  })
+
+  describe('commonConfigToAgentProto', () => {
+    it('the function storageToImportContainer should add https by default if protocol is missing', () => {
+      const config = deployMapper.commonConfigToAgentProto(
+        <MergedContainerConfigData>{
+          storageId: 'test-1234',
+          storageConfig: {
+            path: 'test',
+            bucket: 'test-bucket',
+          },
+        },
+        <Storage>{ url: 'example.com', id: 'test-1234' },
+      )
+      const expected = <CommonContainerConfig>{
+        importContainer: <ImportContainer>{
+          command: 'sync s3:test-bucket /data/output',
+          volume: 'test',
+          environment: {
+            RCLONE_CONFIG_S3_ENDPOINT: 'https://example.com',
+          },
+        },
+      }
+      expect(config).toMatchObject(expected)
+    })
+
+    it('the function storageToImportContainer should leave http prefix untouched', () => {
+      const config = deployMapper.commonConfigToAgentProto(
+        <MergedContainerConfigData>{
+          storageId: 'test-1234',
+          storageConfig: {
+            path: 'test',
+            bucket: 'test-bucket',
+          },
+        },
+        <Storage>{ url: 'http://example.com', id: 'test-1234' },
+      )
+      const expected = <CommonContainerConfig>{
+        importContainer: <ImportContainer>{
+          command: 'sync s3:test-bucket /data/output',
+          volume: 'test',
+          environment: {
+            RCLONE_CONFIG_S3_ENDPOINT: 'http://example.com',
+          },
+        },
+      }
+      expect(config).toMatchObject(expected)
+    })
+
+    it('the function storageToImportContainer should add https prefix untouched', () => {
+      const config = deployMapper.commonConfigToAgentProto(
+        <MergedContainerConfigData>{
+          storageId: 'test-1234',
+          storageConfig: {
+            path: 'test',
+            bucket: 'test-bucket',
+          },
+        },
+        <Storage>{ url: 'https://example.com', id: 'test-1234' },
+      )
+      const expected = <CommonContainerConfig>{
+        importContainer: <ImportContainer>{
+          command: 'sync s3:test-bucket /data/output',
+          volume: 'test',
+          environment: {
+            RCLONE_CONFIG_S3_ENDPOINT: 'https://example.com',
+          },
+        },
+      }
+      expect(config).toMatchObject(expected)
+    })
   })
 })
