@@ -408,4 +408,7 @@ export const getEndOfToday = () => {
   return endOfToday
 }
 
-export const delay = (ms: number): Promise<boolean> => new Promise(resolve => setTimeout(() => resolve(null), ms))
+export const delay = (ms: number): Promise<boolean> =>
+  new Promise(resolve => {
+    setTimeout(() => resolve(null), ms)
+  })

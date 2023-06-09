@@ -1,6 +1,7 @@
 import { WS_RECONNECT_TIMEOUT } from '@app/const'
 import { Logger } from '@app/logger'
 import { WsErrorMessage, WS_TYPE_ERROR } from '@app/models'
+import { delay } from '@app/utils'
 import {
   SubscriptionMessage,
   SubscriptionRedirectMessage,
@@ -12,7 +13,6 @@ import {
 } from './common'
 import WebSocketClientEndpoint from './websocket-client-endpoint'
 import WebSocketClientRoute from './websocket-client-route'
-import { delay } from '@app/utils'
 
 class WebSocketClient {
   private logger = new Logger('WebSocketClient') // need to be explicit string because of production build uglification
@@ -234,71 +234,72 @@ class WebSocketClient {
   private createConnectionAttempt(): Promise<boolean> {
     this.lastAttempt = Date.now()
 
-    const attempt = () => new Promise<boolean>(resolve => {
-      this.logger.debug('Connecting...')
-      let resolved = false
+    const attempt = () =>
+      new Promise<boolean>(resolve => {
+        this.logger.debug('Connecting...')
+        let resolved = false
 
-      const onOpen = () => {
-        if (!resolved) {
-          resolved = true
-          resolve(true)
+        const onOpen = () => {
+          if (!resolved) {
+            resolved = true
+            resolve(true)
+          }
+
+          this.logger.info('Connected')
+          this.routes.forEach(it => it.onSocketOpen())
         }
 
-        this.logger.info('Connected')
-        this.routes.forEach(it => it.onSocketOpen())
-      }
+        const onClose = () => {
+          if (!resolved) {
+            resolved = true
+            resolve(false)
+          }
 
-      const onClose = () => {
-        if (!resolved) {
-          resolved = true
+          this.logger.info('Disconnected')
+
+          this.routes.forEach(it => it.onSocketClose())
+          this.reconnect()
+        }
+
+        const onError = ev => {
+          this.logger.error(`Error occurred:`, ev)
+
+          this.routes.forEach(r => r.onError(ev))
           resolve(false)
         }
 
-        this.logger.info('Disconnected')
+        const onMessage = ev => {
+          const message = JSON.parse(ev.data) as WsMessage
+          const { type } = message
 
-        this.routes.forEach(it => it.onSocketClose())
-        this.reconnect()
-      }
+          this.logger.verbose('Receiving message:', type, message.data)
 
-      const onError = ev => {
-        this.logger.error(`Error occurred:`, ev)
+          if (message.type === WS_TYPE_ERROR && this.errorHandler) {
+            this.errorHandler(message.data as WsErrorMessage)
+          } else if (type === WS_TYPE_SUBBED || type === WS_TYPE_UNSUBBED || message.type === WS_TYPE_SUB_REDIRECT) {
+            this.onSubscriptionMessage(message as WsMessage<SubscriptionMessage>)
+            return
+          }
 
-        this.routes.forEach(r => r.onError(ev))
-        resolve(false)
-      }
-
-      const onMessage = ev => {
-        const message = JSON.parse(ev.data) as WsMessage
-        const { type } = message
-
-        this.logger.verbose('Receiving message:', type, message.data)
-
-        if (message.type === WS_TYPE_ERROR && this.errorHandler) {
-          this.errorHandler(message.data as WsErrorMessage)
-        } else if (type === WS_TYPE_SUBBED || type === WS_TYPE_UNSUBBED || message.type === WS_TYPE_SUB_REDIRECT) {
-          this.onSubscriptionMessage(message as WsMessage<SubscriptionMessage>)
-          return
+          this.routes.forEach(r => r.onMessage(message))
         }
 
-        this.routes.forEach(r => r.onMessage(message))
-      }
+        this.clearSocket()
+        this.socket = new WebSocket(WebSocketClient.assembleWsUrl())
 
-      this.clearSocket()
-      this.socket = new WebSocket(WebSocketClient.assembleWsUrl())
+        const ws = this.socket
+        ws.addEventListener('open', onOpen)
+        ws.addEventListener('close', onClose)
+        ws.addEventListener('error', onError)
+        ws.addEventListener('message', onMessage)
 
-      const ws = this.socket
-      ws.addEventListener('open', onOpen)
-      ws.addEventListener('close', onClose)
-      ws.addEventListener('error', onError)
-      ws.addEventListener('message', onMessage)
-
-      this.destroyListeners = () => {
-        ws.removeEventListener('open', onOpen)
-        ws.removeEventListener('close', onClose)
-        ws.removeEventListener('error', onError)
-        ws.removeEventListener('message', onMessage)
-      }
-    })
+        this.destroyListeners = () => {
+          ws.removeEventListener('open', onOpen)
+          ws.removeEventListener('close', onClose)
+          ws.removeEventListener('error', onError)
+          ws.removeEventListener('message', onMessage)
+        }
+      })
 
     return this.connectionAttemptDelay > 0 ? delay(this.connectionAttemptDelay).then(() => attempt()) : attempt()
   }

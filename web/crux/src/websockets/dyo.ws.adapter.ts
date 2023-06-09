@@ -3,7 +3,7 @@ import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-hos
 import { AbstractWsAdapter } from '@nestjs/websockets'
 import { CLOSE_EVENT, CONNECTION_EVENT, ERROR_EVENT } from '@nestjs/websockets/constants'
 import { MessageMappingProperties } from '@nestjs/websockets/gateway-metadata-explorer'
-import http from 'http'
+import http, { IncomingMessage, OutgoingHttpHeaders } from 'http'
 import {
   EMPTY,
   Observable,
@@ -38,8 +38,6 @@ import {
   namespaceOf,
 } from './common'
 import WsRoute from './route'
-import { IncomingMessage } from 'http'
-import { OutgoingHttpHeaders } from 'http2'
 
 export enum WebSocketReadyState {
   CONNECTING_STATE = 0,
@@ -78,9 +76,7 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     this.authGuard
       .canActivate(ctx)
       .then(authorized => {
-        this.logger.debug(
-          `Connection ${authorized ? 'authorized' : 'unauthorized'} - ${req.socket.remoteAddress}`,
-        )
+        this.logger.debug(`Connection ${authorized ? 'authorized' : 'unauthorized'} - ${req.socket.remoteAddress}`)
         callback(authorized)
       })
       .catch(err => {
@@ -101,9 +97,7 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
   create(_port: number, options?: Record<string, any> & { namespace?: string; server?: any }) {
     if (!options.server) {
       const httpServer = this.httpServer as http.Server
-      this.server = this.bindErrorHandler(
-        new WebSocketServer(this.createWebSocketServerOptions(httpServer)),
-      )
+      this.server = this.bindErrorHandler(new WebSocketServer(this.createWebSocketServerOptions(httpServer)))
       this.server.on(CONNECTION_EVENT, (client, req) => this.onClientConnect(client as WsClient, req))
 
       this.logger.log('WebSocket adapter registered.')
@@ -309,11 +303,7 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     }
     client.on(CLOSE_EVENT, () => this.onClientDisconnect(client))
 
-    client.setup = new WsClientSetup(
-      client,
-      client.token,
-      () => this.bindClientMessageHandlers(client),
-    )
+    client.setup = new WsClientSetup(client, client.token, () => this.bindClientMessageHandlers(client))
     client.setup.start()
 
     this.logger.log(`Connected ${client.token} clients: ${this.server?.clients?.size}`)
