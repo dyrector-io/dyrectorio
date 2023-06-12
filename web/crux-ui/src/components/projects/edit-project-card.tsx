@@ -13,7 +13,6 @@ import { API_PROJECTS, projectApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createProjectSchema, updateProjectSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { useRouter } from 'next/router'
 import { MutableRefObject, useState } from 'react'
 
 interface EditProjectCardProps {
@@ -27,7 +26,6 @@ const EditProjectCard = (props: EditProjectCardProps) => {
   const { project: propsProject, className, onProjectEdited, submitRef } = props
 
   const { t } = useTranslation('projects')
-  const router = useRouter()
 
   const [project, setProject] = useState<EditableProject>(
     propsProject ?? {
