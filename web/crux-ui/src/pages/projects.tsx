@@ -53,12 +53,12 @@ const ProjectsPage = (props: ProjectsPageProps) => {
 
   const [viewMode, setViewMode] = useState<ViewMode>('tile')
 
-  const onCreated = (project: Project) => {
+  const onCreated = async (project: Project) => {
     setCreating(false)
     filters.setItems([...filters.items, project])
 
     // When creating navigate the user to the project detail page
-    router.push(projectUrl(project.id))
+    await router.push(projectUrl(project.id))
   }
 
   const pageLink: BreadcrumbLink = {
