@@ -577,16 +577,15 @@ jobs:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
     needs: [e2e, gather_changes]
     if: |
-      always()
-    # &&
-    # (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
-    # needs.e2e.result == 'success' &&
-    # needs.go_build.result == 'success' &&
-    # (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
-    # (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
-    # (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
-    # needs.conventional_commits.result == 'success' &&
-    # needs.gather_changes.result == 'success'
+      always() &&
+      (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
+      needs.e2e.result == 'success' &&
+      needs.go_build.result == 'success' &&
+      (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
+      (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
+      (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
+      needs.conventional_commits.result == 'success' &&
+      needs.gather_changes.result == 'success'
     environment: Workflow - Protected
     steps:
       - name: Login to GHCR
@@ -615,20 +614,9 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
-          platform: all
-      - name: Setup binfmt
-        run: make binfmt
-      - name: Test binfmt availability
-        run: |
-          cat /proc/sys/fs/binfmt_misc/qemu-aarch64
+          platforms: linux/arm64, linux/amd64
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      - name: Test if arm64 is supported
-        run: |
-          docker run docker run --rm --platform linux/arm64 arm64v8/alpine uname -a
-      - name: Test if arm64 is supported
-        run: |
-          docker run docker run --rm --platform linux/amd64 amd64/alpine uname -a
       - name: Compile
         run: |
           make GOOS="linux darwin windows" GOARCHS="amd64 arm64" compile-cli
