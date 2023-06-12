@@ -1,7 +1,6 @@
-import { WS_RECONNECT_TIMEOUT } from '@app/const'
+import { WS_CONNECT_DELAY_PER_TRY, WS_MAX_CONNECT_TRY } from '@app/const'
 import { Logger } from '@app/logger'
 import { WsErrorMessage, WS_TYPE_ERROR } from '@app/models'
-import { delay } from '@app/utils'
 import {
   SubscriptionMessage,
   SubscriptionRedirectMessage,
@@ -21,9 +20,7 @@ class WebSocketClient {
 
   private connectionAttempt?: Promise<boolean>
 
-  private connectionAttemptDelay = 0
-
-  private lastAttempt = 0
+  private connectionAttemptNumber = 0
 
   private destroyListeners?: VoidFunction
 
@@ -121,6 +118,10 @@ class WebSocketClient {
   }
 
   private async connect(): Promise<boolean> {
+    if (this.connectionAttemptNumber >= WS_MAX_CONNECT_TRY) {
+      return false
+    }
+
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       // we are already connected
       return true
@@ -136,7 +137,7 @@ class WebSocketClient {
     this.connectionAttempt = this.createConnectionAttempt()
     const result = await this.connectionAttempt
 
-    this.connectionAttemptDelay = result ? 0 : WS_RECONNECT_TIMEOUT
+    this.connectionAttemptNumber = result ? 0 : this.connectionAttemptNumber + 1
     this.connectionAttempt = null
 
     return result
@@ -206,6 +207,10 @@ class WebSocketClient {
   }
 
   private reconnect() {
+    if (this.connectionAttemptNumber >= WS_MAX_CONNECT_TRY) {
+      return false
+    }
+
     if (this.routes.size < 1) {
       // no need to reconnect
       this.logger.debug('Reconnect skipped: there are no endpoints')
@@ -224,84 +229,80 @@ class WebSocketClient {
       return
     }
 
-    const now = Date.now()
-    this.connectionAttemptDelay = now - this.lastAttempt
-
     this.logger.debug('Reconnecting...')
     this.connect()
   }
 
   private createConnectionAttempt(): Promise<boolean> {
-    this.lastAttempt = Date.now()
+    const failTimeout = (this.connectionAttemptNumber + 1) * WS_CONNECT_DELAY_PER_TRY
 
-    const attempt = () =>
-      new Promise<boolean>(resolve => {
-        this.logger.debug('Connecting...')
-        let resolved = false
+    return new Promise<boolean>(resolve => {
+      this.logger.debug('Connecting...')
+      let resolved = false
 
-        const onOpen = () => {
-          if (!resolved) {
-            resolved = true
-            resolve(true)
-          }
-
-          this.logger.info('Connected')
-          this.routes.forEach(it => it.onSocketOpen())
+      const onOpen = () => {
+        if (!resolved) {
+          resolved = true
+          resolve(true)
         }
 
-        const onClose = () => {
-          if (!resolved) {
-            resolved = true
-            resolve(false)
-          }
+        this.logger.info('Connected')
+        this.routes.forEach(it => it.onSocketOpen())
+      }
 
-          this.logger.info('Disconnected')
-
-          this.routes.forEach(it => it.onSocketClose())
-          this.reconnect()
+      const onClose = () => {
+        if (!resolved) {
+          resolved = true
+          setTimeout(() => resolve(false), failTimeout)
         }
 
-        const onError = ev => {
-          this.logger.error(`Error occurred:`, ev)
+        this.logger.info('Disconnected')
 
-          this.routes.forEach(r => r.onError(ev))
-          resolve(false)
+        this.routes.forEach(it => it.onSocketClose())
+        this.reconnect()
+      }
+
+      const onError = ev => {
+        resolved = true
+
+        this.logger.error(`Error occurred:`, ev)
+        this.routes.forEach(r => r.onError(ev))
+
+        setTimeout(() => resolve(false), failTimeout)
+      }
+
+      const onMessage = ev => {
+        const message = JSON.parse(ev.data) as WsMessage
+        const { type } = message
+
+        this.logger.verbose('Receiving message:', type, message.data)
+
+        if (message.type === WS_TYPE_ERROR && this.errorHandler) {
+          this.errorHandler(message.data as WsErrorMessage)
+        } else if (type === WS_TYPE_SUBBED || type === WS_TYPE_UNSUBBED || message.type === WS_TYPE_SUB_REDIRECT) {
+          this.onSubscriptionMessage(message as WsMessage<SubscriptionMessage>)
+          return
         }
 
-        const onMessage = ev => {
-          const message = JSON.parse(ev.data) as WsMessage
-          const { type } = message
+        this.routes.forEach(r => r.onMessage(message))
+      }
 
-          this.logger.verbose('Receiving message:', type, message.data)
+      this.clearSocket()
+      this.socket = new WebSocket(WebSocketClient.assembleWsUrl())
 
-          if (message.type === WS_TYPE_ERROR && this.errorHandler) {
-            this.errorHandler(message.data as WsErrorMessage)
-          } else if (type === WS_TYPE_SUBBED || type === WS_TYPE_UNSUBBED || message.type === WS_TYPE_SUB_REDIRECT) {
-            this.onSubscriptionMessage(message as WsMessage<SubscriptionMessage>)
-            return
-          }
+      const ws = this.socket
+      ws.addEventListener('open', onOpen)
+      ws.addEventListener('close', onClose)
+      ws.addEventListener('error', onError)
+      ws.addEventListener('message', onMessage)
 
-          this.routes.forEach(r => r.onMessage(message))
-        }
-
-        this.clearSocket()
-        this.socket = new WebSocket(WebSocketClient.assembleWsUrl())
-
-        const ws = this.socket
-        ws.addEventListener('open', onOpen)
-        ws.addEventListener('close', onClose)
-        ws.addEventListener('error', onError)
-        ws.addEventListener('message', onMessage)
-
-        this.destroyListeners = () => {
-          ws.removeEventListener('open', onOpen)
-          ws.removeEventListener('close', onClose)
-          ws.removeEventListener('error', onError)
-          ws.removeEventListener('message', onMessage)
-        }
-      })
-
-    return this.connectionAttemptDelay > 0 ? delay(this.connectionAttemptDelay).then(() => attempt()) : attempt()
+      this.destroyListeners = () => {
+        ws.removeEventListener('open', onOpen)
+        ws.removeEventListener('close', onClose)
+        ws.removeEventListener('error', onError)
+        ws.removeEventListener('message', onMessage)
+      }
+    })
   }
 
   private static assembleWsUrl() {
