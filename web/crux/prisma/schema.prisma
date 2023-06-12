@@ -275,10 +275,10 @@ model Deployment {
 }
 
 model Instance {
-  id           String              @id @default(uuid()) @db.Uuid
-  updatedAt    DateTime            @updatedAt @db.Timestamptz(6)
-  deploymentId String              @db.Uuid
-  imageId      String              @db.Uuid
+  id           String   @id @default(uuid()) @db.Uuid
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  deploymentId String   @db.Uuid
+  imageId      String   @db.Uuid
 
   deployment Deployment               @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
   image      Image                    @relation(fields: [imageId], references: [id], onDelete: Cascade)
@@ -357,10 +357,10 @@ enum AuditLogRequestMethodEnum {
 }
 
 model AuditLog {
-  id        String                    @id @default(uuid()) @db.Uuid
-  createdAt DateTime                  @default(now()) @db.Timestamptz(6)
-  userId    String                    @db.Uuid
-  teamId    String                    @db.Uuid
+  id        String                     @id @default(uuid()) @db.Uuid
+  createdAt DateTime                   @default(now()) @db.Timestamptz(6)
+  userId    String                     @db.Uuid
+  teamId    String                     @db.Uuid
   context   AuditLogContextEnum
   method    AuditLogRequestMethodEnum?
   event     String
@@ -405,13 +405,13 @@ model NotificationEvent {
 }
 
 model AgentEvent {
-  id             String               @id @default(uuid()) @db.Uuid
-  nodeId         String               @db.Uuid
-  createdAt      DateTime             @default(now()) @db.Timestamptz(6)
-  event          AgentEventTypeEnum
-  data           Json?
+  id        String             @id @default(uuid()) @db.Uuid
+  nodeId    String             @db.Uuid
+  createdAt DateTime           @default(now()) @db.Timestamptz(6)
+  event     AgentEventTypeEnum
+  data      Json?
 
-  node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)  
+  node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
 }
 
 enum ProjectTypeEnum {
