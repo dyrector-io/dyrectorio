@@ -132,6 +132,7 @@ const EditStorageCard = (props: EditStorageCardProps) => {
             grow
             name="url"
             type="text"
+            placeholder="https://example.com"
             label={t('url')}
             onChange={formik.handleChange}
             value={formik.values.url}

@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -423,18 +422,17 @@ func (dc *DockerContainerBuilder) CreateAndStartWaitUntilExit() (Container, *Wai
 		return cont, res, err
 	}
 
-	if res.StatusCode == 0 {
-		return cont, res, err
-	}
 	logReader, err := dc.client.ContainerLogs(dc.ctx, *cont.GetContainerID(), types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
 	if err != nil {
 		return cont, res, err
 	}
 
 	defer logdefer.LogDeferredErr(logReader.Close, log.Debug(), "could not close log reader")
+	res.Logs = ReadDockerLogsFromReadCloser(logReader, 0, 0)
 
-	logs, err := io.ReadAll(logReader)
-	res.Logs = strings.Split(string(logs), "\n")
+	if res.StatusCode == 0 {
+		return cont, res, err
+	}
 
 	return cont, res, err
 }
