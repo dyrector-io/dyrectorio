@@ -27,7 +27,7 @@ export default class DeployCreateValidationInterceptor implements NestIntercepto
         nodeId: body.nodeId,
         versionId: body.versionId,
         prefix: body.prefix,
-        
+
         // Rolling versions can only have one deployment for a node with the same prefix
         status: version.type === VersionTypeEnum.rolling ? undefined : 'preparing',
       },
