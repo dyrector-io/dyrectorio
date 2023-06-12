@@ -1,7 +1,9 @@
 import useEditorState, { EditorState } from '@app/components/editor/use-editor-state'
 import useNodeState from '@app/components/nodes/use-node-state'
 import { ViewMode } from '@app/components/shared/view-mode-toggle'
+import { DEPLOYMENT_EDIT_WS_REQUEST_DELAY } from '@app/const'
 import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
+import { useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentDetails,
@@ -22,6 +24,7 @@ import {
   InstanceUpdatedMessage,
   NodeEventMessage,
   ProjectDetails,
+  UniqueKeyValue,
   VersionDetails,
   WS_TYPE_DEPLOYMENT_ENV_UPDATED,
   WS_TYPE_GET_INSTANCE,
@@ -67,6 +70,7 @@ export type DeploymentState = {
 export type DeploymentActions = {
   setEditing: (editing: boolean) => void
   onDeploymentEdited: (editedDeployment: DeploymentDetails) => void
+  onEnvironmentEdited: (environment: UniqueKeyValue[]) => void
   onCopyDeployment: () => Promise<string>
   setViewMode: (viewMode: ViewMode) => void
   onInvalidateSecrets: (secrets: DeploymentInvalidatedSecrets[]) => void
@@ -83,6 +87,8 @@ const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage)
 const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, DeploymentActions] => {
   const { deployment: optionDeploy, onWsError, onApiError } = options
   const { project, version } = optionDeploy
+
+  const envEditThrottle = useThrottling(DEPLOYMENT_EDIT_WS_REQUEST_DELAY)
 
   const [deployment, setDeployment] = useState<DeploymentDetails>(optionDeploy)
   const [node, setNode] = useNodeState(optionDeploy.node)
@@ -166,6 +172,16 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
     setEditing(false)
   }
 
+  const onEnvironmentEdited = environment => {
+    setDeployment({
+      ...deployment,
+      environment,
+    })
+    envEditThrottle(() => {
+      sock.send(WS_TYPE_PATCH_DEPLOYMENT_ENV, environment)
+    })
+  }
+
   const onCopyDeployment = () =>
     copyDeployment({
       deploymentId: deployment.id,
@@ -223,6 +239,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
     {
       setEditing,
       onDeploymentEdited,
+      onEnvironmentEdited,
       onCopyDeployment,
       setViewMode,
       onInvalidateSecrets,

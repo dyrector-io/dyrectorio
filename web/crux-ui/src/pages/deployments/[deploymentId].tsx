@@ -216,7 +216,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
           <div className="flex flex-row">
             <NodeConnectionCard className="w-1/3 p-6" node={state.node} showName />
 
-            <DeploymentDetailsSection state={state} className="w-2/3 p-6 ml-2" />
+            <DeploymentDetailsSection state={state} actions={actions} className="w-2/3 p-6 ml-2" />
           </div>
 
           <EditDeploymentInstances state={state} actions={actions} />
