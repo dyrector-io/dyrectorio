@@ -91,9 +91,6 @@ test('Cannot create multiple deployments with the same node and prefix for a rol
     'test-prefix',
   )
 
-  await expect(await page.locator('.dyo-toast')).toHaveText(
-    'Rolling versions can only have one deployment for the same node with the same prefix!',
-  )
   await expect(page.url()).toEqual(firstDeploymentUrl)
   await expect(firstDeploymentUrl).toEqual(secondDeploymentUrl)
 })

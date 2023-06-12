@@ -12,7 +12,7 @@ const CruxApp = ({ Component, pageProps }: AppProps) => (
         toastOptions={{
           error: {
             icon: null,
-            className: '!bg-error-red dyo-toast',
+            className: '!bg-error-red',
             style: {
               color: 'white',
             },
