@@ -63,6 +63,9 @@ func spawnInitContainer(
 		return err
 	}
 
+	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS,
+		fmt.Sprintf("Init container (%v) exited with status %v, output:", initContName, waitResult.StatusCode))
+	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, waitResult.Logs...)
 	if waitResult.StatusCode == 0 {
 		containerID := *resultCont.GetContainerID()
 		err = dockerHelper.DeleteContainerByID(ctx, dog, containerID)
