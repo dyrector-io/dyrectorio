@@ -1,8 +1,9 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
-import { checkDeploymentCopiability } from 'src/domain/deployment'
-import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
+import { checkDeploymentCopiability, checkPrefixAvailability } from 'src/domain/deployment'
+import { CruxConflictException, CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
+import { CopyDeploymentDto } from '../deploy.dto'
 
 @Injectable()
 export default class DeployCopyValidationInterceptor implements NestInterceptor {
@@ -11,7 +12,7 @@ export default class DeployCopyValidationInterceptor implements NestInterceptor 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest()
     const deploymentId = req.params.deploymentId as string
-    const force = req.query.force === 'true'
+    const dto = req.body as CopyDeploymentDto
 
     const deployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
@@ -25,12 +26,24 @@ export default class DeployCopyValidationInterceptor implements NestInterceptor 
         version: {
           select: {
             type: true,
+            deployments: {
+              where: {
+                nodeId: dto.nodeId,
+                prefix: dto.prefix,
+              },
+              select: {
+                id: true,
+                nodeId: true,
+                prefix: true,
+                status: true,
+              },
+            },
           },
         },
       },
     })
 
-    if (!checkDeploymentCopiability(deployment.status, deployment.version.type)) {
+    if (!checkDeploymentCopiability(deployment.status)) {
       throw new CruxPreconditionFailedException({
         message: 'Invalid deployment status.',
         property: 'status',
@@ -38,27 +51,11 @@ export default class DeployCopyValidationInterceptor implements NestInterceptor 
       })
     }
 
-    if (force) {
-      return next.handle()
-    }
-
-    const preparingDeployment = await this.prisma.deployment.findFirst({
-      where: {
-        nodeId: deployment.nodeId,
-        versionId: deployment.versionId,
-        prefix: deployment.prefix,
-        status: 'preparing',
-      },
-      select: {
-        id: true,
-      },
-    })
-
-    if (preparingDeployment) {
-      throw new CruxPreconditionFailedException({
-        message: 'The node already has a preparing deployment with this prefix and version.',
+    if (!checkPrefixAvailability(deployment.version, dto.nodeId, dto.prefix)) {
+      throw new CruxConflictException({
+        message: 'There is already a deployment with the same prefix on the selected node.',
         property: 'deploymentId',
-        value: preparingDeployment.id,
+        value: deployment.version.deployments[0].id,
       })
     }
 

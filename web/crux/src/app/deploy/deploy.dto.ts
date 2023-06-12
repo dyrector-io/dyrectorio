@@ -135,6 +135,18 @@ export class PatchInstanceDto {
   config: InstanceContainerConfigDto
 }
 
+export class CopyDeploymentDto {
+  @IsUUID()
+  nodeId: string
+
+  @IsString()
+  prefix: string
+
+  @IsString()
+  @IsOptional()
+  note?: string | null
+}
+
 export const DEPLOYMENT_EVENT_TYPE_VALUES = ['log', 'deployment-status', 'container-status'] as const
 export type DeploymentEventTypeDto = (typeof DEPLOYMENT_EVENT_TYPE_VALUES)[number]
 

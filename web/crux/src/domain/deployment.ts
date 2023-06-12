@@ -1,10 +1,15 @@
-import { DeploymentEventTypeEnum, DeploymentStatusEnum, VersionTypeEnum } from '.prisma/client'
+import {
+  Deployment as DbDeployment,
+  DeploymentEventTypeEnum,
+  DeploymentStatusEnum,
+  VersionTypeEnum,
+} from '.prisma/client'
 import { Logger } from '@nestjs/common'
 import { Observable, Subject } from 'rxjs'
 import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
-  ContainerState as ProtoContainerState,
   DeploymentStatusMessage,
+  ContainerState as ProtoContainerState,
   DeploymentStatus as ProtoDeploymentStatus,
   containerStateToJSON,
   deploymentStatusToJSON,
@@ -48,8 +53,29 @@ export const containerNameFromImageName = (imageName: string): string => {
   return imageName.substring(index + 1)
 }
 
-export const checkDeploymentCopiability = (status: DeploymentStatusEnum, type: VersionTypeEnum): boolean =>
-  type !== 'rolling' && status !== 'inProgress' && status !== 'preparing'
+export const checkDeploymentCopiability = (status: DeploymentStatusEnum): boolean => status !== 'inProgress'
+
+/**
+ *
+ * @param versionType
+ * @param deployments the deployments with the copy target's nodeId and prefix in the same version
+ */
+export const checkPrefixAvailability = (
+  version: {
+    type: VersionTypeEnum
+    deployments: Pick<DbDeployment, 'status' | 'nodeId' | 'prefix'>[]
+  },
+  nodeId: string,
+  prefix: string,
+): boolean => {
+  const relevantDeployments = version.deployments.filter(it => it.nodeId === nodeId && it.prefix === prefix)
+
+  if (version.type === 'rolling') {
+    return relevantDeployments.length < 1
+  }
+
+  return !relevantDeployments.find(it => it.status === 'preparing' || it.status === 'inProgress')
+}
 
 export const checkDeploymentDeletability = (status: DeploymentStatusEnum): boolean => status !== 'inProgress'
 

@@ -8,27 +8,29 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { CreateDeployment, Deployment, DyoApiError, DyoNode, projectNameToDeploymentPrefix } from '@app/models'
-import { API_DEPLOYMENTS, API_NODES } from '@app/routes'
-import { fetcher, sendForm, toastWarning } from '@app/utils'
-import { createDeploymentSchema } from '@app/validations'
+import { CopyDeployment, Deployment, DeploymentDetails, DyoNode } from '@app/models'
+import { API_NODES, deploymentCopyApiUrl } from '@app/routes'
+import { fetcher, sendForm } from '@app/utils'
+import { copyDeploymentSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect } from 'react'
 import toast from 'react-hot-toast'
 import useSWR from 'swr'
 
-interface AddDeploymentCardProps {
+interface CopyDeploymentCardProps {
   className?: string
-  projectName: string
-  versionId: string
-  onAdd: (deploymentId: string) => void
+  submitRef?: React.MutableRefObject<() => Promise<any>>
+  deployment: DeploymentDetails
+  onDeplyomentCopied: (string) => void
   onDiscard: VoidFunction
 }
 
-const AddDeploymentCard = (props: AddDeploymentCardProps) => {
-  const { projectName, versionId, className, onAdd, onDiscard } = props
+const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
+  const { className, submitRef, deployment, onDeplyomentCopied, onDiscard } = props
 
   const { t } = useTranslation('deployments')
+
+  const handleApiError = defaultApiErrorHandler(t)
 
   const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(API_NODES, fetcher)
 
@@ -38,48 +40,41 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
     }
   }, [nodes, t])
 
-  const handleApiError = defaultApiErrorHandler(t)
-
   const formik = useDyoFormik({
     initialValues: {
-      nodeId: null as string,
-      note: '',
-      prefix: projectNameToDeploymentPrefix(projectName),
-    },
-    validationSchema: createDeploymentSchema,
+      nodeId: deployment.node.id,
+      prefix: deployment.version.type === 'incremental' ? deployment.prefix : `${deployment.prefix}-copy`,
+      note: deployment.note,
+    } as CopyDeployment,
+    validationSchema: copyDeploymentSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
-      const transformedValues = createDeploymentSchema.cast(values) as any
+      const res = await sendForm('POST', deploymentCopyApiUrl(deployment.id), values)
 
-      const body: CreateDeployment = {
-        ...transformedValues,
-        versionId,
-      }
-
-      const res = await sendForm('POST', API_DEPLOYMENTS, body)
+      setSubmitting(false)
 
       if (res.ok) {
-        const result = (await res.json()) as Deployment
-        onAdd(result.id)
+        const copiedDeployment = (await res.json()) as Deployment
+        onDeplyomentCopied(copiedDeployment.id)
       } else if (res.status === 409) {
         // There is already a deployment for the selected node with the same prefix
-        toastWarning(t('alreadyHaveDeployment'))
-        const dto = (await res.json()) as DyoApiError
-        onAdd(dto.value)
+        toast.error(t('alreadyHaveDeployment'))
       } else {
         handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
+
+  if (submitRef) {
+    submitRef.current = formik.submitForm
+  }
 
   return (
     <DyoCard className={className}>
       <div className="flex flex-row">
         <DyoHeading element="h4" className="text-lg text-bright">
-          {t('addDeployment')}
+          {t('copyDeployment')}
         </DyoHeading>
 
         <DyoButton outlined secondary className="ml-auto mr-2 px-10" onClick={onDiscard}>
@@ -87,7 +82,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         </DyoButton>
 
         <DyoButton outlined className="ml-2 px-10" onClick={() => formik.submitForm()}>
-          {t('common:add')}
+          {t('common:copy')}
         </DyoButton>
       </div>
 
@@ -109,6 +104,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
             selection={nodes.find(it => it.id === formik.values.nodeId)}
             onSelectionChange={it => formik.setFieldValue('nodeId', it.id)}
           />
+
           {!formik.errors.nodeId ? null : <DyoMessage message={formik.errors.nodeId} messageType="error" />}
 
           <DyoInput
@@ -136,4 +132,4 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   )
 }
 
-export default AddDeploymentCard
+export default CopyDeploymentCard

@@ -20,6 +20,7 @@ import EditorServiceProvider from '../editor/editor.service.provider'
 import { ImageEvent } from '../image/image.event'
 import ImageEventService from '../image/image.event.service'
 import {
+  CopyDeploymentDto,
   CreateDeploymentDto,
   DeploymentDetailsDto,
   DeploymentDto,
@@ -655,7 +656,7 @@ export default class DeployService {
     return this.mapper.secretsResponseToInstanceSecretsDto(secrets)
   }
 
-  async copyDeployment(deploymentId: string, identity: Identity): Promise<DeploymentDto> {
+  async copyDeployment(deploymentId: string, request: CopyDeploymentDto, identity: Identity): Promise<DeploymentDto> {
     const oldDeployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
         id: deploymentId,
@@ -669,26 +670,14 @@ export default class DeployService {
       },
     })
 
-    const preparingDeployment = await this.prisma.deployment.findFirst({
-      where: {
-        nodeId: oldDeployment.nodeId,
-        versionId: oldDeployment.versionId,
-        prefix: oldDeployment.prefix,
-        status: 'preparing',
-      },
-      select: {
-        id: true,
-      },
-    })
-
     const newDeployment = await this.prisma.deployment.create({
       data: {
         versionId: oldDeployment.versionId,
-        nodeId: oldDeployment.nodeId,
+        nodeId: request.nodeId,
+        prefix: request.prefix,
+        note: request.note,
         status: DeploymentStatusEnum.preparing,
-        note: oldDeployment.note,
         createdBy: identity.id,
-        prefix: oldDeployment.prefix,
       },
       include: {
         node: true,
@@ -747,10 +736,6 @@ export default class DeployService {
         }),
       ),
     )
-
-    if (preparingDeployment) {
-      await this.deleteDeployment(preparingDeployment.id)
-    }
 
     return this.mapper.toDto(newDeployment)
   }

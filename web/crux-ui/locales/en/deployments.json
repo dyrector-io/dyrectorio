@@ -1,11 +1,16 @@
 {
   "deploysName": "Projects - {{project}} - Versions - {{version}} - Deployments - {{name}}",
   "deploysNameDeploy": "Projects - {{project}} - Versions - {{version}} - Deployments - {{name}} - Deploy",
+  "copyDeployment": "Copy deployment",
   "log": "Log",
   "environmentConfig": "Environment config",
   "created": "Created",
   "actions": "Actions",
   "noItems": "You haven't made a deployment.",
+  "addDeployment": "Add deployment",
+  "nodeRequired": "You can't create deployment without having at least one node",
+  "alreadyHaveDeployment": "You already have a deployment with the same prefix for that node",
+  "canNotCopyInProgress": "You can not copy an ",
   "prefixName": "Prefix: {{name}}",
   "showLogs": "Show logs",
 
