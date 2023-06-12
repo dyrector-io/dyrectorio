@@ -17,7 +17,6 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
 
   const { state, actions, className } = props
   const { deployment, mutable, editor, sock } = state
-  const { onEnvironmentEdited } = actions
 
   const editorState = useItemEditorState(editor, sock, ITEM_ID)
 
@@ -29,7 +28,7 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
         editorOptions={editorState}
         label={t('images:environment').toUpperCase()}
         items={deployment.environment ?? []}
-        onChange={onEnvironmentEdited}
+        onChange={actions.onEnvironmentEdited}
       />
     </DeploymentDetailsCard>
   )
