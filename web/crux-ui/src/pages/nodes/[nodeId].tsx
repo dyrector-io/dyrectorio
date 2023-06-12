@@ -1,8 +1,10 @@
 import { Layout } from '@app/components/layout'
 import DyoNodeCard from '@app/components/nodes/dyo-node-card'
 import EditNodeCard from '@app/components/nodes/edit-node-card'
+import NodeAuditList from '@app/components/nodes/node-audit-list'
 import NodeConnectionCard from '@app/components/nodes/node-connection-card'
 import NodeContainersList from '@app/components/nodes/node-containers-list'
+import NodeSectionsHeading from '@app/components/nodes/node-sections-heading'
 import useNodeDetailsState from '@app/components/nodes/use-node-details-state'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
@@ -53,7 +55,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
     }
 
     await mutate(API_NODES, null)
-    router.back()
+    router.push(ROUTE_NODES)
   }
 
   const pageLink: BreadcrumbLink = {
@@ -94,9 +96,17 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
             <NodeConnectionCard className="w-1/3 px-6 py-4" node={node} />
           </div>
 
-          <Filters setTextFilter={it => state.filters.setFilter({ text: it })} />
+          <NodeSectionsHeading section={state.section} setSection={actions.setSection} />
 
-          <NodeContainersList state={state} actions={actions} />
+          {state.section === 'containers' ? (
+            <>
+              <Filters setTextFilter={it => state.containerFilters.setFilter({ text: it })} />
+
+              <NodeContainersList state={state} actions={actions} />
+            </>
+          ) : (
+            <NodeAuditList node={node} />
+          )}
         </>
       )}
 

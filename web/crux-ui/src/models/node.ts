@@ -1,3 +1,4 @@
+import { PaginationQuery } from './common'
 import { Container, ContainerCommand, ContainerIdentifier } from './container'
 
 export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
@@ -7,6 +8,9 @@ export const NODE_INSTALL_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
 export type NodeInstallScriptType = typeof NODE_INSTALL_SCRIPT_TYPE_VALUES[number]
 
 export type NodeStatus = 'unreachable' | 'connected' | 'outdated'
+
+export const NODE_EVENT_TYPE_VALUES = ['connected', 'kicked', 'left', 'update'] as const
+export type NodeEventType = typeof NODE_EVENT_TYPE_VALUES[number]
 
 export type NodeConnection = {
   address?: string
@@ -33,6 +37,7 @@ export type NodeInstall = {
 export type NodeDetails = DyoNode & {
   hasToken: boolean
   install?: NodeInstall
+  lastConnectionAt?: string
 }
 
 export const nodeConnectionOf = (node: DyoNode): NodeConnection => ({
@@ -64,6 +69,21 @@ export type NodeGenerateScript = {
 export type NodeDeleteContainer = {
   container?: ContainerIdentifier
   prefix?: string
+}
+
+export type NodeAuditLogQuery = PaginationQuery & {
+  filterEventType?: NodeEventType
+}
+
+export type NodeAuditLog = {
+  createdAt: string
+  event: string
+  data?: object
+}
+
+export type NodeAuditLogList = {
+  items: NodeAuditLog[]
+  total: number
 }
 
 // ws

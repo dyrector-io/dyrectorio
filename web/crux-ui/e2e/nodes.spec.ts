@@ -239,3 +239,44 @@ test('Container list should show containers on the node screen', async ({ page }
 
   await expect(containerRows).toBeGreaterThanOrEqual(1)
 })
+
+test('Deleting node', async ({ page }) => {
+  const name = 'PW_DELETE_NODE'
+
+  await page.goto(ROUTE_NODES)
+
+  await page.locator('button:has-text("Add")').click()
+
+  await page.locator('input[name=name] >> visible=true').fill(name)
+
+  await page.locator('button:has-text("Save")').click()
+
+  await page.locator(`h3:has-text("${name}")`).click()
+  await page.waitForURL(`${ROUTE_NODES}/**`)
+
+  await page.locator('button:has-text("Delete")').click()
+
+  await page.locator('button:has-text("Delete"):left-of(:has-text("Cancel"))').click()
+
+  await page.goto(ROUTE_NODES)
+
+  await expect(await page.locator(`h3:has-text("${name}")`).count()).toEqual(0)
+})
+
+test('Logs should show agent events', async ({ page }) => {
+  await page.goto(ROUTE_NODES)
+
+  const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
+  await nodeButton.click()
+
+  await page.locator('input[placeholder="Search"]').type(`dagent`)
+
+  await page.locator('button:has-text("Logs")').click()
+
+  const tableBody = await page.locator('.table-row-group')
+
+  const nodeContainerRow = await tableBody.locator('.table-row')
+  await nodeContainerRow.nth(0).waitFor()
+
+  await expect(await nodeContainerRow.locator('div:has-text("Connected")')).toBeVisible()
+})

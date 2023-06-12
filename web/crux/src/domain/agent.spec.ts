@@ -11,7 +11,7 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { DEFAULT_CONTAINER_LOG_TAIL } from 'src/shared/const'
-import { Agent, AgentEvent } from './agent'
+import { Agent, AgentConnectionMessage } from './agent'
 
 const AGENT_ID = 'agent-id'
 const AGENT_ADDRESS = '127.0.0.1:1234'
@@ -43,10 +43,10 @@ it('containerPrefixNameOf should return the combined prefix name', () => {
 describe('agent', () => {
   let agentConnection: any = null
   let agent: Agent = null
-  let eventChannel: Subject<AgentEvent> = null
+  let eventChannel: Subject<AgentConnectionMessage> = null
 
   beforeEach(() => {
-    eventChannel = new Subject<AgentEvent>()
+    eventChannel = new Subject<AgentConnectionMessage>()
 
     agentConnection = new GrpcNodeConnectionMock()
 

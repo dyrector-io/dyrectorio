@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { Observable, filter, firstValueFrom, map, mergeAll, mergeWith, of, timeout } from 'rxjs'
-import { Agent, AgentEvent } from 'src/domain/agent'
+import { Agent, AgentConnectionMessage } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
 import {
   ContainerCommandRequest,
@@ -12,11 +12,14 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
+import { Prisma } from '@prisma/client'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
 import {
   ContainerDto,
   CreateNodeDto,
+  NodeAuditLogListDto,
+  NodeAuditLogQueryDto,
   NodeDetailsDto,
   NodeDto,
   NodeGenerateScriptDto,
@@ -110,14 +113,14 @@ export default class NodeService {
     return this.mapper.toDto(node)
   }
 
-  async deleteNode(id: string): Promise<void> {
+  async deleteNode(id: string, identity: Identity): Promise<void> {
     await this.prisma.node.delete({
       where: {
         id,
       },
     })
 
-    this.agentService.kick(id)
+    this.agentService.kick(id, 'delete-node', identity.id)
   }
 
   async updateNode(id: string, req: UpdateNodeDto, identity: Identity): Promise<void> {
@@ -183,10 +186,10 @@ export default class NodeService {
       },
     })
 
-    this.agentService.kick(id)
+    this.agentService.kick(id, 'revoke-token', identity.id)
   }
 
-  async subscribeToNodeEvents(teamId: string): Promise<Observable<AgentEvent>> {
+  async subscribeToNodeEvents(teamId: string): Promise<Observable<AgentConnectionMessage>> {
     const nodes = await this.prisma.node.findMany({
       where: {
         team: {
@@ -195,7 +198,7 @@ export default class NodeService {
       },
     })
 
-    const currentEvents = nodes.map(it => this.mapper.toAgentEvent(it))
+    const currentEvents = nodes.map(it => this.mapper.toConnectionMessage(it))
 
     const events = await this.agentService.getNodeEventsByTeam(teamId)
     return events.pipe(mergeWith(of(currentEvents).pipe(mergeAll())))
@@ -313,5 +316,51 @@ export default class NodeService {
     }
 
     agent.sendContainerCommand(command)
+  }
+
+  async getAuditLog(nodeId: string, query: NodeAuditLogQueryDto): Promise<NodeAuditLogListDto> {
+    const { skip, take, from, to } = query
+
+    const where: Prisma.AgentEventWhereInput = {
+      nodeId,
+      AND: {
+        createdAt: {
+          gte: from,
+          lte: to,
+        },
+        ...(query.filterEventType
+          ? {
+              AND: {
+                event: query.filterEventType,
+              },
+            }
+          : null),
+      },
+    }
+
+    const [auditLog, total] = await this.prisma.$transaction([
+      this.prisma.agentEvent.findMany({
+        where,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip,
+        take,
+        select: {
+          createdAt: true,
+          event: true,
+          data: true,
+        },
+      }),
+      this.prisma.agentEvent.count({ where }),
+    ])
+
+    return {
+      items: auditLog.map(it => ({
+        ...it,
+        data: it.data as object,
+      })),
+      total,
+    }
   }
 }

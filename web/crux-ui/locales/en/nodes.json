@@ -1,6 +1,9 @@
 {
   "nodesName": "Nodes - {{name}}",
 
+  "containers": "Containers",
+  "logs": "Logs",
+
   "add": "Add node",
   "new": "New node",
   "tips": "Nodes are the environments where you plan to run your applications.",
@@ -15,6 +18,7 @@
   "scriptExpiresIn": "The script expires in:",
   "address": "Address",
   "status": "Status",
+  "lastConnected": "Last connected",
   "whatScriptDoesHeader": "What does this script do?",
   "scriptExplanation": "The following 'Generate script' button will create a one-liner and script that will install our agent to the target host with the selected technology.",
   "requirements": "Requirements",
@@ -55,5 +59,13 @@
   "traefikAcmeEmail": "Traefik ACME email",
   "whatIsTraefik": "What is Traefik?",
   "traefikExplanation": "Traefik is a reverse proxy which lets users deploy services to subdomains as well as use HTTPS.",
-  "in-progress": "In progress"
+  "in-progress": "In progress",
+
+  "auditEvents": {
+    "none": "None",
+    "connected": "Connected",
+    "left": "Left",
+    "kicked": "Kicked",
+    "update": "Update"
+  }
 }

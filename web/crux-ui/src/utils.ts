@@ -401,3 +401,9 @@ export const toNumber = (value: string, defaultValue: number = 0): number => {
 
   return Number.isNaN(value) ? defaultValue : Number(value)
 }
+
+export const getEndOfToday = () => {
+  const endOfToday = new Date()
+  endOfToday.setHours(23, 59, 59, 999)
+  return endOfToday
+}

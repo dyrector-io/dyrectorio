@@ -12,7 +12,7 @@ import DyoModal from '@app/elements/dyo-modal'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import { AuditLog, AuditLogList, AuditLogQuery, auditToMethod } from '@app/models'
 import { auditApiUrl, ROUTE_AUDIT } from '@app/routes'
-import { utcDateToLocale } from '@app/utils'
+import { getEndOfToday, utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
@@ -25,18 +25,17 @@ type AuditFilter = {
 
 const headerClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
 const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-32', 'w-2/12', '', 'w-20']
-const sixdays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
+const sixDays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
-const endOfToday = new Date()
-endOfToday.setHours(23, 59, 59, 999)
 
 const AuditLogPage = () => {
   const { t } = useTranslation('audit')
 
+  const endOfToday = getEndOfToday()
   const [total, setTotal] = useState(0)
   const [data, setData] = useState<AuditLog[]>([])
   const [filter, setFilter] = useState<AuditFilter>({
-    from: new Date(endOfToday.getTime() - sixdays),
+    from: new Date(endOfToday.getTime() - sixDays),
     to: new Date(endOfToday),
     filter: null,
   })
@@ -47,15 +46,12 @@ const AuditLogPage = () => {
 
   const fetchData = async () => {
     const { from, to } = filter
-    if (!from || !to) {
-      return
-    }
 
     const query: AuditLogQuery = {
       skip: pagination.pageNumber * pagination.pageSize,
       take: pagination.pageSize,
-      from: from.toISOString(),
-      to: to.toISOString(),
+      from: (from ?? new Date(endOfToday.getTime() - sixDays)).toISOString(),
+      to: (to ?? endOfToday).toISOString(),
       filter: !filter.filter || filter.filter.trim() === '' ? null : filter.filter,
     }
 
