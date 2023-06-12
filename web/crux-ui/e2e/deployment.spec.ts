@@ -1,6 +1,7 @@
 import { ProjectType } from '@app/models'
+import { projectUrl, ROUTE_DASHBOARD, ROUTE_TEAMS } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
-import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG } from './utils/common'
+import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, USER_FULLNAME } from './utils/common'
 import { createNode } from './utils/nodes'
 import {
   addDeploymentToVersion,
@@ -93,4 +94,34 @@ test('Cannot create multiple deployments with the same node and prefix for a rol
 
   await expect(page.url()).toEqual(firstDeploymentUrl)
   await expect(firstDeploymentUrl).toEqual(secondDeploymentUrl)
+})
+
+test('Select first node when adding a deployment if only one node exists', async ({ page }) => {
+  const teamName = 'testDeploymentTeam'
+  const projectName = 'deploymentNodeSelector'
+  const nodeName = 'node0'
+
+  await page.goto(ROUTE_TEAMS)
+  await page.locator('button:has-text("Add")').click()
+  await expect(page.locator('h4:has-text("Create new team")')).toHaveCount(1)
+  await page.locator('input[name=name] >> visible=true').type(teamName)
+  await page.locator('button:has-text("Save")').click()
+
+  await expect(page.locator(`h4:has-text("${teamName}")`)).toHaveCount(1)
+
+  await page.goto(ROUTE_TEAMS)
+  await page.locator(`label:has-text("${USER_FULLNAME}")`).click()
+  await page.locator(`div:has-text("${teamName}"):right-of(img[alt="Team's avatar"])`).click()
+
+  await page.waitForURL(ROUTE_DASHBOARD)
+
+  const { projectId } = await setup(page, nodeName, projectName)
+  await addImageToVersionlessProject(page, projectId, 'nginx')
+
+  await page.goto(projectUrl(projectId))
+
+  await page.locator('button:has-text("Add deployment")').click()
+  await expect(page.locator('h4:has-text("Add deployment")')).toHaveCount(1)
+
+  await expect(page.locator(`button:has-text("${nodeName}")`)).toHaveClass(/bg-dyo-turquoise/)
 })
