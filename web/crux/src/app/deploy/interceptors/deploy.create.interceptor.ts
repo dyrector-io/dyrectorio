@@ -3,6 +3,7 @@ import { Observable } from 'rxjs'
 import { CruxConflictException, CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 import { CreateDeploymentDto } from '../deploy.dto'
+import { VersionTypeEnum } from '@prisma/client'
 
 @Injectable()
 export default class DeployCreateValidationInterceptor implements NestInterceptor {
@@ -12,12 +13,23 @@ export default class DeployCreateValidationInterceptor implements NestIntercepto
     const req = context.switchToHttp().getRequest()
     const body = req.body as CreateDeploymentDto
 
+    const version = await this.prisma.version.findFirst({
+      where: {
+        id: body.versionId,
+      },
+      select: {
+        type: true,
+      },
+    })
+
     const existingDeployment = await this.prisma.deployment.findFirst({
       where: {
         nodeId: body.nodeId,
         versionId: body.versionId,
         prefix: body.prefix,
-        status: 'preparing',
+        
+        // Rolling versions can only have one deployment for a node with the same prefix
+        status: version.type === VersionTypeEnum.rolling ? undefined : 'preparing',
       },
       select: {
         id: true,
@@ -26,7 +38,7 @@ export default class DeployCreateValidationInterceptor implements NestIntercepto
 
     if (existingDeployment) {
       throw new CruxConflictException({
-        message: 'There is already a deployment with preparing status for the version on that node',
+        message: version.type === VersionTypeEnum.rolling ? 'rollingVersionDeployment' : 'alreadyHavePreparing',
         property: 'deploymentId',
         value: existingDeployment.id,
       })

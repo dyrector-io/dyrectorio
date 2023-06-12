@@ -6,9 +6,16 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
-import { defaultApiErrorHandler } from '@app/errors'
+import { apiErrorHandler, defaultApiErrorHandler, defaultTranslator } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { CreateDeployment, DeploymentCreated, DyoApiError, DyoNode, projectNameToDeploymentPrefix } from '@app/models'
+import {
+  CreateDeployment,
+  DeploymentCreated,
+  DyoApiError,
+  DyoErrorDto,
+  DyoNode,
+  projectNameToDeploymentPrefix,
+} from '@app/models'
 import { API_DEPLOYMENTS, API_NODES } from '@app/routes'
 import { fetcher, sendForm } from '@app/utils'
 import { createDeploymentSchema } from '@app/validations'
@@ -39,6 +46,14 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   }, [nodes, t])
 
   const handleApiError = defaultApiErrorHandler(t)
+  const handleCreateApiError = apiErrorHandler((stringId: string, status: number, dto: DyoErrorDto) => {
+    if (status === 409) {
+      return {
+        toast: t(`errors.${dto.description}`),
+      }
+    }
+    return defaultTranslator(t)(stringId, status, dto)
+  })
 
   const formik = useDyoFormik({
     initialValues: {
@@ -63,8 +78,9 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         const result = (await res.json()) as DeploymentCreated
         onAdd(result.id)
       } else if (res.status === 409) {
-        // There is already a deployment for the selected node
-        toast.error(t('alreadyHavePreparing'))
+        // Handle preparing deployment exists or rolling version has deployment errors
+        handleCreateApiError(res.clone())
+
         const dto = (await res.json()) as DyoApiError
         onAdd(dto.value)
       } else {
