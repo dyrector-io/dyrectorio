@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Header, HttpCode, Post, Put, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Header, HttpCode, Post, Put, Query, UseGuards } from '@nestjs/common'
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -16,6 +16,8 @@ import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
 import { NodeId, PARAM_NODE_ID, ROUTE_NODES, ROUTE_NODE_ID } from './node.const'
 import {
   CreateNodeDto,
+  NodeAuditLogListDto,
+  NodeAuditLogQueryDto,
   NodeDetailsDto,
   NodeDto,
   NodeGenerateScriptDto,
@@ -107,8 +109,8 @@ export default class NodeHttpController {
   })
   @ApiNoContentResponse({ description: 'Node deleted.' })
   @UuidParams(PARAM_NODE_ID)
-  async deleteNode(@NodeId() nodeId: string): Promise<void> {
-    return this.service.deleteNode(nodeId)
+  async deleteNode(@NodeId() nodeId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
+    return this.service.deleteNode(nodeId, identity)
   }
 
   @Post(`${ROUTE_NODE_ID}/script`)
@@ -176,5 +178,17 @@ export default class NodeHttpController {
   @UuidParams(PARAM_NODE_ID)
   updateNodeAgent(@NodeId() nodeId: string) {
     this.service.updateAgent(nodeId)
+  }
+
+  @Get(`${ROUTE_NODE_ID}/audit`)
+  @HttpCode(200)
+  @ApiOperation({
+    description:
+      'Request must include `skip`, `take`, and dates of `from` and `to`. Response should include an array of `items`: `createdAt` date, `event`, and `data`.',
+    summary: 'Fetch audit log.',
+  })
+  @ApiOkResponse({ type: NodeAuditLogListDto, description: 'Paginated list of the Audit log.' })
+  async getAuditLog(@NodeId() nodeId: string, @Query() query: NodeAuditLogQueryDto): Promise<NodeAuditLogListDto> {
+    return await this.service.getAuditLog(nodeId, query)
   }
 }

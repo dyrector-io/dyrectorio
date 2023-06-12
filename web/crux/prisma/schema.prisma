@@ -84,6 +84,7 @@ model Node {
   teamId         String        @db.Uuid
 
   deployments Deployment[]
+  events      AgentEvent[]
 
   @@unique([name, teamId])
 }
@@ -225,7 +226,7 @@ model ContainerConfig {
   args            Json?
   initContainers  Json?
   storageSet      Boolean?
-  storageId       String?        @unique @db.Uuid
+  storageId       String?        @db.Uuid
   storageConfig   Json?
 
   //Dagent
@@ -403,6 +404,16 @@ model NotificationEvent {
   @@unique([event, notificationId])
 }
 
+model AgentEvent {
+  id             String               @id @default(uuid()) @db.Uuid
+  nodeId         String               @db.Uuid
+  createdAt      DateTime             @default(now()) @db.Timestamptz(6)
+  event          AgentEventTypeEnum
+  data           Json?
+
+  node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)  
+}
+
 enum ProjectTypeEnum {
   versionless
   versioned
@@ -460,6 +471,13 @@ enum NotificationEventTypeEnum {
   versionCreated
   nodeAdded
   userInvited
+}
+
+enum AgentEventTypeEnum {
+  connected
+  left
+  kicked
+  update
 }
 
 model Storage {

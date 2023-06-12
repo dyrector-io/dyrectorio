@@ -30,3 +30,12 @@ export type WsErrorMessage = {
 }
 
 export const WS_TYPE_PATCH_RECEIVED = 'patch-received'
+
+// pagination
+
+export type PaginationQuery = {
+  skip: number
+  take: number
+  from: string
+  to: string
+}
