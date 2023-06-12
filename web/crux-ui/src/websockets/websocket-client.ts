@@ -208,7 +208,7 @@ class WebSocketClient {
 
   private reconnect() {
     if (this.connectionAttemptNumber >= WS_MAX_CONNECT_TRY) {
-      return false
+      return
     }
 
     if (this.routes.size < 1) {
