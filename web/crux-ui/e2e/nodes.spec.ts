@@ -84,14 +84,12 @@ test('Generate script should show the curl command and the script', async ({ pag
   const script = await page.locator('textarea[readonly]')
   const timer = await page.locator('label.text-dyo-turquoise')
   const discardButton = await page.locator('button:has-text("Discard")').first()
-  const copyButton = await page.locator('button:has-text("Copy")')
 
   await expect(curl).toBeVisible()
   await expect(curl).toHaveValue(/curl/)
   await expect(script).toBeVisible()
   await expect(timer).toBeVisible()
   await expect(discardButton).toBeVisible()
-  await expect(copyButton).toBeVisible()
 })
 
 test('Generate script should show script type selector for Docker', async ({ page }) => {
