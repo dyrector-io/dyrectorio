@@ -20,7 +20,7 @@ class WebSocketClient {
 
   private connectionAttempt?: Promise<boolean>
 
-  private connectionAttemptNumber = 0
+  private connectionAttemptCount = 0
 
   private destroyListeners?: VoidFunction
 
@@ -54,7 +54,9 @@ class WebSocketClient {
     }
 
     // ensure connection
-    await this.connect()
+    if (!(await this.connect())) {
+      return
+    }
 
     // ensure subscription
     route.subscribe(endpoint)
@@ -118,7 +120,7 @@ class WebSocketClient {
   }
 
   private async connect(): Promise<boolean> {
-    if (this.connectionAttemptNumber >= WS_MAX_CONNECT_TRY) {
+    if (this.connectionAttemptCount >= WS_MAX_CONNECT_TRY) {
       return false
     }
 
@@ -137,7 +139,7 @@ class WebSocketClient {
     this.connectionAttempt = this.createConnectionAttempt()
     const result = await this.connectionAttempt
 
-    this.connectionAttemptNumber = result ? 0 : this.connectionAttemptNumber + 1
+    this.connectionAttemptCount = result ? 0 : this.connectionAttemptCount + 1
     this.connectionAttempt = null
 
     return result
@@ -207,7 +209,7 @@ class WebSocketClient {
   }
 
   private reconnect() {
-    if (this.connectionAttemptNumber >= WS_MAX_CONNECT_TRY) {
+    if (this.connectionAttemptCount >= WS_MAX_CONNECT_TRY) {
       return
     }
 
@@ -234,7 +236,7 @@ class WebSocketClient {
   }
 
   private createConnectionAttempt(): Promise<boolean> {
-    const failTimeout = (this.connectionAttemptNumber + 1) * WS_CONNECT_DELAY_PER_TRY
+    const failTimeout = (this.connectionAttemptCount + 1) * WS_CONNECT_DELAY_PER_TRY
 
     return new Promise<boolean>(resolve => {
       this.logger.debug('Connecting...')
