@@ -96,7 +96,10 @@ test('Cannot create multiple deployments with the same node and prefix for a rol
   await expect(firstDeploymentUrl).toEqual(secondDeploymentUrl)
 })
 
-test('Select first node when adding a deployment if only one node exists', async ({ page }) => {
+test('Select first node when adding a deployment if only one node exists', async ({ browser }) => {
+  // Open a new page to be able to switch teams without messing with other tests
+  const page = await browser.newPage()
+
   const teamName = 'testDeploymentTeam'
   const projectName = 'deploymentNodeSelector'
   const nodeName = 'node0'
