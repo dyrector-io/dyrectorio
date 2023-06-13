@@ -38,7 +38,11 @@ export default class DeployCreateValidationInterceptor implements NestIntercepto
 
     if (existingDeployment) {
       throw new CruxConflictException({
-        message: version.type === VersionTypeEnum.rolling ? 'rollingVersionDeployment' : 'alreadyHavePreparing',
+        message:
+          version.type === VersionTypeEnum.rolling
+            ? 'Rolling versions can only have one deployment for the same node with the same prefix!'
+            : 'You already have one preparing deployment with the same prefix!',
+        error: version.type === VersionTypeEnum.rolling ? 'rollingVersionDeployment' : 'alreadyHavePreparing',
         property: 'deploymentId',
         value: existingDeployment.id,
       })

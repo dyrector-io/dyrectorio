@@ -4,6 +4,7 @@ export type CruxExceptionOptions = {
   message: string
   property?: string
   value?: any
+  error?: string
 }
 
 export class CruxException extends HttpException {
