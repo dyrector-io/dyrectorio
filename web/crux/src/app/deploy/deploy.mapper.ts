@@ -292,7 +292,8 @@ export default class DeployMapper {
       initContainers: this.mapInitContainerToAgent(config.initContainers),
       portRanges: config.portRanges,
       ports: config.ports,
-      user: config.user,
+      // Set user to the given value, if not null or use 0 if specifically 0, otherwise set null
+      user: config.user === -1 ? null : config.user,
       volumes: this.imageMapper.volumesToProto(config.volumes ?? []),
     }
   }

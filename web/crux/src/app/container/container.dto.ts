@@ -1,16 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger'
-import {
-  IsBoolean,
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsPositive,
-  IsString,
-  IsUUID,
-  Max,
-  Min,
-  ValidateNested,
-} from 'class-validator'
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, Max, Min, ValidateNested } from 'class-validator'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
@@ -27,6 +16,7 @@ import {
   PORT_MAX,
   PORT_MIN,
 } from 'src/domain/container'
+import { UID_MAX } from 'src/shared/const'
 
 export class UniqueKeyDto {
   @IsUUID()
@@ -284,7 +274,8 @@ export class ContainerConfigDto {
 
   @IsOptional()
   @IsInt()
-  @IsPositive()
+  @Min(-1)
+  @Max(UID_MAX)
   user?: number
 
   @IsBoolean()

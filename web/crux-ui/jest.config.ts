@@ -4,6 +4,11 @@ const config: Config.InitialOptions = {
   preset: 'ts-jest',
   moduleFileExtensions: ['js', 'json', 'ts'],
   modulePaths: ['.'],
+  moduleNameMapper: {
+    '^@pages/(.*)$': '<rootDir>/src/pages/$1',
+    '^@server/(.*)$': '<rootDir>/src/server/$1',
+    '^@app/(.*)$': '<rootDir>/src/$1',
+  },
   testRegex: '.*\\.unit.test\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
