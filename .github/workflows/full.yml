@@ -628,6 +628,12 @@ jobs:
         env:
           VERSION: ${{ needs.gather_changes.outputs.version }}
           image_version: ${{ needs.gather_changes.outputs.tag }}
+  #
+  # Uncommented because of usage difficulties (multiarch images & image signing incompatibility),
+  # custom manifest creation might be an option to
+  # preserve multiarch images.
+  # Temporally disabled
+  #
   # go_sign:
   #   permissions:
   #     packages: write
