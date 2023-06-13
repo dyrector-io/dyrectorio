@@ -2,7 +2,6 @@ import useEditorState, { EditorState } from '@app/components/editor/use-editor-s
 import useNodeState from '@app/components/nodes/use-node-state'
 import { ViewMode } from '@app/components/shared/view-mode-toggle'
 import { DEPLOYMENT_EDIT_WS_REQUEST_DELAY } from '@app/const'
-import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -40,11 +39,11 @@ import {
 import { deploymentWsUrl, WS_NODES } from '@app/routes'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import { useState } from 'react'
-import useCopyDeploymentModal from './use-copy-deployment-confirmation-modal'
+
+export type DeploymentEditState = 'details' | 'edit' | 'copy'
 
 export type DeploymentStateOptions = {
   deployment: DeploymentRoot
-  onApiError: (res: Response) => void
   onWsError: (error: Error) => void
 }
 
@@ -59,19 +58,17 @@ export type DeploymentState = {
   copiable: boolean
   deletable: boolean
   saving: boolean
-  editing: boolean
+  editState: DeploymentEditState
   editor: EditorState
   viewMode: ViewMode
-  confirmationModal: DyoConfirmationModalConfig
   sock: WebSocketClientEndpoint
   showDeploymentLog: boolean
 }
 
 export type DeploymentActions = {
-  setEditing: (editing: boolean) => void
+  setEditState: (state: DeploymentEditState) => void
   onDeploymentEdited: (editedDeployment: DeploymentDetails) => void
   onEnvironmentEdited: (environment: UniqueKeyValue[]) => void
-  onCopyDeployment: () => Promise<string>
   setViewMode: (viewMode: ViewMode) => void
   onInvalidateSecrets: (secrets: DeploymentInvalidatedSecrets[]) => void
 }
@@ -85,7 +82,7 @@ const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage)
 })
 
 const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, DeploymentActions] => {
-  const { deployment: optionDeploy, onWsError, onApiError } = options
+  const { deployment: optionDeploy, onWsError } = options
   const { project, version } = optionDeploy
 
   const envEditThrottle = useThrottling(DEPLOYMENT_EDIT_WS_REQUEST_DELAY)
@@ -93,15 +90,14 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const [deployment, setDeployment] = useState<DeploymentDetails>(optionDeploy)
   const [node, setNode] = useNodeState(optionDeploy.node)
   const [saving, setSaving] = useState(false)
-  const [editing, setEditing] = useState(false)
+  const [editState, setEditState] = useState<DeploymentEditState>('details')
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
   const [viewMode, setViewMode] = useState<ViewMode>('list')
-  const [confirmationModal, copyDeployment] = useCopyDeploymentModal(onApiError)
 
   const mutable = deploymentIsMutable(deployment.status, version.type)
   const deployable = deploymentIsDeployable(deployment.status, version.type)
   const deletable = deploymentIsDeletable(deployment.status)
-  const copiable = deploymentIsCopiable(deployment.status, version.type)
+  const copiable = deploymentIsCopiable(deployment.status)
   const showDeploymentLog = deploymentLogVisible(deployment.status)
 
   const nodesSock = useWebSocket(WS_NODES)
@@ -169,7 +165,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
 
   const onDeploymentEdited = dep => {
     setDeployment(dep)
-    setEditing(false)
+    setEditState('details')
   }
 
   const onEnvironmentEdited = environment => {
@@ -181,11 +177,6 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       sock.send(WS_TYPE_PATCH_DEPLOYMENT_ENV, environment)
     })
   }
-
-  const onCopyDeployment = () =>
-    copyDeployment({
-      deploymentId: deployment.id,
-    })
 
   const onInvalidateSecrets = (secrets: DeploymentInvalidatedSecrets[]) => {
     const newInstances = instances.map(it => {
@@ -225,22 +216,20 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       node,
       instances,
       saving,
-      editing,
+      editState,
       mutable,
       deployable,
       deletable,
       copiable,
       editor,
       viewMode,
-      confirmationModal,
       sock,
       showDeploymentLog,
     },
     {
-      setEditing,
+      setEditState,
       onDeploymentEdited,
       onEnvironmentEdited,
-      onCopyDeployment,
       setViewMode,
       onInvalidateSecrets,
     },

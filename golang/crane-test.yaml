@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: nginx:latest
+          image: ghcr.io/dyrector-io/mirror/nginx:mainline-alpine
           imagePullPolicy: Always
           resources:
             requests:
@@ -46,7 +46,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: nginx:latest
+          image: ghcr.io/dyrector-io/mirror/nginx:mainline-alpine
           imagePullPolicy: Always
           resources:
             requests:

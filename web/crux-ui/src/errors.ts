@@ -3,6 +3,8 @@ import toast from 'react-hot-toast'
 import { fromApiError } from './error-responses'
 import { DyoErrorDto, WsErrorMessage } from './models'
 
+export type DyoApiErrorHandler = (res: Response, setErrorValue?: FormikSetErrorValue) => Promise<void>
+
 type Translation = {
   input?: string
   toast: string

@@ -23,11 +23,9 @@
 
   "reorderImages": "Reorder images",
   "saveOrder": "Save image order",
-  "addDeployment": "Add deployment",
   "addImage": "Add image",
 
   "deploymentName": "Deployment name",
-  "nodeRequired": "You can't create deployment without having at least one node!",
   "versionSemanticHint": "Version is not in semantic format.",
 
   "errors": {

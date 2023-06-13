@@ -1,6 +1,12 @@
 import { deploymentDeployUrl, nodeContainerLogUrl, ROUTE_NODES } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { DAGENT_NODE, screenshotPath } from './utils/common'
+import {
+  DAGENT_NODE,
+  EXPANDED_IMAGE_NAME,
+  NGINX_IMAGE_NAME,
+  NGINX_TEST_IMAGE_WITH_TAG,
+  screenshotPath,
+} from './utils/common'
 import { addDeploymentToVersionlessProject, addImageToVersionlessProject, createProject } from './utils/projects'
 
 test('Install dagent should be successful', async ({ page }) => {
@@ -78,14 +84,12 @@ test('Generate script should show the curl command and the script', async ({ pag
   const script = await page.locator('textarea[readonly]')
   const timer = await page.locator('label.text-dyo-turquoise')
   const discardButton = await page.locator('button:has-text("Discard")').first()
-  const copyButton = await page.locator('button:has-text("Copy")')
 
   await expect(curl).toBeVisible()
   await expect(curl).toHaveValue(/curl/)
   await expect(script).toBeVisible()
   await expect(timer).toBeVisible()
   await expect(discardButton).toBeVisible()
-  await expect(copyButton).toBeVisible()
 })
 
 test('Generate script should show script type selector for Docker', async ({ page }) => {
@@ -111,10 +115,9 @@ test('Generate script should show script type selector for Docker', async ({ pag
 
 test('Container log should appear after a successful deployment', async ({ page }) => {
   const prefix = 'deploy-log'
-  const imageName = 'nginx'
 
   const projectId = await createProject(page, 'deploy-log-test', 'versionless')
-  await addImageToVersionlessProject(page, projectId, imageName)
+  await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
   const { url, id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, prefix)
 
   await page.goto(url)
@@ -125,7 +128,7 @@ test('Container log should appear after a successful deployment', async ({ page 
   await page.locator(deployButtonSelector).click()
   await page.waitForURL(deploymentDeployUrl(deploymentId))
 
-  const containerRow = page.locator(`span:text-is("${imageName}") >> xpath=../..`)
+  const containerRow = page.locator(`span:text-is("${EXPANDED_IMAGE_NAME}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
 
   const runningTag = containerRow.locator(':text-is("Running")')
@@ -143,10 +146,9 @@ test('Container log should appear after a successful deployment', async ({ page 
 
 test('Container log should appear on a node container', async ({ page }) => {
   const prefix = 'node-deploy-log'
-  const imageName = 'nginx'
 
   const porjectId = await createProject(page, 'node-deploy-log-test', 'versionless')
-  await addImageToVersionlessProject(page, porjectId, imageName)
+  await addImageToVersionlessProject(page, porjectId, NGINX_TEST_IMAGE_WITH_TAG)
   const { url, id: deploymentId } = await addDeploymentToVersionlessProject(page, porjectId, DAGENT_NODE, prefix)
 
   await page.goto(url)
@@ -157,7 +159,7 @@ test('Container log should appear on a node container', async ({ page }) => {
   await page.locator(deployButtonSelector).click()
   await page.waitForURL(deploymentDeployUrl(deploymentId))
 
-  const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
+  const containerRow = page.locator(`span:text-is("${EXPANDED_IMAGE_NAME}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
 
   const runningTag = await containerRow.locator(':text-is("Running")')
@@ -168,9 +170,9 @@ test('Container log should appear on a node container', async ({ page }) => {
   const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
   await nodeButton.click()
 
-  await page.locator('input[placeholder="Search"]').type(`${prefix}-${imageName}`)
+  await page.locator('input[placeholder="Search"]').type(`${prefix}-${NGINX_IMAGE_NAME}`)
 
-  const nodeContainerRow = await page.locator(`span:text-is("${prefix}-${imageName}") >> xpath=../..`)
+  const nodeContainerRow = await page.locator(`span:text-is("${prefix}-${NGINX_IMAGE_NAME}") >> xpath=../..`)
   await expect(nodeContainerRow).toHaveCount(1)
 
   const logButton = await nodeContainerRow.locator('img[src*="/note.svg"]')
@@ -181,7 +183,7 @@ test('Container log should appear on a node container', async ({ page }) => {
   await logButton.click()
   await page.waitForURL(
     nodeContainerLogUrl(nodeId, {
-      name: `${prefix}-${imageName}`,
+      name: `${prefix}-${NGINX_IMAGE_NAME}`,
     }),
   )
 

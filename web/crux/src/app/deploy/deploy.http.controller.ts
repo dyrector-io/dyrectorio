@@ -24,6 +24,7 @@ import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import {
+  CopyDeploymentDto,
   CreateDeploymentDto,
   DeploymentDetailsDto,
   DeploymentDto,
@@ -217,11 +218,12 @@ export default class DeployHttpController {
   @UseInterceptors(DeployCopyValidationInterceptor)
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async copyDeployment(
-    @Query('force') _: boolean,
     @DeploymentId() deploymentId: string,
+    @Body() request: CopyDeploymentDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreatedResponse<DeploymentDto>> {
-    const deployment = await this.service.copyDeployment(deploymentId, identity)
+    const deployment = await this.service.copyDeployment(deploymentId, request, identity)
+
     return {
       url: DeployHttpController.locationOf(deployment.id),
       body: deployment,

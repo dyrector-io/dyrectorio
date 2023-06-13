@@ -53,15 +53,17 @@ export type CreateDeployment = {
   note?: string | undefined
 }
 
-export type DeploymentCreated = {
-  id: string
-}
-
 export type PatchDeployment = {
   id: string
   prefix?: string
   note?: string
   environment?: UniqueKeyValue[]
+}
+
+export type CopyDeployment = {
+  nodeId: string
+  prefix: string
+  note?: string | null
 }
 
 export type CheckDeploymentCopyResponse = {
@@ -167,19 +169,9 @@ export const deploymentIsDeployable = (status: DeploymentStatus, type: VersionTy
 
 export const deploymentIsDeletable = (status: DeploymentStatus): boolean => status !== 'in-progress'
 
-export const deploymentIsCopiable = (status: DeploymentStatus, type: VersionType) =>
-  type !== 'rolling' && status !== 'in-progress' && status !== 'preparing'
+export const deploymentIsCopiable = (status: DeploymentStatus) => status !== 'in-progress'
 
-export const deploymentLogVisible = (status: DeploymentStatus) => {
-  switch (status) {
-    case 'failed':
-    case 'successful':
-    case 'in-progress':
-      return true
-    default:
-      return false
-  }
-}
+export const deploymentLogVisible = (status: DeploymentStatus) => status !== 'preparing'
 
 export const projectNameToDeploymentPrefix = (name: string) => name.replaceAll(/( |\.)/g, '-').toLowerCase()
 

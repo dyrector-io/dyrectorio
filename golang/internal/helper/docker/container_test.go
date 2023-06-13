@@ -35,7 +35,7 @@ type DockerContainerHelperTestSuite struct {
 }
 
 const (
-	nginxImage                 = "docker.io/library/nginx:latest"
+	nginxImage                 = "ghcr.io/dyrector-io/mirror/nginx:mainline-alpine"
 	prefixLength               = 8
 	dockerClientTimeoutSeconds = 30
 )
