@@ -289,6 +289,11 @@ export default class DeployService {
 
     const config = this.containerMapper.configDataToDb(configData)
 
+    // We should overwrite the user in the ConfigData. This is an edge case, which is why we haven't
+    // implemented a new mapper for configDataToDb. However, in the long run, if there are more similar
+    // situations, we will have to create a different mapper for InstanceConfig.
+    config.user = configData.user
+
     await this.prisma.deployment.update({
       where: {
         id: deploymentId,

@@ -168,7 +168,7 @@ type ContainerConfig struct {
 	ImportContainer *ImportContainer `json:"importContainer,omitempty"`
 	// standard initContainers
 	InitContainers []InitContainer `json:"initContainers,omitempty" binding:"dive"`
-	// container user id
+	// container UID
 	User *int64 `json:"user"`
 	// the initial command of a container have mixed terms
 	// docker --> k8s: entrypoint => command, cmd => args

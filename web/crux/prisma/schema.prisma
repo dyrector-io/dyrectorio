@@ -217,7 +217,7 @@ model ContainerConfig {
   expose          ExposeStrategy
   ingress         Json?
   configContainer Json?
-  user            Int?
+  user            Int            @default(-1)
   tty             Boolean
   ports           Json?
   portRanges      Json?
