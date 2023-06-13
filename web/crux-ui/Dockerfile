@@ -4,8 +4,8 @@ WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED 1
 
-COPY ./package.json ./package-lock.json ./
-RUN npm ci --no-fund
+COPY ./package.json ./package-lock.json ./.npm ./
+RUN npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
 
 COPY . .
 RUN npm run build && \
