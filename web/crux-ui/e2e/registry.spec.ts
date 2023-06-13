@@ -88,7 +88,7 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   await expect(page.locator('button:text-is("Add")')).toBeVisible()
 
   await clearInput(page.locator('input[name=imageName]'))
-  await page.locator('input[name=imageName]').type(`${NGINX_TEST_IMAGE}:mainline-alpine`)
+  await page.locator('input[name=imageName]').type(NGINX_TEST_IMAGE)
   await expect(page.locator('input[name=imageName] >> xpath=../p')).not.toBeVisible()
   await expect(page.locator('button:text-is("Add")')).toBeVisible()
 
