@@ -55,7 +55,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
     }
 
     await mutate(API_NODES, null)
-    router.push(ROUTE_NODES)
+    await router.push(ROUTE_NODES)
   }
 
   const pageLink: BreadcrumbLink = {

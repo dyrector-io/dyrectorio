@@ -1,4 +1,4 @@
-import { WS_RECONNECT_TIMEOUT } from '@app/const'
+import { WS_CONNECT_DELAY_PER_TRY, WS_MAX_CONNECT_TRY } from '@app/const'
 import { Logger } from '@app/logger'
 import { WsErrorMessage, WS_TYPE_ERROR } from '@app/models'
 import {
@@ -20,7 +20,7 @@ class WebSocketClient {
 
   private connectionAttempt?: Promise<boolean>
 
-  private lastAttempt = 0
+  private connectionAttemptCount = 0
 
   private destroyListeners?: VoidFunction
 
@@ -54,7 +54,9 @@ class WebSocketClient {
     }
 
     // ensure connection
-    await this.connect()
+    if (!(await this.connect())) {
+      return
+    }
 
     // ensure subscription
     route.subscribe(endpoint)
@@ -118,6 +120,10 @@ class WebSocketClient {
   }
 
   private async connect(): Promise<boolean> {
+    if (this.connectionAttemptCount >= WS_MAX_CONNECT_TRY) {
+      return false
+    }
+
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       // we are already connected
       return true
@@ -131,9 +137,11 @@ class WebSocketClient {
 
     // try to connect
     this.connectionAttempt = this.createConnectionAttempt()
-
     const result = await this.connectionAttempt
+
+    this.connectionAttemptCount = result ? 0 : this.connectionAttemptCount + 1
     this.connectionAttempt = null
+
     return result
   }
 
@@ -201,6 +209,10 @@ class WebSocketClient {
   }
 
   private reconnect() {
+    if (this.connectionAttemptCount >= WS_MAX_CONNECT_TRY) {
+      return
+    }
+
     if (this.routes.size < 1) {
       // no need to reconnect
       this.logger.debug('Reconnect skipped: there are no endpoints')
@@ -219,20 +231,12 @@ class WebSocketClient {
       return
     }
 
-    const now = Date.now()
-    const elapsed = now - this.lastAttempt
-    if (elapsed < WS_RECONNECT_TIMEOUT) {
-      // try again if we can't connect in time
-      setTimeout(() => this.reconnect(), WS_RECONNECT_TIMEOUT - elapsed)
-      return
-    }
-
     this.logger.debug('Reconnecting...')
     this.connect()
   }
 
   private createConnectionAttempt(): Promise<boolean> {
-    this.lastAttempt = Date.now()
+    const failTimeout = (this.connectionAttemptCount + 1) * WS_CONNECT_DELAY_PER_TRY
 
     return new Promise<boolean>(resolve => {
       this.logger.debug('Connecting...')
@@ -251,7 +255,7 @@ class WebSocketClient {
       const onClose = () => {
         if (!resolved) {
           resolved = true
-          resolve(false)
+          setTimeout(() => resolve(false), failTimeout)
         }
 
         this.logger.info('Disconnected')
@@ -261,10 +265,12 @@ class WebSocketClient {
       }
 
       const onError = ev => {
-        this.logger.error(`Error occurred:`, ev)
+        resolved = true
 
+        this.logger.error(`Error occurred:`, ev)
         this.routes.forEach(r => r.onError(ev))
-        resolve(false)
+
+        setTimeout(() => resolve(false), failTimeout)
       }
 
       const onMessage = ev => {

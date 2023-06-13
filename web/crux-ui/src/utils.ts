@@ -413,3 +413,8 @@ export const getEndOfToday = () => {
   endOfToday.setHours(23, 59, 59, 999)
   return endOfToday
 }
+
+export const delay = (ms: number): Promise<boolean> =>
+  new Promise(resolve => {
+    setTimeout(() => resolve(null), ms)
+  })

@@ -12,11 +12,9 @@ const baseURL = process.env.E2E_BASE_URL || 'http://localhost:8000'
 const config: PlaywrightTestConfig = {
   globalSetup: path.join(__dirname, 'e2e', 'utils', 'global-setup.ts'),
   globalTeardown: path.join(__dirname, 'e2e', 'utils', 'global-teardown.ts'),
-  timeout: 2 * 60 * 1000, // 2 min
-  expect: { timeout: 10 * 1000 }, // We double the default(5s), since some test runners are not THAT fast :)
+  timeout: 2 * 60 * 1000, // 2 minutes
+  expect: { timeout: 10 * 1000 }, // We double the default(5s), since some test runners are not that fast
   testDir: path.join(__dirname, 'e2e'),
-  // With 3 retries it runs for ages on the pipeline. One is the sweet spot.
-  retries: 1,
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: path.join(__dirname, 'e2e_results/'),
   webServer: {

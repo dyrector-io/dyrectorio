@@ -405,13 +405,13 @@ model NotificationEvent {
 }
 
 model AgentEvent {
-  id             String               @id @default(uuid()) @db.Uuid
-  nodeId         String               @db.Uuid
-  createdAt      DateTime             @default(now()) @db.Timestamptz(6)
-  event          AgentEventTypeEnum
-  data           Json?
+  id        String             @id @default(uuid()) @db.Uuid
+  nodeId    String             @db.Uuid
+  createdAt DateTime           @default(now()) @db.Timestamptz(6)
+  event     AgentEventTypeEnum
+  data      Json?
 
-  node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)  
+  node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
 }
 
 enum ProjectTypeEnum {

@@ -27,7 +27,11 @@
   "addImage": "Add image",
 
   "deploymentName": "Deployment name",
-  "alreadyHavePreparing": "You already have one preparing deployment with the same prefix!",
   "nodeRequired": "You can't create deployment without having at least one node!",
-  "versionSemanticHint": "Version is not in semantic format."
+  "versionSemanticHint": "Version is not in semantic format.",
+
+  "errors": {
+    "alreadyHavePreparing": "You already have one preparing deployment with the same prefix!",
+    "rollingVersionDeployment": "Rolling versions can only have one deployment for the same node with the same prefix!"
+  }
 }

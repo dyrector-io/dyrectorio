@@ -11,11 +11,12 @@ import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Project, ProjectType, PROJECT_TYPE_VALUES } from '@app/models'
-import { API_PROJECTS, ROUTE_PROJECTS } from '@app/routes'
+import { API_PROJECTS, projectUrl, ROUTE_PROJECTS } from '@app/routes'
 import { auditToLocaleDate, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
+import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
 
 type ProjectFilter = TextFilter & {
@@ -36,6 +37,7 @@ interface ProjectsPageProps {
 const ProjectsPage = (props: ProjectsPageProps) => {
   const { projects } = props
 
+  const router = useRouter()
   const { t } = useTranslation('projects')
 
   const filters = useFilters<Project, ProjectFilter>({
@@ -51,9 +53,12 @@ const ProjectsPage = (props: ProjectsPageProps) => {
 
   const [viewMode, setViewMode] = useState<ViewMode>('tile')
 
-  const onCreated = (project: Project) => {
+  const onCreated = async (project: Project) => {
     setCreating(false)
     filters.setItems([...filters.items, project])
+
+    // When creating navigate the user to the project detail page
+    await router.push(projectUrl(project.id))
   }
 
   const pageLink: BreadcrumbLink = {
