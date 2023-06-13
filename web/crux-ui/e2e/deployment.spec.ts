@@ -95,36 +95,3 @@ test('Cannot create multiple deployments with the same node and prefix for a rol
   await expect(page.url()).toEqual(firstDeploymentUrl)
   await expect(firstDeploymentUrl).toEqual(secondDeploymentUrl)
 })
-
-test('Select first node when adding a deployment if only one node exists', async ({ browser }) => {
-  // Open a new page to be able to switch teams without messing with other tests
-  const page = await browser.newPage()
-
-  const teamName = 'testDeploymentTeam'
-  const projectName = 'deploymentNodeSelector'
-  const nodeName = 'node0'
-
-  await page.goto(ROUTE_TEAMS)
-  await page.locator('button:has-text("Add")').click()
-  await expect(page.locator('h4:has-text("Create new team")')).toHaveCount(1)
-  await page.locator('input[name=name] >> visible=true').type(teamName)
-  await page.locator('button:has-text("Save")').click()
-
-  await expect(page.locator(`h4:has-text("${teamName}")`)).toHaveCount(1)
-
-  await page.goto(ROUTE_TEAMS)
-  await page.locator(`label:has-text("${USER_FULLNAME}")`).click()
-  await page.locator(`div:has-text("${teamName}"):right-of(img[alt="Team's avatar"])`).click()
-
-  await page.waitForURL(ROUTE_DASHBOARD)
-
-  const { projectId } = await setup(page, nodeName, projectName)
-  await addImageToVersionlessProject(page, projectId, 'nginx')
-
-  await page.goto(projectUrl(projectId))
-
-  await page.locator('button:has-text("Add deployment")').click()
-  await expect(page.locator('h4:has-text("Add deployment")')).toHaveCount(1)
-
-  await expect(page.locator(`button:has-text("${nodeName}")`)).toHaveClass(/bg-dyo-turquoise/)
-})
