@@ -82,7 +82,7 @@ func TestProtoRegistryUrlEmpty(t *testing.T) {
 func TestExpandImageName(t *testing.T) {
 	name, err := imageHelper.ExpandImageName("nginx")
 	assert.NoError(t, err)
-	assert.Equal(t, "ghcr.io/dyrector-io/mirror/nginx:latest", name, "plain image is expanded to latest tag and it prefixing")
+	assert.Equal(t, "docker.io/library/nginx:latest", name, "plain image is expanded to latest tag and it prefixing")
 
 	name, err = imageHelper.ExpandImageName("nginx:tag")
 	assert.NoError(t, err)
@@ -90,7 +90,7 @@ func TestExpandImageName(t *testing.T) {
 
 	name, err = imageHelper.ExpandImageName("my-reg.com/library/nginx")
 	assert.NoError(t, err)
-	assert.Equal(t, "ghcr.io/dyrector-io/mirror/nginx:mainline-alpine", name)
+	assert.Equal(t, "my-reg.com/library/nginx:latest", name)
 
 	name, err = imageHelper.ExpandImageName("my-reg.com/library/nginx:my-tag")
 	assert.NoError(t, err)
