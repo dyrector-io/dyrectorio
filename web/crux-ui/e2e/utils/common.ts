@@ -24,6 +24,7 @@ export const SCREENSHOTS_FOLDER = 'screenshots'
 
 export const GHCR_MIRROR = 'ghcr.io/dyrector-io/mirror'
 export const NGINX_TEST_IMAGE = 'nginx:mainline-alpine'
+export const REGISTRY_NAME = 'ghcr for testing'
 
 const replacePort = (address: string, port: string): string => {
   const index = address.lastIndexOf(':')

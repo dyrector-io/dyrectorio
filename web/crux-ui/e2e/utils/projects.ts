@@ -2,6 +2,7 @@
 import { ProjectType } from '@app/models'
 import { projectUrl, ROUTE_DEPLOYMENTS, ROUTE_PROJECTS, versionUrl } from '@app/routes'
 import { expect, Page } from '@playwright/test'
+import { REGISTRY_NAME } from './common'
 
 export const createProject = async (page: Page, name: string, type: ProjectType) => {
   await page.goto(ROUTE_PROJECTS)
@@ -54,7 +55,7 @@ export const createImage = async (page: Page, projectId: string, versionId: stri
   const addImage = await page.waitForSelector('button:has-text("Add image")')
   await addImage.click()
 
-  const registry = await page.waitForSelector(`button:has-text("ghcr for testing")`)
+  const registry = await page.waitForSelector(`button:has-text("${REGISTRY_NAME}")`)
   await registry.click()
 
   await page.locator('input[name=imageName] >> visible=true').fill(image)
@@ -78,7 +79,7 @@ export const addImageToVersion = async (page: Page, projectId: string, versionId
   await page.locator('button:has-text("Add image")').click()
   await expect(page.locator('h4:has-text("Add image")')).toHaveCount(1)
 
-  const registry = await page.waitForSelector(`button:has-text("ghcr for testing")`)
+  const registry = await page.waitForSelector(`button:has-text("${REGISTRY_NAME}")`)
   await registry.click()
 
   await page.locator('input[name=imageName] >> visible=true').type(image)
@@ -97,7 +98,7 @@ export const addUncheckedImageToVersion = async (page: Page, projectId: string, 
   await page.locator('button:has-text("Add image")').click()
   await expect(page.locator('h4:has-text("Add image")')).toHaveCount(1)
 
-  const registry = await page.waitForSelector(`button:has-text("ghcr for testing")`)
+  const registry = await page.waitForSelector(`button:has-text("${REGISTRY_NAME}")`)
   await registry.click()
 
   await page.locator('input[name=imageName] >> visible=true').fill(image)
@@ -111,7 +112,7 @@ export const addImageToVersionlessProject = async (page: Page, projectId: string
   await page.locator('button:has-text("Add image")').click()
   await expect(page.locator('h4:has-text("Add image")')).toHaveCount(1)
 
-  const registry = await page.waitForSelector(`button:has-text("ghcr for testing")`)
+  const registry = await page.waitForSelector(`button:has-text("${REGISTRY_NAME}")`)
   await registry.click()
 
   await page.locator('input[name=imageName] >> visible=true').fill(image)

@@ -1,7 +1,15 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { ROUTE_DASHBOARD, ROUTE_LOGIN, ROUTE_REGISTRIES, ROUTE_TEAMS_CREATE } from '@app/routes'
 import { chromium, FullConfig } from '@playwright/test'
-import { createUser, GHCR_MIRROR, kratosFromConfig, USER_EMAIL, USER_PASSWORD, USER_TEAM } from './common'
+import {
+  createUser,
+  GHCR_MIRROR,
+  kratosFromConfig,
+  REGISTRY_NAME,
+  USER_EMAIL,
+  USER_PASSWORD,
+  USER_TEAM,
+} from './common'
 import globalTeardown from './global-teardown'
 import { installDagent } from './node-helper'
 
@@ -46,7 +54,7 @@ const globalSetup = async (config: FullConfig) => {
   await page.waitForURL(`${ROUTE_REGISTRIES}/**`)
   await page.click('button:has-text("Edit")')
   await page.click('button:has-text("Unchecked")')
-  await page.locator('input[name=name]').fill('ghcr for testing')
+  await page.locator('input[name=name]').fill(REGISTRY_NAME)
   await page.locator('input[name=url]').fill(GHCR_MIRROR)
   await page.click('button:has-text("Save")')
 
