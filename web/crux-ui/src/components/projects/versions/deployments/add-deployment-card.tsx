@@ -63,8 +63,9 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         const result = (await res.json()) as Deployment
         onAdd(result.id)
       } else if (res.status === 409) {
-        // There is already a deployment for the selected node with the same prefix
-        toastWarning(t('alreadyHaveDeployment'))
+        // Handle preparing deployment exists or rolling version has deployment errors
+        handleApiError(res.clone())
+
         const dto = (await res.json()) as DyoApiError
         onAdd(dto.value)
       } else {

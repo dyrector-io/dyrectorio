@@ -75,12 +75,12 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     clsx('text-center rounded-tr-lg', defaultHeaderClass),
   ]
 
-  const onCellClick = (data: Deployment, row: number, col: number) => {
+  const onCellClick = async (data: Deployment, row: number, col: number) => {
     if (col >= headers.length - 1) {
       return
     }
 
-    router.push(deploymentUrl(data.id))
+    await router.push(deploymentUrl(data.id))
   }
 
   const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [
