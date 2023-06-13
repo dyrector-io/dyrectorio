@@ -11,10 +11,11 @@ import {
 } from '@app/models'
 import { containerConfigSchema, getValidationError } from '@app/validations'
 import { useEffect, useState } from 'react'
-import { DeploymentState } from '../use-deployment-state'
+import { DeploymentActions, DeploymentState } from '../use-deployment-state'
 
 export type InstanceStateOptions = {
   deploymentState: DeploymentState
+  deploymentActions: DeploymentActions
   instance: Instance
 }
 
@@ -33,7 +34,7 @@ export type InstanceActions = {
 }
 
 const useInstanceState = (options: InstanceStateOptions) => {
-  const { instance, deploymentState } = options
+  const { instance, deploymentState, deploymentActions } = options
   const { sock } = deploymentState
 
   const [config, setConfig] = useState(instance.config)
@@ -71,12 +72,13 @@ const useInstanceState = (options: InstanceStateOptions) => {
   }
 
   const onPatch = (id: string, newConfig: InstanceContainerConfigData) => {
-    setParseError(null)
+    setConfig({
+      ...config,
+      ...newConfig,
+    })
 
-    sock.send(WS_TYPE_PATCH_INSTANCE, {
-      instanceId: id,
-      config: newConfig,
-    } as PatchInstanceMessage)
+    deploymentActions.onPatchInstance(id, newConfig)
+    setParseError(null)
   }
 
   const onParseError = (err: Error) => setParseError(err.message)

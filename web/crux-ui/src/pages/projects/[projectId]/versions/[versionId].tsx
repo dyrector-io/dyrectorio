@@ -7,7 +7,7 @@ import VersionSections, { parseVersionSectionState } from '@app/components/proje
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
-import LoadingIndicator from '@app/elements/loading-indicator'
+import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
 import { EditableVersion, ProjectDetails, VersionDetails } from '@app/models'
 import { projectApiUrl, projectUrl, ROUTE_PROJECTS, versionApiUrl, versionUrl } from '@app/routes'
 import { anchorLinkOf, redirectTo, searchParamsOf, withContextAuthorization } from '@app/utils'
@@ -32,7 +32,6 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
   const [allVersions, setAllVersions] = useState(project.versions)
   const [version, setVersion] = useState(propsVersion)
   const [editing, setEditing] = useState(anchorLinkOf(router) === '#edit')
-  const [saving, setSaving] = useState(false)
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
   const submitRef = useRef<() => Promise<any>>()
 
@@ -91,7 +90,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
   return (
     <Layout title={t('versionsName', { project: project.name, name: version.name })} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        {saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
+        <WebSocketSaveIndicator className="mx-3" state={state.saveState} />
 
         {!version.deletable && !version.mutable ? null : (
           <DetailsPageMenu
@@ -127,7 +126,6 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
           project={project}
           state={state}
           actions={actions}
-          setSaving={setSaving}
           setTopBarContent={setTopBarContent}
         />
       )}

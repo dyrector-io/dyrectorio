@@ -9,20 +9,17 @@ import {
   DeploymentDetails,
   DeploymentEnvUpdatedMessage,
   DeploymentInvalidatedSecrets,
-  deploymentIsCopiable,
-  deploymentIsDeletable,
-  deploymentIsDeployable,
-  deploymentIsMutable,
-  deploymentLogVisible,
   DeploymentRoot,
   DyoNode,
   GetInstanceMessage,
   ImageDeletedMessage,
   Instance,
+  InstanceContainerConfigData,
   InstanceMessage,
-  InstancesAddedMessage,
   InstanceUpdatedMessage,
+  InstancesAddedMessage,
   NodeEventMessage,
+  PatchInstanceMessage,
   ProjectDetails,
   UniqueKeyValue,
   VersionDetails,
@@ -36,8 +33,14 @@ import {
   WS_TYPE_PATCH_DEPLOYMENT_ENV,
   WS_TYPE_PATCH_INSTANCE,
   WS_TYPE_PATCH_RECEIVED,
+  WebSocketSaveState,
+  deploymentIsCopiable,
+  deploymentIsDeletable,
+  deploymentIsDeployable,
+  deploymentIsMutable,
+  deploymentLogVisible,
 } from '@app/models'
-import { deploymentWsUrl, WS_NODES } from '@app/routes'
+import { WS_NODES, deploymentWsUrl } from '@app/routes'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import { useState } from 'react'
 import useCopyDeploymentModal from './use-copy-deployment-confirmation-modal'
@@ -58,7 +61,7 @@ export type DeploymentState = {
   deployable: boolean
   copiable: boolean
   deletable: boolean
-  saving: boolean
+  saveState: WebSocketSaveState
   editing: boolean
   editor: EditorState
   viewMode: ViewMode
@@ -72,6 +75,7 @@ export type DeploymentActions = {
   onDeploymentEdited: (editedDeployment: DeploymentDetails) => void
   onEnvironmentEdited: (environment: UniqueKeyValue[]) => void
   onCopyDeployment: () => Promise<string>
+  onPatchInstance: (id: string, newConfig: InstanceContainerConfigData) => void
   setViewMode: (viewMode: ViewMode) => void
   onInvalidateSecrets: (secrets: DeploymentInvalidatedSecrets[]) => void
 }
@@ -88,11 +92,11 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const { deployment: optionDeploy, onWsError, onApiError } = options
   const { project, version } = optionDeploy
 
-  const envEditThrottle = useThrottling(DEPLOYMENT_EDIT_WS_REQUEST_DELAY)
+  const throttle = useThrottling(DEPLOYMENT_EDIT_WS_REQUEST_DELAY)
 
   const [deployment, setDeployment] = useState<DeploymentDetails>(optionDeploy)
   const [node, setNode] = useNodeState(optionDeploy.node)
-  const [saving, setSaving] = useState(false)
+  const [saveState, setSaveState] = useState<WebSocketSaveState>('saved')
   const [editing, setEditing] = useState(false)
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
   const [viewMode, setViewMode] = useState<ViewMode>('list')
@@ -119,14 +123,16 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   })
 
   const sock = useWebSocket(deploymentWsUrl(deployment.id), {
+    onOpen: () => setSaveState('saved'),
+    onClose: () => setSaveState('disconnected'),
     onSend: message => {
       if ([WS_TYPE_PATCH_INSTANCE, WS_TYPE_PATCH_DEPLOYMENT_ENV].includes(message.type)) {
-        setSaving(true)
+        setSaveState('saving')
       }
     },
     onReceive: message => {
       if (WS_TYPE_PATCH_RECEIVED === message.type) {
-        setSaving(false)
+        setSaveState('saved')
       }
     },
     onError: onWsError,
@@ -173,11 +179,12 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   }
 
   const onEnvironmentEdited = environment => {
+    setSaveState('saving')
     setDeployment({
       ...deployment,
       environment,
     })
-    envEditThrottle(() => {
+    throttle(() => {
       sock.send(WS_TYPE_PATCH_DEPLOYMENT_ENV, environment)
     })
   }
@@ -217,6 +224,37 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
     setInstances(newInstances)
   }
 
+  const onPatchInstance = (id: string, newConfig: InstanceContainerConfigData) => {
+    setSaveState('saving')
+
+    const index = instances.findIndex(it => it.id === id)
+    if (index < 0) {
+      return
+    }
+
+    const newInstances = [...instances]
+    const instance = newInstances[index]
+
+    newInstances[index] = {
+      ...instance,
+      config: instance.config
+        ? {
+            ...instance.config,
+            ...newConfig,
+          }
+        : newConfig,
+    }
+
+    setInstances(newInstances)
+
+    throttle(() => {
+      sock.send(WS_TYPE_PATCH_INSTANCE, {
+        instanceId: id,
+        config: newConfig,
+      } as PatchInstanceMessage)
+    })
+  }
+
   return [
     {
       deployment,
@@ -224,7 +262,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       version,
       node,
       instances,
-      saving,
+      saveState,
       editing,
       mutable,
       deployable,
@@ -243,6 +281,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       onCopyDeployment,
       setViewMode,
       onInvalidateSecrets,
+      onPatchInstance,
     },
   ]
 }

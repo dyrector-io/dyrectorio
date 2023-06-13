@@ -16,6 +16,7 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoMessage from '@app/elements/dyo-message'
+import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import {
@@ -71,7 +72,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     toast(t('errors:connectionLost'))
   }
 
-  const [deploymentState] = useDeploymentState({
+  const [deploymentState, deploymentActions] = useDeploymentState({
     deployment,
     onApiError,
     onWsError,
@@ -82,6 +83,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   const [state, actions] = useInstanceState({
     instance,
     deploymentState,
+    deploymentActions,
   })
 
   const patch = useRef<Partial<InstanceContainerConfigData>>({})
@@ -203,6 +205,8 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   return (
     <Layout title={t('instancesName', state.config ?? instance.image)} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
+        <WebSocketSaveIndicator className="mx-3" state={deploymentState.saveState} />
+
         <DyoButton href={deploymentUrl(deployment.id)}>{t('common:back')}</DyoButton>
       </PageHeading>
 

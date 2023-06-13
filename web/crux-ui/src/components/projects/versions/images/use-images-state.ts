@@ -20,6 +20,7 @@ import {
   VersionDetails,
   VersionImage,
   VersionSectionsState,
+  WebSocketSaveState,
   WS_TYPE_ADD_IMAGES,
   WS_TYPE_GET_IMAGE,
   WS_TYPE_IMAGE,
@@ -36,7 +37,7 @@ import {
 import { versionWsUrl, WS_REGISTRIES } from '@app/routes'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // state
 export type ImageTagsMap = { [key: string]: RegistryImageTags } // image key to RegistryImageTags
@@ -55,7 +56,7 @@ const ADD_SECTION_TO_SECTION: Record<VersionAddSection, VersionSection> = {
 export type ImagesState = {
   projectId: string
   versionId: string
-  saving: boolean
+  saveState: WebSocketSaveState
   addSection: VersionAddSection
   section: VersionSection
   images: VersionImage[]
@@ -96,6 +97,7 @@ export interface ImagesStateOptions {
   projectId: string
   version: VersionDetails
   initialSection: VersionSectionsState
+  setSaveState?: (saveState: WebSocketSaveState) => void
 }
 
 const refreshImageTags = (registriesSock: WebSocketClientEndpoint, images: VersionImage[]): void => {
@@ -124,26 +126,34 @@ export const selectTagsOfImage = (state: ImagesState, image: VersionImage): stri
 }
 
 export const useImagesState = (options: ImagesStateOptions): [ImagesState, ImagesActions] => {
-  const { projectId, version: optionsVersion, initialSection } = options
+  const { projectId, version: optionsVersion, setSaveState: optionsSetSaveState, initialSection } = options
 
-  const [saving, setSaving] = useState(false)
+  const [saveState, setSaveState] = useState<WebSocketSaveState>('saved')
   const [section, setSection] = useState(initialSection)
   const [addSection, setAddSection] = useState<VersionAddSection>('none')
   const [version, setVersion] = useState(optionsVersion)
   const [tags, setTags] = useState<ImageTagsMap>({})
   const [viewMode, setViewMode] = useState<ViewMode>('list')
 
+  useEffect(() => {
+    if (optionsSetSaveState) {
+      optionsSetSaveState(saveState)
+    }
+  }, [saveState, optionsSetSaveState])
+
   const versionSock = useWebSocket(versionWsUrl(version.id), {
+    onOpen: () => setSaveState('saved'),
     onSend: message => {
       if (message.type === WS_TYPE_PATCH_IMAGE) {
-        setSaving(true)
+        setSaveState('saving')
       }
     },
     onReceive: message => {
       if (WS_TYPE_PATCH_RECEIVED === message.type) {
-        setSaving(false)
+        setSaveState('saved')
       }
     },
+    onClose: () => setSaveState('disconnected'),
   })
 
   const editor = useEditorState(versionSock)
@@ -291,6 +301,8 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   }
 
   const updateImageConfig = (image: VersionImage, config: Partial<ContainerConfigData>) => {
+    setSaveState('saving')
+
     const newImages = [...version.images]
     const index = newImages.findIndex(it => it.id === image.id)
 
@@ -318,7 +330,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
       version,
       images: version.images,
       editor,
-      saving,
+      saveState,
       tags,
       viewMode,
       versionSock,
