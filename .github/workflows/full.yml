@@ -575,17 +575,18 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    needs: [e2e, gather_changes]
+    needs: [gather_changes]
     if: |
-      always() &&
-      (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
-      needs.e2e.result == 'success' &&
-      needs.go_build.result == 'success' &&
-      (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
-      (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
-      (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
-      needs.conventional_commits.result == 'success' &&
-      needs.gather_changes.result == 'success'
+      always()
+    # &&
+    # (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
+    # needs.e2e.result == 'success' &&
+    # needs.go_build.result == 'success' &&
+    # (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
+    # (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
+    # (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
+    # needs.conventional_commits.result == 'success' &&
+    # needs.gather_changes.result == 'success'
     environment: Workflow - Protected
     steps:
       - name: Login to GHCR
@@ -636,7 +637,7 @@ jobs:
       image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
     needs: [gather_changes, go_push]
     if: |
-      always() &&
+      true == false &&
       (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
       needs.e2e.result == 'success' &&
       needs.go_build.result == 'success' &&
