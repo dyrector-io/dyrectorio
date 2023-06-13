@@ -170,7 +170,10 @@ export default class VersionWebSocketGateway {
 
     const res: WsMessage<PatchImageMessage> = {
       type: WS_TYPE_IMAGE_UPDATED,
-      data: message,
+      data: {
+        ...cruxReq,
+        id: message.id,
+      },
     }
 
     subscription.sendToAllExcept(client, res)

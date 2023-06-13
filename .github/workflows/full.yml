@@ -575,7 +575,7 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    needs: [e2e, gather_changes]
+    needs: [gather_changes]
     if: |
       always() &&
       (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
@@ -613,20 +613,14 @@ jobs:
         run: make compile-agents
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
+        with:
+          platforms: linux/arm64, linux/amd64
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      - name: Setup binfmt
-        run: make binfmt
       - name: Compile
         run: |
           make GOOS="linux darwin windows" GOARCHS="amd64 arm64" compile-cli
           make GOOS="linux" GOARCHS="amd64 arm64" compile-agents
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Setup binfmt
-        run: make binfmt
       - name: Build images
         run: |
           make build-cli-push
@@ -634,76 +628,82 @@ jobs:
         env:
           VERSION: ${{ needs.gather_changes.outputs.version }}
           image_version: ${{ needs.gather_changes.outputs.tag }}
-  go_sign:
-    permissions:
-      packages: write
-    runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
-    needs: [gather_changes, go_push]
-    if: |
-      always() &&
-      (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
-      needs.e2e.result == 'success' &&
-      needs.go_build.result == 'success' &&
-      (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
-      (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
-      (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
-      needs.conventional_commits.result == 'success' &&
-      needs.gather_changes.result == 'success' && needs.go_push.result == 'success'
-    environment: Workflow - Protected
-    steps:
-      - name: Login to GHCR
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          registry: docker.io
-          username: dyrectorio
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Pull images to retag & sign
-        run: |
-          docker pull ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
-          docker pull ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
-          docker pull ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
-      - name: Write signing key to disk
-        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-      - name: Docker tag
-        run: |
-          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }}
-          docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }}
-          docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }}
-      - name: Add minor version tag
-        if: github.ref_type == 'tag'
-        run: |
-          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.minorversion }}
-          docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.minorversion }}
-          docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.minorversion }}
-          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
-          docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
-          docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:{{ needs.gather_changes.outputs.minorversion }}
-      - name: Docker push
-        run: |
-          docker push -a ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}
-          docker push -a ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}
-          docker push -a ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}
-          docker push -a ${DOCKERHUB_REGISTRY}/crane
-          docker push -a ${DOCKERHUB_REGISTRY}/dagent
-          docker push -a ${DOCKERHUB_REGISTRY}/dyo
-      - name: Sign container image
-        run: |
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }} )
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }} )
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }} )
-        env:
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+  #
+  # Uncommented because of usage difficulties (multiarch images & image signing incompatibility),
+  # custom manifest creation might be an option to
+  # preserve multiarch images.
+  # Temporally disabled
+  #
+  # go_sign:
+  #   permissions:
+  #     packages: write
+  #   runs-on: ubuntu-22.04
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
+  #   needs: [gather_changes, go_push]
+  #   if: |
+  #     always() &&
+  #     (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
+  #     needs.e2e.result == 'success' &&
+  #     needs.go_build.result == 'success' &&
+  #     (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
+  #     (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
+  #     (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
+  #     needs.conventional_commits.result == 'success' &&
+  #     needs.gather_changes.result == 'success' && needs.go_push.result == 'success'
+  #   environment: Workflow - Protected
+  #   steps:
+  #     - name: Login to GHCR
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GHCR_PAT }}
+  #     - name: Login to DockerHub
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: docker.io
+  #         username: dyrectorio
+  #         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+  #     - name: Pull images to retag & sign
+  #       run: |
+  #         docker pull ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
+  #         docker pull ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
+  #         docker pull ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }}
+  #     - name: Write signing key to disk
+  #       run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+  #     - name: Docker tag
+  #       run: |
+  #         docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }}
+  #         docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }}
+  #         docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }}
+  #     - name: Add minor version tag
+  #       if: github.ref_type == 'tag'
+  #       run: |
+  #         docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.minorversion }}
+  #         docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.minorversion }}
+  #         docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.minorversion }}
+  #         docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
+  #         docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
+  #         docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:{{ needs.gather_changes.outputs.minorversion }}
+  #     - name: Docker push
+  #       run: |
+  #         docker push -a ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}
+  #         docker push -a ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}
+  #         docker push -a ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}
+  #         docker push -a ${DOCKERHUB_REGISTRY}/crane
+  #         docker push -a ${DOCKERHUB_REGISTRY}/dagent
+  #         docker push -a ${DOCKERHUB_REGISTRY}/dyo
+  #     - name: Sign container image
+  #       run: |
+  #         cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+  #         cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+  #         cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+  #         cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }} )
+  #         cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }} )
+  #         cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }} )
+  #       env:
+  #         COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
   crux_push:
     permissions:
       packages: write

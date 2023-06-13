@@ -12,6 +12,7 @@ import {
   ValidateNested,
 } from 'class-validator'
 import { CONTAINER_STATE_VALUES, ContainerState } from 'src/domain/container'
+import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
 import { ContainerIdentifierDto } from '../container/container.dto'
 
 export const NODE_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
@@ -22,6 +23,9 @@ export type NodeConnectionStatus = (typeof NODE_CONNECTION_STATUS_VALUES)[number
 
 export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
 export type NodeType = (typeof NODE_TYPE_VALUES)[number]
+
+export const NODE_EVENT_TYPE_VALUES = ['connected', 'kicked', 'left', 'update'] as const
+export type NodeEventType = (typeof NODE_EVENT_TYPE_VALUES)[number]
 
 export class BasicNodeDto {
   @IsUUID()
@@ -98,7 +102,6 @@ export class NodeDetailsDto extends NodeDto {
 
   @IsOptional()
   @ValidateNested()
-  @IsOptional()
   install?: NodeInstallDto
 }
 
@@ -195,4 +198,38 @@ export class ContainerDto {
   imageTag: string
 
   ports: ContainerPort[]
+}
+
+export class NodeAuditLogQueryDto extends PaginationQuery {
+  @Type(() => Date)
+  @IsDate()
+  readonly from: Date
+
+  @Type(() => Date)
+  @IsDate()
+  readonly to: Date
+
+  @IsString()
+  @IsIn(NODE_EVENT_TYPE_VALUES)
+  @IsOptional()
+  readonly filterEventType?: NodeEventType
+}
+
+export class NodeAuditLogDto {
+  @Type(() => Date)
+  @IsDate()
+  createdAt: Date
+
+  @IsString()
+  event: string
+
+  @IsOptional()
+  data?: object
+}
+
+export class NodeAuditLogListDto extends PaginatedList<NodeAuditLogDto> {
+  @Type(() => NodeAuditLogDto)
+  items: NodeAuditLogDto[]
+
+  total: number
 }

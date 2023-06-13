@@ -1,3 +1,5 @@
+import { PaginationQuery } from './common'
+
 export type Audit = {
   updatedAt: string
   updatedBy?: string | null
@@ -25,11 +27,7 @@ export type AuditLogList = {
   total: number
 }
 
-export type AuditLogQuery = {
-  skip: number
-  take: number
-  from: string
-  to: string
+export type AuditLogQuery = PaginationQuery & {
   filter?: string
 }
 

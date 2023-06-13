@@ -15,7 +15,7 @@ import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { PRODUCTION } from 'src/shared/const'
 import { getAgentVersionFromPackage } from 'src/shared/package'
-import { Agent, AgentEvent } from './agent'
+import { Agent, AgentConnectionMessage } from './agent'
 
 export default class AgentInstaller {
   scriptCompiler: ScriptCompiler
@@ -96,7 +96,7 @@ export default class AgentInstaller {
     return this.scriptCompiler.compile(installScriptParams)
   }
 
-  complete(connection: GrpcNodeConnection, info: AgentInfo, eventChannel: Subject<AgentEvent>): Agent {
+  complete(connection: GrpcNodeConnection, info: AgentInfo, eventChannel: Subject<AgentConnectionMessage>): Agent {
     this.verify()
     return new Agent(connection, info, eventChannel, false)
   }

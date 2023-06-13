@@ -13,22 +13,11 @@ export default class WsClientSetup {
 
   private subscribe: () => Subject<any> = null
 
-  private authorize: Promise<boolean> = null
-
   private binder: Promise<boolean> = null
 
   boundRoutes = 0
 
-  get authorized(): Promise<boolean> {
-    return this.authorize
-  }
-
-  constructor(
-    client: WebSocket,
-    token: string,
-    private readonly initAuthorize: WsInitializer,
-    private readonly initBind: WsInitializer,
-  ) {
+  constructor(client: WebSocket, token: string, private readonly initBind: WsInitializer) {
     this.logger = new Logger(`${WsClientSetup.name} ${token}`)
 
     const receiver: (buffer: RawData, isBinary: boolean) => void = (buffer, binary) => {
@@ -47,16 +36,10 @@ export default class WsClientSetup {
   }
 
   async bound(): Promise<boolean> {
-    const authorized = await this.authorize
-    if (!authorized) {
-      return false
-    }
-
     return await this.binder
   }
 
   start() {
-    this.authorize = this.initAuthorize()
     this.binder = this.initBind()
     this.logger.verbose('started')
   }
@@ -86,7 +69,6 @@ export default class WsClientSetup {
     this.clearReceiver()
     this.messages = []
 
-    this.authorize = null
     this.binder = null
     this.subscribe = null
 

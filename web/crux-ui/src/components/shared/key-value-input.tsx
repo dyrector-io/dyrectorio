@@ -30,7 +30,11 @@ const generateEmptyLine = () => ({
   id: uuid(),
 })
 
-const setItems = (items: UniqueKeyValue[]) => (): UniqueKeyValue[] => items
+const setItems = (items: UniqueKeyValue[]) => (): UniqueKeyValue[] => {
+  const newItems = items.filter(it => !isCompletelyEmpty(it))
+  const emptyLine = generateEmptyLine()
+  return [...newItems, emptyLine]
+}
 
 const mergeItems =
   (updatedItems: UniqueKeyValue[]) =>

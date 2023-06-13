@@ -174,6 +174,7 @@ export const nodeScriptApiUrl = (id: string) => `${nodeApiUrl(id)}/script`
 export const nodeTokenApiUrl = (id: string) => `${nodeApiUrl(id)}/token`
 export const nodeUpdateApiUrl = (id: string) => `${nodeApiUrl(id)}/update`
 export const nodeWsUrl = (id: string) => `/nodes/${id}`
+export const nodeAuditApiUrl = (nodeId: string, query: AuditLogQuery) => urlQuery(`${nodeApiUrl(nodeId)}/audit`, query)
 
 // node-global-container
 export const nodeGlobalContainerListApiUrl = (nodeId: string) => `${nodeApiUrl(nodeId)}/containers`

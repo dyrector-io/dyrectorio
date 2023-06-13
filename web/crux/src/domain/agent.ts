@@ -56,7 +56,7 @@ export class Agent {
   constructor(
     private connection: GrpcNodeConnection,
     info: AgentInfo,
-    private readonly eventChannel: Subject<AgentEvent>,
+    private readonly eventChannel: Subject<AgentConnectionMessage>,
     readonly outdated: boolean,
   ) {
     this.id = connection.nodeId
@@ -387,7 +387,7 @@ export type AgentToken = {
   iat: number
 }
 
-export type AgentEvent = {
+export type AgentConnectionMessage = {
   id: string
   status: NodeConnectionStatus
   address?: string

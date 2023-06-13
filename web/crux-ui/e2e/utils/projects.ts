@@ -16,9 +16,6 @@ export const createProject = async (page: Page, name: string, type: ProjectType)
 
   await page.locator('button:has-text("Save")').click()
 
-  const project = await page.waitForSelector(`a:has-text("${name}")`)
-
-  await project.click()
   await page.waitForURL(`${ROUTE_PROJECTS}/**`)
 
   if (type === 'versionless') {
