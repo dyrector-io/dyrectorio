@@ -751,8 +751,8 @@ jobs:
       - name: Add minor version tag
         if: github.ref_type == 'tag'
         run: |
-          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.minorversion }}
-          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
+          docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.minorversion }}
+          docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
       - name: Docker tag
         run: |
           docker push -a ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}
