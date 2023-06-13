@@ -1,8 +1,13 @@
 import { DyoApiError, UnavailableErrorType } from './models'
 
-export const invalidArgument = (property: string, description?: string, value?: string): DyoApiError => ({
+export const invalidArgument = (
+  property: string,
+  description?: string,
+  value?: string,
+  error?: string,
+): DyoApiError => ({
   status: 400,
-  error: 'invalidArgument',
+  error: error ?? 'invalidArgument',
   property,
   description: description ?? `Invalid ${property}`,
   value,
@@ -15,39 +20,49 @@ export const missingParameter = (property: string, description?: string): DyoApi
   description: description ?? `Missing ${property}`,
 })
 
-export const notFoundError = (property: string, description?: string, value?: string): DyoApiError => ({
+export const notFoundError = (property: string, description?: string, value?: string, error?: string): DyoApiError => ({
   status: 404,
-  error: 'notFound',
+  error: error ?? 'notFound',
   property,
   value,
   description: description ?? `The value of ${property} not found.`,
 })
 
-export const alreadyExistsError = (property: string, description?: string, value?: string): DyoApiError => ({
+export const alreadyExistsError = (
+  property: string,
+  description?: string,
+  value?: string,
+  error?: string,
+): DyoApiError => ({
   status: 409,
-  error: 'alreadyExists',
+  error: error ?? 'alreadyExists',
   property,
   value,
   description: description ?? `The value of ${property} already exists.`,
 })
 
-export const preconditionFailedError = (property: string, description?: string, value?: string): DyoApiError => ({
+export const preconditionFailedError = (
+  property: string,
+  description?: string,
+  value?: string,
+  error?: string,
+): DyoApiError => ({
   status: 412,
-  error: 'preconditionFailed',
+  error: error ?? 'preconditionFailed',
   property,
   value,
   description: description ?? `Precondition failed for: ${property}`,
 })
 
-export const unauthorizedError = (description: string = 'Unauthorized'): DyoApiError => ({
+export const unauthorizedError = (description: string = 'Unauthorized', error?: string): DyoApiError => ({
   status: 401,
-  error: 'unauthorized',
+  error: error ?? 'unauthorized',
   description,
 })
 
-export const forbiddenError = (description: string = 'Forbidden'): DyoApiError => ({
+export const forbiddenError = (description: string = 'Forbidden', error?: string): DyoApiError => ({
   status: 403,
-  error: 'forbidden',
+  error: error ?? 'forbidden',
   description,
 })
 
@@ -67,35 +82,36 @@ type CruxApiError = {
   message: string
   property?: string
   value?: string
+  error?: string
 }
 
-export const fromApiError = (status: number, error: CruxApiError): DyoApiError => {
-  const { message, property, value } = error
+export const fromApiError = (status: number, apiError: CruxApiError): DyoApiError => {
+  const { message, property, value, error } = apiError
 
   switch (status) {
     case 503: {
       return unavailableError('crux', message)
     }
     case 401: {
-      return unauthorizedError(message)
+      return unauthorizedError(message, error)
     }
     case 404: {
-      return notFoundError(property, message, value)
+      return notFoundError(property, message, value, error)
     }
     case 400: {
-      return invalidArgument(property, message, value)
+      return invalidArgument(property, message, value, error)
     }
     case 409: {
-      return alreadyExistsError(property, message, value)
+      return alreadyExistsError(property, message, value, error)
     }
     case 412: {
-      return preconditionFailedError(property, message, value)
+      return preconditionFailedError(property, message, value, error)
     }
     case 403: {
-      return forbiddenError(message)
+      return forbiddenError(message, error)
     }
     default: {
-      return internalError(error.message ?? 'Unknown error')
+      return internalError(apiError.message ?? 'Unknown error')
     }
   }
 }
