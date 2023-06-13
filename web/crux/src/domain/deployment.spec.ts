@@ -57,10 +57,8 @@ describe('DomainDeployment', () => {
   describe('checkDeploymentCopiability', () => {
     it.each(DEPLOYMENT_STATUSES_VERSION_TYPES)(
       'should be true when status is not inProgress or preparing and the version is not rolling (%p and %p)',
-      (status: DeploymentStatusEnum, type: VersionTypeEnum) => {
-        expect(checkDeploymentCopiability(status, type)).toEqual(
-          type !== 'rolling' && status !== 'inProgress' && status !== 'preparing',
-        )
+      (status: DeploymentStatusEnum) => {
+        expect(checkDeploymentCopiability(status)).toEqual(status !== 'inProgress')
       },
     )
 
