@@ -1,6 +1,6 @@
 import { ProjectType } from '@app/models'
 import { expect, Page, test } from '@playwright/test'
-import { DAGENT_NODE } from './utils/common'
+import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG } from './utils/common'
 import { createNode } from './utils/nodes'
 import {
   addDeploymentToVersion,
@@ -33,7 +33,7 @@ test('Can create multiple preparings to the same node with different prefixes', 
   const prefixOther = 'prefix-other'
 
   const { projectId } = await setup(page, nodeName, projectName)
-  await addImageToVersionlessProject(page, projectId, 'nginx')
+  await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
   const one = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOne)
   const other = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOther)
 
@@ -52,7 +52,7 @@ test('Can not create multiple preparings to the same node with the same prefix',
   const prefixOne = 'prefix-one'
 
   const { projectId } = await setup(page, nodeName, projectName)
-  await addImageToVersionlessProject(page, projectId, 'nginx')
+  await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
   const one = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOne)
   await page.goto(one.url)
   await page.waitForSelector(`label:has-text("Prefix: ${prefixOne}")`)
