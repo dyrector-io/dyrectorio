@@ -16,7 +16,6 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoMessage from '@app/elements/dyo-message'
-import { defaultApiErrorHandler } from '@app/errors'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import {
   configToFilters,
@@ -64,7 +63,6 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   const { deployment, instanceId } = props
   const { project, version } = deployment
 
-  const onApiError = defaultApiErrorHandler(t)
   const onWsError = (error: Error) => {
     // eslint-disable-next-line
     console.error('ws', 'edit-deployment', error)
@@ -73,7 +71,6 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
   const [deploymentState] = useDeploymentState({
     deployment,
-    onApiError,
     onWsError,
   })
 

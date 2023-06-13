@@ -6,6 +6,7 @@ import {
   AddImagesMessage,
   ContainerConfigData,
   DeleteImageMessage,
+  DeploymentDetails,
   FetchImageTagsMessage,
   GetImageMessage,
   ImageMessage,
@@ -33,13 +34,13 @@ import {
   WS_TYPE_PATCH_RECEIVED,
   WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS,
   WS_TYPE_REGISTRY_IMAGE_TAGS,
-  DeploymentDetails,
 } from '@app/models'
-import { deploymentApiUrl, versionWsUrl, WS_REGISTRIES } from '@app/routes'
+import { versionWsUrl, WS_REGISTRIES } from '@app/routes'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
 
 import { useState } from 'react'
+import useCopyDeploymentState from '../deployments/use-copy-deployment-state'
 
 // state
 export type ImageTagsMap = { [key: string]: RegistryImageTags } // image key to RegistryImageTags
@@ -141,7 +142,9 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   const [version, setVersion] = useState(optionsVersion)
   const [tags, setTags] = useState<ImageTagsMap>({})
   const [viewMode, setViewMode] = useState<ViewMode>('list')
-  const [copyDeploymentTarget, setCopyDeploymentTarget] = useState<DeploymentDetails>(null)
+  const [copyDeploymentTarget, setCopyDeploymentTarget] = useCopyDeploymentState({
+    handleApiError,
+  })
 
   const versionSock = useWebSocket(versionWsUrl(version.id), {
     onSend: message => {
@@ -320,15 +323,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   }
 
   const copyDeployment = async (deploymentId: string) => {
-    const res = await fetch(deploymentApiUrl(deploymentId))
-    if (!res.ok) {
-      handleApiError(res)
-      return
-    }
-
-    const deployment = (await res.json()) as DeploymentDetails
-
-    setCopyDeploymentTarget(deployment)
+    await setCopyDeploymentTarget(deploymentId)
     setAddSection('copy-deployment')
   }
 
