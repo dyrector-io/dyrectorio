@@ -1,7 +1,7 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoLabel } from '@app/elements/dyo-label'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import Link from 'next/link'
 
 export type BreadcrumbLink = {
@@ -29,7 +29,7 @@ const Breadcrumb = (props: BreadcrumbProps) => {
       <div className="bg-bright w-px h-8 mx-6" />
 
       <Link href={pageUrl} passHref>
-        <Image className="cursor-pointer" src="/breadcrumb_home.svg" alt={t('home')} width={16} height={16} />
+        <DyoIcon className="cursor-pointer" src="/breadcrumb_home.svg" alt={t('home')} size="sm" />
       </Link>
 
       {links?.map((it, index) => {
@@ -38,13 +38,7 @@ const Breadcrumb = (props: BreadcrumbProps) => {
         return (
           <div key={`breadcrumb-link-${index}`} className="flex flex-row max-w-lg">
             <div className="mx-4 mt-1">
-              <Image
-                className="aspect-square"
-                src="/breadcrumb_next.svg"
-                alt={t('rightArrowIcon')}
-                width={16}
-                height={16}
-              />
+              <DyoIcon className="aspect-square" src="/breadcrumb_next.svg" alt={t('rightArrowIcon')} size="sm" />
             </div>
 
             {last ? (

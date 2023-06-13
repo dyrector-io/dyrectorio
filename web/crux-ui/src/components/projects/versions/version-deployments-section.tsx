@@ -3,6 +3,7 @@ import Filters from '@app/components/shared/filters'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
@@ -116,7 +117,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       <>{utcDateToLocale(item.updatedAt)}</>,
       <div className="flex justify-center">
         <Link className="mr-2 inline-block cursor-pointer" href={deploymentUrl(item.id)} passHref>
-          <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} />
+          <DyoIcon src="/eye.svg" alt={t('common:deploy')} size="md" />
         </Link>
         {deployable && (
           <div

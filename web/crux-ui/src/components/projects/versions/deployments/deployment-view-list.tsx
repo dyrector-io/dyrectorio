@@ -1,11 +1,11 @@
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import { Instance } from '@app/models'
 import { instanceConfigUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import Link from 'next/link'
 import { DeploymentState } from './use-deployment-state'
 
@@ -45,7 +45,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
     </div>,
     <span suppressHydrationWarning>{item.image.createdAt ? utcDateToLocale(item.image.createdAt) : 'new'}</span>,
     <Link href={instanceConfigUrl(state.deployment.id, item.id)} passHref>
-      <Image src="/settings.svg" alt={t('common:settings')} width={24} height={24} />
+      <DyoIcon src="/settings.svg" alt={t('common:settings')} size="md" />
     </Link>,
   ]
 

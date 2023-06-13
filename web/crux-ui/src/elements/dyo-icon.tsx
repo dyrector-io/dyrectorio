@@ -28,6 +28,7 @@ const DyoIcon = (props: DyoIconProps) => {
           imageClassName,
           onClick ? 'cursor-pointer' : null,
         )}
+        title={alt}
         src={src}
         alt={alt}
         width={size}

@@ -8,6 +8,7 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
@@ -19,7 +20,6 @@ import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 
@@ -92,21 +92,19 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
     <div className="flex justify-center">
       <div className="mr-2 inline-block">
-        <Image
+        <DyoIcon
           src="/note.svg"
           alt={t('common:deploy')}
-          width={24}
-          height={24}
+          size="md"
           className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
           onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
         />
       </div>
 
-      <Image
+      <DyoIcon
         src="/copy.svg"
         alt={t('common:copy')}
-        width={24}
-        height={24}
+        size="md"
         className={deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
         onClick={() => deploymentIsCopiable(item.status) && setCopyDeploymentTarget(item.id)}
       />
