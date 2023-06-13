@@ -401,49 +401,57 @@ const removeId = <T extends { id: string }>(item: T): Omit<T, 'id'> => {
   return newItem
 }
 
-export const imageConfigToJsonContainerConfig = (config: Partial<ContainerConfigData>): JsonContainerConfig => ({
-  ...config,
-  commands: keyArrayToJson(config.commands),
-  args: keyArrayToJson(config.args),
-  networks: keyArrayToJson(config.networks),
-  customHeaders: keyArrayToJson(config.customHeaders),
-  extraLBAnnotations: keyValueArrayToJson(config.extraLBAnnotations),
-  environment: keyValueArrayToJson(config.environment),
-  capabilities: keyValueArrayToJson(config.capabilities),
-  secrets: config.secrets?.map(it => ({ key: it.key, required: it.required })),
-  portRanges: config.portRanges?.map(it => removeId(it)),
-  ports: config.ports?.map(it => removeId(it)),
-  storage: config.storage,
-  logConfig: config.logConfig
-    ? {
-        ...config.logConfig,
-        options: keyValueArrayToJson(config.logConfig?.options),
-      }
-    : null,
-  initContainers: config.initContainers?.map(container => ({
-    ...removeId(container),
-    command: keyArrayToJson(container.command),
-    args: keyArrayToJson(container.args),
-    environment: keyValueArrayToJson(container.environment),
-    volumes: container.volumes?.map(vit => removeId(vit)),
-  })),
-  volumes: config.volumes?.map(it => removeId(it)),
-  dockerLabels: keyValueArrayToJson(config.dockerLabels),
-  annotations: config.annotations
-    ? {
-        deployment: keyValueArrayToJson(config.annotations.deployment),
-        service: keyValueArrayToJson(config.annotations.service),
-        ingress: keyValueArrayToJson(config.annotations.ingress),
-      }
-    : null,
-  labels: config.labels
-    ? {
-        deployment: keyValueArrayToJson(config.labels.deployment),
-        service: keyValueArrayToJson(config.labels.service),
-        ingress: keyValueArrayToJson(config.labels.ingress),
-      }
-    : null,
-})
+export const imageConfigToJsonContainerConfig = (config: Partial<ContainerConfigData>): JsonContainerConfig => {
+  const jsonConfig = {
+    ...config,
+    commands: keyArrayToJson(config.commands),
+    args: keyArrayToJson(config.args),
+    networks: keyArrayToJson(config.networks),
+    customHeaders: keyArrayToJson(config.customHeaders),
+    extraLBAnnotations: keyValueArrayToJson(config.extraLBAnnotations),
+    environment: keyValueArrayToJson(config.environment),
+    capabilities: keyValueArrayToJson(config.capabilities),
+    secrets: config.secrets?.map(it => ({ key: it.key, required: it.required })),
+    portRanges: config.portRanges?.map(it => removeId(it)),
+    ports: config.ports?.map(it => removeId(it)),
+    storage: config.storage,
+    logConfig: config.logConfig
+      ? {
+          ...config.logConfig,
+          options: keyValueArrayToJson(config.logConfig?.options),
+        }
+      : null,
+    initContainers: config.initContainers?.map(container => ({
+      ...removeId(container),
+      command: keyArrayToJson(container.command),
+      args: keyArrayToJson(container.args),
+      environment: keyValueArrayToJson(container.environment),
+      volumes: container.volumes?.map(vit => removeId(vit)),
+    })),
+    volumes: config.volumes?.map(it => removeId(it)),
+    dockerLabels: keyValueArrayToJson(config.dockerLabels),
+    annotations: config.annotations
+      ? {
+          deployment: keyValueArrayToJson(config.annotations.deployment),
+          service: keyValueArrayToJson(config.annotations.service),
+          ingress: keyValueArrayToJson(config.annotations.ingress),
+        }
+      : null,
+    labels: config.labels
+      ? {
+          deployment: keyValueArrayToJson(config.labels.deployment),
+          service: keyValueArrayToJson(config.labels.service),
+          ingress: keyValueArrayToJson(config.labels.ingress),
+        }
+      : null,
+  }
+
+  const configObject = jsonConfig as any
+  delete configObject.id
+  delete configObject.imageId
+
+  return jsonConfig
+}
 
 export const instanceConfigToJsonInstanceConfig = (
   config: InstanceContainerConfigData,

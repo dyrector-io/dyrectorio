@@ -32,12 +32,6 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
   const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(API_NODES, fetcher)
 
-  useEffect(() => {
-    if (nodes && nodes.length < 1) {
-      toast.error(t('nodeRequired'))
-    }
-  }, [nodes, t])
-
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
@@ -75,6 +69,15 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       setSubmitting(false)
     },
   })
+
+  useEffect(() => {
+    if (nodes && nodes.length < 1) {
+      toast.error(t('nodeRequired'))
+    }
+    if (nodes?.length === 1 && !formik.values.nodeId) {
+      formik.setFieldValue('nodeId', nodes[0].id)
+    }
+  }, [nodes, t])
 
   return (
     <DyoCard className={className}>

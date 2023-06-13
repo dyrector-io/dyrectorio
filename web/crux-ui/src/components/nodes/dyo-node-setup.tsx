@@ -2,6 +2,7 @@ import DyoButton from '@app/elements/dyo-button'
 import DyoChips from '@app/elements/dyo-chips'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoSwitch from '@app/elements/dyo-switch'
@@ -198,16 +199,24 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
       ) : (
         <>
           <div className="flex flex-col">
-            <DyoInput
-              label={t('command')}
-              className="bg-gray-900"
-              readOnly
-              grow
-              defaultValue={node.install.command}
-              onFocus={ev => ev.target.select()}
-            />
+            <DyoLabel className="mt-8 mb-2.5 whitespace-nowrap">{t('command')}</DyoLabel>
 
-            <div className="flex flex-row">
+            <div className="flex flex-row items-center">
+              <DyoInput
+                className="bg-gray-900"
+                containerClassName="flex-1"
+                readOnly
+                grow
+                defaultValue={node.install.command}
+                onFocus={ev => ev.target.select()}
+              />
+
+              <div onClick={onCopyScript} className="cursor-pointer ml-2 h-11 w-11 flex items-center justify-center">
+                <DyoIcon size="md" src="/copy-alt.svg" alt={t('copy')} />
+              </div>
+            </div>
+
+            <div className="flex flex-row mt-2">
               <DyoLabel className="text-white mr-2">{t('scriptExpiresIn')}</DyoLabel>
 
               <TimeLabel textColor="text-dyo-turquoise" seconds={remaining} />
@@ -217,10 +226,6 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
           <div className="flex flex-row mt-4 mb-4">
             <DyoButton className="px-4 py-2 mr-4" secondary onClick={onDiscard}>
               {t('common:discard')}
-            </DyoButton>
-
-            <DyoButton className="px-4 py-2 mr-auto" outlined onClick={onCopyScript}>
-              {t('common:copy')}
             </DyoButton>
           </div>
 

@@ -18,9 +18,18 @@ export const MAILSLURPER_TIMEOUT = 30000 // millis
 export const USER_EMAIL = 'john.doe@example.com'
 export const USER_PASSWORD = 'TestPw23233'
 export const USER_TEAM = "John's Team"
+export const USER_FIRSTNAME = 'John'
+export const USER_LASTNAME = 'Doe'
+export const USER_FULLNAME = `${USER_FIRSTNAME} ${USER_LASTNAME}`
 
 export const DAGENT_NODE = 'dagent-deployable'
 export const SCREENSHOTS_FOLDER = 'screenshots'
+
+export const GHCR_MIRROR = 'ghcr.io/dyrector-io/mirror'
+export const NGINX_IMAGE_NAME = 'nginx'
+export const NGINX_TEST_IMAGE_WITH_TAG = `${NGINX_IMAGE_NAME}:mainline-alpine`
+export const EXPANDED_IMAGE_NAME = `${GHCR_MIRROR}/${NGINX_TEST_IMAGE_WITH_TAG}`
+export const REGISTRY_NAME = 'ghcr for testing'
 
 const replacePort = (address: string, port: string): string => {
   const index = address.lastIndexOf(':')
@@ -90,8 +99,8 @@ export const createUser = async (
       traits: {
         email,
         name: {
-          first: 'John',
-          last: 'Doe',
+          first: USER_FIRSTNAME,
+          last: USER_LASTNAME,
         },
       },
       credentials: {

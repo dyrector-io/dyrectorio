@@ -1,7 +1,7 @@
 import { ProjectType } from '@app/models'
 import { deploymentUrl, imageConfigUrl, ROUTE_DEPLOYMENTS, versionWsUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
-import { waitForURLExcept } from './utils/common'
+import { NGINX_TEST_IMAGE_WITH_TAG, waitForURLExcept } from './utils/common'
 import { deployWithDagent } from './utils/node-helper'
 import { createNode } from './utils/nodes'
 import {
@@ -36,7 +36,7 @@ test.describe('Versionless Project', () => {
     const prefix = projectName
 
     const { projectId } = await setup(page, nodeName, projectName)
-    await addImageToVersionlessProject(page, projectId, 'nginx')
+    await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
     await addDeploymentToVersionlessProject(page, projectId, nodeName, prefix)
 
     await page.goto(ROUTE_DEPLOYMENTS)
@@ -63,7 +63,7 @@ test.describe('Versionless Project', () => {
     const { projectId } = await setup(page, nodeName, projectName)
     await createNode(page, otherNode)
 
-    await addImageToVersionlessProject(page, projectId, 'nginx')
+    await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
     const { id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefix)
 
     await page.goto(deploymentUrl(deploymentId))
@@ -88,7 +88,7 @@ test.describe('Versionless Project', () => {
 
     const { projectId } = await setup(page, nodeName, projectName)
 
-    await addImageToVersionlessProject(page, projectId, 'nginx')
+    await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
     const { id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefix)
 
     await page.goto(deploymentUrl(deploymentId))
@@ -115,7 +115,7 @@ test.describe('Versioned Project', () => {
 
     const { projectId } = await setup(page, nodeName, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '1.0.0', 'Incremental')
-    await createImage(page, projectId, versionId, 'nginx')
+    await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
     await addDeploymentToVersion(page, projectId, versionId, prefix)
 
     await page.goto(ROUTE_DEPLOYMENTS)
@@ -143,7 +143,7 @@ test.describe('Versioned Project', () => {
 
     const { projectId } = await setup(page, nodeName, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
-    await createImage(page, projectId, versionId, 'nginx')
+    await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
     const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, nodeName, prefix)
     await page.goto(deploymentUrl(deploymentId))
@@ -168,7 +168,7 @@ test.describe('Versioned Project', () => {
 
     const { projectId } = await setup(page, nodeName, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
-    await createImage(page, projectId, versionId, 'nginx')
+    await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
     const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, nodeName, prefix)
 
     await page.goto(deploymentUrl(deploymentId))
@@ -192,7 +192,7 @@ test.describe('Versioned Project', () => {
 
     const projectId = await createProject(page, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
-    const imageId = await createImage(page, projectId, versionId, 'nginx')
+    const imageId = await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocket(page)
     await page.goto(imageConfigUrl(projectId, versionId, imageId))
