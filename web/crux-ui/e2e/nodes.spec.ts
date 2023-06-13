@@ -1,6 +1,6 @@
 import { deploymentDeployUrl, nodeContainerLogUrl, ROUTE_NODES } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { DAGENT_NODE, screenshotPath } from './utils/common'
+import { DAGENT_NODE, NGINX_TEST_IMAGE, screenshotPath } from './utils/common'
 import { addDeploymentToVersionlessProject, addImageToVersionlessProject, createProject } from './utils/projects'
 
 test('Install dagent should be successful', async ({ page }) => {
@@ -111,7 +111,7 @@ test('Generate script should show script type selector for Docker', async ({ pag
 
 test('Container log should appear after a successful deployment', async ({ page }) => {
   const prefix = 'deploy-log'
-  const imageName = 'nginx'
+  const imageName = NGINX_TEST_IMAGE
 
   const projectId = await createProject(page, 'deploy-log-test', 'versionless')
   await addImageToVersionlessProject(page, projectId, imageName)
@@ -143,7 +143,7 @@ test('Container log should appear after a successful deployment', async ({ page 
 
 test('Container log should appear on a node container', async ({ page }) => {
   const prefix = 'node-deploy-log'
-  const imageName = 'nginx'
+  const imageName = NGINX_TEST_IMAGE
 
   const porjectId = await createProject(page, 'node-deploy-log-test', 'versionless')
   await addImageToVersionlessProject(page, porjectId, imageName)

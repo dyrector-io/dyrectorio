@@ -22,6 +22,9 @@ export const USER_TEAM = "John's Team"
 export const DAGENT_NODE = 'dagent-deployable'
 export const SCREENSHOTS_FOLDER = 'screenshots'
 
+export const GHCR_MIRROR = 'ghcr.io/dyrector-io/mirror'
+export const NGINX_TEST_IMAGE = 'nginx:mainline-stable'
+
 const replacePort = (address: string, port: string): string => {
   const index = address.lastIndexOf(':')
   const url = address.substring(0, index)

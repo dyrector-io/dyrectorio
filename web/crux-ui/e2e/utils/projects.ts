@@ -54,13 +54,10 @@ export const createImage = async (page: Page, projectId: string, versionId: stri
   const addImage = await page.waitForSelector('button:has-text("Add image")')
   await addImage.click()
 
-  const registry = await page.waitForSelector(`button:has-text("Docker Hub Library")`)
+  const registry = await page.waitForSelector(`button:has-text("ghcr for testing")`)
   await registry.click()
 
-  await page.locator('input[name=imageName] >> visible=true').type(image)
-
-  const imageItem = await page.waitForSelector(`label:has-text("${image}")`)
-  await imageItem.click()
+  await page.locator('input[name=imageName] >> visible=true').fill(image)
 
   const addButton = await page.waitForSelector('button:has-text("Add")')
   await addButton.click()
@@ -81,7 +78,7 @@ export const addImageToVersion = async (page: Page, projectId: string, versionId
   await page.locator('button:has-text("Add image")').click()
   await expect(page.locator('h4:has-text("Add image")')).toHaveCount(1)
 
-  const registry = await page.waitForSelector(`button:has-text("Docker Hub Library")`)
+  const registry = await page.waitForSelector(`button:has-text("ghcr for testing")`)
   await registry.click()
 
   await page.locator('input[name=imageName] >> visible=true').type(image)
@@ -94,23 +91,32 @@ export const addImageToVersion = async (page: Page, projectId: string, versionId
   await page.waitForSelector(`a:has-text("${image}")`)
 }
 
+export const addUncheckedImageToVersion = async (page: Page, projectId: string, versionId: string, image: string) => {
+  await page.goto(versionUrl(projectId, versionId))
+
+  await page.locator('button:has-text("Add image")').click()
+  await expect(page.locator('h4:has-text("Add image")')).toHaveCount(1)
+
+  const registry = await page.waitForSelector(`button:has-text("ghcr for testing")`)
+  await registry.click()
+
+  await page.locator('input[name=imageName] >> visible=true').fill(image)
+  await page.locator('button:has-text("Add")').click()
+  await page.waitForSelector(`div:has-text("${image}")`)
+}
+
 export const addImageToVersionlessProject = async (page: Page, projectId: string, image: string) => {
   await page.goto(projectUrl(projectId))
 
   await page.locator('button:has-text("Add image")').click()
   await expect(page.locator('h4:has-text("Add image")')).toHaveCount(1)
 
-  const registry = await page.waitForSelector(`button:has-text("Docker Hub Library")`)
+  const registry = await page.waitForSelector(`button:has-text("ghcr for testing")`)
   await registry.click()
 
-  await page.locator('input[name=imageName] >> visible=true').type(image)
-
-  const imageItem = await page.waitForSelector(`label:has-text("${image}")`)
-  await imageItem.click()
-
+  await page.locator('input[name=imageName] >> visible=true').fill(image)
   await page.locator('button:has-text("Add")').click()
-
-  await page.waitForSelector(`a:has-text("${image}")`)
+  await page.waitForSelector(`div:has-text("${image}")`)
 }
 
 export const addDeploymentToVersionlessProject = async (

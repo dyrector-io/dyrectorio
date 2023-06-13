@@ -41,7 +41,7 @@ func TestPullImage(t *testing.T) {
 		})
 	}
 
-	err = imageHelper.Pull(context.Background(), nil, "docker.io/library/nginx:latest", "")
+	err = imageHelper.Pull(context.Background(), nil, "ghcr.io/dyrector-io/mirror/nginx:mainline-stable", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +70,7 @@ func TestNewPull(t *testing.T) {
 
 func TestPullFullQualifiedImage(t *testing.T) {
 	ctx := context.Background()
-	img := "nginx:latest"
+	img := "ghcr.io/dyrector-io/mirror/nginx:mainline-stable"
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
 	log.Logger = log.Logger.Level(zerolog.InfoLevel)
 

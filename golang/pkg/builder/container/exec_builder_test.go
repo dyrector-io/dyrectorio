@@ -22,7 +22,7 @@ func TestExecBuilder(t *testing.T) {
 	containerBuilder := containerbuilder.NewDockerBuilder(context.Background()).
 		WithName("test1").
 		WithLogWriter(logger).
-		WithImage("docker.io/library/nginx:latest")
+		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-stable")
 
 	cont, err := containerBuilder.CreateAndStart()
 	assert.Nil(t, err)

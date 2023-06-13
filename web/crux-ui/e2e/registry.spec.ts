@@ -69,7 +69,7 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   await expect(page.locator('label[for=imageName]')).toContainText('Image name and tag')
 
   await clearInput(page.locator('input[name=imageName]'))
-  await page.locator('input[name=imageName]').type('nginx:latest:test')
+  await page.locator('input[name=imageName]').type('ghcr.io/dyrector-io/mirror/nginx:mainline-stable:test')
   await expect(page.locator('input[name=imageName] >> xpath=../p')).toContainText(
     "Invalid format, please use 'NAME[:TAG]'",
   )
@@ -88,7 +88,7 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   await expect(page.locator('button:text-is("Add")')).toBeVisible()
 
   await clearInput(page.locator('input[name=imageName]'))
-  await page.locator('input[name=imageName]').type('nginx:latest')
+  await page.locator('input[name=imageName]').type('ghcr.io/dyrector-io/mirror/nginx:mainline-stable')
   await expect(page.locator('input[name=imageName] >> xpath=../p')).not.toBeVisible()
   await expect(page.locator('button:text-is("Add")')).toBeVisible()
 
