@@ -1,3 +1,4 @@
+import { UID_MAX } from '@app/const'
 import {
   ContainerConfigExposeStrategy,
   ContainerDeploymentStrategyType,
@@ -284,7 +285,7 @@ const containerConfigBaseSchema = yup.object().shape({
   environments: uniqueKeyValuesSchema.default([]).nullable(),
   ingress: ingressRule,
   expose: exposeRule,
-  user: yup.number().default(null).min(-1).max(2147483647).nullable(),
+  user: yup.number().default(null).min(-1).max(UID_MAX).nullable(),
   tty: yup.boolean().default(false).required(),
   configContainer: configContainerRule,
   ports: portConfigRule,
