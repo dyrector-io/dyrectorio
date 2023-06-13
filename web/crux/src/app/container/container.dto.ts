@@ -16,6 +16,7 @@ import {
   PORT_MAX,
   PORT_MIN,
 } from 'src/domain/container'
+import { UID_MAX } from 'src/shared/const'
 
 export class UniqueKeyDto {
   @IsUUID()
@@ -274,7 +275,7 @@ export class ContainerConfigDto {
   @IsOptional()
   @IsInt()
   @Min(-1)
-  @Max(2147483647)
+  @Max(UID_MAX)
   user?: number
 
   @IsBoolean()

@@ -24,3 +24,5 @@ export const API_CREATED_LOCATION_HEADERS = {
     },
   },
 }
+
+export const UID_MAX = 2147483647

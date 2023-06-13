@@ -1,9 +1,9 @@
-/*
-  Warnings:
-
-  - Made the column `user` on table `ContainerConfig` required. This step will fail if there are existing NULL values in that column.
-
-*/
 -- AlterTable
-ALTER TABLE "ContainerConfig" ALTER COLUMN "user" SET NOT NULL,
-ALTER COLUMN "user" SET DEFAULT -1;
+ALTER TABLE "ContainerConfig" ALTER COLUMN "user" SET DEFAULT -1;
+
+UPDATE "ContainerConfig"
+SET "user" = -1
+WHERE "user" IS NULL;
+
+ALTER TABLE "ContainerConfig" ALTER COLUMN "user" SET NOT NULL;
+

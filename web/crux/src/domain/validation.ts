@@ -1,5 +1,6 @@
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 import * as yup from 'yup'
+import { UID_MAX } from 'src/shared/const'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
@@ -294,7 +295,7 @@ export const containerConfigSchema = yup.object().shape({
   secrets: uniqueSecretKeyValuesSchema.default([]).nullable(),
   ingress: ingressRule,
   expose: exposeRule,
-  user: yup.number().default(null).min(-1).max(2147483647).nullable(),
+  user: yup.number().default(null).min(-1).max(UID_MAX).nullable(),
   tty: yup.boolean().default(false).required(),
   configContainer: configContainerRule,
   ports: portConfigRule,
@@ -332,7 +333,7 @@ export const instanceContainerConfigSchema = yup.object().shape({
   secrets: uniqueKeyValuesSchema.default([]).nullable(),
   ingress: ingressRule.nullable(),
   expose: instanceExposeRule,
-  user: yup.number().default(null).min(-1).max(2147483647).nullable(),
+  user: yup.number().default(null).min(-1).max(UID_MAX).nullable(),
   tty: yup.boolean().default(false).nullable(),
   configContainer: configContainerRule.nullable(),
   ports: portConfigRule.nullable(),
