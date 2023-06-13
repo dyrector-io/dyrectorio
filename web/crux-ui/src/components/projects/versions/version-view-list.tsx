@@ -1,4 +1,5 @@
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
@@ -7,7 +8,6 @@ import { imageConfigUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import EditImageTags from './images/edit-image-tags'
@@ -70,27 +70,25 @@ const VersionViewList = (props: VersionViewListProps) => {
     <span suppressHydrationWarning>{item.createdAt ? utcDateToLocale(item.createdAt) : t('common:new')}</span>,
     <div className="flex flex-wrap justify-center">
       <div className="inline-block">
-        <Image
+        <DyoIcon
           className="cursor-pointer"
           src="/archive.svg"
           alt={t('tag')}
-          width={24}
-          height={24}
+          size="md"
           onClick={() => onOpenTagsDialog(item)}
         />
       </div>
       <div className="inline-block">
-        <Image
+        <DyoIcon
           className="cursor-pointer"
           alt={t('common:delete')}
           src="/trash-can.svg"
-          width={24}
-          height={24}
+          size="md"
           onClick={() => onDelete(item)}
         />
       </div>
       <Link href={imageConfigUrl(state.projectId, state.versionId, item.id)} passHref>
-        <Image src="/settings.svg" alt={t('common:settings')} width={24} height={24} />
+        <DyoIcon src="/settings.svg" alt={t('common:settings')} size="md" />
       </Link>
     </div>,
   ]

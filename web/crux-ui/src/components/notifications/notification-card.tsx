@@ -1,10 +1,10 @@
 import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { Notification } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import Link from 'next/link'
 import NotificationStatusTag from './notification-status-tag'
 import NotificationTypeTag from './notification-type-tag'
@@ -20,7 +20,7 @@ const NotificationCard = (props: NotificationCardProps) => {
   const { t } = useTranslation('notifications')
 
   const getDefaultImage = (
-    <Image className="aspect-square" src="/notification.svg" width={18} height={20} alt={t('altNotificationPicture')} />
+    <DyoIcon className="aspect-square" src="/notification.svg" size="sm" alt={t('altNotificationPicture')} />
   )
 
   const title = (

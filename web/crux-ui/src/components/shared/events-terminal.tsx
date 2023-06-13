@@ -1,5 +1,5 @@
+import DyoIcon from '@app/elements/dyo-icon'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 
 const SCROLL_LOCK_MARGIN = 10
@@ -66,7 +66,7 @@ const EventsTerminal = <T,>(props: EventsTerminalProps<T>) => {
           onClick={scrollToBottom}
           className="absolute right-0 bottom-0 mr-6 mb-3 cursor-pointer animate-bounce flex items-center justify-center"
         >
-          <Image src="/arrow_down.svg" alt={t('down')} width="24" height="24" />
+          <DyoIcon src="/arrow_down.svg" alt={t('down')} size="md" />
         </div>
       )}
     </div>

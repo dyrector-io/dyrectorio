@@ -1,4 +1,5 @@
 import DyoButton from '@app/elements/dyo-button'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -98,7 +99,7 @@ const Paginator = (props: PaginatorProps) => {
           thin
           disabled={disabled}
         >
-          <Image className="aspect-square h-6 m-auto" src="/carets_left.svg" width={24} height={24} alt="carets left" />
+          <DyoIcon className="aspect-square h-6 m-auto" src="/carets_left.svg" size="md" alt="carets left" />
         </DyoButton>
         <DyoButton
           className="w-8 text-xl"
@@ -107,7 +108,7 @@ const Paginator = (props: PaginatorProps) => {
           thin
           disabled={disabled}
         >
-          <Image className="aspect-square h-6 m-auto" src="/caret_left.svg" width={24} height={24} alt="caret left" />
+          <DyoIcon className="aspect-square h-6 m-auto" src="/caret_left.svg" size="md" alt="caret left" />
         </DyoButton>
         {pagination.pageNumber - 2 >= 0 && (
           <DyoButton
@@ -167,7 +168,7 @@ const Paginator = (props: PaginatorProps) => {
           thin
           disabled={disabled}
         >
-          <Image className="aspect-square h-6 m-auto" src="/caret_right.svg" width={24} height={24} alt="caret right" />
+          <DyoIcon className="aspect-square h-6 m-auto" src="/caret_right.svg" size="md" alt="caret right" />
         </DyoButton>
         <DyoButton
           className="w-8 text-xl"

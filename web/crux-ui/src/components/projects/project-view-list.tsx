@@ -1,11 +1,11 @@
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import { Project } from '@app/models'
 import { projectUrl } from '@app/routes'
 import { auditToLocaleDate } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import Link from 'next/link'
 import ProjectTypeTag from './project-type-tag'
 
@@ -43,7 +43,7 @@ const ProjectViewList = (props: ProjectViewListProps) => {
       <ProjectTypeTag className="w-fit m-auto" type={item.type} />
     </div>,
     <Link href={projectUrl(item.id)} passHref>
-      <Image src="/eye.svg" alt={t('common:view')} width={24} height={24} />
+      <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
     </Link>,
   ]
 

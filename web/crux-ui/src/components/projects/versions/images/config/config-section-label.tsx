@@ -1,6 +1,6 @@
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoLabel } from '@app/elements/dyo-label'
 import clsx from 'clsx'
-import Image from 'next/image'
 
 type ConfigSectionLabelProps = {
   disabled: boolean
@@ -18,11 +18,10 @@ const ConfigSectionLabel = (props: ConfigSectionLabelProps) => {
       <DyoLabel className={labelClassName ?? 'text-bright font-semibold tracking-wide mb-2'}>{children}</DyoLabel>
 
       {disabled ? null : (
-        <Image
+        <DyoIcon
           className="w-6 h-6 cursor-pointer ml-2"
           src="/refresh.svg"
-          width={24}
-          height={24}
+          size="md"
           alt="reset"
           onClick={onResetSection}
         />

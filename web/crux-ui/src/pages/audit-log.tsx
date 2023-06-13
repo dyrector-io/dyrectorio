@@ -7,6 +7,7 @@ import Paginator, { PaginationSettings } from '@app/components/shared/paginator'
 import UserDefaultAvatar from '@app/components/team/user-default-avatar'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoDatePicker from '@app/elements/dyo-date-picker'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { useThrottling } from '@app/hooks/use-throttleing'
@@ -14,7 +15,6 @@ import { AuditLog, AuditLogList, AuditLogQuery, auditToMethod } from '@app/model
 import { auditApiUrl, ROUTE_AUDIT } from '@app/routes'
 import { getEndOfToday, utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 type AuditFilter = {
@@ -117,12 +117,11 @@ const AuditLogPage = () => {
       {JSON.stringify(log.data)}
     </div>,
     <div className="text-center">
-      <Image
+      <DyoIcon
         className="aspect-square cursor-pointer"
         src="/eye.svg"
         alt={t('common:view')}
-        width={24}
-        height={24}
+        size="md"
         onClick={() => onShowInfoClick(log)}
       />
     </div>,
