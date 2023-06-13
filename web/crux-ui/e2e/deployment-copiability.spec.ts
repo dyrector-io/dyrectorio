@@ -1,7 +1,7 @@
 import { ProjectType } from '@app/models'
 import { deploymentUrl, projectUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
-import { DAGENT_NODE, NGINX_TEST_IMAGE, waitForURLExcept } from './utils/common'
+import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, waitForURLExcept } from './utils/common'
 import { deployWithDagent } from './utils/node-helper'
 import { createNode } from './utils/nodes'
 import {
@@ -34,7 +34,7 @@ test.describe('Versionless Project', () => {
     const projectName = 'project-copy-test-1'
 
     const { projectId } = await setup(page, nodeName, projectName)
-    await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE)
+    await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
     await addDeploymentToVersionlessProject(page, projectId, nodeName, null)
 
     await page.goto(ROUTE_DEPLOYMENTS)
@@ -48,7 +48,7 @@ test.describe('Versionless Project', () => {
     const projectName = 'project-copy-test-2'
 
     const { projectId } = await setup(page, nodeName, projectName)
-    await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE)
+    await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
     await addDeploymentToVersionlessProject(page, projectId, nodeName, null)
 
     await page.goto(projectUrl(projectId))
@@ -64,7 +64,7 @@ test.describe('Versionless Project', () => {
     const projectName = 'project-copy-test-3'
 
     const { projectId } = await setup(page, DAGENT_NODE, projectName)
-    await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE)
+    await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
     const { url } = await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, null)
 
     await page.goto(url)
@@ -78,7 +78,7 @@ test.describe('Versionless Project', () => {
     const projectName = 'project-copy-test-4'
 
     const projectId = await createProject(page, projectName, 'versionless')
-    await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE)
+    await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
 
     const prefix = 'succ-versionless-copy'
 
