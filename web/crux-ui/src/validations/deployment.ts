@@ -14,3 +14,5 @@ export const createDeploymentSchema = updateDeploymentSchema.concat(
     nodeId: yup.mixed().nullable().required().label('node'),
   }),
 )
+
+export const copyDeploymentSchema = createDeploymentSchema

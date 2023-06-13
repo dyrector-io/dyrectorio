@@ -4,7 +4,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
-import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import DyoModal from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
@@ -28,7 +28,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import DeploymentStatusTag from './deployments/deployment-status-tag'
-import useCopyDeploymentModal from './deployments/use-copy-deployment-confirmation-modal'
 
 export const startDeployment = async (
   router: NextRouter,
@@ -51,12 +50,13 @@ export const startDeployment = async (
 
 interface VersionDeploymentsSectionProps {
   version: VersionDetails
+  onCopyDeployment: (deploymentId: string) => void
 }
 
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
 
 const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
-  const { version } = props
+  const { version, onCopyDeployment } = props
 
   const { t } = useTranslation('versions')
 
@@ -64,23 +64,9 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const [confirmationModal, copyDeployment] = useCopyDeploymentModal(handleApiError)
-
   const [showInfo, setShowInfo] = useState<DeploymentByVersion>(null)
 
   const onDeploy = (deploymentId: string) => startDeployment(router, handleApiError, deploymentId)
-
-  const onCopyDeployment = async (deploymentId: string) => {
-    const url = await copyDeployment({
-      deploymentId,
-    })
-
-    if (!url) {
-      return
-    }
-
-    await router.push(url)
-  }
 
   const filters = useFilters<DeploymentByVersion, DeploymentFilter>({
     filters: [
@@ -161,16 +147,16 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           />
         </div>
 
-        <Image
-          src="/copy.svg"
-          alt={t('common:copy')}
-          width={24}
-          height={24}
-          className={
-            deploymentIsCopiable(item.status, version.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'
-          }
-          onClick={() => deploymentIsCopiable(item.status, version.type) && onCopyDeployment(item.id)}
-        />
+        {deploymentIsCopiable(item.status) ? (
+          <Image
+            src="/copy.svg"
+            alt={t('common:copy')}
+            width={24}
+            height={24}
+            className={deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+            onClick={() => onCopyDeployment(item.id)}
+          />
+        ) : null}
       </div>,
     ]
     /* eslint-enable react/jsx-key */
@@ -221,8 +207,6 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           <p className="text-bright mt-8 break-all overflow-y-auto">{showInfo.note}</p>
         </DyoModal>
       )}
-
-      <DyoConfirmationModal config={confirmationModal} className="w-1/4" confirmColor="bg-error-red" />
     </>
   )
 }
