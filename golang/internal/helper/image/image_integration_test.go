@@ -5,6 +5,7 @@ package image_test
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -29,7 +30,7 @@ func TestPullImage(t *testing.T) {
 	}
 
 	images, err := cli.ImageList(context.Background(), types.ImageListOptions{
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: "nginx"}),
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: "ghcr.io/dyrector-io/mirror/nginx"}),
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -41,13 +42,13 @@ func TestPullImage(t *testing.T) {
 		})
 	}
 
-	err = imageHelper.Pull(context.Background(), nil, "ghcr.io/dyrector-io/mirror/nginx:mainline-stable", "")
+	err = imageHelper.Pull(context.Background(), nil, nginxImage, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	images, err = cli.ImageList(context.Background(), types.ImageListOptions{
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: "nginx"}),
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: "ghcr.io/dyrector-io/mirror/nginx"}),
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -62,15 +63,13 @@ func logAllIncoming(j jsonmessage.JSONMessage) {
 
 func TestNewPull(t *testing.T) {
 	ctx := context.Background()
-	img := "nginx:alpine"
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
-	err := image.CustomImagePull(ctx, img, "", false, false, cli.DockerPullProgressDisplayer)
+	err := image.CustomImagePull(ctx, nginxImage, "", false, false, cli.DockerPullProgressDisplayer)
 	assert.Nilf(t, err, "expected err to be nil for a valid image name")
 }
 
 func TestPullFullQualifiedImage(t *testing.T) {
 	ctx := context.Background()
-	img := "ghcr.io/dyrector-io/mirror/nginx:mainline-stable"
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
 	log.Logger = log.Logger.Level(zerolog.InfoLevel)
 
@@ -81,18 +80,18 @@ func TestPullFullQualifiedImage(t *testing.T) {
 		return nil
 	})
 
-	err := image.CustomImagePull(ctx, img, "", false, false, cb)
+	err := image.CustomImagePull(ctx, nginxImage, "", false, false, cb)
 	assert.Nilf(t, err, "expected err to be nil for a valid image name")
 	assert.Truef(t, called, "display func is called")
 
-	exists, err := image.Exists(ctx, nil, img)
+	exists, err := image.Exists(ctx, nil, nginxImage)
 	assert.Nilf(t, err, "expected err to be nil for a valid image name")
 	assert.Truef(t, exists, "expected image to exist locally after pull")
 }
 
 func TestPrettyPullFullQualifiedInvalidImage(t *testing.T) {
 	ctx := context.Background()
-	img := "nginx:invalid-non-existent-tag"
+	img := fmt.Sprintf("%s:nonexistenttag", nginxImageNoTag)
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
 
 	err := image.CustomImagePull(ctx, img, "", false, false, cli.DockerPullProgressDisplayer)

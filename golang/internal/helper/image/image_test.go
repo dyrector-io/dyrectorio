@@ -12,6 +12,11 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
+const (
+	nginxImage      = "ghcr.io/dyrector-io/mirror/nginx:mainline-alpine"
+	nginxImageNoTag = "ghcr.io/dyrector-io/mirror/nginx"
+)
+
 func TestRegistryUrl(t *testing.T) {
 	auth := &imageHelper.RegistryAuth{
 		URL: "test",
@@ -77,7 +82,7 @@ func TestProtoRegistryUrlEmpty(t *testing.T) {
 func TestExpandImageName(t *testing.T) {
 	name, err := imageHelper.ExpandImageName("nginx")
 	assert.NoError(t, err)
-	assert.Equal(t, "ghcr.io/dyrector-io/mirror/nginx:mainline-stable", name)
+	assert.Equal(t, "ghcr.io/dyrector-io/mirror/nginx:mainline-alpine", name)
 
 	name, err = imageHelper.ExpandImageName("nginx:tag")
 	assert.NoError(t, err)
@@ -85,7 +90,7 @@ func TestExpandImageName(t *testing.T) {
 
 	name, err = imageHelper.ExpandImageName("my-reg.com/library/nginx")
 	assert.NoError(t, err)
-	assert.Equal(t, "my-reg.com/library/ghcr.io/dyrector-io/mirror/nginx:mainline-stable", name)
+	assert.Equal(t, "my-reg.com/library/ghcr.io/dyrector-io/mirror/nginx:mainline-alpine", name)
 
 	name, err = imageHelper.ExpandImageName("my-reg.com/library/nginx:my-tag")
 	assert.NoError(t, err)

@@ -23,7 +23,7 @@ export const DAGENT_NODE = 'dagent-deployable'
 export const SCREENSHOTS_FOLDER = 'screenshots'
 
 export const GHCR_MIRROR = 'ghcr.io/dyrector-io/mirror'
-export const NGINX_TEST_IMAGE = 'nginx:mainline-stable'
+export const NGINX_TEST_IMAGE = 'nginx:mainline-alpine'
 
 const replacePort = (address: string, port: string): string => {
   const index = address.lastIndexOf(':')

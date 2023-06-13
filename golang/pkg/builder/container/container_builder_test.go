@@ -67,7 +67,7 @@ func TestNameWithBuilder(t *testing.T) {
 	var _ containerbuilder.Builder = (*containerbuilder.DockerContainerBuilder)(nil)
 
 	builder := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-stable")
+		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-alpine")
 
 	cont, err := builder.CreateAndStart()
 	defer containerCleanup(cont)
@@ -97,7 +97,7 @@ func TestEnvPortsLabelsRestartPolicySettings(t *testing.T) {
 			"LABEL2": "1234",
 		}).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
-		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-stable").
+		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-alpine").
 		CreateAndStart()
 
 	defer containerCleanup(cont)
@@ -134,7 +134,7 @@ func TestLogging(t *testing.T) {
 	}
 
 	cont, err := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-stable").
+		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-alpine").
 		WithLogWriter(logger).CreateAndStart()
 
 	defer containerCleanup(cont)
@@ -146,7 +146,7 @@ func TestHooks(t *testing.T) {
 	order := []string{}
 
 	cont, err := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-stable").
+		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-alpine").
 		WithPreCreateHooks(hookCallback(func() {
 			order = append(order, "pre-create")
 		})).
@@ -177,7 +177,7 @@ func TestNetwork(t *testing.T) {
 	}
 
 	cont, err := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-stable").
+		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-alpine").
 		WithName("prefix-container").
 		WithLogWriter(logger).
 		WithNetworkMode("prefix").
@@ -195,7 +195,7 @@ func TestAutoRemove(t *testing.T) {
 
 	_, waitResult, err := baseBuilder(ctx).
 		WithName("prefix-container").
-		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-stable").
+		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-alpine").
 		WithCmd([]string{"echo", "test"}).
 		WithAutoRemove(true).CreateAndStartWaitUntilExit()
 	assert.NoError(t, err)
@@ -221,7 +221,7 @@ func TestAutoRemove(t *testing.T) {
 
 func TestConflict(t *testing.T) {
 	cont1, err := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-stable").
+		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-alpine").
 		WithName("conflicting-container").
 		WithLabels(map[string]string{"TEST": "OLD_CONTAINER"}).
 		CreateAndStart()
@@ -230,7 +230,7 @@ func TestConflict(t *testing.T) {
 	assert.NoError(t, err)
 
 	cont2, err := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-stable").
+		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-alpine").
 		WithName("conflicting-container").
 		WithLabels(map[string]string{"TEST": "NEW_CONTAINER"}).
 		WithoutConflict().
