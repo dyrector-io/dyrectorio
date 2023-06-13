@@ -6,28 +6,45 @@ import path from 'path'
 
 dotenv.config()
 
-const baseURL = process.env.E2E_BASE_URL || 'http://localhost:8000'
+export const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:8000'
+export const STORAGE_STATE = path.join(__dirname, 'storageState.json')
+
+const DEBUG = !!process.env.DEBUG || !!process.env.PWDEBUG
+
+const createProject = (name: string, testMatch: string | RegExp | (string | RegExp)[], deps?: string[]) => {
+  return {
+    name,
+    testMatch,
+    // If running in DEBUG mode only depend on 'global-setup' so any test can run without running the whole project structure
+    dependencies: DEBUG ? ['global-setup'] : deps ?? ['global-setup'],
+    use: {
+      ...devices['Desktop Chromium'],
+      storageState: STORAGE_STATE,
+    },
+  }
+}
 
 // Reference: https://playwright.dev/docs/test-configuration
 const config: PlaywrightTestConfig = {
-  globalSetup: path.join(__dirname, 'e2e', 'utils', 'global-setup.ts'),
-  globalTeardown: path.join(__dirname, 'e2e', 'utils', 'global-teardown.ts'),
-  timeout: 2 * 60 * 1000, // 2 minutes
-  expect: { timeout: 10 * 1000 }, // We double the default(5s), since some test runners are not that fast
-  testDir: path.join(__dirname, 'e2e'),
+  timeout: 2 * 60 * 1000, // 2 min
+  expect: { timeout: 10 * 1000 }, // We double the default(5s), since some test runners are not THAT fast :)
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: path.join(__dirname, 'e2e_results/'),
+  testDir: path.join(__dirname, 'e2e'),
   webServer: {
     command: 'npm run start:prod',
-    url: baseURL,
+    url: BASE_URL,
     timeout: 60 * 1000, // 1 min
     reuseExistingServer: true,
   },
   workers: process.env.CI ? 4 : undefined,
+  // Terminate tests if any one of them fails
+  maxFailures: 1,
+  retries: 0,
   use: {
     // Use baseURL so to make navigations relative.
     // More information: https://playwright.dev/docs/api/class-testoptions#test-options-base-url
-    baseURL,
+    baseURL: BASE_URL,
 
     trace: {
       // Retry a test if its failing with enabled tracing. This allows you to analyse the DOM, console logs, network traffic etc.
@@ -41,16 +58,41 @@ const config: PlaywrightTestConfig = {
     // contextOptions: {
     //   ignoreHTTPSErrors: true,
     // },
-    storageState: 'storageState.json',
     viewport: { width: 1920, height: 1080 },
   },
   projects: [
     {
-      name: 'Desktop Chromium',
+      name: 'global-setup',
+      testMatch: /global\.setup\.spec\.ts/,
+      teardown: 'global-teardown',
+    },
+    {
+      name: 'global-teardown',
+      testMatch: /global\.teardown\.spec\.ts/,
+      use: {
+        storageState: STORAGE_STATE,
+      },
+    },
+    {
+      name: 'test-without-login',
+      testMatch: /without\-login\/.*spec\.ts/,
+      dependencies: ['global-setup'],
       use: {
         ...devices['Desktop Chromium'],
       },
     },
+    createProject('test-registry', 'with-login/registry.spec.ts'),
+    createProject('test-notification', 'with-login/notification.spec.ts'),
+    createProject('test-nodes', 'with-login/nodes.spec.ts'),
+    createProject('test-template', 'with-login/template.spec.ts'),
+    createProject('test-version', 'with-login/version.spec.ts'),
+    createProject('test-image-config', 'with-login/image-config.spec.ts', [
+      'test-registry',
+      'test-template',
+      'test-version',
+    ]),
+    createProject('test-deployment', /with-login\/deployment*\.spec\.ts/, ['test-image-config', 'test-nodes']),
+    createProject('test-dagent-deploy', 'with-login/nodes-deploy.spec.ts', ['test-deployment']),
   ],
 }
 

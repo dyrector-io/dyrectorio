@@ -1,9 +1,9 @@
 import { ProjectType } from '@app/models'
 import { deploymentUrl, imageConfigUrl, ROUTE_DEPLOYMENTS, versionWsUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
-import { NGINX_TEST_IMAGE_WITH_TAG, waitForURLExcept } from './utils/common'
-import { deployWithDagent } from './utils/node-helper'
-import { createNode } from './utils/nodes'
+import { NGINX_TEST_IMAGE_WITH_TAG, waitForURLExcept } from '../utils/common'
+import { deployWithDagent } from '../utils/node-helper'
+import { createNode } from '../utils/nodes'
 import {
   addDeploymentToVersion,
   addDeploymentToVersionlessProject,
@@ -11,8 +11,8 @@ import {
   createImage,
   createProject,
   createVersion,
-} from './utils/projects'
-import { waitSocket, wsPatchSent } from './utils/websocket'
+} from '../utils/projects'
+import { waitSocket, wsPatchSent } from '../utils/websocket'
 
 const setup = async (
   page: Page,

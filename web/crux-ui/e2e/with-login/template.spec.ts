@@ -1,6 +1,6 @@
 import { projectUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
-import { createProjectFromTemplate } from './utils/templates'
+import { createProjectFromTemplate } from '../utils/templates'
 
 const testVersionlessTemplate = async (
   page: Page,

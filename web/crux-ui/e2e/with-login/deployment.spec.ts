@@ -1,8 +1,7 @@
 import { ProjectType } from '@app/models'
-import { projectUrl, ROUTE_DASHBOARD, ROUTE_TEAMS } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
-import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, USER_FULLNAME } from './utils/common'
-import { createNode } from './utils/nodes'
+import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG } from '../utils/common'
+import { createNode } from '../utils/nodes'
 import {
   addDeploymentToVersion,
   addDeploymentToVersionlessProject,
@@ -10,7 +9,7 @@ import {
   addImageToVersionlessProject,
   createProject,
   createVersion,
-} from './utils/projects'
+} from '../utils/projects'
 
 const setup = async (
   page: Page,

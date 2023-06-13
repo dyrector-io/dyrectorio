@@ -1,8 +1,8 @@
+import { imageConfigUrl, versionWsUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
-import { imageConfigUrl, versionWsUrl } from '../src/routes'
-import { screenshotPath } from './utils/common'
-import { createImage, createProject, createVersion } from './utils/projects'
-import { waitSocket, wsPatchSent } from './utils/websocket'
+import { screenshotPath } from '../utils/common'
+import { createImage, createProject, createVersion } from '../utils/projects'
+import { waitSocket, wsPatchSent } from '../utils/websocket'
 
 const setup = async (
   page: Page,

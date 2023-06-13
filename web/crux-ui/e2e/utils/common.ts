@@ -9,7 +9,7 @@ import {
   IdentityApi,
   UpdateLoginFlowWithPasswordMethod,
 } from '@ory/kratos-client'
-import { FullConfig, Locator, Page } from '@playwright/test'
+import { Locator, Page } from '@playwright/test'
 import path from 'path'
 import { v4 as uuid } from 'uuid'
 import MailSlurper from './mail-slurper'
@@ -42,8 +42,7 @@ export const mailslurperFromBaseURL = (baseURL: string): MailSlurper => {
   return new MailSlurper(url)
 }
 
-export const cruxUrlFromConfig = (config: FullConfig) => {
-  const { baseURL } = config.projects[0].use
+export const cruxUrlFromConfig = (baseURL: string) => {
   return process.env.CRUX_URL ?? baseURL
 }
 
@@ -74,13 +73,11 @@ export const kratosFrontendFromBaseURL = (baseURL?: string) => {
   return new FrontendApi(kratosConfig)
 }
 
-export const kratosFromConfig = (config: FullConfig) => {
-  const { baseURL } = config.projects[0].use
+export const kratosFromConfig = (baseURL: string) => {
   return kratosFromBaseURL(baseURL)
 }
 
-export const kratosFrontendFromConfig = (config: FullConfig) => {
-  const { baseURL } = config.projects[0].use
+export const kratosFrontendFromConfig = (baseURL: string) => {
   return kratosFrontendFromBaseURL(baseURL)
 }
 
