@@ -1,8 +1,20 @@
 # CHANGELOG
 
 
+<a name="0.5.1"></a>
+## [0.5.1](https://github.com/dyrector-io/dyrectorio/compare/0.5.0...0.5.1) (2023-06-14)
+
+### Build
+
+* include golang version change in release script ([#690](https://github.com/dyrector-io/dyrectorio/issues/690))
+
+### Fix
+
+* **(ci):** minor versioning with crux push ([#689](https://github.com/dyrector-io/dyrectorio/issues/689))
+
+
 <a name="0.5.0"></a>
-## [0.5.0](https://github.com/dyrector-io/dyrectorio/compare/0.4.2...0.5.0) (2023-06-13)
+## [0.5.0](https://github.com/dyrector-io/dyrectorio/compare/0.4.2...0.5.0) (2023-06-14)
 
 ### Build
 
@@ -501,7 +513,7 @@
 
 
 <a name="0.2.1"></a>
-## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.1...0.2.1) (2022-09-27)
+## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...0.2.1) (2022-09-27)
 
 ### Chore
 
@@ -654,12 +666,8 @@
 * websocket message routing
 
 
-<a name="v0.1.1"></a>
-## [v0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...v0.1.1) (2022-08-03)
-
-
 <a name="0.1.1"></a>
-## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.0...0.1.1) (2022-08-03)
+## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...0.1.1) (2022-08-03)
 
 ### Chore
 
@@ -673,10 +681,6 @@
 ### Refactor
 
 * **(agent):** tests ([#54](https://github.com/dyrector-io/dyrectorio/issues/54))
-
-
-<a name="v0.1.0"></a>
-## [v0.1.0](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...v0.1.0) (2022-08-01)
 
 
 <a name="0.1.0"></a>
