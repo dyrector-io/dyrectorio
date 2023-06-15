@@ -2,7 +2,15 @@
 import { ROUTE_DASHBOARD, ROUTE_LOGIN, ROUTE_REGISTRIES, ROUTE_TEAMS_CREATE } from '@app/routes'
 import { test } from '@playwright/test'
 import { BASE_URL, STORAGE_STATE } from '../../playwright.config'
-import { createUser, kratosFromConfig, GHCR_MIRROR, USER_EMAIL, USER_PASSWORD, USER_TEAM, REGISTRY_NAME } from './common'
+import {
+  createUser,
+  GHCR_MIRROR,
+  kratosFromConfig,
+  REGISTRY_NAME,
+  USER_EMAIL,
+  USER_PASSWORD,
+  USER_TEAM,
+} from './common'
 import { globalTeardown } from './global.teardown'
 import { installDagent } from './node-helper'
 

@@ -1,13 +1,6 @@
 import { ROUTE_NODES } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import {
-  DAGENT_NODE,
-  EXPANDED_IMAGE_NAME,
-  NGINX_IMAGE_NAME,
-  NGINX_TEST_IMAGE_WITH_TAG,
-  screenshotPath,
-} from '../utils/common'
-import { addDeploymentToVersionlessProject, addImageToVersionlessProject, createProject } from '../utils/projects'
+import { DAGENT_NODE, screenshotPath } from '../utils/common'
 
 test('Install dagent should be successful', async ({ page }) => {
   await page.goto(ROUTE_NODES)

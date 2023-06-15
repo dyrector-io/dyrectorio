@@ -10,16 +10,16 @@ import {
   createVersion,
 } from '../utils/projects'
 
-const prefix = 'first'
-const prefixTwo = 'second'
-const image = 'nginx'
+const PREFIX = 'first'
+const PREFIX_TWO = 'second'
+const IMAGE = 'nginx'
 
 test('Deploy to node should be successful', async ({ page }, testInfo) => {
   const projectId = await createProject(page, 'deploy-test', 'versioned')
   const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
-  await createImage(page, projectId, versionId, image)
+  await createImage(page, projectId, versionId, IMAGE)
 
-  await deployWithDagent(page, prefix, projectId, versionId, false, testInfo.title)
+  await deployWithDagent(page, PREFIX, projectId, versionId, false, testInfo.title)
 
   await page.screenshot({ path: screenshotPath('succ-deployment'), fullPage: true })
 
@@ -32,14 +32,14 @@ test('Deploy to node should be successful', async ({ page }, testInfo) => {
 test('Second successful deployment should make the first deployment obsolete', async ({ page }, testInfo) => {
   const projectId = await createProject(page, 'obsolete', 'versioned')
   const versionId = await createVersion(page, projectId, '1.0.0', 'Incremental')
-  await createImage(page, projectId, versionId, image)
+  await createImage(page, projectId, versionId, IMAGE)
 
-  await deployWithDagent(page, prefixTwo, projectId, versionId, false, `${testInfo.title}1`)
+  await deployWithDagent(page, PREFIX_TWO, projectId, versionId, false, `${testInfo.title}1`)
 
   const firstDeployStatus = await page.getByText('Successful')
   await expect(firstDeployStatus).toHaveCount(1)
 
-  await deployWithDagent(page, prefixTwo, projectId, versionId, false, `${testInfo.title}2`)
+  await deployWithDagent(page, PREFIX_TWO, projectId, versionId, false, `${testInfo.title}2`)
 
   const secondDeployStatus = await page.getByText('Successful')
   await expect(secondDeployStatus).toHaveCount(1)
