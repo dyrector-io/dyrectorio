@@ -51,7 +51,7 @@ test.describe('Versionless Project', () => {
     const toast = page.getByRole('status')
     await toast.waitFor()
 
-    expect(toast).toHaveCount(1)
+    await expect(toast).toHaveCount(1)
   })
 
   test('should be able to copy deployment to a different node', async ({ page }) => {
@@ -130,7 +130,7 @@ test.describe('Versioned Project', () => {
     const toast = page.getByRole('status')
     await toast.waitFor()
 
-    expect(toast).toHaveCount(1)
+    await expect(toast).toHaveCount(1)
   })
 
   test('should be able to copy to a different node', async ({ page }) => {
