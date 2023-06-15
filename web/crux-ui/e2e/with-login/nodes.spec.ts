@@ -1,4 +1,4 @@
-import { ROUTE_NODES } from '@app/routes'
+import { ROUTE_DASHBOARD, ROUTE_NODES } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { DAGENT_NODE, screenshotPath } from '../utils/common'
 
@@ -157,6 +157,7 @@ test('Deleting node', async ({ page }) => {
   await page.locator('button:has-text("Delete"):left-of(:has-text("Cancel"))').click()
 
   await page.goto(ROUTE_NODES)
+  await page.waitForURL(ROUTE_NODES)
 
   await expect(await page.locator(`h3:has-text("${name}")`).count()).toEqual(0)
 })
