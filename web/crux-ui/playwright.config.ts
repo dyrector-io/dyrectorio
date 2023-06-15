@@ -10,6 +10,7 @@ export const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:8000'
 export const STORAGE_STATE = path.join(__dirname, 'storageState.json')
 
 const DEBUG = !!process.env.DEBUG || !!process.env.PWDEBUG
+const CI = !!process.env.CI
 
 const createProject = (name: string, testMatch: string | RegExp | (string | RegExp)[], deps?: string[]) => {
   return {
@@ -37,10 +38,11 @@ const config: PlaywrightTestConfig = {
     timeout: 60 * 1000, // 1 min
     reuseExistingServer: true,
   },
-  workers: process.env.CI ? 4 : undefined,
+  workers: CI ? 4 : undefined,
   // Terminate tests if any one of them fails
   maxFailures: 1,
   retries: 0,
+  reporter: CI ? 'github' : 'list',
   use: {
     // Use baseURL so to make navigations relative.
     // More information: https://playwright.dev/docs/api/class-testoptions#test-options-base-url
