@@ -91,7 +91,7 @@ const config: PlaywrightTestConfig = {
       'test-template',
       'test-version',
     ]),
-    createProject('test-deployment', /with-login\/deployment*\.spec\.ts/, ['test-image-config', 'test-nodes']),
+    createProject('test-deployment', /with-login\/deployment(.*)\.spec\.ts/, ['test-image-config', 'test-nodes']),
     createProject('test-dagent-deploy', 'with-login/nodes-deploy.spec.ts', ['test-deployment']),
   ],
 }
