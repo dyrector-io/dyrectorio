@@ -121,7 +121,7 @@ test('Container log should appear on a node container', async ({ page }) => {
 
   await page.locator('input[placeholder="Search"]').type(`${prefix}-${imageName}`)
 
-  const nodeContainerRow = await page.locator(`span:text-is("${prefix}-${imageName}") >> xpath=../..`)
+  const nodeContainerRow = await page.locator(`span:text-is("pw-${prefix}-${imageName}") >> xpath=../..`)
   await expect(nodeContainerRow).toHaveCount(1)
 
   const logButton = await nodeContainerRow.locator('img[src*="/note.svg"]')
@@ -132,7 +132,7 @@ test('Container log should appear on a node container', async ({ page }) => {
   await logButton.click()
   await page.waitForURL(
     nodeContainerLogUrl(nodeId, {
-      name: `${prefix}-${imageName}`,
+      name: `pw-${prefix}-${imageName}`,
     }),
   )
 
