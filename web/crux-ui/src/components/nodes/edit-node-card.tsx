@@ -234,13 +234,15 @@ const EditNodeCard = (props: EditNodeCardProps) => {
               {t('setup')}
             </DyoHeading>
 
-            <div className="text-bright mb-4">
-              <DyoHeading element="h4" className="text-md">
-                {t('whatScriptDoesHeader')}
-              </DyoHeading>
+            {editing && (
+              <div className="text-bright mb-4">
+                <DyoHeading element="h4" className="text-md">
+                  {t('whatScriptDoesHeader')}
+                </DyoHeading>
 
-              <p className="text-light-eased ml-4">{t('scriptExplanation')}</p>
-            </div>
+                <p className="text-light-eased ml-4">{t('scriptExplanation')}</p>
+              </div>
+            )}
 
             {node.install ? (
               <div className="text-bright mb-4">
@@ -257,7 +259,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
             ) : null}
 
             {!editing ? (
-              <div className="text-bright font-bold mt-2">{t('saveYourNode')}</div>
+              <div className="text-bright mt-2">{t('youCanInstall')}</div>
             ) : node.hasToken && !node.install ? (
               <>
                 <DyoButton className="px-6 mt-4 mr-auto" secondary onClick={onRevokeToken}>
