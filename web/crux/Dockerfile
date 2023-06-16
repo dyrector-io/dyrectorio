@@ -5,8 +5,8 @@ WORKDIR /app
 
 RUN apk --update add openssl1.1-compat
 
-COPY ./package.json ./package-lock.json ./tsconfig.build.json ./tsconfig.json ./
-RUN npm ci --no-fund
+COPY ./package.json ./package-lock.json ./.npm ./tsconfig.build.json ./tsconfig.json ./
+RUN npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
 
 COPY ./prisma ./prisma
 RUN npm run prisma:gen
