@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: build
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
     if: github.ref_name == 'develop'
     environment: Workflow - Protected
     steps:
