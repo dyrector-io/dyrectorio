@@ -1,9 +1,9 @@
 import { ProjectType } from '@app/models'
 import { deploymentUrl, imageConfigUrl, ROUTE_DEPLOYMENTS, versionWsUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
-import { NGINX_TEST_IMAGE_WITH_TAG, waitForURLExcept } from './utils/common'
-import { deployWithDagent } from './utils/node-helper'
-import { createNode } from './utils/nodes'
+import { NGINX_TEST_IMAGE_WITH_TAG, waitForURLExcept } from '../utils/common'
+import { deployWithDagent } from '../utils/node-helper'
+import { createNode } from '../utils/nodes'
 import {
   addDeploymentToVersion,
   addDeploymentToVersionlessProject,
@@ -11,8 +11,9 @@ import {
   createImage,
   createProject,
   createVersion,
-} from './utils/projects'
-import { waitSocket, wsPatchSent } from './utils/websocket'
+  fillDeploymentPrefix,
+} from '../utils/projects'
+import { waitSocket, wsPatchSent } from '../utils/websocket'
 
 const setup = async (
   page: Page,
@@ -45,13 +46,13 @@ test.describe('Versionless Project', () => {
     await copyButton.click()
 
     await page.locator(`button:has-text("${nodeName}")`).click()
-    await page.locator('input[name=prefix]').fill(prefix)
+    await fillDeploymentPrefix(page, prefix)
     await page.locator('button:has-text("Copy")').click()
 
     const toast = page.getByRole('status')
     await toast.waitFor()
 
-    expect(toast).toHaveCount(1)
+    await expect(toast).toHaveCount(1)
   })
 
   test('should be able to copy deployment to a different node', async ({ page }) => {
@@ -72,7 +73,7 @@ test.describe('Versionless Project', () => {
     await copyButton.click()
 
     await page.locator(`button:has-text("${otherNode}")`).click()
-    await page.locator('input[name=prefix]').fill(prefix)
+    await fillDeploymentPrefix(page, prefix)
 
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
@@ -97,7 +98,7 @@ test.describe('Versionless Project', () => {
     await copyButton.click()
 
     await page.locator(`button:has-text("${nodeName}")`).click()
-    await page.locator('input[name=prefix]').fill(`${prefix}-new-prefix`)
+    await fillDeploymentPrefix(page, `${prefix}-new-prefix`)
 
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
@@ -124,13 +125,13 @@ test.describe('Versioned Project', () => {
     await copyButton.click()
 
     await page.locator(`button:has-text("${nodeName}")`).click()
-    await page.locator('input[name=prefix]').fill(prefix)
+    await fillDeploymentPrefix(page, prefix)
     await page.locator('button:has-text("Copy")').click()
 
     const toast = page.getByRole('status')
     await toast.waitFor()
 
-    expect(toast).toHaveCount(1)
+    await expect(toast).toHaveCount(1)
   })
 
   test('should be able to copy to a different node', async ({ page }) => {
@@ -152,7 +153,7 @@ test.describe('Versioned Project', () => {
     await copyButton.click()
 
     await page.locator(`button:has-text("${otherNode}")`).click()
-    await page.locator('input[name=prefix]').fill(prefix)
+    await fillDeploymentPrefix(page, prefix)
 
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
@@ -177,7 +178,7 @@ test.describe('Versioned Project', () => {
     await copyButton.click()
 
     await page.locator(`button:has-text("${nodeName}")`).click()
-    await page.locator('input[name=prefix]').fill(`${prefix}-new-prefix`)
+    await fillDeploymentPrefix(page, `${prefix}-new-prefix`)
 
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
