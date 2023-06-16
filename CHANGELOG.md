@@ -1,6 +1,28 @@
 # CHANGELOG
 
 
+<a name="0.5.2"></a>
+## [0.5.2](https://github.com/dyrector-io/dyrectorio/compare/0.5.1...0.5.2) (2023-06-16)
+
+### Build
+
+* reapply image signing using `crane cp` from gcr ([#692](https://github.com/dyrector-io/dyrectorio/issues/692))
+
+### Ci
+
+* add missing go_push requirement ([#695](https://github.com/dyrector-io/dyrectorio/issues/695))
+
+### Feat
+
+* **(web):** node install & container uptime & fail deployments on bootstrap ([#696](https://github.com/dyrector-io/dyrectorio/issues/696))
+* **(crux-ui):** playwright project ([#691](https://github.com/dyrector-io/dyrectorio/issues/691))
+* **(ci):** add caches ([#688](https://github.com/dyrector-io/dyrectorio/issues/688))
+
+### Fix
+
+* **(agent):** dagent registry auth ([#693](https://github.com/dyrector-io/dyrectorio/issues/693))
+
+
 <a name="0.5.1"></a>
 ## [0.5.1](https://github.com/dyrector-io/dyrectorio/compare/0.5.0...0.5.1) (2023-06-14)
 
@@ -513,7 +535,7 @@
 
 
 <a name="0.2.1"></a>
-## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...0.2.1) (2022-09-27)
+## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.1...0.2.1) (2022-09-27)
 
 ### Chore
 
@@ -666,8 +688,12 @@
 * websocket message routing
 
 
+<a name="v0.1.1"></a>
+## [v0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...v0.1.1) (2022-08-03)
+
+
 <a name="0.1.1"></a>
-## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...0.1.1) (2022-08-03)
+## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.0...0.1.1) (2022-08-03)
 
 ### Chore
 
@@ -681,6 +707,10 @@
 ### Refactor
 
 * **(agent):** tests ([#54](https://github.com/dyrector-io/dyrectorio/issues/54))
+
+
+<a name="v0.1.0"></a>
+## [v0.1.0](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...v0.1.0) (2022-08-01)
 
 
 <a name="0.1.0"></a>
