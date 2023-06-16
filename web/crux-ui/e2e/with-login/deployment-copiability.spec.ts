@@ -11,6 +11,7 @@ import {
   createImage,
   createProject,
   createVersion,
+  fillDeploymentPrefix,
 } from '../utils/projects'
 import { waitSocket, wsPatchSent } from '../utils/websocket'
 
@@ -45,7 +46,7 @@ test.describe('Versionless Project', () => {
     await copyButton.click()
 
     await page.locator(`button:has-text("${nodeName}")`).click()
-    await page.locator('input[name=prefix]').fill(prefix)
+    await fillDeploymentPrefix(page, prefix)
     await page.locator('button:has-text("Copy")').click()
 
     const toast = page.getByRole('status')
@@ -72,7 +73,7 @@ test.describe('Versionless Project', () => {
     await copyButton.click()
 
     await page.locator(`button:has-text("${otherNode}")`).click()
-    await page.locator('input[name=prefix]').fill(prefix)
+    await fillDeploymentPrefix(page, prefix)
 
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
@@ -97,7 +98,7 @@ test.describe('Versionless Project', () => {
     await copyButton.click()
 
     await page.locator(`button:has-text("${nodeName}")`).click()
-    await page.locator('input[name=prefix]').fill(`${prefix}-new-prefix`)
+    await fillDeploymentPrefix(page, `${prefix}-new-prefix`)
 
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
@@ -124,7 +125,7 @@ test.describe('Versioned Project', () => {
     await copyButton.click()
 
     await page.locator(`button:has-text("${nodeName}")`).click()
-    await page.locator('input[name=prefix]').fill(prefix)
+    await fillDeploymentPrefix(page, prefix)
     await page.locator('button:has-text("Copy")').click()
 
     const toast = page.getByRole('status')
@@ -152,7 +153,7 @@ test.describe('Versioned Project', () => {
     await copyButton.click()
 
     await page.locator(`button:has-text("${otherNode}")`).click()
-    await page.locator('input[name=prefix]').fill(prefix)
+    await fillDeploymentPrefix(page, prefix)
 
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
@@ -177,7 +178,7 @@ test.describe('Versioned Project', () => {
     await copyButton.click()
 
     await page.locator(`button:has-text("${nodeName}")`).click()
-    await page.locator('input[name=prefix]').fill(`${prefix}-new-prefix`)
+    await fillDeploymentPrefix(page, `${prefix}-new-prefix`)
 
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
