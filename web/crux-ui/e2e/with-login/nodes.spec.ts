@@ -1,4 +1,4 @@
-import { ROUTE_DASHBOARD, ROUTE_NODES } from '@app/routes'
+import { ROUTE_NODES } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { DAGENT_NODE, screenshotPath } from '../utils/common'
 

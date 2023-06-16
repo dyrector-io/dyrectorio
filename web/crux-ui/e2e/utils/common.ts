@@ -42,7 +42,7 @@ export const mailslurperFromBaseURL = (baseURL: string): MailSlurper => {
   return new MailSlurper(url)
 }
 
-export const cruxUrlFromConfig = (baseURL: string) => {
+export const cruxUrlFromEnv = (baseURL: string) => {
   return process.env.CRUX_URL ?? baseURL
 }
 

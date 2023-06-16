@@ -6,7 +6,7 @@ import { API_USERS_ME, teamApiUrl } from '@app/routes'
 import { isDyoError } from '@app/utils'
 import { BASE_URL } from '../../playwright.config'
 import {
-  cruxUrlFromConfig,
+  cruxUrlFromEnv,
   deleteUserByEmail,
   getUserByEmail,
   getUserSessionToken,
@@ -62,7 +62,7 @@ export const globalTeardown = async () => {
     return
   }
 
-  const cruxUrl = cruxUrlFromConfig(BASE_URL)
+  const cruxUrl = cruxUrlFromEnv(BASE_URL)
   logInfo('using crux url', cruxUrl)
 
   logInfo('fetch', 'user meta')
