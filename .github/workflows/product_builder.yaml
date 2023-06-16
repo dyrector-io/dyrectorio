@@ -452,7 +452,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
     defaults:
       run:
         working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
@@ -645,6 +645,11 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Setup Golang caches
+        uses: actions/cache/restore@v3
+        with:
+          path: /go
+          key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
       # fixes: fatal: unsafe repository
       - name: Adding workspace
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -677,7 +682,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
     needs: [gather_changes, go_push]
     if: |
       always() &&
@@ -703,8 +708,6 @@ jobs:
           registry: docker.io
           username: dyrectorio
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Setup crane
-        uses: imjasonh/setup-crane@v0.1
       - name: Write signing key to disk
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Add DockerHub tag
@@ -720,23 +723,23 @@ jobs:
           crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.minorversion }}
           crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
           crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
-          crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:{{ needs.gather_changes.outputs.minorversion }}
-      - name: Sign container image
-        run: |
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }} )
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }} )
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }} )
-        env:
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:{{ needs.gather_changes.outputs.minorversion }}
+        # - name: Sign container image
+        #   run: |
+        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }} )
+        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }} )
+        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }} )
+        #   env:
+        #     COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
   crux_push:
     permissions:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
     needs: [crux_build, e2e, gather_changes]
     if: |
       always() &&
@@ -794,7 +797,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
     needs: [crux-ui_build, e2e, gather_changes]
     if: |
       always() &&
@@ -852,7 +855,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
     needs: [kratos_build, e2e, gather_changes]
     if: |
       always() &&
