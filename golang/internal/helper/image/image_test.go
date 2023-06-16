@@ -4,6 +4,7 @@
 package image_test
 
 import (
+	"encoding/base64"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -131,4 +132,17 @@ func TestSplitImageName(t *testing.T) {
 
 	name, tag, err = imageHelper.SplitImageName("my-reg.com/test/nginx")
 	assert.Error(t, err)
+}
+
+func TestAuthConfigToBasicAuth(t *testing.T) {
+	authConfig := "{\"username\":\"test-user\",\"password\":\"test-password\"}"
+	encodedAuth := base64.URLEncoding.EncodeToString([]byte(authConfig))
+
+	expectedBasicAuth := "test-user:test-password"
+	expected := base64.URLEncoding.EncodeToString([]byte(expectedBasicAuth))
+
+	basicAuth, err := imageHelper.AuthConfigToBasicAuth(encodedAuth)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, basicAuth)
 }
