@@ -19,8 +19,8 @@ type VerifyFixture = {
 let emailIndex = 0
 
 const test = base.extend<VerifyFixture>({
-  email: async ({ acceptDownloads: _ }, use) => {
-    await use(`${emailIndex++}.verify@example.com`)
+  email: async ({ acceptDownloads: _ }, use, testInfo) => {
+    await use(`${testInfo.repeatEachIndex + emailIndex++}.verify@example.com`)
   },
 })
 

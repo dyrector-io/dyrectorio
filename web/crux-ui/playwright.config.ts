@@ -78,7 +78,6 @@ const config: PlaywrightTestConfig = {
     {
       name: 'without-login',
       testMatch: /without\-login\/.*spec\.ts/,
-      dependencies: ['global-setup'],
       use: {
         ...devices['Desktop Chromium'],
       },

@@ -1,3 +1,6 @@
+import { test } from '@playwright/test'
 import { globalTeardown } from './global.teardown'
 
-globalTeardown()
+test('teardown', async () => {
+  await globalTeardown()
+})
