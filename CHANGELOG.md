@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+<a name="0.5.3"></a>
+## [0.5.3](https://github.com/dyrector-io/dyrectorio/compare/0.5.2...0.5.3) (2023-06-16)
+
+### Fix
+
+* add crane to signer image and add additional cache restore ([#698](https://github.com/dyrector-io/dyrectorio/issues/698))
+
+
 <a name="0.5.2"></a>
 ## [0.5.2](https://github.com/dyrector-io/dyrectorio/compare/0.5.1...0.5.2) (2023-06-16)
 
