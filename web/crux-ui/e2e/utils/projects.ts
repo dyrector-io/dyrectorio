@@ -112,9 +112,7 @@ export const addDeploymentToVersionlessProject = async (
   await page.locator('button:has-text("Add deployment")').click()
   await expect(page.locator('h4:has-text("Add deployment")')).toHaveCount(1)
 
-  if (prefix) {
-    await page.locator('input[name=prefix] >> visible=true').fill(prefix)
-  }
+  await fillDeploymentPrefix(page, prefix)
 
   await page.locator(`button:has-text("${nodeName}")`).click()
 
@@ -140,9 +138,7 @@ export const addDeploymentToVersion = async (
   await page.locator('button:has-text("Add deployment")').click()
   await expect(page.locator('h4:has-text("Add deployment")')).toHaveCount(1)
 
-  if (prefix) {
-    await page.locator('input[name=prefix] >> visible=true').fill(prefix)
-  }
+  await fillDeploymentPrefix(page, prefix)
 
   await page.locator(`button:has-text("${nodeName}")`).click()
 
@@ -153,4 +149,9 @@ export const addDeploymentToVersion = async (
     id: page.url().split('/').pop(),
     url: page.url(),
   }
+}
+
+export const fillDeploymentPrefix = async (page: Page, prefix: string) => {
+  const prefixInput = await page.waitForSelector('input[name=prefix] >> visible=true')
+  await prefixInput.fill(`pw-${prefix ?? (await prefixInput.inputValue())}`)
 }

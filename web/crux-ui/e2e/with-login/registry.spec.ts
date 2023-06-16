@@ -1,7 +1,7 @@
 import { ROUTE_REGISTRIES } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { clearInput, NGINX_TEST_IMAGE_WITH_TAG, screenshotPath } from './utils/common'
-import { createProject } from './utils/projects'
+import { clearInput, NGINX_TEST_IMAGE_WITH_TAG, screenshotPath } from '../utils/common'
+import { createProject } from '../utils/projects'
 
 test('adding a new registry should work', async ({ page }) => {
   await page.goto(ROUTE_REGISTRIES)
