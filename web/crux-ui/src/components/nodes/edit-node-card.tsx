@@ -259,7 +259,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
             ) : null}
 
             {!editing ? (
-              <div className="text-bright font-bold mt-2">{t('saveYourNode')}</div>
+              <div className="text-bright mt-2">{t('youCanInstall')}</div>
             ) : node.hasToken && !node.install ? (
               <>
                 <DyoButton className="px-6 mt-4 mr-auto" secondary onClick={onRevokeToken}>
