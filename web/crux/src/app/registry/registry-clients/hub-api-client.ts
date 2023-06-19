@@ -21,7 +21,7 @@ class HubApiClient implements RegistryApiClient {
     this.proxyToken = process.env.HUB_PROXY_TOKEN
   }
 
-  async catalog(text: string, take: number): Promise<string[]> {
+  async catalog(text: string): Promise<string[]> {
     const endpoint = ''
 
     let repositories: string[] = this.cache.get(endpoint)
@@ -32,7 +32,7 @@ class HubApiClient implements RegistryApiClient {
       this.cache.upsert(endpoint, repositories)
     }
 
-    return repositories.filter(it => it.includes(text)).slice(0, take)
+    return repositories.filter(it => it.includes(text))
   }
 
   async tags(image: string): Promise<RegistryImageTags> {

@@ -48,7 +48,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
     }
   }
 
-  async catalog(text: string, take: number): Promise<string[]> {
+  async catalog(text: string): Promise<string[]> {
     if (this.client) {
       await this.registryCredentialsToBearerAuth()
     }
@@ -65,7 +65,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
 
     const json = (await res.json()) as { child: string[] }
 
-    return json.child.filter(it => it.includes(text)).slice(0, take)
+    return json.child.filter(it => it.includes(text))
   }
 
   async tags(image: string): Promise<RegistryImageTags> {

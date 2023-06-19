@@ -17,7 +17,7 @@ class GithubRegistryClient implements RegistryApiClient {
     this.namespace = namespace === 'organization' ? 'orgs' : 'users'
   }
 
-  async catalog(text: string, take: number): Promise<string[]> {
+  async catalog(text: string): Promise<string[]> {
     const res = await fetch(
       `https://api.github.com/${this.namespace}/${this.imageNamePrefix}/packages?package_type=container`,
       {
@@ -31,7 +31,7 @@ class GithubRegistryClient implements RegistryApiClient {
 
     const json = (await res.json()) as { name: string }[]
     const repositories = json.flatMap(it => it.name) as string[]
-    return repositories.filter(it => it.includes(text)).slice(0, take)
+    return repositories.filter(it => it.includes(text))
   }
 
   async tags(image: string): Promise<RegistryImageTags> {

@@ -32,7 +32,7 @@ export class GitlabRegistryClient implements RegistryApiClient {
     this.namespace = namespace === 'group' ? 'groups' : 'projects'
   }
 
-  async catalog(text: string, take: number): Promise<string[]> {
+  async catalog(text: string): Promise<string[]> {
     const res = await fetch(
       `https://${this.urls.apiUrl}/api/v4/${this.namespace}/${this.namespaceId}/registry/repositories`,
       {
@@ -46,7 +46,7 @@ export class GitlabRegistryClient implements RegistryApiClient {
 
     const json = (await res.json()) as { path: string }[]
     const repositories = json.flatMap(it => it.path) as string[]
-    return repositories.filter(it => it.includes(text)).slice(0, take)
+    return repositories.filter(it => it.includes(text))
   }
 
   async tags(image: string): Promise<RegistryImageTags> {

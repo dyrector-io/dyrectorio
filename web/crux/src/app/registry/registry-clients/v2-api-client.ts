@@ -38,7 +38,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
     return res
   }
 
-  async catalog(text: string, take: number): Promise<string[]> {
+  async catalog(text: string): Promise<string[]> {
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this.fetch(it), '/_catalog')
     if (!res.ok) {
       throw getRegistryApiException(res, 'Catalog request')
@@ -46,7 +46,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
 
     const json = (await res.json()) as { repositories: string }[]
     const repositories = json.flatMap(it => it.repositories) as string[]
-    return repositories.filter(it => it.includes(text)).slice(0, take)
+    return repositories.filter(it => it.includes(text))
   }
 
   async tags(image: string): Promise<RegistryImageTags> {
