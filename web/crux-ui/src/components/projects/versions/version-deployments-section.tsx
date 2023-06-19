@@ -13,6 +13,7 @@ import {
   DeploymentByVersion,
   deploymentIsCopiable,
   deploymentIsDeployable,
+  DeploymentStartRequest,
   DeploymentStatus,
   DEPLOYMENT_STATUS_VALUES,
   NodeEventMessage,
@@ -34,9 +35,26 @@ export const startDeployment = async (
   router: NextRouter,
   onApiError: (response: Response) => void,
   deploymentId: string,
+  deployInstances?: string[],
 ) => {
+  const request = deployInstances
+    ? ({
+        instances: deployInstances,
+      } as DeploymentStartRequest)
+    : null
+
+  const requestInit: RequestInit = request
+    ? {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      }
+    : null
+
   const res = await fetch(deploymentStartApiUrl(deploymentId), {
     method: 'POST',
+    ...requestInit,
   })
 
   if (!res.ok) {

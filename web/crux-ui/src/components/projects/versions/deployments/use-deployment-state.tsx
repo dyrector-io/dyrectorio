@@ -69,6 +69,7 @@ export type DeploymentState = {
   sock: WebSocketClientEndpoint
   showDeploymentLog: boolean
   confirmationModal: DyoConfirmationModalConfig
+  deployInstances: string[]
 }
 
 export type DeploymentActions = {
@@ -79,6 +80,7 @@ export type DeploymentActions = {
   onInvalidateSecrets: (secrets: DeploymentInvalidatedSecrets[]) => void
   onDeploymentTokenCreated: (token: DeploymentToken) => void
   onRevokeDeploymentToken: VoidFunction
+  onDeployInstanceEdited: (id: string, deploy: boolean) => void
 }
 
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
@@ -104,6 +106,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [confirmationModal, confirm] = useConfirmation()
+  const [deployInstances, setDeployInstances] = useState<string[]>(deployment.instances?.map(it => it.id) ?? [])
 
   const mutable = deploymentIsMutable(deployment.status, version.type)
   const deployable = deploymentIsDeployable(deployment.status, version.type)
@@ -249,6 +252,14 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       token: null,
     })
   }
+  
+  const onDeployInstanceEdited = (id: string, deploy: boolean) => {
+    if ((deploy && deployInstances.includes(id)) || (!deploy && !deployInstances.includes(id))) {
+      return
+    }
+
+    setDeployInstances(deploy ? [...deployInstances, id] : [...deployInstances.filter(it => it !== id)])
+  }
 
   return [
     {
@@ -268,6 +279,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       sock,
       showDeploymentLog,
       confirmationModal,
+      deployInstances,
     },
     {
       setEditState,
@@ -277,6 +289,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       onInvalidateSecrets,
       onDeploymentTokenCreated,
       onRevokeDeploymentToken,
+      onDeployInstanceEdited,
     },
   ]
 }

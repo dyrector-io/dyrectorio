@@ -355,7 +355,17 @@ export default class DeployService {
     }
   }
 
-  async startDeployment(deploymentId: string, identity: Identity): Promise<void> {
+  async startDeployment(deploymentId: string, identity: Identity, instances?: string[]): Promise<void> {
+    const instanceWhere: Prisma.Deployment$instancesArgs = instances
+      ? {
+          where: {
+            id: {
+              in: instances,
+            },
+          },
+        }
+      : null
+
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id: deploymentId,
@@ -371,6 +381,7 @@ export default class DeployService {
           },
         },
         instances: {
+          ...instanceWhere,
           include: {
             image: {
               include: {

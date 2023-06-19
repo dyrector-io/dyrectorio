@@ -244,6 +244,12 @@ export class DeploymentLogPaginationQuery extends PaginationQuery {
   readonly try?: number
 }
 
+export class DeployStartDto {
+  @IsOptional()
+  @IsString({ each: true })
+  instances?: string[]
+}
+
 export type DeploymentImageEvent = ImageEvent & {
   deploymentIds?: string[]
   instances?: InstanceDetails[]
