@@ -1,4 +1,5 @@
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoCheckbox from '@app/elements/dyo-checkbox'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import { Instance } from '@app/models'
@@ -7,34 +8,39 @@ import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
-import { DeploymentState } from './use-deployment-state'
+import { DeploymentActions, DeploymentState } from './use-deployment-state'
 
 export interface DeploymentViewListProps {
   state: DeploymentState
+  actions: DeploymentActions
 }
 
 const DeploymentViewList = (props: DeploymentViewListProps) => {
-  const { state } = props
-  const { instances } = state
+  const { state, actions } = props
+  const { instances, deployInstances } = state
 
   const { t } = useTranslation('images')
 
-  const columnWidths = ['w-3/12', 'w-3/12', 'w-2/12', 'w-3/12', 'w-1/12']
-  const headers = ['containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions']
+  const columnWidths = ['w-12', 'w-4/12', 'w-2/12', 'w-2/12', 'w-3/12', 'w-28']
+  const headers = ['', 'containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions']
   const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultHeaderClass),
-    clsx('rounded-tr-lg text-right pr-4', defaultHeaderClass),
+    clsx('rounded-tr-lg text-right pr-6', defaultHeaderClass),
   ]
   const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
   const itemClasses = [
     clsx('pl-6', defaultItemClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultItemClass),
-    clsx('text-right pr-4', defaultItemClass),
+    clsx('text-right pr-6', defaultItemClass),
   ]
 
   const itemTemplate = (item: Instance) => [
+    <DyoCheckbox
+      checked={deployInstances.includes(item.id)}
+      onCheckedChange={it => actions.onDeployInstanceEdited(item.id, it)}
+    />,
     item.config?.name ?? item.image.config.name,
     item.image.registry.name,
     <div className="flex items-center">

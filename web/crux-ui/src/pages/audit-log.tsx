@@ -14,6 +14,7 @@ import { useThrottling } from '@app/hooks/use-throttleing'
 import { AuditLog, AuditLogList, AuditLogQuery, auditToMethod } from '@app/models'
 import { auditApiUrl, ROUTE_AUDIT } from '@app/routes'
 import { getEndOfToday, utcDateToLocale } from '@app/utils'
+import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
 
@@ -23,8 +24,8 @@ type AuditFilter = {
   filter?: string
 }
 
-const headerClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
-const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-32', 'w-2/12', '', 'w-20']
+const defaultHeaderClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased p-2 py-3 h-11'
+const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-32', 'w-2/12', '', 'w-24']
 const sixDays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
 
@@ -105,6 +106,11 @@ const AuditLogPage = () => {
     ),
   ]
 
+  const headerClassNames = [
+    ...Array.from({ length: listHeaders.length - 1 }).map(() => defaultHeaderClassName),
+    clsx('text-right pr-6', defaultHeaderClassName),
+  ]
+
   const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
     <div className="w-10 ml-auto">
       <UserDefaultAvatar />
@@ -116,7 +122,7 @@ const AuditLogPage = () => {
     <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
       {JSON.stringify(log.data)}
     </div>,
-    <div className="text-center">
+    <div className="text-right pr-6">
       <DyoIcon
         className="aspect-square cursor-pointer"
         src="/eye.svg"
@@ -148,7 +154,7 @@ const AuditLogPage = () => {
         <DyoCard className="relative mt-4 overflow-auto">
           <DyoList
             noSeparator
-            headerClassName={headerClassName}
+            headerClassName={headerClassNames}
             columnWidths={columnWidths}
             data={data}
             headers={listHeaders}

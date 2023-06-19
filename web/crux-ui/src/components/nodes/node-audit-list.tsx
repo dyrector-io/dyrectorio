@@ -32,7 +32,8 @@ interface NodeAuditListProps {
   node: DyoNode
 }
 
-const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
+const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased p-2 py-3 h-11'
+const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
 const columnWidths = ['w-2/12', 'w-48', '', 'w-24']
 const sixDays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
@@ -94,7 +95,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: listHeaders.length - 2 }).map(() => defaultHeaderClass),
-    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
+    clsx('rounded-tr-lg pr-6 text-right', defaultHeaderClass),
   ]
 
   const itemTemplate = (log: NodeAuditLog) => /* eslint-disable react/jsx-key */ [
@@ -103,7 +104,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
     <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
       {log.data && JSON.stringify(log.data)}
     </div>,
-    <div className="pr-4">
+    <div className="pr-4 text-right">
       {log.data && (
         <DyoIcon
           className="aspect-square cursor-pointer ml-auto mr-auto"
@@ -150,6 +151,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
         <DyoList
           noSeparator
           headerClassName={headerClasses}
+          itemClassName={defaultItemClass}
           columnWidths={columnWidths}
           data={data}
           headers={listHeaders}

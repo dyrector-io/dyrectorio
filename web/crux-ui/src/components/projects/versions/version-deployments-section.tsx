@@ -94,13 +94,21 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const headers = [
     ...['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it => t(it)),
   ]
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-2 font-semibold'
+  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-2 pl-6 font-semibold'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     defaultHeaderClass,
     clsx('text-center', defaultHeaderClass),
     defaultHeaderClass,
-    clsx('rounded-tr-lg text-center pr-6', defaultHeaderClass),
+    clsx('rounded-tr-lg text-right pr-6', defaultHeaderClass),
+  ]
+
+  const defaultItemClass = 'h-11 min-h-min text-light-eased pl-6 w-fit'
+  const itemClasses = [
+    ...Array.from({ length: 2 }).map(() => defaultItemClass),
+    clsx('text-center', defaultItemClass),
+    ...Array.from({ length: headerClasses.length - 4 }).map(() => defaultItemClass),
+    clsx('pr-6', defaultItemClass),
   ]
 
   const itemTemplate = (item: DeploymentByVersion) => {
@@ -115,7 +123,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       item.prefix,
       <DeploymentStatusTag className="w-fit m-auto" status={item.status} />,
       <>{utcDateToLocale(item.updatedAt)}</>,
-      <div className="flex justify-center">
+      <div className="flex justify-end">
         <Link className="mr-2 inline-block cursor-pointer" href={deploymentUrl(item.id)} passHref>
           <DyoIcon src="/eye.svg" alt={t('common:deploy')} size="md" />
         </Link>
@@ -185,7 +193,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             <DyoList
               headerClassName={headerClasses}
               headers={headers}
-              itemClassName="h-11 min-h-min text-light-eased pl-4 w-fit"
+              itemClassName={itemClasses}
               noSeparator
               data={filters.filtered}
               itemBuilder={itemTemplate}

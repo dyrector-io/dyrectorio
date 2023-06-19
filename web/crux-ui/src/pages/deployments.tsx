@@ -67,12 +67,19 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     'common:status',
     'common:actions',
   ]
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
+  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-6 font-semibold'
   const headerClasses = [
     clsx('rounded-tl-lg', defaultHeaderClass),
     ...Array.from({ length: headers.length - 3 }).map(() => defaultHeaderClass),
     clsx('text-center', defaultHeaderClass),
-    clsx('text-center rounded-tr-lg', defaultHeaderClass),
+    clsx('text-right pr-6 rounded-tr-lg', defaultHeaderClass),
+  ]
+
+  const defaultItemClass = 'h-11 min-h-min text-light-eased pl-6 w-fit'
+  const itemClasses = [
+    ...Array.from({ length: 5 }).map(() => defaultItemClass),
+    clsx('text-center', defaultItemClass),
+    clsx('text-right pr-6', defaultItemClass),
   ]
 
   const onCellClick = async (data: Deployment, row: number, col: number) => {
@@ -90,7 +97,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     <span>{item.prefix}</span>,
     <span suppressHydrationWarning>{auditToLocaleDate(item.audit)}</span>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
-    <div className="flex justify-center">
+    <>
       <div className="mr-2 inline-block">
         <DyoIcon
           src="/note.svg"
@@ -108,7 +115,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
         className={deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
         onClick={() => deploymentIsCopiable(item.status) && setCopyDeploymentTarget(item.id)}
       />
-    </div>,
+    </>,
   ]
   /* eslint-enable react/jsx-key */
 
@@ -144,7 +151,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
             <DyoList
               headers={[...headers.map(h => t(h)), '']}
               headerClassName={headerClasses}
-              itemClassName="h-11 min-h-min text-light-eased pl-4 w-fit"
+              itemClassName={itemClasses}
               data={filters.filtered}
               noSeparator
               itemBuilder={itemTemplate}
