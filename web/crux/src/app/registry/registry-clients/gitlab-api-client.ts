@@ -1,11 +1,6 @@
-import {
-  CruxExceptionOptions,
-  CruxInternalServerErrorException,
-  CruxUnauthorizedException,
-} from 'src/exception/crux-exception'
 import { GitlabNamespace } from '../registry.dto'
 import { RegistryImageTags } from '../registry.message'
-import { RegistryApiClient } from './registry-api-client'
+import { RegistryApiClient, getRegistryApiException } from './registry-api-client'
 import RegistryV2ApiClient, { RegistryV2ApiClientOptions } from './v2-api-client'
 
 export type GitlabRegistryClientUrls = {
@@ -46,12 +41,7 @@ export class GitlabRegistryClient implements RegistryApiClient {
     )
 
     if (!res.ok) {
-      const excOptions: CruxExceptionOptions = {
-        message: `Gitlab repositories request failed with status: ${res.status} ${res.statusText}`,
-      }
-      throw res.status === 401
-        ? new CruxUnauthorizedException(excOptions)
-        : new CruxInternalServerErrorException(excOptions)
+      throw getRegistryApiException(res, 'Gitlab repositories request')
     }
 
     const json = (await res.json()) as { path: string }[]
@@ -67,12 +57,7 @@ export class GitlabRegistryClient implements RegistryApiClient {
       },
     )
     if (!tokenRes.ok) {
-      const excOptions: CruxExceptionOptions = {
-        message: `Gitlab jwt auth request failed with status: ${tokenRes.status} ${tokenRes.statusText}`,
-      }
-      throw tokenRes.status === 401
-        ? new CruxUnauthorizedException(excOptions)
-        : new CruxInternalServerErrorException(excOptions)
+      throw getRegistryApiException(tokenRes, 'Gitlab jwt auth request')
     }
 
     const token = ((await tokenRes.json()) as { token: string })?.token
@@ -86,12 +71,7 @@ export class GitlabRegistryClient implements RegistryApiClient {
 
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(fetcher, `/${image}/tags/list`)
     if (!res.ok) {
-      const excOptions: CruxExceptionOptions = {
-        message: `Gitlab tags request failed for image ${image} with status: ${res.status} ${res.statusText}`,
-      }
-      throw res.status === 401
-        ? new CruxUnauthorizedException(excOptions)
-        : new CruxInternalServerErrorException(excOptions)
+      throw getRegistryApiException(res, `Gitlab tags for image ${image}`)
     }
 
     const json = (await res.json()) as RegistryImageTags[]

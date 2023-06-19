@@ -1,12 +1,7 @@
-import {
-  CruxExceptionOptions,
-  CruxInternalServerErrorException,
-  CruxUnauthorizedException,
-} from 'src/exception/crux-exception'
 import { REGISTRY_GITHUB_URL } from 'src/shared/const'
 import { GithubNamespace } from '../registry.dto'
 import { RegistryImageTags } from '../registry.message'
-import { RegistryApiClient } from './registry-api-client'
+import { RegistryApiClient, getRegistryApiException } from './registry-api-client'
 import RegistryV2ApiClient, { RegistryV2ApiClientOptions, registryCredentialsToBasicAuth } from './v2-api-client'
 
 class GithubRegistryClient implements RegistryApiClient {
@@ -31,12 +26,7 @@ class GithubRegistryClient implements RegistryApiClient {
     )
 
     if (!res.ok) {
-      const excOptions: CruxExceptionOptions = {
-        message: `Github packages request failed with status: ${res.status} ${res.statusText}`,
-      }
-      throw res.status === 401
-        ? new CruxUnauthorizedException(excOptions)
-        : new CruxInternalServerErrorException(excOptions)
+      throw getRegistryApiException(res, 'Github packages request')
     }
 
     const json = (await res.json()) as { name: string }[]
@@ -52,12 +42,7 @@ class GithubRegistryClient implements RegistryApiClient {
       },
     )
     if (!tokenRes.ok) {
-      const excOptions: CruxExceptionOptions = {
-        message: `Github auth request failed with status: ${tokenRes.status} ${tokenRes.statusText}`,
-      }
-      throw tokenRes.status === 401
-        ? new CruxUnauthorizedException(excOptions)
-        : new CruxInternalServerErrorException(excOptions)
+      throw getRegistryApiException(tokenRes, 'Github auth request')
     }
 
     const token = ((await tokenRes.json()) as { token: string })?.token
@@ -71,13 +56,7 @@ class GithubRegistryClient implements RegistryApiClient {
 
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(fetcher, `/${this.imageNamePrefix}/${image}/tags/list`)
     if (!res.ok) {
-      const excOptions: CruxExceptionOptions = {
-        message: `Github tags request failed with status: ${res.status} ${res.statusText}`,
-      }
-
-      throw res.status === 401
-        ? new CruxUnauthorizedException(excOptions)
-        : new CruxInternalServerErrorException(excOptions)
+      throw getRegistryApiException(tokenRes, '`Github tags request')
     }
 
     const json = (await res.json()) as RegistryImageTags[]

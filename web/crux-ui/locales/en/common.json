@@ -198,5 +198,10 @@
   "data": "Data",
   "log": "Log",
 
-  "storages": "Storages"
+  "storages": "Storages",
+
+  "errors": {
+    "registryRateLimit": "Rate limit reached, please try again later",
+    "registryUnauthorized": "Unauthorized"
+  }
 }
