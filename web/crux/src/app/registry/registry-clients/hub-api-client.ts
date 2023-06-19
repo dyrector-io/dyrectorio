@@ -1,13 +1,6 @@
-import {
-  CruxBadRequestException,
-  CruxExceptionOptions,
-  CruxInternalServerErrorException,
-  CruxUnauthorizedException,
-} from 'src/exception/crux-exception'
 import { RegistryImageTags } from '../registry.message'
 import HubApiCache from './caches/hub-api-cache'
 import { RegistryApiClient, getRegistryApiException } from './registry-api-client'
-import { Exception } from 'handlebars'
 
 type HubApiPaginatedResponse = {
   count: number
