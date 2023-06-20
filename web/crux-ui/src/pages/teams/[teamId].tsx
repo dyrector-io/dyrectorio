@@ -199,7 +199,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
         />
       )}
     </div>,
-    <div>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('never')}</div>,
+    <div>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('common:never')}</div>,
     <UserStatusTag className="w-fit mx-auto" status={it.status} />,
     <div className="flex flex-row">
       {!userStatusReinvitable(it.status) || countdown > 0 ? null : (

@@ -2,13 +2,15 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
-import { AuthPayload } from 'src/domain/identity'
+import { DeploymentTokenPayload } from 'src/domain/deployment-token'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 
+export const DEPLOY_TOKEN_STRATEGY = 'deploy-token-strategy'
+
 @Injectable()
-export default class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(configService: ConfigService, private prisma: PrismaService) {
+export class DeployJwtStrategy extends PassportStrategy(Strategy, DEPLOY_TOKEN_STRATEGY) {
+  constructor(configService: ConfigService, private readonly prisma: PrismaService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -16,20 +18,14 @@ export default class JwtStrategy extends PassportStrategy(Strategy) {
     })
   }
 
-  /**
-   * Validate returns jwt payload.
-   * @params payload - is an object literal containing the decoded JWT payload
-   * @params done - passport error first callback accepting arguments done(error, user, info)
-   * @returns payload
-   * @memberof JwtStrategy
-   */
-  async validate(payload: AuthPayload): Promise<AuthPayload> {
-    const token = await this.prisma.token.findFirst({
+  async validate(payload: DeploymentTokenPayload): Promise<DeploymentTokenPayload> {
+    const token = await this.prisma.deploymentToken.findFirst({
       select: {
         id: true,
       },
       where: {
         nonce: payload.nonce,
+        deploymentId: payload.deploymentId,
       },
     })
 

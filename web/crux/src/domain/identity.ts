@@ -27,7 +27,7 @@ export type JwtToken = {
 
 export type AuthPayload = {
   sub: string
-  nonce?: string
+  nonce: string
 }
 
 export const nameOfIdentity = (identity: Identity) => {

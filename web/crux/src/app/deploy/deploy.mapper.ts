@@ -68,6 +68,7 @@ export default class DeployMapper {
     @Inject(forwardRef(() => ProjectMapper))
     private projectMapper: ProjectMapper,
     private auditMapper: AuditMapper,
+    @Inject(forwardRef(() => VersionMapper))
     private versionMapper: VersionMapper,
     private nodeMapper: NodeMapper,
   ) {}
@@ -107,6 +108,7 @@ export default class DeployMapper {
   toDetailsDto(deployment: DeploymentDetails, publicKey?: string): DeploymentDetailsDto {
     return {
       ...this.toDto(deployment),
+      token: deployment.tokens.length > 0 ? deployment.tokens[0] : null,
       lastTry: deployment.tries,
       publicKey,
       environment: deployment.environment as UniqueKeyValue[],

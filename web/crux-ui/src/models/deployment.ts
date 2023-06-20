@@ -18,9 +18,25 @@ export type Deployment = {
   version: BasicVersion
 }
 
+export type DeploymentToken = {
+  id: string
+  createdAt: string
+  expiresAt?: string | null
+}
+
+export type CreateDeploymentToken = {
+  expirationInDays?: number
+}
+
+export type DeploymentTokenCreated = DeploymentToken & {
+  token: string
+  curl: string
+}
+
 export type DeploymentDetails = Deployment & {
   environment: UniqueKeyValue[]
   publicKey?: string
+  token: DeploymentToken
   instances: Instance[]
 }
 
