@@ -1,8 +1,4 @@
-import {
-  CruxExceptionOptions,
-  CruxInternalServerErrorException,
-  CruxUnauthorizedException,
-} from 'src/exception/crux-exception'
+import { getRegistryApiException } from 'src/exception/registry-exception'
 import { RegistryImageTags } from '../registry.message'
 import HubApiCache from './caches/hub-api-cache'
 import { RegistryApiClient } from './registry-api-client'
@@ -26,7 +22,7 @@ class HubApiClient implements RegistryApiClient {
     this.proxyToken = process.env.HUB_PROXY_TOKEN
   }
 
-  async catalog(text: string, take: number): Promise<string[]> {
+  async catalog(text: string): Promise<string[]> {
     const endpoint = ''
 
     let repositories: string[] = this.cache.get(endpoint)
@@ -37,7 +33,7 @@ class HubApiClient implements RegistryApiClient {
       this.cache.upsert(endpoint, repositories)
     }
 
-    return repositories.filter(it => it.includes(text)).slice(0, take)
+    return repositories.filter(it => it.includes(text))
   }
 
   async tags(image: string): Promise<RegistryImageTags> {
@@ -96,8 +92,6 @@ class HubApiClient implements RegistryApiClient {
         const retryAfterHeader = res.headers.get('x-retry-after') ?? res.headers.get('retry-after')
         const retryAfter = Number(retryAfterHeader) - new Date().getTime() / 1000
 
-        // this.logger.warn(`DockerHub API rate limit '${endpoint}', retry after ${retryAfter}s`)
-
         const fetchNext = next
         next = () =>
           new Promise<Response>(resolve => {
@@ -108,12 +102,7 @@ class HubApiClient implements RegistryApiClient {
 
         rateTry += 1
       } else {
-        const excOptions: CruxExceptionOptions = {
-          message: `${endpoint} request failed with status: ${res.status} ${res.statusText}`,
-        }
-        throw res.status === 401
-          ? new CruxUnauthorizedException(excOptions)
-          : new CruxInternalServerErrorException(excOptions)
+        throw getRegistryApiException(res, endpoint)
       }
     } while (next)
 

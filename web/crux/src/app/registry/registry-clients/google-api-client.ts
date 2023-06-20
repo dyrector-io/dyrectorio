@@ -1,10 +1,7 @@
 import { JWT } from 'google-auth-library'
 import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
-import {
-  CruxExceptionOptions,
-  CruxInternalServerErrorException,
-  CruxUnauthorizedException,
-} from 'src/exception/crux-exception'
+import { CruxUnauthorizedException } from 'src/exception/crux-exception'
+import { getRegistryApiException } from 'src/exception/registry-exception'
 import { RegistryImageTags } from '../registry.message'
 import { RegistryApiClient } from './registry-api-client'
 
@@ -23,6 +20,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
       if (!options.password) {
         throw new CruxUnauthorizedException({
           message: `Invalid authentication parameters for: ${url}`,
+          property: 'registryUnauthorized',
         })
       }
 
@@ -41,6 +39,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
     } catch (err) {
       throw new CruxUnauthorizedException({
         message: `Google auth request failed`,
+        property: 'registryUnauthorized',
       })
     }
 
@@ -50,7 +49,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
     }
   }
 
-  async catalog(text: string, take: number): Promise<string[]> {
+  async catalog(text: string): Promise<string[]> {
     if (this.client) {
       await this.registryCredentialsToBearerAuth()
     }
@@ -62,17 +61,12 @@ export class GoogleRegistryClient implements RegistryApiClient {
     })
 
     if (!res.ok) {
-      const excOptions: CruxExceptionOptions = {
-        message: `Google repositories request failed with status: ${res.status} ${res.statusText}`,
-      }
-      throw res.status === 401
-        ? new CruxUnauthorizedException(excOptions)
-        : new CruxInternalServerErrorException(excOptions)
+      throw getRegistryApiException(res, 'Google repositories request')
     }
 
     const json = (await res.json()) as { child: string[] }
 
-    return json.child.filter(it => it.includes(text)).slice(0, take)
+    return json.child.filter(it => it.includes(text))
   }
 
   async tags(image: string): Promise<RegistryImageTags> {
@@ -87,12 +81,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
     })
 
     if (!tagRes.ok) {
-      const excOptions: CruxExceptionOptions = {
-        message: `Google tags request failed with status: ${tagRes.status} ${tagRes.statusText}`,
-      }
-      throw tagRes.status === 401
-        ? new CruxUnauthorizedException(excOptions)
-        : new CruxInternalServerErrorException(excOptions)
+      throw getRegistryApiException(tagRes, 'Google tags request')
     }
 
     const json = (await tagRes.json()) as { tags: string[] }
