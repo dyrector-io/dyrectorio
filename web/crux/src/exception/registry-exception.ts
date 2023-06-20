@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import { CruxBadRequestException, CruxInternalServerErrorException, CruxUnauthorizedException } from './crux-exception'
 
 export const getRegistryApiException = (res: Response, endpoint: string) => {

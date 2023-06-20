@@ -1,8 +1,3 @@
-import {
-  CruxBadRequestException,
-  CruxInternalServerErrorException,
-  CruxUnauthorizedException,
-} from 'src/exception/crux-exception'
 import { RegistryImageTags } from '../registry.message'
 
 export interface RegistryApiClient {

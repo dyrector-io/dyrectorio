@@ -1,9 +1,9 @@
 import { JWT } from 'google-auth-library'
 import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
+import { getRegistryApiException } from 'src/exception/registry-exception'
 import { RegistryImageTags } from '../registry.message'
 import { RegistryApiClient } from './registry-api-client'
-import { getRegistryApiException } from 'src/exception/registry-exception'
 
 export type GoogleClientOptions = {
   username?: string
