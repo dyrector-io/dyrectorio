@@ -1,8 +1,8 @@
 import { deploymentUrl, imageConfigUrl, projectUrl, versionWsUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { deployWithDagent } from './utils/node-helper'
-import { createImage, createProject, createVersion } from './utils/projects'
-import { waitSocket, wsPatchSent } from './utils/websocket'
+import { deployWithDagent } from '../utils/node-helper'
+import { createImage, createProject, createVersion } from '../utils/projects'
+import { waitSocket, wsPatchSent } from '../utils/websocket'
 
 test('In progress deployment should be not deletable', async ({ page }) => {
   const projectName = 'project-delete-test-1'

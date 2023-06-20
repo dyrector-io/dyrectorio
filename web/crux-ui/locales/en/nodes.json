@@ -25,7 +25,7 @@
     "k8s": ["A kubernetes cluster", "kubectl authenticated, active context selected", "Ability to run these commands"],
     "docker": ["A linux host/VPS", "Docker or podman installed on host", "Ability to execute the script on host"]
   },
-  "saveYourNode": "Please save your node to begin the setup process.",
+  "youCanInstall": "You can install an agent on your environment by running a script generated here. You're able to generate one after saving this node.",
   "connection": "Connection",
   "connectionExplanation": "If the setup was successful, you will see your node appear here.",
   "command": "Command",

@@ -2,6 +2,7 @@ package image
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -246,7 +247,11 @@ func checkRemote(ctx context.Context, check remoteCheck) (err error) {
 	craneOpts := []crane.Option{}
 
 	if check.encodedAuth != "" {
-		craneOpts = append(craneOpts, crane.WithAuth(authn.FromConfig(authn.AuthConfig{Auth: check.encodedAuth})))
+		basicAuth, convertError := authConfigToBasicAuth(check.encodedAuth)
+		if convertError != nil {
+			return convertError
+		}
+		craneOpts = append(craneOpts, crane.WithAuth(authn.FromConfig(authn.AuthConfig{Auth: basicAuth})))
 	}
 	remoteDigest, err := crane.Digest(check.distributionRef.String(), craneOpts...)
 	if err != nil {
@@ -331,4 +336,21 @@ func SplitImageName(expandedImageName string) (imageName, tag string, tagError e
 	}
 
 	return tagged.Name(), tagged.Tag(), nil
+}
+
+func authConfigToBasicAuth(authConfigEncoded string) (string, error) {
+	authConfigJSON, err := base64.URLEncoding.DecodeString(authConfigEncoded)
+	if err != nil {
+		return "", err
+	}
+
+	var authOpts types.AuthConfig
+	err = json.Unmarshal(authConfigJSON, &authOpts)
+	if err != nil {
+		return "", err
+	}
+
+	basicAuthString := fmt.Sprintf("%s:%s", authOpts.Username, authOpts.Password)
+
+	return base64.URLEncoding.EncodeToString([]byte(basicAuthString)), nil
 }

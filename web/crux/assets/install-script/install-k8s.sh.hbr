@@ -27,14 +27,84 @@ data:
 {{/if}}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dyrectorio-crane-create-read-only
+  labels:
+    rbac.dyrector.io/crane: "restricted-api-access"
+rules:
+-
+  apiGroups:
+  - ""
+  resources:
+  - namespaces
+  - pvc
+  verbs:
+  - get
+  - list
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dyrectorio-crane-rw
+  labels:
+    rbac.dyrector.io/crane: "restricted-api-access"
+rules:
+-
+  apiGroups:
+  - apps
+  - ""
+  - "monitoring.coreos.com"
+  resources:
+  - deployments
+  - services
+  - pods
+  - ingress
+  - secrets
+  - servicemonitors
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dyrectorio-crane
+aggregationRule:
+  clusterRoleSelectors:
+  - matchLabels:
+      rbac.dyrector.io/crane: "restricted-api-access"
+rules: []
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: dyorectorio-admin-role
-  namespace: dyrectorio
+  name: dyrectorio-crane
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cluster-admin
+  name: dyrectorio-crane
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: dyrectorio
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dyrectorio-crane
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: dyrectorio-crane
 subjects:
 - kind: ServiceAccount
   name: default

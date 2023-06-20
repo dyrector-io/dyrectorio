@@ -143,7 +143,7 @@ End-to-end tests:
   - You may have to run `npx playwright install-deps`
   - More info: https://playwright.dev/docs/intro
 12. In a different terminal go to the `web/crux-ui` folder and run `npm run test:e2e`
-  - If you want to run a specific test file from the `web/crux-ui/e2e` folder you can do it with `npx playwright test <file_name>`
+  - If you want to run a specific test file from the `web/crux-ui/e2e` folder you can do it with `DEBUG=1 npx playwright test <file_name>`
 
 ## Non-development
 

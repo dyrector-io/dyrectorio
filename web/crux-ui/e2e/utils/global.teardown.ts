@@ -4,9 +4,9 @@ import { internalError } from '@app/error-responses'
 import { UserMeta } from '@app/models'
 import { API_USERS_ME, teamApiUrl } from '@app/routes'
 import { isDyoError } from '@app/utils'
-import { FullConfig } from '@playwright/test'
+import { BASE_URL } from '../../playwright.config'
 import {
-  cruxUrlFromConfig,
+  cruxUrlFromEnv,
   deleteUserByEmail,
   getUserByEmail,
   getUserSessionToken,
@@ -45,24 +45,24 @@ export const fetchCruxFromBrowser = async (cookie: string, cruxUrl: string, url:
   return res
 }
 
-const globalTeardown = async (config: FullConfig) => {
+export const globalTeardown = async () => {
   logInfo('started')
 
-  const kratos = kratosFromConfig(config)
+  const kratos = kratosFromConfig(BASE_URL)
   const identity = await getUserByEmail(kratos, USER_EMAIL)
   if (!identity) {
     logInfo('skipped', 'No identity found.')
     return
   }
 
-  const frontend = kratosFrontendFromConfig(config)
+  const frontend = kratosFrontendFromConfig(BASE_URL)
   const cookie = await getUserSessionToken(frontend)
   if (!cookie) {
     logInfo('skipped', 'No session found.')
     return
   }
 
-  const cruxUrl = cruxUrlFromConfig(config)
+  const cruxUrl = cruxUrlFromEnv(BASE_URL)
   logInfo('using crux url', cruxUrl)
 
   logInfo('fetch', 'user meta')
@@ -96,5 +96,3 @@ const globalTeardown = async (config: FullConfig) => {
   exec(`docker rm -f $(docker ps -a -q --filter "name=^pw")`, settings)
   exec('docker rm -f dagent', settings)
 }
-
-export default globalTeardown

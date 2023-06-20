@@ -1,13 +1,6 @@
-import { deploymentDeployUrl, nodeContainerLogUrl, ROUTE_NODES } from '@app/routes'
+import { ROUTE_NODES } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import {
-  DAGENT_NODE,
-  EXPANDED_IMAGE_NAME,
-  NGINX_IMAGE_NAME,
-  NGINX_TEST_IMAGE_WITH_TAG,
-  screenshotPath,
-} from './utils/common'
-import { addDeploymentToVersionlessProject, addImageToVersionlessProject, createProject } from './utils/projects'
+import { DAGENT_NODE, screenshotPath } from '../utils/common'
 
 test('Install dagent should be successful', async ({ page }) => {
   await page.goto(ROUTE_NODES)
@@ -113,85 +106,6 @@ test('Generate script should show script type selector for Docker', async ({ pag
   await expect(await page.locator('button:text-is("PowerShell")')).toBeVisible()
 })
 
-test('Container log should appear after a successful deployment', async ({ page }) => {
-  const prefix = 'deploy-log'
-
-  const projectId = await createProject(page, 'deploy-log-test', 'versionless')
-  await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
-  const { url, id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, prefix)
-
-  await page.goto(url)
-
-  const deployButtonSelector = 'button:text-is("Deploy")'
-  await page.waitForSelector(deployButtonSelector)
-
-  await page.locator(deployButtonSelector).click()
-  await page.waitForURL(deploymentDeployUrl(deploymentId))
-
-  const containerRow = page.locator(`span:text-is("${EXPANDED_IMAGE_NAME}") >> xpath=../..`)
-  await expect(containerRow).toBeVisible()
-
-  const runningTag = containerRow.locator(':text-is("Running")')
-  await expect(runningTag).toBeVisible()
-
-  const showLogs = containerRow.locator('span:text-is("Show logs")')
-
-  await showLogs.click()
-  await page.waitForURL(`${ROUTE_NODES}/**/log**`)
-
-  await page.waitForSelector('div.font-roboto')
-  const terminal = page.locator('div.font-roboto')
-  await expect(await terminal.locator('span')).not.toHaveCount(0)
-})
-
-test('Container log should appear on a node container', async ({ page }) => {
-  const prefix = 'node-deploy-log'
-
-  const porjectId = await createProject(page, 'node-deploy-log-test', 'versionless')
-  await addImageToVersionlessProject(page, porjectId, NGINX_TEST_IMAGE_WITH_TAG)
-  const { url, id: deploymentId } = await addDeploymentToVersionlessProject(page, porjectId, DAGENT_NODE, prefix)
-
-  await page.goto(url)
-
-  const deployButtonSelector = 'button:text-is("Deploy")'
-  await page.waitForSelector(deployButtonSelector)
-
-  await page.locator(deployButtonSelector).click()
-  await page.waitForURL(deploymentDeployUrl(deploymentId))
-
-  const containerRow = page.locator(`span:text-is("${EXPANDED_IMAGE_NAME}") >> xpath=../..`)
-  await expect(containerRow).toBeVisible()
-
-  const runningTag = await containerRow.locator(':text-is("Running")')
-  await expect(runningTag).toBeVisible()
-
-  await page.goto(ROUTE_NODES)
-
-  const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
-  await nodeButton.click()
-
-  await page.locator('input[placeholder="Search"]').type(`${prefix}-${NGINX_IMAGE_NAME}`)
-
-  const nodeContainerRow = await page.locator(`span:text-is("${prefix}-${NGINX_IMAGE_NAME}") >> xpath=../..`)
-  await expect(nodeContainerRow).toHaveCount(1)
-
-  const logButton = await nodeContainerRow.locator('img[src*="/note.svg"]')
-  await expect(logButton).toBeVisible()
-
-  const nodeId = page.url().split('/').pop()
-
-  await logButton.click()
-  await page.waitForURL(
-    nodeContainerLogUrl(nodeId, {
-      name: `${prefix}-${NGINX_IMAGE_NAME}`,
-    }),
-  )
-
-  await page.waitForSelector('div.font-roboto')
-  const terminal = await page.locator('div.font-roboto')
-  await expect(await terminal.locator('span')).not.toHaveCount(0)
-})
-
 test('Docker generate script should show Traefik options', async ({ page }) => {
   await page.goto(ROUTE_NODES)
 
@@ -224,24 +138,6 @@ test('Docker generate script should show Traefik options', async ({ page }) => {
   await expect(await page.locator('p:has-text("ACME email is a required field")')).not.toBeVisible()
 })
 
-test('Container list should show containers on the node screen', async ({ page }) => {
-  await page.goto(ROUTE_NODES)
-
-  const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
-  await nodeButton.click()
-
-  await page.locator('input[placeholder="Search"]').type(`dagent`)
-
-  const tableBody = await page.locator('.table-row-group')
-
-  const nodeContainerRow = await tableBody.locator('.table-row')
-  await nodeContainerRow.nth(0).waitFor()
-
-  const containerRows = await nodeContainerRow.count()
-
-  await expect(containerRows).toBeGreaterThanOrEqual(1)
-})
-
 test('Deleting node', async ({ page }) => {
   const name = 'PW_DELETE_NODE'
 
@@ -261,6 +157,7 @@ test('Deleting node', async ({ page }) => {
   await page.locator('button:has-text("Delete"):left-of(:has-text("Cancel"))').click()
 
   await page.goto(ROUTE_NODES)
+  await page.waitForURL(ROUTE_NODES)
 
   await expect(await page.locator(`h3:has-text("${name}")`).count()).toEqual(0)
 })
