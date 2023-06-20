@@ -109,7 +109,7 @@ const AuditLogPage = () => {
 
   const headerClassNames = [
     ...Array.from({ length: listHeaders.length - 1 }).map(() => defaultHeaderClassName),
-    clsx('text-center pr-6', defaultHeaderClassName),
+    clsx('pr-6 text-center', defaultHeaderClassName),
   ]
 
   const itemClasses = [

@@ -25,7 +25,7 @@ const ProjectViewList = (props: ProjectViewListProps) => {
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: headers.length - 3 }).map(() => defaultHeaderClass),
     clsx('text-center', defaultHeaderClass),
-    clsx('rounded-tr-lg text-center pr-6', defaultHeaderClass),
+    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
   ]
   const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
   const itemClasses = [

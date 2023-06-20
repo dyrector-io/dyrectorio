@@ -175,10 +175,10 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   ]
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 p-2 font-semibold'
   const headerClassNames = [
-    clsx(defaultHeaderClass, 'pl-6 rounded-tl-lg'),
+    clsx(defaultHeaderClass, 'rounded-tl-lg pl-6'),
     ...Array.from({ length: listHeaders.length - 3 }).map(() => defaultHeaderClass),
     clsx(defaultHeaderClass, 'text-center'),
-    clsx(defaultHeaderClass, 'text-center rounded-tr-lg pr-6'),
+    clsx(defaultHeaderClass, 'rounded-tr-lg pr-6 text-center'),
   ]
 
   const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
@@ -186,7 +186,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     clsx('pl-6', defaultItemClass),
     ...Array.from({ length: listHeaders.length - 3 }).map(() => defaultItemClass),
     clsx('text-center', defaultItemClass),
-    clsx('text-center pr-6', defaultItemClass),
+    clsx('pr-6 text-center', defaultItemClass),
   ]
 
   const pageMenuTexts: DetailsPageTexts = {

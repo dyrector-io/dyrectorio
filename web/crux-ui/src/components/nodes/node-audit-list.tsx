@@ -101,7 +101,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
   const itemClasses = [
     clsx('pl-6', defaultItemClass),
     ...Array.from({ length: listHeaders.length - 2 }).map(() => defaultItemClass),
-    clsx('text-center pr-6', defaultItemClass),
+    clsx('pr-6 text-center', defaultItemClass),
   ]
 
   const itemTemplate = (log: NodeAuditLog) => /* eslint-disable react/jsx-key */ [

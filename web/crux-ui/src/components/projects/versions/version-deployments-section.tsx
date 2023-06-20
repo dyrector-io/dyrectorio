@@ -118,7 +118,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     defaultHeaderClass,
     clsx('text-center', defaultHeaderClass),
     defaultHeaderClass,
-    clsx('rounded-tr-lg text-center pr-6', defaultHeaderClass),
+    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
   ]
 
   const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
@@ -127,7 +127,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     ...Array.from({ length: 1 }).map(() => defaultItemClass),
     clsx('text-center', defaultItemClass),
     ...Array.from({ length: headerClasses.length - 4 }).map(() => defaultItemClass),
-    clsx('text-center pr-6', defaultItemClass),
+    clsx('pr-6 text-center', defaultItemClass),
   ]
 
   const itemTemplate = (item: DeploymentByVersion) => {

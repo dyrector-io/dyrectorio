@@ -72,7 +72,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: headers.length - 3 }).map(() => defaultHeaderClass),
     clsx('text-center', defaultHeaderClass),
-    clsx('text-center pr-6 rounded-tr-lg', defaultHeaderClass),
+    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
   ]
 
   const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
@@ -80,7 +80,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     clsx('pl-6', defaultItemClass),
     ...Array.from({ length: headerClasses.length - 3 }).map(() => defaultItemClass),
     clsx('text-center', defaultItemClass),
-    clsx('text-center pr-6', defaultItemClass),
+    clsx('pr-6 text-center', defaultItemClass),
   ]
 
   const onCellClick = async (data: Deployment, row: number, col: number) => {
