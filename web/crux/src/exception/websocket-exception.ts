@@ -18,5 +18,6 @@ export const convertHttpExceptionToWsExceptionOptions = (exception: HttpExceptio
   return {
     ...res,
     status,
+    property: res.property,
   }
 }

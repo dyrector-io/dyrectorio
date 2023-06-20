@@ -1,8 +1,5 @@
-import {
-  CruxExceptionOptions,
-  CruxInternalServerErrorException,
-  CruxUnauthorizedException,
-} from 'src/exception/crux-exception'
+import { CruxUnauthorizedException } from 'src/exception/crux-exception'
+import { getRegistryApiException } from 'src/exception/registry-exception'
 import { RegistryImageTags } from '../registry.message'
 import { RegistryApiClient } from './registry-api-client'
 
@@ -36,42 +33,27 @@ class RegistryV2ApiClient implements RegistryApiClient {
   async version() {
     const res = await this.fetch('/')
     if (!res.ok) {
-      const excOptions: CruxExceptionOptions = {
-        message: `Version request failed with status: ${res.status} ${res.statusText}`,
-      }
-      throw res.status === 401
-        ? new CruxUnauthorizedException(excOptions)
-        : new CruxInternalServerErrorException(excOptions)
+      throw getRegistryApiException(res, 'Version request')
     }
 
     return res
   }
 
-  async catalog(text: string, take: number): Promise<string[]> {
+  async catalog(text: string): Promise<string[]> {
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this.fetch(it), '/_catalog')
     if (!res.ok) {
-      const excOptions: CruxExceptionOptions = {
-        message: `Catalog request failed with status: ${res.status} ${res.statusText}`,
-      }
-      throw res.status === 401
-        ? new CruxUnauthorizedException(excOptions)
-        : new CruxInternalServerErrorException(excOptions)
+      throw getRegistryApiException(res, 'Catalog request')
     }
 
     const json = (await res.json()) as { repositories: string }[]
     const repositories = json.flatMap(it => it.repositories) as string[]
-    return repositories.filter(it => it.includes(text)).slice(0, take)
+    return repositories.filter(it => it.includes(text))
   }
 
   async tags(image: string): Promise<RegistryImageTags> {
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this.fetch(it), `/${image}/tags/list`)
     if (!res.ok) {
-      const excOptions: CruxExceptionOptions = {
-        message: `Tags request failed with status: ${res.status} ${res.statusText}`,
-      }
-      throw res.status === 401
-        ? new CruxUnauthorizedException(excOptions)
-        : new CruxInternalServerErrorException(excOptions)
+      throw getRegistryApiException(res, 'Tags request')
     }
 
     const json = (await res.json()) as RegistryImageTags[]
