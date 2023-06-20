@@ -328,15 +328,18 @@ export default class DeployService {
       select: {
         prefix: true,
         nodeId: true,
+        status: true,
       },
     })
 
-    const agent = this.agentService.getById(deployment.nodeId)
-    if (agent) {
-      agent.deleteContainers({
-        prefix: deployment.prefix,
-        container: null,
-      })
+    if (deployment.status === 'successful') {
+      const agent = this.agentService.getById(deployment.nodeId)
+      if (agent) {
+        agent.deleteContainers({
+          prefix: deployment.prefix,
+          container: null,
+        })
+      }
     }
   }
 
