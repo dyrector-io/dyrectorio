@@ -62,6 +62,7 @@
   "deploy": "Deploy",
   "view": "View",
   "down": "Down",
+  "never": "Never",
 
   "confirm": "Confirm",
   "areYouSureDeleteName": "Are you sure you want to delete {{name}}?",

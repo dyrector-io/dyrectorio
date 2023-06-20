@@ -32,6 +32,9 @@ module.exports = {
         'error-red': '#ea5455',
         'warning-orange': '#ff9f43',
       },
+      width: {
+        128: '32rem',
+      },
       height: {
         128: '32rem',
       },

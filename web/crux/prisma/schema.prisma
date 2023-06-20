@@ -270,8 +270,23 @@ model Deployment {
   version Version @relation(fields: [versionId], references: [id], onDelete: Cascade)
   node    Node    @relation(fields: [nodeId], references: [id], onDelete: Cascade)
 
-  instances Instance[]
-  events    DeploymentEvent[]
+  instances       Instance[]
+  events          DeploymentEvent[]
+  tokens          DeploymentToken[]
+}
+
+model DeploymentToken {
+  id           String    @id @default(uuid()) @db.Uuid
+  deploymentId String    @db.Uuid
+  createdBy    String    @db.Uuid
+  createdAt    DateTime  @default(now()) @db.Timestamptz(6)
+  expiresAt    DateTime? @db.Timestamptz(6)
+  nonce        String    @db.Uuid
+
+  deployment Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+
+  @@unique([deploymentId])
+  @@unique([deploymentId, nonce])
 }
 
 model Instance {

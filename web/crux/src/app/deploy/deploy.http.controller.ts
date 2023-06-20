@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   UseGuards,
   UseInterceptors,
@@ -21,15 +22,17 @@ import {
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
+import { AuthStrategy, IdentityFromRequest } from '../token/jwt-auth.guard'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
-import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import {
   CopyDeploymentDto,
   CreateDeploymentDto,
+  CreateDeploymentTokenDto,
   DeploymentDetailsDto,
   DeploymentDto,
   DeploymentLogListDto,
   DeploymentLogPaginationQuery,
+  DeploymentTokenCreatedDto,
   InstanceDto,
   InstanceSecretsDto,
   PatchDeploymentDto,
@@ -43,6 +46,7 @@ import DeployCreateValidationInterceptor from './interceptors/deploy.create.inte
 import DeleteDeploymentValidationInterceptor from './interceptors/deploy.delete.interceptor'
 import DeployPatchValidationInterceptor from './interceptors/deploy.patch.interceptor'
 import DeployStartValidationInterceptor from './interceptors/deploy.start.interceptor'
+import DeployJwtAuthGuard from './guards/deploy.jwt-auth.guard'
 
 const PARAM_DEPLOYMENT_ID = 'deploymentId'
 const PARAM_INSTANCE_ID = 'instanceId'
@@ -53,10 +57,11 @@ const ROUTE_DEPLOYMENTS = 'deployments'
 const ROUTE_DEPLOYMENT_ID = ':deploymentId'
 const ROUTE_INSTANCES = 'instances'
 const ROUTE_INSTANCE_ID = ':instanceId'
+const ROUTE_TOKEN = 'token'
 
 @Controller(ROUTE_DEPLOYMENTS)
 @ApiTags(ROUTE_DEPLOYMENTS)
-@UseGuards(DeployTeamAccessGuard)
+@UseGuards(DeployJwtAuthGuard, DeployTeamAccessGuard)
 export default class DeployHttpController {
   constructor(private service: DeployService) {}
 
@@ -199,6 +204,7 @@ export default class DeployHttpController {
   @UseInterceptors(DeployStartValidationInterceptor)
   @ApiNoContentResponse({ description: 'Deployment initiated.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
+  @AuthStrategy('deploy-token')
   async startDeployment(
     @DeploymentId() deploymentId: string,
     @IdentityFromRequest() identity: Identity,
@@ -210,7 +216,7 @@ export default class DeployHttpController {
   @HttpCode(201)
   @ApiOperation({
     description:
-      'Request must include `deploymentId` and `force`, which is when true will overwrite the existing preparing deployment. Response should include deployment data: `id`, `prefix`, `status`, `note`, and miscellaneous details of `audit` log, `project`, `version`, and `node`.',
+      'Request must include `deploymentId`, which will be copied. The body must include the `nodeId`, `prefix` and optionally a `note`. Response should include deployment data: `id`, `prefix`, `status`, `note`, and miscellaneous details of `audit` log, `project`, `version`, and `node`.',
     summary: 'Copy deployment.',
   })
   @CreatedWithLocation()
@@ -244,6 +250,41 @@ export default class DeployHttpController {
     @Query() query: DeploymentLogPaginationQuery,
   ): Promise<DeploymentLogListDto> {
     return this.service.getDeploymentLog(deploymentId, query)
+  }
+
+  @Put(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_TOKEN}`)
+  @HttpCode(201)
+  @ApiOperation({
+    description:
+      'Request must include `deploymentId` in the url. In the body a `name` and optionally the expiration date as `expirationInDays`.',
+    summary: 'Create deployment token.',
+  })
+  @CreatedWithLocation()
+  @ApiOkResponse({ type: DeploymentTokenCreatedDto, description: 'Deployment token with jwt and the curl command.' })
+  @UuidParams(PARAM_DEPLOYMENT_ID)
+  async createDeploymentToken(
+    @DeploymentId() deploymentId: string,
+    @Body() request: CreateDeploymentTokenDto,
+    @IdentityFromRequest() identity: Identity,
+  ): Promise<CreatedResponse<DeploymentTokenCreatedDto>> {
+    const token = await this.service.createDeploymentToken(deploymentId, request, identity)
+
+    return {
+      url: `${DeployHttpController.locationOf(deploymentId)}/${ROUTE_TOKEN}`,
+      body: token,
+    }
+  }
+
+  @Delete(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_TOKEN}`)
+  @HttpCode(204)
+  @ApiOperation({
+    description: 'Request must include the `deploymentId`.',
+    summary: 'Delete deployment token.',
+  })
+  @ApiNoContentResponse({ description: 'Deployment token deleted.' })
+  @UuidParams(PARAM_DEPLOYMENT_ID)
+  async deleteDeploymentToken(@DeploymentId() deploymentId: string): Promise<void> {
+    await this.service.deleteDeploymentToken(deploymentId)
   }
 
   private static locationOf(deploymentId: string) {
