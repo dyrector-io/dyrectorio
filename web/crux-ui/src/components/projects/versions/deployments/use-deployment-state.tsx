@@ -2,6 +2,8 @@ import useEditorState, { EditorState } from '@app/components/editor/use-editor-s
 import useNodeState from '@app/components/nodes/use-node-state'
 import { ViewMode } from '@app/components/shared/view-mode-toggle'
 import { DEPLOYMENT_EDIT_WS_REQUEST_DELAY } from '@app/const'
+import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
+import useConfirmation from '@app/hooks/use-confirmation'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -14,6 +16,7 @@ import {
   deploymentIsMutable,
   deploymentLogVisible,
   DeploymentRoot,
+  DeploymentToken,
   DyoNode,
   GetInstanceMessage,
   ImageDeletedMessage,
@@ -36,15 +39,17 @@ import {
   WS_TYPE_PATCH_INSTANCE,
   WS_TYPE_PATCH_RECEIVED,
 } from '@app/models'
-import { deploymentWsUrl, WS_NODES } from '@app/routes'
+import { deploymentTokenApiUrl, deploymentWsUrl, WS_NODES } from '@app/routes'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
+import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
-export type DeploymentEditState = 'details' | 'edit' | 'copy'
+export type DeploymentEditState = 'details' | 'edit' | 'copy' | 'create-token'
 
 export type DeploymentStateOptions = {
   deployment: DeploymentRoot
   onWsError: (error: Error) => void
+  onApiError: (error: Response) => void
 }
 
 export type DeploymentState = {
@@ -63,6 +68,7 @@ export type DeploymentState = {
   viewMode: ViewMode
   sock: WebSocketClientEndpoint
   showDeploymentLog: boolean
+  confirmationModal: DyoConfirmationModalConfig
 }
 
 export type DeploymentActions = {
@@ -71,6 +77,8 @@ export type DeploymentActions = {
   onEnvironmentEdited: (environment: UniqueKeyValue[]) => void
   setViewMode: (viewMode: ViewMode) => void
   onInvalidateSecrets: (secrets: DeploymentInvalidatedSecrets[]) => void
+  onDeploymentTokenCreated: (token: DeploymentToken) => void
+  onRevokeDeploymentToken: VoidFunction
 }
 
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
@@ -82,7 +90,9 @@ const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage)
 })
 
 const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, DeploymentActions] => {
-  const { deployment: optionDeploy, onWsError } = options
+  const { t } = useTranslation('deployments')
+
+  const { deployment: optionDeploy, onWsError, onApiError } = options
   const { project, version } = optionDeploy
 
   const envEditThrottle = useThrottling(DEPLOYMENT_EDIT_WS_REQUEST_DELAY)
@@ -93,6 +103,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const [editState, setEditState] = useState<DeploymentEditState>('details')
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
   const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [confirmationModal, confirm] = useConfirmation()
 
   const mutable = deploymentIsMutable(deployment.status, version.type)
   const deployable = deploymentIsDeployable(deployment.status, version.type)
@@ -208,6 +219,37 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
     setInstances(newInstances)
   }
 
+  const onDeploymentTokenCreated = (token: DeploymentToken) => {
+    setDeployment({
+      ...deployment,
+      token,
+    })
+    setEditState('details')
+  }
+
+  const onRevokeDeploymentToken = async () => {
+    const confirmed = await confirm(null, {
+      title: t('common:areYouSure'),
+      description: t('tokens:revokingTokenMayBreak'),
+    })
+
+    if (!confirmed) {
+      return
+    }
+
+    const res = await fetch(deploymentTokenApiUrl(deployment.id), { method: 'DELETE' })
+
+    if (!res.ok) {
+      onApiError(res)
+      return
+    }
+
+    setDeployment({
+      ...deployment,
+      token: null,
+    })
+  }
+
   return [
     {
       deployment,
@@ -225,6 +267,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       viewMode,
       sock,
       showDeploymentLog,
+      confirmationModal,
     },
     {
       setEditState,
@@ -232,6 +275,8 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       onEnvironmentEdited,
       setViewMode,
       onInvalidateSecrets,
+      onDeploymentTokenCreated,
+      onRevokeDeploymentToken,
     },
   ]
 }

@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { DISABLE_AUTH, identityOfRequest } from 'src/app/token/jwt-auth.guard'
+import { AUTH_STRATEGY, AuthStrategyType, identityOfRequest } from 'src/app/token/jwt-auth.guard'
 import NodeService from '../node.service'
 
 @Injectable()
@@ -15,8 +15,8 @@ export default class NodeTeamAccessGuard implements CanActivate {
       return true
     }
 
-    const authDisabled = this.reflector.get<boolean>(DISABLE_AUTH, context.getHandler())
-    if (authDisabled) {
+    const authStrategy = this.reflector.get<AuthStrategyType>(AUTH_STRATEGY, context.getHandler())
+    if (authStrategy === 'disabled') {
       return true
     }
 

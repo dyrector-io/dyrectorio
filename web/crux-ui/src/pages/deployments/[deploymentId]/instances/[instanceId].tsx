@@ -16,6 +16,7 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoMessage from '@app/elements/dyo-message'
+import { defaultApiErrorHandler } from '@app/errors'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import {
   configToFilters,
@@ -69,9 +70,12 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     toast(t('errors:connectionLost'))
   }
 
+  const onApiError = defaultApiErrorHandler(t)
+
   const [deploymentState] = useDeploymentState({
     deployment,
     onWsError,
+    onApiError,
   })
 
   const instance = deploymentState.instances.find(it => it.id === instanceId)
