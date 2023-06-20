@@ -234,6 +234,8 @@ export const deploymentCopyApiUrl = (deploymentId: string) => `${deploymentApiUr
 
 export const deploymentStartApiUrl = (deploymentId: string) => `${deploymentApiUrl(deploymentId)}/start`
 
+export const deploymentTokenApiUrl = (deploymentId: string) => `${deploymentApiUrl(deploymentId)}/token`
+
 export const instanceApiUrl = (deploymentId: string, instanceId: string) =>
   `${deploymentApiUrl(deploymentId)}/instances/${instanceId}`
 

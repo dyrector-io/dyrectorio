@@ -57,7 +57,6 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
   const { t } = useTranslation('common')
 
   const [section, setSection] = useState<NodeDetailsSection>('containers')
-  const [editing, setEditing] = useState<boolean>(false)
   const [node, setNode] = useNodeState(options.node)
   const [confirmationModal, confirm] = useConfirmation()
 
@@ -138,6 +137,8 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     }
   })
 
+  const setEditing = (editing: boolean) => setSection(editing ? 'editing' : 'containers')
+
   const sendContainerCommand = (container: Container, operation: ContainerOperation) => {
     sock.send(WS_TYPE_CONTAINER_COMMAND, {
       container: container.id,
@@ -193,7 +194,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
 
   return [
     {
-      section: editing ? 'editing' : section,
+      section,
       node,
       containerTargetStates,
       containerFilters,

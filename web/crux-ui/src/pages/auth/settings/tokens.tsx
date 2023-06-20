@@ -70,7 +70,7 @@ const TokensPage = (props: TokensPageProps) => {
   }
 
   const columnWidths = ['w-4/12', 'w-2/12', 'w-2/12', 'w-4/12']
-  const headers = ['common:name', 'common:createdAt', 'expiresAt', 'common:actions']
+  const headers = ['common:name', 'common:createdAt', 'tokens:expiresAt', 'common:actions']
   const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),

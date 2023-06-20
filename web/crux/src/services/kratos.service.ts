@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto'
 import { setDefaultResultOrder } from 'dns'
 import { IdentityTraits, KRATOS_IDENTITY_SCHEMA, KratosInvitation } from 'src/domain/identity'
 import { PRODUCTION } from 'src/shared/const'
+import http from 'http'
 
 @Injectable()
 export default class KratosService {
@@ -143,3 +144,5 @@ export default class KratosService {
     })
   }
 }
+
+export const hasKratosSession = (req: http.IncomingMessage): boolean => req.headers.cookie?.includes('ory_kratos_session=')

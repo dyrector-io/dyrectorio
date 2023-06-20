@@ -261,7 +261,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
             ) : node.hasToken && !node.install ? (
               <>
                 <DyoButton className="px-6 mt-4 mr-auto" secondary onClick={onRevokeToken}>
-                  {t('revoke')}
+                  {t('tokens:revoke')}
                 </DyoButton>
                 <DyoButton
                   className="px-6 mt-4 ml-4 mr-auto"
@@ -290,7 +290,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       <DyoConfirmationModal
         config={revokeModalConfig}
         title={t('confirmRevoke')}
-        confirmText={t('revoke')}
+        confirmText={t('tokens:revoke')}
         className="w-1/4"
         confirmColor="bg-error-red"
       />

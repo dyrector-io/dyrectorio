@@ -25,11 +25,15 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
   return (
     <DyoCard className={clsx(className ?? 'p-6')}>
       {!showName ? null : (
-        <div className="flex flex-row">
-          {node.icon ? <DyoBadge icon={node.icon} /> : null}
+        <div className="flex flex-row items-center gap-1 mb-2">
+          {node.icon ? (
+            <DyoBadge icon={node.icon} />
+          ) : (
+            <span className="text-bright text-xl">{`${t('common:node')}:`}</span>
+          )}
 
           <DyoHeading
-            className={clsx('text-xl text-bright font-semibold my-auto mr-auto', node.icon ? 'ml-4' : null)}
+            className={clsx('text-xl text-bright font-semibold truncate my-auto mr-auto', node.icon ? 'ml-4' : null)}
             element="h3"
           >
             {node.name}
@@ -41,7 +45,7 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
         <DyoLabel>{t('address')}</DyoLabel>
         <span className="text-light-eased">{node.address}</span>
 
-        <DyoLabel> {t('version')}</DyoLabel>
+        <DyoLabel className="self-start"> {t('version')}</DyoLabel>
         <span className="text-light-eased">{node.version}</span>
 
         <DyoLabel>{t('status')}</DyoLabel>

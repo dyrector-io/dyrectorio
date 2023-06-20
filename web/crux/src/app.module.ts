@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { PrometheusModule } from '@willsoto/nestjs-prometheus'
 import { LoggerModule } from 'nestjs-pino'
 import AgentModule from './app/agent/agent.module'
@@ -23,6 +23,8 @@ import PrismaService from './services/prisma.service'
 import UuidValidationGuard from './guards/uuid-params.validation.guard'
 import appConfig from './config/app.config'
 import pinoLoggerConfig from './config/pino.logger.config'
+import { PassportModule } from '@nestjs/passport'
+import { JwtModule } from '@nestjs/jwt'
 
 const imports = [
   ProjectModule,

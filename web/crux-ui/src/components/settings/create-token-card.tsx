@@ -60,7 +60,7 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
   return (
     <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
-        {t('newToken')}
+        {t('tokens:newToken')}
       </DyoHeading>
 
       <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
@@ -76,7 +76,7 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
           message={formik.errors.name}
         />
 
-        <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('expirationIn')}</DyoLabel>
+        <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('tokens:expirationIn')}</DyoLabel>
         <DyoChips
           className="text-bright"
           choices={EXPIRATION_VALUES}

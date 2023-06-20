@@ -10,7 +10,6 @@
   "description": "Nodes are the deployment targets. You can add a new node by installing dyrector.io’s agents on your environment using a one-liner generated.",
   "noItems": "You haven't added any nodes yet. To add a new node click 'Add' on the top right.\n\n",
 
-  "revoke": "Revoke token",
   "confirmRevoke": "Are you sure you want to revoke the token?",
 
   "setup": "Install the agent",

@@ -2,7 +2,9 @@ import EditorBadge from '@app/components/editor/editor-badge'
 import { Layout } from '@app/components/layout'
 import NodeConnectionCard from '@app/components/nodes/node-connection-card'
 import CopyDeploymentCard from '@app/components/projects/versions/deployments/copy-deployment-card'
+import CreateDeploymentTokenCard from '@app/components/projects/versions/deployments/create-deployment-token-card'
 import DeploymentDetailsSection from '@app/components/projects/versions/deployments/deployment-details-section'
+import DeploymentTokenCard from '@app/components/projects/versions/deployments/deployment-token-card'
 import EditDeploymentCard from '@app/components/projects/versions/deployments/edit-deployment-card'
 import EditDeploymentInstances from '@app/components/projects/versions/deployments/edit-deployment-instances'
 import useDeploymentState from '@app/components/projects/versions/deployments/use-deployment-state'
@@ -11,6 +13,7 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import DyoButton from '@app/elements/dyo-button'
+import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
@@ -67,6 +70,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const [state, actions] = useDeploymentState({
     deployment: propsDeployment,
     onWsError,
+    onApiError: handleApiError,
   })
 
   const { project, version, deployment, node } = state
@@ -143,6 +147,8 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   const editing = state.editState === 'edit'
 
+  const onDiscard = () => actions.setEditState('details')
+
   return (
     <Layout
       title={t('deploysName', {
@@ -215,12 +221,28 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
           deployment={state.deployment}
           submitRef={submitRef}
           onDeplyomentCopied={onDeploymentCopied}
-          onDiscard={() => actions.setEditState('details')}
+          onDiscard={onDiscard}
+        />
+      ) : state.editState === 'create-token' ? (
+        <CreateDeploymentTokenCard
+          deployment={state.deployment}
+          submitRef={submitRef}
+          onTokenCreated={actions.onDeploymentTokenCreated}
+          onDiscard={onDiscard}
         />
       ) : (
         <>
           <div className="flex flex-row">
-            <NodeConnectionCard className="w-1/3 p-6" node={state.node} showName />
+            <div className="flex flex-col gap-2 w-1/3">
+              <NodeConnectionCard node={state.node} showName />
+
+              <DeploymentTokenCard
+                className="h-full p-6"
+                token={state.deployment.token}
+                onCreate={() => actions.setEditState('create-token')}
+                onRevoke={actions.onRevokeDeploymentToken}
+              />
+            </div>
 
             <DeploymentDetailsSection state={state} actions={actions} className="w-2/3 p-6 ml-2" />
           </div>
@@ -228,6 +250,14 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
           <EditDeploymentInstances state={state} actions={actions} />
         </>
       )}
+
+      <DyoConfirmationModal
+        config={state.confirmationModal}
+        title={t('confirmRevoke')}
+        confirmText={t('tokens:revoke')}
+        className="w-1/4"
+        confirmColor="bg-error-red"
+      />
     </Layout>
   )
 }
