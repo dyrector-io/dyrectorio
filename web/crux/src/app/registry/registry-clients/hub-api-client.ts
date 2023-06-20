@@ -1,6 +1,7 @@
+import { getRegistryApiException } from 'src/exception/registry-exception'
 import { RegistryImageTags } from '../registry.message'
 import HubApiCache from './caches/hub-api-cache'
-import { RegistryApiClient, getRegistryApiException } from './registry-api-client'
+import { RegistryApiClient } from './registry-api-client'
 
 type HubApiPaginatedResponse = {
   count: number

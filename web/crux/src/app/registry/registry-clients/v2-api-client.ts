@@ -1,6 +1,7 @@
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { RegistryImageTags } from '../registry.message'
-import { RegistryApiClient, getRegistryApiException } from './registry-api-client'
+import { RegistryApiClient } from './registry-api-client'
+import { getRegistryApiException } from 'src/exception/registry-exception'
 
 export type RegistryV2ApiClientOptions = {
   username?: string

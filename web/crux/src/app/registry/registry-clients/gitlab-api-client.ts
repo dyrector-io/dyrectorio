@@ -1,6 +1,7 @@
+import { getRegistryApiException } from 'src/exception/registry-exception'
 import { GitlabNamespace } from '../registry.dto'
 import { RegistryImageTags } from '../registry.message'
-import { RegistryApiClient, getRegistryApiException } from './registry-api-client'
+import { RegistryApiClient } from './registry-api-client'
 import RegistryV2ApiClient, { RegistryV2ApiClientOptions } from './v2-api-client'
 
 export type GitlabRegistryClientUrls = {
