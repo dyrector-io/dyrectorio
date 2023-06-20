@@ -135,7 +135,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
           </div>
 
           <DyoHeading element="h4" className="text-xl text-bright mt-8">
-            {t('JWT token')}
+            {t('jwtToken')}
           </DyoHeading>
 
           <div className="flex flex-wrap gap-2 text-bright items-center">
@@ -146,6 +146,8 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
             </span>
 
             <span>{t('youMustPutTheBearer')}</span>
+
+            <span>{t('youCanSelectSpecificInstances')}</span>
           </div>
 
           <ShEditor className="h-26 p-2 mb-4 mt-2 w-full overflow-x-auto" readOnly value={token.token} />

@@ -7,8 +7,9 @@
   "deploymentToken": "Deployment token",
   "createDeployTokenFor": "Create a deployment token for your CI/CD pipeline, so you can trigger this deployment with dyrector.io's HTTP API.",
   "deployTokenIsReady": "The deployment token is ready. Make sure to copy the token itself or the curl command below now. You won't be able to see it again!",
-  "toTriggerTheDeploy": "To trigger the deployment with the jwt token, send a POST request to",
+  "toTriggerTheDeploy": "To trigger the deployment with the JWT token, send a POST request to",
   "youMustPutTheBearer": "You must put the generated token as 'Bearer <token>' into the request's Authorization header.",
+  "youCanSelectSpecificInstances": "You can select specific instances to be deployed by specifying them in the body of the request.",
   "created": "Created",
   "actions": "Actions",
   "noItems": "You haven't made a deployment.",
@@ -19,6 +20,7 @@
   "prefixName": "Prefix: {{name}}",
   "showLogs": "Show logs",
   "noInstancesSelected": "No instances selected to deploy.",
+  "jwtToken": "JWT token",
 
   "proceedYouDeletePrefix": "If you proceed, you will delete containers under prefix {{prefix}}. This action is not revocable."
 }
