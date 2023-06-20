@@ -25,6 +25,7 @@ type AuditFilter = {
 }
 
 const defaultHeaderClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased p-2 py-3 h-11'
+const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
 const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-32', 'w-2/12', '', 'w-24']
 const sixDays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
@@ -108,7 +109,12 @@ const AuditLogPage = () => {
 
   const headerClassNames = [
     ...Array.from({ length: listHeaders.length - 1 }).map(() => defaultHeaderClassName),
-    clsx('text-right pr-6', defaultHeaderClassName),
+    clsx('text-center pr-6', defaultHeaderClassName),
+  ]
+
+  const itemClasses = [
+    ...Array.from({ length: headerClassNames.length - 1 }).map(() => defaultItemClass),
+    clsx('pr-6 text-center', defaultItemClass),
   ]
 
   const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
@@ -122,15 +128,13 @@ const AuditLogPage = () => {
     <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
       {JSON.stringify(log.data)}
     </div>,
-    <div className="text-right pr-6">
-      <DyoIcon
-        className="aspect-square cursor-pointer"
-        src="/eye.svg"
-        alt={t('common:view')}
-        size="md"
-        onClick={() => onShowInfoClick(log)}
-      />
-    </div>,
+    <DyoIcon
+      className="aspect-square cursor-pointer"
+      src="/eye.svg"
+      alt={t('common:view')}
+      size="md"
+      onClick={() => onShowInfoClick(log)}
+    />,
   ]
   /* eslint-enable react/jsx-key */
 
@@ -155,6 +159,7 @@ const AuditLogPage = () => {
           <DyoList
             noSeparator
             headerClassName={headerClassNames}
+            itemClassName={itemClasses}
             columnWidths={columnWidths}
             data={data}
             headers={listHeaders}

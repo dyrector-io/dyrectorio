@@ -21,25 +21,25 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
 
   const { t } = useTranslation('images')
 
-  const columnWidths = ['w-12', 'w-4/12', 'w-2/12', 'w-2/12', 'w-3/12', 'w-28']
+  const columnWidths = ['w-12', 'w-4/12', 'w-2/12', 'w-2/12', 'w-4/12', 'w-28']
   const headers = ['', 'containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions']
-  const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
+  const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased p-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultHeaderClass),
-    clsx('rounded-tr-lg text-right pr-6', defaultHeaderClass),
+    clsx('rounded-tr-lg text-center pr-6', defaultHeaderClass),
   ]
   const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
   const itemClasses = [
     clsx('pl-6', defaultItemClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultItemClass),
-    clsx('text-right pr-6', defaultItemClass),
+    clsx('text-center pr-6', defaultItemClass),
   ]
 
   const itemTemplate = (item: Instance) => [
     <DyoCheckbox
       checked={deployInstances.includes(item.id)}
-      onCheckedChange={it => actions.onDeployInstanceEdited(item.id, it)}
+      onCheckedChange={it => actions.onDeployInstanceEdited(it, item.id)}
     />,
     item.config?.name ?? item.image.config.name,
     item.image.registry.name,
@@ -49,11 +49,23 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
         {item.image.tag ? `:${item.image.tag}` : null}
       </span>
     </div>,
-    <span suppressHydrationWarning>{item.image.createdAt ? utcDateToLocale(item.image.createdAt) : 'new'}</span>,
+    <span suppressHydrationWarning>
+      {item.image.createdAt ? utcDateToLocale(item.image.createdAt) : t('common:new')}
+    </span>,
     <Link href={instanceConfigUrl(state.deployment.id, item.id)} passHref>
       <DyoIcon src="/settings.svg" alt={t('common:settings')} size="md" />
     </Link>,
   ]
+
+  const headerBuilder = (header: string, index: number) =>
+    index === 0 ? (
+      <DyoCheckbox
+        checked={state.instances.length === state.deployInstances.length}
+        onCheckedChange={it => actions.onDeployInstanceEdited(it)}
+      />
+    ) : (
+      header
+    )
 
   return (
     <DyoCard className="relative mt-4">
@@ -65,6 +77,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
         data={instances}
         noSeparator
         itemBuilder={itemTemplate}
+        headerBuilder={headerBuilder}
       />
     </DyoCard>
   )

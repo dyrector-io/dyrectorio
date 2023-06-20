@@ -80,7 +80,7 @@ export type DeploymentActions = {
   onInvalidateSecrets: (secrets: DeploymentInvalidatedSecrets[]) => void
   onDeploymentTokenCreated: (token: DeploymentToken) => void
   onRevokeDeploymentToken: VoidFunction
-  onDeployInstanceEdited: (id: string, deploy: boolean) => void
+  onDeployInstanceEdited: (deploy: boolean, id?: string) => void
 }
 
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
@@ -252,13 +252,17 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       token: null,
     })
   }
-  
-  const onDeployInstanceEdited = (id: string, deploy: boolean) => {
-    if ((deploy && deployInstances.includes(id)) || (!deploy && !deployInstances.includes(id))) {
-      return
-    }
 
-    setDeployInstances(deploy ? [...deployInstances, id] : [...deployInstances.filter(it => it !== id)])
+  const onDeployInstanceEdited = (deploy: boolean, id?: string) => {
+    if (id) {
+      if ((deploy && deployInstances.includes(id)) || (!deploy && !deployInstances.includes(id))) {
+        return
+      }
+
+      setDeployInstances(deploy ? [...deployInstances, id] : [...deployInstances.filter(it => it !== id)])
+    } else {
+      setDeployInstances(deploy ? instances.map(it => it.id) : [])
+    }
   }
 
   return [

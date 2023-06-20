@@ -107,17 +107,17 @@ const NodeContainersList = (props: NodeContainersListProps) => {
   }
 
   const columnWidths = ['w-2/12', 'w-3/12', 'w-1/12', 'w-1/12', '', '', 'w-40']
-  const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
+  const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased p-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultHeaderClass),
-    clsx('rounded-tr-lg pr-6 text-right', defaultHeaderClass),
+    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
   ]
   const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
   const itemClasses = [
     clsx('pl-6', defaultItemClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultItemClass),
-    clsx('pr-6 text-right', defaultItemClass),
+    clsx('pr-6 text-center', defaultItemClass),
   ]
 
   return (

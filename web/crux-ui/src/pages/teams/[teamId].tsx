@@ -173,19 +173,20 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const listHeaders = [
     ...['common:name', 'common:email', 'role', 'lastLogin', 'common:status', 'common:actions'].map(it => t(it)),
   ]
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-6 font-semibold'
+  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 p-2 font-semibold'
   const headerClassNames = [
-    clsx(defaultHeaderClass, 'rounded-tl-lg'),
+    clsx(defaultHeaderClass, 'pl-6 rounded-tl-lg'),
     ...Array.from({ length: listHeaders.length - 3 }).map(() => defaultHeaderClass),
     clsx(defaultHeaderClass, 'text-center'),
-    clsx(defaultHeaderClass, 'text-right rounded-tr-lg pr-6'),
+    clsx(defaultHeaderClass, 'text-center rounded-tr-lg pr-6'),
   ]
 
-  const defaultItemClass = 'h-11 min-h-min text-light-eased pl-6 w-fit'
+  const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
   const itemClass = [
-    ...Array.from({ length: listHeaders.length - 2 }).map(() => defaultItemClass),
+    clsx('pl-6', defaultItemClass),
+    ...Array.from({ length: listHeaders.length - 3 }).map(() => defaultItemClass),
     clsx('text-center', defaultItemClass),
-    clsx('text-right pr-6', defaultItemClass),
+    clsx('text-center pr-6', defaultItemClass),
   ]
 
   const pageMenuTexts: DetailsPageTexts = {

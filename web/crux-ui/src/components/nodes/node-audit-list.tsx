@@ -95,16 +95,22 @@ const NodeAuditList = (props: NodeAuditListProps) => {
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: listHeaders.length - 2 }).map(() => defaultHeaderClass),
-    clsx('rounded-tr-lg pr-6 text-right', defaultHeaderClass),
+    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
+  ]
+
+  const itemClasses = [
+    clsx('pl-6', defaultItemClass),
+    ...Array.from({ length: listHeaders.length - 2 }).map(() => defaultItemClass),
+    clsx('text-center pr-6', defaultItemClass),
   ]
 
   const itemTemplate = (log: NodeAuditLog) => /* eslint-disable react/jsx-key */ [
-    <div className="pl-4 min-w-max">{utcDateToLocale(log.createdAt)}</div>,
+    <div className="min-w-max">{utcDateToLocale(log.createdAt)}</div>,
     t(`auditEvents.${log.event}`),
     <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
       {log.data && JSON.stringify(log.data)}
     </div>,
-    <div className="pr-4 text-right">
+    <div className="text-center">
       {log.data && (
         <DyoIcon
           className="aspect-square cursor-pointer ml-auto mr-auto"
@@ -151,7 +157,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
         <DyoList
           noSeparator
           headerClassName={headerClasses}
-          itemClassName={defaultItemClass}
+          itemClassName={itemClasses}
           columnWidths={columnWidths}
           data={data}
           headers={listHeaders}

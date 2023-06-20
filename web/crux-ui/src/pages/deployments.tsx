@@ -67,19 +67,20 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     'common:status',
     'common:actions',
   ]
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-6 font-semibold'
+  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 p-2 font-semibold'
   const headerClasses = [
-    clsx('rounded-tl-lg', defaultHeaderClass),
+    clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: headers.length - 3 }).map(() => defaultHeaderClass),
     clsx('text-center', defaultHeaderClass),
-    clsx('text-right pr-6 rounded-tr-lg', defaultHeaderClass),
+    clsx('text-center pr-6 rounded-tr-lg', defaultHeaderClass),
   ]
 
-  const defaultItemClass = 'h-11 min-h-min text-light-eased pl-6 w-fit'
+  const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
   const itemClasses = [
-    ...Array.from({ length: 5 }).map(() => defaultItemClass),
+    clsx('pl-6', defaultItemClass),
+    ...Array.from({ length: headerClasses.length - 3 }).map(() => defaultItemClass),
     clsx('text-center', defaultItemClass),
-    clsx('text-right pr-6', defaultItemClass),
+    clsx('text-center pr-6', defaultItemClass),
   ]
 
   const onCellClick = async (data: Deployment, row: number, col: number) => {

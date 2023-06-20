@@ -69,13 +69,13 @@ const TokensPage = (props: TokensPageProps) => {
     }
   }
 
-  const columnWidths = ['w-4/12', 'w-2/12', 'w-2/12', 'w-4/12']
+  const columnWidths = ['w-7/12', 'w-2/12', 'w-2/12', 'w-1/12']
   const headers = ['common:name', 'common:createdAt', 'tokens:expiresAt', 'common:actions']
-  const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
+  const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased p-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultHeaderClass),
-    clsx('rounded-tr-lg text-right pr-6', defaultHeaderClass),
+    clsx('rounded-tr-lg text-center pr-6', defaultHeaderClass),
   ]
   const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
   const itemClasses = [
@@ -88,7 +88,7 @@ const TokensPage = (props: TokensPageProps) => {
     <a>{item.name}</a>,
     <a>{utcDateToLocale(item.createdAt)}</a>,
     <a>{utcDateToLocale(item.expiresAt)}</a>,
-    <div className="flex flex-row justify-end">
+    <div className="flex flex-row justify-center">
       <Image
         className="cursor-pointer"
         src="/trash-can.svg"
