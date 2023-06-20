@@ -18,5 +18,7 @@
   "canNotCopyInProgress": "You can not copy an ",
   "prefixName": "Prefix: {{name}}",
   "showLogs": "Show logs",
+  "noInstancesSelected": "No instances selected to deploy.",
+
   "proceedYouDeletePrefix": "If you proceed, you will delete containers under prefix {{prefix}}. This action is not revocable."
 }

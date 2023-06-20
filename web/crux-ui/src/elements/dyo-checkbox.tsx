@@ -23,7 +23,7 @@ const DyoCheckbox = (props: DyoCheckboxProps) => {
       className={clsx(
         className,
         checked ? 'bg-dyo-turquoise' : 'border-2 border-light-grey',
-        'flex w-5 h-5 rounded-sm cursor-pointer',
+        'flex w-5 h-5 rounded-sm cursor-pointer select-none',
       )}
       onClick={() => handleCheckedChange(!checked)}
     >

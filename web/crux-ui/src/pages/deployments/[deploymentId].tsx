@@ -86,6 +86,11 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
+    if (state.deployInstances.length === 0) {
+      toast.error(t('noInstancesSelected'))
+      return
+    }
+
     let error: ValidationError
 
     let i = 0

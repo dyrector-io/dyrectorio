@@ -60,6 +60,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
   const headerBuilder = (header: string, index: number) =>
     index === 0 ? (
       <DyoCheckbox
+        className="border-bright-muted"
         checked={state.instances.length === state.deployInstances.length}
         onCheckedChange={it => actions.onDeployInstanceEdited(it)}
       />
