@@ -8,6 +8,7 @@ import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import { dateSort, SortFunctions, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentByVersion,
@@ -74,6 +75,11 @@ interface VersionDeploymentsSectionProps {
 
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
 
+type DeploymentSorting = 'prefix' | 'updatedAt' | 'status'
+
+const statusSort = (field: string, a: DeploymentByVersion, b: DeploymentByVersion) =>
+  DEPLOYMENT_STATUS_VALUES.indexOf(a.status) - DEPLOYMENT_STATUS_VALUES.indexOf(b.status)
+
 const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const { version, onCopyDeployment } = props
 
@@ -93,6 +99,15 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       enumFilterFor<DeploymentByVersion, DeploymentStatus>(it => [it.status]),
     ],
     initialData: version.deployments,
+  })
+
+  const sortFunctions: SortFunctions<DeploymentByVersion> = {
+    prefix: stringSort,
+    status: statusSort,
+    updatedAt: dateSort,
+  }
+  const sorting = useSorting<DeploymentByVersion, DeploymentSorting>(filters.filtered, {
+    sortFunctions,
   })
 
   const [nodeStatuses, setNodeStatuses] = useState<Record<string, NodeStatus>>({})
@@ -192,7 +207,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   return (
     <>
-      {filters.items.length ? (
+      {sorting.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
@@ -214,8 +229,15 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
               headers={headers}
               itemClassName={itemClasses}
               noSeparator
-              data={filters.filtered}
+              data={sorting.items}
               itemBuilder={itemTemplate}
+              headerBuilder={sortHeaderBuilder<DeploymentByVersion, DeploymentSorting>(sorting, [
+                null,
+                'prefix',
+                'status',
+                'updatedAt',
+                null,
+              ])}
             />
           </DyoCard>
         </>
