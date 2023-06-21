@@ -21,6 +21,7 @@ import {
 } from '@app/models'
 import {
   projectApiUrl,
+  projectConvertApiUrl,
   projectUrl,
   ROUTE_PROJECTS,
   versionApiUrl,
@@ -124,6 +125,21 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
 
   const onVersionIncreased = async (version: Version) => await router.push(versionUrl(project.id, version.id))
 
+  const onConvertToVersioned =
+    project.type === 'versioned'
+      ? null
+      : async () => {
+          const res = await fetch(projectConvertApiUrl(project.id), {
+            method: 'POST',
+          })
+
+          if (res.ok) {
+            await router.reload()
+          } else {
+            toast(t('errors:oops'))
+          }
+        }
+
   const pageLink: BreadcrumbLink = {
     name: t('common:projects'),
     url: ROUTE_PROJECTS,
@@ -160,7 +176,11 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
       </PageHeading>
 
       {editState === 'version-list' ? (
-        <ProjectDetailsCard project={project} className={clsx('p-6', versionless ? 'mb-4' : null)} />
+        <ProjectDetailsCard
+          project={project}
+          className={clsx('p-6', versionless ? 'mb-4' : null)}
+          onConvertToVersioned={onConvertToVersioned}
+        />
       ) : editState === 'edit-project' ? (
         <EditProjectCard
           className="mb-8 px-8 py-6"
