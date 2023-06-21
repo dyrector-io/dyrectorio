@@ -244,7 +244,7 @@ export class DeploymentLogPaginationQuery extends PaginationQuery {
   readonly try?: number
 }
 
-export class DeployStartDto {
+export class StartDeploymentDto {
   @IsOptional()
   @IsString({ each: true })
   instances?: string[]

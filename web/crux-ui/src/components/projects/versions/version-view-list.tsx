@@ -28,7 +28,7 @@ const VersionViewList = (props: VersionViewListProps) => {
 
   const columnWidths = ['', 'w-3/12', 'w-2/12', 'w-3/12', 'w-28']
   const headers = ['containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions']
-  const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased p-2 py-3 h-11'
+  const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultHeaderClass),

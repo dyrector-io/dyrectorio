@@ -144,6 +144,9 @@ const urlQuery = (url: string, query: object) => {
   return url
 }
 
+// docs
+export const apiDocsUrl = (params: CruxUrlParams) => appendUrlParams(`${ROUTE_DOCS}/basics/api`, params)
+
 // auth
 export const verificationUrl = (email: string, options?: { restart?: boolean }) => {
   const url = `${ROUTE_VERIFICATION}?email=${encodeURIComponent(email)}`

@@ -80,7 +80,8 @@ export type DeploymentActions = {
   onInvalidateSecrets: (secrets: DeploymentInvalidatedSecrets[]) => void
   onDeploymentTokenCreated: (token: DeploymentToken) => void
   onRevokeDeploymentToken: VoidFunction
-  onDeployInstanceEdited: (deploy: boolean, id?: string) => void
+  onInstanceSelected: (id: string, deploy: boolean) => void
+  onAllInstancesToggled: (deploy: boolean) => void
 }
 
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
@@ -253,16 +254,16 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
     })
   }
 
-  const onDeployInstanceEdited = (deploy: boolean, id?: string) => {
-    if (id) {
-      if ((deploy && deployInstances.includes(id)) || (!deploy && !deployInstances.includes(id))) {
-        return
-      }
-
-      setDeployInstances(deploy ? [...deployInstances, id] : [...deployInstances.filter(it => it !== id)])
-    } else {
-      setDeployInstances(deploy ? instances.map(it => it.id) : [])
+  const onInstanceSelected = (id: string, deploy: boolean) => {
+    if ((deploy && deployInstances.includes(id)) || (!deploy && !deployInstances.includes(id))) {
+      return
     }
+
+    setDeployInstances(deploy ? [...deployInstances, id] : [...deployInstances.filter(it => it !== id)])
+  }
+
+  const onAllInstancesToggled = (deploy: boolean) => {
+    setDeployInstances(deploy ? instances.map(it => it.id) : [])
   }
 
   return [
@@ -293,7 +294,8 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       onInvalidateSecrets,
       onDeploymentTokenCreated,
       onRevokeDeploymentToken,
-      onDeployInstanceEdited,
+      onInstanceSelected,
+      onAllInstancesToggled,
     },
   ]
 }

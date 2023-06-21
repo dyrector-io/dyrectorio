@@ -32,7 +32,7 @@ interface NodeAuditListProps {
   node: DyoNode
 }
 
-const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased p-2 py-3 h-11'
+const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11'
 const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
 const columnWidths = ['w-2/12', 'w-48', '', 'w-24']
 const sixDays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six

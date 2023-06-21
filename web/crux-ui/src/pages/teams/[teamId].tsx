@@ -173,7 +173,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const listHeaders = [
     ...['common:name', 'common:email', 'role', 'lastLogin', 'common:status', 'common:actions'].map(it => t(it)),
   ]
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 p-2 font-semibold'
+  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased px-2 py-3 font-semibold'
   const headerClassNames = [
     clsx(defaultHeaderClass, 'rounded-tl-lg pl-6'),
     ...Array.from({ length: listHeaders.length - 3 }).map(() => defaultHeaderClass),
