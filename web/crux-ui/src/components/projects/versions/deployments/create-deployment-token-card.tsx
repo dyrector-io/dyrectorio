@@ -152,6 +152,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
               <a
                 className="pl-1 underline"
                 target="_blank"
+                rel="noreferrer"
                 href={apiDocsUrl({ anchor: 'api-deployments-deploymentid-start' })}
               >
                 {t('clickHereForMoreInfo')}
