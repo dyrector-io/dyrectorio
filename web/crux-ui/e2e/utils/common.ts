@@ -170,5 +170,5 @@ export const clearInput = async (input: Locator) => {
   await input.press('Backspace')
 }
 
-export const waitForURLExcept = (page: Page, options: { startsWith: string; except: string }) =>
-  page.waitForURL(it => it.toString() !== options.except && it.pathname.startsWith(options.startsWith))
+export const waitForURLExcept = async (page: Page, options: { startsWith: string; except: string }) =>
+  await page.waitForURL(it => it.toString() !== options.except && it.pathname.startsWith(options.startsWith))

@@ -95,7 +95,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
 
         {!version.deletable && !version.mutable ? null : (
           <DetailsPageMenu
-            onDelete={!version.default ? (version.deletable ? onDelete : null) : null}
+            onDelete={version.deletable ? onDelete : null}
             editing={editing}
             setEditing={setEditing}
             disableEditing={!version.mutable}

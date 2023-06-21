@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { ProjectType } from '@app/models'
-import { projectUrl, ROUTE_DEPLOYMENTS, ROUTE_PROJECTS, versionUrl } from '@app/routes'
+import { deploymentUrl, projectUrl, ROUTE_DEPLOYMENTS, ROUTE_PROJECTS, versionUrl } from '@app/routes'
 import { expect, Page } from '@playwright/test'
 import { REGISTRY_NAME } from './common'
 
@@ -154,4 +154,26 @@ export const addDeploymentToVersion = async (
 export const fillDeploymentPrefix = async (page: Page, prefix: string) => {
   const prefixInput = await page.waitForSelector('input[name=prefix] >> visible=true')
   await prefixInput.fill(`pw-${prefix ?? (await prefixInput.inputValue())}`)
+}
+
+export const deleteVersion = async (page: Page, projectId: string, versionId: string) => {
+  await page.goto(versionUrl(projectId, versionId))
+
+  const deleteButton = page.locator('button:has-text("Delete")')
+  await expect(deleteButton).toHaveCount(1)
+  await deleteButton.click()
+  const confirmDeleteButton = page.locator('div[role=dialog]').locator('button:has-text("Delete")')
+  await expect(confirmDeleteButton).toHaveCount(1)
+  await confirmDeleteButton.click()
+}
+
+export const deleteDeployment = async (page: Page, deploymentId: string) => {
+  await page.goto(deploymentUrl(deploymentId))
+
+  const deleteButton = page.locator('button:has-text("Delete")')
+  await expect(deleteButton).toHaveCount(1)
+  await deleteButton.click()
+  const confirmDeleteButton = page.locator('div[role=dialog]').locator('button:has-text("Delete")')
+  await expect(confirmDeleteButton).toHaveCount(1)
+  await confirmDeleteButton.click()
 }

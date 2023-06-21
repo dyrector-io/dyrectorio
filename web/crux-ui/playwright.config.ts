@@ -12,18 +12,16 @@ export const STORAGE_STATE = path.join(__dirname, 'storageState.json')
 const DEBUG = !!process.env.DEBUG || !!process.env.PWDEBUG
 const CI = !!process.env.CI
 
-const createProject = (name: string, testMatch: string | RegExp | (string | RegExp)[], deps?: string[]) => {
-  return {
-    name,
-    testMatch,
-    // If running in DEBUG mode only depend on 'global-setup' so any test can run without running the whole project structure
-    dependencies: DEBUG ? ['global-setup'] : deps ?? ['global-setup'],
-    use: {
-      ...devices['Desktop Chromium'],
-      storageState: STORAGE_STATE,
-    },
-  }
-}
+const createProject = (name: string, testMatch: string | RegExp | (string | RegExp)[], deps?: string[]) => ({
+  name,
+  testMatch,
+  // If running in DEBUG mode only depend on 'global-setup' so any test can run without running the whole project structure
+  dependencies: DEBUG ? ['global-setup'] : deps ?? ['global-setup'],
+  use: {
+    ...devices['Desktop Chromium'],
+    storageState: STORAGE_STATE,
+  },
+})
 
 // Reference: https://playwright.dev/docs/test-configuration
 const config: PlaywrightTestConfig = {
@@ -77,7 +75,7 @@ const config: PlaywrightTestConfig = {
     },
     {
       name: 'without-login',
-      testMatch: /without\-login\/.*spec\.ts/,
+      testMatch: /without-login\/.*spec\.ts/,
       use: {
         ...devices['Desktop Chromium'],
       },
@@ -90,6 +88,7 @@ const config: PlaywrightTestConfig = {
     createProject('image-config', 'with-login/image-config.spec.ts', ['registry', 'template', 'version']),
     createProject('deployment', /with-login\/deployment(.*)\.spec\.ts/, ['image-config', 'nodes']),
     createProject('dagent-deploy', 'with-login/nodes-deploy.spec.ts', ['deployment']),
+    createProject('resource-copy', 'with-login/resource-copy.spec.ts', ['template', 'version', 'deployment', 'nodes']),
   ],
 }
 
