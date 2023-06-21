@@ -57,7 +57,6 @@ export const useSorting = <Item, Fields extends string>(
   }, [data, sortBy])
 
   const toggleSorting = (field: Fields) => {
-    console.log('kek')
     if (!sortBy || sortBy.field !== field) {
       setSortBy({
         field,
@@ -95,11 +94,13 @@ export const sortHeaderBuilder =
           onClick={() => sort.toggleSorting(mapping[index])}
         >
           <span>{header}</span>
-          {sort.sortDirection === 'asc' ? (
-            <Image className="cursor-pointer ml-1" src="/arrow_up.svg" alt={'orderUp'} width={16} height={16} />
-          ) : (
-            <Image className="cursor-pointer ml-1" src="/arrow_down.svg" alt={'orderDown'} width={16} height={16} />
-          )}
+          <Image
+            className="cursor-pointer ml-1"
+            src={sort.sortDirection === 'asc' ? '/arrow_up.svg' : '/arrow_down.svg'}
+            alt="order"
+            width={16}
+            height={16}
+          />
         </div>
       ) : (
         <span className="cursor-pointer select-none" onClick={() => sort.toggleSorting(mapping[index])}>
@@ -110,7 +111,7 @@ export const sortHeaderBuilder =
       header
     )
 
-export const stringSort = <Item,>(field: string, a: Item, b: Item): number => ('' + a[field]).localeCompare(b[field])
+export const stringSort = <Item,>(field: string, a: Item, b: Item): number => (a[field] ?? '').localeCompare(b[field])
 
 export const dateSort = <Item,>(field: string, a: Item, b: Item): number => {
   if (a[field] && b[field]) {
