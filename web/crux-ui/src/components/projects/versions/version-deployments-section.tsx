@@ -76,6 +76,7 @@ interface VersionDeploymentsSectionProps {
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
 
 type DeploymentSorting = 'prefix' | 'updatedAt' | 'status'
+const sortHeaders: DeploymentSorting[] = [null, 'prefix', 'status', 'updatedAt', null]
 
 const statusSort = (field: string, a: DeploymentByVersion, b: DeploymentByVersion) =>
   DEPLOYMENT_STATUS_VALUES.indexOf(a.status) - DEPLOYMENT_STATUS_VALUES.indexOf(b.status)
@@ -231,13 +232,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
               noSeparator
               data={sorting.items}
               itemBuilder={itemTemplate}
-              headerBuilder={sortHeaderBuilder<DeploymentByVersion, DeploymentSorting>(sorting, [
-                null,
-                'prefix',
-                'status',
-                'updatedAt',
-                null,
-              ])}
+              headerBuilder={sortHeaderBuilder<DeploymentByVersion, DeploymentSorting>(sorting, sortHeaders)}
             />
           </DyoCard>
         </>
