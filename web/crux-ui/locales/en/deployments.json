@@ -20,8 +20,8 @@
   "canNotCopyInProgress": "You can not copy an ",
   "prefixName": "Prefix: {{name}}",
   "showLogs": "Show logs",
+  "proceedYouDeletePrefix": "If you proceed, you will delete containers with prefix {{prefix}} on node {{node}}. This action is not revocable.",
+  "areYouSureDeployNodePrefix": "Are you sure you want start the deployment to {{node}} with the {{prefix}} prefix?",
   "noInstancesSelected": "No instances selected to deploy.",
-  "jwtToken": "JWT token",
-
-  "proceedYouDeletePrefix": "If you proceed, you will delete containers under prefix {{prefix}}. This action is not revocable."
+  "jwtToken": "JWT token"
 }

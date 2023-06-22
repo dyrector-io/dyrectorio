@@ -11,16 +11,16 @@ import {
 } from '@app/models'
 import { containerConfigSchema, getValidationError } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
+import { VerionState, VersionActions } from '../use-version-state'
 import EditImageHeading from './edit-image-heading'
 import EditImageJson from './edit-image-json'
 import useImageEditorState from './use-image-editor-state'
-import { ImagesActions, ImagesState } from './use-images-state'
 
 interface EditImageCardProps {
   disabled?: boolean
   image: VersionImage
-  imagesState: ImagesState
-  imagesActions: ImagesActions
+  imagesState: VerionState
+  imagesActions: VersionActions
 }
 
 const EditImageCard = (props: EditImageCardProps) => {

@@ -184,7 +184,10 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
             })}
             deleteModalDescription={
               node.status === 'connected' && state.deployment.status === 'successful'
-                ? t('proceedYouDeletePrefix', state.deployment)
+                ? t('proceedYouDeletePrefix', {
+                    node: state.deployment.node.name,
+                    prefix: state.deployment.prefix,
+                  })
                 : t('common:proceedYouLoseAllDataToName', {
                     name: state.deployment.prefix,
                   })
@@ -258,7 +261,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
       <DyoConfirmationModal
         config={state.confirmationModal}
-        title={t('confirmRevoke')}
+        title={t('tokens:areYouSureRevoke')}
         confirmText={t('tokens:revoke')}
         className="w-1/4"
         confirmColor="bg-error-red"
