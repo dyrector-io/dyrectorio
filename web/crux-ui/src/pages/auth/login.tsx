@@ -70,6 +70,8 @@ const LoginPage = (props: LoginPageProps) => {
 
       if (res.ok) {
         router.replace(invitation ? teamInvitationUrl(invitation) : ROUTE_INDEX)
+      } else if (res.status === 410) {
+        await router.reload()
       } else {
         recaptcha.current?.reset()
         const result = await res.json()
