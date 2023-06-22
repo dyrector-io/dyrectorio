@@ -215,6 +215,11 @@ func DeployImage(ctx context.Context,
 	containerName := getContainerName(deployImageRequest)
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+
 	imageName := util.JoinV("/",
 		*deployImageRequest.Registry,
 		util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag))
@@ -237,7 +242,7 @@ func DeployImage(ctx context.Context,
 	envList := EnvMapToSlice(MergeStringMapUnique(envMap, mapper.ByteMapToStringMap(secret)))
 	mountList := buildMountList(cfg, dog, deployImageRequest)
 
-	matchedContainer, err := dockerHelper.GetContainerByName(ctx, containerName)
+	matchedContainer, err := dockerHelper.GetContainerByName(ctx, cli, containerName)
 	if err != nil {
 		writeDoggerError(dog, fmt.Sprintf("Failed to find container: %s", containerName), err)
 		return err
@@ -261,6 +266,7 @@ func DeployImage(ctx context.Context,
 	}
 
 	builder.WithImage(expandedImageName).
+		WithClient(cli).
 		WithName(containerName).
 		WithMountPoints(mountList).
 		WithPortBindings(deployImageRequest.ContainerConfig.Ports).
@@ -564,17 +570,17 @@ func SecretList(ctx context.Context, prefix, name string) ([]string, error) {
 }
 
 func ContainerCommand(ctx context.Context, command *common.ContainerCommandRequest) error {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+
 	operation := command.Operation
 
 	prefix := command.Container.Prefix
 	name := command.Container.Name
 
-	cont, err := GetContainerByPrefixAndName(ctx, prefix, name)
-	if err != nil {
-		return err
-	}
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	cont, err := GetContainerByPrefixAndName(ctx, cli, prefix, name)
 	if err != nil {
 		return err
 	}
@@ -691,7 +697,7 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 		return nil, err
 	}
 
-	self, err := GetOwnContainer(ctx)
+	self, err := GetOwnContainer(ctx, cli)
 	if err != nil {
 		if !errors.Is(err, &UnknownContainerError{}) {
 			return nil, err
@@ -708,7 +714,7 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 	prefix := request.Container.Prefix
 	name := request.Container.Name
 
-	cont, err := GetContainerByPrefixAndName(ctx, prefix, name)
+	cont, err := GetContainerByPrefixAndName(ctx, cli, prefix, name)
 	if err != nil {
 		return nil, fmt.Errorf("container not found: %w", err)
 	}

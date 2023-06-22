@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
 	"github.com/hashicorp/go-version"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -14,14 +14,10 @@ import (
 // If a runtime version doesn't satisfy recommendation: show warning
 // If a runtime version doesn't satisfy minimum: failure
 
-type DockerInfoInterface interface {
-	Info(context.Context) (types.Info, error)
-	ServerVersion(context.Context) (types.Version, error)
-}
-
 const (
 	Podman                         = "podman"
 	Docker                         = "docker"
+	UnknownRuntime                 = "unknown-runtime"
 	MinimumDockerServerVersion     = "20.10.0"
 	RecommendedDockerServerVersion = "23.0.0"
 	MinimumPodmanServerVersion     = "4.0.0"
@@ -43,7 +39,7 @@ var (
 	ErrCannotSatisfyVersionConstraint = errors.New("cannot satisfy version constraint")
 )
 
-func VersionCheck(ctx context.Context, cli DockerInfoInterface) (*zerolog.Event, error) {
+func VersionCheck(ctx context.Context, cli client.APIClient) (*zerolog.Event, error) {
 	serverVersion, err := cli.ServerVersion(ctx)
 	if err != nil {
 		return nil, err
@@ -72,7 +68,6 @@ func VersionCheck(ctx context.Context, cli DockerInfoInterface) (*zerolog.Event,
 			return nil, err
 		}
 		return ev, nil
-
 	default:
 		return nil, ErrServerUnknown
 	}
@@ -107,10 +102,10 @@ func SatisfyVersion(minimumVer, preferredVer, actualVer string) error {
 	return nil
 }
 
-func GetInternalHostDomain(ctx context.Context, cli DockerInfoInterface) (string, error) {
+func GetInternalHostDomain(ctx context.Context, cli client.APIClient) (string, error) {
 	containerRuntime, err := GetContainerRuntime(ctx, cli)
 	if err != nil {
-		return "", err
+		return containerRuntime, err
 	}
 
 	if containerRuntime == Podman {
@@ -119,7 +114,7 @@ func GetInternalHostDomain(ctx context.Context, cli DockerInfoInterface) (string
 	return DockerHost, nil
 }
 
-func GetContainerRuntime(ctx context.Context, cli DockerInfoInterface) (string, error) {
+func GetContainerRuntime(ctx context.Context, cli client.APIClient) (string, error) {
 	info, err := cli.Info(ctx)
 	if err != nil {
 		return "", err
@@ -131,6 +126,6 @@ func GetContainerRuntime(ctx context.Context, cli DockerInfoInterface) (string, 
 	case "docker-init":
 		return Docker, nil
 	default:
-		return "", ErrServerUnknown
+		return UnknownRuntime, ErrServerUnknown
 	}
 }

@@ -42,7 +42,7 @@ func TestPullImage(t *testing.T) {
 		})
 	}
 
-	err = imageHelper.Pull(context.Background(), nil, nginxImage, "")
+	err = imageHelper.Pull(context.Background(), cli, nil, nginxImage, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,6 +69,10 @@ func TestNewPull(t *testing.T) {
 }
 
 func TestPullFullQualifiedImage(t *testing.T) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		t.Fatal(err)
+	}
 	ctx := context.Background()
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
 	log.Logger = log.Logger.Level(zerolog.InfoLevel)
@@ -80,11 +84,11 @@ func TestPullFullQualifiedImage(t *testing.T) {
 		return nil
 	})
 
-	err := image.CustomImagePull(ctx, nginxImage, "", false, false, cb)
+	err = image.CustomImagePull(ctx, nginxImage, "", false, false, cb)
 	assert.Nilf(t, err, "expected err to be nil for a valid image name")
 	assert.Truef(t, called, "display func is called")
 
-	exists, err := image.Exists(ctx, nil, nginxImage)
+	exists, _, _, err := image.Exists(ctx, cli, nil, nginxImage, "")
 	assert.Nilf(t, err, "expected err to be nil for a valid image name")
 	assert.Truef(t, exists, "expected image to exist locally after pull")
 }

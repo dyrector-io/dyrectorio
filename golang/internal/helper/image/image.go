@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
@@ -47,6 +48,11 @@ var (
 	errDigestsMatching = errors.New("digests already matching")
 )
 
+var (
+	ErrInvalidTag   = errors.New("invalid image tag")
+	ErrInvalidImage = errors.New("invalid image")
+)
+
 func GetRegistryURL(reg *string, registryAuth *RegistryAuth) string {
 	if registryAuth != nil {
 		return registryAuth.URL
@@ -67,17 +73,15 @@ func GetRegistryURLProto(reg *string, registryAuth *agent.RegistryAuth) string {
 	}
 }
 
-func GetImageByReference(ctx context.Context, ref string) (*types.ImageSummary, error) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return nil, err
-	}
-
+func GetImageByReference(ctx context.Context, cli client.APIClient, ref string) (*types.ImageSummary, error) {
 	images, err := cli.ImageList(ctx, types.ImageListOptions{
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: ref}),
 	})
 	if err != nil {
 		return nil, err
+	}
+	if len(images) == 0 {
+		return nil, errors.New("image not found with the given reference")
 	}
 
 	if len(images) == 1 {
@@ -88,12 +92,10 @@ func GetImageByReference(ctx context.Context, ref string) (*types.ImageSummary, 
 }
 
 // Exists checks local references using a filter, this uses exact matching
-func Exists(ctx context.Context, logger io.StringWriter, expandedImageName string) (bool, error) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return false, err
-	}
-
+func Exists(
+	ctx context.Context, cli client.APIClient,
+	logger io.StringWriter, expandedImageName, encodedAuth string,
+) (localExists, remoteExists, matches bool, existErr error) {
 	images, err := cli.ImageList(ctx, types.ImageListOptions{
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: expandedImageName}),
 	})
@@ -106,26 +108,46 @@ func Exists(ctx context.Context, logger io.StringWriter, expandedImageName strin
 			}
 		}
 
-		return false, err
+		return false, false, false, err
 	}
 
 	if count := len(images); count == 1 {
-		return true, nil
+		localExists = true
+	} else if count == 0 {
+		localExists = false
 	} else if count > 1 {
-		return false, errors.New("unexpected image count")
+		return false, false, false, errors.New("unexpected image count")
 	}
 
-	return false, nil
+	craneOpts := []crane.Option{}
+
+	if encodedAuth != "" {
+		basicAuth, convertError := authConfigToBasicAuth(encodedAuth)
+		if convertError != nil {
+			return false, false, false, convertError
+		}
+		craneOpts = append(craneOpts, crane.WithAuth(authn.FromConfig(authn.AuthConfig{Auth: basicAuth})))
+	}
+	remoteDigest, err := crane.Digest(expandedImageName, craneOpts...)
+	if err != nil {
+		if manifestErr, ok := err.(*transport.Error); ok {
+			if manifestErr.StatusCode == http.StatusNotFound {
+				remoteExists = false
+			}
+		}
+	}
+
+	if localExists && remoteExists {
+		matches = images[0].ID == remoteDigest
+	}
+
+	return localExists, remoteExists, matches, nil
 }
 
 // force pulls the given image name
 // TODO(@nandor-magyar): the output from docker is not really nice, should be improved
-func Pull(ctx context.Context, logger io.StringWriter, expandedImageName, authCreds string) error {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return err
-	}
-
+func Pull(ctx context.Context, cli client.APIClient, logger io.StringWriter, expandedImageName, authCreds string) error {
+	var err error
 	if logger != nil {
 		_, err = logger.WriteString("Pulling image: " + expandedImageName)
 		if err != nil {
@@ -308,9 +330,15 @@ func ExpandImageNameWithTag(image, tag string) (string, error) {
 		return "", err
 	}
 
+	anchoredTagRegexp := regexp.MustCompile(`^` + reference.TagRegexp.String() + `$`)
+
+	if !anchoredTagRegexp.MatchString(tag) {
+		return "", ErrInvalidTag
+	}
+
 	named, ok := ref.(reference.Named)
 	if !ok {
-		return "", errors.New("invalid image with tag")
+		return "", ErrInvalidImage
 	}
 
 	if reference.IsNameOnly(named) {
