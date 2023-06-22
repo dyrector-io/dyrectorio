@@ -122,12 +122,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
       {editing ? (
         <ProjectVersionsSection projectId={project.id} versions={allVersions} disabled />
       ) : (
-        <VersionSections
-          project={project}
-          state={state}
-          actions={actions}
-          setTopBarContent={setTopBarContent}
-        />
+        <VersionSections project={project} state={state} actions={actions} setTopBarContent={setTopBarContent} />
       )}
     </Layout>
   )
