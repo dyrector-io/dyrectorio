@@ -3,6 +3,7 @@ import { deploymentDeployUrl, projectUrl, ROUTE_DEPLOYMENTS, ROUTE_NODES, versio
 import { expect, Page } from '@playwright/test'
 import { exec, ExecOptions } from 'child_process'
 import { DAGENT_NODE, screenshotPath } from './common'
+import { fillDeploymentPrefix } from './projects'
 
 export const installDagent = async (page: Page) => {
   await page.goto(ROUTE_NODES)
@@ -52,7 +53,7 @@ export const deployWithDagent = async (
 
   await page.locator(`button:has-text("${DAGENT_NODE}")`).click()
 
-  await page.locator('input[name=prefix]').fill(prefix)
+  await fillDeploymentPrefix(page, prefix)
 
   await page.locator('button:has-text("Add")').click()
   await page.waitForURL(`${ROUTE_DEPLOYMENTS}/**`)

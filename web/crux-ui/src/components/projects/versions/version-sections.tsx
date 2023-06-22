@@ -5,6 +5,7 @@ import { parseStringUnionType } from '@app/utils'
 import { useRouter } from 'next/dist/client/router'
 import React, { useEffect, useRef } from 'react'
 import AddDeploymentCard from './deployments/add-deployment-card'
+import CopyDeploymentCard from './deployments/copy-deployment-card'
 import SelectImagesCard from './images/select-images-card'
 import { ImagesActions, ImagesState, VersionSection } from './images/use-images-state'
 import VersionDeploymentsSection from './version-deployments-section'
@@ -43,7 +44,7 @@ const VersionSections = (props: VersionSectionsProps) => {
 
   const saveImageOrderRef = useRef<VoidFunction>()
 
-  const onAddDeployment = async (deploymentId: string) => await router.push(deploymentUrl(deploymentId))
+  const onDeploymentCreated = async (deploymentId: string) => await router.push(deploymentUrl(deploymentId))
 
   return (
     <>
@@ -56,12 +57,19 @@ const VersionSections = (props: VersionSectionsProps) => {
         />
       ) : state.addSection === 'image' ? (
         <SelectImagesCard onImagesSelected={actions.addImages} onDiscard={actions.discardAddSection} />
-      ) : (
+      ) : state.addSection === 'deployment' ? (
         <AddDeploymentCard
           className="mb-4 p-8"
           projectName={project.name}
           versionId={state.version.id}
-          onAdd={onAddDeployment}
+          onAdd={onDeploymentCreated}
+          onDiscard={actions.discardAddSection}
+        />
+      ) : (
+        <CopyDeploymentCard
+          className="mb-4 p-8"
+          deployment={state.copyDeploymentTarget}
+          onDeplyomentCopied={onDeploymentCreated}
           onDiscard={actions.discardAddSection}
         />
       )}
@@ -69,7 +77,7 @@ const VersionSections = (props: VersionSectionsProps) => {
       {state.section === 'images' ? (
         <VersionImagesSection disabled={!state.version.mutable} state={state} actions={actions} />
       ) : state.section === 'deployments' ? (
-        <VersionDeploymentsSection version={state.version} />
+        <VersionDeploymentsSection version={state.version} onCopyDeployment={actions.copyDeployment} />
       ) : (
         <VersionReorderImagesSection images={state.images} saveRef={saveImageOrderRef} onSave={actions.orderImages} />
       )}

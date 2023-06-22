@@ -1,10 +1,12 @@
 import useEditorState, { EditorState } from '@app/components/editor/use-editor-state'
 import { ViewMode } from '@app/components/shared/view-mode-toggle'
+import { defaultApiErrorHandler } from '@app/errors'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   AddImagesMessage,
   ContainerConfigData,
   DeleteImageMessage,
+  DeploymentDetails,
   FetchImageTagsMessage,
   GetImageMessage,
   ImageMessage,
@@ -36,13 +38,14 @@ import {
 } from '@app/models'
 import { versionWsUrl, WS_REGISTRIES } from '@app/routes'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
-
+import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
+import useCopyDeploymentState from '../deployments/use-copy-deployment-state'
 
 // state
 export type ImageTagsMap = { [key: string]: RegistryImageTags } // image key to RegistryImageTags
 
-export type VersionAddSection = 'image' | 'deployment' | 'none'
+export type VersionAddSection = 'image' | 'deployment' | 'copy-deployment' | 'none'
 
 const VERSION_SECTIONS_STATE_VALUES = ['images', 'deployments', 'reorder'] as const
 export type VersionSection = typeof VERSION_SECTIONS_STATE_VALUES[number]
@@ -50,6 +53,7 @@ export type VersionSection = typeof VERSION_SECTIONS_STATE_VALUES[number]
 const ADD_SECTION_TO_SECTION: Record<VersionAddSection, VersionSection> = {
   image: 'images',
   deployment: 'deployments',
+  'copy-deployment': 'deployments',
   none: 'images',
 }
 
@@ -65,6 +69,7 @@ export type ImagesState = {
   viewMode: ViewMode
   versionSock: WebSocketClientEndpoint
   version: VersionDetails
+  copyDeploymentTarget: DeploymentDetails
 }
 
 // actions
@@ -78,6 +83,7 @@ export type ImagesActions = {
   fetchImageTags: (image: VersionImage) => void
   selectTagForImage: (image: VersionImage, tag: string) => void
   updateImageConfig: (image: VersionImage, config: Partial<ContainerConfigData>) => void
+  copyDeployment: (deploymentId: string) => Promise<any>
 }
 
 export const imageTagKey = (registryId: string, imageName: string) => `${registryId}/${imageName}`
@@ -128,12 +134,18 @@ export const selectTagsOfImage = (state: ImagesState, image: VersionImage): stri
 export const useImagesState = (options: ImagesStateOptions): [ImagesState, ImagesActions] => {
   const { projectId, version: optionsVersion, setSaveState: optionsSetSaveState, initialSection } = options
 
+  const { t } = useTranslation('versions')
+  const handleApiError = defaultApiErrorHandler(t)
+
   const [saveState, setSaveState] = useState<WebSocketSaveState>('saved')
   const [section, setSection] = useState(initialSection)
   const [addSection, setAddSection] = useState<VersionAddSection>('none')
   const [version, setVersion] = useState(optionsVersion)
   const [tags, setTags] = useState<ImageTagsMap>({})
   const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [copyDeploymentTarget, setCopyDeploymentTarget] = useCopyDeploymentState({
+    handleApiError,
+  })
 
   useEffect(() => {
     if (optionsSetSaveState) {
@@ -321,6 +333,11 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
     setVersion({ ...version, images: newImages })
   }
 
+  const copyDeployment = async (deploymentId: string) => {
+    await setCopyDeploymentTarget(deploymentId)
+    setAddSection('copy-deployment')
+  }
+
   return [
     {
       projectId,
@@ -334,6 +351,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
       tags,
       viewMode,
       versionSock,
+      copyDeploymentTarget,
     },
     {
       selectAddSection,
@@ -345,6 +363,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
       selectTagForImage,
       fetchImageTags,
       updateImageConfig,
+      copyDeployment,
     },
   ]
 }

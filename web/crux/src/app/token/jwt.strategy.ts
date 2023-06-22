@@ -8,7 +8,7 @@ import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
 export default class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private configService: ConfigService, private prismaService: PrismaService) {
+  constructor(configService: ConfigService, private prisma: PrismaService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -24,7 +24,7 @@ export default class JwtStrategy extends PassportStrategy(Strategy) {
    * @memberof JwtStrategy
    */
   async validate(payload: AuthPayload): Promise<AuthPayload> {
-    const token = await this.prismaService.token.findFirst({
+    const token = await this.prisma.token.findFirst({
       select: {
         id: true,
       },

@@ -1,7 +1,7 @@
 import { deploymentUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { DAGENT_NODE, screenshotPath } from './utils/common'
-import { deployWithDagent } from './utils/node-helper'
+import { DAGENT_NODE, screenshotPath } from '../utils/common'
+import { deployWithDagent } from '../utils/node-helper'
 import {
   addDeploymentToVersion,
   addDeploymentToVersionlessProject,
@@ -9,7 +9,7 @@ import {
   createImage,
   createProject,
   createVersion,
-} from './utils/projects'
+} from '../utils/projects'
 
 const image = 'nginx'
 

@@ -1,4 +1,5 @@
 import DyoButton from '@app/elements/dyo-button'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { UniqueSecretKeyValue } from '@app/models'
 import clsx from 'clsx'
@@ -279,12 +280,11 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
               onClick={() => onRemoveOrClear(index)}
               className="basis-12 flex-initial cursor-pointer ml-2 w-12 ring-2 rounded-md focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
             >
-              <Image
+              <DyoIcon
                 className="text-bright-muted"
                 src={required ? '/clear.svg' : '/trash-can.svg'}
                 alt={t('clear')}
-                width={24}
-                height={24}
+                size="md"
               />
             </div>
           )}

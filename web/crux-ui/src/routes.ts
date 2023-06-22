@@ -230,10 +230,11 @@ export const deploymentWsUrl = (deploymentId: string) => `${deploymentUrl(deploy
 
 export const deploymentDeployUrl = (deploymentId: string) => `${deploymentUrl(deploymentId)}/deploy`
 
-export const deploymentCopyUrl = (deploymentId: string, force?: boolean) =>
-  `${deploymentApiUrl(deploymentId)}/copy${force ? '?overwrite=true' : ''}`
+export const deploymentCopyApiUrl = (deploymentId: string) => `${deploymentApiUrl(deploymentId)}/copy`
 
 export const deploymentStartApiUrl = (deploymentId: string) => `${deploymentApiUrl(deploymentId)}/start`
+
+export const deploymentTokenApiUrl = (deploymentId: string) => `${deploymentApiUrl(deploymentId)}/token`
 
 export const instanceApiUrl = (deploymentId: string, instanceId: string) =>
   `${deploymentApiUrl(deploymentId)}/instances/${instanceId}`

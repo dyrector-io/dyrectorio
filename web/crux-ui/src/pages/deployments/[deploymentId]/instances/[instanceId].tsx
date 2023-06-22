@@ -65,17 +65,18 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   const { deployment, instanceId } = props
   const { project, version } = deployment
 
-  const onApiError = defaultApiErrorHandler(t)
   const onWsError = (error: Error) => {
     // eslint-disable-next-line
     console.error('ws', 'edit-deployment', error)
     toast(t('errors:connectionLost'))
   }
 
+  const onApiError = defaultApiErrorHandler(t)
+
   const [deploymentState, deploymentActions] = useDeploymentState({
     deployment,
-    onApiError,
     onWsError,
+    onApiError,
   })
 
   const instance = deploymentState.instances.find(it => it.id === instanceId)

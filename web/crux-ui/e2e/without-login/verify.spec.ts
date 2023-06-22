@@ -8,7 +8,7 @@ import {
   mailslurperFromBaseURL,
   screenshotPath,
   USER_PASSWORD,
-} from './utils/common'
+} from '../utils/common'
 
 const VERIFYABLE_PASSWORD = `v.${USER_PASSWORD}`
 
@@ -19,15 +19,8 @@ type VerifyFixture = {
 let emailIndex = 0
 
 const test = base.extend<VerifyFixture>({
-  email: async ({ acceptDownloads: _ }, use) => {
-    await use(`${emailIndex++}.verify@example.com`)
-  },
-})
-
-test.use({
-  storageState: {
-    cookies: [],
-    origins: [],
+  email: async ({ acceptDownloads: _ }, use, testInfo) => {
+    await use(`${testInfo.repeatEachIndex + emailIndex++}.verify@example.com`)
   },
 })
 

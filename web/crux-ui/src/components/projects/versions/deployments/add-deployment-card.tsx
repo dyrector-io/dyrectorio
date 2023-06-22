@@ -8,7 +8,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { CreateDeployment, DeploymentCreated, DyoApiError, DyoNode, projectNameToDeploymentPrefix } from '@app/models'
+import { CreateDeployment, Deployment, DyoApiError, DyoNode, projectNameToDeploymentPrefix } from '@app/models'
 import { API_DEPLOYMENTS, API_NODES } from '@app/routes'
 import { fetcher, sendForm } from '@app/utils'
 import { createDeploymentSchema } from '@app/validations'
@@ -28,15 +28,9 @@ interface AddDeploymentCardProps {
 const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   const { projectName, versionId, className, onAdd, onDiscard } = props
 
-  const { t } = useTranslation('versions')
+  const { t } = useTranslation('deployments')
 
   const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(API_NODES, fetcher)
-
-  useEffect(() => {
-    if (nodes && nodes.length < 1) {
-      toast.error(t('nodeRequired'))
-    }
-  }, [nodes, t])
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -60,7 +54,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       const res = await sendForm('POST', API_DEPLOYMENTS, body)
 
       if (res.ok) {
-        const result = (await res.json()) as DeploymentCreated
+        const result = (await res.json()) as Deployment
         onAdd(result.id)
       } else if (res.status === 409) {
         // Handle preparing deployment exists or rolling version has deployment errors
@@ -75,6 +69,15 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       setSubmitting(false)
     },
   })
+
+  useEffect(() => {
+    if (nodes && nodes.length < 1) {
+      toast.error(t('nodeRequired'))
+    }
+    if (nodes?.length === 1 && !formik.values.nodeId) {
+      formik.setFieldValue('nodeId', nodes[0].id)
+    }
+  }, [nodes, t])
 
   return (
     <DyoCard className={className}>

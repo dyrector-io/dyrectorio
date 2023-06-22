@@ -1,6 +1,129 @@
 # CHANGELOG
 
 
+<a name="0.5.3"></a>
+## [0.5.3](https://github.com/dyrector-io/dyrectorio/compare/0.5.2...0.5.3) (2023-06-16)
+
+### Fix
+
+* add crane to signer image and add additional cache restore ([#698](https://github.com/dyrector-io/dyrectorio/issues/698))
+
+
+<a name="0.5.2"></a>
+## [0.5.2](https://github.com/dyrector-io/dyrectorio/compare/0.5.1...0.5.2) (2023-06-16)
+
+### Build
+
+* reapply image signing using `crane cp` from gcr ([#692](https://github.com/dyrector-io/dyrectorio/issues/692))
+
+### Ci
+
+* add missing go_push requirement ([#695](https://github.com/dyrector-io/dyrectorio/issues/695))
+
+### Feat
+
+* **(web):** node install & container uptime & fail deployments on bootstrap ([#696](https://github.com/dyrector-io/dyrectorio/issues/696))
+* **(crux-ui):** playwright project ([#691](https://github.com/dyrector-io/dyrectorio/issues/691))
+* **(ci):** add caches ([#688](https://github.com/dyrector-io/dyrectorio/issues/688))
+
+### Fix
+
+* **(agent):** dagent registry auth ([#693](https://github.com/dyrector-io/dyrectorio/issues/693))
+
+
+<a name="0.5.1"></a>
+## [0.5.1](https://github.com/dyrector-io/dyrectorio/compare/0.5.0...0.5.1) (2023-06-14)
+
+### Build
+
+* include golang version change in release script ([#690](https://github.com/dyrector-io/dyrectorio/issues/690))
+
+### Fix
+
+* **(ci):** minor versioning with crux push ([#689](https://github.com/dyrector-io/dyrectorio/issues/689))
+
+
+<a name="0.5.0"></a>
+## [0.5.0](https://github.com/dyrector-io/dyrectorio/compare/0.4.2...0.5.0) (2023-06-14)
+
+### Build
+
+* remove signing from multiarch images ([#682](https://github.com/dyrector-io/dyrectorio/issues/682))
+* **(agent):** fix multi-arch agent builds in GH actions ([#679](https://github.com/dyrector-io/dyrectorio/issues/679))
+* add staging deploy workflow ([#672](https://github.com/dyrector-io/dyrectorio/issues/672))
+* remove branch from release target ([#663](https://github.com/dyrector-io/dyrectorio/issues/663))
+* add hardcoded agent and cli versions ([#648](https://github.com/dyrector-io/dyrectorio/issues/648))
+
+### Chore
+
+* **(ci):** split builder image ([#653](https://github.com/dyrector-io/dyrectorio/issues/653))
+* **(crux-ui):** remove needless buildstep from dockerfile ([#616](https://github.com/dyrector-io/dyrectorio/issues/616))
+
+### Docs
+
+* Use the correct url for app.dyrectorio.com ([#641](https://github.com/dyrector-io/dyrectorio/issues/641))
+* add back the how it works image ([#613](https://github.com/dyrector-io/dyrectorio/issues/613))
+
+### Feat
+
+* **(crux-ui):** add tooltips and refactor <Image> to <DyoIcon> ([#686](https://github.com/dyrector-io/dyrectorio/issues/686))
+* **(web):** copy rolling deployment ([#684](https://github.com/dyrector-io/dyrectorio/issues/684))
+* **(web):** add extra explanation to dagent persistence section ([#687](https://github.com/dyrector-io/dyrectorio/issues/687))
+* **(crux-ui):** node script & add deployment & config json editor improvements ([#681](https://github.com/dyrector-io/dyrectorio/issues/681))
+* **(ci):** add concurrency ([#685](https://github.com/dyrector-io/dyrectorio/issues/685))
+* **(web):** agent audit log ([#666](https://github.com/dyrector-io/dyrectorio/issues/666))
+* **(agent):** crane pod state mapping ([#637](https://github.com/dyrector-io/dyrectorio/issues/637))
+* **(cli):** add CLI version in addition to runtime versions ([#668](https://github.com/dyrector-io/dyrectorio/issues/668))
+* **(web):** onboarding ([#657](https://github.com/dyrector-io/dyrectorio/issues/657))
+* **(web):** rename project type values ([#665](https://github.com/dyrector-io/dyrectorio/issues/665))
+* **(cli):** better image pull display ([#584](https://github.com/dyrector-io/dyrectorio/issues/584))
+* **(crux-ui):** config initial filters based on config ([#650](https://github.com/dyrector-io/dyrectorio/issues/650))
+* change the version in version.go when using make release command ([#647](https://github.com/dyrector-io/dyrectorio/issues/647))
+* **(ci):** minor versions will always point at the latest patchversion ([#646](https://github.com/dyrector-io/dyrectorio/issues/646))
+* **(web):** improve audit log ([#642](https://github.com/dyrector-io/dyrectorio/issues/642))
+* **(web):** outdated agent ([#640](https://github.com/dyrector-io/dyrectorio/issues/640))
+* agent install version & version checking on connection & minor team selector fix ([#622](https://github.com/dyrector-io/dyrectorio/issues/622))
+* **(crux):** use proxy headers to determine the node ip ([#635](https://github.com/dyrector-io/dyrectorio/issues/635))
+* **(web):** add jest to ui and fix the container (internal) missleadings ([#619](https://github.com/dyrector-io/dyrectorio/issues/619))
+* **(ci):** add auto assignes to PR ([#620](https://github.com/dyrector-io/dyrectorio/issues/620))
+* **(ci):** add yamlfmt validation, update cosign ([#588](https://github.com/dyrector-io/dyrectorio/issues/588))
+* append git short hash to crux and ui versions ([#598](https://github.com/dyrector-io/dyrectorio/issues/598))
+* **(crux):** add pino logger, and small config refactors ([#594](https://github.com/dyrector-io/dyrectorio/issues/594))
+
+### Fix
+
+* **(web):** userId cannot be null in config screen ([#670](https://github.com/dyrector-io/dyrectorio/issues/670))
+* **(web):** rolling version deployments ([#678](https://github.com/dyrector-io/dyrectorio/issues/678))
+* project creation navigation, remove playwright retries, small fixes ([#680](https://github.com/dyrector-io/dyrectorio/issues/680))
+* web socket reconnect throttle ([#675](https://github.com/dyrector-io/dyrectorio/issues/675))
+* **(web):** deployment environment editing ([#676](https://github.com/dyrector-io/dyrectorio/issues/676))
+* **(crux):** add https if protocol is missing from storage URL ([#674](https://github.com/dyrector-io/dyrectorio/issues/674))
+* registry and storage editing ([#673](https://github.com/dyrector-io/dyrectorio/issues/673))
+* registration and verification flows ([#671](https://github.com/dyrector-io/dyrectorio/issues/671))
+* **(web):** rename field to make Traefik work again ([#667](https://github.com/dyrector-io/dyrectorio/issues/667))
+* add multi-arch build for CLI and agents ([#658](https://github.com/dyrector-io/dyrectorio/issues/658))
+* **(crux-ui):** add links to registries ([#662](https://github.com/dyrector-io/dyrectorio/issues/662))
+* **(crux):** very old audit log migration ([#659](https://github.com/dyrector-io/dyrectorio/issues/659))
+* **(crux-ui):** add node description to empty node screen ([#660](https://github.com/dyrector-io/dyrectorio/issues/660))
+* **(ci):** fix the js and tsx source label rules ([#664](https://github.com/dyrector-io/dyrectorio/issues/664))
+* **(web):** deployment list & install script & email verification ([#651](https://github.com/dyrector-io/dyrectorio/issues/651))
+* **(crux):** add default for pino logger ([#652](https://github.com/dyrector-io/dyrectorio/issues/652))
+* **(web):** node builds ([#645](https://github.com/dyrector-io/dyrectorio/issues/645))
+* rename dyrectorio to dyrector.io in docs ([#644](https://github.com/dyrector-io/dyrectorio/issues/644))
+* add missing LOG_LEVEL for the project ([#638](https://github.com/dyrector-io/dyrectorio/issues/638))
+* **(crux):** nullpointer in ContainerStateMessage mapping ([#621](https://github.com/dyrector-io/dyrectorio/issues/621))
+* **(ci):** run pipelines on edit pr  ([#608](https://github.com/dyrector-io/dyrectorio/issues/608))
+* **(ci):** labeler fork repository dependency ([#610](https://github.com/dyrector-io/dyrectorio/issues/610))
+* **(ci):** fix stable push on main branch ([#607](https://github.com/dyrector-io/dyrectorio/issues/607))
+
+### Refactor
+
+* rename product to project ([#654](https://github.com/dyrector-io/dyrectorio/issues/654))
+* use map for environment instead of pipes ([#617](https://github.com/dyrector-io/dyrectorio/issues/617))
+* **(crux):** remove shared module ([#602](https://github.com/dyrector-io/dyrectorio/issues/602))
+* **(cli):** add documentation, clean up, fix minor bugs ([#604](https://github.com/dyrector-io/dyrectorio/issues/604))
+
+
 <a name="0.4.2"></a>
 ## [0.4.2](https://github.com/dyrector-io/dyrectorio/compare/0.4.1...0.4.2) (2023-06-05)
 

@@ -3,6 +3,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
 import DyoDatePicker from '@app/elements/dyo-date-picker'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { useThrottling } from '@app/hooks/use-throttleing'
@@ -18,7 +19,6 @@ import { nodeAuditApiUrl } from '@app/routes'
 import { getEndOfToday, utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import JsonEditor from '../shared/json-editor'
 
@@ -105,12 +105,11 @@ const NodeAuditList = (props: NodeAuditListProps) => {
     </div>,
     <div className="pr-4">
       {log.data && (
-        <Image
+        <DyoIcon
           className="aspect-square cursor-pointer ml-auto mr-auto"
           src="/eye.svg"
           alt={t('common:view')}
-          width={24}
-          height={24}
+          size="md"
           onClick={() => onShowInfoClick(log)}
         />
       )}

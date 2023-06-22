@@ -63,7 +63,9 @@ const VersionSectionsHeading = (props: VersionSectionsHeadingProps) => {
               <DyoButton onClick={() => actions.selectAddSection('image')}>{t('addImage')}</DyoButton>
             )}
 
-            <DyoButton onClick={() => actions.selectAddSection('deployment')}>{t('addDeployment')}</DyoButton>
+            <DyoButton onClick={() => actions.selectAddSection('deployment')}>
+              {t('deployments:addDeployment')}
+            </DyoButton>
 
             {state.section === 'images' && (
               <ViewModeToggle viewMode={state.viewMode} onViewModeChanged={actions.selectViewMode} />

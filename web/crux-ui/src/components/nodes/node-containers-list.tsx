@@ -2,6 +2,7 @@ import ContainerStatusTag from '@app/components/nodes/container-status-tag'
 import { NodeDetailsActions, NodeDetailsState } from '@app/components/nodes/use-node-details-state'
 import Paginator from '@app/components/shared/paginator'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoIcon from '@app/elements/dyo-icon'
 import DyoImgButton from '@app/elements/dyo-img-button'
 import { DyoList } from '@app/elements/dyo-list'
 import LoadingIndicator from '@app/elements/loading-indicator'
@@ -18,7 +19,6 @@ import { nodeContainerLogUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import Link from 'next/link'
 
 interface NodeContainersListProps {
@@ -90,7 +90,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
 
             {container.state && (
               <Link href={nodeContainerLogUrl(state.node.id, container.id)} passHref>
-                <Image src="/note.svg" alt="log" width={24} height={24} />
+                <DyoIcon src="/note.svg" alt="log" size="md" />
               </Link>
             )}
 

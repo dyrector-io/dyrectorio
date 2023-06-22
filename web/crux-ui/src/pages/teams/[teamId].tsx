@@ -8,6 +8,7 @@ import UserRoleAction from '@app/components/team/user-role-action'
 import UserStatusTag from '@app/components/team/user-status-tag'
 import { AUTH_RESEND_DELAY } from '@app/const'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
@@ -32,7 +33,6 @@ import { sessionOfContext } from '@server/kratos'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
@@ -199,17 +199,16 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
         />
       )}
     </div>,
-    <div>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('never')}</div>,
+    <div>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('common:never')}</div>,
     <UserStatusTag className="w-fit mx-auto" status={it.status} />,
     <div className="flex flex-row">
       {!userStatusReinvitable(it.status) || countdown > 0 ? null : (
         <div className="mr-2 inline-block">
-          <Image
+          <DyoIcon
             className="aspect-square cursor-pointer"
             src="/restart.svg"
             alt={t('common:delete')}
-            width={24}
-            height={24}
+            size="md"
             onClick={() => onReinviteUser(it)}
           />
         </div>
@@ -217,12 +216,11 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
 
       {detailsState !== 'none' || !canEdit || it.role === 'owner' ? null : (
         <div className="mr-2 inline-block">
-          <Image
+          <DyoIcon
             className="aspect-square cursor-pointer"
             src="/trash-can.svg"
             alt={t('common:delete')}
-            width={24}
-            height={24}
+            size="md"
             onClick={() => onDeleteUser(it)}
           />
         </div>

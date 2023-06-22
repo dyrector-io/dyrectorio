@@ -3,26 +3,34 @@ import useNodeState from '@app/components/nodes/use-node-state'
 import { ViewMode } from '@app/components/shared/view-mode-toggle'
 import { DEPLOYMENT_EDIT_WS_REQUEST_DELAY } from '@app/const'
 import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
+import useConfirmation from '@app/hooks/use-confirmation'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentDetails,
   DeploymentEnvUpdatedMessage,
   DeploymentInvalidatedSecrets,
+  deploymentIsCopiable,
+  deploymentIsDeletable,
+  deploymentIsDeployable,
+  deploymentIsMutable,
+  deploymentLogVisible,
   DeploymentRoot,
+  DeploymentToken,
   DyoNode,
   GetInstanceMessage,
   ImageDeletedMessage,
   Instance,
   InstanceContainerConfigData,
   InstanceMessage,
-  InstanceUpdatedMessage,
   InstancesAddedMessage,
+  InstanceUpdatedMessage,
   NodeEventMessage,
   PatchInstanceMessage,
   ProjectDetails,
   UniqueKeyValue,
   VersionDetails,
+  WebSocketSaveState,
   WS_TYPE_DEPLOYMENT_ENV_UPDATED,
   WS_TYPE_GET_INSTANCE,
   WS_TYPE_IMAGE_DELETED,
@@ -33,22 +41,18 @@ import {
   WS_TYPE_PATCH_DEPLOYMENT_ENV,
   WS_TYPE_PATCH_INSTANCE,
   WS_TYPE_PATCH_RECEIVED,
-  WebSocketSaveState,
-  deploymentIsCopiable,
-  deploymentIsDeletable,
-  deploymentIsDeployable,
-  deploymentIsMutable,
-  deploymentLogVisible,
 } from '@app/models'
-import { WS_NODES, deploymentWsUrl } from '@app/routes'
+import { deploymentTokenApiUrl, deploymentWsUrl, WS_NODES } from '@app/routes'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
+import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
-import useCopyDeploymentModal from './use-copy-deployment-confirmation-modal'
+
+export type DeploymentEditState = 'details' | 'edit' | 'copy' | 'create-token'
 
 export type DeploymentStateOptions = {
   deployment: DeploymentRoot
-  onApiError: (res: Response) => void
   onWsError: (error: Error) => void
+  onApiError: (error: Response) => void
 }
 
 export type DeploymentState = {
@@ -62,22 +66,23 @@ export type DeploymentState = {
   copiable: boolean
   deletable: boolean
   saveState: WebSocketSaveState
-  editing: boolean
+  editState: DeploymentEditState
   editor: EditorState
   viewMode: ViewMode
-  confirmationModal: DyoConfirmationModalConfig
   sock: WebSocketClientEndpoint
   showDeploymentLog: boolean
+  confirmationModal: DyoConfirmationModalConfig
 }
 
 export type DeploymentActions = {
-  setEditing: (editing: boolean) => void
+  setEditState: (state: DeploymentEditState) => void
   onDeploymentEdited: (editedDeployment: DeploymentDetails) => void
   onEnvironmentEdited: (environment: UniqueKeyValue[]) => void
-  onCopyDeployment: () => Promise<string>
   onPatchInstance: (id: string, newConfig: InstanceContainerConfigData) => void
   setViewMode: (viewMode: ViewMode) => void
   onInvalidateSecrets: (secrets: DeploymentInvalidatedSecrets[]) => void
+  onDeploymentTokenCreated: (token: DeploymentToken) => void
+  onRevokeDeploymentToken: VoidFunction
 }
 
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
@@ -89,6 +94,8 @@ const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage)
 })
 
 const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, DeploymentActions] => {
+  const { t } = useTranslation('deployments')
+
   const { deployment: optionDeploy, onWsError, onApiError } = options
   const { project, version } = optionDeploy
 
@@ -97,15 +104,15 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const [deployment, setDeployment] = useState<DeploymentDetails>(optionDeploy)
   const [node, setNode] = useNodeState(optionDeploy.node)
   const [saveState, setSaveState] = useState<WebSocketSaveState>('saved')
-  const [editing, setEditing] = useState(false)
+  const [editState, setEditState] = useState<DeploymentEditState>('details')
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
   const [viewMode, setViewMode] = useState<ViewMode>('list')
-  const [confirmationModal, copyDeployment] = useCopyDeploymentModal(onApiError)
+  const [confirmationModal, confirm] = useConfirmation()
 
   const mutable = deploymentIsMutable(deployment.status, version.type)
   const deployable = deploymentIsDeployable(deployment.status, version.type)
   const deletable = deploymentIsDeletable(deployment.status)
-  const copiable = deploymentIsCopiable(deployment.status, version.type)
+  const copiable = deploymentIsCopiable(deployment.status)
   const showDeploymentLog = deploymentLogVisible(deployment.status)
 
   const nodesSock = useWebSocket(WS_NODES)
@@ -175,7 +182,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
 
   const onDeploymentEdited = dep => {
     setDeployment(dep)
-    setEditing(false)
+    setEditState('details')
   }
 
   const onEnvironmentEdited = environment => {
@@ -188,11 +195,6 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       sock.send(WS_TYPE_PATCH_DEPLOYMENT_ENV, environment)
     })
   }
-
-  const onCopyDeployment = () =>
-    copyDeployment({
-      deploymentId: deployment.id,
-    })
 
   const onInvalidateSecrets = (secrets: DeploymentInvalidatedSecrets[]) => {
     const newInstances = instances.map(it => {
@@ -255,6 +257,37 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
     })
   }
 
+  const onDeploymentTokenCreated = (token: DeploymentToken) => {
+    setDeployment({
+      ...deployment,
+      token,
+    })
+    setEditState('details')
+  }
+
+  const onRevokeDeploymentToken = async () => {
+    const confirmed = await confirm(null, {
+      title: t('common:areYouSure'),
+      description: t('tokens:revokingTokenMayBreak'),
+    })
+
+    if (!confirmed) {
+      return
+    }
+
+    const res = await fetch(deploymentTokenApiUrl(deployment.id), { method: 'DELETE' })
+
+    if (!res.ok) {
+      onApiError(res)
+      return
+    }
+
+    setDeployment({
+      ...deployment,
+      token: null,
+    })
+  }
+
   return [
     {
       deployment,
@@ -263,25 +296,26 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       node,
       instances,
       saveState,
-      editing,
+      editState,
       mutable,
       deployable,
       deletable,
       copiable,
       editor,
       viewMode,
-      confirmationModal,
       sock,
       showDeploymentLog,
+      confirmationModal,
     },
     {
-      setEditing,
+      setEditState,
       onDeploymentEdited,
       onEnvironmentEdited,
-      onCopyDeployment,
       setViewMode,
       onInvalidateSecrets,
       onPatchInstance,
+      onDeploymentTokenCreated,
+      onRevokeDeploymentToken,
     },
   ]
 }

@@ -1,14 +1,16 @@
 import { Layout } from '@app/components/layout'
+import CopyDeploymentCard from '@app/components/projects/versions/deployments/copy-deployment-card'
 import DeploymentStatusTag from '@app/components/projects/versions/deployments/deployment-status-tag'
-import useCopyDeploymentModal from '@app/components/projects/versions/deployments/use-copy-deployment-confirmation-modal'
+import useCopyDeploymentState from '@app/components/projects/versions/deployments/use-copy-deployment-state'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
-import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import DyoModal from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Deployment, deploymentIsCopiable, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
@@ -18,7 +20,6 @@ import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 
@@ -33,22 +34,15 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   const { t } = useTranslation('deployments')
   const router = useRouter()
 
-  const [showInfo, setShowInfo] = useState<Deployment>(null)
-
   const handleApiError = defaultApiErrorHandler(t)
-  const [confirmationModal, copyDeployment] = useCopyDeploymentModal(handleApiError)
 
-  const onCopyDeployment = async (deploymentId: string) => {
-    const deployment = deployments.find(d => d.id === deploymentId)
-    const url = await copyDeployment({
-      deploymentId: deployment.id,
-    })
+  const [showInfo, setShowInfo] = useState<Deployment>(null)
+  const [copyDeploymentTarget, setCopyDeploymentTarget] = useCopyDeploymentState({
+    handleApiError,
+  })
 
-    if (!url) {
-      return
-    }
-
-    await router.push(url)
+  const onDeploymentCopied = async (deploymentId: string) => {
+    await router.push(deploymentUrl(deploymentId))
   }
 
   const filters = useFilters<Deployment, DeploymentFilter>({
@@ -98,25 +92,21 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
     <div className="flex justify-center">
       <div className="mr-2 inline-block">
-        <Image
+        <DyoIcon
           src="/note.svg"
           alt={t('common:deploy')}
-          width={24}
-          height={24}
+          size="md"
           className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
           onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
         />
       </div>
 
-      <Image
+      <DyoIcon
         src="/copy.svg"
         alt={t('common:copy')}
-        width={24}
-        height={24}
-        className={
-          deploymentIsCopiable(item.status, item.version.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'
-        }
-        onClick={() => deploymentIsCopiable(item.status, item.version.type) && onCopyDeployment(item.id)}
+        size="md"
+        className={deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+        onClick={() => deploymentIsCopiable(item.status) && setCopyDeploymentTarget(item.id)}
       />
     </div>,
   ]
@@ -125,6 +115,16 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   return (
     <Layout title={t('common:deployments')}>
       <PageHeading pageLink={selfLink} />
+
+      {!copyDeploymentTarget ? null : (
+        <CopyDeploymentCard
+          className="p-8 mb-4"
+          deployment={copyDeploymentTarget}
+          onDeplyomentCopied={onDeploymentCopied}
+          onDiscard={() => setCopyDeploymentTarget(null)}
+        />
+      )}
+
       {deployments.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
@@ -168,8 +168,6 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           <p className="text-bright mt-8 break-all overflow-y-auto">{showInfo.note}</p>
         </DyoModal>
       )}
-
-      <DyoConfirmationModal config={confirmationModal} className="w-1/4" confirmColor="bg-error-red" />
     </Layout>
   )
 }

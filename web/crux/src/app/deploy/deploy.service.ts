@@ -1,4 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import { JwtService } from '@nestjs/jwt'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum, Prisma } from '@prisma/client'
 import { EMPTY, Observable, Subject, concatAll, concatMap, filter, from, lastValueFrom, map, of } from 'rxjs'
@@ -9,10 +11,12 @@ import {
   UniqueSecretKeyValue,
 } from 'src/domain/container'
 import Deployment from 'src/domain/deployment'
+import { DeploymentTokenPayload, DeploymentTokenScriptGenerator } from 'src/domain/deployment-token'
 import { toPrismaJson } from 'src/domain/utils'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import PrismaService from 'src/services/prisma.service'
+import { v4 as uuid } from 'uuid'
 import AgentService from '../agent/agent.service'
 import ContainerMapper from '../container/container.mapper'
 import { EditorLeftMessage, EditorMessage } from '../editor/editor.message'
@@ -20,13 +24,16 @@ import EditorServiceProvider from '../editor/editor.service.provider'
 import { ImageEvent } from '../image/image.event'
 import ImageEventService from '../image/image.event.service'
 import {
+  CopyDeploymentDto,
   CreateDeploymentDto,
+  CreateDeploymentTokenDto,
   DeploymentDetailsDto,
   DeploymentDto,
   DeploymentEventDto,
   DeploymentImageEvent,
   DeploymentLogListDto,
   DeploymentLogPaginationQuery,
+  DeploymentTokenCreatedDto,
   InstanceDto,
   InstanceSecretsDto,
   PatchDeploymentDto,
@@ -42,12 +49,14 @@ export default class DeployService {
   private deploymentImageEvents = new Subject<DeploymentImageEvent>()
 
   constructor(
-    private prisma: PrismaService,
-    private agentService: AgentService,
-    imageEventService: ImageEventService,
-    private mapper: DeployMapper,
-    private containerMapper: ContainerMapper,
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+    private readonly agentService: AgentService,
+    readonly imageEventService: ImageEventService,
+    private readonly mapper: DeployMapper,
+    private readonly containerMapper: ContainerMapper,
     private readonly editorServices: EditorServiceProvider,
+    private readonly configService: ConfigService,
   ) {
     imageEventService
       .watchEvents()
@@ -96,6 +105,13 @@ export default class DeployService {
         version: {
           include: {
             project: true,
+          },
+        },
+        tokens: {
+          select: {
+            id: true,
+            createdAt: true,
+            expiresAt: true,
           },
         },
         instances: {
@@ -327,15 +343,18 @@ export default class DeployService {
       select: {
         prefix: true,
         nodeId: true,
+        status: true,
       },
     })
 
-    const agent = this.agentService.getById(deployment.nodeId)
-    if (agent) {
-      agent.deleteContainers({
-        prefix: deployment.prefix,
-        container: null,
-      })
+    if (deployment.status === 'successful') {
+      const agent = this.agentService.getById(deployment.nodeId)
+      if (agent) {
+        agent.deleteContainers({
+          prefix: deployment.prefix,
+          container: null,
+        })
+      }
     }
   }
 
@@ -660,7 +679,7 @@ export default class DeployService {
     return this.mapper.secretsResponseToInstanceSecretsDto(secrets)
   }
 
-  async copyDeployment(deploymentId: string, identity: Identity): Promise<DeploymentDto> {
+  async copyDeployment(deploymentId: string, request: CopyDeploymentDto, identity: Identity): Promise<DeploymentDto> {
     const oldDeployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
         id: deploymentId,
@@ -674,26 +693,14 @@ export default class DeployService {
       },
     })
 
-    const preparingDeployment = await this.prisma.deployment.findFirst({
-      where: {
-        nodeId: oldDeployment.nodeId,
-        versionId: oldDeployment.versionId,
-        prefix: oldDeployment.prefix,
-        status: 'preparing',
-      },
-      select: {
-        id: true,
-      },
-    })
-
     const newDeployment = await this.prisma.deployment.create({
       data: {
         versionId: oldDeployment.versionId,
-        nodeId: oldDeployment.nodeId,
+        nodeId: request.nodeId,
+        prefix: request.prefix,
+        note: request.note,
         status: DeploymentStatusEnum.preparing,
-        note: oldDeployment.note,
         createdBy: identity.id,
-        prefix: oldDeployment.prefix,
       },
       include: {
         node: true,
@@ -753,10 +760,6 @@ export default class DeployService {
       ),
     )
 
-    if (preparingDeployment) {
-      await this.deleteDeployment(preparingDeployment.id)
-    }
-
     return this.mapper.toDto(newDeployment)
   }
 
@@ -784,6 +787,72 @@ export default class DeployService {
       items: events.reverse().map(it => this.mapper.eventToDto(it)),
       total,
     }
+  }
+
+  async createDeploymentToken(
+    deploymentId: string,
+    req: CreateDeploymentTokenDto,
+    identity: Identity,
+  ): Promise<DeploymentTokenCreatedDto> {
+    const nonce = uuid()
+    let expiresAt: Date | null = null
+
+    if (req.expirationInDays) {
+      expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + req.expirationInDays)
+    }
+
+    this.logger.verbose(`DeploymentToken expires at ${expiresAt?.toISOString()}`)
+
+    const payload: DeploymentTokenPayload = {
+      sub: identity.id,
+      deploymentId,
+      nonce,
+    }
+
+    const tokenProperties: Record<string, any> = {
+      data: payload,
+    }
+
+    if (expiresAt) {
+      tokenProperties.exp = expiresAt.getTime() / 1000
+    }
+
+    const jwt = this.jwtService.sign(tokenProperties)
+
+    const tokenGenerator = new DeploymentTokenScriptGenerator(this.configService)
+
+    const curl = tokenGenerator
+      .getCurlCommand({
+        deploymentId,
+        token: jwt,
+      })
+      .trim()
+
+    const deploymentToken = await this.prisma.deploymentToken.create({
+      data: {
+        deploymentId,
+        nonce,
+        expiresAt,
+        createdBy: identity.id,
+      },
+    })
+
+    return {
+      id: deploymentToken.id,
+      createdAt: deploymentToken.createdAt,
+      expiresAt,
+      token: jwt,
+      curl,
+    }
+  }
+
+  async deleteDeploymentToken(deploymentId: string): Promise<void> {
+    await this.prisma.deploymentToken.delete({
+      where: {
+        deploymentId,
+      },
+    })
   }
 
   private async transformImageEvent(event: ImageEvent): Promise<DeploymentImageEvent> {

@@ -1,7 +1,7 @@
 import { ROUTE_REGISTRIES } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { clearInput, screenshotPath } from './utils/common'
-import { createProject } from './utils/projects'
+import { clearInput, NGINX_TEST_IMAGE_WITH_TAG, screenshotPath } from '../utils/common'
+import { createProject } from '../utils/projects'
 
 test('adding a new registry should work', async ({ page }) => {
   await page.goto(ROUTE_REGISTRIES)
@@ -69,7 +69,7 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   await expect(page.locator('label[for=imageName]')).toContainText('Image name and tag')
 
   await clearInput(page.locator('input[name=imageName]'))
-  await page.locator('input[name=imageName]').type('nginx:latest:test')
+  await page.locator('input[name=imageName]').type(`${NGINX_TEST_IMAGE_WITH_TAG}:mainline-alpine`)
   await expect(page.locator('input[name=imageName] >> xpath=../p')).toContainText(
     "Invalid format, please use 'NAME[:TAG]'",
   )
@@ -88,7 +88,7 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   await expect(page.locator('button:text-is("Add")')).toBeVisible()
 
   await clearInput(page.locator('input[name=imageName]'))
-  await page.locator('input[name=imageName]').type('nginx:latest')
+  await page.locator('input[name=imageName]').type(NGINX_TEST_IMAGE_WITH_TAG)
   await expect(page.locator('input[name=imageName] >> xpath=../p')).not.toBeVisible()
   await expect(page.locator('button:text-is("Add")')).toBeVisible()
 

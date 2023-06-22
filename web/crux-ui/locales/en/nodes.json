@@ -10,7 +10,6 @@
   "description": "Nodes are the deployment targets. You can add a new node by installing dyrector.io’s agents on your environment using a one-liner generated.",
   "noItems": "You haven't added any nodes yet. To add a new node click 'Add' on the top right.\n\n",
 
-  "revoke": "Revoke token",
   "confirmRevoke": "Are you sure you want to revoke the token?",
 
   "setup": "Install the agent",
@@ -26,7 +25,7 @@
     "k8s": ["A kubernetes cluster", "kubectl authenticated, active context selected", "Ability to run these commands"],
     "docker": ["A linux host/VPS", "Docker or podman installed on host", "Ability to execute the script on host"]
   },
-  "saveYourNode": "Please save your node to begin the setup process.",
+  "youCanInstall": "You can install an agent on your environment by running a script generated here. You're able to generate one after saving this node.",
   "connection": "Connection",
   "connectionExplanation": "If the setup was successful, you will see your node appear here.",
   "command": "Command",
@@ -49,7 +48,7 @@
     "unreachable": "Unreachable"
   },
   "persistentDataPath": "Persistent data path",
-  "persistentDataExplanation": "This is where agent will create and store some files required to work as well as create persistent storage for containers.",
+  "persistentDataExplanation": "Stores basic operational data and serves as a base path for containers using relative volume names. Environment variables are resolved, but it is suggested to use absolute paths and avoid special characters.",
   "optionalLeaveEmptyForDefaults": "Optional, leave empty for default paths",
   "update": "Update",
   "updateError": "Failed to update agent: {{error}}",

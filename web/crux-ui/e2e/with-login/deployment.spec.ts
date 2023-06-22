@@ -1,7 +1,7 @@
 import { ProjectType } from '@app/models'
 import { expect, Page, test } from '@playwright/test'
-import { DAGENT_NODE } from './utils/common'
-import { createNode } from './utils/nodes'
+import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG } from '../utils/common'
+import { createNode } from '../utils/nodes'
 import {
   addDeploymentToVersion,
   addDeploymentToVersionlessProject,
@@ -9,7 +9,7 @@ import {
   addImageToVersionlessProject,
   createProject,
   createVersion,
-} from './utils/projects'
+} from '../utils/projects'
 
 const setup = async (
   page: Page,
@@ -33,17 +33,17 @@ test('Can create multiple preparings to the same node with different prefixes', 
   const prefixOther = 'prefix-other'
 
   const { projectId } = await setup(page, nodeName, projectName)
-  await addImageToVersionlessProject(page, projectId, 'nginx')
+  await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
   const one = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOne)
   const other = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOther)
 
   await page.goto(one.url)
-  await page.waitForSelector(`label:has-text("Prefix: ${prefixOne}")`)
-  await expect(await page.locator(`label:has-text("Prefix: ${prefixOne}")`)).toHaveCount(1)
+  await page.waitForSelector(`label:has-text("Prefix: pw-${prefixOne}")`)
+  await expect(await page.locator(`label:has-text("Prefix: pw-${prefixOne}")`)).toHaveCount(1)
 
   await page.goto(other.url)
-  await page.waitForSelector(`label:has-text("Prefix: ${prefixOther}")`)
-  await expect(await page.locator(`label:has-text("Prefix: ${prefixOther}")`)).toHaveCount(1)
+  await page.waitForSelector(`label:has-text("Prefix: pw-${prefixOther}")`)
+  await expect(await page.locator(`label:has-text("Prefix: pw-${prefixOther}")`)).toHaveCount(1)
 })
 
 test('Can not create multiple preparings to the same node with the same prefix', async ({ page }) => {
@@ -52,18 +52,18 @@ test('Can not create multiple preparings to the same node with the same prefix',
   const prefixOne = 'prefix-one'
 
   const { projectId } = await setup(page, nodeName, projectName)
-  await addImageToVersionlessProject(page, projectId, 'nginx')
+  await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
   const one = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOne)
   await page.goto(one.url)
-  await page.waitForSelector(`label:has-text("Prefix: ${prefixOne}")`)
-  await expect(await page.locator(`label:has-text("Prefix: ${prefixOne}")`)).toHaveCount(1)
+  await page.waitForSelector(`label:has-text("Prefix: pw-${prefixOne}")`)
+  await expect(await page.locator(`label:has-text("Prefix: pw-${prefixOne}")`)).toHaveCount(1)
 
   const other = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOne)
 
   expect(other.id, one.id)
   await page.goto(other.url)
-  await page.waitForSelector(`label:has-text("Prefix: ${prefixOne}")`)
-  await expect(await page.locator(`label:has-text("Prefix: ${prefixOne}")`)).toHaveCount(1)
+  await page.waitForSelector(`label:has-text("Prefix: pw-${prefixOne}")`)
+  await expect(await page.locator(`label:has-text("Prefix: pw-${prefixOne}")`)).toHaveCount(1)
 })
 
 test('Cannot create multiple deployments with the same node and prefix for a rolling version', async ({ page }) => {

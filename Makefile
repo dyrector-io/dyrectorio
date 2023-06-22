@@ -1,7 +1,6 @@
-
 SHELL = /bin/sh
 
-## shortcut to start stack, fully containerized, stable build
+## Shortcut to start stack, fully containerized, stable build
 .PHONY: up
 up:
 	cd golang && \
@@ -12,7 +11,7 @@ down:
 	cd golang && \
 	make down
 
-# shortcut to start stack with local development config
+# Shortcut to start stack with local development config
 .PHONY: upd
 upd:
 	cd golang && \
@@ -26,18 +25,19 @@ downd:
 .PHONY: dwd
 dwd: downd
 
-# shortcut for cli
+# Shortcut for CLI
 .PHONY: cli
 cli:
 	cd golang/cmd/dyo && \
 	go run .
 
+# Create dyrector.io offline installer bundle
 .PHONY: bundle
 bundle:
 	$(eval BUNDLEVER=$(or $(version),latest))
 	mv .env .env_bak || true
 	echo "DYO_VERSION=$(BUNDLEVER)" > .env
-	docker-compose --ansi=never pull  2> >(awk '!/level=warning/') >/dev/stdout
+	docker-compose --ansi=never pull
 	docker-compose config 2>/dev/null | yq -r '.services[].image' | sort | uniq | while read line ; do \
 	docker save $$line | gzip > "offline/$$(echo "$$line" | sed 's/\//\./g; s/\:/\_/g' | cut -d'.' -f3-).tgz" ; done
 	cp docker-compose.yaml offline/
@@ -45,17 +45,17 @@ bundle:
 	zip -r dyrectorio-offline-bundle-$(BUNDLEVER).zip offline
 	mv .env_bak .env || true
 
-## Compile the all grpc files
+## Compile the all gRPC files
 .PHONY: protogen
 protogen:| proto-agent proto-crux
 
-## Generate agent grpc files
+## Generate agent gRPC files
 .PHONY: go-lint
 go-lint:
 	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4 ash -c "\
 		cd golang && make lint"
 
-## Generate agent grpc files
+## Generate agent gRPC files
 .PHONY: proto-agent
 proto-agent:
 	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4 ash -c "\
@@ -93,9 +93,10 @@ build-proto-image:
 branch-check:
 	@branch=$$(git rev-parse --abbrev-ref HEAD); \
 	if [ "$$branch" = "main" ] || [ "$$branch" = "develop" ]; then \
-		echo main; \
+		echo "You are on main / develop branch."; \
 	else \
-		echo "!!! WARNING: You are not on the main or develop branch!"; \
+		echo "!!!WARNING: You are not on the main or develop branch!"; \
+		exit 1; \
 	fi
 
 # use on the branch to-release (develop or main for hotfixes)
@@ -113,6 +114,7 @@ release: branch-check
 
 ## Change the golang version
 	sed 's/Version *=.*/Version = "$(version)"/' golang/internal/version/version.go > temp_file && mv temp_file golang/internal/version/version.go
+	git add golang/internal/version/version.go
 
 ## Change version of crux
 	jq '.version = "$(version)"' web/crux/package.json  > web/crux/package.json.tmp

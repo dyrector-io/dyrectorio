@@ -1,8 +1,7 @@
-import { projectUrl } from '@app/routes'
+import { projectUrl, versionUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { versionUrl } from './../src/routes'
-import { DAGENT_NODE } from './utils/common'
-import { addDeploymentToVersion, createImage, createProject, createVersion } from './utils/projects'
+import { DAGENT_NODE } from '../utils/common'
+import { addDeploymentToVersion, createImage, createProject, createVersion } from '../utils/projects'
 
 test('Add incremental version should work', async ({ page }) => {
   const projectId = await createProject(page, 'incremental', 'versioned')

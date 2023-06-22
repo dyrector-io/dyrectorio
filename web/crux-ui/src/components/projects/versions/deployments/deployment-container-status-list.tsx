@@ -25,6 +25,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
   const { deployment } = props
 
   const { t } = useTranslation('deployments')
+  const now = utcNow()
 
   const [containers, setContainers] = useState<Container[]>(() =>
     deployment.instances.map(it => ({
@@ -32,7 +33,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
         prefix: deployment.prefix,
         name: it.config?.name ?? it.image.config.name,
       },
-      createdAt: it.image.createdAt,
+      createdAt: null,
       state: null,
       reason: null,
       imageName: it.image.name,
@@ -68,11 +69,18 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     setContainers(merge(containers, message.containers)),
   )
 
-  const itemTemplate = (container: Container) => {
-    const now = utcNow()
+  const formatContainerTime = (container: Container) => {
+    if (!container.createdAt) {
+      return '-'
+    }
+
     const created = new Date(container.createdAt).getTime()
     const seconds = Math.floor((now - created) / 1000)
 
+    return timeAgo(t, seconds)
+  }
+
+  const itemTemplate = (container: Container) => {
     const logUrl = nodeContainerLogUrl(deployment.node.id, container.id)
 
     /* eslint-disable react/jsx-key */
@@ -80,7 +88,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       <ContainerStatusIndicator state={container.state} />,
       <span>{container.id.name}</span>,
       <span>{`${container.imageName}:${container.imageTag}`}</span>,
-      <span>{timeAgo(t, seconds)}</span>,
+      <span>{formatContainerTime(container)}</span>,
       <ContainerStatusTag className="inline-block" state={container.state} />,
       <span>{container.reason}</span>,
       container.state && (

@@ -16,6 +16,7 @@ import DyoWsAdapter from './websockets/dyo.ws.adapter'
 import AuditLoggerInterceptor from './app/audit.logger/audit.logger.interceptor'
 import { PRODUCTION } from './shared/const'
 import CreatedWithLocationInterceptor from './interceptors/created-with-location.interceptor'
+import prismaBootstrap from './services/prisma.bootstrap'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -81,6 +82,8 @@ const bootstrap = async () => {
       ...agentOptions,
     },
   })
+
+  await prismaBootstrap(app)
 
   await app.startAllMicroservices()
   await app.listen(httpOptions)

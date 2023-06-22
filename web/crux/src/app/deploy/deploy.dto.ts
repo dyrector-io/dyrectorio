@@ -1,9 +1,11 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger'
-import { Deployment, Instance, InstanceContainerConfig, Node, Project, Version } from '@prisma/client'
+import { Deployment, DeploymentToken, Instance, InstanceContainerConfig, Node, Project, Version } from '@prisma/client'
 import { Type } from 'class-transformer'
-import { IsDate, IsIn, IsInt, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator'
+import { IsDate, IsIn, IsInt, IsJWT, IsOptional, IsString, IsUUID, Min, ValidateNested } from 'class-validator'
 import { CONTAINER_STATE_VALUES, ContainerState } from 'src/domain/container'
 import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
+import { BasicProperties } from '../../shared/dtos/shared.dto'
+import { AuditDto } from '../audit/audit.dto'
 import {
   ContainerConfigDto,
   ContainerIdentifierDto,
@@ -13,11 +15,9 @@ import {
 import { ImageDto } from '../image/image.dto'
 import { ImageEvent } from '../image/image.event'
 import { ImageDetails } from '../image/image.mapper'
-import { BasicProperties } from '../../shared/dtos/shared.dto'
-import { AuditDto } from '../audit/audit.dto'
+import { BasicNodeDto, BasicNodeWithStatus } from '../node/node.dto'
 import { BasicProjectDto } from '../project/project.dto'
 import { BasicVersionDto } from '../version/version.dto'
-import { BasicNodeDto, BasicNodeWithStatus } from '../node/node.dto'
 
 const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete'] as const
 export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]
@@ -87,6 +87,35 @@ export class InstanceDto {
   config?: InstanceContainerConfigDto | null
 }
 
+export class DeploymentTokenDto {
+  @IsUUID()
+  id: string
+
+  @IsDate()
+  @Type(() => Date)
+  createdAt: Date
+
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  expiresAt?: Date | null
+}
+
+export class CreateDeploymentTokenDto {
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  expirationInDays?: number
+}
+
+export class DeploymentTokenCreatedDto extends DeploymentTokenDto {
+  @IsJWT()
+  token: string
+
+  @IsString()
+  curl: string
+}
+
 export class DeploymentDetailsDto extends DeploymentDto {
   @ValidateNested({ each: true })
   environment: UniqueKeyValueDto[]
@@ -98,7 +127,12 @@ export class DeploymentDetailsDto extends DeploymentDto {
   @ValidateNested()
   instances: InstanceDto[]
 
+  @IsInt()
+  @Min(0)
   lastTry: number
+
+  @ValidateNested()
+  token: DeploymentTokenDto
 }
 
 export class CreateDeploymentDto {
@@ -133,6 +167,18 @@ export class PatchDeploymentDto {
 export class PatchInstanceDto {
   @ValidateNested()
   config: InstanceContainerConfigDto
+}
+
+export class CopyDeploymentDto {
+  @IsUUID()
+  nodeId: string
+
+  @IsString()
+  prefix: string
+
+  @IsString()
+  @IsOptional()
+  note?: string | null
 }
 
 export const DEPLOYMENT_EVENT_TYPE_VALUES = ['log', 'deployment-status', 'container-status'] as const
@@ -219,5 +265,6 @@ export type InstanceDetails = Instance & {
 }
 
 export type DeploymentDetails = DeploymentWithNodeVersion & {
+  tokens: Pick<DeploymentToken, 'id' | 'createdAt' | 'expiresAt'>[]
   instances: InstanceDetails[]
 }

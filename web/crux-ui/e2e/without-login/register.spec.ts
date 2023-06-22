@@ -1,17 +1,10 @@
 import { ROUTE_LOGIN, ROUTE_REGISTER, verificationUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { deleteUserByEmail, kratosFromBaseURL, screenshotPath, USER_EMAIL, USER_PASSWORD } from './utils/common'
+import { deleteUserByEmail, kratosFromBaseURL, screenshotPath, USER_EMAIL, USER_PASSWORD } from '../utils/common'
 
 const REGISTERED_USER_EMAIL = `r.${USER_EMAIL}`
 const REGISTERED_USER_PASSWORD = `r.${USER_PASSWORD}`
 const REGISTERED_USER_FIRST_NAME = 'r.John'
-
-test.use({
-  storageState: {
-    cookies: [],
-    origins: [],
-  },
-})
 
 test('should navigate to login when clicking on log in', async ({ page }) => {
   await page.goto(ROUTE_REGISTER)

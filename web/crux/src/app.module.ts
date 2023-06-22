@@ -17,12 +17,12 @@ import StorageModule from './app/storage/storage.module'
 import TeamModule from './app/team/team.module'
 import TemplateModule from './app/template/template.module'
 import VersionModule from './app/version/version.module'
-import ShutdownService from './services/application.shutdown.service'
-import EmailModule from './mailer/email.module'
-import PrismaService from './services/prisma.service'
-import UuidValidationGuard from './guards/uuid-params.validation.guard'
 import appConfig from './config/app.config'
 import pinoLoggerConfig from './config/pino.logger.config'
+import UuidValidationGuard from './guards/uuid-params.validation.guard'
+import EmailModule from './mailer/email.module'
+import ShutdownService from './services/application.shutdown.service'
+import PrismaService from './services/prisma.service'
 
 const imports = [
   ProjectModule,

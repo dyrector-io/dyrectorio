@@ -1,7 +1,10 @@
 import EditorBadge from '@app/components/editor/editor-badge'
 import { Layout } from '@app/components/layout'
 import NodeConnectionCard from '@app/components/nodes/node-connection-card'
+import CopyDeploymentCard from '@app/components/projects/versions/deployments/copy-deployment-card'
+import CreateDeploymentTokenCard from '@app/components/projects/versions/deployments/create-deployment-token-card'
 import DeploymentDetailsSection from '@app/components/projects/versions/deployments/deployment-details-section'
+import DeploymentTokenCard from '@app/components/projects/versions/deployments/deployment-token-card'
 import EditDeploymentCard from '@app/components/projects/versions/deployments/edit-deployment-card'
 import EditDeploymentInstances from '@app/components/projects/versions/deployments/edit-deployment-instances'
 import useDeploymentState from '@app/components/projects/versions/deployments/use-deployment-state'
@@ -58,7 +61,6 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const onApiError = defaultApiErrorHandler(t)
   const onWsError = (error: Error) => {
     // eslint-disable-next-line
     console.error('ws', 'edit-deployment', error)
@@ -67,19 +69,14 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   const [state, actions] = useDeploymentState({
     deployment: propsDeployment,
-    onApiError,
     onWsError,
+    onApiError: handleApiError,
   })
 
   const { project, version, deployment, node } = state
 
-  const onCopyDeployment = async () => {
-    const url = await actions.onCopyDeployment()
-    if (!url) {
-      return
-    }
-
-    await router.push(url)
+  const onDeploymentCopied = async (deploymentId: string) => {
+    await router.push(deploymentUrl(deploymentId))
     router.reload()
   }
 
@@ -148,6 +145,10 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     }
   }
 
+  const editing = state.editState === 'edit'
+
+  const onDiscard = () => actions.setEditState('details')
+
   return (
     <Layout
       title={t('deploysName', {
@@ -169,8 +170,8 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
         {!state.deletable ? null : (
           <DetailsPageMenu
             onDelete={onDelete}
-            editing={state.editing}
-            setEditing={actions.setEditing}
+            editing={editing}
+            setEditing={it => actions.setEditState(it ? 'edit' : 'details')}
             disableEditing={!state.mutable}
             submitRef={submitRef}
             deleteModalTitle={t('common:areYouSureDeleteName', {
@@ -186,35 +187,62 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
           />
         )}
 
-        {!state.copiable ? null : (
-          <DyoButton className="px-6 ml-4" onClick={onCopyDeployment}>
-            {t('common:copy')}
-          </DyoButton>
+        {state.editState !== 'details' ? null : (
+          <>
+            {state.copiable ? (
+              <DyoButton className="px-6 ml-4" onClick={() => actions.setEditState('copy')}>
+                {t('common:copy')}
+              </DyoButton>
+            ) : null}
+
+            {state.showDeploymentLog ? (
+              <DyoButton className="px-6 ml-4" href={deploymentDeployUrl(deployment.id)}>
+                {t('log')}
+              </DyoButton>
+            ) : null}
+
+            {state.deployable ? (
+              <DyoButton className="px-6 ml-4" onClick={onDeploy} disabled={node.status !== 'connected'}>
+                {t('common:deploy')}
+              </DyoButton>
+            ) : null}
+          </>
         )}
-
-        {state.showDeploymentLog ? (
-          <DyoButton className="px-6 ml-4" href={deploymentDeployUrl(deployment.id)}>
-            {t('log')}
-          </DyoButton>
-        ) : null}
-
-        {state.deployable && !state.editing ? (
-          <DyoButton className="px-6 ml-4" onClick={onDeploy} disabled={node.status !== 'connected'}>
-            {t('common:deploy')}
-          </DyoButton>
-        ) : null}
       </PageHeading>
 
-      {state.editing ? (
+      {editing ? (
         <EditDeploymentCard
           deployment={state.deployment}
           submitRef={submitRef}
           onDeploymentEdited={actions.onDeploymentEdited}
         />
+      ) : state.editState === 'copy' ? (
+        <CopyDeploymentCard
+          deployment={state.deployment}
+          submitRef={submitRef}
+          onDeplyomentCopied={onDeploymentCopied}
+          onDiscard={onDiscard}
+        />
+      ) : state.editState === 'create-token' ? (
+        <CreateDeploymentTokenCard
+          deployment={state.deployment}
+          submitRef={submitRef}
+          onTokenCreated={actions.onDeploymentTokenCreated}
+          onDiscard={onDiscard}
+        />
       ) : (
         <>
           <div className="flex flex-row">
-            <NodeConnectionCard className="w-1/3 p-6" node={state.node} showName />
+            <div className="flex flex-col gap-2 w-1/3">
+              <NodeConnectionCard node={state.node} showName />
+
+              <DeploymentTokenCard
+                className="h-full p-6"
+                token={state.deployment.token}
+                onCreate={() => actions.setEditState('create-token')}
+                onRevoke={actions.onRevokeDeploymentToken}
+              />
+            </div>
 
             <DeploymentDetailsSection state={state} actions={actions} className="w-2/3 p-6 ml-2" />
           </div>
@@ -223,7 +251,13 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
         </>
       )}
 
-      <DyoConfirmationModal config={state.confirmationModal} className="w-1/4" confirmColor="bg-error-red" />
+      <DyoConfirmationModal
+        config={state.confirmationModal}
+        title={t('confirmRevoke')}
+        confirmText={t('tokens:revoke')}
+        className="w-1/4"
+        confirmColor="bg-error-red"
+      />
     </Layout>
   )
 }

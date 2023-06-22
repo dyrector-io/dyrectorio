@@ -13,7 +13,6 @@ import WsRedirectInterceptor from 'src/websockets/interceptors/ws.redirect.inter
 import TeamService from '../team/team.service'
 import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import RegistryClientProvider from './registry-client.provider'
-import { IMAGE_FILTER_TAKE } from './registry.const'
 import {
   FetchImageTagsMessage,
   FindImageMessage,
@@ -45,7 +44,7 @@ export default class RegistryWebSocketGateway {
     @SocketMessage() message: FindImageMessage,
   ): Promise<WsMessage<FindImageResultMessage>> {
     const api = await this.registryClients.getByRegistryId(teamId, message.registryId)
-    const images = await api.catalog(message.filter, IMAGE_FILTER_TAKE)
+    const images = await api.catalog(message.filter)
 
     return {
       type: 'find-image-result',

@@ -5,11 +5,13 @@ import { Identity } from '@ory/kratos-client'
 import http from 'http'
 import { JwtToken } from 'src/domain/identity'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
-import KratosService from 'src/services/kratos.service'
+import KratosService, { hasKratosSession } from 'src/services/kratos.service'
 import { WsClient } from 'src/websockets/common'
 
-export const DISABLE_AUTH = 'disable-auth'
-export const DisableAuth = () => SetMetadata(DISABLE_AUTH, true)
+export type AuthStrategyType = 'user-token' | 'deploy-token' | 'disabled'
+export const AUTH_STRATEGY = 'auth-strategy'
+export const AuthStrategy = (strategy: AuthStrategyType) => SetMetadata(AUTH_STRATEGY, strategy)
+export const DisableAuth = () => AuthStrategy('disabled')
 
 @Injectable()
 export default class JwtAuthGuard extends AuthGuard('jwt') {
@@ -20,16 +22,16 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const disableAuth = this.reflector.get<boolean>(DISABLE_AUTH, context.getHandler())
-    if (disableAuth) {
-      this.logger.verbose(`Authorized. Guard was disabled for path.`)
+    const strategy = this.reflector.get<AuthStrategyType>(AUTH_STRATEGY, context.getHandler()) ?? 'user-token'
+    if (strategy === 'disabled') {
+      this.logger.verbose(`Authorized. Guard was for path.`)
       return true
     }
 
     const type = context.getType()
 
     if (type === 'http') {
-      return await this.canActivateHttp(context, context.switchToHttp().getRequest())
+      return await this.canActivateHttp(context, context.switchToHttp().getRequest(), strategy)
     }
     if (type === 'ws') {
       return this.canActivateWs(context)
@@ -39,8 +41,12 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
     return false
   }
 
-  private async canActivateHttp(context: ExecutionContext, req: AuthorizedHttpRequest): Promise<boolean> {
-    if (req.headers.cookie?.includes('ory_kratos_session=')) {
+  private async canActivateHttp(
+    context: ExecutionContext,
+    req: AuthorizedHttpRequest,
+    strategy: AuthStrategyType,
+  ): Promise<boolean> {
+    if (hasKratosSession(req)) {
       try {
         // check the cookie for a valid session
         const session = await this.kratos.getSessionByCookie(req.headers.cookie)
@@ -54,19 +60,28 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     this.handleWsConnection(req)
-    const activated = await (super.canActivate(context) as Promise<boolean>)
+    let activated = false
+    try {
+      activated = await (super.canActivate(context) as Promise<boolean>)
+    } catch {
+      /* EMPTY */
+    }
 
-    if (activated) {
-      const jwt = req.user
-      const userId = jwt.data.sub
-      try {
-        req.identity = await this.kratos.getIdentityById(userId)
-        req.sessionExpiresAt = jwt.exp
-        this.logger.verbose('Authorized. JWT was found legit.')
-      } catch {
-        this.logger.verbose('Unauthorized. JWT was found, but failed to authorize with kratos.')
-        return false
-      }
+    if (!activated) {
+      this.logger.verbose('Failed to authorize with jwt.')
+      // let the DeployJwtAuthGuard decide if the jwt is valid
+      return strategy === 'deploy-token'
+    }
+
+    const jwt = req.user
+    const userId = jwt.data.sub
+    try {
+      req.identity = await this.kratos.getIdentityById(userId)
+      req.sessionExpiresAt = jwt.exp
+      this.logger.verbose('Authorized. JWT was found legit.')
+    } catch {
+      this.logger.verbose('Unauthorized. JWT was found, but failed to authorize with kratos.')
+      return false
     }
 
     return activated
