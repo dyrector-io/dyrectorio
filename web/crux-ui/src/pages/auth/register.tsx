@@ -86,6 +86,8 @@ const RegisterPage = (props: RegisterPageProps) => {
 
       if (res.ok) {
         router.replace(verificationUrl(values.email))
+      } else if (res.status === 410) {
+        await router.reload()
       } else {
         recaptcha.current?.reset()
 
