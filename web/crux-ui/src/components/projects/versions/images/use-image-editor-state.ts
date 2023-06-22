@@ -12,7 +12,7 @@ import {
 } from '@app/models'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import { useRef, useState } from 'react'
-import { ImagesActions, ImagesState, selectTagsOfImage } from './use-images-state'
+import { selectTagsOfImage, VerionState, VersionActions } from '../use-version-state'
 
 export type ImageEditorState = {
   image: VersionImage
@@ -31,8 +31,8 @@ export type ImageEditorActions = {
 
 export type ImageEditorStateOptions = {
   image: VersionImage
-  imagesState: ImagesState
-  imagesActions: ImagesActions
+  imagesState: VerionState
+  imagesActions: VersionActions
   sock: WebSocketClientEndpoint
 }
 
