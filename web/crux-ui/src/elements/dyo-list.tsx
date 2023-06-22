@@ -4,6 +4,8 @@ import React from 'react'
 
 export type DyoListItemBuilder<T> = (it: T, index: number) => React.ReactNode[]
 
+export type DyoListHeaderBuilder = (header: string, index: number) => React.ReactNode
+
 export type DyoListProps<T> = {
   key?: React.Key
   className?: string
@@ -16,6 +18,7 @@ export type DyoListProps<T> = {
   data: T[]
   noSeparator?: boolean
   itemBuilder?: DyoListItemBuilder<T>
+  headerBuilder?: DyoListHeaderBuilder
   cellClick?: (data: T, rowIndex: number, columnIndex: number) => void
 }
 
@@ -32,6 +35,7 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
     data: propsData,
     noSeparator,
     itemBuilder,
+    headerBuilder,
     cellClick,
   } = props
 
@@ -80,7 +84,7 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
                     columnWidths ? columnWidths[index] ?? '' : '',
                   )}
                 >
-                  {header}
+                  {headerBuilder ? headerBuilder(header, index) : header}
                 </div>
               ))}
             </div>

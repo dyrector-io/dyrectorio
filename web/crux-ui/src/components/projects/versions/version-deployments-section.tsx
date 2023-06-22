@@ -17,11 +17,12 @@ import {
   DEPLOYMENT_STATUS_VALUES,
   NodeEventMessage,
   NodeStatus,
+  StartDeployment,
   VersionDetails,
   WS_TYPE_NODE_EVENT,
 } from '@app/models'
 import { deploymentDeployUrl, deploymentStartApiUrl, deploymentUrl, WS_NODES } from '@app/routes'
-import { utcDateToLocale } from '@app/utils'
+import { sendForm, utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { NextRouter, useRouter } from 'next/dist/client/router'
@@ -34,10 +35,17 @@ export const startDeployment = async (
   router: NextRouter,
   onApiError: (response: Response) => void,
   deploymentId: string,
+  deployInstances?: string[],
 ) => {
-  const res = await fetch(deploymentStartApiUrl(deploymentId), {
-    method: 'POST',
-  })
+  const res = await sendForm(
+    'POST',
+    deploymentStartApiUrl(deploymentId),
+    deployInstances
+      ? ({
+          instances: deployInstances,
+        } as StartDeployment)
+      : null,
+  )
 
   if (!res.ok) {
     onApiError(res)
@@ -94,13 +102,22 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const headers = [
     ...['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it => t(it)),
   ]
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-2 font-semibold'
+  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased px-2 py-3 font-semibold'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     defaultHeaderClass,
     clsx('text-center', defaultHeaderClass),
     defaultHeaderClass,
-    clsx('rounded-tr-lg text-center pr-6', defaultHeaderClass),
+    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
+  ]
+
+  const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
+  const itemClasses = [
+    clsx('pl-6', defaultItemClass),
+    ...Array.from({ length: 1 }).map(() => defaultItemClass),
+    clsx('text-center', defaultItemClass),
+    ...Array.from({ length: headerClasses.length - 4 }).map(() => defaultItemClass),
+    clsx('pr-6 text-center', defaultItemClass),
   ]
 
   const itemTemplate = (item: DeploymentByVersion) => {
@@ -185,7 +202,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             <DyoList
               headerClassName={headerClasses}
               headers={headers}
-              itemClassName="h-11 min-h-min text-light-eased pl-4 w-fit"
+              itemClassName={itemClasses}
               noSeparator
               data={filters.filtered}
               itemBuilder={itemTemplate}

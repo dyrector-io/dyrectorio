@@ -16,7 +16,7 @@ const DyoIcon = (props: DyoIconProps) => {
 
   return (
     <span
-      className={className}
+      className={clsx('inline-block', className)}
       style={{
         minWidth: size,
         minHeight: size,
