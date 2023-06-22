@@ -8,9 +8,12 @@ import VersionlessProjectSections from '@app/components/projects/versions/versio
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu, DetailsPageTexts } from '@app/components/shared/page-menu'
+import DyoButton from '@app/elements/dyo-button'
+import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
+import useConfirmation from '@app/hooks/use-confirmation'
 import {
   EditableProject,
   EditableVersion,
@@ -23,6 +26,7 @@ import {
 } from '@app/models'
 import {
   projectApiUrl,
+  projectConvertToVersionedApiUrl,
   projectUrl,
   ROUTE_PROJECTS,
   versionApiUrl,
@@ -56,6 +60,8 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
 
   const submitRef = useRef<() => Promise<any>>()
+
+  const [convertModelConfig, confirmConvert] = useConfirmation()
 
   const versionless = project.type === 'versionless'
 
@@ -126,6 +132,21 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
 
   const onVersionIncreased = async (version: Version) => await router.push(versionUrl(project.id, version.id))
 
+  const onConvertToVersioned =
+    project.type === 'versioned'
+      ? null
+      : async () => {
+          const res = await fetch(projectConvertToVersionedApiUrl(project.id), {
+            method: 'POST',
+          })
+
+          if (res.ok) {
+            await router.reload()
+          } else {
+            toast(t('errors:oops'))
+          }
+        }
+
   const pageLink: BreadcrumbLink = {
     name: t('common:projects'),
     url: ROUTE_PROJECTS,
@@ -158,7 +179,13 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
           deleteModalDescription={t('proceedYouLoseAllDataToName', {
             name: project.name,
           })}
-        />
+        >
+          {editState !== 'version-list' && versionless && (
+            <DyoButton className="px-2 mx-2" outlined onClick={() => confirmConvert(onConvertToVersioned)}>
+              {t('convertToVersioned')}
+            </DyoButton>
+          )}
+        </DetailsPageMenu>
       </PageHeading>
 
       {editState === 'version-list' ? (
@@ -204,6 +231,16 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
       ) : editState === 'add-version' || editState === 'edit-project' ? (
         <ProjectVersionsSection disabled projectId={project.id} versions={project.versions} />
       ) : null}
+
+      {versionless && (
+        <DyoConfirmationModal
+          config={convertModelConfig}
+          title={t('convertProjectToVersioned', { name: project.name })}
+          description={t('areYouSureWantToConvert')}
+          className="w-1/4"
+          confirmColor="bg-error-red"
+        />
+      )}
     </Layout>
   )
 }
