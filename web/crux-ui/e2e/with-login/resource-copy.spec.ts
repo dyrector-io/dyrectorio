@@ -1,3 +1,4 @@
+import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_INSTANCE } from '@app/models'
 import { deploymentUrl, deploymentWsUrl, imageConfigUrl, projectUrl, versionUrl, versionWsUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG } from 'e2e/utils/common'
@@ -55,7 +56,7 @@ test.describe('Deleting default version', () => {
 
     const internal = '1000'
     const external = '2000'
-    await addPortsToContainerConfig(page, ws, wsRoute, internal, external)
+    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_IMAGE, internal, external)
 
     const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
 
@@ -187,7 +188,7 @@ test.describe('Deleting default version', () => {
 
     const internal = '1000'
     const external = '2000'
-    await addPortsToContainerConfig(page, ws, wsRoute, internal, external)
+    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_INSTANCE, internal, external)
 
     const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
 
@@ -299,7 +300,7 @@ test.describe("Deleting copied deployment's parent", () => {
 
     const internal = '1000'
     const external = '2000'
-    await addPortsToContainerConfig(page, ws, wsRoute, internal, external)
+    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_INSTANCE, internal, external)
 
     await page.goto(deploymentUrl(parentDeploymentId))
 

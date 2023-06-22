@@ -1,4 +1,4 @@
-import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_RECEIVED } from '@app/models'
+import { WS_TYPE_PATCH_RECEIVED } from '@app/models'
 import { WsMessage } from '@app/websockets/common'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Page, WebSocket } from 'playwright'
@@ -30,13 +30,13 @@ export const waitSocketReceived = (
         },
   )
 
-export const waitSocketSent = (
+export const waitSocketSent = async (
   ws: WebSocket,
   route: string,
   type: string = null,
   match: (data: any) => boolean = null,
 ) =>
-  ws.waitForEvent(
+  await ws.waitForEvent(
     'framesent',
     !type
       ? undefined
@@ -55,10 +55,15 @@ export const waitSocketSent = (
         },
   )
 
-export const wsPatchSent = async (ws: WebSocket, route: string, match: (payload: any) => boolean = null) => {
+export const wsPatchSent = async (
+  ws: WebSocket,
+  route: string,
+  sentWsType: string,
+  match: (payload: any) => boolean = null,
+) => {
   const frameReceived = waitSocketReceived(ws, route, WS_TYPE_PATCH_RECEIVED)
 
-  await waitSocketSent(ws, route, WS_TYPE_PATCH_IMAGE, match)
+  await waitSocketSent(ws, route, sentWsType, match)
 
   await frameReceived
 }

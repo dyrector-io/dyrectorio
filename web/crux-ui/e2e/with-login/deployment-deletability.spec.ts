@@ -1,3 +1,4 @@
+import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 import { deploymentUrl, imageConfigUrl, projectUrl, versionWsUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { deployWithDagent } from '../utils/node-helper'
@@ -35,7 +36,7 @@ test('In progress deployment should be not deletable', async ({ page }) => {
       useParentConfig: false,
     },
   ]
-  const wsSent = wsPatchSent(ws, wsRoute)
+  const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE)
   await jsonContainer.fill(JSON.stringify(configObject))
   await wsSent
 

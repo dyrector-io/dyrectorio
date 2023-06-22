@@ -1,3 +1,4 @@
+import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 import { imageConfigUrl, versionWsUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
 import { addPortsToContainerConfig, wsPatchMatchContainerConfigPorts } from 'e2e/utils/container-config'
@@ -120,7 +121,7 @@ test.describe('Image configurations', () => {
     const internal = '1000'
     const external = '2000'
 
-    await addPortsToContainerConfig(page, ws, wsRoute, internal, external)
+    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_IMAGE, internal, external)
 
     await page.reload()
 
@@ -151,7 +152,7 @@ test.describe('Image configurations', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.ports = [{ internal: internalAsNumber, external: externalAsNumber }]
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchContainerConfigPorts(internal, external))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchContainerConfigPorts(internal, external))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 

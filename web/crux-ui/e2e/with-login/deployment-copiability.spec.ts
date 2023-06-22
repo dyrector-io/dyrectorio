@@ -1,4 +1,4 @@
-import { ProjectType } from '@app/models'
+import { ProjectType, WS_TYPE_PATCH_IMAGE } from '@app/models'
 import { deploymentUrl, imageConfigUrl, ROUTE_DEPLOYMENTS, versionWsUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
 import { NGINX_TEST_IMAGE_WITH_TAG, waitForURLExcept } from '../utils/common'
@@ -219,7 +219,7 @@ test.describe('Versioned Project', () => {
         useParentConfig: false,
       },
     ]
-    const wsSent = wsPatchSent(ws, wsRoute)
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE)
     await jsonContainer.fill(JSON.stringify(configObject))
     await wsSent
 
