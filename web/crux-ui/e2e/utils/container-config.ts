@@ -19,8 +19,8 @@ export const addPortsToContainerConfig = async (
 ) => {
   await page.locator('button:has-text("Ports")').click()
 
-  let wsSent = wsPatchSent(ws, sentWsType, wsRoute)
-  const addPortsButton = await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
+  let wsSent = wsPatchSent(ws, wsRoute, sentWsType)
+  const addPortsButton = page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
   await addPortsButton.click()
   await wsSent
 
