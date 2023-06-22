@@ -138,4 +138,15 @@ export default class ProjectService {
       },
     })
   }
+
+  async convertProjectToVersioned(id: string): Promise<void> {
+    await this.prisma.project.update({
+      where: {
+        id,
+      },
+      data: {
+        type: 'versioned',
+      },
+    })
+  }
 }
