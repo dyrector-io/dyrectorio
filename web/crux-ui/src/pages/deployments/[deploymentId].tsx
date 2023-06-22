@@ -86,6 +86,11 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
+    if (state.deployInstances.length < 1) {
+      toast.error(t('noInstancesSelected'))
+      return
+    }
+
     let error: ValidationError
 
     let i = 0
@@ -103,7 +108,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    const result = await startDeployment(router, handleApiError, deployment.id)
+    const result = await startDeployment(router, handleApiError, deployment.id, state.deployInstances)
     if (result?.property === 'secrets') {
       const invalidSecrets = result.value as DeploymentInvalidatedSecrets[]
 
@@ -179,7 +184,10 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
             })}
             deleteModalDescription={
               node.status === 'connected' && state.deployment.status === 'successful'
-                ? t('proceedYouDeletePrefix', state.deployment)
+                ? t('proceedYouDeletePrefix', {
+                    node: state.deployment.node.name,
+                    prefix: state.deployment.prefix,
+                  })
                 : t('common:proceedYouLoseAllDataToName', {
                     name: state.deployment.prefix,
                   })

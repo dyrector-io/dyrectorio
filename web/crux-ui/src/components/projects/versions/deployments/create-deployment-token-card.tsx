@@ -9,7 +9,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import { CreateDeploymentToken, DeploymentDetails, DeploymentToken, DeploymentTokenCreated } from '@app/models'
-import { deploymentStartApiUrl, deploymentTokenApiUrl } from '@app/routes'
+import { apiDocsUrl, deploymentStartApiUrl, deploymentTokenApiUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
 import { createDeploymentTokenSchema } from '@app/validations'
 import { useFormik } from 'formik'
@@ -146,6 +146,18 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
             </span>
 
             <span>{t('youMustPutTheBearer')}</span>
+
+            <span>
+              {t('youCanSelectSpecificInstances')}
+              <a
+                className="pl-1 underline"
+                target="_blank"
+                rel="noreferrer"
+                href={apiDocsUrl({ anchor: 'api-deployments-deploymentid-start' })}
+              >
+                {t('clickHereForMoreInfo')}
+              </a>
+            </span>
           </div>
 
           <ShEditor className="h-26 p-2 mb-4 mt-2 w-full overflow-x-auto" readOnly value={token.token} />

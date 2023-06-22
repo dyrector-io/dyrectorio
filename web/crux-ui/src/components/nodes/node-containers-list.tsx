@@ -58,7 +58,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
       !container.ports ? null : (
         <span className="block overflow-hidden truncate">{containerPortsToString(container.ports)}</span>
       ),
-      <div className="flex flex-wrap gap-1 justify-center items-center">
+      <div className="flex flex-wrap gap-1 justify-end items-center">
         {targetState ? (
           <LoadingIndicator />
         ) : (
@@ -106,18 +106,18 @@ const NodeContainersList = (props: NodeContainersListProps) => {
     ]
   }
 
-  const columnWidths = ['w-2/12', 'w-4/12', 'w-1/12', 'w-1/12', '', '', 'w-1/12']
-  const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
+  const columnWidths = ['w-2/12', 'w-3/12', 'w-1/12', 'w-1/12', '', '', 'w-40']
+  const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultHeaderClass),
-    clsx('rounded-tr-lg pr-6', defaultHeaderClass),
+    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
   ]
   const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
   const itemClasses = [
     clsx('pl-6', defaultItemClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultItemClass),
-    clsx('pr-2', defaultItemClass),
+    clsx('pr-6 text-center', defaultItemClass),
   ]
 
   return (

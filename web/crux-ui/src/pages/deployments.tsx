@@ -103,12 +103,20 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     'common:status',
     'common:actions',
   ]
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
+  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 px-2 font-semibold'
   const headerClasses = [
-    clsx('rounded-tl-lg', defaultHeaderClass),
+    clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: headers.length - 3 }).map(() => defaultHeaderClass),
     clsx('text-center', defaultHeaderClass),
-    clsx('text-center rounded-tr-lg', defaultHeaderClass),
+    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
+  ]
+
+  const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
+  const itemClasses = [
+    clsx('pl-6', defaultItemClass),
+    ...Array.from({ length: headerClasses.length - 3 }).map(() => defaultItemClass),
+    clsx('text-center', defaultItemClass),
+    clsx('pr-6 text-center', defaultItemClass),
   ]
 
   const onCellClick = async (data: Deployment, row: number, col: number) => {
@@ -126,8 +134,8 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     <span>{item.prefix}</span>,
     <span suppressHydrationWarning>{auditToLocaleDate(item.audit)}</span>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
-    <div className="flex justify-center gap-2">
-      <div className="inline-block">
+    <>
+      <div className="inline-block mr-2">
         <DyoIcon
           src="/note.svg"
           alt={t('common:note')}
@@ -147,14 +155,14 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
 
       {deploymentIsDeletable(item.status) ? (
         <DyoIcon
-          className="aspect-square cursor-pointer"
+          className="aspect-square cursor-pointer ml-2"
           src="/trash-can.svg"
           alt={t('common:delete')}
           size="md"
           onClick={() => onDeleteDeployment(item)}
         />
       ) : null}
-    </div>,
+    </>,
   ]
   /* eslint-enable react/jsx-key */
 
@@ -190,7 +198,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
             <DyoList
               headers={[...headers.map(h => t(h)), '']}
               headerClassName={headerClasses}
-              itemClassName="h-11 min-h-min text-light-eased pl-4 w-fit"
+              itemClassName={itemClasses}
               data={filters.filtered}
               noSeparator
               itemBuilder={itemTemplate}

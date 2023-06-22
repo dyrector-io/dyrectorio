@@ -108,4 +108,16 @@ export default class ProjectHttpController {
   async deleteProject(@ProjectId() id: string): Promise<void> {
     return this.service.deleteProject(id)
   }
+
+  @Post(`${ROUTE_PROJECT_ID}/convert`)
+  @HttpCode(204)
+  @ApiOperation({
+    description: 'Converts a project to versioned with the specified `projectId`',
+    summary: 'Convert a project to versioned.',
+  })
+  @ApiNoContentResponse({ description: 'Project converted.' })
+  @UuidParams(PARAM_PROJECT_ID)
+  async convertProject(@ProjectId() id: string): Promise<void> {
+    return this.service.convertProjectToVersioned(id)
+  }
 }
