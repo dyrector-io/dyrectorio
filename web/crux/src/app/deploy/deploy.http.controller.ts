@@ -28,7 +28,7 @@ import {
   CopyDeploymentDto,
   CreateDeploymentDto,
   CreateDeploymentTokenDto,
-  DeployStartDto,
+  StartDeploymentDto,
   DeploymentDetailsDto,
   DeploymentDto,
   DeploymentLogListDto,
@@ -209,7 +209,7 @@ export default class DeployHttpController {
   async startDeployment(
     @DeploymentId() deploymentId: string,
     @IdentityFromRequest() identity: Identity,
-    @Body() request: DeployStartDto,
+    @Body() request: StartDeploymentDto,
   ): Promise<void> {
     await this.service.startDeployment(deploymentId, identity, request.instances)
   }

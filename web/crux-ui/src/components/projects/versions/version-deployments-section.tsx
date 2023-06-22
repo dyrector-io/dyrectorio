@@ -19,11 +19,12 @@ import {
   DEPLOYMENT_STATUS_VALUES,
   NodeEventMessage,
   NodeStatus,
+  StartDeployment,
   VersionDetails,
   WS_TYPE_NODE_EVENT,
 } from '@app/models'
 import { deploymentDeployUrl, deploymentStartApiUrl, deploymentUrl, WS_NODES } from '@app/routes'
-import { utcDateToLocale } from '@app/utils'
+import { sendForm, utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { NextRouter, useRouter } from 'next/dist/client/router'
@@ -38,25 +39,15 @@ export const startDeployment = async (
   deploymentId: string,
   deployInstances?: string[],
 ) => {
-  const request = deployInstances
-    ? ({
-        instances: deployInstances,
-      } as DeploymentStartRequest)
-    : null
-
-  const requestInit: RequestInit = request
-    ? {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(request),
-      }
-    : null
-
-  const res = await fetch(deploymentStartApiUrl(deploymentId), {
-    method: 'POST',
-    ...requestInit,
-  })
+  const res = await sendForm(
+    'POST',
+    deploymentStartApiUrl(deploymentId),
+    deployInstances
+      ? ({
+          instances: deployInstances,
+        } as StartDeployment)
+      : null,
+  )
 
   if (!res.ok) {
     onApiError(res)
@@ -128,7 +119,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const headers = [
     ...['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it => t(it)),
   ]
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased p-2 py-3 font-semibold'
+  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased px-2 py-3 font-semibold'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     defaultHeaderClass,

@@ -82,6 +82,8 @@ const RecoveryPage = (props: RecoveryPageProps) => {
 
           setFlow(await res.json())
         }
+      } else if (res.status === 410) {
+        await router.reload()
       } else {
         recaptcha.current?.reset()
 

@@ -48,6 +48,8 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
       const res = await sendForm('POST', API_CREATE_ACCOUNT, body)
       if (res.ok) {
         router.replace(res.headers.get(HEADER_LOCATION) ?? ROUTE_INDEX)
+      } else if (res.status === 410) {
+        await router.reload()
       } else {
         const result = await res.json()
 

@@ -10,6 +10,7 @@
   "toTriggerTheDeploy": "To trigger the deployment with the JWT token, send a POST request to",
   "youMustPutTheBearer": "You must put the generated token as 'Bearer <token>' into the request's Authorization header.",
   "youCanSelectSpecificInstances": "You can select specific instances to be deployed by specifying them in the body of the request.",
+  "clickHereForMoreInfo": "Click here for more information.",
   "created": "Created",
   "actions": "Actions",
   "noItems": "You haven't made a deployment.",

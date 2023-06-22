@@ -95,7 +95,7 @@ export type DeploymentInvalidatedSecrets = {
   invalid: string[]
 }
 
-export type DeploymentStartRequest = {
+export type StartDeployment = {
   instances?: string[]
 }
 

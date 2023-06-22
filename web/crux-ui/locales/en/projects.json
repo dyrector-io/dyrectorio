@@ -27,5 +27,9 @@
     "alreadyExists": "Project name taken."
   },
 
-  "changelogName": "Changelog: {{name}}"
+  "changelogName": "Changelog: {{name}}",
+
+  "convertToVersioned": "Convert to versioned",
+  "convertProjectToVersioned": "Convert {{name}} to versioned",
+  "areYouSureWantToConvert": "Are you sure want to convert the project to versioned? This is a non reversible action."
 }
