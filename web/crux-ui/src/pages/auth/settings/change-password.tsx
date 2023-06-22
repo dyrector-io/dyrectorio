@@ -56,6 +56,8 @@ const SettingsPage = (props: SettingsFlow) => {
 
       if (res.ok) {
         router.back()
+      } else if (res.status === 410) {
+        await router.reload()
       } else if (res.status === 403) {
         router.replace(`${ROUTE_LOGIN}?refresh=${encodeURIComponent(identity.traits.email)}`)
       } else {

@@ -55,6 +55,8 @@ const NewPasswordPage = (props: NewPasswordPageProps) => {
 
       if (res.ok) {
         router.replace(ROUTE_INDEX)
+      } else if (res.status === 410) {
+        await router.reload()
       } else if (res.status === 403) {
         setPriviledgedSession(false)
       } else {
