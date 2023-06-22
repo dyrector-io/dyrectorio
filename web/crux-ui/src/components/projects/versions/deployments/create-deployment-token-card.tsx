@@ -135,7 +135,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
           </div>
 
           <DyoHeading element="h4" className="text-xl text-bright mt-8">
-            {t('tokens:jwtToken')}
+            {t('jwtToken')}
           </DyoHeading>
 
           <div className="flex flex-wrap gap-2 text-bright items-center">
