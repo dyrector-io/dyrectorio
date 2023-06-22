@@ -58,6 +58,8 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
     await router.push(ROUTE_NODES)
   }
 
+  const onNodeEdited = async () => await router.replace(ROUTE_NODES)
+
   const pageLink: BreadcrumbLink = {
     name: t('common:nodes'),
     url: ROUTE_NODES,
@@ -87,7 +89,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
       </PageHeading>
 
       {state.section === 'editing' ? (
-        <EditNodeCard node={node} onNodeEdited={actions.onNodeEdited} submitRef={submitRef} />
+        <EditNodeCard node={node} onNodeEdited={onNodeEdited} submitRef={submitRef} />
       ) : (
         <>
           <div className="flex flex-row gap-4 mb-4">
