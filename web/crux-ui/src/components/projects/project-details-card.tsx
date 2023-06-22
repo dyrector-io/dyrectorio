@@ -1,9 +1,6 @@
-import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoConfirmationModal } from '@app/elements/dyo-modal'
-import useConfirmation from '@app/hooks/use-confirmation'
 import { ProjectDetails } from '@app/models'
 import { auditToLocaleDate } from '@app/utils'
 import clsx from 'clsx'
@@ -14,15 +11,12 @@ import ProjectTypeTag from './project-type-tag'
 interface ProjectDetailsCardProps {
   className?: string
   project: ProjectDetails
-  onConvertToVersioned: () => void
 }
 
 const ProjectDetailsCard = (props: ProjectDetailsCardProps) => {
-  const { project, className, onConvertToVersioned } = props
+  const { project, className } = props
 
   const { t } = useTranslation('projects')
-
-  const [convertModelConfig, confirmConvert] = useConfirmation()
 
   const version = project.type === 'versionless' ? project.versions[0] : null
 
@@ -69,9 +63,6 @@ const ProjectDetailsCard = (props: ProjectDetailsCardProps) => {
         <>
           <div className="flex flex-row mt-2 items-center">
             <span className="text-bright font-bold flex-1">{t('common:changelog')}</span>
-            <DyoButton className="px-2" outlined onClick={() => confirmConvert(onConvertToVersioned)}>
-              {t('convertToVersioned')}
-            </DyoButton>
           </div>
 
           <DyoExpandableText
@@ -82,16 +73,6 @@ const ProjectDetailsCard = (props: ProjectDetailsCardProps) => {
             modalTitle={t('common:changelogName', { name: version.name })}
           />
         </>
-      )}
-
-      {!onConvertToVersioned ? null : (
-        <DyoConfirmationModal
-          config={convertModelConfig}
-          title={t('convertProjectToVersioned', { name: project.name })}
-          description={t('areYouSureWantToConvert')}
-          className="w-1/4"
-          confirmColor="bg-error-red"
-        />
       )}
     </DyoCard>
   )

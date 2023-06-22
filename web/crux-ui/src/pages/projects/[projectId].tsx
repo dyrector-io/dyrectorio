@@ -8,8 +8,11 @@ import VersionlessProjectSections from '@app/components/projects/versions/versio
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu, DetailsPageTexts } from '@app/components/shared/page-menu'
+import DyoButton from '@app/elements/dyo-button'
+import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
+import useConfirmation from '@app/hooks/use-confirmation'
 import {
   EditableProject,
   EditableVersion,
@@ -21,7 +24,7 @@ import {
 } from '@app/models'
 import {
   projectApiUrl,
-  projectConvertApiUrl,
+  projectConvertToVersionedApiUrl,
   projectUrl,
   ROUTE_PROJECTS,
   versionApiUrl,
@@ -55,6 +58,8 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
 
   const submitRef = useRef<() => Promise<any>>()
+
+  const [convertModelConfig, confirmConvert] = useConfirmation()
 
   const versionless = project.type === 'versionless'
 
@@ -129,7 +134,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
     project.type === 'versioned'
       ? null
       : async () => {
-          const res = await fetch(projectConvertApiUrl(project.id), {
+          const res = await fetch(projectConvertToVersionedApiUrl(project.id), {
             method: 'POST',
           })
 
@@ -172,15 +177,17 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
           deleteModalDescription={t('proceedYouLoseAllDataToName', {
             name: project.name,
           })}
-        />
+        >
+          {editState !== 'version-list' && versionless && (
+            <DyoButton className="px-2 mx-2" outlined onClick={() => confirmConvert(onConvertToVersioned)}>
+              {t('convertToVersioned')}
+            </DyoButton>
+          )}
+        </DetailsPageMenu>
       </PageHeading>
 
       {editState === 'version-list' ? (
-        <ProjectDetailsCard
-          project={project}
-          className={clsx('p-6', versionless ? 'mb-4' : null)}
-          onConvertToVersioned={onConvertToVersioned}
-        />
+        <ProjectDetailsCard project={project} className={clsx('p-6', versionless ? 'mb-4' : null)} />
       ) : editState === 'edit-project' ? (
         <EditProjectCard
           className="mb-8 px-8 py-6"
@@ -222,6 +229,16 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
       ) : editState === 'add-version' || editState === 'edit-project' ? (
         <ProjectVersionsSection disabled projectId={project.id} versions={project.versions} />
       ) : null}
+
+      {versionless && (
+        <DyoConfirmationModal
+          config={convertModelConfig}
+          title={t('convertProjectToVersioned', { name: project.name })}
+          description={t('areYouSureWantToConvert')}
+          className="w-1/4"
+          confirmColor="bg-error-red"
+        />
+      )}
     </Layout>
   )
 }
