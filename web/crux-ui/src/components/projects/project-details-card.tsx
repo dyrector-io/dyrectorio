@@ -61,7 +61,9 @@ const ProjectDetailsCard = (props: ProjectDetailsCardProps) => {
 
       {!version ? null : (
         <>
-          <span className="text-bright font-bold mt-2">{t('common:changelog')}</span>
+          <div className="flex flex-row mt-2 items-center">
+            <span className="text-bright font-bold flex-1">{t('common:changelog')}</span>
+          </div>
 
           <DyoExpandableText
             text={version.changelog}
