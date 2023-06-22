@@ -48,12 +48,12 @@ func getUniqueContainerName(ctx context.Context, cli client.APIClient, base stri
 
 // TODO(robot9706): move to utils
 func findImageAndPull(ctx context.Context, cli client.APIClient, imageName string) (id string, pullErr error) {
-	_, _, matches, err := image.Exists(ctx, cli, nil, imageName, "")
+	exists, err := image.Exists(ctx, cli, nil, imageName, "")
 	if err != nil {
 		return "", err
 	}
 
-	if !matches {
+	if !exists.Matching {
 		err = image.Pull(ctx, cli, nil, imageName, "")
 		if err != nil {
 			return "", err

@@ -43,6 +43,12 @@ type remoteCheck struct {
 	encodedAuth     string
 }
 
+type ExistResult struct {
+	LocalExists  bool
+	RemoteExists bool
+	Matching     bool
+}
+
 var (
 	errDigestMismatch  = errors.New("digest mismatch")
 	errDigestsMatching = errors.New("digests already matching")
@@ -95,7 +101,8 @@ func GetImageByReference(ctx context.Context, cli client.APIClient, ref string) 
 func Exists(
 	ctx context.Context, cli client.APIClient,
 	logger io.StringWriter, expandedImageName, encodedAuth string,
-) (localExists, remoteExists, matches bool, existErr error) {
+) (*ExistResult, error) {
+	exists := ExistResult{}
 	images, err := cli.ImageList(ctx, types.ImageListOptions{
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: expandedImageName}),
 	})
@@ -108,15 +115,13 @@ func Exists(
 			}
 		}
 
-		return false, false, false, err
+		return nil, err
 	}
 
 	if count := len(images); count == 1 {
-		localExists = true
-	} else if count == 0 {
-		localExists = false
+		exists.LocalExists = true
 	} else if count > 1 {
-		return false, false, false, errors.New("unexpected image count")
+		return nil, errors.New("unexpected image count")
 	}
 
 	craneOpts := []crane.Option{}
@@ -124,7 +129,7 @@ func Exists(
 	if encodedAuth != "" {
 		basicAuth, convertError := authConfigToBasicAuth(encodedAuth)
 		if convertError != nil {
-			return false, false, false, convertError
+			return nil, convertError
 		}
 		craneOpts = append(craneOpts, crane.WithAuth(authn.FromConfig(authn.AuthConfig{Auth: basicAuth})))
 	}
@@ -132,16 +137,16 @@ func Exists(
 	if err != nil {
 		if manifestErr, ok := err.(*transport.Error); ok {
 			if manifestErr.StatusCode == http.StatusNotFound {
-				remoteExists = false
+				exists.RemoteExists = false
 			}
 		}
 	}
 
-	if localExists && remoteExists {
-		matches = images[0].ID == remoteDigest
+	if exists.LocalExists && exists.RemoteExists {
+		exists.Matching = images[0].ID == remoteDigest
 	}
 
-	return localExists, remoteExists, matches, nil
+	return &exists, nil
 }
 
 // force pulls the given image name

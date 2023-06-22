@@ -88,9 +88,9 @@ func TestPullFullQualifiedImage(t *testing.T) {
 	assert.Nilf(t, err, "expected err to be nil for a valid image name")
 	assert.Truef(t, called, "display func is called")
 
-	exists, _, _, err := image.Exists(ctx, cli, nil, nginxImage, "")
+	exists, err := image.Exists(ctx, cli, nil, nginxImage, "")
 	assert.Nilf(t, err, "expected err to be nil for a valid image name")
-	assert.Truef(t, exists, "expected image to exist locally after pull")
+	assert.Truef(t, exists.LocalExists, "expected image to exist locally after pull")
 }
 
 func TestPrettyPullFullQualifiedInvalidImage(t *testing.T) {
