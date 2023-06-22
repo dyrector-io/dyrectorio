@@ -114,6 +114,9 @@ func TestExpandImageNameWithTag(t *testing.T) {
 	name, err = imageHelper.ExpandImageNameWithTag("my-reg.com/library/nginx:my-tag", "tag-4")
 	assert.NoError(t, err)
 	assert.Equal(t, "my-reg.com/library/nginx:tag-4", name)
+
+	name, err = imageHelper.ExpandImageNameWithTag("my-reg.com/library/nginx", "-12@3%44-")
+	assert.ErrorIs(t, err, imageHelper.ErrInvalidTag)
 }
 
 func TestSplitImageName(t *testing.T) {
