@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing'
+import DomainNotificationService from 'src/services/domain.notification.service'
+import PrismaService from 'src/services/prisma.service'
+import { of } from 'rxjs'
 import NodeService from './node.service'
 import TeamRepository from '../team/team.repository'
 import AgentService from '../agent/agent.service'
 import NodeMapper from './node.mapper'
-import DomainNotificationService from 'src/services/domain.notification.service'
-import PrismaService from 'src/services/prisma.service'
-import { of } from 'rxjs'
 
 describe('NodeService', () => {
   describe('Container audit log', () => {
-    let createAgentEventMock = jest.fn()
+    const createAgentEventMock = jest.fn()
     let nodeService: NodeService = null
 
     beforeEach(async () => {
