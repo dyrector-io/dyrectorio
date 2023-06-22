@@ -78,7 +78,7 @@ export default class NodeGlobalContainerHttpController {
   })
   @ApiNoContentResponse({ description: 'Container deleted.' })
   @UuidParams(PARAM_NODE_ID)
-  deleteContainer(@NodeId() nodeId: string, @Name() name: string): Observable<void> {
+  deleteContainer(@NodeId() nodeId: string, @Name() name: string): Promise<Observable<void>> {
     return this.service.deleteContainer(nodeId, GLOBAL_PREFIX, name)
   }
 }

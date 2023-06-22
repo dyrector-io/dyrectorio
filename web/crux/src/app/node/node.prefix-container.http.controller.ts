@@ -66,7 +66,7 @@ export default class NodePrefixContainerHttpController {
   })
   @ApiNoContentResponse({ description: 'Containers deleted.' })
   @UuidParams(PARAM_NODE_ID)
-  deleteAllContainers(@NodeId() nodeId: string, @Prefix() prefix: string): Observable<void> {
+  deleteAllContainers(@NodeId() nodeId: string, @Prefix() prefix: string): Promise<Observable<void>> {
     return this.service.deleteAllContainers(nodeId, prefix)
   }
 
@@ -78,7 +78,7 @@ export default class NodePrefixContainerHttpController {
   })
   @ApiNoContentResponse({ description: 'Container deleted.' })
   @UuidParams(PARAM_NODE_ID)
-  deleteContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Observable<void> {
+  deleteContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Promise<Observable<void>> {
     return this.service.deleteContainer(nodeId, prefix, name)
   }
 }
