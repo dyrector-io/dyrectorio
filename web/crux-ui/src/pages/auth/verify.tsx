@@ -88,6 +88,8 @@ const VerifyPage = (props: VerifyProps) => {
         }
 
         setFlow(await res.json())
+      } else if (res.status === 410) {
+        await router.reload()
       } else {
         recaptcha.current?.reset()
 
