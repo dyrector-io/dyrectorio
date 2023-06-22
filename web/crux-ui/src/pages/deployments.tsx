@@ -14,7 +14,13 @@ import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { Deployment, deploymentIsCopiable, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
+import {
+  Deployment,
+  deploymentIsCopiable,
+  deploymentIsDeletable,
+  DeploymentStatus,
+  DEPLOYMENT_STATUS_VALUES,
+} from '@app/models'
 import { API_DEPLOYMENTS, deploymentApiUrl, deploymentUrl, ROUTE_DEPLOYMENTS } from '@app/routes'
 import { auditToLocaleDate, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
@@ -139,13 +145,15 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
         onClick={() => deploymentIsCopiable(item.status) && setCopyDeploymentTarget(item.id)}
       />
 
-      <DyoIcon
-        className="aspect-square cursor-pointer"
-        src="/trash-can.svg"
-        alt={t('common:delete')}
-        size="md"
-        onClick={() => onDeleteDeployment(item)}
-      />
+      {deploymentIsDeletable(item.status) ? (
+        <DyoIcon
+          className="aspect-square cursor-pointer"
+          src="/trash-can.svg"
+          alt={t('common:delete')}
+          size="md"
+          onClick={() => onDeleteDeployment(item)}
+        />
+      ) : null}
     </div>,
   ]
   /* eslint-enable react/jsx-key */

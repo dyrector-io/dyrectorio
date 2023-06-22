@@ -13,6 +13,7 @@ import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentByVersion,
   deploymentIsCopiable,
+  deploymentIsDeletable,
   deploymentIsDeployable,
   DeploymentStatus,
   DEPLOYMENT_STATUS_VALUES,
@@ -21,15 +22,16 @@ import {
   VersionDetails,
   WS_TYPE_NODE_EVENT,
 } from '@app/models'
-import { deploymentDeployUrl, deploymentStartApiUrl, deploymentUrl, WS_NODES } from '@app/routes'
+import { deploymentApiUrl, deploymentDeployUrl, deploymentStartApiUrl, deploymentUrl, WS_NODES } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { NextRouter, useRouter } from 'next/dist/client/router'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import DeploymentStatusTag from './deployments/deployment-status-tag'
+import { VersionActions } from './use-version-state'
 
 export const startDeployment = async (
   router: NextRouter,
@@ -52,13 +54,13 @@ export const startDeployment = async (
 
 interface VersionDeploymentsSectionProps {
   version: VersionDetails
-  onCopyDeployment: (deploymentId: string) => void
+  actions: VersionActions
 }
 
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
 
 const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
-  const { version, onCopyDeployment } = props
+  const { version, actions } = props
 
   const { t } = useTranslation('versions')
 
@@ -69,8 +71,8 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const [showInfo, setShowInfo] = useState<DeploymentByVersion>(null)
   const [confirmModalConfig, confirm] = useConfirmation()
 
-  const onDeploy = (deployment: DeploymentByVersion) => {
-    const confirmed = confirm(null, {
+  const onDeploy = async (deployment: DeploymentByVersion) => {
+    const confirmed = await confirm(null, {
       title: t('common:areYouSure'),
       description: t('deployments:areYouSureDeployNodePrefix', {
         node: deployment.node.name,
@@ -83,7 +85,34 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       return
     }
 
-    startDeployment(router, handleApiError, deployment.id)
+    await startDeployment(router, handleApiError, deployment.id)
+  }
+
+  const onDeleteDeployment = async (deployment: DeploymentByVersion) => {
+    const confirmed = await confirm(null, {
+      title: t('common:areYouSure'),
+      description:
+        deployment.status === 'successful'
+          ? t('deployments:proceedYouDeletePrefix', {
+              node: deployment.node.name,
+              prefix: deployment.prefix,
+            })
+          : null,
+      confirmText: t('common:delete'),
+      confirmColor: 'bg-error-red',
+    })
+
+    if (!confirmed) {
+      return
+    }
+
+    const res = await fetch(deploymentApiUrl(deployment.id), { method: 'DELETE' })
+    if (!res.ok) {
+      handleApiError(res)
+      return
+    }
+
+    actions.onDeploymentDeleted(deployment.id)
   }
 
   const filters = useFilters<DeploymentByVersion, DeploymentFilter>({
@@ -93,6 +122,8 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     ],
     initialData: version.deployments,
   })
+
+  useEffect(() => filters.setItems(version.deployments), [filters, version.deployments])
 
   const [nodeStatuses, setNodeStatuses] = useState<Record<string, NodeStatus>>({})
 
@@ -172,7 +203,17 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             width={24}
             height={24}
             className={deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-            onClick={() => onCopyDeployment(item.id)}
+            onClick={() => actions.copyDeployment(item.id)}
+          />
+        ) : null}
+
+        {deploymentIsDeletable(item.status) ? (
+          <DyoIcon
+            className="aspect-square cursor-pointer"
+            src="/trash-can.svg"
+            alt={t('common:delete')}
+            size="md"
+            onClick={() => onDeleteDeployment(item)}
           />
         ) : null}
       </div>,
