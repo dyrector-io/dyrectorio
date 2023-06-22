@@ -86,6 +86,11 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
+    if (state.deployInstances.length < 1) {
+      toast.error(t('noInstancesSelected'))
+      return
+    }
+
     let error: ValidationError
 
     let i = 0
@@ -103,7 +108,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    const result = await startDeployment(router, handleApiError, deployment.id)
+    const result = await startDeployment(router, handleApiError, deployment.id, state.deployInstances)
     if (result?.property === 'secrets') {
       const invalidSecrets = result.value as DeploymentInvalidatedSecrets[]
 

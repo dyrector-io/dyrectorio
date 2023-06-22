@@ -144,6 +144,9 @@ const urlQuery = (url: string, query: object) => {
   return url
 }
 
+// docs
+export const apiDocsUrl = (params: CruxUrlParams) => appendUrlParams(`${ROUTE_DOCS}/basics/api`, params)
+
 // auth
 export const verificationUrl = (email: string, options?: { restart?: boolean }) => {
   const url = `${ROUTE_VERIFICATION}?email=${encodeURIComponent(email)}`
@@ -161,6 +164,7 @@ export const auditApiUrl = (query: AuditLogQuery) => urlQuery(API_AUDIT, query)
 export const projectUrl = (id: string, params?: VersionUrlParams) => appendUrlParams(`${ROUTE_PROJECTS}/${id}`, params)
 export const projectApiUrl = (id: string) => `${API_PROJECTS}/${id}`
 export const projectVersionsApiUrl = (projectId: string) => `${projectApiUrl(projectId)}/versions`
+export const projectConvertToVersionedApiUrl = (projectId: string) => `${projectApiUrl(projectId)}/convert`
 
 // registry
 export const registryUrl = (id: string) => `${ROUTE_REGISTRIES}/${id}`
