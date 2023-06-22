@@ -2,13 +2,13 @@ import ViewModeToggle from '@app/components/shared/view-mode-toggle'
 import DyoButton from '@app/elements/dyo-button'
 import useTranslation from 'next-translate/useTranslation'
 import { RefObject } from 'react'
-import { ImagesActions, ImagesState } from './images/use-images-state'
+import { VerionState, VersionActions } from './use-version-state'
 
 interface VersionSectionsHeadingProps {
   saveImageOrderRef: RefObject<VoidFunction>
   versionMutable: boolean
-  state: ImagesState
-  actions: ImagesActions
+  state: VerionState
+  actions: VersionActions
 }
 
 const VersionSectionsHeading = (props: VersionSectionsHeadingProps) => {

@@ -40,7 +40,7 @@ import { versionWsUrl, WS_REGISTRIES } from '@app/routes'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
-import useCopyDeploymentState from '../deployments/use-copy-deployment-state'
+import useCopyDeploymentState from './deployments/use-copy-deployment-state'
 
 // state
 export type ImageTagsMap = { [key: string]: RegistryImageTags } // image key to RegistryImageTags
@@ -57,13 +57,11 @@ const ADD_SECTION_TO_SECTION: Record<VersionAddSection, VersionSection> = {
   none: 'images',
 }
 
-export type ImagesState = {
+export type VerionState = {
   projectId: string
-  versionId: string
   saveState: WebSocketSaveState
   addSection: VersionAddSection
   section: VersionSection
-  images: VersionImage[]
   tags: ImageTagsMap
   editor: EditorState
   viewMode: ViewMode
@@ -73,7 +71,7 @@ export type ImagesState = {
 }
 
 // actions
-export type ImagesActions = {
+export type VersionActions = {
   selectAddSection: (addSection: VersionAddSection) => void
   discardAddSection: VoidFunction
   setSection: (section: VersionSection) => void
@@ -84,6 +82,7 @@ export type ImagesActions = {
   selectTagForImage: (image: VersionImage, tag: string) => void
   updateImageConfig: (image: VersionImage, config: Partial<ContainerConfigData>) => void
   copyDeployment: (deploymentId: string) => Promise<any>
+  onDeploymentDeleted: (deploymentId: string) => void
 }
 
 export const imageTagKey = (registryId: string, imageName: string) => `${registryId}/${imageName}`
@@ -99,7 +98,7 @@ const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): V
     : oldImage.config,
 })
 
-export interface ImagesStateOptions {
+export interface VersionStateOptions {
   projectId: string
   version: VersionDetails
   initialSection: VersionSectionsState
@@ -126,12 +125,12 @@ const refreshImageTags = (registriesSock: WebSocketClientEndpoint, images: Versi
   })
 }
 
-export const selectTagsOfImage = (state: ImagesState, image: VersionImage): string[] => {
+export const selectTagsOfImage = (state: VerionState, image: VersionImage): string[] => {
   const regImgTags = state.tags[imageTagKey(image.registry.id, image.name)]
   return regImgTags ? regImgTags.tags : image.tag ? [image.tag] : []
 }
 
-export const useImagesState = (options: ImagesStateOptions): [ImagesState, ImagesActions] => {
+export const useVersionState = (options: VersionStateOptions): [VerionState, VersionActions] => {
   const { projectId, version: optionsVersion, setSaveState: optionsSetSaveState, initialSection } = options
 
   const { t } = useTranslation('versions')
@@ -338,14 +337,18 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
     setAddSection('copy-deployment')
   }
 
+  const onDeploymentDeleted = (deploymentId: string) =>
+    setVersion({
+      ...version,
+      deployments: version.deployments.filter(it => it.id !== deploymentId),
+    })
+
   return [
     {
       projectId,
-      versionId: version.id,
       addSection,
       section,
       version,
-      images: version.images,
       editor,
       saveState,
       tags,
@@ -364,6 +367,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
       fetchImageTags,
       updateImageConfig,
       copyDeployment,
+      onDeploymentDeleted,
     },
   ]
 }

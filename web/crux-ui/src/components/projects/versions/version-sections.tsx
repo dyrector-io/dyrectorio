@@ -7,7 +7,7 @@ import React, { useEffect, useRef } from 'react'
 import AddDeploymentCard from './deployments/add-deployment-card'
 import CopyDeploymentCard from './deployments/copy-deployment-card'
 import SelectImagesCard from './images/select-images-card'
-import { ImagesActions, ImagesState, VersionSection } from './images/use-images-state'
+import { VerionState, VersionActions, VersionSection } from './use-version-state'
 import VersionDeploymentsSection from './version-deployments-section'
 import VersionImagesSection from './version-images-section'
 import VersionReorderImagesSection from './version-reorder-images-section'
@@ -18,8 +18,8 @@ export const parseVersionSectionState = (section: string, fallback: VersionSecti
 
 interface VersionSectionsProps {
   project: ProjectDetails
-  state: ImagesState
-  actions: ImagesActions
+  state: VerionState
+  actions: VersionActions
   setTopBarContent: (node: React.ReactNode) => void
 }
 
@@ -77,9 +77,13 @@ const VersionSections = (props: VersionSectionsProps) => {
       {state.section === 'images' ? (
         <VersionImagesSection disabled={!state.version.mutable} state={state} actions={actions} />
       ) : state.section === 'deployments' ? (
-        <VersionDeploymentsSection version={state.version} onCopyDeployment={actions.copyDeployment} />
+        <VersionDeploymentsSection version={state.version} actions={actions} />
       ) : (
-        <VersionReorderImagesSection images={state.images} saveRef={saveImageOrderRef} onSave={actions.orderImages} />
+        <VersionReorderImagesSection
+          images={state.version.images}
+          saveRef={saveImageOrderRef}
+          onSave={actions.orderImages}
+        />
       )}
     </>
   )

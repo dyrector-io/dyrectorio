@@ -1,23 +1,23 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { PatchVersionImage, VersionImage } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
-import { ImagesActions, ImagesState } from './images/use-images-state'
+import { VerionState, VersionActions } from './use-version-state'
 import VersionViewList from './version-view-list'
 import VersionViewTile from './version-view-tile'
 
 interface VersionImagesSectionProps {
   disabled?: boolean
-  state: ImagesState
-  actions: ImagesActions
+  state: VerionState
+  actions: VersionActions
 }
 
 const VersionImagesSection = (props: VersionImagesSectionProps) => {
   const { state, actions, disabled } = props
-  const { images, viewMode } = state
+  const { version, viewMode } = state
 
   const { t } = useTranslation('images')
 
-  return images.length ? (
+  return version.images.length ? (
     viewMode === 'tile' ? (
       <VersionViewTile disabled={disabled} state={state} actions={actions} />
     ) : (

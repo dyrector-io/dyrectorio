@@ -1,7 +1,7 @@
 import { Layout } from '@app/components/layout'
 import ProjectVersionsSection from '@app/components/projects/project-versions-section'
 import EditVersionCard from '@app/components/projects/versions/edit-version-card'
-import { useImagesState } from '@app/components/projects/versions/images/use-images-state'
+import { useVersionState } from '@app/components/projects/versions/use-version-state'
 import VersionDetailsCard from '@app/components/projects/versions/version-details-card'
 import VersionSections, { parseVersionSectionState } from '@app/components/projects/versions/version-sections'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
@@ -36,7 +36,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
   const submitRef = useRef<() => Promise<any>>()
 
   const initialSection = parseVersionSectionState(router.query.section as string, 'images')
-  const [state, actions] = useImagesState({
+  const [state, actions] = useVersionState({
     initialSection,
     projectId: project.id,
     version,

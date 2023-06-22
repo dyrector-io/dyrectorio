@@ -1,6 +1,6 @@
 import { ProjectDetails, VersionDetails, WebSocketSaveState } from '@app/models'
 import { useRouter } from 'next/router'
-import { useImagesState } from './images/use-images-state'
+import { useVersionState } from './use-version-state'
 import VersionSections, { parseVersionSectionState } from './version-sections'
 
 interface VersionlessProjectSectionsProps {
@@ -16,7 +16,7 @@ const VersionlessProjectSections = (props: VersionlessProjectSectionsProps) => {
   const router = useRouter()
 
   const initialSection = parseVersionSectionState(router.query.section as string, 'images')
-  const [state, actions] = useImagesState({
+  const [state, actions] = useVersionState({
     version,
     projectId: project.id,
     initialSection,
