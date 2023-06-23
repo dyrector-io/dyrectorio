@@ -16,7 +16,6 @@ import {
   deploymentIsCopiable,
   deploymentIsDeletable,
   deploymentIsDeployable,
-  DeploymentStartRequest,
   DeploymentStatus,
   DEPLOYMENT_STATUS_VALUES,
   NodeEventMessage,
