@@ -15,8 +15,8 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
-func DeleteContainerByName(ctx context.Context, nameFilter string) error {
-	matchedContainer, err := GetContainerByName(ctx, nameFilter)
+func DeleteContainerByName(ctx context.Context, cli client.APIClient, nameFilter string) error {
+	matchedContainer, err := GetContainerByName(ctx, cli, nameFilter)
 	if err != nil {
 		return fmt.Errorf("builder could not get container (%s) to remove: %s", nameFilter, err.Error())
 	}
@@ -90,12 +90,7 @@ func DeleteContainersByLabel(ctx context.Context, label string) error {
 }
 
 // Check the existence of containers, then return it
-func GetAllContainersByName(ctx context.Context, nameFilter string) ([]types.Container, error) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		log.Fatal().Err(err).Send()
-	}
-
+func GetAllContainersByName(ctx context.Context, cli client.APIClient, nameFilter string) ([]types.Container, error) {
 	containers, err := cli.ContainerList(ctx, containerListOptionsfilter("name", nameFilter))
 	if err != nil {
 		return []types.Container{}, err
@@ -160,8 +155,8 @@ func GetAllContainersByLabel(ctx context.Context, label string) ([]types.Contain
 }
 
 // Using exact match!
-func GetContainerByName(ctx context.Context, nameFilter string) (*types.Container, error) {
-	containers, err := GetAllContainersByName(ctx, fmt.Sprintf("^%s$", nameFilter))
+func GetContainerByName(ctx context.Context, cli client.APIClient, nameFilter string) (*types.Container, error) {
+	containers, err := GetAllContainersByName(ctx, cli, fmt.Sprintf("^%s$", nameFilter))
 	if err != nil {
 		return nil, err
 	}
