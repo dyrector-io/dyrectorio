@@ -45,7 +45,7 @@ import {
 import { deploymentTokenApiUrl, deploymentWsUrl, WS_NODES } from '@app/routes'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 export type DeploymentEditState = 'details' | 'edit' | 'copy' | 'create-token'
 
@@ -80,6 +80,7 @@ export type DeploymentActions = {
   onDeploymentEdited: (editedDeployment: DeploymentDetails) => void
   onEnvironmentEdited: (environment: UniqueKeyValue[]) => void
   onPatchInstance: (id: string, newConfig: InstanceContainerConfigData) => void
+  updateInstanceConfig: (id: string, newConfig: InstanceContainerConfigData) => void
   setViewMode: (viewMode: ViewMode) => void
   onInvalidateSecrets: (secrets: DeploymentInvalidatedSecrets[]) => void
   onDeploymentTokenCreated: (token: DeploymentToken) => void
@@ -103,6 +104,8 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const { project, version } = optionDeploy
 
   const throttle = useThrottling(DEPLOYMENT_EDIT_WS_REQUEST_DELAY)
+
+  const patch = useRef<Partial<InstanceContainerConfigData>>({})
 
   const [deployment, setDeployment] = useState<DeploymentDetails>(optionDeploy)
   const [node, setNode] = useNodeState(optionDeploy.node)
@@ -231,12 +234,18 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   }
 
   const onPatchInstance = (id: string, newConfig: InstanceContainerConfigData) => {
-    setSaveState('saving')
-
     const index = instances.findIndex(it => it.id === id)
     if (index < 0) {
       return
     }
+
+    setSaveState('saving')
+
+    const newPatch = {
+      ...patch.current,
+      ...newConfig,
+    }
+    patch.current = newPatch
 
     const newInstances = [...instances]
     const instance = newInstances[index]
@@ -256,9 +265,34 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
     throttle(() => {
       sock.send(WS_TYPE_PATCH_INSTANCE, {
         instanceId: id,
-        config: newConfig,
+        config: patch.current,
       } as PatchInstanceMessage)
+      patch.current = {}
     })
+  }
+
+  const updateInstanceConfig = (id: string, newConfig: InstanceContainerConfigData) => {
+    const index = instances.findIndex(it => it.id === id)
+    if (index < 0) {
+      return
+    }
+
+    setSaveState('saving')
+
+    const newInstances = [...instances]
+    const instance = newInstances[index]
+
+    newInstances[index] = {
+      ...instance,
+      config: instance.config
+        ? {
+            ...instance.config,
+            ...newConfig,
+          }
+        : newConfig,
+    }
+
+    setInstances(newInstances)
   }
 
   const onDeploymentTokenCreated = (token: DeploymentToken) => {
@@ -335,6 +369,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       onRevokeDeploymentToken,
       onInstanceSelected,
       onAllInstancesToggled,
+      updateInstanceConfig,
     },
   ]
 }

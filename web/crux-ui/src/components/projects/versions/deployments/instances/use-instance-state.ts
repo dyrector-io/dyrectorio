@@ -5,6 +5,7 @@ import {
   InstanceContainerConfigData,
   InstanceSecretsMessage,
   mergeConfigs,
+  MergedContainerConfigData,
   PatchInstanceMessage,
   WS_TYPE_INSTANCE_SECRETS,
   WS_TYPE_PATCH_INSTANCE,
@@ -20,15 +21,14 @@ export type InstanceStateOptions = {
 }
 
 export type InstanceState = {
-  config: ContainerConfigData
+  config: MergedContainerConfigData
   resetableConfig: ContainerConfigData
   definedSecrets: string[]
   errorMessage: string
 }
 
 export type InstanceActions = {
-  updateConfig: (config: Partial<ContainerConfigData>) => void
-  resetSection: (section: ImageConfigProperty) => ContainerConfigData
+  resetSection: (section: ImageConfigProperty) => InstanceContainerConfigData
   onPatch: (newConfig: Partial<ContainerConfigData>) => void
   onParseError: (error: Error) => void
 }
@@ -37,11 +37,8 @@ const useInstanceState = (options: InstanceStateOptions) => {
   const { instance, deploymentState, deploymentActions } = options
   const { sock } = deploymentState
 
-  const [config, setConfig] = useState(instance.config)
   const [parseError, setParseError] = useState<string>(null)
   const [definedSecrets, setDefinedSecrets] = useState<string[]>([])
-
-  useEffect(() => setConfig(instance.config), [instance.config])
 
   sock.on(WS_TYPE_INSTANCE_SECRETS, (message: InstanceSecretsMessage) => {
     if (message.instanceId !== instance.id) {
@@ -51,17 +48,15 @@ const useInstanceState = (options: InstanceStateOptions) => {
     setDefinedSecrets(message.keys)
   })
 
-  const mergedConfig = mergeConfigs(instance.image.config, config)
+  const mergedConfig = mergeConfigs(instance.image.config, instance.config)
 
   const errorMessage = parseError ?? getValidationError(containerConfigSchema, mergedConfig)?.message
 
-  const updateConfig = (newConfig: Partial<InstanceContainerConfigData>) => setConfig({ ...config, ...newConfig })
-
-  const resetSection = (section: ImageConfigProperty) => {
-    const newConfig = { ...config } as any
+  const resetSection = (section: ImageConfigProperty): InstanceContainerConfigData => {
+    const newConfig = { ...instance.config } as any
     newConfig[section] = null
 
-    setConfig(newConfig)
+    deploymentActions.updateInstanceConfig(instance.id, newConfig)
 
     sock.send(WS_TYPE_PATCH_INSTANCE, {
       instanceId: instance.id,
@@ -72,11 +67,6 @@ const useInstanceState = (options: InstanceStateOptions) => {
   }
 
   const onPatch = (id: string, newConfig: InstanceContainerConfigData) => {
-    setConfig({
-      ...config,
-      ...newConfig,
-    })
-
     deploymentActions.onPatchInstance(id, newConfig)
     setParseError(null)
   }
@@ -86,13 +76,12 @@ const useInstanceState = (options: InstanceStateOptions) => {
   return [
     {
       config: mergedConfig,
-      resetableConfig: config,
+      resetableConfig: instance.config,
       definedSecrets,
       errorMessage,
     },
     {
       onPatch,
-      updateConfig,
       resetSection,
       onParseError,
     },

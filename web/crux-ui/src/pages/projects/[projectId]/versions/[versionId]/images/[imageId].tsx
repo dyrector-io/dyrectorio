@@ -139,7 +139,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
 
   const onResetSection = (section: ImageConfigProperty) => {
     const newConfig = { ...config } as any
-    newConfig[section] = null
+    newConfig[section] = section === 'user' ? -1 : null
 
     setConfig(newConfig)
 

@@ -51,7 +51,7 @@ import { getMergedContainerConfigFieldErrors } from '@app/validations/instance'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { ValidationError } from 'yup'
 
@@ -87,7 +87,6 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     deploymentActions,
   })
 
-  const patch = useRef<Partial<InstanceContainerConfigData>>({})
   const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], state.config))
   const [viewState, setViewState] = useState<ViewState>('editor')
   const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() =>
@@ -95,8 +94,6 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   )
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
-
-  const throttle = useThrottling(INSTANCE_WS_REQUEST_DELAY)
 
   const editor = useEditorState(deploymentState.sock)
   const editorState = useItemEditorState(editor, deploymentState.sock, instance.id)
@@ -118,17 +115,9 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   }, [state.config])
 
   const onChange = (newConfig: Partial<InstanceContainerConfigData>) => {
-    actions.updateConfig(newConfig)
-
-    const newPatch = {
-      ...patch.current,
-      ...newConfig,
-    }
-    patch.current = newPatch
-
     const applied: InstanceContainerConfigData = {
       ...state.config,
-      ...newPatch,
+      ...newConfig,
     }
 
     const merged = mergeConfigs(instance.image.config, applied)
@@ -136,10 +125,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     setFieldErrors(errors)
     setJsonError(jsonErrorOf(errors))
 
-    throttle(() => {
-      actions.onPatch(instance.id, patch.current)
-      patch.current = {}
-    })
+    actions.onPatch(instance.id, newConfig)
   }
 
   const onResetSection = (section: ImageConfigProperty) => {
