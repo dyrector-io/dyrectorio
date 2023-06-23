@@ -11,11 +11,11 @@ import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import { useState } from 'react'
 import EditImageTags from './images/edit-image-tags'
-import { ImagesActions, ImagesState, selectTagsOfImage } from './images/use-images-state'
+import { selectTagsOfImage, VerionState, VersionActions } from './use-version-state'
 
 interface VersionViewListProps {
-  state: ImagesState
-  actions: ImagesActions
+  state: VerionState
+  actions: VersionActions
 }
 
 const VersionViewList = (props: VersionViewListProps) => {
@@ -87,7 +87,7 @@ const VersionViewList = (props: VersionViewListProps) => {
           onClick={() => onDelete(item)}
         />
       </div>
-      <Link href={imageConfigUrl(state.projectId, state.versionId, item.id)} passHref>
+      <Link href={imageConfigUrl(state.projectId, state.version.id, item.id)} passHref>
         <DyoIcon src="/settings.svg" alt={t('common:settings')} size="md" />
       </Link>
     </div>,
@@ -101,7 +101,7 @@ const VersionViewList = (props: VersionViewListProps) => {
           headerClassName={headerClasses}
           columnWidths={columnWidths}
           itemClassName={itemClasses}
-          data={state.images}
+          data={state.version.images}
           noSeparator
           itemBuilder={itemTemplate}
         />

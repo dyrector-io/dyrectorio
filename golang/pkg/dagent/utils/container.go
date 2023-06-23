@@ -121,12 +121,12 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 	return err
 }
 
-func GetOwnContainer(ctx context.Context) (*types.Container, error) {
+func GetOwnContainer(ctx context.Context, cli client.APIClient) (*types.Container, error) {
 	hostname := os.Getenv("HOSTNAME")
 
 	log.Info().Str("hostname", hostname).Msg("Getting self by hostname")
 
-	ownContainer, err := dockerHelper.GetContainerByName(ctx, hostname)
+	ownContainer, err := dockerHelper.GetContainerByName(ctx, cli, hostname)
 	if err != nil {
 		return nil, err
 	}
@@ -157,16 +157,11 @@ func GetOwnContainer(ctx context.Context) (*types.Container, error) {
 		return ownContainer, nil
 	}
 
-	return nil, &UnknownContainerError{}
+	return nil, fmt.Errorf("failed to find parent container: %w", &UnknownContainerError{})
 }
 
-func GetOwnContainerImage() (*types.ImageInspect, error) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return nil, err
-	}
-
-	self, err := GetOwnContainer(context.Background())
+func GetOwnContainerImage(cli client.APIClient) (*types.ImageInspect, error) {
+	self, err := GetOwnContainer(context.Background(), cli)
 	if err != nil {
 		return nil, err
 	}

@@ -310,7 +310,7 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 	}
 
 	if dc.withoutConflict {
-		err := dockerHelper.DeleteContainerByName(dc.ctx, dc.containerName)
+		err := dockerHelper.DeleteContainerByName(dc.ctx, dc.client, dc.containerName)
 		if err != nil {
 			dc.logWrite(fmt.Sprintf("Failed to resolve conflict during creating the container: %v", err))
 			return nil, err
