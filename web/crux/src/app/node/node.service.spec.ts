@@ -24,7 +24,6 @@ describe('NodeService', () => {
           {
             provide: AgentService,
             useValue: {
-              ...jest.mocked(AgentService),
               createAgentAudit: createAgentEventMock,
               getByIdOrThrow: () => ({
                 sendContainerCommand: jest.fn(),
