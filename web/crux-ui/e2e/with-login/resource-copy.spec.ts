@@ -170,6 +170,7 @@ test.describe('Deleting default version', () => {
       prefix,
     )
 
+    const sock = waitSocket(page)
     await page.goto(deploymentUrl(defaultDeploymentId))
 
     const instancesTableBody = await page.locator('.table-row-group')
@@ -181,7 +182,6 @@ test.describe('Deleting default version', () => {
     const settingsButton = await page.waitForSelector(`[src="/settings.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
 
-    const sock = waitSocket(page)
     await page.waitForSelector(`h2:has-text("Container")`)
     const ws = await sock
     const wsRoute = deploymentWsUrl(defaultDeploymentId)
