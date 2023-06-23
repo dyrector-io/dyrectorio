@@ -28,7 +28,7 @@ import (
 type DockerContainerHelperTestSuite struct {
 	suite.Suite
 	testContainers []containerbuilder.Builder
-	dockerClient   client.Client
+	dockerClient   client.APIClient
 	ctx            context.Context
 	prefix         string
 	containerNames []string
@@ -37,7 +37,7 @@ type DockerContainerHelperTestSuite struct {
 const (
 	nginxImage                 = "ghcr.io/dyrector-io/mirror/nginx:mainline-alpine"
 	prefixLength               = 8
-	dockerClientTimeoutSeconds = 30
+	dockerClientTimeoutSeconds = 15
 )
 
 // Runs before everything
@@ -46,7 +46,7 @@ func (testSuite *DockerContainerHelperTestSuite) SetupSuite() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Could not connect to docker socket.")
 	}
-	testSuite.dockerClient = *cli
+	testSuite.dockerClient = cli
 	testSuite.prefix = randstr.Hex(prefixLength)
 	testSuite.ctx = context.Background()
 	testSuite.containerNames = []string{"nginx1", "nginx2", "nginx3"}
@@ -62,6 +62,7 @@ func (testSuite *DockerContainerHelperTestSuite) SetupSuite() {
 
 // Runs after everything
 func (testSuite *DockerContainerHelperTestSuite) TearDownSuite() {
+	dockerHelper.DeleteContainersByLabel(context.TODO(), util.JoinV("=", label.ContainerPrefix, testSuite.prefix))
 	testSuite.dockerClient.Close()
 }
 
@@ -112,7 +113,7 @@ func (testSuite *DockerContainerHelperTestSuite) TestGetAllContainers() {
 }
 
 func (testSuite *DockerContainerHelperTestSuite) TestGetAllContainersbyName() {
-	containers, err := dockerHelper.GetAllContainersByName(testSuite.ctx, fmt.Sprintf("^%s", testSuite.prefix))
+	containers, err := dockerHelper.GetAllContainersByName(testSuite.ctx, testSuite.dockerClient, fmt.Sprintf("^%s", testSuite.prefix))
 
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.Equal(testSuite.T(), len(testSuite.testContainers), len(containers),
@@ -120,7 +121,7 @@ func (testSuite *DockerContainerHelperTestSuite) TestGetAllContainersbyName() {
 }
 
 func (testSuite *DockerContainerHelperTestSuite) TestGetContainerbyNameFound() {
-	matched, err := getContainerByNameWithNotFoundError(testSuite.ctx, fmt.Sprintf("%s-nginx1", testSuite.prefix))
+	matched, err := getContainerByNameWithNotFoundError(testSuite.ctx, testSuite.dockerClient, fmt.Sprintf("%s-nginx1", testSuite.prefix))
 
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.Equal(testSuite.T(), fmt.Sprintf("/%s-nginx1", testSuite.prefix), matched.Names[0],
@@ -128,14 +129,14 @@ func (testSuite *DockerContainerHelperTestSuite) TestGetContainerbyNameFound() {
 }
 
 func (testSuite *DockerContainerHelperTestSuite) TestGetContainerbyNameNotFound() {
-	matched, err := dockerHelper.GetContainerByName(testSuite.ctx, fmt.Sprintf("%s-nginx1", randstr.Hex(prefixLength)))
+	matched, err := dockerHelper.GetContainerByName(testSuite.ctx, testSuite.dockerClient, fmt.Sprintf("%s-nginx1", randstr.Hex(prefixLength)))
 
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.Nil(testSuite.T(), matched, "should return nil pointer")
 }
 
 func (testSuite *DockerContainerHelperTestSuite) TestDeleteContainer() {
-	containers, err := dockerHelper.GetAllContainersByName(testSuite.ctx, fmt.Sprintf("^%s", testSuite.prefix))
+	containers, err := dockerHelper.GetAllContainersByName(testSuite.ctx, testSuite.dockerClient, fmt.Sprintf("^%s", testSuite.prefix))
 
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.GreaterOrEqual(testSuite.T(), len(testSuite.testContainers), len(containers),
@@ -146,7 +147,7 @@ func (testSuite *DockerContainerHelperTestSuite) TestDeleteContainer() {
 	err = dockerHelper.DeleteContainer(testSuite.ctx, &targetContainer)
 	assert.NoError(testSuite.T(), err, "%s", err)
 
-	containers, err = dockerHelper.GetAllContainersByName(testSuite.ctx, fmt.Sprintf("^%s", testSuite.prefix))
+	containers, err = dockerHelper.GetAllContainersByName(testSuite.ctx, testSuite.dockerClient, fmt.Sprintf("^%s", testSuite.prefix))
 	assert.NoError(testSuite.T(), err, "%s", err)
 
 	for _, cont := range containers {
@@ -155,18 +156,18 @@ func (testSuite *DockerContainerHelperTestSuite) TestDeleteContainer() {
 }
 
 func (testSuite *DockerContainerHelperTestSuite) TestDeleteContainerByName() {
-	containers, err := dockerHelper.GetAllContainersByName(testSuite.ctx, fmt.Sprintf("^%s", testSuite.prefix))
+	containers, err := dockerHelper.GetAllContainersByName(testSuite.ctx, testSuite.dockerClient, fmt.Sprintf("^%s", testSuite.prefix))
 
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.GreaterOrEqual(testSuite.T(), len(testSuite.testContainers), len(containers),
 		"should return number of original containers")
 
 	for i := range testSuite.containerNames {
-		err = dockerHelper.DeleteContainerByName(testSuite.ctx, fmt.Sprintf("%s-%s", testSuite.prefix, testSuite.containerNames[i]))
+		err = dockerHelper.DeleteContainerByName(testSuite.ctx, testSuite.dockerClient, fmt.Sprintf("%s-%s", testSuite.prefix, testSuite.containerNames[i]))
 		assert.NoError(testSuite.T(), err, "%s", err)
 	}
 
-	containers, err = dockerHelper.GetAllContainersByName(testSuite.ctx, fmt.Sprintf("^%s", testSuite.prefix))
+	containers, err = dockerHelper.GetAllContainersByName(testSuite.ctx, testSuite.dockerClient, fmt.Sprintf("^%s", testSuite.prefix))
 
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.Equal(testSuite.T(), 0, len(containers),
@@ -174,7 +175,7 @@ func (testSuite *DockerContainerHelperTestSuite) TestDeleteContainerByName() {
 }
 
 func (testSuite *DockerContainerHelperTestSuite) DeleteContainersByLabel() {
-	containers, err := dockerHelper.GetAllContainersByName(testSuite.ctx, fmt.Sprintf("^%s", testSuite.prefix))
+	containers, err := dockerHelper.GetAllContainersByName(testSuite.ctx, testSuite.dockerClient, fmt.Sprintf("^%s", testSuite.prefix))
 
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.GreaterOrEqual(testSuite.T(), len(testSuite.testContainers), len(containers),
@@ -183,7 +184,7 @@ func (testSuite *DockerContainerHelperTestSuite) DeleteContainersByLabel() {
 	err = dockerHelper.DeleteContainersByLabel(testSuite.ctx, util.JoinV("=", label.ContainerPrefix, testSuite.prefix))
 	assert.NoError(testSuite.T(), err, "%s", err)
 
-	containers, err = dockerHelper.GetAllContainersByName(testSuite.ctx, fmt.Sprintf("^%s", testSuite.prefix))
+	containers, err = dockerHelper.GetAllContainersByName(testSuite.ctx, testSuite.dockerClient, fmt.Sprintf("^%s", testSuite.prefix))
 
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.Equal(testSuite.T(), 0, len(containers),
@@ -191,7 +192,7 @@ func (testSuite *DockerContainerHelperTestSuite) DeleteContainersByLabel() {
 }
 
 func (testSuite *DockerContainerHelperTestSuite) TestDeleteContainerByID() {
-	containers, err := dockerHelper.GetAllContainersByName(testSuite.ctx, fmt.Sprintf("^%s", testSuite.prefix))
+	containers, err := dockerHelper.GetAllContainersByName(testSuite.ctx, testSuite.dockerClient, fmt.Sprintf("^%s", testSuite.prefix))
 
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.GreaterOrEqual(testSuite.T(), len(testSuite.testContainers), len(containers),
@@ -202,7 +203,7 @@ func (testSuite *DockerContainerHelperTestSuite) TestDeleteContainerByID() {
 		assert.NoError(testSuite.T(), err, "%s", err)
 	}
 
-	containers, err = dockerHelper.GetAllContainersByName(testSuite.ctx, fmt.Sprintf("^%s", testSuite.prefix))
+	containers, err = dockerHelper.GetAllContainersByName(testSuite.ctx, testSuite.dockerClient, fmt.Sprintf("^%s", testSuite.prefix))
 
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.Equal(testSuite.T(), 0, len(containers),
@@ -213,8 +214,8 @@ func TestDockerContainerHelperTestSuite(t *testing.T) {
 	suite.Run(t, new(DockerContainerHelperTestSuite))
 }
 
-func getContainerByNameWithNotFoundError(ctx context.Context, nameFilter string) (*types.Container, error) {
-	container, err := dockerHelper.GetContainerByName(ctx, nameFilter)
+func getContainerByNameWithNotFoundError(ctx context.Context, cli client.APIClient, nameFilter string) (*types.Container, error) {
+	container, err := dockerHelper.GetContainerByName(ctx, cli, nameFilter)
 	if err != nil {
 		return nil, err
 	} else if container == nil {

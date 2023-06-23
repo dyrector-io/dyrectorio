@@ -6,34 +6,53 @@ package container_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	containerRuntime "github.com/dyrector-io/dyrectorio/golang/internal/runtime/container"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
 	"github.com/stretchr/testify/assert"
 )
 
-type mockClient struct {
+type mockDockerClient struct {
+	client.APIClient
 	version string
 	info    *types.Info
 }
 
-func newMockClient(version string, info *types.Info) *mockClient {
-	return &mockClient{
+type mockErrDockerClient struct {
+	client.APIClient
+}
+
+func newMockClient(version string, info *types.Info) client.APIClient {
+	return &mockDockerClient{
 		version: version,
 		info:    info,
 	}
 }
 
-func (m *mockClient) Info(ctx context.Context) (types.Info, error) {
+func (m mockDockerClient) Info(ctx context.Context) (types.Info, error) {
 	return *m.info, nil
 }
 
-func (m *mockClient) ServerVersion(ctx context.Context) (types.Version, error) {
+func (m mockDockerClient) ServerVersion(ctx context.Context) (types.Version, error) {
 	return types.Version{
 		Version: m.version,
 	}, nil
+}
+
+func newErrMockClient() client.APIClient {
+	return &mockErrDockerClient{}
+}
+
+func (m mockErrDockerClient) ServerVersion(ctx context.Context) (types.Version, error) {
+	return types.Version{}, fmt.Errorf("expected version error")
+}
+
+func (m mockErrDockerClient) Info(ctx context.Context) (types.Info, error) {
+	return types.Info{}, fmt.Errorf("expected info error")
 }
 
 func getDockerInfoDocker() *types.Info {
@@ -60,7 +79,6 @@ type VersionTestCase struct {
 	ErrExpected       error
 }
 
-// TODO(@nandor-magyar): this should be refactored into an iterated test case, this kind of repetition is undesired
 func TestVersionCheck(t *testing.T) {
 	errExternal := errors.New("externalError")
 	testCases := []VersionTestCase{
@@ -130,6 +148,15 @@ func TestVersionCheck(t *testing.T) {
 	}
 }
 
+func TestErrors(t *testing.T) {
+	errClient := newErrMockClient()
+	_, err := containerRuntime.VersionCheck(context.TODO(), errClient)
+	assert.ErrorContains(t, err, "expected version error", "mock error should be thrown")
+
+	_, err = containerRuntime.GetInternalHostDomain(context.TODO(), errClient)
+	assert.ErrorContains(t, err, "expected info error", "mock error should be thrown")
+}
+
 func TestSatisfyVersion(t *testing.T) {
 	assert.ErrorIs(t, containerRuntime.ErrServerVersionIsNotSupported, containerRuntime.SatisfyVersion("2.0.0", "3.0.0", "1.0.0"))
 	assert.ErrorIs(t, containerRuntime.ErrServerIsOutdated, containerRuntime.SatisfyVersion("2.0.0", "3.0.0", "2.0.0"))
@@ -149,8 +176,8 @@ func TestGetInternalHostname(t *testing.T) {
 
 	invalidClient := newMockClient("4.4.0", getDockerInfoInvalid())
 	invalidRuntime, err := containerRuntime.GetInternalHostDomain(context.TODO(), invalidClient)
-	assert.Equal(t, invalidRuntime, "")
-	assert.True(t, errors.Is(containerRuntime.ErrServerUnknown, err))
+	assert.Equal(t, containerRuntime.UnknownRuntime, invalidRuntime, "unknown-runtime is recognized")
+	assert.ErrorIs(t, err, containerRuntime.ErrServerUnknown, "error is not set for unknown runtimes")
 }
 
 func TestGetContainerRuntime(t *testing.T) {
@@ -166,6 +193,6 @@ func TestGetContainerRuntime(t *testing.T) {
 
 	invalidClient := newMockClient("4.4.0", getDockerInfoInvalid())
 	invalidRuntime, err := containerRuntime.GetContainerRuntime(context.TODO(), invalidClient)
-	assert.True(t, errors.Is(err, containerRuntime.ErrServerUnknown))
-	assert.Equal(t, invalidRuntime, "")
+	assert.Equal(t, containerRuntime.UnknownRuntime, invalidRuntime, "unknown-runtime is recognized")
+	assert.ErrorIs(t, err, containerRuntime.ErrServerUnknown, "error is not set for unknown runtimes")
 }

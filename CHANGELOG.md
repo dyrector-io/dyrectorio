@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+<a name="0.5.4"></a>
+## [0.5.4](https://github.com/dyrector-io/dyrectorio/compare/0.5.3...0.5.4) (2023-06-22)
+
+### Feat
+
+* **(crux-ui):** add delete button to deployments list ([#709](https://github.com/dyrector-io/dyrectorio/issues/709))
+* **(web):** select instances to deploy ([#700](https://github.com/dyrector-io/dyrectorio/issues/700))
+* **(web):** convert versionless project to versioned ([#705](https://github.com/dyrector-io/dyrectorio/issues/705))
+* **(crux-ui):** reload on kratos gone ([#707](https://github.com/dyrector-io/dyrectorio/issues/707))
+* **(web):** add deployment tokens ([#701](https://github.com/dyrector-io/dyrectorio/issues/701))
+* **(web):** registry api errors ([#699](https://github.com/dyrector-io/dyrectorio/issues/699))
+
+### Fix
+
+* **(crux):** deployment deletes containers ([#703](https://github.com/dyrector-io/dyrectorio/issues/703))
+* small improvements in makefile around bundle ([#702](https://github.com/dyrector-io/dyrectorio/issues/702))
+* add crane to signer image and add additional cache restore ([#698](https://github.com/dyrector-io/dyrectorio/issues/698))
+
+
 <a name="0.5.3"></a>
 ## [0.5.3](https://github.com/dyrector-io/dyrectorio/compare/0.5.2...0.5.3) (2023-06-16)
 
