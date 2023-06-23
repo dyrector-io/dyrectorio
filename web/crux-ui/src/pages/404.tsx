@@ -1,6 +1,7 @@
 import { SingleFormLayout } from '@app/components/layout'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import { ROUTE_DASHBOARD } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
@@ -9,7 +10,7 @@ const Page404 = () => {
   const { t } = useTranslation('404')
   const router = useRouter()
 
-  const goBack = () => router.back()
+  const navigateToDashboard = async () => await router.push(ROUTE_DASHBOARD)
 
   return (
     <SingleFormLayout title={t('oops')}>
@@ -25,8 +26,8 @@ const Page404 = () => {
 
           <p className="text-center text-light font-semibold my-6">{t('nothingYet')}</p>
 
-          <DyoButton secondary outlined onClick={goBack}>
-            {t('common:goBack')}
+          <DyoButton className="px-12" outlined onClick={navigateToDashboard}>
+            {t('common:dashboard')}
           </DyoButton>
         </div>
       </div>

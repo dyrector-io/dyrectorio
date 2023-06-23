@@ -50,7 +50,7 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
       return
     }
 
-    router.back()
+    router.replace(ROUTE_NOTIFICATIONS)
   }
 
   const pageLink: BreadcrumbLink = {
