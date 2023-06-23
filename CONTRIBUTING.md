@@ -10,6 +10,17 @@ If you're worried or don’t know where to start, check out our next section exp
 
 Help us keep dyrector.io open and inclusive. Please read and follow our [Code of Conduct](/CODE_OF_CONDUCT.md).
 
+## Git branching strategy
+
+We have two persistent branches: main, develop. 
+PRs are going into develop.
+The develop branch is always fast-forward mergable to main.
+PR titles must follow the conventional commit guidelines.
+
+Release: a release commit is made to develop, package versions are bumped, develop is fast-forward merged into main.
+Hotfix: in rare occassions, a hotfix/** branch is created from main and the PR targets the main branch,
+develop must be rebased to main -- using rebase-onto.
+
 ## Submit a Pull Request
 
 Branch naming convention is as following
