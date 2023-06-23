@@ -291,7 +291,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
 
       <DyoConfirmationModal
         config={revokeModalConfig}
-        title={t('confirmRevoke')}
+        title={t('tokens:areYouSureRevoke')}
         confirmText={t('tokens:revoke')}
         className="w-1/4"
         confirmColor="bg-error-red"

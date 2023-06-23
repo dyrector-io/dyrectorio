@@ -5,39 +5,50 @@ import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
-import DyoModal from '@app/elements/dyo-modal'
+import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
+import useConfirmation from '@app/hooks/use-confirmation'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentByVersion,
   deploymentIsCopiable,
+  deploymentIsDeletable,
   deploymentIsDeployable,
   DeploymentStatus,
   DEPLOYMENT_STATUS_VALUES,
   NodeEventMessage,
   NodeStatus,
+  StartDeployment,
   VersionDetails,
   WS_TYPE_NODE_EVENT,
 } from '@app/models'
-import { deploymentDeployUrl, deploymentStartApiUrl, deploymentUrl, WS_NODES } from '@app/routes'
-import { utcDateToLocale } from '@app/utils'
+import { deploymentApiUrl, deploymentDeployUrl, deploymentStartApiUrl, deploymentUrl, WS_NODES } from '@app/routes'
+import { sendForm, utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { NextRouter, useRouter } from 'next/dist/client/router'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import DeploymentStatusTag from './deployments/deployment-status-tag'
+import { VersionActions } from './use-version-state'
 
 export const startDeployment = async (
   router: NextRouter,
   onApiError: (response: Response) => void,
   deploymentId: string,
+  deployInstances?: string[],
 ) => {
-  const res = await fetch(deploymentStartApiUrl(deploymentId), {
-    method: 'POST',
-  })
+  const res = await sendForm(
+    'POST',
+    deploymentStartApiUrl(deploymentId),
+    deployInstances
+      ? ({
+          instances: deployInstances,
+        } as StartDeployment)
+      : null,
+  )
 
   if (!res.ok) {
     onApiError(res)
@@ -51,13 +62,13 @@ export const startDeployment = async (
 
 interface VersionDeploymentsSectionProps {
   version: VersionDetails
-  onCopyDeployment: (deploymentId: string) => void
+  actions: VersionActions
 }
 
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
 
 const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
-  const { version, onCopyDeployment } = props
+  const { version, actions } = props
 
   const { t } = useTranslation('versions')
 
@@ -66,8 +77,51 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const [showInfo, setShowInfo] = useState<DeploymentByVersion>(null)
+  const [confirmModalConfig, confirm] = useConfirmation()
 
-  const onDeploy = (deploymentId: string) => startDeployment(router, handleApiError, deploymentId)
+  const onDeploy = async (deployment: DeploymentByVersion) => {
+    const confirmed = await confirm(null, {
+      title: t('common:areYouSure'),
+      description: t('deployments:areYouSureDeployNodePrefix', {
+        node: deployment.node.name,
+        prefix: deployment.prefix,
+      }),
+      confirmText: t('common:deploy'),
+    })
+
+    if (!confirmed) {
+      return
+    }
+
+    await startDeployment(router, handleApiError, deployment.id)
+  }
+
+  const onDeleteDeployment = async (deployment: DeploymentByVersion) => {
+    const confirmed = await confirm(null, {
+      title: t('common:areYouSure'),
+      description:
+        deployment.status === 'successful'
+          ? t('deployments:proceedYouDeletePrefix', {
+              node: deployment.node.name,
+              prefix: deployment.prefix,
+            })
+          : null,
+      confirmText: t('common:delete'),
+      confirmColor: 'bg-error-red',
+    })
+
+    if (!confirmed) {
+      return
+    }
+
+    const res = await fetch(deploymentApiUrl(deployment.id), { method: 'DELETE' })
+    if (!res.ok) {
+      handleApiError(res)
+      return
+    }
+
+    actions.onDeploymentDeleted(deployment.id)
+  }
 
   const filters = useFilters<DeploymentByVersion, DeploymentFilter>({
     filters: [
@@ -76,6 +130,8 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     ],
     initialData: version.deployments,
   })
+
+  useEffect(() => filters.setItems(version.deployments), [filters, version.deployments])
 
   const [nodeStatuses, setNodeStatuses] = useState<Record<string, NodeStatus>>({})
 
@@ -94,13 +150,22 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const headers = [
     ...['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it => t(it)),
   ]
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-2 font-semibold'
+  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased px-2 py-3 font-semibold'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     defaultHeaderClass,
     clsx('text-center', defaultHeaderClass),
     defaultHeaderClass,
-    clsx('rounded-tr-lg text-center pr-6', defaultHeaderClass),
+    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
+  ]
+
+  const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
+  const itemClasses = [
+    clsx('pl-6', defaultItemClass),
+    ...Array.from({ length: 1 }).map(() => defaultItemClass),
+    clsx('text-center', defaultItemClass),
+    ...Array.from({ length: headerClasses.length - 4 }).map(() => defaultItemClass),
+    clsx('pr-6 text-center', defaultItemClass),
   ]
 
   const itemTemplate = (item: DeploymentByVersion) => {
@@ -132,7 +197,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
               className={item.node.status === 'connected' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
               width={24}
               height={24}
-              onClick={() => item.node.status === 'connected' && onDeploy(item.id)}
+              onClick={() => item.node.status === 'connected' && onDeploy(item)}
             />
           </div>
         )}
@@ -140,7 +205,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
         <div className="mr-2 inline-block">
           <Image
             src="/note.svg"
-            alt={t('common:deploy')}
+            alt={t('common:note')}
             width={24}
             height={24}
             className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
@@ -155,7 +220,17 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             width={24}
             height={24}
             className={deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-            onClick={() => onCopyDeployment(item.id)}
+            onClick={() => actions.copyDeployment(item.id)}
+          />
+        ) : null}
+
+        {deploymentIsDeletable(item.status) ? (
+          <DyoIcon
+            className="aspect-square cursor-pointer"
+            src="/trash-can.svg"
+            alt={t('common:delete')}
+            size="md"
+            onClick={() => onDeleteDeployment(item)}
           />
         ) : null}
       </div>,
@@ -185,7 +260,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             <DyoList
               headerClassName={headerClasses}
               headers={headers}
-              itemClassName="h-11 min-h-min text-light-eased pl-4 w-fit"
+              itemClassName={itemClasses}
               noSeparator
               data={filters.filtered}
               itemBuilder={itemTemplate}
@@ -208,6 +283,8 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           <p className="text-bright mt-8 break-all overflow-y-auto">{showInfo.note}</p>
         </DyoModal>
       )}
+
+      <DyoConfirmationModal config={confirmModalConfig} />
     </>
   )
 }

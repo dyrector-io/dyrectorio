@@ -170,13 +170,23 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     },
   ]
 
-  const listHeaders = [...['common:name', 'common:email', 'role', 'lastLogin', 'common:status'].map(it => t(it)), '']
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
+  const listHeaders = [
+    ...['common:name', 'common:email', 'role', 'lastLogin', 'common:status', 'common:actions'].map(it => t(it)),
+  ]
+  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased px-2 py-3 font-semibold'
   const headerClassNames = [
-    clsx(defaultHeaderClass, 'rounded-tl-lg'),
+    clsx(defaultHeaderClass, 'rounded-tl-lg pl-6'),
     ...Array.from({ length: listHeaders.length - 3 }).map(() => defaultHeaderClass),
     clsx(defaultHeaderClass, 'text-center'),
-    clsx(defaultHeaderClass, 'rounded-tr-lg'),
+    clsx(defaultHeaderClass, 'rounded-tr-lg pr-6 text-center'),
+  ]
+
+  const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
+  const itemClass = [
+    clsx('pl-6', defaultItemClass),
+    ...Array.from({ length: listHeaders.length - 3 }).map(() => defaultItemClass),
+    clsx('text-center', defaultItemClass),
+    clsx('pr-6 text-center', defaultItemClass),
   ]
 
   const pageMenuTexts: DetailsPageTexts = {
@@ -201,7 +211,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     </div>,
     <div>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('common:never')}</div>,
     <UserStatusTag className="w-fit mx-auto" status={it.status} />,
-    <div className="flex flex-row">
+    <>
       {!userStatusReinvitable(it.status) || countdown > 0 ? null : (
         <div className="mr-2 inline-block">
           <DyoIcon
@@ -215,7 +225,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
       )}
 
       {detailsState !== 'none' || !canEdit || it.role === 'owner' ? null : (
-        <div className="mr-2 inline-block">
+        <div className="inline-block">
           <DyoIcon
             className="aspect-square cursor-pointer"
             src="/trash-can.svg"
@@ -225,7 +235,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
           />
         </div>
       )}
-    </div>,
+    </>,
   ]
   /* eslint-enable react/jsx-key */
 
@@ -263,7 +273,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
           noSeparator
           headers={listHeaders}
           headerClassName={headerClassNames}
-          itemClassName="h-11 min-h-min text-light-eased pl-4 w-fit"
+          itemClassName={itemClass}
           data={team.users}
           itemBuilder={itemTemplate}
         />

@@ -62,7 +62,7 @@ export interface DetailsPageMenuProps {
   deleteModalDescription?: string
 }
 
-export const DetailsPageMenu = (props: DetailsPageMenuProps) => {
+export const DetailsPageMenu = (props: React.PropsWithChildren<DetailsPageMenuProps>) => {
   const {
     texts: propsTexts,
     disableEditing,
@@ -73,6 +73,7 @@ export const DetailsPageMenu = (props: DetailsPageMenuProps) => {
     onAdd,
     deleteModalTitle,
     deleteModalDescription,
+    children,
   } = props
 
   const { t } = useTranslation('common')
@@ -121,6 +122,8 @@ export const DetailsPageMenu = (props: DetailsPageMenuProps) => {
       <DyoButton className="ml-auto px-6 mr-2" secondary onClick={() => setEditing(false)}>
         {texts.discard ?? t('discard')}
       </DyoButton>
+
+      {children}
 
       <DyoButton className="px-6 ml-2" onClick={() => submitRef.current()}>
         {texts.save ?? t('save')}

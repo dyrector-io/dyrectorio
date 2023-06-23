@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
 	"github.com/rs/zerolog/log"
 
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
@@ -34,9 +35,9 @@ func GetContainersByPrefix(ctx context.Context, prefix string) []*common.Contain
 	return mapper.MapContainerState(containers, prefix)
 }
 
-func GetContainerByPrefixAndName(ctx context.Context, prefix, name string) (*types.Container, error) {
+func GetContainerByPrefixAndName(ctx context.Context, cli client.APIClient, prefix, name string) (*types.Container, error) {
 	if prefix == "" {
-		return dockerHelper.GetContainerByName(ctx, name)
+		return dockerHelper.GetContainerByName(ctx, cli, name)
 	}
 
 	containers, err := dockerHelper.GetAllContainersByLabel(ctx, label.GetPrefixLabelFilter(prefix))
@@ -57,7 +58,12 @@ func GetContainerByPrefixAndName(ctx context.Context, prefix, name string) (*typ
 }
 
 func DeleteContainerByPrefixAndName(ctx context.Context, prefix, name string) error {
-	container, err := GetContainerByPrefixAndName(ctx, prefix, name)
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+
+	container, err := GetContainerByPrefixAndName(ctx, cli, prefix, name)
 	if err != nil {
 		return fmt.Errorf("could not get container (%s, %s) to delete: %s", prefix, name, err.Error())
 	}

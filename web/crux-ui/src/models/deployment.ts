@@ -95,6 +95,10 @@ export type DeploymentInvalidatedSecrets = {
   invalid: string[]
 }
 
+export type StartDeployment = {
+  instances?: string[]
+}
+
 // ws
 
 export const WS_TYPE_PATCH_DEPLOYMENT_ENV = 'patch-deployment-env'
