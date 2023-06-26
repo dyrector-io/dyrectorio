@@ -66,7 +66,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
             {containerIsRestartable(container.state) ? (
               <DyoImgButton
                 src="/restart.svg"
-                alt="restart"
+                alt={t('restart')}
                 height={24}
                 onClick={() => actions.onRestartContainer(container)}
               />
@@ -74,7 +74,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
               <DyoImgButton
                 disabled={!containerIsStartable(container.state)}
                 src="/start.svg"
-                alt="start"
+                alt={t('start')}
                 height={24}
                 onClick={() => actions.onStartContainer(container)}
               />
@@ -83,20 +83,20 @@ const NodeContainersList = (props: NodeContainersListProps) => {
             <DyoImgButton
               disabled={!containerIsStopable(container.state)}
               src="/stop.svg"
-              alt="stop"
+              alt={t('stop')}
               height={24}
               onClick={() => actions.onStopContainer(container)}
             />
 
             {container.state && (
               <Link href={nodeContainerLogUrl(state.node.id, container.id)} passHref>
-                <DyoIcon src="/note.svg" alt="log" size="md" />
+                <DyoIcon src="/note.svg" alt={t('logs')} size="md" />
               </Link>
             )}
 
             <DyoImgButton
               src="/trash-can.svg"
-              alt="delete"
+              alt={t('common:delete')}
               height={24}
               onClick={() => actions.onDeleteContainer(container)}
             />

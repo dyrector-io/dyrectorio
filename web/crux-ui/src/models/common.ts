@@ -31,6 +31,8 @@ export type WsErrorMessage = {
 
 export const WS_TYPE_PATCH_RECEIVED = 'patch-received'
 
+export type WebSocketSaveState = 'saved' | 'saving' | 'disconnected'
+
 // pagination
 
 export type PaginationQuery = {

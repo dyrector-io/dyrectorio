@@ -11,13 +11,12 @@ import EditImageJson from '@app/components/projects/versions/images/edit-image-j
 import ImageConfigFilters from '@app/components/projects/versions/images/image-config-filters'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
-import { INSTANCE_WS_REQUEST_DELAY } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoMessage from '@app/elements/dyo-message'
+import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
-import { useThrottling } from '@app/hooks/use-throttleing'
 import {
   configToFilters,
   DeploymentDetails,
@@ -50,7 +49,7 @@ import { getMergedContainerConfigFieldErrors } from '@app/validations/instance'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { ValidationError } from 'yup'
 
@@ -72,7 +71,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
   const onApiError = defaultApiErrorHandler(t)
 
-  const [deploymentState] = useDeploymentState({
+  const [deploymentState, deploymentActions] = useDeploymentState({
     deployment,
     onWsError,
     onApiError,
@@ -83,9 +82,9 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   const [state, actions] = useInstanceState({
     instance,
     deploymentState,
+    deploymentActions,
   })
 
-  const patch = useRef<Partial<InstanceContainerConfigData>>({})
   const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], state.config))
   const [viewState, setViewState] = useState<ViewState>('editor')
   const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() =>
@@ -93,8 +92,6 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   )
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
-
-  const throttle = useThrottling(INSTANCE_WS_REQUEST_DELAY)
 
   const editor = useEditorState(deploymentState.sock)
   const editorState = useItemEditorState(editor, deploymentState.sock, instance.id)
@@ -116,17 +113,9 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   }, [state.config])
 
   const onChange = (newConfig: Partial<InstanceContainerConfigData>) => {
-    actions.updateConfig(newConfig)
-
-    const newPatch = {
-      ...patch.current,
-      ...newConfig,
-    }
-    patch.current = newPatch
-
     const applied: InstanceContainerConfigData = {
       ...state.config,
-      ...newPatch,
+      ...newConfig,
     }
 
     const merged = mergeConfigs(instance.image.config, applied)
@@ -134,10 +123,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     setFieldErrors(errors)
     setJsonError(jsonErrorOf(errors))
 
-    throttle(() => {
-      actions.onPatch(instance.id, patch.current)
-      patch.current = {}
-    })
+    actions.onPatch(instance.id, newConfig)
   }
 
   const onResetSection = (section: ImageConfigProperty) => {
@@ -204,6 +190,8 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   return (
     <Layout title={t('instancesName', state.config ?? instance.image)} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
+        <WebSocketSaveIndicator className="mx-3" state={deploymentState.saveState} />
+
         <DyoButton href={deploymentUrl(deployment.id)}>{t('common:back')}</DyoButton>
       </PageHeading>
 
