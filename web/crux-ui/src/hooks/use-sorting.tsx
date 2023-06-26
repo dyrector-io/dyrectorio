@@ -90,16 +90,22 @@ export const useSorting = <Item, Fields extends string>(
   }
 }
 
+export type SortHeaderBuilderMapping<Fields extends string> = { [key: string]: Fields }
+
 export const sortHeaderBuilder =
-  <Item, Fields extends string>(sort: SortConfig<Item, Fields>, mapping: Fields[]) =>
+  <Item, Fields extends string>(
+    sort: SortConfig<Item, Fields>,
+    mapping: SortHeaderBuilderMapping<Fields>,
+    translate: (string) => string,
+  ) =>
   (header: string, index: number): React.ReactNode =>
-    mapping[index] ? (
-      sort.sortField === mapping[index] ? (
+    mapping[header] ? (
+      sort.sortField === mapping[header] ? (
         <div
           className="inline-flex flex-row cursor-pointer select-none"
-          onClick={() => sort.toggleSorting(mapping[index])}
+          onClick={() => sort.toggleSorting(mapping[header])}
         >
-          <span>{header}</span>
+          <span>{translate(header)}</span>
           <Image
             className="cursor-pointer ml-1"
             src={sort.sortDirection === 'asc' ? '/arrow_up.svg' : '/arrow_down.svg'}
@@ -109,12 +115,12 @@ export const sortHeaderBuilder =
           />
         </div>
       ) : (
-        <span className="cursor-pointer select-none" onClick={() => sort.toggleSorting(mapping[index])}>
-          {header}
+        <span className="cursor-pointer select-none" onClick={() => sort.toggleSorting(mapping[header])}>
+          {translate(header)}
         </span>
       )
     ) : (
-      header
+      translate(header)
     )
 
 export const stringSort = <Item,>(field: string, a: Item, b: Item): number => (a[field] ?? '').localeCompare(b[field])

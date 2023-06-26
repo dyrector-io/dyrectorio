@@ -9,7 +9,14 @@ import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { dateSort, SortFunctions, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
+import {
+  dateSort,
+  SortFunctions,
+  sortHeaderBuilder,
+  SortHeaderBuilderMapping,
+  stringSort,
+  useSorting,
+} from '@app/hooks/use-sorting'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentByVersion,
@@ -69,7 +76,11 @@ interface VersionDeploymentsSectionProps {
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
 
 type DeploymentSorting = 'prefix' | 'updatedAt' | 'status'
-const sortHeaders: DeploymentSorting[] = [null, 'prefix', 'status', 'updatedAt', null]
+const sortHeaders: SortHeaderBuilderMapping<DeploymentSorting> = {
+  'common:prefix': 'prefix',
+  'common:status': 'status',
+  'common:date': 'updatedAt',
+}
 
 const statusSort = (field: string, a: DeploymentByVersion, b: DeploymentByVersion) =>
   DEPLOYMENT_STATUS_VALUES.indexOf(a.status) - DEPLOYMENT_STATUS_VALUES.indexOf(b.status)
@@ -163,9 +174,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     setNodeStatuses(statuses)
   })
 
-  const headers = [
-    ...['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it => t(it)),
-  ]
+  const headers = ['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions']
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased px-2 py-3 font-semibold'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
@@ -280,7 +289,9 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
               noSeparator
               data={sorting.items}
               itemBuilder={itemTemplate}
-              headerBuilder={sortHeaderBuilder<DeploymentByVersion, DeploymentSorting>(sorting, sortHeaders)}
+              headerBuilder={sortHeaderBuilder<DeploymentByVersion, DeploymentSorting>(sorting, sortHeaders, text =>
+                t(text),
+              )}
             />
           </DyoCard>
         </>
