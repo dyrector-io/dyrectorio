@@ -33,7 +33,13 @@ const sortData = <Item, Fields extends string>(
     return items
   }
 
-  return [...items].sort((a, b) => functions[sortBy.field](sortBy.field, a, b) * (sortBy.direction === 'desc' ? -1 : 1))
+  const sortFunction = functions[sortBy.field]
+  const direction = sortBy.direction === 'desc' ? -1 : 1
+
+  return [...items].sort((a, b) => {
+    const order = sortFunction(sortBy.field, a, b)
+    return order * direction
+  })
 }
 
 export const useSorting = <Item, Fields extends string>(
