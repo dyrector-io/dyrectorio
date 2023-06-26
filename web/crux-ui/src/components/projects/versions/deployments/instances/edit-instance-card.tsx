@@ -9,21 +9,23 @@ import {
 } from '@app/models'
 import EditImageHeading from '../../images/edit-image-heading'
 import EditImageJson from '../../images/edit-image-json'
-import { DeploymentState } from '../use-deployment-state'
+import { DeploymentActions, DeploymentState } from '../use-deployment-state'
 import useInstanceState from './use-instance-state'
 
 interface EditInstanceCardProps {
   instance: Instance
   deploymentState: DeploymentState
+  deploymentActions: DeploymentActions
 }
 
 const EditInstanceCard = (props: EditInstanceCardProps) => {
-  const { instance, deploymentState } = props
+  const { instance, deploymentState, deploymentActions } = props
   const { editor, sock } = deploymentState
 
   const [state, actions] = useInstanceState({
     instance,
     deploymentState,
+    deploymentActions,
   })
 
   const { config, errorMessage } = state
@@ -36,7 +38,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
         <EditImageHeading
           imageName={instance.image.name}
           imageTag={instance.image.tag}
-          containerName={instance.image.config.name}
+          containerName={instance.config?.name ?? instance.image.config.name}
         />
       </div>
 

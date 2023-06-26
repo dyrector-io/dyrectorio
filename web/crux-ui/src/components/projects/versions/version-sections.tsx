@@ -20,18 +20,15 @@ interface VersionSectionsProps {
   project: ProjectDetails
   state: VerionState
   actions: VersionActions
-  setSaving: (saving: boolean) => void
   setTopBarContent: (node: React.ReactNode) => void
 }
 
 const VersionSections = (props: VersionSectionsProps) => {
-  const { state, actions, setSaving, setTopBarContent, project } = props
+  const { state, actions, setTopBarContent, project } = props
 
   const router = useRouter()
 
   const { editors } = state.editor
-
-  useEffect(() => setSaving(state.saving), [setSaving, state.saving])
 
   useEffect(() => {
     const reactNode = (

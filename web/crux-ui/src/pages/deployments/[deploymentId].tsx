@@ -14,7 +14,7 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
-import LoadingIndicator from '@app/elements/loading-indicator'
+import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
 import {
@@ -170,7 +170,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       }
     >
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        {state.saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
+        <WebSocketSaveIndicator className="mx-3" state={state.saveState} />
 
         {!state.deletable ? null : (
           <DetailsPageMenu

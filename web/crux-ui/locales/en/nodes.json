@@ -58,6 +58,10 @@
   "traefikExplanation": "Traefik is a reverse proxy which lets users deploy services to subdomains as well as use HTTPS.",
   "in-progress": "In progress",
 
+  "start": "Start",
+  "stop": "Stop",
+  "restart": "Restart",
+
   "auditEvents": {
     "none": "None",
     "connected": "Connected",
