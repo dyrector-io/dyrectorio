@@ -15,6 +15,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoMessage from '@app/elements/dyo-message'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
@@ -32,9 +33,11 @@ import {
   VersionDetails,
   VersionImage,
   ViewState,
+  WebSocketSaveState,
   WS_TYPE_DELETE_IMAGE,
   WS_TYPE_IMAGE_UPDATED,
   WS_TYPE_PATCH_IMAGE,
+  WS_TYPE_PATCH_RECEIVED,
 } from '@app/models'
 import {
   imageApiUrl,
@@ -48,6 +51,7 @@ import {
 } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getContainerConfigFieldErrors, jsonErrorOf } from '@app/validations/image'
+import { WsMessage } from '@app/websockets/common'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -70,6 +74,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() => getContainerConfigFieldErrors(image.config))
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
+  const [saveState, setSaveState] = useState<WebSocketSaveState>('saved')
 
   const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], config))
 
@@ -77,7 +82,15 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
   const router = useRouter()
   const [deleteModalConfig, confirmDelete] = useConfirmation()
-  const versionSock = useWebSocket(versionWsUrl(version.id))
+  const versionSock = useWebSocket(versionWsUrl(version.id), {
+    onOpen: () => setSaveState('saved'),
+    onClose: () => setSaveState('disconnected'),
+    onReceive: (message: WsMessage) => {
+      if (message.type === WS_TYPE_PATCH_RECEIVED) {
+        setSaveState('saved')
+      }
+    },
+  })
 
   const editor = useEditorState(versionSock)
   const editorState = useItemEditorState(editor, versionSock, image.id)
@@ -99,6 +112,8 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   }, [config])
 
   const onChange = (newConfig: Partial<ContainerConfigData>) => {
+    setSaveState('saving')
+
     const value = { ...config, ...newConfig }
     setConfig(value)
 
@@ -124,7 +139,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
 
   const onResetSection = (section: ImageConfigProperty) => {
     const newConfig = { ...config } as any
-    newConfig[section] = null
+    newConfig[section] = section === 'user' ? -1 : null
 
     setConfig(newConfig)
 
@@ -209,6 +224,8 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   return (
     <Layout title={t('imagesName', config ?? image)} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
+        <WebSocketSaveIndicator className="mx-3" state={saveState} />
+
         <DyoButton href={versionUrl(project.id, version.id, { section: 'images' })}>{t('common:back')}</DyoButton>
 
         <DyoButton className="ml-2 px-6" color="bg-error-red" onClick={onDelete}>

@@ -24,7 +24,7 @@ export type NodeConnectionStatus = (typeof NODE_CONNECTION_STATUS_VALUES)[number
 export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
 export type NodeType = (typeof NODE_TYPE_VALUES)[number]
 
-export const NODE_EVENT_TYPE_VALUES = ['connected', 'kicked', 'left', 'update'] as const
+export const NODE_EVENT_TYPE_VALUES = ['connected', 'kicked', 'left', 'update', 'containerCommand'] as const
 export type NodeEventType = (typeof NODE_EVENT_TYPE_VALUES)[number]
 
 export class BasicNodeDto {

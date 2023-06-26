@@ -10,6 +10,17 @@ If you're worried or don’t know where to start, check out our next section exp
 
 Help us keep dyrector.io open and inclusive. Please read and follow our [Code of Conduct](/CODE_OF_CONDUCT.md).
 
+## Git branching strategy
+
+We have two persistent branches: main, develop. 
+PRs are going into develop.
+The develop branch is always fast-forward mergable to main.
+PR titles must follow the conventional commit guidelines.
+
+Release: a release commit is made to develop, package versions are bumped, develop is fast-forward merged into main.
+Hotfix: in rare occassions, a hotfix/** branch is created from main and the PR targets the main branch,
+develop must be rebased to main -- using rebase-onto.
+
 ## Submit a Pull Request
 
 Branch naming convention is as following
@@ -18,13 +29,14 @@ Branch naming convention is as following
 
 When `TYPE` can be:
 
--   `feat/` - a new feature
--   `fix/` - a bug fix
--   `hotfix/` - a bug fix on main branch
--   `doc/` - documentation only changes
--   `cicd/` - changes related to CI/CD system
--   `refactor/` - code change that neither fixes a bug nor adds a feature
--   `chore/` - change that only affects formatting, style or repo structure, version bumps, does not affect functionality
+-   `chore/` - Formatting, style, repository structure, or version updates that do not affect functionality.
+-   `cicd/` - Changes related to the CI/CD system, such as build script or configuration updates.
+-   `doc/` - Changes focused on documentation updates, including README files, documentation files, or code comments.
+-   `feat/` - Implementation of new features or functionality.
+-   `fix/` - Resolution of bugs or issues in the codebase.
+-   `hotfix/` - Urgent bug fixes on the main branch to address critical issues.
+-   `refactor/` - Code changes to improve structure, readability, or maintainability.
+-   `test/` - Changes related to testing, including adding or modifying test cases or improving the testing infrastructure.
 
 All PRs must include a commit message with the changes described.
 

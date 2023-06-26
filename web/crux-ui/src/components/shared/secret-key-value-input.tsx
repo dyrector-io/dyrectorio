@@ -283,7 +283,7 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
               <DyoIcon
                 className="text-bright-muted"
                 src={required ? '/clear.svg' : '/trash-can.svg'}
-                alt={t('clear')}
+                alt={t(required ? 'clear' : 'common:delete')}
                 size="md"
               />
             </div>
