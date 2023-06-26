@@ -154,6 +154,12 @@
     "list": "List"
   },
 
+  "saveState": {
+    "saved": "Saved",
+    "saving": "Saving",
+    "disconnected": "Disconnected"
+  },
+
   "dyoWhiteLogo": "dyrector.io's white logo",
   "dyoLogo": "dyrector.io's logo",
   "heart": "Heart",

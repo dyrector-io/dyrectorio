@@ -140,7 +140,11 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               <div className="flex flex-row gap-4 items-start">
                 <ConfigSectionLabel
                   className="mt-2.5"
-                  disabled={disabled || (!resetableConfig.user && resetableConfig.user !== 0)}
+                  disabled={
+                    disabled || configType === 'image'
+                      ? resetableConfig?.user === -1
+                      : !resetableConfig?.user && resetableConfig.user !== 0
+                  }
                   onResetSection={() => onResetSection('user')}
                 >
                   {t('common.user').toUpperCase()}
@@ -151,9 +155,12 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   containerClassName="max-w-lg mb-3"
                   labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
                   grow
-                  value={!config.user && config.user !== 0 ? '' : config.user}
+                  value={config.user === -1 ? '' : config.user}
                   placeholder={t('common.placeholders.containerDefault')}
-                  onPatch={it => onChange({ user: toNumber(it) })}
+                  onPatch={it => {
+                    const val = toNumber(it)
+                    onChange({ user: configType === 'instance' || val === 0 ? val : val ?? -1 })
+                  }}
                   editorOptions={editorOptions}
                   message={fieldErrors.find(it => it.path?.startsWith('user'))?.message}
                   disabled={disabled}

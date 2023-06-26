@@ -10,7 +10,7 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu, DetailsPageTexts } from '@app/components/shared/page-menu'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
-import LoadingIndicator from '@app/elements/loading-indicator'
+import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import {
@@ -21,6 +21,7 @@ import {
   updateProjectDetailsWithEditableProject,
   Version,
   VersionDetails,
+  WebSocketSaveState,
 } from '@app/models'
 import {
   projectApiUrl,
@@ -54,7 +55,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
   const [project, setProject] = useState(propsProject)
   const [editState, setEditState] = useState<ProjectDetailsEditState>('version-list')
   const [increaseTarget, setIncreaseTarget] = useState<Version>(null)
-  const [saving, setSaving] = useState(false)
+  const [saveState, setSaveState] = useState<WebSocketSaveState>('saved')
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
 
   const submitRef = useRef<() => Promise<any>>()
@@ -164,7 +165,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
   return (
     <Layout title={t('projectsName', project)} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        {saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
+        <WebSocketSaveIndicator className="mx-3" state={saveState} />
 
         <DetailsPageMenu
           texts={pageMenuTexts}
@@ -216,7 +217,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
         <VersionlessProjectSections
           project={project}
           version={versionlessProjectVersionDetails}
-          setSaving={setSaving}
+          setSaveState={setSaveState}
           setTopBarContent={setTopBarContent}
         />
       ) : editState === 'version-list' ? (
