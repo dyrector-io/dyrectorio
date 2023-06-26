@@ -15,9 +15,9 @@ export default class TokenService {
 
   async generateToken(req: GenerateTokenDto, identity: Identity): Promise<GeneratedTokenDto> {
     const nonce = uuid()
-    const expirationDate = new Date(Date.now())
-    expirationDate.setDate(expirationDate.getDate() + req.expirationInDays)
-    this.logger.verbose(`Token expires at ${expirationDate.toISOString()}`)
+    const expirationDate =
+      req.expirationInDays === 'never' ? null : TokenService.getExpirationDate(req.expirationInDays)
+    this.logger.verbose(expirationDate ? `Token expires at ${expirationDate.toISOString()}` : 'Token never expries')
 
     const payload: AuthPayload = {
       sub: identity.id,
@@ -33,7 +33,9 @@ export default class TokenService {
       },
     })
 
-    const jwt = this.jwtService.sign({ exp: expirationDate.getTime() / 1000, data: payload })
+    const jwt = this.jwtService.sign(
+      expirationDate ? { exp: expirationDate.getTime() / 1000, data: payload } : { data: payload },
+    )
 
     return this.mapper.generatedTokenToDto(newToken, jwt)
   }
@@ -65,5 +67,11 @@ export default class TokenService {
         id,
       },
     })
+  }
+
+  private static getExpirationDate(days: number): Date {
+    const expirationDate = new Date(Date.now())
+    expirationDate.setDate(expirationDate.getDate() + days)
+    return expirationDate
   }
 }
