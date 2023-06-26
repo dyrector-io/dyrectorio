@@ -98,7 +98,7 @@ export const sortHeaderBuilder =
     mapping: SortHeaderBuilderMapping<Fields>,
     translate: (string) => string,
   ) =>
-  (header: string, index: number): React.ReactNode =>
+  (header: string): React.ReactNode =>
     mapping[header] ? (
       sort.sortField === mapping[header] ? (
         <div
