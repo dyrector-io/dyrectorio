@@ -11,14 +11,12 @@ import EditImageJson from '@app/components/projects/versions/images/edit-image-j
 import ImageConfigFilters from '@app/components/projects/versions/images/image-config-filters'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
-import { INSTANCE_WS_REQUEST_DELAY } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoMessage from '@app/elements/dyo-message'
 import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
-import { useThrottling } from '@app/hooks/use-throttleing'
 import {
   configToFilters,
   DeploymentDetails,

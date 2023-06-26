@@ -11,7 +11,7 @@ import {
   WS_TYPE_PATCH_INSTANCE,
 } from '@app/models'
 import { containerConfigSchema, getValidationError } from '@app/validations'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { DeploymentActions, DeploymentState } from '../use-deployment-state'
 
 export type InstanceStateOptions = {
