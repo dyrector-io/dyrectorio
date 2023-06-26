@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, HttpCode, Post, Query, UseGuards } from '@nestjs/common'
 import { ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
-import { Observable } from 'rxjs'
+import { from, mergeAll, Observable } from 'rxjs'
 import UuidParams from 'src/decorators/api-params.decorator'
 import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
 import {
@@ -78,7 +78,7 @@ export default class NodeGlobalContainerHttpController {
   })
   @ApiNoContentResponse({ description: 'Container deleted.' })
   @UuidParams(PARAM_NODE_ID)
-  deleteContainer(@NodeId() nodeId: string, @Name() name: string): Promise<Observable<void>> {
-    return this.service.deleteContainer(nodeId, GLOBAL_PREFIX, name)
+  deleteContainer(@NodeId() nodeId: string, @Name() name: string): Observable<void> {
+    return from(this.service.deleteContainer(nodeId, GLOBAL_PREFIX, name)).pipe(mergeAll())
   }
 }

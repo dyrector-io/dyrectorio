@@ -1,6 +1,6 @@
 import { Controller, Delete, HttpCode, Post, UseGuards } from '@nestjs/common'
 import { ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
-import { Observable } from 'rxjs'
+import { Observable, from, mergeAll } from 'rxjs'
 import UuidParams from 'src/decorators/api-params.decorator'
 import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
 import {
@@ -66,8 +66,8 @@ export default class NodePrefixContainerHttpController {
   })
   @ApiNoContentResponse({ description: 'Containers deleted.' })
   @UuidParams(PARAM_NODE_ID)
-  deleteAllContainers(@NodeId() nodeId: string, @Prefix() prefix: string): Promise<Observable<void>> {
-    return this.service.deleteAllContainers(nodeId, prefix)
+  deleteAllContainers(@NodeId() nodeId: string, @Prefix() prefix: string): Observable<void> {
+    return from(this.service.deleteAllContainers(nodeId, prefix)).pipe(mergeAll())
   }
 
   @Delete(`${ROUTE_NAME}`)
@@ -78,7 +78,7 @@ export default class NodePrefixContainerHttpController {
   })
   @ApiNoContentResponse({ description: 'Container deleted.' })
   @UuidParams(PARAM_NODE_ID)
-  deleteContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Promise<Observable<void>> {
-    return this.service.deleteContainer(nodeId, prefix, name)
+  deleteContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Observable<void> {
+    return from(this.service.deleteContainer(nodeId, prefix, name)).pipe(mergeAll())
   }
 }
