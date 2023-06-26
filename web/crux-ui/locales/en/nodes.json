@@ -67,6 +67,7 @@
     "connected": "Connected",
     "left": "Left",
     "kicked": "Kicked",
-    "update": "Update"
+    "update": "Update",
+    "containerCommand": "Container command"
   }
 }

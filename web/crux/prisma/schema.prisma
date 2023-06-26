@@ -493,6 +493,7 @@ enum AgentEventTypeEnum {
   left
   kicked
   update
+  containerCommand
 }
 
 model Storage {
