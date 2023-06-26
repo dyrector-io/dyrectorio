@@ -169,12 +169,11 @@ const NodeAuditList = (props: NodeAuditListProps) => {
         <DyoModal
           className="w-1/2 h-1/2"
           titleClassName="pl-4 font-medium text-xl text-bright mb-3"
-          title={`${showInfo.event} | ${utcDateToLocale(showInfo.createdAt)}`}
+          title={`${t(`auditEvents.${showInfo.event}`)} | ${utcDateToLocale(showInfo.createdAt)}`}
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
         >
-          <span className="text-bright font-semibold pl-4">{showInfo.event}</span>
-          <JsonEditor className="overflow-y-auto mt-8 p-4" disabled value={showInfo.data} />
+          <JsonEditor className="overflow-y-auto p-4 h-full" disabled value={showInfo.data} />
         </DyoModal>
       )}
     </>

@@ -9,6 +9,7 @@ import {
   ContainerOperation,
   ContainerStateListMessage,
   DeleteContainersRequest,
+  containerOperationToJSON,
 } from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
@@ -263,16 +264,21 @@ export default class NodeService {
     )
   }
 
-  deleteAllContainers(nodeId: string, prefix: string): Observable<void> {
+  async deleteAllContainers(nodeId: string, prefix: string): Promise<Observable<void>> {
     const agent = this.agentService.getByIdOrThrow(nodeId)
     const cmd: DeleteContainersRequest = {
       prefix,
     }
 
+    await this.agentService.createAgentAudit(nodeId, 'containerCommand', {
+      operation: 'deleteContainers',
+      ...cmd,
+    })
+
     return agent.deleteContainers(cmd).pipe(map(() => undefined))
   }
 
-  deleteContainer(nodeId: string, prefix: string, name: string): Observable<void> {
+  async deleteContainer(nodeId: string, prefix: string, name: string): Promise<Observable<void>> {
     const agent = this.agentService.getByIdOrThrow(nodeId)
     const cmd: DeleteContainersRequest = {
       container: {
@@ -280,6 +286,11 @@ export default class NodeService {
         name,
       },
     }
+
+    await this.agentService.createAgentAudit(nodeId, 'containerCommand', {
+      operation: 'deleteContainer',
+      ...cmd,
+    })
 
     return agent.deleteContainers(cmd).pipe(map(() => undefined))
   }
@@ -307,7 +318,11 @@ export default class NodeService {
     return watcher.watch()
   }
 
-  private sendContainerOperation(nodeId: string, container: ContainerIdentifier, operation: ContainerOperation) {
+  private async sendContainerOperation(
+    nodeId: string,
+    container: ContainerIdentifier,
+    operation: ContainerOperation,
+  ): Promise<void> {
     const agent = this.agentService.getByIdOrThrow(nodeId)
 
     const command: ContainerCommandRequest = {
@@ -316,6 +331,11 @@ export default class NodeService {
     }
 
     agent.sendContainerCommand(command)
+
+    await this.agentService.createAgentAudit(nodeId, 'containerCommand', {
+      ...command,
+      operation: NodeService.snakeCaseToCamelCase(containerOperationToJSON(command.operation)),
+    })
   }
 
   async getAuditLog(nodeId: string, query: NodeAuditLogQueryDto): Promise<NodeAuditLogListDto> {
@@ -362,5 +382,9 @@ export default class NodeService {
       })),
       total,
     }
+  }
+
+  private static snakeCaseToCamelCase(snake: string): string {
+    return snake.toLocaleLowerCase().replace(/([-_][a-z])/g, it => it.replace('_', '').toLocaleUpperCase())
   }
 }

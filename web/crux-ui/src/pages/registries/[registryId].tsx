@@ -42,7 +42,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.back()
+      router.replace(ROUTE_REGISTRIES)
     } else {
       handleApiError(res)
     }

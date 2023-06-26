@@ -1,6 +1,6 @@
 import { SingleFormLayout } from '@app/components/layout'
 import DyoButton from '@app/elements/dyo-button'
-import { ROUTE_INDEX } from '@app/routes'
+import { ROUTE_DASHBOARD, ROUTE_INDEX } from '@app/routes'
 import { redirectTo, withContextErrorHandling } from '@app/utils'
 import { FlowError } from '@ory/kratos-client'
 import kratos from '@server/kratos'
@@ -20,7 +20,7 @@ const ErrorPage = (props: FlowError) => {
 
   const error = propsError && 'message' in propsError ? (propsError as Error) : null
 
-  const onGoBack = () => router.back()
+  const navigateToDashboard = async () => await router.push(ROUTE_DASHBOARD)
 
   return (
     <SingleFormLayout title={t('oops')}>
@@ -29,7 +29,9 @@ const ErrorPage = (props: FlowError) => {
 
         <div className="my-4 text-center text-purple-lightText font-semibold">{error?.message}</div>
 
-        <DyoButton onClick={onGoBack}>{t('common:goBack')}</DyoButton>
+        <DyoButton className="px-12" outlined onClick={navigateToDashboard}>
+          {t('common:dashboard')}
+        </DyoButton>
 
         <div className="mt-16" />
       </div>

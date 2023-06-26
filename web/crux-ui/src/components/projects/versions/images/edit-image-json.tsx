@@ -56,10 +56,7 @@ const EditImageJson = <Config, Json>(props: EditImageJsonProps<Config, Json>) =>
   const onChange = (newConfig: Json) => {
     setJsonError(false)
 
-    // TODO (@m8vago): Do we need this throttle?
-    throttle(() => {
-      onPatch(newConfig)
-    })
+    onPatch(newConfig)
 
     editorActions.onChange(newConfig)
   }

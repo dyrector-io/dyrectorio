@@ -1,7 +1,7 @@
 import { SingleFormLayout } from '@app/components/layout'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { ROUTE_STATUS } from '@app/routes'
+import { ROUTE_DASHBOARD, ROUTE_STATUS } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 
@@ -9,7 +9,7 @@ const Page500 = () => {
   const { t } = useTranslation('status')
   const router = useRouter()
 
-  const goBack = () => router.back()
+  const navigateToDashboard = async () => await router.push(ROUTE_DASHBOARD)
 
   return (
     <SingleFormLayout title={t('errors:internalError')}>
@@ -18,8 +18,8 @@ const Page500 = () => {
       </DyoHeading>
 
       <div className="flex flex-row mb-auto mt-12">
-        <DyoButton className="ml-auto mr-2 px-10 mb-auto" secondary outlined onClick={goBack}>
-          {t('common:goBack')}
+        <DyoButton className="px-12" outlined onClick={navigateToDashboard}>
+          {t('common:dashboard')}
         </DyoButton>
 
         <DyoButton className="ml-2 mr-auto px-12" href={ROUTE_STATUS}>

@@ -233,7 +233,7 @@ export const sendForm = async <Dto>(method: 'POST' | 'PUT', url: string, body?: 
       ? {
           'Content-Type': 'application/json',
         }
-      : null,
+      : undefined,
     body: body ? JSON.stringify(body) : null,
   })
 

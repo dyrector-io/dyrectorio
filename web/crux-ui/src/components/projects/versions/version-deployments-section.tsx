@@ -207,7 +207,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       <>{utcDateToLocale(item.updatedAt)}</>,
       <div className="flex justify-center">
         <Link className="mr-2 inline-block cursor-pointer" href={deploymentUrl(item.id)} passHref>
-          <DyoIcon src="/eye.svg" alt={t('common:deploy')} size="md" />
+          <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
         </Link>
         {deployable && (
           <div

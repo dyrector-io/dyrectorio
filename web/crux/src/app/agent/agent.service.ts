@@ -605,7 +605,7 @@ export default class AgentService {
     })
   }
 
-  private async createAgentAudit(nodeId: string, event: AgentEventTypeEnum, data?: any) {
+  public async createAgentAudit(nodeId: string, event: AgentEventTypeEnum, data?: any) {
     try {
       await this.prisma.agentEvent.create({
         data: {
