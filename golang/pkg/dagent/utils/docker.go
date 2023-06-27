@@ -774,8 +774,8 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 	}
 
 	logContext := &grpc.ContainerLogContext{
-		Reader:     logReader,
-		EnableEcho: enableEcho,
+		Reader: logReader,
+		Echo:   enableEcho,
 	}
 
 	return logContext, nil

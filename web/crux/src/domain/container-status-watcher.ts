@@ -1,10 +1,13 @@
 import { finalize, Observable, startWith, Subject } from 'rxjs'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
-import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
+import { ContainerState, ContainerStateItem, ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import { Agent } from 'src/domain/agent'
 
 export type ContainerStatusStreamCompleter = Subject<unknown>
+
+type StateMap = { [key: string]: ContainerStateItem }
 
 export default class ContainerStatusWatcher {
   private stream = new Subject<ContainerStateListMessage>()
@@ -12,6 +15,8 @@ export default class ContainerStatusWatcher {
   private started = false
 
   private completer: ContainerStatusStreamCompleter = null
+
+  private state: StateMap = {}
 
   constructor(private prefix: string, private oneShot: boolean) {}
 
@@ -30,7 +35,13 @@ export default class ContainerStatusWatcher {
   }
 
   update(status: ContainerStateListMessage) {
-    this.stream.next(status)
+    const removed = status.data.filter(it => it.state === ContainerState.REMOVED).map(it => Agent.containerPrefixNameOf(it.id))
+    const updated = status.data.filter(it => it.state !== ContainerState.REMOVED)
+
+    const stateMap = Object.keys(this.state).filter(it => !removed.includes(it)).reduce((map, it) => ({ ...map, [it]: this.state[it] }), {})
+    this.state = updated.reduce((map, it) => ({ ...map, [Agent.containerPrefixNameOf(it.id)]: it } as StateMap), stateMap)
+
+    this.stream.next(this.mapStateToMessage())
   }
 
   stop() {
@@ -81,6 +92,13 @@ export default class ContainerStatusWatcher {
   private onWatcherDisconnected() {
     if (!this.stream.observed) {
       this.stop()
+    }
+  }
+
+  private mapStateToMessage(): ContainerStateListMessage {
+    return {
+      prefix: this.prefix,
+      data: Object.values(this.state),
     }
   }
 }

@@ -371,46 +371,49 @@ func mapVolumeLinks(in []*agent.VolumeLink) []v1.VolumeLink {
 	return volumeLinks
 }
 
-func MapContainerState(in []dockerTypes.Container, prefix string) []*common.ContainerStateItem {
+func MapContainerState(it dockerTypes.Container, prefix string) *common.ContainerStateItem {
+	name := ""
+	if len(it.Names) > 0 {
+		name = strings.TrimPrefix(it.Names[0], "/")
+	}
+
+	if prefix != "" {
+		name = strings.TrimPrefix(name, prefix+"-")
+	}
+
+	imageName := strings.Split(it.Image, ":")
+
+	var imageTag string
+
+	if len(imageName) > 1 {
+		imageTag = imageName[1]
+	} else {
+		imageTag = "latest"
+	}
+
+	return &common.ContainerStateItem{
+		Id: &common.ContainerIdentifier{
+			Prefix: prefix,
+			Name:   name,
+		},
+		Command:   it.Command,
+		CreatedAt: timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
+		State:     MapDockerStateToCruxContainerState(it.State),
+		Reason:    it.State,
+		Status:    it.Status,
+		Ports:     mapContainerPorts(&it.Ports),
+		ImageName: imageName[0],
+		ImageTag:  imageTag,
+	}
+}
+
+func MapContainerStates(in []dockerTypes.Container, prefix string) []*common.ContainerStateItem {
 	list := []*common.ContainerStateItem{}
 
 	for i := range in {
-		// TODO (@m8Vago): get rid of it :)
 		it := in[i]
-
-		name := ""
-		if len(it.Names) > 0 {
-			name = strings.TrimPrefix(it.Names[0], "/")
-		}
-
-		if prefix != "" {
-			name = strings.TrimPrefix(name, prefix+"-")
-		}
-
-		imageName := strings.Split(it.Image, ":")
-
-		var imageTag string
-
-		if len(imageName) > 1 {
-			imageTag = imageName[1]
-		} else {
-			imageTag = "latest"
-		}
-
-		list = append(list, &common.ContainerStateItem{
-			Id: &common.ContainerIdentifier{
-				Prefix: prefix,
-				Name:   name,
-			},
-			Command:   it.Command,
-			CreatedAt: timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
-			State:     MapDockerStateToCruxContainerState(it.State),
-			Reason:    it.State,
-			Status:    it.Status,
-			Ports:     mapContainerPorts(&it.Ports),
-			ImageName: imageName[0],
-			ImageTag:  imageTag,
-		})
+		item := MapContainerState(it, prefix)
+		list = append(list, item)
 	}
 
 	return list
@@ -565,6 +568,29 @@ func MapDockerStateToCruxContainerState(state string) common.ContainerState {
 		return common.ContainerState_EXITED
 	case "dead":
 		return common.ContainerState_EXITED
+	default:
+		return common.ContainerState_CONTAINER_STATE_UNSPECIFIED
+	}
+}
+
+func MapDockerContainerEventToContainerState(event string) common.ContainerState {
+	switch event {
+	case "create":
+		return common.ContainerState_WAITING
+	case "destroy":
+		return common.ContainerState_REMOVED
+	case "die":
+		return common.ContainerState_EXITED
+	case "pause":
+		return common.ContainerState_EXITED
+	case "restart":
+		return common.ContainerState_WAITING
+	case "start":
+		return common.ContainerState_RUNNING
+	case "stop":
+		return common.ContainerState_EXITED
+	case "unpause":
+		return common.ContainerState_RUNNING
 	default:
 		return common.ContainerState_CONTAINER_STATE_UNSPECIFIED
 	}

@@ -187,8 +187,8 @@ func PodLog(ctx context.Context, request *agent.ContainerLogRequest) (*grpc.Cont
 	}
 
 	logContext := &grpc.ContainerLogContext{
-		Reader:     logReader,
-		EnableEcho: enableEcho,
+		Reader: logReader,
+		Echo:   enableEcho,
 	}
 
 	return logContext, nil

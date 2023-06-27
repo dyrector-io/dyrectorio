@@ -13,6 +13,7 @@ enum ContainerState {
   RUNNING = 1;
   WAITING = 2;
   EXITED = 3;
+  REMOVED = 4;
 }
 
 enum DeploymentStatus {
@@ -56,6 +57,9 @@ message ContainerStateItem {
   google.protobuf.Timestamp createdAt = 102;
   /* The 'State' of the container (Created, Running, etc) */
   ContainerState state = 103;
+  /* The 'reason' behind 'state'. */
+  string reason = 107;
+
   /*
    * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
    * etc). Unused but left here for reverse compatibility with the legacy
@@ -65,13 +69,12 @@ message ContainerStateItem {
   string imageName = 105;
   string imageTag = 106;
 
-  /* The 'reason' behind 'state'. */
-  string reason = 107;
-
   repeated ContainerStateItemPort ports = 1000;
 }
 
-message ContainerLogMessage { string log = 100; }
+message ContainerLogMessage {
+  string log = 100;
+}
 
 enum NetworkMode {
   NETWORK_MODE_UNSPECIFIED = 0;
