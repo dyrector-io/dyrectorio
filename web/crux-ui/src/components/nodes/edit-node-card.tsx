@@ -39,11 +39,12 @@ interface EditNodeCardProps {
   className?: string
   node?: NodeDetails
   onNodeEdited: (node: NodeDetails, shouldClose?: boolean) => void
+  onNodeSubmitted: (node: NodeDetails) => void
   submitRef?: MutableRefObject<() => Promise<any>>
 }
 
 const EditNodeCard = (props: EditNodeCardProps) => {
-  const { className, node: propsNode, onNodeEdited, submitRef } = props
+  const { className, node: propsNode, onNodeEdited, onNodeSubmitted, submitRef } = props
 
   const { t } = useTranslation('nodes')
 
@@ -173,6 +174,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
         setNode(result)
         setSubmitting(false)
         onNodeEdited(result, editing)
+        onNodeSubmitted(result)
       } else {
         setSubmitting(false)
         handleApiError(res, setFieldError)
