@@ -15,8 +15,7 @@ export default class TokenService {
 
   async generateToken(req: GenerateTokenDto, identity: Identity): Promise<GeneratedTokenDto> {
     const nonce = uuid()
-    const expirationDate =
-      req.expirationInDays === 'never' ? null : TokenService.getExpirationDate(req.expirationInDays)
+    const expirationDate = req.expirationInDays === 0 ? null : TokenService.getExpirationDate(req.expirationInDays)
     this.logger.verbose(expirationDate ? `Token expires at ${expirationDate.toISOString()}` : 'Token never expries')
 
     const payload: AuthPayload = {

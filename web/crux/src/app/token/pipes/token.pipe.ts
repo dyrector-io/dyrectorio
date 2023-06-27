@@ -5,7 +5,7 @@ import { GenerateTokenDto } from '../token.dto'
 @Injectable()
 export default class TokenValidationPipe implements PipeTransform {
   async transform(req: GenerateTokenDto) {
-    if (req.expirationInDays !== 'never' && req.expirationInDays <= 0) {
+    if (req.expirationInDays < 0) {
       throw new CruxBadRequestException({
         property: 'expirationInDays',
         value: req.expirationInDays,

@@ -1,5 +1,3 @@
-export type TokenExpiration = number | 'never'
-
 export class Token {
   id: string
 
@@ -13,7 +11,7 @@ export class Token {
 export class GenerateToken {
   name: string
 
-  expirationInDays: TokenExpiration
+  expirationInDays: number
 }
 
 export class GeneratedToken extends Token {

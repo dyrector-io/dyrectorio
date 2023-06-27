@@ -1,8 +1,5 @@
 import { Type } from 'class-transformer'
-import { IsDate, IsDefined, IsJWT, IsString, IsUUID, Validate } from 'class-validator'
-import IsTokenExpiration from './validation/token-expiration.validator'
-
-export type TokenExpiration = number | 'never'
+import { IsDate, IsDefined, IsJWT, IsString, IsUUID, Min } from 'class-validator'
 
 export class TokenDto {
   @IsUUID()
@@ -25,8 +22,8 @@ export class GenerateTokenDto {
   name: string
 
   @IsDefined()
-  @Validate(IsTokenExpiration)
-  expirationInDays: TokenExpiration
+  @Min(0)
+  expirationInDays: number
 }
 
 export class GeneratedTokenDto extends TokenDto {
