@@ -14,7 +14,7 @@
     "/auth/settings/edit-profile": ["settings"],
     "/auth/settings/change-password": ["settings"],
     "/auth/settings/new-password": ["settings"],
-    "/auth/settings/tokens": ["settings"],
+    "/auth/settings/tokens": ["settings", "tokens"],
     "/auth/verify": ["verify"],
     "/projects": ["projects"],
     "/projects/[projectId]": ["projects", "versions", "images", "deployments"],

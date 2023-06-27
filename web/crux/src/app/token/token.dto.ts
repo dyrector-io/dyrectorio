@@ -10,7 +10,7 @@ export class TokenDto {
 
   @Type(() => Date)
   @IsDate()
-  expiresAt: Date
+  expiresAt?: Date
 
   @Type(() => Date)
   @IsDate()
@@ -22,7 +22,7 @@ export class GenerateTokenDto {
   name: string
 
   @IsInt()
-  @Min(1)
+  @Min(0)
   expirationInDays: number
 }
 
