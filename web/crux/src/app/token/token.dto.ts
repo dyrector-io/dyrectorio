@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer'
-import { IsDate, IsDefined, IsJWT, IsString, IsUUID, Min } from 'class-validator'
+import { IsDate, IsInt, IsJWT, IsString, IsUUID, Min } from 'class-validator'
 
 export class TokenDto {
   @IsUUID()
@@ -21,7 +21,7 @@ export class GenerateTokenDto {
   @IsString()
   name: string
 
-  @IsDefined()
+  @IsInt()
   @Min(0)
   expirationInDays: number
 }
