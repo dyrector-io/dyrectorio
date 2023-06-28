@@ -94,7 +94,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
       </PageHeading>
 
       {state.section === 'editing' ? (
-        <EditNodeCard node={node} onNodeEdited={actions.onNodeEdited} submitRef={submitRef} />
+        <EditNodeCard node={node} onNodeEdited={onNodeEdited} submitRef={submitRef} />
       ) : (
         <>
           <div className="flex flex-row gap-4 mb-4">

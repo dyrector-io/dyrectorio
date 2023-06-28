@@ -91,13 +91,18 @@ func updateContainerList(ctx context.Context, prefix string, states []*common.Co
 		return append(states[:stateIndex], states[stateIndex+1:]...), destroy, nil
 	}
 
+	containerState := mapper.MapDockerContainerEventToContainerState(event.Action)
+	if containerState == common.ContainerState_CONTAINER_STATE_UNSPECIFIED {
+		return states, nil, nil
+	}
+
 	if stateItem == nil {
 		newContainer, err := dockerHelper.GetContainerByID(ctx, event.Actor.ID)
 		if err != nil {
 			return nil, nil, err
 		}
 		newState := mapper.MapContainerState(*newContainer, prefix)
-		newState.State = mapper.MapDockerContainerEventToContainerState(event.Action)
+		newState.State = containerState
 		states := append(states, newState)
 		return states, newState, nil
 	} else {
@@ -107,7 +112,7 @@ func updateContainerList(ctx context.Context, prefix string, states []*common.Co
 		}
 		fmt.Println(container.State)
 		stateItem := mapper.MapContainerState(*container, prefix)
-		stateItem.State = mapper.MapDockerContainerEventToContainerState(event.Action)
+		stateItem.State = containerState
 		states[stateIndex] = stateItem
 		return states, stateItem, nil
 	}
