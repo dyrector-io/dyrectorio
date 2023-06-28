@@ -45,7 +45,7 @@ func getContainerIdentifierFromEvent(event events.Message) *common.ContainerIden
 	return &containerId
 }
 
-func updateContainerList(ctx context.Context, prefix string, event events.Message) (*common.ContainerStateItem, error) {
+func eventToMessage(ctx context.Context, prefix string, event events.Message) (*common.ContainerStateItem, error) {
 	if event.Type != "container" {
 		return nil, nil
 	}
@@ -121,7 +121,7 @@ func WatchContainersByPrefix(ctx context.Context, prefix string) (*grpc.Containe
 				break
 			case eventMessage := <-messages:
 				var changed *common.ContainerStateItem
-				changed, err = updateContainerList(ctx, prefix, eventMessage)
+				changed, err = eventToMessage(ctx, prefix, eventMessage)
 				if err != nil {
 					log.Error().Err(err).Msg("docker events message error")
 				} else if changed != nil {
