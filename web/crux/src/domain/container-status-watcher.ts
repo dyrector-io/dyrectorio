@@ -42,18 +42,20 @@ export default class ContainerStatusWatcher {
 
     const stateMap = Object.keys(this.state)
       .filter(it => !removedIds.includes(it))
-      .reduce((map, it) => {
-        return {
+      .reduce(
+        (map, it) => ({
           ...map,
           [it]: this.state[it],
-        }
-      }, {})
-    this.state = updated.reduce((map, it) => {
-      return {
+        }),
+        {},
+      )
+    this.state = updated.reduce(
+      (map, it) => ({
         ...map,
         [Agent.containerPrefixNameOf(it.id)]: it,
-      }
-    }, stateMap)
+      }),
+      stateMap,
+    )
 
     this.stream.next(this.mapStateToMessage())
   }

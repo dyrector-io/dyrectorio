@@ -16,7 +16,7 @@ import (
 	common "github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
-func GetDeployments(ctx context.Context, namespace string) []*common.ContainerStateItem {
+func WatchDeploymentsByPrefix(ctx context.Context, namespace string) (*grpc.ContainerWatchContext, error) {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 	client := k8s.NewClient(cfg)
 
@@ -24,13 +24,14 @@ func GetDeployments(ctx context.Context, namespace string) []*common.ContainerSt
 	deployments, err := deploymentHandler.GetDeployments(ctx, namespace, cfg)
 	if err != nil {
 		log.Error().Err(err).Stack().Send()
-		return nil
+		return nil, err
 	}
 
 	svcHandler := k8s.NewService(ctx, client)
 	svc, err := svcHandler.GetServices(namespace)
 	if err != nil {
 		log.Error().Err(err).Stack().Send()
+		return nil, err
 	}
 
 	podsByDeployment := make(map[string][]corev1.Pod)
@@ -39,13 +40,20 @@ func GetDeployments(ctx context.Context, namespace string) []*common.ContainerSt
 		pods, err := deploymentHandler.GetPods(namespace, deployment.Name)
 		if err != nil {
 			log.Error().Err(err).Stack().Send()
-			return nil
+			return nil, err
 		}
 
 		podsByDeployment[deployment.Name] = pods
 	}
 
-	return mapper.MapKubeDeploymentListToCruxStateItems(deployments, podsByDeployment, svc)
+	state := mapper.MapKubeDeploymentListToCruxStateItems(deployments, podsByDeployment, svc)
+
+	eventChannel := make(chan []*common.ContainerStateItem)
+	eventChannel <- state
+
+	return &grpc.ContainerWatchContext{
+		Events: eventChannel,
+	}, nil
 }
 
 func GetSecretsList(ctx context.Context, prefix, name string) ([]string, error) {

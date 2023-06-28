@@ -17,6 +17,7 @@ func TestGetAllDeployments(t *testing.T) {
 	ctx := grpc.WithGRPCConfig(context.Background(), &config.Configuration{
 		CraneInCluster: false,
 	})
-	res := crux.GetDeployments(ctx, "")
+	res, err := crux.WatchDeploymentsByPrefix(ctx, "")
+	assert.NoError(t, err)
 	assert.NotNil(t, res)
 }
