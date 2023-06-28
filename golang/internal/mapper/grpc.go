@@ -371,7 +371,7 @@ func mapVolumeLinks(in []*agent.VolumeLink) []v1.VolumeLink {
 	return volumeLinks
 }
 
-func MapContainerState(it dockerTypes.Container, prefix string) *common.ContainerStateItem {
+func MapContainerState(it *dockerTypes.Container, prefix string) *common.ContainerStateItem {
 	name := ""
 	if len(it.Names) > 0 {
 		name = strings.TrimPrefix(it.Names[0], "/")
@@ -411,8 +411,7 @@ func MapContainerStates(in []dockerTypes.Container, prefix string) []*common.Con
 	list := []*common.ContainerStateItem{}
 
 	for i := range in {
-		it := in[i]
-		item := MapContainerState(it, prefix)
+		item := MapContainerState(&in[i], prefix)
 		list = append(list, item)
 	}
 

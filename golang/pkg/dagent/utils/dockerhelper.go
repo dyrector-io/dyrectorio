@@ -22,7 +22,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
-func getContainerIdentifierFromEvent(event events.Message) *common.ContainerIdentifier {
+func getContainerIdentifierFromEvent(event *events.Message) *common.ContainerIdentifier {
 	prefix, hasValue := event.Actor.Attributes[label.DyrectorioOrg+label.ContainerPrefix]
 	if !hasValue {
 		prefix = ""
@@ -31,37 +31,35 @@ func getContainerIdentifierFromEvent(event events.Message) *common.ContainerIden
 	name, hasValue := event.Actor.Attributes["name"]
 	if !hasValue {
 		return nil
-	} else {
-		if prefix != "" && strings.HasPrefix(name, prefix) {
-			name = name[len(prefix)+1:]
-		}
+	} else if prefix != "" && strings.HasPrefix(name, prefix) {
+		name = name[len(prefix)+1:]
 	}
 
-	containerId := common.ContainerIdentifier{
+	containerID := common.ContainerIdentifier{
 		Prefix: prefix,
 		Name:   name,
 	}
 
-	return &containerId
+	return &containerID
 }
 
-func eventToMessage(ctx context.Context, prefix string, event events.Message) (*common.ContainerStateItem, error) {
+func eventToMessage(ctx context.Context, prefix string, event *events.Message) (*common.ContainerStateItem, error) {
 	if event.Type != "container" {
 		return nil, nil
 	}
 
-	containerId := getContainerIdentifierFromEvent(event)
-	if containerId == nil {
+	containerID := getContainerIdentifierFromEvent(event)
+	if containerID == nil {
 		return nil, errors.New("event has no container name")
 	}
 
-	if prefix != "" && containerId.Prefix != prefix {
+	if prefix != "" && containerID.Prefix != prefix {
 		return nil, nil
 	}
 
 	if event.Action == "destroy" {
 		destroy := &common.ContainerStateItem{
-			Id:        containerId,
+			Id:        containerID,
 			Command:   "",
 			CreatedAt: nil,
 			State:     common.ContainerState_REMOVED,
@@ -84,7 +82,7 @@ func eventToMessage(ctx context.Context, prefix string, event events.Message) (*
 		return nil, err
 	}
 
-	newState := mapper.MapContainerState(*container, prefix)
+	newState := mapper.MapContainerState(container, prefix)
 	newState.State = containerState
 	return newState, nil
 }
@@ -107,21 +105,21 @@ func WatchContainersByPrefix(ctx context.Context, prefix string) (*grpc.Containe
 
 	eventChannel := make(chan []*common.ContainerStateItem)
 
-	messages, errors := cli.Events(ctx, types.EventsOptions{})
+	chanMessages, chanErrors := cli.Events(ctx, types.EventsOptions{})
 
-	go func(ctx context.Context, prefix string, messages <-chan events.Message, errors <-chan error) {
+	go func(ctx context.Context, prefix string, chanMessages <-chan events.Message, chanErrors <-chan error) {
 		eventChannel <- mapper.MapContainerStates(containers, prefix)
 
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case eventError := <-errors:
+			case eventError := <-chanErrors:
 				log.Error().Err(eventError).Msg("docker events error")
 				break
-			case eventMessage := <-messages:
+			case eventMessage := <-chanMessages:
 				var changed *common.ContainerStateItem
-				changed, err = eventToMessage(ctx, prefix, eventMessage)
+				changed, err = eventToMessage(ctx, prefix, &eventMessage)
 				if err != nil {
 					log.Error().Err(err).Msg("docker events message error")
 				} else if changed != nil {
@@ -132,7 +130,7 @@ func WatchContainersByPrefix(ctx context.Context, prefix string) (*grpc.Containe
 				break
 			}
 		}
-	}(ctx, prefix, messages, errors)
+	}(ctx, prefix, chanMessages, chanErrors)
 
 	return &grpc.ContainerWatchContext{
 		Events: eventChannel,
