@@ -48,9 +48,9 @@ func WatchDeploymentsByPrefix(ctx context.Context, namespace string) (*grpc.Cont
 
 	eventChannel := make(chan []*common.ContainerStateItem)
 
-	go func(channel chan []*common.ContainerStateItem) {
-		channel <- mapper.MapKubeDeploymentListToCruxStateItems(deployments, podsByDeployment, svc)
-	}(eventChannel)
+	go func() {
+		eventChannel <- mapper.MapKubeDeploymentListToCruxStateItems(deployments, podsByDeployment, svc)
+	}()
 
 	return &grpc.ContainerWatchContext{
 		Events: eventChannel,

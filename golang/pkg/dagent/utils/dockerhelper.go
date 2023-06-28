@@ -31,8 +31,8 @@ func getContainerIdentifierFromEvent(event *events.Message) *common.ContainerIde
 	name, hasValue := event.Actor.Attributes["name"]
 	if !hasValue {
 		return nil
-	} else if prefix != "" && strings.HasPrefix(name, prefix) {
-		name = name[len(prefix)+1:]
+	} else if len(prefix) > 0 {
+		name = strings.TrimPrefix(name, prefix+"-")
 	}
 
 	containerID := common.ContainerIdentifier{

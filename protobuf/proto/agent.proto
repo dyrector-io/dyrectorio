@@ -1,0 +1,278 @@
+/**
+ * Container agent interface messages and service definitions
+ * Logs, statuses, deployments
+ *
+ */
+syntax = "proto3";
+
+package agent;
+option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/agent";
+
+import "protobuf/proto/common.proto";
+
+/**
+ * Service handling deployment of containers and fetching statuses
+ */
+service Agent {
+  /**
+   * Subscribe with pre-assigned AgentID, waiting for incoming
+   * deploy requests and prefix status requests.
+   * In both cases, separate, shorter-living channels are opened.
+   * For deployment status reports, closed when ended.
+   * For prefix state reports, should be closed by the server.
+   */
+  rpc Connect(AgentInfo) returns (stream AgentCommand);
+  rpc DeploymentStatus(stream common.DeploymentStatusMessage)
+      returns (common.Empty);
+  rpc ContainerState(stream common.ContainerStateListMessage)
+      returns (common.Empty);
+  rpc SecretList(common.ListSecretsResponse) returns (common.Empty);
+  rpc AbortUpdate(AgentAbortUpdate) returns (common.Empty);
+  rpc DeleteContainers(common.DeleteContainersRequest) returns (common.Empty);
+  rpc ContainerLog(stream common.ContainerLogMessage) returns (common.Empty);
+}
+
+/**
+ *
+ *
+ */
+message AgentInfo {
+  string id = 1;
+  string version = 2;
+  string publicKey = 3;
+}
+
+message AgentCommand {
+  oneof command {
+    VersionDeployRequest deploy = 1;
+    ContainerStateRequest containerState = 2;
+    ContainerDeleteRequest containerDelete = 3;
+    DeployRequestLegacy deployLegacy = 4;
+    ListSecretsRequest listSecrets = 5;
+    AgentUpdateRequest update = 6;
+    CloseConnectionRequest close = 7;
+    common.ContainerCommandRequest containerCommand = 8;
+    common.DeleteContainersRequest deleteContainers = 9;
+    ContainerLogRequest containerLog = 10;
+  }
+}
+
+/*
+ * This is more of a placeholder, we could include more, or return this
+ * instantly after validation success.
+ */
+message DeployResponse { bool started = 1; }
+
+message VersionDeployRequest {
+  string id = 1;
+  string versionName = 2;
+  string releaseNotes = 3;
+
+  repeated DeployRequest requests = 4;
+}
+/*
+ * Request for a keys of existing secrets in a prefix, eg. namespace
+ */
+message ListSecretsRequest {
+  string prefix = 1;
+  string name = 2;
+}
+
+/**
+ * Deploys a single container
+ *
+ */
+message InstanceConfig {
+  /*
+  prefix mapped into host folder structure,
+  used as namespace id
+  */
+  string prefix = 1;
+  optional string mountPath = 2;        // mount path of instance (docker only)
+  map<string, string> environment = 3; // environment variable map
+  optional string repositoryPrefix = 4; // registry repo prefix
+}
+
+message RegistryAuth {
+  string name = 1;
+  string url = 2;
+  string user = 3;
+  string password = 4;
+}
+
+// Container config
+
+message Port {
+  int32 internal = 100;
+  optional int32 external = 101;
+}
+
+message PortRange {
+  int32 from = 100;
+  int32 to = 101;
+}
+
+message PortRangeBinding {
+  PortRange internal = 100;
+  PortRange external = 101;
+}
+
+message Volume {
+  string name = 100;
+  string path = 101;
+  optional string size = 102;
+  optional common.VolumeType type = 103;
+  optional string class = 104;
+}
+
+message VolumeLink {
+  string name = 100;
+  string path = 101;
+}
+
+message InitContainer {
+  string name = 100;
+  string image = 101;
+  optional bool useParentConfig = 102;
+
+  repeated VolumeLink volumes = 1000;
+  repeated string command = 1001;
+  repeated string args = 1002;
+  map<string, string> environment = 1003;
+}
+
+message ImportContainer {
+  string volume = 100;
+  string command = 101;
+
+  map<string, string> environment = 1000;
+}
+
+message LogConfig {
+  common.DriverType driver = 100;
+
+  map<string, string> options = 1000;
+}
+
+message Marker {
+  map<string, string> deployment = 1000;
+  map<string, string> service = 1001;
+  map<string, string> ingress = 1002;
+}
+
+message DagentContainerConfig {
+  optional LogConfig logConfig = 100;
+  optional common.RestartPolicy restartPolicy = 101;
+  optional common.NetworkMode networkMode = 102;
+
+  repeated string networks = 1000;
+  map<string, string> labels = 1001;
+}
+
+message Metrics {
+  string port = 1;
+  string path = 2;
+}
+
+message CraneContainerConfig {
+  optional common.DeploymentStrategy deploymentStatregy = 100;
+  optional common.HealthCheckConfig healthCheckConfig = 101;
+  optional common.ResourceConfig resourceConfig = 102;
+  optional bool proxyHeaders = 103;
+  optional bool useLoadBalancer = 104;
+  optional Marker annotations = 105;
+  optional Marker labels = 106;
+  optional Metrics metrics = 107;
+
+  repeated string customHeaders = 1000;
+  map<string, string> extraLBAnnotations = 1001;
+}
+
+message CommonContainerConfig {
+  string name = 101;
+  optional common.ExposeStrategy expose = 102;
+  optional common.Ingress ingress = 103;
+  optional common.ConfigContainer configContainer = 104;
+  optional ImportContainer importContainer = 105;
+  optional int64 user = 106;
+  optional bool TTY = 107;
+
+  repeated Port ports = 1000;
+  repeated PortRangeBinding portRanges = 1001;
+  repeated Volume volumes = 1002;
+  repeated string commands = 1003;
+  repeated string args = 1004;
+  map<string, string> environment = 1005;
+  map<string, string> secrets = 1006;
+  repeated InitContainer initContainers = 1007;
+}
+
+message DeployRequest {
+  string id = 1;
+  string containerName = 2;
+
+  /* InstanceConfig is set for multiple containers */
+  InstanceConfig instanceConfig = 3;
+
+  /* ContainerConfigs */
+  optional CommonContainerConfig common = 4;
+  optional DagentContainerConfig dagent = 5;
+  optional CraneContainerConfig crane = 6;
+
+  /* Runtime info and requirements of a container */
+  optional string runtimeConfig = 7;
+  optional string registry = 8;
+  string imageName = 9;
+  string tag = 10;
+
+  optional RegistryAuth registryAuth = 11;
+}
+
+message ContainerStateRequest {
+  optional string prefix = 1;
+  optional bool oneShot = 2;
+}
+
+message ContainerDeleteRequest {
+  string prefix = 1;
+  string name = 2;
+}
+
+message DeployRequestLegacy {
+  string requestId = 1; // for early dogger logging
+  string json = 2;
+}
+
+/*
+ * Dagent update
+ *
+ */
+message AgentUpdateRequest {
+  string tag = 1;
+  int32 timeoutSeconds = 2;
+}
+
+message AgentAbortUpdate { string error = 1; }
+
+/*
+ * Container log
+ *
+ */
+message ContainerLogRequest {
+  common.ContainerIdentifier container = 1;
+  bool streaming = 2;
+  uint32 tail = 3;
+}
+
+/*
+ * Connection close
+ *
+ */
+enum CloseReason {
+  CLOSE_REASON_UNSPECIFIED = 0;
+  CLOSE = 1;
+  SELF_DESTRUCT = 2;
+  SHUTDOWN = 3;
+}
+
+message CloseConnectionRequest { CloseReason reason = 1; }
