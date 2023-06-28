@@ -7,7 +7,7 @@ import { Agent } from 'src/domain/agent'
 
 export type ContainerStatusStreamCompleter = Subject<unknown>
 
-type StateMap = { [key: string]: ContainerStateItem }
+type StateMap = { [containerIdentifier: string]: ContainerStateItem }
 
 export default class ContainerStatusWatcher {
   private stream = new Subject<ContainerStateListMessage>()
@@ -35,11 +35,25 @@ export default class ContainerStatusWatcher {
   }
 
   update(status: ContainerStateListMessage) {
-    const removed = status.data.filter(it => it.state === ContainerState.REMOVED).map(it => Agent.containerPrefixNameOf(it.id))
+    const removedIds = status.data
+      .filter(it => it.state === ContainerState.REMOVED)
+      .map(it => Agent.containerPrefixNameOf(it.id))
     const updated = status.data.filter(it => it.state !== ContainerState.REMOVED)
 
-    const stateMap = Object.keys(this.state).filter(it => !removed.includes(it)).reduce((map, it) => ({ ...map, [it]: this.state[it] }), {})
-    this.state = updated.reduce((map, it) => ({ ...map, [Agent.containerPrefixNameOf(it.id)]: it } as StateMap), stateMap)
+    const stateMap = Object.keys(this.state)
+      .filter(it => !removedIds.includes(it))
+      .reduce((map, it) => {
+        return {
+          ...map,
+          [it]: this.state[it],
+        }
+      }, {})
+    this.state = updated.reduce((map, it) => {
+      return {
+        ...map,
+        [Agent.containerPrefixNameOf(it.id)]: it,
+      }
+    }, stateMap)
 
     this.stream.next(this.mapStateToMessage())
   }

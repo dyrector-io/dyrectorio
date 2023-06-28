@@ -5,7 +5,6 @@ package utils
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -13,6 +12,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/client"
+	"github.com/rs/zerolog/log"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
@@ -22,63 +22,46 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
-func updateContainerList(ctx context.Context, prefix string, states []*common.ContainerStateItem, event events.Message) ([]*common.ContainerStateItem, *common.ContainerStateItem, error) {
-	if event.Type != "container" {
-		return states, nil, nil
+func getContainerIdentifierFromEvent(event events.Message) *common.ContainerIdentifier {
+	prefix, hasValue := event.Actor.Attributes[label.DyrectorioOrg+label.ContainerPrefix]
+	if !hasValue {
+		prefix = ""
 	}
 
-	dataeerer, _ := json.Marshal(event)
-	fmt.Println(string(dataeerer))
-
-	var eventPrefix string = ""
-	if attributesPrefix, hasValue := event.Actor.Attributes[label.DyrectorioOrg+label.ContainerPrefix]; hasValue {
-		eventPrefix = attributesPrefix
-	}
-
-	var eventName string = ""
-	var eventFullName string = ""
-	if attributesName, hasValue := event.Actor.Attributes["name"]; hasValue {
-		eventFullName = attributesName
-		if eventPrefix != "" && strings.HasPrefix(attributesName, eventPrefix) {
-			eventName = attributesName[len(eventPrefix)+1:]
-		} else {
-			eventName = attributesName
-		}
+	name, hasValue := event.Actor.Attributes["name"]
+	if !hasValue {
+		return nil
 	} else {
-		return nil, nil, errors.New("event has no container name")
-	}
-
-	if prefix != "" && eventPrefix != prefix {
-		return states, nil, nil
-	}
-
-	eventContainerId := common.ContainerIdentifier{
-		Prefix: eventPrefix,
-		Name:   eventName,
-	}
-
-	var stateItem *common.ContainerStateItem = nil
-	var stateIndex int = -1
-	for index, item := range states {
-		if (item.Id.Prefix != "" && item.Id.Name != eventContainerId.Name && item.Id.Prefix != eventContainerId.Prefix) || (item.Id.Prefix == "" && item.Id.Name != eventFullName) {
-			continue
+		if prefix != "" && strings.HasPrefix(name, prefix) {
+			name = name[len(prefix)+1:]
 		}
+	}
 
-		stateItem = item
-		stateIndex = index
-		break
+	containerId := common.ContainerIdentifier{
+		Prefix: prefix,
+		Name:   name,
+	}
+
+	return &containerId
+}
+
+func updateContainerList(ctx context.Context, prefix string, event events.Message) (*common.ContainerStateItem, error) {
+	if event.Type != "container" {
+		return nil, nil
+	}
+
+	containerId := getContainerIdentifierFromEvent(event)
+	if containerId == nil {
+		return nil, errors.New("event has no container name")
+	}
+
+	if prefix != "" && containerId.Prefix != prefix {
+		return nil, nil
 	}
 
 	if event.Action == "destroy" {
-		if stateIndex == -1 {
-			return states, nil, nil
-		}
-
 		destroy := &common.ContainerStateItem{
-			Id: &common.ContainerIdentifier{
-				Prefix: eventPrefix,
-				Name:   eventName,
-			},
+			Id:        containerId,
 			Command:   "",
 			CreatedAt: nil,
 			State:     common.ContainerState_REMOVED,
@@ -88,34 +71,22 @@ func updateContainerList(ctx context.Context, prefix string, states []*common.Co
 			ImageName: "",
 			ImageTag:  "",
 		}
-		return append(states[:stateIndex], states[stateIndex+1:]...), destroy, nil
+		return destroy, nil
 	}
 
 	containerState := mapper.MapDockerContainerEventToContainerState(event.Action)
 	if containerState == common.ContainerState_CONTAINER_STATE_UNSPECIFIED {
-		return states, nil, nil
+		return nil, nil
 	}
 
-	if stateItem == nil {
-		newContainer, err := dockerHelper.GetContainerByID(ctx, event.Actor.ID)
-		if err != nil {
-			return nil, nil, err
-		}
-		newState := mapper.MapContainerState(*newContainer, prefix)
-		newState.State = containerState
-		states := append(states, newState)
-		return states, newState, nil
-	} else {
-		container, err := dockerHelper.GetContainerByID(ctx, event.Actor.ID)
-		if err != nil {
-			return nil, nil, err
-		}
-		fmt.Println(container.State)
-		stateItem := mapper.MapContainerState(*container, prefix)
-		stateItem.State = containerState
-		states[stateIndex] = stateItem
-		return states, stateItem, nil
+	container, err := dockerHelper.GetContainerByID(ctx, event.Actor.ID)
+	if err != nil {
+		return nil, err
 	}
+
+	newState := mapper.MapContainerState(*container, prefix)
+	newState.State = containerState
+	return newState, nil
 }
 
 func WatchContainersByPrefix(ctx context.Context, prefix string) (*grpc.ContainerWatchContext, error) {
@@ -136,24 +107,23 @@ func WatchContainersByPrefix(ctx context.Context, prefix string) (*grpc.Containe
 
 	eventChannel := make(chan []*common.ContainerStateItem)
 
-	go func(ctx context.Context, prefix string) {
-		messages, errors := cli.Events(ctx, types.EventsOptions{})
+	messages, errors := cli.Events(ctx, types.EventsOptions{})
 
-		states := mapper.MapContainerStates(containers, prefix)
-		eventChannel <- states
+	go func(ctx context.Context, prefix string, messages <-chan events.Message, errors <-chan error) {
+		eventChannel <- mapper.MapContainerStates(containers, prefix)
 
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			case eventError := <-errors:
-				fmt.Printf("ERR %s", eventError.Error())
+				log.Error().Err(eventError).Msg("docker events error")
 				break
 			case eventMessage := <-messages:
 				var changed *common.ContainerStateItem
-				states, changed, err = updateContainerList(ctx, prefix, states, eventMessage)
+				changed, err = updateContainerList(ctx, prefix, eventMessage)
 				if err != nil {
-					fmt.Printf("ERR2 %s", err.Error())
+					log.Error().Err(err).Msg("docker events message error")
 				} else if changed != nil {
 					eventChannel <- []*common.ContainerStateItem{
 						changed,
@@ -162,7 +132,7 @@ func WatchContainersByPrefix(ctx context.Context, prefix string) (*grpc.Containe
 				break
 			}
 		}
-	}(ctx, prefix)
+	}(ctx, prefix, messages, errors)
 
 	return &grpc.ContainerWatchContext{
 		Events: eventChannel,
