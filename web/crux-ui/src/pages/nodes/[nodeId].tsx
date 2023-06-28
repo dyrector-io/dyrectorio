@@ -58,8 +58,8 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
     await router.push(ROUTE_NODES)
   }
 
-  const onNodeEdited = async (node: NodeDetails, shouldClose?: boolean) => {
-    actions.onNodeEdited(node, shouldClose)
+  const onNodeEdited = async (edited: NodeDetails, shouldClose?: boolean) => {
+    actions.onNodeEdited(edited, shouldClose)
     if (shouldClose) {
       await router.replace(ROUTE_NODES)
     }
