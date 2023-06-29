@@ -137,6 +137,17 @@ func (d *Deployment) GetDeployments(ctx context.Context, namespace string, cfg *
 	return list, err
 }
 
+func (d *Deployment) GetDeploymentByName(ctx context.Context, namespace string, name string, cfg *config.Configuration) (*kappsv1.Deployment, error) {
+	client := NewClient(cfg)
+	clientset, err := client.GetClientSet()
+	if err != nil {
+		return nil, err
+	}
+
+	deploymentsClient := clientset.AppsV1().Deployments(util.Fallback(namespace, coreV1.NamespaceAll))
+	return deploymentsClient.Get(ctx, name, metaV1.GetOptions{})
+}
+
 func (d *Deployment) Restart(namespace, name string) error {
 	client := getDeploymentsClient(namespace, d.appConfig)
 

@@ -7,8 +7,6 @@ import { Agent } from 'src/domain/agent'
 
 export type ContainerStatusStreamCompleter = Subject<unknown>
 
-type StateMap = { [containerIdentifier: string]: ContainerStateItem }
-
 export default class ContainerStatusWatcher {
   private stream = new Subject<ContainerStateListMessage>()
 
@@ -16,7 +14,7 @@ export default class ContainerStatusWatcher {
 
   private completer: ContainerStatusStreamCompleter = null
 
-  private state: StateMap = {}
+  private state: Record<string, ContainerStateItem> = {}
 
   constructor(private prefix: string, private oneShot: boolean) {}
 
@@ -43,17 +41,17 @@ export default class ContainerStatusWatcher {
     const stateMap = Object.keys(this.state)
       .filter(it => !removedIds.includes(it))
       .reduce(
-        (map, it) => ({
-          ...map,
-          [it]: this.state[it],
-        }),
+        (map, it) => {
+          map[it] = this.state[it]
+          return map
+        },
         {},
       )
     this.state = updated.reduce(
-      (map, it) => ({
-        ...map,
-        [Agent.containerPrefixNameOf(it.id)]: it,
-      }),
+      (map, it) => {
+        map[Agent.containerPrefixNameOf(it.id)] = it
+        return map
+      },
       stateMap,
     )
 

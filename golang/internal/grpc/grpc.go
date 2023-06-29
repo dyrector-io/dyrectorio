@@ -397,45 +397,38 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 		return
 	}
 
-	go func() {
-		for {
-			select {
-			case <-streamCtx.Done():
-				return
-			case event := <-eventsContext.Events:
-				err = stream.Send(&common.ContainerStateListMessage{
-					Prefix: req.Prefix,
-					Data:   event,
-				})
+loop:
+	for {
+		select {
+		case <-streamCtx.Done():
+			break loop
+		case event := <-eventsContext.Events:
+			err = stream.Send(&common.ContainerStateListMessage{
+				Prefix: req.Prefix,
+				Data:   event,
+			})
 
-				if err != nil {
-					log.Error().Err(err).Msg("Container status channel error")
-					break
-				}
-
-				if req.OneShot != nil && *req.OneShot {
-					err := stream.CloseSend()
-					if err == nil {
-						log.Info().Str("prefix", filterPrefix).Msg("Closed container status channel")
-					} else {
-						log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to close container status channel")
-					}
-					return
-				}
+			if err != nil {
+				log.Error().Err(err).Msg("Container status channel error")
 				break
 			}
-		}
-	}()
 
-	for {
-		var msg interface{}
-		err := stream.RecvMsg(&msg)
-		if err != nil {
+			if req.OneShot != nil && *req.OneShot {
+				err := stream.CloseSend()
+				if err == nil {
+					log.Info().Str("prefix", filterPrefix).Msg("Closed container status channel")
+				} else {
+					log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to close container status channel")
+				}
+				return
+			}
 			break
 		}
 	}
 
 	<-streamCtx.Done()
+
+	log.Info().Str("prefix", filterPrefix).Msg("Container status channel closed")
 }
 
 func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteRequest, deleteFn DeleteFunc) {

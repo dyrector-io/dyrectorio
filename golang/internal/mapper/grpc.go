@@ -407,7 +407,7 @@ func MapContainerState(it *dockerTypes.Container, prefix string) *common.Contain
 	}
 }
 
-func MapContainerStates(in []dockerTypes.Container, prefix string) []*common.ContainerStateItem {
+func MapContainerStateList(in []dockerTypes.Container, prefix string) []*common.ContainerStateItem {
 	list := []*common.ContainerStateItem{}
 
 	for i := range in {
@@ -433,73 +433,86 @@ func mapContainerPorts(in *[]dockerTypes.Port) []*common.ContainerStateItemPort 
 	return ports
 }
 
+func MapKubeDeploymentToCruxStateItems(
+	deployment *appsv1.Deployment,
+	pods []corev1.Pod,
+	svc map[string]*corev1.Service,
+) *common.ContainerStateItem {
+	stateItem := &common.ContainerStateItem{
+		Id: &common.ContainerIdentifier{
+			Prefix: deployment.Namespace,
+			Name:   deployment.Name,
+		},
+		State: common.ContainerState_CONTAINER_STATE_UNSPECIFIED,
+		CreatedAt: timestamppb.New(
+			time.UnixMilli(deployment.GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
+		),
+		Ports: mapServicePorts(svc[deployment.Name]),
+	}
+
+	if containers := deployment.Spec.Template.Spec.Containers; containers != nil {
+		for i := 0; i < len(containers); i++ {
+			if containers[i].Name != deployment.Name {
+				// this move was suggested by golangci
+				continue
+			}
+			stateItem.Command = util.JoinV(" ", containers[i].Command...)
+
+			fullName, err := imageHelper.ExpandImageName(containers[i].Image)
+			if err != nil {
+				log.Error().Stack().Err(err).Msg("Failed to get k8s container image info (failed to parse image name)")
+				continue
+			}
+
+			name, tag, err := imageHelper.SplitImageName(fullName)
+			if err != nil {
+				log.Error().Stack().Err(err).Msg("Failed to get k8s container image info")
+				continue
+			}
+
+			stateItem.ImageName = name
+			stateItem.ImageTag = tag
+		}
+	}
+
+	if len(pods) == 1 {
+		err := mapKubeStatusToCruxContainerState(stateItem, pods[0].Status.ContainerStatuses[0].State)
+		if err != nil {
+			log.Error().Stack().Err(err).Msg("Failed to map k8s pod info")
+			return nil
+		}
+	}
+
+	return stateItem
+}
+
 func MapKubeDeploymentListToCruxStateItems(
 	deployments *appsv1.DeploymentList,
 	podsByDeployment map[string][]corev1.Pod,
-	svc *corev1.ServiceList,
+	svcMap map[string]map[string]*corev1.Service,
 ) []*common.ContainerStateItem {
 	stateItems := []*common.ContainerStateItem{}
-	svcMap := createServiceMap(svc)
 
 	for i := range deployments.Items {
-		deployment := deployments.Items[i]
+		deployment := &deployments.Items[i]
 		pods, podsFound := podsByDeployment[deployment.Name]
-		if len(pods) > 1 {
+		if podsFound && len(pods) > 1 {
 			log.Warn().Str("deployment", deployment.Name).Int("numberOfPods", len(pods)).Msg("More than one pod found for deployment")
 		}
-
-		stateItem := &common.ContainerStateItem{
-			Id: &common.ContainerIdentifier{
-				Prefix: deployment.Namespace,
-				Name:   deployment.Name,
-			},
-			State: common.ContainerState_CONTAINER_STATE_UNSPECIFIED,
-			CreatedAt: timestamppb.New(
-				time.UnixMilli(deployment.GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
-			),
-			Ports: mapServicePorts(svcMap[deployment.Namespace][deployment.Name]),
+		if !podsFound {
+			pods = []corev1.Pod{}
 		}
 
-		if containers := deployment.Spec.Template.Spec.Containers; containers != nil {
-			for i := 0; i < len(containers); i++ {
-				if containers[i].Name != deployment.Name {
-					// this move was suggested by golangci
-					continue
-				}
-				stateItem.Command = util.JoinV(" ", containers[i].Command...)
+		svc := svcMap[deployment.Namespace]
 
-				fullName, err := imageHelper.ExpandImageName(containers[i].Image)
-				if err != nil {
-					log.Error().Stack().Err(err).Msg("Failed to get k8s container image info (failed to parse image name)")
-					continue
-				}
-
-				name, tag, err := imageHelper.SplitImageName(fullName)
-				if err != nil {
-					log.Error().Stack().Err(err).Msg("Failed to get k8s container image info")
-					continue
-				}
-
-				stateItem.ImageName = name
-				stateItem.ImageTag = tag
-			}
-		}
-
-		if podsFound && len(pods) == 1 {
-			err := mapKubeStatusToCruxContainerState(stateItem, pods[0].Status.ContainerStatuses[0].State)
-			if err != nil {
-				log.Error().Stack().Err(err).Msg("Failed to map k8s pod info")
-				continue
-			}
-		}
-
+		stateItem := MapKubeDeploymentToCruxStateItems(deployment, pods, svc)
 		stateItems = append(stateItems, stateItem)
 	}
 
 	return stateItems
 }
 
-func createServiceMap(svc *corev1.ServiceList) map[string]map[string]*corev1.Service {
+func CreateServiceMap(svc *corev1.ServiceList) map[string]map[string]*corev1.Service {
 	res := map[string]map[string]*corev1.Service{}
 
 	for i := range svc.Items {

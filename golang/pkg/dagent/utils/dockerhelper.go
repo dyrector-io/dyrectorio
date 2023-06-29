@@ -43,7 +43,8 @@ func getContainerIdentifierFromEvent(event *events.Message) *common.ContainerIde
 	return &containerID
 }
 
-func eventToMessage(ctx context.Context, prefix string, event *events.Message) (*common.ContainerStateItem, error) {
+func messageToStateItem(ctx context.Context, prefix string, event *events.Message) (*common.ContainerStateItem, error) {
+	// Only check container events, ignored events include image, volume, network, daemons, etc.
 	if event.Type != "container" {
 		return nil, nil
 	}
@@ -58,7 +59,7 @@ func eventToMessage(ctx context.Context, prefix string, event *events.Message) (
 	}
 
 	if event.Action == "destroy" {
-		destroy := &common.ContainerStateItem{
+		return &common.ContainerStateItem{
 			Id:        containerID,
 			Command:   "",
 			CreatedAt: nil,
@@ -68,11 +69,11 @@ func eventToMessage(ctx context.Context, prefix string, event *events.Message) (
 			Ports:     []*common.ContainerStateItemPort{},
 			ImageName: "",
 			ImageTag:  "",
-		}
-		return destroy, nil
+		}, nil
 	}
 
 	containerState := mapper.MapDockerContainerEventToContainerState(event.Action)
+	// Ingored events are mapped to unspecified, for example tty, exec, oom, etc.
 	if containerState == common.ContainerState_CONTAINER_STATE_UNSPECIFIED {
 		return nil, nil
 	}
@@ -108,7 +109,7 @@ func WatchContainersByPrefix(ctx context.Context, prefix string) (*grpc.Containe
 	chanMessages, chanErrors := cli.Events(ctx, types.EventsOptions{})
 
 	go func(ctx context.Context, prefix string, chanMessages <-chan events.Message, chanErrors <-chan error) {
-		eventChannel <- mapper.MapContainerStates(containers, prefix)
+		eventChannel <- mapper.MapContainerStateList(containers, prefix)
 
 		for {
 			select {
@@ -119,7 +120,7 @@ func WatchContainersByPrefix(ctx context.Context, prefix string) (*grpc.Containe
 				break
 			case eventMessage := <-chanMessages:
 				var changed *common.ContainerStateItem
-				changed, err = eventToMessage(ctx, prefix, &eventMessage)
+				changed, err = messageToStateItem(ctx, prefix, &eventMessage)
 				if err != nil {
 					log.Error().Err(err).Msg("docker events message error")
 				} else if changed != nil {
