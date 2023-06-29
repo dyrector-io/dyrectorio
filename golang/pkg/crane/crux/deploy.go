@@ -3,6 +3,7 @@ package crux
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
@@ -21,35 +22,46 @@ func WatchDeploymentsByPrefix(ctx context.Context, namespace string) (*grpc.Cont
 	client := k8s.NewClient(cfg)
 
 	deploymentHandler := k8s.NewDeployment(ctx, cfg)
-	deployments, err := deploymentHandler.GetDeployments(ctx, namespace, cfg)
-	if err != nil {
-		log.Error().Err(err).Stack().Send()
-		return nil, err
-	}
-
 	svcHandler := k8s.NewService(ctx, client)
-	svc, err := svcHandler.GetServices(namespace)
-	if err != nil {
-		log.Error().Err(err).Stack().Send()
-		return nil, err
-	}
-
-	podsByDeployment := make(map[string][]corev1.Pod)
-	for i := 0; i < len(deployments.Items); i++ {
-		deployment := deployments.Items[i]
-		pods, err := deploymentHandler.GetPods(namespace, deployment.Name)
-		if err != nil {
-			log.Error().Err(err).Stack().Send()
-			return nil, err
-		}
-
-		podsByDeployment[deployment.Name] = pods
-	}
 
 	eventChannel := make(chan []*common.ContainerStateItem)
 
+	// TODO: Proper kubernetes event handling
 	go func() {
-		eventChannel <- mapper.MapKubeDeploymentListToCruxStateItems(deployments, podsByDeployment, svc)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				deployments, err := deploymentHandler.GetDeployments(ctx, namespace, cfg)
+				if err != nil {
+					log.Error().Err(err).Stack().Send()
+					break
+				}
+
+				svc, err := svcHandler.GetServices(namespace)
+				if err != nil {
+					log.Error().Err(err).Stack().Send()
+					break
+				}
+
+				podsByDeployment := make(map[string][]corev1.Pod)
+				for i := 0; i < len(deployments.Items); i++ {
+					deployment := deployments.Items[i]
+					pods, err := deploymentHandler.GetPods(namespace, deployment.Name)
+					if err != nil {
+						log.Error().Err(err).Stack().Send()
+						break
+					}
+
+					podsByDeployment[deployment.Name] = pods
+				}
+
+				eventChannel <- mapper.MapKubeDeploymentListToCruxStateItems(deployments, podsByDeployment, svc)
+
+				time.Sleep(1 * time.Second)
+			}
+		}
 	}()
 
 	return &grpc.ContainerWatchContext{
