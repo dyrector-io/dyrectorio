@@ -30,6 +30,8 @@ const SettingsPage = (props: SettingsFlow) => {
   const [ui, setUi] = useState(propsUi)
   const saveRef = useRef<() => Promise<any>>()
 
+  const onDiscard = () => router.replace(ROUTE_SETTINGS)
+
   const formik = useDyoFormik({
     initialValues: {
       email: findAttributes(ui, 'traits.email').value,
@@ -48,7 +50,7 @@ const SettingsPage = (props: SettingsFlow) => {
       const res = await sendForm('POST', API_SETTINGS_EDIT_PROFILE, data)
 
       if (res.ok) {
-        router.back()
+        router.replace(ROUTE_SETTINGS)
       } else if (res.status === 410) {
         await router.reload()
       } else if (res.status === 403) {
@@ -77,7 +79,7 @@ const SettingsPage = (props: SettingsFlow) => {
   return (
     <Layout title={t('editProfile')}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        <SaveDiscardPageMenu saveRef={saveRef} onDiscard={router.back} />
+        <SaveDiscardPageMenu saveRef={saveRef} onDiscard={onDiscard} />
       </PageHeading>
       <DyoCard>
         <DyoForm

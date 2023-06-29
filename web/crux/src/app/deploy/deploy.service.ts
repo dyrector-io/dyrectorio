@@ -124,6 +124,11 @@ export default class DeployService {
             },
             config: true,
           },
+          orderBy: {
+            image: {
+              order: 'asc',
+            },
+          },
         },
       },
     })
@@ -393,6 +398,11 @@ export default class DeployService {
               },
             },
             config: true,
+          },
+          orderBy: {
+            image: {
+              order: 'asc',
+            },
           },
         },
         node: {

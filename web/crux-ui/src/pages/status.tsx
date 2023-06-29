@@ -15,7 +15,6 @@ const StatusPage = () => {
 
   const { data: status, error } = useSWR<DyoServiceInfo, any>(API_STATUS, fetcher)
 
-  const goBack = () => router.back()
   const navigateToDashboard = async () => await router.push(ROUTE_DASHBOARD)
 
   if (error) {
@@ -48,11 +47,7 @@ const StatusPage = () => {
         />
       </div>
 
-      <div className="flex flex-row gap-4 mb-auto mt-12">
-        <DyoButton className="px-12" secondary outlined onClick={goBack}>
-          {t('common:goBack')}
-        </DyoButton>
-
+      <div className="flex flex-row mb-auto mt-12">
         <DyoButton className="px-12" outlined onClick={navigateToDashboard}>
           {t('common:dashboard')}
         </DyoButton>

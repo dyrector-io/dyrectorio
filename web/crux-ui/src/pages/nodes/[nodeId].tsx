@@ -58,7 +58,12 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
     await router.push(ROUTE_NODES)
   }
 
-  const onNodeEdited = async () => await router.replace(ROUTE_NODES)
+  const onNodeEdited = async (edited: NodeDetails, shouldClose?: boolean) => {
+    actions.onNodeEdited(edited, shouldClose)
+    if (shouldClose) {
+      await router.replace(ROUTE_NODES)
+    }
+  }
 
   const pageLink: BreadcrumbLink = {
     name: t('common:nodes'),

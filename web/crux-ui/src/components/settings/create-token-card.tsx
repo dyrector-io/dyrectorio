@@ -14,7 +14,7 @@ import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject } from 'react'
 
-const EXPIRATION_VALUES = [30, 60, 90]
+const EXPIRATION_VALUES = [30, 60, 90, 0]
 
 interface CreateTokenCardProps {
   className?: string
@@ -81,7 +81,7 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
           className="text-bright"
           choices={EXPIRATION_VALUES}
           selection={formik.values.expirationInDays}
-          converter={it => t('common:days', { days: it })}
+          converter={it => (it === 0 ? t('common:never') : t('common:days', { days: it }))}
           onSelectionChange={it => {
             formik.setFieldValue('expirationInDays', it, false)
           }}

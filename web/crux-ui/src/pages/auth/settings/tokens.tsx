@@ -87,7 +87,7 @@ const TokensPage = (props: TokensPageProps) => {
   const itemTemplate = (item: GeneratedToken) => [
     <a>{item.name}</a>,
     <a>{utcDateToLocale(item.createdAt)}</a>,
-    <a>{utcDateToLocale(item.expiresAt)}</a>,
+    <a>{item.expiresAt ? utcDateToLocale(item.expiresAt) : t('common:never')}</a>,
     <div className="flex flex-row justify-center">
       <Image
         className="cursor-pointer"

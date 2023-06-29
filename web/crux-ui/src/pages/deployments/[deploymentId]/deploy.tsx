@@ -101,7 +101,7 @@ const DeployPage = (props: DeployPageProps) => {
     },
   ]
 
-  const onBack = () => router.back()
+  const onBack = () => router.replace(deploymentUrl(deployment.id))
 
   const formatEvent = (event: DeploymentEvent): string[] => {
     if (event.type !== 'log') {

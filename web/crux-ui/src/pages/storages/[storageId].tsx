@@ -6,7 +6,7 @@ import EditStorageCard from '@app/components/storages/edit-storage-card'
 import StorageCard from '@app/components/storages/storage-card'
 import { defaultApiErrorHandler } from '@app/errors'
 import { StorageDetails } from '@app/models'
-import { ROUTE_REGISTRIES, storageApiUrl, storageUrl } from '@app/routes'
+import { ROUTE_REGISTRIES, ROUTE_STORAGES, storageApiUrl, storageUrl } from '@app/routes'
 import { toastWarning, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
@@ -42,7 +42,7 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.back()
+      router.replace(ROUTE_STORAGES)
     } else if (res.status === 412) {
       toastWarning(t('inUse'))
     } else {

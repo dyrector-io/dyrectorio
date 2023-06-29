@@ -32,6 +32,8 @@ const SettingsPage = (props: SettingsFlow) => {
   const [confirmError, setConfirmError] = useState<string>(null)
   const saveRef = useRef<() => Promise<any>>()
 
+  const onDiscard = () => router.replace(ROUTE_SETTINGS)
+
   const formik = useDyoFormik({
     initialValues: {
       password: '',
@@ -55,7 +57,7 @@ const SettingsPage = (props: SettingsFlow) => {
       const res = await sendForm('POST', API_SETTINGS_CHANGE_PASSWORD, data)
 
       if (res.ok) {
-        router.back()
+        router.replace(ROUTE_SETTINGS)
       } else if (res.status === 410) {
         await router.reload()
       } else if (res.status === 403) {
@@ -84,7 +86,7 @@ const SettingsPage = (props: SettingsFlow) => {
   return (
     <Layout title={t('changePass')}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        <SaveDiscardPageMenu saveRef={saveRef} onDiscard={router.back} />
+        <SaveDiscardPageMenu saveRef={saveRef} onDiscard={onDiscard} />
       </PageHeading>
 
       <DyoCard className="text-bright p-8">
