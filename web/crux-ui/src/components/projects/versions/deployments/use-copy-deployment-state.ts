@@ -15,7 +15,7 @@ const useCopyDeploymentState = (
 
   const setCopyTarget = async (deploymentId: string | null) => {
     if (!deploymentId) {
-      setCopyTarget(null)
+      setTarget(null)
       return
     }
 
