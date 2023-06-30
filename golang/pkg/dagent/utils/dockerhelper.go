@@ -12,7 +12,6 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/client"
-	"github.com/rs/zerolog/log"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
@@ -105,6 +104,7 @@ func WatchContainersByPrefix(ctx context.Context, prefix string) (*grpc.Containe
 	}
 
 	eventChannel := make(chan []*common.ContainerStateItem)
+	errorChannel := make(chan error)
 
 	chanMessages, chanErrors := cli.Events(ctx, types.EventsOptions{})
 
@@ -116,13 +116,14 @@ func WatchContainersByPrefix(ctx context.Context, prefix string) (*grpc.Containe
 			case <-ctx.Done():
 				return
 			case eventError := <-chanErrors:
-				log.Error().Err(eventError).Msg("docker events error")
-				break
+				errorChannel <- eventError
+				return
 			case eventMessage := <-chanMessages:
 				var changed *common.ContainerStateItem
 				changed, err = messageToStateItem(ctx, prefix, &eventMessage)
 				if err != nil {
-					log.Error().Err(err).Msg("docker events message error")
+					errorChannel <- err
+					return
 				} else if changed != nil {
 					eventChannel <- []*common.ContainerStateItem{
 						changed,
@@ -135,6 +136,7 @@ func WatchContainersByPrefix(ctx context.Context, prefix string) (*grpc.Containe
 
 	return &grpc.ContainerWatchContext{
 		Events: eventChannel,
+		Error: errorChannel,
 	}, nil
 }
 

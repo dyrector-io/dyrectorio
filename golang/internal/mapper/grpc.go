@@ -499,8 +499,9 @@ func MapKubeDeploymentListToCruxStateItems(
 		if podsFound && len(pods) > 1 {
 			log.Warn().Str("deployment", deployment.Name).Int("numberOfPods", len(pods)).Msg("More than one pod found for deployment")
 		}
-		if !podsFound {
-			pods = []corev1.Pod{}
+		if !podsFound || len(pods) == 0 {
+			log.Info().Str("deployment", deployment.Name).Msg("Deployment has no pods")
+			continue
 		}
 
 		svc := svcMap[deployment.Namespace]
@@ -544,7 +545,7 @@ func mapServicePorts(svc *corev1.Service) []*common.ContainerStateItemPort {
 func mapKubeStatusToCruxContainerState(stateItem *common.ContainerStateItem, kubeContainerState corev1.ContainerState) error {
 	if kubeContainerState.Running != nil {
 		stateItem.State = common.ContainerState_RUNNING
-		stateItem.Reason = kubeContainerState.Running.String()
+		stateItem.Reason = fmt.Sprintf("Started at: %s", kubeContainerState.Running.StartedAt)
 
 		return nil
 	}

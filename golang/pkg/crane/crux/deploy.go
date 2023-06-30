@@ -3,6 +3,7 @@ package crux
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
@@ -45,6 +46,81 @@ func getInitialStateList(ctx context.Context, deploymentHandler *k8s.Deployment,
 	return mapper.MapKubeDeploymentListToCruxStateItems(deployments, podsByDeployment, svcMap), nil
 }
 
+func deploymentToStateItem(
+	ctx context.Context,
+	deploymentHandler *k8s.Deployment,
+	svcHandler *k8s.Service,
+	namespace,
+	name string,
+	cfg *config.Configuration,
+) (*common.ContainerStateItem, error) {
+	deployment, err := deploymentHandler.GetDeploymentByName(ctx, namespace, name, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	pods, err := deploymentHandler.GetPods(namespace, deployment.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	svc, err := svcHandler.GetServices(namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	svcMap := mapper.CreateServiceMap(svc)
+
+	return mapper.MapKubeDeploymentToCruxStateItems(deployment, pods, svcMap[deployment.Namespace]), nil
+}
+
+func podToStateItem(
+	ctx context.Context,
+	deploymentHandler *k8s.Deployment,
+	svcHandler *k8s.Service,
+	namespace,
+	podName string,
+	cfg *config.Configuration,
+) (*common.ContainerStateItem, error) {
+	deployments, err := deploymentHandler.GetDeployments(ctx, namespace, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	var eventDeployment *kappsv1.Deployment = nil
+	var eventPods *[]corev1.Pod = nil
+loopDeployment:
+	for deploymentIndex := range deployments.Items {
+		deployment := deployments.Items[deploymentIndex]
+		pods, err := deploymentHandler.GetPods(namespace, deployment.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		for podIndex := range pods {
+			pod := pods[podIndex]
+			if pod.Name == podName {
+				eventDeployment = &deployment
+				eventPods = &pods
+				break loopDeployment
+			}
+		}
+	}
+
+	if eventDeployment == nil {
+		return nil, fmt.Errorf("pod not found in any of the deployments '%s'", podName)
+	}
+
+	svc, err := svcHandler.GetServices(namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	svcMap := mapper.CreateServiceMap(svc)
+
+	return mapper.MapKubeDeploymentToCruxStateItems(eventDeployment, *eventPods, svcMap[eventDeployment.Namespace]), nil
+}
+
 func WatchDeploymentsByPrefix(ctx context.Context, namespace string) (*grpc.ContainerWatchContext, error) {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 	client := k8s.NewClient(cfg)
@@ -53,6 +129,7 @@ func WatchDeploymentsByPrefix(ctx context.Context, namespace string) (*grpc.Cont
 	svcHandler := k8s.NewService(ctx, client)
 
 	eventChannel := make(chan []*common.ContainerStateItem)
+	errorChannel := make(chan error)
 
 	clientSet, err := client.GetClientSet()
 	if err != nil {
@@ -77,7 +154,7 @@ func WatchDeploymentsByPrefix(ctx context.Context, namespace string) (*grpc.Cont
 	go func() {
 		initialState, err := getInitialStateList(ctx, deploymentHandler, svcHandler, namespace, cfg)
 		if err != nil {
-			// TODO
+			errorChannel <- err
 			return
 		}
 		eventChannel <- initialState
@@ -90,88 +167,37 @@ func WatchDeploymentsByPrefix(ctx context.Context, namespace string) (*grpc.Cont
 				if !ok {
 					watcher, err = clientSet.CoreV1().Events(corev1.NamespaceAll).Watch(context.Background(), opts)
 					if err != nil {
-						// TODO: error handling?
+						errorChannel <- err
 						return
 					}
 				}
 
 				if event.Type != "" {
-					// a, _ := json.Marshal(event)
-					// fmt.Println(string(a))
-
 					event, isEvent := event.Object.(*corev1.Event)
 					if isEvent {
-						if event.InvolvedObject.Kind == "Deployment" {
-							deployment, err := deploymentHandler.GetDeploymentByName(ctx, namespace, event.InvolvedObject.Name, cfg)
+						switch event.InvolvedObject.Kind {
+						case "Deployment":
+							stateItem, err := deploymentToStateItem(ctx, deploymentHandler, svcHandler, namespace, event.InvolvedObject.Name, cfg)
 							if err != nil {
-								// TODO
+								errorChannel <- err
 								return
 							}
 
-							pods, err := deploymentHandler.GetPods(namespace, deployment.Name)
-							if err != nil {
-								// TODO
-								return
-							}
-
-							svc, err := svcHandler.GetServices(namespace)
-							if err != nil {
-								// TODO
-								return
-							}
-
-							svcMap := mapper.CreateServiceMap(svc)
-
-							stateItem := mapper.MapKubeDeploymentToCruxStateItems(deployment, pods, svcMap[deployment.Namespace])
 							eventChannel <- []*common.ContainerStateItem{
 								stateItem,
 							}
-						}
-						if event.InvolvedObject.Kind == "Pod" {
-							deployments, err := deploymentHandler.GetDeployments(ctx, namespace, cfg)
+							break
+						case "Pod":
+							stateItem, err := podToStateItem(ctx, deploymentHandler, svcHandler, namespace, event.InvolvedObject.Name, cfg)
 							if err != nil {
-								// TODO
+								errorChannel <- err
 								return
 							}
 
-							var eventDeployment *kappsv1.Deployment = nil
-							var eventPods *[]corev1.Pod = nil
-						loopDeployment:
-							for deploymentIndex := range deployments.Items {
-								deployment := deployments.Items[deploymentIndex]
-								pods, err := deploymentHandler.GetPods(namespace, deployment.Name)
-								if err != nil {
-									// TODO
-									return
-								}
-
-								for podIndex := range pods {
-									pod := pods[podIndex]
-									if pod.Name == event.InvolvedObject.Name {
-										eventDeployment = &deployment
-										eventPods = &pods
-										break loopDeployment
-									}
-								}
-							}
-
-							if eventDeployment == nil {
-								// TODO
-								break
-							}
-
-							svc, err := svcHandler.GetServices(namespace)
-							if err != nil {
-								// TODO
-								return
-							}
-
-							svcMap := mapper.CreateServiceMap(svc)
-
-							stateItem := mapper.MapKubeDeploymentToCruxStateItems(eventDeployment, *eventPods, svcMap[eventDeployment.Namespace])
 							eventChannel <- []*common.ContainerStateItem{
 								stateItem,
 							}
+							break
 						}
 					}
 				}
@@ -182,6 +208,7 @@ func WatchDeploymentsByPrefix(ctx context.Context, namespace string) (*grpc.Cont
 
 	return &grpc.ContainerWatchContext{
 		Events: eventChannel,
+		Error:  errorChannel,
 	}, nil
 }
 

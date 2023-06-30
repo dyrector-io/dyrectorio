@@ -58,6 +58,7 @@ type ContainerLogContext struct {
 
 type ContainerWatchContext struct {
 	Events chan []*common.ContainerStateItem
+	Error  chan error
 }
 
 type (
@@ -402,6 +403,9 @@ loop:
 		select {
 		case <-streamCtx.Done():
 			break loop
+		case eventError := <-eventsContext.Error:
+			log.Error().Err(eventError).Msg("Container status watcher error")
+			break loop
 		case event := <-eventsContext.Events:
 			err = stream.Send(&common.ContainerStateListMessage{
 				Prefix: req.Prefix,
@@ -410,20 +414,21 @@ loop:
 
 			if err != nil {
 				log.Error().Err(err).Msg("Container status channel error")
-				break
+				break loop
 			}
 
 			if req.OneShot != nil && *req.OneShot {
-				err := stream.CloseSend()
-				if err == nil {
-					log.Info().Str("prefix", filterPrefix).Msg("Closed container status channel")
-				} else {
-					log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to close container status channel")
-				}
-				return
+				break loop
 			}
 			break
 		}
+	}
+
+	err = stream.CloseSend()
+	if err == nil {
+		log.Info().Str("prefix", filterPrefix).Msg("Closed container status channel")
+	} else {
+		log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to close container status channel")
 	}
 
 	<-streamCtx.Done()
