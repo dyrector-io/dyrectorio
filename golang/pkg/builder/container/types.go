@@ -100,10 +100,17 @@ func (policy *RestartPolicyName) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+type ParentContainer struct {
+	Name        string
+	ID          *string
+	MountList   []mount.Mount
+	Environment []string
+	Logger      *io.StringWriter
+}
+
 // Hook function  which can be used to add custom logic before and after events of the lifecycle of a container.
 // 'containerId' can be nil depending on the hook.
-type LifecycleFunc func(ctx context.Context, client client.APIClient, containerName string,
-	containerId *string, mountList []mount.Mount, logger *io.StringWriter) error
+type LifecycleFunc func(ctx context.Context, client client.APIClient, cont ParentContainer) error
 
 // WaitResult with the status code from the container
 type WaitResult struct {

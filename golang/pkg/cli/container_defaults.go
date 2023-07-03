@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net/url"
 	"os"
 	"strings"
@@ -104,7 +103,7 @@ func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.Lifecy
 	}, state.EnvFile...)
 
 	return func(ctx context.Context, client client.APIClient,
-		containerName string, containerId *string, mountList []mount.Mount, logger *io.StringWriter,
+		parentCont containerbuilder.ParentContainer,
 	) error {
 		cruxMigrate := baseContainer(ctx, args).
 			WithImage(fmt.Sprintf("%s:%s", state.Crux.Image, state.SettingsFile.Version)).
@@ -281,11 +280,11 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 		}).
 		WithPostStartHooks(func(ctx context.Context, client client.APIClient,
-			containerName string, containerId *string, mountList []mount.Mount, logger *io.StringWriter,
+			cont containerbuilder.ParentContainer,
 		) error {
 			return CopyTraefikConfiguration(
 				ctx,
-				containerName,
+				cont.Name,
 				state.InternalHostDomain,
 				state.SettingsFile.CruxHTTPPort,
 				state.SettingsFile.CruxUIPort,
@@ -359,9 +358,7 @@ func getKratosInitContainer(state *State, args *ArgsFlags) containerbuilder.Life
 			state.SettingsFile.KratosPostgresDB),
 	}, state.EnvFile...)
 
-	return func(ctx context.Context, client client.APIClient, containerName string,
-		containerId *string, mountList []mount.Mount, logger *io.StringWriter,
-	) error {
+	return func(ctx context.Context, client client.APIClient, parentCont containerbuilder.ParentContainer) error {
 		kratosMigrate := baseContainer(state.Ctx, args).
 			WithImage(fmt.Sprintf("%s:%s", state.Kratos.Image, state.SettingsFile.Version)).
 			WithName(state.Containers.KratosMigrate.Name).
