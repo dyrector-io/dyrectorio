@@ -51,7 +51,7 @@ func spawnInitContainer(
 
 	resultCont, waitResult, err := builder.
 		WithClient(cli).
-		WithImage(initCont.Config.Name).
+		WithImage(initCont.Config.Image).
 		WithCmd(initCont.Config.Command).
 		WithName(initContName).
 		WithEnv(MergeStringMapToUniqueSlice(initCont.EnvList, initCont.Config.Envs)).
