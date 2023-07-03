@@ -21,8 +21,6 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
     updateSettingsFlowBody: body,
   })
 
-  // kratos.upda
-   
   if (kratosRes.status === 200) {
     const session = sessionOf(req)
     await identityPasswordSet(session)
