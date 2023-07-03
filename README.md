@@ -121,12 +121,13 @@ Stack:
 8. Start the backend with `npm run start`
 9. Go to the `web/crux-ui` directory: `cd web/crux-ui`
 10. Install dependencies `npm ci`
-11. Start the frontend with `npm run start`
-12. After you navigated to `localhost:8000` (this is the default Traefik port) you will see a Login screen
-13. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
-14. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
-15. Open your e-mail message and using the link inside you can activate your account
-16. Fruitful contributing! 🎬
+11. Copy the _env.example_ file as _.env_ `cp .env.example .env`
+12. Start the frontend with `npm run start`
+13. After you navigated to `localhost:8000` (this is the default Traefik port) you will see a Login screen
+14. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
+15. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
+16. Open your e-mail message and using the link inside you can activate your account
+17. Fruitful contributing! 🎬
 
 Read more about the CLI in the [documentation](https://docs.dyrector.io/get-started/cli).
 
