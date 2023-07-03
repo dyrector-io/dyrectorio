@@ -104,16 +104,29 @@ Stack:
 
 ## Development
 
-1. Read the CLI documentation first (See the end of this section)
-2. Decide which part of the project you want to work on, in this case it is crux, crux-ui or both
-3. Modify the [CLI's settings file](https://docs.dyrector.io/get-started/cli#configuration) if necessary
-4. Execute the correct CLI command using the appropriate flags to turn off crux or crux-ui services
-5. Start crux or crux-ui with the appropriate `npm` command, usually `npm run start`
-6. After you navigated to `localhost:8000` (this is the default Traefik port) you will see a Login screen
-7. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
-8. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
-9. Open your e-mail message and using the link inside you can activate your account
-10. Fruitful contributing! 🎬
+## Development
+
+1. Run `make upd` in the repo's root folder.
+  - Save your `DATABASE_URL=<connection_string>` environment variable for later.
+2. Go to the `web/crux` directory: `cd web/crux`
+3. Install dependencies `npm ci`
+4. Copy the _env.example_ file as _.env_ `cp .env.example .env`
+  - Paste `DATABASE_URL=<connection_string>` variable from step 1 to _.env_
+5. On Linux:
+  - Uncomment the `DNS_DEFAULT_RESULT_ORDER=ipv4first` line in the _.env_ file
+  - Change the `CRUX_AGENT_ADDRESS` variable's value to `172.17.0.1:5000`
+6. On Mac / Windows you may have to edit your OS's hosts file to be sure the `host.docker.internal` domain resolves to docker's bridge network.
+  - Alternatively you can use your machine's LAN IP.
+7. Deploy the database with `npm run prisma:migrate`
+8. Start the backend with `npm run start`
+9. Go to the `web/crux-ui` directory: `cd web/crux-ui`
+10. Install dependencies `npm ci`
+11. Start the frontend with `npm run start`
+12. After you navigated to `localhost:8000` (this is the default Traefik port) you will see a Login screen
+13. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
+14. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
+15. Open your e-mail message and using the link inside you can activate your account
+16. Fruitful contributing! 🎬
 
 Read more about the CLI in the [documentation](https://docs.dyrector.io/get-started/cli).
 
