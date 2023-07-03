@@ -17,6 +17,7 @@ import AuditLoggerInterceptor from './app/audit.logger/audit.logger.interceptor'
 import { PRODUCTION } from './shared/const'
 import CreatedWithLocationInterceptor from './interceptors/created-with-location.interceptor'
 import prismaBootstrap from './services/prisma.bootstrap'
+import HttpLoggerInterceptor from './interceptors/http.logger.interceptor'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -64,6 +65,7 @@ const bootstrap = async () => {
   app.useGlobalFilters(new HttpExceptionFilter())
   app.useGlobalGuards(authGuard, app.get(UuidValidationGuard))
   app.useGlobalInterceptors(
+    new HttpLoggerInterceptor(),
     app.get(PrismaErrorInterceptor),
     new CreatedWithLocationInterceptor(),
     app.get(AuditLoggerInterceptor),
