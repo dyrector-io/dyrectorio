@@ -398,37 +398,41 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 		return
 	}
 
-loop:
+	go func() {
+	loop:
+		for {
+			select {
+			case <-streamCtx.Done():
+				break loop
+			case eventError := <-eventsContext.Error:
+				log.Error().Err(eventError).Msg("Container status watcher error")
+				break loop
+			case event := <-eventsContext.Events:
+				err = stream.Send(&common.ContainerStateListMessage{
+					Prefix: req.Prefix,
+					Data:   event,
+				})
+
+				if err != nil {
+					log.Error().Err(err).Msg("Container status channel error")
+					break loop
+				}
+
+				if req.OneShot != nil && *req.OneShot {
+					break loop
+				}
+				break
+			}
+		}
+	}()
+
+	// RecvMsg must be called in order to get an error if the server closes the stream
 	for {
-		select {
-		case <-streamCtx.Done():
-			break loop
-		case eventError := <-eventsContext.Error:
-			log.Error().Err(eventError).Msg("Container status watcher error")
-			break loop
-		case event := <-eventsContext.Events:
-			err = stream.Send(&common.ContainerStateListMessage{
-				Prefix: req.Prefix,
-				Data:   event,
-			})
-
-			if err != nil {
-				log.Error().Err(err).Msg("Container status channel error")
-				break loop
-			}
-
-			if req.OneShot != nil && *req.OneShot {
-				break loop
-			}
+		var msg interface{}
+		err := stream.RecvMsg(&msg)
+		if err != nil {
 			break
 		}
-	}
-
-	err = stream.CloseSend()
-	if err == nil {
-		log.Info().Str("prefix", filterPrefix).Msg("Closed container status channel")
-	} else {
-		log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to close container status channel")
 	}
 
 	<-streamCtx.Done()

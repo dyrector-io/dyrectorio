@@ -64,7 +64,7 @@ func (d *DeleteFacade) DeleteIngresses() error {
 // hard-delete if called with prefix name only without container name
 func DeleteMultiple(c context.Context, request *common.DeleteContainersRequest) error {
 	cfg := grpc.GetConfigFromContext(c).(*config.Configuration)
-	if ns := request.GetPrefix(); ns != "" {
+	if ns := request.GetContainer().GetPrefix(); ns != "" {
 		if deploymentName := request.GetContainer().GetName(); deploymentName != "" {
 			return Delete(c, ns, deploymentName)
 		}
@@ -75,24 +75,24 @@ func DeleteMultiple(c context.Context, request *common.DeleteContainersRequest) 
 }
 
 // soft-delete: deployment,services,configmaps, ingresses
-func Delete(c context.Context, containerPreName, containerName string) error {
+func Delete(c context.Context, prefix, name string) error {
 	cfg := grpc.GetConfigFromContext(c).(*config.Configuration)
 
-	del := NewDeleteFacade(c, containerPreName, containerName, cfg)
+	del := NewDeleteFacade(c, prefix, name, cfg)
 
 	// delete deployment is necessary while others are optional
 	// deployments contain containers
 	err := del.DeleteDeployment()
 	if errors.IsNotFound(err) {
 		log.Fatal().Err(err).Stack().
-			Str("containerPreName", containerPreName).
-			Str("containerName", containerName).
+			Str("prefix", prefix).
+			Str("name", name).
 			Msg("Failed to delete container (not found)")
 		return err
 	} else if err != nil {
 		log.Fatal().Err(err).Stack().
-			Str("containerPreName", containerPreName).
-			Str("containerName", containerName).
+			Str("prefix", prefix).
+			Str("name", name).
 			Msg("Failed to delete container")
 		return err
 	}

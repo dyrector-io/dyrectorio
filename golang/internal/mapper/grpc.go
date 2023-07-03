@@ -433,11 +433,30 @@ func mapContainerPorts(in *[]dockerTypes.Port) []*common.ContainerStateItemPort 
 	return ports
 }
 
-func MapKubeDeploymentToCruxStateItems(
+func MapDeploymentLatestPodToStateItem(
 	deployment *appsv1.Deployment,
 	pods []corev1.Pod,
 	svc map[string]*corev1.Service,
-) *common.ContainerStateItem {
+) (*common.ContainerStateItem, *corev1.Pod) {
+	if len(pods) == 0 {
+		return &common.ContainerStateItem{
+			Id: &common.ContainerIdentifier{
+				Prefix: deployment.Namespace,
+				Name:   deployment.Name,
+			},
+			Command: "",
+			CreatedAt: timestamppb.New(
+				time.UnixMilli(deployment.GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
+			),
+			State:     common.ContainerState_EXITED,
+			Reason:    "",
+			Status:    "",
+			Ports:     []*common.ContainerStateItemPort{},
+			ImageName: "",
+			ImageTag:  "",
+		}, nil
+	}
+
 	stateItem := &common.ContainerStateItem{
 		Id: &common.ContainerIdentifier{
 			Prefix: deployment.Namespace,
@@ -447,7 +466,7 @@ func MapKubeDeploymentToCruxStateItems(
 		CreatedAt: timestamppb.New(
 			time.UnixMilli(deployment.GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
 		),
-		Ports: mapServicePorts(svc[deployment.Name]),
+		Ports: []*common.ContainerStateItemPort{},
 	}
 
 	if containers := deployment.Spec.Template.Spec.Containers; containers != nil {
@@ -475,15 +494,24 @@ func MapKubeDeploymentToCruxStateItems(
 		}
 	}
 
-	if len(pods) == 1 {
-		err := mapKubeStatusToCruxContainerState(stateItem, pods[0].Status.ContainerStatuses[0].State)
-		if err != nil {
-			log.Error().Stack().Err(err).Msg("Failed to map k8s pod info")
-			return nil
+	stateItem.Ports = mapServicePorts(svc[deployment.Name])
+
+	var latestPod *corev1.Pod = nil
+	for index, pod := range pods {
+		if latestPod == nil || pod.CreationTimestamp.After(latestPod.CreationTimestamp.Time) {
+			latestPod = &pods[index]
 		}
 	}
 
-	return stateItem
+	if latestPod != nil && len(latestPod.Status.ContainerStatuses) > 0 {
+		err := mapKubeStatusToCruxContainerState(stateItem, latestPod.Status.ContainerStatuses[0].State)
+		if err != nil {
+			log.Error().Stack().Err(err).Msg("Failed to map k8s pod info")
+			return nil, nil
+		}
+	}
+
+	return stateItem, latestPod
 }
 
 func MapKubeDeploymentListToCruxStateItems(
@@ -495,19 +523,18 @@ func MapKubeDeploymentListToCruxStateItems(
 
 	for i := range deployments.Items {
 		deployment := &deployments.Items[i]
-		pods, podsFound := podsByDeployment[deployment.Name]
+		fullName := fmt.Sprintf("%s-%s", deployment.Namespace, deployment.Name)
+		pods, podsFound := podsByDeployment[fullName]
 		if podsFound && len(pods) > 1 {
 			log.Warn().Str("deployment", deployment.Name).Int("numberOfPods", len(pods)).Msg("More than one pod found for deployment")
-		}
-		if !podsFound || len(pods) == 0 {
-			log.Info().Str("deployment", deployment.Name).Msg("Deployment has no pods")
-			continue
 		}
 
 		svc := svcMap[deployment.Namespace]
 
-		stateItem := MapKubeDeploymentToCruxStateItems(deployment, pods, svc)
-		stateItems = append(stateItems, stateItem)
+		stateItem, _ := MapDeploymentLatestPodToStateItem(deployment, pods, svc)
+		if stateItem != nil && stateItem.State != common.ContainerState_CONTAINER_STATE_UNSPECIFIED {
+			stateItems = append(stateItems, stateItem)
+		}
 	}
 
 	return stateItems
@@ -545,7 +572,7 @@ func mapServicePorts(svc *corev1.Service) []*common.ContainerStateItemPort {
 func mapKubeStatusToCruxContainerState(stateItem *common.ContainerStateItem, kubeContainerState corev1.ContainerState) error {
 	if kubeContainerState.Running != nil {
 		stateItem.State = common.ContainerState_RUNNING
-		stateItem.Reason = fmt.Sprintf("Started at: %s", kubeContainerState.Running.StartedAt)
+		stateItem.Reason = "Started"
 
 		return nil
 	}
