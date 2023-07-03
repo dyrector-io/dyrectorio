@@ -226,13 +226,21 @@ const RegisterPage = (props: RegisterPageProps) => {
               <span className="text-light my-2">{t('orSignUpWith')}</span>
 
               <div className="flex flex-row gap-8">
-                <DyoIcon src="/oidc/gitlab.svg" size="lg" alt="Gitlab" onClick={() => registerWithOidc('gitlab')} />
+                {!oidc.gitlab ? null : (
+                  <DyoIcon src="/oidc/gitlab.svg" size="lg" alt="Gitlab" onClick={() => registerWithOidc('gitlab')} />
+                )}
 
-                <DyoIcon src="/oidc/github.svg" size="lg" alt="Github" onClick={() => registerWithOidc('github')} />
+                {!oidc.github ? null : (
+                  <DyoIcon src="/oidc/github.svg" size="lg" alt="Github" onClick={() => registerWithOidc('github')} />
+                )}
 
-                <DyoIcon src="/oidc/google.svg" size="lg" alt="Google" onClick={() => registerWithOidc('google')} />
+                {!oidc.google ? null : (
+                  <DyoIcon src="/oidc/google.svg" size="lg" alt="Google" onClick={() => registerWithOidc('google')} />
+                )}
 
-                <DyoIcon src="/oidc/azure.svg" size="lg" alt="Azure" onClick={() => registerWithOidc('azure')} />
+                {!oidc.azure ? null : (
+                  <DyoIcon src="/oidc/azure.svg" size="lg" alt="Azure" onClick={() => registerWithOidc('azure')} />
+                )}
               </div>
             </div>
           )}

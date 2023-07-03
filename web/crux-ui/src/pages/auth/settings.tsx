@@ -174,41 +174,33 @@ const SettingsPage = (props: SettingsPageProps) => {
 
           {!oidcEnabled(oidc) ? null : (
             <div className="grid grid-cols-2 items-center gap-4 mt-14">
-              {!oidc.gitlab ? null : (
-                <OidcConnector
-                  provider="gitlab"
-                  name="Gitlab"
-                  action={oidcActions.gitlab}
-                  onModifyConnection={onModifyOidcConnection}
-                />
-              )}
+              <OidcConnector
+                provider="gitlab"
+                name="Gitlab"
+                action={oidcActions.gitlab}
+                onModifyConnection={onModifyOidcConnection}
+              />
 
-              {!oidc.github ? null : (
-                <OidcConnector
-                  provider="github"
-                  name="Github"
-                  action={oidcActions.github}
-                  onModifyConnection={onModifyOidcConnection}
-                />
-              )}
+              <OidcConnector
+                provider="github"
+                name="Github"
+                action={oidcActions.github}
+                onModifyConnection={onModifyOidcConnection}
+              />
 
-              {!oidc.google ? null : (
-                <OidcConnector
-                  provider="google"
-                  name="Google"
-                  action={oidcActions.google}
-                  onModifyConnection={onModifyOidcConnection}
-                />
-              )}
+              <OidcConnector
+                provider="google"
+                name="Google"
+                action={oidcActions.google}
+                onModifyConnection={onModifyOidcConnection}
+              />
 
-              {!oidc.azure ? null : (
-                <OidcConnector
-                  provider="azure"
-                  name="Azure"
-                  action={oidcActions.azure}
-                  onModifyConnection={onModifyOidcConnection}
-                />
-              )}
+              <OidcConnector
+                provider="azure"
+                name="Azure"
+                action={oidcActions.azure}
+                onModifyConnection={onModifyOidcConnection}
+              />
 
               {ui.messages?.map((it, index) => (
                 <DyoMessage
