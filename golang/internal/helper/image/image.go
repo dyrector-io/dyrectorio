@@ -222,25 +222,26 @@ func parseDistributionRef(imageName string) (reference.Named, error) {
 func shouldUseLocalImage(ctx context.Context, cli client.APIClient,
 	distributionRef reference.Named, encodedAuth string, preferLocal bool,
 ) (bool, error) {
-	if preferLocal {
-		err := checkRemote(ctx, remoteCheck{
-			Client:          cli,
-			DistributionRef: distributionRef,
-			EncodedAuth:     encodedAuth,
-		})
-		if err != nil {
-			if errors.Is(err, errDigestMismatch) && !errors.Is(err, ErrLocalImageNotFound) {
-				log.Debug().Msgf("using local image")
-				return true, nil
-			}
-			if errors.Is(err, errDigestsMatching) {
-				return true, nil
-			}
-			if !(errors.Is(err, errDigestMismatch) || errors.Is(err, ErrImageNotFound)) {
-				return false, err
-			}
+	err := checkRemote(ctx, remoteCheck{
+		Client:          cli,
+		DistributionRef: distributionRef,
+		EncodedAuth:     encodedAuth,
+	})
+	if err != nil {
+		if preferLocal && errors.Is(err, errDigestMismatch) && !errors.Is(err, ErrLocalImageNotFound) {
+			log.Debug().Msgf("using local image")
+			return true, nil
+		}
+		if errors.Is(err, errDigestsMatching) {
+			log.Debug().Msgf("using local image")
+			return true, nil
+		}
+		// swallowing specific errors
+		if !(errors.Is(err, errDigestMismatch) || errors.Is(err, ErrImageNotFound)) {
+			return false, err
 		}
 	}
+
 	return false, nil
 }
 
@@ -269,13 +270,15 @@ func CustomImagePull(ctx context.Context, cli client.APIClient,
 		return err
 	}
 
-	useLocalImage, err := shouldUseLocalImage(ctx, cli, distributionRef, encodedAuth, preferLocal)
-	if err != nil {
-		return err
-	}
+	if !forcePull {
+		useLocalImage, localImageErr := shouldUseLocalImage(ctx, cli, distributionRef, encodedAuth, preferLocal)
+		if localImageErr != nil {
+			return err
+		}
 
-	if useLocalImage {
-		return nil
+		if useLocalImage {
+			return nil
+		}
 	}
 
 	responseBody, err := pullImage(ctx, cli, imageName, encodedAuth)

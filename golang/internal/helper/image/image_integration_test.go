@@ -15,6 +15,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/errdefs"
 	"github.com/docker/docker/pkg/jsonmessage"
+	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
@@ -148,4 +149,51 @@ func TestCheckRemote_NotFound(t *testing.T) {
 	})
 
 	assert.ErrorIs(t, err, image.ErrImageNotFound, "if non-existent it should result in a mismatch")
+}
+
+func TestShouldUseLocalImage_LocalPref_NotFound(t *testing.T) {
+	img, err := image.ParseDistributionRef(nginxImage)
+	if err != nil {
+		t.Fatal(err)
+	}
+	useLocal, err := image.ShouldUseLocalImage(context.Background(), &mockImageClient{
+		inspectErr: errdefs.NotFound(fmt.Errorf("notfound error for local image test")),
+	}, img, "", true)
+	assert.False(t, useLocal, "should choose remote because local is not found")
+}
+
+func TestShouldUseLocalImage_LocalPref(t *testing.T) {
+	img, err := image.ParseDistributionRef(nginxImage)
+	if err != nil {
+		t.Fatal(err)
+	}
+	digest, err := crane.Digest(nginxImage)
+	if err != nil {
+		t.Fatal(err)
+	}
+	useLocal, err := image.ShouldUseLocalImage(context.Background(), &mockImageClient{
+		insp: types.ImageInspect{ID: digest},
+	}, img, "", true)
+	assert.True(t, useLocal, "mocked local is matching with the remote, should choose local")
+}
+
+func TestShouldUseLocalImage_RemotePref(t *testing.T) {
+	img, err := image.ParseDistributionRef(nginxImage)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	digest, err := crane.Digest(nginxImage)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	digest = fmt.Sprintf("%s%s", digest[:len(digest)-1], string([]byte(digest)[len(digest)-1]+1))
+
+	useLocal, err := image.ShouldUseLocalImage(context.Background(), &mockImageClient{
+		insp: types.ImageInspect{
+			ID: digest,
+		},
+	}, img, "", false)
+	assert.False(t, useLocal, "remote should be used")
 }

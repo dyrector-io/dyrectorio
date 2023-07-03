@@ -20,7 +20,7 @@ type InitContainer struct {
 	Parent   string
 	Config   *v1.InitContainer
 	MountMap map[string]mount.Mount
-	EnvList  []string
+	EnvList  map[string]string
 }
 
 // before application container starts, launches an init container
@@ -54,7 +54,7 @@ func spawnInitContainer(
 		WithImage(initCont.Config.Name).
 		WithCmd(initCont.Config.Command).
 		WithName(initContName).
-		WithEnv(initCont.EnvList).
+		WithEnv(MergeStringMapToUniqueSlice(initCont.EnvList, initCont.Config.Envs)).
 		WithMountPoints(targetVolumes).
 		WithoutConflict().
 		WithPreStartHooks(

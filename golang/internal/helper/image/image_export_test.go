@@ -16,4 +16,5 @@ var (
 	AuthConfigToBasicAuth = authConfigToBasicAuth
 	ParseDistributionRef  = parseDistributionRef
 	CheckRemote           = checkRemote
+	ShouldUseLocalImage   = shouldUseLocalImage
 )

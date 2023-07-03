@@ -239,7 +239,7 @@ func DeployImage(ctx context.Context,
 		return fmt.Errorf("deployment failed, secret error: %w", err)
 	}
 
-	envList := EnvMapToSlice(MergeStringMapUnique(envMap, mapper.ByteMapToStringMap(secret)))
+	envMap = MergeStringMapUnique(envMap, mapper.ByteMapToStringMap(secret))
 	mountList := buildMountList(cfg, dog, deployImageRequest)
 
 	matchedContainer, err := dockerHelper.GetContainerByName(ctx, cli, containerName)
@@ -276,7 +276,7 @@ func DeployImage(ctx context.Context,
 		WithNetworkAliases(containerName, deployImageRequest.ContainerConfig.Container).
 		WithRegistryAuth(deployImageRequest.RegistryAuth).
 		WithRestartPolicy(deployImageRequest.ContainerConfig.RestartPolicy).
-		WithEnv(envList).
+		WithEnv(EnvMapToSlice(envMap)).
 		WithLabels(labels).
 		WithLogConfig(deployImageRequest.ContainerConfig.LogConfig).
 		WithUser(deployImageRequest.ContainerConfig.User).
@@ -286,7 +286,7 @@ func DeployImage(ctx context.Context,
 		WithLogWriter(dog).
 		WithPullDisplayFunc(dog.WriteDockerPull)
 
-	WithInitContainers(builder, &deployImageRequest.ContainerConfig, dog, envList, cfg)
+	WithInitContainers(builder, &deployImageRequest.ContainerConfig, dog, envMap, cfg)
 
 	cont, err := builder.CreateAndStart()
 	if err != nil {
@@ -320,7 +320,7 @@ func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, 
 }
 
 func WithInitContainers(dc container.Builder, containerConfig *v1.ContainerConfig,
-	dog *dogger.DeploymentLogger, envList []string, cfg *config.Configuration,
+	dog *dogger.DeploymentLogger, envMap map[string]string, cfg *config.Configuration,
 ) {
 	initFuncs := []container.LifecycleFunc{}
 	if containerConfig.ImportContainer != nil {
@@ -349,7 +349,7 @@ func WithInitContainers(dc container.Builder, containerConfig *v1.ContainerConfi
 							Parent:   parentCont.Name,
 							Config:   &containerConfig.InitContainers[i],
 							MountMap: MountListToMap(parentCont.MountList),
-							EnvList:  envList,
+							EnvList:  envMap,
 						}, dog)
 					if err != nil {
 						return err
