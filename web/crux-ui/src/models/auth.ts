@@ -27,6 +27,8 @@ export type OidcAvailability = {
   azure: boolean
 }
 
+export const oidcEnabled = (oidc: OidcAvailability) => oidc.gitlab || oidc.github || oidc.google || oidc.azure
+
 type LoginBase = {
   method: AuthenticationMethod
   flow: string

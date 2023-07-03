@@ -9,7 +9,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { DyoErrorDto, OidcProvider, Register } from '@app/models'
+import { DyoErrorDto, oidcEnabled, OidcProvider, Register } from '@app/models'
 import { API_AUTH_REGISTER, ROUTE_LOGIN, ROUTE_SETTINGS, verificationUrl } from '@app/routes'
 import {
   findAttributes,
@@ -221,27 +221,21 @@ const RegisterPage = (props: RegisterPageProps) => {
             {t('createAcc')}
           </DyoButton>
 
-          <div className="flex flex-col gap-2 items-center mx-auto mt-2">
-            <span className="text-light my-2">{t('orSignUpWith')}</span>
+          {!oidcEnabled(oidc) ? null : (
+            <div className="flex flex-col gap-2 items-center mx-auto mt-2">
+              <span className="text-light my-2">{t('orSignUpWith')}</span>
 
-            <div className="flex flex-row gap-8">
-              {!oidc.gitlab ? null : (
+              <div className="flex flex-row gap-8">
                 <DyoIcon src="/oidc/gitlab.svg" size="lg" alt="Gitlab" onClick={() => registerWithOidc('gitlab')} />
-              )}
 
-              {!oidc.github ? null : (
                 <DyoIcon src="/oidc/github.svg" size="lg" alt="Github" onClick={() => registerWithOidc('github')} />
-              )}
 
-              {!oidc.google ? null : (
                 <DyoIcon src="/oidc/google.svg" size="lg" alt="Google" onClick={() => registerWithOidc('google')} />
-              )}
 
-              {!oidc.azure ? null : (
                 <DyoIcon src="/oidc/azure.svg" size="lg" alt="Azure" onClick={() => registerWithOidc('azure')} />
-              )}
+              </div>
             </div>
-          </div>
+          )}
 
           <p className="text-bright text-center self-center max-w-xl mt-8">
             {t(`whenYouRegister`)}

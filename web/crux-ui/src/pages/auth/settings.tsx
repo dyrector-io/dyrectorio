@@ -13,7 +13,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
-import { IdentityPublicMetadata, OidcProvider } from '@app/models'
+import { IdentityPublicMetadata, oidcEnabled, OidcProvider } from '@app/models'
 import {
   API_SETTINGS_OIDC,
   API_USERS_ME_PREFERENCES_ONBOARDING,
@@ -172,52 +172,54 @@ const SettingsPage = (props: SettingsPageProps) => {
             />
           </div>
 
-          <div className="grid grid-cols-2 items-center gap-4 mt-14">
-            {!oidc.gitlab ? null : (
-              <OidcConnector
-                provider="gitlab"
-                name="Gitlab"
-                action={oidcActions.gitlab}
-                onModifyConnection={onModifyOidcConnection}
-              />
-            )}
+          {!oidcEnabled(oidc) ? null : (
+            <div className="grid grid-cols-2 items-center gap-4 mt-14">
+              {!oidc.gitlab ? null : (
+                <OidcConnector
+                  provider="gitlab"
+                  name="Gitlab"
+                  action={oidcActions.gitlab}
+                  onModifyConnection={onModifyOidcConnection}
+                />
+              )}
 
-            {!oidc.github ? null : (
-              <OidcConnector
-                provider="github"
-                name="Github"
-                action={oidcActions.github}
-                onModifyConnection={onModifyOidcConnection}
-              />
-            )}
+              {!oidc.github ? null : (
+                <OidcConnector
+                  provider="github"
+                  name="Github"
+                  action={oidcActions.github}
+                  onModifyConnection={onModifyOidcConnection}
+                />
+              )}
 
-            {!oidc.google ? null : (
-              <OidcConnector
-                provider="google"
-                name="Google"
-                action={oidcActions.google}
-                onModifyConnection={onModifyOidcConnection}
-              />
-            )}
+              {!oidc.google ? null : (
+                <OidcConnector
+                  provider="google"
+                  name="Google"
+                  action={oidcActions.google}
+                  onModifyConnection={onModifyOidcConnection}
+                />
+              )}
 
-            {!oidc.azure ? null : (
-              <OidcConnector
-                provider="azure"
-                name="Azure"
-                action={oidcActions.azure}
-                onModifyConnection={onModifyOidcConnection}
-              />
-            )}
+              {!oidc.azure ? null : (
+                <OidcConnector
+                  provider="azure"
+                  name="Azure"
+                  action={oidcActions.azure}
+                  onModifyConnection={onModifyOidcConnection}
+                />
+              )}
 
-            {ui.messages?.map((it, index) => (
-              <DyoMessage
-                className="col-span-2 text-xs italic"
-                key={`info-${index}`}
-                message={it?.text}
-                messageType="info"
-              />
-            ))}
-          </div>
+              {ui.messages?.map((it, index) => (
+                <DyoMessage
+                  className="col-span-2 text-xs italic"
+                  key={`info-${index}`}
+                  message={it?.text}
+                  messageType="info"
+                />
+              ))}
+            </div>
+          )}
         </div>
       </DyoCard>
 

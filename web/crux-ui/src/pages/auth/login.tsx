@@ -9,7 +9,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { DyoErrorDto, Login, OidcProvider } from '@app/models'
+import { DyoErrorDto, Login, OidcProvider, oidcEnabled } from '@app/models'
 import {
   API_AUTH_LOGIN,
   ROUTE_DOCS,
@@ -185,27 +185,29 @@ const LoginPage = (props: LoginPageProps) => {
             {t('common:logIn')}
           </DyoButton>
 
-          <div className="flex flex-col gap-2 items-center mx-auto mt-2">
-            <span className="text-light my-2">{t('orLogInWith')}</span>
+          {!oidcEnabled(oidc) ? null : (
+            <div className="flex flex-col gap-2 items-center mx-auto mt-2">
+              <span className="text-light my-2">{t('orLogInWith')}</span>
 
-            <div className="flex flex-row gap-8">
-              {!oidc.gitlab ? null : (
-                <DyoIcon src="/oidc/gitlab.svg" size="lg" alt="Gitlab" onClick={() => loginWithOidc('gitlab')} />
-              )}
+              <div className="flex flex-row gap-8">
+                {!oidc.gitlab ? null : (
+                  <DyoIcon src="/oidc/gitlab.svg" size="lg" alt="Gitlab" onClick={() => loginWithOidc('gitlab')} />
+                )}
 
-              {!oidc.github ? null : (
-                <DyoIcon src="/oidc/github.svg" size="lg" alt="Github" onClick={() => loginWithOidc('github')} />
-              )}
+                {!oidc.github ? null : (
+                  <DyoIcon src="/oidc/github.svg" size="lg" alt="Github" onClick={() => loginWithOidc('github')} />
+                )}
 
-              {!oidc.google ? null : (
-                <DyoIcon src="/oidc/google.svg" size="lg" alt="Google" onClick={() => loginWithOidc('google')} />
-              )}
+                {!oidc.google ? null : (
+                  <DyoIcon src="/oidc/google.svg" size="lg" alt="Google" onClick={() => loginWithOidc('google')} />
+                )}
 
-              {!oidc.azure ? null : (
-                <DyoIcon src="/oidc/azure.svg" size="lg" alt="Azure" onClick={() => loginWithOidc('azure')} />
-              )}
+                {!oidc.azure ? null : (
+                  <DyoIcon src="/oidc/azure.svg" size="lg" alt="Azure" onClick={() => loginWithOidc('azure')} />
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
         </DyoForm>
