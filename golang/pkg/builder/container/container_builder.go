@@ -399,7 +399,7 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 	dc.containerID = &containers[0].ID
 	attachNetworks(dc)
 
-	return NewDockerContainer(&containers[0], &dc.hooksPreStart, &dc.hooksPostStart, &dc.mountList), nil
+	return NewDockerContainer(&containers[0], &dc.hooksPreStart, &dc.hooksPostStart, &dc.mountList, dc.envList), nil
 }
 
 func (dc *DockerContainerBuilder) CreateAndStart() (Container, error) {
@@ -444,7 +444,7 @@ func (dc *DockerContainerBuilder) prepareImage() error {
 		return err
 	}
 
-	err = imageHelper.CustomImagePull(dc.ctx, expandedImageName, dc.registryAuth, dc.forcePull, dc.localImage, dc.pullDisplayFn)
+	err = imageHelper.CustomImagePull(dc.ctx, dc.client, expandedImageName, dc.registryAuth, dc.forcePull, dc.localImage, dc.pullDisplayFn)
 	if err != nil && err.Error() != "EOF" {
 		return fmt.Errorf("image pull error: %s", err.Error())
 	}
@@ -502,7 +502,14 @@ func attachNetworks(dc *DockerContainerBuilder) {
 
 func execHooks(dc *DockerContainerBuilder, hooks []LifecycleFunc) error {
 	for _, hook := range hooks {
-		if err := hook(dc.ctx, dc.client, dc.containerName, dc.containerID, dc.mountList, &dc.logger); err != nil {
+		if err := hook(dc.ctx, dc.client,
+			ParentContainer{
+				Name:        dc.containerName,
+				ID:          dc.containerID,
+				MountList:   dc.mountList,
+				Environment: dc.envList,
+				Logger:      &dc.logger,
+			}); err != nil {
 			return err
 		}
 	}

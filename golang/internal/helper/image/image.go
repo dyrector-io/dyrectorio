@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
@@ -204,49 +205,80 @@ func Pull(ctx context.Context, cli client.APIClient, logger io.StringWriter, exp
 	return err
 }
 
-// CustomImagePull is a client side `smart` Pull, that only pulls if the digests are not matching
-func CustomImagePull(ctx context.Context, imageName, encodedAuth string, forcePull, preferLocal bool, displayFn PullDisplayFn) error {
+func parseDistributionRef(imageName string) (reference.Named, error) {
 	distributionRef, nameErr := reference.ParseNormalizedNamed(imageName)
 	switch {
 	case nameErr != nil:
-		return nameErr
+		return nil, nameErr
 	case reference.IsNameOnly(distributionRef):
 		distributionRef = reference.TagNameOnly(distributionRef)
 		if tagged, ok := distributionRef.(reference.Tagged); ok {
 			log.Info().Msgf("Using default tag for image %s", tagged.String())
 		}
 	}
+	return distributionRef, nil
+}
 
-	cli, cliErr := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if cliErr != nil {
-		return cliErr
-	}
-
-	if !forcePull {
+func shouldUseLocalImage(ctx context.Context, cli client.APIClient,
+	distributionRef reference.Named, encodedAuth string, preferLocal bool,
+) (bool, error) {
+	if preferLocal {
 		err := checkRemote(ctx, remoteCheck{
 			client:          cli,
 			distributionRef: distributionRef,
 			encodedAuth:     encodedAuth,
 		})
 		if err != nil {
-			if preferLocal &&
-				(errors.Is(err, errDigestMismatch) && !errors.Is(err, ErrLocalImageNotFound)) {
+			if errors.Is(err, errDigestMismatch) && !errors.Is(err, ErrLocalImageNotFound) {
 				log.Debug().Msgf("using local image")
-				return nil
+				return true, nil
 			}
 			if errors.Is(err, errDigestsMatching) {
-				return nil
+				return true, nil
 			}
 			if !(errors.Is(err, errDigestMismatch) || errors.Is(err, ErrImageNotFound)) {
-				return err
+				return false, err
 			}
 		}
 	}
+	return false, nil
+}
+
+func pullImage(ctx context.Context, cli client.APIClient, imageName, encodedAuth string) (io.ReadCloser, error) {
 	options := types.ImagePullOptions{
 		RegistryAuth: encodedAuth,
 	}
 
 	responseBody, err := cli.ImagePull(ctx, imageName, options)
+	if err != nil {
+		if errdefs.IsSystem(err) && strings.Contains(err.Error(), "manifest unknown") {
+			return nil, ErrImageNotFound
+		}
+		return nil, err
+	}
+
+	return responseBody, nil
+}
+
+// CustomImagePull is a client side `smart` Pull, that only pulls if the digests are not matching
+func CustomImagePull(ctx context.Context, cli client.APIClient,
+	imageName, encodedAuth string, forcePull, preferLocal bool, displayFn PullDisplayFn,
+) error {
+	distributionRef, err := parseDistributionRef(imageName)
+	if err != nil {
+		return err
+	}
+
+	useLocalImage, err := shouldUseLocalImage(ctx, cli, distributionRef, encodedAuth, preferLocal)
+	if err != nil {
+		return err
+	}
+
+	if useLocalImage {
+		return nil
+	}
+
+	responseBody, err := pullImage(ctx, cli, imageName, encodedAuth)
 	if err != nil {
 		return err
 	}

@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	"fmt"
-	"io"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
@@ -17,20 +16,27 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// before application container starts, loads import container
+type InitContainer struct {
+	Parent   string
+	Config   *v1.InitContainer
+	MountMap map[string]mount.Mount
+	EnvList  []string
+}
+
+// before application container starts, launches an init container
 func spawnInitContainer(
 	ctx context.Context, cli client.APIClient,
-	parentName string, cont *v1.InitContainer, mountMap map[string]mount.Mount,
+	initCont InitContainer,
 	dog *dogger.DeploymentLogger,
 ) error {
-	initContName := util.JoinV("-", parentName, cont.Name)
+	initContName := util.JoinV("-", initCont.Parent, initCont.Config.Name)
 	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, fmt.Sprintf("Spawning init container: %s", initContName))
 	builder := containerbuilder.NewDockerBuilder(ctx)
 
 	targetVolumes := []mount.Mount{}
 
-	for _, v := range cont.Volumes {
-		linkedVolume := FindVolumeInMountMap(v.Name, mountMap)
+	for _, v := range initCont.Config.Volumes {
+		linkedVolume := FindVolumeInMountMap(v.Name, initCont.MountMap)
 		if linkedVolume == nil {
 			return fmt.Errorf("linked volume not found: %s", v.Name)
 		}
@@ -45,16 +51,14 @@ func spawnInitContainer(
 
 	resultCont, waitResult, err := builder.
 		WithClient(cli).
-		WithImage(cont.Image).
-		WithCmd(cont.Command).
+		WithImage(initCont.Config.Name).
+		WithCmd(initCont.Config.Command).
 		WithName(initContName).
-		WithEnv(EnvMapToSlice(cont.Envs)).
+		WithEnv(initCont.EnvList).
 		WithMountPoints(targetVolumes).
 		WithoutConflict().
 		WithPreStartHooks(
-			func(ctx context.Context, client client.APIClient, containerName string,
-				containerId *string, mountList []mount.Mount, logger *io.StringWriter,
-			) error {
+			func(ctx context.Context, client client.APIClient, parentCont containerbuilder.ParentContainer) error {
 				dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for init container to finish")
 				return nil
 			}).
@@ -70,10 +74,10 @@ func spawnInitContainer(
 		containerID := *resultCont.GetContainerID()
 		err = dockerHelper.DeleteContainerByID(ctx, dog, containerID)
 		if err != nil {
-			log.Warn().Msg("Failed to delete import container after completion")
+			log.Warn().Msg("Failed to delete init container after completion")
 		}
 	} else {
-		return fmt.Errorf("import container exited with code: %v", waitResult.StatusCode)
+		return fmt.Errorf("init container exited with code: %v", waitResult.StatusCode)
 	}
 	return nil
 }

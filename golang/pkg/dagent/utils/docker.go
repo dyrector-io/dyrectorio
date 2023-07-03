@@ -286,7 +286,7 @@ func DeployImage(ctx context.Context,
 		WithLogWriter(dog).
 		WithPullDisplayFunc(dog.WriteDockerPull)
 
-	WithInitContainers(builder, &deployImageRequest.ContainerConfig, dog, cfg)
+	WithInitContainers(builder, &deployImageRequest.ContainerConfig, dog, envList, cfg)
 
 	cont, err := builder.CreateAndStart()
 	if err != nil {
@@ -320,18 +320,17 @@ func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, 
 }
 
 func WithInitContainers(dc container.Builder, containerConfig *v1.ContainerConfig,
-	dog *dogger.DeploymentLogger, cfg *config.Configuration,
+	dog *dogger.DeploymentLogger, envList []string, cfg *config.Configuration,
 ) {
 	initFuncs := []container.LifecycleFunc{}
 	if containerConfig.ImportContainer != nil {
 		initFuncs = append(initFuncs,
 			func(ctx context.Context, client client.APIClient,
-				containerName string, containerId *string,
-				mountList []mount.Mount, logger *io.StringWriter,
+				parentCont container.ParentContainer,
 			) error {
-				if initError := spawnImportContainer(ctx, client, containerName, mountList,
+				if initError := spawnImportContainer(ctx, client, parentCont.Name, parentCont.MountList,
 					containerConfig.ImportContainer, dog, cfg); initError != nil {
-					dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, "Failed to spawn init container: "+initError.Error())
+					dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, "Failed to spawn import container: "+initError.Error())
 					return initError
 				}
 				dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Loading assets was successful.")
@@ -341,13 +340,29 @@ func WithInitContainers(dc container.Builder, containerConfig *v1.ContainerConfi
 
 	if len(containerConfig.InitContainers) > 0 {
 		initFuncs = append(initFuncs, func(ctx context.Context, client client.APIClient,
-			containerName string, containerId *string,
-			mountList []mount.Mount, logger *io.StringWriter,
+			parentCont container.ParentContainer,
 		) error {
 			for i := range containerConfig.InitContainers {
-				err := spawnInitContainer(ctx, client, containerName, &containerConfig.InitContainers[i], MountListToMap(mountList), dog)
-				if err != nil {
-					return err
+				if containerConfig.InitContainers[i].UseParent {
+					err := spawnInitContainer(ctx, client,
+						InitContainer{
+							Parent:   parentCont.Name,
+							Config:   &containerConfig.InitContainers[i],
+							MountMap: MountListToMap(parentCont.MountList),
+							EnvList:  envList,
+						}, dog)
+					if err != nil {
+						return err
+					}
+				} else {
+					err := spawnInitContainer(ctx, client,
+						InitContainer{
+							Parent: parentCont.Name,
+							Config: &containerConfig.InitContainers[i],
+						}, dog)
+					if err != nil {
+						return err
+					}
 				}
 			}
 			dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Init containers are started successfully.")
