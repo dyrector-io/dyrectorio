@@ -22,7 +22,11 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
   const { t } = useTranslation('images')
 
   const columnWidths = ['w-12', 'w-4/12', 'w-2/12', 'w-2/12', 'w-4/12', 'w-28']
-  const headers = ['', 'containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions']
+  const headers = [
+    '',
+    ...['containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions'].map(it => t(it)),
+    '',
+  ]
   const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
@@ -71,7 +75,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
   return (
     <DyoCard className="relative mt-4">
       <DyoList
-        headers={[...headers.map(h => t(h)), '']}
+        headers={headers}
         headerClassName={headerClasses}
         columnWidths={columnWidths}
         itemClassName={itemClasses}

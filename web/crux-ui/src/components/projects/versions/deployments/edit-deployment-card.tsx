@@ -39,7 +39,7 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
         ...transformedValues,
       }
 
-      const res = await sendForm('PUT', deploymentApiUrl(deployment.id), body)
+      const res = await sendForm('PATCH', deploymentApiUrl(deployment.id), body)
 
       setSubmitting(false)
 

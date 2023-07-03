@@ -226,7 +226,7 @@ export const formikFieldValueConverter =
   (field, value, shouldValidate) =>
     formik.setFieldValue(field, converter(value), shouldValidate)
 
-export const sendForm = async <Dto>(method: 'POST' | 'PUT', url: string, body?: Dto): Promise<Response> =>
+export const sendForm = async <Dto>(method: 'POST' | 'PUT' | 'PATCH', url: string, body?: Dto): Promise<Response> =>
   await fetch(url, {
     method,
     headers: body
