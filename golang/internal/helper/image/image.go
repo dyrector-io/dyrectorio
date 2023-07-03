@@ -39,9 +39,9 @@ type PullResponse struct {
 }
 
 type remoteCheck struct {
-	client          client.APIClient
-	distributionRef reference.Named
-	encodedAuth     string
+	Client          client.APIClient
+	DistributionRef reference.Named
+	EncodedAuth     string
 }
 
 type ExistResult struct {
@@ -224,9 +224,9 @@ func shouldUseLocalImage(ctx context.Context, cli client.APIClient,
 ) (bool, error) {
 	if preferLocal {
 		err := checkRemote(ctx, remoteCheck{
-			client:          cli,
-			distributionRef: distributionRef,
-			encodedAuth:     encodedAuth,
+			Client:          cli,
+			DistributionRef: distributionRef,
+			EncodedAuth:     encodedAuth,
 		})
 		if err != nil {
 			if errors.Is(err, errDigestMismatch) && !errors.Is(err, ErrLocalImageNotFound) {
@@ -295,7 +295,7 @@ func CustomImagePull(ctx context.Context, cli client.APIClient,
 // check local and remote registry for container image and do digest comparison
 func checkRemote(ctx context.Context, check remoteCheck) (err error) {
 	localImageNotFound := false
-	insp, _, err := check.client.ImageInspectWithRaw(ctx, check.distributionRef.String())
+	insp, _, err := check.Client.ImageInspectWithRaw(ctx, check.DistributionRef.String())
 	if err != nil {
 		if errdefs.IsNotFound(err) {
 			localImageNotFound = true
@@ -306,14 +306,14 @@ func checkRemote(ctx context.Context, check remoteCheck) (err error) {
 
 	craneOpts := []crane.Option{}
 
-	if check.encodedAuth != "" {
-		basicAuth, convertError := authConfigToBasicAuth(check.encodedAuth)
+	if check.EncodedAuth != "" {
+		basicAuth, convertError := authConfigToBasicAuth(check.EncodedAuth)
 		if convertError != nil {
 			return convertError
 		}
 		craneOpts = append(craneOpts, crane.WithAuth(authn.FromConfig(authn.AuthConfig{Auth: basicAuth})))
 	}
-	remoteDigest, err := crane.Digest(check.distributionRef.String(), craneOpts...)
+	remoteDigest, err := crane.Digest(check.DistributionRef.String(), craneOpts...)
 	if err != nil {
 		if localImageNotFound {
 			if manifestErr, ok := err.(*transport.Error); ok {
@@ -327,9 +327,9 @@ func checkRemote(ctx context.Context, check remoteCheck) (err error) {
 	}
 
 	log.Debug().Msgf("%v in %v",
-		fmt.Sprintf("%v@%v", reference.FamiliarName(reference.TrimNamed(check.distributionRef)), remoteDigest), insp.RepoDigests)
+		fmt.Sprintf("%v@%v", reference.FamiliarName(reference.TrimNamed(check.DistributionRef)), remoteDigest), insp.RepoDigests)
 	if !util.Contains(insp.RepoDigests,
-		fmt.Sprintf("%v@%v", reference.FamiliarName(reference.TrimNamed(check.distributionRef)), remoteDigest)) {
+		fmt.Sprintf("%v@%v", reference.FamiliarName(reference.TrimNamed(check.DistributionRef)), remoteDigest)) {
 		if insp.ID == "" {
 			return errors.Join(errDigestMismatch, ErrLocalImageNotFound)
 		}

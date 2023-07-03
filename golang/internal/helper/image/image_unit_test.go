@@ -144,3 +144,17 @@ func TestAuthConfigToBasicAuth(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, basicAuth)
 }
+
+func TestParseDistribRefErr(t *testing.T) {
+	_, err := imageHelper.ParseDistributionRef("invalid%image!123-name::")
+	assert.NotNil(t, err, "invalid image name triggers image name parse error")
+}
+
+func TestParseDistribRef(t *testing.T) {
+	name, err := imageHelper.ParseDistributionRef("nginx:latest")
+	assert.Nil(t, err, "valid image name does not trigger any error, and it is expanded properly")
+	assert.Equal(t, "docker.io/library/nginx:latest", name.String())
+	name, err = imageHelper.ParseDistributionRef("nginx")
+	assert.Nil(t, err, "valid image name does not trigger any error even without a tag, default tag is appended")
+	assert.Equal(t, "docker.io/library/nginx:latest", name.String())
+}

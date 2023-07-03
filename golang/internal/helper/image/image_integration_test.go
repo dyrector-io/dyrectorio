@@ -13,6 +13,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/errdefs"
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -108,4 +109,43 @@ func TestPrettyPullFullQualifiedInvalidImage(t *testing.T) {
 
 	err = image.CustomImagePull(ctx, client, img, "", false, false, cli.DockerPullProgressDisplayer)
 	assert.ErrorIs(t, err, image.ErrImageNotFound, "expected err to be notfound for a invalid image name")
+}
+
+// Define a mockImageClient struct that implements the necessary methods.
+type mockImageClient struct {
+	insp       types.ImageInspect
+	inspectErr error
+	client.APIClient
+}
+
+func (m *mockImageClient) ImageInspectWithRaw(ctx context.Context, ref string) (types.ImageInspect, []byte, error) {
+	return m.insp, nil, m.inspectErr
+}
+
+func TestCheckRemote_Mismatch(t *testing.T) {
+	ref, err := image.ParseDistributionRef("test:image")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = image.CheckRemote(context.Background(), image.RemoteCheck{
+		Client:          &mockImageClient{insp: types.ImageInspect{}},
+		DistributionRef: ref,
+	})
+
+	assert.ErrorIs(t, err, image.ErrDigestMismatch, "if non-existent it should result in a mismatch")
+}
+
+func TestCheckRemote_NotFound(t *testing.T) {
+	ref, err := image.ParseDistributionRef(fmt.Sprintf("%s:%s", nginxImageNoTag, "nonexistent"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = image.CheckRemote(context.Background(), image.RemoteCheck{
+		Client:          &mockImageClient{insp: types.ImageInspect{}, inspectErr: errdefs.NotFound(fmt.Errorf("test not found error"))},
+		DistributionRef: ref,
+	})
+
+	assert.ErrorIs(t, err, image.ErrImageNotFound, "if non-existent it should result in a mismatch")
 }
