@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/docker/docker/api/types/mount"
@@ -56,7 +55,7 @@ func spawnImportContainer(
 		WithoutConflict().
 		WithLogWriter(dog).
 		WithPreStartHooks(func(ctx context.Context, client client.APIClient,
-			containerName string, containerId *string, mountList []mount.Mount, logger *io.StringWriter,
+			parentCont containerbuilder.ParentContainer,
 		) error {
 			dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
 			return nil
