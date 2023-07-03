@@ -1,6 +1,6 @@
 import { HEADER_LOCATION } from '@app/const'
 import { missingParameter } from '@app/error-responses'
-import { CreateAccount, toRecoverNewPasswordError } from '@app/models'
+import { CreateAccount, toKratosLocationChangeRequiredError } from '@app/models'
 import { userInvitationApiUrl } from '@app/routes'
 import { UpdateRecoveryFlowWithCodeMethod } from '@ory/kratos-client'
 import { fetchCrux } from '@server/crux-api'
@@ -46,31 +46,31 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
       updateRecoveryFlowBody: body,
     })
 
+    forwardCookieToResponse(res, kratosRes)
     res.status(kratosRes.status).json(kratosRes.data)
   } catch (err) {
-    const error = toRecoverNewPasswordError(err)
+    const error = toKratosLocationChangeRequiredError(err)
 
-    if (error) {
-      forwardCookieToResponse(res, error)
-      const settingsFlow = flowOfUrl(error.data.redirect_browser_to)
-
-      const cookieHeader = error.headers['set-cookie'] as string | string[]
-      if (typeof cookieHeader === 'string') {
-        cookie = cookieHeader
-      } else {
-        cookie = (cookieHeader as string[]).find(it => it.startsWith('ory_kratos_session'))
-      }
-
-      const session = await obtainSessionFromResponse(error)
-      await identityRecovered(session, settingsFlow)
-
-      await acceptInvitation(cookie, dto.team)
-
-      res.status(201).setHeader(HEADER_LOCATION, error.data.redirect_browser_to).end()
-      return
+    if (!error) {
+      throw err
     }
 
-    throw err
+    forwardCookieToResponse(res, error)
+    const settingsFlow = flowOfUrl(error.data.redirect_browser_to)
+
+    const cookieHeader = error.headers['set-cookie'] as string | string[]
+    if (typeof cookieHeader === 'string') {
+      cookie = cookieHeader
+    } else {
+      cookie = (cookieHeader as string[]).find(it => it.startsWith('ory_kratos_session'))
+    }
+
+    const session = await obtainSessionFromResponse(error)
+    await identityRecovered(session, settingsFlow)
+
+    await acceptInvitation(cookie, dto.team)
+
+    res.status(201).setHeader(HEADER_LOCATION, error.data.redirect_browser_to).end()
   }
 }
 

@@ -1,14 +1,15 @@
 import { SingleFormLayout } from '@app/components/layout'
-import { ATTRIB_CSRF, KRATOS_ERROR_NO_VERIFIED_EMAIL_ADDRESS } from '@app/const'
+import { ATTRIB_CSRF, HEADER_LOCATION, KRATOS_ERROR_NO_VERIFIED_EMAIL_ADDRESS } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoForm from '@app/elements/dyo-form'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { DyoErrorDto, Login } from '@app/models'
+import { DyoErrorDto, Login, OidcProvider } from '@app/models'
 import {
   API_AUTH_LOGIN,
   ROUTE_DOCS,
@@ -19,7 +20,16 @@ import {
   teamInvitationUrl,
   verificationUrl,
 } from '@app/routes'
-import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendForm, upsertDyoError } from '@app/utils'
+import {
+  findAttributes,
+  findError,
+  findMessage,
+  isDyoError,
+  mapOidcAvailability,
+  redirectTo,
+  sendForm,
+  upsertDyoError,
+} from '@app/utils'
 import { LoginFlow, UiContainer } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import kratos, { cookieOf, forwardCookie, obtainSessionFromRequest, userVerified } from '@server/kratos'
@@ -50,6 +60,41 @@ const LoginPage = (props: LoginPageProps) => {
   const [errors, setErrors] = useState<DyoErrorDto[]>([])
 
   const recaptcha = useRef<ReCAPTCHA>()
+  const oidc = mapOidcAvailability(ui)
+
+  const loginWithOidc = async (provider: OidcProvider) => {
+    const captcha = await recaptcha.current?.executeAsync()
+
+    const data: Login = {
+      method: 'oidc',
+      flow: flow.id,
+      csrfToken: findAttributes(ui, ATTRIB_CSRF)?.value,
+      captcha,
+      provider,
+    }
+
+    const res = await sendForm('POST', API_AUTH_LOGIN, data)
+    if (res.ok) {
+      const url = res.headers.get(HEADER_LOCATION)
+      await router.push(url)
+      return
+    }
+
+    if (res.status === 410) {
+      await router.reload()
+    }
+
+    const result = await res.json()
+
+    if (isDyoError(result)) {
+      setErrors(upsertDyoError(errors, result as DyoErrorDto))
+    } else if (result?.ui) {
+      setUi(result.ui)
+    } else {
+      toast(t('errors:internalError'))
+    }
+  }
+
   const formik = useDyoFormik({
     initialValues: {
       email,
@@ -59,6 +104,7 @@ const LoginPage = (props: LoginPageProps) => {
       const captcha = await recaptcha.current?.executeAsync()
 
       const data: Login = {
+        method: 'password',
         flow: flow.id,
         csrfToken: findAttributes(ui, ATTRIB_CSRF)?.value,
         captcha,
@@ -139,6 +185,28 @@ const LoginPage = (props: LoginPageProps) => {
             {t('common:logIn')}
           </DyoButton>
 
+          <div className="flex flex-col gap-2 items-center mx-auto mt-2">
+            <span className="text-light my-2">{t('orLogInWith')}</span>
+
+            <div className="flex flex-row gap-8">
+              {!oidc.gitlab ? null : (
+                <DyoIcon src="/oidc/gitlab.svg" size="lg" alt="Gitlab" onClick={() => loginWithOidc('gitlab')} />
+              )}
+
+              {!oidc.github ? null : (
+                <DyoIcon src="/oidc/github.svg" size="lg" alt="Github" onClick={() => loginWithOidc('github')} />
+              )}
+
+              {!oidc.google ? null : (
+                <DyoIcon src="/oidc/google.svg" size="lg" alt="Google" onClick={() => loginWithOidc('google')} />
+              )}
+
+              {!oidc.azure ? null : (
+                <DyoIcon src="/oidc/azure.svg" size="lg" alt="Azure" onClick={() => loginWithOidc('azure')} />
+              )}
+            </div>
+          </div>
+
           {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
         </DyoForm>
 
@@ -169,6 +237,8 @@ const LoginPage = (props: LoginPageProps) => {
 export default LoginPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
+  const flowId = context.query.flow as string
+
   const { refresh } = context.query
   const session = await obtainSessionFromRequest(context.req)
 
@@ -180,10 +250,15 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(ROUTE_INDEX)
   }
 
-  const flow = await kratos.createBrowserLoginFlow({
-    refresh: !!refresh,
-    cookie: !refresh ? undefined : cookieOf(context.req),
-  })
+  const flow = flowId
+    ? await kratos.getLoginFlow({
+        id: flowId,
+        cookie: cookieOf(context.req),
+      })
+    : await kratos.createBrowserLoginFlow({
+        refresh: !!refresh,
+        cookie: !refresh ? undefined : cookieOf(context.req),
+      })
 
   forwardCookie(context, flow)
 

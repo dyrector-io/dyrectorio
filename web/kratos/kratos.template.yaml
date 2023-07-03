@@ -1,4 +1,4 @@
-version: v0.10.1
+version: v0.13.0
 serve:
   public:
     base_url: ${KRATOS_URL}
@@ -13,6 +13,56 @@ selfservice:
       enabled: true
     oidc:
       enabled: false
+      config:
+        base_redirect_uri: ${KRATOS_URL}
+        providers:
+          - id: gitlab
+            provider: gitlab
+            mapper_url: "base64://${OIDC_GITLABHUB_SCHEMA_MAPPER}"
+            auth_url: https://gitlab.com/oauth/authorize
+            token_url: https://gitlab.com/oauth/token
+            issuer_url: https://gitlab.com
+            client_id: ""
+            client_secret: ""
+            scope:
+              - read_user
+              - openid
+              - email
+              - profile
+          - id: github
+            provider: github
+            mapper_url: "base64://${OIDC_GITLABHUB_SCHEMA_MAPPER}"
+            auth_url: https://github.com/login/oauth/authorize
+            token_url: https://github.com/login/oauth/access_token
+            issuer_url: https://github.com
+            client_id: ""
+            client_secret: ""
+            scope:
+              - read:user
+              - user:email
+          - id: google
+            provider: google
+            mapper_url: "base64://${OIDC_GOOGLE_SCHEMA_MAPPER}"
+            auth_url: https://accounts.google.com/o/oauth2/v2/auth
+            token_url: https://www.googleapis.com/oauth2/v4/token
+            issuer_url: https://accounts.google.com
+            client_id: ""
+            client_secret: ""
+            scope:
+              - openid
+              - email
+              - profile
+          - id: azure
+            provider: microsoft
+            mapper_url: "base64://${OIDC_AZURE_SCHEMA_MAPPER}"
+            client_id: ""
+            client_secret: ""
+            microsoft_tenant: common
+            subject_source: userinfo
+            scope:
+              - openid
+              - email
+              - profile
     code:
       enabled: true
   flows:
@@ -42,11 +92,19 @@ selfservice:
           default_browser_return_url: ${CRUX_UI_URL}
           hooks:
             - hook: require_verified_address
+        oidc:
+          default_browser_return_url: ${CRUX_UI_URL}
+          hooks:
+            - hook: revoke_active_sessions
     registration:
       lifespan: 10m
       ui_url: ${CRUX_UI_URL}/auth/registration
       after:
         password:
+          hooks:
+            - hook: session
+        oidc:
+          default_browser_return_url: ${CRUX_UI_URL}
           hooks:
             - hook: session
 hashers:

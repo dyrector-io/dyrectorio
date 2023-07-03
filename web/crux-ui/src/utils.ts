@@ -17,7 +17,7 @@ import { Translate } from 'next-translate'
 import { NextRouter } from 'next/router'
 import toast, { ToastOptions } from 'react-hot-toast'
 import { MessageType } from './elements/dyo-input'
-import { Audit, AxiosError, DyoApiError, DyoErrorDto, RegistryDetails } from './models'
+import { Audit, AxiosError, DyoApiError, DyoErrorDto, OidcAvailability, RegistryDetails } from './models'
 import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_NEW_PASSWORD, ROUTE_STATUS, verificationUrl } from './routes'
 
 export type AsyncVoidFunction = () => Promise<void>
@@ -115,7 +115,12 @@ export const distinct = <T>(items: T[]): T[] => Array.from(new Set(items))
 // auth related
 export const findAttributes = (ui: UiContainer, name: string): UiNodeInputAttributes => {
   const node = ui.nodes.find(it => (it.attributes as UiNodeInputAttributes).name === name)
-  return node.attributes as UiNodeInputAttributes
+  return node?.attributes as UiNodeInputAttributes
+}
+
+export const findAttributesByValue = (ui: UiContainer, value: string): UiNodeInputAttributes => {
+  const node = ui.nodes.find(it => (it.attributes as UiNodeInputAttributes).value === value)
+  return node?.attributes as UiNodeInputAttributes
 }
 
 export const findMessage = (ui: UiContainer, name: string): string => {
@@ -135,6 +140,13 @@ export const findUiMessage = (ui: UiContainer, type: MessageType): string => {
   const message = ui?.messages?.find(it => it.type === type)
   return message?.text
 }
+
+export const mapOidcAvailability = (ui: UiContainer): OidcAvailability => ({
+  gitlab: !!findAttributesByValue(ui, 'gitlab'),
+  github: !!findAttributesByValue(ui, 'github'),
+  google: !!findAttributesByValue(ui, 'google'),
+  azure: !!findAttributesByValue(ui, 'azure'),
+})
 
 // errors
 export const isDyoError = (instance: any) => 'error' in instance && 'description' in instance
@@ -226,7 +238,7 @@ export const formikFieldValueConverter =
   (field, value, shouldValidate) =>
     formik.setFieldValue(field, converter(value), shouldValidate)
 
-export const sendForm = async <Dto>(method: 'POST' | 'PUT', url: string, body?: Dto): Promise<Response> =>
+export const sendForm = async <Dto>(method: 'POST' | 'PUT' | 'DELETE', url: string, body?: Dto): Promise<Response> =>
   await fetch(url, {
     method,
     headers: body
@@ -281,7 +293,10 @@ const dyoApiErrorStatusToRedirectUrl = (status: number): string => {
   }
 }
 
-export const setupContextSession = async (context: GetServerSidePropsContext | NextPageContext, session: Session) => {
+export const setupContextSession = async (
+  context: GetServerSidePropsContext | NextPageContext,
+  session: Session,
+): Promise<GetServerSidePropsResult<any>> => {
   const req = context.req as IncomingMessageWithSession
 
   if (!session) {

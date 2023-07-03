@@ -82,6 +82,7 @@
   "profile": "Profile",
   "tokens": "Tokens",
   "templates": "Templates",
+
   "role": {
     "owner": "Owner",
     "user": "User",

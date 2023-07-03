@@ -10,5 +10,8 @@
   "profileToken": "Tokens",
   "noTokens": "You haven't created any token yet. Make one by clicking 'Add' on the top right.",
   "newTokenTips": "Here is your newly created token, make sure to copy it now. You won't be able to see it again!",
-  "onboarding": "Onboarding tips"
+  "onboarding": "Onboarding tips",
+  "connect": "Connect",
+  "remove": "Remove",
+  "areYouSureWantToRemoveAccount": "Are you sure you want to remove your {{account}} account connection?"
 }
