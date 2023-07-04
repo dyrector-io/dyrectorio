@@ -172,7 +172,7 @@ const SettingsPage = (props: SettingsPageProps) => {
             />
           </div>
 
-          {!oidcEnabled(oidc) ? null : (
+          {oidcEnabled(oidc) && (
             <div className="grid grid-cols-2 items-center gap-4 mt-14">
               <OidcConnector
                 provider="gitlab"

@@ -221,24 +221,24 @@ const RegisterPage = (props: RegisterPageProps) => {
             {t('createAcc')}
           </DyoButton>
 
-          {!oidcEnabled(oidc) ? null : (
+          {oidcEnabled(oidc) && (
             <div className="flex flex-col gap-2 items-center mx-auto mt-2">
               <span className="text-light my-2">{t('orSignUpWith')}</span>
 
               <div className="flex flex-row gap-8">
-                {!oidc.gitlab ? null : (
+                {oidc.gitlab && (
                   <DyoIcon src="/oidc/gitlab.svg" size="lg" alt="Gitlab" onClick={() => registerWithOidc('gitlab')} />
                 )}
 
-                {!oidc.github ? null : (
+                {oidc.github && (
                   <DyoIcon src="/oidc/github.svg" size="lg" alt="Github" onClick={() => registerWithOidc('github')} />
                 )}
 
-                {!oidc.google ? null : (
+                {oidc.google && (
                   <DyoIcon src="/oidc/google.svg" size="lg" alt="Google" onClick={() => registerWithOidc('google')} />
                 )}
 
-                {!oidc.azure ? null : (
+                {oidc.azure && (
                   <DyoIcon src="/oidc/azure.svg" size="lg" alt="Azure" onClick={() => registerWithOidc('azure')} />
                 )}
               </div>
