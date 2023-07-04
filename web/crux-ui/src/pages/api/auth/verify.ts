@@ -1,5 +1,5 @@
 import { VerifyEmail } from '@app/models'
-import { UpdateVerificationFlowBody, UpdateVerificationFlowWithCodeMethodBody } from '@ory/kratos-client'
+import { UpdateVerificationFlowBody, UpdateVerificationFlowWithCodeMethod } from '@ory/kratos-client'
 import { validateCaptcha } from '@server/captcha'
 import { useErrorMiddleware } from '@server/error-middleware'
 import kratos, { cookieOf } from '@server/kratos'
@@ -15,7 +15,7 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const { code } = dto
 
-  const body: UpdateVerificationFlowWithCodeMethodBody = {
+  const body: UpdateVerificationFlowWithCodeMethod = {
     csrf_token: dto.csrfToken,
     method: 'code',
     email: !code ? dto.email : null,

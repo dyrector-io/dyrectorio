@@ -10,27 +10,66 @@ export type AxiosError<T> = {
   response?: AxiosErrorResponse<T>
 }
 
-export type Login = {
-  flow: string
-  csrfToken: string
-  captcha?: string
-  email: string
-  password: string
-}
-
 export type Logout = {
   url: string
 }
 
-export type Register = {
+export const AUTHENTICATION_METHOD_VALUES = ['password', 'oidc'] as const
+export type AuthenticationMethod = typeof AUTHENTICATION_METHOD_VALUES[number]
+
+export const OIDC_PROVIDER_VALUES = ['google', 'gitlab', 'github', 'azure'] as const
+export type OidcProvider = typeof OIDC_PROVIDER_VALUES[number]
+
+export type OidcAvailability = {
+  gitlab: boolean
+  github: boolean
+  google: boolean
+  azure: boolean
+}
+
+export const oidcEnabled = (oidc: OidcAvailability) => oidc.gitlab || oidc.github || oidc.google || oidc.azure
+
+type LoginBase = {
+  method: AuthenticationMethod
   flow: string
   csrfToken: string
   captcha?: string
+}
+
+export type LoginWithPassword = LoginBase & {
+  method: 'password'
+  email: string
+  password: string
+}
+
+export type LoginWithOidc = LoginBase & {
+  method: 'oidc'
+  provider: OidcProvider
+}
+
+export type Login = LoginWithPassword | LoginWithOidc
+
+type RegisterBase = {
+  flow: string
+  method: AuthenticationMethod
+  csrfToken: string
+  captcha?: string
+}
+
+export type RegisterWithPassword = RegisterBase & {
+  method: 'password'
   email: string
   password: string
   firstName: string
   lastName?: string
 }
+
+export type RegisterWithOidc = RegisterBase & {
+  method: 'oidc'
+  provider: OidcProvider
+}
+
+export type Register = RegisterWithPassword | RegisterWithOidc
 
 export type RecoverEmail = {
   flow: string
@@ -43,7 +82,7 @@ export type RecoverEmail = {
 const KRATOS_LOCATION_CHANGE_REQUIRED = 'browser_location_change_required'
 const KRATOS_LOCATION_CHANGE_REQUIRED_TYPE_VALUE = [KRATOS_LOCATION_CHANGE_REQUIRED] as const
 
-export type RecoverNewPasswordError = {
+export type KratosLocationChangeRequiredError = {
   error: {
     id: typeof KRATOS_LOCATION_CHANGE_REQUIRED_TYPE_VALUE[number]
   }
@@ -109,8 +148,10 @@ export const nameOfIdentity = (identity: Identity): string => {
   return ''
 }
 
-export const toRecoverNewPasswordError = (err: Error): AxiosErrorResponse<RecoverNewPasswordError> => {
-  const error = err as AxiosError<RecoverNewPasswordError>
+export const toKratosLocationChangeRequiredError = (
+  err: Error,
+): AxiosErrorResponse<KratosLocationChangeRequiredError> => {
+  const error = err as AxiosError<KratosLocationChangeRequiredError>
 
   if (!error.response) {
     return null

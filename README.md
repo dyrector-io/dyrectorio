@@ -69,10 +69,9 @@ https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a
 
 ## Getting Started
 
-Our CLI tool lets you run and manage the entire, fully functional stack on your on-prem or cloud infrastructure.
+Our CLI tool lets you run and manage the entire, fully functional stack for development purposes.
 
 Stack:
-
 -   UI Service (crux-ui)
 -   Backend Service (crux)
 -   PostgreSQL database
