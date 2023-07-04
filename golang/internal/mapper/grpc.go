@@ -335,17 +335,13 @@ func mapInitContainers(in []*agent.InitContainer) []v1.InitContainer {
 	containers := []v1.InitContainer{}
 
 	for _, ic := range in {
-		useParentConfig := false
-		if ic.UseParentConfig != nil {
-			useParentConfig = *ic.UseParentConfig
-		}
 		containers = append(containers, v1.InitContainer{
 			Name:      ic.Name,
 			Image:     ic.Image,
 			Command:   ic.Command,
 			Volumes:   mapVolumeLinks(ic.Volumes),
 			Args:      ic.Args,
-			UseParent: useParentConfig,
+			UseParent: pointer.GetBool(ic.UseParentConfig),
 			Envs:      ic.Environment,
 		})
 	}
