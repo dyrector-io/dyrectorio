@@ -144,7 +144,7 @@ func (d *Deployment) GetDeploymentByName(
 	namespace,
 	name string,
 	cfg *config.Configuration,
-	) (*kappsv1.Deployment, error) {
+) (*kappsv1.Deployment, error) {
 	client := NewClient(cfg)
 	clientset, err := client.GetClientSet()
 	if err != nil {
