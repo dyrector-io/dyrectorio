@@ -398,6 +398,7 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 		return
 	}
 
+	// The channel consumer must run in a gofunc so RecvMsg can receive server side stream close events
 	go func() {
 	loop:
 		for {

@@ -87,12 +87,17 @@ func messageToStateItem(ctx context.Context, prefix string, event *events.Messag
 	return newState, nil
 }
 
-func WatchContainersByPrefix(ctx context.Context, prefix string) (*grpc.ContainerWatchContext, error) {
+func WatchContainers(ctx context.Context, prefix string) (*grpc.ContainerWatchContext, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
 	}
 
+	return WatchContainersByPrefix(ctx, cli, prefix)
+}
+
+func WatchContainersByPrefix(ctx context.Context, cli client.APIClient, prefix string) (*grpc.ContainerWatchContext, error) {
+	var err error
 	var containers []types.Container
 	if prefix == "" {
 		containers, err = dockerHelper.GetAllContainers(ctx)
@@ -136,7 +141,7 @@ func WatchContainersByPrefix(ctx context.Context, prefix string) (*grpc.Containe
 
 	return &grpc.ContainerWatchContext{
 		Events: eventChannel,
-		Error: errorChannel,
+		Error:  errorChannel,
 	}, nil
 }
 
