@@ -139,7 +139,12 @@ func (d *Deployment) GetDeployments(ctx context.Context, namespace string, cfg *
 	return list, err
 }
 
-func (d *Deployment) GetDeploymentByName(ctx context.Context, namespace, name string, cfg *config.Configuration) (*kappsv1.Deployment, error) {
+func (d *Deployment) GetDeploymentByName(
+	ctx context.Context,
+	namespace,
+	name string,
+	cfg *config.Configuration
+	) (*kappsv1.Deployment, error) {
 	client := NewClient(cfg)
 	clientset, err := client.GetClientSet()
 	if err != nil {

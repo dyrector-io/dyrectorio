@@ -7,22 +7,24 @@ import (
 	"time"
 
 	"github.com/AlekSi/pointer"
-	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
-	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
-	"github.com/dyrector-io/dyrectorio/golang/internal/util"
-	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
-	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
-	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
+	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
+	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
+	"github.com/dyrector-io/dyrectorio/golang/internal/util"
+	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
+	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
+
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	watch "k8s.io/apimachinery/pkg/watch"
 )
 
 const timeoutOneHour = 60 * 60
@@ -222,6 +224,41 @@ func podToStateItem(
 	return stateItem, nil
 }
 
+func pushEvent(
+	ctx context.Context,
+	event watch.Event,
+	watchContext *grpc.ContainerWatchContext,
+	deploymentHandler *k8s.Deployment,
+	svcHandler *k8s.Service,
+	cfg *config.Configuration,
+) {
+	eventObj, isEvent := event.Object.(*corev1.Event)
+	if !isEvent || eventObj.InvolvedObject.Kind != "Pod" {
+		return
+	}
+
+	stateItem, err := podToStateItem(ctx,
+		deploymentHandler,
+		svcHandler,
+		eventObj.InvolvedObject.Namespace,
+		eventObj.InvolvedObject.Name,
+		eventObj.Reason,
+		cfg)
+	if err != nil {
+		if kerrors.IsNotFound(err) {
+			return
+		}
+		watchContext.Error <- err
+		return
+	}
+	if stateItem == nil || stateItem.State == common.ContainerState_CONTAINER_STATE_UNSPECIFIED {
+		return
+	}
+	watchContext.Events <- []*common.ContainerStateItem{
+		stateItem,
+	}
+}
+
 func watchPods(
 	ctx context.Context,
 	namespace string,
@@ -273,23 +310,7 @@ func watchPods(
 
 			// Event type is empty when something goes wrong, in this case the watcher will be restarted
 			if event.Type != "" {
-				eventObj, isEvent := event.Object.(*corev1.Event)
-				if isEvent && eventObj.InvolvedObject.Kind == "Pod" {
-					stateItem, err := podToStateItem(ctx, deploymentHandler, svcHandler, eventObj.InvolvedObject.Namespace, eventObj.InvolvedObject.Name, eventObj.Reason, cfg)
-					if err != nil {
-						if kerrors.IsNotFound(err) {
-							continue
-						}
-						watchContext.Error <- err
-						return
-					}
-					if stateItem == nil || stateItem.State == common.ContainerState_CONTAINER_STATE_UNSPECIFIED {
-						break
-					}
-					watchContext.Events <- []*common.ContainerStateItem{
-						stateItem,
-					}
-				}
+				pushEvent(ctx, event, watchContext, deploymentHandler, svcHandler, cfg)
 			}
 			break
 		}
