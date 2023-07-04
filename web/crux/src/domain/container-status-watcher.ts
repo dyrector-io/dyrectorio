@@ -33,27 +33,23 @@ export default class ContainerStatusWatcher {
   }
 
   update(status: ContainerStateListMessage) {
-    const removedIds = status.data
-      .filter(it => it.state === ContainerState.REMOVED)
-      .map(it => Agent.containerPrefixNameOf(it.id))
-    const updated = status.data.filter(it => it.state !== ContainerState.REMOVED)
+    if (status.data) {
+      const removedIds = status.data
+        .filter(it => it.state === ContainerState.REMOVED)
+        .map(it => Agent.containerPrefixNameOf(it.id))
+      const updated = status.data.filter(it => it.state !== ContainerState.REMOVED)
 
-    const stateMap = Object.keys(this.state)
-      .filter(it => !removedIds.includes(it))
-      .reduce(
-        (map, it) => {
+      const stateMap = Object.keys(this.state)
+        .filter(it => !removedIds.includes(it))
+        .reduce((map, it) => {
           map[it] = this.state[it]
           return map
-        },
-        {},
-      )
-    this.state = updated.reduce(
-      (map, it) => {
+        }, {})
+      this.state = updated.reduce((map, it) => {
         map[Agent.containerPrefixNameOf(it.id)] = it
         return map
-      },
-      stateMap,
-    )
+      }, stateMap)
+    }
 
     this.stream.next(this.mapStateToMessage())
   }

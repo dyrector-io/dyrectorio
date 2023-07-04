@@ -420,6 +420,13 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 				}
 
 				if req.OneShot != nil && *req.OneShot {
+					err := stream.CloseSend()
+					if err == nil {
+						log.Info().Str("prefix", filterPrefix).Msg("Closed container status channel")
+					} else {
+						log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to close container status channel")
+					}
+
 					break loop
 				}
 				break

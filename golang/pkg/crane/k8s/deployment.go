@@ -34,7 +34,7 @@ import (
 
 const CraneUpdatedAnnotation = "crane.dyrector.io/restartedAt"
 
-var ErrorPodHasNoOwner = errors.New("pod has no owner")
+var ErrPodHasNoOwner = errors.New("pod has no owner")
 
 // facade object for Deployment management
 type Deployment struct {
@@ -139,7 +139,7 @@ func (d *Deployment) GetDeployments(ctx context.Context, namespace string, cfg *
 	return list, err
 }
 
-func (d *Deployment) GetDeploymentByName(ctx context.Context, namespace string, name string, cfg *config.Configuration) (*kappsv1.Deployment, error) {
+func (d *Deployment) GetDeploymentByName(ctx context.Context, namespace, name string, cfg *config.Configuration) (*kappsv1.Deployment, error) {
 	client := NewClient(cfg)
 	clientset, err := client.GetClientSet()
 	if err != nil {
@@ -247,7 +247,7 @@ func (d *Deployment) GetPodDeployment(namespace, name string) (*kappsv1.Deployme
 	}
 
 	if len(pod.OwnerReferences) == 0 {
-		return nil, ErrorPodHasNoOwner
+		return nil, ErrPodHasNoOwner
 	}
 
 	owner := &pod.OwnerReferences[0]

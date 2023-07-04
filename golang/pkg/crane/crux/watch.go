@@ -25,7 +25,15 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-func getInitialStateList(ctx context.Context, deploymentHandler *k8s.Deployment, svcHandler *k8s.Service, namespace string, cfg *config.Configuration) ([]*common.ContainerStateItem, error) {
+const timeoutOneHour = 60 * 60
+
+func getInitialStateList(
+	ctx context.Context,
+	deploymentHandler *k8s.Deployment,
+	svcHandler *k8s.Service,
+	namespace string,
+	cfg *config.Configuration,
+) ([]*common.ContainerStateItem, error) {
 	deployments, err := deploymentHandler.GetDeployments(ctx, namespace, cfg)
 	if err != nil {
 		return nil, err
@@ -98,9 +106,9 @@ func deploymentToStateItem(
 }
 
 func sendDeploymentInformerEvent(
+	ctx context.Context,
 	obj interface{},
 	filterNamespace string,
-	ctx context.Context,
 	deploymentHandler *k8s.Deployment,
 	svcHandler *k8s.Service,
 	watchContext *grpc.ContainerWatchContext,
@@ -147,14 +155,18 @@ func watchDeployments(
 	informer := factory.ForResource(resource).Informer()
 
 	mux := &sync.RWMutex{}
-	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, err := informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		DeleteFunc: func(obj interface{}) {
 			mux.RLock()
 			defer mux.RUnlock()
 
-			sendDeploymentInformerEvent(obj, namespace, ctx, deploymentHandler, svcHandler, watchContext, cfg)
+			sendDeploymentInformerEvent(ctx, obj, namespace, deploymentHandler, svcHandler, watchContext, cfg)
 		},
 	})
+	if err != nil {
+		watchContext.Error <- err
+		return
+	}
 
 	informer.Run(ctx.Done())
 }
@@ -185,7 +197,7 @@ func podToStateItem(
 ) (*common.ContainerStateItem, error) {
 	deployment, err := deploymentHandler.GetPodDeployment(namespace, podName)
 	if err != nil {
-		if errors.Is(err, k8s.ErrorPodHasNoOwner) {
+		if errors.Is(err, k8s.ErrPodHasNoOwner) {
 			return nil, nil
 		}
 		return nil, err
@@ -235,7 +247,7 @@ func watchPods(
 	opts := metav1.ListOptions{
 		Watch:             true,
 		SendInitialEvents: pointer.ToBool(false),
-		TimeoutSeconds:    pointer.ToInt64(60 * 60),
+		TimeoutSeconds:    pointer.ToInt64(timeoutOneHour),
 		ResourceVersion:   list.ResourceVersion,
 	}
 

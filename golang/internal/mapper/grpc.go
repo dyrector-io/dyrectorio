@@ -496,10 +496,11 @@ func MapDeploymentLatestPodToStateItem(
 
 	stateItem.Ports = mapServicePorts(svc[deployment.Name])
 
-	var latestPod *corev1.Pod = nil
-	for index, pod := range pods {
+	var latestPod *corev1.Pod
+	for index := range pods {
+		pod := &pods[index]
 		if latestPod == nil || pod.CreationTimestamp.After(latestPod.CreationTimestamp.Time) {
-			latestPod = &pods[index]
+			latestPod = pod
 		}
 	}
 
@@ -622,7 +623,7 @@ func MapDockerContainerEventToContainerState(event string) common.ContainerState
 	case "pause":
 		return common.ContainerState_WAITING
 	case "restart":
-		return common.ContainerState_WAITING
+		return common.ContainerState_RUNNING
 	case "start":
 		return common.ContainerState_RUNNING
 	case "stop":
