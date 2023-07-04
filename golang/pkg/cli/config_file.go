@@ -11,6 +11,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 
 	containerRuntime "github.com/dyrector-io/dyrectorio/golang/internal/runtime/container"
@@ -304,11 +305,16 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 }
 
 func LoadEnvFile(envFile string) []string {
-	file, err := os.Open(envFile)
+	workDir, err := os.Getwd()
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("Failed to open the specified .env")
+		log.Fatal().Err(err).Stack().Msg("Can not get the working directory, for the .env file")
 	}
-	defer file.Close()
+
+	file, err := os.Open(path.Join(workDir, envFile)) //#nosec G304 -- secret path comes from an env
+	if err != nil {
+		log.Fatal().Err(err).Stack().Msg("Failed to open the specified .env file")
+	}
+	defer logdefer.LogDeferredErr(file.Close, log.Warn(), "error closing .env file")
 
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
