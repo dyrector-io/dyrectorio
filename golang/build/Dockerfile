@@ -16,4 +16,4 @@ LABEL org.opencontainers.image.documentation="https://docs.dyrector.io"
 
 COPY ./out/$AGENT_BINARY-$TARGETOS-$TARGETARCH /agent
 
-CMD ["/agent"]
+ENTRYPOINT ["/agent"]
