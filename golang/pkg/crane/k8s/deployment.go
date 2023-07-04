@@ -143,7 +143,7 @@ func (d *Deployment) GetDeploymentByName(
 	ctx context.Context,
 	namespace,
 	name string,
-	cfg *config.Configuration
+	cfg *config.Configuration,
 	) (*kappsv1.Deployment, error) {
 	client := NewClient(cfg)
 	clientset, err := client.GetClientSet()
