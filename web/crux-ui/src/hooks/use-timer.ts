@@ -1,29 +1,30 @@
 import { SECOND_IN_MILLIS } from '@app/const'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
+import useInterval from './use-interval'
 
 const useTimer = (
-  initialTimeout?: number,
+  initialTimeout?: number | null,
   onExpire?: VoidFunction,
 ): [number, (timeout: number) => void, VoidFunction] => {
-  const [remaining, setRemaining] = useState(initialTimeout ?? -1)
-  const expireCallback = useRef<VoidFunction>(null)
-  const timer = useRef<NodeJS.Timeout>(null)
+  const currentOnExpire = useRef(onExpire)
+  const [remaining, setRemaining] = useState(initialTimeout ?? null)
 
-  expireCallback.current = onExpire
+  const onIntervalExpire = useCallback(() => {
+    const newRemaining = remaining - 1
+    setRemaining(newRemaining)
 
-  useEffect(() => {
-    if (remaining > 0) {
-      timer.current = setTimeout(() => setRemaining(remaining - 1), SECOND_IN_MILLIS)
-    } else {
-      timer.current = null
-      if (timer !== null) {
-        expireCallback.current?.call(null)
-      }
+    if (newRemaining < 1) {
+      setRemaining(null)
+      currentOnExpire.current?.call(null)
     }
-    return () => clearTimeout(timer.current)
   }, [remaining])
 
-  return [remaining, (timeout: number) => setRemaining(timeout), () => clearTimeout(timer.current)]
+  const start = useCallback((timeout: number) => setRemaining(timeout), [])
+  const cancel = useCallback(() => setRemaining(null), [])
+
+  useInterval(onIntervalExpire, remaining < 1 ? null : SECOND_IN_MILLIS)
+
+  return [remaining, start, cancel]
 }
 
 export default useTimer

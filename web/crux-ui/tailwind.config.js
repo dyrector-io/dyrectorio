@@ -5,6 +5,7 @@ module.exports = {
     './src/elements/**/*.{js,ts,jsx,tsx}',
     './src/utils.ts',
   ],
+  mode: 'jit',
   theme: {
     extend: {
       colors: {
@@ -48,6 +49,15 @@ module.exports = {
         poppins: 'Poppins, sans-serif',
         roboto: 'Roboto Mono, sans-serif',
       },
+      animation: {
+        fade: 'fade-out forwards 3s ease-out',
+      },
+      keyframes: theme => ({
+        'fade-out': {
+          '0%': { opacity: theme('opacity.100') },
+          '100%': { opacity: theme('opacity.0') },
+        },
+      }),
     },
   },
   variants: {

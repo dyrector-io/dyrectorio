@@ -74,7 +74,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() => getContainerConfigFieldErrors(image.config))
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
-  const [saveState, setSaveState] = useState<WebSocketSaveState>('saved')
+  const [saveState, setSaveState] = useState<WebSocketSaveState>(null)
 
   const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], config))
 
@@ -83,7 +83,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const router = useRouter()
   const [deleteModalConfig, confirmDelete] = useConfirmation()
   const versionSock = useWebSocket(versionWsUrl(version.id), {
-    onOpen: () => setSaveState('saved'),
+    onOpen: () => setSaveState('connected'),
     onClose: () => setSaveState('disconnected'),
     onReceive: (message: WsMessage) => {
       if (message.type === WS_TYPE_PATCH_RECEIVED) {

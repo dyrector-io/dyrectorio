@@ -55,7 +55,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
   const [project, setProject] = useState(propsProject)
   const [editState, setEditState] = useState<ProjectDetailsEditState>('version-list')
   const [increaseTarget, setIncreaseTarget] = useState<Version>(null)
-  const [saveState, setSaveState] = useState<WebSocketSaveState>('saved')
+  const [saveState, setSaveState] = useState<WebSocketSaveState>(null)
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
 
   const submitRef = useRef<() => Promise<any>>()
@@ -165,7 +165,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
   return (
     <Layout title={t('projectsName', project)} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        <WebSocketSaveIndicator className="mx-3" state={saveState} />
+        {project.type === 'versionless' && <WebSocketSaveIndicator className="mx-3" state={saveState} />}
 
         <DetailsPageMenu
           texts={pageMenuTexts}
