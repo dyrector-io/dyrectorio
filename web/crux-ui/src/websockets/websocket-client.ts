@@ -30,10 +30,6 @@ class WebSocketClient {
 
   private errorHandler: WsErrorHandler = null
 
-  get connecting(): boolean {
-    return this.socket?.readyState === WebSocket.CONNECTING
-  }
-
   get connected(): boolean {
     return this.socket?.readyState === WebSocket.OPEN
   }
