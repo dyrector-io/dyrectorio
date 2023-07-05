@@ -263,12 +263,12 @@ func (d *Deployment) GetPodDeployment(namespace, name string) (*kappsv1.Deployme
 		}
 
 		if len(replicaSet.OwnerReferences) == 0 {
-			return nil, errors.New("pod ReplicaSet has no owner")
+			return nil, ErrPodHasNoOwner
 		}
 
 		owner = &replicaSet.OwnerReferences[0]
 		if owner.Kind != "Deployment" {
-			return nil, errors.New("unexpected ReplicaSet owner kind")
+			return nil, ErrPodHasNoOwner
 		}
 	}
 

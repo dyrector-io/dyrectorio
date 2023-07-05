@@ -370,14 +370,13 @@ func streamContainerStatus(
 	req *agent.ContainerStateRequest,
 	eventsContext *ContainerWatchContext,
 ) {
-loop:
 	for {
 		select {
 		case <-streamCtx.Done():
-			break loop
+			return
 		case eventError := <-eventsContext.Error:
 			log.Error().Err(eventError).Msg("Container status watcher error")
-			break loop
+			return
 		case event := <-eventsContext.Events:
 			err := stream.Send(&common.ContainerStateListMessage{
 				Prefix: req.Prefix,
@@ -385,7 +384,7 @@ loop:
 			})
 			if err != nil {
 				log.Error().Err(err).Msg("Container status channel error")
-				break loop
+				return
 			}
 
 			if req.OneShot != nil && *req.OneShot {
@@ -396,7 +395,7 @@ loop:
 					log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to close container status channel")
 				}
 
-				break loop
+				return
 			}
 			break
 		}
