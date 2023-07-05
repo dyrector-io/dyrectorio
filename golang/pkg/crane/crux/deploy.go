@@ -42,6 +42,8 @@ func WatchDeploymentsByPrefix(ctx context.Context, namespace string) (*grpc.Cont
 		Error:  errorChannel,
 	}
 
+	// For some unknown reason the watcher used by watchPods does not get any deployment delete events
+	// so a separate watcher is required
 	go watchDeployments(ctx, namespace, clusterClient, deploymentHandler, svcHandler, watchContext, cfg)
 	go watchPods(ctx, namespace, clientSet, deploymentHandler, svcHandler, watchContext, cfg)
 
