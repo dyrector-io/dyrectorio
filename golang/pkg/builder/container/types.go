@@ -7,6 +7,7 @@ import (
 	"io"
 
 	"github.com/AlekSi/pointer"
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 )
@@ -102,10 +103,10 @@ func (policy *RestartPolicyName) UnmarshalJSON(b []byte) error {
 
 type ParentContainer struct {
 	Name        string
-	ID          *string
 	MountList   []mount.Mount
 	Environment []string
 	Logger      *io.StringWriter
+	*types.Container
 }
 
 // Hook function  which can be used to add custom logic before and after events of the lifecycle of a container.
