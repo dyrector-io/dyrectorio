@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bufio"
 	"context"
 	"crypto/rand"
 	"encoding/base64"
@@ -10,6 +11,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 
 	containerRuntime "github.com/dyrector-io/dyrectorio/golang/internal/runtime/container"
@@ -26,6 +28,7 @@ type State struct {
 	Ctx                context.Context
 	SettingsFile       SettingsFile
 	InternalHostDomain string
+	EnvFile            []string
 	*Containers
 }
 
@@ -41,6 +44,7 @@ type ArgsFlags struct {
 	CruxUIDisabled    bool
 	LocalAgent        bool
 	PreferLocalImages bool
+	EnvFile           string
 	// pipeline mode
 	FullyContainerized bool
 	Network            string
@@ -192,6 +196,10 @@ func SettingsFileDefaults(initialState *State, args *ArgsFlags) *State {
 		log.Fatal().Stack().Err(err).Send()
 	}
 
+	if args.EnvFile != "" {
+		state.EnvFile = LoadEnvFile(args.EnvFile)
+	}
+
 	EnsureNetworkExists(state)
 
 	if args.Network != "" {
@@ -294,6 +302,31 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	state.Containers.MailSlurper.Name = fmt.Sprintf("%s_mailslurper", args.Prefix)
 
 	return state
+}
+
+func LoadEnvFile(envFile string) []string {
+	workDir, err := os.Getwd()
+	if err != nil {
+		log.Fatal().Err(err).Stack().Msg("Can not get the working directory, for the .env file")
+	}
+
+	file, err := os.Open(path.Join(workDir, envFile)) //#nosec G304 -- secret path comes from an env
+	if err != nil {
+		log.Fatal().Err(err).Stack().Msg("Failed to open the specified .env file")
+	}
+	defer logdefer.LogDeferredErr(file.Close, log.Warn(), "error closing .env file")
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+
+	var envs []string
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		envs = append(envs, line)
+	}
+
+	return envs
 }
 
 // CheckSettings makes sure your state is correct

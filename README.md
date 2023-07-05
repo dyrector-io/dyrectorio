@@ -69,10 +69,9 @@ https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a
 
 ## Getting Started
 
-Our CLI tool lets you run and manage the entire, fully functional stack on your on-prem or cloud infrastructure.
+Our CLI tool lets you run and manage the entire, fully functional stack for development purposes.
 
 Stack:
-
 -   UI Service (crux-ui)
 -   Backend Service (crux)
 -   PostgreSQL database
@@ -104,16 +103,30 @@ Stack:
 
 ## Development
 
-1. Read the CLI documentation first (See the end of this section)
-2. Decide which part of the project you want to work on, in this case it is crux, crux-ui or both
-3. Modify the [CLI's settings file](https://docs.dyrector.io/get-started/cli#configuration) if necessary
-4. Execute the correct CLI command using the appropriate flags to turn off crux or crux-ui services
-5. Start crux or crux-ui with the appropriate `npm` command, usually `npm run start`
-6. After you navigated to `localhost:8000` (this is the default Traefik port) you will see a Login screen
-7. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
-8. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
-9. Open your e-mail message and using the link inside you can activate your account
-10. Fruitful contributing! 🎬
+## Development
+
+1. Run `make upd` in the repo's root folder.
+  - Save your `DATABASE_URL=<connection_string>` environment variable for later.
+2. Go to the `web/crux` directory: `cd web/crux`
+3. Install dependencies `npm ci`
+4. Copy the _env.example_ file as _.env_ `cp .env.example .env`
+  - Paste `DATABASE_URL=<connection_string>` variable from step 1 to _.env_
+5. On Linux:
+  - Uncomment the `DNS_DEFAULT_RESULT_ORDER=ipv4first` line in the _.env_ file
+  - Change the `CRUX_AGENT_ADDRESS` variable's value to `172.17.0.1:5000`
+6. On Mac / Windows you may have to edit your OS's hosts file to be sure the `host.docker.internal` domain resolves to docker's bridge network.
+  - Alternatively you can use your machine's LAN IP.
+7. Deploy the database with `npm run prisma:migrate`
+8. Start the backend with `npm run start`
+9. Go to the `web/crux-ui` directory: `cd web/crux-ui`
+10. Install dependencies `npm ci`
+11. Copy the _env.example_ file as _.env_ `cp .env.example .env`
+12. Start the frontend with `npm run start`
+13. After you navigated to `localhost:8000` (this is the default Traefik port) you will see a Login screen
+14. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
+15. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
+16. Open your e-mail message and using the link inside you can activate your account
+17. Fruitful contributing! 🎬
 
 Read more about the CLI in the [documentation](https://docs.dyrector.io/get-started/cli).
 
@@ -142,6 +155,10 @@ End-to-end tests:
 11. Be sure that `chromium` is installed on your system
   - You may have to run `npx playwright install-deps`
   - More info: https://playwright.dev/docs/intro
+  - Additional note: On some systems like Manjaro, `npx playwright install-deps` does not work 
+    (warning message: "your OS is not officially supported by Playwright").
+    In this case, you can run `npm init playwright@latest` and when prompted with the question "Install Playwright operating system dependencies", choose "No".
+    After that, for Manjaro, you need to separately install Playwright from the AUR repository with the package manager and everything works just fine.
 12. In a different terminal go to the `web/crux-ui` folder and run `npm run test:e2e`
   - If you want to run a specific test file from the `web/crux-ui/e2e` folder you can do it with `DEBUG=1 npx playwright test <file_name>`
 

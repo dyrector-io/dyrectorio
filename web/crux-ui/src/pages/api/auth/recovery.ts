@@ -1,5 +1,5 @@
 import { HEADER_LOCATION } from '@app/const'
-import { RecoverEmail, toRecoverNewPasswordError } from '@app/models'
+import { RecoverEmail, toKratosLocationChangeRequiredError } from '@app/models'
 import { UpdateRecoveryFlowWithCodeMethod } from '@ory/kratos-client'
 import { validateCaptcha } from '@server/captcha'
 import { useErrorMiddleware } from '@server/error-middleware'
@@ -38,7 +38,7 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
 
     res.status(kratosRes.status).json(kratosRes.data)
   } catch (err) {
-    const error = toRecoverNewPasswordError(err)
+    const error = toKratosLocationChangeRequiredError(err)
     if (error) {
       forwardCookieToResponse(res, error)
       const settingsFlow = flowOfUrl(error.data.redirect_browser_to)

@@ -1,16 +1,23 @@
 import { Layout } from '@app/components/layout'
+import OidcConnector, { OidcConnectorAction } from '@app/components/settings/oidc-connector'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
+import { HEADER_LOCATION } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoMessage from '@app/elements/dyo-message'
+import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
-import { IdentityPublicMetadata } from '@app/models'
+import useConfirmation from '@app/hooks/use-confirmation'
+import { IdentityPublicMetadata, oidcEnabled, OidcProvider } from '@app/models'
 import {
+  API_SETTINGS_OIDC,
   API_USERS_ME_PREFERENCES_ONBOARDING,
+  ROUTE_LOGIN,
   ROUTE_NEW_PASSWORD,
   ROUTE_SETTINGS,
   ROUTE_SETTINGS_CHANGE_PASSWORD,
@@ -18,22 +25,43 @@ import {
   ROUTE_SETTINGS_TOKENS,
   verificationUrl,
 } from '@app/routes'
-import { redirectTo, withContextAuthorization } from '@app/utils'
-import { Identity } from '@ory/kratos-client'
-import { sessionOfContext } from '@server/kratos'
+import { findAttributesByValue, mapOidcAvailability, redirectTo, sendForm, withContextAuthorization } from '@app/utils'
+import { Identity, SettingsFlow, UiContainer } from '@ory/kratos-client'
+import kratos, { cookieOf, identityWasRecovered, sessionOfContext } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
+import { useRouter } from 'next/router'
 import { useState } from 'react'
 
-const SettingsPage = (props: Identity) => {
-  const { t } = useTranslation('settings')
+type SettingsPageProps = {
+  identity: Identity
+  flow: SettingsFlow
+}
 
-  const { traits, metadata_public: propsPublicMetadata } = props
+const mapUiToOidcProviders = (ui: UiContainer): Record<OidcProvider, OidcConnectorAction> => ({
+  gitlab: findAttributesByValue(ui, 'gitlab')?.name as OidcConnectorAction,
+  github: findAttributesByValue(ui, 'github')?.name as OidcConnectorAction,
+  google: findAttributesByValue(ui, 'google')?.name as OidcConnectorAction,
+  azure: findAttributesByValue(ui, 'azure')?.name as OidcConnectorAction,
+})
+
+const SettingsPage = (props: SettingsPageProps) => {
+  const { t } = useTranslation('settings')
+  const router = useRouter()
+
+  const { flow } = props
+  const { identity } = flow
+  const { traits, metadata_public: propsPublicMetadata } = identity
 
   const handleApiError = defaultApiErrorHandler(t)
 
   const metadata = propsPublicMetadata as IdentityPublicMetadata
   const [onboardingDisabled, setOnboardingDisabled] = useState(metadata?.disableOnboarding ?? false)
+  const [modalConfig, confirm] = useConfirmation()
+  const [ui, setUi] = useState<UiContainer>(flow.ui)
+
+  const oidc = mapOidcAvailability(ui)
+  const oidcActions = mapUiToOidcProviders(ui)
 
   const onToggleOnboarding = async () => {
     const res = await fetch(API_USERS_ME_PREFERENCES_ONBOARDING, { method: onboardingDisabled ? 'PUT' : 'DELETE' })
@@ -43,6 +71,52 @@ const SettingsPage = (props: Identity) => {
     }
 
     setOnboardingDisabled(!onboardingDisabled)
+  }
+
+  const onModifyOidcConnection = async (provider: OidcProvider, action: OidcConnectorAction) => {
+    if (action === 'unlink') {
+      const confirmed = await confirm(null, {
+        title: t('common:areYouSure'),
+        description: t('areYouSureWantToRemoveAccount', {
+          account: provider,
+        }),
+        confirmText: t('remove'),
+        confirmColor: 'bg-error-red',
+      })
+
+      if (!confirmed) {
+        return
+      }
+    }
+
+    const res = await sendForm(action === 'link' ? 'POST' : 'DELETE', API_SETTINGS_OIDC, {
+      flow: flow.id,
+      provider,
+    })
+
+    if (!res.ok) {
+      if (res.status === 403) {
+        await router.replace(`${ROUTE_LOGIN}?refresh=${encodeURIComponent(identity.traits.email)}`)
+        return
+      }
+
+      if (res.status === 410) {
+        router.reload()
+        return
+      }
+
+      handleApiError(res)
+      return
+    }
+
+    if (res.status === 201) {
+      const url = res.headers.get(HEADER_LOCATION)
+      await router.push(url)
+      return
+    }
+
+    const newFlow = (await res.json()) as SettingsFlow
+    setUi(newFlow.ui)
   }
 
   const pageLink: BreadcrumbLink = {
@@ -67,7 +141,7 @@ const SettingsPage = (props: Identity) => {
 
         <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
 
-        <div className="flex flex-row">
+        <div className="flex flex-row gap-32">
           <div className="flex flex-col w-1/2">
             <DyoInput
               label={t('common:firstName')}
@@ -97,8 +171,51 @@ const SettingsPage = (props: Identity) => {
               onCheckedChange={onToggleOnboarding}
             />
           </div>
+
+          {oidcEnabled(oidc) && (
+            <div className="grid grid-cols-2 items-center gap-4 mt-14">
+              <OidcConnector
+                provider="gitlab"
+                name="Gitlab"
+                action={oidcActions.gitlab}
+                onModifyConnection={onModifyOidcConnection}
+              />
+
+              <OidcConnector
+                provider="github"
+                name="Github"
+                action={oidcActions.github}
+                onModifyConnection={onModifyOidcConnection}
+              />
+
+              <OidcConnector
+                provider="google"
+                name="Google"
+                action={oidcActions.google}
+                onModifyConnection={onModifyOidcConnection}
+              />
+
+              <OidcConnector
+                provider="azure"
+                name="Azure"
+                action={oidcActions.azure}
+                onModifyConnection={onModifyOidcConnection}
+              />
+
+              {ui.messages?.map((it, index) => (
+                <DyoMessage
+                  className="col-span-2 text-xs italic"
+                  key={`info-${index}`}
+                  message={it?.text}
+                  messageType="info"
+                />
+              ))}
+            </div>
+          )}
         </div>
       </DyoCard>
+
+      <DyoConfirmationModal config={modalConfig} />
     </Layout>
   )
 }
@@ -106,14 +223,15 @@ const SettingsPage = (props: Identity) => {
 export default SettingsPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const { flow } = context.query
-  if (flow) {
-    return redirectTo(`${ROUTE_NEW_PASSWORD}?flow=${flow}`)
-  }
+  const flowId = context.query.flow as string
 
   const session = sessionOfContext(context)
-
   const { identity } = session
+
+  if (identityWasRecovered(session)) {
+    return redirectTo(`${ROUTE_NEW_PASSWORD}?flow=${flowId}`)
+  }
+
   const { email } = identity.traits
   const verifiable = identity.verifiable_addresses?.find(it => it.value === email && !it.verified)
 
@@ -121,8 +239,20 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(verificationUrl(verifiable.value))
   }
 
+  const cookie = cookieOf(context.req)
+  const flow = flowId
+    ? await kratos.getSettingsFlow({
+        id: flowId,
+        cookie: cookieOf(context.req),
+      })
+    : await kratos.createBrowserSettingsFlow({
+        cookie,
+      })
+
   return {
-    props: identity,
+    props: {
+      flow: flow.data,
+    },
   }
 }
 

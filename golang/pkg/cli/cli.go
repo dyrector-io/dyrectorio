@@ -24,6 +24,7 @@ const (
 	FlagSilent             = "silent"
 	FlagExpectContainerEnv = "expect-container-env"
 	FlagNetwork            = "network"
+	FlagEnvFile            = "env-file"
 )
 
 // InitCLI returns the configuration flags of the program
@@ -146,6 +147,12 @@ func InitCLI() *ucli.App {
 				Value:   false,
 				Usage:   "hides the welcome message and minimizes chattiness",
 			},
+			&ucli.StringFlag{
+				Name:    FlagEnvFile,
+				Aliases: []string{"e"},
+				Value:   "",
+				Usage:   "loads the environment variables into all containers from the specified .env file",
+			},
 		},
 	}
 }
@@ -170,6 +177,7 @@ func run(cCtx *ucli.Context) error {
 		CruxUIDisabled:     cCtx.Bool(FlagDisableCruxUI),
 		LocalAgent:         cCtx.Bool(FlagLocalAgent),
 		Command:            cCtx.Command.Name,
+		EnvFile:            cCtx.String(FlagEnvFile),
 	}
 
 	initialState := State{

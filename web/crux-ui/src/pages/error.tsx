@@ -27,7 +27,7 @@ const ErrorPage = (props: FlowError) => {
       <div className="container mx-auto px-6 w-full max-w-2xl md:max-w-5xl lg:max-w-7xl text-center my-20">
         <h2 className="text-4xl font-extrabold text-blue">{t('oops')}</h2>
 
-        <div className="my-4 text-center text-purple-lightText font-semibold">{error?.message}</div>
+        <div className="my-4 text-center text-bright font-semibold">{error?.message}</div>
 
         <DyoButton className="px-12" outlined onClick={navigateToDashboard}>
           {t('common:dashboard')}

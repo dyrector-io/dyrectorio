@@ -1,29 +1,32 @@
 import { SingleFormLayout } from '@app/components/layout'
-import { ATTRIB_CSRF } from '@app/const'
+import { ATTRIB_CSRF, HEADER_LOCATION } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoForm from '@app/elements/dyo-form'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { DyoErrorDto, Register } from '@app/models'
+import { DyoErrorDto, oidcEnabled, OidcProvider, Register } from '@app/models'
 import { API_AUTH_REGISTER, ROUTE_LOGIN, ROUTE_SETTINGS, verificationUrl } from '@app/routes'
 import {
   findAttributes,
   findError,
   findMessage,
   isDyoError,
+  mapOidcAvailability,
   redirectTo,
   removeError,
+  sendForm,
   upsertDyoError,
   upsertError,
 } from '@app/utils'
 import { registerSchema } from '@app/validations'
 import { RegistrationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
-import kratos, { forwardCookie, obtainSessionFromRequest } from '@server/kratos'
+import kratos, { cookieOf, forwardCookie, obtainSessionFromRequest } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -47,6 +50,41 @@ const RegisterPage = (props: RegisterPageProps) => {
   const [errors, setErrors] = useState<DyoErrorDto[]>([])
 
   const recaptcha = useRef<ReCAPTCHA>()
+  const oidc = mapOidcAvailability(ui)
+
+  const registerWithOidc = async (provider: OidcProvider) => {
+    const captcha = await recaptcha.current?.executeAsync()
+
+    const data: Register = {
+      method: 'oidc',
+      flow: flow.id,
+      csrfToken: findAttributes(ui, ATTRIB_CSRF)?.value,
+      captcha,
+      provider,
+    }
+
+    const res = await sendForm('POST', API_AUTH_REGISTER, data)
+    if (res.ok) {
+      const url = res.headers.get(HEADER_LOCATION)
+      await router.push(url)
+      return
+    }
+
+    if (res.status === 410) {
+      await router.reload()
+    }
+
+    const result = await res.json()
+
+    if (isDyoError(result)) {
+      setErrors(upsertDyoError(errors, result as DyoErrorDto))
+    } else if (result?.ui) {
+      setUi(result.ui)
+    } else {
+      toast(t('errors:internalError'))
+    }
+  }
+
   const formik = useDyoFormik({
     initialValues: {
       email: '',
@@ -67,6 +105,7 @@ const RegisterPage = (props: RegisterPageProps) => {
       const captcha = await recaptcha.current?.executeAsync()
 
       const data: Register = {
+        method: 'password',
         flow: flow.id,
         csrfToken: findAttributes(ui, ATTRIB_CSRF)?.value,
         captcha,
@@ -105,12 +144,12 @@ const RegisterPage = (props: RegisterPageProps) => {
   })
 
   return (
-    <SingleFormLayout title={t('signUp')}>
+    <SingleFormLayout title={t('common:signUp')}>
       <DyoSingleFormLogo />
 
-      <DyoCard className="p-8 mt-8">
+      <DyoCard className="p-6 mt-2">
         <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-          <DyoSingleFormHeading>{t('signUp')}</DyoSingleFormHeading>
+          <DyoSingleFormHeading>{t('common:signUp')}</DyoSingleFormHeading>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
             <DyoInput
@@ -178,9 +217,33 @@ const RegisterPage = (props: RegisterPageProps) => {
             messageType="error"
           />
 
-          <DyoButton className="mx-auto mt-8 px-8" type="submit">
+          <DyoButton className="px-8 mx-auto mt-8" type="submit">
             {t('createAcc')}
           </DyoButton>
+
+          {oidcEnabled(oidc) && (
+            <div className="flex flex-col gap-2 items-center mx-auto mt-2">
+              <span className="text-light my-2">{t('orSignUpWith')}</span>
+
+              <div className="flex flex-row gap-8">
+                {oidc.gitlab && (
+                  <DyoIcon src="/oidc/gitlab.svg" size="lg" alt="Gitlab" onClick={() => registerWithOidc('gitlab')} />
+                )}
+
+                {oidc.github && (
+                  <DyoIcon src="/oidc/github.svg" size="lg" alt="Github" onClick={() => registerWithOidc('github')} />
+                )}
+
+                {oidc.google && (
+                  <DyoIcon src="/oidc/google.svg" size="lg" alt="Google" onClick={() => registerWithOidc('google')} />
+                )}
+
+                {oidc.azure && (
+                  <DyoIcon src="/oidc/azure.svg" size="lg" alt="Azure" onClick={() => registerWithOidc('azure')} />
+                )}
+              </div>
+            </div>
+          )}
 
           <p className="text-bright text-center self-center max-w-xl mt-8">
             {t(`whenYouRegister`)}
@@ -208,12 +271,20 @@ const RegisterPage = (props: RegisterPageProps) => {
 export default RegisterPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
+  const flowId = context.query.flow as string
+
   const session = await obtainSessionFromRequest(context.req)
   if (session) {
     return redirectTo(ROUTE_SETTINGS)
   }
 
-  const flow = await kratos.createBrowserRegistrationFlow()
+  const flow = flowId
+    ? await kratos.getRegistrationFlow({
+        id: flowId,
+        cookie: cookieOf(context.req),
+      })
+    : await kratos.createBrowserRegistrationFlow()
+
   forwardCookie(context, flow)
 
   return {

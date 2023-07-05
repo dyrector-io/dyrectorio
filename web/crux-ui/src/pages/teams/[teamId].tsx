@@ -217,7 +217,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
           <DyoIcon
             className="aspect-square cursor-pointer"
             src="/restart.svg"
-            alt={t('common:reinvite')}
+            alt={t('reinvite')}
             size="md"
             onClick={() => onReinviteUser(it)}
           />

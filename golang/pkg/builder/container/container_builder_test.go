@@ -6,14 +6,12 @@ package container_test
 import (
 	"context"
 	"fmt"
-	"io"
 	"testing"
 	"time"
 
 	"github.com/AlekSi/pointer"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/rs/zerolog/log"
@@ -55,9 +53,7 @@ func assertPortBinding(t *testing.T, portMap nat.PortMap, internal, external str
 }
 
 func hookCallback(callback func()) containerbuilder.LifecycleFunc {
-	return func(ctx context.Context, client client.APIClient, containerName string,
-		containerId *string, mountList []mount.Mount, logger *io.StringWriter,
-	) error {
+	return func(ctx context.Context, client client.APIClient, cont containerbuilder.ParentContainer) error {
 		callback()
 		return nil
 	}

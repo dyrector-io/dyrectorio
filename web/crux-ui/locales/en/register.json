@@ -1,9 +1,6 @@
 {
-  "title": "Sign up",
-  "signUp": "Sign up",
   "createAcc": "Create account",
-  "signUpGoogle": "Sign up with Google",
-  "signUpGithub": "Sign up with GitHub",
+  "orSignUpWith": "Or sign up with",
   "alreadyUser": "Already a user?",
   "whenYouRegister": "When you register and use dyrector.io, you consent to dyrector.io processing your personal data in accordance with the terms outlined in the ",
   "privacyPolicy": "Privacy Policy"
