@@ -63,63 +63,60 @@ const VerifyPage = (props: VerifyProps) => {
 
   const ui = flow?.ui
 
+  const submitFlow = async (email: string, code: string) => {
+    const captcha = await recaptcha.current?.executeAsync()
+
+    const data: VerifyEmail = {
+      flow: flow.id,
+      csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
+      captcha,
+      email,
+      code,
+    }
+
+    const res = await sendForm('POST', API_VERIFICATION, data)
+
+    if (res.ok) {
+      if (!flowEmailSent) {
+        startCountdown(AUTH_RESEND_DELAY)
+      }
+
+      setFlow(await res.json())
+    } else if (res.status === 410) {
+      await router.reload()
+    } else {
+      recaptcha.current?.reset()
+
+      const result = await res.json()
+
+      if (isDyoError(result)) {
+        setErrors(upsertDyoError(errors, result as DyoErrorDto))
+      } else if (result?.ui) {
+        setFlow(result)
+      } else {
+        toast(t('errors:internalError'))
+      }
+    }
+  }
+
   const formik = useDyoFormik({
     initialValues: {
       email: !flowEmailSent ? email ?? '' : null,
       code: flowEmailSent ? findAttributes(ui, 'code')?.value ?? '' : null,
     },
     validationSchema: !flowEmailSent ? verifyEmailSchema : verifyCodeSchema,
-    onSubmit: async values => {
-      const captcha = await recaptcha.current?.executeAsync()
-
-      const data: VerifyEmail = {
-        flow: flow.id,
-        csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
-        captcha,
-        email: !flowEmailSent ? values.email : null,
-        code: flowEmailSent ? values.code.trim() : null,
-      }
-
-      const res = await sendForm('POST', API_VERIFICATION, data)
-
-      if (res.ok) {
-        if (!flowEmailSent) {
-          startCountdown(AUTH_RESEND_DELAY)
-        }
-
-        setFlow(await res.json())
-      } else if (res.status === 410) {
-        await router.reload()
-      } else {
-        recaptcha.current?.reset()
-
-        const result = await res.json()
-
-        if (isDyoError(result)) {
-          setErrors(upsertDyoError(errors, result as DyoErrorDto))
-        } else if (result?.ui) {
-          setFlow(result)
-        } else {
-          toast(t('errors:internalError'))
-        }
-      }
-    },
+    onSubmit: async values =>
+      submitFlow(!flowEmailSent ? values.email : null, flowEmailSent ? values.code.trim() : null),
   })
 
-  const resendEmail = () => {
-    setFlow({
-      ...flow,
-      state: null,
-    })
-
+  const resendEmail = async () => {
     startCountdown(AUTH_RESEND_DELAY)
 
-    formik.submitForm()
+    submitFlow(formik.values.email ?? email, null)
   }
 
   const restartVerification = () => {
-    router.replace(verificationUrl(email, { restart: true }))
-    router.reload()
+    window.location.replace(verificationUrl(email, { restart: true }))
   }
 
   const emailAvailable = !!formik.values.email
