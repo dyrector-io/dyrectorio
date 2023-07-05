@@ -34,6 +34,8 @@ import (
 
 const CraneUpdatedAnnotation = "crane.dyrector.io/restartedAt"
 
+var ErrPodHasNoOwner = errors.New("pod has no owner")
+
 // facade object for Deployment management
 type Deployment struct {
 	ctx       context.Context
@@ -137,6 +139,22 @@ func (d *Deployment) GetDeployments(ctx context.Context, namespace string, cfg *
 	return list, err
 }
 
+func (d *Deployment) GetDeploymentByName(
+	ctx context.Context,
+	namespace,
+	name string,
+	cfg *config.Configuration,
+) (*kappsv1.Deployment, error) {
+	client := NewClient(cfg)
+	clientset, err := client.GetClientSet()
+	if err != nil {
+		return nil, err
+	}
+
+	deploymentsClient := clientset.AppsV1().Deployments(util.Fallback(namespace, coreV1.NamespaceAll))
+	return deploymentsClient.Get(ctx, name, metaV1.GetOptions{})
+}
+
 func (d *Deployment) Restart(namespace, name string) error {
 	client := getDeploymentsClient(namespace, d.appConfig)
 
@@ -206,6 +224,55 @@ func (d *Deployment) GetPods(namespace, name string) ([]coreV1.Pod, error) {
 	}
 
 	return pods.Items, nil
+}
+
+func (d *Deployment) GetPod(namespace, name string) (*coreV1.Pod, error) {
+	client, err := NewClient(d.appConfig).GetClientSet()
+	if err != nil {
+		return nil, err
+	}
+
+	pod, err := client.CoreV1().Pods(namespace).Get(d.ctx, name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return pod, nil
+}
+
+func (d *Deployment) GetPodDeployment(namespace, name string) (*kappsv1.Deployment, error) {
+	client, err := NewClient(d.appConfig).GetClientSet()
+	if err != nil {
+		return nil, err
+	}
+
+	pod, err := client.CoreV1().Pods(namespace).Get(d.ctx, name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(pod.OwnerReferences) == 0 {
+		return nil, ErrPodHasNoOwner
+	}
+
+	owner := &pod.OwnerReferences[0]
+	if owner.Kind == "ReplicaSet" {
+		replicaSet, err := client.AppsV1().ReplicaSets(namespace).Get(d.ctx, owner.Name, metaV1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+
+		if len(replicaSet.OwnerReferences) == 0 {
+			return nil, ErrPodHasNoOwner
+		}
+
+		owner = &replicaSet.OwnerReferences[0]
+		if owner.Kind != "Deployment" {
+			return nil, ErrPodHasNoOwner
+		}
+	}
+
+	return client.AppsV1().Deployments(namespace).Get(d.ctx, owner.Name, metaV1.GetOptions{})
 }
 
 // builds the container using the builder interface, with healthchecks, volumes, configs, ports...
@@ -570,4 +637,8 @@ func getVolumeMountsFromMap(mounts map[string]v1.Volume) []*corev1.VolumeMountAp
 	}
 
 	return volumes
+}
+
+func DeploymentToFullName(deployment *kappsv1.Deployment) string {
+	return fmt.Sprintf("%s-%s", deployment.Namespace, deployment.Name)
 }

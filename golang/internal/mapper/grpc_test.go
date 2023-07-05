@@ -46,7 +46,7 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 			Environment:       map[string]string{"Evn1": "Val1", "Env2": "Val2"},
 			Registry:          "",
 			RepositoryPreName: "repo-prefix",
-			SharedEnvironment: map[string]string {},
+			SharedEnvironment: map[string]string{},
 			UseSharedEnvs:     false,
 		},
 		ContainerConfig: v1.ContainerConfig{
@@ -170,6 +170,16 @@ func TestMapSecrets(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, m)
+}
+
+func TestMapDockerContainerEventToContainerState(t *testing.T) {
+	assert.Equal(t, common.ContainerState_WAITING, mapper.MapDockerContainerEventToContainerState("create"))
+	assert.Equal(t, common.ContainerState_REMOVED, mapper.MapDockerContainerEventToContainerState("destroy"))
+	assert.Equal(t, common.ContainerState_WAITING, mapper.MapDockerContainerEventToContainerState("pause"))
+	assert.Equal(t, common.ContainerState_RUNNING, mapper.MapDockerContainerEventToContainerState("restart"))
+	assert.Equal(t, common.ContainerState_RUNNING, mapper.MapDockerContainerEventToContainerState("start"))
+	assert.Equal(t, common.ContainerState_EXITED, mapper.MapDockerContainerEventToContainerState("stop"))
+	assert.Equal(t, common.ContainerState_EXITED, mapper.MapDockerContainerEventToContainerState("die"))
 }
 
 func testDeployRequest() *agent.DeployRequest {
