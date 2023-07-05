@@ -137,8 +137,10 @@ export default class KratosService {
       jsonPatch: [
         {
           op: 'add',
-          path: '/metadata_public/disableOnboarding',
-          value: true,
+          path: '/metadata_public',
+          value: {
+            disableOnboarding: true,
+          },
         },
       ],
     })
