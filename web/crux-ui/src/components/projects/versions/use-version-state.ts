@@ -136,7 +136,7 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
   const { t } = useTranslation('versions')
   const handleApiError = defaultApiErrorHandler(t)
 
-  const [saveState, setSaveState] = useState<WebSocketSaveState>('saved')
+  const [saveState, setSaveState] = useState<WebSocketSaveState>(null)
   const [section, setSection] = useState(initialSection)
   const [addSection, setAddSection] = useState<VersionAddSection>('none')
   const [version, setVersion] = useState(optionsVersion)
@@ -153,7 +153,8 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
   }, [saveState, optionsSetSaveState])
 
   const versionSock = useWebSocket(versionWsUrl(version.id), {
-    onOpen: () => setSaveState('saved'),
+    onOpen: viewMode !== 'tile' ? null : () => setSaveState('connected'),
+    onClose: viewMode !== 'tile' ? null : () => setSaveState('disconnected'),
     onSend: message => {
       if (message.type === WS_TYPE_PATCH_IMAGE) {
         setSaveState('saving')
@@ -164,7 +165,6 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
         setSaveState('saved')
       }
     },
-    onClose: () => setSaveState('disconnected'),
   })
 
   const editor = useEditorState(versionSock)
@@ -288,7 +288,13 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
     })
   }
 
-  const selectViewMode = (mode: ViewMode) => setViewMode(mode)
+  const selectViewMode = (mode: ViewMode) => {
+    if (mode !== 'tile') {
+      setSaveState(null)
+    }
+
+    setViewMode(mode)
+  }
 
   const selectTagForImage = (image: VersionImage, tag: string) => {
     const newImages = [...version.images]
