@@ -176,7 +176,7 @@ func TestMapDockerContainerEventToContainerState(t *testing.T) {
 	assert.Equal(t, common.ContainerState_WAITING, mapper.MapDockerContainerEventToContainerState("create"))
 	assert.Equal(t, common.ContainerState_REMOVED, mapper.MapDockerContainerEventToContainerState("destroy"))
 	assert.Equal(t, common.ContainerState_WAITING, mapper.MapDockerContainerEventToContainerState("pause"))
-	assert.Equal(t, common.ContainerState_WAITING, mapper.MapDockerContainerEventToContainerState("restart"))
+	assert.Equal(t, common.ContainerState_RUNNING, mapper.MapDockerContainerEventToContainerState("restart"))
 	assert.Equal(t, common.ContainerState_RUNNING, mapper.MapDockerContainerEventToContainerState("start"))
 	assert.Equal(t, common.ContainerState_EXITED, mapper.MapDockerContainerEventToContainerState("stop"))
 	assert.Equal(t, common.ContainerState_EXITED, mapper.MapDockerContainerEventToContainerState("die"))
