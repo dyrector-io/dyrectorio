@@ -155,6 +155,10 @@ End-to-end tests:
 11. Be sure that `chromium` is installed on your system
   - You may have to run `npx playwright install-deps`
   - More info: https://playwright.dev/docs/intro
+  - Additional note: On some systems like Manjaro, `npx playwright install-deps` does not work 
+    (warning message: "your OS is not officially supported by Playwright").
+    In this case, you can run `npm init playwright@latest` and when prompted with the question "Install Playwright operating system dependencies", choose "No".
+    After that, for Manjaro, you need to separately install Playwright from the AUR repository with the package manager and everything works just fine.
 12. In a different terminal go to the `web/crux-ui` folder and run `npm run test:e2e`
   - If you want to run a specific test file from the `web/crux-ui/e2e` folder you can do it with `DEBUG=1 npx playwright test <file_name>`
 
