@@ -343,26 +343,22 @@ func WithInitContainers(dc container.Builder, containerConfig *v1.ContainerConfi
 			parentCont container.ParentContainer,
 		) error {
 			for i := range containerConfig.InitContainers {
+				var initContConfig *InitContainerConfig
 				if containerConfig.InitContainers[i].UseParent {
-					err := spawnInitContainer(ctx, client,
-						InitContainer{
-							Parent:   parentCont.Name,
-							Config:   &containerConfig.InitContainers[i],
-							MountMap: MountListToMap(parentCont.MountList),
-							EnvList:  envMap,
-						}, dog)
-					if err != nil {
-						return err
+					initContConfig = &InitContainerConfig{
+						ParentName: parentCont.Name,
+						MountMap:   MountListToMap(parentCont.MountList),
+						Networks:   containerConfig.Networks,
+						EnvList:    envMap,
 					}
 				} else {
-					err := spawnInitContainer(ctx, client,
-						InitContainer{
-							Parent: parentCont.Name,
-							Config: &containerConfig.InitContainers[i],
-						}, dog)
-					if err != nil {
-						return err
+					initContConfig = &InitContainerConfig{
+						ParentName: parentCont.Name,
 					}
+				}
+				err := spawnInitContainer(ctx, client, initContConfig, &containerConfig.InitContainers[i], dog)
+				if err != nil {
+					return err
 				}
 			}
 			dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Init containers are started successfully.")
