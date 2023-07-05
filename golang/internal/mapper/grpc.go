@@ -371,46 +371,48 @@ func mapVolumeLinks(in []*agent.VolumeLink) []v1.VolumeLink {
 	return volumeLinks
 }
 
-func MapContainerState(in []dockerTypes.Container, prefix string) []*common.ContainerStateItem {
+func MapContainerState(it *dockerTypes.Container, prefix string) *common.ContainerStateItem {
+	name := ""
+	if len(it.Names) > 0 {
+		name = strings.TrimPrefix(it.Names[0], "/")
+	}
+
+	if prefix != "" {
+		name = strings.TrimPrefix(name, prefix+"-")
+	}
+
+	imageName := strings.Split(it.Image, ":")
+
+	var imageTag string
+
+	if len(imageName) > 1 {
+		imageTag = imageName[1]
+	} else {
+		imageTag = "latest"
+	}
+
+	return &common.ContainerStateItem{
+		Id: &common.ContainerIdentifier{
+			Prefix: prefix,
+			Name:   name,
+		},
+		Command:   it.Command,
+		CreatedAt: timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
+		State:     MapDockerStateToCruxContainerState(it.State),
+		Reason:    it.State,
+		Status:    it.Status,
+		Ports:     mapContainerPorts(&it.Ports),
+		ImageName: imageName[0],
+		ImageTag:  imageTag,
+	}
+}
+
+func MapContainerStateList(in []dockerTypes.Container, prefix string) []*common.ContainerStateItem {
 	list := []*common.ContainerStateItem{}
 
 	for i := range in {
-		// TODO (@m8Vago): get rid of it :)
-		it := in[i]
-
-		name := ""
-		if len(it.Names) > 0 {
-			name = strings.TrimPrefix(it.Names[0], "/")
-		}
-
-		if prefix != "" {
-			name = strings.TrimPrefix(name, prefix+"-")
-		}
-
-		imageName := strings.Split(it.Image, ":")
-
-		var imageTag string
-
-		if len(imageName) > 1 {
-			imageTag = imageName[1]
-		} else {
-			imageTag = "latest"
-		}
-
-		list = append(list, &common.ContainerStateItem{
-			Id: &common.ContainerIdentifier{
-				Prefix: prefix,
-				Name:   name,
-			},
-			Command:   it.Command,
-			CreatedAt: timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
-			State:     MapDockerStateToCruxContainerState(it.State),
-			Reason:    it.State,
-			Status:    it.Status,
-			Ports:     mapContainerPorts(&it.Ports),
-			ImageName: imageName[0],
-			ImageTag:  imageTag,
-		})
+		item := MapContainerState(&in[i], prefix)
+		list = append(list, item)
 	}
 
 	return list
@@ -431,73 +433,115 @@ func mapContainerPorts(in *[]dockerTypes.Port) []*common.ContainerStateItemPort 
 	return ports
 }
 
-func MapKubeDeploymentListToCruxStateItems(
-	deployments *appsv1.DeploymentList,
-	podsByDeployment map[string][]corev1.Pod,
-	svc *corev1.ServiceList,
-) []*common.ContainerStateItem {
-	stateItems := []*common.ContainerStateItem{}
-	svcMap := createServiceMap(svc)
-
-	for i := range deployments.Items {
-		deployment := deployments.Items[i]
-		pods, podsFound := podsByDeployment[deployment.Name]
-		if len(pods) > 1 {
-			log.Warn().Str("deployment", deployment.Name).Int("numberOfPods", len(pods)).Msg("More than one pod found for deployment")
-		}
-
-		stateItem := &common.ContainerStateItem{
+func MapDeploymentLatestPodToStateItem(
+	deployment *appsv1.Deployment,
+	pods []corev1.Pod,
+	svc map[string]*corev1.Service,
+) (*common.ContainerStateItem, *corev1.Pod) {
+	if len(pods) == 0 {
+		return &common.ContainerStateItem{
 			Id: &common.ContainerIdentifier{
 				Prefix: deployment.Namespace,
 				Name:   deployment.Name,
 			},
-			State: common.ContainerState_CONTAINER_STATE_UNSPECIFIED,
+			Command: "",
 			CreatedAt: timestamppb.New(
 				time.UnixMilli(deployment.GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
 			),
-			Ports: mapServicePorts(svcMap[deployment.Namespace][deployment.Name]),
-		}
+			State:     common.ContainerState_EXITED,
+			Reason:    "",
+			Status:    "",
+			Ports:     []*common.ContainerStateItemPort{},
+			ImageName: "",
+			ImageTag:  "",
+		}, nil
+	}
 
-		if containers := deployment.Spec.Template.Spec.Containers; containers != nil {
-			for i := 0; i < len(containers); i++ {
-				if containers[i].Name != deployment.Name {
-					// this move was suggested by golangci
-					continue
-				}
-				stateItem.Command = util.JoinV(" ", containers[i].Command...)
+	stateItem := &common.ContainerStateItem{
+		Id: &common.ContainerIdentifier{
+			Prefix: deployment.Namespace,
+			Name:   deployment.Name,
+		},
+		State: common.ContainerState_CONTAINER_STATE_UNSPECIFIED,
+		CreatedAt: timestamppb.New(
+			time.UnixMilli(deployment.GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
+		),
+		Ports: []*common.ContainerStateItemPort{},
+	}
 
-				fullName, err := imageHelper.ExpandImageName(containers[i].Image)
-				if err != nil {
-					log.Error().Stack().Err(err).Msg("Failed to get k8s container image info (failed to parse image name)")
-					continue
-				}
-
-				name, tag, err := imageHelper.SplitImageName(fullName)
-				if err != nil {
-					log.Error().Stack().Err(err).Msg("Failed to get k8s container image info")
-					continue
-				}
-
-				stateItem.ImageName = name
-				stateItem.ImageTag = tag
-			}
-		}
-
-		if podsFound && len(pods) == 1 {
-			err := mapKubeStatusToCruxContainerState(stateItem, pods[0].Status.ContainerStatuses[0].State)
-			if err != nil {
-				log.Error().Stack().Err(err).Msg("Failed to map k8s pod info")
+	if containers := deployment.Spec.Template.Spec.Containers; containers != nil {
+		for i := 0; i < len(containers); i++ {
+			if containers[i].Name != deployment.Name {
+				// this move was suggested by golangci
 				continue
 			}
+			stateItem.Command = util.JoinV(" ", containers[i].Command...)
+
+			fullName, err := imageHelper.ExpandImageName(containers[i].Image)
+			if err != nil {
+				log.Error().Stack().Err(err).Msg("Failed to get k8s container image info (failed to parse image name)")
+				continue
+			}
+
+			name, tag, err := imageHelper.SplitImageName(fullName)
+			if err != nil {
+				log.Error().Stack().Err(err).Msg("Failed to get k8s container image info")
+				continue
+			}
+
+			stateItem.ImageName = name
+			stateItem.ImageTag = tag
+		}
+	}
+
+	stateItem.Ports = mapServicePorts(svc[deployment.Name])
+
+	var latestPod *corev1.Pod
+	for index := range pods {
+		pod := &pods[index]
+		if latestPod == nil || pod.CreationTimestamp.After(latestPod.CreationTimestamp.Time) {
+			latestPod = pod
+		}
+	}
+
+	if latestPod != nil && len(latestPod.Status.ContainerStatuses) > 0 {
+		err := mapKubeStatusToCruxContainerState(stateItem, latestPod.Status.ContainerStatuses[0].State)
+		if err != nil {
+			log.Error().Stack().Err(err).Msg("Failed to map k8s pod info")
+			return nil, nil
+		}
+	}
+
+	return stateItem, latestPod
+}
+
+func MapKubeDeploymentListToCruxStateItems(
+	deployments *appsv1.DeploymentList,
+	podsByDeployment map[string][]corev1.Pod,
+	svcMap map[string]map[string]*corev1.Service,
+) []*common.ContainerStateItem {
+	stateItems := []*common.ContainerStateItem{}
+
+	for i := range deployments.Items {
+		deployment := &deployments.Items[i]
+		fullName := fmt.Sprintf("%s-%s", deployment.Namespace, deployment.Name)
+		pods, podsFound := podsByDeployment[fullName]
+		if podsFound && len(pods) > 1 {
+			log.Warn().Str("deployment", deployment.Name).Int("numberOfPods", len(pods)).Msg("More than one pod found for deployment")
 		}
 
-		stateItems = append(stateItems, stateItem)
+		svc := svcMap[deployment.Namespace]
+
+		stateItem, _ := MapDeploymentLatestPodToStateItem(deployment, pods, svc)
+		if stateItem != nil && stateItem.State != common.ContainerState_CONTAINER_STATE_UNSPECIFIED {
+			stateItems = append(stateItems, stateItem)
+		}
 	}
 
 	return stateItems
 }
 
-func createServiceMap(svc *corev1.ServiceList) map[string]map[string]*corev1.Service {
+func CreateServiceMap(svc *corev1.ServiceList) map[string]map[string]*corev1.Service {
 	res := map[string]map[string]*corev1.Service{}
 
 	for i := range svc.Items {
@@ -529,7 +573,7 @@ func mapServicePorts(svc *corev1.Service) []*common.ContainerStateItemPort {
 func mapKubeStatusToCruxContainerState(stateItem *common.ContainerStateItem, kubeContainerState corev1.ContainerState) error {
 	if kubeContainerState.Running != nil {
 		stateItem.State = common.ContainerState_RUNNING
-		stateItem.Reason = kubeContainerState.Running.String()
+		stateItem.Reason = "Started"
 
 		return nil
 	}
@@ -564,6 +608,27 @@ func MapDockerStateToCruxContainerState(state string) common.ContainerState {
 	case "exited":
 		return common.ContainerState_EXITED
 	case "dead":
+		return common.ContainerState_EXITED
+	default:
+		return common.ContainerState_CONTAINER_STATE_UNSPECIFIED
+	}
+}
+
+func MapDockerContainerEventToContainerState(event string) common.ContainerState {
+	switch event {
+	case "create":
+		return common.ContainerState_WAITING
+	case "destroy":
+		return common.ContainerState_REMOVED
+	case "pause":
+		return common.ContainerState_WAITING
+	case "restart":
+		return common.ContainerState_RUNNING
+	case "start":
+		return common.ContainerState_RUNNING
+	case "stop":
+		return common.ContainerState_EXITED
+	case "die":
 		return common.ContainerState_EXITED
 	default:
 		return common.ContainerState_CONTAINER_STATE_UNSPECIFIED

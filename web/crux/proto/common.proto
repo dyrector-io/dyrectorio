@@ -13,6 +13,7 @@ enum ContainerState {
   RUNNING = 1;
   WAITING = 2;
   EXITED = 3;
+  REMOVED = 4;
 }
 
 enum DeploymentStatus {

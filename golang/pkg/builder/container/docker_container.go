@@ -102,7 +102,7 @@ func execStartHooks(ctx context.Context, cli client.APIClient, name string,
 		if err := hook(ctx, cli,
 			ParentContainer{
 				Name:        name,
-				ID:          pointer.ToStringOrNil(cont.ID),
+				Container:   cont,
 				MountList:   *mountList,
 				Environment: envList,
 				Logger:      nil,

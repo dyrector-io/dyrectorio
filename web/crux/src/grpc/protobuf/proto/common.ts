@@ -9,6 +9,7 @@ export enum ContainerState {
   RUNNING = 1,
   WAITING = 2,
   EXITED = 3,
+  REMOVED = 4,
   UNRECOGNIZED = -1,
 }
 
@@ -26,6 +27,9 @@ export function containerStateFromJSON(object: any): ContainerState {
     case 3:
     case 'EXITED':
       return ContainerState.EXITED
+    case 4:
+    case 'REMOVED':
+      return ContainerState.REMOVED
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -43,6 +47,8 @@ export function containerStateToJSON(object: ContainerState): string {
       return 'WAITING'
     case ContainerState.EXITED:
       return 'EXITED'
+    case ContainerState.REMOVED:
+      return 'REMOVED'
     case ContainerState.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
