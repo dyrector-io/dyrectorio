@@ -109,7 +109,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
 
   const [deployment, setDeployment] = useState<DeploymentDetails>(optionDeploy)
   const [node, setNode] = useNodeState(optionDeploy.node)
-  const [saveState, setSaveState] = useState<WebSocketSaveState>('saved')
+  const [saveState, setSaveState] = useState<WebSocketSaveState>(null)
   const [editState, setEditState] = useState<DeploymentEditState>('details')
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
   const [viewMode, setViewMode] = useState<ViewMode>('list')
@@ -137,7 +137,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   })
 
   const sock = useWebSocket(deploymentWsUrl(deployment.id), {
-    onOpen: () => setSaveState('saved'),
+    onOpen: () => setSaveState('connected'),
     onClose: () => setSaveState('disconnected'),
     onSend: message => {
       if ([WS_TYPE_PATCH_INSTANCE, WS_TYPE_PATCH_DEPLOYMENT_ENV].includes(message.type)) {
