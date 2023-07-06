@@ -1,4 +1,4 @@
-import { Controller, Delete, HttpCode, Post, UseGuards } from '@nestjs/common'
+import { Controller, Delete, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common'
 import { ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Observable, from, mergeAll } from 'rxjs'
 import UuidParams from 'src/decorators/api-params.decorator'
@@ -23,7 +23,7 @@ export default class NodePrefixContainerHttpController {
   constructor(private service: NodeService) {}
 
   @Post(`${ROUTE_NAME}/start`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `nodeId`, `prefix`, and `name`.',
     summary: 'Start a container deployed with dyrector.io on a node.',
@@ -35,7 +35,7 @@ export default class NodePrefixContainerHttpController {
   }
 
   @Post(`${ROUTE_NAME}/stop`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `nodeId`, `prefix`, and `name`.',
     summary: 'Stop a container deployed with dyrector.io on a node.',
@@ -47,7 +47,7 @@ export default class NodePrefixContainerHttpController {
   }
 
   @Post(`${ROUTE_NAME}/restart`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `nodeId`, `prefix`, and `name`.',
     summary: 'Restart a container deployed with dyrector.io on a node.',
@@ -59,7 +59,7 @@ export default class NodePrefixContainerHttpController {
   }
 
   @Delete()
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `nodeId`, and `prefix`.',
     summary: 'Delete containers deployed with dyrector.io, with the specified prefix on a node.',
@@ -71,7 +71,7 @@ export default class NodePrefixContainerHttpController {
   }
 
   @Delete(`${ROUTE_NAME}`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `nodeId`, `prefix`, and `name`.',
     summary: 'Delete a container deployed with dyrector.io, with the specified prefix and name on a node.',

@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, PipeTransform, Type, UseGuards } from '@nestjs/common'
+import { Controller, Get, HttpCode, HttpStatus, PipeTransform, Type, UseGuards } from '@nestjs/common'
 import { Delete, Post, Put } from '@nestjs/common/decorators/http/request-mapping.decorator'
 import { Body, Param } from '@nestjs/common/decorators/http/route-params.decorator'
 import {
@@ -33,7 +33,7 @@ export default class RegistryHttpController {
   constructor(private service: RegistryService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       'Lists every registries available in the active team. Response is an array including the `name`, `id`, `type`, `description`, and `icon` of the registry.</br></br>Registries are 3rd party registries where the container images are stored.',
@@ -45,7 +45,7 @@ export default class RegistryHttpController {
   }
 
   @Get(ROUTE_REGISTRY_ID)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       "Lists the details of a registry. `registryId` refers to the registry's ID. Response is an array including the `name`, `id`, `type`, `description`, `imageNamePrefix`, `inUse`, `icon`, and audit log info of the registry.",
@@ -58,7 +58,7 @@ export default class RegistryHttpController {
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @CreatedWithLocation()
   @ApiOperation({
     description:
@@ -85,7 +85,7 @@ export default class RegistryHttpController {
   }
 
   @Put(ROUTE_REGISTRY_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       "Modify the `name`, `type`, `description`, `details`, and `icon`. `registryId` refers to the registry's ID. `registryId`, `type`, `details`, and `name` are required.",
@@ -104,7 +104,7 @@ export default class RegistryHttpController {
   }
 
   @Delete(ROUTE_REGISTRY_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Deletes a registry with the specified `registryId`',
     summary: 'Delete a registry from dyrector.io.',

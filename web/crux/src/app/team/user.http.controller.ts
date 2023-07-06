@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, HttpCode, Param, Post, Put } from '@nestjs/common'
+import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common'
 import { ApiBody, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
@@ -24,7 +24,7 @@ export default class UserHttpController {
   constructor(private service: TeamService) {}
 
   @Post()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @AuditLogLevel('disabled')
   @ApiOperation({
     description: 'Response includes the `user`, `activeTeamId`, `teams`, and `invitations`.',
@@ -36,7 +36,7 @@ export default class UserHttpController {
   }
 
   @Post(ROUTE_ACTIVE_TEAM)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `teamID`.',
     summary: 'Sets the active team.',
@@ -48,7 +48,7 @@ export default class UserHttpController {
   }
 
   @Post(`${ROUTE_INVITATIONS}/${ROUTE_TEAM_ID}`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `teamID`.',
     summary: 'Accept invitation to a team.',
@@ -60,7 +60,7 @@ export default class UserHttpController {
   }
 
   @Delete(`${ROUTE_INVITATIONS}/${ROUTE_TEAM_ID}`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `teamID`.',
     summary: 'Decline invitation to a team.',
@@ -72,7 +72,7 @@ export default class UserHttpController {
   }
 
   @Put(`${ROUTE_PREFERENCES}/${ROUTE_ONBOARDING}`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Enable onboarding tips.',
     summary: 'Sets the onboarding tips to visible for the user.',
@@ -83,7 +83,7 @@ export default class UserHttpController {
   }
 
   @Delete(`${ROUTE_PREFERENCES}/${ROUTE_ONBOARDING}`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Disable onboarding tips.',
     summary: 'Sets the onboarding tips to hidden for the user.',

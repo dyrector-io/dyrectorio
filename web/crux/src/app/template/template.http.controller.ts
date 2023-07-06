@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, HttpCode, Param, Post, Response } from '@nestjs/common'
+import { Body, Controller, Get, Header, HttpCode, HttpStatus, Param, Post, Response } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import { Response as ExpressResponse } from 'express'
@@ -21,7 +21,7 @@ export default class TemplateHttpController {
   constructor(private service: TemplateService, private templateFileService: TemplateFileService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description: 'Response should include `id`, `name`, `description` and `technologies` of templates.',
     summary: 'Return list of templates on the platform.',
@@ -32,7 +32,7 @@ export default class TemplateHttpController {
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @CreatedWithLocation()
   @ApiOperation({
     description:
@@ -54,7 +54,7 @@ export default class TemplateHttpController {
   }
 
   @Get(`${ROUTE_TEMPLATE_ID}/image`)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description: 'Request must include `templateId`.',
     summary: 'Retrieves the picture of the template',

@@ -10,6 +10,7 @@ import {
   UseGuards,
   UseInterceptors,
   Request,
+  HttpStatus,
 } from '@nestjs/common'
 import {
   ApiBody,
@@ -51,7 +52,7 @@ export default class TeamHttpController {
   constructor(private service: TeamService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       'List of teams consist of `name`, `id`, and `statistics`, including number of `users`, `projects`, `nodes`, `versions`, and `deployments`.</br></br>Teams are the shared entity of multiple users. The purpose of teams is to separate users, nodes and projects based on their needs within an organization. Team owners can assign roles. More details about teams here.',
@@ -64,7 +65,7 @@ export default class TeamHttpController {
   }
 
   @Get(ROUTE_TEAM_ID)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       "Get the details of a team. Request must include `teamId`, which is the ID of the team they'd like to get the data of. Data of teams consist of `name`, `id`, and `statistics`, including number of `users`, `projects`, `nodes`, `versions`, and `deployments`. Response should include user details, as well, including `name`, `id`, `role`, `status`, `email`, and `lastLogin`.",
@@ -77,7 +78,7 @@ export default class TeamHttpController {
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @AuditLogLevel('disabled')
   @ApiOperation({
     description:
@@ -106,7 +107,7 @@ export default class TeamHttpController {
   }
 
   @Put(ROUTE_TEAM_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ type: UpdateTeamDto })
   @ApiOperation({
     description: 'Request must include `teamId` and `name`. Admin access required for a successful request.',
@@ -124,7 +125,7 @@ export default class TeamHttpController {
   }
 
   @Delete(ROUTE_TEAM_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @AuditLogLevel('disabled')
   @ApiOperation({
     description: 'Request must include `teamId`. Owner access required for successful request.',
@@ -141,7 +142,7 @@ export default class TeamHttpController {
   // Users endpoints
 
   @Post(`${ROUTE_TEAM_ID}/${ROUTE_USERS}`)
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @CreatedWithLocation()
   @ApiOperation({
     description:
@@ -171,7 +172,7 @@ export default class TeamHttpController {
   }
 
   @Put(`${ROUTE_TEAM_ID}/${ROUTE_USERS}/${ROUTE_USER_ID}/role`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ type: UpdateUserRoleDto })
   @ApiOperation({
     description:
@@ -192,7 +193,7 @@ export default class TeamHttpController {
   }
 
   @Delete(`${ROUTE_TEAM_ID}/${ROUTE_USERS}/${ROUTE_USER_ID}`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @TeamRoleRequired('admin')
   @ApiOperation({
     description:
@@ -207,7 +208,7 @@ export default class TeamHttpController {
   }
 
   @Post(`${ROUTE_TEAM_ID}/${ROUTE_USERS}/${ROUTE_USER_ID}/reinvite`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseInterceptors(TeamReinviteUserValidationInterceptor)
   @ApiOperation({
     description:
