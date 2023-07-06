@@ -10,7 +10,7 @@ import LoadingIndicator from '@app/elements/loading-indicator'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTimer from '@app/hooks/use-timer'
 import { DyoErrorDto, VerifyEmail } from '@app/models'
-import { API_VERIFICATION, ROUTE_INDEX, ROUTE_SETTINGS, verificationUrl } from '@app/routes'
+import { API_VERIFICATION, ROUTE_INDEX, ROUTE_LOGOUT, ROUTE_SETTINGS, verificationUrl } from '@app/routes'
 import {
   findAttributes,
   findError,
@@ -28,6 +28,7 @@ import { captchaDisabled } from '@server/captcha'
 import kratos, { forwardCookie, obtainSessionFromRequest, verifiableEmailOfIdentity } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useRef, useState } from 'react'
 import ReCAPTCHA from 'react-google-recaptcha'
@@ -135,86 +136,93 @@ const VerifyPage = (props: VerifyProps) => {
       {passedChallenge ? (
         <LoadingIndicator />
       ) : (
-        <DyoCard className="text-bright p-8 m-auto">
-          <DyoSingleFormHeading className="max-w-xs">{t('verification')}</DyoSingleFormHeading>
+        <div>
+          <DyoCard className="text-bright p-8 m-auto">
+            <DyoSingleFormHeading className="max-w-xs">{t('verification')}</DyoSingleFormHeading>
 
-          {implictEmailSent ? (
-            <div className="flex flex-col w-80 mx-auto text-center">
-              <p className="mt-4">{t('emailWasSent', formik.values)}</p>
-              <p className="mt-4">{t('ifYouCantFind')}</p>
+            {implictEmailSent ? (
+              <div className="flex flex-col w-80 mx-auto text-center">
+                <p className="mt-4">{t('emailWasSent', formik.values)}</p>
+                <p className="mt-4">{t('ifYouCantFind')}</p>
 
-              {restartVerificationButton}
-            </div>
-          ) : (
-            <>
-              <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-                {flowEmailSent ? null : (
-                  <DyoInput
-                    label={t('common:email')}
-                    name="email"
-                    type="email"
-                    onChange={formik.handleChange}
-                    value={formik.values.email}
-                    message={findMessage(ui, 'email')}
-                  />
-                )}
-
-                {!flowEmailSent ? null : (
-                  <>
-                    {formik.values.email ? (
-                      <p className="w-80 text-center mx-auto mt-4">{t('codeSentToEmail', formik.values)}</p>
-                    ) : (
-                      <p className="w-80 text-center mx-auto mt-4">{t('pleaseClickVerify')}</p>
-                    )}
-
+                {restartVerificationButton}
+              </div>
+            ) : (
+              <>
+                <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+                  {flowEmailSent ? null : (
                     <DyoInput
-                      label={t('common:code')}
-                      name="code"
-                      type="text"
+                      label={t('common:email')}
+                      name="email"
+                      type="email"
                       onChange={formik.handleChange}
-                      value={formik.values.code}
-                      message={findMessage(ui, 'code')}
+                      value={formik.values.email}
+                      message={findMessage(ui, 'email')}
                     />
+                  )}
 
-                    <DyoButton className="mt-8" type="submit">
-                      {t('verify')}
+                  {!flowEmailSent ? null : (
+                    <>
+                      {formik.values.email ? (
+                        <p className="w-80 text-center mx-auto mt-4">{t('codeSentToEmail', formik.values)}</p>
+                      ) : (
+                        <p className="w-80 text-center mx-auto mt-4">{t('pleaseClickVerify')}</p>
+                      )}
+
+                      <DyoInput
+                        label={t('common:code')}
+                        name="code"
+                        type="text"
+                        onChange={formik.handleChange}
+                        value={formik.values.code}
+                        message={findMessage(ui, 'code')}
+                      />
+
+                      <DyoButton className="mt-8" type="submit">
+                        {t('verify')}
+                      </DyoButton>
+                    </>
+                  )}
+
+                  {!flowEmailSent ? (
+                    <DyoButton className="mt-8" disabled={submitDisabled} type="submit">
+                      {t('common:send')}
                     </DyoButton>
-                  </>
-                )}
+                  ) : emailAvailable ? (
+                    <DyoButton
+                      className="mt-8"
+                      color="bg-warning-orange"
+                      disabled={submitDisabled}
+                      type="button"
+                      onClick={resendEmail}
+                    >
+                      {`${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim()}
+                    </DyoButton>
+                  ) : (
+                    restartVerificationButton
+                  )}
+                </DyoForm>
 
-                {!flowEmailSent ? (
-                  <DyoButton className="mt-8" disabled={submitDisabled} type="submit">
-                    {t('common:send')}
-                  </DyoButton>
-                ) : emailAvailable ? (
-                  <DyoButton
-                    className="mt-8"
-                    color="bg-warning-orange"
-                    disabled={submitDisabled}
-                    type="button"
-                    onClick={resendEmail}
-                  >
-                    {`${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim()}
-                  </DyoButton>
-                ) : (
-                  restartVerificationButton
-                )}
-              </DyoForm>
+                {uiMessage ? <DyoMessage message={uiMessage} messageType="error" /> : null}
 
-              {uiMessage ? <DyoMessage message={uiMessage} messageType="error" /> : null}
-
-              <DyoMessage
-                message={findError(errors, 'captcha', it =>
-                  t(`errors:${it.error}`, {
-                    name: it.value,
-                  }),
-                )}
-                messageType="error"
-              />
-            </>
-          )}
-          {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
-        </DyoCard>
+                <DyoMessage
+                  message={findError(errors, 'captcha', it =>
+                    t(`errors:${it.error}`, {
+                      name: it.value,
+                    }),
+                  )}
+                  messageType="error"
+                />
+              </>
+            )}
+            {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
+          </DyoCard>
+          <div className="flex justify-center text-bright mt-8">
+            <Link className="font-bold underline" href={ROUTE_LOGOUT}>
+              {t('common:logOut')}
+            </Link>
+          </div>
+        </div>
       )}
     </SingleFormLayout>
   )
