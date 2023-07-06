@@ -146,10 +146,18 @@ export default class DashboardService {
     })
 
     if (deployment) {
+      const {
+        version,
+        version: {
+          images: [image],
+          project,
+        },
+      } = deployment
+
       dashboardTeam.deployment = deployment
-      dashboardTeam.version = deployment.version
-      dashboardTeam.image = deployment.version.images[0]
-      dashboardTeam.project = deployment.version.project
+      dashboardTeam.version = version
+      dashboardTeam.image = image
+      dashboardTeam.project = project
     }
   }
 
@@ -170,7 +178,7 @@ export default class DashboardService {
       orderBy: [
         {
           images: {
-            _count: "desc",
+            _count: 'desc',
           },
         },
         {
@@ -197,9 +205,14 @@ export default class DashboardService {
     })
 
     if (version) {
+      const {
+        images: [image],
+        project,
+      } = version
+
       dashboardTeam.version = version
-      dashboardTeam.image = version.images[0]
-      dashboardTeam.project = version.project
+      dashboardTeam.image = image
+      dashboardTeam.project = project
     }
   }
 

@@ -64,15 +64,15 @@ const VerifyPage = (props: VerifyProps) => {
 
   const ui = flow?.ui
 
-  const submitFlow = async (email: string, code: string) => {
+  const submitFlow = async (flowEmail: string, flowCode: string) => {
     const captcha = await recaptcha.current?.executeAsync()
 
     const data: VerifyEmail = {
       flow: flow.id,
       csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
       captcha,
-      email,
-      code,
+      email: flowEmail,
+      code: flowCode,
     }
 
     const res = await sendForm('POST', API_VERIFICATION, data)
