@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Header, HttpCode, Post, Put, Query, UseGuards } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common'
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -35,7 +47,7 @@ export default class NodeHttpController {
   constructor(private service: NodeService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       "Fetch data of deployment targets. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, and `name`.",
@@ -51,7 +63,7 @@ export default class NodeHttpController {
   }
 
   @Get(ROUTE_NODE_ID)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       "Fetch data of a specific node. Request must include `nodeId`. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, `name`, `hasToken`, and agent installation details.",
@@ -64,7 +76,7 @@ export default class NodeHttpController {
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
       "Request must include the node's `name`. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, and `name`.",
@@ -86,7 +98,7 @@ export default class NodeHttpController {
   }
 
   @Put(ROUTE_NODE_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: "Request must include the node's `name`, body can include `description` and `icon`.",
     summary: 'Update details of a node.',
@@ -102,7 +114,7 @@ export default class NodeHttpController {
   }
 
   @Delete(ROUTE_NODE_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `nodeId`.',
     summary: 'Delete node.',
@@ -114,7 +126,7 @@ export default class NodeHttpController {
   }
 
   @Post(`${ROUTE_NODE_ID}/script`)
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description: 'Request must include `nodeId`, `type` and `scriptType`.',
     summary: 'Create agent install script.',
@@ -130,7 +142,7 @@ export default class NodeHttpController {
   }
 
   @Delete(`${ROUTE_NODE_ID}/script`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `nodeId`.',
     summary: 'Delete node set up install script.',
@@ -157,7 +169,7 @@ export default class NodeHttpController {
   }
 
   @Delete(`${ROUTE_NODE_ID}/token`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `nodeId`.',
     summary: "Revoke the node's access token.",
@@ -169,7 +181,7 @@ export default class NodeHttpController {
   }
 
   @Post(`${ROUTE_NODE_ID}/update`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `nodeId`.',
     summary: "Update node's data.",
@@ -181,7 +193,7 @@ export default class NodeHttpController {
   }
 
   @Get(`${ROUTE_NODE_ID}/audit`)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       'Request must include `skip`, `take`, and dates of `from` and `to`. Response should include an array of `items`: `createdAt` date, `event`, and `data`.',

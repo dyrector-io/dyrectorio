@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, Query } from '@nestjs/common'
+import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -11,7 +11,7 @@ export default class AuditController {
   constructor(private service: AuditService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       'Request must include `skip`, `take`, and dates of `from` and `to`. Response should include an array of `items`: `createdAt` date, `userId`, `email`, `serviceCall`, and `data`.',

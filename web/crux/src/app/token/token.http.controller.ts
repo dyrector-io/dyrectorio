@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common'
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -30,7 +30,7 @@ export default class TokenHttpController {
   constructor(private service: TokenService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description: "Access token's support is to provide secure access to the HTTP api without a cookie.",
     summary: 'List of tokens.',
@@ -45,7 +45,7 @@ export default class TokenHttpController {
   }
 
   @Get(ROUTE_TOKEN_ID)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       "Access token's details are `name`, `id`, and the time of creation and expiration. Request must include `tokenId`.",
@@ -58,7 +58,7 @@ export default class TokenHttpController {
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @CreatedWithLocation()
   @ApiOperation({
     description: 'Request must include `name` and `expirationInDays`.',
@@ -82,7 +82,7 @@ export default class TokenHttpController {
   }
 
   @Delete(ROUTE_TOKEN_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `tokenId`.',
     summary: 'Delete an access token.',

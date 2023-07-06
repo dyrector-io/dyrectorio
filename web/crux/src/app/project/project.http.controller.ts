@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -29,7 +41,7 @@ export default class ProjectHttpController {
   constructor(private service: ProjectService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description: "Returns a list of a team's projects and their details.",
     summary: 'Fetch the projects list.',
@@ -45,7 +57,7 @@ export default class ProjectHttpController {
   }
 
   @Get(ROUTE_PROJECT_ID)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       "Returns a project's details. The response should contain an array, consisting of the project's `name`, `id`, `type`, `description`, `deletability`, versions and version related data, including version `name` and `id`, `changelog`, increasibility.",
@@ -58,7 +70,7 @@ export default class ProjectHttpController {
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
       'Create a new project for a team. Newly created team has a `type` and a `name` as required variables, and optionally a `description` and a `changelog`.',
@@ -80,7 +92,7 @@ export default class ProjectHttpController {
   }
 
   @Put(ROUTE_PROJECT_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       'Updates a project. `projectId` is a required variable to identify which project is modified, `name`, `description` and `changelog` can be adjusted with this call.',
@@ -98,7 +110,7 @@ export default class ProjectHttpController {
   }
 
   @Delete(ROUTE_PROJECT_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Deletes a project with the specified `projectId`',
     summary: 'Delete a project.',
@@ -110,7 +122,7 @@ export default class ProjectHttpController {
   }
 
   @Post(`${ROUTE_PROJECT_ID}/convert`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Converts a project to versioned with the specified `projectId`',
     summary: 'Convert a project to versioned.',

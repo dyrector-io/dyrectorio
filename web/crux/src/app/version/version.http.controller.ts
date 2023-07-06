@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -55,7 +56,7 @@ export default class VersionHttpController {
   constructor(private service: VersionService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       "Returns an array containing the every version that belong to a project. `projectId` refers to the project's ID. Details include the version's `name`, `id`, `type`, `audit` log details, `changelog`, and increasibility.",
@@ -88,7 +89,7 @@ export default class VersionHttpController {
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @CreatedWithLocation()
   @UseInterceptors(VersionCreateValidationInterceptor)
   @ApiOperation({
@@ -113,7 +114,7 @@ export default class VersionHttpController {
   }
 
   @Put(ROUTE_VERSION_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       "Updates a version's `name` and `changelog`. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.",
@@ -133,7 +134,7 @@ export default class VersionHttpController {
   }
 
   @Delete(ROUTE_VERSION_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       "This call deletes a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.",
@@ -147,7 +148,7 @@ export default class VersionHttpController {
   }
 
   @Put(`${ROUTE_VERSION_ID}/default`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       "This call turns a version into the default one, resulting other versions within this project later inherit images, deployments and their configurations from it. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.",
@@ -163,7 +164,7 @@ export default class VersionHttpController {
   }
 
   @Post(`${ROUTE_VERSION_ID}/increase`)
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @CreatedWithLocation()
   @ApiOperation({
     description:
