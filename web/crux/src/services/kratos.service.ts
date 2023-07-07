@@ -150,8 +150,8 @@ export default class KratosService {
       })
     ).data
 
-    // Due to a bug in kratos (https://github.com/ory/kratos/pull/3304)
-    // the whole metadata needs to be updated
+    // TODO(@robot9706): Due to a bug in kratos (https://github.com/ory/kratos/pull/3304)
+    // the whole metadata needs to be updated, once the fix is released refactor the patch
     await this.identity.patchIdentity({
       id: userId,
       jsonPatch: [
