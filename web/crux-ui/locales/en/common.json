@@ -211,6 +211,7 @@
 
   "errors": {
     "registryRateLimit": "Rate limit reached, please try again later",
-    "registryUnauthorized": "Unauthorized"
+    "registryUnauthorized": "Unauthorized",
+    "deployRequiredSecrets": "The following instances have missing required secrets: {{instances}}"
   }
 }

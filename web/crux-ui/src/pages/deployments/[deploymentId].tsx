@@ -108,7 +108,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    const result = await startDeployment(router, handleApiError, deployment.id, state.deployInstances)
+    const result = await startDeployment(router, t, deployment.id, state.deployInstances)
     if (result?.property === 'secrets') {
       const invalidSecrets = result.value as DeploymentInvalidatedSecrets[]
 

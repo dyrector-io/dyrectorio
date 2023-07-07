@@ -60,7 +60,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
       })
     }
 
-    const secretsHaveValue = deployment.instances.every(it => {
+    const missingSecrets = deployment.instances.filter(it => {
       const imageSecrets = (it.image.config.secrets as UniqueSecretKey[]) ?? []
       const requiredSecrets = imageSecrets.filter(imageSecret => imageSecret.required).map(secret => secret.key)
 
@@ -74,14 +74,17 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
         return instanceSecret.encrypted && instanceSecret.value.length > 0
       })
 
-      return hasSecrets
+      return !hasSecrets
     })
 
-    if (!secretsHaveValue) {
+    if (missingSecrets.length > 0) {
       throw new CruxPreconditionFailedException({
         message: 'Required secrets must have values!',
-        property: 'deploymentId',
-        value: deployment.id,
+        property: 'instanceIds',
+        value: missingSecrets.map(it => ({
+          id: it.id,
+          name: it.config?.name ?? it.image.name,
+        })),
       })
     }
 

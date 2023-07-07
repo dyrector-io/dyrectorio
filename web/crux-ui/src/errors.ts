@@ -1,5 +1,5 @@
 import { Translate } from 'next-translate'
-import toast from 'react-hot-toast'
+import toast, { ToastOptions } from 'react-hot-toast'
 import { fromApiError } from './error-responses'
 import { DyoErrorDto, WsErrorMessage } from './models'
 
@@ -7,6 +7,7 @@ export type DyoApiErrorHandler = (res: Response, setErrorValue?: FormikSetErrorV
 
 type Translation = {
   input?: string
+  toastOptions?: ToastOptions
   toast: string
 }
 
@@ -38,7 +39,7 @@ export const defaultTranslator: (t: Translate) => Translator = t => (stringId, s
 
 export const apiErrorHandler =
   (translator: Translator) => async (res: Response, setErrorValue?: FormikSetErrorValue) => {
-    const toaster = message => toast.error(message)
+    const toaster = (message, options) => toast.error(message, options)
 
     const { status } = res
     let translation = null
@@ -56,7 +57,7 @@ export const apiErrorHandler =
       translation = translator(null, 500, null)
     }
 
-    toaster(translation.toast)
+    toaster(translation.toast, translation.toastOptions)
   }
 
 export const defaultApiErrorHandler = (t: Translate) => apiErrorHandler(defaultTranslator(t))
