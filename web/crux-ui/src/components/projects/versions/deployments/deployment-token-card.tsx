@@ -34,6 +34,10 @@ const DeploymentTokenCard = (props: DeploymentTokenCardProps) => {
         </>
       ) : (
         <div className="grid grid-cols-2 text-bright gap-1">
+          <span>{t('common:name')}</span>
+
+          <span>{token.name}</span>
+
           <span>{t('created')}</span>
 
           <span>{utcDateToLocale(token.createdAt)}</span>

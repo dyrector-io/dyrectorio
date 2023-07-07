@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core'
 import { Request as ExpressRequest } from 'express'
 import { Observable, concatMap, of, tap } from 'rxjs'
 import AuditLoggerService from 'src/app/audit.logger/audit.logger.service'
-import { identityOfRequest } from 'src/app/token/jwt-auth.guard'
+import { AuthorizedHttpRequest } from 'src/app/token/jwt-auth.guard'
 import { AUDIT_LOGGER_LEVEL, AuditLogLevelOption } from 'src/decorators/audit-logger.decorator'
 import { WS_TYPE_SUBSCRIBE, WS_TYPE_UNSUBSCRIBE, WsMessage } from 'src/websockets/common'
 
@@ -38,11 +38,6 @@ export default class AuditLoggerInterceptor implements NestInterceptor {
     next: CallHandler,
     level: AuditLogLevelOption | null,
   ): Promise<Observable<any>> {
-    const user = identityOfRequest(context)
-    if (!user) {
-      return next.handle()
-    }
-
     const req: ExpressRequest = context.switchToHttp().getRequest()
 
     if (!level && req.method === 'GET') {
@@ -51,7 +46,7 @@ export default class AuditLoggerInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(async () => {
-        await this.service.createHttpAudit(level, user, req)
+        await this.service.createHttpAudit(level, req as AuthorizedHttpRequest)
       }),
     )
   }

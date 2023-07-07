@@ -18,5 +18,6 @@ export const createDeploymentSchema = updateDeploymentSchema.concat(
 export const copyDeploymentSchema = createDeploymentSchema
 
 export const createDeploymentTokenSchema = yup.object().shape({
+  name: yup.string().required(),
   expirationInDays: yup.number().nullable(),
 })

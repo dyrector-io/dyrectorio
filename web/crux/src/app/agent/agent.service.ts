@@ -18,6 +18,7 @@ import {
   startWith,
   takeUntil,
 } from 'rxjs'
+import { coerce, major, minor } from 'semver'
 import { Agent, AgentConnectionMessage, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import Deployment, { DeploymentProgressEvent } from 'src/domain/deployment'
@@ -38,7 +39,6 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { getAgentVersionFromPackage, getPackageVersion } from 'src/shared/package'
-import { coerce, major, minor } from 'semver'
 import { JWT_EXPIRATION, PRODUCTION } from '../../shared/const'
 import ContainerMapper from '../container/container.mapper'
 import { DagentTraefikOptionsDto, NodeConnectionStatus, NodeScriptTypeDto } from '../node/node.dto'
@@ -215,14 +215,15 @@ export default class AgentService {
         this.onDeploymentFinished(agent.id, deployment, status)
 
         const messageType: NotificationMessageType =
-          deployment.getStatus() === 'successful' ? 'successfulDeploy' : 'failedDeploy'
+          deployment.getStatus() === 'successful' ? 'successful-deploy' : 'failed-deploy'
         await this.notificationService.sendNotification({
-          identityId: deployment.notification.accessedBy,
+          teamId: deployment.notification.teamId,
           messageType,
           message: {
             subject: deployment.notification.projectName,
             version: deployment.notification.versionName,
             node: deployment.notification.nodeName,
+            owner: deployment.notification.actor,
           } as DeployMessage,
         })
 

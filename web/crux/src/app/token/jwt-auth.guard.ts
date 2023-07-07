@@ -2,11 +2,11 @@ import { createParamDecorator, ExecutionContext, Injectable, Logger, SetMetadata
 import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
 import { Identity } from '@ory/kratos-client'
-import http from 'http'
-import { JwtToken } from 'src/domain/identity'
+import { RequestAuthenticationData } from 'src/domain/identity'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import KratosService, { hasKratosSession } from 'src/services/kratos.service'
 import { WsClient } from 'src/websockets/common'
+import { Request as ExpressRequest } from 'express'
 
 export type AuthStrategyType = 'user-token' | 'deploy-token' | 'disabled'
 export const AUTH_STRATEGY = 'auth-strategy'
@@ -119,11 +119,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
   }
 }
 
-export type AuthorizedHttpRequest = http.IncomingMessage & {
-  sessionExpiresAt: number // epoch millis
-  identity: Identity
-  user: JwtToken
-}
+export type AuthorizedHttpRequest = ExpressRequest & RequestAuthenticationData
 
 export const identityOfRequest = (context: ExecutionContext): Identity => {
   const req = context.switchToHttp().getRequest() as AuthorizedHttpRequest
