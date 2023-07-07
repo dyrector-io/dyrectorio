@@ -6,13 +6,13 @@ interface DyoIconProps {
   imageClassName?: string
   src: string
   alt: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   onClick?: VoidFunction
 }
 
 const DyoIcon = (props: DyoIconProps) => {
   const { className, imageClassName, src, alt, size: propsSize = 'sm', onClick } = props
-  const size = propsSize === 'sm' ? 16 : propsSize === 'md' ? 24 : 32
+  const size = propsSize === 'sm' ? 16 : propsSize === 'md' ? 24 : propsSize === 'lg' ? 32 : 36
 
   return (
     <span

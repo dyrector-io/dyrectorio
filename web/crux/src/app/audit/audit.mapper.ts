@@ -31,7 +31,6 @@ export default class AuditMapper {
       createdAt: it.createdAt,
       event: it.event,
       method: it.method,
-      // email: .email as string,
       data: it.data as object,
     }
 

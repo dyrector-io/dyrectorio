@@ -120,16 +120,7 @@ const AuditLogPage = () => {
   const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
     <div className="w-10 ml-auto">
       {log.actorType === 'deployment-token' ? (
-        <span
-          title={t('token')}
-          className="flex justify-center items-center rounded-full font-bold text-dark text-xl bg-dyo-cyan"
-          style={{
-            width: 36,
-            height: 36,
-          }}
-        >
-          {t('deploymentTokenInitials').toUpperCase()}
-        </span>
+        <DyoIcon src="/robot-avatar.svg" alt={t('common:robotAvatar')} size="xl" />
       ) : (
         <UserDefaultAvatar />
       )}

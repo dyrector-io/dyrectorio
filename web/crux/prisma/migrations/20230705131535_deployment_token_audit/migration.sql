@@ -2,7 +2,7 @@
 CREATE TYPE "AuditLogActorTypeEnum" AS ENUM ('user', 'deploymentToken');
 
 -- AlterTable
-ALTER TABLE "AuditLog" 
+ALTER TABLE "AuditLog"
 ADD COLUMN     "actorType" "AuditLogActorTypeEnum",
 ADD COLUMN     "deploymentTokenId" UUID,
 ALTER COLUMN "userId" DROP NOT NULL;
@@ -18,7 +18,7 @@ ALTER TABLE "DeploymentToken" ADD COLUMN     "name" text;
 
 update "DeploymentToken"
 set "name" = (select distinct concat(p."name", ' ', n."name", ' ', d.prefix) from "DeploymentToken" dt
-inner join "Deployment" d on d.id = dt."deploymentId" 
+inner join "Deployment" d on d.id = dt."deploymentId"
 inner join "Node" n on n.id = d."nodeId"
 inner join "Version" v on v.id = d."versionId"
 inner join "Project" p on p.id = v."projectId"
