@@ -32,7 +32,7 @@ const Breadcrumb = (props: BreadcrumbProps) => {
 
       <div className="bg-bright w-px h-8 mx-6" />
 
-      <Link className='inline' href={homeMenu?.link ?? ROUTE_DASHBOARD} passHref>
+      <Link href={homeMenu?.link ?? ROUTE_DASHBOARD} passHref>
         <DyoIcon
           className="cursor-pointer"
           src={homeMenu?.icon ?? '/breadcrumb_home.svg'}
