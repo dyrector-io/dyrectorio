@@ -137,6 +137,7 @@ export const Sidebar = (props: SidebarProps) => {
 
         {SIDEBAR_SECTIONS.map((it, index) => (
           <NavSection
+            key={index}
             className={index < SIDEBAR_SECTIONS.length - 1 ? 'mt-6' : 'mt-auto mt-6'}
             title={t(it.title)}
             options={it.items}
