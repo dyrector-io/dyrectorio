@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -29,7 +41,7 @@ export default class StorageHttpController {
   constructor(private service: StorageService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description: 'Response should include `description`, `icon`, `url`, `id`, and `name`.',
     summary: 'Fetch the list of storages.',
@@ -44,7 +56,7 @@ export default class StorageHttpController {
   }
 
   @Get('options')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description: 'Response should include `id`, and `name`.',
     summary: 'Fetch the name and ID of available storage options.',
@@ -59,7 +71,7 @@ export default class StorageHttpController {
   }
 
   @Get(ROUTE_STORAGE_ID)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       'Get the details of a storage. Request must include `storageId`. Response should include description, icon, url, `id`, `name`, `accessKey`, `secretKey`, and `inUse`.',
@@ -72,7 +84,7 @@ export default class StorageHttpController {
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
       'Creates a new storage. Request must include `name`, and `url`. Request body may include `description`, `icon`, `accesKey`, and `secretKey`. Response should include `description`, `icon`, `url`, `id`, `name`, `accessKey`, `secretKey`, and `inUse`.',
@@ -94,7 +106,7 @@ export default class StorageHttpController {
   }
 
   @Put(ROUTE_STORAGE_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       'Updates a storage. Request must include `storageId`, `name`, and `url`. Request body may include `description`, `icon`, `accesKey`, and `secretKey`.',
@@ -111,7 +123,7 @@ export default class StorageHttpController {
   }
 
   @Delete(ROUTE_STORAGE_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Deletes a storage Request must include `storageId`.',
     summary: 'Delete a storage from dyrector.io.',

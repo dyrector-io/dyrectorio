@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -48,7 +49,7 @@ export default class ImageHttpController {
   constructor(private service: ImageService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       "Fetch details of images within a version. `ProjectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.</br></br>Details come in an array, including `name`, `id`, `tag`, `order`, and config details of the image.",
@@ -65,7 +66,7 @@ export default class ImageHttpController {
   }
 
   @Get(ROUTE_IMAGE_ID)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       "Fetch details of an image within a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required parameters.</br></br>Image details consists `name`, `id`, `tag`, `order`, and the config of the image.",
@@ -82,7 +83,7 @@ export default class ImageHttpController {
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @CreatedWithLocation()
   @ApiOperation({
     description:
@@ -109,7 +110,7 @@ export default class ImageHttpController {
   }
 
   @Patch(ROUTE_IMAGE_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       "Modify the configuration variables of an image. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required variables. `Tag` refers to the version of the image, `config` is an object of configuration variables.",
@@ -129,7 +130,7 @@ export default class ImageHttpController {
   }
 
   @Delete(ROUTE_IMAGE_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       "Delete an image. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required variables.",
@@ -147,7 +148,7 @@ export default class ImageHttpController {
   }
 
   @Put('order')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       "Edit image deployment order of a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables. Request should include the IDs of the images in an array.",
