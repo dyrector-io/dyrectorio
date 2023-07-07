@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, HttpCode, Post, Query, UseGuards } from '@nestjs/common'
+import { Controller, Delete, Get, HttpCode, HttpStatus, Post, Query, UseGuards } from '@nestjs/common'
 import { ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { from, mergeAll, Observable } from 'rxjs'
 import UuidParams from 'src/decorators/api-params.decorator'
@@ -23,7 +23,7 @@ export default class NodeGlobalContainerHttpController {
   constructor(private service: NodeService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       'Request must include `nodeId` and `prefix`. Response should include `id`, `command`, `createdAt`, `state`, `status`, `imageName`, `imageTag` and `ports` of images.',
@@ -35,7 +35,7 @@ export default class NodeGlobalContainerHttpController {
   }
 
   @Post(`${ROUTE_NAME}/start`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `nodeId`, and the `name` of the container.',
     summary: 'Start the specific container on a node.',
@@ -47,7 +47,7 @@ export default class NodeGlobalContainerHttpController {
   }
 
   @Post(`${ROUTE_NAME}/stop`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `nodeId`, and the `name` of the container.',
     summary: 'Stop the specific container on a node.',
@@ -59,7 +59,7 @@ export default class NodeGlobalContainerHttpController {
   }
 
   @Post(`${ROUTE_NAME}/restart`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `nodeId`, and the `name` of the container.',
     summary: 'Restart the specific container on a node.',
@@ -71,7 +71,7 @@ export default class NodeGlobalContainerHttpController {
   }
 
   @Delete(`${ROUTE_NAME}`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `nodeId`, and the `name` of the container.',
     summary: 'Delete the specific container from a node.',

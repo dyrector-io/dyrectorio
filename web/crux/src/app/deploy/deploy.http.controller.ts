@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -82,7 +83,7 @@ export default class DeployHttpController {
   }
 
   @Get(ROUTE_DEPLOYMENT_ID)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       'Get details of a certain deployment. Request must include `deploymentId`. Deployment details should include `id`, `prefix`, `environment`, `status`, `note`, `audit` log details, project `name`, `id`, `type`, version `name`, `type`, `id`, and node `name`, `id`, `type`.',
@@ -95,7 +96,7 @@ export default class DeployHttpController {
   }
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       'Request must include `deploymentId` and `instanceId`, which refer to the ID of a deployment and the instance. Instances are the manifestation of an image in the deployment. Response should include `state`, `id`, `updatedAt`, and `image` details including `id`, `name`, `tag`, `order` and `config` variables.',
@@ -108,7 +109,7 @@ export default class DeployHttpController {
   }
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}/secrets`)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       'Request must include `deploymentId` and `instanceId`, which refers to the ID of a deployment and the instance. Response should include container `prefix` and `name`, and `publicKey`, `keys`.',
@@ -124,7 +125,7 @@ export default class DeployHttpController {
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
       'Request must include `versionId`, `nodeId`, and `prefix`, which refers to the ID of a version, a node and the prefix of the deployment. Response should include deployment `id`, `prefix`, `status`, `note`, and `audit` log details, as well as project `type`, `id`, `name`, version `type`, `id`, `name`, and node `type`, `id`, `name`.',
@@ -148,7 +149,7 @@ export default class DeployHttpController {
   }
 
   @Patch(ROUTE_DEPLOYMENT_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `deploymentId`.',
     summary: 'Update deployment.',
@@ -165,7 +166,7 @@ export default class DeployHttpController {
   }
 
   @Patch(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       'Request must include `deploymentId` and `instanceId` and portion of the instance configuration as `config`. Response should include `config` variables in an array.',
@@ -184,7 +185,7 @@ export default class DeployHttpController {
   }
 
   @Delete(ROUTE_DEPLOYMENT_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `deploymentId`.',
     summary: 'Delete deployment.',
@@ -197,7 +198,7 @@ export default class DeployHttpController {
   }
 
   @Post(`${ROUTE_DEPLOYMENT_ID}/start`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `deploymentId`.',
     summary: 'Start the deployment process.',
@@ -215,7 +216,7 @@ export default class DeployHttpController {
   }
 
   @Post(`${ROUTE_DEPLOYMENT_ID}/copy`)
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
       'Request must include `deploymentId`, which will be copied. The body must include the `nodeId`, `prefix` and optionally a `note`. Response should include deployment data: `id`, `prefix`, `status`, `note`, and miscellaneous details of `audit` log, `project`, `version`, and `node`.',
@@ -239,7 +240,7 @@ export default class DeployHttpController {
   }
 
   @Get(`${ROUTE_DEPLOYMENT_ID}/log`)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       'Request must include `deploymentId`. Response should include an `items` array with objects of `type`, `deploymentStatus`, `createdAt`, `log`, and `containerState` which consists of `state` and `instanceId`.',
@@ -255,7 +256,7 @@ export default class DeployHttpController {
   }
 
   @Put(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_TOKEN}`)
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
       'Request must include `deploymentId` in the url. In the body a `name` and optionally the expiration date as `expirationInDays`.',
@@ -278,7 +279,7 @@ export default class DeployHttpController {
   }
 
   @Delete(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_TOKEN}`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include the `deploymentId`.',
     summary: 'Delete deployment token.',
