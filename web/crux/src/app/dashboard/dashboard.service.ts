@@ -4,6 +4,8 @@ import PrismaService from 'src/services/prisma.service'
 import { DashboardDto } from './dashboard.dto'
 import DashboardMapper, { DashboardTeam } from './dashboard.mapper'
 
+type DashboardTeamComponents = Pick<DashboardTeam, 'deployment' | 'version' | 'image' | 'project'>
+
 @Injectable()
 export default class DashboardService {
   constructor(private readonly prisma: PrismaService, private readonly mapper: DashboardMapper) {}
@@ -39,7 +41,7 @@ export default class DashboardService {
       },
     })
 
-    const dashboardTeam: DashboardTeam = {
+    let dashboardTeam: DashboardTeam = {
       ...team,
       project: null,
       version: null,
@@ -47,13 +49,21 @@ export default class DashboardService {
       deployment: null,
     }
 
-    await this.dashboardFromDeployment(dashboardTeam, identity)
+    let components = await this.dashboardFromDeployment(identity)
 
-    if (dashboardTeam.version == null) {
-      await this.dashboardFromVersion(dashboardTeam, identity)
+    if (!components) {
+      components = await this.dashboardFromVersion(identity)
+
+      if (!components) {
+        components = await this.dashboardFromProject(identity)
+      }
     }
-    if (dashboardTeam.project == null) {
-      await this.dashboardFromProject(dashboardTeam, identity)
+
+    if (components) {
+      dashboardTeam = {
+        ...dashboardTeam,
+        ...components,
+      }
     }
 
     const versions = this.prisma.version.count({
@@ -96,7 +106,7 @@ export default class DashboardService {
     }
   }
 
-  private async dashboardFromDeployment(dashboardTeam: DashboardTeam, identity: Identity) {
+  private async dashboardFromDeployment(identity: Identity): Promise<DashboardTeamComponents> {
     const deployment = await this.prisma.deployment.findFirst({
       where: {
         version: {
@@ -145,23 +155,27 @@ export default class DashboardService {
       },
     })
 
-    if (deployment) {
-      const {
-        version,
-        version: {
-          images: [image],
-          project,
-        },
-      } = deployment
+    if (!deployment) {
+      return null
+    }
 
-      dashboardTeam.deployment = deployment
-      dashboardTeam.version = version
-      dashboardTeam.image = image
-      dashboardTeam.project = project
+    const {
+      version,
+      version: {
+        images: [image],
+        project,
+      },
+    } = deployment
+
+    return {
+      project,
+      version,
+      image,
+      deployment,
     }
   }
 
-  private async dashboardFromVersion(dashboardTeam: DashboardTeam, identity: Identity) {
+  private async dashboardFromVersion(identity: Identity): Promise<DashboardTeamComponents> {
     const version = await this.prisma.version.findFirst({
       where: {
         project: {
@@ -204,19 +218,24 @@ export default class DashboardService {
       },
     })
 
-    if (version) {
-      const {
-        images: [image],
-        project,
-      } = version
+    if (!version) {
+      return null
+    }
 
-      dashboardTeam.version = version
-      dashboardTeam.image = image
-      dashboardTeam.project = project
+    const {
+      images: [image],
+      project,
+    } = version
+
+    return {
+      project,
+      version,
+      image,
+      deployment: null,
     }
   }
 
-  private async dashboardFromProject(dashboardTeam: DashboardTeam, identity: Identity) {
+  private async dashboardFromProject(identity: Identity): Promise<DashboardTeamComponents> {
     const project = await this.prisma.project.findFirst({
       where: {
         team: {
@@ -236,8 +255,15 @@ export default class DashboardService {
       },
     })
 
-    if (project) {
-      dashboardTeam.project = project
+    if (!project) {
+      return null
+    }
+
+    return {
+      project,
+      version: null,
+      image: null,
+      deployment: null,
     }
   }
 }
