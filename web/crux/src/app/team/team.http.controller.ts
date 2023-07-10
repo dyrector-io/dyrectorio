@@ -15,6 +15,7 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
@@ -100,6 +101,7 @@ export default class TeamHttpController {
   })
   @ApiBadRequestResponse({ description: 'Bad request for team creation.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for team creation.' })
+  @ApiConflictResponse({ description: 'Team name taken.' })
   @TeamRoleRequired('none')
   async createTeam(
     @Body() request: CreateTeamDto,
@@ -126,6 +128,7 @@ export default class TeamHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for team modification.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for team modification.' })
   @ApiNotFoundResponse({ description: 'Team not found.' })
+  @ApiConflictResponse({ description: 'Team name taken.' })
   @UuidParams(PARAM_TEAM_ID)
   async updateTeam(
     @TeamId() teamId: string,
@@ -170,6 +173,7 @@ export default class TeamHttpController {
   })
   @ApiBadRequestResponse({ description: 'Bad request for user invitation.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for user invitation.' })
+  @ApiConflictResponse({ description: 'User is already invited to or already in the team.' })
   @UseInterceptors(TeamInviteUserValitationInterceptor)
   @TeamRoleRequired('admin')
   @UuidParams(PARAM_TEAM_ID)

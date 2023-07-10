@@ -16,12 +16,14 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiPreconditionFailedResponse,
   ApiTags,
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
@@ -151,6 +153,7 @@ export default class DeployHttpController {
   @ApiCreatedResponse({ type: DeploymentDto, description: 'New deployment created.' })
   @ApiBadRequestResponse({ description: 'Bad request for a deployment.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment.' })
+  @ApiConflictResponse({ description: 'Prefix taken for the node.' })
   @UseGuards(DeployCreateTeamAccessGuard)
   @UseInterceptors(DeployCreateValidationInterceptor)
   async createDeployment(
@@ -251,6 +254,7 @@ export default class DeployHttpController {
   })
   @CreatedWithLocation()
   @ApiCreatedResponse({ type: DeploymentDto, description: 'Deployment copied.' })
+  @ApiConflictResponse({ description: 'Prefix taken for the node.' })
   @ApiBadRequestResponse({ description: 'Bad request for a deployment.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment.' })
   @UseInterceptors(DeployCopyValidationInterceptor)
@@ -297,6 +301,7 @@ export default class DeployHttpController {
   @CreatedWithLocation()
   @ApiOkResponse({ type: DeploymentTokenCreatedDto, description: 'Deployment token with jwt and the curl command.' })
   @ApiBadRequestResponse({ description: 'Bad request for a deployment token.' })
+  @ApiConflictResponse({ description: 'Token name taken.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment token.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   @UseInterceptors(DeployCreateDeployTokenValidationInterceptor)

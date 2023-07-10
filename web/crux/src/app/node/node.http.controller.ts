@@ -14,6 +14,7 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
@@ -92,6 +93,7 @@ export default class NodeHttpController {
   @CreatedWithLocation()
   @ApiBody({ type: CreateNodeDto })
   @ApiCreatedResponse({ type: NodeDto, description: 'New node created.' })
+  @ApiConflictResponse({ description: 'Node name taken.' })
   @ApiBadRequestResponse({ description: 'Bad request for node creation.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for node creation.' })
   async createNode(
@@ -116,6 +118,7 @@ export default class NodeHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for node details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for node details.' })
   @ApiNotFoundResponse({ description: 'Node details not found.' })
+  @ApiConflictResponse({ description: 'Node name taken.' })
   @UuidParams(PARAM_NODE_ID)
   async updateNode(
     @NodeId() id: string,
@@ -207,7 +210,7 @@ export default class NodeHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `nodeId`.',
-    summary: "Update node's data.",
+    summary: 'Update the agent.',
   })
   @ApiNoContentResponse({ description: 'Node details modified.' })
   @ApiBadRequestResponse({ description: 'Bad request for node details.' })

@@ -4,6 +4,7 @@ import { Body, Param } from '@nestjs/common/decorators/http/route-params.decorat
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
@@ -80,6 +81,7 @@ export default class RegistryHttpController {
   })
   @ApiBadRequestResponse({ description: 'Bad request for registry creation.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for registry creation.' })
+  @ApiConflictResponse({ description: 'Registry name taken.' })
   @UseGuards(RegistryAccessValidationGuard)
   async createRegistry(
     @Body() request: CreateRegistryDto,
@@ -106,6 +108,7 @@ export default class RegistryHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for registry modification.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for registry modification.' })
   @ApiNotFoundResponse({ description: 'Registry not found.' })
+  @ApiConflictResponse({ description: 'Registry name taken.' })
   @UuidParams(PARAM_REGISTRY_ID)
   async updateRegistry(
     @RegistryId() id: string,

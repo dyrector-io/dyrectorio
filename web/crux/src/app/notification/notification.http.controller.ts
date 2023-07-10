@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, 
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
@@ -74,6 +75,7 @@ export default class NotificationHttpController {
   @ApiCreatedResponse({ type: NotificationDetailsDto, description: 'New notification created.' })
   @ApiBadRequestResponse({ description: 'Bad request for a notification.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for a notification.' })
+  @ApiConflictResponse({ description: 'Notification name taken.' })
   async createNotification(
     @Body() request: CreateNotificationDto,
     @IdentityFromRequest() identity: Identity,
@@ -97,6 +99,7 @@ export default class NotificationHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for a notification.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for a notification.' })
   @ApiNotFoundResponse({ description: 'Notification not found.' })
+  @ApiConflictResponse({ description: 'Notification name taken.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
   async updateNotification(
     @NotificationId() notificationId: string,

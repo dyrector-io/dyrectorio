@@ -14,6 +14,7 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
@@ -87,6 +88,7 @@ export default class ProjectHttpController {
   @ApiCreatedResponse({ type: ProjectListItemDto, description: 'New project created.' })
   @ApiBadRequestResponse({ description: 'Bad request for project creation.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for project creation.' })
+  @ApiConflictResponse({ description: 'Project name taken.' })
   async createProject(
     @Body() request: CreateProjectDto,
     @IdentityFromRequest() identity: Identity,
@@ -109,7 +111,8 @@ export default class ProjectHttpController {
   @ApiNoContentResponse({ description: 'Project details are modified.' })
   @ApiBadRequestResponse({ description: 'Bad request for project details modification.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for project details modification.' })
-  @ApiNotFoundResponse({ description: 'Project details not found.' })
+  @ApiNotFoundResponse({ description: 'Project not found.' })
+  @ApiConflictResponse({ description: 'Project name taken.' })
   @UseInterceptors(ProjectUpdateValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID)
   async updateProject(

@@ -14,6 +14,7 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
@@ -105,6 +106,7 @@ export default class StorageHttpController {
   @ApiCreatedResponse({ type: StorageDetailsDto, description: 'New storage created.' })
   @ApiBadRequestResponse({ description: 'Bad request for storage creation.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for storage creation.' })
+  @ApiConflictResponse({ description: 'Storage name taken.' })
   async createStorage(
     @Body() request: CreateStorageDto,
     @IdentityFromRequest() identity: Identity,
@@ -128,6 +130,7 @@ export default class StorageHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for storage update.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for storage update.' })
   @ApiNotFoundResponse({ description: 'Storage not found.' })
+  @ApiConflictResponse({ description: 'Storage name taken.' })
   @UuidParams(PARAM_STORAGE_ID)
   async updateStorage(
     @StorageId() id: string,

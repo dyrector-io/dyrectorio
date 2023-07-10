@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UseGu
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
@@ -78,6 +79,7 @@ export default class TokenHttpController {
   })
   @ApiBadRequestResponse({ description: 'Bad request for token creation.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for token creation.' })
+  @ApiConflictResponse({ description: 'Token name taken.' })
   async generateToken(
     @Body(TokenValidationPipe) request: GenerateTokenDto,
     @IdentityFromRequest() identity: Identity,

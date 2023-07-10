@@ -15,6 +15,7 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
@@ -108,6 +109,7 @@ export default class VersionHttpController {
   @ApiCreatedResponse({ type: VersionDto, description: 'New version created.' })
   @ApiBadRequestResponse({ description: 'Bad request for version creation.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for version creation.' })
+  @ApiConflictResponse({ description: 'Version name taken.' })
   @UuidParams(PARAM_PROJECT_ID)
   async createVersion(
     @ProjectId() projectId: string,
@@ -133,6 +135,7 @@ export default class VersionHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for version modification.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for version modification.' })
   @ApiNotFoundResponse({ description: 'Version not found.' })
+  @ApiConflictResponse({ description: 'Version name taken.' })
   @UseInterceptors(VersionUpdateValidationInterceptor)
   @ApiBody({ type: UpdateVersionDto })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)

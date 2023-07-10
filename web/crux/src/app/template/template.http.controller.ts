@@ -2,6 +2,7 @@ import { Body, Controller, Get, Header, HttpCode, HttpStatus, Param, Post, Respo
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -52,6 +53,7 @@ export default class TemplateHttpController {
   @ApiBody({ type: CreateProjectFromTemplateDto })
   @ApiCreatedResponse({ type: ProjectDto, description: 'New project created.' })
   @ApiBadRequestResponse({ description: 'Bad request for project creation.' })
+  @ApiConflictResponse({ description: 'Project name taken.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for project creation.' })
   async createProject(
     @Body() request: CreateProjectFromTemplateDto,
