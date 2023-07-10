@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode } from '@nestjs/common'
+import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -11,7 +11,7 @@ export default class DashboardHttpController {
   constructor(private service: DashboardService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       'Response should include `users`, number of `auditLogEntries`, `projects`, `versions`, `deployments`, `failedDeployments`, details of `nodes`, `latestDeployments` and `auditLog` entries.',

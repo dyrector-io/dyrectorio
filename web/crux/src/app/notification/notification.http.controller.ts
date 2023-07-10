@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, UseGuards } from '@nestjs/common'
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -33,7 +33,7 @@ export default class NotificationHttpController {
   constructor(private service: NotificationService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description: 'Response should include `type`, `id`, `name`, `url`, `active`, and `creatorName`.',
     summary: 'Retrieve notifications that belong to a team.',
@@ -44,7 +44,7 @@ export default class NotificationHttpController {
   }
 
   @Get(ROUTE_NOTIFICATION_ID)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       'Request must include `notificationId` parameter. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
@@ -56,7 +56,7 @@ export default class NotificationHttpController {
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
       'Request must include `type`, `enabledEvents`, `id`, `name`, `url`, and `active`. Response should list `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
@@ -78,7 +78,7 @@ export default class NotificationHttpController {
   }
 
   @Put(ROUTE_NOTIFICATION_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       'Request must include `notificationId`, `type`, `enabledEvents`, `id`, `name`, `url`, and `active`. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
@@ -95,7 +95,7 @@ export default class NotificationHttpController {
   }
 
   @Delete(ROUTE_NOTIFICATION_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `notificationId`.',
     summary: 'Delete a notification.',
@@ -107,7 +107,7 @@ export default class NotificationHttpController {
   }
 
   @Post(`${ROUTE_NOTIFICATION_ID}/test`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `notificationId`.',
     summary: 'Send a test message.',

@@ -1,0 +1,22 @@
+# workflow containing webhooks that are external to us
+name: deploy_external
+on:
+  workflow_run:
+    workflows:
+      - "product_builder"
+    branches:
+      - "develop"
+    types:
+      - completed
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+jobs:
+  execute-webhook:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Execute dedicated Sunilium instance webhook
+        run: |
+          curl -X POST -H 'Authorization: Bearer ${{SUN_DYO_WEBHOOK_TOKEN}}' https://app.dyrectorio.com/api/deployments/8322f763-e611-40c7-a29b-bb21f2fd4822/start
