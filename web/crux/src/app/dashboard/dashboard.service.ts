@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import PrismaService from 'src/services/prisma.service'
 import { DashboardDto } from './dashboard.dto'
-import DashboardMapper from './dashboard.mapper'
+import DashboardMapper, { DashboardTeam } from './dashboard.mapper'
+
+type DashboardTeamComponents = Pick<DashboardTeam, 'deployment' | 'version' | 'image' | 'project'>
 
 @Injectable()
 export default class DashboardService {
@@ -36,45 +38,33 @@ export default class DashboardService {
             createdAt: 'asc',
           },
         },
-        projects: {
-          select: {
-            id: true,
-            versions: {
-              select: {
-                id: true,
-                images: {
-                  select: {
-                    id: true,
-                  },
-                  take: 1,
-                  orderBy: {
-                    createdAt: 'asc',
-                  },
-                },
-                deployments: {
-                  select: {
-                    id: true,
-                    status: true,
-                  },
-                  take: 1,
-                  orderBy: {
-                    createdAt: 'asc',
-                  },
-                },
-              },
-              take: 1,
-              orderBy: {
-                createdAt: 'asc',
-              },
-            },
-          },
-          take: 1,
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
       },
     })
+
+    let dashboardTeam: DashboardTeam = {
+      ...team,
+      project: null,
+      version: null,
+      image: null,
+      deployment: null,
+    }
+
+    let components = await this.dashboardFromDeployment(identity)
+
+    if (!components) {
+      components = await this.dashboardFromVersion(identity)
+
+      if (!components) {
+        components = await this.dashboardFromProject(identity)
+      }
+    }
+
+    if (components) {
+      dashboardTeam = {
+        ...dashboardTeam,
+        ...components,
+      }
+    }
 
     const versions = this.prisma.version.count({
       where: {
@@ -105,7 +95,7 @@ export default class DashboardService {
       },
     })
 
-    const onboard = this.mapper.teamToOnboard(team)
+    const onboard = this.mapper.teamToOnboard(dashboardTeam)
 
     return {
       ...team._count,
@@ -113,6 +103,167 @@ export default class DashboardService {
       deployments: await deployments,
       failedDeployments: await failedDeployments,
       onboarding: onboard,
+    }
+  }
+
+  private async dashboardFromDeployment(identity: Identity): Promise<DashboardTeamComponents> {
+    const deployment = await this.prisma.deployment.findFirst({
+      where: {
+        version: {
+          project: {
+            team: {
+              users: {
+                some: {
+                  userId: identity.id,
+                  active: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+      select: {
+        id: true,
+        status: true,
+        node: {
+          select: {
+            id: true,
+          },
+        },
+        version: {
+          select: {
+            id: true,
+            images: {
+              select: {
+                id: true,
+              },
+              take: 1,
+              orderBy: {
+                createdAt: 'asc',
+              },
+            },
+            project: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    if (!deployment) {
+      return null
+    }
+
+    const {
+      version,
+      version: {
+        images: [image],
+        project,
+      },
+    } = deployment
+
+    return {
+      project,
+      version,
+      image,
+      deployment,
+    }
+  }
+
+  private async dashboardFromVersion(identity: Identity): Promise<DashboardTeamComponents> {
+    const version = await this.prisma.version.findFirst({
+      where: {
+        project: {
+          team: {
+            users: {
+              some: {
+                userId: identity.id,
+                active: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: [
+        {
+          images: {
+            _count: 'desc',
+          },
+        },
+        {
+          createdAt: 'asc',
+        },
+      ],
+      select: {
+        id: true,
+        images: {
+          select: {
+            id: true,
+          },
+          take: 1,
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
+        project: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    })
+
+    if (!version) {
+      return null
+    }
+
+    const {
+      images: [image],
+      project,
+    } = version
+
+    return {
+      project,
+      version,
+      image,
+      deployment: null,
+    }
+  }
+
+  private async dashboardFromProject(identity: Identity): Promise<DashboardTeamComponents> {
+    const project = await this.prisma.project.findFirst({
+      where: {
+        team: {
+          users: {
+            some: {
+              userId: identity.id,
+              active: true,
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+      select: {
+        id: true,
+      },
+    })
+
+    if (!project) {
+      return null
+    }
+
+    return {
+      project,
+      version: null,
+      image: null,
+      deployment: null,
     }
   }
 }

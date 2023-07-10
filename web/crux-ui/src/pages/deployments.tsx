@@ -28,7 +28,7 @@ import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface DeploymentsPageProps {
   deployments: Deployment[]
@@ -74,7 +74,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
       return
     }
 
-    setDeployments(deployments.filter(it => it.id !== deployment.id))
+    setDeployments([...deployments.filter(it => it.id !== deployment.id)])
   }
 
   const onDeploymentCopied = async (deploymentId: string) => {
@@ -88,6 +88,8 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     ],
     initialData: deployments,
   })
+
+  useEffect(() => filters.setItems(deployments), [deployments])
 
   const selfLink: BreadcrumbLink = {
     name: t('common:deployments'),

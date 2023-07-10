@@ -120,25 +120,48 @@ export default class KratosService {
   }
 
   async enableOnboarding(userId: string): Promise<void> {
+    const identity = (
+      await this.identity.getIdentity({
+        id: userId,
+      })
+    ).data
+
+    // TODO(@robot9706): Due to a bug in kratos (https://github.com/ory/kratos/pull/3304)
+    // the whole metadata needs to be updated, once the fix is released refactor the patch
     await this.identity.patchIdentity({
       id: userId,
       jsonPatch: [
         {
-          op: 'remove',
-          path: '/metadata_public/disableOnboarding',
+          op: 'add',
+          path: '/metadata_public',
+          value: {
+            ...identity.metadata_public,
+            disableOnboarding: undefined,
+          },
         },
       ],
     })
   }
 
   async disableOnboarding(userId: string): Promise<void> {
+    const identity = (
+      await this.identity.getIdentity({
+        id: userId,
+      })
+    ).data
+
+    // TODO(@robot9706): Due to a bug in kratos (https://github.com/ory/kratos/pull/3304)
+    // the whole metadata needs to be updated, once the fix is released refactor the patch
     await this.identity.patchIdentity({
       id: userId,
       jsonPatch: [
         {
           op: 'add',
-          path: '/metadata_public/disableOnboarding',
-          value: true,
+          path: '/metadata_public',
+          value: {
+            ...identity.metadata_public,
+            disableOnboarding: true,
+          },
         },
       ],
     })
