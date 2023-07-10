@@ -5,6 +5,8 @@ import { OnboardingDto, OnboardingItemDto } from './dashboard.dto'
 @Injectable()
 export default class DashboardMapper {
   teamToOnboard(team: DashboardTeam): OnboardingDto {
+    const { deployment } = team
+
     const onboard: OnboardingDto = {
       signUp: {
         done: true,
@@ -13,13 +15,13 @@ export default class DashboardMapper {
         done: true,
         resourceId: team.id,
       },
-      createNode: this.resourceToOnboardItem(team.deployment ? team.deployment.node : team.nodes.find(Boolean)),
+      createNode: this.resourceToOnboardItem(deployment ? deployment.node : team.nodes.find(Boolean)),
       createProject: this.resourceToOnboardItem(team.project),
       createVersion: this.resourceToOnboardItem(team.version),
       addImages: this.resourceToOnboardItem(team.image),
-      addDeployment: this.resourceToOnboardItem(team.deployment),
+      addDeployment: this.resourceToOnboardItem(deployment),
       deploy: {
-        done: (team.deployment && team.deployment.status !== 'preparing') ?? false,
+        done: (deployment && deployment.status !== 'preparing') ?? false,
       },
     }
 
