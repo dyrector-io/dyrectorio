@@ -106,6 +106,7 @@ export class DeploymentTokenDto {
 
 export class CreateDeploymentTokenDto {
   @IsString()
+  @Min(3)
   name: string
 
   @IsInt()
