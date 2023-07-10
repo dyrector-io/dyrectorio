@@ -1,8 +1,10 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoLabel } from '@app/elements/dyo-label'
+import { ROUTE_DASHBOARD } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
+import { SIDEBAR_SECTIONS } from '../main/sidebar'
 
 export type BreadcrumbLink = {
   name: string
@@ -20,6 +22,8 @@ const Breadcrumb = (props: BreadcrumbProps) => {
 
   const { t } = useTranslation('common')
 
+  const homeMenu = SIDEBAR_SECTIONS.flatMap(it => it.items).find(it => it.link === pageUrl)
+
   return (
     <div key="breadcrumb" className="flex flex-row items-center w-1/2 flex-grow">
       <DyoHeading element="h2" className="text-2xl text-bright">
@@ -28,8 +32,13 @@ const Breadcrumb = (props: BreadcrumbProps) => {
 
       <div className="bg-bright w-px h-8 mx-6" />
 
-      <Link href={pageUrl} passHref>
-        <DyoIcon className="cursor-pointer" src="/breadcrumb_home.svg" alt={t('home')} size="sm" />
+      <Link href={homeMenu?.link ?? ROUTE_DASHBOARD} passHref>
+        <DyoIcon
+          className="cursor-pointer"
+          src={homeMenu?.icon ?? '/breadcrumb_home.svg'}
+          alt={t(homeMenu?.text ?? 'home')}
+          size="sm"
+        />
       </Link>
 
       {links?.map((it, index) => {
