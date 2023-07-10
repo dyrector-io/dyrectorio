@@ -52,9 +52,8 @@ export default class ProjectHttpController {
   @ApiOkResponse({
     type: ProjectListItemDto,
     isArray: true,
-    description: 'List of projects',
+    description: 'List of projects.',
   })
-  @ApiNoContentResponse()
   @ApiForbiddenResponse({ description: 'Unauthorized request for projects.' })
   async getProjects(@IdentityFromRequest() identity: Identity): Promise<ProjectListItemDto[]> {
     return this.service.getProjects(identity)
