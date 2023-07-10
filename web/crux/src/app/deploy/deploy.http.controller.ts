@@ -23,7 +23,6 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiPreconditionFailedResponse,
   ApiTags,
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
