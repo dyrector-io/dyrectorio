@@ -8,7 +8,7 @@ import DeploymentTokenCard from '@app/components/projects/versions/deployments/d
 import EditDeploymentCard from '@app/components/projects/versions/deployments/edit-deployment-card'
 import EditDeploymentInstances from '@app/components/projects/versions/deployments/edit-deployment-instances'
 import useDeploymentState from '@app/components/projects/versions/deployments/use-deployment-state'
-import { startDeployment } from '@app/components/projects/versions/version-deployments-section'
+import { deployStartErrorHandler, startDeployment } from '@app/components/projects/versions/version-deployments-section'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
@@ -19,7 +19,6 @@ import { defaultApiErrorHandler } from '@app/errors'
 import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
 import {
   DeploymentDetails,
-  DeploymentInvalidatedSecrets,
   DeploymentRoot,
   mergeConfigs,
   NodeDetails,
@@ -60,6 +59,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const submitRef = useRef<() => Promise<any>>()
 
   const handleApiError = defaultApiErrorHandler(t)
+  const handleDeployStartError = deployStartErrorHandler(t)
 
   const onWsError = (error: Error) => {
     // eslint-disable-next-line
@@ -108,11 +108,11 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    const result = await startDeployment(router, t, deployment.id, state.deployInstances)
-    if (result?.property === 'secrets') {
-      const invalidSecrets = result.value as DeploymentInvalidatedSecrets[]
-
-      actions.onInvalidateSecrets(invalidSecrets)
+    const res = await startDeployment(deployment.id)
+    if (res) {
+      handleDeployStartError(res)
+    } else {
+      await router.push(deploymentDeployUrl(deployment.id))
     }
   }
 

@@ -37,7 +37,7 @@ import { sendForm, utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import { Translate } from 'next-translate'
 import useTranslation from 'next-translate/useTranslation'
-import { NextRouter, useRouter } from 'next/dist/client/router'
+import { useRouter } from 'next/dist/client/router'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -49,13 +49,8 @@ type ErrorInstance = {
   name: string
 }
 
-export const startDeployment = async (
-  router: NextRouter,
-  t: Translate,
-  deploymentId: string,
-  deployInstances?: string[],
-) => {
-  const handleApiError = apiErrorHandler((stringId: string, status: number, dto: DyoErrorDto) => {
+export const deployStartErrorHandler = (t: Translate) =>
+  apiErrorHandler((stringId: string, status: number, dto: DyoErrorDto) => {
     if (status === 412) {
       const instances: ErrorInstance[] = dto.value
       return {
@@ -70,6 +65,7 @@ export const startDeployment = async (
     return defaultTranslator(t)(stringId, status, dto)
   })
 
+export const startDeployment = async (deploymentId: string, deployInstances?: string[]): Promise<Response | null> => {
   const res = await sendForm(
     'POST',
     deploymentStartApiUrl(deploymentId),
@@ -81,11 +77,8 @@ export const startDeployment = async (
   )
 
   if (!res.ok) {
-    handleApiError(res)
-    return null
+    return res
   }
-
-  await router.push(deploymentDeployUrl(deploymentId))
 
   return null
 }
@@ -115,6 +108,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const router = useRouter()
 
   const handleApiError = defaultApiErrorHandler(t)
+  const handleDeployStartError = deployStartErrorHandler(t)
 
   const [showInfo, setShowInfo] = useState<DeploymentByVersion>(null)
   const [confirmModalConfig, confirm] = useConfirmation()
@@ -133,7 +127,12 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       return
     }
 
-    await startDeployment(router, t, deployment.id)
+    const res = await startDeployment(deployment.id)
+    if (res) {
+      handleDeployStartError(res)
+    } else {
+      await router.push(deploymentDeployUrl(deployment.id))
+    }
   }
 
   const onDeleteDeployment = async (deployment: DeploymentByVersion) => {
