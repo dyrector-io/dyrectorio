@@ -26,7 +26,7 @@ type AuditFilter = {
 
 const defaultHeaderClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11'
 const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
-const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-32', 'w-2/12', '', 'w-24']
+const columnWidths = ['w-16', 'w-1/6', 'w-48', 'w-32', 'w-1/6', '', 'w-24']
 const sixDays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
 
@@ -102,7 +102,7 @@ const AuditLogPage = () => {
 
   const listHeaders = [
     '',
-    ...['common:email', 'common:date', 'common:method', 'common:event', 'common:data', 'common:actions'].map(it =>
+    ...['common:name', 'common:date', 'common:method', 'common:event', 'common:data', 'common:actions'].map(it =>
       t(it),
     ),
   ]
@@ -119,9 +119,15 @@ const AuditLogPage = () => {
 
   const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
     <div className="w-10 ml-auto">
-      <UserDefaultAvatar />
+      {log.actorType === 'deployment-token' ? (
+        <DyoIcon src="/robot-avatar.svg" alt={t('common:robotAvatar')} size="xl" />
+      ) : (
+        <UserDefaultAvatar />
+      )}
     </div>,
-    <div className="font-semibold min-w-max">{log.email}</div>,
+    <div title={log.actorType !== 'user' ? null : log.user.email} className="font-semibold min-w-max">
+      {log.name}
+    </div>,
     <div className="min-w-max">{utcDateToLocale(log.createdAt)}</div>,
     <div>{auditToMethod(log)}</div>,
     <div>{log.event}</div>,
@@ -173,7 +179,7 @@ const AuditLogPage = () => {
         <DyoModal
           className="w-1/2 h-1/2"
           titleClassName="pl-4 font-medium text-xl text-bright mb-3"
-          title={`${showInfo.email} | ${utcDateToLocale(showInfo.createdAt)}`}
+          title={`${showInfo.name} | ${utcDateToLocale(showInfo.createdAt)}`}
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
         >

@@ -106,9 +106,9 @@ export default class NodeService {
     })
 
     await this.notificationService.sendNotification({
-      identityId: identity.id,
+      teamId: team.teamId,
       messageType: 'node',
-      message: { subject: node.name } as BaseMessage,
+      message: { subject: node.name, owner: identity } as BaseMessage,
     })
 
     return this.mapper.toDto(node)
