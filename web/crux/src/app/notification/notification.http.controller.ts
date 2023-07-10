@@ -1,8 +1,12 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, UseGuards } from '@nestjs/common'
 import {
+  ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -39,6 +43,7 @@ export default class NotificationHttpController {
     summary: 'Retrieve notifications that belong to a team.',
   })
   @ApiOkResponse({ type: NotificationDto, isArray: true, description: 'Notifications listed.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for notifications.' })
   async getNotifications(@IdentityFromRequest() identity: Identity): Promise<NotificationDto[]> {
     return this.service.getNotifications(identity)
   }
@@ -51,6 +56,9 @@ export default class NotificationHttpController {
     summary: 'Fetch details of a notification.',
   })
   @ApiOkResponse({ type: NotificationDetailsDto, description: 'Details of notification listed.' })
+  @ApiBadRequestResponse({ description: 'Bad request for notification details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for notification details.' })
+  @ApiNotFoundResponse({ description: 'Notification not found.' })
   async getNotificationDetails(@NotificationId() notificationId: string): Promise<NotificationDetailsDto> {
     return this.service.getNotificationDetails(notificationId)
   }
@@ -65,6 +73,9 @@ export default class NotificationHttpController {
   @CreatedWithLocation()
   @ApiBody({ type: CreateNotificationDto })
   @ApiCreatedResponse({ type: NotificationDetailsDto, description: 'New notification created.' })
+  @ApiBadRequestResponse({ description: 'Bad request for a notification.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a notification.' })
+  @ApiConflictResponse({ description: 'Notification name taken.' })
   async createNotification(
     @Body() request: CreateNotificationDto,
     @IdentityFromRequest() identity: Identity,
@@ -85,6 +96,10 @@ export default class NotificationHttpController {
     summary: 'Modify a notification.',
   })
   @ApiOkResponse({ type: NotificationDetailsDto, description: 'Notification modified.' })
+  @ApiBadRequestResponse({ description: 'Bad request for a notification.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a notification.' })
+  @ApiNotFoundResponse({ description: 'Notification not found.' })
+  @ApiConflictResponse({ description: 'Notification name taken.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
   async updateNotification(
     @NotificationId() notificationId: string,
@@ -101,6 +116,8 @@ export default class NotificationHttpController {
     summary: 'Delete a notification.',
   })
   @ApiNoContentResponse({ description: 'Notification deleted.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for notification delete.' })
+  @ApiNotFoundResponse({ description: 'Notification not found.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
   async deleteNotification(@NotificationId() notificationId: string): Promise<void> {
     this.service.deleteNotification(notificationId)
@@ -113,6 +130,8 @@ export default class NotificationHttpController {
     summary: 'Send a test message.',
   })
   @ApiNoContentResponse({ description: 'Test message sent.' })
+  @ApiBadRequestResponse({ description: 'Bad request for a test message.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a test message.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
   async testNotification(@NotificationId() notificationId: string): Promise<void> {
     this.service.testNotification(notificationId)

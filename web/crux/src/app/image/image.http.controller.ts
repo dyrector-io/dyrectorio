@@ -13,9 +13,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import {
+  ApiBadRequestResponse,
   ApiBody,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -60,6 +63,7 @@ export default class ImageHttpController {
     isArray: true,
     description: 'Data of images listed.',
   })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for images.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async getImagesByVersionId(@ProjectId() _projectId: string, @VersionId() versionId: string): Promise<ImageDto[]> {
     return await this.service.getImagesByVersionId(versionId)
@@ -73,6 +77,9 @@ export default class ImageHttpController {
     summary: 'Fetch data of an image of a version.',
   })
   @ApiOkResponse({ type: ImageDto, description: 'Data of an image.' })
+  @ApiBadRequestResponse({ description: 'Bad request for image details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for image details.' })
+  @ApiNotFoundResponse({ description: 'Image not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async getImageDetails(
     @ProjectId() _projectId: string,
@@ -92,6 +99,8 @@ export default class ImageHttpController {
   })
   @ApiBody({ type: AddImagesDto, isArray: true })
   @ApiCreatedResponse({ type: ImageDto, isArray: true, description: 'New image added.' })
+  @ApiBadRequestResponse({ description: 'Bad request for images.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for images.' })
   @UseGuards(ImageAddToVersionTeamAccessGuard)
   @UseInterceptors(ImageAddToVersionValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
@@ -118,6 +127,9 @@ export default class ImageHttpController {
   })
   @ApiBody({ type: PatchImageDto })
   @ApiNoContentResponse({ description: "Image's configure variables updated." })
+  @ApiBadRequestResponse({ description: 'Bad request for an image.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for an image.' })
+  @ApiNotFoundResponse({ description: 'Image not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async patchImage(
     @ProjectId() _projectId: string,
@@ -137,6 +149,8 @@ export default class ImageHttpController {
     summary: 'Delete an image from a version.',
   })
   @ApiNoContentResponse({ description: 'Delete an image from a version.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for an image.' })
+  @ApiNotFoundResponse({ description: 'Image not found.' })
   @UseInterceptors(DeleteImageValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async deleteImage(
@@ -155,6 +169,8 @@ export default class ImageHttpController {
     summary: 'Edit image deployment order of a version.',
   })
   @ApiNoContentResponse({ description: 'Image order modified.' })
+  @ApiBadRequestResponse({ description: 'Bad request for ordering.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for ordering.' })
   @ApiBody({ type: String, isArray: true })
   @UseGuards(ImageOrderImagesTeamAccessGuard)
   @UseInterceptors(OrderImagesValidationInterceptor)

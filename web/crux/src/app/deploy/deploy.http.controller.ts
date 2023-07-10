@@ -14,11 +14,16 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import {
+  ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiPreconditionFailedResponse,
   ApiTags,
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
@@ -69,6 +74,7 @@ export default class DeployHttpController {
   constructor(private service: DeployService) {}
 
   @Get()
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       'Get the list of deployments. A deployment should include `id`, `prefix`, `status`, `note`, `audit` log details, project `name`, `id`, `type`, version `name`, `type`, `id`, and node `name`, `id`, `type`.',
@@ -79,6 +85,7 @@ export default class DeployHttpController {
     isArray: true,
     description: 'List of deployments.',
   })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
   async getDeployments(@IdentityFromRequest() identity: Identity): Promise<DeploymentDto[]> {
     return await this.service.getDeployments(identity)
   }
@@ -91,6 +98,9 @@ export default class DeployHttpController {
     summary: 'Retrieve details of a deployment.',
   })
   @ApiOkResponse({ type: DeploymentDetailsDto, description: 'Details of a deployment.' })
+  @ApiBadRequestResponse({ description: 'Bad request for deployment details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for deployment details.' })
+  @ApiNotFoundResponse({ description: 'Deployment not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async getDeploymentDetails(@DeploymentId() deploymentId: string): Promise<DeploymentDetailsDto> {
     return await this.service.getDeploymentDetails(deploymentId)
@@ -104,6 +114,9 @@ export default class DeployHttpController {
     summary: 'Get details of a soon-to-be container.',
   })
   @ApiOkResponse({ type: InstanceDto, description: 'Details of an instance.' })
+  @ApiBadRequestResponse({ description: 'Bad request for instance details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for an instance.' })
+  @ApiNotFoundResponse({ description: 'Instance not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
   async getInstance(@DeploymentId() _deploymentId: string, @InstanceId() instanceId: string): Promise<InstanceDto> {
     return await this.service.getInstance(instanceId)
@@ -117,6 +130,9 @@ export default class DeployHttpController {
     summary: 'Fetch secrets of a soon-to-be container.',
   })
   @ApiOkResponse({ type: InstanceSecretsDto, description: 'Secrets of an instance listed.' })
+  @ApiBadRequestResponse({ description: 'Bad request for instance secrets.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for instance secrets.' })
+  @ApiNotFoundResponse({ description: 'Instance secrets not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
   async getDeploymentSecrets(
     @DeploymentId() _deploymentId: string,
@@ -135,6 +151,9 @@ export default class DeployHttpController {
   @CreatedWithLocation()
   @ApiBody({ type: CreateDeploymentDto })
   @ApiCreatedResponse({ type: DeploymentDto, description: 'New deployment created.' })
+  @ApiBadRequestResponse({ description: 'Bad request for a deployment.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment.' })
+  @ApiConflictResponse({ description: 'Prefix taken for the node.' })
   @UseGuards(DeployCreateTeamAccessGuard)
   @UseInterceptors(DeployCreateValidationInterceptor)
   async createDeployment(
@@ -157,6 +176,9 @@ export default class DeployHttpController {
   })
   @UseInterceptors(DeployPatchValidationInterceptor)
   @ApiNoContentResponse({ description: 'Deployment modified.' })
+  @ApiBadRequestResponse({ description: 'Bad request for a deployment.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment.' })
+  @ApiNotFoundResponse({ description: 'Deployment not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async patchDeployment(
     @DeploymentId() deploymentId: string,
@@ -175,6 +197,9 @@ export default class DeployHttpController {
   })
   @UseInterceptors(DeployPatchValidationInterceptor)
   @ApiNoContentResponse({ description: 'Instance configuration updated.' })
+  @ApiBadRequestResponse({ description: 'Bad request for an instance.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for an instance.' })
+  @ApiNotFoundResponse({ description: 'Instance not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
   async patchInstance(
     @DeploymentId() deploymentId: string,
@@ -193,6 +218,8 @@ export default class DeployHttpController {
   })
   @UseInterceptors(DeleteDeploymentValidationInterceptor)
   @ApiNoContentResponse({ description: 'Deployment deleted.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment.' })
+  @ApiNotFoundResponse({ description: 'Deployment not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async deleteDeployment(@DeploymentId() deploymentId: string): Promise<void> {
     await this.service.deleteDeployment(deploymentId)
@@ -206,6 +233,8 @@ export default class DeployHttpController {
   })
   @UseInterceptors(DeployStartValidationInterceptor)
   @ApiNoContentResponse({ description: 'Deployment initiated.' })
+  @ApiBadRequestResponse({ description: 'Bad request for a deployment.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   @AuthStrategy('deploy-token')
   async startDeployment(
@@ -225,6 +254,9 @@ export default class DeployHttpController {
   })
   @CreatedWithLocation()
   @ApiCreatedResponse({ type: DeploymentDto, description: 'Deployment copied.' })
+  @ApiConflictResponse({ description: 'Prefix taken for the node.' })
+  @ApiBadRequestResponse({ description: 'Bad request for a deployment.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment.' })
   @UseInterceptors(DeployCopyValidationInterceptor)
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async copyDeployment(
@@ -248,6 +280,9 @@ export default class DeployHttpController {
     summary: 'Fetch event log of a deployment.',
   })
   @ApiOkResponse({ type: DeploymentLogListDto, description: 'Deployment event log.' })
+  @ApiBadRequestResponse({ description: 'Bad request for a deployment log.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment log.' })
+  @ApiNotFoundResponse({ description: 'Deployment log not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async deploymentLog(
     @DeploymentId() deploymentId: string,
@@ -265,6 +300,9 @@ export default class DeployHttpController {
   })
   @CreatedWithLocation()
   @ApiOkResponse({ type: DeploymentTokenCreatedDto, description: 'Deployment token with jwt and the curl command.' })
+  @ApiBadRequestResponse({ description: 'Bad request for a deployment token.' })
+  @ApiConflictResponse({ description: 'Token name taken.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment token.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   @UseInterceptors(DeployCreateDeployTokenValidationInterceptor)
   async createDeploymentToken(
@@ -287,6 +325,8 @@ export default class DeployHttpController {
     summary: 'Delete deployment token.',
   })
   @ApiNoContentResponse({ description: 'Deployment token deleted.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment token.' })
+  @ApiNotFoundResponse({ description: 'Deployment token not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async deleteDeploymentToken(@DeploymentId() deploymentId: string): Promise<void> {
     await this.service.deleteDeploymentToken(deploymentId)

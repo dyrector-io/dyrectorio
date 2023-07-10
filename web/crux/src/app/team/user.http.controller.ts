@@ -1,5 +1,14 @@
 import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common'
-import { ApiBody, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiForbiddenResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
@@ -31,6 +40,8 @@ export default class UserHttpController {
     summary: 'Fetch the current user.',
   })
   @ApiOkResponse({ type: UserMetaDto, description: 'Fetch the current user.' })
+  @ApiBadRequestResponse({ description: 'Bad request for current user.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for current user.' })
   async getUserMeta(@IdentityFromRequest() identity: Identity): Promise<UserMetaDto> {
     return await this.service.getUserMeta(identity)
   }
@@ -43,6 +54,8 @@ export default class UserHttpController {
   })
   @ApiBody({ type: ActivateTeamDto })
   @ApiNoContentResponse({ description: 'Set the active team.' })
+  @ApiBadRequestResponse({ description: 'Bad request for team activation.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for team activation.' })
   async activateTeam(@Body() request: ActivateTeamDto, @IdentityFromRequest() identity: Identity): Promise<void> {
     await this.service.activateTeam(request, identity)
   }
@@ -54,6 +67,8 @@ export default class UserHttpController {
     summary: 'Accept invitation to a team.',
   })
   @ApiNoContentResponse({ description: 'Invitation accepted.' })
+  @ApiBadRequestResponse({ description: 'Bad request for team invitation.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for team invitation.' })
   @UuidParams(PARAM_TEAM_ID)
   async acceptTeamInvitation(@TeamId() teamId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
     await this.service.acceptTeamInvitation(teamId, identity)
@@ -66,6 +81,8 @@ export default class UserHttpController {
     summary: 'Decline invitation to a team.',
   })
   @ApiNoContentResponse({ description: 'Invitation declined.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for invite declination.' })
+  @ApiNotFoundResponse({ description: 'Invitation not found.' })
   @UuidParams(PARAM_TEAM_ID)
   async declineTeamInvitation(@TeamId() teamId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
     await this.service.declineTeamInvitation(teamId, identity)
@@ -78,6 +95,7 @@ export default class UserHttpController {
     summary: 'Sets the onboarding tips to visible for the user.',
   })
   @ApiNoContentResponse({ description: 'Enabled.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for onboarding tips.' })
   async enableOnboardingTips(@IdentityFromRequest() identity: Identity): Promise<void> {
     await this.service.enableOnboarding(identity)
   }
@@ -89,6 +107,7 @@ export default class UserHttpController {
     summary: 'Sets the onboarding tips to hidden for the user.',
   })
   @ApiNoContentResponse({ description: 'Disabled.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for onboarding tips.' })
   async disableOnboardingTips(@IdentityFromRequest() identity: Identity): Promise<void> {
     await this.service.disableOnboarding(identity)
   }

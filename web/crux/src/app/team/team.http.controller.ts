@@ -13,9 +13,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import {
+  ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -58,6 +62,7 @@ export default class TeamHttpController {
     summary: 'Fetch data of teams the user is a member of.',
   })
   @ApiOkResponse({ type: TeamDto, isArray: true, description: 'List of teams and their statistics.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for teams.' })
   @TeamRoleRequired('none')
   async getTeams(@IdentityFromRequest() identity: Identity): Promise<TeamDto[]> {
     return await this.service.getTeams(identity)
@@ -71,6 +76,9 @@ export default class TeamHttpController {
     summary: 'Fetch data of a team the user is a member of.',
   })
   @ApiOkResponse({ type: TeamDetailsDto, description: 'Details of the team.' })
+  @ApiBadRequestResponse({ description: 'Bad request for team details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for team details.' })
+  @ApiNotFoundResponse({ description: 'Team not found.' })
   @UuidParams(PARAM_TEAM_ID)
   async getTeamById(@TeamId() teamId: string): Promise<TeamDetailsDto> {
     return await this.service.getTeamById(teamId)
@@ -91,6 +99,9 @@ export default class TeamHttpController {
     headers: API_CREATED_LOCATION_HEADERS,
     description: 'New team created.',
   })
+  @ApiBadRequestResponse({ description: 'Bad request for team creation.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for team creation.' })
+  @ApiConflictResponse({ description: 'Team name taken.' })
   @TeamRoleRequired('none')
   async createTeam(
     @Body() request: CreateTeamDto,
@@ -114,6 +125,10 @@ export default class TeamHttpController {
   })
   @TeamRoleRequired('admin')
   @ApiNoContentResponse({ description: 'Team name modified.' })
+  @ApiBadRequestResponse({ description: 'Bad request for team modification.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for team modification.' })
+  @ApiNotFoundResponse({ description: 'Team not found.' })
+  @ApiConflictResponse({ description: 'Team name taken.' })
   @UuidParams(PARAM_TEAM_ID)
   async updateTeam(
     @TeamId() teamId: string,
@@ -132,6 +147,8 @@ export default class TeamHttpController {
   })
   @TeamRoleRequired('owner')
   @ApiNoContentResponse({ description: 'Team deleted.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for team delete.' })
+  @ApiNotFoundResponse({ description: 'Team not found.' })
   @UuidParams(PARAM_TEAM_ID)
   @AuditLogLevel('disabled')
   async deleteTeam(@TeamId() teamId: string): Promise<void> {
@@ -154,6 +171,9 @@ export default class TeamHttpController {
     headers: API_CREATED_LOCATION_HEADERS,
     description: 'User invited.',
   })
+  @ApiBadRequestResponse({ description: 'Bad request for user invitation.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for user invitation.' })
+  @ApiConflictResponse({ description: 'User is already invited to or already in the team.' })
   @UseInterceptors(TeamInviteUserValitationInterceptor)
   @TeamRoleRequired('admin')
   @UuidParams(PARAM_TEAM_ID)
@@ -181,6 +201,9 @@ export default class TeamHttpController {
   @TeamRoleRequired('admin')
   @UseInterceptors(TeamOwnerImmutabilityValidationInterceptor)
   @ApiNoContentResponse({ description: "User's role modified." })
+  @ApiBadRequestResponse({ description: 'Bad request for user role modification.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for user role modification.' })
+  @ApiNotFoundResponse({ description: 'User not found.' })
   @UuidParams(PARAM_TEAM_ID, PARAM_USER_ID)
   async updateUserRoleInTeam(
     @TeamId() teamId: string,
@@ -201,6 +224,8 @@ export default class TeamHttpController {
   })
   @UseInterceptors(TeamOwnerImmutabilityValidationInterceptor)
   @ApiNoContentResponse({ description: 'User removed from a team.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for user removal.' })
+  @ApiNotFoundResponse({ description: 'User not found.' })
   @UuidParams(PARAM_TEAM_ID, PARAM_USER_ID)
   async deleteUserFromTeam(@TeamId() teamId: string, @UserId() userId: string): Promise<void> {
     await this.service.deleteUserFromTeam(teamId, userId)
@@ -216,6 +241,8 @@ export default class TeamHttpController {
   })
   @TeamRoleRequired('admin')
   @ApiNoContentResponse({ description: 'New invite link sent.' })
+  @ApiBadRequestResponse({ description: 'Bad request for reinvitation.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for reinvitation.' })
   @UuidParams(PARAM_TEAM_ID, PARAM_USER_ID)
   async reinviteUser(
     @TeamId() teamId: string,
