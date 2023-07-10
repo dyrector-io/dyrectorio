@@ -1,5 +1,5 @@
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common'
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiForbiddenResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import { DashboardDto } from './dashboard.dto'
@@ -18,6 +18,7 @@ export default class DashboardHttpController {
     summary: 'Fetch dashboard data of latest activities.',
   })
   @ApiOkResponse({ type: DashboardDto, description: 'Dashboard data listed.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for the dashboard.' })
   async getDashboard(@IdentityFromRequest() identity: Identity): Promise<DashboardDto> {
     return await this.service.getDashboard(identity)
   }

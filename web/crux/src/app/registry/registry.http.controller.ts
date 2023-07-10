@@ -2,9 +2,12 @@ import { Controller, Get, HttpCode, HttpStatus, PipeTransform, Type, UseGuards }
 import { Delete, Post, Put } from '@nestjs/common/decorators/http/request-mapping.decorator'
 import { Body, Param } from '@nestjs/common/decorators/http/route-params.decorator'
 import {
+  ApiBadRequestResponse,
   ApiBody,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -40,6 +43,7 @@ export default class RegistryHttpController {
     summary: 'Fetch data of registries.',
   })
   @ApiOkResponse({ type: RegistryDto, isArray: true, description: 'Data of all registries within a team listed.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for registries.' })
   async getRegistries(@IdentityFromRequest() identity: Identity): Promise<RegistryDto[]> {
     return await this.service.getRegistries(identity)
   }
@@ -52,6 +56,9 @@ export default class RegistryHttpController {
     summary: 'Fetch data of a registry.',
   })
   @ApiOkResponse({ type: RegistryDetailsDto, description: 'Data of a registry listed.' })
+  @ApiBadRequestResponse({ description: 'Bad request for a registry.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a registry.' })
+  @ApiNotFoundResponse({ description: 'Registry not found.' })
   @UuidParams(PARAM_REGISTRY_ID)
   async getRegistry(@RegistryId() id: string): Promise<RegistryDetailsDto> {
     return await this.service.getRegistryDetails(id)
@@ -71,6 +78,8 @@ export default class RegistryHttpController {
     headers: API_CREATED_LOCATION_HEADERS,
     description: 'New registry created.',
   })
+  @ApiBadRequestResponse({ description: 'Bad request for registry creation.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for registry creation.' })
   @UseGuards(RegistryAccessValidationGuard)
   async createRegistry(
     @Body() request: CreateRegistryDto,
@@ -94,6 +103,9 @@ export default class RegistryHttpController {
   @UseGuards(RegistryAccessValidationGuard)
   @ApiBody({ type: UpdateRegistryDto })
   @ApiNoContentResponse({ description: 'Registry modified.' })
+  @ApiBadRequestResponse({ description: 'Bad request for registry modification.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for registry modification.' })
+  @ApiNotFoundResponse({ description: 'Registry not found.' })
   @UuidParams(PARAM_REGISTRY_ID)
   async updateRegistry(
     @RegistryId() id: string,
@@ -110,6 +122,8 @@ export default class RegistryHttpController {
     summary: 'Delete a registry from dyrector.io.',
   })
   @ApiNoContentResponse({ description: 'Registry deleted.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for registry delete.' })
+  @ApiNotFoundResponse({ description: 'Registry not found.' })
   @UuidParams(PARAM_REGISTRY_ID)
   async deleteRegistry(@RegistryId(DeleteRegistryValidationPipe) id: string): Promise<void> {
     await this.service.deleteRegistry(id)

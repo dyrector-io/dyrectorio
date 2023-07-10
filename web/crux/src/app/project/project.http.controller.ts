@@ -12,9 +12,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import {
+  ApiBadRequestResponse,
   ApiBody,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -52,6 +55,7 @@ export default class ProjectHttpController {
     description: 'List of projects',
   })
   @ApiNoContentResponse()
+  @ApiForbiddenResponse({ description: 'Unauthorized request for projects.' })
   async getProjects(@IdentityFromRequest() identity: Identity): Promise<ProjectListItemDto[]> {
     return this.service.getProjects(identity)
   }
@@ -64,6 +68,9 @@ export default class ProjectHttpController {
     summary: 'Fetch details of a project.',
   })
   @ApiOkResponse({ type: ProjectDetailsDto, description: 'Details of a project.' })
+  @ApiBadRequestResponse({ description: 'Bad request for project details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for project details.' })
+  @ApiNotFoundResponse({ description: 'Project details not found.' })
   @UuidParams(PARAM_PROJECT_ID)
   async getProjectDetails(@ProjectId() id: string): Promise<ProjectDetailsDto> {
     return this.service.getProjectDetails(id)
@@ -79,6 +86,8 @@ export default class ProjectHttpController {
   @CreatedWithLocation()
   @ApiBody({ type: CreateProjectDto })
   @ApiCreatedResponse({ type: ProjectListItemDto, description: 'New project created.' })
+  @ApiBadRequestResponse({ description: 'Bad request for project creation.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for project creation.' })
   async createProject(
     @Body() request: CreateProjectDto,
     @IdentityFromRequest() identity: Identity,
@@ -99,6 +108,9 @@ export default class ProjectHttpController {
     summary: 'Update a project.',
   })
   @ApiNoContentResponse({ description: 'Project details are modified.' })
+  @ApiBadRequestResponse({ description: 'Bad request for project details modification.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for project details modification.' })
+  @ApiNotFoundResponse({ description: 'Project details not found.' })
   @UseInterceptors(ProjectUpdateValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID)
   async updateProject(
@@ -116,6 +128,8 @@ export default class ProjectHttpController {
     summary: 'Delete a project.',
   })
   @ApiNoContentResponse({ description: 'Project deleted.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a project.' })
+  @ApiNotFoundResponse({ description: 'Project not found.' })
   @UuidParams(PARAM_PROJECT_ID)
   async deleteProject(@ProjectId() id: string): Promise<void> {
     return this.service.deleteProject(id)
@@ -128,6 +142,8 @@ export default class ProjectHttpController {
     summary: 'Convert a project to versioned.',
   })
   @ApiNoContentResponse({ description: 'Project converted.' })
+  @ApiBadRequestResponse({ description: 'Bad request for project conversion.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for project conversion.' })
   @UuidParams(PARAM_PROJECT_ID)
   async convertProject(@ProjectId() id: string): Promise<void> {
     return this.service.convertProjectToVersioned(id)

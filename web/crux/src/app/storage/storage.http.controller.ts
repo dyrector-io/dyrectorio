@@ -12,9 +12,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import {
+  ApiBadRequestResponse,
   ApiBody,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -51,6 +54,7 @@ export default class StorageHttpController {
     isArray: true,
     description: 'List of storages.',
   })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for storages.' })
   async getStorages(@IdentityFromRequest() identity: Identity): Promise<StorageDto[]> {
     return this.service.getStorages(identity)
   }
@@ -66,6 +70,9 @@ export default class StorageHttpController {
     isArray: true,
     description: 'Name and ID of storage options listed.',
   })
+  @ApiBadRequestResponse({ description: 'Bad request for storage options.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for storage options.' })
+  @ApiNotFoundResponse({ description: 'Storage options not found.' })
   async getStorageOptions(@IdentityFromRequest() identity: Identity): Promise<StorageOptionDto[]> {
     return this.service.getStorageOptions(identity)
   }
@@ -78,6 +85,9 @@ export default class StorageHttpController {
     summary: 'Return details of a storage.',
   })
   @ApiOkResponse({ type: StorageDetailsDto, description: 'Storage details.' })
+  @ApiBadRequestResponse({ description: 'Bad request for storage details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for storage details.' })
+  @ApiNotFoundResponse({ description: 'Storage details not found.' })
   @UuidParams(PARAM_STORAGE_ID)
   async getStorageDetails(@StorageId() id: string): Promise<StorageDetailsDto> {
     return this.service.getStorageDetails(id)
@@ -93,6 +103,8 @@ export default class StorageHttpController {
   @CreatedWithLocation()
   @ApiBody({ type: CreateStorageDto })
   @ApiCreatedResponse({ type: StorageDetailsDto, description: 'New storage created.' })
+  @ApiBadRequestResponse({ description: 'Bad request for storage creation.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for storage creation.' })
   async createStorage(
     @Body() request: CreateStorageDto,
     @IdentityFromRequest() identity: Identity,
@@ -113,6 +125,9 @@ export default class StorageHttpController {
     summary: 'Modify a storage.',
   })
   @ApiNoContentResponse({ description: 'Storage updated.' })
+  @ApiBadRequestResponse({ description: 'Bad request for storage update.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for storage update.' })
+  @ApiNotFoundResponse({ description: 'Storage not found.' })
   @UuidParams(PARAM_STORAGE_ID)
   async updateStorage(
     @StorageId() id: string,
@@ -130,6 +145,8 @@ export default class StorageHttpController {
   })
   @UseInterceptors(StorageDeleteValidationInterceptor)
   @ApiNoContentResponse({ description: 'Storage deleted.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for storage delete.' })
+  @ApiNotFoundResponse({ description: 'Storage not found.' })
   @UuidParams(PARAM_STORAGE_ID)
   async deleteStorage(@StorageId() id: string): Promise<void> {
     return this.service.deleteStorage(id)

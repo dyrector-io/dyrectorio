@@ -12,9 +12,12 @@ import {
   UseGuards,
 } from '@nestjs/common'
 import {
+  ApiBadRequestResponse,
   ApiBody,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiProduces,
@@ -58,6 +61,7 @@ export default class NodeHttpController {
     isArray: true,
     description: 'Data of nodes listed.',
   })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for nodes.' })
   async getNodes(@IdentityFromRequest() identity: Identity): Promise<NodeDto[]> {
     return this.service.getNodes(identity)
   }
@@ -70,6 +74,9 @@ export default class NodeHttpController {
     summary: 'Get data of nodes that belong to your team.',
   })
   @ApiOkResponse({ type: NodeDetailsDto, description: 'Data of the node.' })
+  @ApiBadRequestResponse({ description: 'Bad request for node details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for node details.' })
+  @ApiNotFoundResponse({ description: 'Node details not found.' })
   @UuidParams(PARAM_NODE_ID)
   async getNodeDetails(@NodeId() nodeId: string): Promise<NodeDetailsDto> {
     return this.service.getNodeDetails(nodeId)
@@ -85,6 +92,8 @@ export default class NodeHttpController {
   @CreatedWithLocation()
   @ApiBody({ type: CreateNodeDto })
   @ApiCreatedResponse({ type: NodeDto, description: 'New node created.' })
+  @ApiBadRequestResponse({ description: 'Bad request for node creation.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for node creation.' })
   async createNode(
     @Body() request: CreateNodeDto,
     @IdentityFromRequest() identity: Identity,
@@ -104,6 +113,9 @@ export default class NodeHttpController {
     summary: 'Update details of a node.',
   })
   @ApiNoContentResponse({ description: 'Node details modified.' })
+  @ApiBadRequestResponse({ description: 'Bad request for node details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for node details.' })
+  @ApiNotFoundResponse({ description: 'Node details not found.' })
   @UuidParams(PARAM_NODE_ID)
   async updateNode(
     @NodeId() id: string,
@@ -120,6 +132,8 @@ export default class NodeHttpController {
     summary: 'Delete node.',
   })
   @ApiNoContentResponse({ description: 'Node deleted.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for node delete.' })
+  @ApiNotFoundResponse({ description: 'Node not found.' })
   @UuidParams(PARAM_NODE_ID)
   async deleteNode(@NodeId() nodeId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
     return this.service.deleteNode(nodeId, identity)
@@ -132,6 +146,8 @@ export default class NodeHttpController {
     summary: 'Create agent install script.',
   })
   @ApiOkResponse({ type: NodeInstallDto, description: 'Install script generated.' })
+  @ApiBadRequestResponse({ description: 'Bad request for an install script.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for an install script.' })
   @UuidParams(PARAM_NODE_ID)
   async generateScript(
     @NodeId(NodeGenerateScriptValidationPipe) nodeId: string,
@@ -148,6 +164,8 @@ export default class NodeHttpController {
     summary: 'Delete node set up install script.',
   })
   @ApiNoContentResponse({ description: 'Agent install script deleted.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for script delete.' })
+  @ApiNotFoundResponse({ description: 'Install script not found.' })
   async discardScript(@NodeId() nodeId: string): Promise<void> {
     return await this.service.discardScript(nodeId)
   }
@@ -161,6 +179,9 @@ export default class NodeHttpController {
     summary: 'Fetch install script.',
   })
   @ApiOkResponse({ type: NodeDetailsDto, description: 'Install script.' })
+  @ApiBadRequestResponse({ description: 'Bad request for an install script.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for an install script.' })
+  @ApiNotFoundResponse({ description: 'Install script not found.' })
   @Header('content-type', 'text/plain')
   @DisableAuth()
   @UuidParams(PARAM_NODE_ID)
@@ -175,6 +196,8 @@ export default class NodeHttpController {
     summary: "Revoke the node's access token.",
   })
   @ApiNoContentResponse({ description: 'Token revoked.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a token.' })
+  @ApiNotFoundResponse({ description: 'Token not found.' })
   @UuidParams(PARAM_NODE_ID)
   async revokeToken(@NodeId() nodeId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
     return await this.service.revokeToken(nodeId, identity)
@@ -187,6 +210,8 @@ export default class NodeHttpController {
     summary: "Update node's data.",
   })
   @ApiNoContentResponse({ description: 'Node details modified.' })
+  @ApiBadRequestResponse({ description: 'Bad request for node details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for node details.' })
   @UuidParams(PARAM_NODE_ID)
   updateNodeAgent(@NodeId() nodeId: string) {
     this.service.updateAgent(nodeId)
@@ -199,7 +224,10 @@ export default class NodeHttpController {
       'Request must include `skip`, `take`, and dates of `from` and `to`. Response should include an array of `items`: `createdAt` date, `event`, and `data`.',
     summary: 'Fetch audit log.',
   })
-  @ApiOkResponse({ type: NodeAuditLogListDto, description: 'Paginated list of the Audit log.' })
+  @ApiOkResponse({ type: NodeAuditLogListDto, description: 'Paginated list of the audit log.' })
+  @ApiBadRequestResponse({ description: 'Bad request for audit log.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for audit log.' })
+  @ApiNotFoundResponse({ description: 'Audit log not found.' })
   async getAuditLog(@NodeId() nodeId: string, @Query() query: NodeAuditLogQueryDto): Promise<NodeAuditLogListDto> {
     return await this.service.getAuditLog(nodeId, query)
   }

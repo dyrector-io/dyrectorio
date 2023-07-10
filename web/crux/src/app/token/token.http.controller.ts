@@ -1,8 +1,11 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common'
 import {
+  ApiBadRequestResponse,
   ApiBody,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -40,6 +43,7 @@ export default class TokenHttpController {
     isArray: true,
     description: 'Token list fetched.',
   })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for tokens.' })
   async getTokens(@IdentityFromRequest() identity: Identity): Promise<TokenDto[]> {
     return this.service.getTokenList(identity)
   }
@@ -52,6 +56,9 @@ export default class TokenHttpController {
     summary: 'Fetch token details.',
   })
   @ApiOkResponse({ type: TokenDto, description: 'Token details listed.' })
+  @ApiBadRequestResponse({ description: 'Bad request for token details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for token details.' })
+  @ApiNotFoundResponse({ description: 'Token details not found.' })
   @UuidParams(PARAM_TOKEN_ID)
   async getToken(@TokenId() id: string, @IdentityFromRequest() identity: Identity): Promise<TokenDto> {
     return this.service.getToken(id, identity)
@@ -69,6 +76,8 @@ export default class TokenHttpController {
     type: GeneratedTokenDto,
     headers: API_CREATED_LOCATION_HEADERS,
   })
+  @ApiBadRequestResponse({ description: 'Bad request for token creation.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for token creation.' })
   async generateToken(
     @Body(TokenValidationPipe) request: GenerateTokenDto,
     @IdentityFromRequest() identity: Identity,
@@ -88,6 +97,8 @@ export default class TokenHttpController {
     summary: 'Delete an access token.',
   })
   @ApiNoContentResponse({ description: 'Delete token.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for token delete.' })
+  @ApiNotFoundResponse({ description: 'Token not found.' })
   @UuidParams(PARAM_TOKEN_ID)
   async deleteToken(@TokenId() id: string): Promise<void> {
     await this.service.deleteToken(id)

@@ -13,9 +13,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import {
+  ApiBadRequestResponse,
   ApiBody,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -65,8 +68,9 @@ export default class VersionHttpController {
   @ApiOkResponse({
     type: VersionDto,
     isArray: true,
-    description: 'Returns an array with the every version of a project.',
+    description: 'Returns an array with every versions of a project.',
   })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for project versions.' })
   @UuidParams(PARAM_PROJECT_ID)
   async getVersions(
     @ProjectId() projectId: string,
@@ -83,6 +87,9 @@ export default class VersionHttpController {
     summary: 'Retrieve the details of a version of a project.',
   })
   @ApiOkResponse({ type: VersionDetailsDto, description: 'Details of a version under a project is fetched.' })
+  @ApiBadRequestResponse({ description: 'Bad request for version details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for version details.' })
+  @ApiNotFoundResponse({ description: 'Version not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async getVersion(@ProjectId() _projectId: string, @VersionId() versionId: string): Promise<VersionDetailsDto> {
     return await this.service.getVersionDetails(versionId)
@@ -99,6 +106,8 @@ export default class VersionHttpController {
   })
   @ApiBody({ type: CreateVersionDto })
   @ApiCreatedResponse({ type: VersionDto, description: 'New version created.' })
+  @ApiBadRequestResponse({ description: 'Bad request for version creation.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for version creation.' })
   @UuidParams(PARAM_PROJECT_ID)
   async createVersion(
     @ProjectId() projectId: string,
@@ -121,6 +130,9 @@ export default class VersionHttpController {
     summary: 'Modify version.',
   })
   @ApiNoContentResponse({ description: 'Changelog of a version is updated.' })
+  @ApiBadRequestResponse({ description: 'Bad request for version modification.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for version modification.' })
+  @ApiNotFoundResponse({ description: 'Version not found.' })
   @UseInterceptors(VersionUpdateValidationInterceptor)
   @ApiBody({ type: UpdateVersionDto })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
@@ -141,6 +153,8 @@ export default class VersionHttpController {
     summary: 'Delete a version.',
   })
   @ApiNoContentResponse({ description: 'Version deleted.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for version delete.' })
+  @ApiNotFoundResponse({ description: 'Version not found.' })
   @UseInterceptors(VersionDeleteValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async deleteVersion(@ProjectId() _projectId: string, @VersionId() versionId: string): Promise<void> {
@@ -158,6 +172,9 @@ export default class VersionHttpController {
   @ApiNoContentResponse({
     description: 'Version turned into default.',
   })
+  @ApiBadRequestResponse({ description: 'Bad request.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for setting version as default.' })
+  @ApiNotFoundResponse({ description: 'Version not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async setDefaultVersion(@ProjectId() projectId: string, @VersionId() versionId: string): Promise<void> {
     return await this.service.setDefaultVersion(projectId, versionId)
@@ -174,6 +191,8 @@ export default class VersionHttpController {
   @UseInterceptors(VersionIncreaseValidationInterceptor)
   @ApiBody({ type: IncreaseVersionDto })
   @ApiCreatedResponse({ type: VersionDto, description: 'New version created.' })
+  @ApiBadRequestResponse({ description: 'Bad request for increasing version.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for increasing version.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async increaseVersion(
     @ProjectId() projectId: string,

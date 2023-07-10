@@ -1,5 +1,13 @@
 import { Controller, Delete, Get, HttpCode, HttpStatus, Post, Query, UseGuards } from '@nestjs/common'
-import { ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBadRequestResponse,
+  ApiForbiddenResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger'
 import { from, mergeAll, Observable } from 'rxjs'
 import UuidParams from 'src/decorators/api-params.decorator'
 import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
@@ -30,6 +38,7 @@ export default class NodeGlobalContainerHttpController {
     summary: 'Fetch data of all containers on a node.',
   })
   @ApiOkResponse({ type: ContainerDto, isArray: true, description: 'Fetch data of containers running on a node.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for containers.' })
   async getContainers(@NodeId() nodeId: string, @Query('prefix') prefix?: string): Promise<ContainerDto[]> {
     return await this.service.getContainers(nodeId, prefix)
   }
@@ -41,6 +50,8 @@ export default class NodeGlobalContainerHttpController {
     summary: 'Start the specific container on a node.',
   })
   @ApiNoContentResponse({ description: 'Container started.' })
+  @ApiBadRequestResponse({ description: 'Bad request for container starting.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for container starting.' })
   @UuidParams(PARAM_NODE_ID)
   startContainer(@NodeId() nodeId: string, @Name() name: string) {
     this.service.startContainer(nodeId, GLOBAL_PREFIX, name)
@@ -53,6 +64,8 @@ export default class NodeGlobalContainerHttpController {
     summary: 'Stop the specific container on a node.',
   })
   @ApiNoContentResponse({ description: 'Container stopped.' })
+  @ApiBadRequestResponse({ description: 'Bad request for container stopping.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for container stopping.' })
   @UuidParams(PARAM_NODE_ID)
   stopContainer(@NodeId() nodeId: string, @Name() name: string) {
     this.service.stopContainer(nodeId, GLOBAL_PREFIX, name)
@@ -65,6 +78,8 @@ export default class NodeGlobalContainerHttpController {
     summary: 'Restart the specific container on a node.',
   })
   @ApiNoContentResponse({ description: 'Container restarted.' })
+  @ApiBadRequestResponse({ description: 'Bad request for container restarting.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for container restarting.' })
   @UuidParams(PARAM_NODE_ID)
   restartContainer(@NodeId() nodeId: string, @Name() name: string) {
     this.service.restartContainer(nodeId, GLOBAL_PREFIX, name)
@@ -77,6 +92,8 @@ export default class NodeGlobalContainerHttpController {
     summary: 'Delete the specific container from a node.',
   })
   @ApiNoContentResponse({ description: 'Container deleted.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for container delete.' })
+  @ApiNotFoundResponse({ description: 'Container not found.' })
   @UuidParams(PARAM_NODE_ID)
   deleteContainer(@NodeId() nodeId: string, @Name() name: string): Observable<void> {
     return from(this.service.deleteContainer(nodeId, GLOBAL_PREFIX, name)).pipe(mergeAll())
