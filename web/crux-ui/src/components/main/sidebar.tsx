@@ -21,84 +21,98 @@ import Link from 'next/link'
 import NavButton from './nav-button'
 import { MenuOption, NavSection } from './nav-section'
 
+export type MenuSection = {
+  title: string
+  items: MenuOption[]
+}
+
 export interface SidebarProps {
   className?: string
 }
+
+export const SIDEBAR_SECTIONS: MenuSection[] = [
+  {
+    title: 'project',
+    items: [
+      {
+        icon: '/projects.svg',
+        text: 'projects',
+        link: ROUTE_PROJECTS,
+      },
+      {
+        icon: '/deploy.svg',
+        text: 'deployments',
+        link: ROUTE_DEPLOYMENTS,
+      },
+    ],
+  },
+  {
+    title: 'components',
+    items: [
+      {
+        icon: '/servers.svg',
+        text: 'nodes',
+        link: ROUTE_NODES,
+      },
+      {
+        icon: '/copy.svg',
+        text: 'registries',
+        link: ROUTE_REGISTRIES,
+      },
+      {
+        icon: '/notification.svg',
+        text: 'notifications',
+        link: ROUTE_NOTIFICATIONS,
+      },
+      {
+        icon: '/template.svg',
+        text: 'templates',
+        link: ROUTE_TEMPLATES,
+      },
+      {
+        icon: '/storage.svg',
+        text: 'storages',
+        link: ROUTE_STORAGES,
+      },
+    ],
+  },
+  {
+    title: 'settings',
+    items: [
+      {
+        icon: '/audit.svg',
+        text: 'audit',
+        link: ROUTE_AUDIT,
+      },
+      {
+        icon: '/team.svg',
+        text: 'teams',
+        link: ROUTE_TEAMS,
+      },
+      {
+        icon: '/profile.svg',
+        text: 'profile',
+        link: ROUTE_PROFILE,
+      },
+      {
+        icon: '/documentation.svg',
+        text: 'documentation',
+        link: ROUTE_DOCS,
+        target: '_blank',
+      },
+      {
+        icon: '/logout.svg',
+        text: 'logout',
+        link: ROUTE_LOGOUT,
+      },
+    ],
+  },
+]
 
 export const Sidebar = (props: SidebarProps) => {
   const { className } = props
 
   const { t } = useTranslation('common')
-
-  const projectOptions: MenuOption[] = [
-    {
-      icon: <DyoIcon src="/projects.svg" alt={t('projects')} />,
-      text: 'projects',
-      link: ROUTE_PROJECTS,
-    },
-    {
-      icon: <DyoIcon src="/deploy.svg" alt={t('deployments')} />,
-      text: 'deployments',
-      link: ROUTE_DEPLOYMENTS,
-    },
-  ]
-
-  const componentOptions: MenuOption[] = [
-    {
-      icon: <DyoIcon src="/servers.svg" alt={t('nodes')} />,
-      text: 'nodes',
-      link: ROUTE_NODES,
-    },
-    {
-      icon: <DyoIcon src="/copy.svg" alt={t('registries')} />,
-      text: 'registries',
-      link: ROUTE_REGISTRIES,
-    },
-    {
-      icon: <DyoIcon src="/notification.svg" alt={t('notifications')} />,
-      text: 'notifications',
-      link: ROUTE_NOTIFICATIONS,
-    },
-    {
-      icon: <DyoIcon src="/template.svg" alt={t('templates')} />,
-      text: 'templates',
-      link: ROUTE_TEMPLATES,
-    },
-    {
-      icon: <DyoIcon src="/storage.svg" alt={t('storages')} />,
-      text: 'storages',
-      link: ROUTE_STORAGES,
-    },
-  ]
-
-  const settingsOptions: MenuOption[] = [
-    {
-      icon: <DyoIcon src="/audit.svg" alt={t('audit')} />,
-      text: 'audit',
-      link: ROUTE_AUDIT,
-    },
-    {
-      icon: <DyoIcon src="/team.svg" alt={t('teams')} />,
-      text: 'teams',
-      link: ROUTE_TEAMS,
-    },
-    {
-      icon: <DyoIcon src="/profile.svg" alt={t('profile')} />,
-      text: 'profile',
-      link: ROUTE_PROFILE,
-    },
-    {
-      icon: <DyoIcon src="/documentation.svg" alt={t('documentation')} />,
-      text: 'documentation',
-      link: ROUTE_DOCS,
-      target: '_blank',
-    },
-    {
-      icon: <DyoIcon src="/logout.svg" alt={t('logout')} />,
-      text: 'logout',
-      link: ROUTE_LOGOUT,
-    },
-  ]
 
   return (
     <div className={className}>
@@ -121,11 +135,14 @@ export const Sidebar = (props: SidebarProps) => {
           </NavButton>
         </div>
 
-        <NavSection className="mt-6" title={t('project')} options={projectOptions} />
-
-        <NavSection className="mt-6" title={t('components')} options={componentOptions} />
-
-        <NavSection className="mt-auto mb-4" title={t('settings')} options={settingsOptions} />
+        {SIDEBAR_SECTIONS.map((it, index) => (
+          <NavSection
+            key={index}
+            className={index < SIDEBAR_SECTIONS.length - 1 ? 'mt-6' : 'mt-auto mt-6'}
+            title={t(it.title)}
+            options={it.items}
+          />
+        ))}
       </div>
     </div>
   )
