@@ -63,7 +63,7 @@ export const startDeployment = async (
           instances: instances.reduce((message, it) => `${message}\n${it.name}`, ''),
         }),
         toastOptions: {
-          className: "!bg-error-red text-center min-w-[32rem]",
+          className: '!bg-error-red text-center min-w-[32rem]',
         },
       }
     }
