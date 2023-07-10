@@ -1,4 +1,5 @@
 import * as yup from 'yup'
+import { nameRule } from './common'
 
 export const updateDeploymentSchema = yup.object().shape({
   note: yup.string(),
@@ -18,5 +19,6 @@ export const createDeploymentSchema = updateDeploymentSchema.concat(
 export const copyDeploymentSchema = createDeploymentSchema
 
 export const createDeploymentTokenSchema = yup.object().shape({
+  name: nameRule,
   expirationInDays: yup.number().nullable(),
 })

@@ -1,28 +1,72 @@
 import { Injectable } from '@nestjs/common'
 import { WsArgumentsHost } from '@nestjs/common/interfaces'
-import { Identity } from '@ory/kratos-client'
-import { Request as ExpressRequest } from 'express'
+import { AuditLogRequestMethodEnum } from '@prisma/client'
 import TeamRepository from 'src/app/team/team.repository'
 import { AuditLogLevelOption } from 'src/decorators/audit-logger.decorator'
-import { WsClient, WsMessage } from 'src/websockets/common'
+import { auditActorOfRequest } from 'src/domain/audit'
 import PrismaService from 'src/services/prisma.service'
-import { AuditLogRequestMethodEnum } from '@prisma/client'
+import { WsClient, WsMessage } from 'src/websockets/common'
+import { AuthorizedHttpRequest } from '../token/jwt-auth.guard'
 
 @Injectable()
 export default class AuditLoggerService {
   constructor(private readonly prisma: PrismaService, private readonly teamRepository: TeamRepository) {}
 
-  async createHttpAudit(level: AuditLogLevelOption, identity: Identity, request: ExpressRequest) {
+  async createHttpAudit(level: AuditLogLevelOption, request: AuthorizedHttpRequest): Promise<void> {
     const { method, url, body } = request
     const data = level === 'no-data' ? null : body
 
-    // Check the team is existing with the given user id
-    const activeTeam = await this.teamRepository.getActiveTeamByUserId(identity.id)
+    const actor = auditActorOfRequest(request)
+
+    if (actor.type === 'user') {
+      const { userId } = actor
+      const activeTeam = await this.teamRepository.getActiveTeamByUserId(userId)
+
+      await this.prisma.auditLog.create({
+        data: {
+          actorType: 'user',
+          userId,
+          teamId: activeTeam.teamId,
+          context: 'http',
+          method: this.httpMethodToRequestMethodEnum(method),
+          event: url,
+          data,
+        },
+      })
+
+      return
+    }
+
+    // deploymentToken
+    const { deploymentId } = actor
+
+    const deploymentToken = await this.prisma.deploymentToken.findUnique({
+      where: {
+        deploymentId,
+      },
+      select: {
+        id: true,
+        deployment: {
+          select: {
+            version: {
+              select: {
+                project: {
+                  select: {
+                    teamId: true, // ♫♪♫ rockin' around, the christmas tree ♪♫♫
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
 
     await this.prisma.auditLog.create({
       data: {
-        userId: identity.id,
-        teamId: activeTeam.teamId,
+        actorType: 'deploymentToken',
+        deploymentTokenId: deploymentToken.id,
+        teamId: deploymentToken.deployment.version.project.teamId,
         context: 'http',
         method: this.httpMethodToRequestMethodEnum(method),
         event: url,
@@ -40,6 +84,7 @@ export default class AuditLoggerService {
 
     await this.prisma.auditLog.create({
       data: {
+        actorType: 'user',
         userId: user.id,
         teamId: activeTeam.teamId,
         context: 'ws',

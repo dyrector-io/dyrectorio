@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { Identity } from '@ory/kratos-client'
-import { AuthPayload } from 'src/domain/identity'
+import { UserTokenPayload } from 'src/domain/token'
 import PrismaService from 'src/services/prisma.service'
 import { v4 as uuid } from 'uuid'
 import { GenerateTokenDto, GeneratedTokenDto, TokenDto } from './token.dto'
@@ -18,7 +18,7 @@ export default class TokenService {
     const expirationDate = req.expirationInDays === 0 ? null : TokenService.getExpirationDate(req.expirationInDays)
     this.logger.verbose(expirationDate ? `Token expires at ${expirationDate.toISOString()}` : 'Token never expries')
 
-    const payload: AuthPayload = {
+    const payload: UserTokenPayload = {
       sub: identity.id,
       nonce,
     }

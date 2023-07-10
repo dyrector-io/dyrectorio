@@ -110,6 +110,7 @@ export default class DeployService {
         tokens: {
           select: {
             id: true,
+            name: true,
             createdAt: true,
             expiresAt: true,
           },
@@ -384,6 +385,7 @@ export default class DeployService {
             project: {
               select: {
                 name: true,
+                teamId: true,
               },
             },
           },
@@ -406,6 +408,11 @@ export default class DeployService {
           },
         },
         node: {
+          select: {
+            name: true,
+          },
+        },
+        tokens: {
           select: {
             name: true,
           },
@@ -571,7 +578,8 @@ export default class DeployService {
         ),
       },
       {
-        accessedBy: identity.id,
+        teamId: deployment.version.project.teamId,
+        actor: identity ?? (deployment.tokens.length > 0 ? deployment.tokens[0].name : null),
         projectName: deployment.version.project.name,
         versionName: deployment.version.name,
         nodeName: deployment.node.name,
@@ -852,6 +860,7 @@ export default class DeployService {
 
     const deploymentToken = await this.prisma.deploymentToken.create({
       data: {
+        name: req.name,
         deploymentId,
         nonce,
         expiresAt,
@@ -861,6 +870,7 @@ export default class DeployService {
 
     return {
       id: deploymentToken.id,
+      name: deploymentToken.name,
       createdAt: deploymentToken.createdAt,
       expiresAt,
       token: jwt,
