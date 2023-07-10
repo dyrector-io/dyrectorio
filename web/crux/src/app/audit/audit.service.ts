@@ -4,10 +4,15 @@ import { Prisma } from '@prisma/client'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { AuditLogListDto, AuditLogQueryDto } from './audit.dto'
+import AuditMapper from './audit.mapper'
 
 @Injectable()
 export default class AuditService {
-  constructor(private readonly prisma: PrismaService, private readonly kratos: KratosService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mapper: AuditMapper,
+    private readonly kratos: KratosService,
+  ) {}
 
   async getAuditLog(query: AuditLogQueryDto, identity: Identity): Promise<AuditLogListDto> {
     const { skip, take, from, to } = query
@@ -38,13 +43,12 @@ export default class AuditService {
         },
         skip,
         take,
-        select: {
-          createdAt: true,
-          userId: true,
-          event: true,
-          context: true,
-          method: true,
-          data: true,
+        include: {
+          deploymentToken: {
+            select: {
+              name: true,
+            },
+          },
         },
       }),
       this.prisma.auditLog.count({ where }),
@@ -53,11 +57,7 @@ export default class AuditService {
     const identities = await this.kratos.getIdentitiesByIds(new Set(auditLog.map(it => it.userId)))
 
     return {
-      items: auditLog.map(it => ({
-        ...it,
-        email: identities.get(it.userId).traits.email as string,
-        data: it.data as object,
-      })),
+      items: auditLog.map(it => this.mapper.toDetailsDto(it, identities)),
       total,
     }
   }

@@ -306,7 +306,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const onRevokeDeploymentToken = async () => {
     const confirmed = await confirm(null, {
       title: t('common:areYouSure'),
-      description: t('tokens:revokingTokenMayBreak'),
+      description: t('tokens:areYouSureRevoke'),
     })
 
     if (!confirmed) {

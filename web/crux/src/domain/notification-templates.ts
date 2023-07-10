@@ -1,12 +1,13 @@
+import { Identity } from '@ory/kratos-client'
 import { NotificationTypeEnum } from '@prisma/client'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
 const title = 'dyrector.io'
 
-export type NotificationMessageType = 'node' | 'version' | 'invite' | 'failedDeploy' | 'successfulDeploy'
+export type NotificationMessageType = 'node' | 'version' | 'invite' | 'failed-deploy' | 'successful-deploy'
 
 export type BaseMessage = {
-  owner: string
+  owner: Identity | string
   subject: string
 }
 
@@ -26,7 +27,7 @@ export type DeployMessage = BaseMessage & {
 export type Message = BaseMessage | VersionMessage | InviteMessage | DeployMessage
 
 export type NotificationTemplate = {
-  identityId: string
+  teamId: string
   messageType: NotificationMessageType
   message: Message
 }

@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { RegistryTypeEnum } from '@prisma/client'
-import { Request as ExpressRequest } from 'express'
 import { IdentityTraits, emailOfIdentity, invitationExpired, nameOfIdentity } from 'src/domain/identity'
 import { InviteMessage } from 'src/domain/notification-templates'
 import {
@@ -17,6 +16,7 @@ import PrismaService from 'src/services/prisma.service'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
 import EmailBuilder, { InviteTemplateOptions } from '../../builders/email.builder'
 import AuditLoggerService from '../audit.logger/audit.logger.service'
+import { AuthorizedHttpRequest } from '../token/jwt-auth.guard'
 import {
   ActivateTeamDto,
   CreateTeamDto,
@@ -83,7 +83,7 @@ export default class TeamService {
     return this.mapper.toUserMetaDto(teams, invitations, identity)
   }
 
-  async createTeam(request: CreateTeamDto, identity: Identity, httpRequest: ExpressRequest): Promise<TeamDto> {
+  async createTeam(request: CreateTeamDto, identity: Identity, httpRequest: AuthorizedHttpRequest): Promise<TeamDto> {
     // If the user doesn't have an active team, make the current one active
     const userHasTeam = await this.teamRepository.userHasTeam(identity.id)
 
@@ -115,7 +115,7 @@ export default class TeamService {
       include: this.teamRepository.teamInclude,
     })
 
-    await this.auditLoggerService.createHttpAudit('all', identity, httpRequest)
+    await this.auditLoggerService.createHttpAudit('all', httpRequest)
 
     return this.mapper.toDto(team)
   }
@@ -245,9 +245,9 @@ export default class TeamService {
     })
 
     await this.notificationService.sendNotification({
-      identityId: identity.id,
+      teamId,
       messageType: 'invite',
-      message: { subject: request.email, team: team.name } as InviteMessage,
+      message: { subject: request.email, team: team.name, owner: identity } as InviteMessage,
     })
 
     return {

@@ -26,13 +26,12 @@ import {
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
-import { AuthStrategy, IdentityFromRequest } from '../token/jwt-auth.guard'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
+import { AuthStrategy, IdentityFromRequest } from '../token/jwt-auth.guard'
 import {
   CopyDeploymentDto,
   CreateDeploymentDto,
   CreateDeploymentTokenDto,
-  StartDeploymentDto,
   DeploymentDetailsDto,
   DeploymentDto,
   DeploymentLogListDto,
@@ -42,16 +41,18 @@ import {
   InstanceSecretsDto,
   PatchDeploymentDto,
   PatchInstanceDto,
+  StartDeploymentDto,
 } from './deploy.dto'
 import DeployService from './deploy.service'
 import DeployCreateTeamAccessGuard from './guards/deploy.create.team-access.guard'
+import DeployJwtAuthGuard from './guards/deploy.jwt-auth.guard'
 import DeployTeamAccessGuard from './guards/deploy.team-access.guard'
 import DeployCopyValidationInterceptor from './interceptors/deploy.copy.interceptor'
 import DeployCreateValidationInterceptor from './interceptors/deploy.create.interceptor'
 import DeleteDeploymentValidationInterceptor from './interceptors/deploy.delete.interceptor'
 import DeployPatchValidationInterceptor from './interceptors/deploy.patch.interceptor'
 import DeployStartValidationInterceptor from './interceptors/deploy.start.interceptor'
-import DeployJwtAuthGuard from './guards/deploy.jwt-auth.guard'
+import DeployCreateDeployTokenValidationInterceptor from './interceptors/deploy.create-deploy-token.interceptor'
 
 const PARAM_DEPLOYMENT_ID = 'deploymentId'
 const PARAM_INSTANCE_ID = 'instanceId'
@@ -298,6 +299,7 @@ export default class DeployHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for a deployment token.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment token.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
+  @UseInterceptors(DeployCreateDeployTokenValidationInterceptor)
   async createDeploymentToken(
     @DeploymentId() deploymentId: string,
     @Body() request: CreateDeploymentTokenDto,

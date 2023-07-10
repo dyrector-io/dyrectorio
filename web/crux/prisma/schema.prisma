@@ -270,9 +270,9 @@ model Deployment {
   version Version @relation(fields: [versionId], references: [id], onDelete: Cascade)
   node    Node    @relation(fields: [nodeId], references: [id], onDelete: Cascade)
 
-  instances       Instance[]
-  events          DeploymentEvent[]
-  tokens          DeploymentToken[]
+  instances Instance[]
+  events    DeploymentEvent[]
+  tokens    DeploymentToken[]
 }
 
 model DeploymentToken {
@@ -280,10 +280,12 @@ model DeploymentToken {
   deploymentId String    @db.Uuid
   createdBy    String    @db.Uuid
   createdAt    DateTime  @default(now()) @db.Timestamptz(6)
+  name         String
   expiresAt    DateTime? @db.Timestamptz(6)
   nonce        String    @db.Uuid
 
   deployment Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+  AuditLog   AuditLog[]
 
   @@unique([deploymentId])
   @@unique([deploymentId, nonce])
@@ -371,17 +373,25 @@ enum AuditLogRequestMethodEnum {
   delete
 }
 
-model AuditLog {
-  id        String                     @id @default(uuid()) @db.Uuid
-  createdAt DateTime                   @default(now()) @db.Timestamptz(6)
-  userId    String                     @db.Uuid
-  teamId    String                     @db.Uuid
-  context   AuditLogContextEnum
-  method    AuditLogRequestMethodEnum?
-  event     String
-  data      Json?
+enum AuditLogActorTypeEnum {
+  user
+  deploymentToken
+}
 
-  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+model AuditLog {
+  id                String                     @id @default(uuid()) @db.Uuid
+  createdAt         DateTime                   @default(now()) @db.Timestamptz(6)
+  actorType         AuditLogActorTypeEnum
+  userId            String?                    @db.Uuid
+  deploymentTokenId String?                    @db.Uuid
+  teamId            String                     @db.Uuid
+  context           AuditLogContextEnum
+  method            AuditLogRequestMethodEnum?
+  event             String
+  data              Json?
+
+  team            Team            @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  deploymentToken DeploymentToken? @relation(fields: [deploymentTokenId], references: [id], onDelete: SetNull) // is it ok on SetNull
 }
 
 enum UserRoleEnum {

@@ -167,6 +167,7 @@
   "heart": "Heart",
   "userAvatar": "User's avatar",
   "teamAvatar": "Team's avatar",
+  "robotAvatar": "Robot's avatar",
   "rightArrowIcon": "Right arrow icon",
 
   "daysOfTheWeekShort": ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
