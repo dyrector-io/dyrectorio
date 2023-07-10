@@ -1,8 +1,51 @@
 # CHANGELOG
 
 
+<a name="0.5.5"></a>
+## [0.5.5](https://github.com/dyrector-io/dyrectorio/compare/0.5.4...0.5.5) (2023-07-10)
+
+### Doc
+
+* additional note for Playwright install ([#725](https://github.com/dyrector-io/dyrectorio/issues/725))
+* clarified Development getting started ([#723](https://github.com/dyrector-io/dyrectorio/issues/723))
+
+### Docs
+
+* add branching strategy to CONTRIBUTING.md ([#715](https://github.com/dyrector-io/dyrectorio/issues/715))
+
+### Feat
+
+* add deployment token name ([#736](https://github.com/dyrector-io/dyrectorio/issues/736))
+* **(crux-ui):** breadcrumb home icon ([#735](https://github.com/dyrector-io/dyrectorio/issues/735))
+* use events to track container states in agents ([#718](https://github.com/dyrector-io/dyrectorio/issues/718))
+* **(web):** websocket save indicator refinement ([#726](https://github.com/dyrector-io/dyrectorio/issues/726))
+* **(web):** social sign-in ([#722](https://github.com/dyrector-io/dyrectorio/issues/722))
+* **(crux-ui):** deployment table sorting ([#704](https://github.com/dyrector-io/dyrectorio/issues/704))
+* **(web):** token never expiration ([#716](https://github.com/dyrector-io/dyrectorio/issues/716))
+* **(web):** agent container command audit ([#711](https://github.com/dyrector-io/dyrectorio/issues/711))
+* **(crux-ui):** web socket save indicator ([#710](https://github.com/dyrector-io/dyrectorio/issues/710))
+
+### Fix
+
+* **(crux):** remove unused ApiPreconditionFailedResponse import ([#739](https://github.com/dyrector-io/dyrectorio/issues/739))
+* empty secret parsing & required secrets error ([#737](https://github.com/dyrector-io/dyrectorio/issues/737))
+* **(web):** various ui fixes releated to onboarding, registration verification, deployment list ([#730](https://github.com/dyrector-io/dyrectorio/issues/730))
+* **(agent):** change agent start directive from CMD to ENTRYPOINT ([#724](https://github.com/dyrector-io/dyrectorio/issues/724))
+* **(crux-ui):** edit deployment ([#720](https://github.com/dyrector-io/dyrectorio/issues/720))
+* **(crux):** http logger ([#719](https://github.com/dyrector-io/dyrectorio/issues/719))
+* **(crux-ui):** unable to edit node ([#717](https://github.com/dyrector-io/dyrectorio/issues/717))
+* **(web):** deploy image order & sendForm null headers ([#714](https://github.com/dyrector-io/dyrectorio/issues/714))
+* CONTRIBUTING.md sync and pipeline cli image push fix ([#713](https://github.com/dyrector-io/dyrectorio/issues/713))
+
+### Refactor
+
+* **(crux):** error statuses for route handlers ([#738](https://github.com/dyrector-io/dyrectorio/issues/738))
+* **(crux):** refactor HTTP response status codes for request handlers ([#733](https://github.com/dyrector-io/dyrectorio/issues/733))
+* **(crux):** use [@updatedAt](https://github.com/updatedAt) without optional in prisma schema ([#728](https://github.com/dyrector-io/dyrectorio/issues/728))
+
+
 <a name="0.5.4"></a>
-## [0.5.4](https://github.com/dyrector-io/dyrectorio/compare/0.5.3...0.5.4) (2023-06-22)
+## [0.5.4](https://github.com/dyrector-io/dyrectorio/compare/0.5.3...0.5.4) (2023-06-23)
 
 ### Feat
 
