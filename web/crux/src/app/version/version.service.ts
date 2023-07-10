@@ -194,6 +194,7 @@ export default class VersionService {
           project: {
             select: {
               name: true,
+              teamId: true,
             },
           },
           children: {
@@ -287,9 +288,9 @@ export default class VersionService {
     })
 
     await this.notificationService.sendNotification({
-      identityId: identity.id,
+      teamId: version.project.teamId,
       messageType: 'version',
-      message: { subject: version.project.name, version: version.name } as VersionMessage,
+      message: { subject: version.project.name, version: version.name, owner: identity } as VersionMessage,
     })
 
     return this.mapper.toDto(version)
@@ -409,6 +410,7 @@ export default class VersionService {
           project: {
             select: {
               name: true,
+              teamId: true,
             },
           },
         },
@@ -494,9 +496,13 @@ export default class VersionService {
     }) // End of Prisma transaction
 
     await this.notificationService.sendNotification({
-      identityId: identity.id,
+      teamId: increasedVersion.project.teamId,
       messageType: 'version',
-      message: { subject: increasedVersion.project.name, version: increasedVersion.name } as VersionMessage,
+      message: {
+        subject: increasedVersion.project.name,
+        version: increasedVersion.name,
+        owner: identity,
+      } as VersionMessage,
     })
 
     return this.mapper.toDto(increasedVersion)

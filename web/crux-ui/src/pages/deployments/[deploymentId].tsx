@@ -244,12 +244,14 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
             <div className="flex flex-col gap-2 w-1/3">
               <NodeConnectionCard node={state.node} showName />
 
-              <DeploymentTokenCard
-                className="h-full p-6"
-                token={state.deployment.token}
-                onCreate={() => actions.setEditState('create-token')}
-                onRevoke={actions.onRevokeDeploymentToken}
-              />
+              {deployment.version.type === 'rolling' && (
+                <DeploymentTokenCard
+                  className="h-full p-6"
+                  token={state.deployment.token}
+                  onCreate={() => actions.setEditState('create-token')}
+                  onRevoke={actions.onRevokeDeploymentToken}
+                />
+              )}
             </div>
 
             <DeploymentDetailsSection state={state} actions={actions} className="w-2/3 p-6 ml-2" />

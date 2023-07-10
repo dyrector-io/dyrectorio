@@ -23,48 +23,38 @@ export default class DomainNotificationService {
   async sendNotification(template: NotificationTemplate): Promise<void> {
     const eventType = this.getMessageEventFromType(template.messageType)
 
-    const userOnTeam = await this.prisma.usersOnTeams.findFirst({
+    const notifications = await this.prisma.notification.findMany({
+      include: {
+        events: {
+          select: {
+            event: true,
+          },
+        },
+      },
       where: {
-        userId: template.identityId,
+        teamId: template.teamId,
         active: true,
+        events: {
+          some: {
+            event: eventType,
+          },
+        },
       },
     })
 
-    if (userOnTeam) {
-      const notifications = await this.prisma.notification.findMany({
-        include: {
-          events: {
-            select: {
-              event: true,
-            },
-          },
-        },
-        where: {
-          teamId: userOnTeam.teamId,
-          active: true,
-          events: {
-            some: {
-              event: eventType,
-            },
-          },
-        },
-      })
-
-      if (notifications.length > 0) {
-        try {
-          const identity = await this.kratos.getIdentityById(template.identityId)
-          template.message.owner = nameOrEmailOfIdentity(identity)
-        } catch {
-          this.logger.error(`Identity: "${template.identityId}" not found, can't set template message owner!`)
-          template.message.owner = 'Unknown'
-        }
-
-        await Promise.all(notifications.map(it => this.send(it.url, it.type, template)))
-      }
+    if (notifications.length > 0) {
+      await Promise.all(notifications.map(it => this.send(it.url, it.type, template)))
     }
   }
 
   private async send(url: string, type: NotificationTypeEnum, temp: NotificationTemplate): Promise<void> {
+    const msg = temp.message
+    if (!msg.owner) {
+      msg.owner = 'Unknown'
+    } else if (typeof msg.owner !== 'string') {
+      msg.owner = nameOrEmailOfIdentity(msg.owner)
+    }
+
     try {
       const template = this.templateBuilder.processTemplate('notificationTemplates', temp.messageType, temp.message)
 
@@ -86,9 +76,9 @@ export default class DomainNotificationService {
         return NotificationEventTypeEnum.versionCreated
       case 'invite':
         return NotificationEventTypeEnum.userInvited
-      case 'failedDeploy':
+      case 'failed-deploy':
         return NotificationEventTypeEnum.deploymentCreated
-      case 'successfulDeploy':
+      case 'successful-deploy':
         return NotificationEventTypeEnum.deploymentCreated
       default:
         throw new CruxInternalServerErrorException({

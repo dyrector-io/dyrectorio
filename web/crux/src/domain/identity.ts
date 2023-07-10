@@ -1,5 +1,6 @@
 import { Identity } from '@ory/kratos-client'
 import { TEAM_INVITATION_EXPIRATION } from '../shared/const'
+import { JwtToken } from './token'
 
 export const KRATOS_IDENTITY_SCHEMA = 'default'
 
@@ -18,16 +19,10 @@ export type IdentityTraitsName = {
   last?: string
 }
 
-export type JwtToken = {
-  exp: number
-  iss: string
-  iat: number
-  data: AuthPayload
-}
-
-export type AuthPayload = {
-  sub: string
-  nonce: string
+export type RequestAuthenticationData = {
+  sessionExpiresAt: number | null // epoch millis
+  identity: Identity | null
+  user: JwtToken | null
 }
 
 export const nameOfIdentity = (identity: Identity) => {
