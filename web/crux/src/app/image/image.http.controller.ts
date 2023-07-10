@@ -79,7 +79,7 @@ export default class ImageHttpController {
   @ApiOkResponse({ type: ImageDto, description: 'Data of an image.' })
   @ApiBadRequestResponse({ description: 'Bad request for image details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for image details.' })
-  @ApiNotFoundResponse({ description: 'Image details not found.' })
+  @ApiNotFoundResponse({ description: 'Image not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async getImageDetails(
     @ProjectId() _projectId: string,

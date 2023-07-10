@@ -70,7 +70,7 @@ export default class ProjectHttpController {
   @ApiOkResponse({ type: ProjectDetailsDto, description: 'Details of a project.' })
   @ApiBadRequestResponse({ description: 'Bad request for project details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for project details.' })
-  @ApiNotFoundResponse({ description: 'Project details not found.' })
+  @ApiNotFoundResponse({ description: 'Project not found.' })
   @UuidParams(PARAM_PROJECT_ID)
   async getProjectDetails(@ProjectId() id: string): Promise<ProjectDetailsDto> {
     return this.service.getProjectDetails(id)

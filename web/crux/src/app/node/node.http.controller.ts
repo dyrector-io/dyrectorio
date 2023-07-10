@@ -77,7 +77,7 @@ export default class NodeHttpController {
   @ApiOkResponse({ type: NodeDetailsDto, description: 'Data of the node.' })
   @ApiBadRequestResponse({ description: 'Bad request for node details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for node details.' })
-  @ApiNotFoundResponse({ description: 'Node details not found.' })
+  @ApiNotFoundResponse({ description: 'Node not found.' })
   @UuidParams(PARAM_NODE_ID)
   async getNodeDetails(@NodeId() nodeId: string): Promise<NodeDetailsDto> {
     return this.service.getNodeDetails(nodeId)
@@ -117,7 +117,7 @@ export default class NodeHttpController {
   @ApiNoContentResponse({ description: 'Node details modified.' })
   @ApiBadRequestResponse({ description: 'Bad request for node details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for node details.' })
-  @ApiNotFoundResponse({ description: 'Node details not found.' })
+  @ApiNotFoundResponse({ description: 'Node not found.' })
   @ApiConflictResponse({ description: 'Node name taken.' })
   @UuidParams(PARAM_NODE_ID)
   async updateNode(

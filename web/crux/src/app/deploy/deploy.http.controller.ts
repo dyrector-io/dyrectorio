@@ -100,7 +100,7 @@ export default class DeployHttpController {
   @ApiOkResponse({ type: DeploymentDetailsDto, description: 'Details of a deployment.' })
   @ApiBadRequestResponse({ description: 'Bad request for deployment details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for deployment details.' })
-  @ApiNotFoundResponse({ description: 'Deployment details not found.' })
+  @ApiNotFoundResponse({ description: 'Deployment not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   async getDeploymentDetails(@DeploymentId() deploymentId: string): Promise<DeploymentDetailsDto> {
     return await this.service.getDeploymentDetails(deploymentId)

@@ -59,7 +59,7 @@ export default class TokenHttpController {
   @ApiOkResponse({ type: TokenDto, description: 'Token details listed.' })
   @ApiBadRequestResponse({ description: 'Bad request for token details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for token details.' })
-  @ApiNotFoundResponse({ description: 'Token details not found.' })
+  @ApiNotFoundResponse({ description: 'Token not found.' })
   @UuidParams(PARAM_TOKEN_ID)
   async getToken(@TokenId() id: string, @IdentityFromRequest() identity: Identity): Promise<TokenDto> {
     return this.service.getToken(id, identity)

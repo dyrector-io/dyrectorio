@@ -58,7 +58,7 @@ export default class NotificationHttpController {
   @ApiOkResponse({ type: NotificationDetailsDto, description: 'Details of notification listed.' })
   @ApiBadRequestResponse({ description: 'Bad request for notification details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for notification details.' })
-  @ApiNotFoundResponse({ description: 'Notification details not found.' })
+  @ApiNotFoundResponse({ description: 'Notification not found.' })
   async getNotificationDetails(@NotificationId() notificationId: string): Promise<NotificationDetailsDto> {
     return this.service.getNotificationDetails(notificationId)
   }

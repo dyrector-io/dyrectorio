@@ -88,7 +88,7 @@ export default class StorageHttpController {
   @ApiOkResponse({ type: StorageDetailsDto, description: 'Storage details.' })
   @ApiBadRequestResponse({ description: 'Bad request for storage details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for storage details.' })
-  @ApiNotFoundResponse({ description: 'Storage details not found.' })
+  @ApiNotFoundResponse({ description: 'Storage not found.' })
   @UuidParams(PARAM_STORAGE_ID)
   async getStorageDetails(@StorageId() id: string): Promise<StorageDetailsDto> {
     return this.service.getStorageDetails(id)

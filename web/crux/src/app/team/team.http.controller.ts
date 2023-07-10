@@ -78,7 +78,7 @@ export default class TeamHttpController {
   @ApiOkResponse({ type: TeamDetailsDto, description: 'Details of the team.' })
   @ApiBadRequestResponse({ description: 'Bad request for team details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for team details.' })
-  @ApiNotFoundResponse({ description: 'Team details not found.' })
+  @ApiNotFoundResponse({ description: 'Team not found.' })
   @UuidParams(PARAM_TEAM_ID)
   async getTeamById(@TeamId() teamId: string): Promise<TeamDetailsDto> {
     return await this.service.getTeamById(teamId)
