@@ -46,7 +46,10 @@ const updateMetadata = async (session: Session, metadata: Partial<IdentityPublic
       state: identity.state,
       traits: identity.traits,
       metadata_admin: identity.metadata_admin,
-      metadata_public: metadata,
+      metadata_public: {
+        ...identity.metadata_public,
+        ...metadata,
+      },
     },
   })
 }

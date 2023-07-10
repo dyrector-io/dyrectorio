@@ -19,7 +19,10 @@ describe('DashboardMapper', () => {
     team = {
       id: TEAM_ID,
       nodes: [],
-      projects: [],
+      project: null,
+      version: null,
+      image: null,
+      deployment: null,
     }
   })
 
@@ -78,21 +81,14 @@ describe('DashboardMapper', () => {
         expect(actual.createProject).toEqual(NOT_DONE)
       })
 
-      test('should be done and contain the first project id, when there are projects', () => {
+      test('should be done when there is a project', () => {
         const PROJECT_ID = 'projectId'
 
         const expected: OnboardingItemDto = { done: true, resourceId: PROJECT_ID }
 
-        team.projects = [
-          {
-            id: PROJECT_ID,
-            versions: [],
-          },
-          {
-            id: 'project-2',
-            versions: [],
-          },
-        ]
+        team.project = {
+          id: PROJECT_ID,
+        }
 
         const actual = mapper.teamToOnboard(team)
 
@@ -102,40 +98,26 @@ describe('DashboardMapper', () => {
 
     describe('createVersion', () => {
       test('should be false with a project without a version', () => {
-        team.projects = [
-          {
-            id: 'projectId',
-            versions: [],
-          },
-        ]
+        team.project = {
+          id: 'projectId',
+        }
 
         const actual = mapper.teamToOnboard(team)
 
         expect(actual.createVersion).toEqual(NOT_DONE)
       })
 
-      test('should be done and contain the first version id, when there are multiple versions', () => {
+      test('should be done when there is a version', () => {
         const VERSION_ID = 'versionId'
 
         const expected: OnboardingItemDto = { done: true, resourceId: VERSION_ID }
 
-        team.projects = [
-          {
-            id: 'projectId',
-            versions: [
-              {
-                id: VERSION_ID,
-                deployments: [],
-                images: [],
-              },
-              {
-                id: 'verion-2',
-                deployments: [],
-                images: [],
-              },
-            ],
-          },
-        ]
+        team.project = {
+          id: 'projectId',
+        }
+        team.version = {
+          id: VERSION_ID,
+        }
 
         const actual = mapper.teamToOnboard(team)
 
@@ -145,48 +127,32 @@ describe('DashboardMapper', () => {
 
     describe('addImages', () => {
       test('should be false with a project with a version without images', () => {
-        team.projects = [
-          {
-            id: 'projectId',
-            versions: [
-              {
-                id: 'versionId',
-                deployments: [],
-                images: [],
-              },
-            ],
-          },
-        ]
+        team.project = {
+          id: 'projectId',
+        }
+        team.version = {
+          id: 'versionid',
+        }
 
         const actual = mapper.teamToOnboard(team)
 
         expect(actual.addImages).toEqual(NOT_DONE)
       })
 
-      test('should be done and contain the first image id, when there are multiple images', () => {
+      test('should be done when there is an image', () => {
         const IMAGE_ID = 'imageId'
 
         const expected: OnboardingItemDto = { done: true, resourceId: IMAGE_ID }
 
-        team.projects = [
-          {
-            id: 'projectId',
-            versions: [
-              {
-                id: 'versionId',
-                deployments: [],
-                images: [
-                  {
-                    id: IMAGE_ID,
-                  },
-                  {
-                    id: 'image-2',
-                  },
-                ],
-              },
-            ],
-          },
-        ]
+        team.project = {
+          id: 'projectId',
+        }
+        team.version = {
+          id: 'versionid',
+        }
+        team.image = {
+          id: IMAGE_ID,
+        }
 
         const actual = mapper.teamToOnboard(team)
 
@@ -196,50 +162,39 @@ describe('DashboardMapper', () => {
 
     describe('addDeployment', () => {
       test('should be false with a project with a version without deployments', () => {
-        team.projects = [
-          {
-            id: 'projectId',
-            versions: [
-              {
-                id: 'versionId',
-                deployments: [],
-                images: [],
-              },
-            ],
-          },
-        ]
+        team.project = {
+          id: 'projectId',
+        }
+        team.version = {
+          id: 'versionid',
+        }
 
         const actual = mapper.teamToOnboard(team)
 
         expect(actual.addDeployment).toEqual(NOT_DONE)
       })
 
-      test('should be done and contain the first deployment id, when there are multiple deployments', () => {
+      test('should be done when there is a deployment', () => {
         const DEPLOYMENT_ID = 'deploymentId'
 
         const expected: OnboardingItemDto = { done: true, resourceId: DEPLOYMENT_ID }
 
-        team.projects = [
-          {
-            id: 'projectId',
-            versions: [
-              {
-                id: 'versionId',
-                deployments: [
-                  {
-                    id: DEPLOYMENT_ID,
-                    status: 'preparing',
-                  },
-                  {
-                    id: 'image-2',
-                    status: 'failed',
-                  },
-                ],
-                images: [],
-              },
-            ],
+        team.project = {
+          id: 'projectId',
+        }
+        team.version = {
+          id: 'versionid',
+        }
+        team.image = {
+          id: 'imageId',
+        }
+        team.deployment = {
+          id: DEPLOYMENT_ID,
+          status: 'preparing',
+          node: {
+            id: 'nodeId',
           },
-        ]
+        }
 
         const actual = mapper.teamToOnboard(team)
 
@@ -249,18 +204,12 @@ describe('DashboardMapper', () => {
 
     describe('deploy', () => {
       test('should be false with a project with a version without deployments', () => {
-        team.projects = [
-          {
-            id: 'projectId',
-            versions: [
-              {
-                id: 'versionId',
-                deployments: [],
-                images: [],
-              },
-            ],
-          },
-        ]
+        team.project = {
+          id: 'projectId',
+        }
+        team.version = {
+          id: 'versionid',
+        }
 
         const actual = mapper.teamToOnboard(team)
 
@@ -270,23 +219,22 @@ describe('DashboardMapper', () => {
       test('should be false with a project with a version with only preparing deployments', () => {
         const DEPLOYMENT_ID = 'deploymentId'
 
-        team.projects = [
-          {
-            id: 'projectId',
-            versions: [
-              {
-                id: 'versionId',
-                deployments: [
-                  {
-                    id: DEPLOYMENT_ID,
-                    status: 'preparing',
-                  },
-                ],
-                images: [],
-              },
-            ],
+        team.project = {
+          id: 'projectId',
+        }
+        team.version = {
+          id: 'versionid',
+        }
+        team.image = {
+          id: 'imageId',
+        }
+        team.deployment = {
+          id: DEPLOYMENT_ID,
+          status: 'preparing',
+          node: {
+            id: 'nodeId',
           },
-        ]
+        }
 
         const actual = mapper.teamToOnboard(team)
 
@@ -298,27 +246,22 @@ describe('DashboardMapper', () => {
 
         const expected: OnboardingItemDto = { done: true }
 
-        team.projects = [
-          {
-            id: 'projectId',
-            versions: [
-              {
-                id: 'versionId',
-                deployments: [
-                  {
-                    id: DEPLOYMENT_ID,
-                    status: 'successful',
-                  },
-                  {
-                    id: 'image-2',
-                    status: 'preparing',
-                  },
-                ],
-                images: [],
-              },
-            ],
+        team.project = {
+          id: 'projectId',
+        }
+        team.version = {
+          id: 'versionid',
+        }
+        team.image = {
+          id: 'imageId',
+        }
+        team.deployment = {
+          id: DEPLOYMENT_ID,
+          status: 'successful',
+          node: {
+            id: 'nodeId',
           },
-        ]
+        }
 
         const actual = mapper.teamToOnboard(team)
 
