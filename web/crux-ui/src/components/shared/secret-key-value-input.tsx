@@ -281,7 +281,7 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
               className="basis-12 flex-initial cursor-pointer ml-2 w-12 ring-2 rounded-md focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
             >
               <DyoIcon
-                className="text-bright-muted"
+                className="text-bright-muted self-center"
                 src={required ? '/clear.svg' : '/trash-can.svg'}
                 alt={t(required ? 'clear' : 'common:delete')}
                 size="md"

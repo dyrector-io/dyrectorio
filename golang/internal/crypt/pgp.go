@@ -12,6 +12,11 @@ func DecryptSecrets(arr map[string]string, appConfig *config.CommonConfiguration
 	out := map[string][]byte{}
 
 	for key, sec := range arr {
+		if sec == "" {
+			out[key] = []byte{}
+			continue
+		}
+
 		decrypted, err := helper.DecryptMessageArmored(appConfig.SecretPrivateKey, nil, sec)
 		if err != nil {
 			return out, fmt.Errorf("could not process secret: %v %w", key, err)
