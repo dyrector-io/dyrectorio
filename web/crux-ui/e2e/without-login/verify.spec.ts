@@ -32,6 +32,8 @@ test('should be able to navigate to verify without cookie', async ({ page }) => 
 })
 
 test('should verify address', async ({ baseURL, page, email }) => {
+  const mailDateFilter = new Date()
+
   await page.goto(ROUTE_VERIFICATION)
 
   await expect(page).toHaveURL('/auth/verify')
@@ -46,6 +48,7 @@ test('should verify address', async ({ baseURL, page, email }) => {
   const mailSlurper = mailslurperFromBaseURL(baseURL)
   const mail = await mailSlurper.getMail({
     toAddress: email,
+    dateSent: mailDateFilter,
   })
 
   const verificationLink = extractKratosLinkFromMail(mail.body)
