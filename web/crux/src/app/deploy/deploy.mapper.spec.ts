@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { ContainerConfigData, InstanceContainerConfigData, MergedContainerConfigData } from 'src/domain/container'
 import { DeploymentStatusEnum, NodeTypeEnum, ProjectTypeEnum, VersionTypeEnum, Storage } from '.prisma/client'
 import { CommonContainerConfig, DagentContainerConfig, ImportContainer } from 'src/grpc/protobuf/proto/agent'
+import { NetworkMode, RestartPolicy } from 'src/grpc/protobuf/proto/common'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
 import { DeploymentDto, DeploymentWithNodeVersion, PatchInstanceDto } from './deploy.dto'
@@ -12,7 +13,6 @@ import AuditMapper from '../audit/audit.mapper'
 import NodeMapper from '../node/node.mapper'
 import AgentService from '../agent/agent.service'
 import RegistryMapper from '../registry/registry.mapper'
-import { NetworkMode, RestartPolicy } from 'src/grpc/protobuf/proto/common'
 
 describe('DeployMapper', () => {
   let containerMapper: ContainerMapper = null
