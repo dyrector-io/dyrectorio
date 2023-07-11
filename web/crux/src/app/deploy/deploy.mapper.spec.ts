@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { ContainerConfigData, InstanceContainerConfigData, MergedContainerConfigData } from 'src/domain/container'
 import { DeploymentStatusEnum, NodeTypeEnum, ProjectTypeEnum, VersionTypeEnum, Storage } from '.prisma/client'
-import { CommonContainerConfig, ImportContainer } from 'src/grpc/protobuf/proto/agent'
+import { CommonContainerConfig, DagentContainerConfig, ImportContainer } from 'src/grpc/protobuf/proto/agent'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
 import { DeploymentDto, DeploymentWithNodeVersion, PatchInstanceDto } from './deploy.dto'
@@ -12,6 +12,7 @@ import AuditMapper from '../audit/audit.mapper'
 import NodeMapper from '../node/node.mapper'
 import AgentService from '../agent/agent.service'
 import RegistryMapper from '../registry/registry.mapper'
+import { NetworkMode, RestartPolicy } from 'src/grpc/protobuf/proto/common'
 
 describe('DeployMapper', () => {
   let containerMapper: ContainerMapper = null
@@ -819,6 +820,45 @@ describe('DeployMapper', () => {
         },
       }
       expect(config).toMatchObject(expected)
+    })
+  })
+
+  describe('dagentConfigToAgentProto logConfig', () => {
+    it('none driver type should return no log driver', () => {
+      const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
+        networks: [],
+        networkMode: 'host',
+        restartPolicy: 'always',
+        dockerLabels: [],
+        logConfig: {
+          driver: 'none',
+        },
+      })
+      const expected = <DagentContainerConfig>{
+        networks: [],
+        logConfig: null,
+        networkMode: NetworkMode.HOST,
+        restartPolicy: RestartPolicy.ALWAYS,
+        labels: {},
+      }
+      expect(config).toEqual(expected)
+    })
+
+    it('undefined logConfig should return no log driver', () => {
+      const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
+        networks: [],
+        networkMode: 'host',
+        restartPolicy: 'always',
+        dockerLabels: [],
+      })
+      const expected = <DagentContainerConfig>{
+        networks: [],
+        logConfig: null,
+        networkMode: NetworkMode.HOST,
+        restartPolicy: RestartPolicy.ALWAYS,
+        labels: {},
+      }
+      expect(config).toEqual(expected)
     })
   })
 })
