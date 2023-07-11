@@ -61,6 +61,17 @@ test('should verify address', async ({ baseURL, page, email }) => {
   await expect(page.locator('h1')).toContainText('Log in')
 })
 
+test('Account verification logout should work', async ({ baseURL, page, email }) => {
+  await page.goto(ROUTE_VERIFICATION)
+  await expect(page.locator('h1')).toContainText('Account verification')
+
+  await page.locator('input[id="email"]').fill(email)
+  await page.locator('button:has-text("Send")').click()
+
+  await page.locator('a:has-text("Log out")').click()
+  await expect(page).toHaveURL(ROUTE_LOGIN)
+})
+
 test.beforeEach(async ({ baseURL, email }) => {
   const kratos = kratosFromBaseURL(baseURL)
   createUser(kratos, email, VERIFYABLE_PASSWORD)
