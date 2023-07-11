@@ -188,9 +188,10 @@ const storageRule = yup
   .optional()
 
 const createOverlapTest = (schema: yup.NumberSchema<number, AnyObject, number>, portRanges: any[]) =>
-  schema.test('port-range-overlap', '${path} overlaps port ranges', (value, _) => {
-    return portRanges.some(it => value < it.internal.from || value > it.internal.to)
-  })
+  // eslint-disable-next-line no-template-curly-in-string
+  schema.test('port-range-overlap', '${path} overlaps port ranges', (value, _) =>
+    portRanges.some(it => value < it.internal.from || value > it.internal.to),
+  )
 
 const portConfigRule = yup
   .mixed()
