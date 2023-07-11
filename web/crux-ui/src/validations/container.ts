@@ -14,6 +14,7 @@ import {
   VolumeType,
 } from '@app/models/container'
 import * as yup from 'yup'
+import { AnyObject } from 'yup/lib/types'
 
 export const uniqueKeySchema = yup
   .array(
@@ -186,16 +187,33 @@ const storageRule = yup
   .nullable()
   .optional()
 
+const createOverlapTest = (schema: yup.NumberSchema<number, AnyObject, number>, portRanges: any[]) =>
+  schema.test('port-range-overlap', '${path} overlaps port ranges', (value, _) => {
+    return portRanges.some(it => value < it.internal.from || value > it.internal.to)
+  })
+
 const portConfigRule = yup
-  .array(
-    yup.object().shape({
-      internal: portNumberRule,
-      external: portNumberOptionalRule,
-    }),
-  )
+  .mixed()
   .default([])
   .nullable()
   .optional()
+  .when('portRanges', (portRanges, _) => {
+    if (!portRanges) {
+      return yup.array(
+        yup.object().shape({
+          internal: portNumberRule,
+          external: portNumberOptionalRule,
+        }),
+      )
+    }
+
+    return yup.array(
+      yup.object().shape({
+        internal: createOverlapTest(portNumberRule, portRanges),
+        external: createOverlapTest(portNumberOptionalRule, portRanges),
+      }),
+    )
+  })
 
 const portRangeConfigRule = yup
   .array(
