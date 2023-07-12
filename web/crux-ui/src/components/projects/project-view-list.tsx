@@ -57,7 +57,6 @@ const ProjectViewList = (props: ProjectViewListProps) => {
   ]
 
   return (
-    // TODO: wire in the implemented onCellClick() to the DyoList
     <DyoCard className="relative mt-4">
       <DyoList
         headers={[...headers.map(h => t(h)), '']}
