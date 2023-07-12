@@ -7,6 +7,7 @@ import { auditToLocaleDate } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import ProjectTypeTag from './project-type-tag'
 
 export interface ProjectViewListProps {
@@ -15,8 +16,8 @@ export interface ProjectViewListProps {
 
 const ProjectViewList = (props: ProjectViewListProps) => {
   const { projects } = props
-
   const { t } = useTranslation('projects')
+  const router = useRouter()
 
   const columnWidths = ['w-6/12', 'w-1/12', 'w-2/12', 'w-2/12', 'w-1/12']
   const headers = ['name', 'versions', 'common:updatedAt', 'type', 'common:actions']
@@ -35,6 +36,14 @@ const ProjectViewList = (props: ProjectViewListProps) => {
     clsx('pr-6 text-center', defaultItemClass),
   ]
 
+  const onCellClick = async (data: Project, row: number, col: number) => {
+    if (col >= headers.length - 1) {
+      return
+    }
+
+    await router.push(projectUrl(data.id))
+  }
+
   const itemTemplate = (item: Project) => [
     <a>{item.name}</a>,
     <a>{item.versionCount}</a>,
@@ -48,6 +57,7 @@ const ProjectViewList = (props: ProjectViewListProps) => {
   ]
 
   return (
+    // TODO: wire in the implemented onCellClick() to the DyoList
     <DyoCard className="relative mt-4">
       <DyoList
         headers={[...headers.map(h => t(h)), '']}
@@ -57,6 +67,7 @@ const ProjectViewList = (props: ProjectViewListProps) => {
         data={projects}
         noSeparator
         itemBuilder={itemTemplate}
+        cellClick={onCellClick}
       />
     </DyoCard>
   )
