@@ -49,14 +49,18 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
       }
 
       return new CruxConflictException(error)
-    } else if (err.code === NOT_FOUND) {
+    }
+
+    if (err.code === NOT_FOUND) {
       const error = {
         property: this.prismaMessageToProperty(err.message),
         message: err.message,
       }
 
       return new CruxNotFoundException(error)
-    } else if (err.code === UUID_INVALID) {
+    }
+
+    if (err.code === UUID_INVALID) {
       return new CruxBadRequestException({
         message: 'Invalid uuid',
       })
