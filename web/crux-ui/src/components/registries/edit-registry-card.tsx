@@ -147,26 +147,28 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
         {editing ? t('common:editName', { name: registry.name }) : t('new')}
       </DyoHeading>
 
-      <DyoLabel className="text-light">{t('tips.common')}</DyoLabel>
+      <DyoLabel className="text-light block">{t('tips.common')}</DyoLabel>
+
+      {formik.values.inUse && (
+        <DyoLabel className="mt-2 block" textColor="text-sm text-warning-orange">
+          {t('registryAlreadyInUse')}
+        </DyoLabel>
+      )}
 
       <DyoForm className="grid grid-cols-2 gap-8" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
         <div className="flex flex-col">
-          <div className="flex flex-col">
+          <div className="flex flex-col mt-4">
             <DyoInput
               className="max-w-lg"
               grow
               name="name"
               type="name"
               label={t('common:name')}
+              labelClassName="mr-2 mb-1 text-light-eased"
               onChange={formik.handleChange}
               value={formik.values.name}
               message={formik.errors.name}
             />
-            {formik.values.inUse && (
-              <DyoLabel className="mt-2" textColor="text-sm text-warning-orange">
-                {t('registryAlreadyInUse')}
-              </DyoLabel>
-            )}
           </div>
 
           <div className="w-full mt-2">
