@@ -1,6 +1,7 @@
 import { UID_MAX } from '@app/const'
 import {
   ContainerConfigExposeStrategy,
+  ContainerConfigPortRange,
   ContainerDeploymentStrategyType,
   ContainerLogDriverType,
   ContainerNetworkMode,
@@ -187,34 +188,41 @@ const storageRule = yup
   .nullable()
   .optional()
 
-const createOverlapTest = (schema: yup.NumberSchema<number, AnyObject, number>, portRanges: any[]) =>
+const createOverlapTest = (
+  schema: yup.NumberSchema<number, AnyObject, number>,
+  portRanges: ContainerConfigPortRange[],
+  field: Exclude<keyof ContainerConfigPortRange, 'id'>,
+) =>
   // eslint-disable-next-line no-template-curly-in-string
   schema.test('port-range-overlap', '${path} overlaps port ranges', (value, _) =>
-    portRanges.some(it => value < it.internal.from || value > it.internal.to),
+    portRanges.some(it => value < it[field].from || value > it[field].to),
   )
 
-const portConfigRule = yup
-  .mixed()
-  .default([])
-  .nullable()
-  .optional()
-  .when('portRanges', (portRanges, _) => {
-    if (!portRanges) {
-      return yup.array(
+const portConfigRule = yup.mixed().when('portRanges', (portRanges, _) => {
+  if (!portRanges) {
+    return yup
+      .array(
         yup.object().shape({
           internal: portNumberRule,
           external: portNumberOptionalRule,
         }),
       )
-    }
+      .default([])
+      .nullable()
+      .optional()
+  }
 
-    return yup.array(
+  return yup
+    .array(
       yup.object().shape({
-        internal: createOverlapTest(portNumberRule, portRanges),
-        external: createOverlapTest(portNumberOptionalRule, portRanges),
+        internal: createOverlapTest(portNumberRule, portRanges, 'internal'),
+        external: createOverlapTest(portNumberOptionalRule, portRanges, 'external'),
       }),
     )
-  })
+    .default([])
+    .nullable()
+    .optional()
+})
 
 const portRangeConfigRule = yup
   .array(

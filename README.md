@@ -161,6 +161,7 @@ End-to-end tests:
     After that, for Manjaro, you need to separately install Playwright from the AUR repository with the package manager and everything works just fine.
 12. In a different terminal go to the `web/crux-ui` folder and run `npm run test:e2e`
   - If you want to run a specific test file from the `web/crux-ui/e2e` folder you can do it with `DEBUG=1 npx playwright test <file_name>`
+  - If you want to open the inspector to see the tests running you can do it with `PWDEBUG=1 npx playwright test <file_name>`
 
 ## Non-development
 
