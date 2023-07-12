@@ -452,7 +452,15 @@ func (dc *DockerContainerBuilder) prepareImage() error {
 		return nil
 	}
 
-	err = imageHelper.CustomImagePull(dc.ctx, dc.client, expandedImageName, dc.registryAuth, dc.imagePriority == ForcePull, dc.imagePriority == PreferLocal, dc.pullDisplayFn)
+	err = imageHelper.CustomImagePull(
+		dc.ctx,
+		dc.client,
+		expandedImageName,
+		dc.registryAuth,
+		dc.imagePriority == ForcePull,
+		dc.imagePriority == PreferLocal,
+		dc.pullDisplayFn,
+	)
 	if err != nil && err.Error() != "EOF" {
 		return fmt.Errorf("image pull error: %s", err.Error())
 	}
