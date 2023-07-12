@@ -385,11 +385,6 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 		All:     true,
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: containerCreateResp.ID}),
 	})
-
-	if hookError := execHooks(dc, &containers[0], dc.hooksPostCreate); hookError != nil {
-		dc.logWrite(fmt.Sprintln("Container post-create hook error: ", err))
-	}
-
 	if err != nil {
 		dc.logWrite(fmt.Sprintf("Container list failed: %s", err.Error()))
 	}
@@ -397,6 +392,10 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 	if len(containers) != 1 {
 		dc.logWrite("Container was not created.")
 		return nil, errors.New("container was not created")
+	}
+
+	if hookError := execHooks(dc, &containers[0], dc.hooksPostCreate); hookError != nil {
+		dc.logWrite(fmt.Sprintln("Container post-create hook error: ", err))
 	}
 
 	dc.containerID = &containers[0].ID
