@@ -214,6 +214,14 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     clsx('pr-6 text-center', defaultItemClass),
   ]
 
+  const onCellClick = async (data: DeploymentByVersion, row: number, col: number) => {
+    if (col >= headers.length - 1) {
+      return
+    }
+
+    await router.push(deploymentUrl(data.id))
+  }
+
   const itemTemplate = (item: DeploymentByVersion) => {
     const deployable = deploymentIsDeployable(item.status, version.type)
 
@@ -313,6 +321,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
               headerBuilder={sortHeaderBuilder<DeploymentByVersion, DeploymentSorting>(sorting, sortHeaders, text =>
                 t(text),
               )}
+              cellClick={onCellClick}
             />
           </DyoCard>
         </>
