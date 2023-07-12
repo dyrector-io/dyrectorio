@@ -5,12 +5,12 @@ import (
 	"io"
 )
 
-type ImagePriority int32
+type PullPriority int32
 
 const (
-	LocalOnly   ImagePriority = 0
-	PreferLocal ImagePriority = 1
-	ForcePull   ImagePriority = 2
+	LocalOnly   PullPriority = 0
+	PreferLocal PullPriority = 1
+	ForcePull   PullPriority = 2
 )
 
 // RegistryAuth defines an image registry and the authentication information

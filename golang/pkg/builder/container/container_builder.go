@@ -30,7 +30,7 @@ import (
 type Builder interface {
 	WithClient(client client.APIClient) Builder
 	WithImage(imageWithTag string) Builder
-	WithImagePriority(priority imageHelper.ImagePriority) Builder
+	WithImagePriority(priority imageHelper.PullPriority) Builder
 	WithEnv(env []string) Builder
 	WithPortBindings(portList []PortBinding) Builder
 	WithPortRanges(portRanges []PortRangeBinding) Builder
@@ -86,7 +86,7 @@ type DockerContainerBuilder struct {
 	shell           []string
 	tty             bool
 	user            *int64
-	imagePriority   imageHelper.ImagePriority
+	imagePriority   imageHelper.PullPriority
 	pullDisplayFn   imageHelper.PullDisplayFn
 	logger          io.StringWriter
 	extraHosts      []string
@@ -174,7 +174,7 @@ func (dc *DockerContainerBuilder) WithImage(imageWithTag string) Builder {
 }
 
 // Sets the image of a container in a "image:tag" format where image can be a fully qualified name.
-func (dc *DockerContainerBuilder) WithImagePriority(priority imageHelper.ImagePriority) Builder {
+func (dc *DockerContainerBuilder) WithImagePriority(priority imageHelper.PullPriority) Builder {
 	dc.imagePriority = priority
 	return dc
 }

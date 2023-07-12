@@ -263,7 +263,7 @@ func pullImage(ctx context.Context, cli client.APIClient, imageName, encodedAuth
 
 // CustomImagePull is a client side `smart` Pull, that only pulls if the digests are not matching
 func CustomImagePull(ctx context.Context, cli client.APIClient,
-	imageName, encodedAuth string, imagePriority ImagePriority, displayFn PullDisplayFn,
+	imageName, encodedAuth string, imagePriority PullPriority, displayFn PullDisplayFn,
 ) error {
 	distributionRef, err := parseDistributionRef(imageName)
 	if err != nil {
