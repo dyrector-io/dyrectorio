@@ -142,7 +142,7 @@ export default class ContainerMapper {
       ingress: instance.ingress ?? image.ingress,
       volumes: instance.volumes ?? image.volumes,
       initContainers: instance.initContainers ?? image.initContainers,
-      capabilities: [], // TODO (@m8vago, @nandor-magyar): caps
+      capabilities: [], // TODO (@m8vago, @nandor-magyar): capabilities feature is still missing
       ports: instance.ports ?? image.ports,
       storageSet: instance.storageSet || image.storageSet,
       storageId: instance.storageSet ? instance.storageId : image.storageId,

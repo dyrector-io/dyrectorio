@@ -174,8 +174,6 @@ func Init(grpcContext context.Context,
 			creds = credentials.NewClientTLSFromCert(certPool, "")
 		}
 
-		// TODO: Missing error or panic when the server don't have a secure connection.
-		// the application silently dies. Added by @polaroi8d 2020/05/25
 		opts := []grpc.DialOption{
 			grpc.WithTransportCredentials(creds),
 			grpc.WithBlock(),
