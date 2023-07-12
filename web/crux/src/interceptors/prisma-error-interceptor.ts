@@ -4,6 +4,7 @@ import { Observable, catchError } from 'rxjs'
 import {
   CruxBadRequestException,
   CruxConflictException,
+  CruxException,
   CruxExceptionOptions,
   CruxNotFoundException,
 } from 'src/exception/crux-exception'
@@ -23,13 +24,18 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
 
   onError(_context: ExecutionContext, err: Error): any {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      this.handlePrismaError(err)
+      const exception = PrismaErrorInterceptor.transformPrismaError(err)
+      if (exception != null) {
+        throw exception
+      }
+
+      return
     }
 
     throw err
   }
 
-  private handlePrismaError(err: Prisma.PrismaClientKnownRequestError) {
+  public static transformPrismaError(err: Prisma.PrismaClientKnownRequestError): CruxException {
     if (err.code === UNIQUE_CONSTRAINT_FAILED) {
       const meta = err.meta ?? ({} as any)
       const { target } = meta
@@ -42,22 +48,24 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
         property,
       }
 
-      throw new CruxConflictException(error)
+      return new CruxConflictException(error)
     } else if (err.code === NOT_FOUND) {
       const error = {
         property: this.prismaMessageToProperty(err.message),
         message: err.message,
       }
 
-      throw new CruxNotFoundException(error)
+      return new CruxNotFoundException(error)
     } else if (err.code === UUID_INVALID) {
-      throw new CruxBadRequestException({
+      return new CruxBadRequestException({
         message: 'Invalid uuid',
       })
     }
+
+    return null
   }
 
-  private prismaMessageToProperty(message: string) {
+  public static prismaMessageToProperty(message: string) {
     const FIRST_PART = 'No '
     const SECOND_PART = ' found'
 

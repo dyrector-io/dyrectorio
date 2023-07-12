@@ -29,6 +29,7 @@ import {
 import TeamMapper, { TeamWithUsers } from './team.mapper'
 import TeamRepository from './team.repository'
 import { UserDto, UserMetaDto } from './user.dto'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 
 @Injectable()
 export default class TeamService {
@@ -415,9 +416,11 @@ export default class TeamService {
         },
       })
       deleted = true
-      // TODO(@polaroi8d): remove this catch or implement a better way to handle this
-    } catch {
-      this.logger.error(`User ${userId} is not in the team: ${team.id}`)
+    } catch (err) {
+      const exception = PrismaErrorInterceptor.transformPrismaError(err)
+      if (!(exception instanceof CruxNotFoundException)) {
+        throw exception
+      }
     }
 
     try {
@@ -430,9 +433,11 @@ export default class TeamService {
         },
       })
       deleted = true
-      // TODO(@polaroi8d): remove this catch or implement a better way to handle this
-    } catch {
-      this.logger.error(`User ${userId} is not in the team: ${team.id}`)
+    } catch (err) {
+      const exception = PrismaErrorInterceptor.transformPrismaError(err)
+      if (!(exception instanceof CruxNotFoundException)) {
+        throw exception
+      }
     }
 
     if (!deleted) {
