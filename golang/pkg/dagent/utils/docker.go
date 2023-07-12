@@ -291,7 +291,7 @@ func DeployImage(ctx context.Context,
 		WithPullDisplayFunc(dog.WriteDockerPull)
 
 	if deployImageRequest.Registry == nil || *deployImageRequest.Registry == "" {
-		builder.WithImagePriority(container.LocalOnly)
+		builder.WithImagePriority(imageHelper.LocalOnly)
 	}
 
 	WithInitContainers(builder, &deployImageRequest.ContainerConfig, dog, envMap, cfg)

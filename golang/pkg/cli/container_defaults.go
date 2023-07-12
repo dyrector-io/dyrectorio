@@ -16,6 +16,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
+	"github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	dagentutils "github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
@@ -46,7 +47,7 @@ func baseContainer(ctx context.Context, args *ArgsFlags) containerbuilder.Builde
 		WithLogWriter(nil).
 		WithoutConflict()
 	if args.PreferLocalImages {
-		builder.WithImagePriority(containerbuilder.PreferLocal)
+		builder.WithImagePriority(image.PreferLocal)
 	}
 	return builder
 }
