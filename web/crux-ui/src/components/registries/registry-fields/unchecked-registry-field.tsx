@@ -19,7 +19,7 @@ const UncheckedRegistryFields = (props: EditRegistryTypeProps<UncheckedRegistryD
 
         <DyoSwitch
           fieldName="local"
-          checked={formik.values.local || false}
+          checked={formik.values.local ?? false}
           setFieldValue={(field: string, value: boolean, shouldValidate?: boolean | undefined) => {
             if (!value) {
               formik.setFieldValue('url', '', false)

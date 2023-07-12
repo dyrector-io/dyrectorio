@@ -24,21 +24,13 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 )
 
-type ImagePriority int32
-
-const (
-	LocalOnly   ImagePriority = 0
-	PreferLocal ImagePriority = 1
-	ForcePull   ImagePriority = 2
-)
-
 // A Builder handles the process of creating and starting containers,
 // it can be configured using 'With...' methods.
 // A Builder can be created using the NewDockerBuilder method.
 type Builder interface {
 	WithClient(client client.APIClient) Builder
 	WithImage(imageWithTag string) Builder
-	WithImagePriority(priority ImagePriority) Builder
+	WithImagePriority(priority imageHelper.ImagePriority) Builder
 	WithEnv(env []string) Builder
 	WithPortBindings(portList []PortBinding) Builder
 	WithPortRanges(portRanges []PortRangeBinding) Builder
@@ -94,7 +86,7 @@ type DockerContainerBuilder struct {
 	shell           []string
 	tty             bool
 	user            *int64
-	imagePriority   ImagePriority
+	imagePriority   imageHelper.ImagePriority
 	pullDisplayFn   imageHelper.PullDisplayFn
 	logger          io.StringWriter
 	extraHosts      []string
@@ -112,7 +104,7 @@ func NewDockerBuilder(ctx context.Context) Builder {
 	b := DockerContainerBuilder{
 		ctx:           ctx,
 		logger:        logger,
-		imagePriority: PreferLocal,
+		imagePriority: imageHelper.PreferLocal,
 	}
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -182,7 +174,7 @@ func (dc *DockerContainerBuilder) WithImage(imageWithTag string) Builder {
 }
 
 // Sets the image of a container in a "image:tag" format where image can be a fully qualified name.
-func (dc *DockerContainerBuilder) WithImagePriority(priority ImagePriority) Builder {
+func (dc *DockerContainerBuilder) WithImagePriority(priority imageHelper.ImagePriority) Builder {
 	dc.imagePriority = priority
 	return dc
 }
@@ -447,7 +439,7 @@ func (dc *DockerContainerBuilder) prepareImage() error {
 		return err
 	}
 
-	if dc.imagePriority == LocalOnly {
+	if dc.imagePriority == imageHelper.LocalOnly {
 		dc.logWrite("Using local image only")
 		return nil
 	}
@@ -457,8 +449,7 @@ func (dc *DockerContainerBuilder) prepareImage() error {
 		dc.client,
 		expandedImageName,
 		dc.registryAuth,
-		dc.imagePriority == ForcePull,
-		dc.imagePriority == PreferLocal,
+		dc.imagePriority,
 		dc.pullDisplayFn,
 	)
 	if err != nil && err.Error() != "EOF" {
