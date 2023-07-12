@@ -46,7 +46,7 @@ func baseContainer(ctx context.Context, args *ArgsFlags) containerbuilder.Builde
 		WithLogWriter(nil).
 		WithoutConflict()
 	if args.PreferLocalImages {
-		builder.WithLocalImagePriority()
+		builder.WithImagePriority(containerbuilder.PreferLocal)
 	}
 	return builder
 }
