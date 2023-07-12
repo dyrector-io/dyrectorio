@@ -14,6 +14,7 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import EmailBuilder, { InviteTemplateOptions } from '../../builders/email.builder'
 import AuditLoggerService from '../audit.logger/audit.logger.service'
 import { AuthorizedHttpRequest } from '../token/jwt-auth.guard'
@@ -29,7 +30,6 @@ import {
 import TeamMapper, { TeamWithUsers } from './team.mapper'
 import TeamRepository from './team.repository'
 import { UserDto, UserMetaDto } from './user.dto'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 
 @Injectable()
 export default class TeamService {
