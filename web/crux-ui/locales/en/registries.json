@@ -24,6 +24,7 @@
   "namespaceType": "Namespace type",
   "project": "Project ID",
   "userName": "User name",
+  "useLocalImages": "Use local images",
 
   "tips": {
     "common": "Registries contain the images you can select to use in your Projects and Versions.",

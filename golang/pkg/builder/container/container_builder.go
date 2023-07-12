@@ -30,7 +30,7 @@ import (
 type Builder interface {
 	WithClient(client client.APIClient) Builder
 	WithImage(imageWithTag string) Builder
-	WithLocalImagePriority() Builder
+	WithImagePriority(priority imageHelper.PullPriority) Builder
 	WithEnv(env []string) Builder
 	WithPortBindings(portList []PortBinding) Builder
 	WithPortRanges(portRanges []PortRangeBinding) Builder
@@ -50,7 +50,6 @@ type Builder interface {
 	WithUser(uid *int64) Builder
 	WithLogWriter(logger io.StringWriter) Builder
 	WithoutConflict() Builder
-	WithForcePullImage() Builder
 	WithPullDisplayFunc(imageHelper.PullDisplayFn) Builder
 	WithExtraHosts(hosts []string) Builder
 	WithPreCreateHooks(hooks ...LifecycleFunc) Builder
@@ -70,7 +69,6 @@ type DockerContainerBuilder struct {
 	networkAliases  []string
 	containerName   string
 	imageWithTag    string
-	localImage      bool
 	envList         []string
 	labels          map[string]string
 	logConfig       *container.LogConfig
@@ -88,7 +86,7 @@ type DockerContainerBuilder struct {
 	shell           []string
 	tty             bool
 	user            *int64
-	forcePull       bool
+	imagePriority   imageHelper.PullPriority
 	pullDisplayFn   imageHelper.PullDisplayFn
 	logger          io.StringWriter
 	extraHosts      []string
@@ -104,8 +102,9 @@ type DockerContainerBuilder struct {
 func NewDockerBuilder(ctx context.Context) Builder {
 	var logger io.StringWriter = defaultLogger{}
 	b := DockerContainerBuilder{
-		ctx:    ctx,
-		logger: logger,
+		ctx:           ctx,
+		logger:        logger,
+		imagePriority: imageHelper.PreferLocal,
 	}
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -175,8 +174,8 @@ func (dc *DockerContainerBuilder) WithImage(imageWithTag string) Builder {
 }
 
 // Sets the image of a container in a "image:tag" format where image can be a fully qualified name.
-func (dc *DockerContainerBuilder) WithLocalImagePriority() Builder {
-	dc.localImage = true
+func (dc *DockerContainerBuilder) WithImagePriority(priority imageHelper.PullPriority) Builder {
+	dc.imagePriority = priority
 	return dc
 }
 
@@ -258,12 +257,6 @@ func (dc *DockerContainerBuilder) WithUser(user *int64) Builder {
 // Sets the logger which logs messages releated to the builder (and not the container).
 func (dc *DockerContainerBuilder) WithLogWriter(logger io.StringWriter) Builder {
 	dc.logger = logger
-	return dc
-}
-
-// Sets the builder to force pull the image before creating the container.
-func (dc *DockerContainerBuilder) WithForcePullImage() Builder {
-	dc.forcePull = true
 	return dc
 }
 
@@ -385,11 +378,6 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 		All:     true,
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: containerCreateResp.ID}),
 	})
-
-	if hookError := execHooks(dc, &containers[0], dc.hooksPostCreate); hookError != nil {
-		dc.logWrite(fmt.Sprintln("Container post-create hook error: ", err))
-	}
-
 	if err != nil {
 		dc.logWrite(fmt.Sprintf("Container list failed: %s", err.Error()))
 	}
@@ -397,6 +385,10 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 	if len(containers) != 1 {
 		dc.logWrite("Container was not created.")
 		return nil, errors.New("container was not created")
+	}
+
+	if hookError := execHooks(dc, &containers[0], dc.hooksPostCreate); hookError != nil {
+		dc.logWrite(fmt.Sprintln("Container post-create hook error: ", err))
 	}
 
 	dc.containerID = &containers[0].ID
@@ -447,7 +439,19 @@ func (dc *DockerContainerBuilder) prepareImage() error {
 		return err
 	}
 
-	err = imageHelper.CustomImagePull(dc.ctx, dc.client, expandedImageName, dc.registryAuth, dc.forcePull, dc.localImage, dc.pullDisplayFn)
+	if dc.imagePriority == imageHelper.LocalOnly {
+		dc.logWrite("Using local image only")
+		return nil
+	}
+
+	err = imageHelper.CustomImagePull(
+		dc.ctx,
+		dc.client,
+		expandedImageName,
+		dc.registryAuth,
+		dc.imagePriority,
+		dc.pullDisplayFn,
+	)
 	if err != nil && err.Error() != "EOF" {
 		return fmt.Errorf("image pull error: %s", err.Error())
 	}

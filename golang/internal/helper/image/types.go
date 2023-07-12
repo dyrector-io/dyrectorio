@@ -5,6 +5,14 @@ import (
 	"io"
 )
 
+type PullPriority int32
+
+const (
+	LocalOnly   PullPriority = 0
+	PreferLocal PullPriority = 1
+	ForcePull   PullPriority = 2
+)
+
 // RegistryAuth defines an image registry and the authentication information
 // associated with it.
 type RegistryAuth struct {
