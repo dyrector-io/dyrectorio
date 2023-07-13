@@ -214,6 +214,26 @@ export default class TeamHttpController {
     await this.service.updateUserRole(teamId, userId, request, identity)
   }
 
+  @Delete(`${ROUTE_TEAM_ID}/${ROUTE_USERS}/leave`)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @AuditLogLevel('disabled')
+  @TeamRoleRequired('user')
+  @ApiOperation({
+    description: 'Removes the current user from the team. Request must include `teamId`.',
+    summary: 'Remove the current user from the team.',
+  })
+  @ApiNoContentResponse({ description: 'User removed from a team.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for user removal.' })
+  @ApiNotFoundResponse({ description: 'User not found.' })
+  @UuidParams(PARAM_TEAM_ID)
+  async leaveTeam(
+    @TeamId() teamId: string,
+    @IdentityFromRequest() identity: Identity,
+    @Request() httpRequest: AuthorizedHttpRequest,
+  ): Promise<void> {
+    await this.service.leaveTeam(teamId, identity, httpRequest)
+  }
+
   @Delete(`${ROUTE_TEAM_ID}/${ROUTE_USERS}/${ROUTE_USER_ID}`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @TeamRoleRequired('admin')
