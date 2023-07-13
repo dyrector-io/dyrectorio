@@ -154,10 +154,9 @@ describe('DeployMapper', () => {
       bucket: 'storageBucket',
       path: 'storagePath',
     },
-    ingress: {
-      host: 'ingress',
-      name: 'ingress',
-      uploadLimit: 'ingress',
+    domain: {
+      name: 'domain',
+      uploadLimit: 'domain',
     },
     initContainers: [
       {
@@ -372,10 +371,9 @@ describe('DeployMapper', () => {
       bucket: 'instance.storageBucket',
       path: 'instance.storagePath',
     },
-    ingress: {
-      host: 'instance.ingress',
-      name: 'instance.ingress',
-      uploadLimit: 'instance.ingress',
+    domain: {
+      name: 'instance.domain',
+      uploadLimit: 'instance.domain',
     },
     initContainers: [
       {

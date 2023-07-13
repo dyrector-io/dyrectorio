@@ -570,9 +570,8 @@ export interface ContainerLogMessage {
   log: string
 }
 
-export interface Ingress {
+export interface Domain {
   name: string
-  host: string
   uploadLimit?: string | undefined
 }
 
@@ -809,23 +808,21 @@ export const ContainerLogMessage = {
   },
 }
 
-function createBaseIngress(): Ingress {
-  return { name: '', host: '' }
+function createBaseDomain(): Domain {
+  return { name: '' }
 }
 
-export const Ingress = {
-  fromJSON(object: any): Ingress {
+export const Domain = {
+  fromJSON(object: any): Domain {
     return {
       name: isSet(object.name) ? String(object.name) : '',
-      host: isSet(object.host) ? String(object.host) : '',
       uploadLimit: isSet(object.uploadLimit) ? String(object.uploadLimit) : undefined,
     }
   },
 
-  toJSON(message: Ingress): unknown {
+  toJSON(message: Domain): unknown {
     const obj: any = {}
     message.name !== undefined && (obj.name = message.name)
-    message.host !== undefined && (obj.host = message.host)
     message.uploadLimit !== undefined && (obj.uploadLimit = message.uploadLimit)
     return obj
   },

@@ -133,9 +133,8 @@ enum ExposeStrategy {
   EXPOSE_WITH_TLS = 3;
 }
 
-message Ingress {
+message Domain {
   string name = 100;
-  string host = 101;
   optional string uploadLimit = 102;
 }
 

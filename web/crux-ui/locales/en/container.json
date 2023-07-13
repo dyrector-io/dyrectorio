@@ -27,9 +27,8 @@
     "args": "Arguments",
     "exposeStrategy": "Expose strategy",
     "exposeStrategies": { "none": "None", "expose": "HTTP", "exposeWithTls": "HTTPS" },
-    "ingressName": "Name",
-    "ingressHost": "Host",
-    "ingressUploadLimit": "Upload limit",
+    "domainName": "Name",
+    "domainUploadLimit": "Upload limit",
     "environment": "Environment",
     "secrets": "Secrets",
     "initContainer": "Init container",
@@ -39,7 +38,7 @@
     "configContainer": "Config container",
     "keepFiles": "Keep files",
     "useParent": "Use parent",
-    "ingress": "Ingress",
+    "domain": "Domain",
     "expose": "Expose",
     "tty": "TTY",
     "initContainers": "Init containers",
@@ -57,9 +56,8 @@
       "port": "Port",
       "path": "Path",
       "containerDefault": "Container default",
-      "ingressName": "Ingress name",
-      "ingressHost": "Ingress host",
-      "ingressUploadLimit": "Ingress upload limit"
+      "domainName": "Domain name",
+      "domainUploadLimit": "Upload limit"
     }
   },
 

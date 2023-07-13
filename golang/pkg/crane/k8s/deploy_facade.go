@@ -221,8 +221,7 @@ func (d *DeployFacade) Deploy() error {
 			&DeployIngressOptions{
 				namespace:     d.namespace.name,
 				containerName: d.params.ContainerConfig.Container,
-				ingressName:   d.params.ContainerConfig.IngressName,
-				ingressHost:   d.params.ContainerConfig.IngressHost,
+				ingressName:   d.params.ContainerConfig.DomainName,
 				uploadLimit:   d.params.ContainerConfig.IngressUploadLimit,
 				ports:         d.service.portsBound,
 				tls:           d.params.ContainerConfig.ExposeTLS,

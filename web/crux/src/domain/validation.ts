@@ -60,11 +60,10 @@ const portNumberBaseRule = yup
 const portNumberOptionalRule = portNumberBaseRule.nullable()
 const portNumberRule = portNumberBaseRule.required()
 
-const ingressRule = yup
+const domainRule = yup
   .object()
   .shape({
     name: yup.string().required(),
-    host: yup.string().required(),
     uploadLimitInBytes: yup.string().nullable(),
   })
   .default({})
@@ -293,7 +292,7 @@ export const containerConfigSchema = yup.object().shape({
   name: yup.string().required(),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
   secrets: uniqueSecretKeyValuesSchema.default([]).nullable(),
-  ingress: ingressRule,
+  domain: domainRule,
   expose: exposeRule,
   user: yup.number().default(null).min(-1).max(UID_MAX).nullable(),
   tty: yup.boolean().default(false).required(),
@@ -331,7 +330,7 @@ export const instanceContainerConfigSchema = yup.object().shape({
   name: yup.string().nullable(),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
   secrets: uniqueKeyValuesSchema.default([]).nullable(),
-  ingress: ingressRule.nullable(),
+  domain: domainRule.nullable(),
   expose: instanceExposeRule,
   user: yup.number().default(null).min(-1).max(UID_MAX).nullable(),
   tty: yup.boolean().default(false).nullable(),

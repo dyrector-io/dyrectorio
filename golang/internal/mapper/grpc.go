@@ -112,12 +112,11 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		containerConfig.ExposeTLS = *cc.Expose > 2
 	}
 
-	if cc.Ingress != nil {
-		containerConfig.IngressName = cc.Ingress.Name
-		containerConfig.IngressHost = cc.Ingress.Host
+	if cc.Domain != nil {
+		containerConfig.DomainName = cc.Domain.Name
 
-		if cc.Ingress.UploadLimit != nil {
-			containerConfig.IngressUploadLimit = *cc.Ingress.UploadLimit
+		if cc.Domain.UploadLimit != nil {
+			containerConfig.IngressUploadLimit = *cc.Domain.UploadLimit
 		}
 	}
 

@@ -71,11 +71,10 @@ const portNumberBaseRule = yup.number().positive().lessThan(65536)
 const portNumberOptionalRule = portNumberBaseRule.nullable()
 const portNumberRule = portNumberBaseRule.required()
 
-const ingressRule = yup
+const domainRule = yup
   .object()
   .shape({
     name: yup.string().required(),
-    host: yup.string().required(),
     uploadLimitInBytes: yup.string().nullable(),
   })
   .default({})
@@ -283,7 +282,7 @@ const markerRule = yup
 const containerConfigBaseSchema = yup.object().shape({
   name: yup.string().required(),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
-  ingress: ingressRule,
+  domain: domainRule,
   expose: exposeRule,
   user: yup.number().default(null).min(-1).max(UID_MAX).nullable(),
   tty: yup.boolean().default(false).required(),

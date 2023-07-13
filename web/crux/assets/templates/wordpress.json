@@ -60,9 +60,8 @@
         "name": "wordpress",
         "tty": false,
         "expose": "expose",
-        "ingress": {
-          "host": "localhost",
-          "name": "wordpress"
+        "domain": {
+          "name": "wordpress.localhost"
         },
         "volumes": [
           {

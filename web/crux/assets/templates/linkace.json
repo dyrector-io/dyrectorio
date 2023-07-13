@@ -67,9 +67,8 @@
       "user": 0,
       "config": {
         "expose": "expose",
-        "ingress": {
-          "host": "localhost",
-          "name": "linkace"
+        "domain": {
+          "name": "linkace.localhost"
         },
         "name": "linkace-app",
         "ports": [

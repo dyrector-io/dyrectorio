@@ -28,12 +28,12 @@ type ingress struct {
 }
 
 type DeployIngressOptions struct {
-	namespace, containerName, ingressName, ingressHost, uploadLimit string
-	ports                                                           []int32
-	tls, proxyHeaders                                               bool
-	customHeaders                                                   []string
-	labels                                                          map[string]string
-	annotations                                                     map[string]string
+	namespace, containerName, ingressName, uploadLimit string
+	ports                                              []int32
+	tls, proxyHeaders                                  bool
+	customHeaders                                      []string
+	labels                                             map[string]string
+	annotations                                        map[string]string
 }
 
 func newIngress(ctx context.Context, client *Client) *ingress {
@@ -54,21 +54,19 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 		return errors.New("empty ports, nothing to expose")
 	}
 
-	var ingressRoot string
-	if options.ingressHost != "" {
-		ingressRoot = options.ingressHost
-	} else if ing.appConfig.IngressRootDomain != "" {
-		ingressRoot = ing.appConfig.IngressRootDomain
+	domain := []string{}
+
+	if options.ingressName != "" {
+		domain = append(domain, options.ingressName)
 	} else {
-		return fmt.Errorf("no ingress domain provided in deploy request or configuration")
+		domain = append(domain, util.JoinV(".", options.containerName, options.namespace))
 	}
 
-	var ingressPath string
-	if options.ingressName != "" {
-		ingressPath = util.JoinV(".", options.ingressName, ingressRoot)
-	} else {
-		ingressPath = util.JoinV(".", options.containerName, options.namespace, ingressRoot)
+	if ing.appConfig.IngressRootDomain != "" {
+		domain = append(domain, ing.appConfig.IngressRootDomain)
 	}
+
+	ingressPath := util.JoinV(".", domain...)
 
 	spec := netv1.IngressSpec().
 		WithRules(

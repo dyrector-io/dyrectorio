@@ -44,18 +44,12 @@ func GetTraefikLabels(
 func GetServiceName(instanceConfig *v1.InstanceConfig, containerConfig *v1.ContainerConfig, cfg *config.Configuration) string {
 	domain := []string{}
 
-	name := util.Fallback(containerConfig.IngressName, containerConfig.Container)
-	domain = append(domain, name)
-	prefix := instanceConfig.ContainerPreName
+	domain = append(domain, util.Fallback(containerConfig.DomainName, containerConfig.Container))
 
-	// if explicit Host is given, prefix is omitted
-	if containerConfig.IngressHost == "" {
-		domain = append(domain, prefix)
+	// TODO(@robot9706): Is IngressRootDomain used?
+	if cfg.IngressRootDomain != "" {
+		domain = append(domain, cfg.IngressRootDomain)
 	}
-
-	// containerConfig.IngressRoot > env INGRESS_HOST
-	ingressHost := util.Fallback(containerConfig.IngressHost, cfg.IngressRootDomain)
-	domain = append(domain, ingressHost)
 
 	return util.JoinV(".", domain...)
 }

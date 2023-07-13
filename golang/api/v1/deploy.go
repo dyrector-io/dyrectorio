@@ -154,9 +154,7 @@ type ContainerConfig struct {
 	// use nginx tls configuration
 	ExposeTLS bool `json:"exposeTls"`
 	// ingress prefix before hostname, `containerName.containerPrefix.<ingress root>` by default, this replaces both before root
-	IngressName string `json:"ingressName"`
-	// ingress hostname, env value used by default, can be overridden here
-	IngressHost string `json:"ingressHost"`
+	DomainName string `json:"ingressName"`
 	// Set endpoint upload limit, default value is: 1m
 	// for docker hosts, this is needs to be bytes: 1000000 ~1m
 	IngressUploadLimit string `json:"ingressUploadLimit"`

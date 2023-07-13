@@ -51,7 +51,7 @@ export default class ImageMapper {
       // common
       name: config.name,
       expose: config.expose,
-      ingress: toPrismaJson(config.ingress),
+      domain: toPrismaJson(config.domain),
       configContainer: toPrismaJson(config.configContainer),
       // Set user to the given value, if not null or use 0 if specifically 0, otherwise set to default -1
       user: config.user ?? (config.user === 0 ? 0 : -1),

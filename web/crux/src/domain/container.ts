@@ -59,9 +59,8 @@ export type ContainerExposeStrategy = (typeof CONTAINER_EXPOSE_STRATEGY_VALUES)[
 export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rwo', 'rwx', 'mem', 'tmp'] as const
 export type ContainerVolumeType = (typeof CONTAINER_VOLUME_TYPE_VALUES)[number]
 
-export type Ingress = {
+export type Domain = {
   name: string
-  host: string
   uploadLimit?: string
 }
 
@@ -152,7 +151,7 @@ export type ContainerConfigData = {
   name: string
   environment?: UniqueKeyValue[]
   secrets?: UniqueSecretKey[]
-  ingress?: Ingress
+  domain?: Domain
   expose: ContainerExposeStrategy
   user?: number
   tty: boolean
@@ -214,7 +213,7 @@ export const CONTAINER_CONFIG_JSON_FIELDS = [
   'environment',
   'secrets',
   'capabilities',
-  'ingress',
+  'domain',
   'configContainer',
   'importContainer',
   'ports',

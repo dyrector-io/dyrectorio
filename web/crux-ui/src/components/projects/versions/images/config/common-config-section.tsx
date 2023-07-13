@@ -277,57 +277,42 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             </div>
           )}
 
-          {/* ingress */}
-          {filterContains('ingress', selectedFilters) && (
+          {/* domain */}
+          {filterContains('domain', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
               <ConfigSectionLabel
-                disabled={disabled || !resetableConfig.ingress}
-                onResetSection={() => onResetSection('ingress')}
+                disabled={disabled || !resetableConfig.domain}
+                onResetSection={() => onResetSection('domain')}
               >
-                {t('common.ingress').toUpperCase()}
+                {t('common.domain').toUpperCase()}
               </ConfigSectionLabel>
 
               <div className="ml-2">
                 <MultiInput
-                  id="common.ingressName"
-                  label={t('common.ingressName')}
+                  id="common.domainName"
+                  label={t('common.domainName')}
                   containerClassName="max-w-lg mb-3"
                   labelClassName="my-auto mr-4 w-40"
                   grow
                   inline
-                  value={config.ingress?.name ?? ''}
-                  placeholder={t('common.placeholders.ingressName')}
-                  onPatch={it => onChange({ ingress: { ...config.ingress, name: it } })}
+                  value={config.domain?.name ?? ''}
+                  placeholder={t('common.placeholders.domainName')}
+                  onPatch={it => onChange({ domain: { ...config.domain, name: it } })}
                   editorOptions={editorOptions}
-                  message={fieldErrors.find(it => it.path?.startsWith('ingress.name'))?.message}
+                  message={fieldErrors.find(it => it.path?.startsWith('domain.name'))?.message}
                   disabled={disabled}
                 />
 
                 <MultiInput
-                  id="common.ingressHost"
-                  label={t('common.ingressHost')}
+                  id="common.domainUploadLimit"
+                  label={t('common.domainUploadLimit')}
                   containerClassName="max-w-lg mb-3"
                   labelClassName="my-auto mr-4 w-40"
                   grow
                   inline
-                  value={config.ingress?.host ?? ''}
-                  placeholder={t('common.placeholders.ingressHost')}
-                  onPatch={it => onChange({ ingress: { ...config.ingress, host: it } })}
-                  editorOptions={editorOptions}
-                  message={fieldErrors.find(it => it.path?.startsWith('ingress.host'))?.message}
-                  disabled={disabled}
-                />
-
-                <MultiInput
-                  id="common.ingressUploadLimit"
-                  label={t('common.ingressUploadLimit')}
-                  containerClassName="max-w-lg mb-3"
-                  labelClassName="my-auto mr-4 w-40"
-                  grow
-                  inline
-                  value={config.ingress?.uploadLimit ?? ''}
-                  placeholder={t('common.placeholders.ingressUploadLimit')}
-                  onPatch={it => onChange({ ingress: { ...config.ingress, uploadLimit: it } })}
+                  value={config.domain?.uploadLimit ?? ''}
+                  placeholder={t('common.placeholders.domainUploadLimit')}
+                  onPatch={it => onChange({ domain: { ...config.domain, uploadLimit: it } })}
                   editorOptions={editorOptions}
                   disabled={disabled}
                 />
