@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+<a name="0.6.0"></a>
+## [0.6.0](https://github.com/dyrector-io/dyrectorio/compare/0.5.5...0.6.0) (2023-07-12)
+
+### Feat
+
+* unchecked registry use local images ([#745](https://github.com/dyrector-io/dyrectorio/issues/745))
+
+### Fix
+
+* remove n refactor todos ([#742](https://github.com/dyrector-io/dyrectorio/issues/742))
+* deployment token name validation ([#740](https://github.com/dyrector-io/dyrectorio/issues/740))
+
+
 <a name="0.5.5"></a>
 ## [0.5.5](https://github.com/dyrector-io/dyrectorio/compare/0.5.4...0.5.5) (2023-07-10)
 

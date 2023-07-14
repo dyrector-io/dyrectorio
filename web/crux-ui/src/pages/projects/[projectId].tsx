@@ -237,7 +237,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
           title={t('convertProjectToVersioned', { name: project.name })}
           description={t('areYouSureWantToConvert')}
           className="w-1/4"
-          confirmColor="bg-error-red"
+          confirmColor="bg-warning-orange"
         />
       )}
     </Layout>
