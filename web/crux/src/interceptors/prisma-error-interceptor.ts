@@ -28,8 +28,6 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
       if (exception != null) {
         throw exception
       }
-
-      return
     }
 
     throw err
