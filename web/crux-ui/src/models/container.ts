@@ -464,6 +464,8 @@ export const instanceConfigToJsonInstanceConfig = (
 }
 
 const mergeKeyValuesWithJson = (items: UniqueKeyValue[], json: JsonKeyValue): UniqueKeyValue[] => {
+  items = items ?? []
+
   if (!json || Object.keys(json).length < 1) {
     return []
   }
@@ -508,6 +510,8 @@ const mergeKeyValuesWithJson = (items: UniqueKeyValue[], json: JsonKeyValue): Un
 }
 
 const mergeKeysWithJson = (items: UniqueKey[], json: string[]): UniqueKey[] => {
+  items = items ?? []
+
   if (!json || Object.entries(json).length < 1) {
     return []
   }
