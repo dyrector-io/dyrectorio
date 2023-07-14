@@ -189,7 +189,7 @@ const createOverlapTest = (
   field: Exclude<keyof ContainerConfigPortRangeDto, 'id'>,
 ) =>
   // eslint-disable-next-line no-template-curly-in-string
-  schema.test('port-range-overlap', '${path} overlaps port ranges', (value) => {
+  schema.test('port-range-overlap', '${path} overlaps port ranges', value => {
     if (portRanges.length <= 0) {
       return true
     }
@@ -199,7 +199,7 @@ const createOverlapTest = (
     return !hasOverlap
   })
 
-const portConfigRule = yup.mixed().when('portRanges', (portRanges) => {
+const portConfigRule = yup.mixed().when('portRanges', portRanges => {
   if (!portRanges) {
     return yup
       .array(
