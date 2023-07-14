@@ -1,4 +1,5 @@
 SHELL = /bin/sh
+GO_PACKAGE = github.com/dyrector-io/dyrectorio/protobuf/go
 
 ## Shortcut to start stack, fully containerized, stable build
 .PHONY: up
@@ -61,11 +62,12 @@ proto-agent:
 	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4 ash -c "\
 		mkdir -p protobuf/go && \
 		protoc -I. \
-			--go_out protobuf/go \
+			--go_out /tmp \
 			--go_opt module=$(REMOTE) \
-			--go-grpc_out protobuf/go \
+			--go-grpc_out /tmp \
 			--go-grpc_opt module=$(REMOTE) \
-			protobuf/proto/*.proto"
+			protobuf/proto/*.proto && \
+		cp -r /tmp/${GO_PACKAGE}/* ./protobuf/go"
 
 # Generate API grpc files
 .PHONY: proto-crux
