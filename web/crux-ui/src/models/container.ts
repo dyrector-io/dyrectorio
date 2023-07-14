@@ -464,6 +464,8 @@ export const instanceConfigToJsonInstanceConfig = (
 }
 
 const mergeKeyValuesWithJson = (items: UniqueKeyValue[], json: JsonKeyValue): UniqueKeyValue[] => {
+  items = items ?? []
+
   if (!json || Object.keys(json).length < 1) {
     return []
   }
@@ -475,7 +477,7 @@ const mergeKeyValuesWithJson = (items: UniqueKeyValue[], json: JsonKeyValue): Un
   jsonKeys.forEach(key => {
     const value = json[key]
 
-    const byKey = items?.find(it => it.key === key)
+    const byKey = items.find(it => it.key === key)
     if (!byKey) {
       const byValue = items.find(it => it.value === value)
 
@@ -499,8 +501,8 @@ const mergeKeyValuesWithJson = (items: UniqueKeyValue[], json: JsonKeyValue): Un
     }
   })
 
-  const removed = items?.filter(it => !jsonKeys.includes(it.key))
-  if (removed?.length > 0) {
+  const removed = items.filter(it => !jsonKeys.includes(it.key))
+  if (removed.length > 0) {
     modified = true
   }
 
@@ -508,6 +510,8 @@ const mergeKeyValuesWithJson = (items: UniqueKeyValue[], json: JsonKeyValue): Un
 }
 
 const mergeKeysWithJson = (items: UniqueKey[], json: string[]): UniqueKey[] => {
+  items = items ?? []
+
   if (!json || Object.entries(json).length < 1) {
     return []
   }
