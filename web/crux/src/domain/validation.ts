@@ -1,6 +1,8 @@
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 import * as yup from 'yup'
 import { UID_MAX } from 'src/shared/const'
+import { AnyObject } from 'yup/lib/types'
+import { ContainerConfigPortRangeDto } from 'src/app/container/container.dto'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
@@ -181,16 +183,46 @@ const storageRule = yup
   .nullable()
   .optional()
 
-const portConfigRule = yup
-  .array(
-    yup.object().shape({
-      internal: portNumberRule,
-      external: portNumberOptionalRule,
-    }),
+const createOverlapTest = (
+  schema: yup.NumberSchema<number, AnyObject, number>,
+  portRanges: ContainerConfigPortRangeDto[],
+  field: Exclude<keyof ContainerConfigPortRangeDto, 'id'>,
+) =>
+  // eslint-disable-next-line no-template-curly-in-string
+  schema.test('port-range-overlap', '${path} overlaps port ranges', value =>
+    portRanges.length > 0
+      ? !portRanges.some(it => {
+          const portRange = it[field]
+          return value >= portRange.from && value <= portRange.to
+        })
+      : true,
   )
-  .default([])
-  .nullable()
-  .optional()
+
+const portConfigRule = yup.mixed().when('portRanges', portRanges => {
+  if (!portRanges) {
+    return yup
+      .array(
+        yup.object().shape({
+          internal: portNumberRule,
+          external: portNumberOptionalRule,
+        }),
+      )
+      .default([])
+      .nullable()
+      .optional()
+  }
+
+  return yup
+    .array(
+      yup.object().shape({
+        internal: createOverlapTest(portNumberRule, portRanges, 'internal'),
+        external: createOverlapTest(portNumberOptionalRule, portRanges, 'external'),
+      }),
+    )
+    .default([])
+    .nullable()
+    .optional()
+})
 
 const portRangeConfigRule = yup
   .array(

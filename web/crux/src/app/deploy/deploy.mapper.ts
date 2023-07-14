@@ -303,13 +303,14 @@ export default class DeployMapper {
   dagentConfigToAgentProto(config: MergedContainerConfigData): DagentContainerConfig {
     return {
       networks: this.mapUniqueKeyToStringArray(config.networks),
-      logConfig: !config.logConfig
-        ? null
-        : {
-            ...config.logConfig,
-            driver: this.imageMapper.logDriverToProto(config.logConfig.driver),
-            options: this.mapKeyValueToMap(config.logConfig.options),
-          },
+      logConfig:
+        !config.logConfig || config.logConfig.driver === 'none'
+          ? null
+          : {
+              ...config.logConfig,
+              driver: this.imageMapper.logDriverToProto(config.logConfig.driver),
+              options: this.mapKeyValueToMap(config.logConfig.options),
+            },
       networkMode: this.imageMapper.networkModeToProto(config.networkMode),
       restartPolicy: this.imageMapper.restartPolicyToProto(config.restartPolicy),
       labels: this.mapKeyValueToMap(config.dockerLabels),

@@ -3,9 +3,9 @@ name: deploy_external
 on:
   workflow_run:
     workflows:
-      - "product_builder"
+      - 'product_builder'
     branches:
-      - "develop"
+      - 'develop'
     types:
       - completed
 permissions:
@@ -19,4 +19,4 @@ jobs:
     steps:
       - name: Execute dedicated Sunilium instance webhook
         run: |
-          curl -X POST -H 'Authorization: Bearer ${{SUN_DYO_WEBHOOK_TOKEN}}' https://app.dyrectorio.com/api/deployments/8322f763-e611-40c7-a29b-bb21f2fd4822/start
+          curl -X POST -H 'Authorization: Bearer ${{secrets.SUN_DYO_WEBHOOK_TOKEN}}' https://app.dyrectorio.com/api/deployments/8322f763-e611-40c7-a29b-bb21f2fd4822/start
