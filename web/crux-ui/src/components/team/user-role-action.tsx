@@ -85,7 +85,7 @@ const UserRoleAction = (props: UserRoleActionProps) => {
         config={roleUpdateModalConfig}
         title={t('common:areYouSure')}
         className="w-1/4"
-        confirmColor="bg-error-red"
+        confirmColor="bg-warning-orange"
       />
     </div>
   )
