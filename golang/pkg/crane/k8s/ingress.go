@@ -57,8 +57,7 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 	domain := []string{}
 
 	if options.ingressName == "" {
-		domain = append(domain, options.containerName)
-		domain = append(domain, options.namespace)
+		domain = append(domain, options.containerName, options.namespace)
 	} else {
 		domain = append(domain, options.ingressName)
 	}

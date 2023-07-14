@@ -45,8 +45,7 @@ func GetServiceName(instanceConfig *v1.InstanceConfig, containerConfig *v1.Conta
 	domain := []string{}
 
 	if containerConfig.DomainName == "" {
-		domain = append(domain, containerConfig.Container)
-		domain = append(domain, instanceConfig.ContainerPreName)
+		domain = append(domain, containerConfig.Container, instanceConfig.ContainerPreName)
 	} else {
 		domain = append(domain, containerConfig.DomainName)
 	}
