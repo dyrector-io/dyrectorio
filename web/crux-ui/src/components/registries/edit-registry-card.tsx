@@ -6,6 +6,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIconPicker from '@app/elements/dyo-icon-picker'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
@@ -150,9 +151,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
       <DyoLabel className="text-light block">{t('tips.common')}</DyoLabel>
 
       {formik.values.inUse && (
-        <DyoLabel className="mt-2 block" textColor="text-sm text-warning-orange">
-          {t('registryAlreadyInUse')}
-        </DyoLabel>
+        <DyoMessage className="text-xs italic" message={t('registryAlreadyInUse')} messageType="info" />
       )}
 
       <DyoForm className="grid grid-cols-2 gap-8" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>

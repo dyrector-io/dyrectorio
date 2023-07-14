@@ -5,6 +5,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIconPicker from '@app/elements/dyo-icon-picker'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
@@ -90,9 +91,7 @@ const EditStorageCard = (props: EditStorageCardProps) => {
         {editing ? t('common:editName', { name: storage.name }) : t('new')}
       </DyoHeading>
       {formik.values.inUse && (
-        <DyoLabel className="mt-2" textColor="text-sm text-warning-orange">
-          {t('storageAlreadyInUse')}
-        </DyoLabel>
+        <DyoMessage className="text-xs italic" message={t('storageAlreadyInUse')} messageType="info" />
       )}
 
       <DyoForm className="grid grid-cols-2 gap-8" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
