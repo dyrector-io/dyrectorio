@@ -46,7 +46,7 @@ func (d *DeployImageRequest) Strings(appConfig *config.CommonConfiguration) []st
 
 	return []string{
 		// TODO: env
-		fmt.Sprintf("Deployment target: %v\n", appConfig.IngressRootDomain),
+		fmt.Sprintf("Deployment target: %v\n", appConfig.RootDomain),
 		fmt.Sprintf("Image: %v\n", util.JoinV(":", d.ImageName, d.Tag)),
 		fmt.Sprintf("Registry: %v\n", registry),
 		fmt.Sprintf("Container name: %v\n", util.JoinV("-", d.InstanceConfig.ContainerPreName, d.ContainerConfig.Container)),
@@ -153,11 +153,12 @@ type ContainerConfig struct {
 	Expose bool `json:"expose"`
 	// use nginx tls configuration
 	ExposeTLS bool `json:"exposeTls"`
-	// ingress prefix before hostname, `containerName.containerPrefix.<ingress root>` by default, this replaces both before root
-	DomainName string `json:"ingressName"`
+	// Domain name, if defined `<DomainName>.<RootDomain>` otherwise `<ContainerName>.<Prefix>.<RootDomain>`
+	// If RootDomain is empty it's omitted
+	DomainName string `json:"domainName"`
 	// Set endpoint upload limit, default value is: 1m
 	// for docker hosts, this is needs to be bytes: 1000000 ~1m
-	IngressUploadLimit string `json:"ingressUploadLimit"`
+	DomainUploadLimit string `json:"domainUploadLimit"`
 	// if put together with another instances consume their shared configs eg. -common config map, generated from here
 	Shared bool `json:"shared"`
 	// config container is spawned as an initcontainer copying files to a shared volume

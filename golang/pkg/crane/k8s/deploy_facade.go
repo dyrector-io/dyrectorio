@@ -222,7 +222,7 @@ func (d *DeployFacade) Deploy() error {
 				namespace:     d.namespace.name,
 				containerName: d.params.ContainerConfig.Container,
 				ingressName:   d.params.ContainerConfig.DomainName,
-				uploadLimit:   d.params.ContainerConfig.IngressUploadLimit,
+				uploadLimit:   d.params.ContainerConfig.DomainUploadLimit,
 				ports:         d.service.portsBound,
 				tls:           d.params.ContainerConfig.ExposeTLS,
 				proxyHeaders:  d.params.ContainerConfig.ProxyHeaders,

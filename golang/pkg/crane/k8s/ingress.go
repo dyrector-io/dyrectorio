@@ -56,14 +56,15 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 
 	domain := []string{}
 
-	if options.ingressName != "" {
-		domain = append(domain, options.ingressName)
+	if options.ingressName == "" {
+		domain = append(domain, options.containerName)
+		domain = append(domain, options.namespace)
 	} else {
-		domain = append(domain, util.JoinV(".", options.containerName, options.namespace))
+		domain = append(domain, options.ingressName)
 	}
 
-	if ing.appConfig.IngressRootDomain != "" {
-		domain = append(domain, ing.appConfig.IngressRootDomain)
+	if ing.appConfig.RootDomain != "" {
+		domain = append(domain, ing.appConfig.RootDomain)
 	}
 
 	ingressPath := util.JoinV(".", domain...)

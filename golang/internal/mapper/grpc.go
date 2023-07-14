@@ -116,7 +116,7 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		containerConfig.DomainName = cc.Domain.Name
 
 		if cc.Domain.UploadLimit != nil {
-			containerConfig.IngressUploadLimit = *cc.Domain.UploadLimit
+			containerConfig.DomainUploadLimit = *cc.Domain.UploadLimit
 		}
 	}
 

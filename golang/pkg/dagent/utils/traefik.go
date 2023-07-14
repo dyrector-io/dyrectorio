@@ -10,7 +10,7 @@ import (
 const TraefikTrue = "true"
 
 // generating container labels for traefik
-// if Expose is provided we bind 80 and the given ingressName + ingressHost
+// if Expose is provided we bind 80 and the given (domainName or (containerName + prefix)) + RootDomain
 func GetTraefikLabels(
 	instanceConfig *v1.InstanceConfig,
 	containerConfig *v1.ContainerConfig,
@@ -33,8 +33,8 @@ func GetTraefikLabels(
 		labels["traefik.http.routers."+serviceName+"-secure.tls.certresolver"] = "le"
 	}
 
-	if containerConfig.IngressUploadLimit != "" {
-		labels["traefik.http.middlewares.limit.buffering.maxRequestBodyBytes"] = containerConfig.IngressUploadLimit
+	if containerConfig.DomainUploadLimit != "" {
+		labels["traefik.http.middlewares.limit.buffering.maxRequestBodyBytes"] = containerConfig.DomainUploadLimit
 	}
 
 	return labels
@@ -44,11 +44,15 @@ func GetTraefikLabels(
 func GetServiceName(instanceConfig *v1.InstanceConfig, containerConfig *v1.ContainerConfig, cfg *config.Configuration) string {
 	domain := []string{}
 
-	domain = append(domain, util.Fallback(containerConfig.DomainName, containerConfig.Container))
+	if containerConfig.DomainName == "" {
+		domain = append(domain, containerConfig.Container)
+		domain = append(domain, instanceConfig.ContainerPreName)
+	} else {
+		domain = append(domain, containerConfig.DomainName)
+	}
 
-	// TODO(@robot9706): Is IngressRootDomain used?
-	if cfg.IngressRootDomain != "" {
-		domain = append(domain, cfg.IngressRootDomain)
+	if cfg.RootDomain != "" {
+		domain = append(domain, cfg.RootDomain)
 	}
 
 	return util.JoinV(".", domain...)
