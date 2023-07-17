@@ -6,7 +6,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
-import { defaultApiErrorHandler } from '@app/errors'
+import { apiErrorHandler, defaultTranslator } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { CreateDeployment, Deployment, DyoApiError, DyoNode, projectNameToDeploymentPrefix } from '@app/models'
 import { API_DEPLOYMENTS, API_NODES } from '@app/routes'
@@ -32,7 +32,21 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
   const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(API_NODES, fetcher)
 
-  const handleApiError = defaultApiErrorHandler(t)
+  const handleApiError = apiErrorHandler((stringId: string, status: number, dto: DyoApiError) => {
+    onAdd(dto.value)
+
+    if (dto.error === 'rollingVersionDeployment') {
+      return {
+        toast: dto.description,
+        toastOptions: {
+          className: '!bg-warning-orange',
+          duration: 5000,
+        },
+      }
+    }
+
+    return defaultTranslator(t)(stringId, status, dto)
+  })
 
   const formik = useDyoFormik({
     initialValues: {
@@ -59,9 +73,6 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       } else if (res.status === 409) {
         // Handle preparing deployment exists or rolling version has deployment errors
         handleApiError(res.clone())
-
-        const dto = (await res.json()) as DyoApiError
-        onAdd(dto.value)
       } else {
         handleApiError(res, setFieldError)
       }
