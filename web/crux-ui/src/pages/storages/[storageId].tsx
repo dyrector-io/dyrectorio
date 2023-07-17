@@ -52,7 +52,7 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
 
   const pageLink: BreadcrumbLink = {
     name: t('common:storages'),
-    url: ROUTE_REGISTRIES,
+    url: ROUTE_STORAGES,
   }
 
   return (
