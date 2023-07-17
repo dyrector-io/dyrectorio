@@ -449,6 +449,30 @@ export default class TeamService {
     }
   }
 
+  async leaveTeam(teamId: string, identity: Identity, httpRequest: AuthorizedHttpRequest): Promise<void> {
+    await this.auditLoggerService.createHttpAudit('all', httpRequest)
+
+    await this.deleteUserFromTeam(teamId, identity.id)
+
+    const userOnTeams = await this.prisma.usersOnTeams.findFirst({
+      where: {
+        userId: identity.id,
+      },
+      select: {
+        teamId: true,
+      },
+    })
+
+    if (userOnTeams) {
+      await this.activateTeam(
+        {
+          teamId: userOnTeams.teamId,
+        },
+        identity,
+      )
+    }
+  }
+
   async getTeams(identity: Identity): Promise<TeamDto[]> {
     const teams = await this.prisma.team.findMany({
       where: {
