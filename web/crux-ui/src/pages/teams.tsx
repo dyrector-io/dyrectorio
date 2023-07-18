@@ -4,23 +4,24 @@ import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
 import EditTeamCard from '@app/components/team/edit-team-card'
 import TeamCard from '@app/components/team/team-card'
-import { Team, UserMeta } from '@app/models'
-import { API_TEAMS, API_USERS_ME, ROUTE_INDEX, ROUTE_TEAMS } from '@app/routes'
-import { redirectTo, withContextAuthorization } from '@app/utils'
-import { getCruxFromContext, postCruxFromContext } from '@server/crux-api'
+import useTeamRoutes from '@app/hooks/use-team-routes'
+import { Team } from '@app/models'
+import { API_TEAMS, ROUTE_TEAMS } from '@app/routes'
+import { withContextAuthorization } from '@app/utils'
+import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRef, useState } from 'react'
 
 interface TeamsPageProps {
-  me: UserMeta
   teams: Team[]
 }
 
 const TeamsPage = (props: TeamsPageProps) => {
-  const { me, teams: propsTeams } = props
+  const { teams: propsTeams } = props
 
   const { t } = useTranslation('teams')
+  const routes = useTeamRoutes()
 
   const [teams, setTeams] = useState(propsTeams)
   const [creating, setCreating] = useState(false)
@@ -46,7 +47,7 @@ const TeamsPage = (props: TeamsPageProps) => {
       {!creating ? null : <EditTeamCard className="mb-8 px-8 py-6" submitRef={submitRef} onTeamEdited={onCreated} />}
 
       {teams.map((team, index) => (
-        <TeamCard key={`team-${index}`} className="my-2" team={team} highlighted={team.id === me.activeTeamId} />
+        <TeamCard key={`team-${index}`} className="my-2" team={team} highlighted={team.slug === routes?.teamSlug} />
       ))}
     </Layout>
   )
@@ -55,16 +56,10 @@ const TeamsPage = (props: TeamsPageProps) => {
 export default TeamsPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const me = await postCruxFromContext<UserMeta>(context, API_USERS_ME)
-  if (!me.activeTeamId) {
-    return redirectTo(ROUTE_INDEX)
-  }
-
   const teams = await getCruxFromContext<Team[]>(context, API_TEAMS)
 
   return {
     props: {
-      me,
       teams,
     },
   }

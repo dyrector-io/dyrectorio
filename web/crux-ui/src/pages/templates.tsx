@@ -6,9 +6,10 @@ import TemplateCard from '@app/components/templates/template-card'
 import DyoButton from '@app/elements/dyo-button'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { Template } from '@app/models'
-import { API_TEMPLATES, projectUrl, ROUTE_TEMPLATES } from '@app/routes'
+import { API_TEMPLATES, ROUTE_TEMPLATES } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
+import { TEAM_ROUTES } from 'e2e/utils/common'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -42,7 +43,7 @@ const TemplatesPage = (props: TemplatesPageProps) => {
 
   const onTemplateApplied = async projectId => {
     setApplying(null)
-    await router.push(projectUrl(projectId))
+    await router.push(TEAM_ROUTES.project.details(projectId))
   }
 
   return (

@@ -3,7 +3,7 @@ import { SingleFormLayout } from '@app/components/layout'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DEFAULT_SERVICE_INFO, DyoServiceInfo } from '@app/models'
-import { API_STATUS, ROUTE_DASHBOARD } from '@app/routes'
+import { API_STATUS, ROUTE_INDEX } from '@app/routes'
 import { fetcher } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -15,7 +15,7 @@ const StatusPage = () => {
 
   const { data: status, error } = useSWR<DyoServiceInfo, any>(API_STATUS, fetcher)
 
-  const navigateToDashboard = async () => await router.push(ROUTE_DASHBOARD)
+  const navigateToIndex = async () => await router.push(ROUTE_INDEX)
 
   if (error) {
     console.error(error)
@@ -48,7 +48,7 @@ const StatusPage = () => {
       </div>
 
       <div className="flex flex-row mb-auto mt-12">
-        <DyoButton className="px-12" outlined onClick={navigateToDashboard}>
+        <DyoButton className="px-12" outlined onClick={navigateToIndex}>
           {t('common:dashboard')}
         </DyoButton>
       </div>

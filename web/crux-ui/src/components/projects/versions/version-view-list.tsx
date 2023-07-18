@@ -3,8 +3,8 @@ import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { DeleteImageMessage, VersionImage, WS_TYPE_DELETE_IMAGE } from '@app/models'
-import { imageConfigUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -22,6 +22,7 @@ const VersionViewList = (props: VersionViewListProps) => {
   const { state, actions } = props
 
   const { t } = useTranslation('images')
+  const routes = useTeamRoutes()
 
   const [deleteModal, confirmDelete] = useConfirmation()
   const [tagsModalTarget, setTagsModalTarget] = useState<VersionImage>(null)
@@ -87,7 +88,7 @@ const VersionViewList = (props: VersionViewListProps) => {
           onClick={() => onDelete(item)}
         />
       </div>
-      <Link href={imageConfigUrl(state.projectId, state.version.id, item.id)} passHref>
+      <Link href={routes.project.versions(state.projectId).imageDetails(state.version.id, item.id)} passHref>
         <DyoIcon src="/settings.svg" alt={t('common:settings')} size="md" />
       </Link>
     </div>,

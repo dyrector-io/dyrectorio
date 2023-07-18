@@ -359,7 +359,7 @@ export const withContextAuthorization =
       return redirect
     }
 
-    return withContextErrorHandling(getServerSideProps)(context)
+    return await withContextErrorHandling(getServerSideProps)(context)
   }
 
 export const parseStringUnionType = <T>(value: string, fallback: T, validValues: ReadonlyArray<T>): T => {

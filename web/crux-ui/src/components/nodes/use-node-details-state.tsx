@@ -1,6 +1,7 @@
 import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { FilterConfig, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   Container,
@@ -17,7 +18,6 @@ import {
   WS_TYPE_DELETE_CONTAINER,
   WS_TYPE_WATCH_CONTAINERS_STATE,
 } from '@app/models'
-import { nodeWsUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
@@ -55,12 +55,13 @@ export type NodeDetailsStateOptions = {
 
 const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsState, NodeDetailsActions] => {
   const { t } = useTranslation('common')
+  const routes = useTeamRoutes()
 
   const [section, setSection] = useState<NodeDetailsSection>('containers')
   const [node, setNode] = useNodeState(options.node)
   const [confirmationModal, confirm] = useConfirmation()
 
-  const sock = useWebSocket(nodeWsUrl(node.id))
+  const sock = useWebSocket(routes.node.detailsSocket(node.id))
 
   const onNodeEdited = (newNode: NodeDetails, shouldClose?: boolean) => {
     if (shouldClose) {

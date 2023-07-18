@@ -2,13 +2,13 @@ import {
   Body,
   Controller,
   Delete,
+  ExecutionContext,
   Get,
   HttpCode,
   HttpStatus,
   Param,
   Post,
   Put,
-  Request,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
@@ -27,9 +27,11 @@ import {
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
+import { Context } from 'src/decorators/context.decorator'
+import { DisableTeamAccessGuard } from 'src/guards/team-access.guard'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
-import { AuthorizedHttpRequest, IdentityFromRequest } from '../token/jwt-auth.guard'
+import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import TeamGuard, { TeamRoleRequired } from './guards/team.guard'
 import TeamInviteUserValitationInterceptor from './interceptors/team.invite.interceptor'
 import TeamReinviteUserValidationInterceptor from './interceptors/team.reinvite.interceptor'
@@ -50,6 +52,7 @@ const ROUTE_USER_ID = ':userId'
 
 @Controller(ROUTE_TEAMS)
 @ApiTags(ROUTE_TEAMS)
+@DisableTeamAccessGuard()
 @UseGuards(TeamGuard)
 export default class TeamHttpController {
   constructor(private service: TeamService) {}
@@ -106,9 +109,9 @@ export default class TeamHttpController {
   async createTeam(
     @Body() request: CreateTeamDto,
     @IdentityFromRequest() identity: Identity,
-    @Request() httpRequest: AuthorizedHttpRequest,
+    @Context() context: ExecutionContext,
   ): Promise<CreatedResponse<TeamDto>> {
-    const team = await this.service.createTeam(request, identity, httpRequest)
+    const team = await this.service.createTeam(request, identity, context)
 
     return {
       url: `/${ROUTE_TEAMS}/${team.id}`,

@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable import/no-cycle */
 import { ATTRIB_CSRF, HEADER_SET_COOKIE } from '@app/const'
+import { TeamRoutes } from '@app/routes'
 import { findAttributes } from '@app/utils'
 import {
   Configuration,
@@ -18,9 +19,12 @@ export const MAILSLURPER_TIMEOUT = 30000 // millis
 export const USER_EMAIL = 'john.doe@example.com'
 export const USER_PASSWORD = 'TestPw23233'
 export const USER_TEAM = "John's Team"
+export const USER_TEAM_SLUG = 'JOT'
 export const USER_FIRSTNAME = 'John'
 export const USER_LASTNAME = 'Doe'
 export const USER_FULLNAME = `${USER_FIRSTNAME} ${USER_LASTNAME}`
+
+export const TEAM_ROUTES = new TeamRoutes(USER_TEAM_SLUG)
 
 export const DAGENT_NODE = 'dagent-deployable'
 export const SCREENSHOTS_FOLDER = 'screenshots'

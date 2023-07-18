@@ -2,15 +2,10 @@ import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { WsAuthorize, WsMessage } from 'src/websockets/common'
-import {
-  UseGlobalWsFilters,
-  UseGlobalWsGuards,
-  UseGlobalWsInterceptors,
-} from 'src/websockets/decorators/ws.gateway.decorators'
+import { UseGlobalWsFilters, UseGlobalWsGuards } from 'src/websockets/decorators/ws.gateway.decorators'
 import WsParam from 'src/websockets/decorators/ws.param.decorator'
 import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
-import WsRedirectInterceptor from 'src/websockets/interceptors/ws.redirect.interceptor'
-import TeamService from '../team/team.service'
+import TeamRepository from '../team/team.repository'
 import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import RegistryClientProvider from './registry-client.provider'
 import {
@@ -20,29 +15,32 @@ import {
   RegistryImageTagsMessage,
 } from './registry.message'
 
-const TeamId = () => WsParam('teamId')
+const TeamSlug = () => WsParam('teamSlug')
 
 @WebSocketGateway({
-  namespace: 'teams/:teamId/registries',
-  redirectFrom: '/registries',
+  namespace: ':teamSlug/registries',
 })
 @UseGlobalWsFilters()
 @UseGlobalWsGuards()
-@UseGlobalWsInterceptors(WsRedirectInterceptor)
 export default class RegistryWebSocketGateway {
-  constructor(private readonly registryClients: RegistryClientProvider, private readonly teamService: TeamService) {}
+  constructor(
+    private readonly registryClients: RegistryClientProvider,
+    private readonly teamRepository: TeamRepository,
+  ) {}
 
   @WsAuthorize()
-  async onAuthorize(@TeamId() teamId: string, @IdentityFromSocket() identity: Identity): Promise<boolean> {
-    return await this.teamService.checkUserActiveTeam(teamId, identity)
+  async onAuthorize(@TeamSlug() teamSlug: string, @IdentityFromSocket() identity: Identity): Promise<boolean> {
+    return await this.teamRepository.userIsInTeam(teamSlug, identity.id)
   }
 
   @AuditLogLevel('disabled')
   @SubscribeMessage('find-image')
   async findImage(
-    @TeamId() teamId: string,
+    @TeamSlug() teamSlug: string,
     @SocketMessage() message: FindImageMessage,
   ): Promise<WsMessage<FindImageResultMessage>> {
+    const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
+
     const api = await this.registryClients.getByRegistryId(teamId, message.registryId)
     const images = await api.catalog(message.filter)
 
@@ -62,9 +60,11 @@ export default class RegistryWebSocketGateway {
   @AuditLogLevel('disabled')
   @SubscribeMessage('fetch-image-tags')
   async fetchImageTags(
-    @TeamId() teamId: string,
+    @TeamSlug() teamSlug: string,
     @SocketMessage() message: FetchImageTagsMessage,
   ): Promise<WsMessage<RegistryImageTagsMessage>> {
+    const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
+
     const api = await this.registryClients.getByRegistryId(teamId, message.registryId)
     const tags = message.images.map(it => api.tags(it))
 

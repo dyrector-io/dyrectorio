@@ -14,17 +14,12 @@ export default class AuditService {
     private readonly kratos: KratosService,
   ) {}
 
-  async getAuditLog(query: AuditLogQueryDto, identity: Identity): Promise<AuditLogListDto> {
+  async getAuditLog(teamSlug: string, query: AuditLogQueryDto): Promise<AuditLogListDto> {
     const { skip, take, from, to } = query
 
     const where: Prisma.AuditLogWhereInput = {
       team: {
-        users: {
-          some: {
-            userId: identity.id,
-            active: true,
-          },
-        },
+        slug: teamSlug,
       },
       AND: {
         createdAt: {

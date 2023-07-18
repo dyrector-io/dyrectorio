@@ -19,16 +19,25 @@ export type InviteUser = {
   captcha?: string
 }
 
-export type UserMeta = {
-  user: User
-  activeTeamId?: string
-  teams: UserMetaTeam[]
-  invitations: UserMetaTeam[]
-}
-
-export type UserMetaTeam = {
+export type UserMetaUser = {
   id: string
   name: string
+}
+
+export type UserMetaBasicTeam = {
+  id: string
+  name: string
+}
+
+export type UserMetaTeam = UserMetaBasicTeam & {
+  slug: string
+  role: UserRole
+}
+
+export type UserMeta = {
+  user: UserMetaUser
+  teams: UserMetaTeam[]
+  invitations: UserMetaBasicTeam[]
 }
 
 export type ActivateTeam = {
@@ -50,8 +59,8 @@ export const roleToText = (role: UserRole) => {
   }
 }
 
-export const activeTeamOf = (meta: UserMeta): UserMetaTeam => {
-  const team = meta.teams.find(it => it.id === meta.activeTeamId)
+export const activeTeamOf = (meta: UserMeta, teamSlug: string): UserMetaTeam => {
+  const team = meta.teams.find(it => it.slug === teamSlug)
   return team
 }
 

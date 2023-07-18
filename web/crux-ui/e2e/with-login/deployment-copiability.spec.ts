@@ -1,7 +1,6 @@
 import { ProjectType } from '@app/models'
-import { deploymentUrl, imageConfigUrl, ROUTE_DEPLOYMENTS, versionWsUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
-import { NGINX_TEST_IMAGE_WITH_TAG, waitForURLExcept } from '../utils/common'
+import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, waitForURLExcept } from '../utils/common'
 import { deployWithDagent } from '../utils/node-helper'
 import { createNode } from '../utils/nodes'
 import {
@@ -40,7 +39,7 @@ test.describe('Versionless Project', () => {
     await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
     await addDeploymentToVersionlessProject(page, projectId, nodeName, prefix)
 
-    await page.goto(ROUTE_DEPLOYMENTS)
+    await page.goto(TEAM_ROUTES.deployment.list())
 
     const copyButton = await page.locator(`[alt="Copy"]:right-of(div:has-text("${projectName}"))`).first()
     await copyButton.click()
@@ -67,7 +66,7 @@ test.describe('Versionless Project', () => {
     await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
     const { id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefix)
 
-    await page.goto(deploymentUrl(deploymentId))
+    await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
     const copyButton = page.locator('button:has-text("Copy")')
     await copyButton.click()
@@ -77,7 +76,7 @@ test.describe('Versionless Project', () => {
 
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
-    await waitForURLExcept(page, { startsWith: `${ROUTE_DEPLOYMENTS}/`, except: currentUrl })
+    await waitForURLExcept(page, { startsWith: `${TEAM_ROUTES.deployment.list()}/`, except: currentUrl })
 
     await expect(await page.locator('.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
@@ -92,7 +91,7 @@ test.describe('Versionless Project', () => {
     await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
     const { id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefix)
 
-    await page.goto(deploymentUrl(deploymentId))
+    await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
     const copyButton = page.locator('button:has-text("Copy")')
     await copyButton.click()
@@ -102,7 +101,7 @@ test.describe('Versionless Project', () => {
 
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
-    await waitForURLExcept(page, { startsWith: `${ROUTE_DEPLOYMENTS}/`, except: currentUrl })
+    await waitForURLExcept(page, { startsWith: `${TEAM_ROUTES.deployment.list()}/`, except: currentUrl })
 
     await expect(await page.locator('.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
@@ -119,7 +118,7 @@ test.describe('Versioned Project', () => {
     await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
     await addDeploymentToVersion(page, projectId, versionId, prefix)
 
-    await page.goto(ROUTE_DEPLOYMENTS)
+    await page.goto(TEAM_ROUTES.deployment.list())
 
     const copyButton = await page.locator(`[alt="Copy"]:right-of(div:has-text("${projectName}"))`).first()
     await copyButton.click()
@@ -147,7 +146,7 @@ test.describe('Versioned Project', () => {
     await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
     const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, nodeName, prefix)
-    await page.goto(deploymentUrl(deploymentId))
+    await page.goto(routes.deployment.details(deploymentId))
 
     const copyButton = page.locator('button:has-text("Copy")')
     await copyButton.click()
@@ -157,7 +156,7 @@ test.describe('Versioned Project', () => {
 
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
-    await waitForURLExcept(page, { startsWith: `${ROUTE_DEPLOYMENTS}/`, except: currentUrl })
+    await waitForURLExcept(page, { startsWith: `${TEAM_ROUTES.deployment.list()}/`, except: currentUrl })
 
     await expect(await page.locator('.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
@@ -172,7 +171,7 @@ test.describe('Versioned Project', () => {
     await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
     const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, nodeName, prefix)
 
-    await page.goto(deploymentUrl(deploymentId))
+    await page.goto(routes.deployment.details(deploymentId))
 
     const copyButton = await page.locator('button:has-text("Copy")')
     await copyButton.click()
@@ -182,7 +181,7 @@ test.describe('Versioned Project', () => {
 
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
-    await waitForURLExcept(page, { startsWith: `${ROUTE_DEPLOYMENTS}/`, except: currentUrl })
+    await waitForURLExcept(page, { startsWith: `${TEAM_ROUTES.deployment.list()}/`, except: currentUrl })
 
     await expect(await page.locator('.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
@@ -196,9 +195,9 @@ test.describe('Versioned Project', () => {
     const imageId = await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     const editorButton = await page.waitForSelector('button:has-text("JSON")')
     await editorButton.click()
@@ -225,7 +224,7 @@ test.describe('Versioned Project', () => {
 
     const deploymentId = await deployWithDagent(page, 'versioned-copiability-inprogress', projectId, versionId, true)
 
-    await page.goto(deploymentUrl(deploymentId))
+    await page.goto(routes.deployment.details(deploymentId))
 
     await expect(await page.getByText('In progress')).toHaveCount(1)
     await expect(await page.locator('button:has-text("Delete")')).toHaveCount(0)

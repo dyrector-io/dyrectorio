@@ -11,16 +11,11 @@ import ProjectMapper from './project.mapper'
 export default class ProjectService {
   constructor(private teamRepository: TeamRepository, private prisma: PrismaService, private mapper: ProjectMapper) {}
 
-  async getProjects(identity: Identity): Promise<ProjectListItemDto[]> {
+  async getProjects(teamSlug: string): Promise<ProjectListItemDto[]> {
     const projects = await this.prisma.project.findMany({
       where: {
         team: {
-          users: {
-            some: {
-              userId: identity.id,
-              active: true,
-            },
-          },
+          slug: teamSlug,
         },
       },
       include: {
@@ -67,15 +62,15 @@ export default class ProjectService {
     return this.mapper.detailsToDto({ ...project, deletable: projectInProgressDeployments === 0 })
   }
 
-  async createProject(request: CreateProjectDto, identity: Identity): Promise<ProjectListItemDto> {
-    const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
+  async createProject(teamSlug: string, request: CreateProjectDto, identity: Identity): Promise<ProjectListItemDto> {
+    const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
     const project = await this.prisma.project.create({
       data: {
         name: request.name,
         description: request.description,
         type: request.type,
-        teamId: team.teamId,
+        teamId,
         createdBy: identity.id,
         versions:
           request.type === ProjectTypeEnum.versionless

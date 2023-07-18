@@ -29,6 +29,7 @@ const EditTeamCard = (props: EditTeamCardProps) => {
     propsTeam ?? {
       id: null,
       name: '',
+      slug: '',
       statistics: DEFAULT_TEAM_STATISTICS,
     },
   )
@@ -40,6 +41,7 @@ const EditTeamCard = (props: EditTeamCardProps) => {
   const formik = useDyoFormik({
     initialValues: {
       name: team.name,
+      slug: team.slug,
     },
     validationSchema: !editing ? createTeamSchema : updateTeamSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {

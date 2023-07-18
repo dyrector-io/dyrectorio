@@ -8,8 +8,8 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateStorage, Storage, StorageDetails, UpdateStorage } from '@app/models'
-import { API_STORAGES, storageApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { storageSchema } from '@app/validations/storage'
 import useTranslation from 'next-translate/useTranslation'
@@ -26,6 +26,7 @@ const EditStorageCard = (props: EditStorageCardProps) => {
   const { className, storage: propsStorage, onStorageEdited, submitRef } = props
 
   const { t } = useTranslation('storages')
+  const routes = useTeamRoutes()
 
   const [storage, setStorage] = useState<StorageDetails>(
     propsStorage ?? {
@@ -57,8 +58,8 @@ const EditStorageCard = (props: EditStorageCardProps) => {
       }
 
       const res = await (!editing
-        ? sendForm('POST', API_STORAGES, body as CreateStorage)
-        : sendForm('PUT', storageApiUrl(storage.id), body as UpdateStorage))
+        ? sendForm('POST', routes.storage.api.list(), body as CreateStorage)
+        : sendForm('PUT', routes.storage.api.details(storage.id), body as UpdateStorage))
 
       if (res.ok) {
         let result: StorageDetails

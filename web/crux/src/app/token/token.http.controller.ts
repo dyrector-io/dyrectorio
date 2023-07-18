@@ -20,6 +20,7 @@ import { IdentityFromRequest } from './jwt-auth.guard'
 import TokenValidationPipe from './pipes/token.pipe'
 import { GenerateTokenDto, GeneratedTokenDto, TokenDto } from './token.dto'
 import TokenService from './token.service'
+import { DisableTeamAccessGuard } from 'src/guards/team-access.guard'
 
 const PARAM_TOKEN_ID = 'tokenId'
 const TokenId = () => Param(PARAM_TOKEN_ID)
@@ -30,6 +31,7 @@ const ROUTE_TOKEN_ID = ':tokenId'
 @Controller(ROUTE_TOKENS)
 @ApiTags(ROUTE_TOKENS)
 @UseGuards(TokenAccessGuard)
+@DisableTeamAccessGuard()
 export default class TokenHttpController {
   constructor(private service: TokenService) {}
 

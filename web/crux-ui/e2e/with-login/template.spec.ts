@@ -1,4 +1,4 @@
-import { projectUrl } from '@app/routes'
+import { routes } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
 import { createProjectFromTemplate } from '../utils/templates'
 
@@ -37,7 +37,7 @@ const testVersionlessTemplate = async (
 ): Promise<string> => {
   const projectId = await createProjectFromTemplate(page, templateName, projectName, 'versionless')
 
-  await expect(page).toHaveURL(projectUrl(projectId))
+  await expect(page).toHaveURL(routes.project.details(projectId))
 
   const imageTableBody = await page.locator('.table-row-group')
   const imageRows = await imageTableBody.locator('.table-row')
@@ -54,10 +54,10 @@ const testVersionedTemplate = async (
 ): Promise<string> => {
   const projectId = await createProjectFromTemplate(page, templateName, projectName, 'versioned')
 
-  await expect(page).toHaveURL(projectUrl(projectId))
+  await expect(page).toHaveURL(routes.project.details(projectId))
 
   await page.locator('text="Images"').click()
-  await page.waitForURL(`${projectUrl(projectId)}/versions/**`)
+  await page.waitForURL(`${routes.project.details(projectId)}/versions/**`)
 
   const imageTableBody = await page.locator('.table-row-group')
   const imageRows = await imageTableBody.locator('.table-row')

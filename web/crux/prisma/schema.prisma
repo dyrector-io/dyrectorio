@@ -10,12 +10,13 @@ datasource db {
 }
 
 model Team {
-  id        String    @id @default(uuid()) @db.Uuid
-  name      String    @unique @db.VarChar(70)
-  createdAt DateTime  @default(now()) @db.Timestamptz(6)
-  createdBy String    @db.Uuid
-  updatedAt DateTime  @updatedAt @db.Timestamptz(6)
-  updatedBy String?   @db.Uuid
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(70)
+  slug      String   @unique @db.VarChar(16)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  createdBy String   @db.Uuid
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  updatedBy String?  @db.Uuid
 
   registries    Registry[]
   projects      Project[]
@@ -58,7 +59,6 @@ model UserInvitation {
 
 model UsersOnTeams {
   userId String       @db.Uuid
-  active Boolean      @default(false)
   role   UserRoleEnum
   teamId String       @db.Uuid
   team   Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
@@ -390,7 +390,7 @@ model AuditLog {
   event             String
   data              Json?
 
-  team            Team            @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  team            Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
   deploymentToken DeploymentToken? @relation(fields: [deploymentTokenId], references: [id], onDelete: SetNull) // is it ok on SetNull
 }
 
@@ -507,12 +507,12 @@ enum AgentEventTypeEnum {
 }
 
 model Storage {
-  id          String    @id @default(uuid()) @db.Uuid
-  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
-  createdBy   String    @db.Uuid
-  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
-  updatedBy   String?   @db.Uuid
-  name        String    @db.VarChar(70)
+  id          String   @id @default(uuid()) @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  createdBy   String   @db.Uuid
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  updatedBy   String?  @db.Uuid
+  name        String   @db.VarChar(70)
   description String?
   icon        String?
   url         String

@@ -32,13 +32,16 @@ import StorageDeleteValidationInterceptor from './interceptors/storage.delete.in
 import { CreateStorageDto, StorageDetailsDto, StorageDto, StorageOptionDto, UpdateStorageDto } from './storage.dto'
 import StorageService from './storage.service'
 
+const PARAM_TEAM_SLUG = 'teamSlug'
 const PARAM_STORAGE_ID = 'storageId'
+const TeamSlug = () => Param(PARAM_TEAM_SLUG)
 const StorageId = () => Param(PARAM_STORAGE_ID)
 
+const ROUTE_TEAM_SLUG = ':teamSlug'
 const ROUTE_STORAGES = 'storages'
 const ROUTE_STORAGE_ID = ':storageId'
 
-@Controller(ROUTE_STORAGES)
+@Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_STORAGES}`)
 @ApiTags(ROUTE_STORAGES)
 @UseGuards(StorageTeamAccessGuard)
 export default class StorageHttpController {
@@ -56,8 +59,8 @@ export default class StorageHttpController {
     description: 'List of storages.',
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for storages.' })
-  async getStorages(@IdentityFromRequest() identity: Identity): Promise<StorageDto[]> {
-    return this.service.getStorages(identity)
+  async getStorages(@TeamSlug() teamSlug: string): Promise<StorageDto[]> {
+    return this.service.getStorages(teamSlug)
   }
 
   @Get('options')
@@ -74,8 +77,8 @@ export default class StorageHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for storage options.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for storage options.' })
   @ApiNotFoundResponse({ description: 'Storage options not found.' })
-  async getStorageOptions(@IdentityFromRequest() identity: Identity): Promise<StorageOptionDto[]> {
-    return this.service.getStorageOptions(identity)
+  async getStorageOptions(@TeamSlug() teamSlug: string): Promise<StorageOptionDto[]> {
+    return this.service.getStorageOptions(teamSlug)
   }
 
   @Get(ROUTE_STORAGE_ID)
@@ -108,13 +111,14 @@ export default class StorageHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for storage creation.' })
   @ApiConflictResponse({ description: 'Storage name taken.' })
   async createStorage(
+    @TeamSlug() teamSlug: string,
     @Body() request: CreateStorageDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreatedResponse<StorageDetailsDto>> {
-    const storage = await this.service.createStorage(request, identity)
+    const storage = await this.service.createStorage(teamSlug, request, identity)
 
     return {
-      url: `/storages/${storage.id}`,
+      url: `${ROUTE_TEAM_SLUG}/storages/${storage.id}`,
       body: storage,
     }
   }

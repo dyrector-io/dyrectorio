@@ -1,24 +1,19 @@
 import { Injectable } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
 import { Identity } from '@ory/kratos-client'
+import PrismaService from 'src/services/prisma.service'
 import TeamRepository from '../team/team.repository'
-import StorageMapper from './storage.mapper'
 import { CreateStorageDto, StorageDetailsDto, StorageDto, StorageOptionDto, UpdateStorageDto } from './storage.dto'
+import StorageMapper from './storage.mapper'
 
 @Injectable()
 export default class StorageService {
   constructor(private teamRepository: TeamRepository, private prisma: PrismaService, private mapper: StorageMapper) {}
 
-  async getStorages(identity: Identity): Promise<StorageDto[]> {
+  async getStorages(teamSlug: string): Promise<StorageDto[]> {
     const storages = await this.prisma.storage.findMany({
       where: {
         team: {
-          users: {
-            some: {
-              userId: identity.id,
-              active: true,
-            },
-          },
+          slug: teamSlug,
         },
       },
     })
@@ -44,8 +39,8 @@ export default class StorageService {
     return this.mapper.detailsToDto(storage)
   }
 
-  async createStorage(req: CreateStorageDto, identity: Identity): Promise<StorageDetailsDto> {
-    const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
+  async createStorage(teamSlug: string, req: CreateStorageDto, identity: Identity): Promise<StorageDetailsDto> {
+    const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
     const storage = await this.prisma.storage.create({
       data: {
@@ -55,7 +50,7 @@ export default class StorageService {
         url: req.url,
         accessKey: req.accessKey,
         secretKey: req.secretKey,
-        teamId: team.teamId,
+        teamId,
         createdBy: identity.id,
       },
     })
@@ -94,16 +89,11 @@ export default class StorageService {
     })
   }
 
-  async getStorageOptions(identity: Identity): Promise<StorageOptionDto[]> {
+  async getStorageOptions(teamSlug: string): Promise<StorageOptionDto[]> {
     const storages = await this.prisma.storage.findMany({
       where: {
         team: {
-          users: {
-            some: {
-              userId: identity.id,
-              active: true,
-            },
-          },
+          slug: teamSlug,
         },
       },
       select: {

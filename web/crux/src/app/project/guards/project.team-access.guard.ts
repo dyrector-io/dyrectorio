@@ -8,24 +8,18 @@ export default class ProjectTeamAccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest()
+    const teamSlug = req.params.teamSlug as string
     const projectId = req.params.projectId as string
 
     if (!projectId) {
       return true
     }
 
-    const identity = identityOfRequest(context)
-
     const projects = await this.prisma.project.count({
       where: {
         id: projectId,
         team: {
-          users: {
-            some: {
-              userId: identity.id,
-              active: true,
-            },
-          },
+          slug: teamSlug,
         },
       },
     })

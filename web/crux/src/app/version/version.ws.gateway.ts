@@ -1,16 +1,16 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { WsAuthorize, WsClient, WsMessage, WsSubscribe, WsSubscription, WsUnsubscribe } from 'src/websockets/common'
 import SocketClient from 'src/websockets/decorators/ws.client.decorator'
-import WsParam from 'src/websockets/decorators/ws.param.decorator'
-import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
-import SocketSubscription from 'src/websockets/decorators/ws.subscription.decorator'
 import {
   UseGlobalWsFilters,
   UseGlobalWsGuards,
   UseGlobalWsInterceptors,
 } from 'src/websockets/decorators/ws.gateway.decorators'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
+import WsParam from 'src/websockets/decorators/ws.param.decorator'
+import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
+import SocketSubscription from 'src/websockets/decorators/ws.subscription.decorator'
 import {
   EditorInitMessage,
   EditorLeftMessage,
@@ -47,12 +47,13 @@ import {
 import VersionService from './version.service'
 
 const VersionId = () => WsParam('versionId')
+const TeamSlug = () => WsParam('teamSlug')
 
 // TODO(@m8vago): make an event aggregator for image updates patches etc
 // so subscribers will be notified of the changes regardless of the transport platform
 
 @WebSocketGateway({
-  namespace: 'versions/:versionId',
+  namespace: ':teamSlug/versions/:versionId',
 })
 @UseGlobalWsFilters()
 @UseGlobalWsGuards()
@@ -65,8 +66,12 @@ export default class VersionWebSocketGateway {
   ) {}
 
   @WsAuthorize()
-  async onAuthorize(@VersionId() versionId: string, @IdentityFromSocket() identity: Identity): Promise<boolean> {
-    return await this.service.checkVersionIsInTheActiveTeam(versionId, identity)
+  async onAuthorize(
+    @TeamSlug() teamSlug,
+    @VersionId() versionId: string,
+    @IdentityFromSocket() identity: Identity,
+  ): Promise<boolean> {
+    return await this.service.checkVersionIsInTeam(teamSlug, versionId, identity)
   }
 
   @WsSubscribe()

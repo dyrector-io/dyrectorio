@@ -8,8 +8,8 @@ import DyoTextArea from '@app/elements/dyo-text-area'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateProject, EditableProject, Project, UpdateProject } from '@app/models'
-import { API_PROJECTS, projectApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createProjectSchema, updateProjectSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
@@ -23,9 +23,10 @@ interface EditProjectCardProps {
 }
 
 const EditProjectCard = (props: EditProjectCardProps) => {
-  const { project: propsProject, className, onProjectEdited, submitRef } = props
-
   const { t } = useTranslation('projects')
+  const routes = useTeamRoutes()
+
+  const { project: propsProject, className, onProjectEdited, submitRef } = props
 
   const [project, setProject] = useState<EditableProject>(
     propsProject ?? {
@@ -57,8 +58,8 @@ const EditProjectCard = (props: EditProjectCardProps) => {
       }
 
       const res = await (!editing
-        ? sendForm('POST', API_PROJECTS, body as CreateProject)
-        : sendForm('PUT', projectApiUrl(project.id), body as UpdateProject))
+        ? sendForm('POST', routes.project.api.list(), body as CreateProject)
+        : sendForm('PUT', routes.project.api.details(project.id), body as UpdateProject))
 
       if (res.ok) {
         let result: Project

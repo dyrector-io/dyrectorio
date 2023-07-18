@@ -4,8 +4,8 @@ import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoImgButton from '@app/elements/dyo-img-button'
 import DyoTag from '@app/elements/dyo-tag'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Version } from '@app/models'
-import { versionUrl } from '@app/routes'
 import { auditToLocaleDate } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -27,6 +27,7 @@ const VersionCard = (props: VersionCardProps) => {
   const { className, projectId, version, onClick, href, disabled, onIncreaseClick, onSetAsDefaultClick } = props
 
   const { t } = useTranslation('versions')
+  const routes = useTeamRoutes()
 
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col flex-grow w-full')}>
@@ -101,7 +102,11 @@ const VersionCard = (props: VersionCardProps) => {
 
       {disabled ? null : (
         <div className="flex flex-row ml-auto mt-auto">
-          <DyoButton className="px-4 mx-2" outlined href={versionUrl(projectId, version.id, { section: 'images' })}>
+          <DyoButton
+            className="px-4 mx-2"
+            outlined
+            href={routes.project.versions(projectId).details(version.id, { section: 'images' })}
+          >
             <div className="flex flex-row items-center gap-2">
               <Image className="aspect-square" src="/images.svg" alt={t('images')} width={20} height={20} />
               {t('images')}
@@ -111,7 +116,7 @@ const VersionCard = (props: VersionCardProps) => {
           <DyoButton
             className="px-4 mx-2"
             outlined
-            href={versionUrl(projectId, version.id, { section: 'deployments' })}
+            href={routes.project.versions(projectId).details(version.id, { section: 'deployments' })}
           >
             <div className="flex flex-row items-center gap-2">
               <Image className="aspect-square" src="/deployments.svg" alt={t('deployments')} width={20} height={20} />

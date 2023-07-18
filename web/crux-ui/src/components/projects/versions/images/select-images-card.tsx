@@ -8,6 +8,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoList } from '@app/elements/dyo-list'
 import LoadingIndicator from '@app/elements/loading-indicator'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -21,7 +22,6 @@ import {
   WS_TYPE_FIND_IMAGE,
   WS_TYPE_FIND_IMAGE_RESULT,
 } from '@app/models'
-import { API_REGISTRIES, WS_REGISTRIES } from '@app/routes'
 import { fetcher } from '@app/utils'
 import { getValidationError, nameTagSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
@@ -35,11 +35,12 @@ interface SelectImagesCardProps {
 }
 
 const SelectImagesCard = (props: SelectImagesCardProps) => {
+  const { t } = useTranslation('images')
+  const routes = useTeamRoutes()
+
   const { className, onDiscard, onImagesSelected } = props
 
-  const { t } = useTranslation('images')
-
-  const { data: registries, error: fetchRegistriesError } = useSWR<Registry[]>(API_REGISTRIES, fetcher)
+  const { data: registries, error: fetchRegistriesError } = useSWR<Registry[]>(routes.registry.api.list(), fetcher)
   const [searching, setSearching] = useState(false)
   const [registry, setRegistry] = useState<Registry>(registries?.length > 0 ? registries[0] : null)
   const [selected, setSelected] = useState<SelectableImage[]>([])
@@ -50,7 +51,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
 
   const registriesFound = registries?.length > 0
 
-  const sock = useWebSocket(WS_REGISTRIES)
+  const sock = useWebSocket(routes.registry.socket())
 
   sock.on(WS_TYPE_FIND_IMAGE_RESULT, (message: FindImageResultMessage) => {
     if (message.registryId === registry?.id && filterOrName.length >= IMAGE_FILTER_MIN_LENGTH) {

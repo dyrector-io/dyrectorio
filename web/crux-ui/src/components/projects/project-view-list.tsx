@@ -1,8 +1,8 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Project } from '@app/models'
-import { projectUrl } from '@app/routes'
 import { auditToLocaleDate } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -14,9 +14,10 @@ export interface ProjectViewListProps {
 }
 
 const ProjectViewList = (props: ProjectViewListProps) => {
-  const { projects } = props
-
   const { t } = useTranslation('projects')
+  const routes = useTeamRoutes()
+
+  const { projects } = props
 
   const columnWidths = ['w-6/12', 'w-1/12', 'w-2/12', 'w-2/12', 'w-1/12']
   const headers = ['name', 'versions', 'common:updatedAt', 'type', 'common:actions']
@@ -42,7 +43,7 @@ const ProjectViewList = (props: ProjectViewListProps) => {
     <div>
       <ProjectTypeTag className="w-fit m-auto" type={item.type} />
     </div>,
-    <Link href={projectUrl(item.id)} passHref>
+    <Link href={routes.project.details(item.id)} passHref>
       <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
     </Link>,
   ]

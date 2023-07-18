@@ -1,6 +1,7 @@
 import ContainerStatusIndicator from '@app/components/nodes/container-status-indicator'
 import ContainerStatusTag from '@app/components/nodes/container-status-tag'
 import { DyoList } from '@app/elements/dyo-list'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   Container,
@@ -11,7 +12,6 @@ import {
   WS_TYPE_CONTAINERS_STATE_LIST,
   WS_TYPE_WATCH_CONTAINERS_STATE,
 } from '@app/models'
-import { nodeContainerLogUrl, nodeWsUrl } from '@app/routes'
 import { timeAgo, utcNow } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
@@ -22,9 +22,10 @@ interface DeploymentContainerStatusListProps {
 }
 
 const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps) => {
-  const { deployment } = props
-
   const { t } = useTranslation('deployments')
+  const routes = useTeamRoutes()
+
+  const { deployment } = props
   const now = utcNow()
 
   const [containers, setContainers] = useState<Container[]>(() =>
@@ -42,7 +43,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     })),
   )
 
-  const sock = useWebSocket(nodeWsUrl(deployment.node.id), {
+  const sock = useWebSocket(routes.deployment.detailsSocket(deployment.node.id), {
     onOpen: () =>
       sock.send(WS_TYPE_WATCH_CONTAINERS_STATE, {
         prefix: deployment.prefix,
@@ -81,7 +82,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
   }
 
   const itemTemplate = (container: Container) => {
-    const logUrl = nodeContainerLogUrl(deployment.node.id, container.id)
+    const logUrl = routes.node.containerLog(deployment.node.id, container.id)
 
     /* eslint-disable react/jsx-key */
     return [

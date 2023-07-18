@@ -3,8 +3,13 @@ import { Reflector } from '@nestjs/core'
 import { Request as ExpressRequest } from 'express'
 import { Observable, concatMap, of, tap } from 'rxjs'
 import AuditLoggerService from 'src/app/audit.logger/audit.logger.service'
-import { AuthorizedHttpRequest } from 'src/app/token/jwt-auth.guard'
-import { AUDIT_LOGGER_LEVEL, AuditLogLevelOption } from 'src/decorators/audit-logger.decorator'
+import {
+  AUDIT_LOGGER_LEVEL,
+  AuditLogLevelOptions,
+  teamSlugFromHttpRequestParams,
+  teamSlugFromWsContext,
+  teamSlugProviderOfContext,
+} from 'src/decorators/audit-logger.decorator'
 import { WS_TYPE_SUBSCRIBE, WS_TYPE_UNSUBSCRIBE, WsMessage } from 'src/websockets/common'
 
 /**
@@ -16,7 +21,7 @@ export default class AuditLoggerInterceptor implements NestInterceptor {
   constructor(private readonly reflector: Reflector, private readonly service: AuditLoggerService) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
-    const level = this.reflector.get<AuditLogLevelOption>(AUDIT_LOGGER_LEVEL, context.getHandler())
+    const level = this.reflector.get<AuditLogLevelOptions>(AUDIT_LOGGER_LEVEL, context.getHandler())
 
     if (level === 'disabled') {
       return next.handle()
@@ -36,7 +41,7 @@ export default class AuditLoggerInterceptor implements NestInterceptor {
   private async logHttp(
     context: ExecutionContext,
     next: CallHandler,
-    level: AuditLogLevelOption | null,
+    level: AuditLogLevelOptions | null,
   ): Promise<Observable<any>> {
     const req: ExpressRequest = context.switchToHttp().getRequest()
 
@@ -44,9 +49,11 @@ export default class AuditLoggerInterceptor implements NestInterceptor {
       return next.handle()
     }
 
+    const teamSlugProvider = teamSlugProviderOfContext(context, this.reflector) ?? teamSlugFromHttpRequestParams
+
     return next.handle().pipe(
       tap(async () => {
-        await this.service.createHttpAudit(level, req as AuthorizedHttpRequest)
+        await this.service.createHttpAudit(teamSlugProvider, level, context)
       }),
     )
   }
@@ -54,7 +61,7 @@ export default class AuditLoggerInterceptor implements NestInterceptor {
   private async logWebSocket(
     context: ExecutionContext,
     next: CallHandler,
-    level: AuditLogLevelOption,
+    level: AuditLogLevelOptions,
   ): Promise<Observable<any>> {
     const wsContext = context.switchToWs()
     const { type } = wsContext.getData() as WsMessage<any>
@@ -63,13 +70,15 @@ export default class AuditLoggerInterceptor implements NestInterceptor {
       return next.handle()
     }
 
+    const teamSlugProvider = teamSlugProviderOfContext(context, this.reflector) ?? teamSlugFromWsContext
+
     return next.handle().pipe(
       // log only the first
       concatMap((it, index) =>
         index === 0
           ? of(it).pipe(
               tap(async () => {
-                await this.service.createWsAudit(level, wsContext)
+                await this.service.createWsAudit(teamSlugProvider, level, context)
               }),
             )
           : of(it),

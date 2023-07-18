@@ -1,11 +1,11 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable import/no-extraneous-dependencies */
 import { ProjectType } from '@app/models'
-import { projectUrl, ROUTE_DEPLOYMENTS, ROUTE_PROJECTS, versionUrl } from '@app/routes'
 import { expect, Page } from '@playwright/test'
-import { REGISTRY_NAME } from './common'
+import { REGISTRY_NAME, TEAM_ROUTES } from './common'
 
 export const createProject = async (page: Page, name: string, type: ProjectType) => {
-  await page.goto(ROUTE_PROJECTS)
+  await page.goto(TEAM_ROUTES.project.list())
 
   await page.locator('button:has-text("Add")').click()
   await expect(page.locator('h4:has-text("New project")')).toHaveCount(1)
@@ -17,7 +17,7 @@ export const createProject = async (page: Page, name: string, type: ProjectType)
 
   await page.locator('button:has-text("Save")').click()
 
-  await page.waitForURL(`${ROUTE_PROJECTS}/**`)
+  await page.waitForURL(`${TEAM_ROUTES.project.list()}/**`)
 
   if (type === 'versionless') {
     await page.waitForSelector(`span:has-text("Changelog")`)
@@ -30,7 +30,7 @@ export const createProject = async (page: Page, name: string, type: ProjectType)
 }
 
 export const createVersion = async (page: Page, projectId: string, name: string, type: 'Incremental' | 'Rolling') => {
-  await page.goto(projectUrl(projectId))
+  await page.goto(TEAM_ROUTES.project.details(projectId))
   await page.waitForSelector(`button:has-text("Add version")`)
 
   await page.locator('button:has-text("Add version")').click()
@@ -50,7 +50,7 @@ export const createVersion = async (page: Page, projectId: string, name: string,
 }
 
 export const createImage = async (page: Page, projectId: string, versionId: string, image: string) => {
-  await page.goto(versionUrl(projectId, versionId))
+  await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionId))
 
   const addImage = await page.waitForSelector('button:has-text("Add image")')
   await addImage.click()
@@ -74,7 +74,7 @@ export const createImage = async (page: Page, projectId: string, versionId: stri
 }
 
 export const addImageToVersion = async (page: Page, projectId: string, versionId: string, image: string) => {
-  await page.goto(versionUrl(projectId, versionId))
+  await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionId))
 
   await page.locator('button:has-text("Add image")').click()
   await expect(page.locator('h4:has-text("Add image")')).toHaveCount(1)
@@ -88,7 +88,7 @@ export const addImageToVersion = async (page: Page, projectId: string, versionId
 }
 
 export const addImageToVersionlessProject = async (page: Page, projectId: string, image: string) => {
-  await page.goto(projectUrl(projectId))
+  await page.goto(TEAM_ROUTES.project.details(projectId))
 
   await page.locator('button:has-text("Add image")').click()
   await expect(page.locator('h4:has-text("Add image")')).toHaveCount(1)
@@ -107,7 +107,7 @@ export const addDeploymentToVersionlessProject = async (
   nodeName: string,
   prefix: string | null,
 ): Promise<{ id: string; url: string }> => {
-  await page.goto(projectUrl(projectId))
+  await page.goto(TEAM_ROUTES.project.details(projectId))
 
   await page.locator('button:has-text("Add deployment")').click()
   await expect(page.locator('h4:has-text("Add deployment")')).toHaveCount(1)
@@ -117,7 +117,7 @@ export const addDeploymentToVersionlessProject = async (
   await page.locator(`button:has-text("${nodeName}")`).click()
 
   await page.locator('button:has-text("Add")').click()
-  await page.waitForURL(`${ROUTE_DEPLOYMENTS}/**`)
+  await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**`)
 
   const deploymentId = page.url().split('/').pop()
   return {
@@ -133,7 +133,7 @@ export const addDeploymentToVersion = async (
   nodeName: string,
   prefix: string = null,
 ): Promise<{ id: string; url: string }> => {
-  await page.goto(versionUrl(projectId, versionId))
+  await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionId))
 
   await page.locator('button:has-text("Add deployment")').click()
   await expect(page.locator('h4:has-text("Add deployment")')).toHaveCount(1)
@@ -143,7 +143,7 @@ export const addDeploymentToVersion = async (
   await page.locator(`button:has-text("${nodeName}")`).click()
 
   await page.locator('button:has-text("Add")').click()
-  await page.waitForURL(`${ROUTE_DEPLOYMENTS}/**`)
+  await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**`)
 
   return {
     id: page.url().split('/').pop(),

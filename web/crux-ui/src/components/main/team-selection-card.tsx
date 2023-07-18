@@ -1,6 +1,7 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoList } from '@app/elements/dyo-list'
 import { defaultApiErrorHandler } from '@app/errors'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { ActivateTeam, UserMeta, UserMetaTeam } from '@app/models'
 import { API_USERS_ME_ACTIVE_TEAM, ROUTE_INDEX } from '@app/routes'
 import { sendForm } from '@app/utils'
@@ -18,6 +19,8 @@ const TeamSelectionCard = (props: TeamSelectionCardProps) => {
   const { meta, className, onTeamSelected } = props
 
   const { t } = useTranslation('common')
+
+  const routes = useTeamRoutes()
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -37,14 +40,14 @@ const TeamSelectionCard = (props: TeamSelectionCardProps) => {
     }
   }
 
-  const itemTemplate = (user: UserMetaTeam) => {
-    const currentTeam = meta.activeTeamId === user.id
+  const itemTemplate = (team: UserMetaTeam) => {
+    const currentTeam = team.slug === routes?.teamSlug
 
     /* eslint-disable react/jsx-key */
     return [
       <div
         className={clsx('flex flex-row items-center', currentTeam ? null : 'cursor-pointer')}
-        onClick={currentTeam ? null : () => onSelectTeam(user)}
+        onClick={currentTeam ? null : () => onSelectTeam(team)}
       >
         <Image
           className={currentTeam ? null : 'opacity-30 bg-blend-darken'}
@@ -53,7 +56,7 @@ const TeamSelectionCard = (props: TeamSelectionCardProps) => {
           width={32}
           height={32}
         />
-        <div className="ml-4">{user.name}</div>
+        <div className="ml-4">{team.name}</div>
       </div>,
     ]
     /* eslint-enable react/jsx-key */

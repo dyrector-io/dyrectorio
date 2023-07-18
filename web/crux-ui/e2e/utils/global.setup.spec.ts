@@ -10,6 +10,7 @@ import {
   USER_EMAIL,
   USER_PASSWORD,
   USER_TEAM,
+  USER_TEAM_SLUG,
 } from './common'
 import { globalTeardown } from './global.teardown'
 import { installDagent } from './node-helper'
@@ -34,6 +35,7 @@ test('global setup', async ({ page }) => {
   logInfo('creating team')
   await page.waitForURL(ROUTE_TEAMS_CREATE)
   await page.locator('input[name=name]').fill(USER_TEAM)
+  await page.locator('input[name=slug]').fill(USER_TEAM_SLUG)
   await page.locator('button[type=submit]').click()
 
   await page.waitForURL(ROUTE_DASHBOARD)

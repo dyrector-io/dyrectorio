@@ -20,10 +20,11 @@ import {
   ROUTE_NODES,
   ROUTE_NODE_ID,
   ROUTE_PREFIX,
+  ROUTE_TEAM_SLUG,
 } from './node.const'
 import NodeService from './node.service'
 
-@Controller(`${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_PREFIX}/${ROUTE_CONTAINERS}`)
+@Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_PREFIX}/${ROUTE_CONTAINERS}`)
 @ApiTags(ROUTE_NODES)
 @UseGuards(NodeTeamAccessGuard)
 export default class NodePrefixContainerHttpController {

@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle */
+import { NextPageContext } from 'next'
 import { AuditLogQuery, ContainerIdentifier, ContainerOperation, VersionSectionsState } from './models'
 
 // Routes:
@@ -20,19 +22,9 @@ export const ROUTE_RECOVERY_EXPIRED = `${ROUTE_RECOVERY}/expired`
 export const ROUTE_VERIFICATION = '/auth/verify'
 
 export const ROUTE_TEAMS = '/teams'
-export const ROUTE_AUDIT = '/audit-log'
 export const ROUTE_TEAMS_CREATE = '/teams/create'
 
-export const ROUTE_PROJECTS = '/projects'
-export const ROUTE_DEPLOYMENTS = '/deployments'
-
-export const ROUTE_NODES = '/nodes'
-export const ROUTE_REGISTRIES = '/registries'
-export const ROUTE_NOTIFICATIONS = '/notifications'
 export const ROUTE_TEMPLATES = '/templates'
-export const ROUTE_STORAGES = '/storages'
-
-export const ROUTE_DASHBOARD = '/dashboard'
 
 export const API_AUTH_REGISTER = '/api/auth/register'
 export const API_AUTH_LOGIN = '/api/auth/login'
@@ -48,40 +40,20 @@ export const API_CREATE_ACCOUNT = '/api/auth/create-account'
 
 export const API_STATUS = '/api/status'
 
-export const API_REGISTRIES = '/api/registries'
-export const API_PROJECTS = '/api/projects'
-export const API_NODES = '/api/nodes'
-export const API_DEPLOYMENTS = '/api/deployments'
-
+export const API_TEMPLATES = `/api/templates`
+export const API_TOKENS = '/api/tokens'
+export const API_HEALTH = '/api/health'
 export const API_TEAMS = '/api/teams'
 export const API_USERS_ME = '/api/users/me'
 export const API_USERS_ME_ACTIVE_TEAM = `${API_USERS_ME}/active-team`
 export const API_USERS_ME_INVITATIONS = `${API_USERS_ME}/invitations`
 export const API_USERS_ME_PREFERENCES_ONBOARDING = `${API_USERS_ME}/preferences/onboarding`
 
-export const API_NOTIFICATIONS = '/api/notifications'
-
-export const API_AUDIT = `/api/audit-log`
-
-export const API_TEMPLATES = `/api/templates`
-
-export const API_DASHBOARD = '/api/dashboard'
-
-export const API_TOKENS = '/api/tokens'
-
-export const API_STORAGES = '/api/storages'
-export const API_STORAGES_OPTIONS = `${API_STORAGES}/options`
-
-export const WS_NODES = `/nodes`
-export const WS_REGISTRIES = `/registries`
-
-export const API_HEALTH = '/api/health'
-
-export type CruxUrlParams = {
+export type AnchorUrlParams = {
   anchor?: string
 }
 
-export const appendUrlParams = <T extends CruxUrlParams>(url: string, params: T): string => {
+export const appendUrlParams = <T extends AnchorUrlParams>(url: string, params: T): string => {
   let result = url
   const paramMap: Map<string, any> = new Map()
   const anchor = params?.anchor
@@ -146,7 +118,7 @@ const urlQuery = (url: string, query: object) => {
 }
 
 // docs
-export const apiDocsUrl = (params: CruxUrlParams) => appendUrlParams(`${ROUTE_DOCS}/basics/api`, params)
+export const apiDocsUrl = (params: AnchorUrlParams) => appendUrlParams(`${ROUTE_DOCS}/basics/api`, params)
 
 // auth
 export const verificationUrl = (email: string, options?: { restart?: boolean }) => {
@@ -157,95 +129,6 @@ export const verificationUrl = (email: string, options?: { restart?: boolean }) 
 
   return `${url}&restart=true`
 }
-
-// audit
-export const auditApiUrl = (query: AuditLogQuery) => urlQuery(API_AUDIT, query)
-
-// project
-export const projectUrl = (id: string, params?: VersionUrlParams) => appendUrlParams(`${ROUTE_PROJECTS}/${id}`, params)
-export const projectApiUrl = (id: string) => `${API_PROJECTS}/${id}`
-export const projectVersionsApiUrl = (projectId: string) => `${projectApiUrl(projectId)}/versions`
-export const projectConvertToVersionedApiUrl = (projectId: string) => `${projectApiUrl(projectId)}/convert`
-
-// registry
-export const registryUrl = (id: string) => `${ROUTE_REGISTRIES}/${id}`
-export const registryApiUrl = (id: string) => `${API_REGISTRIES}/${id}`
-
-// node
-export const nodeUrl = (id: string) => `${ROUTE_NODES}/${id}`
-export const nodeInspectUrl = (id: string, prefix?: string) => `${nodeUrl(id)}?prefix=${prefix}`
-export const nodeApiUrl = (id: string) => `${API_NODES}/${id}`
-export const nodeScriptApiUrl = (id: string) => `${nodeApiUrl(id)}/script`
-export const nodeTokenApiUrl = (id: string) => `${nodeApiUrl(id)}/token`
-export const nodeUpdateApiUrl = (id: string) => `${nodeApiUrl(id)}/update`
-export const nodeWsUrl = (id: string) => `/nodes/${id}`
-export const nodeAuditApiUrl = (nodeId: string, query: AuditLogQuery) => urlQuery(`${nodeApiUrl(nodeId)}/audit`, query)
-
-// node-global-container
-export const nodeGlobalContainerListApiUrl = (nodeId: string) => `${nodeApiUrl(nodeId)}/containers`
-export const nodeGlobalContainerApiUrl = (nodeId: string, containerName: string) =>
-  `${nodeGlobalContainerListApiUrl(nodeId)}/${containerName}`
-export const nodeGlobalContainerOperationApiUrl = (
-  nodeId: string,
-  containerName: string,
-  operation: ContainerOperation,
-) => `${nodeGlobalContainerApiUrl(nodeId, containerName)}/${operation}`
-
-// node-prefix-container
-export const nodePrefixContainerListApiUrl = (nodeId: string, prefix: string) =>
-  `${nodeApiUrl(nodeId)}/${prefix}/containers`
-export const nodePrefixContainerApiUrl = (nodeId: string, contianer: ContainerIdentifier) =>
-  `${nodePrefixContainerListApiUrl(nodeId, contianer.prefix)}/${contianer.name}`
-export const nodePrefixContainerOperationApiUrl = (
-  nodeId: string,
-  container: ContainerIdentifier,
-  operation: ContainerOperation,
-) => `${nodePrefixContainerApiUrl(nodeId, container)}/${operation}`
-
-// version
-
-export type VersionUrlAnchor = 'edit'
-export type VersionUrlParams = {
-  anchor?: VersionUrlAnchor
-  section?: VersionSectionsState
-}
-
-export const versionUrl = (projectId: string, versionId: string, params?: VersionUrlParams) =>
-  appendUrlParams(`${projectUrl(projectId)}/versions/${versionId}`, params)
-
-export const versionApiUrl = (projectId: string, versionId: string) =>
-  `${projectApiUrl(projectId)}/versions/${versionId}`
-export const versionIncreaseApiUrl = (projectId: string, versionId: string) =>
-  `${versionApiUrl(projectId, versionId)}/increase`
-export const versionSetDefaultApiUrl = (projectId: string, versionId: string) =>
-  `${versionApiUrl(projectId, versionId)}/default`
-export const versionWsUrl = (versionId: string) => `/versions/${versionId}`
-
-// deployment
-export const versionDeploymentsUrl = (projectId: string, versionId: string) =>
-  `${versionUrl(projectId, versionId)}/deployments`
-export const versionDeploymentsApiUrl = (projectId: string, versionId: string) =>
-  `/api${versionDeploymentsUrl(projectId, versionId)}`
-
-export const deploymentUrl = (deploymentId: string) => `${ROUTE_DEPLOYMENTS}/${deploymentId}`
-
-export const deploymentApiUrl = (deploymentId: string) => `${API_DEPLOYMENTS}/${deploymentId}`
-
-export const deploymentWsUrl = (deploymentId: string) => `${deploymentUrl(deploymentId)}`
-
-export const deploymentDeployUrl = (deploymentId: string) => `${deploymentUrl(deploymentId)}/deploy`
-
-export const deploymentCopyApiUrl = (deploymentId: string) => `${deploymentApiUrl(deploymentId)}/copy`
-
-export const deploymentStartApiUrl = (deploymentId: string) => `${deploymentApiUrl(deploymentId)}/start`
-
-export const deploymentTokenApiUrl = (deploymentId: string) => `${deploymentApiUrl(deploymentId)}/token`
-
-export const instanceApiUrl = (deploymentId: string, instanceId: string) =>
-  `${deploymentApiUrl(deploymentId)}/instances/${instanceId}`
-
-export const instanceSecretsApiUrl = (deploymentId: string, instanceId: string) =>
-  `${instanceApiUrl(deploymentId, instanceId)}/secrets`
 
 // team
 export const teamUrl = (id: string) => `${ROUTE_TEAMS}/${id}`
@@ -258,46 +141,479 @@ export const teamUserReinviteUrl = (teamId: string, userId: string) => `${teamUs
 
 export const userInvitationApiUrl = (teamId: string) => `${API_USERS_ME_INVITATIONS}/${teamId}`
 
-// notification
-export const notificationUrl = (id: string) => `${ROUTE_NOTIFICATIONS}/${id}`
-export const notificationApiUrl = (id: string) => `${API_NOTIFICATIONS}/${id}`
-export const notificationApiHookUrl = (id: string) => `${notificationApiUrl(id)}/test`
-
-// image config
-export const imageConfigUrl = (projectId: string, versionId: string, imageId: string) =>
-  `${versionUrl(projectId, versionId)}/images/${imageId}`
-
-export const versionImagesApiUrl = (projectId: string, versionId: string) =>
-  `${versionApiUrl(projectId, versionId)}/images`
-
-export const versionImagesOrderApiUrl = (projectId: string, versionId: string) =>
-  `${versionImagesApiUrl(projectId, versionId)}/order`
-
-export const imageApiUrl = (projectId: string, versionId: string, imageId: string) =>
-  `${versionImagesApiUrl(projectId, versionId)}/${imageId}`
-
-// instance
-export const instanceConfigUrl = (deploymentId: string, instanceId: string) =>
-  `${deploymentUrl(deploymentId)}/instances/${instanceId}`
-
 // template
 export const templateImageUrl = (templateId: string) => `${API_TEMPLATES}/${templateId}/image`
 
 // tokens
 export const tokensApiUrl = (tokenId: string) => `${API_TOKENS}/${tokenId}`
 
-// log
+// dashboard
+class DashboardRoutes {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `${root}/dashboard`
+  }
+
+  api = () => `/api${this.root}`
+
+  index = () => this.root
+}
+
+// audit
+class AuditRoutes {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `${root}/audit-log`
+  }
+
+  api = (query: AuditLogQuery) => urlQuery(`/api${this.root}`, query)
+
+  list = () => `${this.root}`
+}
+
+// node
 export type ContainerLogParams = {
   prefix?: string
   name?: string
 }
 
-export const nodeContainerLogUrl = (nodeId: string, params: ContainerLogParams) =>
-  appendUrlParams(`${nodeUrl(nodeId)}/log`, {
-    ...params,
-    anchor: null,
-  })
+class NodeApi {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `/api${root}`
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+
+  script = (id: string) => `${this.details(id)}/script`
+
+  token = (id: string) => `${this.details(id)}/token`
+
+  update = (id: string) => `${this.details(id)}/update`
+
+  audit = (id: string, query: AuditLogQuery) => urlQuery(`${this.details(id)}/audit`, query)
+
+  // node-global-container
+  globalContainerList = (id: string) => `${this.details(id)}/containers`
+
+  globalContainer = (id: string, containerName: string) => `${this.globalContainerList(id)}/${containerName}`
+
+  globalContainerOperation = (id: string, containerName: string, operation: ContainerOperation) =>
+    `${this.globalContainer(id, containerName)}/${operation}`
+
+  // node-prefix-container
+  prefixContainerList = (id: string, prefix: string) => `${this.details(id)}/${prefix}/containers`
+
+  prefixContainer = (id: string, contianer: ContainerIdentifier) =>
+    `${this.prefixContainerList(id, contianer.prefix)}/${contianer.name}`
+
+  prefixContainerOperation = (id: string, container: ContainerIdentifier, operation: ContainerOperation) =>
+    `${this.prefixContainer(id, container)}/${operation}`
+}
+
+class NodeRoutes {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `${root}/nodes`
+  }
+
+  private _api: NodeApi
+
+  get api() {
+    if (!this._api) {
+      this._api = new NodeApi(this.root)
+    }
+
+    return this._api
+  }
+
+  socket = () => this.root
+
+  detailsSocket = (id: string) => this.details(id)
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+
+  inspect = (id: string, prefix?: string) => `${this.details(id)}?prefix=${prefix}`
+
+  containerLog = (id: string, params: ContainerLogParams) =>
+    appendUrlParams(`${this.details(id)}/log`, {
+      ...params,
+      anchor: null,
+    })
+}
+
+class RegistryApi {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `/api${root}`
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+}
+
+class RegistryRoutes {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `${root}/registries`
+  }
+
+  private _api: RegistryApi
+
+  get api() {
+    if (!this._api) {
+      this._api = new RegistryApi(this.root)
+    }
+
+    return this._api
+  }
+
+  socket = () => this.root
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+}
+
+// version
+export type VersionUrlAnchor = 'edit'
+export type VersionUrlParams = {
+  anchor?: VersionUrlAnchor
+  section?: VersionSectionsState
+}
+
+class VersionApi {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `/api${root}`
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+
+  increase = (id: string) => `${this.details(id)}/increase`
+
+  setAsDefault = (id: string) => `${this.details(id)}/default`
+
+  deployments = (versionId: string) => `${this.details(versionId)}/deployments`
+
+  images = (versionId: string) => `${this.details(versionId)}/images`
+
+  orderImages = (versionId: string) => `${this.details(versionId)}/order`
+
+  imageDetails = (versionId: string, imageId: string) => `${this.images(versionId)}/${imageId}`
+}
+
+class VersionRoutes {
+  private readonly root: string
+
+  constructor(root: string, projectId: string) {
+    this.root = `${root}/projects/${projectId}/versions`
+  }
+
+  private _api: VersionApi
+
+  get api() {
+    if (!this._api) {
+      this._api = new VersionApi(this.root)
+    }
+
+    return this._api
+  }
+
+  detailsSocket = (id: string) => `${this.root}/versions/${id}`
+
+  details = (id: string, params?: VersionUrlParams) => appendUrlParams(`${this.root}/${id}`, params)
+
+  deployments = (versionId: string) => `${this.details(versionId)}/deployments`
+
+  imageDetails = (versionId: string, imageId: string) => `${this.details(versionId)}/images/${imageId}`
+}
+
+// project
+class ProjectApi {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `/api${root}`
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+
+  convertToVersioned = (id: string) => `${this.details(id)}/convert`
+}
+
+class ProjectRoutes {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `${root}/projects`
+  }
+
+  private _api: ProjectApi
+
+  private _versionProjectId: string
+
+  private _versionRoutes: VersionRoutes
+
+  get api() {
+    if (!this._api) {
+      this._api = new ProjectApi(this.root)
+    }
+
+    return this._api
+  }
+
+  list = () => this.root
+
+  details = (id: string, params?: VersionUrlParams) => appendUrlParams(`${this.root}/${id}`, params)
+
+  versions = (projectId: string) => {
+    if (this._versionProjectId !== projectId) {
+      this._versionRoutes = new VersionRoutes(this.root, projectId)
+    }
+
+    return this._versionRoutes
+  }
+}
+
+// deployment
+class DeploymentApi {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `/api${root}`
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+
+  copy = (id: string) => `${this.details(id)}/copy`
+
+  start = (id: string) => `${this.details(id)}/start`
+
+  token = (id: string) => `${this.details(id)}/token`
+
+  instanceDetails = (deploymentId: string, instanceId: string) =>
+    `${this.details(deploymentId)}/instances/${instanceId}`
+
+  instanceSecrets = (deploymentId: string, instanceId: string) =>
+    `${this.instanceDetails(deploymentId, instanceId)}/secrets`
+}
+
+class DeploymentRoutes {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `${root}/deployments`
+  }
+
+  private _api: DeploymentApi
+
+  get api() {
+    if (!this._api) {
+      this._api = new DeploymentApi(this.root)
+    }
+
+    return this._api
+  }
+
+  detailsSocket = (id: string) => this.details(id)
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+
+  deploy = (id: string) => `${this.details(id)}/deploy`
+
+  instanceDetails = (deploymentId: string, instanceId: string) =>
+    `${this.details(deploymentId)}/instances/${instanceId}`
+}
+
+// notification
+class NotificationApi {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `/api${root}`
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+
+  test = (id: string) => `${this.details(id)}/test`
+}
+
+class NotificationRoutes {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `${root}/notifications`
+  }
+
+  private _api: NotificationApi
+
+  get api() {
+    if (!this._api) {
+      this._api = new NotificationApi(this.root)
+    }
+
+    return this._api
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+}
 
 // storage
-export const storageUrl = (id: string) => `${ROUTE_STORAGES}/${id}`
-export const storageApiUrl = (id: string) => `${API_STORAGES}/${id}`
+
+class StorageApi {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `/api${root}`
+  }
+
+  list = () => this.root
+
+  options = () => `${this.root}/options`
+
+  details = (id: string) => `${this.root}/${id}`
+}
+
+class StorageRoutes {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `${root}/storages`
+  }
+
+  private _api: StorageApi
+
+  get api() {
+    if (!this._api) {
+      this._api = new StorageApi(this.root)
+    }
+
+    return this._api
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+}
+
+export class TeamRoutes {
+  readonly root: string
+
+  constructor(readonly teamSlug: string) {
+    this.root = `/${teamSlug}`
+  }
+
+  private _audit: AuditRoutes
+
+  private _dashboard: DashboardRoutes
+
+  private _node: NodeRoutes
+
+  private _registry: RegistryRoutes
+
+  private _project: ProjectRoutes
+
+  private _deployment: DeploymentRoutes
+
+  private _notification: NotificationRoutes
+
+  private _storage: StorageRoutes
+
+  get audit() {
+    if (!this._audit) {
+      this._audit = new AuditRoutes(this.root)
+    }
+
+    return this._audit
+  }
+
+  get dashboard() {
+    if (!this._dashboard) {
+      this._dashboard = new DashboardRoutes(this.root)
+    }
+
+    return this._dashboard
+  }
+
+  get node() {
+    if (!this._node) {
+      this._node = new NodeRoutes(this.root)
+    }
+
+    return this._node
+  }
+
+  get registry() {
+    if (!this._registry) {
+      this._registry = new RegistryRoutes(this.root)
+    }
+
+    return this._registry
+  }
+
+  get project() {
+    if (!this._project) {
+      this._project = new ProjectRoutes(this.root)
+    }
+
+    return this._project
+  }
+
+  get deployment() {
+    if (!this._deployment) {
+      this._deployment = new DeploymentRoutes(this.root)
+    }
+
+    return this._deployment
+  }
+
+  get notification() {
+    if (!this._notification) {
+      this._notification = new NotificationRoutes(this.root)
+    }
+
+    return this._notification
+  }
+
+  get storage() {
+    if (!this._storage) {
+      this._storage = new StorageRoutes(this.root)
+    }
+
+    return this._storage
+  }
+
+  static fromContext(context: NextPageContext): TeamRoutes | null {
+    const teamSlug = context.query.teamSlug as string
+    if (!teamSlug) {
+      return null
+    }
+
+    return new TeamRoutes(teamSlug)
+  }
+}

@@ -1,4 +1,4 @@
-import { deploymentDeployUrl, nodeContainerLogUrl, ROUTE_NODES, versionUrl } from '@app/routes'
+import { nodeContainerLogUrl, routes, ROUTE_NODES } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { DAGENT_NODE, screenshotPath } from '../utils/common'
 import { deployWithDagent } from '../utils/node-helper'
@@ -44,7 +44,7 @@ test('Second successful deployment should make the first deployment obsolete', a
   const secondDeployStatus = await page.getByText('Successful')
   await expect(secondDeployStatus).toHaveCount(1)
 
-  await page.goto(versionUrl(projectId, versionId, { section: 'deployments' }))
+  await page.goto(routes.project.versions(projectId, versionId, { section: 'deployments' }))
   await page.screenshot({ path: screenshotPath('deployment-should-be-obsolete'), fullPage: true })
 
   const deploymentsTableBody = await page.locator('.table-row-group')
@@ -74,7 +74,7 @@ test('Container log should appear after a successful deployment', async ({ page 
   await page.waitForSelector(deployButtonSelector)
 
   await page.locator(deployButtonSelector).click()
-  await page.waitForURL(deploymentDeployUrl(deploymentId))
+  await page.waitForURL(routes.deployment.deploy(deploymentId))
 
   const containerRow = page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
@@ -106,7 +106,7 @@ test('Container log should appear on a node container', async ({ page }) => {
   await page.waitForSelector(deployButtonSelector)
 
   await page.locator(deployButtonSelector).click()
-  await page.waitForURL(deploymentDeployUrl(deploymentId))
+  await page.waitForURL(routes.deployment.deploy(deploymentId))
 
   const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
