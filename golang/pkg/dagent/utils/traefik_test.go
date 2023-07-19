@@ -23,8 +23,8 @@ func TestGetTraefikLabelsNoEnv(t *testing.T) {
 		Ports: []container.PortBinding{
 			{ExposedPort: 8888, PortBinding: pointer.ToUint16(1)},
 		},
-		ExposeTLS:         true,
-		DomainUploadLimit: "16k",
+		ExposeTLS:          true,
+		IngressUploadLimit: "16k",
 	}
 	cfg := &dagentConfig.Configuration{}
 
@@ -52,9 +52,9 @@ func TestGetTraefikLabelsNoEnvWithDomain(t *testing.T) {
 		Ports: []container.PortBinding{
 			{ExposedPort: 8888, PortBinding: pointer.ToUint16(1)},
 		},
-		ExposeTLS:         true,
-		DomainUploadLimit: "16k",
-		DomainName:        "domain.test",
+		ExposeTLS:          true,
+		IngressUploadLimit: "16k",
+		IngressName:        "domain.test",
 	}
 	cfg := &dagentConfig.Configuration{}
 
@@ -82,8 +82,8 @@ func TestGetTraefikLabelsEnv(t *testing.T) {
 		Ports: []container.PortBinding{
 			{ExposedPort: 8888, PortBinding: pointer.ToUint16(1)},
 		},
-		ExposeTLS:         true,
-		DomainUploadLimit: "16k",
+		ExposeTLS:          true,
+		IngressUploadLimit: "16k",
 	}
 	cfg := &dagentConfig.Configuration{
 		CommonConfiguration: config.CommonConfiguration{
@@ -115,9 +115,9 @@ func TestGetTraefikLabelsEnvWithDomain(t *testing.T) {
 		Ports: []container.PortBinding{
 			{ExposedPort: 8888, PortBinding: pointer.ToUint16(1)},
 		},
-		ExposeTLS:         true,
-		DomainUploadLimit: "16k",
-		DomainName:        "domain.test",
+		ExposeTLS:          true,
+		IngressUploadLimit: "16k",
+		IngressName:        "domain.test",
 	}
 	cfg := &dagentConfig.Configuration{
 		CommonConfiguration: config.CommonConfiguration{

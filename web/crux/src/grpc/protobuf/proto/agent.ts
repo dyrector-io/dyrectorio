@@ -13,7 +13,6 @@ import {
   DeploymentStrategy,
   deploymentStrategyFromJSON,
   deploymentStrategyToJSON,
-  Domain,
   DriverType,
   driverTypeFromJSON,
   driverTypeToJSON,
@@ -30,6 +29,7 @@ import {
   RestartPolicy,
   restartPolicyFromJSON,
   restartPolicyToJSON,
+  Routing,
   VolumeType,
   volumeTypeFromJSON,
   volumeTypeToJSON,
@@ -280,7 +280,7 @@ export interface CraneContainerConfig_ExtraLBAnnotationsEntry {
 export interface CommonContainerConfig {
   name: string
   expose?: ExposeStrategy | undefined
-  domain?: Domain | undefined
+  routing?: Routing | undefined
   configContainer?: ConfigContainer | undefined
   importContainer?: ImportContainer | undefined
   user?: number | undefined
@@ -1122,7 +1122,7 @@ export const CommonContainerConfig = {
     return {
       name: isSet(object.name) ? String(object.name) : '',
       expose: isSet(object.expose) ? exposeStrategyFromJSON(object.expose) : undefined,
-      domain: isSet(object.domain) ? Domain.fromJSON(object.domain) : undefined,
+      routing: isSet(object.routing) ? Routing.fromJSON(object.routing) : undefined,
       configContainer: isSet(object.configContainer) ? ConfigContainer.fromJSON(object.configContainer) : undefined,
       importContainer: isSet(object.importContainer) ? ImportContainer.fromJSON(object.importContainer) : undefined,
       user: isSet(object.user) ? Number(object.user) : undefined,
@@ -1157,7 +1157,7 @@ export const CommonContainerConfig = {
     message.name !== undefined && (obj.name = message.name)
     message.expose !== undefined &&
       (obj.expose = message.expose !== undefined ? exposeStrategyToJSON(message.expose) : undefined)
-    message.domain !== undefined && (obj.domain = message.domain ? Domain.toJSON(message.domain) : undefined)
+    message.routing !== undefined && (obj.routing = message.routing ? Routing.toJSON(message.routing) : undefined)
     message.configContainer !== undefined &&
       (obj.configContainer = message.configContainer ? ConfigContainer.toJSON(message.configContainer) : undefined)
     message.importContainer !== undefined &&

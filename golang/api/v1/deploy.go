@@ -153,12 +153,26 @@ type ContainerConfig struct {
 	Expose bool `json:"expose"`
 	// use nginx tls configuration
 	ExposeTLS bool `json:"exposeTls"`
-	// Domain name, if defined `<DomainName>.<RootDomain>` otherwise `<ContainerName>.<Prefix>.<RootDomain>`
-	// If RootDomain is empty it's omitted
-	DomainName string `json:"domainName"`
-	// Set endpoint upload limit, default value is: 1m
+
+	/*
+		// proposal: all components need to match this
+
+		// Domain name, if defined `<IngressName>.<RootDomain>` otherwise `<ContainerName>.<Prefix>.<RootDomain>`
+		// If RootDomain is empty it's omitted
+		DomainName string `json:"domainName"`
+		// Set endpoint upload limit, default value is: 1m
+		// for docker hosts, this is needs to be bytes: 1000000 ~1m
+		DomainUploadLimit string `json:"domainUploadLimit"`
+	*/
+
+	// ingress prefix before hostname, `containerName.containerPrefix.<ingress root>` by default, this replaces both before root
+	IngressName string `json:"ingressName"`
+	// ingress hostname, env value used by default, can be overridden here
+	IngressHost string `json:"ingressHost"`
+	// ingress path for path based routing
+	IngressPath string `json:"ingressPath"`
 	// for docker hosts, this is needs to be bytes: 1000000 ~1m
-	DomainUploadLimit string `json:"domainUploadLimit"`
+	IngressUploadLimit string `json:"ingressUploadLimit"`
 	// if put together with another instances consume their shared configs eg. -common config map, generated from here
 	Shared bool `json:"shared"`
 	// config container is spawned as an initcontainer copying files to a shared volume
@@ -180,6 +194,7 @@ type ContainerConfig struct {
 	TTY bool `json:"tty"`
 
 	// dagent only
+	// docker log config https://docs.docker.com/config/containers/logging/configure/
 	LogConfig     *container.LogConfig      `json:"logConfig"`
 	RestartPolicy builder.RestartPolicyName `json:"restartPolicy"`
 	// bridge(container, default) host, none or network name

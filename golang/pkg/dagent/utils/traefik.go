@@ -33,21 +33,25 @@ func GetTraefikLabels(
 		labels["traefik.http.routers."+serviceName+"-secure.tls.certresolver"] = "le"
 	}
 
-	if containerConfig.DomainUploadLimit != "" {
-		labels["traefik.http.middlewares.limit.buffering.maxRequestBodyBytes"] = containerConfig.DomainUploadLimit
+	if containerConfig.IngressUploadLimit != "" {
+		labels["traefik.http.middlewares.limit.buffering.maxRequestBodyBytes"] = containerConfig.IngressUploadLimit
 	}
 
 	return labels
+}
+
+func GetRoutingRule(containerConfig *v1.ContainerConfig) string {
+	return ""
 }
 
 // serviceName container-name.container-pre-name.ingress.host is default
 func GetServiceName(instanceConfig *v1.InstanceConfig, containerConfig *v1.ContainerConfig, cfg *config.Configuration) string {
 	domain := []string{}
 
-	if containerConfig.DomainName == "" {
+	if containerConfig.IngressName == "" {
 		domain = append(domain, containerConfig.Container, instanceConfig.ContainerPreName)
 	} else {
-		domain = append(domain, containerConfig.DomainName)
+		domain = append(domain, containerConfig.IngressName)
 	}
 
 	if cfg.RootDomain != "" {

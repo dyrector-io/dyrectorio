@@ -112,11 +112,15 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		containerConfig.ExposeTLS = *cc.Expose > 2
 	}
 
-	if cc.Domain != nil {
-		containerConfig.DomainName = cc.Domain.Name
+	if cc.Routing != nil {
+		if strings.ContainsRune(*cc.Routing.Domain, '.') {
+			splitDomain := strings.Split(*cc.Routing.Domain, ".")
+			containerConfig.IngressName = splitDomain[0]
+			containerConfig.IngressHost = util.JoinV(".", splitDomain[1:]...)
+		}
 
-		if cc.Domain.UploadLimit != nil {
-			containerConfig.DomainUploadLimit = *cc.Domain.UploadLimit
+		if cc.Routing.UploadLimit != nil {
+			containerConfig.IngressHost = *cc.Routing.UploadLimit
 		}
 	}
 

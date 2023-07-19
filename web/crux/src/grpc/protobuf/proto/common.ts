@@ -570,8 +570,10 @@ export interface ContainerLogMessage {
   log: string
 }
 
-export interface Domain {
-  name: string
+export interface Routing {
+  domain?: string | undefined
+  path?: string | undefined
+  stripPath?: boolean | undefined
   uploadLimit?: string | undefined
 }
 
@@ -808,21 +810,25 @@ export const ContainerLogMessage = {
   },
 }
 
-function createBaseDomain(): Domain {
-  return { name: '' }
+function createBaseRouting(): Routing {
+  return {}
 }
 
-export const Domain = {
-  fromJSON(object: any): Domain {
+export const Routing = {
+  fromJSON(object: any): Routing {
     return {
-      name: isSet(object.name) ? String(object.name) : '',
+      domain: isSet(object.domain) ? String(object.domain) : undefined,
+      path: isSet(object.path) ? String(object.path) : undefined,
+      stripPath: isSet(object.stripPath) ? Boolean(object.stripPath) : undefined,
       uploadLimit: isSet(object.uploadLimit) ? String(object.uploadLimit) : undefined,
     }
   },
 
-  toJSON(message: Domain): unknown {
+  toJSON(message: Routing): unknown {
     const obj: any = {}
-    message.name !== undefined && (obj.name = message.name)
+    message.domain !== undefined && (obj.domain = message.domain)
+    message.path !== undefined && (obj.path = message.path)
+    message.stripPath !== undefined && (obj.stripPath = message.stripPath)
     message.uploadLimit !== undefined && (obj.uploadLimit = message.uploadLimit)
     return obj
   },
