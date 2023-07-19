@@ -552,9 +552,10 @@ export interface ContainerLogMessage {
   log: string
 }
 
-export interface Ingress {
-  name: string
-  host: string
+export interface Routing {
+  domain?: string | undefined
+  path?: string | undefined
+  stripPath?: boolean | undefined
   uploadLimit?: string | undefined
 }
 
@@ -791,23 +792,25 @@ export const ContainerLogMessage = {
   },
 }
 
-function createBaseIngress(): Ingress {
-  return { name: '', host: '' }
+function createBaseRouting(): Routing {
+  return {}
 }
 
-export const Ingress = {
-  fromJSON(object: any): Ingress {
+export const Routing = {
+  fromJSON(object: any): Routing {
     return {
-      name: isSet(object.name) ? String(object.name) : '',
-      host: isSet(object.host) ? String(object.host) : '',
+      domain: isSet(object.domain) ? String(object.domain) : undefined,
+      path: isSet(object.path) ? String(object.path) : undefined,
+      stripPath: isSet(object.stripPath) ? Boolean(object.stripPath) : undefined,
       uploadLimit: isSet(object.uploadLimit) ? String(object.uploadLimit) : undefined,
     }
   },
 
-  toJSON(message: Ingress): unknown {
+  toJSON(message: Routing): unknown {
     const obj: any = {}
-    message.name !== undefined && (obj.name = message.name)
-    message.host !== undefined && (obj.host = message.host)
+    message.domain !== undefined && (obj.domain = message.domain)
+    message.path !== undefined && (obj.path = message.path)
+    message.stripPath !== undefined && (obj.stripPath = message.stripPath)
     message.uploadLimit !== undefined && (obj.uploadLimit = message.uploadLimit)
     return obj
   },
