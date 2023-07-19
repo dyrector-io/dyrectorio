@@ -289,7 +289,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
 
               <div className="ml-2">
                 <MultiInput
-                  id="common.domain"
+                  id="routing.domain"
                   label={t('common.domain')}
                   containerClassName="max-w-lg mb-3"
                   labelClassName="my-auto mr-4 w-40"
@@ -304,7 +304,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 />
 
                 <MultiInput
-                  id="common.path"
+                  id="routing.path"
                   label={t('common.path')}
                   containerClassName="max-w-lg mb-3"
                   labelClassName="my-auto mr-4 w-40"
@@ -322,6 +322,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   <DyoLabel className="my-auto mr-12">{t('common.stripPath')}</DyoLabel>
 
                   <DyoSwitch
+                    id="routing.stripPath"
                     fieldName="routing.stripPath"
                     checked={config.routing?.stripPath ?? false}
                     onCheckedChange={it => onChange({ routing: { ...config.routing, stripPath: it } })}
@@ -330,14 +331,14 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 </div>
 
                 <MultiInput
-                  id="common.domainUploadLimit"
-                  label={t('common.domainUploadLimit')}
+                  id="routing.uploadLimit"
+                  label={t('common.uploadLimit')}
                   containerClassName="max-w-lg mb-3"
                   labelClassName="my-auto mr-4 w-40"
                   grow
                   inline
                   value={config.routing?.uploadLimit ?? ''}
-                  placeholder={t('common.placeholders.domainUploadLimit')}
+                  placeholder={t('common.uploadLimit')}
                   onPatch={it => onChange({ routing: { ...config.routing, uploadLimit: it } })}
                   editorOptions={editorOptions}
                   disabled={disabled}

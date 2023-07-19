@@ -27,7 +27,7 @@
     "args": "Arguments",
     "exposeStrategy": "Expose strategy",
     "exposeStrategies": { "none": "None", "expose": "HTTP", "exposeWithTls": "HTTPS" },
-    "domainUploadLimit": "Upload limit",
+    "uploadLimit": "Upload limit",
     "environment": "Environment",
     "secrets": "Secrets",
     "initContainer": "Init container",
@@ -57,7 +57,6 @@
       "port": "Port",
       "path": "Path",
       "containerDefault": "Container default",
-      "domainUploadLimit": "Upload limit"
     }
   },
 

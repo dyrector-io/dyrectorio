@@ -159,10 +159,10 @@ type ContainerConfig struct {
 
 		// Domain name, if defined `<IngressName>.<RootDomain>` otherwise `<ContainerName>.<Prefix>.<RootDomain>`
 		// If RootDomain is empty it's omitted
-		DomainName string `json:"domainName"`
+		RoutingDomain string `json:"routingDomain"`
 		// Set endpoint upload limit, default value is: 1m
 		// for docker hosts, this is needs to be bytes: 1000000 ~1m
-		DomainUploadLimit string `json:"domainUploadLimit"`
+		RoutingUploadLimit string `json:"routingUploadLimit"`
 	*/
 
 	// ingress prefix before hostname, `containerName.containerPrefix.<ingress root>` by default, this replaces both before root

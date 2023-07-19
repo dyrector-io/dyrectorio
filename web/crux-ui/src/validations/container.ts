@@ -316,7 +316,7 @@ const markerRule = yup
 const containerConfigBaseSchema = yup.object().shape({
   name: yup.string().required(),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
-  domain: routingRule,
+  routing: routingRule,
   expose: exposeRule,
   user: yup.number().default(null).min(-1).max(UID_MAX).nullable(),
   tty: yup.boolean().default(false).required(),
