@@ -1,7 +1,7 @@
 SHELL = /bin/sh
 GO_PACKAGE = github.com/dyrector-io/dyrectorio/protobuf/go
 
-## Shortcut to start stack, fully containerized, stable build
+# Shortcut to start stack, fully containerized, stable build
 .PHONY: up
 up:
 	cd golang && \
@@ -46,17 +46,17 @@ bundle:
 	zip -r dyrectorio-offline-bundle-$(BUNDLEVER).zip offline
 	mv .env_bak .env || true
 
-## Compile the all gRPC files
+# Compile the all gRPC files
 .PHONY: protogen
 protogen:| proto-agent proto-crux
 
-## Generate agent gRPC files
+# Generate agent gRPC files
 .PHONY: go-lint
 go-lint:
 	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4 ash -c "\
 		cd golang && make lint"
 
-## Generate agent gRPC files
+ Generate agent gRPC files
 .PHONY: proto-agent
 proto-agent:
 	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4 ash -c "\
@@ -101,6 +101,13 @@ branch-check:
 		exit 1; \
 	fi
 
+
+# Define a macro for updating version numbers in various files
+define update_version
+	jq $(1) $(2) > $(2).tmp
+	mv $(2).tmp $(2)
+endef
+
 # use on the branch to-release (develop or main for hotfixes)
 .PHONY: release
 release: branch-check
@@ -110,29 +117,27 @@ release: branch-check
 	git pull
 	git checkout -b "release/$(version)"
 
-## Create changelog
+# Create changelog
 	git-chglog --next-tag $(version) -o CHANGELOG.md
 	git add CHANGELOG.md
 
-## Change the golang version
+# Change the golang version
 	sed 's/Version *=.*/Version = "$(version)"/' golang/internal/version/version.go > temp_file && mv temp_file golang/internal/version/version.go
 	git add golang/internal/version/version.go
 
-## Change version of crux
-	jq '.version = "$(version)"' web/crux/package.json  > web/crux/package.json.tmp
-	mv web/crux/package.json.tmp web/crux/package.json
-	jq '.version = "$(version)"' web/crux/package-lock.json  > web/crux/package-lock.json.tmp
-	mv web/crux/package-lock.json.tmp web/crux/package-lock.json
+# Change version of crux
+	$(call update_version,'.version = "$(version)"', web/crux/package.json)
+	$(call update_version,'.version = "$(version)"', "web/crux/package-lock.json")
+	$(call update_version,'.packages."".version = "$(version)"', web/crux/package-lock.json)
 	git add web/crux/
 
-## Change version of crux-ui
-	jq '.version = "$(version)"' web/crux-ui/package.json > web/crux-ui/package.json.tmp
-	mv web/crux-ui/package.json.tmp web/crux-ui/package.json
-	jq '.version = "$(version)"' web/crux-ui/package-lock.json > web/crux-ui/package-lock.json.tmp
-	mv web/crux-ui/package-lock.json.tmp web/crux-ui/package-lock.json
+# Change version of crux-ui
+	$(call update_version,'.version = "$(version)"', web/crux-ui/package.json)
+	$(call update_version,'.version = "$(version)"', "web/crux-ui/package-lock.json")
+	$(call update_version,'.packages."".version = "$(version)"', web/crux-ui/package-lock.json)
 	git add web/crux-ui/
 
-## Finalizing changes
+# Finalizing changes
 	git commit -m "release: $(version)"
 	git tag -sm "$(version)" $(version)
 
@@ -148,7 +153,7 @@ test-integration:
 format:
 	yamlfmt .
 
-## Generate video with gource, needs ffmpeg and gource installed
+# Generate video with gource, needs ffmpeg and gource installed
 .PHONY: gource
 gource:
 	gource \
