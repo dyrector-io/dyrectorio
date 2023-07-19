@@ -35,6 +35,9 @@ func GetTraefikLabels(
 
 	if containerConfig.ExposeTLS {
 		labels["traefik.http.routers."+serviceName+"-secure.entrypoints"] = "websecure"
+		if containerConfig.IngressStripPath && containerConfig.IngressPath != "" {
+			labels["traefik.http.routers."+serviceName+"-secure.middlewares"] = serviceName + "-stripper"
+		}
 		labels["traefik.http.routers."+serviceName+"-secure.rule"] = rule
 		labels["traefik.http.routers."+serviceName+"-secure.tls"] = TraefikTrue
 		labels["traefik.http.routers."+serviceName+"-secure.tls.certresolver"] = "le"
