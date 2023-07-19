@@ -44,7 +44,7 @@ export type ContainerPortRange = {
 
 export type JsonKeyValue = { [key: string]: string }
 
-export const CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge', 'overlay', 'ipvlan', 'macvlan'] as const
+export const CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge'] as const
 export type ContainerNetworkMode = (typeof CONTAINER_NETWORK_MODE_VALUES)[number]
 
 export const CONTAINER_RESTART_POLICY_TYPE_VALUES = ['always', 'unlessStopped', 'no', 'onFailure'] as const

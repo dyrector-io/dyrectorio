@@ -6,7 +6,7 @@ import EditStorageCard from '@app/components/storages/edit-storage-card'
 import StorageCard from '@app/components/storages/storage-card'
 import { defaultApiErrorHandler } from '@app/errors'
 import { StorageDetails } from '@app/models'
-import { ROUTE_REGISTRIES, ROUTE_STORAGES, storageApiUrl, storageUrl } from '@app/routes'
+import { ROUTE_STORAGES, storageApiUrl, storageUrl } from '@app/routes'
 import { toastWarning, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
@@ -52,7 +52,7 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
 
   const pageLink: BreadcrumbLink = {
     name: t('common:storages'),
-    url: ROUTE_REGISTRIES,
+    url: ROUTE_STORAGES,
   }
 
   return (

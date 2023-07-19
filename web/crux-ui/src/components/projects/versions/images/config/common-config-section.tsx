@@ -394,23 +394,6 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             </div>
           )}
 
-          {/* args */}
-          {filterContains('args', selectedFilters) && (
-            <div className="grid break-inside-avoid mb-8 max-w-lg">
-              <KeyOnlyInput
-                className="max-h-128 overflow-y-auto mb-2"
-                keyPlaceholder={t('common.arguments')}
-                label={t('common.arguments').toUpperCase()}
-                labelClassName="text-bright font-semibold tracking-wide mb-2"
-                onChange={it => onChange({ args: it })}
-                onResetSection={resetableConfig.args ? () => onResetSection('args') : null}
-                items={config.args}
-                editorOptions={editorOptions}
-                disabled={disabled}
-              />
-            </div>
-          )}
-
           {/* commands */}
           {filterContains('commands', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8 max-w-lg">
@@ -422,6 +405,23 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 onChange={it => onChange({ commands: it })}
                 onResetSection={resetableConfig.commands ? () => onResetSection('commands') : null}
                 items={config.commands}
+                editorOptions={editorOptions}
+                disabled={disabled}
+              />
+            </div>
+          )}
+
+          {/* args */}
+          {filterContains('args', selectedFilters) && (
+            <div className="grid break-inside-avoid mb-8 max-w-lg">
+              <KeyOnlyInput
+                className="max-h-128 overflow-y-auto mb-2"
+                keyPlaceholder={t('common.arguments')}
+                label={t('common.arguments').toUpperCase()}
+                labelClassName="text-bright font-semibold tracking-wide mb-2"
+                onChange={it => onChange({ args: it })}
+                onResetSection={resetableConfig.args ? () => onResetSection('args') : null}
+                items={config.args}
                 editorOptions={editorOptions}
                 disabled={disabled}
               />

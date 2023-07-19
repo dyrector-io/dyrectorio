@@ -1,5 +1,6 @@
 {
     "go.buildFlags": ["-tags=unit,integration"],
+    "go.testTimeout": "300s",
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,

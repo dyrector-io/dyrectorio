@@ -183,9 +183,6 @@ enum NetworkMode {
   none
   host
   bridge
-  overlay
-  ipvlan
-  macvlan
 }
 
 enum DeploymentStrategy {

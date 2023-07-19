@@ -122,9 +122,6 @@ export enum NetworkMode {
   NETWORK_MODE_UNSPECIFIED = 0,
   BRIDGE = 1,
   HOST = 2,
-  OVERLAY = 3,
-  IPVLAN = 4,
-  MACVLAN = 5,
   NONE = 6,
   UNRECOGNIZED = -1,
 }
@@ -140,15 +137,6 @@ export function networkModeFromJSON(object: any): NetworkMode {
     case 2:
     case 'HOST':
       return NetworkMode.HOST
-    case 3:
-    case 'OVERLAY':
-      return NetworkMode.OVERLAY
-    case 4:
-    case 'IPVLAN':
-      return NetworkMode.IPVLAN
-    case 5:
-    case 'MACVLAN':
-      return NetworkMode.MACVLAN
     case 6:
     case 'NONE':
       return NetworkMode.NONE
@@ -167,12 +155,6 @@ export function networkModeToJSON(object: NetworkMode): string {
       return 'BRIDGE'
     case NetworkMode.HOST:
       return 'HOST'
-    case NetworkMode.OVERLAY:
-      return 'OVERLAY'
-    case NetworkMode.IPVLAN:
-      return 'IPVLAN'
-    case NetworkMode.MACVLAN:
-      return 'MACVLAN'
     case NetworkMode.NONE:
       return 'NONE'
     case NetworkMode.UNRECOGNIZED:
