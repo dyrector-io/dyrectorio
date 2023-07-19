@@ -171,6 +171,8 @@ type ContainerConfig struct {
 	IngressHost string `json:"ingressHost"`
 	// ingress path for path based routing
 	IngressPath string `json:"ingressPath"`
+	// ingress path for path based routing
+	IngressStripPath bool `json:"ingressPathStrip"`
 	// for docker hosts, this is needs to be bytes: 1000000 ~1m
 	IngressUploadLimit string `json:"ingressUploadLimit"`
 	// if put together with another instances consume their shared configs eg. -common config map, generated from here
