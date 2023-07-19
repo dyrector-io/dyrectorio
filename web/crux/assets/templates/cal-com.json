@@ -70,8 +70,8 @@
         "tty": false,
         "networks": ["cal-com-network"],
         "expose": "expose",
-        "domain": {
-          "name": "cal.localhost"
+        "routing": {
+          "domain": "cal.localhost"
         },
         "ports": [
           {

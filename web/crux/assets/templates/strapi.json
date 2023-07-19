@@ -64,8 +64,8 @@
       "config": {
         "name": "strapi-service",
         "expose": "expose",
-        "domain": {
-          "name": "strapi.localhost"
+        "routing": {
+          "domain": "strapi.localhost"
         },
         "volumes": [
           {

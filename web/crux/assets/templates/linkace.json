@@ -67,8 +67,8 @@
       "user": 0,
       "config": {
         "expose": "expose",
-        "domain": {
-          "name": "linkace.localhost"
+        "routing": {
+          "domain": "linkace.localhost"
         },
         "name": "linkace-app",
         "ports": [

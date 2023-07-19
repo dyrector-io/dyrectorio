@@ -41,8 +41,8 @@
             "value": "https://vault.example.com/"
           }
         ],
-        "domain": {
-          "name": "vault.example.com"
+        "routing": {
+          "domain": "vault.example.com"
         },
         "expose": "EXPOSE_WITH_TLS",
         "dockerLabels": [

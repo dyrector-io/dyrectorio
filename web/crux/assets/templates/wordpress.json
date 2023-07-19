@@ -60,8 +60,8 @@
         "name": "wordpress",
         "tty": false,
         "expose": "expose",
-        "domain": {
-          "name": "wordpress.localhost"
+        "routing": {
+          "domain": "wordpress.localhost"
         },
         "volumes": [
           {
