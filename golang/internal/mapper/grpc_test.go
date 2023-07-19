@@ -61,7 +61,8 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 			RuntimeConfigType:  "",
 			Expose:             true,
 			ExposeTLS:          true,
-			IngressName:        "test-domain",
+			IngressHost:        "test-domain",
+			IngressName:        "",
 			IngressUploadLimit: "5Mi",
 			Shared:             false,
 			ConfigContainer: &v1.ConfigContainer{
