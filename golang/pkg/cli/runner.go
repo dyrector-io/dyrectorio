@@ -164,7 +164,7 @@ func EnsureNetworkExists(state *State) {
 		}
 
 		resp, err := cli.NetworkCreate(context.Background(), state.SettingsFile.Network, opts)
-		log.Info().Str("responseId", resp.ID).Msg("Network created with ")
+		log.Info().Str("id", resp.ID).Msg("Network created")
 		if err != nil {
 			log.Fatal().Err(err).Stack().Send()
 		}

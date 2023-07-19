@@ -68,9 +68,6 @@
     "networkModes": {
       "bridge": "Bridge",
       "host": "Host",
-      "overlay": "Overlay",
-      "ipvlan": "Ipvlan",
-      "macvlan": "Macvlan",
       "none": "None"
     },
     "restartPolicy": "Restart policy",
