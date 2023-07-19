@@ -52,6 +52,7 @@ func GetRule(instanceConfig *v1.InstanceConfig, containerConfig *v1.ContainerCon
 	rules := []string{}
 	domain := []string{}
 
+	println("ingressnaaame", containerConfig.IngressName)
 	if containerConfig.IngressName == "" {
 		domain = append(domain, containerConfig.Container, instanceConfig.ContainerPreName)
 	} else {

@@ -274,7 +274,7 @@ export type JsonContainerConfig = {
   name?: string
   environment?: JsonKeyValue
   secrets?: JsonContainerConfigSecretKey[]
-  domain?: ContainerConfigRouting
+  routing?: ContainerConfigRouting
   expose?: ContainerConfigExposeStrategy
   user?: number
   tty?: boolean
