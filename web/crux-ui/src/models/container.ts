@@ -89,8 +89,10 @@ export type ContainerConfigExposeStrategy = typeof CONTAINER_EXPOSE_STRATEGY_VAL
 export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rwo', 'rwx', 'mem', 'tmp'] as const
 export type VolumeType = typeof CONTAINER_VOLUME_TYPE_VALUES[number]
 
-export type ContainerConfigDomain = {
-  name: string
+export type ContainerConfigRouting = {
+  domain?: string
+  path?: string
+  stripPath?: boolean
   uploadLimit?: string
 }
 
@@ -182,7 +184,7 @@ export type ContainerConfigData = {
   name: string
   environment?: UniqueKeyValue[]
   secrets?: UniqueSecretKey[]
-  domain?: ContainerConfigDomain
+  routing?: ContainerConfigRouting
   expose: ContainerConfigExposeStrategy
   user?: number
   tty: boolean
@@ -272,7 +274,7 @@ export type JsonContainerConfig = {
   name?: string
   environment?: JsonKeyValue
   secrets?: JsonContainerConfigSecretKey[]
-  domain?: ContainerConfigDomain
+  domain?: ContainerConfigRouting
   expose?: ContainerConfigExposeStrategy
   user?: number
   tty?: boolean
@@ -362,7 +364,7 @@ export const mergeConfigs = (
     commands: instance.commands ?? image.commands,
     expose: instance.expose ?? image.expose,
     configContainer: instance.configContainer ?? image.configContainer,
-    domain: instance.domain ?? image.domain,
+    routing: instance.routing ?? image.routing,
     volumes: instance.volumes ?? image.volumes,
     initContainers: instance.initContainers ?? image.initContainers,
     capabilities: null,

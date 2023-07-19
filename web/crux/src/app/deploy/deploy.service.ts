@@ -752,7 +752,7 @@ export default class DeployService {
                   create: {
                     name: it.config.name,
                     expose: it.config.expose,
-                    domain: toPrismaJson(it.config.domain),
+                    routing: toPrismaJson(it.config.routing),
                     configContainer: toPrismaJson(it.config.configContainer),
                     user: it.config.user,
                     tty: it.config.tty,

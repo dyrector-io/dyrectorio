@@ -4,7 +4,7 @@ export const COMMON_CONFIG_PROPERTIES = [
   'name',
   'environment',
   'secrets',
-  'domain',
+  'routing',
   'expose',
   'user',
   'tty',

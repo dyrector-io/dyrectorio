@@ -290,7 +290,7 @@ export default class DeployMapper {
       TTY: config.tty,
       configContainer: config.configContainer,
       importContainer: config.storageId ? this.storageToImportContainer(config, storage) : null,
-      domain: config.domain,
+      routing: config.routing,
       initContainers: this.mapInitContainerToAgent(config.initContainers),
       portRanges: config.portRanges,
       ports: config.ports,

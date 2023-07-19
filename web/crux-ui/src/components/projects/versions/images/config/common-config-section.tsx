@@ -277,31 +277,57 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             </div>
           )}
 
-          {/* domain */}
-          {filterContains('domain', selectedFilters) && (
+          {/* routing */}
+          {filterContains('routing', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
               <ConfigSectionLabel
-                disabled={disabled || !resetableConfig.domain}
-                onResetSection={() => onResetSection('domain')}
+                disabled={disabled || !resetableConfig.routing}
+                onResetSection={() => onResetSection('routing')}
               >
-                {t('common.domain').toUpperCase()}
+                {t('common.routing').toUpperCase()}
               </ConfigSectionLabel>
 
               <div className="ml-2">
                 <MultiInput
-                  id="common.domainName"
-                  label={t('common.domainName')}
+                  id="common.domain"
+                  label={t('common.domain')}
                   containerClassName="max-w-lg mb-3"
                   labelClassName="my-auto mr-4 w-40"
                   grow
                   inline
-                  value={config.domain?.name ?? ''}
-                  placeholder={t('common.placeholders.domainName')}
-                  onPatch={it => onChange({ domain: { ...config.domain, name: it } })}
+                  value={config.routing?.domain ?? ''}
+                  placeholder={t('common.domain')}
+                  onPatch={it => onChange({ routing: { ...config.routing, domain: it } })}
                   editorOptions={editorOptions}
-                  message={fieldErrors.find(it => it.path?.startsWith('domain.name'))?.message}
+                  message={fieldErrors.find(it => it.path?.startsWith('routing.domain'))?.message}
                   disabled={disabled}
                 />
+
+                <MultiInput
+                  id="common.path"
+                  label={t('common.path')}
+                  containerClassName="max-w-lg mb-3"
+                  labelClassName="my-auto mr-4 w-40"
+                  grow
+                  inline
+                  value={config.routing?.path ?? ''}
+                  placeholder={t('common.path')}
+                  onPatch={it => onChange({ routing: { ...config.routing, path: it } })}
+                  editorOptions={editorOptions}
+                  message={fieldErrors.find(it => it.path?.startsWith('routing.path'))?.message}
+                  disabled={disabled}
+                />
+
+                <div className="flex flex-row break-inside-avoid my-4">
+                  <DyoLabel className="my-auto mr-12">{t('common.stripPath')}</DyoLabel>
+
+                  <DyoSwitch
+                    fieldName="routing.stripPath"
+                    checked={config.routing?.stripPath ?? false}
+                    onCheckedChange={it => onChange({ routing: { ...config.routing, stripPath: it } })}
+                    disabled={disabled}
+                  />
+                </div>
 
                 <MultiInput
                   id="common.domainUploadLimit"
@@ -310,9 +336,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   labelClassName="my-auto mr-4 w-40"
                   grow
                   inline
-                  value={config.domain?.uploadLimit ?? ''}
+                  value={config.routing?.uploadLimit ?? ''}
                   placeholder={t('common.placeholders.domainUploadLimit')}
-                  onPatch={it => onChange({ domain: { ...config.domain, uploadLimit: it } })}
+                  onPatch={it => onChange({ routing: { ...config.routing, uploadLimit: it } })}
                   editorOptions={editorOptions}
                   disabled={disabled}
                 />

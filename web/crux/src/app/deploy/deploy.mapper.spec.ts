@@ -155,9 +155,11 @@ describe('DeployMapper', () => {
       bucket: 'storageBucket',
       path: 'storagePath',
     },
-    domain: {
-      name: 'domain',
-      uploadLimit: 'domain',
+    routing: {
+      domain: 'domain',
+      path: 'path',
+      stripPrefix: true,
+      uploadLimit: 'uploadLimit',
     },
     initContainers: [
       {
@@ -372,9 +374,11 @@ describe('DeployMapper', () => {
       bucket: 'instance.storageBucket',
       path: 'instance.storagePath',
     },
-    domain: {
-      name: 'instance.domain',
-      uploadLimit: 'instance.domain',
+    routing: {
+      domain: 'instance.domain',
+      path: 'instance.path',
+      stripPrefix: true,
+      uploadLimit: 'instance.uploadLimit',
     },
     initContainers: [
       {

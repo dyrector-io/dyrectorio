@@ -1,8 +1,8 @@
-import { CruxBadRequestException } from 'src/exception/crux-exception'
-import * as yup from 'yup'
-import { UID_MAX } from 'src/shared/const'
-import { AnyObject } from 'yup/lib/types'
 import { ContainerConfigPortRangeDto } from 'src/app/container/container.dto'
+import { CruxBadRequestException } from 'src/exception/crux-exception'
+import { UID_MAX } from 'src/shared/const'
+import * as yup from 'yup'
+import { AnyObject } from 'yup/lib/types'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
@@ -62,11 +62,13 @@ const portNumberBaseRule = yup
 const portNumberOptionalRule = portNumberBaseRule.nullable()
 const portNumberRule = portNumberBaseRule.required()
 
-const domainRule = yup
+const routingRule = yup
   .object()
   .shape({
-    name: yup.string().required(),
-    uploadLimitInBytes: yup.string().nullable(),
+    domain: yup.string().nullable(),
+    path: yup.string().nullable(),
+    stripPath: yup.bool().nullable(),
+    uploadLimit: yup.string().nullable(),
   })
   .default({})
   .nullable()
@@ -324,7 +326,7 @@ export const containerConfigSchema = yup.object().shape({
   name: yup.string().required(),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
   secrets: uniqueSecretKeyValuesSchema.default([]).nullable(),
-  domain: domainRule,
+  routing: routingRule,
   expose: exposeRule,
   user: yup.number().default(null).min(-1).max(UID_MAX).nullable(),
   tty: yup.boolean().default(false).required(),
@@ -362,7 +364,7 @@ export const instanceContainerConfigSchema = yup.object().shape({
   name: yup.string().nullable(),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
   secrets: uniqueKeyValuesSchema.default([]).nullable(),
-  domain: domainRule.nullable(),
+  routing: routingRule.nullable(),
   expose: instanceExposeRule,
   user: yup.number().default(null).min(-1).max(UID_MAX).nullable(),
   tty: yup.boolean().default(false).nullable(),

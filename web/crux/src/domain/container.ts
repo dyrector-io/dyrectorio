@@ -59,8 +59,10 @@ export type ContainerExposeStrategy = (typeof CONTAINER_EXPOSE_STRATEGY_VALUES)[
 export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rwo', 'rwx', 'mem', 'tmp'] as const
 export type ContainerVolumeType = (typeof CONTAINER_VOLUME_TYPE_VALUES)[number]
 
-export type Domain = {
-  name: string
+export type Routing = {
+  domain?: string
+  path?: string
+  stripPrefix?: boolean
   uploadLimit?: string
 }
 
@@ -151,7 +153,7 @@ export type ContainerConfigData = {
   name: string
   environment?: UniqueKeyValue[]
   secrets?: UniqueSecretKey[]
-  domain?: Domain
+  routing?: Routing
   expose: ContainerExposeStrategy
   user?: number
   tty: boolean
@@ -213,7 +215,7 @@ export const CONTAINER_CONFIG_JSON_FIELDS = [
   'environment',
   'secrets',
   'capabilities',
-  'domain',
+  'routing',
   'configContainer',
   'importContainer',
   'ports',
