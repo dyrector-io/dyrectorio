@@ -56,7 +56,7 @@
     "placeholders": {
       "port": "Port",
       "path": "Path",
-      "containerDefault": "Container default",
+      "containerDefault": "Container default"
     }
   },
 
