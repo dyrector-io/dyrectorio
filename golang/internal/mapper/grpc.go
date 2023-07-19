@@ -121,6 +121,7 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		}
 
 		containerConfig.IngressUploadLimit = pointer.GetString(cc.Routing.UploadLimit)
+		containerConfig.IngressPath = pointer.GetString(cc.Routing.Path)
 		containerConfig.IngressStripPath = pointer.GetBool(cc.Routing.StripPath)
 	}
 
