@@ -56,7 +56,7 @@ go-lint:
 	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4 ash -c "\
 		cd golang && make lint"
 
- Generate agent gRPC files
+# Generate agent gRPC files
 .PHONY: proto-agent
 proto-agent:
 	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4 ash -c "\
