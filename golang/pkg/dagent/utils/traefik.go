@@ -52,14 +52,17 @@ func GetRule(instanceConfig *v1.InstanceConfig, containerConfig *v1.ContainerCon
 	rules := []string{}
 	domain := []string{}
 
-	println("ingressnaaame", containerConfig.IngressName)
-	if containerConfig.IngressName == "" {
+	// generate the name.prefix.domain from prefix and container name
+	if containerConfig.IngressName == "" && containerConfig.IngressHost == "" {
 		domain = append(domain, containerConfig.Container, instanceConfig.ContainerPreName)
-	} else {
+	} else if containerConfig.IngressName != "" {
 		domain = append(domain, containerConfig.IngressName)
 	}
 
-	if cfg.RootDomain != "" {
+	// use ingressHost that might be localhost
+	if containerConfig.IngressHost != "" {
+		domain = append(domain, containerConfig.IngressHost)
+	} else if cfg.RootDomain != "" {
 		domain = append(domain, cfg.RootDomain)
 	}
 
