@@ -80,9 +80,6 @@ enum NetworkMode {
   NETWORK_MODE_UNSPECIFIED = 0;
   BRIDGE = 1;
   HOST = 2;
-  OVERLAY = 3;
-  IPVLAN = 4;
-  MACVLAN = 5;
   NONE = 6;
 }
 
