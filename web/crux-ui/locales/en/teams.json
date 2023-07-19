@@ -23,6 +23,10 @@
   "confirmRoleAction": "You are going to {{action}} {{user}} to {{role}}.",
   "invitationNotExpired": "The invitation is not expired yet.",
 
+  "leave": "Leave",
+  "leaveTeam": "Leave team",
+  "areYouSureWantToLeave": "Are you sure you want to leave the team {{name}}?",
+
   "errors": {
     "preconditionFailed": "Invitation link expired"
   }

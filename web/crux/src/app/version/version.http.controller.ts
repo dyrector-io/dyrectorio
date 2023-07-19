@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -12,9 +13,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import {
+  ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -55,7 +60,7 @@ export default class VersionHttpController {
   constructor(private service: VersionService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       "Returns an array containing the every version that belong to a project. `projectId` refers to the project's ID. Details include the version's `name`, `id`, `type`, `audit` log details, `changelog`, and increasibility.",
@@ -64,8 +69,9 @@ export default class VersionHttpController {
   @ApiOkResponse({
     type: VersionDto,
     isArray: true,
-    description: 'Returns an array with the every version of a project.',
+    description: 'Returns an array with every versions of a project.',
   })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for project versions.' })
   @UuidParams(PARAM_PROJECT_ID)
   async getVersions(
     @ProjectId() projectId: string,
@@ -82,13 +88,16 @@ export default class VersionHttpController {
     summary: 'Retrieve the details of a version of a project.',
   })
   @ApiOkResponse({ type: VersionDetailsDto, description: 'Details of a version under a project is fetched.' })
+  @ApiBadRequestResponse({ description: 'Bad request for version details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for version details.' })
+  @ApiNotFoundResponse({ description: 'Version not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async getVersion(@ProjectId() _projectId: string, @VersionId() versionId: string): Promise<VersionDetailsDto> {
     return await this.service.getVersionDetails(versionId)
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @CreatedWithLocation()
   @UseInterceptors(VersionCreateValidationInterceptor)
   @ApiOperation({
@@ -98,6 +107,9 @@ export default class VersionHttpController {
   })
   @ApiBody({ type: CreateVersionDto })
   @ApiCreatedResponse({ type: VersionDto, description: 'New version created.' })
+  @ApiBadRequestResponse({ description: 'Bad request for version creation.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for version creation.' })
+  @ApiConflictResponse({ description: 'Version name taken.' })
   @UuidParams(PARAM_PROJECT_ID)
   async createVersion(
     @ProjectId() projectId: string,
@@ -113,13 +125,17 @@ export default class VersionHttpController {
   }
 
   @Put(ROUTE_VERSION_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       "Updates a version's `name` and `changelog`. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.",
     summary: 'Modify version.',
   })
   @ApiNoContentResponse({ description: 'Changelog of a version is updated.' })
+  @ApiBadRequestResponse({ description: 'Bad request for version modification.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for version modification.' })
+  @ApiNotFoundResponse({ description: 'Version not found.' })
+  @ApiConflictResponse({ description: 'Version name taken.' })
   @UseInterceptors(VersionUpdateValidationInterceptor)
   @ApiBody({ type: UpdateVersionDto })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
@@ -133,13 +149,15 @@ export default class VersionHttpController {
   }
 
   @Delete(ROUTE_VERSION_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       "This call deletes a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.",
     summary: 'Delete a version.',
   })
   @ApiNoContentResponse({ description: 'Version deleted.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for version delete.' })
+  @ApiNotFoundResponse({ description: 'Version not found.' })
   @UseInterceptors(VersionDeleteValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async deleteVersion(@ProjectId() _projectId: string, @VersionId() versionId: string): Promise<void> {
@@ -147,7 +165,7 @@ export default class VersionHttpController {
   }
 
   @Put(`${ROUTE_VERSION_ID}/default`)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       "This call turns a version into the default one, resulting other versions within this project later inherit images, deployments and their configurations from it. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.",
@@ -157,13 +175,16 @@ export default class VersionHttpController {
   @ApiNoContentResponse({
     description: 'Version turned into default.',
   })
+  @ApiBadRequestResponse({ description: 'Bad request.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for setting version as default.' })
+  @ApiNotFoundResponse({ description: 'Version not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async setDefaultVersion(@ProjectId() projectId: string, @VersionId() versionId: string): Promise<void> {
     return await this.service.setDefaultVersion(projectId, versionId)
   }
 
   @Post(`${ROUTE_VERSION_ID}/increase`)
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @CreatedWithLocation()
   @ApiOperation({
     description:
@@ -173,6 +194,8 @@ export default class VersionHttpController {
   @UseInterceptors(VersionIncreaseValidationInterceptor)
   @ApiBody({ type: IncreaseVersionDto })
   @ApiCreatedResponse({ type: VersionDto, description: 'New version created.' })
+  @ApiBadRequestResponse({ description: 'Bad request for increasing version.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for increasing version.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async increaseVersion(
     @ProjectId() projectId: string,

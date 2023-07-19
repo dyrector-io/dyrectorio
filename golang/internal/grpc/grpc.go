@@ -52,13 +52,18 @@ type ContainerLogReader interface {
 }
 
 type ContainerLogContext struct {
-	Reader     ContainerLogReader
-	EnableEcho bool
+	Reader ContainerLogReader
+	Echo   bool
+}
+
+type ContainerWatchContext struct {
+	Events chan []*common.ContainerStateItem
+	Error  chan error
 }
 
 type (
 	DeployFunc           func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
-	WatchFunc            func(context.Context, string) []*common.ContainerStateItem
+	WatchFunc            func(context.Context, string) (*ContainerWatchContext, error)
 	DeleteFunc           func(context.Context, string, string) error
 	SecretListFunc       func(context.Context, string, string) ([]string, error)
 	SelfUpdateFunc       func(context.Context, string, int32) error
@@ -169,8 +174,6 @@ func Init(grpcContext context.Context,
 			creds = credentials.NewClientTLSFromCert(certPool, "")
 		}
 
-		// TODO: Missing error or panic when the server don't have a secure connection.
-		// the application silently dies. Added by @polaroi8d 2020/05/25
 		opts := []grpc.DialOption{
 			grpc.WithTransportCredentials(creds),
 			grpc.WithBlock(),
@@ -358,9 +361,48 @@ func executeVersionDeployRequest(
 	}
 }
 
-func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateRequest, listFn WatchFunc) {
-	if listFn == nil {
-		log.Error().Msg("List function not implemented")
+func streamContainerStatus(
+	streamCtx context.Context,
+	filterPrefix string,
+	stream agent.Agent_ContainerStateClient,
+	req *agent.ContainerStateRequest,
+	eventsContext *ContainerWatchContext,
+) {
+	for {
+		select {
+		case <-streamCtx.Done():
+			return
+		case eventError := <-eventsContext.Error:
+			log.Error().Err(eventError).Msg("Container status watcher error")
+			return
+		case event := <-eventsContext.Events:
+			err := stream.Send(&common.ContainerStateListMessage{
+				Prefix: req.Prefix,
+				Data:   event,
+			})
+			if err != nil {
+				log.Error().Err(err).Msg("Container status channel error")
+				return
+			}
+
+			if req.OneShot != nil && *req.OneShot {
+				err := stream.CloseSend()
+				if err == nil {
+					log.Info().Str("prefix", filterPrefix).Msg("Closed container status channel")
+				} else {
+					log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to close container status channel")
+				}
+
+				return
+			}
+			break
+		}
+	}
+}
+
+func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateRequest, watchFn WatchFunc) {
+	if watchFn == nil {
+		log.Error().Msg("Watch function not implemented")
 		return
 	}
 
@@ -378,31 +420,36 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 		return
 	}
 
-	for {
-		containers := listFn(ctx, filterPrefix)
-
-		err = stream.Send(&common.ContainerStateListMessage{
-			Prefix: req.Prefix,
-			Data:   containers,
-		})
-
+	defer func() {
+		err = stream.CloseSend()
 		if err != nil {
-			log.Error().Err(err).Msg("Container status channel error")
+			log.Error().Err(err).Stack().Str("prefix", filterPrefix).Msg("Failed to close container status stream")
+		}
+	}()
+
+	streamCtx = stream.Context()
+
+	eventsContext, err := watchFn(streamCtx, filterPrefix)
+	if err != nil {
+		log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to open container status reader")
+		return
+	}
+
+	// The channel consumer must run in a gofunc so RecvMsg can receive server side stream close events
+	go streamContainerStatus(streamCtx, filterPrefix, stream, req, eventsContext)
+
+	// RecvMsg must be called in order to get an error if the server closes the stream
+	for {
+		var msg interface{}
+		err := stream.RecvMsg(&msg)
+		if err != nil {
 			break
 		}
-
-		if req.OneShot != nil && *req.OneShot {
-			err := stream.CloseSend()
-			if err == nil {
-				log.Info().Str("prefix", filterPrefix).Msg("Closed container status channel")
-			} else {
-				log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to close container status channel")
-			}
-			return
-		}
-
-		time.Sleep(time.Second)
 	}
+
+	<-streamCtx.Done()
+
+	log.Info().Str("prefix", filterPrefix).Msg("Container status channel closed")
 }
 
 func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteRequest, deleteFn DeleteFunc) {
@@ -624,7 +671,7 @@ func streamContainerLog(reader ContainerLogReader,
 			break
 		}
 
-		if logContext.EnableEcho {
+		if logContext.Echo {
 			log.Debug().Str("prefix", prefix).Str("name", name).Str("log", event.Message).Msg("Container log")
 		}
 

@@ -20,11 +20,13 @@ export type Deployment = {
 
 export type DeploymentToken = {
   id: string
+  name: string
   createdAt: string
   expiresAt?: string | null
 }
 
 export type CreateDeploymentToken = {
+  name: string
   expirationInDays?: number
 }
 

@@ -1,8 +1,12 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common'
 import {
+  ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -30,7 +34,7 @@ export default class TokenHttpController {
   constructor(private service: TokenService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description: "Access token's support is to provide secure access to the HTTP api without a cookie.",
     summary: 'List of tokens.',
@@ -40,25 +44,29 @@ export default class TokenHttpController {
     isArray: true,
     description: 'Token list fetched.',
   })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for tokens.' })
   async getTokens(@IdentityFromRequest() identity: Identity): Promise<TokenDto[]> {
     return this.service.getTokenList(identity)
   }
 
   @Get(ROUTE_TOKEN_ID)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       "Access token's details are `name`, `id`, and the time of creation and expiration. Request must include `tokenId`.",
     summary: 'Fetch token details.',
   })
   @ApiOkResponse({ type: TokenDto, description: 'Token details listed.' })
+  @ApiBadRequestResponse({ description: 'Bad request for token details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for token details.' })
+  @ApiNotFoundResponse({ description: 'Token not found.' })
   @UuidParams(PARAM_TOKEN_ID)
   async getToken(@TokenId() id: string, @IdentityFromRequest() identity: Identity): Promise<TokenDto> {
     return this.service.getToken(id, identity)
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @CreatedWithLocation()
   @ApiOperation({
     description: 'Request must include `name` and `expirationInDays`.',
@@ -69,6 +77,9 @@ export default class TokenHttpController {
     type: GeneratedTokenDto,
     headers: API_CREATED_LOCATION_HEADERS,
   })
+  @ApiBadRequestResponse({ description: 'Bad request for token creation.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for token creation.' })
+  @ApiConflictResponse({ description: 'Token name taken.' })
   async generateToken(
     @Body(TokenValidationPipe) request: GenerateTokenDto,
     @IdentityFromRequest() identity: Identity,
@@ -82,12 +93,14 @@ export default class TokenHttpController {
   }
 
   @Delete(ROUTE_TOKEN_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `tokenId`.',
     summary: 'Delete an access token.',
   })
   @ApiNoContentResponse({ description: 'Delete token.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for token delete.' })
+  @ApiNotFoundResponse({ description: 'Token not found.' })
   @UuidParams(PARAM_TOKEN_ID)
   async deleteToken(@TokenId() id: string): Promise<void> {
     await this.service.deleteToken(id)

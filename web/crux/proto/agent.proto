@@ -191,7 +191,7 @@ message CraneContainerConfig {
 message CommonContainerConfig {
   string name = 101;
   optional common.ExposeStrategy expose = 102;
-  optional common.Ingress ingress = 103;
+  optional common.Routing routing = 103;
   optional common.ConfigContainer configContainer = 104;
   optional ImportContainer importContainer = 105;
   optional int64 user = 106;

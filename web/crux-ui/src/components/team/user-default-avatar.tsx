@@ -13,9 +13,9 @@ const UserDefaultAvatar = (props: UserDefaultAvatarProps) => {
 
   return (
     <Image
-      className={clsx('cursor-pointer bg-dyo-light-turquoise rounded-full w-9 h-9', className)}
-      src="/default_avatar.svg"
-      alt={t('teamAvatar')}
+      className={clsx('bg-dyo-light-turquoise rounded-full w-9 h-9', onClick ? 'cursor-pointer' : null, className)}
+      src="/user-avatar.svg"
+      alt={t('userAvatar')}
       width={36}
       height={36}
       onClick={onClick}

@@ -6,7 +6,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
-import { defaultApiErrorHandler } from '@app/errors'
+import { apiErrorHandler, defaultApiErrorHandler, defaultTranslator } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import {
@@ -25,6 +25,7 @@ import {
   deploymentIsDeployable,
   DeploymentStatus,
   DEPLOYMENT_STATUS_VALUES,
+  DyoErrorDto,
   NodeEventMessage,
   NodeStatus,
   StartDeployment,
@@ -34,20 +35,37 @@ import {
 import { deploymentApiUrl, deploymentDeployUrl, deploymentStartApiUrl, deploymentUrl, WS_NODES } from '@app/routes'
 import { sendForm, utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
+import { Translate } from 'next-translate'
 import useTranslation from 'next-translate/useTranslation'
-import { NextRouter, useRouter } from 'next/dist/client/router'
+import { useRouter } from 'next/dist/client/router'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import DeploymentStatusTag from './deployments/deployment-status-tag'
 import { VersionActions } from './use-version-state'
 
-export const startDeployment = async (
-  router: NextRouter,
-  onApiError: (response: Response) => void,
-  deploymentId: string,
-  deployInstances?: string[],
-) => {
+type ErrorInstance = {
+  id: string
+  name: string
+}
+
+export const deployStartErrorHandler = (t: Translate) =>
+  apiErrorHandler((stringId: string, status: number, dto: DyoErrorDto) => {
+    if (status === 412) {
+      const instances: ErrorInstance[] = dto.value
+      return {
+        toast: t('common:errors.deployRequiredSecrets', {
+          instances: instances.reduce((message, it) => `${message}\n${it.name}`, ''),
+        }),
+        toastOptions: {
+          className: '!bg-error-red text-center min-w-[32rem]',
+        },
+      }
+    }
+    return defaultTranslator(t)(stringId, status, dto)
+  })
+
+export const startDeployment = async (deploymentId: string, deployInstances?: string[]): Promise<Response | null> => {
   const res = await sendForm(
     'POST',
     deploymentStartApiUrl(deploymentId),
@@ -59,11 +77,8 @@ export const startDeployment = async (
   )
 
   if (!res.ok) {
-    onApiError(res)
-    return null
+    return res
   }
-
-  await router.push(deploymentDeployUrl(deploymentId))
 
   return null
 }
@@ -93,6 +108,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const router = useRouter()
 
   const handleApiError = defaultApiErrorHandler(t)
+  const handleDeployStartError = deployStartErrorHandler(t)
 
   const [showInfo, setShowInfo] = useState<DeploymentByVersion>(null)
   const [confirmModalConfig, confirm] = useConfirmation()
@@ -111,7 +127,12 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       return
     }
 
-    await startDeployment(router, handleApiError, deployment.id)
+    const res = await startDeployment(deployment.id)
+    if (res) {
+      handleDeployStartError(res)
+    } else {
+      await router.push(deploymentDeployUrl(deployment.id))
+    }
   }
 
   const onDeleteDeployment = async (deployment: DeploymentByVersion) => {
@@ -192,6 +213,14 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     ...Array.from({ length: headerClasses.length - 4 }).map(() => defaultItemClass),
     clsx('pr-6 text-center', defaultItemClass),
   ]
+
+  const onCellClick = async (data: DeploymentByVersion, row: number, col: number) => {
+    if (col >= headers.length - 1) {
+      return
+    }
+
+    await router.push(deploymentUrl(data.id))
+  }
 
   const itemTemplate = (item: DeploymentByVersion) => {
     const deployable = deploymentIsDeployable(item.status, version.type)
@@ -292,6 +321,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
               headerBuilder={sortHeaderBuilder<DeploymentByVersion, DeploymentSorting>(sorting, sortHeaders, text =>
                 t(text),
               )}
+              cellClick={onCellClick}
             />
           </DyoCard>
         </>

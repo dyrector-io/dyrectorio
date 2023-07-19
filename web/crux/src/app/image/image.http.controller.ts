@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -12,9 +13,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import {
+  ApiBadRequestResponse,
   ApiBody,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -48,7 +52,7 @@ export default class ImageHttpController {
   constructor(private service: ImageService) {}
 
   @Get()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       "Fetch details of images within a version. `ProjectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.</br></br>Details come in an array, including `name`, `id`, `tag`, `order`, and config details of the image.",
@@ -59,19 +63,23 @@ export default class ImageHttpController {
     isArray: true,
     description: 'Data of images listed.',
   })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for images.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async getImagesByVersionId(@ProjectId() _projectId: string, @VersionId() versionId: string): Promise<ImageDto[]> {
     return await this.service.getImagesByVersionId(versionId)
   }
 
   @Get(ROUTE_IMAGE_ID)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       "Fetch details of an image within a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required parameters.</br></br>Image details consists `name`, `id`, `tag`, `order`, and the config of the image.",
     summary: 'Fetch data of an image of a version.',
   })
   @ApiOkResponse({ type: ImageDto, description: 'Data of an image.' })
+  @ApiBadRequestResponse({ description: 'Bad request for image details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for image details.' })
+  @ApiNotFoundResponse({ description: 'Image not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async getImageDetails(
     @ProjectId() _projectId: string,
@@ -82,7 +90,7 @@ export default class ImageHttpController {
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @CreatedWithLocation()
   @ApiOperation({
     description:
@@ -91,6 +99,8 @@ export default class ImageHttpController {
   })
   @ApiBody({ type: AddImagesDto, isArray: true })
   @ApiCreatedResponse({ type: ImageDto, isArray: true, description: 'New image added.' })
+  @ApiBadRequestResponse({ description: 'Bad request for images.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for images.' })
   @UseGuards(ImageAddToVersionTeamAccessGuard)
   @UseInterceptors(ImageAddToVersionValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
@@ -109,7 +119,7 @@ export default class ImageHttpController {
   }
 
   @Patch(ROUTE_IMAGE_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       "Modify the configuration variables of an image. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required variables. `Tag` refers to the version of the image, `config` is an object of configuration variables.",
@@ -117,6 +127,9 @@ export default class ImageHttpController {
   })
   @ApiBody({ type: PatchImageDto })
   @ApiNoContentResponse({ description: "Image's configure variables updated." })
+  @ApiBadRequestResponse({ description: 'Bad request for an image.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for an image.' })
+  @ApiNotFoundResponse({ description: 'Image not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async patchImage(
     @ProjectId() _projectId: string,
@@ -129,13 +142,15 @@ export default class ImageHttpController {
   }
 
   @Delete(ROUTE_IMAGE_ID)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       "Delete an image. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required variables.",
     summary: 'Delete an image from a version.',
   })
   @ApiNoContentResponse({ description: 'Delete an image from a version.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for an image.' })
+  @ApiNotFoundResponse({ description: 'Image not found.' })
   @UseInterceptors(DeleteImageValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async deleteImage(
@@ -147,13 +162,15 @@ export default class ImageHttpController {
   }
 
   @Put('order')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
       "Edit image deployment order of a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables. Request should include the IDs of the images in an array.",
     summary: 'Edit image deployment order of a version.',
   })
   @ApiNoContentResponse({ description: 'Image order modified.' })
+  @ApiBadRequestResponse({ description: 'Bad request for ordering.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for ordering.' })
   @ApiBody({ type: String, isArray: true })
   @UseGuards(ImageOrderImagesTeamAccessGuard)
   @UseInterceptors(OrderImagesValidationInterceptor)

@@ -4,48 +4,50 @@ import (
 	"context"
 	"errors"
 
-	"github.com/rs/zerolog/log"
+	"k8s.io/client-go/dynamic"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
-	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
-
-	corev1 "k8s.io/api/core/v1"
-
-	common "github.com/dyrector-io/dyrectorio/protobuf/go/common"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
-func GetDeployments(ctx context.Context, namespace string) []*common.ContainerStateItem {
+func WatchDeploymentsByPrefix(ctx context.Context, namespace string) (*grpc.ContainerWatchContext, error) {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 	client := k8s.NewClient(cfg)
 
+	clientSet, err := client.GetClientSet()
+	if err != nil {
+		return nil, err
+	}
+
+	restConfig, err := client.GetRestConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	clusterClient, err := dynamic.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	deploymentHandler := k8s.NewDeployment(ctx, cfg)
-	deployments, err := deploymentHandler.GetDeployments(ctx, namespace, cfg)
-	if err != nil {
-		log.Error().Err(err).Stack().Send()
-		return nil
-	}
-
 	svcHandler := k8s.NewService(ctx, client)
-	svc, err := svcHandler.GetServices(namespace)
-	if err != nil {
-		log.Error().Err(err).Stack().Send()
+
+	eventChannel := make(chan []*common.ContainerStateItem)
+	errorChannel := make(chan error)
+
+	watchContext := &grpc.ContainerWatchContext{
+		Events: eventChannel,
+		Error:  errorChannel,
 	}
 
-	podsByDeployment := make(map[string][]corev1.Pod)
-	for i := 0; i < len(deployments.Items); i++ {
-		deployment := deployments.Items[i]
-		pods, err := deploymentHandler.GetPods(namespace, deployment.Name)
-		if err != nil {
-			log.Error().Err(err).Stack().Send()
-			return nil
-		}
+	// For some unknown reason the watcher used by watchPods does not get any deployment delete events
+	// so a separate watcher is required
+	go watchDeployments(ctx, namespace, clusterClient, deploymentHandler, svcHandler, watchContext, cfg)
+	go watchPods(ctx, namespace, clientSet, deploymentHandler, svcHandler, watchContext, cfg)
 
-		podsByDeployment[deployment.Name] = pods
-	}
-
-	return mapper.MapKubeDeploymentListToCruxStateItems(deployments, podsByDeployment, svc)
+	return watchContext, nil
 }
 
 func GetSecretsList(ctx context.Context, prefix, name string) ([]string, error) {

@@ -5,18 +5,7 @@ import { OnboardingDto, OnboardingItemDto } from './dashboard.dto'
 @Injectable()
 export default class DashboardMapper {
   teamToOnboard(team: DashboardTeam): OnboardingDto {
-    const project: DashboardProject = team.projects.find(Boolean)
-    let version: DashboardVersion = null
-    let image: ResourceWithId = null
-    let deployment: DashboardDeployment = null
-
-    if (project) {
-      version = project.versions.find(Boolean)
-      if (version) {
-        image = version.images.find(Boolean)
-        deployment = version.deployments.find(Boolean)
-      }
-    }
+    const { deployment } = team
 
     const onboard: OnboardingDto = {
       signUp: {
@@ -26,10 +15,10 @@ export default class DashboardMapper {
         done: true,
         resourceId: team.id,
       },
-      createNode: this.resourceToOnboardItem(team.nodes.find(Boolean)),
-      createProject: this.resourceToOnboardItem(project),
-      createVersion: this.resourceToOnboardItem(version),
-      addImages: this.resourceToOnboardItem(image),
+      createNode: this.resourceToOnboardItem(deployment ? deployment.node : team.nodes.find(Boolean)),
+      createProject: this.resourceToOnboardItem(team.project),
+      createVersion: this.resourceToOnboardItem(team.version),
+      addImages: this.resourceToOnboardItem(team.image),
       addDeployment: this.resourceToOnboardItem(deployment),
       deploy: {
         done: (deployment && deployment.status !== 'preparing') ?? false,
@@ -59,18 +48,13 @@ type ResourceWithId = {
 
 type DashboardDeployment = ResourceWithId & {
   status: DeploymentStatusEnum
-}
-
-type DashboardVersion = ResourceWithId & {
-  images: ResourceWithId[]
-  deployments: DashboardDeployment[]
-}
-
-type DashboardProject = ResourceWithId & {
-  versions: DashboardVersion[]
+  node: ResourceWithId
 }
 
 export type DashboardTeam = ResourceWithId & {
   nodes: ResourceWithId[]
-  projects: DashboardProject[]
+  project: ResourceWithId
+  version: ResourceWithId
+  image: ResourceWithId
+  deployment: DashboardDeployment
 }

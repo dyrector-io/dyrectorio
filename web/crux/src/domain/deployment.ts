@@ -5,6 +5,7 @@ import {
   VersionTypeEnum,
 } from '.prisma/client'
 import { Logger } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import { Observable, Subject } from 'rxjs'
 import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
@@ -105,7 +106,8 @@ export const checkDeploymentDeployability = (status: DeploymentStatusEnum, type:
 }
 
 export type DeploymentNotification = {
-  accessedBy: string
+  teamId: string
+  actor: Identity | string
   projectName: string
   versionName: string
   nodeName: string

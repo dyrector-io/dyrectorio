@@ -12,7 +12,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { GeneratedToken, Token } from '@app/models'
-import { API_TOKENS, ROUTE_SETTINGS_EDIT_PROFILE, ROUTE_SETTINGS_TOKENS, tokensApiUrl } from '@app/routes'
+import { API_TOKENS, ROUTE_SETTINGS, ROUTE_SETTINGS_EDIT_PROFILE, tokensApiUrl } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
@@ -109,7 +109,7 @@ const TokensPage = (props: TokensPageProps) => {
 
   const pageLink: BreadcrumbLink = {
     name: t('common:tokens'),
-    url: ROUTE_SETTINGS_TOKENS,
+    url: ROUTE_SETTINGS,
   }
 
   const sublinks: BreadcrumbLink[] = [

@@ -277,57 +277,69 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             </div>
           )}
 
-          {/* ingress */}
-          {filterContains('ingress', selectedFilters) && (
+          {/* routing */}
+          {filterContains('routing', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
               <ConfigSectionLabel
-                disabled={disabled || !resetableConfig.ingress}
-                onResetSection={() => onResetSection('ingress')}
+                disabled={disabled || !resetableConfig.routing}
+                onResetSection={() => onResetSection('routing')}
               >
-                {t('common.ingress').toUpperCase()}
+                {t('common.routing').toUpperCase()}
               </ConfigSectionLabel>
 
               <div className="ml-2">
                 <MultiInput
-                  id="common.ingressName"
-                  label={t('common.ingressName')}
+                  id="routing.domain"
+                  label={t('common.domain')}
                   containerClassName="max-w-lg mb-3"
                   labelClassName="my-auto mr-4 w-40"
                   grow
                   inline
-                  value={config.ingress?.name ?? ''}
-                  placeholder={t('common.placeholders.ingressName')}
-                  onPatch={it => onChange({ ingress: { ...config.ingress, name: it } })}
+                  value={config.routing?.domain ?? ''}
+                  placeholder={t('common.domain')}
+                  onPatch={it => onChange({ routing: { ...config.routing, domain: it } })}
                   editorOptions={editorOptions}
-                  message={fieldErrors.find(it => it.path?.startsWith('ingress.name'))?.message}
+                  message={fieldErrors.find(it => it.path?.startsWith('routing.domain'))?.message}
                   disabled={disabled}
                 />
 
                 <MultiInput
-                  id="common.ingressHost"
-                  label={t('common.ingressHost')}
+                  id="routing.path"
+                  label={t('common.path')}
                   containerClassName="max-w-lg mb-3"
                   labelClassName="my-auto mr-4 w-40"
                   grow
                   inline
-                  value={config.ingress?.host ?? ''}
-                  placeholder={t('common.placeholders.ingressHost')}
-                  onPatch={it => onChange({ ingress: { ...config.ingress, host: it } })}
+                  value={config.routing?.path ?? ''}
+                  placeholder={t('common.path')}
+                  onPatch={it => onChange({ routing: { ...config.routing, path: it } })}
                   editorOptions={editorOptions}
-                  message={fieldErrors.find(it => it.path?.startsWith('ingress.host'))?.message}
+                  message={fieldErrors.find(it => it.path?.startsWith('routing.path'))?.message}
                   disabled={disabled}
                 />
 
+                <div className="flex flex-row break-inside-avoid my-4">
+                  <DyoLabel className="my-auto mr-12">{t('common.stripPath')}</DyoLabel>
+
+                  <DyoSwitch
+                    id="routing.stripPath"
+                    fieldName="routing.stripPath"
+                    checked={config.routing?.stripPath ?? false}
+                    onCheckedChange={it => onChange({ routing: { ...config.routing, stripPath: it } })}
+                    disabled={disabled}
+                  />
+                </div>
+
                 <MultiInput
-                  id="common.ingressUploadLimit"
-                  label={t('common.ingressUploadLimit')}
+                  id="routing.uploadLimit"
+                  label={t('common.uploadLimit')}
                   containerClassName="max-w-lg mb-3"
                   labelClassName="my-auto mr-4 w-40"
                   grow
                   inline
-                  value={config.ingress?.uploadLimit ?? ''}
-                  placeholder={t('common.placeholders.ingressUploadLimit')}
-                  onPatch={it => onChange({ ingress: { ...config.ingress, uploadLimit: it } })}
+                  value={config.routing?.uploadLimit ?? ''}
+                  placeholder={t('common.uploadLimit')}
+                  onPatch={it => onChange({ routing: { ...config.routing, uploadLimit: it } })}
                   editorOptions={editorOptions}
                   disabled={disabled}
                 />
@@ -383,23 +395,6 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             </div>
           )}
 
-          {/* args */}
-          {filterContains('args', selectedFilters) && (
-            <div className="grid break-inside-avoid mb-8 max-w-lg">
-              <KeyOnlyInput
-                className="max-h-128 overflow-y-auto mb-2"
-                keyPlaceholder={t('common.arguments')}
-                label={t('common.arguments').toUpperCase()}
-                labelClassName="text-bright font-semibold tracking-wide mb-2"
-                onChange={it => onChange({ args: it })}
-                onResetSection={resetableConfig.args ? () => onResetSection('args') : null}
-                items={config.args}
-                editorOptions={editorOptions}
-                disabled={disabled}
-              />
-            </div>
-          )}
-
           {/* commands */}
           {filterContains('commands', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8 max-w-lg">
@@ -411,6 +406,23 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 onChange={it => onChange({ commands: it })}
                 onResetSection={resetableConfig.commands ? () => onResetSection('commands') : null}
                 items={config.commands}
+                editorOptions={editorOptions}
+                disabled={disabled}
+              />
+            </div>
+          )}
+
+          {/* args */}
+          {filterContains('args', selectedFilters) && (
+            <div className="grid break-inside-avoid mb-8 max-w-lg">
+              <KeyOnlyInput
+                className="max-h-128 overflow-y-auto mb-2"
+                keyPlaceholder={t('common.arguments')}
+                label={t('common.arguments').toUpperCase()}
+                labelClassName="text-bright font-semibold tracking-wide mb-2"
+                onChange={it => onChange({ args: it })}
+                onResetSection={resetableConfig.args ? () => onResetSection('args') : null}
+                items={config.args}
                 editorOptions={editorOptions}
                 disabled={disabled}
               />

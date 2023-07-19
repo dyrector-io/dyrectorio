@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { Observable, filter, firstValueFrom, map, mergeAll, mergeWith, of, timeout } from 'rxjs'
+import { Prisma } from '@prisma/client'
+import { EmptyError, Observable, filter, firstValueFrom, map, mergeAll, mergeWith, of, timeout } from 'rxjs'
 import { Agent, AgentConnectionMessage } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
 import {
@@ -13,7 +14,6 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
-import { Prisma } from '@prisma/client'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
 import {
@@ -106,9 +106,9 @@ export default class NodeService {
     })
 
     await this.notificationService.sendNotification({
-      identityId: identity.id,
+      teamId: team.teamId,
       messageType: 'node',
-      message: { subject: node.name } as BaseMessage,
+      message: { subject: node.name, owner: identity } as BaseMessage,
     })
 
     return this.mapper.toDto(node)
@@ -296,13 +296,24 @@ export default class NodeService {
   }
 
   async getContainers(nodeId: string, prefix?: string): Promise<ContainerDto[]> {
-    const states = this.upsertAndWatchStateWatcher(nodeId, prefix, true).pipe(
-      map(list => list.data?.map(it => this.mapper.containerStateItemToDto(it))),
-      filter(it => it && it.length > 0),
-      timeout(5000),
-    )
-    const containers = await firstValueFrom(states)
-    return containers ?? []
+    try {
+      const states = this.upsertAndWatchStateWatcher(nodeId, prefix, true).pipe(
+        map(list => list.data?.map(it => this.mapper.containerStateItemToDto(it))),
+        filter(it => it && it.length > 0),
+        timeout(5000),
+      )
+
+      const containers = await firstValueFrom(states)
+
+      return containers ?? []
+    } catch (err) {
+      // TODO(@m8vago): check if we can remove this workaround after rxjs update
+      if (err instanceof EmptyError) {
+        return []
+      }
+
+      throw err
+    }
   }
 
   private upsertAndWatchStateWatcher(

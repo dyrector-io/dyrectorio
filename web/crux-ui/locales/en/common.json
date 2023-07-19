@@ -158,6 +158,7 @@
   "saveState": {
     "saved": "Saved",
     "saving": "Saving",
+    "connected": "Connected",
     "disconnected": "Disconnected"
   },
 
@@ -166,6 +167,7 @@
   "heart": "Heart",
   "userAvatar": "User's avatar",
   "teamAvatar": "Team's avatar",
+  "robotAvatar": "Robot's avatar",
   "rightArrowIcon": "Right arrow icon",
 
   "daysOfTheWeekShort": ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
@@ -210,6 +212,7 @@
 
   "errors": {
     "registryRateLimit": "Rate limit reached, please try again later",
-    "registryUnauthorized": "Unauthorized"
+    "registryUnauthorized": "Unauthorized",
+    "deployRequiredSecrets": "The following instances have missing required secrets: {{instances}}"
   }
 }

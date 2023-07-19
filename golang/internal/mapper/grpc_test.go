@@ -46,7 +46,7 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 			Environment:       map[string]string{"Evn1": "Val1", "Env2": "Val2"},
 			Registry:          "",
 			RepositoryPreName: "repo-prefix",
-			SharedEnvironment: map[string]string {},
+			SharedEnvironment: map[string]string{},
 			UseSharedEnvs:     false,
 		},
 		ContainerConfig: v1.ContainerConfig{
@@ -61,8 +61,8 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 			RuntimeConfigType:  "",
 			Expose:             true,
 			ExposeTLS:          true,
-			IngressName:        "test-ingress",
-			IngressHost:        "test-host",
+			IngressHost:        "test-domain",
+			IngressName:        "",
 			IngressUploadLimit: "5Mi",
 			Shared:             false,
 			ConfigContainer: &v1.ConfigContainer{
@@ -172,6 +172,16 @@ func TestMapSecrets(t *testing.T) {
 	assert.Equal(t, expected, m)
 }
 
+func TestMapDockerContainerEventToContainerState(t *testing.T) {
+	assert.Equal(t, common.ContainerState_WAITING, mapper.MapDockerContainerEventToContainerState("create"))
+	assert.Equal(t, common.ContainerState_REMOVED, mapper.MapDockerContainerEventToContainerState("destroy"))
+	assert.Equal(t, common.ContainerState_WAITING, mapper.MapDockerContainerEventToContainerState("pause"))
+	assert.Equal(t, common.ContainerState_RUNNING, mapper.MapDockerContainerEventToContainerState("restart"))
+	assert.Equal(t, common.ContainerState_RUNNING, mapper.MapDockerContainerEventToContainerState("start"))
+	assert.Equal(t, common.ContainerState_EXITED, mapper.MapDockerContainerEventToContainerState("stop"))
+	assert.Equal(t, common.ContainerState_EXITED, mapper.MapDockerContainerEventToContainerState("die"))
+}
+
 func testDeployRequest() *agent.DeployRequest {
 	registry := "https://my-registry.com"
 	runtimeCfg := "key1=val1,key2=val2"
@@ -213,9 +223,8 @@ func testDeployRequest() *agent.DeployRequest {
 			Volumes:        []*agent.Volume{testVolume()},
 			InitContainers: []*agent.InitContainer{testInitContainer()},
 			Expose:         &strategy,
-			Ingress: &common.Ingress{
-				Name:        "test-ingress",
-				Host:        "test-host",
+			Routing: &common.Routing{
+				Domain:      pointer.ToString("test-domain"),
 				UploadLimit: &upLimit,
 			},
 			ConfigContainer: &common.ConfigContainer{
@@ -360,7 +369,7 @@ func testAppConfig() *config.CommonConfiguration {
 		GrpcKeepalive:        30 * time.Second,
 		Debug:                false,
 		ImportContainerImage: "",
-		IngressRootDomain:    "",
+		RootDomain:           "",
 		ReadHeaderTimeout:    30 * time.Second,
 		DefaultRegistry:      "",
 		SecretPrivateKey:     "",

@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { RegistryTypeEnum } from '@prisma/client'
-import { Request as ExpressRequest } from 'express'
 import { IdentityTraits, emailOfIdentity, invitationExpired, nameOfIdentity } from 'src/domain/identity'
 import { InviteMessage } from 'src/domain/notification-templates'
 import {
@@ -15,8 +14,10 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import EmailBuilder, { InviteTemplateOptions } from '../../builders/email.builder'
 import AuditLoggerService from '../audit.logger/audit.logger.service'
+import { AuthorizedHttpRequest } from '../token/jwt-auth.guard'
 import {
   ActivateTeamDto,
   CreateTeamDto,
@@ -83,7 +84,7 @@ export default class TeamService {
     return this.mapper.toUserMetaDto(teams, invitations, identity)
   }
 
-  async createTeam(request: CreateTeamDto, identity: Identity, httpRequest: ExpressRequest): Promise<TeamDto> {
+  async createTeam(request: CreateTeamDto, identity: Identity, httpRequest: AuthorizedHttpRequest): Promise<TeamDto> {
     // If the user doesn't have an active team, make the current one active
     const userHasTeam = await this.teamRepository.userHasTeam(identity.id)
 
@@ -115,7 +116,7 @@ export default class TeamService {
       include: this.teamRepository.teamInclude,
     })
 
-    await this.auditLoggerService.createHttpAudit('all', identity, httpRequest)
+    await this.auditLoggerService.createHttpAudit('all', httpRequest)
 
     return this.mapper.toDto(team)
   }
@@ -245,9 +246,9 @@ export default class TeamService {
     })
 
     await this.notificationService.sendNotification({
-      identityId: identity.id,
+      teamId,
       messageType: 'invite',
-      message: { subject: request.email, team: team.name } as InviteMessage,
+      message: { subject: request.email, team: team.name, owner: identity } as InviteMessage,
     })
 
     return {
@@ -415,9 +416,11 @@ export default class TeamService {
         },
       })
       deleted = true
-      // TODO(@polaroi8d): remove this catch or implement a better way to handle this
-    } catch {
-      this.logger.error(`User ${userId} is not in the team: ${team.id}`)
+    } catch (err) {
+      const exception = PrismaErrorInterceptor.transformPrismaError(err)
+      if (!(exception instanceof CruxNotFoundException)) {
+        throw exception
+      }
     }
 
     try {
@@ -430,9 +433,11 @@ export default class TeamService {
         },
       })
       deleted = true
-      // TODO(@polaroi8d): remove this catch or implement a better way to handle this
-    } catch {
-      this.logger.error(`User ${userId} is not in the team: ${team.id}`)
+    } catch (err) {
+      const exception = PrismaErrorInterceptor.transformPrismaError(err)
+      if (!(exception instanceof CruxNotFoundException)) {
+        throw exception
+      }
     }
 
     if (!deleted) {
@@ -441,6 +446,30 @@ export default class TeamService {
         property: 'userId',
         value: userId,
       })
+    }
+  }
+
+  async leaveTeam(teamId: string, identity: Identity, httpRequest: AuthorizedHttpRequest): Promise<void> {
+    await this.auditLoggerService.createHttpAudit('all', httpRequest)
+
+    await this.deleteUserFromTeam(teamId, identity.id)
+
+    const userOnTeams = await this.prisma.usersOnTeams.findFirst({
+      where: {
+        userId: identity.id,
+      },
+      select: {
+        teamId: true,
+      },
+    })
+
+    if (userOnTeams) {
+      await this.activateTeam(
+        {
+          teamId: userOnTeams.teamId,
+        },
+        identity,
+      )
     }
   }
 

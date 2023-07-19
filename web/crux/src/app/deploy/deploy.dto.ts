@@ -1,7 +1,18 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger'
 import { Deployment, DeploymentToken, Instance, InstanceContainerConfig, Node, Project, Version } from '@prisma/client'
 import { Type } from 'class-transformer'
-import { IsDate, IsIn, IsInt, IsJWT, IsOptional, IsString, IsUUID, Min, ValidateNested } from 'class-validator'
+import {
+  IsDate,
+  IsIn,
+  IsInt,
+  IsJWT,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+  MinLength,
+  ValidateNested,
+} from 'class-validator'
 import { CONTAINER_STATE_VALUES, ContainerState } from 'src/domain/container'
 import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
 import { BasicProperties } from '../../shared/dtos/shared.dto'
@@ -91,6 +102,9 @@ export class DeploymentTokenDto {
   @IsUUID()
   id: string
 
+  @IsString()
+  name: string
+
   @IsDate()
   @Type(() => Date)
   createdAt: Date
@@ -102,6 +116,10 @@ export class DeploymentTokenDto {
 }
 
 export class CreateDeploymentTokenDto {
+  @IsString()
+  @MinLength(3)
+  name: string
+
   @IsInt()
   @Min(1)
   @IsOptional()
@@ -271,6 +289,6 @@ export type InstanceDetails = Instance & {
 }
 
 export type DeploymentDetails = DeploymentWithNodeVersion & {
-  tokens: Pick<DeploymentToken, 'id' | 'createdAt' | 'expiresAt'>[]
+  tokens: Pick<DeploymentToken, 'id' | 'name' | 'createdAt' | 'expiresAt'>[]
   instances: InstanceDetails[]
 }

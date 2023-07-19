@@ -44,7 +44,7 @@ export type ContainerPortRange = {
 
 export type JsonKeyValue = { [key: string]: string }
 
-export const CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge', 'overlay', 'ipvlan', 'macvlan'] as const
+export const CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge'] as const
 export type ContainerNetworkMode = (typeof CONTAINER_NETWORK_MODE_VALUES)[number]
 
 export const CONTAINER_RESTART_POLICY_TYPE_VALUES = ['always', 'unlessStopped', 'no', 'onFailure'] as const
@@ -59,9 +59,10 @@ export type ContainerExposeStrategy = (typeof CONTAINER_EXPOSE_STRATEGY_VALUES)[
 export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rwo', 'rwx', 'mem', 'tmp'] as const
 export type ContainerVolumeType = (typeof CONTAINER_VOLUME_TYPE_VALUES)[number]
 
-export type Ingress = {
-  name: string
-  host: string
+export type Routing = {
+  domain?: string
+  path?: string
+  stripPrefix?: boolean
   uploadLimit?: string
 }
 
@@ -152,7 +153,7 @@ export type ContainerConfigData = {
   name: string
   environment?: UniqueKeyValue[]
   secrets?: UniqueSecretKey[]
-  ingress?: Ingress
+  routing?: Routing
   expose: ContainerExposeStrategy
   user?: number
   tty: boolean
@@ -214,7 +215,7 @@ export const CONTAINER_CONFIG_JSON_FIELDS = [
   'environment',
   'secrets',
   'capabilities',
-  'ingress',
+  'routing',
   'configContainer',
   'importContainer',
   'ports',

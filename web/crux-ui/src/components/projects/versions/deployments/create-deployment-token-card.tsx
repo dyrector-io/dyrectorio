@@ -47,6 +47,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
   const formik = useFormik({
     validationSchema: createDeploymentTokenSchema,
     initialValues: {
+      name: '',
       expirationInDays: EXPIRATION_VALUES[0],
     } as CreateDeploymentToken,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
@@ -75,7 +76,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
     <DyoCard className={className}>
       <div className="flex flex-row">
         <DyoHeading element="h4" className="text-xl text-bright">
-          {t('tokens:newToken')}
+          {!token ? t('tokens:newToken') : token.name}
         </DyoHeading>
 
         {!token ? (
@@ -97,6 +98,18 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
 
       {!token ? (
         <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+          <DyoInput
+            className="max-w-lg"
+            grow
+            name="name"
+            type="name"
+            required
+            label={t('common:name')}
+            onChange={formik.handleChange}
+            value={formik.values.name}
+            message={formik.errors.name}
+          />
+
           <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('tokens:expirationIn')}</DyoLabel>
 
           <DyoChips

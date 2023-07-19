@@ -24,11 +24,7 @@ export default class DeployJwtAuthGuard extends AuthGuard(DEPLOY_TOKEN_STRATEGY)
       return false
     }
 
-    const jwt = req.user
-    const userId = jwt.data.sub
     try {
-      req.identity = await this.kratos.getIdentityById(userId)
-      req.sessionExpiresAt = jwt.exp
       this.logger.verbose('Authorized. JWT was found legit.')
     } catch {
       this.logger.verbose('Unauthorized. JWT was found, but failed to authorize with kratos.')
