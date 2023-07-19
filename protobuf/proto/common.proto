@@ -80,9 +80,6 @@ enum NetworkMode {
   NETWORK_MODE_UNSPECIFIED = 0;
   BRIDGE = 1;
   HOST = 2;
-  OVERLAY = 3;
-  IPVLAN = 4;
-  MACVLAN = 5;
   NONE = 6;
 }
 
@@ -133,10 +130,11 @@ enum ExposeStrategy {
   EXPOSE_WITH_TLS = 3;
 }
 
-message Ingress {
-  string name = 100;
-  string host = 101;
-  optional string uploadLimit = 102;
+message Routing {
+  optional string domain = 100;
+  optional string path = 101;
+  optional bool stripPath = 102;
+  optional string uploadLimit = 103;
 }
 
 message ConfigContainer {

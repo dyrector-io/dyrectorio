@@ -64,9 +64,8 @@
       "config": {
         "name": "strapi-service",
         "expose": "expose",
-        "ingress": {
-          "host": "localhost",
-          "name": "strapi"
+        "routing": {
+          "domain": "strapi.localhost"
         },
         "volumes": [
           {

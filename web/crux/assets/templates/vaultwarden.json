@@ -41,9 +41,8 @@
             "value": "https://vault.example.com/"
           }
         ],
-        "ingress": {
-          "host": "example.com",
-          "name": "vault"
+        "routing": {
+          "domain": "vault.example.com"
         },
         "expose": "EXPOSE_WITH_TLS",
         "dockerLabels": [
