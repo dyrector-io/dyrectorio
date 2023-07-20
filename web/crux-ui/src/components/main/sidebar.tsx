@@ -110,7 +110,7 @@ export const Sidebar = (props: SidebarProps) => {
 
   const routes = useTeamRoutes()
 
-  const sidebarSections = sidebarSectionsOf(routes)
+  const sidebarSections = routes ? sidebarSectionsOf(routes) : null
 
   return (
     <div className={className}>
@@ -126,22 +126,24 @@ export const Sidebar = (props: SidebarProps) => {
         </Link>
       </div>
 
-      <div className="flex flex-col flex-grow pb-4">
-        <div className="mt-6 flex text-bright">
-          <NavButton href={routes.dashboard.index()} icon={<DyoIcon src="/dashboard.svg" alt={t('dashboard')} />}>
-            {t('dashboard')}
-          </NavButton>
-        </div>
+      {sidebarSections && (
+        <div className="flex flex-col flex-grow pb-4">
+          <div className="mt-6 flex text-bright">
+            <NavButton href={routes.dashboard.index()} icon={<DyoIcon src="/dashboard.svg" alt={t('dashboard')} />}>
+              {t('dashboard')}
+            </NavButton>
+          </div>
 
-        {sidebarSections.map((it, index) => (
-          <NavSection
-            key={index}
-            className={index < sidebarSections.length - 1 ? 'mt-6' : 'mt-auto mt-6'}
-            title={t(it.title)}
-            options={it.items}
-          />
-        ))}
-      </div>
+          {sidebarSections.map((it, index) => (
+            <NavSection
+              key={index}
+              className={index < sidebarSections.length - 1 ? 'mt-6' : 'mt-auto mt-6'}
+              title={t(it.title)}
+              options={it.items}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

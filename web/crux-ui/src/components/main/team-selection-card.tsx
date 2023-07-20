@@ -1,10 +1,7 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoList } from '@app/elements/dyo-list'
-import { defaultApiErrorHandler } from '@app/errors'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { ActivateTeam, UserMeta, UserMetaTeam } from '@app/models'
-import { API_USERS_ME_ACTIVE_TEAM, ROUTE_INDEX } from '@app/routes'
-import { sendForm } from '@app/utils'
+import { UserMeta, UserMetaTeam } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -19,25 +16,11 @@ const TeamSelectionCard = (props: TeamSelectionCardProps) => {
   const { meta, className, onTeamSelected } = props
 
   const { t } = useTranslation('common')
-
   const routes = useTeamRoutes()
 
-  const handleApiError = defaultApiErrorHandler(t)
-
   const onSelectTeam = async (team: UserMetaTeam) => {
-    const req: ActivateTeam = {
-      teamId: team.id,
-    }
-
-    const res = await sendForm('POST', API_USERS_ME_ACTIVE_TEAM, req)
-
-    if (res.ok) {
-      // nextjs router replace then reload loads the page twice, so instead use window.location
-      window.location.replace(ROUTE_INDEX)
-      onTeamSelected?.call(null)
-    } else {
-      handleApiError(res)
-    }
+    window.location.replace(`/${team.slug}`)
+    onTeamSelected?.call(null)
   }
 
   const itemTemplate = (team: UserMetaTeam) => {

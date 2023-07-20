@@ -12,8 +12,9 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { GeneratedToken, Token } from '@app/models'
-import { API_TOKENS, ROUTE_SETTINGS, ROUTE_SETTINGS_EDIT_PROFILE, tokensApiUrl } from '@app/routes'
-import { utcDateToLocale, withContextAuthorization } from '@app/utils'
+import { appendTeamSlug } from '@app/providers/team-routes'
+import { API_TOKENS, ROUTE_INDEX, ROUTE_SETTINGS, ROUTE_SETTINGS_EDIT_PROFILE, tokensApiUrl } from '@app/routes'
+import { redirectTo, teamSlugOrFirstTeam, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
@@ -185,10 +186,15 @@ export default TokensPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const tokens = await getCruxFromContext<Token[]>(context, API_TOKENS)
 
+  const teamSlug = await teamSlugOrFirstTeam(context)
+  if (!teamSlug) {
+    return redirectTo(ROUTE_INDEX)
+  }
+
   return {
-    props: {
+    props: appendTeamSlug(teamSlug, {
       tokens,
-    },
+    }),
   }
 }
 

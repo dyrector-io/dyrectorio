@@ -2,6 +2,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoLabel } from '@app/elements/dyo-label'
 import useTeamRoutes from '@app/hooks/use-team-routes'
+import { ROUTE_INDEX } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import { sidebarSectionsOf } from '../main/sidebar'
@@ -18,14 +19,16 @@ export interface BreadcrumbProps {
 }
 
 const Breadcrumb = (props: BreadcrumbProps) => {
+  const { page, pageUrl, links } = props
+
   const { t } = useTranslation('common')
   const routes = useTeamRoutes()
 
-  const { page, pageUrl, links } = props
-
-  const homeMenu = sidebarSectionsOf(routes)
-    .flatMap(it => it.items)
-    .find(it => it.link === pageUrl)
+  const homeMenu = !routes
+    ? null
+    : sidebarSectionsOf(routes)
+        .flatMap(it => it.items)
+        .find(it => it.link === pageUrl)
 
   return (
     <div key="breadcrumb" className="flex flex-row items-center w-1/2 flex-grow">
@@ -35,7 +38,7 @@ const Breadcrumb = (props: BreadcrumbProps) => {
 
       <div className="bg-bright w-px h-8 mx-6" />
 
-      <Link href={homeMenu?.link ?? routes.dashboard.index()} passHref>
+      <Link href={homeMenu?.link ?? ROUTE_INDEX} passHref>
         <DyoIcon
           className="cursor-pointer"
           src={homeMenu?.icon ?? '/breadcrumb_home.svg'}

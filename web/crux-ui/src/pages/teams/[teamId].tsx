@@ -6,7 +6,7 @@ import EditTeamCard from '@app/components/team/edit-team-card'
 import InviteUserCard from '@app/components/team/invite-user-card'
 import UserRoleAction from '@app/components/team/user-role-action'
 import UserStatusTag from '@app/components/team/user-status-tag'
-import { AUTH_RESEND_DELAY } from '@app/const'
+import { AUTH_RESEND_DELAY, COOKIE_TEAM_SLUG } from '@app/const'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
@@ -24,10 +24,12 @@ import {
   UserRole,
   userStatusReinvitable,
 } from '@app/models'
+import { appendTeamSlug } from '@app/providers/team-routes'
 import { API_USERS_ME, ROUTE_TEAMS, teamApiUrl, teamUrl, teamUserApiUrl, teamUserReinviteUrl } from '@app/routes'
 import { redirectTo, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
+import { getCookie } from '@server/cookie'
 import { getCruxFromContext } from '@server/crux-api'
 import { sessionOfContext } from '@server/kratos'
 import clsx from 'clsx'
@@ -300,12 +302,14 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(ROUTE_TEAMS)
   }
 
+  const teamSlug = getCookie(context, COOKIE_TEAM_SLUG) ?? team.slug
+
   return {
-    props: {
+    props: appendTeamSlug(teamSlug, {
       me: sessionOfContext(context).identity,
       team,
       recaptchaSiteKey: captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY,
-    },
+    }),
   }
 }
 

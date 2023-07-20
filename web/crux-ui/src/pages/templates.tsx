@@ -6,8 +6,9 @@ import TemplateCard from '@app/components/templates/template-card'
 import DyoButton from '@app/elements/dyo-button'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { Template } from '@app/models'
-import { API_TEMPLATES, ROUTE_TEMPLATES } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
+import { appendTeamSlug } from '@app/providers/team-routes'
+import { API_TEMPLATES, ROUTE_INDEX, ROUTE_TEMPLATES } from '@app/routes'
+import { redirectTo, teamSlugOrFirstTeam, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import { TEAM_ROUTES } from 'e2e/utils/common'
 import { NextPageContext } from 'next'
@@ -78,10 +79,15 @@ export default TemplatesPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const templates = await getCruxFromContext<Template[]>(context, API_TEMPLATES)
 
+  const teamSlug = await teamSlugOrFirstTeam(context)
+  if (!teamSlug) {
+    return redirectTo(ROUTE_INDEX)
+  }
+
   return {
-    props: {
+    props: appendTeamSlug(teamSlug, {
       templates,
-    },
+    }),
   }
 }
 

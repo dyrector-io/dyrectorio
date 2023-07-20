@@ -1,34 +1,13 @@
-import { STORAGE_TEAM_SLUG } from '@app/const'
-import useLocalStorage from '@app/hooks/use-local-storage'
-import { UserMeta, UserMetaTeam } from '@app/models'
-import { API_USERS_ME, ROUTE_TEAMS_CREATE, teamInvitationUrl, TeamRoutes } from '@app/routes'
+import { COOKIE_TEAM_SLUG } from '@app/const'
+import { UserMeta } from '@app/models'
+import { API_USERS_ME, ROUTE_TEAMS_CREATE, teamInvitationUrl } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
+import { getCookie } from '@server/cookie'
 import { postCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
-import { useRouter } from 'next/router'
-import { useEffect } from 'react'
 
-type IndexPageProps = {
-  team: UserMetaTeam
-}
-
-const IndexPage = (props: IndexPageProps) => {
-  const { team } = props
-
-  const router = useRouter()
-  const [teamSlug] = useLocalStorage(STORAGE_TEAM_SLUG, team.slug)
-
-  useEffect(() => {
-    if (teamSlug) {
-      const routes = new TeamRoutes(teamSlug)
-
-      router.replace(routes.dashboard.index())
-    }
-  }, [teamSlug, router])
-
-  // eslint-disable-next-line react/jsx-no-useless-fragment
-  return <></>
-}
+// eslint-disable-next-line react/jsx-no-useless-fragment
+const IndexPage = () => <></>
 
 export default IndexPage
 
@@ -40,11 +19,13 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(inv ? teamInvitationUrl(inv.id) : ROUTE_TEAMS_CREATE)
   }
 
-  return {
-    props: {
-      team: user.teams[0],
-    },
+  let teamSlug = getCookie(context, COOKIE_TEAM_SLUG)
+  if (!teamSlug) {
+    const firstTeam = user.teams[0]
+    teamSlug = firstTeam.slug
   }
+
+  return redirectTo(`/${teamSlug}`)
 }
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

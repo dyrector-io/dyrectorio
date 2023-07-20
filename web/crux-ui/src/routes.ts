@@ -45,7 +45,6 @@ export const API_TOKENS = '/api/tokens'
 export const API_HEALTH = '/api/health'
 export const API_TEAMS = '/api/teams'
 export const API_USERS_ME = '/api/users/me'
-export const API_USERS_ME_ACTIVE_TEAM = `${API_USERS_ME}/active-team`
 export const API_USERS_ME_INVITATIONS = `${API_USERS_ME}/invitations`
 export const API_USERS_ME_PREFERENCES_ONBOARDING = `${API_USERS_ME}/preferences/onboarding`
 

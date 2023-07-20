@@ -1,6 +1,7 @@
 import { EditProfile } from '@app/models'
 import { UpdateSettingsFlowWithProfileMethod } from '@ory/kratos-client'
-import kratos, { cookieOf } from '@server/kratos'
+import { cookieOf } from '@server/cookie'
+import kratos from '@server/kratos'
 import useKratosErrorMiddleware from '@server/kratos-error-middleware'
 import { withMiddlewares } from '@server/middlewares'
 import { NextApiRequest, NextApiResponse } from 'next'

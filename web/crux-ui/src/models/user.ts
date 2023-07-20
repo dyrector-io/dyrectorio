@@ -40,10 +40,6 @@ export type UserMeta = {
   invitations: UserMetaBasicTeam[]
 }
 
-export type ActivateTeam = {
-  teamId: string
-}
-
 export type UpdateUserRole = {
   role: UserRole
 }
@@ -60,7 +56,7 @@ export const roleToText = (role: UserRole) => {
 }
 
 export const activeTeamOf = (meta: UserMeta, teamSlug: string): UserMetaTeam => {
-  const team = meta.teams.find(it => it.slug === teamSlug)
+  const team = meta?.teams.find(it => it.slug === teamSlug)
   return team
 }
 

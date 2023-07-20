@@ -35,7 +35,7 @@ export default class UserHttpController {
   @HttpCode(HttpStatus.OK)
   @AuditLogLevel('disabled')
   @ApiOperation({
-    description: 'Response includes the `user`, `activeTeamId`, `teams`, and `invitations`.',
+    description: 'Response includes the `user`, `teams`, and `invitations`.',
     summary: 'Fetch the current user.',
   })
   @ApiOkResponse({ type: UserMetaDto, description: 'Fetch the current user.' })

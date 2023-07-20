@@ -94,12 +94,24 @@ const EditTeamCard = (props: EditTeamCardProps) => {
           className="max-w-lg"
           grow
           name="name"
-          type="name"
+          type="text"
           required
           label={t('common:name')}
           onChange={formik.handleChange}
           value={formik.values.name}
           message={formik.errors.name}
+        />
+
+        <DyoInput
+          className="max-w-lg"
+          grow
+          name="slug"
+          type="text"
+          required
+          label={t('common:slug')}
+          onChange={formik.handleChange}
+          value={formik.values.slug}
+          message={formik.errors.slug}
         />
 
         <DyoButton className="hidden" type="submit" />

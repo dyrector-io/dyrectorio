@@ -4,10 +4,13 @@ import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
 import EditTeamCard from '@app/components/team/edit-team-card'
 import TeamCard from '@app/components/team/team-card'
+import { COOKIE_TEAM_SLUG } from '@app/const'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Team } from '@app/models'
-import { API_TEAMS, ROUTE_TEAMS } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
+import { appendTeamSlug } from '@app/providers/team-routes'
+import { API_TEAMS, ROUTE_INDEX, ROUTE_TEAMS } from '@app/routes'
+import { redirectTo, withContextAuthorization } from '@app/utils'
+import { getCookie } from '@server/cookie'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -21,6 +24,7 @@ const TeamsPage = (props: TeamsPageProps) => {
   const { teams: propsTeams } = props
 
   const { t } = useTranslation('teams')
+
   const routes = useTeamRoutes()
 
   const [teams, setTeams] = useState(propsTeams)
@@ -58,10 +62,16 @@ export default TeamsPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const teams = await getCruxFromContext<Team[]>(context, API_TEAMS)
 
+  if (teams.length < 1) {
+    return redirectTo(ROUTE_INDEX)
+  }
+
+  const teamSlug = getCookie(context, COOKIE_TEAM_SLUG) ?? teams[0].slug
+
   return {
-    props: {
+    props: appendTeamSlug(teamSlug, {
       teams,
-    },
+    }),
   }
 }
 
