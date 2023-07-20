@@ -43,7 +43,7 @@ const ProjectViewList = (props: ProjectViewListProps) => {
       return
     }
 
-    await router.push(projectUrl(data.id))
+    await router.push(routes.project.details(data.id))
   }
 
   const itemTemplate = (item: Project) => [

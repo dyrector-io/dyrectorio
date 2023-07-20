@@ -141,7 +141,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     <span suppressHydrationWarning>{auditToLocaleDate(item.audit)}</span>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
     <>
-      <Link href={deploymentUrl(item.id)} passHref>
+      <Link href={routes.deployment.details(item.id)} passHref>
         <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
       </Link>
 

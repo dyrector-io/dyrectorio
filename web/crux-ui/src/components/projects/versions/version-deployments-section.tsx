@@ -225,7 +225,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       return
     }
 
-    await router.push(deploymentUrl(data.id))
+    await router.push(routes.deployment.details(data.id))
   }
 
   const itemTemplate = (item: DeploymentByVersion) => {
