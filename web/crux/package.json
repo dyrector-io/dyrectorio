@@ -38,7 +38,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.8.14",
     "@grpc/proto-loader": "^0.7.6",
-    "@nestjs-modules/mailer": "^1.8.1",
+    "@nestjs-modules/mailer": "^1.7.1",
     "@nestjs/axios": "^2.0.0",
     "@nestjs/cli": "^9.4.2",
     "@nestjs/common": "^9.4.0",
