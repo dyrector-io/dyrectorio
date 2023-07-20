@@ -113,11 +113,13 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 	}
 
 	if cc.Routing != nil {
-		if splitDomain := strings.Split(*cc.Routing.Domain, "."); len(splitDomain) > 1 {
-			containerConfig.IngressName = splitDomain[0]
-			containerConfig.IngressHost = util.JoinV(".", splitDomain[1:]...)
-		} else {
-			containerConfig.IngressHost = pointer.GetString(cc.Routing.Domain)
+		if domain := pointer.GetString(cc.Routing.Domain); domain != "" {
+			if splitDomain := strings.Split(domain, "."); len(splitDomain) > 1 {
+				containerConfig.IngressName = splitDomain[0]
+				containerConfig.IngressHost = util.JoinV(".", splitDomain[1:]...)
+			} else {
+				containerConfig.IngressHost = pointer.GetString(cc.Routing.Domain)
+			}
 		}
 
 		containerConfig.IngressUploadLimit = pointer.GetString(cc.Routing.UploadLimit)
