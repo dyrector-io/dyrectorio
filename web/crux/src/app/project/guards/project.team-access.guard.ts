@@ -1,5 +1,4 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
-import { identityOfRequest } from 'src/app/token/jwt-auth.guard'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()

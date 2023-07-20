@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common'
-import { Identity } from '@ory/kratos-client'
 import { Prisma } from '@prisma/client'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'

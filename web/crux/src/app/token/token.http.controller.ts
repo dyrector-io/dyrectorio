@@ -13,6 +13,7 @@ import {
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
+import { DisableTeamAccessGuard } from 'src/guards/team-access.guard'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
 import TokenAccessGuard from './guards/token.access.guard'
@@ -20,7 +21,6 @@ import { IdentityFromRequest } from './jwt-auth.guard'
 import TokenValidationPipe from './pipes/token.pipe'
 import { GenerateTokenDto, GeneratedTokenDto, TokenDto } from './token.dto'
 import TokenService from './token.service'
-import { DisableTeamAccessGuard } from 'src/guards/team-access.guard'
 
 const PARAM_TOKEN_ID = 'tokenId'
 const TokenId = () => Param(PARAM_TOKEN_ID)
