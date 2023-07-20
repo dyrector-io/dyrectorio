@@ -28,10 +28,10 @@ type CreateDeploymentTokenCardProps = {
 }
 
 const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
+  const { className, submitRef, deployment, onTokenCreated, onDiscard } = props
+
   const { t } = useTranslation('deployments')
   const routes = useTeamRoutes()
-
-  const { className, submitRef, deployment, onTokenCreated, onDiscard } = props
 
   const [token, setToken] = useState<DeploymentTokenCreated>(null)
 

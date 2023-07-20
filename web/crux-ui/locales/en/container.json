@@ -27,9 +27,7 @@
     "args": "Arguments",
     "exposeStrategy": "Expose strategy",
     "exposeStrategies": { "none": "None", "expose": "HTTP", "exposeWithTls": "HTTPS" },
-    "ingressName": "Name",
-    "ingressHost": "Host",
-    "ingressUploadLimit": "Upload limit",
+    "uploadLimit": "Upload limit",
     "environment": "Environment",
     "secrets": "Secrets",
     "initContainer": "Init container",
@@ -39,7 +37,9 @@
     "configContainer": "Config container",
     "keepFiles": "Keep files",
     "useParent": "Use parent",
-    "ingress": "Ingress",
+    "routing": "Routing",
+    "domain": "Domain",
+    "stripPath": "Strip path",
     "expose": "Expose",
     "tty": "TTY",
     "initContainers": "Init containers",
@@ -56,10 +56,7 @@
     "placeholders": {
       "port": "Port",
       "path": "Path",
-      "containerDefault": "Container default",
-      "ingressName": "Ingress name",
-      "ingressHost": "Ingress host",
-      "ingressUploadLimit": "Ingress upload limit"
+      "containerDefault": "Container default"
     }
   },
 
@@ -68,9 +65,6 @@
     "networkModes": {
       "bridge": "Bridge",
       "host": "Host",
-      "overlay": "Overlay",
-      "ipvlan": "Ipvlan",
-      "macvlan": "Macvlan",
       "none": "None"
     },
     "restartPolicy": "Restart policy",

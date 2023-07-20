@@ -112,13 +112,19 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		containerConfig.ExposeTLS = *cc.Expose > 2
 	}
 
-	if cc.Ingress != nil {
-		containerConfig.IngressName = cc.Ingress.Name
-		containerConfig.IngressHost = cc.Ingress.Host
-
-		if cc.Ingress.UploadLimit != nil {
-			containerConfig.IngressUploadLimit = *cc.Ingress.UploadLimit
+	if cc.Routing != nil {
+		if domain := pointer.GetString(cc.Routing.Domain); domain != "" {
+			if splitDomain := strings.Split(domain, "."); len(splitDomain) > 1 {
+				containerConfig.IngressName = splitDomain[0]
+				containerConfig.IngressHost = util.JoinV(".", splitDomain[1:]...)
+			} else {
+				containerConfig.IngressHost = pointer.GetString(cc.Routing.Domain)
+			}
 		}
+
+		containerConfig.IngressUploadLimit = pointer.GetString(cc.Routing.UploadLimit)
+		containerConfig.IngressPath = pointer.GetString(cc.Routing.Path)
+		containerConfig.IngressStripPath = pointer.GetBool(cc.Routing.StripPath)
 	}
 
 	if cc.ConfigContainer != nil {

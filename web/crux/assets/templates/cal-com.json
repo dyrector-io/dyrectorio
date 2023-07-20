@@ -1,6 +1,6 @@
 {
   "name": "cal.com",
-  "description": "The open-source Calendly alternative.\nCal.com is the event-juggling scheduler for everyone. Focus on meeting, not making meetings. Free for individuals.\n\nBefore deployment make sure to set the 'POSTGRES_PASSWORD' secret and update the 'DATABASE_URL' with the password, as well as set the 'NEXTAUTH_SECRET' and 'CALENDSO_ENCRYPTION_KEY' secrets to a secure random string (16-32 characters should suffice, for example use 'openssl rand -base64 32').\n\nBy default the application will run on 'http://localhost:7000'. If you have a node with Traefik enabled you can use 'http://cal.localhost' (or any other domain setup in the ingress settings) by setting 'NEXT_PUBLIC_WEBAPP_URL' to the public URL.",
+  "description": "The open-source Calendly alternative.\nCal.com is the event-juggling scheduler for everyone. Focus on meeting, not making meetings. Free for individuals.\n\nBefore deployment make sure to set the 'POSTGRES_PASSWORD' secret and update the 'DATABASE_URL' with the password, as well as set the 'NEXTAUTH_SECRET' and 'CALENDSO_ENCRYPTION_KEY' secrets to a secure random string (16-32 characters should suffice, for example use 'openssl rand -base64 32').\n\nBy default the application will run on 'http://localhost:7000'. If you have a node with Traefik enabled you can use 'http://cal.localhost' (or any other domain setup in the routing settings) by setting 'NEXT_PUBLIC_WEBAPP_URL' to the public URL.",
   "technologies": ["Docker", "Kubernetes"],
   "registries": [
     {
@@ -70,9 +70,8 @@
         "tty": false,
         "networks": ["cal-com-network"],
         "expose": "expose",
-        "ingress": {
-          "host": "localhost",
-          "name": "cal"
+        "routing": {
+          "domain": "cal.localhost"
         },
         "ports": [
           {

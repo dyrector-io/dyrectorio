@@ -39,10 +39,10 @@ const sixDays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
 
 const NodeAuditList = (props: NodeAuditListProps) => {
+  const { node } = props
+
   const { t } = useTranslation('nodes')
   const routes = useTeamRoutes()
-
-  const { node } = props
 
   const endOfToday = getEndOfToday()
 

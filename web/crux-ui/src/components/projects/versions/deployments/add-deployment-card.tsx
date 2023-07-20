@@ -6,7 +6,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
-import { defaultApiErrorHandler } from '@app/errors'
+import { apiErrorHandler, defaultTranslator } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateDeployment, Deployment, DyoApiError, DyoNode, projectNameToDeploymentPrefix } from '@app/models'
@@ -26,14 +26,28 @@ interface AddDeploymentCardProps {
 }
 
 const AddDeploymentCard = (props: AddDeploymentCardProps) => {
+  const { projectName, versionId, className, onAdd, onDiscard } = props
+
   const { t } = useTranslation('deployments')
   const routes = useTeamRoutes()
 
-  const { projectName, versionId, className, onAdd, onDiscard } = props
-
   const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(routes.node.api.list(), fetcher)
 
-  const handleApiError = defaultApiErrorHandler(t)
+  const handleApiError = apiErrorHandler((stringId: string, status: number, dto: DyoApiError) => {
+    onAdd(dto.value)
+
+    if (dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing') {
+      return {
+        toast: dto.description,
+        toastOptions: {
+          className: '!bg-warning-orange',
+          duration: 5000,
+        },
+      }
+    }
+
+    return defaultTranslator(t)(stringId, status, dto)
+  })
 
   const formik = useDyoFormik({
     initialValues: {
@@ -60,9 +74,6 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       } else if (res.status === 409) {
         // Handle preparing deployment exists or rolling version has deployment errors
         handleApiError(res.clone())
-
-        const dto = (await res.json()) as DyoApiError
-        onAdd(dto.value)
       } else {
         handleApiError(res, setFieldError)
       }

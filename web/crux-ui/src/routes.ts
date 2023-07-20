@@ -137,6 +137,7 @@ export const teamUserListApiUrl = (teamId: string) => `${teamApiUrl(teamId)}/use
 export const teamUserApiUrl = (teamId: string, userId: string) => `${teamUserListApiUrl(teamId)}/${userId}`
 export const teamUserRoleApiUrl = (teamId: string, userId: string) => `${teamUserApiUrl(teamId, userId)}/role`
 export const teamUserReinviteUrl = (teamId: string, userId: string) => `${teamUserApiUrl(teamId, userId)}/reinvite`
+export const teamUserLeaveApiUrl = (teamId: string) => `${teamUserListApiUrl(teamId)}/leave`
 
 export const userInvitationApiUrl = (teamId: string) => `${API_USERS_ME_INVITATIONS}/${teamId}`
 

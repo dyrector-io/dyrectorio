@@ -35,10 +35,10 @@ interface SelectImagesCardProps {
 }
 
 const SelectImagesCard = (props: SelectImagesCardProps) => {
+  const { className, onDiscard, onImagesSelected } = props
+
   const { t } = useTranslation('images')
   const routes = useTeamRoutes()
-
-  const { className, onDiscard, onImagesSelected } = props
 
   const { data: registries, error: fetchRegistriesError } = useSWR<Registry[]>(routes.registry.api.list(), fetcher)
   const [searching, setSearching] = useState(false)

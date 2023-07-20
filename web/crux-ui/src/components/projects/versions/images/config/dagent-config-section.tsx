@@ -48,7 +48,6 @@ type InstanceDagentConfigSectionProps = DagentConfigSectionBaseProps<InstanceDag
 type DagentConfigSectionProps = ImageDagentConfigSectionProps | InstanceDagentConfigSectionProps
 
 const DagentConfigSection = (props: DagentConfigSectionProps) => {
-  const { t } = useTranslation('container')
   const {
     config: propsConfig,
     resetableConfig: propsResetableConfig,
@@ -59,6 +58,8 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
     editorOptions,
     disabled,
   } = props
+
+  const { t } = useTranslation('container')
 
   const disabledOnImage = configType === 'image' || disabled
   // eslint-disable-next-line react/destructuring-assignment

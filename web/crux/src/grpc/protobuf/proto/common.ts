@@ -122,9 +122,6 @@ export enum NetworkMode {
   NETWORK_MODE_UNSPECIFIED = 0,
   BRIDGE = 1,
   HOST = 2,
-  OVERLAY = 3,
-  IPVLAN = 4,
-  MACVLAN = 5,
   NONE = 6,
   UNRECOGNIZED = -1,
 }
@@ -140,15 +137,6 @@ export function networkModeFromJSON(object: any): NetworkMode {
     case 2:
     case 'HOST':
       return NetworkMode.HOST
-    case 3:
-    case 'OVERLAY':
-      return NetworkMode.OVERLAY
-    case 4:
-    case 'IPVLAN':
-      return NetworkMode.IPVLAN
-    case 5:
-    case 'MACVLAN':
-      return NetworkMode.MACVLAN
     case 6:
     case 'NONE':
       return NetworkMode.NONE
@@ -167,12 +155,6 @@ export function networkModeToJSON(object: NetworkMode): string {
       return 'BRIDGE'
     case NetworkMode.HOST:
       return 'HOST'
-    case NetworkMode.OVERLAY:
-      return 'OVERLAY'
-    case NetworkMode.IPVLAN:
-      return 'IPVLAN'
-    case NetworkMode.MACVLAN:
-      return 'MACVLAN'
     case NetworkMode.NONE:
       return 'NONE'
     case NetworkMode.UNRECOGNIZED:
@@ -570,9 +552,10 @@ export interface ContainerLogMessage {
   log: string
 }
 
-export interface Ingress {
-  name: string
-  host: string
+export interface Routing {
+  domain?: string | undefined
+  path?: string | undefined
+  stripPath?: boolean | undefined
   uploadLimit?: string | undefined
 }
 
@@ -809,23 +792,25 @@ export const ContainerLogMessage = {
   },
 }
 
-function createBaseIngress(): Ingress {
-  return { name: '', host: '' }
+function createBaseRouting(): Routing {
+  return {}
 }
 
-export const Ingress = {
-  fromJSON(object: any): Ingress {
+export const Routing = {
+  fromJSON(object: any): Routing {
     return {
-      name: isSet(object.name) ? String(object.name) : '',
-      host: isSet(object.host) ? String(object.host) : '',
+      domain: isSet(object.domain) ? String(object.domain) : undefined,
+      path: isSet(object.path) ? String(object.path) : undefined,
+      stripPath: isSet(object.stripPath) ? Boolean(object.stripPath) : undefined,
       uploadLimit: isSet(object.uploadLimit) ? String(object.uploadLimit) : undefined,
     }
   },
 
-  toJSON(message: Ingress): unknown {
+  toJSON(message: Routing): unknown {
     const obj: any = {}
-    message.name !== undefined && (obj.name = message.name)
-    message.host !== undefined && (obj.host = message.host)
+    message.domain !== undefined && (obj.domain = message.domain)
+    message.path !== undefined && (obj.path = message.path)
+    message.stripPath !== undefined && (obj.stripPath = message.stripPath)
     message.uploadLimit !== undefined && (obj.uploadLimit = message.uploadLimit)
     return obj
   },

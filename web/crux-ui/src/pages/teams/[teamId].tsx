@@ -7,6 +7,7 @@ import InviteUserCard from '@app/components/team/invite-user-card'
 import UserRoleAction from '@app/components/team/user-role-action'
 import UserStatusTag from '@app/components/team/user-status-tag'
 import { AUTH_RESEND_DELAY, COOKIE_TEAM_SLUG } from '@app/const'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
@@ -25,7 +26,15 @@ import {
   userStatusReinvitable,
 } from '@app/models'
 import { appendTeamSlug } from '@app/providers/team-routes'
-import { API_USERS_ME, ROUTE_TEAMS, teamApiUrl, teamUrl, teamUserApiUrl, teamUserReinviteUrl } from '@app/routes'
+import {
+  API_USERS_ME,
+  ROUTE_TEAMS,
+  teamApiUrl,
+  teamUrl,
+  teamUserApiUrl,
+  teamUserLeaveApiUrl,
+  teamUserReinviteUrl,
+} from '@app/routes'
 import { redirectTo, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
@@ -47,11 +56,10 @@ interface TeamDetailsPageProps {
 }
 
 const TeamDetailsPage = (props: TeamDetailsPageProps) => {
-  const { t } = useTranslation('teams')
-
-  const router = useRouter()
-
   const { me, team: propsTeam, recaptchaSiteKey } = props
+
+  const { t } = useTranslation('teams')
+  const router = useRouter()
 
   const { mutate } = useSWRConfig()
 
@@ -79,6 +87,18 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
         ...team,
         users: team.users.filter(it => it.id !== user.id),
       })
+    } else {
+      handleApiError(res)
+    }
+  }
+
+  const sendLeaveUserRequest = async () => {
+    const res = await fetch(teamUserLeaveApiUrl(team.id), {
+      method: 'DELETE',
+    })
+
+    if (res.ok) {
+      await router.push(ROUTE_TEAMS)
     } else {
       handleApiError(res)
     }
@@ -144,6 +164,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const onDeleteUser = (user: User) =>
     confirmDelete(() => sendDeleteUserRequest(user), {
       title: t('common:areYouSureDeleteName', { name: user.name }),
+      confirmText: t('common:delete'),
     })
 
   const onUserRoleUpdated = (userId: string, role: UserRole) => {
@@ -159,6 +180,12 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
       users: newUsers,
     })
   }
+
+  const onLeaveTeam = () =>
+    confirmDelete(() => sendLeaveUserRequest(), {
+      title: t('leaveTeam'),
+      description: t('areYouSureWantToLeave', { name: team.name }),
+    })
 
   const selfLink: BreadcrumbLink = {
     name: t('common:teams'),
@@ -244,6 +271,11 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   return (
     <Layout title={t('teamsName', team)}>
       <PageHeading pageLink={selfLink} sublinks={sublinks}>
+        {!userIsOwner(actor) && (
+          <DyoButton className="mx-2 px-6" color="bg-error-red" onClick={onLeaveTeam}>
+            {t('leave')}
+          </DyoButton>
+        )}
         {!canEdit ? null : (
           <DetailsPageMenu
             texts={pageMenuTexts}
@@ -280,13 +312,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
           itemBuilder={itemTemplate}
         />
 
-        <DyoConfirmationModal
-          config={deleteModalConfig}
-          title={t('common:areYouSureDeleteName')}
-          confirmText={t('common:delete')}
-          className="w-1/4"
-          confirmColor="bg-error-red"
-        />
+        <DyoConfirmationModal config={deleteModalConfig} className="w-1/4" confirmColor="bg-error-red" />
       </DyoCard>
     </Layout>
   )

@@ -99,6 +99,7 @@ export default class TemplateService {
   }
 
   private mapTemplateConfig(config: TemplateContainerConfig): ContainerConfigData {
+    // TODO (polaroi8d): wait this until we'll rework the templates
     // TODO (@m8vago): validate containerConfigData
 
     return {

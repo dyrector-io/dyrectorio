@@ -48,12 +48,18 @@ export class UniqueSecretKeyValueDto extends UniqueSecretKeyDto {
   publicKey?: string
 }
 
-export class ContainerConfigIngressDto {
+export class ContainerConfigRoutingDto {
   @IsString()
-  name: string
+  @IsOptional()
+  domain?: string
 
   @IsString()
-  host: string
+  @IsOptional()
+  path?: string
+
+  @IsBoolean()
+  @IsOptional()
+  stripPath?: boolean
 
   @IsString()
   @IsOptional()
@@ -266,7 +272,7 @@ export class ContainerConfigDto {
 
   @IsOptional()
   @ValidateNested()
-  ingress?: ContainerConfigIngressDto
+  routing?: ContainerConfigRoutingDto
 
   @ApiProperty({ enum: CONTAINER_EXPOSE_STRATEGY_VALUES })
   @IsIn(CONTAINER_EXPOSE_STRATEGY_VALUES)

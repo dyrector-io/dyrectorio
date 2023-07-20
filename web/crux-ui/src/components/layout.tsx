@@ -19,9 +19,9 @@ interface PageHeadProps {
 }
 
 const PageHead = (props: PageHeadProps) => {
-  const { t } = useTranslation('head')
-
   const { title } = props
+
+  const { t } = useTranslation('head')
 
   return (
     <Head>

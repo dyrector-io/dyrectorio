@@ -8,9 +8,9 @@ export interface ProjectViewTileProps {
 }
 
 const ProjectViewTile = (props: ProjectViewTileProps) => {
-  const routes = useTeamRoutes()
-
   const { projects } = props
+
+  const routes = useTeamRoutes()
 
   return (
     <DyoWrap>

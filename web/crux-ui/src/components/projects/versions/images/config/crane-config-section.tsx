@@ -47,7 +47,6 @@ type InstanceCraneConfigSectionProps = CraneConfigSectionBaseProps<InstanceCrane
 export type CraneConfigSectionProps = ImageCraneConfigSectionProps | InstanceCraneConfigSectionProps
 
 const CraneConfigSection = (props: CraneConfigSectionProps) => {
-  const { t } = useTranslation('container')
   const {
     config: propsConfig,
     resetableConfig: propsResetableConfig,
@@ -58,6 +57,8 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
     editorOptions,
     disabled,
   } = props
+
+  const { t } = useTranslation('container')
 
   const disabledOnImage = configType === 'image' || disabled
   // eslint-disable-next-line react/destructuring-assignment

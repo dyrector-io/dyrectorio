@@ -38,10 +38,10 @@ interface RecoveryPageProps {
 }
 
 const RecoveryPage = (props: RecoveryPageProps) => {
+  const { flow: propsFlow, recaptchaSiteKey } = props
+
   const { t } = useTranslation('recovery')
   const router = useRouter()
-
-  const { flow: propsFlow, recaptchaSiteKey } = props
 
   const recaptcha = useRef<ReCAPTCHA>()
 

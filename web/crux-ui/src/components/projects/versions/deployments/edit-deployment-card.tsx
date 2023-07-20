@@ -21,10 +21,10 @@ interface EditDeploymentCardProps {
 }
 
 const EditDeploymentCard = (props: EditDeploymentCardProps) => {
+  const { deployment, className, onDeploymentEdited, submitRef } = props
+
   const { t } = useTranslation('deployments')
   const routes = useTeamRoutes()
-
-  const { deployment, className, onDeploymentEdited, submitRef } = props
 
   const handleApiError = defaultApiErrorHandler(t)
 

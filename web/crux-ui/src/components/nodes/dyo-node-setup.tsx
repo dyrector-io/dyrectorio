@@ -37,10 +37,10 @@ interface DyoNodeSetupProps {
 }
 
 const DyoNodeSetup = (props: DyoNodeSetupProps) => {
+  const { node, onNodeTypeChanged, onNodeInstallChanged } = props
+
   const { t } = useTranslation('nodes')
   const routes = useTeamRoutes()
-
-  const { node, onNodeTypeChanged, onNodeInstallChanged } = props
 
   const [remaining, startCountdown, cancelCountdown] = useTimer(
     node.install ? expiresIn(new Date(node.install.expireAt)) : null,

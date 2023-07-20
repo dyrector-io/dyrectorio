@@ -24,10 +24,10 @@ interface IncreaseVersionCardProps {
 }
 
 const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
+  const { className, parent, project, onVersionIncreased, submitRef } = props
+
   const { t } = useTranslation('versions')
   const routes = useTeamRoutes()
-
-  const { className, parent, project, onVersionIncreased, submitRef } = props
 
   const handleApiError = defaultApiErrorHandler(t)
 

@@ -1,7 +1,9 @@
 import { HEADER_LOCATION } from '@app/const'
 import { invalidArgument } from '@app/error-responses'
-import { Login, toKratosLocationChangeRequiredError } from '@app/models'
+import { AxiosErrorResponse, Login, toKratosLocationChangeRequiredError } from '@app/models'
 import {
+  LoginFlow,
+  UiContainer,
   UpdateLoginFlowBody,
   UpdateLoginFlowWithOidcMethod,
   UpdateLoginFlowWithPasswordMethod,
@@ -13,6 +15,8 @@ import kratos, { identityPasswordSet, obtainSessionFromResponse } from '@server/
 import useKratosErrorMiddleware from '@server/kratos-error-middleware'
 import { withMiddlewares } from '@server/middlewares'
 import { NextApiRequest, NextApiResponse } from 'next'
+
+const LOGIN_DETECTED = 'A valid session was detected and thus login is not possible.'
 
 const dtoToKratosBody = (dto: Login): UpdateLoginFlowBody => {
   switch (dto.method) {
@@ -40,6 +44,16 @@ const dtoToKratosBody = (dto: Login): UpdateLoginFlowBody => {
   }
 }
 
+const isAlreadyLoggedIn = (res: AxiosErrorResponse<LoginFlow>): boolean => {
+  if (!res.data.ui) {
+    return false
+  }
+
+  const newUi = res.data.ui as UiContainer
+  // TODO(@robot9706): this is the best solution I found
+  return newUi.messages.some(it => it.id === 4000001 && it.text.startsWith(LOGIN_DETECTED))
+}
+
 const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
   const dto = req.body as Login
   await validateCaptcha(dto.captcha)
@@ -62,8 +76,14 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
 
     res.status(kratosRes.status).end()
   } catch (err) {
-    const error = toKratosLocationChangeRequiredError(err)
+    const flowResponse = err.response as AxiosErrorResponse<LoginFlow>
+    if (isAlreadyLoggedIn(flowResponse)) {
+      forwardCookieToResponse(res, err.response)
+      res.status(409).end()
+      return
+    }
 
+    const error = toKratosLocationChangeRequiredError(err)
     if (!error) {
       throw err
     }

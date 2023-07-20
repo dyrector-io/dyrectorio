@@ -28,6 +28,7 @@ import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 
@@ -140,6 +141,10 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     <span suppressHydrationWarning>{auditToLocaleDate(item.audit)}</span>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
     <>
+      <Link href={deploymentUrl(item.id)} passHref>
+        <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
+      </Link>
+
       <div className="inline-block mr-2">
         <DyoIcon
           src="/note.svg"

@@ -183,9 +183,6 @@ enum NetworkMode {
   none
   host
   bridge
-  overlay
-  ipvlan
-  macvlan
 }
 
 enum DeploymentStrategy {
@@ -215,7 +212,7 @@ model ContainerConfig {
   secrets         Json?
   capabilities    Json?
   expose          ExposeStrategy
-  ingress         Json?
+  routing          Json?
   configContainer Json?
   user            Int            @default(-1)
   tty             Boolean
@@ -312,7 +309,7 @@ model InstanceContainerConfig {
   secrets         Json?
   capabilities    Json?
   expose          ExposeStrategy?
-  ingress         Json?
+  routing          Json?
   configContainer Json?
   user            Int?
   tty             Boolean?

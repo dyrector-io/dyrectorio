@@ -5,6 +5,8 @@ import DatePicker, { ReactDatePickerProps } from 'react-datepicker'
 import { DyoInput } from './dyo-input'
 
 const DyoDatePicker = forwardRef((props: ReactDatePickerProps<never, boolean>, ref: ForwardedRef<DatePicker>) => {
+  const { className, ...rest } = props
+
   const { t } = useTranslation('common')
 
   const days = t('daysOfTheWeekShort', null, { returnObjects: true }) as string[]
@@ -27,8 +29,6 @@ const DyoDatePicker = forwardRef((props: ReactDatePickerProps<never, boolean>, r
     },
     match: {}, // Date picker requires locale.match, but doesn't use it
   } as Locale
-
-  const { className, ...rest } = props
 
   return (
     <div className={className}>

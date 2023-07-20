@@ -44,9 +44,9 @@ interface EditNodeCardProps {
 
 const EditNodeCard = (props: EditNodeCardProps) => {
   const { className, node: propsNode, onNodeEdited, submitRef } = props
-  const routes = useTeamRoutes()
 
   const { t } = useTranslation('nodes')
+  const routes = useTeamRoutes()
 
   const [revokeModalConfig, confirmTokenRevoke] = useConfirmation()
 

@@ -16,9 +16,9 @@ interface TopbarProps {
 }
 
 const Topbar = (props: TopbarProps) => {
-  const { t } = useTranslation('common')
-
   const { meta, className, children } = props
+
+  const { t } = useTranslation('common')
 
   const user = meta?.user
   const routes = useTeamRoutes()

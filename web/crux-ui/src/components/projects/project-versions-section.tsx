@@ -16,10 +16,10 @@ interface ProjectVersionsSectionProps {
 }
 
 const ProjectVersionsSection = (props: ProjectVersionsSectionProps) => {
+  const { projectId, versions, onIncrease, onSetAsDefault, disabled } = props
+
   const { t } = useTranslation('projects')
   const routes = useTeamRoutes()
-
-  const { projectId, versions, onIncrease, onSetAsDefault, disabled } = props
 
   const [modalConfig, confirmSetAsDefault] = useConfirmation()
 

@@ -31,10 +31,10 @@ interface EditNotificationCardProps {
 }
 
 const EditNotificationCard = (props: EditNotificationCardProps) => {
+  const { notification: propsNotification, submitRef, onNotificationEdited, className } = props
+
   const { t } = useTranslation('notifications')
   const routes = useTeamRoutes()
-
-  const { notification: propsNotification, submitRef, onNotificationEdited, className } = props
 
   const [notification, setNotification] = useState<NotificationDetails>(
     propsNotification ?? {

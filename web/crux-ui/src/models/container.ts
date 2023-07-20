@@ -74,7 +74,7 @@ export type ContainerConfigPortRange = {
 
 export type JsonKeyValue = { [key: string]: string }
 
-export const CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge', 'overlay', 'ipvlan', 'macvlan'] as const
+export const CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge'] as const
 export type ContainerNetworkMode = typeof CONTAINER_NETWORK_MODE_VALUES[number]
 
 export const CONTAINER_RESTART_POLICY_TYPE_VALUES = ['always', 'unlessStopped', 'no', 'onFailure'] as const
@@ -89,9 +89,10 @@ export type ContainerConfigExposeStrategy = typeof CONTAINER_EXPOSE_STRATEGY_VAL
 export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rwo', 'rwx', 'mem', 'tmp'] as const
 export type VolumeType = typeof CONTAINER_VOLUME_TYPE_VALUES[number]
 
-export type ContainerConfigIngress = {
-  name: string
-  host: string
+export type ContainerConfigRouting = {
+  domain?: string
+  path?: string
+  stripPath?: boolean
   uploadLimit?: string
 }
 
@@ -183,7 +184,7 @@ export type ContainerConfigData = {
   name: string
   environment?: UniqueKeyValue[]
   secrets?: UniqueSecretKey[]
-  ingress?: ContainerConfigIngress
+  routing?: ContainerConfigRouting
   expose: ContainerConfigExposeStrategy
   user?: number
   tty: boolean
@@ -273,7 +274,7 @@ export type JsonContainerConfig = {
   name?: string
   environment?: JsonKeyValue
   secrets?: JsonContainerConfigSecretKey[]
-  ingress?: ContainerConfigIngress
+  routing?: ContainerConfigRouting
   expose?: ContainerConfigExposeStrategy
   user?: number
   tty?: boolean
@@ -363,7 +364,7 @@ export const mergeConfigs = (
     commands: instance.commands ?? image.commands,
     expose: instance.expose ?? image.expose,
     configContainer: instance.configContainer ?? image.configContainer,
-    ingress: instance.ingress ?? image.ingress,
+    routing: instance.routing ?? image.routing,
     volumes: instance.volumes ?? image.volumes,
     initContainers: instance.initContainers ?? image.initContainers,
     capabilities: null,
@@ -464,6 +465,8 @@ export const instanceConfigToJsonInstanceConfig = (
 }
 
 const mergeKeyValuesWithJson = (items: UniqueKeyValue[], json: JsonKeyValue): UniqueKeyValue[] => {
+  items = items ?? []
+
   if (!json || Object.keys(json).length < 1) {
     return []
   }
@@ -508,6 +511,8 @@ const mergeKeyValuesWithJson = (items: UniqueKeyValue[], json: JsonKeyValue): Un
 }
 
 const mergeKeysWithJson = (items: UniqueKey[], json: string[]): UniqueKey[] => {
+  items = items ?? []
+
   if (!json || Object.entries(json).length < 1) {
     return []
   }

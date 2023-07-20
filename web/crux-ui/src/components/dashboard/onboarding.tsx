@@ -78,12 +78,12 @@ type OnboardingProps = {
 }
 
 const Onboarding = (props: OnboardingProps) => {
+  const { onboarding, onClose } = props
+
   const { t } = useTranslation('dashboard')
   const routes = useTeamRoutes()
 
   const linkFactories = useMemo(() => onboardingLinkFactories(routes), [routes])
-
-  const { onboarding, onClose } = props
 
   const lastOnboardIndex = Object.keys(onboarding).length - 1
   const nextOnboardIndex = Object.values(onboarding).findIndex(it => !it.done)

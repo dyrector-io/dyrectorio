@@ -26,10 +26,9 @@ interface AcceptInvitationPageProps {
 }
 
 const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
-  const { t } = useTranslation('create-account')
-
   const { flow: propsFlow, code, team } = props
 
+  const { t } = useTranslation('create-account')
   const router = useRouter()
 
   const [flow, setFlow] = useState(propsFlow)

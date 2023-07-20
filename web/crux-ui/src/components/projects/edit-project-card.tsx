@@ -23,10 +23,10 @@ interface EditProjectCardProps {
 }
 
 const EditProjectCard = (props: EditProjectCardProps) => {
+  const { project: propsProject, className, onProjectEdited, submitRef } = props
+
   const { t } = useTranslation('projects')
   const routes = useTeamRoutes()
-
-  const { project: propsProject, className, onProjectEdited, submitRef } = props
 
   const [project, setProject] = useState<EditableProject>(
     propsProject ?? {

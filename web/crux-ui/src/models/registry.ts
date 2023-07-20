@@ -73,6 +73,7 @@ export type GoogleRegistryDetails = RegistryDetailsBase & GoogleRegistryDetailsD
 
 type UncheckedRegistryDetailsDto = {
   type: 'unchecked'
+  local?: boolean
   url: string
 }
 export type UncheckedRegistryDetails = RegistryDetailsBase & UncheckedRegistryDetailsDto
@@ -272,6 +273,7 @@ export const registryDetailsDtoToUI = (dto: RegistryDetailsDto): RegistryDetails
     return {
       ...registry,
       ...uncheckedDetails,
+      local: uncheckedDetails.url === '',
     }
   }
 

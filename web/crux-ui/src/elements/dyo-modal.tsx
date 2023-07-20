@@ -76,8 +76,6 @@ export type DyoConfirmationModalProps = Omit<DyoModalProps, 'buttons' | 'childre
 }
 
 export const DyoConfirmationModal = (props: DyoConfirmationModalProps) => {
-  const { t } = useTranslation('common')
-
   const {
     confirmText,
     cancelText,
@@ -89,6 +87,8 @@ export const DyoConfirmationModal = (props: DyoConfirmationModalProps) => {
     className,
     ...forwardedProps
   } = props
+
+  const { t } = useTranslation('common')
 
   if (!config) {
     return null

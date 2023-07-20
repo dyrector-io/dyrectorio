@@ -23,9 +23,8 @@ interface TemplatesPageProps {
 const TemplatesPage = (props: TemplatesPageProps) => {
   const { templates } = props
 
-  const router = useRouter()
-
   const { t } = useTranslation('templates')
+  const router = useRouter()
 
   const [applying, setApplying] = useState<Template | null>(null)
   const submitRef = useRef<() => Promise<any>>()

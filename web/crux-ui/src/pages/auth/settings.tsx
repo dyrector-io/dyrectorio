@@ -56,12 +56,12 @@ const mapUiToOidcProviders = (ui: UiContainer): Record<OidcProvider, OidcConnect
 })
 
 const SettingsPage = (props: SettingsPageProps) => {
-  const { t } = useTranslation('settings')
-  const router = useRouter()
-
   const { flow } = props
   const { identity } = flow
   const { traits, metadata_public: propsPublicMetadata } = identity
+
+  const { t } = useTranslation('settings')
+  const router = useRouter()
 
   const handleApiError = defaultApiErrorHandler(t)
 
