@@ -9,15 +9,14 @@ import {
   CruxNotFoundException,
   CruxPreconditionFailedException,
 } from 'src/exception/crux-exception'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import EmailService from 'src/mailer/email.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import EmailBuilder, { InviteTemplateOptions } from '../../builders/email.builder'
 import AuditLoggerService from '../audit.logger/audit.logger.service'
-import { AuthorizedHttpRequest } from '../token/jwt-auth.guard'
 import { CreateTeamDto, InviteUserDto, TeamDetailsDto, TeamDto, UpdateTeamDto, UpdateUserRoleDto } from './team.dto'
 import TeamMapper, { TeamWithUsers } from './team.mapper'
 import TeamRepository from './team.repository'
@@ -352,28 +351,10 @@ export default class TeamService {
     }
   }
 
-  async leaveTeam(teamId: string, identity: Identity, httpRequest: AuthorizedHttpRequest): Promise<void> {
-    await this.auditLoggerService.createHttpAudit('all', httpRequest)
+  async leaveTeam(teamId: string, identity: Identity, context: ExecutionContext): Promise<void> {
+    await this.auditLoggerService.createHttpAudit(teamSlugFromCreateDto, 'all', context)
 
     await this.deleteUserFromTeam(teamId, identity.id)
-
-    const userOnTeams = await this.prisma.usersOnTeams.findFirst({
-      where: {
-        userId: identity.id,
-      },
-      select: {
-        teamId: true,
-      },
-    })
-
-    if (userOnTeams) {
-      await this.activateTeam(
-        {
-          teamId: userOnTeams.teamId,
-        },
-        identity,
-      )
-    }
   }
 
   async getTeams(identity: Identity): Promise<TeamDto[]> {

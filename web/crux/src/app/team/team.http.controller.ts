@@ -232,9 +232,9 @@ export default class TeamHttpController {
   async leaveTeam(
     @TeamId() teamId: string,
     @IdentityFromRequest() identity: Identity,
-    @Request() httpRequest: AuthorizedHttpRequest,
+    @Context() context: ExecutionContext,
   ): Promise<void> {
-    await this.service.leaveTeam(teamId, identity, httpRequest)
+    await this.service.leaveTeam(teamId, identity, context)
   }
 
   @Delete(`${ROUTE_TEAM_ID}/${ROUTE_USERS}/${ROUTE_USER_ID}`)
