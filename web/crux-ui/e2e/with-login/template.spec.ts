@@ -1,5 +1,5 @@
-import { routes } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
+import { TEAM_ROUTES } from 'e2e/utils/common'
 import { createProjectFromTemplate } from '../utils/templates'
 
 const templates = [
@@ -37,7 +37,7 @@ const testVersionlessTemplate = async (
 ): Promise<string> => {
   const projectId = await createProjectFromTemplate(page, templateName, projectName, 'versionless')
 
-  await expect(page).toHaveURL(routes.project.details(projectId))
+  await expect(page).toHaveURL(TEAM_ROUTES.project.details(projectId))
 
   const imageTableBody = await page.locator('.table-row-group')
   const imageRows = await imageTableBody.locator('.table-row')
@@ -54,10 +54,10 @@ const testVersionedTemplate = async (
 ): Promise<string> => {
   const projectId = await createProjectFromTemplate(page, templateName, projectName, 'versioned')
 
-  await expect(page).toHaveURL(routes.project.details(projectId))
+  await expect(page).toHaveURL(TEAM_ROUTES.project.details(projectId))
 
   await page.locator('text="Images"').click()
-  await page.waitForURL(`${routes.project.details(projectId)}/versions/**`)
+  await page.waitForURL(`${TEAM_ROUTES.project.details(projectId)}/versions/**`)
 
   const imageTableBody = await page.locator('.table-row-group')
   const imageRows = await imageTableBody.locator('.table-row')
@@ -66,6 +66,7 @@ const testVersionedTemplate = async (
   return projectId
 }
 
+// eslint-disable-next-line no-restricted-syntax
 for (const template of templates) {
   const projectName = template.name.toLowerCase().replaceAll(' ', '_')
 

@@ -1,6 +1,5 @@
-import { nodeContainerLogUrl, routes, ROUTE_NODES } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { DAGENT_NODE, screenshotPath } from '../utils/common'
+import { DAGENT_NODE, screenshotPath, TEAM_ROUTES } from '../utils/common'
 import { deployWithDagent } from '../utils/node-helper'
 import {
   addDeploymentToVersionlessProject,
@@ -44,7 +43,7 @@ test('Second successful deployment should make the first deployment obsolete', a
   const secondDeployStatus = await page.getByText('Successful')
   await expect(secondDeployStatus).toHaveCount(1)
 
-  await page.goto(routes.project.versions(projectId, versionId, { section: 'deployments' }))
+  await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionId, { section: 'deployments' }))
   await page.screenshot({ path: screenshotPath('deployment-should-be-obsolete'), fullPage: true })
 
   const deploymentsTableBody = await page.locator('.table-row-group')
@@ -74,7 +73,7 @@ test('Container log should appear after a successful deployment', async ({ page 
   await page.waitForSelector(deployButtonSelector)
 
   await page.locator(deployButtonSelector).click()
-  await page.waitForURL(routes.deployment.deploy(deploymentId))
+  await page.waitForURL(TEAM_ROUTES.deployment.deploy(deploymentId))
 
   const containerRow = page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
@@ -85,7 +84,7 @@ test('Container log should appear after a successful deployment', async ({ page 
   const showLogs = containerRow.locator('span:text-is("Show logs")')
 
   await showLogs.click()
-  await page.waitForURL(`${ROUTE_NODES}/**/log**`)
+  await page.waitForURL(`${TEAM_ROUTES.node.list()}/**/log**`)
 
   await page.waitForSelector('div.font-roboto')
   const terminal = page.locator('div.font-roboto')
@@ -106,7 +105,7 @@ test('Container log should appear on a node container', async ({ page }) => {
   await page.waitForSelector(deployButtonSelector)
 
   await page.locator(deployButtonSelector).click()
-  await page.waitForURL(routes.deployment.deploy(deploymentId))
+  await page.waitForURL(TEAM_ROUTES.deployment.deploy(deploymentId))
 
   const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
@@ -114,7 +113,7 @@ test('Container log should appear on a node container', async ({ page }) => {
   const runningTag = await containerRow.locator(':text-is("Running")')
   await expect(runningTag).toBeVisible()
 
-  await page.goto(ROUTE_NODES)
+  await page.goto(TEAM_ROUTES.node.list())
 
   const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
   await nodeButton.click()
@@ -131,7 +130,7 @@ test('Container log should appear on a node container', async ({ page }) => {
 
   await logButton.click()
   await page.waitForURL(
-    nodeContainerLogUrl(nodeId, {
+    TEAM_ROUTES.node.containerLog(nodeId, {
       name: `pw-${prefix}-${imageName}`,
     }),
   )
@@ -142,7 +141,7 @@ test('Container log should appear on a node container', async ({ page }) => {
 })
 
 test('Container list should show containers on the node screen', async ({ page }) => {
-  await page.goto(ROUTE_NODES)
+  await page.goto(TEAM_ROUTES.node.list())
 
   const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
   await nodeButton.click()

@@ -1,6 +1,5 @@
-import { routes } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { DAGENT_NODE, screenshotPath } from '../utils/common'
+import { DAGENT_NODE, TEAM_ROUTES, screenshotPath } from '../utils/common'
 import { deployWithDagent } from '../utils/node-helper'
 import {
   addDeploymentToVersion,
@@ -36,7 +35,7 @@ test.describe('Versionless Project', () => {
 
     const deploymentId = await deployWithDagent(page, prefix, projectId, '', false, testInfo.title)
 
-    await page.goto(routes.deployment.details(deploymentId))
+    await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
     await page.screenshot({ path: screenshotPath('versionless-prod-successful-deployment'), fullPage: true })
 
@@ -58,7 +57,7 @@ test.describe('Versioned Project incremental version', () => {
 
     const { id } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE)
 
-    await page.goto(routes.deployment.details(id))
+    await page.goto(TEAM_ROUTES.deployment.details(id))
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
@@ -83,7 +82,7 @@ test.describe('Versioned Project incremental version', () => {
       testInfo.title,
     )
 
-    await page.goto(routes.deployment.details(deploymentId))
+    await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(0)
 
@@ -110,7 +109,7 @@ test.describe('Versioned Project incremental version', () => {
 
     await deployWithDagent(page, 'versioned-mutability-obsolete', projectId, versionId, false, `${testInfo.title}2`)
 
-    await page.goto(routes.deployment.details(deploymentId))
+    await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(0)
 
