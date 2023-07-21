@@ -478,9 +478,9 @@ const mergeKeyValuesWithJson = (items: UniqueKeyValue[], json: JsonKeyValue): Un
   jsonKeys.forEach(key => {
     const value = json[key]
 
-    const byKey = items?.find(it => it.key === key)
+    const byKey = items.find(it => it.key === key)
     if (!byKey) {
-      const byValue = items?.find(it => it.value === value)
+      const byValue = items.find(it => it.value === value)
 
       result.push({
         key,
@@ -502,8 +502,8 @@ const mergeKeyValuesWithJson = (items: UniqueKeyValue[], json: JsonKeyValue): Un
     }
   })
 
-  const removed = items?.filter(it => !jsonKeys.includes(it.key))
-  if (removed?.length > 0) {
+  const removed = items.filter(it => !jsonKeys.includes(it.key))
+  if (removed.length > 0) {
     modified = true
   }
 
@@ -520,7 +520,7 @@ const mergeKeysWithJson = (items: UniqueKey[], json: string[]): UniqueKey[] => {
   let modified = false
   const result = []
   json.forEach(entry => {
-    const byKey = items?.find(it => it.key === entry)
+    const byKey = items.find(it => it.key === entry)
     if (!byKey) {
       result.push({
         key: entry,
@@ -541,8 +541,8 @@ const mergeKeysWithJson = (items: UniqueKey[], json: string[]): UniqueKey[] => {
   })
 
   const jsonKeys = Object.keys(json)
-  const removed = items?.filter(it => !jsonKeys.includes(it.key))
-  if (removed?.length > 0) {
+  const removed = items.filter(it => !jsonKeys.includes(it.key))
+  if (removed.length > 0) {
     modified = true
   }
 
