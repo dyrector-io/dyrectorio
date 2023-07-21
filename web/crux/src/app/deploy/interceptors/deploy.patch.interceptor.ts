@@ -3,8 +3,8 @@ import { Observable } from 'rxjs'
 import { checkDeploymentMutability } from 'src/domain/deployment'
 import { CruxConflictException, CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
-import { PatchDeploymentDto } from '../deploy.dto'
 import { VersionTypeEnum } from '@prisma/client'
+import { PatchDeploymentDto } from '../deploy.dto'
 
 @Injectable()
 export default class DeployPatchValidationInterceptor implements NestInterceptor {
