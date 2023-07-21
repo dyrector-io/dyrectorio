@@ -14,6 +14,7 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import EmailBuilder, { InviteTemplateOptions } from '../../builders/email.builder'
 import AuditLoggerService from '../audit.logger/audit.logger.service'
 import { AuthorizedHttpRequest } from '../token/jwt-auth.guard'
@@ -416,9 +417,11 @@ export default class TeamService {
         },
       })
       deleted = true
-      // TODO(@polaroi8d): remove this catch or implement a better way to handle this
-    } catch {
-      this.logger.error(`User ${userId} is not in the team: ${team.id}`)
+    } catch (err) {
+      const exception = PrismaErrorInterceptor.transformPrismaError(err)
+      if (!(exception instanceof CruxNotFoundException)) {
+        throw exception
+      }
     }
 
     try {
@@ -431,9 +434,11 @@ export default class TeamService {
         },
       })
       deleted = true
-      // TODO(@polaroi8d): remove this catch or implement a better way to handle this
-    } catch {
-      this.logger.error(`User ${userId} is not in the team: ${team.id}`)
+    } catch (err) {
+      const exception = PrismaErrorInterceptor.transformPrismaError(err)
+      if (!(exception instanceof CruxNotFoundException)) {
+        throw exception
+      }
     }
 
     if (!deleted) {
@@ -442,6 +447,30 @@ export default class TeamService {
         property: 'userId',
         value: userId,
       })
+    }
+  }
+
+  async leaveTeam(teamId: string, identity: Identity, httpRequest: AuthorizedHttpRequest): Promise<void> {
+    await this.auditLoggerService.createHttpAudit('all', httpRequest)
+
+    await this.deleteUserFromTeam(teamId, identity.id)
+
+    const userOnTeams = await this.prisma.usersOnTeams.findFirst({
+      where: {
+        userId: identity.id,
+      },
+      select: {
+        teamId: true,
+      },
+    })
+
+    if (userOnTeams) {
+      await this.activateTeam(
+        {
+          teamId: userOnTeams.teamId,
+        },
+        identity,
+      )
     }
   }
 

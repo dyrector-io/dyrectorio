@@ -54,7 +54,7 @@ func TestDeploymentImageRequestStrings(t *testing.T) {
 	}
 
 	cfg := config.CommonConfiguration{
-		IngressRootDomain: "my-root-domain.com",
+		RootDomain: "my-root-domain.com",
 	}
 
 	// Without registry

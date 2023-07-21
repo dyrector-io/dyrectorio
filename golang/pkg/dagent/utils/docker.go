@@ -155,8 +155,8 @@ func logDeployInfo(
 		log.Info().Str("requestID", reqID).Send()
 	}
 	dog.Write(
-		fmt.Sprintln("Starting container: ", containerName),
-		fmt.Sprintln("Using image: ", expandedImageName),
+		fmt.Sprintf("Starting container: %s", containerName),
+		fmt.Sprintf("Using image: %s", expandedImageName),
 	)
 
 	labels, _ := GetImageLabels(expandedImageName)
@@ -207,6 +207,15 @@ func writeDoggerError(dog *dogger.DeploymentLogger, msg string, err error) {
 	dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED, err.Error(), msg)
 }
 
+func getImageNameFromRequest(deployImageRequest *v1.DeployImageRequest) (string, error) {
+	imageName := util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)
+	if deployImageRequest.Registry != nil && *deployImageRequest.Registry != "" {
+		imageName = util.JoinV("/", *deployImageRequest.Registry, imageName)
+	}
+
+	return imageHelper.ExpandImageName(imageName)
+}
+
 func DeployImage(ctx context.Context,
 	dog *dogger.DeploymentLogger,
 	deployImageRequest *v1.DeployImageRequest,
@@ -220,17 +229,12 @@ func DeployImage(ctx context.Context,
 		return err
 	}
 
-	imageName := util.JoinV("/",
-		*deployImageRequest.Registry,
-		util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag))
-
-	expandedImageName, err := imageHelper.ExpandImageName(imageName)
+	expandedImageName, err := getImageNameFromRequest(deployImageRequest)
 	if err != nil {
 		return fmt.Errorf("deployment failed, image name error: %w", err)
 	}
 
-	log.Debug().Str("name", imageName).Str("full", expandedImageName).Msg("Image name parsed")
-
+	log.Debug().Str("name", deployImageRequest.ImageName).Str("full", expandedImageName).Msg("Image name parsed")
 	logDeployInfo(dog, deployImageRequest, expandedImageName, containerName)
 
 	envMap := MergeStringMapUnique(deployImageRequest.InstanceConfig.Environment, deployImageRequest.ContainerConfig.Environment)
@@ -285,6 +289,10 @@ func DeployImage(ctx context.Context,
 		WithoutConflict().
 		WithLogWriter(dog).
 		WithPullDisplayFunc(dog.WriteDockerPull)
+
+	if deployImageRequest.Registry == nil || *deployImageRequest.Registry == "" {
+		builder.WithImagePriority(imageHelper.LocalOnly)
+	}
 
 	WithInitContainers(builder, &deployImageRequest.ContainerConfig, dog, envMap, cfg)
 

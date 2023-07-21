@@ -61,8 +61,8 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 			RuntimeConfigType:  "",
 			Expose:             true,
 			ExposeTLS:          true,
-			IngressName:        "test-ingress",
-			IngressHost:        "test-host",
+			IngressHost:        "test-domain",
+			IngressName:        "",
 			IngressUploadLimit: "5Mi",
 			Shared:             false,
 			ConfigContainer: &v1.ConfigContainer{
@@ -223,9 +223,8 @@ func testDeployRequest() *agent.DeployRequest {
 			Volumes:        []*agent.Volume{testVolume()},
 			InitContainers: []*agent.InitContainer{testInitContainer()},
 			Expose:         &strategy,
-			Ingress: &common.Ingress{
-				Name:        "test-ingress",
-				Host:        "test-host",
+			Routing: &common.Routing{
+				Domain:      pointer.ToString("test-domain"),
 				UploadLimit: &upLimit,
 			},
 			ConfigContainer: &common.ConfigContainer{
@@ -370,7 +369,7 @@ func testAppConfig() *config.CommonConfiguration {
 		GrpcKeepalive:        30 * time.Second,
 		Debug:                false,
 		ImportContainerImage: "",
-		IngressRootDomain:    "",
+		RootDomain:           "",
 		ReadHeaderTimeout:    30 * time.Second,
 		DefaultRegistry:      "",
 		SecretPrivateKey:     "",

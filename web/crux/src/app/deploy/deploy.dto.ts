@@ -1,7 +1,18 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger'
 import { Deployment, DeploymentToken, Instance, InstanceContainerConfig, Node, Project, Version } from '@prisma/client'
 import { Type } from 'class-transformer'
-import { IsDate, IsIn, IsInt, IsJWT, IsOptional, IsString, IsUUID, Min, ValidateNested } from 'class-validator'
+import {
+  IsDate,
+  IsIn,
+  IsInt,
+  IsJWT,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+  MinLength,
+  ValidateNested,
+} from 'class-validator'
 import { CONTAINER_STATE_VALUES, ContainerState } from 'src/domain/container'
 import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
 import { BasicProperties } from '../../shared/dtos/shared.dto'
@@ -106,7 +117,7 @@ export class DeploymentTokenDto {
 
 export class CreateDeploymentTokenDto {
   @IsString()
-  @Min(3)
+  @MinLength(3)
   name: string
 
   @IsInt()

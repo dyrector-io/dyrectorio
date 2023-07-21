@@ -30,7 +30,7 @@ import (
 type Builder interface {
 	WithClient(client client.APIClient) Builder
 	WithImage(imageWithTag string) Builder
-	WithLocalImagePriority() Builder
+	WithImagePriority(priority imageHelper.PullPriority) Builder
 	WithEnv(env []string) Builder
 	WithPortBindings(portList []PortBinding) Builder
 	WithPortRanges(portRanges []PortRangeBinding) Builder
@@ -50,7 +50,6 @@ type Builder interface {
 	WithUser(uid *int64) Builder
 	WithLogWriter(logger io.StringWriter) Builder
 	WithoutConflict() Builder
-	WithForcePullImage() Builder
 	WithPullDisplayFunc(imageHelper.PullDisplayFn) Builder
 	WithExtraHosts(hosts []string) Builder
 	WithPreCreateHooks(hooks ...LifecycleFunc) Builder
@@ -70,7 +69,6 @@ type DockerContainerBuilder struct {
 	networkAliases  []string
 	containerName   string
 	imageWithTag    string
-	localImage      bool
 	envList         []string
 	labels          map[string]string
 	logConfig       *container.LogConfig
@@ -88,7 +86,7 @@ type DockerContainerBuilder struct {
 	shell           []string
 	tty             bool
 	user            *int64
-	forcePull       bool
+	imagePriority   imageHelper.PullPriority
 	pullDisplayFn   imageHelper.PullDisplayFn
 	logger          io.StringWriter
 	extraHosts      []string
@@ -104,8 +102,9 @@ type DockerContainerBuilder struct {
 func NewDockerBuilder(ctx context.Context) Builder {
 	var logger io.StringWriter = defaultLogger{}
 	b := DockerContainerBuilder{
-		ctx:    ctx,
-		logger: logger,
+		ctx:           ctx,
+		logger:        logger,
+		imagePriority: imageHelper.PreferLocal,
 	}
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -175,8 +174,8 @@ func (dc *DockerContainerBuilder) WithImage(imageWithTag string) Builder {
 }
 
 // Sets the image of a container in a "image:tag" format where image can be a fully qualified name.
-func (dc *DockerContainerBuilder) WithLocalImagePriority() Builder {
-	dc.localImage = true
+func (dc *DockerContainerBuilder) WithImagePriority(priority imageHelper.PullPriority) Builder {
+	dc.imagePriority = priority
 	return dc
 }
 
@@ -262,12 +261,6 @@ func (dc *DockerContainerBuilder) WithLogWriter(logger io.StringWriter) Builder 
 }
 
 // Sets the builder to force pull the image before creating the container.
-func (dc *DockerContainerBuilder) WithForcePullImage() Builder {
-	dc.forcePull = true
-	return dc
-}
-
-// Sets the builder to force pull the image before creating the container.
 func (dc *DockerContainerBuilder) WithPullDisplayFunc(fn imageHelper.PullDisplayFn) Builder {
 	dc.pullDisplayFn = fn
 	return dc
@@ -304,32 +297,23 @@ func (dc *DockerContainerBuilder) WithPostStartHooks(hooks ...LifecycleFunc) Bui
 	return dc
 }
 
-// Creates the container using the configuration given by 'With...' functions.
-func (dc *DockerContainerBuilder) Create() (Container, error) {
-	dc.logWrite(fmt.Sprintf("Creating container: %s", util.Fallback(dc.containerName, dc.imageWithTag)))
-	if err := dc.prepareImage(); err != nil {
-		dc.logWrite(fmt.Sprintf("Failed to prepare image: %s", err.Error()))
-		return nil, err
-	}
-
-	if dc.withoutConflict {
-		err := dockerHelper.DeleteContainerByName(dc.ctx, dc.client, dc.containerName)
-		if err != nil {
-			dc.logWrite(fmt.Sprintf("Failed to resolve conflict during creating the container: %v", err))
-			return nil, err
-		}
+func builderToDockerConfig(dc *DockerContainerBuilder) (hostConfig *container.HostConfig, containerConfig *container.Config, err error) {
+	hostConfig = &container.HostConfig{}
+	containerConfig = &container.Config{}
+	if dc.containerName != "" {
+		containerConfig.Hostname = dc.containerName
 	}
 
 	portListNat := portListToNatBinding(dc.portRanges, dc.portList)
 	exposedPortSet := getPortSet(dc.portList)
-	hostConfig := &container.HostConfig{
+	hostConfig = &container.HostConfig{
 		Mounts:       dc.mountList,
 		PortBindings: portListNat,
 		AutoRemove:   dc.remove,
 		ExtraHosts:   dc.extraHosts,
 	}
 
-	containerConfig := &container.Config{
+	containerConfig = &container.Config{
 		Image:        dc.imageWithTag,
 		Tty:          dc.tty,
 		Env:          dc.envList,
@@ -355,29 +339,47 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 	if dc.networkMode != "" {
 		dc.logWrite(fmt.Sprintf("Provided networkMode: %s", dc.networkMode))
 	}
-	if nw := container.NetworkMode(dc.networkMode); !nw.IsPrivate() {
+	if nw := container.NetworkMode(dc.networkMode); !nw.IsPrivate() || nw.IsNone() {
 		hostConfig.NetworkMode = nw
 	} else {
 		networkCreateResult, err := createNetworks(dc)
 		if err != nil {
-			return nil, errors.Join(err, fmt.Errorf("error creating enlisted containers networks: %v", dc.networks))
+			return nil, nil, errors.Join(err, fmt.Errorf("error creating enlisted containers networks: %v", dc.networks))
 		}
 
 		dc.networkMap = networkCreateResult
 		dc.logWrite(fmt.Sprintf("Container network: %v", maps.Keys(dc.networkMap)))
 	}
 
-	var name string
-	if dc.containerName != "" {
-		name = dc.containerName
-		containerConfig.Hostname = dc.containerName
+	return hostConfig, containerConfig, nil
+}
+
+// Creates the container using the configuration given by 'With...' functions.
+func (dc *DockerContainerBuilder) Create() (Container, error) {
+	dc.logWrite(fmt.Sprintf("Creating container: %s", util.Fallback(dc.containerName, dc.imageWithTag)))
+	if err := dc.prepareImage(); err != nil {
+		dc.logWrite(fmt.Sprintf("Failed to prepare image: %s", err.Error()))
+		return nil, err
+	}
+
+	if dc.withoutConflict {
+		err := dockerHelper.DeleteContainerByName(dc.ctx, dc.client, dc.containerName)
+		if err != nil {
+			dc.logWrite(fmt.Sprintf("Failed to resolve conflict during creating the container: %v", err))
+			return nil, err
+		}
 	}
 
 	if hookError := execHooks(dc, nil, dc.hooksPreCreate); hookError != nil {
 		dc.logWrite(fmt.Sprintln("Container pre-create hook error: ", hookError))
 	}
 
-	containerCreateResp, err := dc.client.ContainerCreate(dc.ctx, containerConfig, hostConfig, nil, nil, name)
+	hostConfig, containerConfig, err := builderToDockerConfig(dc)
+	if err != nil {
+		return nil, err
+	}
+
+	containerCreateResp, err := dc.client.ContainerCreate(dc.ctx, containerConfig, hostConfig, nil, nil, dc.containerName)
 	if err != nil {
 		dc.logWrite(fmt.Sprintln("Container create failed: ", err))
 	}
@@ -385,11 +387,6 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 		All:     true,
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: containerCreateResp.ID}),
 	})
-
-	if hookError := execHooks(dc, &containers[0], dc.hooksPostCreate); hookError != nil {
-		dc.logWrite(fmt.Sprintln("Container post-create hook error: ", err))
-	}
-
 	if err != nil {
 		dc.logWrite(fmt.Sprintf("Container list failed: %s", err.Error()))
 	}
@@ -397,6 +394,10 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 	if len(containers) != 1 {
 		dc.logWrite("Container was not created.")
 		return nil, errors.New("container was not created")
+	}
+
+	if hookError := execHooks(dc, &containers[0], dc.hooksPostCreate); hookError != nil {
+		dc.logWrite(fmt.Sprintln("Container post-create hook error: ", err))
 	}
 
 	dc.containerID = &containers[0].ID
@@ -447,7 +448,19 @@ func (dc *DockerContainerBuilder) prepareImage() error {
 		return err
 	}
 
-	err = imageHelper.CustomImagePull(dc.ctx, dc.client, expandedImageName, dc.registryAuth, dc.forcePull, dc.localImage, dc.pullDisplayFn)
+	if dc.imagePriority == imageHelper.LocalOnly {
+		dc.logWrite("Using local image only")
+		return nil
+	}
+
+	err = imageHelper.CustomImagePull(
+		dc.ctx,
+		dc.client,
+		expandedImageName,
+		dc.registryAuth,
+		dc.imagePriority,
+		dc.pullDisplayFn,
+	)
 	if err != nil && err.Error() != "EOF" {
 		return fmt.Errorf("image pull error: %s", err.Error())
 	}
@@ -520,7 +533,10 @@ func execHooks(dc *DockerContainerBuilder, cont *types.Container, hooks []Lifecy
 }
 
 func portListToNatBinding(portRanges []PortRangeBinding, portList []PortBinding) map[nat.Port][]nat.PortBinding {
-	portMap := make(map[nat.Port][]nat.PortBinding)
+	if len(portRanges) == 0 && len(portList) == 0 {
+		return nil
+	}
+	portMap := map[nat.Port][]nat.PortBinding{}
 
 	for _, p := range portRanges {
 		// example complete portSpec
@@ -559,7 +575,10 @@ func portListToNatBinding(portRanges []PortRangeBinding, portList []PortBinding)
 }
 
 func getPortSet(portList []PortBinding) nat.PortSet {
-	portSet := make(nat.PortSet)
+	if len(portList) == 0 {
+		return nil
+	}
+	portSet := nat.PortSet{}
 
 	for _, port := range portList {
 		exposedPort, _ := nat.NewPort("tcp", fmt.Sprint(port.ExposedPort))

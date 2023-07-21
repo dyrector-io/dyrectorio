@@ -70,7 +70,7 @@ export default class ContainerMapper {
     return {
       name: config.name,
       expose: config.expose,
-      ingress: toPrismaJson(config.ingress),
+      routing: toPrismaJson(config.routing),
       configContainer: toPrismaJson(config.configContainer),
       // Set user to the given value, if not null or use 0 if specifically 0, otherwise set to default -1
       user: config.user ?? (config.user === 0 ? 0 : -1),
@@ -139,10 +139,10 @@ export default class ContainerMapper {
       commands: instance.commands ?? image.commands,
       expose: instance.expose ?? image.expose,
       configContainer: instance.configContainer ?? image.configContainer,
-      ingress: instance.ingress ?? image.ingress,
+      routing: instance.routing ?? image.routing,
       volumes: instance.volumes ?? image.volumes,
       initContainers: instance.initContainers ?? image.initContainers,
-      capabilities: [], // TODO (@m8vago, @nandor-magyar): caps
+      capabilities: [], // TODO (@m8vago, @nandor-magyar): capabilities feature is still missing
       ports: instance.ports ?? image.ports,
       storageSet: instance.storageSet || image.storageSet,
       storageId: instance.storageSet ? instance.storageId : image.storageId,

@@ -82,7 +82,6 @@ class RegistryV2ApiClient implements RegistryApiClient {
   ): Promise<Response> {
     const bodies = []
 
-    // TODO @m8 could you tell me what is this function doing?
     const generateResponse = (res: Response) => {
       res.json = async () => bodies
       return res
