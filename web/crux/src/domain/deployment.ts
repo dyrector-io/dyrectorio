@@ -161,7 +161,7 @@ export default class Deployment {
 
     if (progress.instance) {
       events.push({
-        type: DeploymentEventTypeEnum.containerStatus,
+        type: DeploymentEventTypeEnum.containerState,
         value: {
           instanceId: progress.instance.instanceId,
           state: containerStateToDto(progress.instance.state),
