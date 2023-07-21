@@ -1,6 +1,6 @@
 import { deploymentDeployUrl, nodeContainerLogUrl, ROUTE_NODES, versionUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { DAGENT_NODE, screenshotPath } from '../utils/common'
+import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, screenshotPath } from '../utils/common'
 import { deployWithDagent } from '../utils/node-helper'
 import {
   addDeploymentToVersionlessProject,
@@ -12,7 +12,7 @@ import {
 
 const PREFIX = 'first'
 const PREFIX_TWO = 'second'
-const IMAGE = 'nginx'
+const IMAGE = NGINX_TEST_IMAGE_WITH_TAG
 
 test('Deploy to node should be successful', async ({ page }, testInfo) => {
   const projectId = await createProject(page, 'deploy-test', 'versioned')

@@ -74,7 +74,6 @@ export const globalTeardown = async () => {
 
   logInfo('fetch', 'delete teams')
   const deletes = user.teams.map(it => {
-    logInfo('team delete', `${it.id}-'${it.name}'`)
     return fetchCruxFromBrowser(cookie, cruxUrl, teamApiUrl(it.id), {
       method: 'DELETE',
     })

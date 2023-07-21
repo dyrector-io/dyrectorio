@@ -31,9 +31,12 @@ test("New version should get the default version's images and deployments", asyn
 
   await page.goto(projectUrl(projectId))
 
+  //changed because the two projects would sometimes switch place when running e2e tests and fail
   await expect(page.locator('.bg-dyo-blue:has-text("Incremental")')).toHaveCount(2)
-  await expect(page.locator(`.bg-error-red:has-text("DEFAULT"):right-of(h5:has-text("1.0.0"))`)).toHaveCount(1)
-  await expect(page.locator(`.bg-error-red:has-text("DEFAULT"):right-of(h5:has-text("2.0.0"))`)).toHaveCount(0)
+  //await expect(page.locator(`.bg-error-red:has-text("DEFAULT"):right-of(h5:has-text("1.0.0"))`)).toHaveCount(1)
+  await expect(page.locator('div.card:has(h5:has-text("1.0.0")) .bg-error-red:has-text("DEFAULT")')).toHaveCount(1)
+  //await expect(page.locator(`.bg-error-red:has-text("DEFAULT"):right-of(h5:has-text("2.0.0"))`)).toHaveCount(0)
+  await expect(page.locator('div.card:has(h5:has-text("2.0.0")) .bg-error-red:has-text("DEFAULT")')).toHaveCount(0)
 
   await page.goto(versionUrl(projectId, childVersion, { section: 'images' }))
 

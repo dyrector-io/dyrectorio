@@ -182,7 +182,6 @@ export default class TeamService {
         const updates = Object.entries(updatables).map(async entry => {
           const [key, value] = entry
 
-          console.log(JSON.stringify(entry))
           return await prisma.usersOnTeams.update({
             where: {
               userId_teamId: {
