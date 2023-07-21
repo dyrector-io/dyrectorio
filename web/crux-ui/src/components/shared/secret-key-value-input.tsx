@@ -1,5 +1,5 @@
 import DyoButton from '@app/elements/dyo-button'
-import DyoIcon from '@app/elements/dyo-icon'
+import DyoImgButton from '@app/elements/dyo-img-button'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { UniqueSecretKeyValue } from '@app/models'
 import clsx from 'clsx'
@@ -276,19 +276,13 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
             onPatch={it => onChange(index, key, it)}
           />
           <div className="ml-2 flex flex-row basis-[64px] my-auto">
-            {encrypted && disabled !== true && (
-              <div
-                onClick={() => onRemoveOrClear(index)}
-                className="basis-12 flex-initial cursor-pointer w-12 focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
-              >
-                <DyoIcon
-                  className="text-bright-muted self-center"
-                  src={required ? '/clear.svg' : '/trash-can.svg'}
-                  alt={t(required ? 'clear' : 'common:delete')}
-                  size="md"
-                />
-              </div>
-            )}
+            <DyoImgButton
+              disabled={!encrypted || disabled}
+              className="basis-12 flex-initial cursor-pointer w-12 focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
+              src={required ? '/clear.svg' : '/trash-can.svg'}
+              alt={t(required ? 'clear' : 'common:delete')}
+              onClick={() => onRemoveOrClear(index)}
+            />
           </div>
         </div>
       </div>
