@@ -258,10 +258,9 @@ test.describe.skip('json error', () => {
 
     await page.reload()
 
-    const cfgDiv = page.getByText('LABELSDeploymentServiceIngress')
-    const deploymentDiv = await getCategoryDiv('Deployment', cfgDiv)
-    const serviceDiv = await getCategoryDiv('Service', cfgDiv)
-    const ingressDiv = await getCategoryDiv('Ingress', cfgDiv)
+    const deploymentDiv = await getCategoryDiv('Deployment', page)
+    const serviceDiv = await getCategoryDiv('Service', page)
+    const ingressDiv = await getCategoryDiv('Ingress', page)
     await expect(deploymentDiv.locator('input[placeholder="Key"]').first()).toHaveValue(key)
     await expect(deploymentDiv.locator('input[placeholder="Value"]').first()).toHaveValue(value)
     await expect(serviceDiv.locator('input[placeholder="Key"]').first()).toHaveValue(key)
@@ -302,10 +301,9 @@ test.describe.skip('json error', () => {
 
     await page.reload()
 
-    const cfgDiv = page.getByText('ANNOTATIONSDeploymentServiceIngress')
-    const deploymentDiv = await getCategoryDiv('Deployment', cfgDiv)
-    const serviceDiv = await getCategoryDiv('Service', cfgDiv)
-    const ingressDiv = await getCategoryDiv('Ingress', cfgDiv)
+    const deploymentDiv = await getCategoryDiv('Deployment', page)
+    const serviceDiv = await getCategoryDiv('Service', page)
+    const ingressDiv = await getCategoryDiv('Ingress', page)
     await expect(deploymentDiv.locator('input[placeholder="Key"]').first()).toHaveValue(key)
     await expect(deploymentDiv.locator('input[placeholder="Value"]').first()).toHaveValue(value)
     await expect(serviceDiv.locator('input[placeholder="Key"]').first()).toHaveValue(key)
@@ -315,6 +313,6 @@ test.describe.skip('json error', () => {
   })
 })
 
-const getCategoryDiv = async (category: string, labelConf: Locator) => {
-  return labelConf.locator(`div.max-h-128 > div:nth-child(2):near(label:has-text("${category}"))`)
+const getCategoryDiv = async (category: string, page: Page) => {
+  return page.locator(`div.max-h-128 > div:nth-child(2):near(label:has-text("${category}"))`)
 }

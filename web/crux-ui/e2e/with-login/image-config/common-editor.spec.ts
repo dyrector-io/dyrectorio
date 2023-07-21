@@ -8,7 +8,7 @@ import {
   wsPatchMatchContainerName,
   wsPatchMatchEnvironment,
   wsPatchMatchExpose,
-  wsPatchMatchIngress,
+  wsPatchMatchRouting,
   wsPatchMatchInitContainer,
   wsPatchMatchPortRange,
   wsPatchMatchPorts,
@@ -248,30 +248,33 @@ test.describe('Image common config from editor', () => {
     await expect(argumentInput).toHaveValue(argument)
   })
 
-  test('Ingress should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'ingress-editor', '1.0.0', 'redis')
+  test('Routing should be saved', async ({ page }) => {
+    const { projectId, versionId, imageId } = await setup(page, 'routing-editor', '1.0.0', 'redis')
     const sock = waitSocket(page)
     await page.goto(imageConfigUrl(projectId, versionId, imageId))
     const ws = await sock
     const wsRoute = versionWsUrl(versionId)
 
-    await page.locator('button:has-text("Ingress")').click()
+    await page.locator('button:has-text("Routing")').click()
 
-    const name = 'ingress-name'
-    const host = 'ingress-host.test.com'
-    const limit = '1024'
+    const domain = 'routing-domain'
+    const path = 'routing-path.test.com'
+    const uploadLimit = '1024'
+    const stripPath = true
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchIngress(name, host, limit))
-    await page.locator('input[placeholder="Ingress name"]').fill(name)
-    await page.locator('input[placeholder="Ingress host"]').fill(host)
-    await page.locator('input[placeholder="Ingress upload limit"]').fill(limit)
+    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchRouting(domain, path, uploadLimit, stripPath))
+    await page.locator('input[placeholder="Domain"]').fill(domain)
+    await page.locator('input[placeholder="Path"]').fill(path)
+    if (stripPath) { await page.locator('button[aria-checked="false"]').click() }
+    await page.locator('input[placeholder="Upload limit"]').fill(uploadLimit)
     await wsSent
 
     await page.reload()
 
-    await expect(page.locator('input[placeholder="Ingress name"]')).toHaveValue(name)
-    await expect(page.locator('input[placeholder="Ingress host"]')).toHaveValue(host)
-    await expect(page.locator('input[placeholder="Ingress upload limit"]')).toHaveValue(limit)
+    await expect(page.locator('input[placeholder="Domain"]')).toHaveValue(domain)
+    await expect(page.locator('input[placeholder="Path"]')).toHaveValue(path)
+    await expect(page.locator('button.bg-dyo-turquoise[aria-checked="true"]')).toBeVisible()
+    await expect(page.locator('input[placeholder="Upload limit"]')).toHaveValue(uploadLimit)
   })
 
   test('Environment should be saved', async ({ page }) => {

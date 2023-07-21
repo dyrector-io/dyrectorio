@@ -8,7 +8,7 @@ import {
   wsPatchMatchContainerName,
   wsPatchMatchEnvironment,
   wsPatchMatchExpose,
-  wsPatchMatchIngress,
+  wsPatchMatchRouting,
   wsPatchMatchInitContainer,
   wsPatchMatchPortRange,
   wsPatchMatchPorts,
@@ -34,7 +34,6 @@ const setup = async (
   return { projectId, versionId, imageId }
 }
 
-test.describe.configure({ mode: 'parallel' })
 test.describe('Image common config from JSON', () => {
   test('Container name should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'name-json', '1.0.0', 'redis')
@@ -295,8 +294,8 @@ test.describe('Image common config from JSON', () => {
     await expect(page.locator('input[placeholder="Arguments"] >> visible=true').nth(0)).toHaveValue(argument)
   })
 
-  test('Ingress should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'ingress-json', '1.0.0', 'redis')
+  test('Routing should be saved', async ({ page }) => {
+    const { projectId, versionId, imageId } = await setup(page, 'routing-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
     await page.goto(imageConfigUrl(projectId, versionId, imageId))
     const ws = await sock
@@ -305,23 +304,25 @@ test.describe('Image common config from JSON', () => {
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
     await jsonEditorButton.click()
 
-    const name = 'ingress-name'
-    const host = 'ingress-host.test.com'
-    const limit = '1024'
+    const domain = 'routing-domain'
+    const path = 'routing-path.test.com'
+    const uploadLimit = '1024'
+    const stripPath = true
 
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
-    json.ingress = { name: name, host: host, uploadLimit: limit }
+    json.routing = { domain: domain, path:path,uploadLimit:uploadLimit, stripPath:stripPath}
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchIngress(name, host, limit))
+    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchRouting(domain, path, uploadLimit,stripPath))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
     await page.reload()
 
-    await expect(page.locator('input[placeholder="Ingress name"]')).toHaveValue(name)
-    await expect(page.locator('input[placeholder="Ingress host"]')).toHaveValue(host)
-    await expect(page.locator('input[placeholder="Ingress upload limit"]')).toHaveValue(limit)
+    await expect(page.locator('input[placeholder="Domain"]')).toHaveValue(domain)
+    await expect(page.locator('input[placeholder="Path"]')).toHaveValue(path)
+    await expect(page.locator('button.bg-dyo-turquoise[aria-checked="true"]')).toBeVisible()
+    await expect(page.locator('input[placeholder="Upload limit"]')).toHaveValue(uploadLimit)
   })
 
   test('Environment should be saved', async ({ page }) => {

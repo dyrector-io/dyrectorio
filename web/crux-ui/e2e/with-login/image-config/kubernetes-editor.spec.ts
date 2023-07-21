@@ -212,10 +212,9 @@ test.describe('Image kubernetes config from editor', () => {
     const key = 'label-key'
     const value = 'label-value'
 
-    const cfgDiv = page.getByText('LABELSDeploymentServiceIngress')
-    const deploymentDiv = await getCategoryDiv('Deployment', cfgDiv)
-    const serviceDiv = await getCategoryDiv('Service', cfgDiv)
-    const ingressDiv = await getCategoryDiv('Ingress', cfgDiv)
+    const deploymentDiv = await getCategoryDiv('Deployment', page)
+    const serviceDiv = await getCategoryDiv('Service', page)
+    const ingressDiv = await getCategoryDiv('Ingress', page)
 
     let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchDeploymentLabel(key, value))
     await deploymentDiv.locator('input[placeholder="Key"]').first().fill(key)
@@ -253,10 +252,9 @@ test.describe('Image kubernetes config from editor', () => {
     const key = 'annotation-key'
     const value = 'annotation-value'
 
-    const cfgDiv = page.getByText('ANNOTATIONSDeploymentServiceIngress')
-    const deploymentDiv = await getCategoryDiv('Deployment', cfgDiv)
-    const serviceDiv = await getCategoryDiv('Service', cfgDiv)
-    const ingressDiv = await getCategoryDiv('Ingress', cfgDiv)
+    const deploymentDiv = await getCategoryDiv('Deployment', page)
+    const serviceDiv = await getCategoryDiv('Service', page)
+    const ingressDiv = await getCategoryDiv('Ingress', page)
 
     let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchDeploymentAnnotations(key, value))
     await deploymentDiv.locator('input[placeholder="Key"]').first().fill(key)
@@ -282,6 +280,6 @@ test.describe('Image kubernetes config from editor', () => {
   })
 })
 
-const getCategoryDiv = async (category: string, labelConf: Locator) => {
-  return labelConf.locator(`div.max-h-128 > div:nth-child(2):near(label:has-text("${category}"))`)
+const getCategoryDiv = async (category: string, page: Page) => {
+  return page.locator(`div.max-h-128 > div:nth-child(2):near(label:has-text("${category}"))`)
 }

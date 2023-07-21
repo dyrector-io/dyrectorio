@@ -31,7 +31,7 @@ test.describe('Image docker config from JSON', () => {
     const ws = await sock
     const wsRoute = versionWsUrl(versionId)
 
-    const mode = 'macvlan'
+    const mode = 'host'
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
     await jsonEditorButton.click()

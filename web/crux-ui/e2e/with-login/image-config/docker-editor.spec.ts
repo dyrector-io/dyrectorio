@@ -31,7 +31,7 @@ test.describe('Image docker config from editor', () => {
     const ws = await sock
     const wsRoute = versionWsUrl(versionId)
 
-    const mode = 'macvlan'
+    const mode = 'host'
 
     let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchNetworkMode(mode))
     await page.locator(`div.grid:has(label:has-text("NETWORK MODE")) button:has-text("${mode}")`).click()
