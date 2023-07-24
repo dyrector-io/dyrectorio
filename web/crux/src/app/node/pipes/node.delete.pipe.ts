@@ -13,7 +13,7 @@ export default class DeleteNodeValidationPipe implements PipeTransform {
       },
     })
 
-    if (!!deploymentExists) {
+    if (deploymentExists) {
       throw new CruxPreconditionFailedException({
         property: 'id',
         value: id,

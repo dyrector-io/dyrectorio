@@ -86,7 +86,7 @@ export default class NodeService {
     const node = await this.prisma.node.findUniqueOrThrow({
       where: {
         id,
-      }
+      },
     })
 
     const deploymentExists = await this.prisma.deployment.findFirst({

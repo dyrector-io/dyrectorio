@@ -139,7 +139,10 @@ export default class NodeHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for node delete.' })
   @ApiNotFoundResponse({ description: 'Node not found.' })
   @UuidParams(PARAM_NODE_ID)
-  async deleteNode(@NodeId(DeleteNodeValidationPipe) nodeId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
+  async deleteNode(
+    @NodeId(DeleteNodeValidationPipe) nodeId: string,
+    @IdentityFromRequest() identity: Identity,
+  ): Promise<void> {
     return this.service.deleteNode(nodeId, identity)
   }
 

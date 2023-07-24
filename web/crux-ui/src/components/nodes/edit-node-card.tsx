@@ -5,6 +5,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIconPicker from '@app/elements/dyo-icon-picker'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoMessage from '@app/elements/dyo-message'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import LoadingIndicator from '@app/elements/loading-indicator'
@@ -34,7 +35,6 @@ import toast from 'react-hot-toast'
 import DyoNodeSetup from './dyo-node-setup'
 import NodeConnectionCard from './node-connection-card'
 import useNodeState from './use-node-state'
-import DyoMessage from '@app/elements/dyo-message'
 
 interface EditNodeCardProps {
   className?: string
