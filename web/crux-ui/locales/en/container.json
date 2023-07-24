@@ -110,7 +110,7 @@
     "customHeaders": "Custom headers",
     "resourceConfig": "Resource config",
     "cpu": "Cpu",
-    "memory": "Mermory",
+    "memory": "Memory",
     "limits": "Limits",
     "requests": "Requests",
     "proxyHeaders": "Proxy headers",
