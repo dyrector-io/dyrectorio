@@ -131,20 +131,31 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
 
   const onVersionIncreased = async (version: Version) => await router.push(versionUrl(project.id, version.id))
 
-  const onConvertToVersioned =
-    project.type === 'versioned'
-      ? null
-      : async () => {
-          const res = await fetch(projectConvertToVersionedApiUrl(project.id), {
-            method: 'POST',
-          })
+  const onConvertToVersioned = async () => {
+    if (project.type === 'versioned') {
+      return
+    }
 
-          if (res.ok) {
-            await router.reload()
-          } else {
-            toast(t('errors:oops'))
-          }
-        }
+    const confirmed = await confirmConvert({
+      title: t('convertProjectToVersioned', { name: project.name }),
+      description: t('areYouSureWantToConvert'),
+      confirmColor: 'bg-warning-orange',
+    })
+
+    if (!confirmed) {
+      return
+    }
+
+    const res = await fetch(projectConvertToVersionedApiUrl(project.id), {
+      method: 'POST',
+    })
+
+    if (res.ok) {
+      await router.reload()
+    } else {
+      toast(t('errors:oops'))
+    }
+  }
 
   const pageLink: BreadcrumbLink = {
     name: t('common:projects'),
@@ -180,7 +191,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
           })}
         >
           {editState !== 'version-list' && versionless && (
-            <DyoButton className="px-2 mx-2" outlined onClick={() => confirmConvert(onConvertToVersioned)}>
+            <DyoButton className="px-2 mx-2" outlined onClick={onConvertToVersioned}>
               {t('convertToVersioned')}
             </DyoButton>
           )}
@@ -231,15 +242,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
         <ProjectVersionsSection disabled projectId={project.id} versions={project.versions} />
       ) : null}
 
-      {versionless && (
-        <DyoConfirmationModal
-          config={convertModelConfig}
-          title={t('convertProjectToVersioned', { name: project.name })}
-          description={t('areYouSureWantToConvert')}
-          className="w-1/4"
-          confirmColor="bg-warning-orange"
-        />
-      )}
+      {versionless && <DyoConfirmationModal config={convertModelConfig} className="w-1/4" />}
     </Layout>
   )
 }

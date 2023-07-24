@@ -11,6 +11,7 @@ import {
   WS_TYPE_PATCH_IMAGE,
 } from '@app/models'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
+import { Translate } from 'next-translate'
 import { useRef, useState } from 'react'
 import { selectTagsOfImage, VerionState, VersionActions } from '../use-version-state'
 
@@ -34,10 +35,11 @@ export type ImageEditorStateOptions = {
   imagesState: VerionState
   imagesActions: VersionActions
   sock: WebSocketClientEndpoint
+  t: Translate
 }
 
 const useImageEditorState = (options: ImageEditorStateOptions): [ImageEditorState, ImageEditorActions] => {
-  const { image, imagesState, imagesActions, sock } = options
+  const { image, imagesState, imagesActions, sock, t } = options
 
   const [deleteModal, confirmDelete] = useConfirmation()
   const [parseError, setParseError] = useState<string>(null)
@@ -69,12 +71,22 @@ const useImageEditorState = (options: ImageEditorStateOptions): [ImageEditorStat
     })
   }
 
-  const deleteImage = () =>
-    confirmDelete(() =>
-      sock.send(WS_TYPE_DELETE_IMAGE, {
-        imageId: image.id,
-      } as DeleteImageMessage),
-    )
+  const deleteImage = async () => {
+    const confirmed = await confirmDelete({
+      title: t('common:areYouSureDeleteName', { name: image.name }),
+      description: t('common:proceedYouLoseAllDataToName', { name: image.name }),
+      confirmText: t('common:delete'),
+      confirmColor: 'bg-error-red',
+    })
+
+    if (!confirmed) {
+      return
+    }
+
+    sock.send(WS_TYPE_DELETE_IMAGE, {
+      imageId: image.id,
+    } as DeleteImageMessage)
+  }
 
   return [
     {

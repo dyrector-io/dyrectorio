@@ -82,6 +82,21 @@ export const DetailsPageMenu = (props: React.PropsWithChildren<DetailsPageMenuPr
 
   const texts = propsTexts ?? {}
 
+  const deleteClick = async () => {
+    const confirmed = await confirmDelete({
+      title: deleteModalTitle,
+      description: deleteModalDescription,
+      confirmText: texts.delete ?? t('delete'),
+      confirmColor: 'bg-error-red',
+    })
+
+    if (!confirmed) {
+      return
+    }
+
+    onDelete()
+  }
+
   return !editing ? (
     <>
       {disableEditing ? null : (
@@ -91,11 +106,7 @@ export const DetailsPageMenu = (props: React.PropsWithChildren<DetailsPageMenuPr
       )}
 
       {!onDelete ? null : (
-        <DyoButton
-          className={clsx(onAdd ? 'mx-2' : 'ml-2', 'px-6')}
-          color="bg-error-red"
-          onClick={() => confirmDelete(onDelete)}
-        >
+        <DyoButton className={clsx(onAdd ? 'mx-2' : 'ml-2', 'px-6')} color="bg-error-red" onClick={deleteClick}>
           {texts.delete ?? t('delete')}
         </DyoButton>
       )}
@@ -106,16 +117,7 @@ export const DetailsPageMenu = (props: React.PropsWithChildren<DetailsPageMenuPr
         </DyoButton>
       )}
 
-      {!onDelete ? null : (
-        <DyoConfirmationModal
-          config={deleteModalConfig}
-          title={deleteModalTitle}
-          description={deleteModalDescription}
-          confirmText={texts.delete ?? t('delete')}
-          className="w-1/4"
-          confirmColor="bg-error-red"
-        />
-      )}
+      {!onDelete ? null : <DyoConfirmationModal config={deleteModalConfig} className="w-1/4" />}
     </>
   ) : (
     <>
