@@ -34,6 +34,7 @@ import toast from 'react-hot-toast'
 import DyoNodeSetup from './dyo-node-setup'
 import NodeConnectionCard from './node-connection-card'
 import useNodeState from './use-node-state'
+import DyoMessage from '@app/elements/dyo-message'
 
 interface EditNodeCardProps {
   className?: string
@@ -56,6 +57,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
         description: '',
         type: 'docker',
         status: 'unreachable',
+        inUse: false,
       } as NodeDetails),
   )
 
@@ -195,6 +197,10 @@ const EditNodeCard = (props: EditNodeCardProps) => {
           </DyoHeading>
 
           <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
+
+          {formik.values.inUse && (
+            <DyoMessage className="text-xs italic" message={t('nodeAlreadyInUse')} messageType="info" />
+          )}
 
           <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
             <DyoInput
