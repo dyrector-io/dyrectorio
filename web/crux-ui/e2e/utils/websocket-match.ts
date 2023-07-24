@@ -162,7 +162,7 @@ export const wsPatchMatchHealthCheck =
 export const wsPatchMatchResourceConfig =
   (cpuLimits: string, cpuRequests: string, memoryLimits: string, memoryRequests: string) => (payload: any) => {
     let rsrc = payload.config?.resourceConfig
-    return rsrc?.limits?.cpu === cpuLimits && rsrc?.limits.memory === memoryLimits
+    return rsrc?.limits?.cpu === cpuLimits && rsrc?.limits?.memory === memoryLimits && rsrc?.requests?.cpu === cpuRequests && rsrc?.requests?.memory === memoryRequests
   }
 
 export const wsPatchMatchDeploymentLabel = (key: string, value: string) => (payload: any) => {

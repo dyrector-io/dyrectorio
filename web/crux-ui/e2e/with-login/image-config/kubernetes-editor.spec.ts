@@ -165,7 +165,6 @@ test.describe('Image kubernetes config from editor', () => {
 
   test('Resource config should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'resource-config-editor', '1.0.0', 'redis')
-
     const sock = waitSocket(page)
     await page.goto(imageConfigUrl(projectId, versionId, imageId))
     const ws = await sock
@@ -185,18 +184,18 @@ test.describe('Image kubernetes config from editor', () => {
       wsRoute,
       wsPatchMatchResourceConfig(cpuLimits, cpuRequests, memoryLimits, memoryRequests),
     )
-    await rsConf.locator('input[placeholder="100"]').nth(0).fill(cpuLimits)
-    await rsConf.locator('input[placeholder="1m"]').nth(0).fill(memoryLimits)
-    await rsConf.locator('input[placeholder="100"]').nth(1).fill(cpuRequests)
-    await rsConf.locator('input[placeholder="1m"]').nth(1).fill(memoryRequests)
+    await rsConf.locator('input').nth(0).fill(cpuLimits)
+    await rsConf.locator('input').nth(1).fill(memoryLimits)
+    await rsConf.locator('input').nth(2).fill(cpuRequests)
+    await rsConf.locator('input').nth(3).fill(memoryRequests)
     await wsSent
 
     await page.reload()
 
-    await expect(rsConf.locator('input[placeholder="100"]').nth(0)).toHaveValue(cpuLimits)
-    await expect(rsConf.locator('input[placeholder="1m"]').nth(0)).toHaveValue(memoryLimits)
-    await expect(rsConf.locator('input[placeholder="100"]').nth(1)).toHaveValue(cpuRequests)
-    await expect(rsConf.locator('input[placeholder="1m"]').nth(1)).toHaveValue(memoryRequests)
+    await expect(rsConf.locator('input').nth(0)).toHaveValue(cpuLimits)
+    await expect(rsConf.locator('input').nth(1)).toHaveValue(memoryLimits)
+    await expect(rsConf.locator('input').nth(2)).toHaveValue(cpuRequests)
+    await expect(rsConf.locator('input').nth(3)).toHaveValue(memoryRequests)
   })
 
   test('Labels should be saved', async ({ page }) => {

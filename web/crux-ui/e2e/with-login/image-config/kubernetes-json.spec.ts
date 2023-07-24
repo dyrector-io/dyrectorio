@@ -217,10 +217,10 @@ test.describe('Image kubernetes config from JSON', () => {
     await page.reload()
 
     const rsConf = page.locator('div.grid:has(label:has-text("RESOURCE CONFIG"))')
-    await expect(rsConf.locator('input[placeholder="100"]').nth(0)).toHaveValue(cpuLimits)
-    await expect(rsConf.locator('input[placeholder="1m"]').nth(0)).toHaveValue(memoryLimits)
-    await expect(rsConf.locator('input[placeholder="100"]').nth(1)).toHaveValue(cpuRequests)
-    await expect(rsConf.locator('input[placeholder="1m"]').nth(1)).toHaveValue(memoryRequests)
+    await expect(rsConf.locator('input').nth(0)).toHaveValue(cpuLimits)
+    await expect(rsConf.locator('input').nth(1)).toHaveValue(memoryLimits)
+    await expect(rsConf.locator('input').nth(2)).toHaveValue(cpuRequests)
+    await expect(rsConf.locator('input').nth(3)).toHaveValue(memoryRequests)
   })
 })
 
