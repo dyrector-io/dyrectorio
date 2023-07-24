@@ -458,7 +458,7 @@ enum DeploymentStatusEnum {
 enum DeploymentEventTypeEnum {
   log
   deploymentStatus
-  containerStatus
+  containerState
 }
 
 enum RegistryTypeEnum {
