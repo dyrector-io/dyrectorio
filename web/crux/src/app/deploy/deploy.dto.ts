@@ -199,7 +199,7 @@ export class CopyDeploymentDto {
   note?: string | null
 }
 
-export const DEPLOYMENT_EVENT_TYPE_VALUES = ['log', 'deployment-status', 'container-status'] as const
+export const DEPLOYMENT_EVENT_TYPE_VALUES = ['log', 'deployment-status', 'container-state'] as const
 export type DeploymentEventTypeDto = (typeof DEPLOYMENT_EVENT_TYPE_VALUES)[number]
 
 export class DeploymentEventContainerStateDto {

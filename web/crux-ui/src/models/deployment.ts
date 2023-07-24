@@ -48,7 +48,7 @@ export type DeploymentRoot = Omit<DeploymentDetails, 'project' | 'version' | 'no
   node: DyoNode
 }
 
-export const DEPLOYMENT_EVENT_TYPE_VALUES = ['log', 'deployment-status', 'container-status'] as const
+export const DEPLOYMENT_EVENT_TYPE_VALUES = ['log', 'deployment-status', 'container-state'] as const
 export type DeploymentEventType = typeof DEPLOYMENT_EVENT_TYPE_VALUES[number]
 
 export type DeploymentEventContainerState = {
