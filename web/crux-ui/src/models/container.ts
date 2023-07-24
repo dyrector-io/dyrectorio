@@ -657,16 +657,16 @@ export const mergeJsonConfigToInstanceContainerConfig = (
     dockerLabels: mergeKeyValuesWithJson(config.dockerLabels, json.dockerLabels),
     labels: json.labels
       ? {
-          deployment: mergeKeyValuesWithJson(config.labels.deployment, json.labels.deployment),
-          service: mergeKeyValuesWithJson(config.labels.service, json.labels.service),
-          ingress: mergeKeyValuesWithJson(config.labels.ingress, json.labels.ingress),
+          deployment: mergeKeyValuesWithJson(config.labels?.deployment, json.labels.deployment),
+          service: mergeKeyValuesWithJson(config.labels?.service, json.labels.service),
+          ingress: mergeKeyValuesWithJson(config.labels?.ingress, json.labels.ingress),
         }
       : null,
     annotations: json.annotations
       ? {
-          deployment: mergeKeyValuesWithJson(config.annotations.deployment, json.annotations.deployment),
-          service: mergeKeyValuesWithJson(config.annotations.service, json.annotations.service),
-          ingress: mergeKeyValuesWithJson(config.annotations.ingress, json.annotations.ingress),
+          deployment: mergeKeyValuesWithJson(config.annotations?.deployment, json.annotations.deployment),
+          service: mergeKeyValuesWithJson(config.annotations?.service, json.annotations.service),
+          ingress: mergeKeyValuesWithJson(config.annotations?.ingress, json.annotations.ingress),
         }
       : null,
     volumes: json.volumes
