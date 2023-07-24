@@ -7,20 +7,20 @@ export const wsPatchMatchPorts = (internalPort: string, externalPort?: string) =
 
 export const wsPatchMatchPortRange =
   (internalFromPort: string, externalFromPort?: string, internalToPort?: string, externalToPort?: string) =>
-    (payload: any) => {
-      const internal = Number.parseInt(internalFromPort, 10)
-      const external = Number.parseInt(externalFromPort, 10)
-      const internalTo = Number.parseInt(internalToPort, 10)
-      const externalTo = Number.parseInt(externalToPort, 10)
+  (payload: any) => {
+    const internal = Number.parseInt(internalFromPort, 10)
+    const external = Number.parseInt(externalFromPort, 10)
+    const internalTo = Number.parseInt(internalToPort, 10)
+    const externalTo = Number.parseInt(externalToPort, 10)
 
-      return payload.config?.portRanges?.some(
-        it =>
-          it.internal.from === internal &&
-          (!external || it.external.from === external) &&
-          (!internalTo || it.internal.to === internalTo) &&
-          (!externalTo || it.external.to === externalTo),
-      )
-    }
+    return payload.config?.portRanges?.some(
+      it =>
+        it.internal.from === internal &&
+        (!external || it.external.from === external) &&
+        (!internalTo || it.internal.to === internalTo) &&
+        (!externalTo || it.external.to === externalTo),
+    )
+  }
 
 export const wsPatchMatchSecret = (secret: string, required: boolean) => (payload: any) => {
   return payload.config?.secrets?.some(it => it.key === secret && it.required === required)
@@ -34,10 +34,16 @@ export const wsPatchMatchArgument = (argument: string) => (payload: any) => {
   return payload.config?.args[0]?.key === argument
 }
 
-export const wsPatchMatchRouting = (domain: string, path: string, uploadLimit: string, stripPath: boolean) => (payload: any) => {
-  let routing = payload.config?.routing
-  return routing?.uploadLimit === uploadLimit && routing?.domain === domain && routing?.path === path && routing?.stripPath === stripPath
-}
+export const wsPatchMatchRouting =
+  (domain: string, path: string, uploadLimit: string, stripPath: boolean) => (payload: any) => {
+    let routing = payload.config?.routing
+    return (
+      routing?.uploadLimit === uploadLimit &&
+      routing?.domain === domain &&
+      routing?.path === path &&
+      routing?.stripPath === stripPath
+    )
+  }
 
 export const wsPatchMatchContainerName = (name: string) => (payload: any) => {
   return payload.config?.name === name
@@ -76,19 +82,19 @@ export const wsPatchMatchInitContainer =
     envKey: string,
     envVal: string,
   ) =>
-    (payload: any) => {
-      let init = payload.config?.initContainers[0]
-      return (
-        init?.name === name &&
-        init?.image === image &&
-        init?.volumes[0].name === volName &&
-        init?.volumes[0].path === volPath &&
-        init?.args[0].key === arg &&
-        init?.command[0].key === cmd &&
-        init?.environment[0].key === envKey &&
-        init?.environment[0].value === envVal
-      )
-    }
+  (payload: any) => {
+    let init = payload.config?.initContainers[0]
+    return (
+      init?.name === name &&
+      init?.image === image &&
+      init?.volumes[0].name === volName &&
+      init?.volumes[0].path === volPath &&
+      init?.args[0].key === arg &&
+      init?.command[0].key === cmd &&
+      init?.environment[0].key === envKey &&
+      init?.environment[0].value === envVal
+    )
+  }
 
 export const wsPatchMatchVolume = (name: string, size: string, path: string, volClass: string) => (payload: any) => {
   return payload.config?.volumes?.some(
@@ -162,7 +168,12 @@ export const wsPatchMatchHealthCheck =
 export const wsPatchMatchResourceConfig =
   (cpuLimits: string, cpuRequests: string, memoryLimits: string, memoryRequests: string) => (payload: any) => {
     let rsrc = payload.config?.resourceConfig
-    return rsrc?.limits?.cpu === cpuLimits && rsrc?.limits?.memory === memoryLimits && rsrc?.requests?.cpu === cpuRequests && rsrc?.requests?.memory === memoryRequests
+    return (
+      rsrc?.limits?.cpu === cpuLimits &&
+      rsrc?.limits?.memory === memoryLimits &&
+      rsrc?.requests?.cpu === cpuRequests &&
+      rsrc?.requests?.memory === memoryRequests
+    )
   }
 
 export const wsPatchMatchDeploymentLabel = (key: string, value: string) => (payload: any) => {

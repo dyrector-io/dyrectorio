@@ -8,10 +8,10 @@ import {
   wsPatchMatchContainerName,
   wsPatchMatchEnvironment,
   wsPatchMatchExpose,
-  wsPatchMatchRouting,
   wsPatchMatchInitContainer,
   wsPatchMatchPortRange,
   wsPatchMatchPorts,
+  wsPatchMatchRouting,
   wsPatchMatchSecret,
   wsPatchMatchStorage,
   wsPatchMatchTTY,
@@ -265,7 +265,9 @@ test.describe('Image common config from editor', () => {
     let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchRouting(domain, path, uploadLimit, stripPath))
     await page.locator('input[placeholder="Domain"]').fill(domain)
     await page.locator('input[placeholder="Path"]').fill(path)
-    if (stripPath) { await page.locator('button[aria-checked="false"]').click() }
+    if (stripPath) {
+      await page.locator('button[aria-checked="false"]').click()
+    }
     await page.locator('input[placeholder="Upload limit"]').fill(uploadLimit)
     await wsSent
 

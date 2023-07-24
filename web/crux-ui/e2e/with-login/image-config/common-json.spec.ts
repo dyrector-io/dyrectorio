@@ -8,10 +8,10 @@ import {
   wsPatchMatchContainerName,
   wsPatchMatchEnvironment,
   wsPatchMatchExpose,
-  wsPatchMatchRouting,
   wsPatchMatchInitContainer,
   wsPatchMatchPortRange,
   wsPatchMatchPorts,
+  wsPatchMatchRouting,
   wsPatchMatchSecret,
   wsPatchMatchStorage,
   wsPatchMatchTTY,
@@ -311,9 +311,9 @@ test.describe('Image common config from JSON', () => {
 
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
-    json.routing = { domain: domain, path:path,uploadLimit:uploadLimit, stripPath:stripPath}
+    json.routing = { domain: domain, path: path, uploadLimit: uploadLimit, stripPath: stripPath }
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchRouting(domain, path, uploadLimit,stripPath))
+    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchRouting(domain, path, uploadLimit, stripPath))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 

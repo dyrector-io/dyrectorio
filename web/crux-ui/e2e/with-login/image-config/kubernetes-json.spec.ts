@@ -1,5 +1,5 @@
 import { imageConfigUrl, versionWsUrl } from '@app/routes'
-import { expect, Locator, Page, test } from '@playwright/test'
+import { expect, Page, test } from '@playwright/test'
 import {
   wsPatchMatchCustomHeader,
   wsPatchMatchDeploymentAnnotations,
