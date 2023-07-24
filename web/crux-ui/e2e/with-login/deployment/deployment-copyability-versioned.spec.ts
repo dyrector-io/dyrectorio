@@ -90,7 +90,7 @@ test.describe('Versioned Project', () => {
     const { projectId } = await setup(page, nodeName, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '1.0.0', 'Incremental')
     await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
-    await addDeploymentToVersion(page, projectId, versionId, prefix)
+    await addDeploymentToVersion(page, projectId, versionId, nodeName, prefix)
 
     await page.goto(ROUTE_DEPLOYMENTS)
 
