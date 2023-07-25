@@ -23,8 +23,8 @@ import {
 } from '@app/models/container'
 import { nullify, toNumber } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import ConfigSectionLabel from './config-section-label'
 import { ValidationError } from 'yup'
+import ConfigSectionLabel from './config-section-label'
 
 type CraneConfigSectionBaseProps<T> = {
   config: T
