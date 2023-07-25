@@ -73,11 +73,11 @@ export const globalTeardown = async () => {
   const user = (await userRes.json()) as UserMeta
 
   logInfo('fetch', 'delete teams')
-  const deletes = user.teams.map(it => {
-    return fetchCruxFromBrowser(cookie, cruxUrl, teamApiUrl(it.id), {
+  const deletes = user.teams.map(it =>
+    fetchCruxFromBrowser(cookie, cruxUrl, teamApiUrl(it.id), {
       method: 'DELETE',
-    })
-  })
+    }),
+  )
 
   await Promise.all(deletes)
 

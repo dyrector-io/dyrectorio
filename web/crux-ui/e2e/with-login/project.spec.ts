@@ -69,7 +69,6 @@ test('Project text filter should work', async ({ page }) => {
   await expect(page.getByAltText('Picture of ', { exact: false })).toHaveCount(1)
 })
 
-//test.describe.configure({ mode: 'parallel' })
 test.describe('Project versioned filter should work', () => {
   test('in tile view', async ({ page }) => {
     await projectFilterType(page, 'filter-by-versioned-tile-project', true, true)

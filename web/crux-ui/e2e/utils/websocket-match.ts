@@ -1,12 +1,12 @@
-export const wsPatchMatchPorts = (internalPort: string, externalPort?: string) => (payload: any) => {
+export const wsPatchMatchPorts = (internalPort: string, externalPort: string) => (payload: any) => {
   const internal = Number.parseInt(internalPort, 10)
   const external = Number.parseInt(externalPort, 10)
 
-  return payload.config?.ports?.some(it => it.internal === internal && (!external || it.external === external))
+  return payload.config?.ports?.some(it => it.internal === internal && it.external === external)
 }
 
 export const wsPatchMatchPortRange =
-  (internalFromPort: string, externalFromPort?: string, internalToPort?: string, externalToPort?: string) =>
+  (internalFromPort: string, externalFromPort: string, internalToPort: string, externalToPort: string) =>
   (payload: any) => {
     const internal = Number.parseInt(internalFromPort, 10)
     const external = Number.parseInt(externalFromPort, 10)
@@ -16,9 +16,9 @@ export const wsPatchMatchPortRange =
     return payload.config?.portRanges?.some(
       it =>
         it.internal.from === internal &&
-        (!external || it.external.from === external) &&
-        (!internalTo || it.internal.to === internalTo) &&
-        (!externalTo || it.external.to === externalTo),
+        it.external.from === external &&
+        it.internal.to === internalTo &&
+        it.external.to === externalTo,
     )
   }
 
@@ -27,11 +27,11 @@ export const wsPatchMatchSecret = (secret: string, required: boolean) => (payloa
 }
 
 export const wsPatchMatchCommand = (command: string) => (payload: any) => {
-  return payload.config?.commands[0]?.key === command
+  return payload.config?.commands?.some(it => it.key === command)
 }
 
 export const wsPatchMatchArgument = (argument: string) => (payload: any) => {
-  return payload.config?.args[0]?.key === argument
+  return payload.config?.args?.some(it => it.key === argument)
 }
 
 export const wsPatchMatchRouting =
@@ -62,7 +62,7 @@ export const wsPatchMatchTTY = (tty: boolean) => (payload: any) => {
 }
 
 export const wsPatchMatchEnvironment = (key: string, value: string) => (payload: any) => {
-  return payload.config?.environment[0]?.key === key && payload.config?.environment[0]?.value === value
+  return payload.config?.environment?.some(it => it.key === key && it.value === value)
 }
 
 export const wsPatchMatchConfigContainer =
@@ -83,16 +83,14 @@ export const wsPatchMatchInitContainer =
     envVal: string,
   ) =>
   (payload: any) => {
-    let init = payload.config?.initContainers[0]
-    return (
-      init?.name === name &&
-      init?.image === image &&
-      init?.volumes[0].name === volName &&
-      init?.volumes[0].path === volPath &&
-      init?.args[0].key === arg &&
-      init?.command[0].key === cmd &&
-      init?.environment[0].key === envKey &&
-      init?.environment[0].value === envVal
+    return payload.config?.initContainers?.some(
+      it =>
+        it.name === name &&
+        it.image === image &&
+        it.volumes?.some(vol => vol.name === volName && vol.path === volPath) &&
+        it.args?.some(args => args.key === arg) &&
+        it.command?.some(cmds => cmds.key === cmd) &&
+        it.environment?.some(env => env.key === envKey && env.value === envVal),
     )
   }
 
@@ -107,13 +105,10 @@ export const wsPatchMatchStorage = (storageId: string, bucketPath: string, volum
   return storage?.storageId === storageId && storage?.bucket === bucketPath && storage?.path === volume
 }
 
-//docker
-export const wsPatchMatchLogConfig = (driver: string, key?: string, value?: string) => (payload: any) => {
-  let logCfg = payload.config?.logConfig
+export const wsPatchMatchLogConfig = (driver: string, key: string, value: string) => (payload: any) => {
   return (
-    logCfg?.driver === driver &&
-    (!key || logCfg?.options[0]?.key === key) &&
-    (!value || logCfg?.options[0]?.value === value)
+    payload.config?.logConfig?.driver === driver &&
+    payload.config?.logConfig?.options?.some(opts => opts.key === key && opts.value === value)
   )
 }
 
@@ -126,20 +121,19 @@ export const wsPatchMatchNetworkMode = (mode: string) => (payload: any) => {
 }
 
 export const wsPatchMatchNetwork = (network: string) => (payload: any) => {
-  return payload.config?.networks[0].key === network
+  return payload.config?.networks?.some(it => it.key === network)
 }
 
 export const wsPatchMatchDockerLabel = (key: string, value: string) => (payload: any) => {
   return payload.config?.dockerLabels?.some(it => it.key === key && it.value === value)
 }
 
-//kubernetes
 export const wsPatchMatchDeploymentStrategy = (strategy: string) => (payload: any) => {
   return payload.config?.deploymentStrategy === strategy
 }
 
 export const wsPatchMatchCustomHeader = (header: string) => (payload: any) => {
-  return payload.config?.customHeaders[0].key === header
+  return payload.config?.customHeaders?.some(it => it.key === header)
 }
 
 export const wsPatchMatchProxyHeader = (proxy: boolean) => (payload: any) => {
@@ -151,7 +145,7 @@ export const wsPatchMatchLoadBalancer = (loadbalancer: boolean) => (payload: any
 }
 
 export const wsPatchMatchLBAnnotations = (key: string, value: string) => (payload: any) => {
-  return payload.config?.extraLBAnnotations[0]?.key === key && payload.config?.extraLBAnnotations[0]?.value === value
+  return payload.config?.extraLBAnnotations?.some(it => it.key === key && it.value === value)
 }
 
 export const wsPatchMatchHealthCheck =
@@ -177,27 +171,21 @@ export const wsPatchMatchResourceConfig =
   }
 
 export const wsPatchMatchDeploymentLabel = (key: string, value: string) => (payload: any) => {
-  let labels = payload.config?.labels.deployment[0]
-  return labels?.key === key && labels?.value === value
+  return payload.config?.labels?.deployment?.some(it => it.key === key && it.value === value)
 }
 export const wsPatchMatchServiceLabel = (key: string, value: string) => (payload: any) => {
-  let labels = payload.config?.labels.service[0]
-  return labels?.key === key && labels?.value === value
+  return payload.config?.labels?.service?.some(it => it.key === key && it.value === value)
 }
 export const wsPatchMatchIngressLabel = (key: string, value: string) => (payload: any) => {
-  let labels = payload.config?.labels.ingress[0]
-  return labels?.key === key && labels?.value === value
+  return payload.config?.labels?.ingress?.some(it => it.key === key && it.value === value)
 }
 
 export const wsPatchMatchDeploymentAnnotations = (key: string, value: string) => (payload: any) => {
-  let annotations = payload.config?.annotations.deployment[0]
-  return annotations?.key === key && annotations?.value === value
+  return payload.config?.annotations?.deployment?.some(it => it.key === key && it.value === value)
 }
 export const wsPatchMatchServiceAnnotations = (key: string, value: string) => (payload: any) => {
-  let annotations = payload.config?.annotations.service[0]
-  return annotations?.key === key && annotations?.value === value
+  return payload.config?.annotations?.service?.some(it => it.key === key && it.value === value)
 }
 export const wsPatchMatchIngressAnnotations = (key: string, value: string) => (payload: any) => {
-  let annotations = payload.config?.annotations.ingress[0]
-  return annotations?.key === key && annotations?.value === value
+  return payload.config?.annotations?.ingress?.some(it => it.key === key && it.value === value)
 }

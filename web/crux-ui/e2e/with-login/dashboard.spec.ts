@@ -8,13 +8,13 @@ test.describe('Onboarding', () => {
     await expect(page.locator('label:has-text("Onboarding")')).toBeVisible()
 
     await page.goto(ROUTE_PROFILE)
-    await page.locator('button[role="switch"]').click()
+    await page.getByRole('switch', { name: 'Onboarding tips' }).click()
 
     await page.goto(ROUTE_DASHBOARD)
     await expect(page.locator('label:has-text("Onboarding")')).not.toBeVisible()
 
     await page.goto(ROUTE_PROFILE)
-    await page.locator('button[role="switch"]').click()
+    await page.getByRole('switch', { name: 'Onboarding tips' }).click()
 
     await page.goto(ROUTE_DASHBOARD)
     await expect(page.locator('label:has-text("Onboarding")')).toBeVisible()

@@ -55,7 +55,7 @@ test('Can edit storage url', async ({ page }) => {
   const storageId = await createStorage(page, storageName, TEST_URL, TEST_ACCESS_KEY, TEST_SECRET_KEY)
   await page.goto(storageUrl(storageId))
   await page.locator('button:has-text("Edit")').click()
-  let newUrl = (await removeUrlDomainSuffix(TEST_URL)).concat(`.edited.${TEST_URL.split('.').pop()}`)
+  let newUrl = removeUrlDomainSuffix(TEST_URL).concat(`.edited.${TEST_URL.split('.').pop()}`)
   await page.locator('input[id="url"]').fill(newUrl)
   await page.locator('button:has-text("Save")').click()
   await expect(page.locator(`div.card label:has-text('${newUrl}')`)).toBeVisible()
@@ -71,7 +71,7 @@ test('Can delete storage', async ({ page }) => {
   await expect(page.locator(`div.card h3:has-text('${storageName}')`)).not.toBeVisible()
 })
 
-const removeUrlDomainSuffix = async (url: string) => {
+const removeUrlDomainSuffix = (url: string) => {
   let split = url.split('.')
   return split
     .splice(0, split.length - 1)
