@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { ContainerConfigData, InstanceContainerConfigData, MergedContainerConfigData } from 'src/domain/container'
 import { DeploymentStatusEnum, NodeTypeEnum, ProjectTypeEnum, VersionTypeEnum, Storage } from '.prisma/client'
 import { CommonContainerConfig, DagentContainerConfig, ImportContainer } from 'src/grpc/protobuf/proto/agent'
-import { NetworkMode, RestartPolicy } from 'src/grpc/protobuf/proto/common'
+import { DriverType, NetworkMode, RestartPolicy } from 'src/grpc/protobuf/proto/common'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
 import { DeploymentDto, DeploymentWithNodeVersion, PatchInstanceDto } from './deploy.dto'
@@ -826,7 +826,7 @@ describe('DeployMapper', () => {
   })
 
   describe('dagentConfigToAgentProto logConfig', () => {
-    it('none driver type should return no log driver', () => {
+    it('none driver type should return none log driver', () => {
       const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
         networks: [],
         networkMode: 'host',
@@ -838,7 +838,10 @@ describe('DeployMapper', () => {
       })
       const expected = <DagentContainerConfig>{
         networks: [],
-        logConfig: null,
+        logConfig: {
+          driver: DriverType.DRIVER_TYPE_NONE,
+          options: {},
+        },
         networkMode: NetworkMode.HOST,
         restartPolicy: RestartPolicy.ALWAYS,
         labels: {},
