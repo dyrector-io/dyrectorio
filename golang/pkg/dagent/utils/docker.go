@@ -154,10 +154,18 @@ func logDeployInfo(
 	if reqID != "" {
 		log.Info().Str("requestID", reqID).Send()
 	}
-	dog.Write(
-		fmt.Sprintf("Starting container: %s", containerName),
-		fmt.Sprintf("Using image: %s", expandedImageName),
-	)
+
+	if deployImageRequest.Registry == nil || *deployImageRequest.Registry == "" {
+		dog.Write(
+			fmt.Sprintf("Starting container: %s", containerName),
+			fmt.Sprintf("Using image: %s:%s", deployImageRequest.ImageName, deployImageRequest.Tag),
+		)
+	} else {
+		dog.Write(
+			fmt.Sprintf("Starting container: %s", containerName),
+			fmt.Sprintf("Using image: %s", expandedImageName),
+		)
+	}
 
 	labels, _ := GetImageLabels(expandedImageName)
 	if len(labels) > 0 {
