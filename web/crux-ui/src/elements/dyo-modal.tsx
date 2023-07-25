@@ -68,27 +68,12 @@ export type DyoConfirmationModalConfig = {
 
 export type DyoConfirmationModalProps = Omit<DyoModalProps, 'buttons' | 'children' | 'onClose' | 'open' | 'title'> & {
   config: DyoConfirmationModalConfig
-  title?: string
-  confirmText?: string
-  cancelText?: string
-  confirmColor?: string
-  cancelColor?: string
 }
 
 export const DyoConfirmationModal = (props: DyoConfirmationModalProps) => {
   const { t } = useTranslation('common')
 
-  const {
-    confirmText,
-    cancelText,
-    confirmColor,
-    cancelColor,
-    description,
-    config,
-    title,
-    className,
-    ...forwardedProps
-  } = props
+  const { description, config, className, ...forwardedProps } = props
 
   if (!config) {
     return null
@@ -102,17 +87,17 @@ export const DyoConfirmationModal = (props: DyoConfirmationModalProps) => {
     <DyoModal
       {...forwardedProps}
       className={clsx(className, 'min-w-[450px]')}
-      title={config?.title ?? title}
+      title={config?.title}
       open
       onClose={() => onClose(false)}
       buttons={
         <>
-          <DyoButton color={config.confirmColor ?? confirmColor} onClick={() => onClose(true)}>
-            {config.confirmText ?? confirmText ?? t('confirm')}
+          <DyoButton color={config.confirmColor} onClick={() => onClose(true)}>
+            {config.confirmText ?? t('confirm')}
           </DyoButton>
 
-          <DyoButton color={config.cancelColor ?? cancelColor} onClick={() => onClose(false)}>
-            {config.cancelText ?? cancelText ?? t('cancel')}
+          <DyoButton color={config.cancelColor} onClick={() => onClose(false)}>
+            {config.cancelText ?? t('cancel')}
           </DyoButton>
         </>
       }

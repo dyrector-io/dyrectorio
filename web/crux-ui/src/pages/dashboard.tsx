@@ -39,7 +39,12 @@ const DashboardPage = (props: DashboardPageProps) => {
   const [confirmHideOnboardingConfig, confirmHideOnboarding] = useConfirmation()
 
   const hideOnboarding = async () => {
-    const confirmed = await confirmHideOnboarding()
+    const confirmed = await confirmHideOnboarding({
+      title: t('common:areYouSure'),
+      description: t('areYouSureHideOnboarding'),
+      confirmText: t('hide'),
+      cancelColor: 'bg-warning-orange',
+    })
     if (!confirmed) {
       return
     }
@@ -133,14 +138,7 @@ const DashboardPage = (props: DashboardPageProps) => {
         </div>
       </div>
 
-      <DyoConfirmationModal
-        config={confirmHideOnboardingConfig}
-        title={t('common:areYouSure')}
-        description={t('areYouSureHideOnboarding')}
-        confirmText={t('hide')}
-        className="w-1/4"
-        cancelColor="bg-warning-orange"
-      />
+      <DyoConfirmationModal config={confirmHideOnboardingConfig} className="w-1/4" />
     </Layout>
   )
 }

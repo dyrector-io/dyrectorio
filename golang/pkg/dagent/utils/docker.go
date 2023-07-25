@@ -167,16 +167,6 @@ func logDeployInfo(
 		)
 	}
 
-	labels, _ := GetImageLabels(expandedImageName)
-	if len(labels) > 0 {
-		labelsLog := []string{"Image labels:"}
-		for key, label := range labels {
-			labelsLog = append(labelsLog, fmt.Sprintf("%s: %s", key, label))
-		}
-		dog.Write(labelsLog...)
-	}
-
-	dog.Write("Start container request for: " + containerName)
 	if deployImageRequest.ContainerConfig.RestartPolicy != "" {
 		dog.Write(fmt.Sprintf("Using restart policy: %v", deployImageRequest.ContainerConfig.RestartPolicy))
 	}
@@ -537,8 +527,11 @@ func setImageLabels(expandedImageName string,
 
 	// add traefik related labels to the container if expose true
 	if deployImageRequest.ContainerConfig.Expose {
-		traefikLabels := GetTraefikLabels(&deployImageRequest.InstanceConfig,
+		traefikLabels, labelErr := GetTraefikLabels(&deployImageRequest.InstanceConfig,
 			&deployImageRequest.ContainerConfig, cfg)
+		if labelErr != nil {
+			return nil, labelErr
+		}
 		maps.Copy(labels, traefikLabels)
 	}
 
