@@ -29,12 +29,14 @@ const UserRoleAction = (props: UserRoleActionProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const onUpdateUserRole = async (updatedRole: UserRole, promote: boolean) => {
-    const confirmed = await confirmRoleUpdate(null, {
+    const confirmed = await confirmRoleUpdate({
+      title: t('common:areYouSure'),
       description: t('confirmRoleAction', {
         action: t(promote ? 'promote' : 'demote'),
         user: user.name !== '' ? user.name : user.email,
         role: t(`common:role.${updatedRole}`),
       }),
+      confirmColor: 'bg-warning-orange',
     })
 
     if (!confirmed) {
@@ -81,12 +83,7 @@ const UserRoleAction = (props: UserRoleActionProps) => {
         />
       ) : null}
 
-      <DyoConfirmationModal
-        config={roleUpdateModalConfig}
-        title={t('common:areYouSure')}
-        className="w-1/4"
-        confirmColor="bg-warning-orange"
-      />
+      <DyoConfirmationModal config={roleUpdateModalConfig} className="w-1/4" />
     </div>
   )
 }

@@ -114,7 +114,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const [confirmModalConfig, confirm] = useConfirmation()
 
   const onDeploy = async (deployment: DeploymentByVersion) => {
-    const confirmed = await confirm(null, {
+    const confirmed = await confirm({
       title: t('common:areYouSure'),
       description: t('deployments:areYouSureDeployNodePrefix', {
         node: deployment.node.name,
@@ -136,7 +136,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   }
 
   const onDeleteDeployment = async (deployment: DeploymentByVersion) => {
-    const confirmed = await confirm(null, {
+    const confirmed = await confirm({
       title: t('common:areYouSure'),
       description:
         deployment.status === 'successful'

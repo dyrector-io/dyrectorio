@@ -5,22 +5,14 @@ type DyoConfirmationModalConfigOverride = Omit<DyoConfirmationModalConfig, 'onCl
 
 const useConfirmation = (): [
   DyoConfirmationModalConfig,
-  (onConfirmed?: VoidFunction, overridenConfig?: DyoConfirmationModalConfigOverride) => Promise<boolean>,
+  (overridenConfig: DyoConfirmationModalConfigOverride) => Promise<boolean>,
 ] => {
   const [config, setConfig] = useState<DyoConfirmationModalConfig>(null)
 
-  const confirm = (
-    onConfirmed?: VoidFunction,
-    overridenConfig?: DyoConfirmationModalConfigOverride,
-  ): Promise<boolean> =>
+  const confirm = (overridenConfig: DyoConfirmationModalConfigOverride): Promise<boolean> =>
     new Promise(resolve => {
       const onClose = (confirmed: boolean) => {
         setConfig(null)
-
-        if (confirmed && onConfirmed) {
-          onConfirmed()
-        }
-
         resolve(confirmed)
       }
 
