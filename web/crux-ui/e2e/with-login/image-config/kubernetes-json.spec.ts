@@ -222,10 +222,7 @@ test.describe('Image kubernetes config from JSON', () => {
     await expect(rsConf.locator('input').nth(2)).toHaveValue(cpuRequests)
     await expect(rsConf.locator('input').nth(3)).toHaveValue(memoryRequests)
   })
-})
 
-//fails because json doesnt get saved
-test.describe.skip('json error', () => {
   test('Labels should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'labels-json', '1.0.0', 'redis')
 
@@ -248,11 +245,11 @@ test.describe.skip('json error', () => {
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
     wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchServiceLabel(key, value))
-    json.labels = { service: { [key]: value } }
+    json.labels = { deployment: { [key]: value }, service: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
     wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchIngressLabel(key, value))
-    json.labels = { ingress: { [key]: value } }
+    json.labels = { deployment: { [key]: value }, service: { [key]: value }, ingress: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -291,11 +288,11 @@ test.describe.skip('json error', () => {
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
     wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchServiceAnnotations(key, value))
-    json.annotations = { service: { [key]: value } }
+    json.annotations = { deployment: { [key]: value }, service: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
     wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchIngressAnnotations(key, value))
-    json.annotations = { ingress: { [key]: value } }
+    json.annotations = { deployment: { [key]: value }, service: { [key]: value }, ingress: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
