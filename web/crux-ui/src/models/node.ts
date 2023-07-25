@@ -38,6 +38,7 @@ export type NodeDetails = DyoNode & {
   hasToken: boolean
   install?: NodeInstall
   lastConnectionAt?: string
+  inUse: boolean
 }
 
 export const nodeConnectionOf = (node: DyoNode): NodeConnection => ({
