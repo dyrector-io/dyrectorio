@@ -100,28 +100,37 @@ const EditNodeCard = (props: EditNodeCardProps) => {
     onNodeEdited(newNode)
   }
 
-  const onRevokeToken = () =>
-    confirmTokenRevoke(async () => {
-      const res = await fetch(nodeTokenApiUrl(node.id), {
-        method: 'DELETE',
-      })
-
-      if (!res.ok) {
-        handleApiError(res)
-        return
-      }
-
-      const newNode = {
-        ...node,
-        status: 'unreachable',
-        version: null,
-        hasToken: false,
-        install: null,
-      } as NodeDetails
-
-      setNode(newNode)
-      onNodeEdited(newNode)
+  const onRevokeToken = async () => {
+    const confirmed = await confirmTokenRevoke({
+      title: t('tokens:areYouSureRevoke'),
+      confirmText: t('tokens:revoke'),
+      confirmColor: 'bg-error-red',
     })
+
+    if (!confirmed) {
+      return
+    }
+
+    const res = await fetch(nodeTokenApiUrl(node.id), {
+      method: 'DELETE',
+    })
+
+    if (!res.ok) {
+      handleApiError(res)
+      return
+    }
+
+    const newNode = {
+      ...node,
+      status: 'unreachable',
+      version: null,
+      hasToken: false,
+      install: null,
+    } as NodeDetails
+
+    setNode(newNode)
+    onNodeEdited(newNode)
+  }
 
   const onNodeTypeChanged = (type: NodeType): void => {
     setNode({
@@ -295,13 +304,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
         </div>
       </div>
 
-      <DyoConfirmationModal
-        config={revokeModalConfig}
-        title={t('tokens:areYouSureRevoke')}
-        confirmText={t('tokens:revoke')}
-        className="w-1/4"
-        confirmColor="bg-error-red"
-      />
+      <DyoConfirmationModal config={revokeModalConfig} className="w-1/4" />
     </>
   )
 }
