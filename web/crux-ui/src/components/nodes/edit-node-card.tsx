@@ -5,6 +5,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIconPicker from '@app/elements/dyo-icon-picker'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoMessage from '@app/elements/dyo-message'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import LoadingIndicator from '@app/elements/loading-indicator'
@@ -56,6 +57,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
         description: '',
         type: 'docker',
         status: 'unreachable',
+        inUse: false,
       } as NodeDetails),
   )
 
@@ -195,6 +197,10 @@ const EditNodeCard = (props: EditNodeCardProps) => {
           </DyoHeading>
 
           <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
+
+          {formik.values.inUse && (
+            <DyoMessage className="text-xs italic" message={t('nodeAlreadyInUse')} messageType="info" />
+          )}
 
           <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
             <DyoInput

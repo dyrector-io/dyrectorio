@@ -89,7 +89,13 @@ export default class NodeService {
       },
     })
 
-    return this.mapper.detailsToDto(node)
+    const deploymentExists = await this.prisma.deployment.findFirst({
+      where: {
+        nodeId: id,
+      },
+    })
+
+    return this.mapper.detailsToDto(node, !!deploymentExists)
   }
 
   async createNode(req: CreateNodeDto, identity: Identity): Promise<NodeDto> {

@@ -43,6 +43,7 @@ import {
 import NodeService from './node.service'
 import NodeGenerateScriptValidationPipe from './pipes/node.generate-script.pipe'
 import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
+import DeleteNodeValidationPipe from './pipes/node.delete.pipe'
 
 @Controller(ROUTE_NODES)
 @ApiTags(ROUTE_NODES)
@@ -138,7 +139,10 @@ export default class NodeHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for node delete.' })
   @ApiNotFoundResponse({ description: 'Node not found.' })
   @UuidParams(PARAM_NODE_ID)
-  async deleteNode(@NodeId() nodeId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
+  async deleteNode(
+    @NodeId(DeleteNodeValidationPipe) nodeId: string,
+    @IdentityFromRequest() identity: Identity,
+  ): Promise<void> {
     return this.service.deleteNode(nodeId, identity)
   }
 
