@@ -232,6 +232,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             onChange={onChange}
             onResetSection={onResetSection}
             editorOptions={editorState}
+            fieldErrors={fieldErrors}
             configType="instance"
             imageConfig={instance.image.config}
           />

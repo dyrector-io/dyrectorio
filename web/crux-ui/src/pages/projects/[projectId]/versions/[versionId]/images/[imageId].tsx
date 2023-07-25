@@ -266,6 +266,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
             onChange={onChange}
             onResetSection={onResetSection}
             editorOptions={editorState}
+            fieldErrors={fieldErrors}
             configType="image"
           />
 
