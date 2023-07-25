@@ -10,6 +10,8 @@
   "description": "Nodes are the deployment targets. You can add a new node by installing dyrector.io’s agents on your environment using a one-liner generated.",
   "noItems": "You haven't added any nodes yet. To add a new node click 'Add' on the top right.\n\n",
 
+  "nodeAlreadyInUse": "This node is already in use in some deployments.",
+
   "setup": "Install the agent",
   "generateScript": "Generate script",
   "scriptExpiresIn": "The script expires in:",
