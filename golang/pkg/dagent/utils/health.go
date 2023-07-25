@@ -9,13 +9,16 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const HealthSocketPath = "/tmp/dagenthealth.sock"
+const (
+	HealthSocketPath  = "/tmp/dagenthealth.sock"
+	ReceiveBufferSize = 1024
+)
 
 type Health struct {
 	Connected bool `json:"connected" binding:"required"`
 }
 
-var health Health = Health{
+var health = Health{
 	Connected: false,
 }
 
@@ -36,7 +39,7 @@ func sendHealthData(conn net.Conn, healthData *Health) error {
 func HealthServe(ctx context.Context) error {
 	_, err := os.Stat(HealthSocketPath)
 	if err == nil {
-		err := os.RemoveAll(HealthSocketPath)
+		err = os.RemoveAll(HealthSocketPath)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to remove socket file")
 		}
@@ -90,13 +93,13 @@ func GetHealth() (*Health, error) {
 	}
 
 	defer func() {
-		err := conn.Close()
+		err = conn.Close()
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to close health socket")
 		}
 	}()
 
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, ReceiveBufferSize)
 
 	length, err := conn.Read(buffer)
 	if err != nil {
