@@ -12,8 +12,11 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/golang/internal/helper"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
+
+const VisibleIDLimit = 12
 
 func DeleteContainerByName(ctx context.Context, cli client.APIClient, nameFilter string) error {
 	matchedContainer, err := GetContainerByName(ctx, cli, nameFilter)
@@ -41,21 +44,21 @@ func deleteContainerByIDAndState(ctx context.Context, dog *dogger.DeploymentLogg
 	switch state {
 	case "running", "paused", "restarting":
 		if dog != nil {
-			dog.Write("Stopping container: " + id)
+			dog.Write("Stopping container: " + helper.FirstN(id, VisibleIDLimit))
 		}
 
 		if err = cli.ContainerStop(ctx, id, container.StopOptions{}); err != nil {
-			return fmt.Errorf("could not stop container (%s): %s", id, err.Error())
+			return fmt.Errorf("could not stop container (%s): %s", helper.FirstN(id, VisibleIDLimit), err.Error())
 		}
 
 		fallthrough
 	case "exited", "dead", "created":
 		if dog != nil {
-			dog.WriteContainerState(common.ContainerState_WAITING, state, "Removing container: "+id)
+			dog.WriteContainerState(common.ContainerState_WAITING, state, "Removing container: "+helper.FirstN(id, VisibleIDLimit))
 		}
 
 		if err = cli.ContainerRemove(ctx, id, types.ContainerRemoveOptions{}); err != nil {
-			return fmt.Errorf("could not remove container (%s): %s", id, err.Error())
+			return fmt.Errorf("could not remove container (%s): %s", helper.FirstN(id, VisibleIDLimit), err.Error())
 		}
 
 		return nil
@@ -130,7 +133,7 @@ func GetContainerByID(ctx context.Context, idFilter string) (*types.Container, e
 func DeleteContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, id string) error {
 	cont, err := GetContainerByID(ctx, id)
 	if err != nil {
-		return fmt.Errorf("could not get container (%s) to delete: %s", id, err.Error())
+		return fmt.Errorf("could not get container (%s) to delete: %s", helper.FirstN(id, VisibleIDLimit), err.Error())
 	}
 
 	if cont == nil {
