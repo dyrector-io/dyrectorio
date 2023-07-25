@@ -27,6 +27,7 @@ import (
 func mapInstanceConfig(in *agent.InstanceConfig) v1.InstanceConfig {
 	instanceConfig := v1.InstanceConfig{
 		ContainerPreName:  in.Prefix,
+		Name:              in.Prefix,
 		SharedEnvironment: map[string]string{},
 	}
 
