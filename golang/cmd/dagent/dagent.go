@@ -12,7 +12,7 @@ import (
 	commonConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
 )
 
-func main() {
+func mainDagent() {
 	cfg := config.Configuration{}
 	err := util.ReadConfig(&cfg)
 	if err != nil {
@@ -24,4 +24,24 @@ func main() {
 	commonConfig.InjectSecret(string(cfg.SecretPrivateKeyFile), &cfg.CommonConfiguration)
 	log.Info().Msg("Configuration loaded.")
 	dagent.Serve(&cfg)
+}
+
+func mainHealth() {
+	health := dagent.GetHealth()
+	if health {
+		os.Exit(0)
+		return
+	}
+
+	os.Exit(1)
+}
+
+func main() {
+	args := os.Args[1:]
+	if len(args) > 0 && args[0] == "health" {
+		mainHealth()
+		return
+	}
+
+	mainDagent()
 }
