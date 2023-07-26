@@ -158,7 +158,7 @@ func Init(grpcContext context.Context,
 
 	ctx, cancel := context.WithCancel(grpcContext)
 
-	err := health.HealthServer(ctx)
+	err := health.Serve(ctx)
 	if err != nil {
 		log.Warn().Err(err).Msg("Failed to start serving health")
 	}

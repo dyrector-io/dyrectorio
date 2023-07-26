@@ -11,8 +11,9 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 
-	commonConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
 	cli "github.com/urfave/cli/v2"
+
+	commonConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
 )
 
 func serve(cCtx *cli.Context) error {

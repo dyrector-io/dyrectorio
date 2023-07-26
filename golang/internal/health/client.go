@@ -10,7 +10,7 @@ import (
 const ReceiveBufferSize = 1024
 
 func GetHealthy() (bool, error) {
-	status, err := GetHealth()
+	status, err := GetStatus()
 	if err != nil {
 		return false, err
 	}
@@ -18,8 +18,8 @@ func GetHealthy() (bool, error) {
 	return status.Connected, nil
 }
 
-func GetHealth() (*HealthStatus, error) {
-	conn, err := net.Dial("unix", HealthSocketPath)
+func GetStatus() (*Status, error) {
+	conn, err := net.Dial("unix", socketPath)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func GetHealth() (*HealthStatus, error) {
 		return nil, err
 	}
 
-	var health HealthStatus
+	var health Status
 	err = json.Unmarshal(buffer[:length], &health)
 
 	return &health, err

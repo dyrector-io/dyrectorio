@@ -9,11 +9,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var health = HealthStatus{
+var health = Status{
 	Connected: false,
 }
 
-func sendHealthData(conn net.Conn, healthData *HealthStatus) error {
+func sendHealthData(conn net.Conn, healthData *Status) error {
 	data, err := json.Marshal(healthData)
 	if err != nil {
 		return err
@@ -47,16 +47,16 @@ func SetHealthGRPCStatus(connected bool) {
 	health.Connected = connected
 }
 
-func HealthServer(ctx context.Context) error {
-	_, err := os.Stat(HealthSocketPath)
+func Serve(ctx context.Context) error {
+	_, err := os.Stat(socketPath)
 	if err == nil {
-		err = os.RemoveAll(HealthSocketPath)
+		err = os.RemoveAll(socketPath)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to remove socket file")
 		}
 	}
 
-	socket, err := net.Listen(HealthSocketType, HealthSocketPath)
+	socket, err := net.Listen(socketType, socketPath)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func HealthServer(ctx context.Context) error {
 			log.Error().Err(err).Msg("Health serve close error")
 		}
 
-		err = os.Remove(HealthSocketPath)
+		err = os.Remove(socketPath)
 		if err != nil {
 			log.Error().Err(err).Msg("Health serve close error")
 		}
