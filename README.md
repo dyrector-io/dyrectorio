@@ -33,7 +33,7 @@ Join our Discord and connect with other members to share and learn together. If 
 ## Getting started
 You have various options to set up the platform right away:
 - [CLI](./GETTING_STARTED.md) 
-- [SaaS](https://app.dyrectorio.com) 
+- [SaaS](#hosted-version-saas) 
 - [docker-compose.yaml](./docker-compose.yaml)
 
 ## 🌊 Use cases
