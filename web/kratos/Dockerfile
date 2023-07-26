@@ -14,6 +14,9 @@ USER 10000
 
 LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/web/kratos"
 
+HEALTHCHECK --interval=30s --timeout=5s \
+    CMD wget -nv -t1 --spider http://localhost:4434/health/ready || exit 1
+
 ENTRYPOINT ["/usr/bin/app/kratos/entrypoint.sh"]
 CMD ["serve", "-c", "/etc/config/kratos/kratos.yaml", "--watch-courier"]
 
