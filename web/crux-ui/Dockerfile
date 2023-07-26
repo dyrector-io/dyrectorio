@@ -31,4 +31,7 @@ EXPOSE 3000
 ENV PORT 3000
 LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/web/crux-ui"
 
+HEALTHCHECK --interval=30s --timeout=5s \
+    CMD wget -nv -t1 --spider http://localhost:3000/ || exit 1
+
 ENTRYPOINT [ "npm", "run", "start:prod"]
