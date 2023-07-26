@@ -111,7 +111,7 @@ const deploymentStrategyRule = yup
 const logDriverRule = yup
   .mixed<ContainerLogDriverType>()
   .oneOf([...CONTAINER_LOG_DRIVER_VALUES])
-  .default('none')
+  .default('unspecified')
   .required()
 
 const volumeTypeRule = yup

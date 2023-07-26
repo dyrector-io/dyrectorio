@@ -164,7 +164,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               <DyoChips
                 className="mb-2 ml-2"
                 choices={CONTAINER_LOG_DRIVER_VALUES}
-                selection={config.logConfig?.driver ?? 'none'}
+                selection={config.logConfig?.driver ?? 'unspecified'}
                 converter={(it: ContainerLogDriverType) => t(`dagent.logDrivers.${it}`)}
                 onSelectionChange={it => onChange({ logConfig: { ...config.logConfig, driver: it } })}
                 disabled={disabled}

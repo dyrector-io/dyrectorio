@@ -826,6 +826,43 @@ describe('DeployMapper', () => {
   })
 
   describe('dagentConfigToAgentProto logConfig', () => {
+    it('undefined logConfig should return no log driver', () => {
+      const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
+        networks: [],
+        networkMode: 'host',
+        restartPolicy: 'always',
+        dockerLabels: [],
+      })
+      const expected = <DagentContainerConfig>{
+        networks: [],
+        logConfig: null,
+        networkMode: NetworkMode.HOST,
+        restartPolicy: RestartPolicy.ALWAYS,
+        labels: {},
+      }
+      expect(config).toEqual(expected)
+    })
+
+    it('unspecified (default) driver type should return no log driver', () => {
+      const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
+        networks: [],
+        networkMode: 'host',
+        restartPolicy: 'always',
+        dockerLabels: [],
+        logConfig: {
+          driver: 'unspecified',
+        },
+      })
+      const expected = <DagentContainerConfig>{
+        networks: [],
+        logConfig: null,
+        networkMode: NetworkMode.HOST,
+        restartPolicy: RestartPolicy.ALWAYS,
+        labels: {},
+      }
+      expect(config).toEqual(expected)
+    })
+
     it('none driver type should return none log driver', () => {
       const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
         networks: [],
@@ -842,23 +879,6 @@ describe('DeployMapper', () => {
           driver: DriverType.DRIVER_TYPE_NONE,
           options: {},
         },
-        networkMode: NetworkMode.HOST,
-        restartPolicy: RestartPolicy.ALWAYS,
-        labels: {},
-      }
-      expect(config).toEqual(expected)
-    })
-
-    it('undefined logConfig should return no log driver', () => {
-      const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
-        networks: [],
-        networkMode: 'host',
-        restartPolicy: 'always',
-        dockerLabels: [],
-      })
-      const expected = <DagentContainerConfig>{
-        networks: [],
-        logConfig: null,
         networkMode: NetworkMode.HOST,
         restartPolicy: RestartPolicy.ALWAYS,
         labels: {},
