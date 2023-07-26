@@ -284,7 +284,11 @@ func mapVolumes(in []*agent.Volume) []v1.Volume {
 		}
 
 		if in[i].Type != nil {
-			volume.Type = in[i].Type.String()
+			if *in[i].Type == common.VolumeType_MEM || *in[i].Type == common.VolumeType_TMP {
+				volume.Type = strings.ToLower(in[i].Type.String())
+			} else {
+				volume.Type = in[i].Type.String()
+			}
 		}
 
 		volumes = append(volumes, volume)

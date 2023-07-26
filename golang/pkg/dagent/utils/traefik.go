@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
+	"github.com/dyrector-io/dyrectorio/golang/internal/domain"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 )
@@ -23,7 +24,7 @@ func GetTraefikLabels(
 ) (map[string]string, error) {
 	labels := map[string]string{}
 
-	rules := GetRules(instanceConfig, containerConfig, cfg)
+	rules := GetRules(containerConfig, instanceConfig, cfg)
 	if len(rules) == 0 {
 		return nil, ErrInsufficientRoutingRules
 	}
@@ -58,31 +59,19 @@ func GetTraefikLabels(
 }
 
 // serviceName container-name.container-pre-name.ingress.host is default
-func GetRules(instanceConfig *v1.InstanceConfig, containerConfig *v1.ContainerConfig, cfg *config.Configuration) []string {
+func GetRules(containerConfig *v1.ContainerConfig, instanceConfig *v1.InstanceConfig, cfg *config.Configuration) []string {
+	prefix := instanceConfig.ContainerPreName
+
+	if containerConfig.ContainerPreName != "" {
+		prefix = containerConfig.ContainerPreName
+	}
 	rules := []string{}
-	domain := []string{}
+	host := domain.GetHostRule(
+		containerConfig.IngressName, containerConfig.IngressHost,
+		containerConfig.Container, prefix, &cfg.CommonConfiguration)
 
-	rootDomain := ""
-
-	if containerConfig.IngressHost != "" {
-		rootDomain = containerConfig.IngressHost
-	} else if cfg.RootDomain != "" {
-		rootDomain = cfg.RootDomain
-	}
-
-	// generate the name.prefix.domain from prefix and container name
-	// no root domain -> no host rule
-	if containerConfig.IngressName == "" && containerConfig.IngressHost == "" && cfg.RootDomain != "" {
-		domain = append(domain, containerConfig.Container, instanceConfig.ContainerPreName, cfg.RootDomain)
-	} else if containerConfig.IngressName != "" && rootDomain != "" {
-		domain = append(domain, containerConfig.IngressName, rootDomain)
-	}
-
-	if len(domain) == 0 && rootDomain != "" {
-		domain = append(domain, rootDomain)
-	}
-	if len(domain) != 0 {
-		rules = append(rules, fmt.Sprintf("Host(`%s`)", util.JoinV(".", domain...)))
+	if host != "" {
+		rules = append(rules, fmt.Sprintf("Host(`%s`)", host))
 	}
 
 	if containerConfig.IngressPath != "" {
