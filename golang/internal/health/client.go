@@ -19,7 +19,7 @@ func GetHealthy() (bool, error) {
 }
 
 func GetStatus() (*Status, error) {
-	conn, err := net.Dial("unix", socketPath)
+	conn, err := net.Dial("unix", getSocketPath())
 	if err != nil {
 		return nil, err
 	}

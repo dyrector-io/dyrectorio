@@ -3,6 +3,7 @@ package health
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net"
 	"os"
 
@@ -48,12 +49,16 @@ func SetHealthGRPCStatus(connected bool) {
 }
 
 func Serve(ctx context.Context) error {
+	socketPath := getSocketPath()
+
 	_, err := os.Stat(socketPath)
 	if err == nil {
 		err = os.RemoveAll(socketPath)
 		if err != nil {
-			log.Error().Err(err).Msg("Failed to remove socket file")
+			log.Error().Str("file", socketPath).Err(err).Msg("Failed to remove socket file")
 		}
+	} else if !errors.Is(err, os.ErrNotExist) {
+		log.Error().Str("file", socketPath).Err(err).Msg("Failed to check socket file")
 	}
 
 	socket, err := net.Listen(socketType, socketPath)
