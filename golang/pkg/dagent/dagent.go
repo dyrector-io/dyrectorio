@@ -17,12 +17,6 @@ func Serve(cfg *config.Configuration) {
 	utils.PreflightChecks(cfg)
 	log.Info().Msg("Starting dyrector.io DAgent service")
 
-	contextHealth, cancelHealth := context.WithCancel(context.Background())
-	err := utils.HealthServe(contextHealth)
-	if err != nil {
-		log.Panic().Err(err).Msg("Failed to start serving health")
-	}
-
 	if cfg.TraefikEnabled {
 		params := utils.TraefikDeployRequest{
 			LogLevel: cfg.TraefikLogLevel,
@@ -52,8 +46,6 @@ func Serve(cfg *config.Configuration) {
 		DeleteContainers: utils.DeleteContainers,
 		ContainerLog:     utils.ContainerLog,
 	})
-
-	cancelHealth()
 }
 
 func grpcClose(ctx context.Context, reason agent.CloseReason) error {
@@ -65,14 +57,4 @@ func grpcClose(ctx context.Context, reason agent.CloseReason) error {
 	}
 
 	return nil
-}
-
-func GetHealth() bool {
-	health, err := utils.GetHealth()
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to get health")
-		return false
-	}
-
-	return health.Connected
 }
