@@ -1,5 +1,5 @@
 import { Audit } from './audit'
-import { DeploymentStatus } from './common'
+import { DeploymentStatus, slugify } from './common'
 import { ContainerIdentifier, ContainerState, InstanceContainerConfigData, UniqueKeyValue } from './container'
 import { ImageConfigProperty, ImageDeletedMessage } from './image'
 import { Instance } from './instance'
@@ -194,16 +194,6 @@ export const deploymentIsDeletable = (status: DeploymentStatus): boolean => stat
 export const deploymentIsCopiable = (status: DeploymentStatus) => status !== 'in-progress'
 
 export const deploymentLogVisible = (status: DeploymentStatus) => status !== 'preparing'
-
-export const slugify = (name: string, separator: string) =>
-  name
-    .toString()
-    .normalize('NFD') // split an accented letter in the base letter and the acent
-    .replace(/[\u0300-\u036f]/g, '') // remove all previously split accents
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9 ]/g, '') // remove all chars not letters, numbers and spaces (to be replaced)
-    .replace(/\s+/g, separator)
 
 export const projectNameToDeploymentPrefix = (name: string) => slugify(name, '-')
 

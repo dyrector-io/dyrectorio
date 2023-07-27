@@ -1,3 +1,4 @@
+import { slugify } from './common'
 import { User, UserMetaTeam } from './user'
 
 export type CreateTeam = {
@@ -28,17 +29,6 @@ export type Team = Omit<UserMetaTeam, 'role'> & {
 export type TeamDetails = Team & {
   users: User[]
 }
-
-// https://gist.github.com/codeguy/6684588?permalink_comment_id=3426313#gistcomment-3426313
-export const slugify = (name: string, separator: string) =>
-  name
-    .toString()
-    .normalize('NFD') // split an accented letter in the base letter and the acent
-    .replace(/[\u0300-\u036f]/g, '') // remove all previously split accents
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9 ]/g, '') // remove all chars not letters, numbers and spaces (to be replaced)
-    .replace(/\s+/g, separator)
 
 export const teamSlugFromName = (name: string) => {
   const slug = slugify(name, '-')

@@ -157,8 +157,8 @@ export const fillDeploymentPrefix = async (page: Page, prefix: string) => {
 }
 
 export const deleteProject = async (page: Page, projectId: string): Promise<void> => {
-  await page.goto(projectUrl(projectId))
+  await page.goto(TEAM_ROUTES.project.details(projectId))
   await page.locator('button:has-text("Delete")').click()
   await page.locator('div[data-headlessui-state="open"] button:has-text("Delete")').click()
-  await page.waitForURL(ROUTE_PROJECTS)
+  await page.waitForURL(TEAM_ROUTES.project.list())
 }
