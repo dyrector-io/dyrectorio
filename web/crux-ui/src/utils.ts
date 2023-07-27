@@ -339,7 +339,7 @@ export const setupContextSession = async (
 
   const verifiableEmail = verifiableEmailOfIdentity(session.identity)
   if (verifiableEmail && !verifiableEmail.verified) {
-    return redirectTo(verificationUrl(verifiableEmail.value))
+    return redirectTo(verificationUrl({ email: verifiableEmail.value }))
   }
 
   req.session = session
