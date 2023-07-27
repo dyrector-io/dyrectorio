@@ -63,12 +63,17 @@ func GetRules(containerConfig *v1.ContainerConfig, instanceConfig *v1.InstanceCo
 	prefix := instanceConfig.ContainerPreName
 
 	if containerConfig.ContainerPreName != "" {
-		prefix = containerConfig.ContainerPreName
+		prefix = instanceConfig.ContainerPreName
 	}
 	rules := []string{}
-	host := domain.GetHostRule(
-		containerConfig.IngressName, containerConfig.IngressHost,
-		containerConfig.Container, prefix, &cfg.CommonConfiguration)
+	host := domain.GetHostRuleStrict(
+		&domain.HostRouting{
+			Subdomain:      containerConfig.IngressName,
+			RootDomain:     containerConfig.IngressHost,
+			ContainerName:  containerConfig.Container,
+			Prefix:         prefix,
+			DomainFallback: cfg.RootDomain,
+		})
 
 	if host != "" {
 		rules = append(rules, fmt.Sprintf("Host(`%s`)", host))

@@ -57,8 +57,13 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 	}
 
 	ingressDomain := domain.GetHostRule(
-		options.ingressName, options.ingressHost,
-		options.containerName, options.namespace, &ing.appConfig.CommonConfiguration)
+		&domain.HostRouting{
+			Subdomain:      options.ingressName,
+			RootDomain:     options.ingressHost,
+			ContainerName:  options.containerName,
+			Prefix:         options.namespace,
+			DomainFallback: ing.appConfig.RootDomain,
+		})
 
 	ingressPath := "/"
 	if options.ingressPath != "" {
