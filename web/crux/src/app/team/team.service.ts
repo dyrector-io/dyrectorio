@@ -167,6 +167,7 @@ export default class TeamService {
             userId: {
               in: userIds,
             },
+            teamId,
           },
           select: {
             teamId: true,
