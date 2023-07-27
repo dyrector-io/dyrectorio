@@ -254,6 +254,12 @@ const getPageServerSideProps = async (context: NextPageContext) => {
         email = session.identity.traits.email ?? null
       }
     }
+  } else if (!queryEmail) {
+    const session = await obtainSessionFromRequest(context.req)
+
+    if (session) {
+      email = session.identity.traits.email ?? null
+    }
   }
 
   const recaptchaSiteKey = captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY
