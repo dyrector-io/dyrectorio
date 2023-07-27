@@ -41,6 +41,9 @@ EXPOSE 1848
 
 LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/web/crux"
 
+HEALTHCHECK --interval=30s --timeout=5s \
+    CMD wget -nv -t1 --spider http://localhost:1848/api/health || exit 1
+
 # Start
 ENTRYPOINT ["./crux-docker-entrypoint.sh"]
 CMD ["serve"]

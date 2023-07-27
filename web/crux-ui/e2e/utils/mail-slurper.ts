@@ -6,11 +6,13 @@ type Mail = {
   subject: string
   body: string
   toAddresses: string[]
+  dateSent: string
 }
 
 type MailFilterOptions = {
   subject?: string
   toAddress?: string
+  dateSent?: Date
 }
 
 class MailSlurper {
@@ -52,6 +54,14 @@ class MailSlurper {
 
         if (filters.toAddress) {
           emails = emails.filter(it => it.toAddresses.includes(filters.toAddress))
+        }
+
+        if (filters.dateSent) {
+          emails = emails.filter(it => {
+            const formatted = `${it.dateSent.replaceAll(' ', 'T')}Z`
+
+            return new Date(formatted) >= filters.dateSent
+          })
         }
       }
 

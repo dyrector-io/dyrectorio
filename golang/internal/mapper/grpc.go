@@ -27,6 +27,7 @@ import (
 func mapInstanceConfig(in *agent.InstanceConfig) v1.InstanceConfig {
 	instanceConfig := v1.InstanceConfig{
 		ContainerPreName:  in.Prefix,
+		Name:              in.Prefix,
 		SharedEnvironment: map[string]string{},
 	}
 
@@ -113,11 +114,13 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 	}
 
 	if cc.Routing != nil {
-		if splitDomain := strings.Split(*cc.Routing.Domain, "."); len(splitDomain) > 1 {
-			containerConfig.IngressName = splitDomain[0]
-			containerConfig.IngressHost = util.JoinV(".", splitDomain[1:]...)
-		} else {
-			containerConfig.IngressHost = pointer.GetString(cc.Routing.Domain)
+		if domain := pointer.GetString(cc.Routing.Domain); domain != "" {
+			if splitDomain := strings.Split(domain, "."); len(splitDomain) > 1 {
+				containerConfig.IngressName = splitDomain[0]
+				containerConfig.IngressHost = util.JoinV(".", splitDomain[1:]...)
+			} else {
+				containerConfig.IngressHost = pointer.GetString(cc.Routing.Domain)
+			}
 		}
 
 		containerConfig.IngressUploadLimit = pointer.GetString(cc.Routing.UploadLimit)
@@ -281,7 +284,11 @@ func mapVolumes(in []*agent.Volume) []v1.Volume {
 		}
 
 		if in[i].Type != nil {
-			volume.Type = in[i].Type.String()
+			if *in[i].Type == common.VolumeType_MEM || *in[i].Type == common.VolumeType_TMP {
+				volume.Type = strings.ToLower(in[i].Type.String())
+			} else {
+				volume.Type = in[i].Type.String()
+			}
 		}
 
 		volumes = append(volumes, volume)

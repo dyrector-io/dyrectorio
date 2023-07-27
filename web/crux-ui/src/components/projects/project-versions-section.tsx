@@ -22,10 +22,18 @@ const ProjectVersionsSection = (props: ProjectVersionsSectionProps) => {
 
   const [modalConfig, confirmSetAsDefault] = useConfirmation()
 
-  const onSetAsDefaultClick = (version: Version) =>
-    confirmSetAsDefault(() => onSetAsDefault(version), {
+  const onSetAsDefaultClick = async (version: Version) => {
+    const confirmed = await confirmSetAsDefault({
+      title: t('common:areYouSure'),
       description: t('setNameAsDefault', version),
     })
+
+    if (!confirmed) {
+      return
+    }
+
+    onSetAsDefault(version)
+  }
 
   return versions.length ? (
     <>
@@ -43,7 +51,7 @@ const ProjectVersionsSection = (props: ProjectVersionsSectionProps) => {
         ))}
       </DyoWrap>
 
-      <DyoConfirmationModal config={modalConfig} title={t('common:areYouSure')} />
+      <DyoConfirmationModal config={modalConfig} />
     </>
   ) : (
     <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">

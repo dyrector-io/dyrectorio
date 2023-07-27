@@ -13,7 +13,8 @@ LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio
 LABEL org.opencontainers.image.revision="$REVISION"
 LABEL org.opencontainers.image.documentation="https://docs.dyrector.io"
 
-
 COPY ./out/$AGENT_BINARY-$TARGETOS-$TARGETARCH /agent
+
+HEALTHCHECK --interval=30s --timeout=5s CMD ["/agent", "health"]
 
 ENTRYPOINT ["/agent"]

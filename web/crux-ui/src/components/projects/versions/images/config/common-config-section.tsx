@@ -520,24 +520,6 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               <div className="flex flex-row flex-grow">
                 <div className="w-6/12 ml-2">
                   <MultiInput
-                    id={`common.ports-${item.id}-internal`}
-                    className="w-full mr-2"
-                    grow
-                    placeholder={t('common.internal')}
-                    value={item.internal ?? ''}
-                    type="number"
-                    onPatch={it =>
-                      onPatch({
-                        internal: toNumber(it),
-                      })
-                    }
-                    editorOptions={editorOptions}
-                    disabled={disabled}
-                  />
-                </div>
-
-                <div className="w-6/12 ml-2 mr-2">
-                  <MultiInput
                     id={`common.ports-${item.id}-external`}
                     className="w-full mr-2"
                     grow
@@ -552,6 +534,24 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                         external,
                       })
                     }}
+                    editorOptions={editorOptions}
+                    disabled={disabled}
+                  />
+                </div>
+
+                <div className="w-6/12 ml-2 mr-2">
+                  <MultiInput
+                    id={`common.ports-${item.id}-internal`}
+                    className="w-full mr-2"
+                    grow
+                    placeholder={t('common.internal')}
+                    value={item.internal ?? ''}
+                    type="number"
+                    onPatch={it =>
+                      onPatch({
+                        internal: toNumber(it),
+                      })
+                    }
                     editorOptions={editorOptions}
                     disabled={disabled}
                   />

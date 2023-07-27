@@ -75,7 +75,7 @@ const SettingsPage = (props: SettingsPageProps) => {
 
   const onModifyOidcConnection = async (provider: OidcProvider, action: OidcConnectorAction) => {
     if (action === 'unlink') {
-      const confirmed = await confirm(null, {
+      const confirmed = await confirm({
         title: t('common:areYouSure'),
         description: t('areYouSureWantToRemoveAccount', {
           account: provider,

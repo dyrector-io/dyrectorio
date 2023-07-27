@@ -1,9 +1,10 @@
 import { WS_TYPE_PATCH_IMAGE } from '@app/models'
-import { deploymentUrl, imageConfigUrl, projectUrl, versionWsUrl } from '@app/routes'
-import { expect, test } from '@playwright/test'
-import { deployWithDagent } from '../utils/node-helper'
-import { createImage, createProject, createVersion } from '../utils/projects'
-import { waitSocket, wsPatchSent } from '../utils/websocket'
+import { deploymentUrl, imageConfigUrl, projectUrl, ROUTE_DEPLOYMENTS, versionWsUrl } from '@app/routes'
+import { expect, Page, test } from '@playwright/test'
+import { NGINX_TEST_IMAGE_WITH_TAG } from 'e2e/utils/common'
+import { deployWithDagent } from '../../utils/node-helper'
+import { addImageToVersion, createImage, createProject, createVersion } from '../../utils/projects'
+import { waitSocket, wsPatchSent } from '../../utils/websocket'
 
 test('In progress deployment should be not deletable', async ({ page }) => {
   const projectName = 'project-delete-test-1'
@@ -67,4 +68,26 @@ test('Delete deployment should work', async ({ page }, testInfo) => {
 
   await page.locator('button:has-text("Delete")').nth(1).click()
   await page.waitForURL(`${projectUrl(projectId)}**`)
+})
+
+const deleteRefreshDeployment = async (page: Page, projectName: string): Promise<void> => {
+  await page.locator(`img[src="/trash-can.svg"]:right-of(div.p-2:has-text('pw-${projectName}'))`).first().click()
+  await page.locator('h4:has-text("Are you sure?")')
+  await page.locator('button:has-text("Delete")').click()
+}
+
+test('Deleting a deployment should refresh deployment list', async ({ page }) => {
+  const projectName = 'project-delete-refresh-test'
+
+  const projId = await createProject(page, projectName, 'versioned')
+  const baseVersion = await createVersion(page, projId, '1.0.0', 'Incremental')
+  await addImageToVersion(page, projId, baseVersion, NGINX_TEST_IMAGE_WITH_TAG)
+  await deployWithDagent(page, projectName, projId, baseVersion)
+  await createVersion(page, projId, '1.0.1', 'Incremental')
+
+  await page.goto(ROUTE_DEPLOYMENTS)
+  deleteRefreshDeployment(page, projectName)
+  await expect(page.locator(`div.p-2:has-text('pw-${projectName}')`)).toHaveCount(1)
+  deleteRefreshDeployment(page, projectName)
+  await expect(page.locator(`div.p-2:has-text('pw-${projectName}')`)).toHaveCount(0)
 })

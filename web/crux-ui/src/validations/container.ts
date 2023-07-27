@@ -71,7 +71,7 @@ export const sensitiveKeyRule = yup.string().matches(sensitiveKeywordRegExp)
 
 const portNumberBaseRule = yup.number().positive().lessThan(65536)
 const portNumberOptionalRule = portNumberBaseRule.nullable()
-const portNumberRule = portNumberBaseRule.required()
+const portNumberRule = portNumberBaseRule.nullable().required()
 
 const routingRule = yup
   .object()
@@ -196,10 +196,13 @@ const createOverlapTest = (
 ) =>
   // eslint-disable-next-line no-template-curly-in-string
   schema.test('port-range-overlap', '${path} overlaps port ranges', value =>
-    portRanges.length > 0
+    value && portRanges.length > 0
       ? !portRanges.some(it => {
           const portRange = it[field]
-          return value >= portRange.from && value <= portRange.to
+          if (!portRange.from || !portRange.to) {
+            return false
+          }
+          return value >= portRange.from && portRange.to && value <= portRange.to
         })
       : true,
   )
