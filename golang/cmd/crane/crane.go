@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	commonConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
+	"github.com/dyrector-io/dyrectorio/golang/internal/health"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/internal/version"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane"
@@ -30,6 +31,12 @@ func main() {
 				Aliases: []string{"i"},
 				Usage:   "Init the key on kubernetes cluster",
 				Action:  initKey,
+			},
+			{
+				Name:    "health",
+				Aliases: []string{"h"},
+				Usage:   "Get the health of the agent",
+				Action:  getHealth,
 			},
 		},
 	}
@@ -94,5 +101,20 @@ func initKey(cCtx *cli.Context) error {
 		return err
 	}
 
+	return nil
+}
+
+func getHealth(cCtx *cli.Context) error {
+	healthy, err := health.GetHealthy()
+	if err != nil {
+		log.Error().Err(err).Send()
+	}
+
+	if healthy {
+		os.Exit(0)
+		return nil
+	}
+
+	os.Exit(1)
 	return nil
 }
