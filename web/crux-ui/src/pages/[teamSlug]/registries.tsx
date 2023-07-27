@@ -107,7 +107,7 @@ export default RegistriesPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const routes = TeamRoutes.fromContext(context)
 
-  const registries = await getCruxFromContext<Registry[]>(context, routes.registry.list())
+  const registries = await getCruxFromContext<Registry[]>(context, routes.registry.api.list())
 
   return {
     props: {

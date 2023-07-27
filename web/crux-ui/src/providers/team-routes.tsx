@@ -1,6 +1,6 @@
 import { TeamRoutes } from '@app/routes'
 import { useRouter } from 'next/router'
-import React, { useState } from 'react'
+import React, { useRef } from 'react'
 
 const TEAM_SLUG_PROP = 'selectedTeamSlug'
 
@@ -10,21 +10,24 @@ type TeamRoutesContextProps = {
 
 export const TeamRoutesContext = React.createContext<TeamRoutesContextProps>({ routes: null })
 
-type TeamRoutesProviderProps = {
+type TeamRoutesProviderValue = {
   pageProps: any
 }
 
-export const TeamRoutesProvider = (props: React.PropsWithChildren<TeamRoutesProviderProps>) => {
+export const TeamRoutesProvider = (props: React.PropsWithChildren<TeamRoutesProviderValue>) => {
   const { pageProps, children } = props
 
   const router = useRouter()
+  const routesRef = useRef<TeamRoutes>()
 
   const teamSlug: string = (router.query.teamSlug as string) ?? pageProps[TEAM_SLUG_PROP]
 
-  const [routes] = useState(() => (teamSlug ? new TeamRoutes(teamSlug) : null))
+  if (routesRef.current?.teamSlug !== teamSlug) {
+    routesRef.current = teamSlug ? new TeamRoutes(teamSlug) : null
+  }
 
   // eslint-disable-next-line react/jsx-no-constructed-context-values
-  return <TeamRoutesContext.Provider value={{ routes }}>{children}</TeamRoutesContext.Provider>
+  return <TeamRoutesContext.Provider value={{ routes: routesRef.current }}>{children}</TeamRoutesContext.Provider>
 }
 
 export const appendTeamSlug = (teamSlug: string, props: any): any => {

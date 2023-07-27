@@ -94,7 +94,7 @@ export default class NodeService {
   }
 
   async createNode(teamSlug: string, req: CreateNodeDto, identity: Identity): Promise<NodeDto> {
-    const teamId = await this.teamRepository.getTeamIdBySlug(identity.id)
+    const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
     const node = await this.prisma.node.create({
       data: {

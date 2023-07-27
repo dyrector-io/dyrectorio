@@ -270,7 +270,7 @@ export const getDeploymentRoot = async (context: NextPageContext) => {
   const node = await getCruxFromContext<NodeDetails>(context, routes.node.api.details(deployment.node.id))
   const version = await getCruxFromContext<VersionDetails>(
     context,
-    routes.project.versions(deployment.project.id).details(deployment.version.id),
+    routes.project.versions(deployment.project.id).api.details(deployment.version.id),
   )
 
   return {

@@ -98,7 +98,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 
   const registryId = context.query.registryId as string
 
-  const dto = await getCruxFromContext<RegistryDetailsDto>(context, routes.registry.details(registryId))
+  const dto = await getCruxFromContext<RegistryDetailsDto>(context, routes.registry.api.details(registryId))
   const details = registryDetailsDtoToUI(dto)
 
   return {

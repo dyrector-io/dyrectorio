@@ -145,7 +145,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 
   const version = await getCruxFromContext<VersionDetails>(
     context,
-    routes.project.versions(projectId).details(versionId),
+    routes.project.versions(projectId).api.details(versionId),
   )
 
   return {

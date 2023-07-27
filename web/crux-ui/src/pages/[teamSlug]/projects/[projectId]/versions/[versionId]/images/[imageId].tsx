@@ -319,10 +319,10 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   const imageId = context.query.imageId as string
 
   const project = getCruxFromContext<ProjectDetails>(context, routes.project.api.details(projectId))
-  const version = getCruxFromContext<VersionDetails>(context, routes.project.versions(projectId).details(versionId))
+  const version = getCruxFromContext<VersionDetails>(context, routes.project.versions(projectId).api.details(versionId))
   const image = getCruxFromContext<VersionImage>(
     context,
-    routes.project.versions(projectId).imageDetails(versionId, imageId),
+    routes.project.versions(projectId).api.imageDetails(versionId, imageId),
   )
 
   return {

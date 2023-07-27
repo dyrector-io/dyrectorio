@@ -261,7 +261,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 
     props.versionlessProjectVersionDetails = await getCruxFromContext<VersionDetails>(
       context,
-      routes.project.versions(projectId).details(version.id),
+      routes.project.versions(projectId).api.details(version.id),
     )
   }
 

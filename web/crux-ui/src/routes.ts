@@ -321,7 +321,7 @@ class VersionRoutes {
   private readonly root: string
 
   constructor(root: string, projectId: string) {
-    this.root = `${root}/projects/${projectId}/versions`
+    this.root = `${root}/${projectId}/versions`
   }
 
   private _api: VersionApi
@@ -334,7 +334,7 @@ class VersionRoutes {
     return this._api
   }
 
-  detailsSocket = (id: string) => `${this.root}/versions/${id}`
+  detailsSocket = (id: string) => `${this.root}/${id}`
 
   details = (id: string, params?: VersionUrlParams) => appendUrlParams(`${this.root}/${id}`, params)
 

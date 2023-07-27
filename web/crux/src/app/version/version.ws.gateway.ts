@@ -53,7 +53,7 @@ const TeamSlug = () => WsParam('teamSlug')
 // so subscribers will be notified of the changes regardless of the transport platform
 
 @WebSocketGateway({
-  namespace: ':teamSlug/versions/:versionId',
+  namespace: ':teamSlug/projects/:projectId/versions/:versionId',
 })
 @UseGlobalWsFilters()
 @UseGlobalWsGuards()

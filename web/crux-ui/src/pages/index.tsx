@@ -20,7 +20,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   }
 
   let teamSlug = getCookie(context, COOKIE_TEAM_SLUG)
-  if (!teamSlug) {
+  if (!user.teams.find(it => it.slug === teamSlug)) {
     const firstTeam = user.teams[0]
     teamSlug = firstTeam.slug
   }

@@ -37,6 +37,7 @@ export default class TemplateService {
 
   async createProjectFromTemplate(req: CreateProjectFromTemplateDto, identity: Identity): Promise<ProjectDto> {
     const { teamSlug } = req
+    console.log('dtoslug', teamSlug)
 
     const template = await this.templateFileService.getTemplateById(req.id)
 
