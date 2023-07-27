@@ -246,7 +246,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   const verifiable = identity.verifiable_addresses?.find(it => it.value === email && !it.verified)
 
   if (verifiable) {
-    return redirectTo(verificationUrl(verifiable.value))
+    return redirectTo(verificationUrl({ email: verifiable.value }))
   }
 
   const cookie = cookieOf(context.req)

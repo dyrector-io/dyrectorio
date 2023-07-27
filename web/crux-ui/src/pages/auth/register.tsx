@@ -125,7 +125,7 @@ const RegisterPage = (props: RegisterPageProps) => {
       })
 
       if (res.ok) {
-        router.replace(verificationUrl(values.email))
+        router.replace(verificationUrl({ email: values.email }))
       } else if (res.status === 410) {
         await router.reload()
       } else {

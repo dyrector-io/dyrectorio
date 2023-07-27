@@ -131,7 +131,7 @@ const LoginPage = (props: LoginPageProps) => {
           const newUi = result.ui as UiContainer
           const noVerifiedEmail = newUi.messages.find(it => it.id === KRATOS_ERROR_NO_VERIFIED_EMAIL_ADDRESS)
           if (noVerifiedEmail) {
-            await router.push(verificationUrl(values.email))
+            await router.push(verificationUrl({ email: values.email }))
           }
 
           setUi(newUi)
