@@ -263,7 +263,10 @@ const volumeConfigRule = yup
     yup.object().shape({
       name: yup.string().required(),
       path: yup.string().required(),
-      size: yup.string().nullable(),
+      size: yup
+        .string()
+        .nullable()
+        .matches(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/),
       class: yup.string().nullable(),
       type: volumeTypeRule,
     }),

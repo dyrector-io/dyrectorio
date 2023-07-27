@@ -13,6 +13,7 @@ import (
 	applymetav1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	netv1 "k8s.io/client-go/applyconfigurations/networking/v1"
 
+	"github.com/dyrector-io/dyrectorio/golang/internal/domain"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 
@@ -28,12 +29,13 @@ type ingress struct {
 }
 
 type DeployIngressOptions struct {
-	namespace, containerName, ingressName, uploadLimit string
-	ports                                              []int32
-	tls, proxyHeaders                                  bool
-	customHeaders                                      []string
-	labels                                             map[string]string
-	annotations                                        map[string]string
+	namespace, containerName, ingressName, ingressHost, ingressPath, uploadLimit string
+	stripPrefix                                                                  bool
+	ports                                                                        []int32
+	tls, proxyHeaders                                                            bool
+	customHeaders                                                                []string
+	labels                                                                       map[string]string
+	annotations                                                                  map[string]string
 }
 
 func newIngress(ctx context.Context, client *Client) *ingress {
@@ -54,26 +56,34 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 		return errors.New("empty ports, nothing to expose")
 	}
 
-	domain := []string{}
+	ingressDomain := domain.GetHostRule(
+		&domain.HostRouting{
+			Subdomain:      options.ingressName,
+			RootDomain:     options.ingressHost,
+			ContainerName:  options.containerName,
+			Prefix:         options.namespace,
+			DomainFallback: ing.appConfig.RootDomain,
+		})
 
-	if options.ingressName == "" {
-		domain = append(domain, options.containerName, options.namespace)
-	} else {
-		domain = append(domain, options.ingressName)
+	ingressPath := "/"
+	if options.ingressPath != "" {
+		ingressPath = options.ingressPath
+		// prefix stripping works in combination with annotations
+		if options.stripPrefix {
+			split := strings.Split(ingressPath, "/")
+
+			split = append(split, "?(.*)")
+			ingressPath = util.JoinV("/", split...)
+			ingressPath = "/" + ingressPath
+		}
 	}
-
-	if ing.appConfig.RootDomain != "" {
-		domain = append(domain, ing.appConfig.RootDomain)
-	}
-
-	ingressPath := util.JoinV(".", domain...)
 
 	spec := netv1.IngressSpec().
 		WithRules(
 			netv1.IngressRule().
-				WithHost(ingressPath).
+				WithHost(ingressDomain).
 				WithHTTP(netv1.HTTPIngressRuleValue().WithPaths(
-					netv1.HTTPIngressPath().WithPath("/").
+					netv1.HTTPIngressPath().WithPath(ingressPath).
 						WithPathType(v1.PathTypeImplementationSpecific).
 						WithBackend(
 							netv1.IngressBackend().WithService(
@@ -83,16 +93,12 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 							),
 						),
 				)))
-	tlsConf := getTLSConfig(ingressPath, options.containerName, options.tls)
+	tlsConf := getTLSConfig(ingressDomain, options.containerName, options.tls)
 	if tlsConf != nil {
 		spec.WithTLS(tlsConf)
 	}
 
-	annot := getIngressAnnotations(options.tls,
-		options.proxyHeaders,
-		options.uploadLimit,
-		options.customHeaders,
-	)
+	annot := getIngressAnnotations(options)
 	maps.Copy(annot, options.annotations)
 
 	labels := map[string]string{}
@@ -135,26 +141,24 @@ func getTLSConfig(ingressPath, containerName string, enabled bool) *netv1.Ingres
 	return nil
 }
 
-func getIngressAnnotations(tlsIsWanted, proxyHeaders bool,
-	uploadLimit string, customHeaders []string,
-) map[string]string {
+func getIngressAnnotations(opts *DeployIngressOptions) map[string]string {
 	corsHeaders := []string{}
 
 	annotations := map[string]string{
 		"kubernetes.io/ingress.class": "nginx",
 	}
 
-	if tlsIsWanted {
+	if opts.tls {
 		annotations["kubernetes.io/tls-acme"] = fmt.Sprintf("%v", true)
 		annotations["cert-manager.io/cluster-issuer"] = "letsencrypt-prod"
 	}
 
 	// Add Custom Headers to the CORS Allow Header annotation if presents
-	if len(customHeaders) > 0 {
-		corsHeaders = customHeaders
+	if len(opts.customHeaders) > 0 {
+		corsHeaders = opts.customHeaders
 	}
 
-	if proxyHeaders {
+	if opts.proxyHeaders {
 		extraHeaders := []string{"X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Server", "X-Real-IP", "X-Requested-With"}
 		corsHeaders = append(corsHeaders, extraHeaders...)
 
@@ -168,8 +172,12 @@ func getIngressAnnotations(tlsIsWanted, proxyHeaders bool,
 		annotations["nginx.ingress.kubernetes.io/cors-allow-headers"] = strings.Join(corsHeaders, ", ")
 	}
 
-	if uploadLimit != "" {
-		annotations["nginx.ingress.kubernetes.io/proxy-body-size"] = uploadLimit
+	if opts.uploadLimit != "" {
+		annotations["nginx.ingress.kubernetes.io/proxy-body-size"] = opts.uploadLimit
+	}
+
+	if opts.stripPrefix {
+		annotations["nginx.ingress.kubernetes.io/rewrite-target"] = "/$1"
 	}
 
 	return annotations

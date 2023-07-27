@@ -1,4 +1,5 @@
 //go:build unit
+// +build unit
 
 package mapper_test
 

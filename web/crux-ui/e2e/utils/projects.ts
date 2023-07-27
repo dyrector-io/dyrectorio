@@ -155,3 +155,10 @@ export const fillDeploymentPrefix = async (page: Page, prefix: string) => {
   const prefixInput = await page.waitForSelector('input[name=prefix] >> visible=true')
   await prefixInput.fill(`pw-${prefix ?? (await prefixInput.inputValue())}`)
 }
+
+export const deleteProject = async (page: Page, projectId: string): Promise<void> => {
+  await page.goto(projectUrl(projectId))
+  await page.locator('button:has-text("Delete")').click()
+  await page.locator('div[data-headlessui-state="open"] button:has-text("Delete")').click()
+  await page.waitForURL(ROUTE_PROJECTS)
+}

@@ -32,6 +32,8 @@ test('should be able to navigate to verify without cookie', async ({ page }) => 
 })
 
 test('should verify address', async ({ baseURL, page, email }) => {
+  const mailDateFilter = new Date()
+
   await page.goto(ROUTE_VERIFICATION)
 
   await expect(page).toHaveURL('/auth/verify')
@@ -46,6 +48,7 @@ test('should verify address', async ({ baseURL, page, email }) => {
   const mailSlurper = mailslurperFromBaseURL(baseURL)
   const mail = await mailSlurper.getMail({
     toAddress: email,
+    dateSent: mailDateFilter,
   })
 
   const verificationLink = extractKratosLinkFromMail(mail.body)
@@ -59,6 +62,17 @@ test('should verify address', async ({ baseURL, page, email }) => {
 
   await page.waitForURL(ROUTE_LOGIN)
   await expect(page.locator('h1')).toContainText('Log in')
+})
+
+test('Account verification logout should work', async ({ baseURL, page, email }) => {
+  await page.goto(ROUTE_VERIFICATION)
+  await expect(page.locator('h1')).toContainText('Account verification')
+
+  await page.locator('input[id="email"]').fill(email)
+  await page.locator('button:has-text("Send")').click()
+
+  await page.locator('a:has-text("Log out")').click()
+  await expect(page).toHaveURL(ROUTE_LOGIN)
 })
 
 test.beforeEach(async ({ baseURL, email }) => {
