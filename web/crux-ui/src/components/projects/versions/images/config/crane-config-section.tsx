@@ -23,6 +23,7 @@ import {
 } from '@app/models/container'
 import { nullify, toNumber } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
+import { ValidationError } from 'yup'
 import ConfigSectionLabel from './config-section-label'
 
 type CraneConfigSectionBaseProps<T> = {
@@ -33,6 +34,7 @@ type CraneConfigSectionBaseProps<T> = {
   selectedFilters: ImageConfigProperty[]
   editorOptions: ItemEditorState
   disabled?: boolean
+  fieldErrors: ValidationError[]
 }
 
 type ImageCraneConfigSectionProps = CraneConfigSectionBaseProps<CraneConfigDetails> & {
@@ -56,6 +58,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
     onResetSection,
     editorOptions,
     disabled,
+    fieldErrors,
   } = props
 
   const { t } = useTranslation('container')
@@ -121,6 +124,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 }
                 editorOptions={editorOptions}
                 disabled={disabled}
+                message={fieldErrors.find(it => it.path?.startsWith('healthCheckConfig.port'))?.message}
               />
 
               <MultiInput
@@ -140,6 +144,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 }
                 editorOptions={editorOptions}
                 disabled={disabled}
+                message={fieldErrors.find(it => it.path?.startsWith('healthCheckConfig.livenessProbe'))?.message}
               />
 
               <MultiInput
@@ -159,6 +164,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 }
                 editorOptions={editorOptions}
                 disabled={disabled}
+                message={fieldErrors.find(it => it.path?.startsWith('healthCheckConfig.readinessProbe'))?.message}
               />
 
               <MultiInput
@@ -178,6 +184,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 }
                 editorOptions={editorOptions}
                 disabled={disabled}
+                message={fieldErrors.find(it => it.path?.startsWith('healthCheckConfig.startupProbe'))?.message}
               />
             </div>
           </div>

@@ -725,6 +725,7 @@ export default class DeployService {
         note: request.note,
         status: DeploymentStatusEnum.preparing,
         createdBy: identity.id,
+        environment: oldDeployment.environment ?? [],
       },
       include: {
         node: true,

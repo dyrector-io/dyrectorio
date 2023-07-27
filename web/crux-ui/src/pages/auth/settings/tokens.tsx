@@ -85,6 +85,23 @@ const TokensPage = (props: TokensPageProps) => {
     clsx('pr-6 text-center', defaultItemClass),
   ]
 
+  const onItemDelete = async (item: GeneratedToken) => {
+    const confirmed = await confirmDelete({
+      title: t('common:areYouSureDeleteName', { name: item.name }),
+      description: t('common:proceedYouLoseAllDataToName', {
+        name: item.name,
+      }),
+      confirmText: t('common:delete'),
+      confirmColor: 'bg-error-red',
+    })
+
+    if (!confirmed) {
+      return
+    }
+
+    onDelete(item)
+  }
+
   const itemTemplate = (item: GeneratedToken) => [
     <a>{item.name}</a>,
     <a>{utcDateToLocale(item.createdAt)}</a>,
@@ -96,14 +113,7 @@ const TokensPage = (props: TokensPageProps) => {
         alt={t('common:view')}
         width={24}
         height={24}
-        onClick={() => {
-          confirmDelete(() => onDelete(item), {
-            title: t('common:areYouSureDeleteName', { name: item.name }),
-            description: t('common:proceedYouLoseAllDataToName', {
-              name: item.name,
-            }),
-          })
-        }}
+        onClick={() => onItemDelete(item)}
       />
     </div>,
   ]
@@ -171,12 +181,7 @@ const TokensPage = (props: TokensPageProps) => {
         </DyoHeading>
       )}
 
-      <DyoConfirmationModal
-        config={deleteModalConfig}
-        confirmText={t('common:delete')}
-        className="w-1/4"
-        confirmColor="bg-error-red"
-      />
+      <DyoConfirmationModal config={deleteModalConfig} className="w-1/4" />
     </Layout>
   )
 }

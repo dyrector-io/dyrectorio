@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test'
-import { TEAM_ROUTES } from 'e2e/utils/common'
-import { deployWithDagent } from '../utils/node-helper'
-import { createImage, createProject, createVersion } from '../utils/projects'
-import { waitSocket, wsPatchSent } from '../utils/websocket'
+import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
+import { deployWithDagent } from '../../utils/node-helper'
+import { addImageToVersion, createImage, createProject, createVersion } from '../../utils/projects'
+import { waitSocket, wsPatchSent } from '../../utils/websocket'
 
 test('In progress deployment should be not deletable', async ({ page }) => {
   const projectName = 'project-delete-test-1'
@@ -41,7 +41,7 @@ test('In progress deployment should be not deletable', async ({ page }) => {
 
   const deploymentId = await deployWithDagent(page, 'versioned-deletability', projectId, versionId, true)
 
-  await page.goto(routes.deployment.details(deploymentId))
+  await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
   await expect(await page.getByText('In progress')).toHaveCount(1)
   await expect(await page.locator('button:has-text("Delete")')).toHaveCount(0)
@@ -56,7 +56,7 @@ test('Delete deployment should work', async ({ page }, testInfo) => {
 
   const deploymentId = await deployWithDagent(page, 'versioned-delete', projectId, versionId, false, testInfo.title)
 
-  await page.goto(routes.deployment.details(deploymentId))
+  await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
   await expect(await page.locator('button:has-text("Delete")')).toHaveCount(1)
 
@@ -65,5 +65,27 @@ test('Delete deployment should work', async ({ page }, testInfo) => {
   await page.waitForSelector('h4:has-text("Are you sure you want to delete Deployment?")')
 
   await page.locator('button:has-text("Delete")').nth(1).click()
-  await page.waitForURL(`${routes.project.details(projectId)}**`)
+  await page.waitForURL(`${TEAM_ROUTES.project.details(projectId)}**`)
+})
+
+test('Deleting a deployment should refresh deployment list', async ({ page }) => {
+  const projectName = 'project-delete-refresh-test'
+
+  const projId = await createProject(page, projectName, 'versioned')
+  const baseVersion = await createVersion(page, projId, '1.0.0', 'Incremental')
+  await addImageToVersion(page, projId, baseVersion, NGINX_TEST_IMAGE_WITH_TAG)
+  await deployWithDagent(page, projectName, projId, baseVersion)
+  await createVersion(page, projId, '1.0.1', 'Incremental')
+
+  const deleteRefreshDeployment = async () => {
+    await page.locator(`img[src="/trash-can.svg"]:right-of(div.p-2:has-text('pw-${projectName}'))`).first().click()
+    await page.locator('h4:has-text("Are you sure?")')
+    await page.locator('button:has-text("Delete")').click()
+  }
+
+  await page.goto(TEAM_ROUTES.deployment.list())
+  deleteRefreshDeployment()
+  await expect(page.locator(`div.p-2:has-text('pw-${projectName}')`)).toHaveCount(1)
+  deleteRefreshDeployment()
+  await expect(page.locator(`div.p-2:has-text('pw-${projectName}')`)).toHaveCount(0)
 })

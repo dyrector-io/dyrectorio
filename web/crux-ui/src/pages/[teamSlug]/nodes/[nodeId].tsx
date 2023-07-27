@@ -119,9 +119,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
         </>
       )}
 
-      {!state.confirmationModal ? null : (
-        <DyoConfirmationModal config={state.confirmationModal} confirmColor="bg-error-red" />
-      )}
+      {!state.confirmationModal ? null : <DyoConfirmationModal config={state.confirmationModal} />}
     </Layout>
   )
 }

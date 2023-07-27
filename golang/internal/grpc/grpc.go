@@ -16,6 +16,7 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/golang/internal/health"
 	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/version"
@@ -156,6 +157,12 @@ func Init(grpcContext context.Context,
 	}
 
 	ctx, cancel := context.WithCancel(grpcContext)
+
+	err := health.Serve(ctx)
+	if err != nil {
+		log.Warn().Err(err).Msg("Failed to start serving health")
+	}
+
 	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-node-token", connParams.token)
 
 	if grpcConn.Conn == nil {
@@ -275,22 +282,24 @@ func grpcLoop(
 				continue
 			} else {
 				log.Info().Msg("Stream connection is up")
+				health.SetHealthGRPCStatus(true)
 			}
 		}
 
 		command := new(agent.AgentCommand)
 		err = stream.RecvMsg(command)
-		if err == io.EOF {
-			log.Info().Msg("End of stream")
-			grpcConn.Client = nil
-			time.Sleep(appConfig.DefaultTimeout)
-			continue
-		}
 		if err != nil {
-			log.Error().Stack().Err(err).Msg("Cannot receive stream")
 			grpcConn.Client = nil
+			health.SetHealthGRPCStatus(false)
+
+			if err == io.EOF {
+				log.Info().Msg("End of stream")
+			} else {
+				log.Error().Stack().Err(err).Msg("Cannot receive stream")
+				// TODO replace the line above with an error status code check and terminate dagent accordingly
+			}
+
 			time.Sleep(appConfig.DefaultTimeout)
-			// TODO replace the line above with an error status code check and terminate dagent accordingly
 			continue
 		}
 

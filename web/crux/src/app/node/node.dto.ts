@@ -103,6 +103,9 @@ export class NodeDetailsDto extends NodeDto {
   @IsOptional()
   @ValidateNested()
   install?: NodeInstallDto
+
+  @IsBoolean()
+  inUse: boolean
 }
 
 export class CreateNodeDto {

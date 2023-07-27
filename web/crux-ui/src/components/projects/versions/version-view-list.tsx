@@ -42,17 +42,22 @@ const VersionViewList = (props: VersionViewListProps) => {
     clsx('pr-6 text-center', defaultItemClass),
   ]
 
-  const onDelete = (item: VersionImage) =>
-    confirmDelete(
-      () =>
-        state.versionSock.send(WS_TYPE_DELETE_IMAGE, {
-          imageId: item.id,
-        } as DeleteImageMessage),
-      {
-        title: t('common:areYouSureDeleteName', { name: item.config.name }),
-        description: t('common:proceedYouLoseAllDataToName', { name: item.config.name }),
-      },
-    )
+  const onDelete = async (item: VersionImage) => {
+    const confirmed = await confirmDelete({
+      title: t('common:areYouSureDeleteName', { name: item.config.name }),
+      description: t('common:proceedYouLoseAllDataToName', { name: item.config.name }),
+      confirmText: t('common:delete'),
+      confirmColor: 'bg-error-red',
+    })
+
+    if (!confirmed) {
+      return
+    }
+
+    state.versionSock.send(WS_TYPE_DELETE_IMAGE, {
+      imageId: item.id,
+    } as DeleteImageMessage)
+  }
 
   const onOpenTagsDialog = (it: VersionImage) => {
     setTagsModalTarget(it)
@@ -108,14 +113,7 @@ const VersionViewList = (props: VersionViewListProps) => {
         />
       </DyoCard>
 
-      <DyoConfirmationModal
-        config={deleteModal}
-        title={t('common:areYouSureDeleteName')}
-        description={t('common:proceedYouLoseAllDataToName')}
-        confirmText={t('common:delete')}
-        className="w-1/4"
-        confirmColor="bg-error-red"
-      />
+      <DyoConfirmationModal config={deleteModal} className="w-1/4" />
 
       {!tagsModalTarget ? null : (
         <DyoModal

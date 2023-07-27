@@ -1,4 +1,5 @@
 //go:build unit
+// +build unit
 
 package mapper_test
 
@@ -42,7 +43,7 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 		InstanceConfig: v1.InstanceConfig{
 			ContainerPreName:  "test-prefix",
 			MountPath:         "/path/to/mount",
-			Name:              "",
+			Name:              "test-prefix",
 			Environment:       map[string]string{"Evn1": "Val1", "Env2": "Val2"},
 			Registry:          "",
 			RepositoryPreName: "repo-prefix",

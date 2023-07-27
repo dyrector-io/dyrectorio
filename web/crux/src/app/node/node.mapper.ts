@@ -71,13 +71,14 @@ export default class NodeMapper {
     }
   }
 
-  detailsToDto(node: Node): NodeDetailsDto {
+  detailsToDto(node: Node, hasDeployment: boolean): NodeDetailsDto {
     const installer = this.agentService.getInstallerByNodeId(node.id)
 
     return {
       ...this.toDto(node),
       hasToken: !!node.token,
       install: installer ? this.installerToDto(installer) : null,
+      inUse: hasDeployment,
     }
   }
 

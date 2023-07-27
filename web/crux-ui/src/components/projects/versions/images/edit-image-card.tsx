@@ -34,6 +34,7 @@ const EditImageCard = (props: EditImageCardProps) => {
     imagesState,
     imagesActions,
     sock: versionSock,
+    t,
   })
 
   const editorState = useItemEditorState(editor, versionSock, image.id)
@@ -78,14 +79,7 @@ const EditImageCard = (props: EditImageCardProps) => {
         </div>
       </DyoCard>
 
-      <DyoConfirmationModal
-        config={state.deleteModal}
-        title={t('common:areYouSureDeleteName', { name: image.name })}
-        description={t('common:proceedYouLoseAllDataToName', { name: image.name })}
-        confirmText={t('common:delete')}
-        className="w-1/4"
-        confirmColor="bg-error-red"
-      />
+      <DyoConfirmationModal config={state.deleteModal} className="w-1/4" />
     </>
   )
 }

@@ -158,14 +158,24 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
     })
   })
 
-  const onDelete = () =>
-    confirmDelete(() => {
-      versionSock.send(WS_TYPE_DELETE_IMAGE, {
-        imageId: image.id,
-      } as DeleteImageMessage)
-
-      router.replace(routes.project.versions(project.id).details(version.id))
+  const onDelete = async () => {
+    const confirmed = await confirmDelete({
+      title: t('common:areYouSureDeleteName', { name: image.name }),
+      description: t('common:proceedYouLoseAllDataToName', { name: image.name }),
+      confirmText: t('common:delete'),
+      confirmColor: 'bg-error-red',
     })
+
+    if (!confirmed) {
+      return
+    }
+
+    versionSock.send(WS_TYPE_DELETE_IMAGE, {
+      imageId: image.id,
+    } as DeleteImageMessage)
+
+    await router.replace(routes.project.versions(project.id).details(version.id))
+  }
 
   const pageLink: BreadcrumbLink = {
     name: t('common:image'),
@@ -262,6 +272,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
             onChange={onChange}
             onResetSection={onResetSection}
             editorOptions={editorState}
+            fieldErrors={fieldErrors}
             configType="image"
           />
 
@@ -293,14 +304,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
         </DyoCard>
       )}
 
-      <DyoConfirmationModal
-        config={deleteModalConfig}
-        title={t('common:areYouSureDeleteName', { name: image.name })}
-        description={t('common:proceedYouLoseAllDataToName', { name: image.name })}
-        confirmText={t('common:delete')}
-        className="w-1/4"
-        confirmColor="bg-error-red"
-      />
+      <DyoConfirmationModal config={deleteModalConfig} className="w-1/4" />
     </Layout>
   )
 }

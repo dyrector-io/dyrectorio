@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { DAGENT_NODE, screenshotPath, TEAM_ROUTES } from '../utils/common'
+import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, screenshotPath } from '../utils/common'
 import { deployWithDagent } from '../utils/node-helper'
 import {
   addDeploymentToVersionlessProject,
@@ -11,12 +11,11 @@ import {
 
 const PREFIX = 'first'
 const PREFIX_TWO = 'second'
-const IMAGE = 'nginx'
 
 test('Deploy to node should be successful', async ({ page }, testInfo) => {
   const projectId = await createProject(page, 'deploy-test', 'versioned')
   const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
-  await createImage(page, projectId, versionId, IMAGE)
+  await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
   await deployWithDagent(page, PREFIX, projectId, versionId, false, testInfo.title)
 
@@ -31,7 +30,7 @@ test('Deploy to node should be successful', async ({ page }, testInfo) => {
 test('Second successful deployment should make the first deployment obsolete', async ({ page }, testInfo) => {
   const projectId = await createProject(page, 'obsolete', 'versioned')
   const versionId = await createVersion(page, projectId, '1.0.0', 'Incremental')
-  await createImage(page, projectId, versionId, IMAGE)
+  await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
   await deployWithDagent(page, PREFIX_TWO, projectId, versionId, false, `${testInfo.title}1`)
 

@@ -2,14 +2,18 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
+	"github.com/dyrector-io/dyrectorio/golang/internal/domain"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 )
 
 const TraefikTrue = "true"
+
+var ErrInsufficientRoutingRules = errors.New("no enough configuration was provided for the container to be routable")
 
 // generating container labels for traefik
 // if Expose is provided we bind 80 and the given (domainName or (containerName + prefix)) + RootDomain
@@ -17,10 +21,14 @@ func GetTraefikLabels(
 	instanceConfig *v1.InstanceConfig,
 	containerConfig *v1.ContainerConfig,
 	cfg *config.Configuration,
-) map[string]string {
+) (map[string]string, error) {
 	labels := map[string]string{}
 
-	rule := GetRule(instanceConfig, containerConfig, cfg)
+	rules := GetRules(containerConfig, instanceConfig, cfg)
+	if len(rules) == 0 {
+		return nil, ErrInsufficientRoutingRules
+	}
+	rule := util.JoinV(" && ", rules...)
 
 	serviceName := util.JoinV("-", instanceConfig.ContainerPreName, containerConfig.Container)
 	labels["traefik.enable"] = TraefikTrue
@@ -47,35 +55,33 @@ func GetTraefikLabels(
 		labels["traefik.http.middlewares.limit.buffering.maxRequestBodyBytes"] = containerConfig.IngressUploadLimit
 	}
 
-	return labels
+	return labels, nil
 }
 
 // serviceName container-name.container-pre-name.ingress.host is default
-func GetRule(instanceConfig *v1.InstanceConfig, containerConfig *v1.ContainerConfig, cfg *config.Configuration) string {
+func GetRules(containerConfig *v1.ContainerConfig, instanceConfig *v1.InstanceConfig, cfg *config.Configuration) []string {
+	prefix := instanceConfig.ContainerPreName
+
+	if containerConfig.ContainerPreName != "" {
+		prefix = instanceConfig.ContainerPreName
+	}
 	rules := []string{}
-	domain := []string{}
+	host := domain.GetHostRuleStrict(
+		&domain.HostRouting{
+			Subdomain:      containerConfig.IngressName,
+			RootDomain:     containerConfig.IngressHost,
+			ContainerName:  containerConfig.Container,
+			Prefix:         prefix,
+			DomainFallback: cfg.RootDomain,
+		})
 
-	// generate the name.prefix.domain from prefix and container name
-	if containerConfig.IngressName == "" && containerConfig.IngressHost == "" {
-		domain = append(domain, containerConfig.Container, instanceConfig.ContainerPreName)
-	} else if containerConfig.IngressName != "" {
-		domain = append(domain, containerConfig.IngressName)
-	}
-
-	// use ingressHost that might be localhost
-	if containerConfig.IngressHost != "" {
-		domain = append(domain, containerConfig.IngressHost)
-	} else if cfg.RootDomain != "" {
-		domain = append(domain, cfg.RootDomain)
-	}
-
-	if len(domain) != 0 {
-		rules = append(rules, fmt.Sprintf("Host(`%s`)", util.JoinV(".", domain...)))
+	if host != "" {
+		rules = append(rules, fmt.Sprintf("Host(`%s`)", host))
 	}
 
 	if containerConfig.IngressPath != "" {
 		rules = append(rules, fmt.Sprintf("PathPrefix(`%s`)", containerConfig.IngressPath))
 	}
 
-	return util.JoinV(" && ", rules...)
+	return rules
 }

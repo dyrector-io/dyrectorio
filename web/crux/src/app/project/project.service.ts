@@ -27,7 +27,7 @@ export default class ProjectService {
       },
     })
 
-    return projects.map(it => this.mapper.toDto(it))
+    return projects.map(it => this.mapper.toListItemDto(it))
   }
 
   async getProjectDetails(id: string): Promise<ProjectDetailsDto> {

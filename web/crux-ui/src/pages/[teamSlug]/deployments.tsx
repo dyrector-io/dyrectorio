@@ -56,7 +56,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   const [confirmModalConfig, confirm] = useConfirmation()
 
   const onDeleteDeployment = async (deployment: Deployment) => {
-    const confirmed = await confirm(null, {
+    const confirmed = await confirm({
       title: t('common:areYouSure'),
       description:
         deployment.status === 'successful'
@@ -66,6 +66,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
             })
           : null,
       confirmText: t('common:delete'),
+      confirmColor: 'bg-error-red',
     })
 
     if (!confirmed) {
@@ -233,7 +234,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
         </DyoModal>
       )}
 
-      <DyoConfirmationModal config={confirmModalConfig} confirmColor="bg-error-red" />
+      <DyoConfirmationModal config={confirmModalConfig} />
     </Layout>
   )
 }

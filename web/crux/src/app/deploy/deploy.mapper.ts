@@ -199,8 +199,8 @@ export default class DeployMapper {
     switch (it) {
       case 'deploymentStatus':
         return 'deployment-status'
-      case 'containerStatus':
-        return 'container-status'
+      case 'containerState':
+        return 'container-state'
       default:
         return it as DeploymentEventTypeDto
     }
@@ -221,8 +221,7 @@ export default class DeployMapper {
         result.deploymentStatus = this.statusToDto(event.value as DeploymentStatusEnum)
         break
       }
-      // TODO(@m8vago): rename to containerState
-      case DeploymentEventTypeEnum.containerStatus: {
+      case DeploymentEventTypeEnum.containerState: {
         const value = event.value as { instanceId: string; state: ContainerState }
         result.containerState = value
         break
@@ -256,7 +255,7 @@ export default class DeployMapper {
 
     if (message.instance) {
       events.push({
-        type: 'container-status',
+        type: 'container-state',
         createdAt: new Date(),
         containerState: {
           instanceId: message.instance.instanceId,

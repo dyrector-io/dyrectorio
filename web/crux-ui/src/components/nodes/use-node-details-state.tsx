@@ -173,10 +173,11 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
   }
 
   const onDeleteContainer = async (container: Container) => {
-    const confirmed = await confirm(null, {
+    const confirmed = await confirm({
       title: t('areYouSure'),
       description: t('areYouSureDeleteName', { name: containerPrefixNameOf(container.id) }),
       confirmText: t('delete'),
+      confirmColor: 'bg-error-red',
     })
 
     if (!confirmed) {

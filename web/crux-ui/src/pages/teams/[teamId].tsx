@@ -161,11 +161,19 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     })
   }
 
-  const onDeleteUser = (user: User) =>
-    confirmDelete(() => sendDeleteUserRequest(user), {
+  const onDeleteUser = async (user: User) => {
+    const confirmed = await confirmDelete({
       title: t('common:areYouSureDeleteName', { name: user.name }),
       confirmText: t('common:delete'),
+      confirmColor: 'bg-error-red',
     })
+
+    if (!confirmed) {
+      return
+    }
+
+    await sendDeleteUserRequest(user)
+  }
 
   const onUserRoleUpdated = (userId: string, role: UserRole) => {
     const index = team.users.findIndex(it => it.id === userId)
@@ -181,11 +189,18 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     })
   }
 
-  const onLeaveTeam = () =>
-    confirmDelete(() => sendLeaveUserRequest(), {
+  const onLeaveTeam = async () => {
+    const confirmed = await confirmDelete({
       title: t('leaveTeam'),
       description: t('areYouSureWantToLeave', { name: team.name }),
     })
+
+    if (!confirmed) {
+      return
+    }
+
+    await sendLeaveUserRequest()
+  }
 
   const selfLink: BreadcrumbLink = {
     name: t('common:teams'),
@@ -312,7 +327,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
           itemBuilder={itemTemplate}
         />
 
-        <DyoConfirmationModal config={deleteModalConfig} className="w-1/4" confirmColor="bg-error-red" />
+        <DyoConfirmationModal config={deleteModalConfig} className="w-1/4" />
       </DyoCard>
     </Layout>
   )

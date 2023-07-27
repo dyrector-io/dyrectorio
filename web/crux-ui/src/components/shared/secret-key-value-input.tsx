@@ -1,5 +1,5 @@
 import DyoButton from '@app/elements/dyo-button'
-import DyoIcon from '@app/elements/dyo-icon'
+import DyoImgButton from '@app/elements/dyo-img-button'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { UniqueSecretKeyValue } from '@app/models'
 import clsx from 'clsx'
@@ -245,7 +245,7 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
             </div>
           )}
           <div className="flex flex-row">
-            <div className="mr-2 flex flex-row basis-[16px] my-auto">
+            <div className="mr-2 flex flex-row basis-[32px] my-auto">
               {!isCompletelyEmpty(entry) && <SecretStatus className="mr-2" present={entry.present} />}
             </div>
             <MultiInput
@@ -275,19 +275,15 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
             editorOptions={editorOptions}
             onPatch={it => onChange(index, key, it)}
           />
-          {encrypted && disabled !== true && (
-            <div
+          <div className="ml-2 flex flex-row basis-[64px] my-auto">
+            <DyoImgButton
+              disabled={!encrypted || disabled}
+              className="basis-12 flex-initial cursor-pointer w-12 focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
+              src={required ? '/clear.svg' : '/trash-can.svg'}
+              alt={t(required ? 'clear' : 'common:delete')}
               onClick={() => onRemoveOrClear(index)}
-              className="basis-12 flex-initial cursor-pointer ml-2 w-12 ring-2 rounded-md focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
-            >
-              <DyoIcon
-                className="text-bright-muted self-center"
-                src={required ? '/clear.svg' : '/trash-can.svg'}
-                alt={t(required ? 'clear' : 'common:delete')}
-                size="md"
-              />
-            </div>
-          )}
+            />
+          </div>
         </div>
       </div>
     )
