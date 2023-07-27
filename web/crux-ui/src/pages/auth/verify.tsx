@@ -118,7 +118,7 @@ const VerifyPage = (props: VerifyProps) => {
   }
 
   const restartVerification = () => {
-    window.location.replace(verificationUrl(email, { restart: true }))
+    window.location.replace(verificationUrl({ email, restart: true }))
   }
 
   const emailAvailable = !!formik.values.email
