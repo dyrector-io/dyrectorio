@@ -96,13 +96,17 @@ func (p *PVC) ApplyVolume(client typedv1.PersistentVolumeClaimInterface,
 ) error {
 	fullVolumeName := util.JoinV("-", name, volume.Name)
 
+	var err error
 	var size resource.Quantity
 
 	if volume.Size == "" {
 		sizeFromEnv := resource.MustParse(p.appConfig.DefaultVolumeSize)
 		size = sizeFromEnv
 	} else {
-		size = resource.MustParse(volume.Size)
+		size, err = resource.ParseQuantity(volume.Size)
+		if err != nil {
+			return err
+		}
 	}
 
 	claimSpec := corev1.PersistentVolumeClaimSpec().
