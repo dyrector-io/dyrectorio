@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, screenshotPath } from '../utils/common'
+import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, screenshotPath, TEAM_ROUTES } from '../utils/common'
 import { deployWithDagent } from '../utils/node-helper'
 import {
   addDeploymentToVersionlessProject,

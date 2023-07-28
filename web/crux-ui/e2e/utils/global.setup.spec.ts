@@ -56,4 +56,6 @@ test('global setup', async ({ page }) => {
 
   logInfo('installing dagent')
   await installDagent(page)
+
+  logInfo('completed')
 })

@@ -26,7 +26,7 @@ test("New version should get the default version's images and deployments", asyn
   await createImage(page, projectId, parentVersion, 'nginx')
   await addDeploymentToVersion(page, projectId, parentVersion, DAGENT_NODE)
 
-  const childVersion = await createVersion(page, projectId, '2.0.0', 'Incremental')
+  const childVersionId = await createVersion(page, projectId, '2.0.0', 'Incremental')
 
   await page.goto(TEAM_ROUTES.project.details(projectId))
 
@@ -34,14 +34,14 @@ test("New version should get the default version's images and deployments", asyn
   await expect(page.locator('div.card:has(h5:has-text("1.0.0")) .bg-error-red:has-text("DEFAULT")')).toHaveCount(1)
   await expect(page.locator('div.card:has(h5:has-text("2.0.0")) .bg-error-red:has-text("DEFAULT")')).toHaveCount(0)
 
-  await page.goto(TEAM_ROUTES.project.versions(projectId, childVersion, { section: 'images' }))
+  await page.goto(TEAM_ROUTES.project.versions(projectId).details(childVersionId, { section: 'images' }))
 
   const imagesTableBody = await page.locator('.table-row-group')
   const imagesRows = await imagesTableBody.locator('.table-row')
 
   await expect(imagesRows).toHaveCount(1)
 
-  await page.goto(TEAM_ROUTES.project.versions(projectId, childVersion, { section: 'deployments' }))
+  await page.goto(TEAM_ROUTES.project.versions(projectId).details(childVersionId, { section: 'deployments' }))
 
   await expect(await page.locator(`h3:has-text("You haven't added a deployment to this version")`)).toHaveCount(0)
 })
@@ -63,8 +63,8 @@ test('Change default version should work', async ({ page }) => {
   await expect(page.locator(`.bg-error-red:has-text("DEFAULT"):left-of(h5:has-text("2.0.0"))`)).toHaveCount(0)
   await expect(page.locator(`.bg-error-red:has-text("DEFAULT"):right-of(h5:has-text("2.0.0"))`)).toHaveCount(1)
 
-  const versionThree = await createVersion(page, projectId, '3.0.0', 'Incremental')
-  await page.goto(TEAM_ROUTES.project.versions(projectId, versionThree, { section: 'images' }))
+  const versionThreeId = await createVersion(page, projectId, '3.0.0', 'Incremental')
+  await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionThreeId, { section: 'images' }))
 
   const imagesTableBody = await page.locator('.table-row-group')
   const imagesRows = await imagesTableBody.locator('.table-row')
