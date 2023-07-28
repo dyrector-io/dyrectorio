@@ -51,10 +51,17 @@ const ProjectsPage = (props: ProjectsPageProps) => {
   const [creating, setCreating] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
-  const [viewMode, setViewMode] = useState<ViewMode>((localStorage.getItem('viewMode') as ViewMode) || 'tile')
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('viewMode') as ViewMode) || 'tile'
+    }
+    return 'tile'
+  })
 
   useEffect(() => {
-    localStorage.setItem('viewMode', viewMode)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('viewMode', viewMode)
+    }
   }, [viewMode])
 
   const onCreated = async (project: Project) => {
