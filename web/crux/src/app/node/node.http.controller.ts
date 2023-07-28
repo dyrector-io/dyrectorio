@@ -158,11 +158,12 @@ export default class NodeHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for an install script.' })
   @UuidParams(PARAM_NODE_ID)
   async generateScript(
+    @TeamSlug() teamSlug: string,
     @NodeId(NodeGenerateScriptValidationPipe) nodeId: string,
     @Body() request: NodeGenerateScriptDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<NodeInstallDto> {
-    return await this.service.generateScript(nodeId, request, identity)
+    return await this.service.generateScript(teamSlug, nodeId, request, identity)
   }
 
   @Delete(`${ROUTE_NODE_ID}/script`)

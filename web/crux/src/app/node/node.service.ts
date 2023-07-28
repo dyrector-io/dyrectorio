@@ -139,7 +139,12 @@ export default class NodeService {
     })
   }
 
-  async generateScript(id: string, req: NodeGenerateScriptDto, identity: Identity): Promise<NodeInstallDto> {
+  async generateScript(
+    teamSlug: string,
+    id: string,
+    req: NodeGenerateScriptDto,
+    identity: Identity,
+  ): Promise<NodeInstallDto> {
     const nodeType = this.mapper.nodeTypeToDb(req.type)
 
     const node = await this.prisma.node.update({
@@ -156,6 +161,7 @@ export default class NodeService {
     })
 
     const installer = await this.agentService.install(
+      teamSlug,
       id,
       node.name,
       nodeType,

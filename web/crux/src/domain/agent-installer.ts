@@ -22,6 +22,7 @@ export default class AgentInstaller {
 
   constructor(
     readonly configService: ConfigService,
+    readonly teamSlug: string,
     readonly nodeId: string,
     readonly nodeName: string,
     readonly token: string,
@@ -49,7 +50,9 @@ export default class AgentInstaller {
   }
 
   getCommand(): string {
-    const scriptUrl = `${this.configService.get<string>('CRUX_UI_URL')}/api/nodes/${this.nodeId}/script`
+    const scriptUrl = `${this.configService.get<string>('CRUX_UI_URL')}/api/${this.teamSlug}/nodes/${
+      this.nodeId
+    }/script`
 
     switch (this.scriptType) {
       case 'shell':
