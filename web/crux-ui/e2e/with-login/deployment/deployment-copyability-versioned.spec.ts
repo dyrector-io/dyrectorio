@@ -91,7 +91,7 @@ test.describe('Versioned Project', () => {
     await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
     await addDeploymentToVersion(page, projectId, versionId, nodeName, prefix)
 
-    await page.goto(ROUTE_DEPLOYMENTS)
+    await page.goto(TEAM_ROUTES.deployment.list())
 
     const copyButton = await page.locator(`[alt="Copy"]:right-of(div:has-text("${projectName}"))`).first()
     await copyButton.click()
