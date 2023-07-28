@@ -1,27 +1,28 @@
-import { ROUTE_DASHBOARD, ROUTE_PROFILE } from '@app/routes'
+import { ROUTE_PROFILE } from '@app/routes'
 import { expect, test } from '@playwright/test'
+import { TEAM_ROUTES } from 'e2e/utils/common'
 
 test.describe('Onboarding', () => {
   test('should be toggleable', async ({ page }) => {
-    await page.goto(ROUTE_DASHBOARD)
-    await page.waitForURL(ROUTE_DASHBOARD)
+    await page.goto(TEAM_ROUTES.dashboard.index())
+    await page.waitForURL(TEAM_ROUTES.dashboard.index())
     await expect(page.locator('label:has-text("Onboarding")')).toBeVisible()
 
     await page.goto(ROUTE_PROFILE)
     await page.getByRole('switch', { name: 'Onboarding tips' }).click()
 
-    await page.goto(ROUTE_DASHBOARD)
+    await page.goto(TEAM_ROUTES.dashboard.index())
     await expect(page.locator('label:has-text("Onboarding")')).not.toBeVisible()
 
     await page.goto(ROUTE_PROFILE)
     await page.getByRole('switch', { name: 'Onboarding tips' }).click()
 
-    await page.goto(ROUTE_DASHBOARD)
+    await page.goto(TEAM_ROUTES.dashboard.index())
     await expect(page.locator('label:has-text("Onboarding")')).toBeVisible()
   })
 
   test('should close after pressing hide', async ({ page }) => {
-    await page.goto(ROUTE_DASHBOARD)
+    await page.goto(TEAM_ROUTES.dashboard.index())
 
     const dashTitle = await page.locator('label:has-text("Onboarding")')
     await expect(dashTitle).toBeVisible()
