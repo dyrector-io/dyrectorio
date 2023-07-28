@@ -120,18 +120,15 @@ test.describe('Image common config from editor', () => {
 
     await page.locator('button:has-text("Ports")').click()
 
-    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE)
     const addPortsButton = await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
     await addPortsButton.click()
-    await wsSent
-
     const internal = '1000'
     const external = '2000'
 
     const internalInput = page.locator('input[placeholder="Internal"]')
     const externalInput = page.locator('input[placeholder="External"]')
 
-    wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchPorts(internal, external))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchPorts(internal, external))
     await internalInput.fill(internal)
     await externalInput.fill(external)
     await wsSent
@@ -152,9 +149,7 @@ test.describe('Image common config from editor', () => {
 
     await page.locator('button:has-text("Port ranges")').click()
 
-    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE)
     await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Port ranges"))`).first().click()
-    await wsSent
 
     const internalFrom = '1000'
     const internalTo = '2000'
@@ -166,7 +161,7 @@ test.describe('Image common config from editor', () => {
     const externalInputFrom = await page.locator('input[placeholder="From"]').nth(1)
     const externalInputTo = await page.locator('input[placeholder="To"]').nth(1)
 
-    wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchPortRange(internalFrom, externalFrom, internalTo, externalTo))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchPortRange(internalFrom, externalFrom, internalTo, externalTo))
     await internalInputFrom.fill(internalFrom)
     await internalInputTo.fill(internalTo)
     await externalInputFrom.fill(externalFrom)

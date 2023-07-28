@@ -13,15 +13,13 @@ export const addPortsToContainerConfig = async (
 ) => {
   await page.locator('button:has-text("Ports")').click()
 
-  let wsSent = wsPatchSent(ws, wsRoute, sentWsType)
   const addPortsButton = page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
   await addPortsButton.click()
-  await wsSent
 
   const internalInput = page.locator('input[placeholder="Internal"]')
   const externalInput = page.locator('input[placeholder="External"]')
 
-  wsSent = wsPatchSent(ws, wsRoute, sentWsType, wsPatchMatchPorts(internal,external))
+  let wsSent = wsPatchSent(ws, wsRoute, sentWsType, wsPatchMatchPorts(internal, external))
   await internalInput.fill(internal)
   await externalInput.fill(external)
   await wsSent
