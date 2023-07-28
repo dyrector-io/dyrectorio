@@ -71,7 +71,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     setNode(newNode)
   }
 
-  const [containerTargetStates, setContainertargetStates] = useState<ContainerTargetStates>({})
+  const [containerTargetStates, setContainerTargetStates] = useState<ContainerTargetStates>({})
   const [containerPagination, setContainerPagination] = useState<PaginationSettings>({
     pageNumber: 0,
     pageSize: 10,
@@ -134,7 +134,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     })
 
     if (Object.keys(newTargetStates).length !== Object.keys(containerTargetStates).length) {
-      setContainertargetStates(newTargetStates)
+      setContainerTargetStates(newTargetStates)
     }
   })
 
@@ -154,7 +154,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
 
     const name = containerPrefixNameOf(container.id)
     newTargetStates[name] = state
-    setContainertargetStates(newTargetStates)
+    setContainerTargetStates(newTargetStates)
   }
 
   const onStartContainer = (container: Container) => {

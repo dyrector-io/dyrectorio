@@ -43,7 +43,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     })),
   )
 
-  const sock = useWebSocket(routes.deployment.detailsSocket(deployment.node.id), {
+  const sock = useWebSocket(routes.node.detailsSocket(deployment.node.id), {
     onOpen: () =>
       sock.send(WS_TYPE_WATCH_CONTAINERS_STATE, {
         prefix: deployment.prefix,

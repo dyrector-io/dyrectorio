@@ -6,7 +6,7 @@ import { useRouter } from 'next/dist/client/router'
 import React, { useEffect, useRef } from 'react'
 import AddDeploymentCard from './deployments/add-deployment-card'
 import CopyDeploymentCard from './deployments/copy-deployment-card'
-import SelectImagesCard from './images/select-images-card'
+import AddImagesCard from './images/add-images-card'
 import { VerionState, VersionActions, VersionSection } from './use-version-state'
 import VersionDeploymentsSection from './version-deployments-section'
 import VersionImagesSection from './version-images-section'
@@ -57,7 +57,7 @@ const VersionSections = (props: VersionSectionsProps) => {
           saveImageOrderRef={saveImageOrderRef}
         />
       ) : state.addSection === 'image' ? (
-        <SelectImagesCard onImagesSelected={actions.addImages} onDiscard={actions.discardAddSection} />
+        <AddImagesCard onImagesSelected={actions.addImages} onDiscard={actions.discardAddSection} />
       ) : state.addSection === 'deployment' ? (
         <AddDeploymentCard
           className="mb-4 p-8"

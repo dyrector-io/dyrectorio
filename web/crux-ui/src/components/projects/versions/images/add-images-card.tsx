@@ -28,13 +28,13 @@ import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 
-interface SelectImagesCardProps {
+interface AddImagesCardProps {
   className?: string
   onImagesSelected: (images: RegistryImages[]) => void
   onDiscard: VoidFunction
 }
 
-const SelectImagesCard = (props: SelectImagesCardProps) => {
+const AddImagesCard = (props: AddImagesCardProps) => {
   const { className, onDiscard, onImagesSelected } = props
 
   const { t } = useTranslation('images')
@@ -248,7 +248,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
   )
 }
 
-export default SelectImagesCard
+export default AddImagesCard
 
 type SelectableImage = {
   registryId: string
