@@ -41,7 +41,7 @@ const ROUTE_TEMPLATES = 'templates'
 const ROUTE_TEMPLATE_ID = ':templateId'
 
 const teamSlugFromCreateDto: AuditLogTeamSlugProvider = (context: ExecutionContext) => {
-  const dto = context.switchToHttp().getRequest() as CreateProjectFromTemplateDto
+  const dto = context.switchToHttp().getRequest().body as CreateProjectFromTemplateDto
   return dto?.teamSlug ?? null
 }
 
