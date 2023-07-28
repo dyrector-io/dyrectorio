@@ -9,6 +9,7 @@ import {
   wsPatchMatchRestartPolicy,
 } from 'e2e/utils/websocket-match'
 import { createImage, createProject, createVersion } from '../../utils/projects'
+import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 
 const setup = async (
   page: Page,
@@ -40,7 +41,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.networkMode = mode
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchNetworkMode(mode))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchNetworkMode(mode))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -68,7 +69,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.dockerLabels = { [key]: value }
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchDockerLabel(key, value))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchDockerLabel(key, value))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -96,7 +97,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.restartPolicy = 'always'
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchRestartPolicy('always'))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchRestartPolicy('always'))
     jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -125,7 +126,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.logConfig = { driver: type, options: { [key]: value } }
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchLogConfig(type, key, value))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchLogConfig(type, key, value))
     jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -155,7 +156,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.networks = [network]
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchNetwork(network))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchNetwork(network))
     jsonEditor.fill(JSON.stringify(json))
     await wsSent
 

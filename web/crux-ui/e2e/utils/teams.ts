@@ -14,7 +14,6 @@ export const createTeam = async (page: Page, name: string) => {
 export const deleteTeam = async (page: Page, teamId: string) => {
   await page.goto(teamUrl(teamId))
   await page.locator('button:has-text("Delete")').click()
-  const overlay = await page.locator('div[data-headlessui-state="open"]')
-  await overlay.locator('button:has-text("Delete")').click()
+  await page.locator('div[role=dialog] button:has-text("Delete")').click()
   await page.waitForURL(ROUTE_TEAMS)
 }

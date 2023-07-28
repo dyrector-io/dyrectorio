@@ -17,6 +17,7 @@ import {
 } from 'e2e/utils/websocket-match'
 import { createImage, createProject, createVersion } from '../../utils/projects'
 import { waitSocket, wsPatchSent } from '../../utils/websocket'
+import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 
 const setup = async (
   page: Page,
@@ -49,7 +50,7 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.deploymentStrategy = strategy
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchDeploymentStrategy(strategy))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentStrategy(strategy))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -75,7 +76,7 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.customHeaders = [header]
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchCustomHeader(header))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchCustomHeader(header))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -102,7 +103,7 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.proxyHeaders = true
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchProxyHeader(true))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchProxyHeader(true))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -129,11 +130,11 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.useLoadBalancer = true
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchLoadBalancer(true))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchLoadBalancer(true))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
     json.extraLBAnnotations = { [key]: value }
-    wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchLBAnnotations(key, value))
+    wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchLBAnnotations(key, value))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -170,7 +171,7 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.healthCheckConfig = { port: port, livenessProbe: liveness, readinessProbe: readiness, startupProbe: startup }
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchHealthCheck(port, liveness, readiness, startup))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchHealthCheck(port, liveness, readiness, startup))
     jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -208,7 +209,7 @@ test.describe('Image kubernetes config from JSON', () => {
 
     let wsSent = wsPatchSent(
       ws,
-      wsRoute,
+      wsRoute,WS_TYPE_PATCH_IMAGE,
       wsPatchMatchResourceConfig(cpuLimits, cpuRequests, memoryLimits, memoryRequests),
     )
     await jsonEditor.fill(JSON.stringify(json))
@@ -240,15 +241,15 @@ test.describe('Image kubernetes config from JSON', () => {
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchDeploymentLabel(key, value))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentLabel(key, value))
     json.labels = { deployment: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchServiceLabel(key, value))
+    wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchServiceLabel(key, value))
     json.labels = { deployment: { [key]: value }, service: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchIngressLabel(key, value))
+    wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchIngressLabel(key, value))
     json.labels = { deployment: { [key]: value }, service: { [key]: value }, ingress: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
@@ -283,15 +284,15 @@ test.describe('Image kubernetes config from JSON', () => {
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchDeploymentAnnotations(key, value))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentAnnotations(key, value))
     json.annotations = { deployment: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchServiceAnnotations(key, value))
+    wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchServiceAnnotations(key, value))
     json.annotations = { deployment: { [key]: value }, service: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchIngressAnnotations(key, value))
+    wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchIngressAnnotations(key, value))
     json.annotations = { deployment: { [key]: value }, service: { [key]: value }, ingress: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent

@@ -1,5 +1,5 @@
 import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_INSTANCE } from '@app/models'
-import { deploymentUrl, deploymentWsUrl, imageConfigUrl, projectUrl, versionUrl, versionWsUrl } from '@app/routes'
+import { ROUTE_DEPLOYMENTS, deploymentUrl, deploymentWsUrl, imageConfigUrl, projectUrl, versionUrl, versionWsUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG } from 'e2e/utils/common'
 import { addPortsToContainerConfig } from 'e2e/utils/container-config'
@@ -282,6 +282,8 @@ test.describe("Deleting copied deployment's parent", () => {
     await addImageToVersion(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
     const { id: parentDeploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, prefix)
 
+    const sock = waitSocket(page)
+
     await page.goto(deploymentUrl(parentDeploymentId))
 
     const instancesTableBody = await page.locator('.table-row-group')
@@ -292,9 +294,8 @@ test.describe("Deleting copied deployment's parent", () => {
 
     const settingsButton = await page.waitForSelector(`[src="/settings.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
+    await page.waitForURL(`${ROUTE_DEPLOYMENTS}/**/instances/**`)
 
-    const sock = waitSocket(page)
-    await page.waitForSelector(`h2:has-text("Container")`)
     const ws = await sock
     const wsRoute = deploymentWsUrl(parentDeploymentId)
 

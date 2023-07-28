@@ -20,6 +20,7 @@ import {
 } from 'e2e/utils/websocket-match'
 import { createImage, createProject, createVersion } from '../../utils/projects'
 import { waitSocket, wsPatchSent } from '../../utils/websocket'
+import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 
 const setup = async (
   page: Page,
@@ -52,7 +53,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.name = name
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchContainerName(name))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchContainerName(name))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -76,7 +77,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.expose = 'exposeWithTls'
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchExpose('exposeWithTls'))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchExpose('exposeWithTls'))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -102,7 +103,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.user = user
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchUser(user))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchUser(user))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -126,7 +127,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.tty = true
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchTTY(true))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchTTY(true))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -155,7 +156,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.ports = [{ internal: internalAsNumber, external: externalAsNumber }]
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchPorts(internal, external))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchPorts(internal, external))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -197,7 +198,7 @@ test.describe('Image common config from JSON', () => {
       },
     ]
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchPortRange(internalFrom, externalFrom, internalTo, externalTo))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchPortRange(internalFrom, externalFrom, internalTo, externalTo))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -232,7 +233,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.secrets = [{ key: secret, required: true }]
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchSecret(secret, true))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchSecret(secret, true))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -259,7 +260,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.commands = [command]
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchCommand(command))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchCommand(command))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -285,7 +286,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.args = [argument]
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchArgument(argument))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchArgument(argument))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -313,7 +314,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.routing = { domain: domain, path: path, uploadLimit: uploadLimit, stripPath: stripPath }
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchRouting(domain, path, uploadLimit, stripPath))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchRouting(domain, path, uploadLimit, stripPath))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -342,7 +343,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.environment = { [key]: value }
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchEnvironment(key, value))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchEnvironment(key, value))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -370,7 +371,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.configContainer = { image: img, volume: volume, path: path, keepFiles: true }
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchConfigContainer(img, volume, path, true))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchConfigContainer(img, volume, path, true))
     jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -418,7 +419,7 @@ test.describe('Image common config from JSON', () => {
 
     let wsSent = wsPatchSent(
       ws,
-      wsRoute,
+      wsRoute, WS_TYPE_PATCH_IMAGE,
       wsPatchMatchInitContainer(name, image, volName, volPath, arg, cmd, envKey, envVal),
     )
     jsonEditor.fill(JSON.stringify(json))
@@ -456,7 +457,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.volumes = [{ name: name, path: path, type: 'rwo', class: volumeClass, size: size }]
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchVolume(name, size, path, volumeClass))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchVolume(name, size, path, volumeClass))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -493,7 +494,7 @@ test.describe('Image common config from JSON', () => {
     json.volumes = [{ name: volumeName, path: path, type: 'rwo', class: volumeClass, size: size }]
     json.storage = { storageId: storageId, bucket: bucketPath, path: volumeName }
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchStorage(storageId, bucketPath, volumeName))
+    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchStorage(storageId, bucketPath, volumeName))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
