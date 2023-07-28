@@ -17,7 +17,7 @@ import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 type ProjectFilter = TextFilter & {
   type?: ProjectType | 'all'
@@ -51,7 +51,11 @@ const ProjectsPage = (props: ProjectsPageProps) => {
   const [creating, setCreating] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
-  const [viewMode, setViewMode] = useState<ViewMode>('tile')
+  const [viewMode, setViewMode] = useState<ViewMode>((localStorage.getItem('viewMode') as ViewMode) || 'tile')
+
+  useEffect(() => {
+    localStorage.setItem('viewMode', viewMode)
+  }, [viewMode])
 
   const onCreated = async (project: Project) => {
     setCreating(false)
