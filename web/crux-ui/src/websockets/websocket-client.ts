@@ -290,7 +290,7 @@ class WebSocketClient {
       }
 
       this.clearSocket()
-      this.socket = new WebSocket(WebSocketClient.assembleWsUrl())
+      this.socket = new WebSocket(this.assembleWsUrl())
 
       const ws = this.socket
       ws.addEventListener('open', onOpen)
@@ -307,11 +307,16 @@ class WebSocketClient {
     })
   }
 
-  private static assembleWsUrl() {
+  private assembleWsUrl() {
     const { location } = window
-    // TODO create some warning when we are in production build but the connection is insecure
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-    return `${protocol}//${location.host}/api`
+    const url = `${protocol}//${location.host}/api`
+
+    if (process.env.NODE_ENV === 'production' && protocol === 'ws:') {
+      this.logger.warn('Insecure WebSocket connection in production environment!')
+    }
+
+    return url
   }
 }
 
