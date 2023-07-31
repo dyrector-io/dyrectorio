@@ -68,6 +68,7 @@ export default class TeamService {
           select: {
             id: true,
             name: true,
+            slug: true,
           },
         },
       },
@@ -117,6 +118,7 @@ export default class TeamService {
       },
       data: {
         name: request.name,
+        slug: request.slug,
         updatedBy: identity.id,
       },
     })

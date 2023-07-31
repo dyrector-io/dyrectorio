@@ -36,6 +36,7 @@ import TeamGuard, { TeamRoleRequired } from './guards/team.guard'
 import TeamInviteUserValitationInterceptor from './interceptors/team.invite.interceptor'
 import TeamReinviteUserValidationInterceptor from './interceptors/team.reinvite.interceptor'
 import TeamOwnerImmutabilityValidationInterceptor from './interceptors/team.team-owner-immutability.interceptor'
+import TeamSlugValidationPipe from './pipes/team.slug-validation.pipe'
 import { CreateTeamDto, InviteUserDto, TeamDetailsDto, TeamDto, UpdateTeamDto, UpdateUserRoleDto } from './team.dto'
 import TeamService from './team.service'
 import { UserDto } from './user.dto'
@@ -107,7 +108,7 @@ export default class TeamHttpController {
   @ApiConflictResponse({ description: 'Team name taken.' })
   @TeamRoleRequired('none')
   async createTeam(
-    @Body() request: CreateTeamDto,
+    @Body(TeamSlugValidationPipe) request: CreateTeamDto,
     @IdentityFromRequest() identity: Identity,
     @Context() context: ExecutionContext,
   ): Promise<CreatedResponse<TeamDto>> {
@@ -135,7 +136,7 @@ export default class TeamHttpController {
   @UuidParams(PARAM_TEAM_ID)
   async updateTeam(
     @TeamId() teamId: string,
-    @Body() request: UpdateTeamDto,
+    @Body(TeamSlugValidationPipe) request: UpdateTeamDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<void> {
     await this.service.updateTeam(teamId, request, identity)

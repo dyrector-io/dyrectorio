@@ -2,9 +2,11 @@ import { DyoCard } from '@app/elements/dyo-card'
 import { DyoList } from '@app/elements/dyo-list'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { UserMeta, UserMetaTeam } from '@app/models'
+import { selectTeamUrl } from '@app/routes'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
+import { useRouter } from 'next/router'
 
 interface TeamSelectionCardProps {
   className?: string
@@ -17,9 +19,10 @@ const TeamSelectionCard = (props: TeamSelectionCardProps) => {
 
   const { t } = useTranslation('common')
   const routes = useTeamRoutes()
+  const router = useRouter()
 
   const onSelectTeam = async (team: UserMetaTeam) => {
-    window.location.replace(`/${team.slug}`)
+    router.push(selectTeamUrl(team.slug))
     onTeamSelected?.call(null)
   }
 

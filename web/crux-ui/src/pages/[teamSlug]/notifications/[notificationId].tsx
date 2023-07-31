@@ -38,7 +38,7 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
   const throttle = useThrottling(WEBOOK_TEST_DELAY)
 
   const onDelete = async () => {
-    const res = await fetch(routes.notification.details(notification.id), {
+    const res = await fetch(routes.notification.api.details(notification.id), {
       method: 'DELETE',
     })
 

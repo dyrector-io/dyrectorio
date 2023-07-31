@@ -308,11 +308,12 @@ export default class DeployHttpController {
   @UuidParams(PARAM_DEPLOYMENT_ID)
   @UseInterceptors(DeployCreateDeployTokenValidationInterceptor)
   async createDeploymentToken(
+    @TeamSlug() teamSlug: string,
     @DeploymentId() deploymentId: string,
     @Body() request: CreateDeploymentTokenDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreatedResponse<DeploymentTokenCreatedDto>> {
-    const token = await this.service.createDeploymentToken(deploymentId, request, identity)
+    const token = await this.service.createDeploymentToken(teamSlug, deploymentId, request, identity)
 
     return {
       url: `${DeployHttpController.locationOf(deploymentId)}/${ROUTE_TOKEN}`,

@@ -21,7 +21,7 @@ const TeamId = () => Param(PARAM_TEAM_ID)
 
 const ROUTE_USERS_ME = 'users/me'
 const ROUTE_INVITATIONS = 'invitations'
-const ROUTE_TEAM_SLUG = ':teamSlug'
+const ROUTE_TEAM_ID = ':teamId'
 const ROUTE_PREFERENCES = 'preferences'
 const ROUTE_ONBOARDING = 'onboarding'
 
@@ -45,11 +45,11 @@ export default class UserHttpController {
     return await this.service.getUserMeta(identity)
   }
 
-  @Post(`${ROUTE_INVITATIONS}/${ROUTE_TEAM_SLUG}`)
+  @Post(`${ROUTE_INVITATIONS}/${ROUTE_TEAM_ID}`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @AuditLogLevel('disabled')
   @ApiOperation({
-    description: 'Request must include `teamSlug`.',
+    description: 'Request must include `teamId`.',
     summary: 'Accept invitation to a team.',
   })
   @ApiNoContentResponse({ description: 'Invitation accepted.' })
@@ -60,11 +60,11 @@ export default class UserHttpController {
     await this.service.acceptTeamInvitation(teamId, identity)
   }
 
-  @Delete(`${ROUTE_INVITATIONS}/${ROUTE_TEAM_SLUG}`)
+  @Delete(`${ROUTE_INVITATIONS}/${ROUTE_TEAM_ID}`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @AuditLogLevel('disabled')
   @ApiOperation({
-    description: 'Request must include `teamSlug`.',
+    description: 'Request must include `teamId`.',
     summary: 'Decline invitation to a team.',
   })
   @ApiNoContentResponse({ description: 'Invitation declined.' })

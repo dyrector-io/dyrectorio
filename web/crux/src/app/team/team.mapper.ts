@@ -14,10 +14,11 @@ export default class TeamMapper {
     }
   }
 
-  toBasicDto(it: TeamWithIdAndName): BasicTeamDto {
+  toBasicDto(it: TeamWithBasicData): BasicTeamDto {
     return {
       id: it.id,
       name: it.name,
+      slug: it.slug,
     }
   }
 
@@ -144,13 +145,13 @@ type TeamDetails = TeamWithUsers &
     invitations: UserInvitation[]
   }
 
-type TeamWithIdAndName = Pick<Team, 'id' | 'name'>
+type TeamWithBasicData = Pick<Team, 'id' | 'name' | 'slug'>
 
 type MetaTeam = UsersOnTeams & {
-  team: Pick<Team, 'id' | 'name' | 'slug'>
+  team: TeamWithBasicData
   role: UserRoleEnum
 }
 
 type MetaInvitation = {
-  team: TeamWithIdAndName
+  team: TeamWithBasicData
 }

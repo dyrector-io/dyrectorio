@@ -43,8 +43,8 @@ export type PaginationQuery = {
 }
 
 // https://gist.github.com/codeguy/6684588?permalink_comment_id=3426313#gistcomment-3426313
-export const slugify = (name: string, separator: string) =>
-  name
+export const slugify = (value: string, separator: string) =>
+  value
     .toString()
     .normalize('NFD') // split an accented letter in the base letter and the acent
     .replace(/[\u0300-\u036f]/g, '') // remove all previously split accents

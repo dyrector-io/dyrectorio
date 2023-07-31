@@ -1,6 +1,6 @@
 import { COOKIE_TEAM_SLUG } from '@app/const'
 import { UserMeta } from '@app/models'
-import { API_USERS_ME, ROUTE_TEAMS_CREATE, teamInvitationUrl } from '@app/routes'
+import { API_USERS_ME, ROUTE_TEAMS_CREATE, selectTeamUrl, teamInvitationUrl } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { getCookie } from '@server/cookie'
 import { postCruxFromContext } from '@server/crux-api'
@@ -25,7 +25,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     teamSlug = firstTeam.slug
   }
 
-  return redirectTo(`/${teamSlug}`)
+  return redirectTo(selectTeamUrl(teamSlug))
 }
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

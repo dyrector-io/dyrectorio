@@ -14,6 +14,7 @@ import { DyoList } from '@app/elements/dyo-list'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import useTimer from '@app/hooks/use-timer'
 import {
   roleToText,
@@ -28,7 +29,9 @@ import {
 import { appendTeamSlug } from '@app/providers/team-routes'
 import {
   API_USERS_ME,
+  ROUTE_INDEX,
   ROUTE_TEAMS,
+  selectTeamUrl,
   teamApiUrl,
   teamUrl,
   teamUserApiUrl,
@@ -59,6 +62,8 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const { me, team: propsTeam, recaptchaSiteKey } = props
 
   const { t } = useTranslation('teams')
+  const routes = useTeamRoutes()
+
   const router = useRouter()
 
   const { mutate } = useSWRConfig()
@@ -69,6 +74,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const [detailsState, setDetailsState] = useState<TeamDetailsState>('none')
   const [deleteModalConfig, confirmDelete] = useConfirmation()
 
+  const activeTeam = team.slug === routes.teamSlug
   const actor = team.users.find(it => it.id === me.id)
   const canEdit = userIsAdmin(actor)
   const canDelete = userIsOwner(actor)
@@ -97,19 +103,31 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
       method: 'DELETE',
     })
 
-    if (res.ok) {
-      await router.push(ROUTE_TEAMS)
-    } else {
+    if (!res.ok) {
       handleApiError(res)
+      return
     }
+
+    if (!activeTeam) {
+      return
+    }
+
+    await router.replace(ROUTE_INDEX)
   }
 
   const onTeamEdited = (newTeam: Team) => {
     setDetailsState('none')
+
+    if (activeTeam) {
+      router.replace(selectTeamUrl(newTeam.slug))
+      return
+    }
+
     setTeam({
       ...team,
       ...newTeam,
     })
+
     mutate(API_USERS_ME)
   }
 
@@ -118,11 +136,17 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
       method: 'DELETE',
     })
 
-    if (res.ok) {
-      router.replace(ROUTE_TEAMS)
-    } else {
+    if (!res.ok) {
       handleApiError(res)
+      return
     }
+
+    if (!activeTeam) {
+      await router.replace(ROUTE_TEAMS)
+      return
+    }
+
+    await router.replace(ROUTE_INDEX)
   }
 
   const onInviteUser = () => setDetailsState('inviting')

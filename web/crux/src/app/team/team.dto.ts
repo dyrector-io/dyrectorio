@@ -8,6 +8,9 @@ export class BasicTeamDto {
 
   @IsString()
   name: string
+
+  @IsString()
+  slug: string
 }
 
 export class CreateTeamDto {

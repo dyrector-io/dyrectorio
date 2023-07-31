@@ -4,9 +4,11 @@ import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
+import useConfirmation from '@app/hooks/use-confirmation'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { CreateTeam, DEFAULT_TEAM_STATISTICS, Team, UpdateTeam } from '@app/models'
+import { CreateTeam, DEFAULT_TEAM_STATISTICS, Team, teamSlugFromName, UpdateTeam } from '@app/models'
 import { API_TEAMS, teamApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createTeamSchema, updateTeamSchema } from '@app/validations'
@@ -24,6 +26,8 @@ const EditTeamCard = (props: EditTeamCardProps) => {
   const { className, team: propsTeam, onTeamEdited, submitRef } = props
 
   const { t } = useTranslation('teams')
+
+  const [confirmationConfig, confirm] = useConfirmation()
 
   const [team, setTeam] = useState<Team>(
     propsTeam ?? {
@@ -45,11 +49,22 @@ const EditTeamCard = (props: EditTeamCardProps) => {
     },
     validationSchema: !editing ? createTeamSchema : updateTeamSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
       const body: CreateTeam | UpdateTeam = {
         ...values,
       }
+
+      if (editing && propsTeam.slug !== body.slug) {
+        const confirmed = await confirm({
+          title: t('areYouSureChangeSlug', propsTeam),
+          description: t('changingSlugHaveToAdjust'),
+        })
+
+        if (!confirmed) {
+          return
+        }
+      }
+
+      setSubmitting(true)
 
       const res = await (!editing
         ? sendForm('POST', API_TEAMS, body as CreateTeam)
@@ -64,6 +79,7 @@ const EditTeamCard = (props: EditTeamCardProps) => {
           result = {
             ...team,
             name: values.name,
+            slug: values.slug,
           } as Team
         }
 
@@ -97,7 +113,12 @@ const EditTeamCard = (props: EditTeamCardProps) => {
           type="text"
           required
           label={t('common:name')}
-          onChange={formik.handleChange}
+          onChange={e => {
+            const { value } = e.target
+
+            formik.setFieldValue('slug', teamSlugFromName(value), false)
+            formik.handleChange(e)
+          }}
           value={formik.values.name}
           message={formik.errors.name}
         />
@@ -116,6 +137,8 @@ const EditTeamCard = (props: EditTeamCardProps) => {
 
         <DyoButton className="hidden" type="submit" />
       </DyoForm>
+
+      <DyoConfirmationModal config={confirmationConfig} />
     </DyoCard>
   )
 }

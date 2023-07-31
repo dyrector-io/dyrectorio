@@ -815,6 +815,7 @@ export default class DeployService {
   }
 
   async createDeploymentToken(
+    teamSlug: string,
     deploymentId: string,
     req: CreateDeploymentTokenDto,
     identity: Identity,
@@ -850,6 +851,7 @@ export default class DeployService {
     const curl = tokenGenerator
       .getCurlCommand({
         deploymentId,
+        teamSlug,
         token: jwt,
       })
       .trim()
