@@ -55,6 +55,7 @@ test('Can edit team', async ({ page }) => {
   await page.locator('input[id="name"]').fill(`${teamName}-new`)
   await page.locator('input[id="slug"]').fill(`${slug}-new`)
   await page.locator('button:has-text("Save")').click()
+  await page.locator('button:has-text("Confirm")').click()
   await expect(page.locator(`label:has-text("${teamName}-new")`)).toBeVisible()
 })
 
