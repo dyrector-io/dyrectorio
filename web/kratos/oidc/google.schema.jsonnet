@@ -7,8 +7,8 @@ local claims = {
         traits: {
             [if 'email' in claims && claims.email_verified then 'email' else null]: claims.email,
             name: {
-                first: claims.given_name,
-                last: claims.family_name,
+                first: if 'given_name' in claims then claims.given_name else null,
+                last: if 'family_name' in claims then claims.family_name else null,
             },
         },
     },

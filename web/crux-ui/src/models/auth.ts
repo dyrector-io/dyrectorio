@@ -67,6 +67,9 @@ export type RegisterWithPassword = RegisterBase & {
 export type RegisterWithOidc = RegisterBase & {
   method: 'oidc'
   provider: OidcProvider
+  email?: string
+  firstName?: string
+  lastName?: string
 }
 
 export type Register = RegisterWithPassword | RegisterWithOidc
