@@ -46,6 +46,20 @@ bundle:
 	zip -r dyrectorio-offline-bundle-$(BUNDLEVER).zip offline
 	mv .env_bak .env || true
 
+.PHONY: save
+save:
+	$(eval BUNDLEVER=$(or $(version),latest))
+	mv .env .env_bak || true
+	echo "DYO_VERSION=$(BUNDLEVER)" > .env
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/kratos:latest offline/kratos.tar
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/crux:latest offline/crux.tar
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/crux-ui:latest offline/crux-ui.tar
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest offline/dagent.tar
+	cp docker-compose.yaml offline/
+	cp .env.example offline/
+	zip -r dyrectorio-offline-bundle-$(BUNDLEVER).zip offline
+	mv .env_bak .env || true
+
 # Compile the all gRPC files
 .PHONY: protogen
 protogen:| proto-agent proto-crux
