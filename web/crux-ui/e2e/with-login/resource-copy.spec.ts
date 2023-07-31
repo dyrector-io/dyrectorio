@@ -6,6 +6,7 @@ import { addPortsToContainerConfig } from 'e2e/utils/container-config'
 import {
   addDeploymentToVersion,
   addImageToVersion,
+  copyDeployment,
   createImage,
   createProject,
   createVersion,
@@ -112,42 +113,24 @@ test.describe('Deleting default version', () => {
 
 test.describe("Deleting copied deployment's parent", () => {
   test('should not affect the instances of the child deployment', async ({ page }) => {
-    const projectName = 'delete-parent-deploy-instances'
-    const prefix = projectName
-
-    const projectId = await createProject(page, projectName, 'versioned')
-    const versionName = 'version'
-    const versionId = await createVersion(page, projectId, versionName, 'Rolling')
+    const projectName = 'delete-parent-deploy-check-copy'
+    const projectId = await createProject(page, projectName, "versioned")
+    const versionName = "version"
+    const versionId = await createVersion(page, projectId, versionName, "Incremental")
     await addImageToVersion(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
-    const { id: parentDeploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, prefix)
 
-    await page.goto(deploymentUrl(parentDeploymentId))
+    const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, projectName)
+    const { id: deploymentCopyId } = await copyDeployment(page, deploymentId, projectName.concat('-copy'))
 
-    const copyButton = page.locator('button:has-text("Copy")')
-    await copyButton.click()
-
-    await page.locator(`button:has-text("${DAGENT_NODE}")`).click()
-    await fillDeploymentPrefix(page, `${prefix}-other`)
-
-    await page.locator('button:has-text("Copy")').click()
-
-    await deleteDeployment(page, parentDeploymentId)
+    await deleteDeployment(page, deploymentId)
 
     await page.goto(versionUrl(projectId, versionId))
 
     await page.locator('button:has-text("Deployments")').click()
+    await expect(page.locator('.table-row-group .table-row')).toHaveCount(1)
 
-    const deploymentsTabelBody = await page.locator('.table-row-group')
-    const deploymentRows = await deploymentsTabelBody.locator('.table-row')
-
-    await expect(deploymentRows).toHaveCount(1)
-
-    const viewDeploymentButton = await page.waitForSelector(`[src="/eye.svg"]`)
-    await viewDeploymentButton.click()
-
-    const instancesTabelBody = await page.locator('.table-row-group')
-    const instanceRows = await instancesTabelBody.locator('.table-row')
-    await expect(instanceRows).toHaveCount(1)
+    await page.goto(deploymentUrl(deploymentCopyId))
+    await expect(page.locator('.table-row-group .table-row')).toHaveCount(1)
   })
 })
 

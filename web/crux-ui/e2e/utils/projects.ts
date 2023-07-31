@@ -176,7 +176,22 @@ export const deleteDeployment = async (page: Page, deploymentId: string) => {
   const confirmDeleteButton = page.locator('div[role=dialog]').locator('button:has-text("Delete")')
   await expect(confirmDeleteButton).toHaveCount(1)
   await confirmDeleteButton.click()
+  await page.waitForURL(`${ROUTE_PROJECTS}/**`)
 }
+
+export const copyDeployment = async (page: Page, deploymentId: string, newName: string) => {
+  await page.goto(deploymentUrl(deploymentId))
+  await page.locator('button:has-text("Copy")').click()
+  await fillDeploymentPrefix(page, `${newName}`)
+  await page.locator('button:has-text("Copy")').click()
+  await expect(page.locator(`label:has-text('${newName}')`)).toBeVisible()
+
+  return {
+    id: page.url().split('/').pop(),
+    url: page.url(),
+  }
+}
+
 
 export const deleteProject = async (page: Page, projectId: string): Promise<void> => {
   await page.goto(projectUrl(projectId))
