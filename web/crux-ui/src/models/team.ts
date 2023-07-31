@@ -31,7 +31,7 @@ export type TeamDetails = Team & {
 }
 
 export const teamSlugFromName = (name: string) => {
-  const slug = slugify(name, '-')
+  const slug = slugify(name)
 
   if (slug.includes('-')) {
     // first character of

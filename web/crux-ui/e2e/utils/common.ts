@@ -77,13 +77,9 @@ export const kratosFrontendFromBaseURL = (baseURL?: string) => {
   return new FrontendApi(kratosConfig)
 }
 
-export const kratosFromConfig = (baseURL: string) => {
-  return kratosFromBaseURL(baseURL)
-}
+export const kratosFromConfig = (baseURL: string) => kratosFromBaseURL(baseURL)
 
-export const kratosFrontendFromConfig = (baseURL: string) => {
-  return kratosFrontendFromBaseURL(baseURL)
-}
+export const kratosFrontendFromConfig = (baseURL: string) => kratosFrontendFromBaseURL(baseURL)
 
 export const createUser = async (
   kratos: IdentityApi,

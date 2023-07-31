@@ -195,7 +195,7 @@ export const deploymentIsCopiable = (status: DeploymentStatus) => status !== 'in
 
 export const deploymentLogVisible = (status: DeploymentStatus) => status !== 'preparing'
 
-export const projectNameToDeploymentPrefix = (name: string) => slugify(name, '-')
+export const projectNameToDeploymentPrefix = (name: string) => slugify(name)
 
 export const lastDeploymentStatusOfEvents = (events: DeploymentEvent[]): DeploymentStatus | null =>
   events
