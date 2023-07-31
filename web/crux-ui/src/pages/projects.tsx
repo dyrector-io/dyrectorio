@@ -6,10 +6,11 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
-import ViewModeToggle, { ViewMode } from '@app/components/shared/view-mode-toggle'
+import ViewModeToggle from '@app/components/shared/view-mode-toggle'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import usePersistedViewMode from '@app/hooks/use-persisted-view-mode'
 import { Project, ProjectType, PROJECT_TYPE_VALUES } from '@app/models'
 import { API_PROJECTS, projectUrl, ROUTE_PROJECTS } from '@app/routes'
 import { auditToLocaleDate, withContextAuthorization } from '@app/utils'
@@ -17,7 +18,7 @@ import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 type ProjectFilter = TextFilter & {
   type?: ProjectType | 'all'
@@ -51,18 +52,7 @@ const ProjectsPage = (props: ProjectsPageProps) => {
   const [creating, setCreating] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('viewMode') as ViewMode) || 'tile'
-    }
-    return 'tile'
-  })
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('viewMode', viewMode)
-    }
-  }, [viewMode])
+  const [viewMode, setViewMode] = usePersistedViewMode({ initialViewMode: 'tile', pageName: 'projects' })
 
   const onCreated = async (project: Project) => {
     setCreating(false)

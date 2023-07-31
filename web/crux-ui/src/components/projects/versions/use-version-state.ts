@@ -1,6 +1,7 @@
 import useEditorState, { EditorState } from '@app/components/editor/use-editor-state'
 import { ViewMode } from '@app/components/shared/view-mode-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
+import usePersistedViewMode from '@app/hooks/use-persisted-view-mode'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   AddImagesMessage,
@@ -141,7 +142,7 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
   const [addSection, setAddSection] = useState<VersionAddSection>('none')
   const [version, setVersion] = useState(optionsVersion)
   const [tags, setTags] = useState<ImageTagsMap>({})
-  const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [viewMode, setViewMode] = usePersistedViewMode({ initialViewMode: 'list', pageName: 'versionState' })
   const [copyDeploymentTarget, setCopyDeploymentTarget] = useCopyDeploymentState({
     handleApiError,
   })

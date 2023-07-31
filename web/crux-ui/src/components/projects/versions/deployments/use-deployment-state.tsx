@@ -4,6 +4,7 @@ import { ViewMode } from '@app/components/shared/view-mode-toggle'
 import { DEPLOYMENT_EDIT_WS_REQUEST_DELAY } from '@app/const'
 import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
+import usePersistedViewMode from '@app/hooks/use-persisted-view-mode'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -112,7 +113,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const [saveState, setSaveState] = useState<WebSocketSaveState>(null)
   const [editState, setEditState] = useState<DeploymentEditState>('details')
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
-  const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [viewMode, setViewMode] = usePersistedViewMode({ initialViewMode: 'list', pageName: 'deploymentState' })
   const [confirmationModal, confirm] = useConfirmation()
   const [deployInstances, setDeployInstances] = useState<string[]>(deployment.instances?.map(it => it.id) ?? [])
 
