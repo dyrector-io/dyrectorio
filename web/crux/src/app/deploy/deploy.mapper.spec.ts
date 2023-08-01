@@ -843,14 +843,14 @@ describe('DeployMapper', () => {
       expect(config).toEqual(expected)
     })
 
-    it('unspecified (default) driver type should return no log driver', () => {
+    it('node default driver type should return no log driver', () => {
       const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
         networks: [],
         networkMode: 'host',
         restartPolicy: 'always',
         dockerLabels: [],
         logConfig: {
-          driver: 'unspecified',
+          driver: 'node_default',
         },
       })
       const expected = <DagentContainerConfig>{

@@ -413,8 +413,8 @@ func TestMapDeployImageLogConfig(t *testing.T) {
 			desc: "Undefined driver type",
 		},
 		{
-			desc:   "Unspecified driver type",
-			driver: common.DriverType_DRIVER_TYPE_UNSPECIFIED,
+			desc:   "Node default driver type",
+			driver: common.DriverType_NODE_DEFAULT,
 		},
 		{
 			desc:   "None driver type",
