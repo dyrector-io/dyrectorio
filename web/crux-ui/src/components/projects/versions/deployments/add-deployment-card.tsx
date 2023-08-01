@@ -35,6 +35,8 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
   const handleApiError = apiErrorHandler((stringId: string, status: number, dto: DyoApiError) => {
     if (dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing') {
+      onAdd(dto.value)
+
       return {
         toast: dto.description,
         toastOptions: {
