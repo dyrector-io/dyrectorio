@@ -120,14 +120,13 @@ const urlQuery = (url: string, query: object) => {
 export const apiDocsUrl = (params: AnchorUrlParams) => appendUrlParams(`${ROUTE_DOCS}/basics/api`, params)
 
 // auth
-export const verificationUrl = (email: string, options?: { restart?: boolean }) => {
-  const url = `${ROUTE_VERIFICATION}?email=${encodeURIComponent(email)}`
-  if (!options?.restart) {
-    return url
-  }
-
-  return `${url}&restart=true`
+export type VerificationUrlParams = {
+  anchor?: VersionUrlAnchor
+  email?: string
+  restart?: boolean
 }
+
+export const verificationUrl = (params: VerificationUrlParams) => appendUrlParams(ROUTE_VERIFICATION, params)
 
 // team
 export const teamUrl = (id: string) => `${ROUTE_TEAMS}/${id}`
