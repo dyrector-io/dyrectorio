@@ -2,16 +2,14 @@ import { DyoCard } from '@app/elements/dyo-card'
 import { DyoList } from '@app/elements/dyo-list'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { UserMeta, UserMetaTeam } from '@app/models'
-import { selectTeamUrl } from '@app/routes'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import { useRouter } from 'next/router'
 
 interface TeamSelectionCardProps {
   className?: string
   meta: UserMeta
-  onTeamSelected?: (team: UserMetaTeam) => void
+  onTeamSelected: (team: UserMetaTeam) => void
 }
 
 const TeamSelectionCard = (props: TeamSelectionCardProps) => {
@@ -19,12 +17,6 @@ const TeamSelectionCard = (props: TeamSelectionCardProps) => {
 
   const { t } = useTranslation('common')
   const routes = useTeamRoutes()
-  const router = useRouter()
-
-  const onSelectTeam = async (team: UserMetaTeam) => {
-    router.push(selectTeamUrl(team.slug))
-    onTeamSelected?.call(null)
-  }
 
   const itemTemplate = (team: UserMetaTeam) => {
     const currentTeam = team.slug === routes?.teamSlug
@@ -33,7 +25,7 @@ const TeamSelectionCard = (props: TeamSelectionCardProps) => {
     return [
       <div
         className={clsx('flex flex-row items-center', currentTeam ? null : 'cursor-pointer')}
-        onClick={currentTeam ? null : () => onSelectTeam(team)}
+        onClick={currentTeam ? null : () => onTeamSelected(team)}
       >
         <Image
           className={currentTeam ? null : 'opacity-30 bg-blend-darken'}

@@ -8,13 +8,14 @@ import { COOKIE_TEAM_SLUG } from '@app/const'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Team } from '@app/models'
 import { appendTeamSlug } from '@app/providers/team-routes'
-import { API_TEAMS, ROUTE_INDEX, ROUTE_TEAMS } from '@app/routes'
+import { API_TEAMS, API_USERS_ME, ROUTE_INDEX, ROUTE_TEAMS } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { getCookie } from '@server/cookie'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRef, useState } from 'react'
+import { useSWRConfig } from 'swr'
 
 interface TeamsPageProps {
   teams: Team[]
@@ -26,6 +27,7 @@ const TeamsPage = (props: TeamsPageProps) => {
   const { t } = useTranslation('teams')
 
   const routes = useTeamRoutes()
+  const { mutate } = useSWRConfig()
 
   const [teams, setTeams] = useState(propsTeams)
   const [creating, setCreating] = useState(false)
@@ -35,6 +37,7 @@ const TeamsPage = (props: TeamsPageProps) => {
   const onCreated = (team: Team) => {
     setCreating(false)
     setTeams([...teams, team])
+    mutate(API_USERS_ME)
   }
 
   const selfLink: BreadcrumbLink = {
