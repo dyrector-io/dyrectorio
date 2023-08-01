@@ -34,8 +34,6 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(routes.node.api.list(), fetcher)
 
   const handleApiError = apiErrorHandler((stringId: string, status: number, dto: DyoApiError) => {
-    onAdd(dto.value)
-
     if (dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing') {
       return {
         toast: dto.description,

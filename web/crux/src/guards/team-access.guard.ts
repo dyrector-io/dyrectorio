@@ -32,6 +32,10 @@ export default class TeamAccessGuard implements CanActivate {
 
     const identity = identityOfRequest(context)
 
+    if (!identity && strategy === 'deploy-token') {
+      return true
+    }
+
     const userOnTeams = await this.prisma.usersOnTeams.count({
       where: {
         userId: identity.id,
