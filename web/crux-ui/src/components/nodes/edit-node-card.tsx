@@ -12,6 +12,7 @@ import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   CreateNode,
@@ -25,7 +26,6 @@ import {
   WS_TYPE_NODE_EVENT,
   WS_TYPE_UPDATE_AGENT,
 } from '@app/models'
-import { API_NODES, nodeApiUrl, nodeTokenApiUrl, WS_NODES } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { nodeSchema } from '@app/validations'
 import clsx from 'clsx'
@@ -47,6 +47,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
   const { className, node: propsNode, onNodeEdited, submitRef } = props
 
   const { t } = useTranslation('nodes')
+  const routes = useTeamRoutes()
 
   const [revokeModalConfig, confirmTokenRevoke] = useConfirmation()
 
@@ -65,7 +66,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const socket = useWebSocket(WS_NODES)
+  const socket = useWebSocket(routes.node.socket())
   socket.on(WS_TYPE_NODE_EVENT, (message: NodeEventMessage) => {
     if (message.id !== node.id) {
       return
@@ -111,7 +112,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       return
     }
 
-    const res = await fetch(nodeTokenApiUrl(node.id), {
+    const res = await fetch(routes.node.api.token(node.id), {
       method: 'DELETE',
     })
 
@@ -161,8 +162,8 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       }
 
       const res = await (!editing
-        ? sendForm('POST', API_NODES, body as CreateNode)
-        : sendForm('PUT', nodeApiUrl(node.id), body as UpdateNode))
+        ? sendForm('POST', routes.node.api.list(), body as CreateNode)
+        : sendForm('PUT', routes.node.api.details(node.id), body as UpdateNode))
 
       if (res.ok) {
         let result: NodeDetails

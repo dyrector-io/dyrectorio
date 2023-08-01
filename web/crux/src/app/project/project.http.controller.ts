@@ -38,7 +38,11 @@ const ProjectId = () => Param(PARAM_PROJECT_ID)
 const ROUTE_PROJECTS = 'projects'
 const ROUTE_PROJECT_ID = ':projectId'
 
-@Controller(ROUTE_PROJECTS)
+const ROUTE_TEAM_SLUG = ':teamSlug'
+const PARAM_TEAM_SLUG = 'teamSlug'
+const TeamSlug = () => Param(PARAM_TEAM_SLUG)
+
+@Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_PROJECTS}`)
 @ApiTags(ROUTE_PROJECTS)
 @UseGuards(ProjectTeamAccessGuard)
 export default class ProjectHttpController {
@@ -56,8 +60,8 @@ export default class ProjectHttpController {
     description: 'List of projects.',
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for projects.' })
-  async getProjects(@IdentityFromRequest() identity: Identity): Promise<ProjectListItemDto[]> {
-    return this.service.getProjects(identity)
+  async getProjects(@TeamSlug() teamSlug: string): Promise<ProjectListItemDto[]> {
+    return this.service.getProjects(teamSlug)
   }
 
   @Get(ROUTE_PROJECT_ID)
@@ -90,13 +94,14 @@ export default class ProjectHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for project creation.' })
   @ApiConflictResponse({ description: 'Project name taken.' })
   async createProject(
+    @TeamSlug() teamSlug: string,
     @Body() request: CreateProjectDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreatedResponse<ProjectListItemDto>> {
-    const project = await this.service.createProject(request, identity)
+    const project = await this.service.createProject(teamSlug, request, identity)
 
     return {
-      url: `/projects/${project.id}`,
+      url: `${teamSlug}/${ROUTE_PROJECTS}/${project.id}`,
       body: project,
     }
   }

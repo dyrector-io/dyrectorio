@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { ROUTE_DASHBOARD, ROUTE_LOGIN, ROUTE_REGISTRIES, ROUTE_TEAMS_CREATE } from '@app/routes'
+import { ROUTE_LOGIN, ROUTE_TEAMS_CREATE } from '@app/routes'
 import { test } from '@playwright/test'
 import { BASE_URL, STORAGE_STATE } from '../../playwright.config'
 import {
@@ -7,9 +7,11 @@ import {
   GHCR_MIRROR,
   kratosFromConfig,
   REGISTRY_NAME,
+  TEAM_ROUTES,
   USER_EMAIL,
   USER_PASSWORD,
   USER_TEAM,
+  USER_TEAM_SLUG,
 } from './common'
 import { globalTeardown } from './global.teardown'
 import { installDagent } from './node-helper'
@@ -34,17 +36,18 @@ test('global setup', async ({ page }) => {
   logInfo('creating team')
   await page.waitForURL(ROUTE_TEAMS_CREATE)
   await page.locator('input[name=name]').fill(USER_TEAM)
+  await page.locator('input[name=slug]').fill(USER_TEAM_SLUG)
   await page.locator('button[type=submit]').click()
 
-  await page.waitForURL(ROUTE_DASHBOARD)
+  await page.waitForURL(TEAM_ROUTES.dashboard.index())
 
   logInfo('saving storage state')
   await page.context().storageState({ path: STORAGE_STATE as string })
 
   logInfo('changing registry to ghcr')
-  await page.goto(ROUTE_REGISTRIES)
+  await page.goto(TEAM_ROUTES.registry.list())
   await page.click('h3:has-text("Docker Hub Library")')
-  await page.waitForURL(`${ROUTE_REGISTRIES}/**`)
+  await page.waitForURL(`${TEAM_ROUTES.registry.list()}/**`)
   await page.click('button:has-text("Edit")')
   await page.click('button:has-text("Unchecked")')
   await page.locator('input[name=name]').fill(REGISTRY_NAME)
@@ -53,4 +56,6 @@ test('global setup', async ({ page }) => {
 
   logInfo('installing dagent')
   await installDagent(page)
+
+  logInfo('completed')
 })

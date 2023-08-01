@@ -116,6 +116,7 @@ export default class AgentService {
   }
 
   async install(
+    teamSlug: string,
     nodeId: string,
     nodeName: string,
     nodeType: NodeTypeEnum,
@@ -135,6 +136,7 @@ export default class AgentService {
 
       installer = new AgentInstaller(
         this.configService,
+        teamSlug,
         nodeId,
         nodeName,
         this.jwtService.sign(token),

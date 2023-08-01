@@ -25,6 +25,7 @@ export class DeploymentTokenScriptGenerator {
 export type DeploymentTokenOptions = {
   token: string
   cruxUiUrl: string
+  teamSlug: string
   deploymentId: string
 }
 

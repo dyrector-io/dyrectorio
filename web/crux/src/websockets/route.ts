@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { MessageMappingProperties } from '@nestjs/websockets'
-import { EMPTY, Observable, firstValueFrom, of, tap } from 'rxjs'
+import { EMPTY, Observable, firstValueFrom, of } from 'rxjs'
 import {
   SubscriptionMessage,
   WS_TYPE_AUTHORIZE,
@@ -59,7 +59,7 @@ export default class WsRoute {
 
   matches(messageType: string): WsRouteMatch | null {
     const parts = messageType.split('/').filter(it => it.length > 0)
-    if (this.matchers.length > parts.length) {
+    if (this.matchers.length !== parts.length) {
       return null
     }
 
@@ -80,7 +80,6 @@ export default class WsRoute {
     client: WsClient,
     match: WsRouteMatch,
     message: WsMessage<SubscriptionMessage>,
-    redirect?: boolean,
   ): Promise<Observable<WsMessage>> {
     const callbacks = this.callbacks.get(client.token)
     const { authorize, transform } = callbacks
@@ -93,16 +92,8 @@ export default class WsRoute {
       ...message,
       params: match.params,
     }
+
     const authorizationRes = transform(authorize(authMessage))
-    if (redirect) {
-      return authorizationRes.pipe(
-        tap(it => {
-          if (typeof it === 'boolean') {
-            throw new Error('Missing WsRedirectInterceptor')
-          }
-        }),
-      )
-    }
 
     const authorized = (await firstValueFrom(authorizationRes)) as boolean
     if (!authorized) {

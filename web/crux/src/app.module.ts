@@ -8,7 +8,7 @@ import DashboardModule from './app/dashboard/dashboard.module'
 import DeployModule from './app/deploy/deploy.module'
 import HealthModule from './app/health/health.module'
 import ImageModule from './app/image/image.module'
-import MetricsController from './app/metrics/metrics.controller'
+import MetricsHttpController from './app/metrics/metrics.http.controller'
 import NodeModule from './app/node/node.module'
 import NotificationModule from './app/notification/notification.module'
 import ProjectModule from './app/project/project.module'
@@ -23,6 +23,7 @@ import UuidValidationGuard from './guards/uuid-params.validation.guard'
 import EmailModule from './mailer/email.module'
 import ShutdownService from './services/application.shutdown.service'
 import PrismaService from './services/prisma.service'
+import TeamAccessGuard from './guards/team-access.guard'
 
 const imports = [
   ProjectModule,
@@ -42,7 +43,7 @@ const imports = [
   ConfigModule.forRoot(appConfig),
   EmailModule,
   PrometheusModule.register({
-    controller: MetricsController,
+    controller: MetricsHttpController,
   }),
 ]
 
@@ -53,6 +54,6 @@ if (process.env.NODE_ENV === 'production') {
 @Module({
   imports,
   controllers: [],
-  providers: [PrismaService, ShutdownService, UuidValidationGuard],
+  providers: [PrismaService, ShutdownService, UuidValidationGuard, TeamAccessGuard],
 })
 export default class AppModule {}

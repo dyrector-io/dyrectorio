@@ -1,5 +1,5 @@
-import { imageConfigUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
+import { TEAM_ROUTES } from 'e2e/utils/common'
 import { createImage, createProject, createVersion } from '../../utils/projects'
 
 const setup = async (
@@ -23,7 +23,7 @@ test.describe('Filters', () => {
   test('None should be selected by default', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'filter-all', '1.0.0', 'redis')
 
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
 
     const allButton = await page.locator('button:has-text("All")')
 
@@ -34,7 +34,7 @@ test.describe('Filters', () => {
   test('All should not be selected if one of the main filters are not selected', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'filter-select', '1.0.0', 'redis')
 
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
 
     await page.locator(`button:has-text("Common")`).first().click()
 
@@ -46,7 +46,7 @@ test.describe('Filters', () => {
   test('Main filter should not be selected if one of its sub filters are not selected', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'sub-filter', '1.0.0', 'redis')
 
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
 
     const subFilter = await page.locator(`button:has-text("Network mode")`)
 
@@ -60,7 +60,7 @@ test.describe('Filters', () => {
   test('Config field should be invisible if its sub filter is not selected', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'sub-deselect', '1.0.0', 'redis')
 
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
 
     const subFilter = await page.locator(`button:has-text("Deployment strategy")`)
 

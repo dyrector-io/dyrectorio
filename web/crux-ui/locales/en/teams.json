@@ -26,6 +26,8 @@
   "leave": "Leave",
   "leaveTeam": "Leave team",
   "areYouSureWantToLeave": "Are you sure you want to leave the team {{name}}?",
+  "areYouSureChangeSlug": "Are you sure you want to change the slug of team {{name}}?",
+  "changingSlugHaveToAdjust": "By changing the team's slug, you will have to adjust your deployment tokens' target url in your pipelines.",
 
   "errors": {
     "preconditionFailed": "Invitation link expired"

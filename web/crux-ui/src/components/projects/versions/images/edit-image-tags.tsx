@@ -19,9 +19,9 @@ type ImageTagSelectListProps = ImageTagInputProps & {
 const ImageTagSelectList = (props: ImageTagSelectListProps) => {
   const { disabled, tags, selected: propsSelected, onTagSelected } = props
 
-  const [selected, setSelected] = useState(propsSelected)
-
   const { t } = useTranslation('images')
+
+  const [selected, setSelected] = useState(propsSelected)
 
   const filters = useFilters<string, TextFilter>({
     filters: [textFilterFor<string>(it => [it])],

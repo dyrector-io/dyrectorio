@@ -48,12 +48,13 @@ const PARAM_VERSION_ID = 'versionId'
 const ProjectId = () => Param(PARAM_PROJECT_ID)
 const VersionId = () => Param(PARAM_VERSION_ID)
 
+const ROUTE_TEAM_SLUG = ':teamSlug'
 const ROUTE_PROJECTS = 'projects'
 const ROUTE_PROJECT_ID = ':projectId'
 const ROUTE_VERSION_ID = ':versionId'
 const ROUTE_VERSIONS = 'versions'
 
-@Controller(`${ROUTE_PROJECTS}/${ROUTE_PROJECT_ID}/${ROUTE_VERSIONS}`)
+@Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_PROJECTS}/${ROUTE_PROJECT_ID}/${ROUTE_VERSIONS}`)
 @ApiTags(ROUTE_VERSIONS)
 @UseGuards(VersionTeamAccessGuard)
 export default class VersionHttpController {

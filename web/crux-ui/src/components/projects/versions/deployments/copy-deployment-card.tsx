@@ -8,8 +8,8 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CopyDeployment, Deployment, DeploymentDetails, DyoNode } from '@app/models'
-import { API_NODES, deploymentCopyApiUrl } from '@app/routes'
 import { fetcher, sendForm } from '@app/utils'
 import { copyDeploymentSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
@@ -26,13 +26,14 @@ interface CopyDeploymentCardProps {
 }
 
 const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
-  const { className, submitRef, deployment, onDeplyomentCopied, onDiscard } = props
-
   const { t } = useTranslation('deployments')
+  const routes = useTeamRoutes()
+
+  const { className, submitRef, deployment, onDeplyomentCopied, onDiscard } = props
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(API_NODES, fetcher)
+  const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(routes.node.api.list(), fetcher)
 
   useEffect(() => {
     if (nodes && nodes.length < 1) {
@@ -50,7 +51,7 @@ const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
-      const res = await sendForm('POST', deploymentCopyApiUrl(deployment.id), values)
+      const res = await sendForm('POST', routes.deployment.api.copy(deployment.id), values)
 
       setSubmitting(false)
 

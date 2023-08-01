@@ -13,10 +13,10 @@ interface DeploymentDetailsSectionProps {
 const ITEM_ID = 'deployment'
 
 const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
-  const { t } = useTranslation('deployments')
-
   const { state, actions, className } = props
   const { deployment, mutable, editor, sock } = state
+
+  const { t } = useTranslation('deployments')
 
   const editorState = useItemEditorState(editor, sock, ITEM_ID)
 

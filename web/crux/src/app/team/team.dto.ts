@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsEmail, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
+import { IsEmail, IsNumber, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator'
 import { UserDto, UserRoleDto, USER_ROLE_VALUES } from './user.dto'
 
 export class BasicTeamDto {
@@ -8,9 +8,17 @@ export class BasicTeamDto {
 
   @IsString()
   name: string
+
+  @IsString()
+  slug: string
 }
 
 export class CreateTeamDto {
+  @MinLength(3)
+  @MaxLength(16)
+  @IsString()
+  slug: string
+
   @IsString()
   name: string
 }

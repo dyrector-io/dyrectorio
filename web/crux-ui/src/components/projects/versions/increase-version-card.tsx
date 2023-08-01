@@ -1,3 +1,4 @@
+import useVersionHint from '@app/components/projects/versions/use-version-hint'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoForm from '@app/elements/dyo-form'
@@ -7,9 +8,8 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import useVersionHint from '@app/hooks/use-version-hint'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { IncreaseVersion, Project, Version } from '@app/models'
-import { versionIncreaseApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { increaseVersionSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
@@ -27,6 +27,7 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
   const { className, parent, project, onVersionIncreased, submitRef } = props
 
   const { t } = useTranslation('versions')
+  const routes = useTeamRoutes()
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -43,7 +44,7 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
 
       const body: IncreaseVersion = values
 
-      const res = await sendForm('POST', versionIncreaseApiUrl(project.id, parent.id), body)
+      const res = await sendForm('POST', routes.project.versions(project.id).api.increase(parent.id), body)
 
       if (res.ok) {
         const result = (await res.json()) as Version

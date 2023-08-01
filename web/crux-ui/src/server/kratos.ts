@@ -1,5 +1,4 @@
 import { HEADER_SET_COOKIE } from '@app/const'
-import { missingParameter } from '@app/error-responses'
 import { DEFAULT_SERVICE_INFO, IdentityPublicMetadata, ServiceInfo } from '@app/models'
 import {
   Configuration,
@@ -109,15 +108,6 @@ export const verifiableEmailOfIdentity = (user: Identity): VerifiableIdentityAdd
 
 export const userVerified = (user: Identity) => verifiableEmailOfIdentity(user)?.verified
 
-export const cookieOf = (request: http.IncomingMessage): string => {
-  const { cookie } = request.headers
-  if (!cookie) {
-    throw missingParameter('cookie')
-  }
-
-  return cookie
-}
-
 export const flowOfUrl = (url: string): string => new URL(url).searchParams.get('flow')
 
 export const obtainKratosSession = async (cookie: string): Promise<Session> => {
@@ -164,18 +154,6 @@ export const sessionOfContext = (context: NextPageContext): Session => {
   const cruxContext = context.req as IncomingMessageWithSession
   return cruxContext.session
 }
-
-export const forwardCookieToResponse = (res: http.OutgoingMessage, from: { headers: any }) => {
-  const cookie = from.headers[HEADER_SET_COOKIE]
-  if (cookie) {
-    res.setHeader(HEADER_SET_COOKIE, cookie)
-  } else {
-    res.removeHeader(HEADER_SET_COOKIE)
-  }
-}
-
-export const forwardCookie = (context: NextPageContext, from: { headers: any }) =>
-  forwardCookieToResponse(context.res, from)
 
 export type IncomingMessageWithSession = http.IncomingMessage & {
   session?: Session

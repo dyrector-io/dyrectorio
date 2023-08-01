@@ -2,8 +2,8 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoCheckbox from '@app/elements/dyo-checkbox'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Instance } from '@app/models'
-import { instanceConfigUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -16,10 +16,11 @@ export interface DeploymentViewListProps {
 }
 
 const DeploymentViewList = (props: DeploymentViewListProps) => {
+  const { t } = useTranslation('images')
+  const routes = useTeamRoutes()
+
   const { state, actions } = props
   const { instances, deployInstances } = state
-
-  const { t } = useTranslation('images')
 
   const columnWidths = ['w-12', 'w-4/12', 'w-2/12', 'w-2/12', 'w-4/12', 'w-28']
   const headers = [
@@ -56,7 +57,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
     <span suppressHydrationWarning>
       {item.image.createdAt ? utcDateToLocale(item.image.createdAt) : t('common:new')}
     </span>,
-    <Link href={instanceConfigUrl(state.deployment.id, item.id)} passHref>
+    <Link href={routes.deployment.instanceDetails(state.deployment.id, item.id)} passHref>
       <DyoIcon src="/settings.svg" alt={t('common:settings')} size="md" />
     </Link>,
   ]

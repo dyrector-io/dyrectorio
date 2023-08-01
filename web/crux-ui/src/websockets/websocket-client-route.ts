@@ -13,14 +13,8 @@ class WebSocketClientRoute {
 
   private endpoints: Set<WebSocketClientEndpoint> = new Set()
 
-  private redirect: string | null = null
-
   get path(): string {
     return this.endpointPath
-  }
-
-  get redirectedFrom(): string | null {
-    return this.redirect
   }
 
   constructor(logger: Logger, private readonly sendMessage: WebSocketSendMessage, private endpointPath: string) {
@@ -122,20 +116,9 @@ class WebSocketClientRoute {
     return true
   }
 
-  onRedirect(redirect: string) {
-    this.logger.debug('Redirected to ', redirect)
-
-    // save the original path
-    this.redirect = this.endpointPath
-    this.endpointPath = redirect
-
-    // repeat the subscription message with the correct path
-    this.sendSubscriptionMessage('subscribe')
-  }
-
   onMessage(message: WsMessage) {
-    if (!message.type.startsWith(this.path)) {
-      // it's not for this route
+    const messageRoutePath = WebSocketClientRoute.routePathOf(message)
+    if (this.path !== messageRoutePath) {
       // TODO(@m8vago): create a map in the websocket-client for the route prefixes and use that for routing
       return
     }
@@ -177,6 +160,15 @@ class WebSocketClientRoute {
       this.logger.verbose('Failed to send subscription message', this.state, '-> unsubscribed')
       this.state = 'unsubscribed'
     }
+  }
+
+  private static routePathOf(message: WsMessage): string | null {
+    const index = message.type.lastIndexOf('/')
+    if (index < 0) {
+      return null
+    }
+
+    return message.type.substring(0, index)
   }
 }
 

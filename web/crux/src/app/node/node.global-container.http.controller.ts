@@ -8,7 +8,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger'
-import { from, mergeAll, Observable } from 'rxjs'
+import { Observable, from, mergeAll } from 'rxjs'
 import UuidParams from 'src/decorators/api-params.decorator'
 import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
 import {
@@ -20,11 +20,12 @@ import {
   ROUTE_NAME,
   ROUTE_NODES,
   ROUTE_NODE_ID,
+  ROUTE_TEAM_SLUG,
 } from './node.const'
 import { ContainerDto } from './node.dto'
 import NodeService from './node.service'
 
-@Controller(`${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_CONTAINERS}`)
+@Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_CONTAINERS}`)
 @ApiTags(ROUTE_NODES)
 @UseGuards(NodeTeamAccessGuard)
 export default class NodeGlobalContainerHttpController {

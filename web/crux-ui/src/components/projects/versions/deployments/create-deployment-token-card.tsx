@@ -8,8 +8,9 @@ import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateDeploymentToken, DeploymentDetails, DeploymentToken, DeploymentTokenCreated } from '@app/models'
-import { apiDocsUrl, deploymentStartApiUrl, deploymentTokenApiUrl } from '@app/routes'
+import { apiDocsUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
 import { createDeploymentTokenSchema } from '@app/validations'
 import { useFormik } from 'formik'
@@ -30,6 +31,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
   const { className, submitRef, deployment, onTokenCreated, onDiscard } = props
 
   const { t } = useTranslation('deployments')
+  const routes = useTeamRoutes()
 
   const [token, setToken] = useState<DeploymentTokenCreated>(null)
 
@@ -53,7 +55,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
-      const res = await sendForm('PUT', deploymentTokenApiUrl(deployment.id), values as CreateDeploymentToken)
+      const res = await sendForm('PUT', routes.deployment.api.token(deployment.id), values as CreateDeploymentToken)
 
       if (res.ok) {
         const json = await res.json()
@@ -155,7 +157,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
             <span>{t('toTriggerTheDeploy')}</span>
 
             <span className="ring-2 ring-light-grey-muted rounded-md focus:outline-none align-middle p-1">
-              {deploymentStartApiUrl(deployment.id)}
+              {routes.deployment.api.start(deployment.id)}
             </span>
 
             <span>{t('youMustPutTheBearer')}</span>

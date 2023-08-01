@@ -14,9 +14,9 @@ interface WebSocketSaveIndicatorProps {
 const FADE_TIMEOUT = 3
 
 const WebSocketSaveIndicator = (props: WebSocketSaveIndicatorProps) => {
-  const { t } = useTranslation('common')
-
   const { className, state } = props
+
+  const { t } = useTranslation('common')
 
   const [hidden, setHidden] = useState(state === 'saved')
   const [remaining, scheduleFade, stopFade] = useTimer(null, () => setHidden(true))

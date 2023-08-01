@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { ExecutionContext, Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { RegistryTypeEnum } from '@prisma/client'
 import { IdentityTraits, emailOfIdentity, invitationExpired, nameOfIdentity } from 'src/domain/identity'
@@ -9,27 +9,23 @@ import {
   CruxNotFoundException,
   CruxPreconditionFailedException,
 } from 'src/exception/crux-exception'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import EmailService from 'src/mailer/email.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import EmailBuilder, { InviteTemplateOptions } from '../../builders/email.builder'
 import AuditLoggerService from '../audit.logger/audit.logger.service'
-import { AuthorizedHttpRequest } from '../token/jwt-auth.guard'
-import {
-  ActivateTeamDto,
-  CreateTeamDto,
-  InviteUserDto,
-  TeamDetailsDto,
-  TeamDto,
-  UpdateTeamDto,
-  UpdateUserRoleDto,
-} from './team.dto'
+import { CreateTeamDto, InviteUserDto, TeamDetailsDto, TeamDto, UpdateTeamDto, UpdateUserRoleDto } from './team.dto'
 import TeamMapper, { TeamWithUsers } from './team.mapper'
 import TeamRepository from './team.repository'
 import { UserDto, UserMetaDto } from './user.dto'
+
+const teamSlugFromCreateDto = (context: ExecutionContext) => {
+  const dto = context.switchToHttp().getRequest() as CreateTeamDto
+  return dto.slug
+}
 
 @Injectable()
 export default class TeamService {
@@ -46,11 +42,6 @@ export default class TeamService {
     private auditLoggerService: AuditLoggerService,
   ) {}
 
-  async checkUserActiveTeam(teamId: string, identity: Identity): Promise<boolean> {
-    const userOnTeam = await this.teamRepository.getActiveTeamByUserId(identity.id)
-    return userOnTeam.teamId === teamId
-  }
-
   async getUserMeta(identity: Identity): Promise<UserMetaDto> {
     const teams = await this.prisma.usersOnTeams.findMany({
       where: {
@@ -61,6 +52,7 @@ export default class TeamService {
           select: {
             id: true,
             name: true,
+            slug: true,
           },
         },
       },
@@ -76,6 +68,7 @@ export default class TeamService {
           select: {
             id: true,
             name: true,
+            slug: true,
           },
         },
       },
@@ -84,19 +77,16 @@ export default class TeamService {
     return this.mapper.toUserMetaDto(teams, invitations, identity)
   }
 
-  async createTeam(request: CreateTeamDto, identity: Identity, httpRequest: AuthorizedHttpRequest): Promise<TeamDto> {
-    // If the user doesn't have an active team, make the current one active
-    const userHasTeam = await this.teamRepository.userHasTeam(identity.id)
-
+  async createTeam(request: CreateTeamDto, identity: Identity, context: ExecutionContext): Promise<TeamDto> {
     // Create Team entity in database
     const team = await this.prisma.team.create({
       data: {
+        slug: request.slug.replace(/\s/g, ''), // remove whitespaces
         name: request.name,
         createdBy: identity.id,
         users: {
           create: {
             userId: identity.id,
-            active: !userHasTeam,
             role: 'owner',
           },
         },
@@ -116,7 +106,7 @@ export default class TeamService {
       include: this.teamRepository.teamInclude,
     })
 
-    await this.auditLoggerService.createHttpAudit('all', httpRequest)
+    await this.auditLoggerService.createHttpAudit(teamSlugFromCreateDto, 'all', context)
 
     return this.mapper.toDto(team)
   }
@@ -128,76 +118,17 @@ export default class TeamService {
       },
       data: {
         name: request.name,
+        slug: request.slug,
         updatedBy: identity.id,
       },
     })
   }
 
   async deleteTeam(teamId: string): Promise<void> {
-    const teamWithActiveUsers = await this.prisma.team.findFirst({
+    await this.prisma.team.delete({
       where: {
         id: teamId,
-        users: {
-          some: {
-            active: true,
-          },
-        },
       },
-      select: {
-        users: {
-          select: {
-            userId: true,
-          },
-        },
-      },
-    })
-
-    await this.prisma.$transaction(async prisma => {
-      await prisma.team.delete({
-        where: {
-          id: teamId,
-        },
-      })
-
-      if (teamWithActiveUsers) {
-        const userIds = teamWithActiveUsers.users.map(it => it.userId)
-
-        const userOnTeams = await prisma.usersOnTeams.findMany({
-          where: {
-            userId: {
-              in: userIds,
-            },
-            teamId,
-          },
-          select: {
-            teamId: true,
-            userId: true,
-          },
-        })
-
-        const updatables: Record<string, string> = userOnTeams.reduce((result, it) => {
-          result[it.userId] = it.teamId
-          return result
-        }, {})
-
-        const updates = Object.entries(updatables).map(async entry => {
-          const [key, value] = entry
-
-          return await prisma.usersOnTeams.update({
-            where: {
-              userId_teamId: {
-                userId: key,
-                teamId: value,
-              },
-            },
-            data: {
-              active: true,
-            },
-          })
-        })
-
-        await Promise.all(updates)
-      }
     })
   }
 
@@ -317,14 +248,11 @@ export default class TeamService {
       })
     }
 
-    const userHasTeam = await this.teamRepository.userHasTeam(identity.id)
-
     await this.prisma.$transaction(async prisma => {
       await prisma.usersOnTeams.create({
         data: {
           userId: invite.userId,
           teamId: invite.teamId,
-          active: !userHasTeam,
           role: 'user',
         },
       })
@@ -370,31 +298,6 @@ export default class TeamService {
       data: {
         status: 'declined',
       },
-    })
-  }
-
-  async activateTeam(req: ActivateTeamDto, identity: Identity): Promise<void> {
-    await this.prisma.$transaction(async prisma => {
-      await prisma.usersOnTeams.updateMany({
-        where: {
-          userId: identity.id,
-        },
-        data: {
-          active: false,
-        },
-      })
-
-      await prisma.usersOnTeams.update({
-        where: {
-          userId_teamId: {
-            userId: identity.id,
-            teamId: req.teamId,
-          },
-        },
-        data: {
-          active: true,
-        },
-      })
     })
   }
 
@@ -450,28 +353,10 @@ export default class TeamService {
     }
   }
 
-  async leaveTeam(teamId: string, identity: Identity, httpRequest: AuthorizedHttpRequest): Promise<void> {
-    await this.auditLoggerService.createHttpAudit('all', httpRequest)
+  async leaveTeam(teamId: string, identity: Identity, context: ExecutionContext): Promise<void> {
+    await this.auditLoggerService.createHttpAudit(teamSlugFromCreateDto, 'all', context)
 
     await this.deleteUserFromTeam(teamId, identity.id)
-
-    const userOnTeams = await this.prisma.usersOnTeams.findFirst({
-      where: {
-        userId: identity.id,
-      },
-      select: {
-        teamId: true,
-      },
-    })
-
-    if (userOnTeams) {
-      await this.activateTeam(
-        {
-          teamId: userOnTeams.teamId,
-        },
-        identity,
-      )
-    }
   }
 
   async getTeams(identity: Identity): Promise<TeamDto[]> {

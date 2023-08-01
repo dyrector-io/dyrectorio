@@ -36,16 +36,18 @@ import ImageAddToVersionValidationInterceptor from './interceptors/image.add-ima
 import DeleteImageValidationInterceptor from './interceptors/image.delete.interceptor'
 import OrderImagesValidationInterceptor from './interceptors/image.order.interceptor'
 
+const PARAM_TEAM_SLUG = 'teamSlug'
 const PARAM_IMAGE_ID = 'imageId'
 const PARAM_VERSION_ID = 'versionId'
 const PARAM_PROJECT_ID = 'projectId'
+const TeamSlug = () => Param(PARAM_TEAM_SLUG)
 const ProjectId = () => Param(PARAM_PROJECT_ID)
 const VersionId = () => Param(PARAM_VERSION_ID)
 const ImageId = () => Param(PARAM_IMAGE_ID)
 
 const ROUTE_IMAGE_ID = ':imageId'
 
-@Controller('/projects/:projectId/versions/:versionId/images')
+@Controller(':teamSlug/projects/:projectId/versions/:versionId/images')
 @ApiTags('version/images')
 @UseGuards(ImageTeamAccessGuard)
 export default class ImageHttpController {
@@ -105,6 +107,7 @@ export default class ImageHttpController {
   @UseInterceptors(ImageAddToVersionValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async addImagesToVersion(
+    @TeamSlug() teamSlug: string,
     @ProjectId() projectId: string,
     @VersionId() versionId: string,
     @Body() request: AddImagesDto[],
@@ -113,7 +116,7 @@ export default class ImageHttpController {
     const images = await this.service.addImagesToVersion(versionId, request, identity)
 
     return {
-      url: `/projects/${projectId}/versions/${versionId}/images`,
+      url: `${teamSlug}/projects/${projectId}/versions/${versionId}/images`,
       body: images,
     }
   }

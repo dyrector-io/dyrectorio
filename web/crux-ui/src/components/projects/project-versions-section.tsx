@@ -2,8 +2,8 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoWrap from '@app/elements/dyo-wrap'
 import useConfirmation from '@app/hooks/use-confirmation'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Version } from '@app/models'
-import { versionUrl } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import VersionCard from './versions/version-card'
 
@@ -19,6 +19,7 @@ const ProjectVersionsSection = (props: ProjectVersionsSectionProps) => {
   const { projectId, versions, onIncrease, onSetAsDefault, disabled } = props
 
   const { t } = useTranslation('projects')
+  const routes = useTeamRoutes()
 
   const [modalConfig, confirmSetAsDefault] = useConfirmation()
 
@@ -46,7 +47,7 @@ const ProjectVersionsSection = (props: ProjectVersionsSectionProps) => {
             disabled={disabled}
             onIncreaseClick={onIncrease ? () => onIncrease(it) : null}
             onSetAsDefaultClick={onSetAsDefault ? () => onSetAsDefaultClick(it) : null}
-            href={versionUrl(projectId, it.id)}
+            href={routes.project.versions(projectId).details(it.id)}
           />
         ))}
       </DyoWrap>

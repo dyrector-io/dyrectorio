@@ -33,3 +33,7 @@ export const KRATOS_ERROR_NO_VERIFIED_EMAIL_ADDRESS = 4000010
 export const STORAGE_VIEW_MODE = 'view-mode'
 
 export const UID_MAX = 2147483647
+
+export const STORAGE_TEAM_SLUG = 'teamSlug'
+
+export const COOKIE_TEAM_SLUG = 'crux_team_slug'

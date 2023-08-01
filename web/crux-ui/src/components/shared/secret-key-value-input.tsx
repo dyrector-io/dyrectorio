@@ -102,8 +102,6 @@ interface SecretKeyValueInputProps {
 }
 
 const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
-  const { t } = useTranslation('common')
-
   const {
     disabled,
     className,
@@ -117,6 +115,8 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
     definedSecrets,
     onSubmit: propsOnSubmit,
   } = props
+
+  const { t } = useTranslation('common')
 
   const [state, dispatch] = useReducer(reducer, items ?? [])
   const [changed, setChanged] = useState<boolean>(false)

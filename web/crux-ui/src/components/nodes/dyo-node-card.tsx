@@ -17,6 +17,7 @@ interface DyoNodeCardProps extends Omit<DyoCardProps, 'children'> {
 
 const DyoNodeCard = (props: DyoNodeCardProps) => {
   const { node, titleHref, className, hideConnectionInfo } = props
+
   const { t } = useTranslation('common')
 
   const title = (

@@ -47,15 +47,15 @@ export default class NodeService {
     private notificationService: DomainNotificationService,
   ) {}
 
-  async checkNodeIsInTheActiveTeam(nodeId: string, identity: Identity): Promise<boolean> {
+  async checkNodeIsInTheTeam(teamSlug: string, nodeId: string, identity: Identity): Promise<boolean> {
     const nodes = await this.prisma.node.count({
       where: {
         id: nodeId,
         team: {
+          slug: teamSlug,
           users: {
             some: {
               userId: identity.id,
-              active: true,
             },
           },
         },
@@ -65,16 +65,11 @@ export default class NodeService {
     return nodes > 0
   }
 
-  async getNodes(identity: Identity): Promise<NodeDto[]> {
+  async getNodes(teamSlug: string): Promise<NodeDto[]> {
     const nodes = await this.prisma.node.findMany({
       where: {
         team: {
-          users: {
-            some: {
-              userId: identity.id,
-              active: true,
-            },
-          },
+          slug: teamSlug,
         },
       },
     })
@@ -98,21 +93,21 @@ export default class NodeService {
     return this.mapper.detailsToDto(node, !!deploymentExists)
   }
 
-  async createNode(req: CreateNodeDto, identity: Identity): Promise<NodeDto> {
-    const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
+  async createNode(teamSlug: string, req: CreateNodeDto, identity: Identity): Promise<NodeDto> {
+    const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
     const node = await this.prisma.node.create({
       data: {
         name: req.name,
         description: req.description,
         icon: req.icon ?? null,
-        teamId: team.teamId,
+        teamId,
         createdBy: identity.id,
       },
     })
 
     await this.notificationService.sendNotification({
-      teamId: team.teamId,
+      teamId,
       messageType: 'node',
       message: { subject: node.name, owner: identity } as BaseMessage,
     })
@@ -144,7 +139,12 @@ export default class NodeService {
     })
   }
 
-  async generateScript(id: string, req: NodeGenerateScriptDto, identity: Identity): Promise<NodeInstallDto> {
+  async generateScript(
+    teamSlug: string,
+    id: string,
+    req: NodeGenerateScriptDto,
+    identity: Identity,
+  ): Promise<NodeInstallDto> {
     const nodeType = this.mapper.nodeTypeToDb(req.type)
 
     const node = await this.prisma.node.update({
@@ -161,6 +161,7 @@ export default class NodeService {
     })
 
     const installer = await this.agentService.install(
+      teamSlug,
       id,
       node.name,
       nodeType,
@@ -196,17 +197,18 @@ export default class NodeService {
     this.agentService.kick(id, 'revoke-token', identity.id)
   }
 
-  async subscribeToNodeEvents(teamId: string): Promise<Observable<AgentConnectionMessage>> {
+  async subscribeToNodeEvents(teamSlug: string): Promise<Observable<AgentConnectionMessage>> {
     const nodes = await this.prisma.node.findMany({
       where: {
         team: {
-          id: teamId,
+          slug: teamSlug,
         },
       },
     })
 
     const currentEvents = nodes.map(it => this.mapper.toConnectionMessage(it))
 
+    const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
     const events = await this.agentService.getNodeEventsByTeam(teamId)
     return events.pipe(mergeWith(of(currentEvents).pipe(mergeAll())))
   }

@@ -1,4 +1,16 @@
-import { Body, Controller, Get, Header, HttpCode, HttpStatus, Param, Post, Response } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  ExecutionContext,
+  Get,
+  Header,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Response,
+  UseGuards,
+} from '@nestjs/common'
 import {
   ApiBadRequestResponse,
   ApiBody,
@@ -12,10 +24,13 @@ import {
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import { Response as ExpressResponse } from 'express'
+import { AuditLogTeamSlug, AuditLogTeamSlugProvider } from 'src/decorators/audit-logger.decorator'
+import { DisableTeamAccessGuard } from 'src/guards/team-access.guard'
 import TemplateFileService from 'src/services/template.file.service'
-import { ProjectDto } from '../project/project.dto'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
+import { ProjectDto } from '../project/project.dto'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
+import TemplateCreateProjectGuard from './guards/template.create-project.guard'
 import { CreateProjectFromTemplateDto, TemplateDto } from './template.dto'
 import TemplateService from './template.service'
 
@@ -25,8 +40,14 @@ const TemplateId = () => Param(PARAM_TEMPLATE_ID)
 const ROUTE_TEMPLATES = 'templates'
 const ROUTE_TEMPLATE_ID = ':templateId'
 
+const teamSlugFromCreateDto: AuditLogTeamSlugProvider = (context: ExecutionContext) => {
+  const dto = context.switchToHttp().getRequest().body as CreateProjectFromTemplateDto
+  return dto?.teamSlug ?? null
+}
+
 @Controller(ROUTE_TEMPLATES)
 @ApiTags(ROUTE_TEMPLATES)
+@DisableTeamAccessGuard()
 export default class TemplateHttpController {
   constructor(private service: TemplateService, private templateFileService: TemplateFileService) {}
 
@@ -55,6 +76,8 @@ export default class TemplateHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for project creation.' })
   @ApiConflictResponse({ description: 'Project name taken.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for project creation.' })
+  @UseGuards(TemplateCreateProjectGuard)
+  @AuditLogTeamSlug(teamSlugFromCreateDto)
   async createProject(
     @Body() request: CreateProjectFromTemplateDto,
     @IdentityFromRequest() identity: Identity,
@@ -62,7 +85,7 @@ export default class TemplateHttpController {
     const project = await this.service.createProjectFromTemplate(request, identity)
 
     return {
-      url: `/projects/${project.id}`,
+      url: `${request.teamSlug}/projects/${project.id}`,
       body: project,
     }
   }

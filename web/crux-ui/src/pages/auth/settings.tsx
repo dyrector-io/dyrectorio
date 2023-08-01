@@ -14,9 +14,11 @@ import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { IdentityPublicMetadata, oidcEnabled, OidcProvider } from '@app/models'
+import { appendTeamSlug } from '@app/providers/team-routes'
 import {
   API_SETTINGS_OIDC,
   API_USERS_ME_PREFERENCES_ONBOARDING,
+  ROUTE_INDEX,
   ROUTE_LOGIN,
   ROUTE_NEW_PASSWORD,
   ROUTE_SETTINGS,
@@ -25,9 +27,17 @@ import {
   ROUTE_SETTINGS_TOKENS,
   verificationUrl,
 } from '@app/routes'
-import { findAttributesByValue, mapOidcAvailability, redirectTo, sendForm, withContextAuthorization } from '@app/utils'
+import {
+  findAttributesByValue,
+  mapOidcAvailability,
+  redirectTo,
+  sendForm,
+  teamSlugOrFirstTeam,
+  withContextAuthorization,
+} from '@app/utils'
 import { Identity, SettingsFlow, UiContainer } from '@ory/kratos-client'
-import kratos, { cookieOf, identityWasRecovered, sessionOfContext } from '@server/kratos'
+import { cookieOf } from '@server/cookie'
+import kratos, { identityWasRecovered, sessionOfContext } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -46,12 +56,12 @@ const mapUiToOidcProviders = (ui: UiContainer): Record<OidcProvider, OidcConnect
 })
 
 const SettingsPage = (props: SettingsPageProps) => {
-  const { t } = useTranslation('settings')
-  const router = useRouter()
-
   const { flow } = props
   const { identity } = flow
   const { traits, metadata_public: propsPublicMetadata } = identity
+
+  const { t } = useTranslation('settings')
+  const router = useRouter()
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -249,10 +259,15 @@ const getPageServerSideProps = async (context: NextPageContext) => {
         cookie,
       })
 
+  const teamSlug = await teamSlugOrFirstTeam(context)
+  if (!teamSlug) {
+    return redirectTo(ROUTE_INDEX)
+  }
+
   return {
-    props: {
+    props: appendTeamSlug(teamSlug, {
       flow: flow.data,
-    },
+    }),
   }
 }
 
