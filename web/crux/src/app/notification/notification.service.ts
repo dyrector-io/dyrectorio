@@ -1,10 +1,11 @@
 import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { EMPTY, catchError, lastValueFrom, map, of } from 'rxjs'
+import { catchError, lastValueFrom, map, of } from 'rxjs'
 import TeamRepository from 'src/app/team/team.repository'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
+import { CruxBadRequestException } from 'src/exception/crux-exception'
 import {
   CreateNotificationDto,
   NotificationDetailsDto,
@@ -12,7 +13,6 @@ import {
   UpdateNotificationDto,
 } from './notification.dto'
 import NotificationMapper from './notification.mapper'
-import { CruxBadRequestException } from 'src/exception/crux-exception'
 
 const TEST_MESSAGE = 'Its a test!'
 
