@@ -155,9 +155,9 @@ test('Deleting node', async ({ page }) => {
   await page.locator('button:has-text("Delete")').click()
 
   await page.locator('button:has-text("Delete"):left-of(:has-text("Cancel"))').click()
-
-  await page.goto(ROUTE_NODES)
   await page.waitForURL(ROUTE_NODES)
+  
+  await page.goto(ROUTE_NODES)
 
   await expect(await page.locator(`h3:has-text("${name}")`).count()).toEqual(0)
 })
