@@ -18,7 +18,7 @@ export const addPortsToContainerConfig = async (
   json.ports = [{ internal: Number.parseInt(internal,10), external: Number.parseInt(external,10) }]
 
   let wsSent = wsPatchSent(ws, wsRoute, sentWsType, wsPatchMatchPorts(internal, external))
-  jsonEditor.fill(JSON.stringify(json))
+  await jsonEditor.fill(JSON.stringify(json))
   await wsSent
 
   await page.reload()

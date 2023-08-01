@@ -42,6 +42,51 @@ test.describe('Deleting default version', () => {
     await expect(page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
   })
 
+  test('should not affect the image config of a new version', async ({ page }) => {
+    const projectName = 'delete-default-check-image-config'
+
+    const projectId = await createProject(page, projectName, 'versioned')
+    const defaultVersionName = 'default-version'
+    const defaultVersionId = await createVersion(page, projectId, defaultVersionName, 'Rolling')
+    const defaultVersionImageId = await createImage(page, projectId, defaultVersionId, NGINX_TEST_IMAGE_WITH_TAG)
+
+    const sock = waitSocket(page)
+    await page.goto(imageConfigUrl(projectId, defaultVersionId, defaultVersionImageId))
+    const ws = await sock
+    const wsRoute = versionWsUrl(defaultVersionId)
+
+    const internal = '1000'
+    const external = '2000'
+    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_IMAGE, internal, external)
+
+    const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
+
+    await deleteVersion(page, projectId, defaultVersionId)
+
+    await page.goto(projectUrl(projectId))
+
+    expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
+
+    await page.goto(versionUrl(projectId, newVersionId))
+
+    const imagesTableBody = await page.locator('.table-row-group')
+    const imagesRows = await imagesTableBody.locator('.table-row')
+
+    await expect(imagesRows).toHaveCount(1)
+    await expect(page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
+
+    const settingsButton = await page.waitForSelector(`[src="/settings.svg"]:right-of(:text("nginx"))`)
+    await settingsButton.click()
+
+    await page.waitForSelector(`h2:has-text("Image")`)
+
+    const internalInput = page.locator('input[placeholder="Internal"]')
+    const externalInput = page.locator('input[placeholder="External"]')
+
+    await expect(internalInput).toHaveValue(internal)
+    await expect(externalInput).toHaveValue(external)
+  })
+
   test('should not affect the deployments of a new version', async ({ page }) => {
     const projectName = 'delete-default-check-deployment'
     const prefix = projectName
@@ -108,76 +153,6 @@ test.describe('Deleting default version', () => {
     const instancesTabelBody = await page.locator('.table-row-group')
     const instanceRows = await instancesTabelBody.locator('.table-row')
     await expect(instanceRows).toHaveCount(1)
-  })
-})
-
-test.describe("Deleting copied deployment's parent", () => {
-  test('should not affect the instances of the child deployment', async ({ page }) => {
-    const projectName = 'delete-parent-deploy-check-copy'
-    const projectId = await createProject(page, projectName, "versioned")
-    const versionName = "version"
-    const versionId = await createVersion(page, projectId, versionName, "Incremental")
-    await addImageToVersion(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
-
-    const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, projectName)
-    const { id: deploymentCopyId } = await copyDeployment(page, deploymentId, projectName.concat('-copy'))
-
-    await deleteDeployment(page, deploymentId)
-
-    await page.goto(versionUrl(projectId, versionId))
-
-    await page.locator('button:has-text("Deployments")').click()
-    await expect(page.locator('.table-row-group .table-row')).toHaveCount(1)
-
-    await page.goto(deploymentUrl(deploymentCopyId))
-    await expect(page.locator('.table-row-group .table-row')).toHaveCount(1)
-  })
-})
-
-test.describe('websocket', () => {
-  test('should not affect the image config of a new version', async ({ page }) => {
-    const projectName = 'delete-default-check-image-config'
-
-    const projectId = await createProject(page, projectName, 'versioned')
-    const defaultVersionName = 'default-version'
-    const defaultVersionId = await createVersion(page, projectId, defaultVersionName, 'Rolling')
-    const defaultVersionImageId = await createImage(page, projectId, defaultVersionId, NGINX_TEST_IMAGE_WITH_TAG)
-
-    const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, defaultVersionId, defaultVersionImageId))
-    const ws = await sock
-    const wsRoute = versionWsUrl(defaultVersionId)
-
-    const internal = '1000'
-    const external = '2000'
-    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_IMAGE, internal, external)
-
-    const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
-
-    await deleteVersion(page, projectId, defaultVersionId)
-
-    await page.goto(projectUrl(projectId))
-
-    expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
-
-    await page.goto(versionUrl(projectId, newVersionId))
-
-    const imagesTableBody = await page.locator('.table-row-group')
-    const imagesRows = await imagesTableBody.locator('.table-row')
-
-    await expect(imagesRows).toHaveCount(1)
-    await expect(page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
-
-    const settingsButton = await page.waitForSelector(`[src="/settings.svg"]:right-of(:text("nginx"))`)
-    await settingsButton.click()
-
-    await page.waitForSelector(`h2:has-text("Image")`)
-
-    const internalInput = page.locator('input[placeholder="Internal"]')
-    const externalInput = page.locator('input[placeholder="External"]')
-
-    await expect(internalInput).toHaveValue(internal)
-    await expect(externalInput).toHaveValue(external)
   })
 
   test('should not affect the instance config of the deployment of a new version', async ({ page }) => {
@@ -255,6 +230,29 @@ test.describe('websocket', () => {
 
     await expect(internalInput).toHaveValue(internal)
     await expect(externalInput).toHaveValue(external)
+  })
+})
+
+test.describe("Deleting copied deployment's parent", () => {
+  test('should not affect the instances of the child deployment', async ({ page }) => {
+    const projectName = 'delete-parent-deploy-check-copy'
+    const projectId = await createProject(page, projectName, "versioned")
+    const versionName = "version"
+    const versionId = await createVersion(page, projectId, versionName, "Incremental")
+    await addImageToVersion(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
+
+    const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, projectName)
+    const { id: deploymentCopyId } = await copyDeployment(page, deploymentId, projectName.concat('-copy'))
+
+    await deleteDeployment(page, deploymentId)
+
+    await page.goto(versionUrl(projectId, versionId))
+
+    await page.locator('button:has-text("Deployments")').click()
+    await expect(page.locator('.table-row-group .table-row')).toHaveCount(1)
+
+    await page.goto(deploymentUrl(deploymentCopyId))
+    await expect(page.locator('.table-row-group .table-row')).toHaveCount(1)
   })
 
   test('should not affect the instance config of the child deployment', async ({ page }) => {
