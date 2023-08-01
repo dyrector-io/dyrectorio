@@ -15,9 +15,9 @@ interface StorageCardProps extends Omit<DyoCardProps, 'children'> {
 }
 
 const StorageCard = (props: StorageCardProps) => {
-  const { t } = useTranslation('storages')
-
   const { storage, titleHref, className } = props
+
+  const { t } = useTranslation('storages')
 
   const title = (
     <div className="flex flex-row">

@@ -24,6 +24,9 @@ export class CreateProjectFromTemplateDto {
   id: string
 
   @IsString()
+  teamSlug: string
+
+  @IsString()
   name: string
 
   @IsString()

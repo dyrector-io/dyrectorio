@@ -1,9 +1,7 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoList } from '@app/elements/dyo-list'
-import { defaultApiErrorHandler } from '@app/errors'
-import { ActivateTeam, UserMeta, UserMetaTeam } from '@app/models'
-import { API_USERS_ME_ACTIVE_TEAM, ROUTE_INDEX } from '@app/routes'
-import { sendForm } from '@app/utils'
+import useTeamRoutes from '@app/hooks/use-team-routes'
+import { UserMeta, UserMetaTeam } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -11,40 +9,23 @@ import Image from 'next/image'
 interface TeamSelectionCardProps {
   className?: string
   meta: UserMeta
-  onTeamSelected?: (team: UserMetaTeam) => void
+  onTeamSelected: (team: UserMetaTeam) => void
 }
 
 const TeamSelectionCard = (props: TeamSelectionCardProps) => {
   const { meta, className, onTeamSelected } = props
 
   const { t } = useTranslation('common')
+  const routes = useTeamRoutes()
 
-  const handleApiError = defaultApiErrorHandler(t)
-
-  const onSelectTeam = async (team: UserMetaTeam) => {
-    const req: ActivateTeam = {
-      teamId: team.id,
-    }
-
-    const res = await sendForm('POST', API_USERS_ME_ACTIVE_TEAM, req)
-
-    if (res.ok) {
-      // nextjs router replace then reload loads the page twice, so instead use window.location
-      window.location.replace(ROUTE_INDEX)
-      onTeamSelected?.call(null)
-    } else {
-      handleApiError(res)
-    }
-  }
-
-  const itemTemplate = (user: UserMetaTeam) => {
-    const currentTeam = meta.activeTeamId === user.id
+  const itemTemplate = (team: UserMetaTeam) => {
+    const currentTeam = team.slug === routes?.teamSlug
 
     /* eslint-disable react/jsx-key */
     return [
       <div
         className={clsx('flex flex-row items-center', currentTeam ? null : 'cursor-pointer')}
-        onClick={currentTeam ? null : () => onSelectTeam(user)}
+        onClick={currentTeam ? null : () => onTeamSelected(team)}
       >
         <Image
           className={currentTeam ? null : 'opacity-30 bg-blend-darken'}
@@ -53,7 +34,7 @@ const TeamSelectionCard = (props: TeamSelectionCardProps) => {
           width={32}
           height={32}
         />
-        <div className="ml-4">{user.name}</div>
+        <div className="ml-4">{team.name}</div>
       </div>,
     ]
     /* eslint-enable react/jsx-key */

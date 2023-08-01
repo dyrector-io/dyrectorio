@@ -14,9 +14,9 @@ type OnboardEntryProps = {
 }
 
 const OnboardingEntry = (props: OnboardEntryProps) => {
-  const { t } = useTranslation('dashboard')
-
   const { onboardKey, done, step, nextStep, line, href } = props
+
+  const { t } = useTranslation('dashboard')
 
   const lineClassName = clsx('w-0.5 h-full mx-auto', done ? 'bg-dyo-turquoise' : 'bg-bright')
 

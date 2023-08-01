@@ -51,8 +51,6 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
 
   private server: WebSocketServer
 
-  private redirections: Map<string, WsRoute> = new Map()
-
   private routes: WsRoute[] = []
 
   constructor(appContext: INestApplicationContext, private readonly authGuard: JwtAuthGuard) {
@@ -117,19 +115,9 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     }
 
     const path = ensurePathFormat(options.namespace)
-    const redirectFrom = options.redirectFrom ? ensurePathFormat(options.redirectFrom) : null
 
     const route = new WsRoute(path)
     this.routes.push(route)
-
-    if (redirectFrom) {
-      if (this.redirections.has(redirectFrom)) {
-        this.logger.error(`Multiple WebSocket redirections from ${redirectFrom}`)
-        throw new Error('Multiple WebSocket redirections.')
-      }
-
-      this.redirections.set(redirectFrom, route)
-    }
 
     return options.server
   }
@@ -141,7 +129,6 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
       this.server.removeAllListeners()
       this.server = null
 
-      this.redirections.clear()
       this.routes.forEach(it => it.close())
       this.routes = []
     }
@@ -247,18 +234,6 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
   ): Promise<Observable<WsMessage>> {
     const subMessage = message as WsMessage<SubscriptionMessage>
     const { path } = subMessage.data
-
-    const redirectRoute = this.redirections.get(path)
-    if (redirectRoute) {
-      const match: WsRouteMatch = {
-        path: message.data.path,
-        params: {},
-        subpath: '',
-      }
-
-      this.logger.debug(`Redirecting ${path} to ${redirectRoute.path}`)
-      return await redirectRoute.onSubscribe(client, match, message, true)
-    }
 
     const [route, match] = this.findRouteByPath(path)
 

@@ -23,7 +23,8 @@ import {
 import { recoverySchema } from '@app/validations'
 import { RecoveryFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
-import kratos, { forwardCookie, obtainSessionFromRequest } from '@server/kratos'
+import { forwardCookie } from '@server/cookie'
+import kratos, { obtainSessionFromRequest } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -37,10 +38,10 @@ interface RecoveryPageProps {
 }
 
 const RecoveryPage = (props: RecoveryPageProps) => {
+  const { flow: propsFlow, recaptchaSiteKey } = props
+
   const { t } = useTranslation('recovery')
   const router = useRouter()
-
-  const { flow: propsFlow, recaptchaSiteKey } = props
 
   const recaptcha = useRef<ReCAPTCHA>()
 

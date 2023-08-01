@@ -7,12 +7,14 @@ import DyoTextArea from '@app/elements/dyo-text-area'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Project, ProjectType } from '@app/models'
 import { CreateProjectFromTemplate, Template } from '@app/models/template'
-import { API_TEMPLATES } from '@app/routes'
+import { API_TEMPLATES, ROUTE_INDEX } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { applyTemplateSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
+import { useRouter } from 'next/router'
 import { MutableRefObject } from 'react'
 
 interface ApplyTemplateCardProps {
@@ -26,6 +28,12 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
   const { template: propsTemplate, className, onTemplateApplied, submitRef } = props
 
   const { t } = useTranslation('templates')
+  const routes = useTeamRoutes()
+  const router = useRouter()
+
+  if (!routes) {
+    router.push(ROUTE_INDEX)
+  }
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -43,6 +51,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
       const body: CreateProjectFromTemplate = {
         id: propsTemplate.id,
         ...values,
+        teamSlug: routes?.teamSlug,
       }
 
       const res = await sendForm('POST', API_TEMPLATES, body)

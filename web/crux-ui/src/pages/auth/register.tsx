@@ -26,7 +26,8 @@ import {
 import { registerSchema } from '@app/validations'
 import { RegistrationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
-import kratos, { cookieOf, forwardCookie, obtainSessionFromRequest } from '@server/kratos'
+import { cookieOf, forwardCookie } from '@server/cookie'
+import kratos, { obtainSessionFromRequest } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -124,7 +125,7 @@ const RegisterPage = (props: RegisterPageProps) => {
       })
 
       if (res.ok) {
-        router.replace(verificationUrl(values.email))
+        router.replace(verificationUrl({ email: values.email }))
       } else if (res.status === 410) {
         await router.reload()
       } else {

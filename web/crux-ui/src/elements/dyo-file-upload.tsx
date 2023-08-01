@@ -12,8 +12,9 @@ export interface DyoFileUploadProps {
 }
 
 export const DyoFileUploadInput = (props: DyoFileUploadProps) => {
-  const { t } = useTranslation('common')
   const { name, multiple, handleFile, accept, label } = props
+
+  const { t } = useTranslation('common')
 
   const hiddenFileInput = React.useRef(null)
 

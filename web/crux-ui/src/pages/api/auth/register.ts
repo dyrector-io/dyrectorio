@@ -8,8 +8,9 @@ import {
   UpdateRegistrationFlowWithPasswordMethod,
 } from '@ory/kratos-client'
 import { validateCaptcha } from '@server/captcha'
+import { forwardCookieToResponse } from '@server/cookie'
 import { useErrorMiddleware } from '@server/error-middleware'
-import kratos, { forwardCookieToResponse } from '@server/kratos'
+import kratos from '@server/kratos'
 import useKratosErrorMiddleware from '@server/kratos-error-middleware'
 import { withMiddlewares } from '@server/middlewares'
 import useValidationMiddleware from '@server/validation-middleware'

@@ -17,6 +17,7 @@ import {
   stringSort,
   useSorting,
 } from '@app/hooks/use-sorting'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentByVersion,
@@ -32,7 +33,7 @@ import {
   VersionDetails,
   WS_TYPE_NODE_EVENT,
 } from '@app/models'
-import { deploymentApiUrl, deploymentDeployUrl, deploymentStartApiUrl, deploymentUrl, WS_NODES } from '@app/routes'
+import { TeamRoutes } from '@app/routes'
 import { sendForm, utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import { Translate } from 'next-translate'
@@ -65,10 +66,14 @@ export const deployStartErrorHandler = (t: Translate) =>
     return defaultTranslator(t)(stringId, status, dto)
   })
 
-export const startDeployment = async (deploymentId: string, deployInstances?: string[]): Promise<Response | null> => {
+export const startDeployment = async (
+  routes: TeamRoutes,
+  deploymentId: string,
+  deployInstances?: string[],
+): Promise<Response | null> => {
   const res = await sendForm(
     'POST',
-    deploymentStartApiUrl(deploymentId),
+    routes.deployment.api.start(deploymentId),
     deployInstances
       ? ({
           instances: deployInstances,
@@ -104,6 +109,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const { version, actions } = props
 
   const { t } = useTranslation('versions')
+  const routes = useTeamRoutes()
 
   const router = useRouter()
 
@@ -127,11 +133,11 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       return
     }
 
-    const res = await startDeployment(deployment.id)
+    const res = await startDeployment(routes, deployment.id)
     if (res) {
       handleDeployStartError(res)
     } else {
-      await router.push(deploymentDeployUrl(deployment.id))
+      await router.push(routes.deployment.deploy(deployment.id))
     }
   }
 
@@ -153,7 +159,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       return
     }
 
-    const res = await fetch(deploymentApiUrl(deployment.id), { method: 'DELETE' })
+    const res = await fetch(routes.deployment.api.details(deployment.id), { method: 'DELETE' })
     if (!res.ok) {
       handleApiError(res)
       return
@@ -183,7 +189,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const [nodeStatuses, setNodeStatuses] = useState<Record<string, NodeStatus>>({})
 
-  const nodeSock = useWebSocket(WS_NODES)
+  const nodeSock = useWebSocket(routes.node.socket())
 
   nodeSock.on(WS_TYPE_NODE_EVENT, (message: NodeEventMessage) => {
     const statuses = {
@@ -219,7 +225,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       return
     }
 
-    await router.push(deploymentUrl(data.id))
+    await router.push(routes.deployment.details(data.id))
   }
 
   const itemTemplate = (item: DeploymentByVersion) => {
@@ -227,7 +233,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
     /* eslint-disable react/jsx-key */
     return [
-      <Link className="flex place-items-center cursor-pointer" href={deploymentUrl(item.id)} passHref>
+      <Link className="flex place-items-center cursor-pointer" href={routes.deployment.details(item.id)} passHref>
         <NodeStatusIndicator className="mr-2" status={item.node.status} />
         {item.node.name}
       </Link>,
@@ -235,7 +241,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       <DeploymentStatusTag className="w-fit m-auto" status={item.status} />,
       <>{utcDateToLocale(item.updatedAt)}</>,
       <div className="flex justify-center">
-        <Link className="mr-2 inline-block cursor-pointer" href={deploymentUrl(item.id)} passHref>
+        <Link className="mr-2 inline-block cursor-pointer" href={routes.deployment.details(item.id)} passHref>
           <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
         </Link>
         {deployable && (

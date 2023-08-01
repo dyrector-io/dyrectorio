@@ -18,6 +18,7 @@ import { PRODUCTION } from './shared/const'
 import CreatedWithLocationInterceptor from './interceptors/created-with-location.interceptor'
 import prismaBootstrap from './services/prisma.bootstrap'
 import HttpLoggerInterceptor from './interceptors/http.logger.interceptor'
+import TeamAccessGuard from './guards/team-access.guard'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -63,7 +64,7 @@ const bootstrap = async () => {
 
   const authGuard = app.get(JwtAuthGuard)
   app.useGlobalFilters(new HttpExceptionFilter())
-  app.useGlobalGuards(authGuard, app.get(UuidValidationGuard))
+  app.useGlobalGuards(authGuard, app.get(TeamAccessGuard), app.get(UuidValidationGuard))
   app.useGlobalInterceptors(
     new HttpLoggerInterceptor(),
     app.get(PrismaErrorInterceptor),

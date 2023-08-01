@@ -14,9 +14,9 @@ interface VersionReorderImagesSectionProps {
 const VersionReorderImagesSection = (props: VersionReorderImagesSectionProps) => {
   const { images, saveRef, onSave } = props
 
-  const [items, setItems] = useState(images)
-
   const { t } = useTranslation('images')
+
+  const [items, setItems] = useState(images)
 
   saveRef.current = () => {
     const currentImages = images

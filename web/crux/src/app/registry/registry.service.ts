@@ -25,16 +25,11 @@ export default class RegistryService {
     return registries > 0
   }
 
-  async getRegistries(identity: Identity): Promise<RegistryDto[]> {
+  async getRegistries(teamSlug: string): Promise<RegistryDto[]> {
     const registries = await this.prisma.registry.findMany({
       where: {
         team: {
-          users: {
-            some: {
-              userId: identity.id,
-              active: true,
-            },
-          },
+          slug: teamSlug,
         },
       },
     })
@@ -59,15 +54,15 @@ export default class RegistryService {
     return this.mapper.detailsToDto(registry)
   }
 
-  async createRegistry(req: CreateRegistryDto, identity: Identity): Promise<RegistryDetailsDto> {
-    const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
+  async createRegistry(teamSlug: string, req: CreateRegistryDto, identity: Identity): Promise<RegistryDetailsDto> {
+    const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
     const registry = await this.prisma.registry.create({
       data: {
         name: req.name,
         description: req.description,
         icon: req.icon ?? null,
-        teamId: team.teamId,
+        teamId,
         createdBy: identity.id,
         ...this.mapper.detailsToDb(req),
       },

@@ -1,5 +1,5 @@
-import { imageConfigUrl, versionWsUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
+import { TEAM_ROUTES } from 'e2e/utils/common'
 import { waitSocket, wsPatchSent } from 'e2e/utils/websocket'
 import {
   wsPatchMatchDockerLabel,
@@ -27,9 +27,9 @@ test.describe('Image docker config from editor', () => {
   test('Network mode should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'networkmode-editor', '1.0.0', 'redis')
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     const mode = 'host'
 
@@ -47,9 +47,9 @@ test.describe('Image docker config from editor', () => {
   test('Docker labels should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'dockerlabel-editor', '1.0.0', 'redis')
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     const key = 'docker-key'
     const value = 'docker-value'
@@ -72,9 +72,9 @@ test.describe('Image docker config from editor', () => {
   test('Restart policy should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'restartpolicy-editor', '1.0.0', 'redis')
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchRestartPolicy('always'))
     page.locator('div.grid:has(label:has-text("RESTART POLICY")) button:has-text("Always")').click()
@@ -90,9 +90,9 @@ test.describe('Image docker config from editor', () => {
   test('Log config should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'logconfig-editor', '1.0.0', 'redis')
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     await page.locator('button:has-text("Log config")').click()
 
@@ -118,9 +118,9 @@ test.describe('Image docker config from editor', () => {
   test('Networks should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'networks-editor', '1.0.0', 'redis')
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     await page.locator('button:has-text("Networks")').click()
 

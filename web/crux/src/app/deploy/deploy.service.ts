@@ -73,17 +73,17 @@ export default class DeployService {
       .subscribe(it => this.deploymentImageEvents.next(it))
   }
 
-  async checkDeploymentIsInTheActiveTeam(deploymentId: string, identity: Identity): Promise<boolean> {
+  async checkDeploymentIsInTeam(teamSlug: string, deploymentId: string, identity: Identity): Promise<boolean> {
     const deployments = await this.prisma.deployment.count({
       where: {
         id: deploymentId,
         version: {
           project: {
             team: {
+              slug: teamSlug,
               users: {
                 some: {
                   userId: identity.id,
-                  active: true,
                 },
               },
             },
@@ -630,18 +630,13 @@ export default class DeployService {
     return this.deploymentImageEvents.pipe(filter(it => it.deploymentIds.includes(deploymentId)))
   }
 
-  async getDeployments(identity: Identity): Promise<DeploymentDto[]> {
+  async getDeployments(teamSlug: string): Promise<DeploymentDto[]> {
     const deployments = await this.prisma.deployment.findMany({
       where: {
         version: {
           project: {
             team: {
-              users: {
-                some: {
-                  userId: identity.id,
-                  active: true,
-                },
-              },
+              slug: teamSlug,
             },
           },
         },
@@ -820,6 +815,7 @@ export default class DeployService {
   }
 
   async createDeploymentToken(
+    teamSlug: string,
     deploymentId: string,
     req: CreateDeploymentTokenDto,
     identity: Identity,
@@ -855,6 +851,7 @@ export default class DeployService {
     const curl = tokenGenerator
       .getCurlCommand({
         deploymentId,
+        teamSlug,
         token: jwt,
       })
       .trim()

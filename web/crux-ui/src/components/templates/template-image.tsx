@@ -11,6 +11,7 @@ const TemplateImage = (props: TemplateImageProps) => {
   const { templateId } = props
 
   const { t } = useTranslation('templates')
+
   const [error, setError] = useState<boolean>(false)
 
   const onError = useCallback(() => {

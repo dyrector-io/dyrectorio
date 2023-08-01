@@ -13,13 +13,8 @@ export type SubscriptionMessageType = typeof SUBSCRIPTION_MESSAGE_TYPE_VALUES[nu
 export const WS_TYPE_SUBBED = 'subbed'
 export const WS_TYPE_SUB_FAILED = 'sub-failed'
 export const WS_TYPE_UNSUBBED = 'unsubbed'
-export const WS_TYPE_SUB_REDIRECT = 'sub-redirect'
 export type SubscriptionMessage = {
   path: string
-}
-
-export type SubscriptionRedirectMessage = SubscriptionMessage & {
-  redirect: string
 }
 
 export type WsConnectDto = {
