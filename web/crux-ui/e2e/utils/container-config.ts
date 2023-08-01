@@ -11,19 +11,18 @@ export const addPortsToContainerConfig = async (
   internal: string,
   external: string,
 ) => {
-  await page.locator('button:has-text("Ports")').click()
+  await page.locator('button:has-text("JSON")').click()
 
-  const addPortsButton = page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
-  await addPortsButton.click()
-
-  const internalInput = page.locator('input[placeholder="Internal"]')
-  const externalInput = page.locator('input[placeholder="External"]')
+  const jsonEditor = await page.locator('textarea')
+  const json = JSON.parse(await jsonEditor.inputValue())
+  json.ports = [{ internal: Number.parseInt(internal,10), external: Number.parseInt(external,10) }]
 
   let wsSent = wsPatchSent(ws, wsRoute, sentWsType, wsPatchMatchPorts(internal, external))
-  await internalInput.fill(internal)
-  await externalInput.fill(external)
+  jsonEditor.fill(JSON.stringify(json))
   await wsSent
 
-  await expect(internalInput).toHaveValue(internal)
-  await expect(externalInput).toHaveValue(external)
+  await page.reload()
+
+  await expect(page.locator('input[placeholder="Internal"]')).toHaveValue(internal)
+  await expect(page.locator('input[placeholder="External"]')).toHaveValue(external)
 }

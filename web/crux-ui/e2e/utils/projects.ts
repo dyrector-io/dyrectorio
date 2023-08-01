@@ -165,6 +165,7 @@ export const deleteVersion = async (page: Page, projectId: string, versionId: st
   const confirmDeleteButton = page.locator('div[role=dialog]').locator('button:has-text("Delete")')
   await expect(confirmDeleteButton).toHaveCount(1)
   await confirmDeleteButton.click()
+  await page.waitForURL(`${ROUTE_PROJECTS}/**`)
 }
 
 export const deleteDeployment = async (page: Page, deploymentId: string) => {
