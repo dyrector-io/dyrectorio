@@ -13,9 +13,9 @@ interface ServiceStatusCardProps {
 }
 
 const ServiceInfoCard = (props: ServiceStatusCardProps) => {
-  const { t } = useTranslation('status')
-
   const { info, name, className } = props
+
+  const { t } = useTranslation('status')
 
   return (
     <DyoCard className={clsx(className, 'flex flex-col p-8 m-4')}>

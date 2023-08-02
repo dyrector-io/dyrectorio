@@ -1,19 +1,13 @@
 import DyoIcon from '@app/elements/dyo-icon'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
-  ROUTE_AUDIT,
-  ROUTE_DASHBOARD,
-  ROUTE_DEPLOYMENTS,
   ROUTE_DOCS,
   ROUTE_INDEX,
   ROUTE_LOGOUT,
-  ROUTE_NODES,
-  ROUTE_NOTIFICATIONS,
   ROUTE_PROFILE,
-  ROUTE_PROJECTS,
-  ROUTE_REGISTRIES,
-  ROUTE_STORAGES,
   ROUTE_TEAMS,
   ROUTE_TEMPLATES,
+  TeamRoutes,
 } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -30,19 +24,19 @@ export interface SidebarProps {
   className?: string
 }
 
-export const SIDEBAR_SECTIONS: MenuSection[] = [
+export const sidebarSectionsOf = (routes: TeamRoutes): MenuSection[] => [
   {
     title: 'project',
     items: [
       {
         icon: '/projects.svg',
         text: 'projects',
-        link: ROUTE_PROJECTS,
+        link: routes.project.list(),
       },
       {
         icon: '/deploy.svg',
         text: 'deployments',
-        link: ROUTE_DEPLOYMENTS,
+        link: routes.deployment.list(),
       },
     ],
   },
@@ -52,17 +46,17 @@ export const SIDEBAR_SECTIONS: MenuSection[] = [
       {
         icon: '/servers.svg',
         text: 'nodes',
-        link: ROUTE_NODES,
+        link: routes.node.list(),
       },
       {
         icon: '/copy.svg',
         text: 'registries',
-        link: ROUTE_REGISTRIES,
+        link: routes.registry.list(),
       },
       {
         icon: '/notification.svg',
         text: 'notifications',
-        link: ROUTE_NOTIFICATIONS,
+        link: routes.notification.list(),
       },
       {
         icon: '/template.svg',
@@ -72,7 +66,7 @@ export const SIDEBAR_SECTIONS: MenuSection[] = [
       {
         icon: '/storage.svg',
         text: 'storages',
-        link: ROUTE_STORAGES,
+        link: routes.storage.list(),
       },
     ],
   },
@@ -82,7 +76,7 @@ export const SIDEBAR_SECTIONS: MenuSection[] = [
       {
         icon: '/audit.svg',
         text: 'audit',
-        link: ROUTE_AUDIT,
+        link: routes.audit.list(),
       },
       {
         icon: '/team.svg',
@@ -114,6 +108,10 @@ export const Sidebar = (props: SidebarProps) => {
 
   const { t } = useTranslation('common')
 
+  const routes = useTeamRoutes()
+
+  const sidebarSections = routes ? sidebarSectionsOf(routes) : null
+
   return (
     <div className={className}>
       <div className="mx-12">
@@ -128,22 +126,24 @@ export const Sidebar = (props: SidebarProps) => {
         </Link>
       </div>
 
-      <div className="flex flex-col flex-grow pb-4">
-        <div className="mt-6 flex text-bright">
-          <NavButton href={ROUTE_DASHBOARD} icon={<DyoIcon src="/dashboard.svg" alt={t('dashboard')} />}>
-            {t('dashboard')}
-          </NavButton>
-        </div>
+      {sidebarSections && (
+        <div className="flex flex-col flex-grow pb-4">
+          <div className="mt-6 flex text-bright">
+            <NavButton href={routes.dashboard.index()} icon={<DyoIcon src="/dashboard.svg" alt={t('dashboard')} />}>
+              {t('dashboard')}
+            </NavButton>
+          </div>
 
-        {SIDEBAR_SECTIONS.map((it, index) => (
-          <NavSection
-            key={index}
-            className={index < SIDEBAR_SECTIONS.length - 1 ? 'mt-6' : 'mt-auto mt-6'}
-            title={t(it.title)}
-            options={it.items}
-          />
-        ))}
-      </div>
+          {sidebarSections.map((it, index) => (
+            <NavSection
+              key={index}
+              className={index < sidebarSections.length - 1 ? 'mt-6' : 'mt-auto mt-6'}
+              title={t(it.title)}
+              options={it.items}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

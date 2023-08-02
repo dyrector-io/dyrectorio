@@ -5,8 +5,8 @@ local claims = std.extVar('claims');
         traits: {
             [if 'email' in claims then 'email' else null]: claims.email,
             name: {
-                first: claims.given_name,
-                last: claims.family_name,
+                first: if 'given_name' in claims then claims.given_name else null,
+                last: if 'family_name' in claims then claims.family_name else null,
             },
         },
     },

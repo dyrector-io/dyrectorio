@@ -1,17 +1,17 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
 import { Observable, Subject, map, of, takeUntil } from 'rxjs'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { WsAuthorize, WsClient, WsMessage, WsSubscribe, WsSubscription, WsUnsubscribe } from 'src/websockets/common'
 import SocketClient from 'src/websockets/decorators/ws.client.decorator'
-import WsParam from 'src/websockets/decorators/ws.param.decorator'
-import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
-import SocketSubscription from 'src/websockets/decorators/ws.subscription.decorator'
 import {
   UseGlobalWsFilters,
   UseGlobalWsGuards,
   UseGlobalWsInterceptors,
 } from 'src/websockets/decorators/ws.gateway.decorators'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
+import WsParam from 'src/websockets/decorators/ws.param.decorator'
+import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
+import SocketSubscription from 'src/websockets/decorators/ws.subscription.decorator'
 import {
   EditorInitMessage,
   EditorLeftMessage,
@@ -55,10 +55,11 @@ import {
 } from './deploy.message'
 import DeployService from './deploy.service'
 
+const TeamSlug = () => WsParam('teamSlug')
 const DeploymentId = () => WsParam('deploymentId')
 
 @WebSocketGateway({
-  namespace: 'deployments/:deploymentId',
+  namespace: ':teamSlug/deployments/:deploymentId',
 })
 @UseGlobalWsFilters()
 @UseGlobalWsGuards()
@@ -69,8 +70,12 @@ export default class DeployWebSocketGateway {
   constructor(private readonly service: DeployService, private readonly editorServices: EditorServiceProvider) {}
 
   @WsAuthorize()
-  async onAuthorize(@DeploymentId() deploymentId: string, @IdentityFromSocket() identity: Identity): Promise<boolean> {
-    return await this.service.checkDeploymentIsInTheActiveTeam(deploymentId, identity)
+  async onAuthorize(
+    @TeamSlug() teamSlug: string,
+    @DeploymentId() deploymentId: string,
+    @IdentityFromSocket() identity: Identity,
+  ): Promise<boolean> {
+    return await this.service.checkDeploymentIsInTeam(teamSlug, deploymentId, identity)
   }
 
   @WsSubscribe()

@@ -1,8 +1,9 @@
 /* eslint-disable import/prefer-default-export */
 /* eslint-disable import/no-extraneous-dependencies */
 import { ProjectType } from '@app/models'
-import { ROUTE_PROJECTS, ROUTE_TEMPLATES } from '@app/routes'
+import { ROUTE_TEMPLATES } from '@app/routes'
 import { Page } from '@playwright/test'
+import { TEAM_ROUTES } from './common'
 
 export const createProjectFromTemplate = async (
   page: Page,
@@ -27,7 +28,7 @@ export const createProjectFromTemplate = async (
   }
 
   await page.locator('text=Add >> nth=0').click()
-  await page.waitForURL(`${ROUTE_PROJECTS}/**`)
+  await page.waitForURL(`${TEAM_ROUTES.project.list()}/**`)
 
   return page.url().split('/').pop()
 }

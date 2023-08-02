@@ -2,6 +2,7 @@ import useEditorState, { EditorState } from '@app/components/editor/use-editor-s
 import { ViewMode } from '@app/components/shared/view-mode-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import usePersistedViewMode from '@app/hooks/use-persisted-view-mode'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   AddImagesMessage,
@@ -37,7 +38,6 @@ import {
   WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS,
   WS_TYPE_REGISTRY_IMAGE_TAGS,
 } from '@app/models'
-import { versionWsUrl, WS_REGISTRIES } from '@app/routes'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
@@ -137,6 +137,8 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
   const { t } = useTranslation('versions')
   const handleApiError = defaultApiErrorHandler(t)
 
+  const routes = useTeamRoutes()
+
   const [saveState, setSaveState] = useState<WebSocketSaveState>(null)
   const [section, setSection] = useState(initialSection)
   const [addSection, setAddSection] = useState<VersionAddSection>('none')
@@ -153,7 +155,7 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
     }
   }, [saveState, optionsSetSaveState])
 
-  const versionSock = useWebSocket(versionWsUrl(version.id), {
+  const versionSock = useWebSocket(routes.project.versions(projectId).detailsSocket(version.id), {
     onOpen: viewMode !== 'tile' ? null : () => setSaveState('connected'),
     onClose: viewMode !== 'tile' ? null : () => setSaveState('disconnected'),
     onSend: message => {
@@ -170,7 +172,7 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
 
   const editor = useEditorState(versionSock)
 
-  const registriesSock = useWebSocket(WS_REGISTRIES, {
+  const registriesSock = useWebSocket(routes.registry.socket(), {
     onOpen: () =>
       refreshImageTags(
         registriesSock,

@@ -1,4 +1,6 @@
 import { Session, UiContainer, UiNodeInputAttributes } from '@ory/kratos-client'
+import { getCookie, setCookie } from '@server/cookie'
+import { postCruxFromContext } from '@server/crux-api'
 import {
   identityWasRecovered,
   IncomingMessageWithSession,
@@ -16,9 +18,18 @@ import {
 import { Translate } from 'next-translate'
 import { NextRouter } from 'next/router'
 import toast, { ToastOptions } from 'react-hot-toast'
+import { COOKIE_TEAM_SLUG } from './const'
 import { MessageType } from './elements/dyo-input'
-import { Audit, AxiosError, DyoApiError, DyoErrorDto, OidcAvailability, RegistryDetails } from './models'
-import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_NEW_PASSWORD, ROUTE_STATUS, verificationUrl } from './routes'
+import { Audit, AxiosError, DyoApiError, DyoErrorDto, OidcAvailability, RegistryDetails, UserMeta } from './models'
+import {
+  API_USERS_ME,
+  ROUTE_404,
+  ROUTE_INDEX,
+  ROUTE_LOGIN,
+  ROUTE_NEW_PASSWORD,
+  ROUTE_STATUS,
+  verificationUrl,
+} from './routes'
 
 export type AsyncVoidFunction = () => Promise<void>
 
@@ -297,6 +308,20 @@ const dyoApiErrorStatusToRedirectUrl = (status: number): string => {
   }
 }
 
+export const teamSlugOrFirstTeam = async (context: NextPageContext): Promise<string> => {
+  let teamSlug = getCookie(context, COOKIE_TEAM_SLUG)
+  if (!teamSlug) {
+    const meta = await postCruxFromContext<UserMeta>(context, API_USERS_ME)
+    if (!meta || meta.teams.length < 1) {
+      return null
+    }
+
+    teamSlug = meta.teams[0].slug
+  }
+
+  return teamSlug
+}
+
 export const setupContextSession = async (
   context: GetServerSidePropsContext | NextPageContext,
   session: Session,
@@ -314,7 +339,7 @@ export const setupContextSession = async (
 
   const verifiableEmail = verifiableEmailOfIdentity(session.identity)
   if (verifiableEmail && !verifiableEmail.verified) {
-    return redirectTo(verificationUrl(verifiableEmail.value))
+    return redirectTo(verificationUrl({ email: verifiableEmail.value }))
   }
 
   req.session = session
@@ -359,7 +384,12 @@ export const withContextAuthorization =
       return redirect
     }
 
-    return withContextErrorHandling(getServerSideProps)(context)
+    const teamSlug = context.query.teamSlug as string
+    if (teamSlug) {
+      setCookie(context, COOKIE_TEAM_SLUG, teamSlug)
+    }
+
+    return await withContextErrorHandling(getServerSideProps)(context)
   }
 
 export const parseStringUnionType = <T>(value: string, fallback: T, validValues: ReadonlyArray<T>): T => {

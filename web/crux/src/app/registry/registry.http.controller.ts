@@ -24,13 +24,16 @@ import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
 import { CreateRegistryDto, RegistryDetailsDto, RegistryDto, UpdateRegistryDto } from './registry.dto'
 import RegistryService from './registry.service'
 
+const PARAM_TEAM_SLUG = 'teamSlug'
 const PARAM_REGISTRY_ID = 'registryId'
 const RegistryId = (...pipes: (Type<PipeTransform> | PipeTransform)[]) => Param(PARAM_REGISTRY_ID, ...pipes)
+const TeamSlug = () => Param(PARAM_TEAM_SLUG)
 
+const ROUTE_TEAM_SLUG = ':teamSlug'
 const ROUTE_REGISTRIES = 'registries'
 const ROUTE_REGISTRY_ID = ':registryId'
 
-@Controller(ROUTE_REGISTRIES)
+@Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_REGISTRIES}`)
 @ApiTags(ROUTE_REGISTRIES)
 @UseGuards(RegistryTeamAccessGuard)
 export default class RegistryHttpController {
@@ -45,8 +48,8 @@ export default class RegistryHttpController {
   })
   @ApiOkResponse({ type: RegistryDto, isArray: true, description: 'Data of all registries within a team listed.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for registries.' })
-  async getRegistries(@IdentityFromRequest() identity: Identity): Promise<RegistryDto[]> {
-    return await this.service.getRegistries(identity)
+  async getRegistries(@TeamSlug() teamSlug: string): Promise<RegistryDto[]> {
+    return await this.service.getRegistries(teamSlug)
   }
 
   @Get(ROUTE_REGISTRY_ID)
@@ -84,13 +87,14 @@ export default class RegistryHttpController {
   @ApiConflictResponse({ description: 'Registry name taken.' })
   @UseGuards(RegistryAccessValidationGuard)
   async createRegistry(
+    @TeamSlug() teamSlug: string,
     @Body() request: CreateRegistryDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreatedResponse<RegistryDetailsDto>> {
-    const registry = await this.service.createRegistry(request, identity)
+    const registry = await this.service.createRegistry(teamSlug, request, identity)
 
     return {
-      url: `/registries/${registry.id}`,
+      url: `${teamSlug}/registries/${registry.id}`,
       body: registry,
     }
   }

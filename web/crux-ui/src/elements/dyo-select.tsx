@@ -14,8 +14,9 @@ export interface DyoSelectProps extends React.InputHTMLAttributes<HTMLSelectElem
 }
 
 export const DyoSelect = forwardRef((props: DyoSelectProps, ref: ForwardedRef<HTMLSelectElement>) => {
-  const { t } = useTranslation('common')
   const { message, messageType, grow, ...forwaredProps } = props
+
+  const { t } = useTranslation('common')
 
   return (
     <>

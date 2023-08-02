@@ -1,3 +1,4 @@
+import useVersionHint from '@app/components/projects/versions/use-version-hint'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
@@ -8,9 +9,8 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import useVersionHint from '@app/hooks/use-version-hint'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateVersion, EditableVersion, Project, UpdateVersion, VERSION_TYPE_VALUES } from '@app/models'
-import { projectVersionsApiUrl, versionApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createVersionSchema, updateVersionSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
@@ -25,9 +25,10 @@ interface EditVersionCardProps {
 }
 
 const EditVersionCard = (props: EditVersionCardProps) => {
-  const { project, className, version: propsVersion, onVersionEdited, submitRef } = props
-
   const { t } = useTranslation('versions')
+  const routes = useTeamRoutes()
+
+  const { project, className, version: propsVersion, onVersionEdited, submitRef } = props
 
   const [version, setVersion] = useState<EditableVersion>(
     propsVersion ?? {
@@ -57,8 +58,8 @@ const EditVersionCard = (props: EditVersionCardProps) => {
       const body: CreateVersion | UpdateVersion = values
 
       const res = await (!editing
-        ? sendForm('POST', projectVersionsApiUrl(project.id), body as CreateVersion)
-        : sendForm('PUT', versionApiUrl(project.id, version.id), body as UpdateVersion))
+        ? sendForm('POST', routes.project.versions(project.id).api.list(), body as CreateVersion)
+        : sendForm('PUT', routes.project.versions(project.id).api.details(version.id), body as UpdateVersion))
 
       if (res.ok) {
         let result: EditableVersion

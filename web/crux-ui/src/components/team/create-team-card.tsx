@@ -6,7 +6,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { CreateTeam, Team } from '@app/models'
+import { CreateTeam, Team, teamSlugFromName } from '@app/models'
 import { API_TEAMS } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createTeamSchema } from '@app/validations'
@@ -27,6 +27,7 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
   const formik = useDyoFormik({
     initialValues: {
       name: '',
+      slug: '',
     },
     validationSchema: createTeamSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
@@ -60,12 +61,29 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
           className="min-w-lg"
           grow
           name="name"
-          type="name"
+          type="text"
           required
           label={t('common:name')}
-          onChange={formik.handleChange}
+          onChange={e => {
+            const { value } = e.target
+
+            formik.setFieldValue('slug', teamSlugFromName(value), false)
+            formik.handleChange(e)
+          }}
           value={formik.values.name}
           message={formik.errors.name}
+        />
+
+        <DyoInput
+          className="min-w-lg"
+          grow
+          name="slug"
+          type="text"
+          required
+          label={t('common:slug')}
+          onChange={formik.handleChange}
+          value={formik.values.slug}
+          message={formik.errors.slug}
         />
 
         <DyoButton className="mt-8" type="submit">

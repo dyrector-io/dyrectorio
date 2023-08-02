@@ -29,7 +29,7 @@ import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
 import { DisableAuth, IdentityFromRequest } from '../token/jwt-auth.guard'
 import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
-import { NodeId, PARAM_NODE_ID, ROUTE_NODES, ROUTE_NODE_ID } from './node.const'
+import { NodeId, PARAM_NODE_ID, ROUTE_NODES, ROUTE_NODE_ID, ROUTE_TEAM_SLUG, TeamSlug } from './node.const'
 import {
   CreateNodeDto,
   NodeAuditLogListDto,
@@ -45,7 +45,7 @@ import NodeGenerateScriptValidationPipe from './pipes/node.generate-script.pipe'
 import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
 import DeleteNodeValidationPipe from './pipes/node.delete.pipe'
 
-@Controller(ROUTE_NODES)
+@Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_NODES}`)
 @ApiTags(ROUTE_NODES)
 @UseGuards(NodeTeamAccessGuard)
 export default class NodeHttpController {
@@ -64,8 +64,8 @@ export default class NodeHttpController {
     description: 'Data of nodes listed.',
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for nodes.' })
-  async getNodes(@IdentityFromRequest() identity: Identity): Promise<NodeDto[]> {
-    return this.service.getNodes(identity)
+  async getNodes(@TeamSlug() teamSlug: string): Promise<NodeDto[]> {
+    return this.service.getNodes(teamSlug)
   }
 
   @Get(ROUTE_NODE_ID)
@@ -98,13 +98,14 @@ export default class NodeHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for node creation.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for node creation.' })
   async createNode(
+    @TeamSlug() teamSlug: string,
     @Body() request: CreateNodeDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreatedResponse<NodeDto>> {
-    const node = await this.service.createNode(request, identity)
+    const node = await this.service.createNode(teamSlug, request, identity)
 
     return {
-      url: `/${ROUTE_NODES}/${node.id}`,
+      url: `${teamSlug}/${ROUTE_NODES}/${node.id}`,
       body: node,
     }
   }
@@ -157,11 +158,12 @@ export default class NodeHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for an install script.' })
   @UuidParams(PARAM_NODE_ID)
   async generateScript(
+    @TeamSlug() teamSlug: string,
     @NodeId(NodeGenerateScriptValidationPipe) nodeId: string,
     @Body() request: NodeGenerateScriptDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<NodeInstallDto> {
-    return await this.service.generateScript(nodeId, request, identity)
+    return await this.service.generateScript(teamSlug, nodeId, request, identity)
   }
 
   @Delete(`${ROUTE_NODE_ID}/script`)

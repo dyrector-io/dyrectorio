@@ -31,21 +31,12 @@ export default class VersionService {
     private readonly editorServices: EditorServiceProvider,
   ) {}
 
-  async checkProjectOrVersionIsInTheActiveTeam(
-    projectId: string,
-    versionId: string | null,
-    identity: Identity,
-  ): Promise<boolean> {
+  async checkProjectOrVersionIsInTeam(teamSlug: string, projectId: string, versionId: string | null): Promise<boolean> {
     const versions = await this.prisma.project.count({
       where: {
         id: projectId,
         team: {
-          users: {
-            some: {
-              userId: identity.id,
-              active: true,
-            },
-          },
+          slug: teamSlug,
         },
         versions: !versionId
           ? undefined
@@ -60,16 +51,16 @@ export default class VersionService {
     return versions > 0
   }
 
-  async checkVersionIsInTheActiveTeam(versionId: string, identity: Identity): Promise<boolean> {
+  async checkVersionIsInTeam(teamSlug: string, versionId: string, identity: Identity): Promise<boolean> {
     const versions = await this.prisma.version.count({
       where: {
         id: versionId,
         project: {
           team: {
+            slug: teamSlug,
             users: {
               some: {
                 userId: identity.id,
-                active: true,
               },
             },
           },
@@ -97,14 +88,6 @@ export default class VersionService {
       where: {
         project: {
           id: projectId,
-          team: {
-            users: {
-              some: {
-                active: true,
-                userId: user.id,
-              },
-            },
-          },
         },
         ...filter,
       },

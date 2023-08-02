@@ -8,8 +8,8 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { apiErrorHandler, defaultTranslator } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateDeployment, Deployment, DyoApiError, DyoNode, projectNameToDeploymentPrefix } from '@app/models'
-import { API_DEPLOYMENTS, API_NODES } from '@app/routes'
 import { fetcher, sendForm } from '@app/utils'
 import { createDeploymentSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
@@ -29,13 +29,14 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   const { projectName, versionId, className, onAdd, onDiscard } = props
 
   const { t } = useTranslation('deployments')
+  const routes = useTeamRoutes()
 
-  const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(API_NODES, fetcher)
+  const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(routes.node.api.list(), fetcher)
 
   const handleApiError = apiErrorHandler((stringId: string, status: number, dto: DyoApiError) => {
-    onAdd(dto.value)
-
     if (dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing') {
+      onAdd(dto.value)
+
       return {
         toast: dto.description,
         toastOptions: {
@@ -65,7 +66,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         versionId,
       }
 
-      const res = await sendForm('POST', API_DEPLOYMENTS, body)
+      const res = await sendForm('POST', routes.deployment.api.list(), body)
 
       if (res.ok) {
         const result = (await res.json()) as Deployment

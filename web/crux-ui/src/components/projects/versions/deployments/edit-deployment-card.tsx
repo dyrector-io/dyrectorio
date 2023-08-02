@@ -6,8 +6,8 @@ import { DyoInput } from '@app/elements/dyo-input'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { DeploymentDetails, PatchDeployment } from '@app/models'
-import { deploymentApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { updateDeploymentSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
@@ -24,6 +24,7 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
   const { deployment, className, onDeploymentEdited, submitRef } = props
 
   const { t } = useTranslation('deployments')
+  const routes = useTeamRoutes()
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -39,7 +40,7 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
         ...transformedValues,
       }
 
-      const res = await sendForm('PATCH', deploymentApiUrl(deployment.id), body)
+      const res = await sendForm('PATCH', routes.deployment.api.details(deployment.id), body)
 
       setSubmitting(false)
 

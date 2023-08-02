@@ -6,9 +6,9 @@ interface LoadingIndicatorProps {
 }
 
 const LoadingIndicator = (props: LoadingIndicatorProps) => {
-  const { t } = useTranslation('common')
-
   const { className } = props
+
+  const { t } = useTranslation('common')
 
   return <DyoIcon className={className} imageClassName="animate-spin" src="/loading.svg" alt={t('loading')} size="md" />
 }

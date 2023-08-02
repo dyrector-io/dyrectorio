@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios'
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { lastValueFrom } from 'rxjs'
 import TeamRepository from 'src/app/team/team.repository'
@@ -17,8 +17,6 @@ const TEST_MESSAGE = 'Its a test!'
 
 @Injectable()
 export default class NotificationService {
-  private readonly logger = new Logger(NotificationService.name)
-
   constructor(
     private mapper: NotificationMapper,
     private prisma: PrismaService,
@@ -27,16 +25,11 @@ export default class NotificationService {
     private httpService: HttpService,
   ) {}
 
-  async getNotifications(identity: Identity): Promise<NotificationDto[]> {
+  async getNotifications(teamSlug: string): Promise<NotificationDto[]> {
     const notifications = await this.prisma.notification.findMany({
       where: {
         team: {
-          users: {
-            some: {
-              userId: identity.id,
-              active: true,
-            },
-          },
+          slug: teamSlug,
         },
       },
       include: {
@@ -65,12 +58,16 @@ export default class NotificationService {
     return this.mapper.detailsToDto(notification, identity)
   }
 
-  async createNotification(request: CreateNotificationDto, identity: Identity): Promise<NotificationDto> {
-    const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
+  async createNotification(
+    teamSlug: string,
+    request: CreateNotificationDto,
+    identity: Identity,
+  ): Promise<NotificationDto> {
+    const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
     const notification = await this.prisma.notification.create({
       data: {
-        teamId: team.teamId,
+        teamId,
         name: request.name,
         url: request.url,
         type: request.type,

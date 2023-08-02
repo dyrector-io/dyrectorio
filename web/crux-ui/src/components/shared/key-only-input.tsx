@@ -71,8 +71,6 @@ interface KeyInputProps {
 }
 
 const KeyOnlyInput = (props: KeyInputProps) => {
-  const { t } = useTranslation('common')
-
   const {
     label,
     labelClassName,
@@ -86,6 +84,8 @@ const KeyOnlyInput = (props: KeyInputProps) => {
     onChange: propsOnChange,
     onResetSection: propsOnResetSection,
   } = props
+
+  const { t } = useTranslation('common')
 
   const [state, dispatch] = useRepatch(items ?? [])
 

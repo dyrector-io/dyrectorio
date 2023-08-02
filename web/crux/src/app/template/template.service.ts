@@ -36,6 +36,8 @@ export default class TemplateService {
   ) {}
 
   async createProjectFromTemplate(req: CreateProjectFromTemplateDto, identity: Identity): Promise<ProjectDto> {
+    const { teamSlug } = req
+
     const template = await this.templateFileService.getTemplateById(req.id)
 
     if (template.registries && template.registries.length > 0) {
@@ -49,12 +51,7 @@ export default class TemplateService {
             },
             {
               team: {
-                users: {
-                  some: {
-                    userId: identity.id,
-                    active: true,
-                  },
-                },
+                slug: teamSlug,
               },
             },
           ],
@@ -65,6 +62,7 @@ export default class TemplateService {
         .filter(it => !counts.find(f => f.name === it.name))
         .map(it =>
           this.registryService.createRegistry(
+            teamSlug,
             {
               ...it,
               description: it.description ?? '',
@@ -81,9 +79,9 @@ export default class TemplateService {
       type: req.type,
     }
 
-    const project = await this.projectService.createProject(createProjectReq, identity)
+    const project = await this.projectService.createProject(teamSlug, createProjectReq, identity)
 
-    await this.createVersion(template.images, project, identity)
+    await this.createVersion(teamSlug, template.images, project, identity)
 
     return project
   }
@@ -139,7 +137,12 @@ export default class TemplateService {
     }
   }
 
-  private async createVersion(templateImages: TemplateImage[], project: ProjectDto, identity: Identity): Promise<void> {
+  private async createVersion(
+    teamSlug: string,
+    templateImages: TemplateImage[],
+    project: ProjectDto,
+    identity: Identity,
+  ): Promise<void> {
     const { id: projectId } = project
 
     let version =
@@ -184,12 +187,7 @@ export default class TemplateService {
           },
           {
             team: {
-              users: {
-                some: {
-                  userId: identity.id,
-                  active: true,
-                },
-              },
+              slug: teamSlug,
             },
           },
         ],

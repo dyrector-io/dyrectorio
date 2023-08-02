@@ -16,9 +16,9 @@ interface NodeConnectionCardProps {
 }
 
 const NodeConnectionCard = (props: NodeConnectionCardProps) => {
-  const { t } = useTranslation('nodes')
-
   const { node, className, showName } = props
+
+  const { t } = useTranslation('nodes')
 
   const runningSince = useNodeUptime(node)
 

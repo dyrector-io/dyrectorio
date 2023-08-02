@@ -5,6 +5,7 @@ import { DEPLOYMENT_EDIT_WS_REQUEST_DELAY } from '@app/const'
 import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import usePersistedViewMode from '@app/hooks/use-persisted-view-mode'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -43,7 +44,6 @@ import {
   WS_TYPE_PATCH_INSTANCE,
   WS_TYPE_PATCH_RECEIVED,
 } from '@app/models'
-import { deploymentTokenApiUrl, deploymentWsUrl, WS_NODES } from '@app/routes'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
 import { useRef, useState } from 'react'
@@ -100,6 +100,7 @@ const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage)
 
 const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, DeploymentActions] => {
   const { t } = useTranslation('deployments')
+  const routes = useTeamRoutes()
 
   const { deployment: optionDeploy, onWsError, onApiError } = options
   const { project, version } = optionDeploy
@@ -123,7 +124,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const copiable = deploymentIsCopiable(deployment.status)
   const showDeploymentLog = deploymentLogVisible(deployment.status)
 
-  const nodesSock = useWebSocket(WS_NODES)
+  const nodesSock = useWebSocket(routes.node.socket())
   nodesSock.on(WS_TYPE_NODE_EVENT, (message: NodeEventMessage) => {
     if (message.id !== node.id) {
       return
@@ -137,7 +138,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
     })
   })
 
-  const sock = useWebSocket(deploymentWsUrl(deployment.id), {
+  const sock = useWebSocket(routes.deployment.detailsSocket(deployment.id), {
     onOpen: () => setSaveState('connected'),
     onClose: () => setSaveState('disconnected'),
     onSend: message => {
@@ -316,7 +317,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       return
     }
 
-    const res = await fetch(deploymentTokenApiUrl(deployment.id), { method: 'DELETE' })
+    const res = await fetch(routes.deployment.api.token(deployment.id), { method: 'DELETE' })
 
     if (!res.ok) {
       onApiError(res)

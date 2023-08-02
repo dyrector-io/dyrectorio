@@ -10,7 +10,7 @@ import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { DyoErrorDto, oidcEnabled, OidcProvider, Register } from '@app/models'
-import { API_AUTH_REGISTER, ROUTE_LOGIN, ROUTE_SETTINGS, verificationUrl } from '@app/routes'
+import { API_AUTH_REGISTER, registerOidcUrl, ROUTE_LOGIN, ROUTE_SETTINGS, verificationUrl } from '@app/routes'
 import {
   findAttributes,
   findError,
@@ -26,7 +26,8 @@ import {
 import { registerSchema } from '@app/validations'
 import { RegistrationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
-import kratos, { cookieOf, forwardCookie, obtainSessionFromRequest } from '@server/kratos'
+import { cookieOf, forwardCookie } from '@server/cookie'
+import kratos, { obtainSessionFromRequest, registrationOidcInvalid } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -124,7 +125,7 @@ const RegisterPage = (props: RegisterPageProps) => {
       })
 
       if (res.ok) {
-        router.replace(verificationUrl(values.email))
+        router.replace(verificationUrl({ email: values.email }))
       } else if (res.status === 410) {
         await router.reload()
       } else {
@@ -284,6 +285,10 @@ const getPageServerSideProps = async (context: NextPageContext) => {
         cookie: cookieOf(context.req),
       })
     : await kratos.createBrowserRegistrationFlow()
+
+  if (flowId && registrationOidcInvalid(flow.data)) {
+    return redirectTo(registerOidcUrl(flowId))
+  }
 
   forwardCookie(context, flow)
 

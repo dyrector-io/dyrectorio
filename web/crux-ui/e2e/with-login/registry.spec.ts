@@ -1,10 +1,9 @@
-import { ROUTE_REGISTRIES } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { clearInput, NGINX_TEST_IMAGE_WITH_TAG, screenshotPath } from '../utils/common'
+import { clearInput, NGINX_TEST_IMAGE_WITH_TAG, screenshotPath, TEAM_ROUTES } from '../utils/common'
 import { createProject } from '../utils/projects'
 
 test('adding a new registry should work', async ({ page }) => {
-  await page.goto(ROUTE_REGISTRIES)
+  await page.goto(TEAM_ROUTES.registry.list())
 
   await page.locator('text=Add').click()
   await expect(page.locator('h4')).toContainText('New registry')
@@ -18,7 +17,7 @@ test('adding a new registry should work', async ({ page }) => {
 
   await page.locator('text=Save').click()
 
-  await page.waitForURL(ROUTE_REGISTRIES)
+  await page.waitForURL(TEAM_ROUTES.registry.list())
 
   await expect(page.locator(`h3:text("TEST REGISTRY")`)).toHaveCount(1)
 
@@ -26,7 +25,7 @@ test('adding a new registry should work', async ({ page }) => {
 })
 
 test('minimum name length requirement should work', async ({ page }) => {
-  await page.goto(ROUTE_REGISTRIES)
+  await page.goto(TEAM_ROUTES.registry.list())
 
   await page.locator('text=Add').click()
   await expect(page.locator('h4')).toContainText('New registry')
@@ -46,7 +45,7 @@ test('minimum name length requirement should work', async ({ page }) => {
 test("Unchecked registry shouldn't search images", async ({ page }) => {
   const registryName = 'REGISTRY_UNCHECKED'
 
-  await page.goto(ROUTE_REGISTRIES)
+  await page.goto(TEAM_ROUTES.registry.list())
 
   await page.locator('text=Add').click()
   await expect(page.locator('h4')).toContainText('New registry')
