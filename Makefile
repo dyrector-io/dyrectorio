@@ -33,17 +33,36 @@ cli:
 	go run .
 
 # Create dyrector.io offline installer bundle
-.PHONY: bundle
-bundle:
+.PHONY: export-minimal
+export-minimal:
 	$(eval BUNDLEVER=$(or $(version),latest))
 	mv .env .env_bak || true
 	echo "DYO_VERSION=$(BUNDLEVER)" > .env
-	docker-compose --ansi=never pull
-	docker-compose config 2>/dev/null | yq -r '.services[].image' | sort | uniq | while read line ; do \
-	docker save $$line | gzip > "offline/$$(echo "$$line" | sed 's/\//\./g; s/\:/\_/g' | cut -d'.' -f3-).tgz" ; done
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/kratos:latest offline/kratos.tar
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/crux:latest offline/crux.tar
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/crux-ui:latest offline/crux-ui.tar
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest offline/dagent.tar
 	cp docker-compose.yaml offline/
 	cp .env.example offline/
-	zip -r dyrectorio-offline-bundle-$(BUNDLEVER).zip offline
+	zip -r dyrectorio-offline-bundle-min-amd64-$(BUNDLEVER).zip offline
+	mv .env_bak .env || true
+
+.PHONY: export-full
+export-full:
+	$(eval BUNDLEVER=$(or $(version),latest))
+	mv .env .env_bak || true
+	echo "DYO_VERSION=$(BUNDLEVER)" > .env
+	crane pull --platform=linux/amd64 docker.io/library/traefik:2.9 offline/traefik.tar
+	crane pull --platform=linux/amd64 docker.io/library/postgres:13-alpine offline/postgresql.tar
+	crane pull --platform=linux/amd64 docker.io/oryd/mailslurper:smtps-latest offline/mailslurper.tar
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/kratos:latest offline/kratos.tar
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/crux:latest offline/crux.tar
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/crux-ui:latest offline/crux-ui.tar
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest offline/dagent.tar
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/agent/crane:latest offline/crane.tar
+	cp docker-compose.yaml offline/
+	cp .env.example offline/
+	zip -r dyrectorio-offline-bundle-full-amd64-$(BUNDLEVER).zip offline
 	mv .env_bak .env || true
 
 # Compile the all gRPC files
