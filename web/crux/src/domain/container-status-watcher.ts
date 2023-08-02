@@ -45,6 +45,7 @@ export default class ContainerStatusWatcher {
           map[it] = this.state[it]
           return map
         }, {})
+
       this.state = updated.reduce((map, it) => {
         map[Agent.containerPrefixNameOf(it.id)] = it
         return map
@@ -67,11 +68,7 @@ export default class ContainerStatusWatcher {
 
   watch(): Observable<ContainerStateListMessage> {
     return this.stream.pipe(
-      // necessary, because of: https://github.com/nestjs/nest/issues/8111
-      startWith({
-        prefix: this.prefix,
-        data: [],
-      }),
+      startWith(this.mapStateToMessage()),
       finalize(() => this.onWatcherDisconnected()),
     )
   }
