@@ -228,15 +228,17 @@ func shouldUseLocalImage(ctx context.Context, cli client.APIClient,
 		EncodedAuth:     encodedAuth,
 	})
 	if err != nil {
-		if preferLocal && errors.Is(err, errDigestMismatch) && !errors.Is(err, ErrLocalImageNotFound) {
-			log.Debug().Msgf("using local image")
-			return true, nil
+		// Local image is present, but does not match the remote image
+		if errors.Is(err, errDigestMismatch) && !errors.Is(err, ErrLocalImageNotFound) {
+			return preferLocal, nil
 		}
-		if errors.Is(err, errDigestsMatching) {
-			log.Debug().Msgf("using local image")
-			return true, nil
+
+		// Either the local image is missing or the digests don't match
+		if errors.Is(err, errDigestMismatch) || errors.Is(err, ErrLocalImageNotFound) {
+			return false, nil
 		}
-		// swallowing specific errors
+
+		// Swallowing specific errors
 		if !(errors.Is(err, errDigestMismatch) || errors.Is(err, ErrImageNotFound)) {
 			return false, err
 		}
