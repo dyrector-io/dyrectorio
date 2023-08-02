@@ -8,8 +8,9 @@ interface UserDefaultAvatarProps {
 }
 
 const UserDefaultAvatar = (props: UserDefaultAvatarProps) => {
-  const { t } = useTranslation('common')
   const { className, onClick } = props
+
+  const { t } = useTranslation('common')
 
   return (
     <Image

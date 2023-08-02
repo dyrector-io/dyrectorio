@@ -1,5 +1,5 @@
-import { imageConfigUrl, versionWsUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
+import { TEAM_ROUTES } from 'e2e/utils/common'
 import { waitSocket, wsPatchSent } from 'e2e/utils/websocket'
 import {
   wsPatchMatchDockerLabel,
@@ -27,9 +27,9 @@ test.describe('Image docker config from JSON', () => {
   test('Network mode should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'networkmode-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     const mode = 'host'
 
@@ -54,9 +54,9 @@ test.describe('Image docker config from JSON', () => {
   test('Docker labels should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'dockerlabel-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     const key = 'docker-key'
     const value = 'docker-value'
@@ -85,9 +85,9 @@ test.describe('Image docker config from JSON', () => {
   test('Restart policy should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'restartpolicy-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
     await jsonEditorButton.click()
@@ -110,9 +110,9 @@ test.describe('Image docker config from JSON', () => {
   test('Log config should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'logconfig-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     const type = 'json-file'
     const key = 'logger-key'
@@ -140,9 +140,9 @@ test.describe('Image docker config from JSON', () => {
   test('Networks should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'networks-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     await page.locator('button:has-text("Networks")').click()
 

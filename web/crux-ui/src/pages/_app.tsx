@@ -1,4 +1,5 @@
 import DyoHead from '@app/components/main/dyo-head'
+import { TeamRoutesProvider } from '@app/providers/team-routes'
 import { WebSocketProvider } from '@app/providers/websocket'
 import '@app/styles/global.css'
 import { AppProps } from 'next/app'
@@ -8,19 +9,22 @@ const CruxApp = ({ Component, pageProps }: AppProps) => (
   <>
     <DyoHead />
     <WebSocketProvider>
-      <Toaster
-        toastOptions={{
-          error: {
-            icon: null,
-            className: '!bg-error-red',
-            style: {
-              color: 'white',
+      <TeamRoutesProvider pageProps={pageProps}>
+        <Toaster
+          toastOptions={{
+            error: {
+              icon: null,
+              className: '!bg-error-red',
+              style: {
+                color: 'white',
+              },
+              position: 'top-center',
             },
-            position: 'top-center',
-          },
-        }}
-      />
-      <Component {...pageProps} />
+          }}
+        />
+
+        <Component {...pageProps} />
+      </TeamRoutesProvider>
     </WebSocketProvider>
   </>
 )

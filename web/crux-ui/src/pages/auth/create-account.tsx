@@ -11,7 +11,8 @@ import { CreateAccount, DyoErrorDto } from '@app/models'
 import { API_CREATE_ACCOUNT, ROUTE_INDEX } from '@app/routes'
 import { findUiMessage, isDyoError, redirectTo, sendForm, upsertDyoError, withContextErrorHandling } from '@app/utils'
 import { RecoveryFlow } from '@ory/kratos-client'
-import kratos, { forwardCookie } from '@server/kratos'
+import { forwardCookie } from '@server/cookie'
+import kratos from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -25,10 +26,9 @@ interface AcceptInvitationPageProps {
 }
 
 const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
-  const { t } = useTranslation('create-account')
-
   const { flow: propsFlow, code, team } = props
 
+  const { t } = useTranslation('create-account')
   const router = useRouter()
 
   const [flow, setFlow] = useState(propsFlow)

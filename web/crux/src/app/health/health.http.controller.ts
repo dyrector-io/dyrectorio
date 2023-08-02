@@ -1,13 +1,15 @@
 import { Controller, Get } from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { DisableTeamAccessGuard } from 'src/guards/team-access.guard'
+import { DisableAuth } from '../token/jwt-auth.guard'
 import { HealthDto } from './health.dto'
 import HealthService from './health.service'
-import { DisableAuth } from '../token/jwt-auth.guard'
 
 const ROUTE_HEALTH = 'health'
 
 @Controller(ROUTE_HEALTH)
 @ApiTags(ROUTE_HEALTH)
+@DisableTeamAccessGuard()
 export default class HealthHttpController {
   constructor(private service: HealthService) {}
 

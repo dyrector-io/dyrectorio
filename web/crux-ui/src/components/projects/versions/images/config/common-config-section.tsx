@@ -9,6 +9,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoSwitch from '@app/elements/dyo-switch'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   CommonConfigProperty,
   COMMON_CONFIG_PROPERTIES,
@@ -29,7 +30,6 @@ import {
   mergeConfigs,
   VolumeType,
 } from '@app/models/container'
-import { API_STORAGES_OPTIONS } from '@app/routes'
 import { fetcher, toNumber } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -65,6 +65,8 @@ type CommonConfigSectionProps = ImageCommonConfigSectionProps | InstanceCommonCo
 
 const CommonConfigSection = (props: CommonConfigSectionProps) => {
   const { t } = useTranslation('container')
+  const routes = useTeamRoutes()
+
   const {
     disabled,
     onChange,
@@ -79,7 +81,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
     resetableConfig: propsResetableConfig,
   } = props
 
-  const { data: storages } = useSWR<StorageOption[]>(API_STORAGES_OPTIONS, fetcher)
+  const { data: storages } = useSWR<StorageOption[]>(routes.storage.api.options(), fetcher)
 
   const disabledOnImage = configType === 'image' || disabled
   // eslint-disable-next-line react/destructuring-assignment

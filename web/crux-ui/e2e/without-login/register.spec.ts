@@ -31,7 +31,7 @@ test('should register with eligible credentials', async ({ page }) => {
 
   await page.screenshot({ path: screenshotPath('register-successful'), fullPage: true })
 
-  await expect(page).toHaveURL(verificationUrl(REGISTERED_USER_EMAIL))
+  await expect(page).toHaveURL(verificationUrl({ email: REGISTERED_USER_EMAIL }))
 })
 
 test.afterAll(async ({ baseURL }) => {

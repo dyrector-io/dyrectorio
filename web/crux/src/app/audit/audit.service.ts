@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common'
-import { Identity } from '@ory/kratos-client'
 import { Prisma } from '@prisma/client'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
@@ -14,17 +13,12 @@ export default class AuditService {
     private readonly kratos: KratosService,
   ) {}
 
-  async getAuditLog(query: AuditLogQueryDto, identity: Identity): Promise<AuditLogListDto> {
+  async getAuditLog(teamSlug: string, query: AuditLogQueryDto): Promise<AuditLogListDto> {
     const { skip, take, from, to } = query
 
     const where: Prisma.AuditLogWhereInput = {
       team: {
-        users: {
-          some: {
-            userId: identity.id,
-            active: true,
-          },
-        },
+        slug: teamSlug,
       },
       AND: {
         createdAt: {

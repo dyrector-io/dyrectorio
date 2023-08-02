@@ -1,7 +1,6 @@
-import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common'
+import { Controller, Delete, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common'
 import {
   ApiBadRequestResponse,
-  ApiBody,
   ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -12,8 +11,8 @@ import {
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
+import { DisableTeamAccessGuard } from 'src/guards/team-access.guard'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
-import { ActivateTeamDto } from './team.dto'
 import TeamService from './team.service'
 import { UserMetaDto } from './user.dto'
 
@@ -21,7 +20,6 @@ const PARAM_TEAM_ID = 'teamId'
 const TeamId = () => Param(PARAM_TEAM_ID)
 
 const ROUTE_USERS_ME = 'users/me'
-const ROUTE_ACTIVE_TEAM = 'active-team'
 const ROUTE_INVITATIONS = 'invitations'
 const ROUTE_TEAM_ID = ':teamId'
 const ROUTE_PREFERENCES = 'preferences'
@@ -29,6 +27,7 @@ const ROUTE_ONBOARDING = 'onboarding'
 
 @Controller(ROUTE_USERS_ME)
 @ApiTags(ROUTE_USERS_ME)
+@DisableTeamAccessGuard()
 export default class UserHttpController {
   constructor(private service: TeamService) {}
 
@@ -36,7 +35,7 @@ export default class UserHttpController {
   @HttpCode(HttpStatus.OK)
   @AuditLogLevel('disabled')
   @ApiOperation({
-    description: 'Response includes the `user`, `activeTeamId`, `teams`, and `invitations`.',
+    description: 'Response includes the `user`, `teams`, and `invitations`.',
     summary: 'Fetch the current user.',
   })
   @ApiOkResponse({ type: UserMetaDto, description: 'Fetch the current user.' })
@@ -46,24 +45,11 @@ export default class UserHttpController {
     return await this.service.getUserMeta(identity)
   }
 
-  @Post(ROUTE_ACTIVE_TEAM)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({
-    description: 'Request must include `teamID`.',
-    summary: 'Sets the active team.',
-  })
-  @ApiBody({ type: ActivateTeamDto })
-  @ApiNoContentResponse({ description: 'Set the active team.' })
-  @ApiBadRequestResponse({ description: 'Bad request for team activation.' })
-  @ApiForbiddenResponse({ description: 'Unauthorized request for team activation.' })
-  async activateTeam(@Body() request: ActivateTeamDto, @IdentityFromRequest() identity: Identity): Promise<void> {
-    await this.service.activateTeam(request, identity)
-  }
-
   @Post(`${ROUTE_INVITATIONS}/${ROUTE_TEAM_ID}`)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @AuditLogLevel('disabled')
   @ApiOperation({
-    description: 'Request must include `teamID`.',
+    description: 'Request must include `teamId`.',
     summary: 'Accept invitation to a team.',
   })
   @ApiNoContentResponse({ description: 'Invitation accepted.' })
@@ -76,8 +62,9 @@ export default class UserHttpController {
 
   @Delete(`${ROUTE_INVITATIONS}/${ROUTE_TEAM_ID}`)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @AuditLogLevel('disabled')
   @ApiOperation({
-    description: 'Request must include `teamID`.',
+    description: 'Request must include `teamId`.',
     summary: 'Decline invitation to a team.',
   })
   @ApiNoContentResponse({ description: 'Invitation declined.' })
@@ -96,6 +83,7 @@ export default class UserHttpController {
   })
   @ApiNoContentResponse({ description: 'Enabled.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for onboarding tips.' })
+  @AuditLogLevel('disabled')
   async enableOnboardingTips(@IdentityFromRequest() identity: Identity): Promise<void> {
     await this.service.enableOnboarding(identity)
   }
@@ -108,6 +96,7 @@ export default class UserHttpController {
   })
   @ApiNoContentResponse({ description: 'Disabled.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for onboarding tips.' })
+  @AuditLogLevel('disabled')
   async disableOnboardingTips(@IdentityFromRequest() identity: Identity): Promise<void> {
     await this.service.disableOnboarding(identity)
   }

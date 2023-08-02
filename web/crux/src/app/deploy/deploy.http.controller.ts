@@ -49,24 +49,27 @@ import DeployCreateTeamAccessGuard from './guards/deploy.create.team-access.guar
 import DeployJwtAuthGuard from './guards/deploy.jwt-auth.guard'
 import DeployTeamAccessGuard from './guards/deploy.team-access.guard'
 import DeployCopyValidationInterceptor from './interceptors/deploy.copy.interceptor'
+import DeployCreateDeployTokenValidationInterceptor from './interceptors/deploy.create-deploy-token.interceptor'
 import DeployCreateValidationInterceptor from './interceptors/deploy.create.interceptor'
 import DeleteDeploymentValidationInterceptor from './interceptors/deploy.delete.interceptor'
 import DeployPatchValidationInterceptor from './interceptors/deploy.patch.interceptor'
 import DeployStartValidationInterceptor from './interceptors/deploy.start.interceptor'
-import DeployCreateDeployTokenValidationInterceptor from './interceptors/deploy.create-deploy-token.interceptor'
 
+const PARAM_TEAM_SLUG = 'teamSlug'
+const TeamSlug = () => Param(PARAM_TEAM_SLUG)
 const PARAM_DEPLOYMENT_ID = 'deploymentId'
 const PARAM_INSTANCE_ID = 'instanceId'
 const DeploymentId = () => Param(PARAM_DEPLOYMENT_ID)
 const InstanceId = () => Param(PARAM_INSTANCE_ID)
 
+const ROUTE_TEAM_SLUG = ':teamSlug'
 const ROUTE_DEPLOYMENTS = 'deployments'
 const ROUTE_DEPLOYMENT_ID = ':deploymentId'
 const ROUTE_INSTANCES = 'instances'
 const ROUTE_INSTANCE_ID = ':instanceId'
 const ROUTE_TOKEN = 'token'
 
-@Controller(ROUTE_DEPLOYMENTS)
+@Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_DEPLOYMENTS}`)
 @ApiTags(ROUTE_DEPLOYMENTS)
 @UseGuards(DeployJwtAuthGuard, DeployTeamAccessGuard)
 export default class DeployHttpController {
@@ -85,8 +88,8 @@ export default class DeployHttpController {
     description: 'List of deployments.',
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
-  async getDeployments(@IdentityFromRequest() identity: Identity): Promise<DeploymentDto[]> {
-    return await this.service.getDeployments(identity)
+  async getDeployments(@TeamSlug() teamSlug: string): Promise<DeploymentDto[]> {
+    return await this.service.getDeployments(teamSlug)
   }
 
   @Get(ROUTE_DEPLOYMENT_ID)
@@ -305,11 +308,12 @@ export default class DeployHttpController {
   @UuidParams(PARAM_DEPLOYMENT_ID)
   @UseInterceptors(DeployCreateDeployTokenValidationInterceptor)
   async createDeploymentToken(
+    @TeamSlug() teamSlug: string,
     @DeploymentId() deploymentId: string,
     @Body() request: CreateDeploymentTokenDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreatedResponse<DeploymentTokenCreatedDto>> {
-    const token = await this.service.createDeploymentToken(deploymentId, request, identity)
+    const token = await this.service.createDeploymentToken(teamSlug, deploymentId, request, identity)
 
     return {
       url: `${DeployHttpController.locationOf(deploymentId)}/${ROUTE_TOKEN}`,
@@ -332,6 +336,6 @@ export default class DeployHttpController {
   }
 
   private static locationOf(deploymentId: string) {
-    return `/${ROUTE_DEPLOYMENTS}/${deploymentId}`
+    return `${ROUTE_TEAM_SLUG}/${ROUTE_DEPLOYMENTS}/${deploymentId}`
   }
 }

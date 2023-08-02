@@ -15,9 +15,9 @@ type OidcConnectorProps = {
 }
 
 const OidcConnector = (props: OidcConnectorProps) => {
-  const { t } = useTranslation('settings')
-
   const { className, provider, name, action, onModifyConnection } = props
+
+  const { t } = useTranslation('settings')
 
   return (
     <>

@@ -23,10 +23,11 @@ import {
 } from './node.message'
 import NodeService from './node.service'
 
+const TeamSlug = () => WsParam('teamSlug')
 const NodeId = () => WsParam('nodeId')
 
 @WebSocketGateway({
-  namespace: 'nodes/:nodeId',
+  namespace: ':teamSlug/nodes/:nodeId',
 })
 @UseGlobalWsFilters()
 @UseGlobalWsGuards()
@@ -35,8 +36,12 @@ export default class NodeContainerWebSocketGateway {
   constructor(private readonly service: NodeService) {}
 
   @WsAuthorize()
-  async onAuthorize(@NodeId() nodeId: string, @IdentityFromSocket() identity: Identity): Promise<boolean> {
-    return this.service.checkNodeIsInTheActiveTeam(nodeId, identity)
+  async onAuthorize(
+    @TeamSlug() teamSlug: string,
+    @NodeId() nodeId: string,
+    @IdentityFromSocket() identity: Identity,
+  ): Promise<boolean> {
+    return this.service.checkNodeIsInTheTeam(teamSlug, nodeId, identity)
   }
 
   @SubscribeMessage('container-command')

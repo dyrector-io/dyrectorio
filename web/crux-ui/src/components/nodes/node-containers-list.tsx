@@ -6,6 +6,7 @@ import DyoIcon from '@app/elements/dyo-icon'
 import DyoImgButton from '@app/elements/dyo-img-button'
 import { DyoList } from '@app/elements/dyo-list'
 import LoadingIndicator from '@app/elements/loading-indicator'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   Container,
   containerIsRestartable,
@@ -15,7 +16,6 @@ import {
   containerPrefixNameOf,
   imageName,
 } from '@app/models'
-import { nodeContainerLogUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -34,6 +34,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
   } = state
 
   const { t } = useTranslation('nodes')
+  const routes = useTeamRoutes()
 
   const headers = [
     'common:name',
@@ -89,7 +90,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
             />
 
             {container.state && (
-              <Link href={nodeContainerLogUrl(state.node.id, container.id)} passHref>
+              <Link href={routes.node.containerLog(state.node.id, container.id)} passHref>
                 <DyoIcon src="/note.svg" alt={t('logs')} size="md" />
               </Link>
             )}

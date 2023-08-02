@@ -26,11 +26,14 @@ import NotificationService from './notification.service'
 
 const PARAM_NOTIFICATION_ID = 'notificationId'
 const NotificationId = () => Param(PARAM_NOTIFICATION_ID)
+const PARAM_TEAM_SLUG = 'teamSlug'
+const TeamSlug = () => Param(PARAM_TEAM_SLUG)
 
+const ROUTE_TEAM_SLUG = ':teamSlug'
 const ROUTE_NOTIFICATIONS = 'notifications'
 const ROUTE_NOTIFICATION_ID = ':notificationId'
 
-@Controller(ROUTE_NOTIFICATIONS)
+@Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_NOTIFICATIONS}`)
 @ApiTags(ROUTE_NOTIFICATIONS)
 @UseGuards(NotificationTeamAccessGuard)
 export default class NotificationHttpController {
@@ -44,8 +47,8 @@ export default class NotificationHttpController {
   })
   @ApiOkResponse({ type: NotificationDto, isArray: true, description: 'Notifications listed.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for notifications.' })
-  async getNotifications(@IdentityFromRequest() identity: Identity): Promise<NotificationDto[]> {
-    return this.service.getNotifications(identity)
+  async getNotifications(@TeamSlug() teamSlug: string): Promise<NotificationDto[]> {
+    return this.service.getNotifications(teamSlug)
   }
 
   @Get(ROUTE_NOTIFICATION_ID)
@@ -77,13 +80,14 @@ export default class NotificationHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for a notification.' })
   @ApiConflictResponse({ description: 'Notification name taken.' })
   async createNotification(
+    @TeamSlug() teamSlug: string,
     @Body() request: CreateNotificationDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreatedResponse<NotificationDto>> {
-    const notification = await this.service.createNotification(request, identity)
+    const notification = await this.service.createNotification(teamSlug, request, identity)
 
     return {
-      url: `${ROUTE_NOTIFICATIONS}/${notification.id}`,
+      url: `${teamSlug}/${ROUTE_NOTIFICATIONS}/${notification.id}`,
       body: notification,
     }
   }

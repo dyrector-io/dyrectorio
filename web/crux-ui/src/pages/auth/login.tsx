@@ -32,7 +32,8 @@ import {
 } from '@app/utils'
 import { LoginFlow, UiContainer } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
-import kratos, { cookieOf, forwardCookie, obtainSessionFromRequest, userVerified } from '@server/kratos'
+import { cookieOf, forwardCookie } from '@server/cookie'
+import kratos, { obtainSessionFromRequest, userVerified } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -130,7 +131,7 @@ const LoginPage = (props: LoginPageProps) => {
           const newUi = result.ui as UiContainer
           const noVerifiedEmail = newUi.messages.find(it => it.id === KRATOS_ERROR_NO_VERIFIED_EMAIL_ADDRESS)
           if (noVerifiedEmail) {
-            await router.push(verificationUrl(values.email))
+            await router.push(verificationUrl({ email: values.email }))
           }
 
           setUi(newUi)

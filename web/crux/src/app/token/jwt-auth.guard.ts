@@ -2,16 +2,18 @@ import { createParamDecorator, ExecutionContext, Injectable, Logger, SetMetadata
 import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
 import { Identity } from '@ory/kratos-client'
+import { Request as ExpressRequest } from 'express'
 import { RequestAuthenticationData } from 'src/domain/identity'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import KratosService, { hasKratosSession } from 'src/services/kratos.service'
 import { WsClient } from 'src/websockets/common'
-import { Request as ExpressRequest } from 'express'
 
 export type AuthStrategyType = 'user-token' | 'deploy-token' | 'disabled'
 export const AUTH_STRATEGY = 'auth-strategy'
 export const AuthStrategy = (strategy: AuthStrategyType) => SetMetadata(AUTH_STRATEGY, strategy)
 export const DisableAuth = () => AuthStrategy('disabled')
+export const authStrategyOfContext = (context: ExecutionContext, reflector: Reflector) =>
+  reflector.get<AuthStrategyType>(AUTH_STRATEGY, context.getHandler()) ?? 'user-token'
 
 @Injectable()
 export default class JwtAuthGuard extends AuthGuard('jwt') {
@@ -22,7 +24,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const strategy = this.reflector.get<AuthStrategyType>(AUTH_STRATEGY, context.getHandler()) ?? 'user-token'
+    const strategy = authStrategyOfContext(context, this.reflector)
     if (strategy === 'disabled') {
       this.logger.verbose(`Authorized. Guard was for path.`)
       return true

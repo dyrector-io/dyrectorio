@@ -6,6 +6,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import {
   DyoNode,
@@ -15,7 +16,6 @@ import {
   NodeEventType,
   NODE_EVENT_TYPE_VALUES,
 } from '@app/models'
-import { nodeAuditApiUrl } from '@app/routes'
 import { getEndOfToday, utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -42,6 +42,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
   const { node } = props
 
   const { t } = useTranslation('nodes')
+  const routes = useTeamRoutes()
 
   const endOfToday = getEndOfToday()
 
@@ -65,7 +66,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
       to: (to ?? endOfToday).toISOString(),
       filterEventType: filter.eventType,
     }
-    const res = await fetch(nodeAuditApiUrl(node.id, query))
+    const res = await fetch(routes.node.api.audit(node.id, query))
 
     if (res.ok) {
       const list = (await res.json()) as NodeAuditLogList

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
-import { WsArgumentsHost } from '@nestjs/common/interfaces'
+import { ExecutionContext } from '@nestjs/common/interfaces'
 import { AuditLogRequestMethodEnum } from '@prisma/client'
 import TeamRepository from 'src/app/team/team.repository'
-import { AuditLogLevelOption } from 'src/decorators/audit-logger.decorator'
+import { AuditLogLevelOptions, AuditLogTeamSlugProvider } from 'src/decorators/audit-logger.decorator'
 import { auditActorOfRequest } from 'src/domain/audit'
 import PrismaService from 'src/services/prisma.service'
 import { WsClient, WsMessage } from 'src/websockets/common'
@@ -12,7 +12,12 @@ import { AuthorizedHttpRequest } from '../token/jwt-auth.guard'
 export default class AuditLoggerService {
   constructor(private readonly prisma: PrismaService, private readonly teamRepository: TeamRepository) {}
 
-  async createHttpAudit(level: AuditLogLevelOption, request: AuthorizedHttpRequest): Promise<void> {
+  async createHttpAudit(
+    teamSlugProvider: AuditLogTeamSlugProvider,
+    level: AuditLogLevelOptions,
+    context: ExecutionContext,
+  ): Promise<void> {
+    const request = context.switchToHttp().getRequest() as AuthorizedHttpRequest
     const { method, url, body } = request
     const data = level === 'no-data' ? null : body
 
@@ -20,13 +25,15 @@ export default class AuditLoggerService {
 
     if (actor.type === 'user') {
       const { userId } = actor
-      const activeTeam = await this.teamRepository.getActiveTeamByUserId(userId)
+
+      const teamSlug = teamSlugProvider(context)
+      const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
       await this.prisma.auditLog.create({
         data: {
           actorType: 'user',
           userId,
-          teamId: activeTeam.teamId,
+          teamId,
           context: 'http',
           method: this.httpMethodToRequestMethodEnum(method),
           event: url,
@@ -75,18 +82,25 @@ export default class AuditLoggerService {
     })
   }
 
-  async createWsAudit(level: AuditLogLevelOption, context: WsArgumentsHost) {
-    const client = context.getClient() as WsClient
-    const { type, data } = context.getData() as WsMessage<any>
+  async createWsAudit(
+    teamSlugProvider: AuditLogTeamSlugProvider,
+    level: AuditLogLevelOptions,
+    context: ExecutionContext,
+  ) {
+    const wsContext = context.switchToWs()
+    const client = wsContext.getClient() as WsClient
+    const { type, data } = wsContext.getData() as WsMessage<any>
 
     const user = client.connectionRequest.identity
-    const activeTeam = await this.teamRepository.getActiveTeamByUserId(user.id)
+
+    const teamSlug = teamSlugProvider(context)
+    const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
     await this.prisma.auditLog.create({
       data: {
         actorType: 'user',
         userId: user.id,
-        teamId: activeTeam.teamId,
+        teamId,
         context: 'ws',
         method: null,
         event: type,

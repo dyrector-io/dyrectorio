@@ -11,8 +11,22 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { EditProfile } from '@app/models'
-import { API_SETTINGS_EDIT_PROFILE, ROUTE_LOGIN, ROUTE_SETTINGS, ROUTE_SETTINGS_EDIT_PROFILE } from '@app/routes'
-import { findAttributes, findMessage, sendForm, withContextAuthorization } from '@app/utils'
+import { appendTeamSlug } from '@app/providers/team-routes'
+import {
+  API_SETTINGS_EDIT_PROFILE,
+  ROUTE_INDEX,
+  ROUTE_LOGIN,
+  ROUTE_SETTINGS,
+  ROUTE_SETTINGS_EDIT_PROFILE,
+} from '@app/routes'
+import {
+  findAttributes,
+  findMessage,
+  redirectTo,
+  sendForm,
+  teamSlugOrFirstTeam,
+  withContextAuthorization,
+} from '@app/utils'
 import { userProfileSchema } from '@app/validations'
 import { SettingsFlow } from '@ory/kratos-client'
 import kratos from '@server/kratos'
@@ -134,8 +148,13 @@ export const getPageServerSideProps = async (context: NextPageContext) => {
     cookie,
   })
 
+  const teamSlug = await teamSlugOrFirstTeam(context)
+  if (!teamSlug) {
+    return redirectTo(ROUTE_INDEX)
+  }
+
   return {
-    props: flow.data,
+    props: appendTeamSlug(teamSlug, flow.data),
   }
 }
 
