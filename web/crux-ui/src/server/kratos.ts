@@ -6,6 +6,7 @@ import {
   Identity,
   IdentityApi,
   MetadataApi,
+  RegistrationFlow,
   Session,
   VerifiableIdentityAddress,
 } from '@ory/kratos-client'
@@ -162,5 +163,8 @@ export type IncomingMessageWithSession = http.IncomingMessage & {
 
 export const assambleKratosRecoveryUrl = (flow: string, code: string): string =>
   `${process.env.KRATOS_URL}/self-service/recovery?flow=${flow}&code=${code}`
+
+export const registrationOidcInvalid = (flow: RegistrationFlow) =>
+  flow.ui.nodes.some(it => it.group === 'oidc' && it.messages.length > 0)
 
 export default kratos
