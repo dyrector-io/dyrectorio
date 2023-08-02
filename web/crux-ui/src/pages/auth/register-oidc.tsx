@@ -1,33 +1,21 @@
 import { SingleFormLayout } from '@app/components/layout'
-import { ATTRIB_CSRF, HEADER_LOCATION } from '@app/const'
+import { ATTRIB_CSRF, ATTRIB_OIDC_PROVIDER, HEADER_LOCATION } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoForm from '@app/elements/dyo-form'
-import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { DyoErrorDto, oidcEnabled, OidcProvider, Register } from '@app/models'
-import { API_AUTH_REGISTER, registerOidcUrl, ROUTE_LOGIN, ROUTE_SETTINGS, verificationUrl } from '@app/routes'
-import {
-  findAttributes,
-  findError,
-  findMessage,
-  isDyoError,
-  mapOidcAvailability,
-  redirectTo,
-  removeError,
-  sendForm,
-  upsertDyoError,
-  upsertError,
-} from '@app/utils'
+import { DyoErrorDto, Register } from '@app/models'
+import { API_AUTH_REGISTER, ROUTE_LOGIN, ROUTE_LOGOUT, ROUTE_SETTINGS } from '@app/routes'
+import { findAttributes, findError, findMessage, isDyoError, redirectTo, upsertDyoError } from '@app/utils'
 import { registerSchema } from '@app/validations'
 import { RegistrationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import { cookieOf, forwardCookie } from '@server/cookie'
-import kratos, { obtainSessionFromRequest, registrationOidcInvalid } from '@server/kratos'
+import kratos, { obtainSessionFromRequest } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -41,7 +29,7 @@ interface RegisterPageProps {
   recaptchaSiteKey?: string
 }
 
-const RegisterPage = (props: RegisterPageProps) => {
+const RegisterOidcPage = (props: RegisterPageProps) => {
   const { t } = useTranslation('register')
   const router = useRouter()
 
@@ -51,67 +39,24 @@ const RegisterPage = (props: RegisterPageProps) => {
   const [errors, setErrors] = useState<DyoErrorDto[]>([])
 
   const recaptcha = useRef<ReCAPTCHA>()
-  const oidc = mapOidcAvailability(ui)
-
-  const registerWithOidc = async (provider: OidcProvider) => {
-    const captcha = await recaptcha.current?.executeAsync()
-
-    const data: Register = {
-      method: 'oidc',
-      flow: flow.id,
-      csrfToken: findAttributes(ui, ATTRIB_CSRF)?.value,
-      captcha,
-      provider,
-    }
-
-    const res = await sendForm('POST', API_AUTH_REGISTER, data)
-    if (res.ok) {
-      const url = res.headers.get(HEADER_LOCATION)
-      await router.push(url)
-      return
-    }
-
-    if (res.status === 410) {
-      await router.reload()
-    }
-
-    const result = await res.json()
-
-    if (isDyoError(result)) {
-      setErrors(upsertDyoError(errors, result as DyoErrorDto))
-    } else if (result?.ui) {
-      setUi(result.ui)
-    } else {
-      toast(t('errors:internalError'))
-    }
-  }
 
   const formik = useDyoFormik({
     initialValues: {
-      email: '',
-      password: '',
-      confirmPassword: '',
-      firstName: '',
-      lastName: '',
+      email: (findAttributes(ui, 'traits.email')?.value as string) ?? '',
+      firstName: (findAttributes(ui, 'traits.name.first')?.value as string) ?? '',
+      lastName: (findAttributes(ui, 'traits.name.last')?.value as string) ?? '',
     },
     validationSchema: registerSchema,
     onSubmit: async values => {
-      if (values.password !== values.confirmPassword) {
-        setErrors(upsertError(errors, 'confirmPassword', 'confirmPassMismatch'))
-        return
-      }
-
-      setErrors(removeError(errors, 'confirmPassword'))
-
       const captcha = await recaptcha.current?.executeAsync()
 
       const data: Register = {
-        method: 'password',
+        method: 'oidc',
         flow: flow.id,
         csrfToken: findAttributes(ui, ATTRIB_CSRF)?.value,
         captcha,
+        provider: findAttributes(ui, ATTRIB_OIDC_PROVIDER)?.value,
         email: values.email,
-        password: values.password,
         firstName: values.firstName,
         lastName: values.lastName,
       }
@@ -125,7 +70,7 @@ const RegisterPage = (props: RegisterPageProps) => {
       })
 
       if (res.ok) {
-        router.replace(verificationUrl({ email: values.email }))
+        window.location.href = res.headers.get(HEADER_LOCATION)
       } else if (res.status === 410) {
         await router.reload()
       } else {
@@ -154,6 +99,17 @@ const RegisterPage = (props: RegisterPageProps) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
             <DyoInput
+              containerClassName="col-span-2"
+              grow
+              label={t('common:email')}
+              name="email"
+              type="email"
+              disabled
+              value={formik.values.email}
+              message={formik.errors.email ?? findMessage(ui, 'traits.email')}
+            />
+
+            <DyoInput
               label={t('common:firstName')}
               name="firstName"
               onChange={formik.handleChange}
@@ -168,38 +124,6 @@ const RegisterPage = (props: RegisterPageProps) => {
               onChange={formik.handleChange}
               value={formik.values.lastName}
               message={formik.errors.lastName}
-              messageType="error"
-            />
-
-            <DyoInput
-              containerClassName="col-span-2"
-              grow
-              label={t('common:email')}
-              name="email"
-              type="email"
-              onChange={formik.handleChange}
-              value={formik.values.email}
-              message={formik.errors.email ?? findMessage(ui, 'traits.email')}
-            />
-
-            <DyoInput
-              label={t('common:password')}
-              name="password"
-              type="password"
-              onChange={formik.handleChange}
-              value={formik.values.password}
-              message={formik.errors.password ?? findMessage(ui, 'password')}
-            />
-
-            <DyoInput
-              label={t('common:confirmPass')}
-              name="confirmPassword"
-              type="password"
-              onChange={formik.handleChange}
-              value={formik.values.confirmPassword}
-              message={
-                formik.errors.confirmPassword ?? findError(errors, 'confirmPassword', it => t(`errors:${it.error}`))
-              }
               messageType="error"
             />
           </div>
@@ -219,32 +143,8 @@ const RegisterPage = (props: RegisterPageProps) => {
           />
 
           <DyoButton className="px-8 mx-auto mt-8" type="submit">
-            {t('createAcc')}
+            {t('continue')}
           </DyoButton>
-
-          {oidcEnabled(oidc) && (
-            <div className="flex flex-col gap-2 items-center mx-auto mt-2">
-              <span className="text-light my-2">{t('orSignUpWith')}</span>
-
-              <div className="flex flex-row gap-8">
-                {oidc.gitlab && (
-                  <DyoIcon src="/oidc/gitlab.svg" size="lg" alt="Gitlab" onClick={() => registerWithOidc('gitlab')} />
-                )}
-
-                {oidc.github && (
-                  <DyoIcon src="/oidc/github.svg" size="lg" alt="Github" onClick={() => registerWithOidc('github')} />
-                )}
-
-                {oidc.google && (
-                  <DyoIcon src="/oidc/google.svg" size="lg" alt="Google" onClick={() => registerWithOidc('google')} />
-                )}
-
-                {oidc.azure && (
-                  <DyoIcon src="/oidc/azure.svg" size="lg" alt="Azure" onClick={() => registerWithOidc('azure')} />
-                )}
-              </div>
-            </div>
-          )}
 
           <p className="text-bright text-center self-center max-w-xl mt-8">
             {t(`whenYouRegister`)}
@@ -259,17 +159,15 @@ const RegisterPage = (props: RegisterPageProps) => {
       </DyoCard>
 
       <div className="flex justify-center text-bright mt-8">
-        <p className="mr-2">{t('alreadyUser')}</p>
-
-        <Link className="font-bold underline" href={ROUTE_LOGIN}>
-          {t('common:logIn')}
+        <Link className="font-bold underline" href={ROUTE_LOGOUT}>
+          {t('common:logOut')}
         </Link>
       </div>
     </SingleFormLayout>
   )
 }
 
-export default RegisterPage
+export default RegisterOidcPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const flowId = context.query.flow as string
@@ -279,16 +177,14 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(ROUTE_SETTINGS)
   }
 
-  const flow = flowId
-    ? await kratos.getRegistrationFlow({
-        id: flowId,
-        cookie: cookieOf(context.req),
-      })
-    : await kratos.createBrowserRegistrationFlow()
-
-  if (flowId && registrationOidcInvalid(flow.data)) {
-    return redirectTo(registerOidcUrl(flowId))
+  if (!flowId) {
+    return redirectTo(ROUTE_LOGIN)
   }
+
+  const flow = await kratos.getRegistrationFlow({
+    id: flowId,
+    cookie: cookieOf(context.req),
+  })
 
   forwardCookie(context, flow)
 
