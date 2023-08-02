@@ -850,7 +850,7 @@ describe('DeployMapper', () => {
         restartPolicy: 'always',
         dockerLabels: [],
         logConfig: {
-          driver: 'node_default',
+          driver: 'nodeDefault',
         },
       })
       const expected = <DagentContainerConfig>{

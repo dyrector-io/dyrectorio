@@ -76,7 +76,7 @@ export type Volume = {
 }
 
 export const CONTAINER_LOG_DRIVER_VALUES = [
-  'node_default',
+  'nodeDefault',
   'none',
   'gcplogs',
   'local',

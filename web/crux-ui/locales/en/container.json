@@ -77,7 +77,7 @@
     },
     "drivers": "Drivers",
     "logDrivers": {
-      "node_default": "Node default",
+      "nodeDefault": "Node default",
       "none": "None",
       "gcplogs": "Gcplogs",
       "local": "Local",
