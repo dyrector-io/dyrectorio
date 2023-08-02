@@ -385,7 +385,7 @@ func testAppConfig() *config.CommonConfiguration {
 
 func testDeployRequestWithLogDriver(driverType common.DriverType) *agent.DeployRequest {
 	request := testDeployRequest()
-	if driverType == common.DriverType_DRIVER_TYPE_UNSPECIFIED {
+	if driverType == common.DriverType_NODE_DEFAULT {
 		request.Dagent.LogConfig = nil
 	} else {
 		request.Dagent.LogConfig.Driver = driverType
@@ -409,9 +409,6 @@ func TestMapDeployImageLogConfig(t *testing.T) {
 		driver common.DriverType
 		want   string
 	}{
-		{
-			desc: "Undefined driver type",
-		},
 		{
 			desc:   "Node default driver type",
 			driver: common.DriverType_NODE_DEFAULT,
