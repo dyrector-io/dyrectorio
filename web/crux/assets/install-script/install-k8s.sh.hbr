@@ -4,9 +4,6 @@ set -e
 # migrating away from deployments because of the limited restartPolicy
 kubectl delete -n dyrectorio deployment dyrectorio-k8s-agent || true
 
-# restart command:
-# kubectl get pod dyrectorio-k8s-agent -o yaml | kubectl replace --force -f -
-
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Namespace
@@ -37,7 +34,6 @@ rules:
   apiGroups:
   - ""
   resources:
-  - namespaces
   - pvc
   verbs:
   - get
@@ -64,6 +60,8 @@ rules:
   - secrets
   - servicemonitors
   - configmaps
+  - events
+  - namespaces
   verbs:
   - create
   - delete
@@ -110,44 +108,57 @@ subjects:
   name: default
   namespace: dyrectorio
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: dyrectorio-k8s-agent
   namespace: dyrectorio
   labels:
     app: dyrectorio-k8s-agent
 spec:
-  initContainers:
-  - name: crane-init
-    image: ghcr.io/dyrector-io/dyrectorio/agent/crane:{{agentImageTag}}
-    args:
-      - init
-    imagePullPolicy: Always
-    resources:
-      requests:
-        memory: 128Mi
-      limits:
-        cpu: "1"
-        memory: 256Mi
-    envFrom:
-      - configMapRef:
-          name: crane-config
-  containers:
-  - name: crane
-    image: ghcr.io/dyrector-io/dyrectorio/agent/crane:{{agentImageTag}}
-    imagePullPolicy: Always
-    resources:
-      requests:
-        memory: 128Mi
-        cpu: 84m
-      limits:
-        cpu: "1"
-        memory: 256Mi
-    envFrom:
-      - configMapRef:
-          name: crane-config
-      - secretRef:
-          name: dyrectorio-secret
-  restartPolicy: OnFailure
+  selector:
+    matchLabels:
+      app: dyrectorio-k8s-agent
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dyrectorio-k8s-agent
+    spec:
+      initContainers:
+      - name: crane-init
+        image: ghcr.io/dyrector-io/dyrectorio/agent/crane:{{agentImageTag}}
+        args:
+        - init
+        imagePullPolicy: Always
+        resources:
+          requests:
+              memory: 128Mi
+          limits:
+              cpu: "1"
+              memory: 256Mi
+        envFrom:
+        - configMapRef:
+            name: crane-config
+        env:
+        - name: CRANE_DEPLOYMENT_NAME
+          valueFrom: {fieldRef: {fieldPath: metadata.name}}
+        - name: CRANE_DEPLOYMENT_NAMESPACE
+          valueFrom: {fieldRef: {fieldPath: metadata.namespace}}
+      containers:
+      - name: crane
+        image: ghcr.io/dyrector-io/dyrectorio/agent/crane:{{agentImageTag}}
+        imagePullPolicy: Always
+        resources:
+          requests:
+              memory: 128Mi
+              cpu: 84m
+          limits:
+              cpu: "1"
+              memory: 256Mi
+        envFrom:
+        - configMapRef:
+            name: crane-config
+        - secretRef:
+            name: dyrectorio-secret
 EOF

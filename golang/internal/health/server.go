@@ -61,6 +61,11 @@ func Serve(ctx context.Context) error {
 		log.Error().Str("file", socketPath).Err(err).Msg("Failed to check socket file")
 	}
 
+	err = os.MkdirAll(getSocketDir(), dirPerm)
+	if err != nil {
+		return err
+	}
+
 	socket, err := net.Listen(socketType, socketPath)
 	if err != nil {
 		return err
