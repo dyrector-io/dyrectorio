@@ -1,2 +1,2 @@
 #!/bin/sh
-ls -1  ./*.tgz | while read -r line; do cat $line | gzip -d | docker load; done
+ls -1  ./*.tar | while read -r line; do cat $line | docker load; done
