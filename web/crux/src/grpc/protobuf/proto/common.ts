@@ -318,18 +318,19 @@ export function volumeTypeToJSON(object: VolumeType): string {
 
 export enum DriverType {
   DRIVER_TYPE_UNSPECIFIED = 0,
-  DRIVER_TYPE_NONE = 1,
-  GCPLOGS = 2,
-  LOCAL = 3,
-  JSON_FILE = 4,
-  SYSLOG = 5,
-  JOURNALD = 6,
-  GELF = 7,
-  FLUENTD = 8,
-  AWSLOGS = 9,
-  SPLUNK = 10,
-  ETWLOGS = 11,
-  LOGENTRIES = 12,
+  NODE_DEFAULT = 1,
+  DRIVER_TYPE_NONE = 2,
+  GCPLOGS = 3,
+  LOCAL = 4,
+  JSON_FILE = 5,
+  SYSLOG = 6,
+  JOURNALD = 7,
+  GELF = 8,
+  FLUENTD = 9,
+  AWSLOGS = 10,
+  SPLUNK = 11,
+  ETWLOGS = 12,
+  LOGENTRIES = 13,
   UNRECOGNIZED = -1,
 }
 
@@ -339,39 +340,42 @@ export function driverTypeFromJSON(object: any): DriverType {
     case 'DRIVER_TYPE_UNSPECIFIED':
       return DriverType.DRIVER_TYPE_UNSPECIFIED
     case 1:
+    case 'NODE_DEFAULT':
+      return DriverType.NODE_DEFAULT
+    case 2:
     case 'DRIVER_TYPE_NONE':
       return DriverType.DRIVER_TYPE_NONE
-    case 2:
+    case 3:
     case 'GCPLOGS':
       return DriverType.GCPLOGS
-    case 3:
+    case 4:
     case 'LOCAL':
       return DriverType.LOCAL
-    case 4:
+    case 5:
     case 'JSON_FILE':
       return DriverType.JSON_FILE
-    case 5:
+    case 6:
     case 'SYSLOG':
       return DriverType.SYSLOG
-    case 6:
+    case 7:
     case 'JOURNALD':
       return DriverType.JOURNALD
-    case 7:
+    case 8:
     case 'GELF':
       return DriverType.GELF
-    case 8:
+    case 9:
     case 'FLUENTD':
       return DriverType.FLUENTD
-    case 9:
+    case 10:
     case 'AWSLOGS':
       return DriverType.AWSLOGS
-    case 10:
+    case 11:
     case 'SPLUNK':
       return DriverType.SPLUNK
-    case 11:
+    case 12:
     case 'ETWLOGS':
       return DriverType.ETWLOGS
-    case 12:
+    case 13:
     case 'LOGENTRIES':
       return DriverType.LOGENTRIES
     case -1:
@@ -385,6 +389,8 @@ export function driverTypeToJSON(object: DriverType): string {
   switch (object) {
     case DriverType.DRIVER_TYPE_UNSPECIFIED:
       return 'DRIVER_TYPE_UNSPECIFIED'
+    case DriverType.NODE_DEFAULT:
+      return 'NODE_DEFAULT'
     case DriverType.DRIVER_TYPE_NONE:
       return 'DRIVER_TYPE_NONE'
     case DriverType.GCPLOGS:
