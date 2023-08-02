@@ -41,6 +41,15 @@ const dtoToKratosBody = (dto: Register): UpdateRegistrationFlowBody => {
         method: 'oidc',
         provider: dto.provider,
         csrf_token: dto.csrfToken,
+        traits:
+          dto.firstName || dto.lastName
+            ? {
+                name: {
+                  first: dto.firstName,
+                  last: dto.lastName,
+                },
+              }
+            : null,
       }
 
       return body

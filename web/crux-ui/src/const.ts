@@ -23,6 +23,7 @@ export const SERVICE_STATUS_CHECK_INTERVAL = 5000 // sec in millis
 
 export const INVITE_LINK_EXPIRATION = '12h'
 export const ATTRIB_CSRF = 'csrf_token'
+export const ATTRIB_OIDC_PROVIDER = 'provider'
 export const HEADER_SET_COOKIE = 'set-cookie'
 export const HEADER_LOCATION = 'location'
 export const AUTH_RESEND_DELAY = 30 // seconds
