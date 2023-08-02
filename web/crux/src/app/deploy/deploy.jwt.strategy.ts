@@ -10,7 +10,10 @@ export const DEPLOY_TOKEN_STRATEGY = 'deploy-token-strategy'
 
 @Injectable()
 export class DeployJwtStrategy extends PassportStrategy(Strategy, DEPLOY_TOKEN_STRATEGY) {
-  constructor(configService: ConfigService, private readonly prisma: PrismaService) {
+  constructor(
+    configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,

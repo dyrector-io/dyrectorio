@@ -15,7 +15,11 @@ import { InviteUserDto } from '../team.dto'
 export default class TeamInviteUserValitationInterceptor implements NestInterceptor {
   private readonly logger = new Logger()
 
-  constructor(private prisma: PrismaService, private kratos: KratosService, private recaptcha: RecaptchaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private kratos: KratosService,
+    private recaptcha: RecaptchaService,
+  ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest()

@@ -5,7 +5,10 @@ import NodeService from '../node.service'
 
 @Injectable()
 export default class NodeTeamAccessGuard implements CanActivate {
-  constructor(private readonly service: NodeService, private readonly reflector: Reflector) {}
+  constructor(
+    private readonly service: NodeService,
+    private readonly reflector: Reflector,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest()

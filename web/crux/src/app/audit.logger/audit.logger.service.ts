@@ -10,7 +10,10 @@ import { AuthorizedHttpRequest } from '../token/jwt-auth.guard'
 
 @Injectable()
 export default class AuditLoggerService {
-  constructor(private readonly prisma: PrismaService, private readonly teamRepository: TeamRepository) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly teamRepository: TeamRepository,
+  ) {}
 
   async createHttpAudit(
     teamSlugProvider: AuditLogTeamSlugProvider,

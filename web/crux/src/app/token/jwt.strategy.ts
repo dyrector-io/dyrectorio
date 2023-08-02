@@ -8,7 +8,10 @@ import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
 export default class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(configService: ConfigService, private prisma: PrismaService) {
+  constructor(
+    configService: ConfigService,
+    private prisma: PrismaService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,

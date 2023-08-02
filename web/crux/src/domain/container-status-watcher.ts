@@ -16,7 +16,10 @@ export default class ContainerStatusWatcher {
 
   private state: Record<string, ContainerStateItem> = {}
 
-  constructor(private prefix: string, private oneShot: boolean) {}
+  constructor(
+    private prefix: string,
+    private oneShot: boolean,
+  ) {}
 
   start(commandChannel: Subject<AgentCommand>) {
     if (this.started) {

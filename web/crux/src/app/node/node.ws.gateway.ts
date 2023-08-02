@@ -18,7 +18,10 @@ const TeamSlug = () => WsParam('teamSlug')
 @UseGlobalWsFilters()
 @UseGlobalWsGuards()
 export default class NodeWebSocketGateway {
-  constructor(private readonly service: NodeService, private readonly teamRepository: TeamRepository) {}
+  constructor(
+    private readonly service: NodeService,
+    private readonly teamRepository: TeamRepository,
+  ) {}
 
   @WsAuthorize()
   async onAuthorize(@TeamSlug() teamSlug: string, @IdentityFromSocket() identity: Identity): Promise<boolean> {

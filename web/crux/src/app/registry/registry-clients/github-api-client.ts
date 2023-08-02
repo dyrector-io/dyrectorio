@@ -10,7 +10,11 @@ class GithubRegistryClient implements RegistryApiClient {
 
   private namespace: string
 
-  constructor(private imageNamePrefix: string, options: RegistryV2ApiClientOptions, namespace: GithubNamespace) {
+  constructor(
+    private imageNamePrefix: string,
+    options: RegistryV2ApiClientOptions,
+    namespace: GithubNamespace,
+  ) {
     this.basicAuthHeaders = {
       Authorization: registryCredentialsToBasicAuth(options),
     }

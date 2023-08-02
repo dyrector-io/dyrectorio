@@ -13,7 +13,10 @@ export default class ContainerLogStream {
 
   private completer: ContainerLogStreamCompleter = null
 
-  constructor(private container: ContainerIdentifier, private tail: number) {}
+  constructor(
+    private container: ContainerIdentifier,
+    private tail: number,
+  ) {}
 
   start(commandChannel: Subject<AgentCommand>) {
     if (this.started) {

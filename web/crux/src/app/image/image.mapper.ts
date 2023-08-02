@@ -30,7 +30,10 @@ import { ImageDto } from './image.dto'
 
 @Injectable()
 export default class ImageMapper {
-  constructor(private registryMapper: RegistryMapper, private readonly containerMapper: ContainerMapper) {}
+  constructor(
+    private registryMapper: RegistryMapper,
+    private readonly containerMapper: ContainerMapper,
+  ) {}
 
   toDto(it: ImageDetails): ImageDto {
     return {

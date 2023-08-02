@@ -14,7 +14,10 @@ export const registryCredentialsToBasicAuth = (options: RegistryV2ApiClientOptio
 class RegistryV2ApiClient implements RegistryApiClient {
   private headers: HeadersInit
 
-  constructor(private url: string, options?: RegistryV2ApiClientOptions) {
+  constructor(
+    private url: string,
+    options?: RegistryV2ApiClientOptions,
+  ) {
     if (options?.username) {
       if (!options.password) {
         throw new CruxUnauthorizedException({

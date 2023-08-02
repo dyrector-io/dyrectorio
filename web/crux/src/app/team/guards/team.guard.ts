@@ -12,7 +12,10 @@ export const TeamRoleRequired = (role: TeamRole = 'user') => SetMetadata(TEAM_RO
 
 @Injectable()
 export default class TeamGuard implements CanActivate {
-  constructor(private prisma: PrismaService, private reflector: Reflector) {}
+  constructor(
+    private prisma: PrismaService,
+    private reflector: Reflector,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest()

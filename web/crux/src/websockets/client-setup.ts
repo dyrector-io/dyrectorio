@@ -17,7 +17,11 @@ export default class WsClientSetup {
 
   boundRoutes = 0
 
-  constructor(client: WebSocket, token: string, private readonly initBind: WsInitializer) {
+  constructor(
+    client: WebSocket,
+    token: string,
+    private readonly initBind: WsInitializer,
+  ) {
     this.logger = new Logger(`${WsClientSetup.name} ${token}`)
 
     const receiver: (buffer: RawData, isBinary: boolean) => void = (buffer, binary) => {

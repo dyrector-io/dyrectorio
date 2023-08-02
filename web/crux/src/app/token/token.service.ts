@@ -11,7 +11,11 @@ import TokenMapper from './token.mapper'
 export default class TokenService {
   private logger = new Logger(TokenService.name)
 
-  constructor(private jwtService: JwtService, private prisma: PrismaService, private mapper: TokenMapper) {}
+  constructor(
+    private jwtService: JwtService,
+    private prisma: PrismaService,
+    private mapper: TokenMapper,
+  ) {}
 
   async generateToken(req: GenerateTokenDto, identity: Identity): Promise<GeneratedTokenDto> {
     const nonce = uuid()
