@@ -17,7 +17,7 @@ type Configuration struct {
 	KubeConfig          string        `yaml:"kubeConfig"            env:"KUBECONFIG"                env-default:""`
 	TestTimeoutDuration time.Duration `yaml:"testTimeout"           env:"TEST_TIMEOUT"              env-default:"15s"`
 	OwnDeployment       string        `yaml:"ownDeployment"         env:"CRANE_DEPLOYMENT_NAME"`
-	OwnNamespace        string        `yaml:"ownNamescae"           env:"CRANE_DEPLOYMENT_NAMESPACE"`
+	OwnNamespace        string        `yaml:"ownNamespace"           env:"CRANE_DEPLOYMENT_NAMESPACE"`
 	// for injecting SecretPrivateKey
 	SecretName string `yaml:"secretName"  env:"SECRET_NAME"         env-default:"dyrectorio-secret"`
 	Namespace  string `yaml:"namespace"   env:"SECRET_NAMESPACE"    env-default:"dyrectorio"`
