@@ -6,10 +6,11 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
-import ViewModeToggle, { ViewMode } from '@app/components/shared/view-mode-toggle'
+import ViewModeToggle from '@app/components/shared/view-mode-toggle'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import usePersistedViewMode from '@app/hooks/use-persisted-view-mode'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Project, ProjectType, PROJECT_TYPE_VALUES } from '@app/models'
 import { TeamRoutes } from '@app/routes'
@@ -53,7 +54,7 @@ const ProjectsPage = (props: ProjectsPageProps) => {
   const [creating, setCreating] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
-  const [viewMode, setViewMode] = useState<ViewMode>('tile')
+  const [viewMode, setViewMode] = usePersistedViewMode({ initialViewMode: 'tile', pageName: 'projects' })
 
   const onCreated = async (project: Project) => {
     setCreating(false)

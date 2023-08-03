@@ -826,14 +826,31 @@ describe('DeployMapper', () => {
   })
 
   describe('dagentConfigToAgentProto logConfig', () => {
-    it('none driver type should return no log driver', () => {
+    it('undefined logConfig should return no log driver', () => {
+      const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
+        networks: [],
+        networkMode: 'host',
+        restartPolicy: 'always',
+        dockerLabels: [],
+      })
+      const expected = <DagentContainerConfig>{
+        networks: [],
+        logConfig: null,
+        networkMode: NetworkMode.HOST,
+        restartPolicy: RestartPolicy.ALWAYS,
+        labels: {},
+      }
+      expect(config).toEqual(expected)
+    })
+
+    it('node default driver type should return no log driver', () => {
       const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
         networks: [],
         networkMode: 'host',
         restartPolicy: 'always',
         dockerLabels: [],
         logConfig: {
-          driver: 'none',
+          driver: 'nodeDefault',
         },
       })
       const expected = <DagentContainerConfig>{
@@ -846,16 +863,22 @@ describe('DeployMapper', () => {
       expect(config).toEqual(expected)
     })
 
-    it('undefined logConfig should return no log driver', () => {
+    it('none driver type should return none log driver', () => {
       const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
         networks: [],
         networkMode: 'host',
         restartPolicy: 'always',
         dockerLabels: [],
+        logConfig: {
+          driver: 'none',
+        },
       })
       const expected = <DagentContainerConfig>{
         networks: [],
-        logConfig: null,
+        logConfig: {
+          driver: DriverType.DRIVER_TYPE_NONE,
+          options: {},
+        },
         networkMode: NetworkMode.HOST,
         restartPolicy: RestartPolicy.ALWAYS,
         labels: {},
