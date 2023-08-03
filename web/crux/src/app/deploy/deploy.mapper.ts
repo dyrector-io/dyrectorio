@@ -303,7 +303,7 @@ export default class DeployMapper {
     return {
       networks: this.mapUniqueKeyToStringArray(config.networks),
       logConfig:
-        !config.logConfig || config.logConfig.driver === 'none'
+        !config.logConfig || config.logConfig.driver === 'nodeDefault'
           ? null
           : {
               ...config.logConfig,
