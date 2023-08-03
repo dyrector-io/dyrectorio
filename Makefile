@@ -69,7 +69,7 @@ export-full:
 .PHONY: protogen
 protogen:| proto-agent proto-crux
 
-# Generate agent gRPC files
+# Run linting on the Go code
 .PHONY: go-lint
 go-lint:
 	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4 ash -c "\

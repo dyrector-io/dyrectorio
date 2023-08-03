@@ -158,7 +158,7 @@ func mapDagentConfig(dagent *agent.DagentContainerConfig, containerConfig *v1.Co
 
 	if dagent.LogConfig != nil {
 		containerConfig.LogConfig = &container.LogConfig{
-			Type:   strings.ToLower(dagent.LogConfig.Driver.String()),
+			Type:   strings.ToLower(strings.ReplaceAll(strings.TrimPrefix(dagent.LogConfig.Driver.String(), "DRIVER_TYPE_"), "_", "-")),
 			Config: dagent.LogConfig.Options,
 		}
 	}
