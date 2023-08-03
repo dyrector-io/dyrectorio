@@ -2,7 +2,7 @@ import { DeploymentStatusEnum, NodeTypeEnum, ProjectTypeEnum, Storage, VersionTy
 import { Test, TestingModule } from '@nestjs/testing'
 import { ContainerConfigData, InstanceContainerConfigData, MergedContainerConfigData } from 'src/domain/container'
 import { CommonContainerConfig, DagentContainerConfig, ImportContainer } from 'src/grpc/protobuf/proto/agent'
-import { NetworkMode, RestartPolicy } from 'src/grpc/protobuf/proto/common'
+import { DriverType, NetworkMode, RestartPolicy } from 'src/grpc/protobuf/proto/common'
 import AgentService from '../agent/agent.service'
 import AuditMapper from '../audit/audit.mapper'
 import ContainerMapper from '../container/container.mapper'

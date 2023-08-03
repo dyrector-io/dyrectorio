@@ -3,7 +3,10 @@ import { Prisma, PrismaClient } from '@prisma/client'
 import { JsonNull } from 'prisma'
 import { Timestamp } from 'src/grpc/google/protobuf/timestamp'
 
-export type PrismaTransactionClient = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>
+export type PrismaTransactionClient = Omit<
+  PrismaClient,
+  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+>
 
 export const collectParentVersionIds = async (
   prisma: PrismaTransactionClient,
