@@ -233,9 +233,8 @@ func shouldUseLocalImage(ctx context.Context, cli client.APIClient,
 			return preferLocal, nil
 		}
 
-		// Either the local image is missing or the digests don't match
-		if errors.Is(err, errDigestMismatch) || errors.Is(err, ErrLocalImageNotFound) {
-			return false, nil
+		if errors.Is(err, errDigestsMatching) {
+			return true, nil
 		}
 
 		// Swallowing specific errors
@@ -279,6 +278,7 @@ func CustomImagePull(ctx context.Context, cli client.APIClient,
 		}
 
 		if useLocalImage {
+			log.Debug().Msgf("using local image")
 			return nil
 		}
 	}
