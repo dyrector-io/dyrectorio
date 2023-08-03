@@ -1,5 +1,5 @@
-import { REGISTRY_GITHUB_URL } from 'src/shared/const'
 import { getRegistryApiException } from 'src/exception/registry-exception'
+import { REGISTRY_GITHUB_URL } from 'src/shared/const'
 import { GithubNamespace } from '../registry.dto'
 import { RegistryImageTags } from '../registry.message'
 import { RegistryApiClient } from './registry-api-client'

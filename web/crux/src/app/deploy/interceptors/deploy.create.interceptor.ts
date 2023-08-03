@@ -1,8 +1,8 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
+import { VersionTypeEnum } from '@prisma/client'
 import { Observable } from 'rxjs'
 import { CruxConflictException, CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
-import { VersionTypeEnum } from '@prisma/client'
 import { CreateDeploymentDto } from '../deploy.dto'
 
 @Injectable()

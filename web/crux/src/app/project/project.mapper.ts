@@ -1,9 +1,9 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import { Project } from '.prisma/client'
+import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import { BasicProperties } from 'src/shared/dtos/shared.dto'
-import VersionMapper, { VersionWithChildren } from '../version/version.mapper'
-import { ProjectListItemDto, ProjectDetailsDto, ProjectDto, BasicProjectDto } from './project.dto'
 import AuditMapper from '../audit/audit.mapper'
+import VersionMapper, { VersionWithChildren } from '../version/version.mapper'
+import { BasicProjectDto, ProjectDetailsDto, ProjectDto, ProjectListItemDto } from './project.dto'
 
 @Injectable()
 export default class ProjectMapper {

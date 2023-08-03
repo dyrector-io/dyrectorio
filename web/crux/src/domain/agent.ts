@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { catchError, finalize, Observable, of, Subject, throwError, timeout, TimeoutError } from 'rxjs'
+import { NodeConnectionStatus } from 'src/app/node/node.dto'
 import {
   CruxConflictException,
   CruxInternalServerErrorException,
@@ -17,7 +18,6 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import { CONTAINER_DELETE_TIMEOUT, DEFAULT_CONTAINER_LOG_TAIL } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
-import { NodeConnectionStatus } from 'src/app/node/node.dto'
 import ContainerLogStream, { ContainerLogStreamCompleter } from './container-log-stream'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
 import Deployment from './deployment'

@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { Subject } from 'rxjs'
-import { WebSocket, RawData } from 'ws'
+import { RawData, WebSocket } from 'ws'
 
 type WsInitializer = () => Promise<boolean>
 

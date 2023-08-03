@@ -12,8 +12,8 @@ import {
   CruxPreconditionFailedException,
 } from 'src/exception/crux-exception'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
-import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { PRODUCTION } from 'src/shared/const'
+import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { getAgentVersionFromPackage } from 'src/shared/package'
 import { Agent, AgentConnectionMessage } from './agent'
 
