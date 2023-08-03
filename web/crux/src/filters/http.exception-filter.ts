@@ -10,7 +10,6 @@ export default class HttpExceptionFilter extends CruxExceptionFilter {
 
   protected handleHttpException(exception: HttpException, host: ArgumentsHost) {
     const contextType = host.getType()
-    console.log(exception)
     if (contextType === 'http') {
       const ctx = host.switchToHttp()
       const status = exception.getStatus()

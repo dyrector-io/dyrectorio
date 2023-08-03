@@ -8,21 +8,21 @@ function usePersistedViewMode({
   initialViewMode: ViewMode
   pageName: string
 }): [ViewMode, (mode: ViewMode) => void] {
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    if (typeof window !== 'undefined') {
-      const storedViewMode = localStorage.getItem(`viewMode_${pageName}`) as ViewMode
-      return storedViewMode || initialViewMode
-    }
-    return initialViewMode
-  })
+  const [viewMode, setViewMode] = useState<ViewMode>(() => initialViewMode)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(`viewMode_${pageName}`, viewMode)
+    const storedViewMode = localStorage.getItem(`viewMode_${pageName}`) as ViewMode
+    if (storedViewMode) {
+      setViewMode(storedViewMode)
     }
-  }, [viewMode, pageName])
+  }, [pageName])
 
-  return [viewMode, setViewMode]
+  const updateViewMode = (mode: ViewMode) => {
+    setViewMode(mode)
+    localStorage.setItem(`viewMode_${pageName}`, mode)
+  }
+
+  return [viewMode, updateViewMode]
 }
 
 export default usePersistedViewMode
