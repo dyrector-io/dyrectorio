@@ -38,6 +38,8 @@ import {
   namespaceOf,
 } from './common'
 import WsRoute from './route'
+import { Gauge } from 'prom-client'
+import { getToken } from '@willsoto/nestjs-prometheus'
 
 export enum WebSocketReadyState {
   CONNECTING_STATE = 0,
@@ -49,6 +51,7 @@ export enum WebSocketReadyState {
 export default class DyoWsAdapter extends AbstractWsAdapter {
   private readonly logger = new Logger(DyoWsAdapter.name)
 
+  private context: INestApplicationContext
   private server: WebSocketServer
 
   private routes: WsRoute[] = []
@@ -58,6 +61,8 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     private readonly authGuard: JwtAuthGuard,
   ) {
     super(appContext)
+
+    this.context = appContext
   }
 
   bindErrorHandler(server: any) {
@@ -284,11 +289,13 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     client.setup = new WsClientSetup(client, client.token, () => this.bindClientMessageHandlers(client))
     client.setup.start()
 
+    this.getConnectionsMetric().inc()
     this.logger.log(`Connected ${client.token} clients: ${this.server?.clients?.size}`)
   }
 
   private onClientDisconnect(client: WsClient) {
     this.logger.log(`Disconnected ${client.token} clients: ${this.server?.clients?.size}`)
+    this.getConnectionsMetric().dec()
 
     this.routes.forEach(it => it.onClientDisconnect(client))
 
@@ -318,5 +325,13 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     }
 
     return [route, match]
+  }
+
+  private getConnectionsMetric(): Gauge<string> {
+    return this.context.get(getToken('ws_connected_count'))
+  }
+
+  private getNamespacesPerRouteMetric(): Gauge<string> {
+    return this.context.get(getToken('ws_namespaces_route'))
   }
 }

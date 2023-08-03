@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { PrometheusModule } from '@willsoto/nestjs-prometheus'
+import { PrometheusModule, makeGaugeProvider } from '@willsoto/nestjs-prometheus'
 import { LoggerModule } from 'nestjs-pino'
 import AgentModule from './app/agent/agent.module'
 import AuditModule from './app/audit/audit.module'
@@ -8,7 +8,6 @@ import DashboardModule from './app/dashboard/dashboard.module'
 import DeployModule from './app/deploy/deploy.module'
 import HealthModule from './app/health/health.module'
 import ImageModule from './app/image/image.module'
-import MetricsHttpController from './app/metrics/metrics.http.controller'
 import NodeModule from './app/node/node.module'
 import NotificationModule from './app/notification/notification.module'
 import ProjectModule from './app/project/project.module'
@@ -42,9 +41,10 @@ const imports = [
   StorageModule,
   ConfigModule.forRoot(appConfig),
   EmailModule,
-  PrometheusModule.register({
-    controller: MetricsHttpController,
-  }),
+  {
+    ...PrometheusModule.register(),
+    controllers: [], // Found no other way to unset the default controller
+  },
 ]
 
 if (process.env.NODE_ENV === 'production') {
@@ -54,6 +54,19 @@ if (process.env.NODE_ENV === 'production') {
 @Module({
   imports,
   controllers: [],
-  providers: [PrismaService, ShutdownService, UuidValidationGuard, TeamAccessGuard],
+  providers: [
+    PrismaService,
+    ShutdownService,
+    UuidValidationGuard,
+    TeamAccessGuard,
+    makeGaugeProvider({
+      name: 'ws_connected_count',
+      help: 'WebSocket connected count',
+    }),
+    makeGaugeProvider({
+      name: 'ws_namespaces_route',
+      help: 'WebSocket namespaces per routes count',
+    }),
+  ],
 })
 export default class AppModule {}

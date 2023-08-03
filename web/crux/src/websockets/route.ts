@@ -49,6 +49,10 @@ export default class WsRoute {
     })
   }
 
+  countNamespaces() {
+    return this.namespaces.size
+  }
+
   close() {
     this.namespaces.forEach(it => it.close())
     this.namespaces.clear()

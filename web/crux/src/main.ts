@@ -19,6 +19,7 @@ import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import prismaBootstrap from './services/prisma.bootstrap'
 import { PRODUCTION } from './shared/const'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
+import { metricsServerBootstrap } from './app/metrics/metrics.server'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -61,6 +62,7 @@ const bootstrap = async () => {
 
   const agentOptions = loadGrpcOptions(configService.get<string>('GRPC_AGENT_PORT'))
   const httpOptions = configService.get<string>('HTTP_API_PORT', '1848')
+  const metricOptions = configService.get<number>('METRICS_API_PORT', 0)
 
   const authGuard = app.get(JwtAuthGuard)
   app.useGlobalFilters(new HttpExceptionFilter())
@@ -87,6 +89,10 @@ const bootstrap = async () => {
   })
 
   await prismaBootstrap(app)
+
+  if (metricOptions > 0) {
+    await metricsServerBootstrap(app, metricOptions)
+  }
 
   await app.startAllMicroservices()
   await app.listen(httpOptions)
