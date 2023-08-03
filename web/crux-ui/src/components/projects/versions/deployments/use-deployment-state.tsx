@@ -114,7 +114,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const [saveState, setSaveState] = useState<WebSocketSaveState>(null)
   const [editState, setEditState] = useState<DeploymentEditState>('details')
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
-  const [viewMode, setViewMode] = usePersistedViewMode({ initialViewMode: 'list', pageName: 'deploymentState' })
+  const [viewMode, setViewMode] = usePersistedViewMode({ initialViewMode: 'list', pageName: 'deployments' })
   const [confirmationModal, confirm] = useConfirmation()
   const [deployInstances, setDeployInstances] = useState<string[]>(deployment.instances?.map(it => it.id) ?? [])
 

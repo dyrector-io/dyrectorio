@@ -144,7 +144,7 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
   const [addSection, setAddSection] = useState<VersionAddSection>('none')
   const [version, setVersion] = useState(optionsVersion)
   const [tags, setTags] = useState<ImageTagsMap>({})
-  const [viewMode, setViewMode] = usePersistedViewMode({ initialViewMode: 'list', pageName: 'versionState' })
+  const [viewMode, setViewMode] = usePersistedViewMode({ initialViewMode: 'list', pageName: 'versions' })
   const [copyDeploymentTarget, setCopyDeploymentTarget] = useCopyDeploymentState({
     handleApiError,
   })
