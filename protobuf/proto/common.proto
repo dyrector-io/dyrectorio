@@ -109,18 +109,19 @@ enum VolumeType {
 
 enum DriverType {
   DRIVER_TYPE_UNSPECIFIED = 0;
-  DRIVER_TYPE_NONE = 1;
-  GCPLOGS = 2;
-  LOCAL = 3;
-  JSON_FILE = 4;
-  SYSLOG = 5;
-  JOURNALD = 6;
-  GELF = 7;
-  FLUENTD = 8;
-  AWSLOGS = 9;
-  SPLUNK = 10;
-  ETWLOGS = 11;
-  LOGENTRIES = 12;
+  NODE_DEFAULT = 1;
+  DRIVER_TYPE_NONE = 2;
+  GCPLOGS = 3;
+  LOCAL = 4;
+  JSON_FILE = 5;
+  SYSLOG = 6;
+  JOURNALD = 7;
+  GELF = 8;
+  FLUENTD = 9;
+  AWSLOGS = 10;
+  SPLUNK = 11;
+  ETWLOGS = 12;
+  LOGENTRIES = 13;
 }
 
 enum ExposeStrategy {

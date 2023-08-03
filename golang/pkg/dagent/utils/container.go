@@ -103,7 +103,7 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 
 	// check if "host" network mode is supported
 	if !container.NetworkMode("host").IsHost() {
-		log.Warn().Msg("Trying to start Traefic with unsupported 'host' network mode! Traefik will not work!")
+		log.Warn().Msg("Trying to start Traefik with unsupported 'host' network mode! Traefik will not work!")
 	}
 
 	builder := containerbuilder.NewDockerBuilder(ctx).WithImage("index.docker.io/library/traefik:v2.8.0").

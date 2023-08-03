@@ -12,6 +12,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/crux"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
 // checks before start
@@ -48,8 +49,23 @@ func Serve(cfg *config.Configuration) {
 }
 
 func grpcClose(ctx context.Context, reason agent.CloseReason) error {
+	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 	if reason == agent.CloseReason_SHUTDOWN {
 		log.Info().Msg("Remote shutdown requested")
+
+		if cfg.CraneInCluster {
+			log.Debug().Msg("running in cluster, scaling down to 0")
+			err := crux.DeploymentCommand(ctx, &common.ContainerCommandRequest{
+				Container: &common.ContainerIdentifier{
+					Prefix: cfg.OwnNamespace,
+					Name:   cfg.OwnDeployment,
+				},
+				Operation: common.ContainerOperation_STOP_CONTAINER,
+			})
+			if err != nil {
+				log.Fatal().Err(err).Msgf("error while scaling shutting down own container")
+			}
+		}
 		os.Exit(0)
 	} else {
 		log.Error().Int32("reason", int32(reason)).Msg("Close reason not implemented")

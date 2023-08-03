@@ -6,6 +6,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
@@ -46,19 +47,12 @@ func (n *Namespace) getNamespaceClient() (v1.NamespaceInterface, error) {
 }
 
 func (n *Namespace) EnsureExists(namespace string) error {
-	namespaces, err := n.GetNamespaces()
+	exists, err := n.Exists()
 	if err != nil {
 		return fmt.Errorf("namespace fetching error in ensure: %w", err)
 	}
 
-	namespaceFound := false
-	for _, item := range namespaces {
-		if item.Name == namespace {
-			namespaceFound = true
-			break
-		}
-	}
-	if !namespaceFound {
+	if !exists {
 		return n.DeployNamespace(namespace)
 	}
 	return nil
@@ -100,6 +94,22 @@ func (n *Namespace) GetNamespaces() ([]NamespaceResponse, error) {
 		log.Error().Err(err).Stack().Send()
 	}
 	return list, err
+}
+
+func (n *Namespace) Exists() (bool, error) {
+	client, err := n.getNamespaceClient()
+	if err != nil {
+		return false, err
+	}
+
+	_, err = client.Get(n.ctx, n.name, metav1.GetOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
 
 func (n *Namespace) DeleteNamespace(name string) error {
