@@ -54,7 +54,7 @@ const DyoModal = (props: DyoModalProps) => {
 
   return (
     open && (
-      <div className="flex fixed inset-0 bg-light-grey bg-opacity-50 h-screen w-screen">
+      <div className="flex fixed inset-0 bg-light-grey bg-opacity-50 h-screen w-screen z-50">
         <DyoCard role="dialog" className={clsx(className, 'flex flex-col m-auto p-8')} shadowClassName="shadow-modal">
           <DyoHeading element="h4" className={titleClassName ?? 'text-xl font-bold text-bright'}>
             {title}

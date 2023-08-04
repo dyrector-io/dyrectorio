@@ -132,7 +132,7 @@ test.describe('Image common config from JSON', () => {
 
     await page.reload()
 
-    await expect(page.locator('button[aria-checked="true"]:right-of(label:has-text("TTY"))')).toBeVisible()
+    await expect(page.locator(':right-of(:text("TTY"))').getByRole('switch', { checked: true })).toBeVisible()
   })
 
   test('Port should be saved', async ({ page }) => {
@@ -239,7 +239,7 @@ test.describe('Image common config from JSON', () => {
     await page.reload()
 
     await expect(secretInput).toHaveValue(secret)
-    await expect(page.locator('button[aria-checked="true"]:right-of(div:has-text("Required"))')).toBeVisible()
+    await expect(page.getByRole('switch', { checked: true }).locator('right-of(:text("Required"))')).toBeVisible()
   })
 
   test('Commands should be saved', async ({ page }) => {
@@ -311,7 +311,7 @@ test.describe('Image common config from JSON', () => {
 
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
-    json.routing = { domain: domain, path: path, uploadLimit: uploadLimit, stripPath: stripPath }
+    json.routing = { domain, path, uploadLimit, stripPath }
 
     const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchRouting(domain, path, uploadLimit, stripPath))
     await jsonEditor.fill(JSON.stringify(json))
@@ -321,7 +321,7 @@ test.describe('Image common config from JSON', () => {
 
     await expect(page.locator('input[placeholder="Domain"]')).toHaveValue(domain)
     await expect(page.locator('input[placeholder="Path"]')).toHaveValue(path)
-    await expect(page.locator('button.bg-dyo-turquoise[aria-checked="true"]')).toBeVisible()
+    await expect(page.getByRole('switch', { checked: true }).locator(':right-of(:text("Strip path"))')).toBeVisible()
     await expect(page.locator('input[placeholder="Upload limit"]')).toHaveValue(uploadLimit)
   })
 
@@ -368,7 +368,7 @@ test.describe('Image common config from JSON', () => {
 
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
-    json.configContainer = { image: img, volume: volume, path: path, keepFiles: true }
+    json.configContainer = { image: img, volume, path, keepFiles: true }
 
     const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchConfigContainer(img, volume, path, true))
     jsonEditor.fill(JSON.stringify(json))
@@ -380,7 +380,7 @@ test.describe('Image common config from JSON', () => {
     await expect(confDiv.getByLabel('Image')).toHaveValue(img)
     await expect(confDiv.getByLabel('Volume')).toHaveValue(volume)
     await expect(confDiv.getByLabel('Path')).toHaveValue(path)
-    await expect(confDiv.locator('button[aria-checked="true"]:right-of(label:has-text("Keep files"))')).toBeVisible()
+    await expect(confDiv.getByRole('switch', { checked: true }).locator(':right-of(:text("Keep files"))')).toBeVisible()
   })
 
   test('Init containers should be saved', async ({ page }) => {
