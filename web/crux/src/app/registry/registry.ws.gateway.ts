@@ -5,6 +5,7 @@ import { WsAuthorize, WsMessage } from 'src/websockets/common'
 import { UseGlobalWsFilters, UseGlobalWsGuards } from 'src/websockets/decorators/ws.gateway.decorators'
 import WsParam from 'src/websockets/decorators/ws.param.decorator'
 import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
+import RegistryMetrics from 'src/shared/metrics/registry.metrics'
 import TeamRepository from '../team/team.repository'
 import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import RegistryClientProvider from './registry-client.provider'
@@ -42,7 +43,9 @@ export default class RegistryWebSocketGateway {
     const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
     const api = await this.registryClients.getByRegistryId(teamId, message.registryId)
-    const images = await api.catalog(message.filter)
+
+    RegistryMetrics.apiRequest(api.type, 'catalog').inc()
+    const images = await api.client.catalog(message.filter)
 
     return {
       type: 'find-image-result',
@@ -66,7 +69,9 @@ export default class RegistryWebSocketGateway {
     const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
     const api = await this.registryClients.getByRegistryId(teamId, message.registryId)
-    const tags = message.images.map(it => api.tags(it))
+
+    RegistryMetrics.apiRequest(api.type, 'tags').inc()
+    const tags = message.images.map(it => api.client.tags(it))
 
     return {
       type: 'registry-image-tags',

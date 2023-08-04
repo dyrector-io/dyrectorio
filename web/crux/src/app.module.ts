@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { PrometheusModule, makeGaugeProvider } from '@willsoto/nestjs-prometheus'
+import { PrometheusModule } from '@willsoto/nestjs-prometheus'
 import { LoggerModule } from 'nestjs-pino'
 import AgentModule from './app/agent/agent.module'
 import AuditModule from './app/audit/audit.module'
@@ -54,19 +54,6 @@ if (process.env.NODE_ENV === 'production') {
 @Module({
   imports,
   controllers: [],
-  providers: [
-    PrismaService,
-    ShutdownService,
-    UuidValidationGuard,
-    TeamAccessGuard,
-    makeGaugeProvider({
-      name: 'ws_connected_count',
-      help: 'WebSocket connected count',
-    }),
-    makeGaugeProvider({
-      name: 'ws_namespaces_route',
-      help: 'WebSocket namespaces per routes count',
-    }),
-  ],
+  providers: [PrismaService, ShutdownService, UuidValidationGuard, TeamAccessGuard],
 })
 export default class AppModule {}

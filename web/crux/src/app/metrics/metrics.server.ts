@@ -9,8 +9,18 @@ let metricServer: http.Server<any, any> = null
 
 const logger = new Logger('Metrics')
 
-export const metricsServerBootstrap = async (app: INestApplication, port: number) => {
-  logger.verbose(`Starting metrics server on port :${port}`)
+const shutdownMetricsServer = async () => {
+  if (metricServer == null) {
+    return
+  }
+
+  logger.log('Shutting down metrics server')
+
+  await promisify(metricServer.close)
+}
+
+const metricsServerBootstrap = async (app: INestApplication, port: number) => {
+  logger.log(`Starting metrics server on port :${port}`)
 
   const shutdownService = app.get(ShutdownService)
 
@@ -32,12 +42,4 @@ export const metricsServerBootstrap = async (app: INestApplication, port: number
   }).listen(port)
 }
 
-export const shutdownMetricsServer = async () => {
-  if (metricServer == null) {
-    return
-  }
-
-  logger.verbose('Shutting down metrics server')
-
-  await promisify(metricServer.close)
-}
+export default metricsServerBootstrap

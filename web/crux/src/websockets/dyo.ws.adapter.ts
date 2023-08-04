@@ -24,6 +24,7 @@ import JwtAuthGuard, { AuthorizedHttpRequest } from 'src/app/token/jwt-auth.guar
 import { WebSocketExceptionOptions } from 'src/exception/websocket-exception'
 import { v4 as uuid } from 'uuid'
 import { WebSocketServer } from 'ws'
+import WsMetrics from 'src/shared/metrics/ws.metrics'
 import WsClientSetup from './client-setup'
 import {
   SubscriptionMessage,
@@ -35,11 +36,10 @@ import {
   WsRouteMatch,
   WsTransform,
   ensurePathFormat,
+  handlerKeyOf,
   namespaceOf,
 } from './common'
 import WsRoute from './route'
-import { Gauge } from 'prom-client'
-import { getToken } from '@willsoto/nestjs-prometheus'
 
 export enum WebSocketReadyState {
   CONNECTING_STATE = 0,
@@ -51,7 +51,6 @@ export enum WebSocketReadyState {
 export default class DyoWsAdapter extends AbstractWsAdapter {
   private readonly logger = new Logger(DyoWsAdapter.name)
 
-  private context: INestApplicationContext
   private server: WebSocketServer
 
   private routes: WsRoute[] = []
@@ -62,7 +61,7 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
   ) {
     super(appContext)
 
-    this.context = appContext
+    WsMetrics.connections().set(0)
   }
 
   bindErrorHandler(server: any) {
@@ -204,6 +203,8 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
         return
       }
 
+      WsMetrics.messageTypeSend(handlerKeyOf(response)).inc()
+
       client.send(JSON.stringify(response))
     }
 
@@ -220,6 +221,8 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     const message: WsMessage = JSON.parse(buffer.data)
 
     this.logger.verbose(`Received ${buffer.data}`)
+
+    WsMetrics.messageTypeReceive(handlerKeyOf(message)).inc()
 
     if (message.type === WS_TYPE_SUBSCRIBE || message.type === WS_TYPE_UNSUBSCRIBE) {
       return from(this.onSubscriptionMessage(client, message)).pipe(mergeAll())
@@ -282,6 +285,8 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
         return
       }
 
+      WsMetrics.messageTypeSend(handlerKeyOf(msg)).inc()
+
       client.send(JSON.stringify(msg))
     }
     client.on(CLOSE_EVENT, () => this.onClientDisconnect(client))
@@ -289,13 +294,13 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     client.setup = new WsClientSetup(client, client.token, () => this.bindClientMessageHandlers(client))
     client.setup.start()
 
-    this.getConnectionsMetric().inc()
+    WsMetrics.connections().inc()
     this.logger.log(`Connected ${client.token} clients: ${this.server?.clients?.size}`)
   }
 
   private onClientDisconnect(client: WsClient) {
     this.logger.log(`Disconnected ${client.token} clients: ${this.server?.clients?.size}`)
-    this.getConnectionsMetric().dec()
+    WsMetrics.connections().dec()
 
     this.routes.forEach(it => it.onClientDisconnect(client))
 
@@ -325,13 +330,5 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     }
 
     return [route, match]
-  }
-
-  private getConnectionsMetric(): Gauge<string> {
-    return this.context.get(getToken('ws_connected_count'))
-  }
-
-  private getNamespacesPerRouteMetric(): Gauge<string> {
-    return this.context.get(getToken('ws_namespaces_route'))
   }
 }

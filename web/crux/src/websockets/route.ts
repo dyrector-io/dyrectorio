@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common'
 import { MessageMappingProperties } from '@nestjs/websockets'
 import { EMPTY, Observable, firstValueFrom, of } from 'rxjs'
+import WsMetrics from 'src/shared/metrics/ws.metrics'
 import {
   SubscriptionMessage,
   WS_TYPE_AUTHORIZE,
@@ -30,6 +31,8 @@ export default class WsRoute {
 
   constructor(readonly path: string) {
     this.logger = new Logger(`${WsRoute.name} ${path}`)
+
+    WsMetrics.routeNamespaces(this.path).set(this.countNamespaces())
 
     const parts = path.split('/').filter(it => it.length > 0)
     this.matchers = parts.map(it => {
@@ -181,6 +184,8 @@ export default class WsRoute {
       this.namespaces.set(path, ns)
 
       this.logger.verbose(`Namespace created ${path}`)
+
+      WsMetrics.routeNamespaces(this.path).set(this.countNamespaces())
     }
 
     return ns
@@ -200,6 +205,8 @@ export default class WsRoute {
     if (shouldRemove) {
       this.namespaces.delete(namespacePath)
       this.logger.verbose(`Namespace deleted ${namespacePath}`)
+
+      WsMetrics.routeNamespaces(this.path).set(this.countNamespaces())
     }
 
     return res

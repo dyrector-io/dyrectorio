@@ -1,5 +1,4 @@
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common'
-import { Subject } from 'rxjs'
+import { Injectable, OnModuleDestroy } from '@nestjs/common'
 
 export type ShutdownListener = () => PromiseLike<void>
 
