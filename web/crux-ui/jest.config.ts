@@ -34,10 +34,10 @@ const customJestConfig: jest.Config = {
 export default createJestConfig(customJestConfig)
 
 // import type { Config } from '@jest/types'
-// 
+//
 // const config: Config.InitialOptions = {
 
 // }
-// 
+//
 // export default config
-// 
+//
