@@ -171,9 +171,7 @@ const LoginPage = (props: LoginPageProps) => {
             message={findMessage(ui, 'password')}
           />
 
-          {ui.messages?.map((it, index) => (
-            <DyoMessage key={`error-${index}`} message={it?.text} />
-          ))}
+          {ui.messages?.map((it, index) => <DyoMessage key={`error-${index}`} message={it?.text} />)}
 
           <DyoMessage
             message={findError(errors, 'captcha', it =>

@@ -1,7 +1,7 @@
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import DyoSwitch from '@app/elements/dyo-switch'
+import DyoToggle from '@app/elements/dyo-toggle'
 import { GitlabRegistryDetails, GITLAB_NAMESPACE_VALUES, RegistryNamespace } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
@@ -71,21 +71,20 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
         message={formik.errors.imageNamePrefix}
       />
 
-      <div className="flex mt-8">
-        <DyoLabel className="mr-2">{t('selfManaged')}</DyoLabel>
+      <DyoToggle
+        className="mt-8"
+        name="selfManaged"
+        label={t('selfManaged')}
+        checked={formik.values.selfManaged}
+        setFieldValue={(field, value, shouldValidate) => {
+          if (!value) {
+            formik.setFieldValue('url', '', false)
+            formik.setFieldValue('apiUrl', '', false)
+          }
 
-        <DyoSwitch
-          fieldName="selfManaged"
-          checked={formik.values.selfManaged}
-          setFieldValue={(field: string, value: boolean, shouldValidate?: boolean | undefined) => {
-            if (!value) {
-              formik.setFieldValue('url', '', false)
-              formik.setFieldValue('apiUrl', '', false)
-            }
-            return formik.setFieldValue(field, value, shouldValidate)
-          }}
-        />
-      </div>
+          return formik.setFieldValue(field, value, shouldValidate)
+        }}
+      />
 
       {!formik.values.selfManaged ? null : (
         <>

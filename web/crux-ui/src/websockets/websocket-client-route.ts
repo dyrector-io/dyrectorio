@@ -17,7 +17,11 @@ class WebSocketClientRoute {
     return this.endpointPath
   }
 
-  constructor(logger: Logger, private readonly sendMessage: WebSocketSendMessage, private endpointPath: string) {
+  constructor(
+    logger: Logger,
+    private readonly sendMessage: WebSocketSendMessage,
+    private endpointPath: string,
+  ) {
     this.logger = logger.derive(endpointPath)
 
     this.sendClientMessage = msg => {

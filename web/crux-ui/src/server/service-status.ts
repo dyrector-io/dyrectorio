@@ -11,7 +11,10 @@ class ServiceStatusChecker<T extends ServiceInfo> {
 
   private checking = false
 
-  constructor(defaultInfo: T, private runCheck: () => Promise<T>) {
+  constructor(
+    defaultInfo: T,
+    private runCheck: () => Promise<T>,
+  ) {
     this.lastInfo = defaultInfo
   }
 

@@ -15,7 +15,6 @@ import {
   VolumeType,
 } from '@app/models/container'
 import * as yup from 'yup'
-import { AnyObject } from 'yup/lib/types'
 
 export const uniqueKeySchema = yup
   .array(
@@ -190,7 +189,7 @@ const storageRule = yup
   .optional()
 
 const createOverlapTest = (
-  schema: yup.NumberSchema<number, AnyObject, number>,
+  schema: yup.NumberSchema<number, any, number>,
   portRanges: ContainerConfigPortRange[],
   field: Exclude<keyof ContainerConfigPortRange, 'id'>,
 ) =>

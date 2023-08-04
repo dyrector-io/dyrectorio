@@ -44,7 +44,7 @@ test('Convert project type should work', async ({ page }) => {
   await page.goto(TEAM_ROUTES.project.details(projId))
   await page.locator('button:has-text("Edit")').click()
   await page.locator('button:has-text("Convert to versioned") >> visible=true').click()
-  const overlay = await page.locator('div[data-headlessui-state="open"]')
+  const overlay = await page.locator('div[role="dialog"]')
   await overlay.locator('button:has-text("Confirm")').click()
   await page.locator(`h5:has-text("${projName}") >> visible=true`)
   await expect(page.locator('div.card span:has-text("VERSIONED")')).toBeVisible()

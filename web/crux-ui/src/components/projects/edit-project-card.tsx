@@ -120,8 +120,7 @@ const EditProjectCard = (props: EditProjectCardProps) => {
           <DyoToggle
             className="justify-self-start mt-8"
             name="type"
-            nameChecked={t('versioning')}
-            nameUnchecked={t('versioning')}
+            label={t('versioning')}
             checked={formik.values.type === 'versioned'}
             onCheckedChange={it => formik.setFieldValue('type', it ? 'versioned' : 'versionless')}
           />
