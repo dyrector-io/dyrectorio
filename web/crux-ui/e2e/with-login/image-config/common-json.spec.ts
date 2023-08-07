@@ -239,7 +239,7 @@ test.describe('Image common config from JSON', () => {
     await page.reload()
 
     await expect(secretInput).toHaveValue(secret)
-    await expect(page.getByRole('switch', { checked: true }).locator('right-of(:text("Required"))')).toBeVisible()
+    await expect(page.getByRole('switch', { checked: true }).locator(':right-of(:text("Required"))')).toBeVisible()
   })
 
   test('Commands should be saved', async ({ page }) => {

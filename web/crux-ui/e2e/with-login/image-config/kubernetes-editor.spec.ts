@@ -91,7 +91,7 @@ test.describe('Image kubernetes config from editor', () => {
 
     await page.reload()
 
-    await expect(page.locator('right-of(:text("PROXY HEADERS"))').getByRole('switch', { checked: true })).toBeVisible()
+    await expect(page.locator(':right-of(:text("PROXY HEADERS"))').getByRole('switch', { checked: true })).toBeVisible()
   })
 
   test('Load balancer should be saved', async ({ page }) => {
