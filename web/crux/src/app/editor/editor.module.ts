@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
-import EditorServiceProvider from './editor.service.provider'
-import EditorService from './editor.service'
 import EditorColorProvider from './editor.color.provider'
+import EditorService from './editor.service'
+import EditorServiceProvider from './editor.service.provider'
 
 @Module({
   imports: [],

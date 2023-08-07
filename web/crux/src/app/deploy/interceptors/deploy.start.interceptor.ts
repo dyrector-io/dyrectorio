@@ -9,7 +9,10 @@ import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
 export default class DeployStartValidationInterceptor implements NestInterceptor {
-  constructor(private prisma: PrismaService, private agentService: AgentService) {}
+  constructor(
+    private prisma: PrismaService,
+    private agentService: AgentService,
+  ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest()

@@ -1,5 +1,5 @@
-import { REGISTRY_GITHUB_URL } from 'src/shared/const'
 import { getRegistryApiException } from 'src/exception/registry-exception'
+import { REGISTRY_GITHUB_URL } from 'src/shared/const'
 import { GithubNamespace } from '../registry.dto'
 import { RegistryImageTags } from '../registry.message'
 import { RegistryApiClient } from './registry-api-client'
@@ -10,7 +10,11 @@ class GithubRegistryClient implements RegistryApiClient {
 
   private namespace: string
 
-  constructor(private imageNamePrefix: string, options: RegistryV2ApiClientOptions, namespace: GithubNamespace) {
+  constructor(
+    private imageNamePrefix: string,
+    options: RegistryV2ApiClientOptions,
+    namespace: GithubNamespace,
+  ) {
     this.basicAuthHeaders = {
       Authorization: registryCredentialsToBasicAuth(options),
     }

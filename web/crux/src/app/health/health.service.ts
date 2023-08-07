@@ -10,7 +10,10 @@ export default class HealthService {
 
   private meta: MetadataApi
 
-  constructor(private prisma: PrismaService, private configService: ConfigService) {
+  constructor(
+    private prisma: PrismaService,
+    private configService: ConfigService,
+  ) {
     const kratosConfig = new Configuration({
       basePath: this.configService.get<string>('KRATOS_ADMIN_URL'),
     })

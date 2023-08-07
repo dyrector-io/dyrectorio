@@ -15,8 +15,8 @@ export const registerWithOidcSchema = yup.object().shape({
 
 export const registerSchema = yup.object().when('method', {
   is: 'password',
-  then: registerWithPasswordSchema,
-  otherwise: registerWithOidcSchema,
+  then: () => registerWithPasswordSchema,
+  otherwise: () => registerWithOidcSchema,
 })
 
 export const verifyEmailSchema = yup.object().shape({

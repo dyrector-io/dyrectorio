@@ -7,7 +7,11 @@ import StorageMapper from './storage.mapper'
 
 @Injectable()
 export default class StorageService {
-  constructor(private teamRepository: TeamRepository, private prisma: PrismaService, private mapper: StorageMapper) {}
+  constructor(
+    private teamRepository: TeamRepository,
+    private prisma: PrismaService,
+    private mapper: StorageMapper,
+  ) {}
 
   async getStorages(teamSlug: string): Promise<StorageDto[]> {
     const storages = await this.prisma.storage.findMany({

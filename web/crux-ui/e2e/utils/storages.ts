@@ -19,6 +19,6 @@ export const createStorage = async (page: Page, name: string, url: string, acces
 export const deleteStorage = async (page: Page, storageId: string) => {
   await page.goto(TEAM_ROUTES.storage.details(storageId))
   await page.locator('button:has-text("Delete")').click()
-  await page.locator('div[data-headlessui-state="open"] button:has-text("Delete")').click()
+  await page.locator('div[role="dialog"] button:has-text("Delete")').click()
   await page.waitForURL(`${TEAM_ROUTES.storage.list()}`)
 }

@@ -1,4 +1,9 @@
 module.exports = {
+  env: {
+    node: true,
+    es2020: true,
+    jest: true,
+  },
   plugins: ['@typescript-eslint'],
   extends: [
     'next/core-web-vitals',
@@ -43,6 +48,7 @@ module.exports = {
     'no-param-reassign': 'off',
     'no-plusplus': 'off',
     'max-classes-per-file': 'off',
+    'import/order': 'off',
   },
   overrides: [
     {

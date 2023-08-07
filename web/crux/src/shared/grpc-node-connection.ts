@@ -32,7 +32,10 @@ export default class GrpcNodeConnection {
     return this.token.sub
   }
 
-  constructor(public readonly metadata: Metadata, private call: NodeGrpcCall) {
+  constructor(
+    public readonly metadata: Metadata,
+    private call: NodeGrpcCall,
+  ) {
     if (call.call.handler.type === 'clientStream' && !call.end) {
       // TODO(@m8vago): nestjs tries to call end() on a ServerReadableStream, when the client
       // cancels the call, but ServerReadableStream does not have one.

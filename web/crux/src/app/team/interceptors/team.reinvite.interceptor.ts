@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
 import { Observable } from 'rxjs'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
+import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
 export default class TeamReinviteUserValidationInterceptor implements NestInterceptor {

@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { Subject } from 'rxjs'
-import { WebSocket, RawData } from 'ws'
+import { RawData, WebSocket } from 'ws'
 
 type WsInitializer = () => Promise<boolean>
 
@@ -17,7 +17,11 @@ export default class WsClientSetup {
 
   boundRoutes = 0
 
-  constructor(client: WebSocket, token: string, private readonly initBind: WsInitializer) {
+  constructor(
+    client: WebSocket,
+    token: string,
+    private readonly initBind: WsInitializer,
+  ) {
     this.logger = new Logger(`${WsClientSetup.name} ${token}`)
 
     const receiver: (buffer: RawData, isBinary: boolean) => void = (buffer, binary) => {

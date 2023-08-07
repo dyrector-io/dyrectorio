@@ -160,8 +160,7 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
             <div className="flex-0">
               <DyoToggle
                 id="required"
-                nameChecked={t('required')}
-                nameUnchecked={t('notRequired')}
+                label={t('required')}
                 checked={required}
                 disabled={disabled}
                 onCheckedChange={it => onChange(index, { required: it })}

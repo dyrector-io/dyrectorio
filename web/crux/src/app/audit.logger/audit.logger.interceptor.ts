@@ -18,7 +18,10 @@ import { WS_TYPE_SUBSCRIBE, WS_TYPE_UNSUBSCRIBE, WsMessage } from 'src/websocket
  */
 @Injectable()
 export default class AuditLoggerInterceptor implements NestInterceptor {
-  constructor(private readonly reflector: Reflector, private readonly service: AuditLoggerService) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly service: AuditLoggerService,
+  ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const level = this.reflector.get<AuditLogLevelOptions>(AUDIT_LOGGER_LEVEL, context.getHandler())

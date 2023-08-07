@@ -5,7 +5,10 @@ import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
 export default class NodeGetScriptValidationPipe implements PipeTransform {
-  constructor(private prisma: PrismaService, private agentService: AgentService) {}
+  constructor(
+    private prisma: PrismaService,
+    private agentService: AgentService,
+  ) {}
 
   async transform(id: string) {
     const node = await this.prisma.node.findUnique({

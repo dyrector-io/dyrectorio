@@ -10,7 +10,10 @@ export const DisableTeamAccessGuard = () => SetMetadata(TEAM_ACCESS_GUARD_DISABL
 export default class TeamAccessGuard implements CanActivate {
   private logger = new Logger(TeamAccessGuard.name)
 
-  constructor(private readonly prisma: PrismaService, private readonly reflector: Reflector) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly reflector: Reflector,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const disabled =

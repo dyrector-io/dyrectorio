@@ -1,13 +1,13 @@
 import { HttpModule } from '@nestjs/axios'
 import { Module } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
 import KratosService from 'src/services/kratos.service'
+import PrismaService from 'src/services/prisma.service'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 import TeamModule from '../team/team.module'
 import TeamRepository from '../team/team.repository'
-import StorageService from './storage.service'
-import StorageMapper from './storage.mapper'
 import StorageHttpController from './storage.http.controller'
-import AuditLoggerModule from '../audit.logger/audit.logger.module'
+import StorageMapper from './storage.mapper'
+import StorageService from './storage.service'
 
 @Module({
   imports: [HttpModule, TeamModule, AuditLoggerModule],

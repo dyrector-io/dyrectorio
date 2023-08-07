@@ -1,9 +1,9 @@
 import { finalize, Observable, startWith, Subject } from 'rxjs'
+import { Agent } from 'src/domain/agent'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
 import { ContainerState, ContainerStateItem, ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
-import { Agent } from 'src/domain/agent'
 
 export type ContainerStatusStreamCompleter = Subject<unknown>
 
@@ -16,7 +16,10 @@ export default class ContainerStatusWatcher {
 
   private state: Record<string, ContainerStateItem> = {}
 
-  constructor(private prefix: string, private oneShot: boolean) {}
+  constructor(
+    private prefix: string,
+    private oneShot: boolean,
+  ) {}
 
   start(commandChannel: Subject<AgentCommand>) {
     if (this.started) {

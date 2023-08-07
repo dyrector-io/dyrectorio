@@ -19,11 +19,11 @@ import TemplateModule from './app/template/template.module'
 import VersionModule from './app/version/version.module'
 import appConfig from './config/app.config'
 import pinoLoggerConfig from './config/pino.logger.config'
+import TeamAccessGuard from './guards/team-access.guard'
 import UuidValidationGuard from './guards/uuid-params.validation.guard'
 import EmailModule from './mailer/email.module'
 import ShutdownService from './services/application.shutdown.service'
 import PrismaService from './services/prisma.service'
-import TeamAccessGuard from './guards/team-access.guard'
 
 const imports = [
   ProjectModule,

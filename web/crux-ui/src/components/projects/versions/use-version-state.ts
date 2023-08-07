@@ -49,7 +49,7 @@ export type ImageTagsMap = { [key: string]: RegistryImageTags } // image key to 
 export type VersionAddSection = 'image' | 'deployment' | 'copy-deployment' | 'none'
 
 const VERSION_SECTIONS_STATE_VALUES = ['images', 'deployments', 'reorder'] as const
-export type VersionSection = typeof VERSION_SECTIONS_STATE_VALUES[number]
+export type VersionSection = (typeof VERSION_SECTIONS_STATE_VALUES)[number]
 
 const ADD_SECTION_TO_SECTION: Record<VersionAddSection, VersionSection> = {
   image: 'images',

@@ -7,12 +7,11 @@ module.exports = {
   },
   extends: [
     'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended',
     'airbnb/base',
     'airbnb-typescript/base',
     'prettier',
   ],
-  plugins: ['@typescript-eslint/eslint-plugin', 'prettier'],
+  plugins: ['@typescript-eslint/eslint-plugin', 'import'],
   root: true,
   env: {
     node: true,
@@ -20,7 +19,6 @@ module.exports = {
   },
   ignorePatterns: ['.eslintrc.js'],
   rules: {
-    'prettier/prettier': 'error',
     'eol-last': ['error', 'always'],
     '@typescript-eslint/semi': ['error', 'never'],
 
@@ -40,5 +38,9 @@ module.exports = {
     'class-methods-use-this': 'off',
     'max-classes-per-file': 'off',
     'import/no-cycle': 'off',
+    'import/first': 'error',
+    'import/newline-after-import': 'error',
+    'import/no-duplicates': 'error',
+    'import/order': 'off',
   },
 }

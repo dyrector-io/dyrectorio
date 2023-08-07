@@ -6,7 +6,10 @@ import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
 export default class DeployTeamAccessGuard implements CanActivate {
-  constructor(private readonly prisma: PrismaService, private readonly reflector: Reflector) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly reflector: Reflector,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const strategy = authStrategyOfContext(context, this.reflector)

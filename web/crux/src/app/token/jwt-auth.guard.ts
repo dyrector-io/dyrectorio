@@ -19,7 +19,10 @@ export const authStrategyOfContext = (context: ExecutionContext, reflector: Refl
 export default class JwtAuthGuard extends AuthGuard('jwt') {
   private logger = new Logger(JwtAuthGuard.name)
 
-  constructor(private kratos: KratosService, private reflector: Reflector) {
+  constructor(
+    private kratos: KratosService,
+    private reflector: Reflector,
+  ) {
     super()
   }
 

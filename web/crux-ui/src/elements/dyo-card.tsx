@@ -1,17 +1,18 @@
 import clsx from 'clsx'
-import { RefAttributes } from 'react'
+import { HTMLAttributes } from 'react'
 
-export interface DyoCardProps extends RefAttributes<HTMLDivElement> {
-  className?: string
-  children: React.ReactNode
-  modal?: boolean
+export interface DyoCardProps extends HTMLAttributes<HTMLDivElement> {
+  shadowClassName?: string
 }
 
 export const DyoCard = (props: DyoCardProps) => {
-  const { className, modal, children } = props
+  const { className, shadowClassName, children, ...forwardedProps } = props
 
   return (
-    <div className={clsx(className ?? 'p-8', 'card rounded-lg bg-medium', modal ? 'shadow-modal' : 'shadow-lg')}>
+    <div
+      className={clsx(className ?? 'p-8', 'card rounded-lg bg-medium', shadowClassName ?? 'shadow-lg')}
+      {...forwardedProps}
+    >
       {children}
     </div>
   )
