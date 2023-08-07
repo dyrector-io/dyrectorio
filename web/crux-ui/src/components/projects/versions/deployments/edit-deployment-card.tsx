@@ -3,6 +3,8 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
+import { DyoLabel } from '@app/elements/dyo-label'
+import DyoSwitch from '@app/elements/dyo-switch'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
@@ -76,6 +78,17 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
           value={formik.values.prefix}
           message={formik.errors.prefix}
         />
+
+        <div className="flex flex-row mt-8 mb-2.5">
+          <DyoLabel className="my-auto mr-4">{t('protected')}</DyoLabel>
+
+          <DyoSwitch
+            fieldName="protected"
+            name="protected"
+            checked={formik.values.protected}
+            setFieldValue={formik.setFieldValue}
+          />
+        </div>
 
         <DyoTextArea
           className="h-48"

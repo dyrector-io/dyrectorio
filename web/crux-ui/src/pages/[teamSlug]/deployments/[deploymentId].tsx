@@ -8,7 +8,6 @@ import DeploymentTokenCard from '@app/components/projects/versions/deployments/d
 import EditDeploymentCard from '@app/components/projects/versions/deployments/edit-deployment-card'
 import EditDeploymentInstances from '@app/components/projects/versions/deployments/edit-deployment-instances'
 import useDeploymentState from '@app/components/projects/versions/deployments/use-deployment-state'
-import { deployStartErrorHandler, startDeployment } from '@app/components/projects/versions/version-deployments-section'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
@@ -16,6 +15,8 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
+import useConfirmation from '@app/hooks/use-confirmation'
+import { useDeploy } from '@app/hooks/use-deploy'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
 import {
@@ -51,7 +52,9 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const submitRef = useRef<() => Promise<any>>()
 
   const handleApiError = defaultApiErrorHandler(t)
-  const handleDeployStartError = deployStartErrorHandler(t)
+
+  const [confirmModalConfig, confirm] = useConfirmation()
+  const deploy = useDeploy({ router, teamRoutes: routes, t, confirm })
 
   const onWsError = (error: Error) => {
     // eslint-disable-next-line
@@ -100,12 +103,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    const res = await startDeployment(routes, deployment.id)
-    if (res) {
-      handleDeployStartError(res)
-    } else {
-      await router.push(routes.deployment.deploy(deployment.id))
-    }
+    await deploy(deployment.id)
   }
 
   useWebsocketTranslate(t)
@@ -254,6 +252,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       )}
 
       <DyoConfirmationModal config={state.confirmationModal} className="w-1/4" />
+      <DyoConfirmationModal config={confirmModalConfig} className="w-1/4" />
     </Layout>
   )
 }

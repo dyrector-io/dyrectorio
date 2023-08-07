@@ -275,6 +275,7 @@ export default class DeployService {
       data: {
         note: req.note ?? undefined,
         prefix: req.prefix ?? undefined,
+        protected: req.protected ?? undefined,
         environment: req.environment
           ? req.environment.map(it => this.containerMapper.uniqueKeyValueDtoToDb(it))
           : undefined,

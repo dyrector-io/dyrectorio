@@ -11,6 +11,7 @@ export type Deployment = {
   id: string
   audit: Audit
   prefix: string
+  protected: boolean
   status: DeploymentStatus
   note?: string
   node: DyoNode
@@ -75,6 +76,7 @@ export type PatchDeployment = {
   id: string
   prefix?: string
   note?: string
+  protected?: boolean
   environment?: UniqueKeyValue[]
 }
 
