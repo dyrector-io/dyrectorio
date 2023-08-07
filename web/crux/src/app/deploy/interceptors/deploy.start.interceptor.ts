@@ -92,7 +92,9 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
     }
 
     if (!deployment.protected) {
-      const ignoreProtected = req.query.ignoreProtected
+      const {
+        query: { ignoreProtected },
+      } = req
 
       if (!ignoreProtected || ignoreProtected === false) {
         const otherProtected = await this.prisma.deployment.findFirst({
