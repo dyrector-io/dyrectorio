@@ -5,7 +5,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import DyoSwitch from '@app/elements/dyo-switch'
+import DyoToggle from '@app/elements/dyo-toggle'
 import TimeLabel from '@app/elements/time-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
@@ -129,15 +129,18 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
           {node.type === 'docker' && (
             <div className="flex flex-col">
-              <DyoHeading element="h4" className="text-lg text-bright mb-2">
+              <DyoHeading element="h4" className="text-lg text-bright">
                 {t('traefik')}
               </DyoHeading>
 
-              <div className="flex flex-row mb-2">
-                <DyoLabel className="my-auto mx-4">{t('installTraefik')}</DyoLabel>
-
-                <DyoSwitch name="traefik" checked={!!formik.values.dagentTraefik} onCheckedChange={onTraefikChanged} />
-              </div>
+              <DyoToggle
+                className="mx-4 my-2"
+                labelClassName="text-light-eased"
+                name="traefik"
+                checked={!!formik.values.dagentTraefik}
+                onCheckedChange={onTraefikChanged}
+                label={t('installTraefik')}
+              />
 
               {formik.values.dagentTraefik && (
                 <div className="ml-2 mb-2">

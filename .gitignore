@@ -1,4 +1,5 @@
 .env
+*.tar
 node_modules/
 
 # Ignore all log files from .vscode folder

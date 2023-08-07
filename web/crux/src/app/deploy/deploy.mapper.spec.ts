@@ -1,18 +1,18 @@
+import { DeploymentStatusEnum, NodeTypeEnum, ProjectTypeEnum, Storage, VersionTypeEnum } from '.prisma/client'
 import { Test, TestingModule } from '@nestjs/testing'
 import { ContainerConfigData, InstanceContainerConfigData, MergedContainerConfigData } from 'src/domain/container'
-import { DeploymentStatusEnum, NodeTypeEnum, ProjectTypeEnum, VersionTypeEnum, Storage } from '.prisma/client'
 import { CommonContainerConfig, DagentContainerConfig, ImportContainer } from 'src/grpc/protobuf/proto/agent'
-import { NetworkMode, RestartPolicy } from 'src/grpc/protobuf/proto/common'
+import { DriverType, NetworkMode, RestartPolicy } from 'src/grpc/protobuf/proto/common'
+import AgentService from '../agent/agent.service'
+import AuditMapper from '../audit/audit.mapper'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
+import NodeMapper from '../node/node.mapper'
+import ProjectMapper from '../project/project.mapper'
+import RegistryMapper from '../registry/registry.mapper'
+import VersionMapper from '../version/version.mapper'
 import { DeploymentDto, DeploymentWithNodeVersion, PatchInstanceDto } from './deploy.dto'
 import DeployMapper from './deploy.mapper'
-import ProjectMapper from '../project/project.mapper'
-import VersionMapper from '../version/version.mapper'
-import AuditMapper from '../audit/audit.mapper'
-import NodeMapper from '../node/node.mapper'
-import AgentService from '../agent/agent.service'
-import RegistryMapper from '../registry/registry.mapper'
 
 describe('DeployMapper', () => {
   let containerMapper: ContainerMapper = null
@@ -826,14 +826,31 @@ describe('DeployMapper', () => {
   })
 
   describe('dagentConfigToAgentProto logConfig', () => {
-    it('none driver type should return no log driver', () => {
+    it('undefined logConfig should return no log driver', () => {
+      const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
+        networks: [],
+        networkMode: 'host',
+        restartPolicy: 'always',
+        dockerLabels: [],
+      })
+      const expected = <DagentContainerConfig>{
+        networks: [],
+        logConfig: null,
+        networkMode: NetworkMode.HOST,
+        restartPolicy: RestartPolicy.ALWAYS,
+        labels: {},
+      }
+      expect(config).toEqual(expected)
+    })
+
+    it('node default driver type should return no log driver', () => {
       const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
         networks: [],
         networkMode: 'host',
         restartPolicy: 'always',
         dockerLabels: [],
         logConfig: {
-          driver: 'none',
+          driver: 'nodeDefault',
         },
       })
       const expected = <DagentContainerConfig>{
@@ -846,16 +863,22 @@ describe('DeployMapper', () => {
       expect(config).toEqual(expected)
     })
 
-    it('undefined logConfig should return no log driver', () => {
+    it('none driver type should return none log driver', () => {
       const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
         networks: [],
         networkMode: 'host',
         restartPolicy: 'always',
         dockerLabels: [],
+        logConfig: {
+          driver: 'none',
+        },
       })
       const expected = <DagentContainerConfig>{
         networks: [],
-        logConfig: null,
+        logConfig: {
+          driver: DriverType.DRIVER_TYPE_NONE,
+          options: {},
+        },
         networkMode: NetworkMode.HOST,
         restartPolicy: RestartPolicy.ALWAYS,
         labels: {},

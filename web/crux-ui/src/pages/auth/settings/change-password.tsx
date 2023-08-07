@@ -131,9 +131,7 @@ const SettingsPage = (props: SettingsFlow) => {
             grow
           />
 
-          {ui.messages?.map((it, index) => (
-            <DyoMessage key={`error-${index}`} message={it.text} />
-          ))}
+          {ui.messages?.map((it, index) => <DyoMessage key={`error-${index}`} message={it.text} />)}
 
           <DyoButton className="hidden" type="submit" />
         </DyoForm>

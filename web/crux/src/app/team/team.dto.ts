@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsEmail, IsNumber, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator'
-import { UserDto, UserRoleDto, USER_ROLE_VALUES } from './user.dto'
+import { USER_ROLE_VALUES, UserDto, UserRoleDto } from './user.dto'
 
 export class BasicTeamDto {
   @IsUUID()

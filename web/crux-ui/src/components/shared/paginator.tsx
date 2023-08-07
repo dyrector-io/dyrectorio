@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 type PaginationType = 'first' | 'last' | 'next' | 'previous'
 export const pageSizes = [5, 10, 20, 50, 100, 250] as const
 export type PaginationSettings = {
-  pageSize: typeof pageSizes[number]
+  pageSize: (typeof pageSizes)[number]
   pageNumber: number
 }
 export interface PaginatorProps {

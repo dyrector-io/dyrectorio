@@ -1,7 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import { NotificationType, NOTIFICATION_TYPE_VALUES } from '@app/models/notification'
 import * as yup from 'yup'
-import { AnyObject } from 'yup/lib/types'
 import { nameRule } from './common'
 
 export const notificationSchema = yup.object().shape({
@@ -13,7 +12,9 @@ export const notificationSchema = yup.object().shape({
   url: yup
     .string()
     .url()
-    .when('type', (type: NotificationType, schema: yup.StringSchema<string, AnyObject, string>) => {
+    .when('type', (values: [NotificationType], schema: yup.StringSchema<string, any, string>) => {
+      const [type] = values
+
       let pattern: RegExp
       let errorMsg: string
       switch (type) {

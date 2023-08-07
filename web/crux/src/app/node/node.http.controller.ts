@@ -41,9 +41,9 @@ import {
   UpdateNodeDto,
 } from './node.dto'
 import NodeService from './node.service'
+import DeleteNodeValidationPipe from './pipes/node.delete.pipe'
 import NodeGenerateScriptValidationPipe from './pipes/node.generate-script.pipe'
 import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
-import DeleteNodeValidationPipe from './pipes/node.delete.pipe'
 
 @Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_NODES}`)
 @ApiTags(ROUTE_NODES)

@@ -175,8 +175,7 @@ const SettingsPage = (props: SettingsPageProps) => {
 
             <DyoToggle
               className="mt-8"
-              nameChecked={t('onboarding')}
-              nameUnchecked={t('onboarding')}
+              label={t('onboarding')}
               checked={!onboardingDisabled}
               onCheckedChange={onToggleOnboarding}
             />

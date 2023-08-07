@@ -382,3 +382,108 @@ func testAppConfig() *config.CommonConfiguration {
 		},
 	}
 }
+
+func testDeployRequestWithLogDriver(driverType common.DriverType) *agent.DeployRequest {
+	request := testDeployRequest()
+	if driverType == common.DriverType_NODE_DEFAULT {
+		request.Dagent.LogConfig = nil
+	} else {
+		request.Dagent.LogConfig.Driver = driverType
+	}
+	return request
+}
+
+func testExpectedCommonWithLogConfigType(req *agent.DeployRequest, logConfigType string) *v1.DeployImageRequest {
+	expected := testExpectedCommon(req)
+	if req.Dagent.LogConfig == nil {
+		expected.ContainerConfig.LogConfig = nil
+	} else {
+		expected.ContainerConfig.LogConfig.Type = logConfigType
+	}
+	return expected
+}
+
+func TestMapDeployImageLogConfig(t *testing.T) {
+	testCases := []struct {
+		desc   string
+		driver common.DriverType
+		want   string
+	}{
+		{
+			desc:   "Node default driver type",
+			driver: common.DriverType_NODE_DEFAULT,
+		},
+		{
+			desc:   "None driver type",
+			driver: common.DriverType_DRIVER_TYPE_NONE,
+			want:   "none",
+		},
+		{
+			desc:   "Gcplogs driver type",
+			driver: common.DriverType_GCPLOGS,
+			want:   "gcplogs",
+		},
+		{
+			desc:   "Local driver type",
+			driver: common.DriverType_LOCAL,
+			want:   "local",
+		},
+		{
+			desc:   "Json-file driver type",
+			driver: common.DriverType_JSON_FILE,
+			want:   "json-file",
+		},
+		{
+			desc:   "Syslog driver type",
+			driver: common.DriverType_SYSLOG,
+			want:   "syslog",
+		},
+		{
+			desc:   "Journald driver type",
+			driver: common.DriverType_JOURNALD,
+			want:   "journald",
+		},
+		{
+			desc:   "Gelf driver type",
+			driver: common.DriverType_GELF,
+			want:   "gelf",
+		},
+		{
+			desc:   "Fluentd driver type",
+			driver: common.DriverType_FLUENTD,
+			want:   "fluentd",
+		},
+		{
+			desc:   "Awslogs driver type",
+			driver: common.DriverType_AWSLOGS,
+			want:   "awslogs",
+		},
+		{
+			desc:   "Splunk driver type",
+			driver: common.DriverType_SPLUNK,
+			want:   "splunk",
+		},
+		{
+			desc:   "Etwlogs driver type",
+			driver: common.DriverType_ETWLOGS,
+			want:   "etwlogs",
+		},
+		{
+			desc:   "Logentries driver type",
+			driver: common.DriverType_LOGENTRIES,
+			want:   "logentries",
+		},
+	}
+
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			req := testDeployRequestWithLogDriver(tC.driver)
+			cfg := testAppConfig()
+
+			res := mapper.MapDeployImage(req, cfg)
+			expected := testExpectedCommonWithLogConfigType(req, tC.want)
+
+			assert.Equal(t, expected, res)
+		})
+	}
+}

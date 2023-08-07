@@ -86,12 +86,12 @@ test.describe('Image kubernetes config from editor', () => {
     await page.locator('button:has-text("Proxy headers")').click()
 
     const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchProxyHeader(true))
-    await page.locator('button[aria-checked="false"]:right-of(label:has-text("PROXY HEADERS"))').click()
+    await page.locator(':right-of(:text("PROXY HEADERS"))').getByRole('switch', { checked: false }).click()
     await wsSent
 
     await page.reload()
 
-    await expect(page.locator('button[aria-checked="true"]:right-of(label:has-text("PROXY HEADERS"))')).toBeVisible()
+    await expect(page.locator(':right-of(:text("PROXY HEADERS"))').getByRole('switch', { checked: true })).toBeVisible()
   })
 
   test('Load balancer should be saved', async ({ page }) => {
@@ -108,7 +108,7 @@ test.describe('Image kubernetes config from editor', () => {
     const value = 'balancer-value'
 
     let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchLoadBalancer(true))
-    await page.locator('button[aria-checked="false"]:right-of(label:has-text("USE LOAD BALANCER"))').click()
+    await page.locator(':right-of(:text("USE LOAD BALANCER"))').getByRole('switch', { checked: false }).click()
     await wsSent
     wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchLBAnnotations(key, value))
     await page.locator('div.grid:has(label:has-text("USE LOAD BALANCER")) input[placeholder="Key"]').first().fill(key)
@@ -121,7 +121,7 @@ test.describe('Image kubernetes config from editor', () => {
     await page.reload()
 
     await expect(
-      page.locator('button[aria-checked="true"]:right-of(label:has-text("USE LOAD BALANCER"))'),
+      page.locator(':right-of(:text("USE LOAD BALANCER"))').getByRole('switch', { checked: true }),
     ).toBeVisible()
     await expect(
       page.locator('div.grid:has(label:has-text("USE LOAD BALANCER")) input[placeholder="Key"]').first(),

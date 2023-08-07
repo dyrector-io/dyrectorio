@@ -53,7 +53,10 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
 
   private routes: WsRoute[] = []
 
-  constructor(appContext: INestApplicationContext, private readonly authGuard: JwtAuthGuard) {
+  constructor(
+    appContext: INestApplicationContext,
+    private readonly authGuard: JwtAuthGuard,
+  ) {
     super(appContext)
   }
 

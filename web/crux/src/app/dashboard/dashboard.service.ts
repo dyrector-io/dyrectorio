@@ -7,7 +7,10 @@ type DashboardTeamComponents = Pick<DashboardTeam, 'deployment' | 'version' | 'i
 
 @Injectable()
 export default class DashboardService {
-  constructor(private readonly prisma: PrismaService, private readonly mapper: DashboardMapper) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mapper: DashboardMapper,
+  ) {}
 
   public async getDashboard(teamSlug: string): Promise<DashboardDto> {
     const team = await this.prisma.team.findFirstOrThrow({

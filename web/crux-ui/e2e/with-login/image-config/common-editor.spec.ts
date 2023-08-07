@@ -101,12 +101,13 @@ test.describe('Image common config from editor', () => {
     await page.locator('button:has-text("TTY")').click()
 
     const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchTTY(true))
-    await page.locator('button[aria-checked="false"]:right-of(label:has-text("TTY"))').click()
+
+    await page.locator(':right-of(:text("TTY"))').getByRole('switch', { checked: false }).click()
     await wsSent
 
     await page.reload()
 
-    await expect(page.locator('button[aria-checked="true"]:right-of(label:has-text("TTY"))')).toBeVisible()
+    await expect(page.locator(':right-of(:text("TTY"))').getByRole('switch', { checked: true })).toBeVisible()
   })
 
   test('Port should be saved', async ({ page }) => {
@@ -195,13 +196,14 @@ test.describe('Image common config from editor', () => {
 
     const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchSecret(secret, true))
     await secretInput.fill(secret)
-    await page.locator('button[aria-checked="false"]:right-of(div:has-text("Not required"))').click()
+
+    await page.getByRole('switch', { checked: false }).locator(':right-of(:text("Required"))').click()
     await wsSent
 
     await page.reload()
 
     await expect(secretInput).toHaveValue(secret)
-    await expect(page.locator('button[aria-checked="true"]:right-of(div:has-text("Required"))')).toBeVisible()
+    await expect(page.getByRole('switch', { checked: true }).locator(':right-of(:text("Required"))')).toBeVisible()
   })
 
   test('Commands should be saved', async ({ page }) => {
@@ -266,7 +268,7 @@ test.describe('Image common config from editor', () => {
     await page.locator('input[placeholder="Domain"]').fill(domain)
     await page.locator('input[placeholder="Path"]').fill(path)
     if (stripPath) {
-      await page.locator('button[aria-checked="false"]').click()
+      await page.getByRole('switch', { checked: false }).click()
     }
     await page.locator('input[placeholder="Upload limit"]').fill(uploadLimit)
     await wsSent
@@ -275,7 +277,7 @@ test.describe('Image common config from editor', () => {
 
     await expect(page.locator('input[placeholder="Domain"]')).toHaveValue(domain)
     await expect(page.locator('input[placeholder="Path"]')).toHaveValue(path)
-    await expect(page.locator('button.bg-dyo-turquoise[aria-checked="true"]')).toBeVisible()
+    await expect(page.getByRole('switch', { checked: true }).locator(':right-of(:text("Strip path"))')).toBeVisible()
     await expect(page.locator('input[placeholder="Upload limit"]')).toHaveValue(uploadLimit)
   })
 
@@ -320,7 +322,7 @@ test.describe('Image common config from editor', () => {
     await confDiv.getByLabel('Image').fill(img)
     await confDiv.getByLabel('Volume').fill(volume)
     await confDiv.getByLabel('Path').fill(path)
-    await confDiv.locator('button[aria-checked="false"]:right-of(label:has-text("Keep files"))').click()
+    await confDiv.getByRole('switch', { checked: false }).locator(':right-of(:text("Keep files"))').click()
     await wsSent
 
     await page.reload()
@@ -328,7 +330,7 @@ test.describe('Image common config from editor', () => {
     await expect(confDiv.getByLabel('Image')).toHaveValue(img)
     await expect(confDiv.getByLabel('Volume')).toHaveValue(volume)
     await expect(confDiv.getByLabel('Path')).toHaveValue(path)
-    await expect(confDiv.locator('button[aria-checked="true"]:right-of(label:has-text("Keep files"))')).toBeVisible()
+    await expect(confDiv.getByRole('switch', { checked: true }).locator(':right-of(:text("Keep files"))')).toBeVisible()
   })
 
   test('Init containers should be saved', async ({ page }) => {

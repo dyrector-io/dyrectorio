@@ -2,13 +2,13 @@ import { Version } from '.prisma/client'
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import { ProjectTypeEnum } from '@prisma/client'
 import { versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/domain/version'
+import { BasicProperties } from '../../shared/dtos/shared.dto'
+import AuditMapper from '../audit/audit.mapper'
 import { DeploymentWithNode } from '../deploy/deploy.dto'
 import DeployMapper from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
-import { BasicProperties } from '../../shared/dtos/shared.dto'
-import { BasicVersionDto, VersionDetailsDto, VersionDto } from './version.dto'
-import AuditMapper from '../audit/audit.mapper'
 import { NodeConnectionStatus } from '../node/node.dto'
+import { BasicVersionDto, VersionDetailsDto, VersionDto } from './version.dto'
 
 @Injectable()
 export default class VersionMapper {

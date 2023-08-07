@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { createReadStream, readdir, readFileSync, ReadStream } from 'fs'
+import { ReadStream, createReadStream, readFileSync, readdir } from 'fs'
 import { join, parse } from 'path'
 import { cwd } from 'process'
 import { CreateRegistryDto } from 'src/app/registry/registry.dto'

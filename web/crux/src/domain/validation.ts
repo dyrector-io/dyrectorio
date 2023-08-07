@@ -2,7 +2,6 @@ import { ContainerConfigPortRangeDto } from 'src/app/container/container.dto'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 import { UID_MAX } from 'src/shared/const'
 import * as yup from 'yup'
-import { AnyObject } from 'yup/lib/types'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
@@ -118,7 +117,7 @@ const instanceDeploymentStrategyRule = yup
 const logDriverRule = yup
   .mixed<ContainerLogDriverType>()
   .oneOf([...CONTAINER_LOG_DRIVER_VALUES])
-  .default('none')
+  .default('nodeDefault')
 
 const volumeTypeRule = yup
   .mixed<ContainerVolumeType>()
@@ -185,7 +184,7 @@ const storageRule = yup
   .optional()
 
 const createOverlapTest = (
-  schema: yup.NumberSchema<number, AnyObject, number>,
+  schema: yup.NumberSchema<number, object, number>,
   portRanges: ContainerConfigPortRangeDto[],
   field: Exclude<keyof ContainerConfigPortRangeDto, 'id'>,
 ) =>
@@ -314,8 +313,8 @@ const uniqueSecretKeyValuesSchema = yup
       key: yup.string().required().ensure().matches(/^\S+$/g), // all characters are non-whitespaces
       value: yup.string().when('encrypt', {
         is: encrypt => !!encrypt,
-        then: yup.string().ensure(),
-        otherwise: yup.string().nullable(),
+        then: s => s.ensure(),
+        otherwise: s => s.nullable(),
       }),
     }),
   )
@@ -419,46 +418,51 @@ const templateRegistrySchema = yup.object().shape({
     .mixed()
     .when('type', {
       is: type => type === 'hub',
-      then: yup.object({
-        imageNamePrefix: yup.string().required(),
-      }),
+      then: () =>
+        yup.object({
+          imageNamePrefix: yup.string().required(),
+        }),
     })
     .when('type', {
       is: type => type === 'v2',
-      then: yup.object({
-        url: yup.string().required(),
-        user: yup.string(),
-        token: yup.string(),
-      }),
+      then: () =>
+        yup.object({
+          url: yup.string().required(),
+          user: yup.string(),
+          token: yup.string(),
+        }),
     })
     .when('type', {
       is: type => type === 'gitlab',
-      then: yup.object({
-        user: yup.string().required(),
-        token: yup.string().required(),
-        imageNamePrefix: yup.string().required(),
-        url: yup.string(),
-        apiUrl: yup.string(),
-        namespace: yup.string().required(),
-      }),
+      then: () =>
+        yup.object({
+          user: yup.string().required(),
+          token: yup.string().required(),
+          imageNamePrefix: yup.string().required(),
+          url: yup.string(),
+          apiUrl: yup.string(),
+          namespace: yup.string().required(),
+        }),
     })
     .when('type', {
       is: type => type === 'github',
-      then: yup.object({
-        user: yup.string().required(),
-        token: yup.string().required(),
-        imageNamePrefix: yup.string().required(),
-        namespace: yup.string().required(),
-      }),
+      then: () =>
+        yup.object({
+          user: yup.string().required(),
+          token: yup.string().required(),
+          imageNamePrefix: yup.string().required(),
+          namespace: yup.string().required(),
+        }),
     })
     .when(['type'], {
       is: type => type === 'google',
-      then: yup.object({
-        url: yup.string().required(),
-        user: yup.string(),
-        token: yup.string(),
-        imageNamePrefix: yup.string().required(),
-      }),
+      then: () =>
+        yup.object({
+          url: yup.string().required(),
+          user: yup.string(),
+          token: yup.string(),
+          imageNamePrefix: yup.string().required(),
+        }),
     }),
 })
 

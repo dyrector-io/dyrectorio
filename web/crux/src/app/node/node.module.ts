@@ -5,6 +5,7 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import AgentModule from '../agent/agent.module'
+import AuditLoggerModule from '../audit.logger/audit.logger.module'
 import TeamModule from '../team/team.module'
 import TeamRepository from '../team/team.repository'
 import NodeContainerWebSocketGateway from './node.container.ws.gateway'
@@ -14,7 +15,6 @@ import NodeMapper from './node.mapper'
 import NodePrefixContainerHttpController from './node.prefix-container.http.controller'
 import NodeService from './node.service'
 import NodeWebSocketGateway from './node.ws.gateway'
-import AuditLoggerModule from '../audit.logger/audit.logger.module'
 
 @Module({
   imports: [AgentModule, TeamModule, HttpModule, AuditLoggerModule],

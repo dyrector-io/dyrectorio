@@ -17,7 +17,11 @@ class HubApiClient implements RegistryApiClient {
 
   private proxyToken?: string
 
-  constructor(private cache: HubApiCache, url: string, private prefix: string) {
+  constructor(
+    private cache: HubApiCache,
+    url: string,
+    private prefix: string,
+  ) {
     this.url = process.env.HUB_PROXY_URL ?? `https://${url}`
     this.proxyToken = process.env.HUB_PROXY_TOKEN
   }
