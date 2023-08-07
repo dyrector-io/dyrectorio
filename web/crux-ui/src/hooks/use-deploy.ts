@@ -58,7 +58,7 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
       if (res.status === 412) {
         const error = (await res.clone().json()) as DyoApiError
         if (error.property === 'protectedDeploymentId') {
-          const confirmed = confirm({
+          const confirmed = await confirm({
             title: t('common:deployProtection.title'),
             description: t('common:deployProtection.description'),
           })
