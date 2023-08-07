@@ -5,7 +5,7 @@ import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import DyoSwitch from '@app/elements/dyo-switch'
+import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTeamRoutes from '@app/hooks/use-team-routes'
@@ -138,11 +138,12 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
           </div>
 
           <div className="flex flex-row justify-between mt-8 items-end">
-            <div className="flex flex-col">
-              <DyoLabel className="mb-2.5">{t('active')}</DyoLabel>
-
-              <DyoSwitch fieldName="active" checked={formik.values.active} setFieldValue={formik.setFieldValue} />
-            </div>
+            <DyoToggle
+              name="active"
+              checked={formik.values.active}
+              setFieldValue={formik.setFieldValue}
+              label={t('active')}
+            />
           </div>
         </div>
 

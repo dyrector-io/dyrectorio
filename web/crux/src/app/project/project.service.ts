@@ -9,7 +9,11 @@ import ProjectMapper from './project.mapper'
 
 @Injectable()
 export default class ProjectService {
-  constructor(private teamRepository: TeamRepository, private prisma: PrismaService, private mapper: ProjectMapper) {}
+  constructor(
+    private teamRepository: TeamRepository,
+    private prisma: PrismaService,
+    private mapper: ProjectMapper,
+  ) {}
 
   async getProjects(teamSlug: string): Promise<ProjectListItemDto[]> {
     const projects = await this.prisma.project.findMany({

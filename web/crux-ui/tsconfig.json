@@ -8,7 +8,6 @@
       "@server/*": ["src/server/*"],
       "@app/*": ["src/*"]
     },
-    "types": ["jest", "node", "@types/jest"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -21,8 +20,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "typeRoots": ["node_modules/yup"]
   },
   "exclude": ["node_modules"],
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "gtag.js"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "types.d.ts"]
 }

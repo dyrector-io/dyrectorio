@@ -1,8 +1,7 @@
 import DyoButton from '@app/elements/dyo-button'
-import { Dialog } from '@headlessui/react'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import React from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { DyoCard } from './dyo-card'
 import { DyoHeading } from './dyo-heading'
 
@@ -15,7 +14,7 @@ export interface DyoModalProps {
   buttons?: React.ReactNode
   children?: React.ReactNode
   open: boolean
-  onClose: () => void
+  onClose: VoidFunction
 }
 
 const DyoModal = (props: DyoModalProps) => {
@@ -35,23 +34,41 @@ const DyoModal = (props: DyoModalProps) => {
 
   const buttons = propsButtons ?? <DyoButton onClick={onClose}>{t('close')}</DyoButton>
 
-  const modal = (
-    <Dialog className="flex fixed inset-0 bg-light-grey bg-opacity-50 h-screen w-screen" open={open} onClose={onClose}>
-      <Dialog.Overlay />
+  const onCloseRef = useRef(onClose)
 
-      <DyoCard className={clsx(className, 'flex flex-col m-auto p-8')} modal>
-        <DyoHeading element="h4" className={titleClassName ?? 'text-xl font-bold text-bright'}>
-          {title}
-        </DyoHeading>
-        {!description ? null : <Dialog.Description className={descClassName}>{description}</Dialog.Description>}
-        {children}
+  const onKeyDown = useCallback((ev: KeyboardEvent) => {
+    if (ev.key === 'Escape') {
+      onCloseRef.current()
+    }
+  }, [])
 
-        <div className="mx-auto mt-auto pt-8">{buttons}</div>
-      </DyoCard>
-    </Dialog>
+  useEffect(() => {
+    if (open) {
+      document.addEventListener('keydown', onKeyDown)
+    } else {
+      document.removeEventListener('keydown', onKeyDown)
+    }
+
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [open, onKeyDown])
+
+  return (
+    open && (
+      <div className="flex fixed inset-0 bg-light-grey bg-opacity-50 h-screen w-screen z-50">
+        <DyoCard role="dialog" className={clsx(className, 'flex flex-col m-auto p-8')} shadowClassName="shadow-modal">
+          <DyoHeading element="h4" className={titleClassName ?? 'text-xl font-bold text-bright'}>
+            {title}
+          </DyoHeading>
+
+          {description && <p className={descClassName}>{description}</p>}
+
+          {children}
+
+          <div className="mx-auto mt-auto pt-8">{buttons}</div>
+        </DyoCard>
+      </div>
+    )
   )
-
-  return modal
 }
 
 export default DyoModal

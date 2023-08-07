@@ -5,18 +5,18 @@ import KeyValueInput from '@app/components/shared/key-value-input'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
-import DyoSwitch from '@app/elements/dyo-switch'
+import DyoToggle from '@app/elements/dyo-toggle'
 import {
-  CraneConfigProperty,
   CRANE_CONFIG_FILTER_VALUES,
+  CraneConfigProperty,
+  ImageConfigProperty,
   filterContains,
   filterEmpty,
-  ImageConfigProperty,
 } from '@app/models'
 import {
+  CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   ContainerConfigData,
   ContainerDeploymentStrategyType,
-  CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CraneConfigDetails,
   InstanceCraneConfigDetails,
   mergeConfigs,
@@ -323,9 +323,9 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               {t('crane.proxyHeaders').toUpperCase()}
             </ConfigSectionLabel>
 
-            <DyoSwitch
+            <DyoToggle
               className="ml-2"
-              fieldName="proxyHeaders"
+              name="proxyHeaders"
               checked={config.proxyHeaders}
               onCheckedChange={it => onChange({ proxyHeaders: it })}
               disabled={disabled}
@@ -344,9 +344,9 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 {t('crane.useLoadBalancer').toUpperCase()}
               </ConfigSectionLabel>
 
-              <DyoSwitch
+              <DyoToggle
                 className="ml-2"
-                fieldName="useLoadBalancer"
+                name="useLoadBalancer"
                 checked={config.useLoadBalancer}
                 onCheckedChange={it => onChange({ useLoadBalancer: it })}
                 disabled={disabled}

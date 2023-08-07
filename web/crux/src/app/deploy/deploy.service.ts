@@ -365,7 +365,7 @@ export default class DeployService {
   }
 
   async startDeployment(deploymentId: string, identity: Identity, instances?: string[]): Promise<void> {
-    const instanceWhere: Prisma.Deployment$instancesArgs = instances
+    const instanceWhere = instances
       ? {
           where: {
             id: {

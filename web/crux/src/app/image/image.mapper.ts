@@ -10,6 +10,7 @@ import {
   RestartPolicy,
 } from '@prisma/client'
 import { ContainerConfigData, ContainerLogDriverType, ContainerVolumeType, Volume } from 'src/domain/container'
+import { toPrismaJson } from 'src/domain/utils'
 import { Volume as ProtoVolume } from 'src/grpc/protobuf/proto/agent'
 import {
   DriverType,
@@ -23,14 +24,16 @@ import {
   networkModeToJSON,
   volumeTypeFromJSON,
 } from 'src/grpc/protobuf/proto/common'
-import { toPrismaJson } from 'src/domain/utils'
 import ContainerMapper from '../container/container.mapper'
 import RegistryMapper from '../registry/registry.mapper'
 import { ImageDto } from './image.dto'
 
 @Injectable()
 export default class ImageMapper {
-  constructor(private registryMapper: RegistryMapper, private readonly containerMapper: ContainerMapper) {}
+  constructor(
+    private registryMapper: RegistryMapper,
+    private readonly containerMapper: ContainerMapper,
+  ) {}
 
   toDto(it: ImageDetails): ImageDto {
     return {

@@ -67,7 +67,10 @@ const DeploymentId = () => WsParam('deploymentId')
 export default class DeployWebSocketGateway {
   private deploymentEventCompleters = new Map<string, Subject<unknown>>()
 
-  constructor(private readonly service: DeployService, private readonly editorServices: EditorServiceProvider) {}
+  constructor(
+    private readonly service: DeployService,
+    private readonly editorServices: EditorServiceProvider,
+  ) {}
 
   @WsAuthorize()
   async onAuthorize(

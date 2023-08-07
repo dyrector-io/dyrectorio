@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing'
+import { of } from 'rxjs'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
-import { of } from 'rxjs'
-import NodeService from './node.service'
-import TeamRepository from '../team/team.repository'
 import AgentService from '../agent/agent.service'
+import TeamRepository from '../team/team.repository'
 import NodeMapper from './node.mapper'
+import NodeService from './node.service'
 
 describe('NodeService', () => {
   describe('Container audit log', () => {

@@ -49,7 +49,10 @@ const teamSlugFromCreateDto: AuditLogTeamSlugProvider = (context: ExecutionConte
 @ApiTags(ROUTE_TEMPLATES)
 @DisableTeamAccessGuard()
 export default class TemplateHttpController {
-  constructor(private service: TemplateService, private templateFileService: TemplateFileService) {}
+  constructor(
+    private service: TemplateService,
+    private templateFileService: TemplateFileService,
+  ) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
