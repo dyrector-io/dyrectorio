@@ -1,3 +1,4 @@
+import AddDeploymentCard from '@app/components/deployments/add-deployment-card'
 import { Layout } from '@app/components/layout'
 import CopyDeploymentCard from '@app/components/projects/versions/deployments/copy-deployment-card'
 import DeploymentStatusTag from '@app/components/projects/versions/deployments/deployment-status-tag'
@@ -5,6 +6,7 @@ import useCopyDeploymentState from '@app/components/projects/versions/deployment
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
@@ -30,7 +32,7 @@ import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface DeploymentsPageProps {
   deployments: Deployment[]
@@ -46,6 +48,9 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   const router = useRouter()
 
   const [deployments, setDeployments] = useState(propsDeployments)
+
+  const [creating, setCreating] = useState(false)
+  const submitRef = useRef<() => Promise<any>>()
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -177,9 +182,25 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   ]
   /* eslint-enable react/jsx-key */
 
+  const onDeploymentCreated = async (deploymentId: string) => await router.push(routes.deployment.details(deploymentId))
+
+  const onCreateDiscard = async () => setCreating(false)
+
   return (
     <Layout title={t('common:deployments')}>
-      <PageHeading pageLink={selfLink} />
+      <PageHeading pageLink={selfLink}>
+        {!creating ? (
+          <DyoButton className="ml-auto px-4" onClick={() => setCreating(true)}>
+            {t('deployments:addDeployment')}
+          </DyoButton>
+        ) : (
+          <></>
+        )}
+      </PageHeading>
+
+      {!creating ? null : (
+        <AddDeploymentCard className="mb-4 p-8" onAdd={onDeploymentCreated} onDiscard={onCreateDiscard} />
+      )}
 
       {!copyDeploymentTarget ? null : (
         <CopyDeploymentCard
