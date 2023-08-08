@@ -59,6 +59,7 @@ test('Deploying a non protected deployment should warn if a protected deployment
 
   await page.click('button:has-text("Deploy")')
 
-  const overlay = await page.locator('div[data-headlessui-state="open"]')
+  const overlay = await page.getByRole('dialog')
+  await expect(overlay).toHaveCount(1)
   await expect(overlay.locator('h4:has-text("Deployment protection")')).toHaveCount(1)
 })
