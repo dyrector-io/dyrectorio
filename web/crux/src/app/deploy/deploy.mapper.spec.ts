@@ -696,6 +696,7 @@ describe('DeployMapper', () => {
       prefix: 'deployment-prefix',
       note: 'deployment note',
       protected: false,
+      configBundleId: null,
       status: DeploymentStatusEnum.inProgress,
       createdAt: new Date(),
       updatedAt: new Date(),

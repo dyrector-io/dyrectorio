@@ -155,6 +155,10 @@ export class DeploymentDetailsDto extends DeploymentDto {
 
   @ValidateNested()
   token: DeploymentTokenDto
+
+  @IsString({ each: true })
+  @IsOptional()
+  configBundleIds: string[]
 }
 
 export class CreateDeploymentDto {
@@ -191,6 +195,10 @@ export class PatchDeploymentDto {
   @IsOptional()
   @ValidateNested({ each: true })
   environment?: UniqueKeyValueDto[] | null
+
+  @IsString({ each: true })
+  @IsOptional()
+  configBundleIds?: string[]
 }
 
 export class PatchInstanceDto {
@@ -302,4 +310,9 @@ export type InstanceDetails = Instance & {
 export type DeploymentDetails = DeploymentWithNodeVersion & {
   tokens: Pick<DeploymentToken, 'id' | 'name' | 'createdAt' | 'expiresAt'>[]
   instances: InstanceDetails[]
+  configBundles: {
+    configBundle: {
+      id: string
+    }
+  }[]
 }

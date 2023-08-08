@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import AgentService from 'src/app/agent/agent.service'
-import { UniqueSecretKey, UniqueSecretKeyValue } from 'src/domain/container'
+import { UniqueKeyValue, UniqueSecretKey, UniqueSecretKeyValue } from 'src/domain/container'
 import { checkDeploymentDeployability } from 'src/domain/deployment'
 import { deploymentSchema, yupValidate } from 'src/domain/validation'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
@@ -21,6 +21,11 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       include: {
         version: true,
+        configBundles: {
+          include: {
+            configBundle: true,
+          },
+        },
         instances: {
           include: {
             config: true,
@@ -39,7 +44,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
 
     if (deployment.instances.length < 1) {
       throw new CruxPreconditionFailedException({
-        message: 'There is no instances to deploy',
+        message: 'There are no instances to deploy',
         property: 'instances',
       })
     }
@@ -122,6 +127,34 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
           })
         }
       }
+    }
+
+    if (deployment.configBundles.length > 0) {
+      const deploymentEnv = (deployment.environment as UniqueKeyValue[]) ?? []
+      const deploymentEnvKeys = deploymentEnv.map(it => it.key)
+
+      const seenKeys: Record<string, string> = {} // Environment key -> config bundle name
+
+      deployment.configBundles.forEach(it => {
+        const bundleEnv = (it.configBundle.data as UniqueKeyValue[]) ?? []
+
+        bundleEnv.forEach(env => {
+          if (deploymentEnvKeys.includes(env.key)) {
+            return
+          }
+          if (seenKeys[env.key]) {
+            throw new CruxPreconditionFailedException({
+              message: `Environment variable "${env.key}" (${it.configBundle.name}) is already defined by ${
+                seenKeys[env.key]
+              }. Please define the key in the deployment or resolve the conflicts in the bundles.`,
+              property: 'configBundleId',
+              value: it.configBundle.id,
+            })
+          }
+
+          seenKeys[env.key] = it.configBundle.name
+        })
+      })
     }
 
     return next.handle()

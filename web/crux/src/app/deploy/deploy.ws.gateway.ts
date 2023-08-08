@@ -225,7 +225,8 @@ export default class DeployWebSocketGateway {
     @SocketSubscription() subscription: WsSubscription,
   ): Promise<WsMessage<null>> {
     const cruxReq: PatchDeploymentDto = {
-      environment: message,
+      environment: message.environment,
+      configBundleIds: message.configBundleIds,
     }
 
     await this.service.patchDeployment(deploymentId, cruxReq, identity)

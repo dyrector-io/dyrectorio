@@ -26,6 +26,7 @@ model Team {
   auditLog      AuditLog[]
   notifications Notification[]
   storages      Storage[]
+  configBundles ConfigBundle[]
 }
 
 model Token {
@@ -212,7 +213,7 @@ model ContainerConfig {
   secrets         Json?
   capabilities    Json?
   expose          ExposeStrategy
-  routing          Json?
+  routing         Json?
   configContainer Json?
   user            Int            @default(-1)
   tty             Boolean
@@ -268,9 +269,10 @@ model Deployment {
   version Version @relation(fields: [versionId], references: [id], onDelete: Cascade)
   node    Node    @relation(fields: [nodeId], references: [id], onDelete: Cascade)
 
-  instances Instance[]
-  events    DeploymentEvent[]
-  tokens    DeploymentToken[]
+  instances     Instance[]
+  events        DeploymentEvent[]
+  tokens        DeploymentToken[]
+  configBundles ConfigBundleOnDeployments[]
 }
 
 model DeploymentToken {
@@ -310,7 +312,7 @@ model InstanceContainerConfig {
   secrets         Json?
   capabilities    Json?
   expose          ExposeStrategy?
-  routing          Json?
+  routing         Json?
   configContainer Json?
   user            Int?
   tty             Boolean?
@@ -524,4 +526,31 @@ model Storage {
   instanceConfigs  InstanceContainerConfig[]
 
   @@unique([name, teamId])
+}
+
+model ConfigBundle {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  data      Json
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  createdBy String   @db.Uuid
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  updatedBy String?  @db.Uuid
+
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String @db.Uuid
+
+  deployments ConfigBundleOnDeployments[]
+
+  @@unique([name, teamId])
+}
+
+model ConfigBundleOnDeployments {
+  deployment   Deployment @relation(fields: [deploymentId], references: [id])
+  deploymentId String     @db.Uuid
+
+  configBundle   ConfigBundle @relation(fields: [configBundleId], references: [id])
+  configBundleId String       @db.Uuid
+
+  @@id([deploymentId, configBundleId])
 }

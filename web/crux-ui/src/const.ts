@@ -6,6 +6,7 @@ export const IMAGE_FILTER_MIN_LENGTH = 1 // characters
 export const IMAGE_WS_REQUEST_DELAY = 500 // millis
 export const INSTANCE_WS_REQUEST_DELAY = IMAGE_WS_REQUEST_DELAY // millis
 export const DEPLOYMENT_EDIT_WS_REQUEST_DELAY = 500 // millis
+export const CONFIG_BUNDLE_EDIT_WS_REQUEST_DELAY = 500 // millis
 export const WS_CONNECT_DELAY_PER_TRY = 5_000 // millis
 export const WS_MAX_CONNECT_TRY = 20
 

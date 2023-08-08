@@ -49,7 +49,6 @@
     "internal": "Internal",
     "from": "From",
     "to": "To",
-    "none": "None",
     "storage": "Storage",
     "bucketPath": "Bucket path",
     "buketPathTips": "You can also use any subfolder of a bucket by specifying its path (\"bucket/folder/sub-folder\").",

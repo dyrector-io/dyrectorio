@@ -1,5 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import {
+  ConfigBundle,
   Deployment,
   DeploymentEvent,
   DeploymentEventTypeEnum,
@@ -113,6 +114,7 @@ export default class DeployMapper {
       token: deployment.tokens.length > 0 ? deployment.tokens[0] : null,
       lastTry: deployment.tries,
       publicKey,
+      configBundleIds: deployment.configBundles.map(it => it.configBundle.id),
       environment: deployment.environment as UniqueKeyValue[],
       instances: deployment.instances.map(it => this.instanceToDto(it)),
     }
@@ -269,10 +271,12 @@ export default class DeployMapper {
     return events
   }
 
-  deploymentToAgentInstanceConfig(deployment: Deployment): InstanceConfig {
+  deploymentToAgentInstanceConfig(deployment: Deployment, mergedEnvironment: UniqueKeyValue[]): InstanceConfig {
+    const environmentMap = this.mapKeyValueToMap(mergedEnvironment)
+
     return {
       prefix: deployment.prefix,
-      environment: this.mapKeyValueToMap((deployment.environment as UniqueKeyValue[]) ?? []),
+      environment: environmentMap,
     }
   }
 

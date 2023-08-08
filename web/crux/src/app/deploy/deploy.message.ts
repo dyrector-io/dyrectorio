@@ -25,10 +25,16 @@ export type InstanceUpdatedMessage = InstanceContainerConfigData & {
 }
 
 export const WS_TYPE_PATCH_DEPLOYMENT_ENV = 'patch-deployment-env'
-export type PatchDeploymentEnvMessage = UniqueKeyValue[]
+export type PatchDeploymentEnvMessage = {
+  environment?: UniqueKeyValue[]
+  configBundleIds?: string[]
+}
 
 export const WS_TYPE_DEPLOYMENT_ENV_UPDATED = 'deployment-env-updated'
-export type DeploymentEnvUpdatedMessage = UniqueKeyValue[]
+export type DeploymentEnvUpdatedMessage = {
+  environment?: UniqueKeyValue[]
+  configBundleIds?: string[]
+}
 
 export const WS_TYPE_GET_INSTANCE = 'get-instance'
 export type GetInstanceMessage = {

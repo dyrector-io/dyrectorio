@@ -448,7 +448,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   className="w-full ml-2"
                   choices={storages ? [null, ...storages.map(it => it.id)] : [null]}
                   selection={config.storage?.storageId ?? null}
-                  converter={(it: string) => storages?.find(storage => storage.id === it)?.name ?? t('common.none')}
+                  converter={(it: string) => storages?.find(storage => storage.id === it)?.name ?? t('common:none')}
                   onSelectionChange={it =>
                     onChange({
                       storage: { ...config.storage, storageId: it },
@@ -482,7 +482,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   choices={config.volumes ? [null, ...config.volumes.filter(it => it.name).map(it => it.name)] : [null]}
                   selection={config.storage?.path ?? null}
                   converter={(it: string) =>
-                    config.volumes?.find(volume => volume.name === it)?.name ?? t('common.none')
+                    config.volumes?.find(volume => volume.name === it)?.name ?? t('common:none')
                   }
                   onSelectionChange={it =>
                     onChange({

@@ -209,6 +209,9 @@
   "log": "Log",
 
   "storages": "Storages",
+  "configBundles": "Config bundles",
+
+  "none": "None",
 
   "deployProtection": {
     "title": "Deployment protection",

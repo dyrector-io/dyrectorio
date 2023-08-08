@@ -104,5 +104,7 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
     Token: 'token',
     Storage: 'storage',
     AgentEvent: 'agentEvent',
+    ConfigBundle: 'configBundle',
+    ConfigBundleOnDeployments: 'configBundleOnDeployments',
   }
 }
