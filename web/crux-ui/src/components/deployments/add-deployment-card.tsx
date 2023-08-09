@@ -21,8 +21,7 @@ import {
 import { fetcher, sendForm } from '@app/utils'
 import { createFullDeploymentSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useState } from 'react'
-import toast from 'react-hot-toast'
+import { useEffect } from 'react'
 import useSWR from 'swr'
 
 interface AddDeploymentCardProps {
@@ -170,24 +169,20 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
           <DyoLabel>{t('common:loading')}</DyoLabel>
         ) : projects.length === 0 ? (
           <DyoMessage message={t('common:noNameFound', { name: t('common:projects') })} messageType="error" />
+        ) : !projects ? (
+          <DyoLabel>{t('common:loading')}</DyoLabel>
         ) : (
           <>
-            {!projects ? (
-              <DyoLabel>{t('common:loading')}</DyoLabel>
-            ) : (
-              <>
-                <DyoChips
-                  choices={projects ?? []}
-                  converter={(it: Project) => it.name}
-                  selection={currentProject}
-                  onSelectionChange={it => {
-                    formik.setFieldValue('projectId', it.id)
-                    formik.setFieldValue('prefix', projectNameToDeploymentPrefix(it.name))
-                  }}
-                />
-                {formik.errors.projectId && <DyoMessage message={formik.errors.projectId} messageType="error" />}
-              </>
-            )}
+            <DyoChips
+              choices={projects ?? []}
+              converter={(it: Project) => it.name}
+              selection={currentProject}
+              onSelectionChange={it => {
+                formik.setFieldValue('projectId', it.id)
+                formik.setFieldValue('prefix', projectNameToDeploymentPrefix(it.name))
+              }}
+            />
+            {formik.errors.projectId && <DyoMessage message={formik.errors.projectId} messageType="error" />}
           </>
         )}
 

@@ -107,8 +107,8 @@ test('Can create from deployments page', async ({ page }) => {
   await page.goto(TEAM_ROUTES.deployment.list())
   await expect(page.locator('h2:has-text("Deployments")')).toBeVisible()
 
-  await page.locator('button:has-text("Add deployment")').click()
-  await expect(page.locator('h4:has-text("Add deployment")')).toBeVisible()
+  await page.locator('button:has-text("Add")').click()
+  await expect(page.locator('h4:has-text("Add")')).toBeVisible()
 
   await page.locator(`button:has-text("${DAGENT_NODE}")`).click()
   await page.locator(`button:has-text("${projectName}")`).click()

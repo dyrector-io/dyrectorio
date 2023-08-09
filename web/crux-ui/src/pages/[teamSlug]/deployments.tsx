@@ -65,9 +65,9 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
       description:
         deployment.status === 'successful'
           ? t('deployments:proceedYouDeletePrefix', {
-            node: deployment.node.name,
-            prefix: deployment.prefix,
-          })
+              node: deployment.node.name,
+              prefix: deployment.prefix,
+            })
           : null,
       confirmText: t('common:delete'),
       confirmColor: 'bg-error-red',
@@ -138,7 +138,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     await router.push(routes.deployment.details(data.id))
   }
 
-  const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */[
+  const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [
     item.project.name,
     item.version.name,
     item.node.name,
