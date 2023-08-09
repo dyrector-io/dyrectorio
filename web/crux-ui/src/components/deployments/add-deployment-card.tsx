@@ -67,8 +67,6 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
-      const transformedValues = createFullDeploymentSchema.cast(values) as any
-
       const body: CreateDeployment = {
         ...values,
       }
