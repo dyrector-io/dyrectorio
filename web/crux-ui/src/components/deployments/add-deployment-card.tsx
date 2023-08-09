@@ -37,7 +37,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   const { t } = useTranslation('deployments')
   const routes = useTeamRoutes()
 
-  const [projectId, SetProjectId] = useState("")
+  const [projectId, SetProjectId] = useState('')
 
   const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(routes.node.api.list(), fetcher)
   const { data: projects, error: fetchProjectsError } = useSWR<Project[]>(routes.project.api.list(), fetcher)
@@ -188,14 +188,16 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
                     </DyoLabel>
                   ) : (
                     <>
-                      {currentProject?.type === "versioned" && (
+                      {currentProject?.type === 'versioned' && (
                         <>
                           <DyoLabel className="mt-8">{t('common:versions')}</DyoLabel>
                           <DyoChips
                             choices={versions ?? []}
                             converter={(it: Version) => it.name}
                             selection={(versions ?? []).find(it => it.id === formik.values.versionId)}
-                            onSelectionChange={it => { formik.setFieldValue('versionId', it.id) }}
+                            onSelectionChange={it => {
+                              formik.setFieldValue('versionId', it.id)
+                            }}
                           />
                         </>
                       )}

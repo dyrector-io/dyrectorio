@@ -102,7 +102,7 @@ test('Can create from deployments page', async ({ page }) => {
 
   const projectId = await createProject(page, projectName, 'versioned')
   const versionId = await createVersion(page, projectId, versionName, 'Rolling')
-  await addImageToVersion(page,projectId,versionId,NGINX_TEST_IMAGE_WITH_TAG)
+  await addImageToVersion(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
   await page.goto(TEAM_ROUTES.deployment.list())
   await expect(page.locator('h2:has-text("Deployments")')).toBeVisible()
@@ -113,10 +113,10 @@ test('Can create from deployments page', async ({ page }) => {
   await page.locator(`button:has-text("${DAGENT_NODE}")`).click()
   await page.locator(`button:has-text("${projectName}")`).click()
   await page.locator(`button:has-text("${versionName}")`).click()
-  await fillDeploymentPrefix(page,projectName.toLowerCase())
+  await fillDeploymentPrefix(page, projectName.toLowerCase())
 
   await page.locator('button:has-text("Add")').click()
-  
+
   await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**`)
   await expect(page.locator('span:has-text("Preparing")')).toBeVisible()
 })
