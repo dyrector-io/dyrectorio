@@ -98,7 +98,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
     if (nodes?.length === 1 && !formik.values.nodeId) {
       formik.setFieldValue('nodeId', nodes[0].id)
     }
-  }, [nodes, t])
+  }, [nodes])
 
   useEffect(() => {
     if (projects?.length === 1) {
@@ -186,7 +186,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
         {currentProject && (
           <>
-            {currentProject.type !== 'versionless' && <DyoLabel className="mt-8">{t('common:versions')}</DyoLabel>}
+            {currentProject.type === 'versioned' && <DyoLabel className="mt-8">{t('common:versions')}</DyoLabel>}
             {fetchVersionsError ? (
               <DyoLabel>
                 {t('errors:fetchFailed', {
