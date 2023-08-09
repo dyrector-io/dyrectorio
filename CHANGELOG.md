@@ -1,6 +1,47 @@
 # CHANGELOG
 
 
+<a name="0.7.0"></a>
+## [0.7.0](https://github.com/dyrector-io/dyrectorio/compare/0.6.1...0.7.0) (2023-08-07)
+
+### Chore
+
+* **(web):** update node packages ([#778](https://github.com/dyrector-io/dyrectorio/issues/778))
+* new export dyrectorio offline bundle ([#776](https://github.com/dyrector-io/dyrectorio/issues/776))
+
+### Doc
+
+* add GETTING_STARTED.md, small section rewrites ([#768](https://github.com/dyrector-io/dyrectorio/issues/768))
+
+### Feat
+
+* **(crux-ui):** save view mode for projects, deployment state, version state pages ([#772](https://github.com/dyrector-io/dyrectorio/issues/772))
+* **(web):** updated Kratos to v1.0 ([#771](https://github.com/dyrector-io/dyrectorio/issues/771))
+* **(web):** add team slug ([#752](https://github.com/dyrector-io/dyrectorio/issues/752))
+* **(agent):** dagent ipc health ([#765](https://github.com/dyrector-io/dyrectorio/issues/765))
+* add HEALTHCHECK directives to every platform image ([#767](https://github.com/dyrector-io/dyrectorio/issues/767))
+* **(web):** node in use ([#763](https://github.com/dyrector-io/dyrectorio/issues/763))
+* **(web):** deployment patch prefix error & fixed json editor kubernetes labels ([#759](https://github.com/dyrector-io/dyrectorio/issues/759))
+* rename ingress to routing in container config ([#749](https://github.com/dyrector-io/dyrectorio/issues/749))
+* **(crux-ui):** leave team ([#748](https://github.com/dyrector-io/dyrectorio/issues/748))
+
+### Fix
+
+* container list watching with multiple users ([#777](https://github.com/dyrector-io/dyrectorio/issues/777))
+* **(web):** docker log config default value ([#766](https://github.com/dyrector-io/dyrectorio/issues/766))
+* **(crux-ui):** kratos oidc missing info ([#773](https://github.com/dyrector-io/dyrectorio/issues/773))
+* **(web):** config validation & project version number & dagent correct image log ([#764](https://github.com/dyrector-io/dyrectorio/issues/764))
+* **(crux-ui):** project name filter ([#754](https://github.com/dyrector-io/dyrectorio/issues/754))
+* improve release makefile command and update modules ([#755](https://github.com/dyrector-io/dyrectorio/issues/755))
+* **(crux-ui):** change rolling version deployment error to warning ([#751](https://github.com/dyrector-io/dyrectorio/issues/751))
+* **(crux):** prisma error handling & team user delete ([#746](https://github.com/dyrector-io/dyrectorio/issues/746))
+
+### Refactor
+
+* **(crux-ui):** useConfirmation ([#761](https://github.com/dyrector-io/dyrectorio/issues/761))
+* **(web):** rename container status to container state ([#760](https://github.com/dyrector-io/dyrectorio/issues/760))
+
+
 <a name="0.6.1"></a>
 ## [0.6.1](https://github.com/dyrector-io/dyrectorio/compare/0.6.0...0.6.1) (2023-07-14)
 
