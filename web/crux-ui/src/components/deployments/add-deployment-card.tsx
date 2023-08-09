@@ -19,56 +19,16 @@ import {
   projectNameToDeploymentPrefix,
 } from '@app/models'
 import { fetcher, sendForm } from '@app/utils'
-import { createDeploymentSchema, createFullDeploymentSchema } from '@app/validations'
+import { createFullDeploymentSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import useSWR, { mutate } from 'swr'
+import useSWR from 'swr'
 
 interface AddDeploymentCardProps {
   className?: string
   onAdd: (deploymentId: string) => void
   onDiscard: VoidFunction
-}
-
-interface VersionChipsProps {
-  projectId: string
-  selectedVersionId: string
-  onVersionSelected: FunctionStringCallback
-}
-
-const VersionChips = (props: VersionChipsProps) => {
-  const { t } = useTranslation('deployments')
-  const routes = useTeamRoutes()
-  const { data: versions, error: fetchVersionsError } = useSWR<Version[]>(
-    routes.project.versions(props.projectId).api.list(),
-    fetcher,
-  )
-
-  return (
-    <>
-      {fetchVersionsError ? (
-        <>
-          <DyoLabel>
-            {t('errors:fetchFailed', {
-              type: t('common:teams'),
-            })}
-          </DyoLabel>
-        </>
-      ) : (
-        <>
-          <DyoChips
-            choices={versions ?? []}
-            converter={(it: Version) => it.name}
-            selection={(versions ?? []).find(it => it.id === props.selectedVersionId)}
-            onSelectionChange={it => {
-              props.onVersionSelected(it.id)
-            }}
-          />
-        </>
-      )}
-    </>
-  )
 }
 
 const AddDeploymentCard = (props: AddDeploymentCardProps) => {
@@ -77,8 +37,16 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   const { t } = useTranslation('deployments')
   const routes = useTeamRoutes()
 
+  const [projectId, SetProjectId] = useState("")
+
   const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(routes.node.api.list(), fetcher)
   const { data: projects, error: fetchProjectsError } = useSWR<Project[]>(routes.project.api.list(), fetcher)
+  const { data: versions, error: fetchVersionsError } = useSWR<Version[]>(
+    routes.project.versions(projectId).api.list(),
+    fetcher,
+  )
+
+  const currentProject = projects?.find(it => it.id === projectId)
 
   const handleApiError = apiErrorHandler((stringId: string, status: number, dto: DyoApiError) => {
     if (dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing') {
@@ -98,11 +66,10 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
   const formik = useDyoFormik({
     initialValues: {
-      nodeId: null as string,
+      nodeId: '',
       note: '',
-      prefix: null as string,
-      projectId: null as string,
-      versionId: null as string,
+      prefix: '',
+      versionId: '',
     },
     validationSchema: createFullDeploymentSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
@@ -141,12 +108,19 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
   useEffect(() => {
     if (projects && projects.length < 1) {
-      toast.error(t('nodeRequired'))
+      toast.error(t('projectRequired'))
     }
-    if (projects?.length === 1 && !formik.values.projectId) {
-      formik.setFieldValue('projectId', projects[0].id)
+    if (projects?.length === 1 && !projectId) {
+      SetProjectId(projects[0].id)
+      formik.setFieldValue('prefix', projectNameToDeploymentPrefix(projects[0].name))
     }
-  })
+  }, [projects])
+
+  useEffect(() => {
+    if (versions?.length === 1) {
+      formik.setFieldValue('versionId', versions[0].id)
+    }
+  }, [versions, projectId])
 
   return (
     <DyoCard className={className}>
@@ -159,7 +133,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
           {t('common:discard')}
         </DyoButton>
 
-        <DyoButton outlined className="ml-2 px-10" onClick={() => formik.submitForm()}>
+        <DyoButton outlined className="ml-2 px-10" onClick={formik.submitForm}>
           {t('common:add')}
         </DyoButton>
       </div>
@@ -200,20 +174,31 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
                   <DyoChips
                     choices={projects ?? []}
                     converter={(it: Project) => it.name}
-                    selection={projects.find(it => it.id === formik.values.projectId)}
+                    selection={currentProject}
                     onSelectionChange={it => {
-                      formik.setFieldValue('projectId', it.id)
+                      SetProjectId(it.id)
                       formik.setFieldValue('prefix', projectNameToDeploymentPrefix(it.name))
                     }}
                   />
-                  {formik.values.projectId && (
+                  {fetchProjectsError ? (
+                    <DyoLabel>
+                      {t('errors:fetchFailed', {
+                        type: t('common:projects'),
+                      })}
+                    </DyoLabel>
+                  ) : (
                     <>
-                      <DyoLabel className="mt-8">{t('common:versions')}</DyoLabel>
-                      <VersionChips
-                        projectId={formik.values.projectId}
-                        selectedVersionId={formik.values.versionId}
-                        onVersionSelected={it => formik.setFieldValue('versionId', it)}
-                      />
+                      {currentProject?.type === "versioned" && (
+                        <>
+                          <DyoLabel className="mt-8">{t('common:versions')}</DyoLabel>
+                          <DyoChips
+                            choices={versions ?? []}
+                            converter={(it: Version) => it.name}
+                            selection={(versions ?? []).find(it => it.id === formik.values.versionId)}
+                            onSelectionChange={it => { formik.setFieldValue('versionId', it.id) }}
+                          />
+                        </>
+                      )}
                       {!formik.errors.versionId ? null : (
                         <DyoMessage message={formik.errors.versionId} messageType="error" />
                       )}

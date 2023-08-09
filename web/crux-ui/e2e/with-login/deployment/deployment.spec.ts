@@ -1,6 +1,6 @@
 import { ProjectType } from '@app/models'
 import { expect, Page, test } from '@playwright/test'
-import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG } from '../../utils/common'
+import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, USER_TEAM_SLUG } from '../../utils/common'
 import { createNode } from '../../utils/nodes'
 import {
   addDeploymentToVersion,
@@ -9,6 +9,7 @@ import {
   addImageToVersionlessProject,
   createProject,
   createVersion,
+  fillDeploymentPrefix,
 } from '../../utils/projects'
 
 const setup = async (
@@ -93,4 +94,29 @@ test('Cannot create multiple deployments with the same node and prefix for a rol
 
   await expect(page.url()).toEqual(firstDeploymentUrl)
   await expect(firstDeploymentUrl).toEqual(secondDeploymentUrl)
+})
+
+test('Can create from deployments page', async ({ page }) => {
+  const projectName = 'FullDeploymentCreate'
+  const versionName = '1.0.0'
+
+  const projectId = await createProject(page, projectName, 'versioned')
+  const versionId = await createVersion(page, projectId, versionName, 'Rolling')
+  await addImageToVersion(page,projectId,versionId,NGINX_TEST_IMAGE_WITH_TAG)
+
+  await page.goto(TEAM_ROUTES.deployment.list())
+  await expect(page.locator('h2:has-text("Deployments")')).toBeVisible()
+
+  await page.locator('button:has-text("Add deployment")').click()
+  await expect(page.locator('h4:has-text("Add deployment")')).toBeVisible()
+
+  await page.locator(`button:has-text("${DAGENT_NODE}")`).click()
+  await page.locator(`button:has-text("${projectName}")`).click()
+  await page.locator(`button:has-text("${versionName}")`).click()
+  await fillDeploymentPrefix(page,projectName.toLowerCase())
+
+  await page.locator('button:has-text("Add")').click()
+  
+  await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**`)
+  await expect(page.locator('span:has-text("Preparing")')).toBeVisible()
 })
