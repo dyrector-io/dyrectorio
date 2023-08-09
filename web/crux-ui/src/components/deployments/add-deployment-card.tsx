@@ -37,16 +37,8 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   const { t } = useTranslation('deployments')
   const routes = useTeamRoutes()
 
-  const [projectId, SetProjectId] = useState('')
-
   const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(routes.node.api.list(), fetcher)
   const { data: projects, error: fetchProjectsError } = useSWR<Project[]>(routes.project.api.list(), fetcher)
-  const { data: versions, error: fetchVersionsError } = useSWR<Version[]>(
-    routes.project.versions(projectId).api.list(),
-    fetcher,
-  )
-
-  const currentProject = projects?.find(it => it.id === projectId)
 
   const handleApiError = apiErrorHandler((stringId: string, status: number, dto: DyoApiError) => {
     if (dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing') {
@@ -66,10 +58,11 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
   const formik = useDyoFormik({
     initialValues: {
-      nodeId: '',
+      nodeId: null as string,
       note: '',
       prefix: '',
-      versionId: '',
+      versionId: null as string,
+      projectId: null as string,
     },
     validationSchema: createFullDeploymentSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
@@ -97,21 +90,22 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
     },
   })
 
+  const currentProject = projects?.find(it => it.id === formik.values.projectId)
+
+  const { data: versions, error: fetchVersionsError } = useSWR<Version[]>(
+    formik.values.projectId ? routes.project.versions(formik.values.projectId).api.list() : null,
+    fetcher,
+  )
+
   useEffect(() => {
-    if (nodes && nodes.length < 1) {
-      toast.error(t('nodeRequired'))
-    }
     if (nodes?.length === 1 && !formik.values.nodeId) {
       formik.setFieldValue('nodeId', nodes[0].id)
     }
   }, [nodes, t])
 
   useEffect(() => {
-    if (projects && projects.length < 1) {
-      toast.error(t('projectRequired'))
-    }
-    if (projects?.length === 1 && !projectId) {
-      SetProjectId(projects[0].id)
+    if (projects?.length === 1) {
+      formik.setFieldValue('projectId', projects[0].id)
       formik.setFieldValue('prefix', projectNameToDeploymentPrefix(projects[0].name))
     }
   }, [projects])
@@ -119,8 +113,11 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   useEffect(() => {
     if (versions?.length === 1) {
       formik.setFieldValue('versionId', versions[0].id)
+    } else {
+      formik.setFieldValue('versionId', null)
     }
-  }, [versions, projectId])
+    formik.setFieldError('versionId', null)
+  }, [versions])
 
   return (
     <DyoCard className={className}>
@@ -138,100 +135,115 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         </DyoButton>
       </div>
 
-      {fetchNodesError ? (
-        <DyoLabel>
-          {t('errors:fetchFailed', {
-            type: t('common:nodes'),
-          })}
-        </DyoLabel>
-      ) : !nodes ? (
-        <DyoLabel>{t('common:loading')}</DyoLabel>
-      ) : (
-        <div className="flex flex-col">
-          <DyoLabel className="mt-8 mb-2.5">{t('common:nodes')}</DyoLabel>
+      <div className="flex flex-col">
+        <DyoLabel className="mt-8 mb-2.5">{t('common:nodes')}</DyoLabel>
+        {fetchNodesError ? (
+          <DyoLabel>
+            {t('errors:fetchFailed', {
+              type: t('common:nodes'),
+            })}
+          </DyoLabel>
+        ) : !nodes ? (
+          <DyoLabel>{t('common:loading')}</DyoLabel>
+        ) : nodes.length === 0 ? (
+          <DyoMessage message={t('common:noNameFound', { name: t('common:nodes') })} messageType="error" />
+        ) : (
+          <>
+            <DyoChips
+              choices={nodes ?? []}
+              converter={(it: DyoNode) => it.name}
+              selection={nodes.find(it => it.id === formik.values.nodeId)}
+              onSelectionChange={it => formik.setFieldValue('nodeId', it.id)}
+            />
+            {formik.errors.nodeId && <DyoMessage message={formik.errors.nodeId} messageType="error" />}
+          </>
+        )}
 
-          <DyoChips
-            choices={nodes ?? []}
-            converter={(it: DyoNode) => it.name}
-            selection={nodes.find(it => it.id === formik.values.nodeId)}
-            onSelectionChange={it => formik.setFieldValue('nodeId', it.id)}
-          />
-          {!formik.errors.nodeId ? null : <DyoMessage message={formik.errors.nodeId} messageType="error" />}
+        <DyoLabel className="mt-8 mb-2.5">{t('common:projects')}</DyoLabel>
+        {fetchProjectsError ? (
+          <DyoLabel>
+            {t('errors:fetchFailed', {
+              type: t('common:projects'),
+            })}
+          </DyoLabel>
+        ) : !projects ? (
+          <DyoLabel>{t('common:loading')}</DyoLabel>
+        ) : projects.length === 0 ? (
+          <DyoMessage message={t('common:noNameFound', { name: t('common:projects') })} messageType="error" />
+        ) : (
+          <>
+            {!projects ? (
+              <DyoLabel>{t('common:loading')}</DyoLabel>
+            ) : (
+              <>
+                <DyoChips
+                  choices={projects ?? []}
+                  converter={(it: Project) => it.name}
+                  selection={currentProject}
+                  onSelectionChange={it => {
+                    formik.setFieldValue('projectId', it.id)
+                    formik.setFieldValue('prefix', projectNameToDeploymentPrefix(it.name))
+                  }}
+                />
+                {formik.errors.projectId && <DyoMessage message={formik.errors.projectId} messageType="error" />}
+              </>
+            )}
+          </>
+        )}
 
-          {fetchProjectsError ? (
-            <DyoLabel>
-              {t('errors:fetchFailed', {
-                type: t('common:projects'),
-              })}
-            </DyoLabel>
-          ) : (
-            <>
-              <DyoLabel className="mt-8 mb-2.5">{t('common:projects')}</DyoLabel>
-              {!projects ? (
-                <DyoLabel>{t('common:loading')}</DyoLabel>
-              ) : (
+        {currentProject && (
+          <>
+            {currentProject.type !== 'versionless' && <DyoLabel className="mt-8">{t('common:versions')}</DyoLabel>}
+            {fetchVersionsError ? (
+              <DyoLabel>
+                {t('errors:fetchFailed', {
+                  type: t('common:versions'),
+                })}
+              </DyoLabel>
+            ) : !versions && formik.values.projectId ? (
+              <DyoLabel>{t('common:loading')}</DyoLabel>
+            ) : versions.length === 0 ? (
+              <DyoLabel>{t('noVersions')}</DyoLabel>
+            ) : (
+              currentProject.type === 'versioned' && (
                 <>
                   <DyoChips
-                    choices={projects ?? []}
-                    converter={(it: Project) => it.name}
-                    selection={currentProject}
+                    choices={versions ?? []}
+                    converter={(it: Version) => it.name}
+                    selection={(versions ?? []).find(it => it.id === formik.values.versionId)}
                     onSelectionChange={it => {
-                      SetProjectId(it.id)
-                      formik.setFieldValue('prefix', projectNameToDeploymentPrefix(it.name))
+                      formik.setFieldValue('versionId', it.id)
                     }}
                   />
-                  {fetchProjectsError ? (
-                    <DyoLabel>
-                      {t('errors:fetchFailed', {
-                        type: t('common:projects'),
-                      })}
-                    </DyoLabel>
-                  ) : (
-                    <>
-                      {currentProject?.type === 'versioned' && (
-                        <>
-                          <DyoLabel className="mt-8">{t('common:versions')}</DyoLabel>
-                          <DyoChips
-                            choices={versions ?? []}
-                            converter={(it: Version) => it.name}
-                            selection={(versions ?? []).find(it => it.id === formik.values.versionId)}
-                            onSelectionChange={it => {
-                              formik.setFieldValue('versionId', it.id)
-                            }}
-                          />
-                        </>
-                      )}
-                      {!formik.errors.versionId ? null : (
-                        <DyoMessage message={formik.errors.versionId} messageType="error" />
-                      )}
-                    </>
+                  {formik.errors.versionId && !formik.values.versionId && (
+                    <DyoMessage message={formik.errors.versionId} messageType="error" />
                   )}
                 </>
-              )}
-            </>
-          )}
+              )
+            )}
+          </>
+        )}
 
-          <DyoInput
-            className="max-w-lg"
-            grow
-            name="prefix"
-            required
-            label={t('common:prefix')}
-            onChange={formik.handleChange}
-            value={formik.values.prefix}
-            message={formik.errors.prefix}
-          />
+        <DyoInput
+          className="max-w-lg"
+          grow
+          name="prefix"
+          required
+          label={t('common:prefix')}
+          onChange={formik.handleChange}
+          value={formik.values.prefix}
+          message={formik.errors.prefix}
+        />
 
-          <DyoTextArea
-            className="h-48"
-            grow
-            name="note"
-            label={t('common:note')}
-            onChange={formik.handleChange}
-            value={formik.values.note}
-          />
-        </div>
-      )}
+        <DyoTextArea
+          className="h-48"
+          grow
+          name="note"
+          label={t('common:note')}
+          onChange={formik.handleChange}
+          value={formik.values.note}
+        />
+      </div>
     </DyoCard>
   )
 }

@@ -32,7 +32,7 @@ import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface DeploymentsPageProps {
   deployments: Deployment[]
@@ -50,7 +50,6 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   const [deployments, setDeployments] = useState(propsDeployments)
 
   const [creating, setCreating] = useState(false)
-  const submitRef = useRef<() => Promise<any>>()
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -66,9 +65,9 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
       description:
         deployment.status === 'successful'
           ? t('deployments:proceedYouDeletePrefix', {
-              node: deployment.node.name,
-              prefix: deployment.prefix,
-            })
+            node: deployment.node.name,
+            prefix: deployment.prefix,
+          })
           : null,
       confirmText: t('common:delete'),
       confirmColor: 'bg-error-red',
@@ -139,7 +138,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     await router.push(routes.deployment.details(data.id))
   }
 
-  const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [
+  const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */[
     item.project.name,
     item.version.name,
     item.node.name,
@@ -189,18 +188,14 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   return (
     <Layout title={t('common:deployments')}>
       <PageHeading pageLink={selfLink}>
-        {!creating ? (
+        {!creating && (
           <DyoButton className="ml-auto px-4" onClick={() => setCreating(true)}>
-            {t('deployments:addDeployment')}
+            {t('common:add')}
           </DyoButton>
-        ) : (
-          <></>
         )}
       </PageHeading>
 
-      {!creating ? null : (
-        <AddDeploymentCard className="mb-4 p-8" onAdd={onDeploymentCreated} onDiscard={onCreateDiscard} />
-      )}
+      {creating && <AddDeploymentCard className="mb-4 p-8" onAdd={onDeploymentCreated} onDiscard={onCreateDiscard} />}
 
       {!copyDeploymentTarget ? null : (
         <CopyDeploymentCard
