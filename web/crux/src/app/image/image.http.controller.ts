@@ -57,7 +57,7 @@ export default class ImageHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      "Fetch details of images within a version. `ProjectId` refers to the project's ID, `versionId` refers to the version's ID. Both, and `TeamSlug` are required variables.</br></br>Details come in an array, including `name`, `id`, `tag`, `order`, and config details of the image.",
+      "Fetch details of images within a version. `ProjectId` refers to the project's ID, `versionId` refers to the version's ID. Both, and `teamSlug` are required in the URL.</br></br>Details come in an array, including `name`, `id`, `tag`, `order`, and config details of the image.",
     summary: 'Fetch data of all images of a version.',
   })
   @ApiOkResponse({
@@ -79,7 +79,7 @@ export default class ImageHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      "Fetch details of an image within a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All, and `TeamSlug` are required parameters.</br></br>Image details consists `name`, `id`, `tag`, `order`, and the config of the image.",
+      "Fetch details of an image within a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All, and `teamSlug` are required in the URL.</br></br>Image details consists `name`, `id`, `tag`, `order`, and the config of the image.",
     summary: 'Fetch data of an image of a version.',
   })
   @ApiOkResponse({ type: ImageDto, description: 'Data of an image.' })
@@ -101,7 +101,7 @@ export default class ImageHttpController {
   @CreatedWithLocation()
   @ApiOperation({
     description:
-      "Add new images to a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `registryId` refers to the registry's ID, `images` refers to the name(s) of the images you'd like to add. All, and `TeamSlug` are required variables.",
+      "Add new images to a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID. These, and `teamSlug` are required in the URL. `registryId` refers to the registry's ID, `images` refers to the name(s) of the images you'd like to add. These are required variables in the body.",
     summary: 'Add images to a version.',
   })
   @ApiBody({ type: AddImagesDto, isArray: true })
@@ -130,7 +130,7 @@ export default class ImageHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      "Modify the configuration variables of an image. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All, and `TeamSlug` are required variables. `Tag` refers to the version of the image, `config` is an object of configuration variables.",
+      "Modify the configuration variables of an image. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All, and `teamSlug` are required in the URL. `Tag` refers to the version of the image, `config` is an object of configuration variables.",
     summary: 'Configure an image of a version.',
   })
   @ApiBody({ type: PatchImageDto })
@@ -154,7 +154,7 @@ export default class ImageHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      "Delete an image. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All, and `TeamSlug` are required variables.",
+      "Delete an image. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All, and `teamSlug` are required in the URL.",
     summary: 'Delete an image from a version.',
   })
   @ApiNoContentResponse({ description: 'Delete an image from a version.' })
@@ -175,7 +175,7 @@ export default class ImageHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      "Edit image deployment order of a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables. Request should include the IDs of the images in an array and `TeamSlug`.",
+      "Edit image deployment order of a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both, and `teamSlug` are required in the URL. Request body should include the IDs of the images in an array.",
     summary: 'Edit image deployment order of a version.',
   })
   @ApiNoContentResponse({ description: 'Image order modified.' })

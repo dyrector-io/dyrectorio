@@ -50,7 +50,7 @@ export default class StorageHttpController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    description: 'Response should include `description`, `icon`, `url`, `id`, and `name`.',
+    description: 'Response should include `description`, `icon`, `url`, `id`, and `name`. `teamSlug` is required in URL.',
     summary: 'Fetch the list of storages.',
   })
   @ApiOkResponse({
@@ -66,7 +66,7 @@ export default class StorageHttpController {
   @Get('options')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    description: 'Response should include `id`, and `name`.',
+    description: 'Response should include `id`, and `name`. `teamSlug` is required in URL.',
     summary: 'Fetch the name and ID of available storage options.',
   })
   @ApiOkResponse({
@@ -85,7 +85,7 @@ export default class StorageHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      'Get the details of a storage. Request must include `TeamSlug` and `storageId`. Response should include description, icon, url, `id`, `name`, `accessKey`, `secretKey`, and `inUse`.',
+      'Get the details of a storage. Request must include `teamSlug` and `storageId` in URL. Response should include description, icon, url, `id`, `name`, `accessKey`, `secretKey`, and `inUse`.',
     summary: 'Return details of a storage.',
   })
   @ApiOkResponse({ type: StorageDetailsDto, description: 'Storage details.' })
@@ -101,7 +101,7 @@ export default class StorageHttpController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
-      'Creates a new storage. Request must include `TeamSlug`, `name`, and `url`. Request body may include `description`, `icon`, `accesKey`, and `secretKey`. Response should include `description`, `icon`, `url`, `id`, `name`, `accessKey`, `secretKey`, and `inUse`.',
+      'Creates a new storage. Request must include `teamSlug` in URL, body is required to include `name`, and `url`. Request body may include `description`, `icon`, `accesKey`, and `secretKey`. Response should include `description`, `icon`, `url`, `id`, `name`, `accessKey`, `secretKey`, and `inUse`.',
     summary: 'Create a new storage.',
   })
   @CreatedWithLocation()
@@ -127,7 +127,7 @@ export default class StorageHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      'Updates a storage. Request must include `TeamSlug`, `storageId`, `name`, and `url`. Request body may include `description`, `icon`, `accesKey`, and `secretKey`.',
+      'Updates a storage. Request must include `teamSlug`and `storageId` in URL. `name`, and `url` must be included in body. Request body may include `description`, `icon`, `accesKey`, and `secretKey`.',
     summary: 'Modify a storage.',
   })
   @ApiNoContentResponse({ description: 'Storage updated.' })
@@ -148,7 +148,7 @@ export default class StorageHttpController {
   @Delete(ROUTE_STORAGE_ID)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Deletes a storage Request must include `TeamSlug`, `storageId`.',
+    description: 'Deletes a storage. Request must include `teamSlug` and `storageId` in URL.',
     summary: 'Delete a storage from dyrector.io.',
   })
   @UseInterceptors(StorageDeleteValidationInterceptor)

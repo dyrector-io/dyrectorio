@@ -43,7 +43,7 @@ export default class RegistryHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      'Lists every registries available in the active team. Request must include `TeamSlug`. Response is an array including the `name`, `id`, `type`, `description`, and `icon` of the registry.</br></br>Registries are 3rd party registries where the container images are stored.',
+      'Lists every registries available in the active team. Request must include `teamSlug` in URL. Response is an array including the `name`, `id`, `type`, `description`, and `icon` of the registry.</br></br>Registries are 3rd party registries where the container images are stored.',
     summary: 'Fetch data of registries.',
   })
   @ApiOkResponse({ type: RegistryDto, isArray: true, description: 'Data of all registries within a team listed.' })
@@ -56,7 +56,7 @@ export default class RegistryHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      "Lists the details of a registry. Request must include `TeamSlug`. `registryId` refers to the registry's ID. Response is an array including the `name`, `id`, `type`, `description`, `imageNamePrefix`, `inUse`, `icon`, and audit log info of the registry.",
+      "Lists the details of a registry. Request must include `teamSlug` and `RegistryID` in URL. `registryId` refers to the registry's ID. Response is an array including the `name`, `id`, `type`, `description`, `imageNamePrefix`, `inUse`, `icon`, and audit log info of the registry.",
     summary: 'Fetch data of a registry.',
   })
   @ApiOkResponse({ type: RegistryDetailsDto, description: 'Data of a registry listed.' })
@@ -73,7 +73,7 @@ export default class RegistryHttpController {
   @CreatedWithLocation()
   @ApiOperation({
     description:
-      'To add a new registry, include `TeamSlug`, `name`, `type`, `description`, `details`, and `icon`. `Type`, `details`, and `name` are required. Response is an array including the `name`, `id`, `type`, `description`, `imageNamePrefix`, `inUse`, `icon`, and audit log info of the registry.',
+      'To add a new registry, include `teamSlug` in URL, body must include `name`, `type`, `description`, `details`, and `icon`. `Type`, `details`, and `name` are required. Response is an array including the `name`, `id`, `type`, `description`, `imageNamePrefix`, `inUse`, `icon`, and audit log info of the registry.',
     summary: 'Create a new registry.',
   })
   @ApiBody({ type: CreateRegistryDto })
@@ -103,7 +103,7 @@ export default class RegistryHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      "Modify the `name`, `type`, `description`, `details`, and `icon`. `registryId` refers to the registry's ID. `TeamSlug`, `registryId`, `type`, `details`, and `name` are required.",
+      "Modify the `name`, `type`, `description`, `details`, and `icon`. `RegistryId` refers to the registry's ID. `teamSlug` and `RegistryID` is required in URL, body must include `type`, `details`, and `name`.",
     summary: 'Modify the details of a registry.',
   })
   @UseGuards(RegistryAccessValidationGuard)
@@ -126,7 +126,7 @@ export default class RegistryHttpController {
   @Delete(ROUTE_REGISTRY_ID)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Deletes a registry with the specified `registryId` and `TeamSlug`',
+    description: 'Deletes a registry with the specified `registryId`. `teamSlug` and `RegistryID` are required in URL.',
     summary: 'Delete a registry from dyrector.io.',
   })
   @ApiNoContentResponse({ description: 'Registry deleted.' })
