@@ -12,6 +12,7 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import { DEFAULT_CONTAINER_LOG_TAIL } from 'src/shared/const'
 import { Agent, AgentConnectionMessage } from './agent'
+import AgentUpdate from './agent-update'
 
 const AGENT_ID = 'agent-id'
 const AGENT_ADDRESS = '127.0.0.1:1234'
@@ -224,7 +225,7 @@ describe('agent', () => {
 
       await expect(agent.updating).toEqual(false)
 
-      agent.update('update-tag')
+      agent.startUpdate('update-tag')
 
       await expect(agent.updating).toEqual(true)
 
@@ -232,15 +233,15 @@ describe('agent', () => {
       expect(commandChannelActual).toEqual({
         update: {
           tag: 'update-tag',
-          timeoutSeconds: Agent.AGENT_UPDATE_TIMEOUT,
+          timeoutSeconds: AgentUpdate.TIMEOUT_SECONDS,
         },
       })
     })
 
     it('should throw exception while updating', () => {
-      agent.update('update-tag')
+      agent.startUpdate('update-tag')
 
-      expect(() => agent.update('update-tag')).toThrow(CruxPreconditionFailedException)
+      expect(() => agent.startUpdate('update-tag')).toThrow(CruxPreconditionFailedException)
     })
 
     it('abort update should return agent to connected state', async () => {
@@ -248,7 +249,7 @@ describe('agent', () => {
 
       agent.onConnected()
 
-      agent.update('update-tag')
+      agent.startUpdate('update-tag')
 
       agent.onUpdateAborted('test')
 

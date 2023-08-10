@@ -250,6 +250,7 @@ message DeployRequestLegacy {
 message AgentUpdateRequest {
   string tag = 1;
   int32 timeoutSeconds = 2;
+  string token = 3;
 }
 
 message AgentAbortUpdate { string error = 1; }

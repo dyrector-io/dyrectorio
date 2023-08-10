@@ -18,14 +18,20 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import { CONTAINER_DELETE_TIMEOUT, DEFAULT_CONTAINER_LOG_TAIL } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import AgentUpdate from './agent-update'
 import ContainerLogStream, { ContainerLogStreamCompleter } from './container-log-stream'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
 import Deployment from './deployment'
 
+export type AgentOptions = {
+  eventChannel: Subject<AgentConnectionMessage>
+  connection: GrpcNodeConnection
+  info: AgentInfo
+  outdated: boolean
+}
+
 export class Agent {
   public static SECRET_TIMEOUT = 5000
-
-  public static AGENT_UPDATE_TIMEOUT = 60 * 5
 
   private commandChannel = new Subject<AgentCommand>()
 
@@ -39,28 +45,36 @@ export class Agent {
 
   private logStreams: Map<string, ContainerLogStream> = new Map()
 
-  private updateStartedAt: number | null = null
+  private update: AgentUpdate | null = null
 
-  readonly id: string
+  private readonly eventChannel: Subject<AgentConnectionMessage>
 
-  readonly address: string
+  private readonly connection: GrpcNodeConnection
+
+  readonly outdated: boolean
 
   readonly version: string
 
   readonly publicKey: string
 
+  get id(): string {
+    return this.connection.nodeId
+  }
+
+  get address(): string {
+    return this.connection.address
+  }
+
   get connected() {
     return this.getConnectionStatus() === 'connected'
   }
 
-  constructor(
-    private connection: GrpcNodeConnection,
-    info: AgentInfo,
-    private readonly eventChannel: Subject<AgentConnectionMessage>,
-    readonly outdated: boolean,
-  ) {
-    this.id = connection.nodeId
-    this.address = connection.address
+  constructor(options: AgentOptions) {
+    this.connection = options.connection
+    this.eventChannel = options.eventChannel
+    this.connection = options.connection
+
+    const { info } = options
     this.version = info.version
     this.publicKey = info.publicKey
   }
@@ -74,21 +88,19 @@ export class Agent {
   }
 
   get updating() {
-    if (!this.updateStartedAt) {
+    if (!this.update) {
       return false
     }
-
-    const now = new Date().getTime()
-    if (now - this.updateStartedAt < Agent.AGENT_UPDATE_TIMEOUT * 1000) {
+    if (!this.update.expired) {
       return true
     }
 
-    this.updateStartedAt = null
+    this.update = null
     return false
   }
 
   deploy(deployment: Deployment): Observable<DeploymentStatusMessage> {
-    this.throwBeforeCommand()
+    this.throwIfCommandsAreDisabled()
 
     if (this.deployments.has(deployment.id)) {
       throw new CruxConflictException({
@@ -104,7 +116,7 @@ export class Agent {
   }
 
   upsertContainerStatusWatcher(prefix: string, oneShot: boolean): ContainerStatusWatcher {
-    this.throwBeforeCommand()
+    this.throwIfCommandsAreDisabled()
 
     let watcher = this.statusWatchers.get(prefix)
     if (!watcher) {
@@ -117,7 +129,7 @@ export class Agent {
   }
 
   upsertContainerLogStream(container: ContainerIdentifier): ContainerLogStream {
-    this.throwBeforeCommand()
+    this.throwIfCommandsAreDisabled()
 
     const key = Agent.containerPrefixNameOf(container)
     let stream = this.logStreams.get(key)
@@ -136,13 +148,14 @@ export class Agent {
         close: {
           reason,
         },
-      } as AgentCommand)
+      })
     }
+
     this.commandChannel.complete()
   }
 
   sendContainerCommand(command: ContainerCommandRequest) {
-    this.throwBeforeCommand()
+    this.throwIfCommandsAreDisabled()
 
     this.commandChannel.next({
       containerCommand: command,
@@ -150,7 +163,7 @@ export class Agent {
   }
 
   deleteContainers(request: DeleteContainersRequest): Observable<Empty> {
-    this.throwBeforeCommand()
+    this.throwIfCommandsAreDisabled()
 
     const reqId = Agent.containerDeleteRequestToRequestId(request)
     const result = new Subject<Empty>()
@@ -250,7 +263,7 @@ export class Agent {
   }
 
   getContainerSecrets(prefix: string, name: string): Observable<ListSecretsResponse> {
-    this.throwBeforeCommand()
+    this.throwIfCommandsAreDisabled()
 
     const key = Agent.containerPrefixNameOf({
       prefix,
@@ -304,7 +317,14 @@ export class Agent {
     this.secretsWatchers.delete(key)
   }
 
-  update(tag: string) {
+  startUpdate(tag: string, token: string) {
+    if (this.deployments.size > 0) {
+      throw new CruxPreconditionFailedException({
+        message: 'Can not update an agent, while you have an in progress deployments',
+        property: 'deployments'
+      })
+    }
+
     if (this.updating) {
       throw new CruxPreconditionFailedException({
         message: 'Node is already updating',
@@ -313,18 +333,13 @@ export class Agent {
       })
     }
 
-    this.updateStartedAt = new Date().getTime()
-
-    this.commandChannel.next({
-      update: {
-        tag,
-        timeoutSeconds: Agent.AGENT_UPDATE_TIMEOUT,
-      },
-    })
+    const now = new Date()
+    this.update = new AgentUpdate(token, now)
+    this.update.start(this.commandChannel, tag)
   }
 
   onUpdateAborted(error?: string) {
-    this.updateStartedAt = null
+    this.update = null
 
     this.eventChannel.next({
       id: this.id,
@@ -332,6 +347,13 @@ export class Agent {
       error,
       updating: false,
     })
+  }
+
+  onUpdateCompleted(connection: GrpcNodeConnection) {
+    this.deployments.forEach(it => it.onDisconnected())
+    this.update.complete(connection)
+
+    this.close(CloseReason.SELF_DESTRUCT)
   }
 
   onContainerDeleted(request: DeleteContainersRequest) {
@@ -351,7 +373,7 @@ export class Agent {
     this.deployments.forEach(it => it.debugInfo(logger))
   }
 
-  private throwBeforeCommand() {
+  private throwIfCommandsAreDisabled() {
     if (this.updating) {
       throw new CruxPreconditionFailedException({
         message: 'Node is updating',
@@ -379,12 +401,6 @@ export class Agent {
 
   public static containerPrefixNameOf = (id: ContainerIdentifier): string =>
     !id.prefix ? id.name : `${id.prefix}-${id.name}`
-}
-
-export type AgentToken = {
-  sub: string
-  iss: string
-  iat: number
 }
 
 export type AgentConnectionMessage = {

@@ -11,10 +11,11 @@ export const VERSIONLESS_PROJECT_VERSION_NAME = 'rolling'
 
 const DAY_IN_MILLIS = 24 * 60 * 60 * 1000
 export const TEAM_INVITATION_EXPIRATION = 7 * DAY_IN_MILLIS
-export const JWT_EXPIRATION = 10 * 60 * 1000 // 10 minutes
+export const JWT_EXPIRATION_MILLIS = 10 * 60 * 1000 // 10 minutes
 export const CONTAINER_DELETE_TIMEOUT = 1000 // millis
 
 export const DEFAULT_CONTAINER_LOG_TAIL = 40
+export const MINIMUM_AGENT_VERSION = '0.7.0'
 
 export const API_CREATED_LOCATION_HEADERS = {
   Location: {

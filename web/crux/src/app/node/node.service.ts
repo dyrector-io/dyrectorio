@@ -34,17 +34,19 @@ import {
   WatchContainerLogMessage,
   WatchContainersStateMessage,
 } from './node.message'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export default class NodeService {
   private readonly logger = new Logger(NodeService.name)
 
   constructor(
-    private teamRepository: TeamRepository,
-    private prisma: PrismaService,
-    private agentService: AgentService,
-    private mapper: NodeMapper,
-    private notificationService: DomainNotificationService,
+    private readonly teamRepository: TeamRepository,
+    private readonly prisma: PrismaService,
+    private readonly agentService: AgentService,
+    private readonly mapper: NodeMapper,
+    private readonly notificationService: DomainNotificationService,
+    private readonly configService: ConfigService,
   ) {}
 
   async checkNodeIsInTheTeam(teamSlug: string, nodeId: string, identity: Identity): Promise<boolean> {
@@ -156,15 +158,15 @@ export default class NodeService {
         updatedBy: identity.id,
       },
       select: {
+        id: true,
         name: true,
+        type: true,
       },
     })
 
-    const installer = await this.agentService.install(
+    const installer = await this.agentService.startInstallation(
       teamSlug,
-      id,
-      node.name,
-      nodeType,
+      node,
       req.rootPath ?? null,
       req.scriptType,
       req.dagentTraefik ?? null,
@@ -176,7 +178,7 @@ export default class NodeService {
   async getScript(id: string): Promise<string> {
     const installer = this.agentService.getInstallerByNodeId(id)
 
-    return installer.getScript()
+    return installer.getScript(this.configService)
   }
 
   async discardScript(id: string): Promise<void> {
@@ -360,7 +362,7 @@ export default class NodeService {
   async getAuditLog(nodeId: string, query: NodeAuditLogQueryDto): Promise<NodeAuditLogListDto> {
     const { skip, take, from, to } = query
 
-    const where: Prisma.AgentEventWhereInput = {
+    const where: Prisma.NodeEventWhereInput = {
       nodeId,
       AND: {
         createdAt: {
@@ -378,7 +380,7 @@ export default class NodeService {
     }
 
     const [auditLog, total] = await this.prisma.$transaction([
-      this.prisma.agentEvent.findMany({
+      this.prisma.nodeEvent.findMany({
         where,
         orderBy: {
           createdAt: 'desc',
@@ -391,7 +393,7 @@ export default class NodeService {
           data: true,
         },
       }),
-      this.prisma.agentEvent.count({ where }),
+      this.prisma.nodeEvent.count({ where }),
     ])
 
     return {

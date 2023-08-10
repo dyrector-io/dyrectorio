@@ -2,6 +2,7 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 import { JsonNull } from 'prisma'
 import { Timestamp } from 'src/grpc/google/protobuf/timestamp'
+import crypto from 'crypto'
 
 export type PrismaTransactionClient = Omit<
   PrismaClient,
@@ -88,3 +89,6 @@ export const toPrismaJson = <T>(val: T): T | JsonNull => {
 
   return val
 }
+
+export const generateNonce = () =>
+  crypto.randomBytes(128).toString('hex')

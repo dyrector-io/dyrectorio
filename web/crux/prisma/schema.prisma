@@ -76,7 +76,6 @@ model Node {
   type           NodeTypeEnum? @default(docker)
   description    String?
   icon           String?
-  token          String?
   address        String?
   connectedAt    DateTime?     @db.Timestamptz(6)
   disconnectedAt DateTime?     @db.Timestamptz(6)
@@ -84,9 +83,18 @@ model Node {
   teamId         String        @db.Uuid
 
   deployments Deployment[]
-  events      AgentEvent[]
+  events      NodeEvent[]
+  token       NodeToken?
 
   @@unique([name, teamId])
+}
+
+model NodeToken {
+  nodeId    String @id @unique @db.Uuid
+  nonce     String
+  createdBy String @db.Uuid
+
+  node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
 }
 
 model Registry {
@@ -212,7 +220,7 @@ model ContainerConfig {
   secrets         Json?
   capabilities    Json?
   expose          ExposeStrategy
-  routing          Json?
+  routing         Json?
   configContainer Json?
   user            Int            @default(-1)
   tty             Boolean
@@ -309,7 +317,7 @@ model InstanceContainerConfig {
   secrets         Json?
   capabilities    Json?
   expose          ExposeStrategy?
-  routing          Json?
+  routing         Json?
   configContainer Json?
   user            Int?
   tty             Boolean?
@@ -426,7 +434,7 @@ model NotificationEvent {
   @@unique([event, notificationId])
 }
 
-model AgentEvent {
+model NodeEvent {
   id        String             @id @default(uuid()) @db.Uuid
   nodeId    String             @db.Uuid
   createdAt DateTime           @default(now()) @db.Timestamptz(6)
@@ -434,6 +442,7 @@ model AgentEvent {
   data      Json?
 
   node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+	@@map("AgentEvent")
 }
 
 enum ProjectTypeEnum {
@@ -496,6 +505,7 @@ enum NotificationEventTypeEnum {
 }
 
 enum AgentEventTypeEnum {
+  installed
   connected
   left
   kicked
