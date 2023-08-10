@@ -50,7 +50,8 @@ export default class StorageHttpController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    description: 'Response should include `description`, `icon`, `url`, `id`, and `name`. `teamSlug` is required in URL.',
+    description:
+      'Response should include `description`, `icon`, `url`, `id`, and `name`. `teamSlug` is required in URL.',
     summary: 'Fetch the list of storages.',
   })
   @ApiOkResponse({

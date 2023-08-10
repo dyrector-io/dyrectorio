@@ -146,7 +146,8 @@ export default class ProjectHttpController {
   @Post(`${ROUTE_PROJECT_ID}/convert`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Converts a project to versioned with the specified `projectId`. `teamSlug` and `ProjectID` are required in URL.',
+    description:
+      'Converts a project to versioned with the specified `projectId`. `teamSlug` and `ProjectID` are required in URL.',
     summary: 'Convert a project to versioned.',
   })
   @ApiNoContentResponse({ description: 'Project converted.' })

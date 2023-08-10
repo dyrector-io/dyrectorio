@@ -113,7 +113,8 @@ export default class NodeHttpController {
   @Put(ROUTE_NODE_ID)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: "Request must include the `teamSlug` in URL, and node's `name` in body, body can include `description` and `icon`.",
+    description:
+      "Request must include the `teamSlug` in URL, and node's `name` in body, body can include `description` and `icon`.",
     summary: 'Update details of a node.',
   })
   @ApiNoContentResponse({ description: 'Node details modified.' })

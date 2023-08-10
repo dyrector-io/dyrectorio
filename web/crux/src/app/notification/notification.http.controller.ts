@@ -42,7 +42,8 @@ export default class NotificationHttpController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    description: 'Response should include `teamSlug` in the URL, `type`, `id`, `name`, `url`, `active`, and `creatorName` in the body.',
+    description:
+      'Response should include `teamSlug` in the URL, `type`, `id`, `name`, `url`, `active`, and `creatorName` in the body.',
     summary: 'Retrieve notifications that belong to a team.',
   })
   @ApiOkResponse({ type: NotificationDto, isArray: true, description: 'Notifications listed.' })
