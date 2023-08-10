@@ -18,6 +18,9 @@ import {
 
 const TeamSlug = () => WsParam('teamSlug')
 
+const METRICS_CATALOG = 'catalog'
+const METRICS_TAGS = 'tags'
+
 @WebSocketGateway({
   namespace: ':teamSlug/registries',
 })
@@ -44,7 +47,7 @@ export default class RegistryWebSocketGateway {
 
     const api = await this.registryClients.getByRegistryId(teamId, message.registryId)
 
-    RegistryMetrics.apiRequest(api.type, 'catalog').inc()
+    RegistryMetrics.apiRequest(api.type, METRICS_CATALOG).inc()
     const images = await api.client.catalog(message.filter)
 
     return {
@@ -70,7 +73,7 @@ export default class RegistryWebSocketGateway {
 
     const api = await this.registryClients.getByRegistryId(teamId, message.registryId)
 
-    RegistryMetrics.apiRequest(api.type, 'tags').inc()
+    RegistryMetrics.apiRequest(api.type, METRICS_TAGS).inc()
     const tags = message.images.map(it => api.client.tags(it))
 
     return {

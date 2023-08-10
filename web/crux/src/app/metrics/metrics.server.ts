@@ -5,9 +5,11 @@ import * as client from 'prom-client'
 import ShutdownService from 'src/services/application.shutdown.service'
 import { promisify } from 'util'
 
-let metricServer: http.Server<any, any> = null
-
 const logger = new Logger('Metrics')
+
+const METRICS_API_URL = '/api/metrics'
+
+let metricServer: http.Server<any, any> = null
 
 const shutdownMetricsServer = async () => {
   if (metricServer == null) {
@@ -26,9 +28,8 @@ const metricsServerBootstrap = async (app: INestApplication, port: number) => {
 
   shutdownService.subscribeToShutdown(shutdownMetricsServer)
 
-  // TODO(@robot9706): Use express instead?
   metricServer = createServer(async (req, res) => {
-    if (req.url !== '/api/metrics') {
+    if (req.url !== METRICS_API_URL) {
       res.writeHead(404)
       res.end()
       return
