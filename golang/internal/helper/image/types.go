@@ -10,7 +10,8 @@ type PullPriority int32
 const (
 	LocalOnly   PullPriority = 0
 	PreferLocal PullPriority = 1
-	ForcePull   PullPriority = 2
+	PullIfNewer PullPriority = 2
+	ForcePull   PullPriority = 3
 )
 
 // RegistryAuth defines an image registry and the authentication information
