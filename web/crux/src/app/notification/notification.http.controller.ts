@@ -42,7 +42,7 @@ export default class NotificationHttpController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    description: 'Response should include `type`, `id`, `name`, `url`, `active`, and `creatorName`.',
+    description: 'Response should include `type`, `TeamSlug`, `id`, `name`, `url`, `active`, and `creatorName`.',
     summary: 'Retrieve notifications that belong to a team.',
   })
   @ApiOkResponse({ type: NotificationDto, isArray: true, description: 'Notifications listed.' })
@@ -55,7 +55,7 @@ export default class NotificationHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      'Request must include `notificationId` parameter. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
+      'Request must include `notificationId` and `TeamSlug` parameter. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
     summary: 'Fetch details of a notification.',
   })
   @ApiOkResponse({ type: NotificationDetailsDto, description: 'Details of notification listed.' })
@@ -73,7 +73,7 @@ export default class NotificationHttpController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
-      'Request must include `type`, `enabledEvents`, `id`, `name`, `url`, and `active`. Response should list `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
+      'Request must include `type`, `enabledEvents`, `TeamSlug`, `id`, `name`, `url`, and `active`. Response should list `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
     summary: 'Create a new notification.',
   })
   @CreatedWithLocation()
@@ -99,7 +99,7 @@ export default class NotificationHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      'Request must include `notificationId`, `type`, `enabledEvents`, `id`, `name`, `url`, and `active`. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
+      'Request must include `notificationId`, `type`, `TeamSlug`, `enabledEvents`, `id`, `name`, `url`, and `active`. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
     summary: 'Modify a notification.',
   })
   @ApiOkResponse({ type: NotificationDetailsDto, description: 'Notification modified.' })
@@ -120,7 +120,7 @@ export default class NotificationHttpController {
   @Delete(ROUTE_NOTIFICATION_ID)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Request must include `notificationId`.',
+    description: 'Request must include `notificationId` and `TeamSlug`.',
     summary: 'Delete a notification.',
   })
   @ApiNoContentResponse({ description: 'Notification deleted.' })
@@ -134,7 +134,7 @@ export default class NotificationHttpController {
   @Post(`${ROUTE_NOTIFICATION_ID}/test`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Request must include `notificationId`.',
+    description: 'Request must include `notificationId` and `TeamSlug`.',
     summary: 'Send a test message.',
   })
   @ApiNoContentResponse({ description: 'Test message sent.' })

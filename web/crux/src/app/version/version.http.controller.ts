@@ -110,7 +110,7 @@ export default class VersionHttpController {
   @UseInterceptors(VersionCreateValidationInterceptor)
   @ApiOperation({
     description:
-      "Creates a new version in a project. `projectId` refers to the project's ID. Request must include the `name` and `type` of the version, `changelog` is optionable. Response should include the `name`, `id`, `changelog`, increasibility, `type`, and `audit` log details of the version.",
+      "Creates a new version in a project. `projectId` refers to the project's ID. Request must include the `TeamSlug`, `name` and `type` of the version, `changelog` is optionable. Response should include the `name`, `id`, `changelog`, increasibility, `type`, and `audit` log details of the version.",
     summary: 'Create a new version.',
   })
   @ApiBody({ type: CreateVersionDto })
@@ -137,7 +137,7 @@ export default class VersionHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      "Updates a version's `name` and `changelog`. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.",
+      "Updates a version's `name` and `changelog`. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both, and `TeamSlug` are required variables.",
     summary: 'Modify version.',
   })
   @ApiNoContentResponse({ description: 'Changelog of a version is updated.' })
@@ -162,7 +162,7 @@ export default class VersionHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      "This call deletes a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.",
+      "This call deletes a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both, and `TeamSlug` are required variables.",
     summary: 'Delete a version.',
   })
   @ApiNoContentResponse({ description: 'Version deleted.' })
@@ -182,7 +182,7 @@ export default class VersionHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      "This call turns a version into the default one, resulting other versions within this project later inherit images, deployments and their configurations from it. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.",
+      "This call turns a version into the default one, resulting other versions within this project later inherit images, deployments and their configurations from it. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both, and `TeamSlug` are required variables.",
     summary:
       'Turn version into a default one of the versioned project other versions under it will inherit images and deployments from.',
   })
@@ -206,7 +206,7 @@ export default class VersionHttpController {
   @CreatedWithLocation()
   @ApiOperation({
     description:
-      "Increases the version of a project with a new child version. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `name` refers to the name of the new version. All are required variables.",
+      "Increases the version of a project with a new child version. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `name` refers to the name of the new version. All, and `TeamSlug` are required variables.",
     summary: 'Increase a the version of a versioned project with a new version.',
   })
   @UseInterceptors(VersionIncreaseValidationInterceptor)

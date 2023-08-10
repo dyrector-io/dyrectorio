@@ -55,7 +55,7 @@ export default class TokenHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      "Access token's details are `name`, `id`, and the time of creation and expiration. Request must include `tokenId`.",
+      "Access token's details are `name`, `id`, and the time of creation and expiration. Request must include `tokenId` and `TeamSlug`.",
     summary: 'Fetch token details.',
   })
   @ApiOkResponse({ type: TokenDto, description: 'Token details listed.' })
@@ -71,7 +71,7 @@ export default class TokenHttpController {
   @HttpCode(HttpStatus.CREATED)
   @CreatedWithLocation()
   @ApiOperation({
-    description: 'Request must include `name` and `expirationInDays`.',
+    description: 'Request must include `name`, `TeamSlug` and `expirationInDays`.',
     summary: 'Create access token.',
   })
   @ApiBody({ type: GenerateTokenDto, description: 'Token created.' })
@@ -97,7 +97,7 @@ export default class TokenHttpController {
   @Delete(ROUTE_TOKEN_ID)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Request must include `tokenId`.',
+    description: 'Request must include `tokenId` and `TeamSlug`.',
     summary: 'Delete an access token.',
   })
   @ApiNoContentResponse({ description: 'Delete token.' })

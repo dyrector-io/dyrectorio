@@ -110,7 +110,7 @@ export default class ProjectHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      'Updates a project. `TeamSlug` and `projectId` is a required variable to identify which project is modified, `name`, `description` and `changelog` can be adjusted with this call.',
+      'Updates a project. `TeamSlug` and `projectId` are required variables to identify which project is modified, `name`, `description` and `changelog` can be adjusted with this call.',
     summary: 'Update a project.',
   })
   @ApiNoContentResponse({ description: 'Project details are modified.' })
@@ -132,7 +132,7 @@ export default class ProjectHttpController {
   @Delete(ROUTE_PROJECT_ID)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Deletes a project with the specified `projectId`',
+    description: 'Deletes a project with the specified `projectId`. `TeamSlug` and `projectId` are required variables.',
     summary: 'Delete a project.',
   })
   @ApiNoContentResponse({ description: 'Project deleted.' })
@@ -146,7 +146,7 @@ export default class ProjectHttpController {
   @Post(`${ROUTE_PROJECT_ID}/convert`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Converts a project to versioned with the specified `projectId`',
+    description: 'Converts a project to versioned with the specified `projectId`. `TeamSlug` and `projectId` are required variables.',
     summary: 'Convert a project to versioned.',
   })
   @ApiNoContentResponse({ description: 'Project converted.' })
