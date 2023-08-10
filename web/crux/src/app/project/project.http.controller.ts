@@ -76,7 +76,7 @@ export default class ProjectHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for project details.' })
   @ApiNotFoundResponse({ description: 'Project not found.' })
   @UuidParams(PARAM_PROJECT_ID)
-  async getProjectDetails(@ProjectId() id: string): Promise<ProjectDetailsDto> {
+  async getProjectDetails(@TeamSlug() _: string, @ProjectId() id: string): Promise<ProjectDetailsDto> {
     return this.service.getProjectDetails(id)
   }
 
@@ -110,7 +110,7 @@ export default class ProjectHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      'Updates a project. `projectId` is a required variable to identify which project is modified, `name`, `description` and `changelog` can be adjusted with this call.',
+      'Updates a project. `TeamSlug` and `projectId` is a required variable to identify which project is modified, `name`, `description` and `changelog` can be adjusted with this call.',
     summary: 'Update a project.',
   })
   @ApiNoContentResponse({ description: 'Project details are modified.' })
@@ -120,7 +120,7 @@ export default class ProjectHttpController {
   @ApiConflictResponse({ description: 'Project name taken.' })
   @UseInterceptors(ProjectUpdateValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID)
-  async updateProject(
+  async updateProject(@TeamSlug() _: string, 
     @ProjectId() id: string,
     @Body() request: UpdateProjectDto,
     @IdentityFromRequest() identity: Identity,
@@ -138,7 +138,7 @@ export default class ProjectHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for a project.' })
   @ApiNotFoundResponse({ description: 'Project not found.' })
   @UuidParams(PARAM_PROJECT_ID)
-  async deleteProject(@ProjectId() id: string): Promise<void> {
+  async deleteProject(@TeamSlug() _: string, @ProjectId() id: string): Promise<void> {
     return this.service.deleteProject(id)
   }
 
@@ -152,7 +152,7 @@ export default class ProjectHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for project conversion.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for project conversion.' })
   @UuidParams(PARAM_PROJECT_ID)
-  async convertProject(@ProjectId() id: string): Promise<void> {
+  async convertProject(@TeamSlug() _: string, @ProjectId() id: string): Promise<void> {
     return this.service.convertProjectToVersioned(id)
   }
 }

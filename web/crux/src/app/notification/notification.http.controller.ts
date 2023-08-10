@@ -62,7 +62,7 @@ export default class NotificationHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for notification details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for notification details.' })
   @ApiNotFoundResponse({ description: 'Notification not found.' })
-  async getNotificationDetails(@NotificationId() notificationId: string): Promise<NotificationDetailsDto> {
+  async getNotificationDetails(@TeamSlug() _: string, @NotificationId() notificationId: string): Promise<NotificationDetailsDto> {
     return this.service.getNotificationDetails(notificationId)
   }
 
@@ -105,7 +105,7 @@ export default class NotificationHttpController {
   @ApiNotFoundResponse({ description: 'Notification not found.' })
   @ApiConflictResponse({ description: 'Notification name taken.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
-  async updateNotification(
+  async updateNotification(@TeamSlug() _: string,
     @NotificationId() notificationId: string,
     @Body() request: UpdateNotificationDto,
     @IdentityFromRequest() identity: Identity,
@@ -123,7 +123,7 @@ export default class NotificationHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for notification delete.' })
   @ApiNotFoundResponse({ description: 'Notification not found.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
-  async deleteNotification(@NotificationId() notificationId: string): Promise<void> {
+  async deleteNotification(@TeamSlug() _: string, @NotificationId() notificationId: string): Promise<void> {
     this.service.deleteNotification(notificationId)
   }
 
@@ -137,7 +137,7 @@ export default class NotificationHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for a test message.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for a test message.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
-  async testNotification(@NotificationId() notificationId: string): Promise<void> {
+  async testNotification(@TeamSlug() _: string, @NotificationId() notificationId: string): Promise<void> {
     this.service.testNotification(notificationId)
   }
 }

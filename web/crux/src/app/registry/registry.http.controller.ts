@@ -64,7 +64,7 @@ export default class RegistryHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for a registry.' })
   @ApiNotFoundResponse({ description: 'Registry not found.' })
   @UuidParams(PARAM_REGISTRY_ID)
-  async getRegistry(@RegistryId() id: string): Promise<RegistryDetailsDto> {
+  async getRegistry(@TeamSlug() _: string, @RegistryId() id: string): Promise<RegistryDetailsDto> {
     return await this.service.getRegistryDetails(id)
   }
 
@@ -114,7 +114,7 @@ export default class RegistryHttpController {
   @ApiNotFoundResponse({ description: 'Registry not found.' })
   @ApiConflictResponse({ description: 'Registry name taken.' })
   @UuidParams(PARAM_REGISTRY_ID)
-  async updateRegistry(
+  async updateRegistry(@TeamSlug() _: string,
     @RegistryId() id: string,
     @Body() request: UpdateRegistryDto,
     @IdentityFromRequest() identity: Identity,
@@ -132,7 +132,7 @@ export default class RegistryHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for registry delete.' })
   @ApiNotFoundResponse({ description: 'Registry not found.' })
   @UuidParams(PARAM_REGISTRY_ID)
-  async deleteRegistry(@RegistryId(DeleteRegistryValidationPipe) id: string): Promise<void> {
+  async deleteRegistry(@TeamSlug() _: string, @RegistryId(DeleteRegistryValidationPipe) id: string): Promise<void> {
     await this.service.deleteRegistry(id)
   }
 }

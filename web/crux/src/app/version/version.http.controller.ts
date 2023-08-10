@@ -43,10 +43,12 @@ import {
 } from './version.dto'
 import VersionService from './version.service'
 
+const PARAM_TEAM_SLUG = 'teamSlug'
 const PARAM_PROJECT_ID = 'projectId'
 const PARAM_VERSION_ID = 'versionId'
 const ProjectId = () => Param(PARAM_PROJECT_ID)
 const VersionId = () => Param(PARAM_VERSION_ID)
+const TeamSlug = () => Param(PARAM_TEAM_SLUG)
 
 const ROUTE_TEAM_SLUG = ':teamSlug'
 const ROUTE_PROJECTS = 'projects'
@@ -74,7 +76,7 @@ export default class VersionHttpController {
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for project versions.' })
   @UuidParams(PARAM_PROJECT_ID)
-  async getVersions(
+  async getVersions(@TeamSlug() _: string,
     @ProjectId() projectId: string,
     @IdentityFromRequest() identity: Identity,
     @Query() query: VersionListQuery,
@@ -93,7 +95,7 @@ export default class VersionHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for version details.' })
   @ApiNotFoundResponse({ description: 'Version not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
-  async getVersion(@ProjectId() _projectId: string, @VersionId() versionId: string): Promise<VersionDetailsDto> {
+  async getVersion(@TeamSlug() _: string, @ProjectId() _projectId: string, @VersionId() versionId: string): Promise<VersionDetailsDto> {
     return await this.service.getVersionDetails(versionId)
   }
 
@@ -112,7 +114,7 @@ export default class VersionHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for version creation.' })
   @ApiConflictResponse({ description: 'Version name taken.' })
   @UuidParams(PARAM_PROJECT_ID)
-  async createVersion(
+  async createVersion(@TeamSlug() _: string,
     @ProjectId() projectId: string,
     @Body() request: CreateVersionDto,
     @IdentityFromRequest() identity: Identity,
@@ -140,7 +142,7 @@ export default class VersionHttpController {
   @UseInterceptors(VersionUpdateValidationInterceptor)
   @ApiBody({ type: UpdateVersionDto })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
-  async updateVersion(
+  async updateVersion(@TeamSlug() _: string,
     @ProjectId() _projectId: string,
     @VersionId() versionId: string,
     @Body() request: UpdateVersionDto,
@@ -161,7 +163,7 @@ export default class VersionHttpController {
   @ApiNotFoundResponse({ description: 'Version not found.' })
   @UseInterceptors(VersionDeleteValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
-  async deleteVersion(@ProjectId() _projectId: string, @VersionId() versionId: string): Promise<void> {
+  async deleteVersion(@TeamSlug() _: string, @ProjectId() _projectId: string, @VersionId() versionId: string): Promise<void> {
     return await this.service.deleteVersion(versionId)
   }
 
@@ -180,7 +182,7 @@ export default class VersionHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for setting version as default.' })
   @ApiNotFoundResponse({ description: 'Version not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
-  async setDefaultVersion(@ProjectId() projectId: string, @VersionId() versionId: string): Promise<void> {
+  async setDefaultVersion(@TeamSlug() _: string, @ProjectId() projectId: string, @VersionId() versionId: string): Promise<void> {
     return await this.service.setDefaultVersion(projectId, versionId)
   }
 
@@ -198,7 +200,7 @@ export default class VersionHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for increasing version.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for increasing version.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
-  async increaseVersion(
+  async increaseVersion(@TeamSlug() _: string,
     @ProjectId() projectId: string,
     @VersionId() versionId: string,
     @Body() request: IncreaseVersionDto,

@@ -64,7 +64,7 @@ export default class NodeHttpController {
     description: 'Data of nodes listed.',
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for nodes.' })
-  async getNodes(@TeamSlug() teamSlug: string): Promise<NodeDto[]> {
+  async getNodes(@TeamSlug() _: string, @TeamSlug() teamSlug: string): Promise<NodeDto[]> {
     return this.service.getNodes(teamSlug)
   }
 
@@ -80,7 +80,7 @@ export default class NodeHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for node details.' })
   @ApiNotFoundResponse({ description: 'Node not found.' })
   @UuidParams(PARAM_NODE_ID)
-  async getNodeDetails(@NodeId() nodeId: string): Promise<NodeDetailsDto> {
+  async getNodeDetails(@TeamSlug() _: string, @NodeId() nodeId: string): Promise<NodeDetailsDto> {
     return this.service.getNodeDetails(nodeId)
   }
 
@@ -122,7 +122,7 @@ export default class NodeHttpController {
   @ApiNotFoundResponse({ description: 'Node not found.' })
   @ApiConflictResponse({ description: 'Node name taken.' })
   @UuidParams(PARAM_NODE_ID)
-  async updateNode(
+  async updateNode(@TeamSlug() _: string,
     @NodeId() id: string,
     @Body() request: UpdateNodeDto,
     @IdentityFromRequest() identity: Identity,
@@ -140,7 +140,7 @@ export default class NodeHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for node delete.' })
   @ApiNotFoundResponse({ description: 'Node not found.' })
   @UuidParams(PARAM_NODE_ID)
-  async deleteNode(
+  async deleteNode(@TeamSlug() _: string,
     @NodeId(DeleteNodeValidationPipe) nodeId: string,
     @IdentityFromRequest() identity: Identity,
   ): Promise<void> {
@@ -175,7 +175,7 @@ export default class NodeHttpController {
   @ApiNoContentResponse({ description: 'Agent install script deleted.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for script delete.' })
   @ApiNotFoundResponse({ description: 'Install script not found.' })
-  async discardScript(@NodeId() nodeId: string): Promise<void> {
+  async discardScript(@TeamSlug() _: string, @NodeId() nodeId: string): Promise<void> {
     return await this.service.discardScript(nodeId)
   }
 
@@ -194,7 +194,7 @@ export default class NodeHttpController {
   @Header('content-type', 'text/plain')
   @DisableAuth()
   @UuidParams(PARAM_NODE_ID)
-  async getScript(@NodeId(NodeGetScriptValidationPipe) nodeId: string): Promise<string> {
+  async getScript(@TeamSlug() _: string, @NodeId(NodeGetScriptValidationPipe) nodeId: string): Promise<string> {
     return await this.service.getScript(nodeId)
   }
 
@@ -208,7 +208,7 @@ export default class NodeHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for a token.' })
   @ApiNotFoundResponse({ description: 'Token not found.' })
   @UuidParams(PARAM_NODE_ID)
-  async revokeToken(@NodeId() nodeId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
+  async revokeToken(@TeamSlug() _: string, @NodeId() nodeId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
     return await this.service.revokeToken(nodeId, identity)
   }
 
@@ -237,7 +237,7 @@ export default class NodeHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for audit log.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for audit log.' })
   @ApiNotFoundResponse({ description: 'Audit log not found.' })
-  async getAuditLog(@NodeId() nodeId: string, @Query() query: NodeAuditLogQueryDto): Promise<NodeAuditLogListDto> {
+  async getAuditLog(@TeamSlug() _: string, @NodeId() nodeId: string, @Query() query: NodeAuditLogQueryDto): Promise<NodeAuditLogListDto> {
     return await this.service.getAuditLog(nodeId, query)
   }
 }

@@ -93,7 +93,7 @@ export default class StorageHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for storage details.' })
   @ApiNotFoundResponse({ description: 'Storage not found.' })
   @UuidParams(PARAM_STORAGE_ID)
-  async getStorageDetails(@StorageId() id: string): Promise<StorageDetailsDto> {
+  async getStorageDetails(@TeamSlug() _: string, @StorageId() id: string): Promise<StorageDetailsDto> {
     return this.service.getStorageDetails(id)
   }
 
@@ -136,7 +136,7 @@ export default class StorageHttpController {
   @ApiNotFoundResponse({ description: 'Storage not found.' })
   @ApiConflictResponse({ description: 'Storage name taken.' })
   @UuidParams(PARAM_STORAGE_ID)
-  async updateStorage(
+  async updateStorage(@TeamSlug() _: string,
     @StorageId() id: string,
     @Body() request: UpdateStorageDto,
     @IdentityFromRequest() identity: Identity,
@@ -155,7 +155,7 @@ export default class StorageHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for storage delete.' })
   @ApiNotFoundResponse({ description: 'Storage not found.' })
   @UuidParams(PARAM_STORAGE_ID)
-  async deleteStorage(@StorageId() id: string): Promise<void> {
+  async deleteStorage(@TeamSlug() _: string, @StorageId() id: string): Promise<void> {
     return this.service.deleteStorage(id)
   }
 }
