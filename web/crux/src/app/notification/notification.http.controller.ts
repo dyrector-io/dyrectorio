@@ -142,7 +142,7 @@ export default class NotificationHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for a test message.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for a test message.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
-  async testNotification(@TeamSlug() _: string, @NotificationId() notificationId: string): Promise<void> {
-    this.service.testNotification(notificationId)
+  testNotification(@TeamSlug() _: string, @NotificationId() notificationId: string): Promise<void> {
+    return this.service.testNotification(notificationId)
   }
 }
