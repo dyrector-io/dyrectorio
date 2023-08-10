@@ -104,7 +104,7 @@ func NewDockerBuilder(ctx context.Context) Builder {
 	b := DockerContainerBuilder{
 		ctx:           ctx,
 		logger:        logger,
-		imagePriority: imageHelper.PreferLocal,
+		imagePriority: imageHelper.PullIfNewer,
 	}
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
