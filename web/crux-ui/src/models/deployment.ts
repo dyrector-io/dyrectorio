@@ -203,4 +203,5 @@ export const lastDeploymentStatusOfEvents = (events: DeploymentEvent[]): Deploym
     .sort((one, other) => new Date(other.createdAt).getTime() - new Date(one.createdAt).getTime())
     .at(0)?.deploymentStatus ?? null
 
-export const deploymentHasError = (dto: DyoApiError): boolean => dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing'
+export const deploymentHasError = (dto: DyoApiError): boolean =>
+  dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing'
