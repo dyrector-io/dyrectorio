@@ -22,7 +22,6 @@ export default class AgentConnectionLegacyStrategy extends AgentConnectionStrate
 
       agent.close(CloseReason.SHUTDOWN)
       agent.onDisconnected()
-      return null
     }
 
     return agent

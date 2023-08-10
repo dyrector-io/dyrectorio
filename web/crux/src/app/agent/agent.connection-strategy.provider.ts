@@ -44,3 +44,11 @@ export default class AgentConnectionStrategyProvider {
     })
   }
 }
+
+export const AGENT_STRATEGY_TYPES = [
+  AgentConnectionStrategy,
+  AgentConnectionLegacyStrategy,
+  AgentConnectionInstallStrategy,
+  AgentConnectionUpdateStrategy,
+  AgentConnectionStrategyProvider,
+]

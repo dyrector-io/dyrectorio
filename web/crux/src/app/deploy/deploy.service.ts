@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { Identity } from '@ory/kratos-client'
@@ -12,7 +12,7 @@ import {
 } from 'src/domain/container'
 import Deployment from 'src/domain/deployment'
 import { DeploymentTokenPayload, DeploymentTokenScriptGenerator } from 'src/domain/deployment-token'
-import { toPrismaJson } from 'src/domain/utils'
+import { collectChildVersionIds, collectParentVersionIds, toPrismaJson } from 'src/domain/utils'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import PrismaService from 'src/services/prisma.service'
@@ -51,7 +51,7 @@ export default class DeployService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly agentService: AgentService,
+    @Inject(forwardRef(() => AgentService)) private readonly agentService: AgentService,
     readonly imageEventService: ImageEventService,
     private readonly mapper: DeployMapper,
     private readonly containerMapper: ContainerMapper,

@@ -21,11 +21,11 @@ import {
 import { coerce, major, minor } from 'semver'
 import { Agent, AgentConnectionMessage } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
-import { AgentToken, generateAgentToken } from 'src/domain/agent-token'
+import { generateAgentToken } from 'src/domain/agent-token'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
 import { BasicNode } from 'src/domain/node'
 import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
-import { CruxConflictException, CruxNotFoundException, CruxUnauthorizedException } from 'src/exception/crux-exception'
+import { CruxNotFoundException } from 'src/exception/crux-exception'
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerIdentifier,
@@ -43,9 +43,8 @@ import { getAgentVersionFromPackage } from 'src/shared/package'
 import { PRODUCTION } from '../../shared/const'
 import DeployService from '../deploy/deploy.service'
 import { DagentTraefikOptionsDto, NodeConnectionStatus, NodeScriptTypeDto } from '../node/node.dto'
-import { AgentKickReason } from './agent.dto'
-import AgentConnectionStrategy from './connection-strategies/agent.connection.strategy'
 import AgentConnectionStrategyProvider from './agent.connection-strategy.provider'
+import { AgentKickReason } from './agent.dto'
 
 @Injectable()
 export default class AgentService {
@@ -135,7 +134,7 @@ export default class AgentService {
     // generate new installer
     const token = generateAgentToken(node.id, 'install')
 
-    installer = new AgentInstaller(teamSlug, node, {
+    installer = new AgentInstaller(this.configService, teamSlug, node, {
       token,
       signedToken: this.jwtService.sign(token),
       rootPath,
@@ -372,13 +371,10 @@ export default class AgentService {
     connection: GrpcNodeConnection,
     request: AgentInfo,
   ): Promise<Observable<AgentCommand>> {
-    const strategy =this.connectionStrategies.select(connection)
-
+    const strategy = this.connectionStrategies.select(connection)
     const agent = await strategy.execute(connection, request)
-    if (!agent) {
-      return null // TODO we have to provide the subject
-    }
 
+    this.agents.set(agent.id, agent)
     connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))
 
     this.logger.log(`Agent joined with id: ${request.id}, key: ${!!agent.publicKey}`)

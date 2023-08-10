@@ -19,6 +19,7 @@ export default class AgentUpdate {
       update: {
         tag,
         timeoutSeconds: AgentUpdate.TIMEOUT_SECONDS,
+        token: this.token,
       },
     })
   }

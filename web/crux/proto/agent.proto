@@ -54,6 +54,7 @@ message AgentCommand {
     common.ContainerCommandRequest containerCommand = 8;
     common.DeleteContainersRequest deleteContainers = 9;
     ContainerLogRequest containerLog = 10;
+    ReplaceTokenRequest replaceToken = 11;
   }
 }
 
@@ -250,6 +251,11 @@ message DeployRequestLegacy {
 message AgentUpdateRequest {
   string tag = 1;
   int32 timeoutSeconds = 2;
+  string token = 3;
+}
+
+message ReplaceTokenRequest {
+  string token = 1;
 }
 
 message AgentAbortUpdate { string error = 1; }

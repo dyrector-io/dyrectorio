@@ -27,25 +27,32 @@ export type AgentInstallerOptions = {
 export default class AgentInstaller {
   private scriptCompiler: ScriptCompiler
 
-  private readonly expireAt: Date
+  private readonly expirationDate: Date
 
   constructor(
+    private readonly configService: ConfigService,
     readonly teamSlug: string,
     readonly node: BasicNode,
     private readonly options: AgentInstallerOptions,
   ) {
     this.scriptCompiler = this.loadScriptAndCompiler(node.type, this.options.scriptType)
 
-    this.expireAt = new Date(options.token.iat * 1000 + JWT_EXPIRATION_MILLIS)
+    this.expirationDate = new Date(options.token.iat * 1000 + JWT_EXPIRATION_MILLIS)
+  }
+
+  get expireAt(): Date {
+    return this.expirationDate
   }
 
   get expired(): boolean {
     const now = new Date()
-    return now > this.expireAt
+    return now > this.expirationDate
   }
 
-  getCommand(configService: ConfigService): string {
-    const scriptUrl = `${configService.get<string>('CRUX_UI_URL')}/api/${this.teamSlug}/nodes/${this.node.id}/script`
+  getCommand(): string {
+    const scriptUrl = `${this.configService.get<string>('CRUX_UI_URL')}/api/${this.teamSlug}/nodes/${
+      this.node.id
+    }/script`
 
     switch (this.options.scriptType) {
       case 'shell':
@@ -61,13 +68,16 @@ export default class AgentInstaller {
     }
   }
 
-  getScript(configService: ConfigService): string {
+  getScript(): string {
     this.throwIfExpired()
 
-    const configLocalDeployment = configService.get<string>('LOCAL_DEPLOYMENT')
-    const configLocalDeploymentNetwork = configService.get<string>('LOCAL_DEPLOYMENT_NETWORK')
-    const disableForcePull = configService.get<boolean>('AGENT_INSTALL_SCRIPT_DISABLE_PULL', false)
-    const agentImageTag = configService.get<string>('CRUX_AGENT_IMAGE', getAgentVersionFromPackage(configService))
+    const configLocalDeployment = this.configService.get<string>('LOCAL_DEPLOYMENT')
+    const configLocalDeploymentNetwork = this.configService.get<string>('LOCAL_DEPLOYMENT_NETWORK')
+    const disableForcePull = this.configService.get<boolean>('AGENT_INSTALL_SCRIPT_DISABLE_PULL', false)
+    const agentImageTag = this.configService.get<string>(
+      'CRUX_AGENT_IMAGE',
+      getAgentVersionFromPackage(this.configService),
+    )
     const debugMode = process.env.NODE_ENV !== PRODUCTION
 
     const installScriptParams: InstallScriptConfig = {
@@ -89,7 +99,7 @@ export default class AgentInstaller {
     return this.scriptCompiler.compile(installScriptParams)
   }
 
-  complete(agentOptions: Omit<AgentOptions, 'outdated'>): Agent {
+  complete(agentOptions: Omit<AgentOptions, 'outdated'>) {
     this.throwIfExpired()
 
     const { connection } = agentOptions
@@ -100,10 +110,13 @@ export default class AgentInstaller {
       })
     }
 
-    return new Agent({
+    const agent = new Agent({
       ...agentOptions,
       outdated: false,
     })
+
+    agent.replaceToken(connection.jwt)
+    return agent
   }
 
   private loadScriptAndCompiler(nodeType: NodeTypeEnum, scriptType: NodeScriptType): ScriptCompiler {

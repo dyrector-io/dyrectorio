@@ -178,7 +178,7 @@ export default class NodeService {
   async getScript(id: string): Promise<string> {
     const installer = this.agentService.getInstallerByNodeId(id)
 
-    return installer.getScript(this.configService)
+    return installer.getScript()
   }
 
   async discardScript(id: string): Promise<void> {

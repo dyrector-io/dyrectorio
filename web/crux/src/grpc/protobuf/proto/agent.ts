@@ -106,6 +106,7 @@ export interface AgentCommand {
   containerCommand?: ContainerCommandRequest | undefined
   deleteContainers?: DeleteContainersRequest | undefined
   containerLog?: ContainerLogRequest | undefined
+  replaceToken?: ReplaceTokenRequest | undefined
 }
 
 /**
@@ -342,6 +343,11 @@ export interface DeployRequestLegacy {
 export interface AgentUpdateRequest {
   tag: string
   timeoutSeconds: number
+  token: string
+}
+
+export interface ReplaceTokenRequest {
+  token: string
 }
 
 export interface AgentAbortUpdate {
@@ -406,6 +412,7 @@ export const AgentCommand = {
         ? DeleteContainersRequest.fromJSON(object.deleteContainers)
         : undefined,
       containerLog: isSet(object.containerLog) ? ContainerLogRequest.fromJSON(object.containerLog) : undefined,
+      replaceToken: isSet(object.replaceToken) ? ReplaceTokenRequest.fromJSON(object.replaceToken) : undefined,
     }
   },
 
@@ -437,6 +444,8 @@ export const AgentCommand = {
         : undefined)
     message.containerLog !== undefined &&
       (obj.containerLog = message.containerLog ? ContainerLogRequest.toJSON(message.containerLog) : undefined)
+    message.replaceToken !== undefined &&
+      (obj.replaceToken = message.replaceToken ? ReplaceTokenRequest.toJSON(message.replaceToken) : undefined)
     return obj
   },
 }
@@ -1347,7 +1356,7 @@ export const DeployRequestLegacy = {
 }
 
 function createBaseAgentUpdateRequest(): AgentUpdateRequest {
-  return { tag: '', timeoutSeconds: 0 }
+  return { tag: '', timeoutSeconds: 0, token: '' }
 }
 
 export const AgentUpdateRequest = {
@@ -1355,6 +1364,7 @@ export const AgentUpdateRequest = {
     return {
       tag: isSet(object.tag) ? String(object.tag) : '',
       timeoutSeconds: isSet(object.timeoutSeconds) ? Number(object.timeoutSeconds) : 0,
+      token: isSet(object.token) ? String(object.token) : '',
     }
   },
 
@@ -1362,6 +1372,23 @@ export const AgentUpdateRequest = {
     const obj: any = {}
     message.tag !== undefined && (obj.tag = message.tag)
     message.timeoutSeconds !== undefined && (obj.timeoutSeconds = Math.round(message.timeoutSeconds))
+    message.token !== undefined && (obj.token = message.token)
+    return obj
+  },
+}
+
+function createBaseReplaceTokenRequest(): ReplaceTokenRequest {
+  return { token: '' }
+}
+
+export const ReplaceTokenRequest = {
+  fromJSON(object: any): ReplaceTokenRequest {
+    return { token: isSet(object.token) ? String(object.token) : '' }
+  },
+
+  toJSON(message: ReplaceTokenRequest): unknown {
+    const obj: any = {}
+    message.token !== undefined && (obj.token = message.token)
     return obj
   },
 }

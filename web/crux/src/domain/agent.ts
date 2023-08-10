@@ -162,6 +162,16 @@ export class Agent {
     } as AgentCommand)
   }
 
+  replaceToken(token: string) {
+    this.throwIfCommandsAreDisabled()
+
+    this.commandChannel.next({
+      replaceToken: {
+        token,
+      }
+    })
+  }
+
   deleteContainers(request: DeleteContainersRequest): Observable<Empty> {
     this.throwIfCommandsAreDisabled()
 

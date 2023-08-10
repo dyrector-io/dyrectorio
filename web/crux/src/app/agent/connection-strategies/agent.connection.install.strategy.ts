@@ -24,6 +24,8 @@ export default class AgentConnectionInstallStrategy extends AgentConnectionStrat
     const connToken = generateAgentToken(node.id, 'connection')
     const signedConnToken = this.jwtService.sign(connToken)
 
+    const eventChannel = await this.service.getNodeEventsByTeam(node.teamId)
+
     // update token to the new connection token
     await this.prisma.nodeToken.update({
       where: {
@@ -31,19 +33,16 @@ export default class AgentConnectionInstallStrategy extends AgentConnectionStrat
       },
       data: {
         nonce: connToken.nonce,
-      }
+      },
     })
 
-    const eventChannel = await this.service.getNodeEventsByTeam(node.teamId)
+    connection.replaceToken(signedConnToken, connToken)
     const agent = installer.complete({
       connection,
-      info,
       eventChannel,
+      info,
     })
 
-    const tag = this.service.getAgentImageTag()
-    agent.startUpdate(tag, signedConnToken)
-
-    return agent.
+    return agent
   }
 }

@@ -103,6 +103,7 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
     NotificationEvent: 'notificationEvent',
     Token: 'token',
     Storage: 'storage',
-    AgentEvent: 'agentEvent',
+    NodeEvent: 'nodeEvent',
+    NodeToken: 'token'
   }
 }

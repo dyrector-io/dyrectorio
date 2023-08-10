@@ -32,9 +32,9 @@ export default class AgentConnectionStrategy {
     const outdated = !this.service.agentVersionSupported(info.version)
     if (outdated) {
       this.logger.warn(
-        `Agent ('${info.id}') connected with unsupported version '${
-          info.version
-        }', package is '${getPackageVersion(this.configService)}'`,
+        `Agent ('${info.id}') connected with unsupported version '${info.version}', package is '${getPackageVersion(
+          this.configService,
+        )}'`,
       )
     }
 
