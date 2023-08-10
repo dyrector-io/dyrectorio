@@ -136,7 +136,8 @@ export default class StorageHttpController {
   @ApiNotFoundResponse({ description: 'Storage not found.' })
   @ApiConflictResponse({ description: 'Storage name taken.' })
   @UuidParams(PARAM_STORAGE_ID)
-  async updateStorage(@TeamSlug() _: string,
+  async updateStorage(
+    @TeamSlug() _: string,
     @StorageId() id: string,
     @Body() request: UpdateStorageDto,
     @IdentityFromRequest() identity: Identity,

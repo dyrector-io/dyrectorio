@@ -67,7 +67,11 @@ export default class ImageHttpController {
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for images.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
-  async getImagesByVersionId(@TeamSlug() _: string, @ProjectId() _projectId: string, @VersionId() versionId: string): Promise<ImageDto[]> {
+  async getImagesByVersionId(
+    @TeamSlug() _: string,
+    @ProjectId() _projectId: string,
+    @VersionId() versionId: string,
+  ): Promise<ImageDto[]> {
     return await this.service.getImagesByVersionId(versionId)
   }
 
@@ -83,7 +87,8 @@ export default class ImageHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for image details.' })
   @ApiNotFoundResponse({ description: 'Image not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
-  async getImageDetails(@TeamSlug() _: string,
+  async getImageDetails(
+    @TeamSlug() _: string,
     @ProjectId() _projectId: string,
     @VersionId() _versionId: string,
     @ImageId() imageId: string,
@@ -134,7 +139,8 @@ export default class ImageHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for an image.' })
   @ApiNotFoundResponse({ description: 'Image not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
-  async patchImage(@TeamSlug() _: string,
+  async patchImage(
+    @TeamSlug() _: string,
     @ProjectId() _projectId: string,
     @VersionId() _versionId: string,
     @ImageId() imageId: string,
@@ -156,7 +162,8 @@ export default class ImageHttpController {
   @ApiNotFoundResponse({ description: 'Image not found.' })
   @UseInterceptors(DeleteImageValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
-  async deleteImage(@TeamSlug() _: string,
+  async deleteImage(
+    @TeamSlug() _: string,
     @ProjectId() _projectId: string,
     @VersionId() _versionId: string,
     @ImageId() imageId: string,
@@ -178,7 +185,8 @@ export default class ImageHttpController {
   @UseGuards(ImageOrderImagesTeamAccessGuard)
   @UseInterceptors(OrderImagesValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
-  async orderImages(@TeamSlug() _: string,
+  async orderImages(
+    @TeamSlug() _: string,
     @ProjectId() _projectId: string,
     @VersionId() _versionId: string,
     @Body() request: string[],

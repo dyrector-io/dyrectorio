@@ -122,7 +122,8 @@ export default class NodeHttpController {
   @ApiNotFoundResponse({ description: 'Node not found.' })
   @ApiConflictResponse({ description: 'Node name taken.' })
   @UuidParams(PARAM_NODE_ID)
-  async updateNode(@TeamSlug() _: string,
+  async updateNode(
+    @TeamSlug() _: string,
     @NodeId() id: string,
     @Body() request: UpdateNodeDto,
     @IdentityFromRequest() identity: Identity,
@@ -140,7 +141,8 @@ export default class NodeHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for node delete.' })
   @ApiNotFoundResponse({ description: 'Node not found.' })
   @UuidParams(PARAM_NODE_ID)
-  async deleteNode(@TeamSlug() _: string,
+  async deleteNode(
+    @TeamSlug() _: string,
     @NodeId(DeleteNodeValidationPipe) nodeId: string,
     @IdentityFromRequest() identity: Identity,
   ): Promise<void> {
@@ -208,7 +210,11 @@ export default class NodeHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for a token.' })
   @ApiNotFoundResponse({ description: 'Token not found.' })
   @UuidParams(PARAM_NODE_ID)
-  async revokeToken(@TeamSlug() _: string, @NodeId() nodeId: string, @IdentityFromRequest() identity: Identity): Promise<void> {
+  async revokeToken(
+    @TeamSlug() _: string,
+    @NodeId() nodeId: string,
+    @IdentityFromRequest() identity: Identity,
+  ): Promise<void> {
     return await this.service.revokeToken(nodeId, identity)
   }
 
@@ -237,7 +243,11 @@ export default class NodeHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for audit log.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for audit log.' })
   @ApiNotFoundResponse({ description: 'Audit log not found.' })
-  async getAuditLog(@TeamSlug() _: string, @NodeId() nodeId: string, @Query() query: NodeAuditLogQueryDto): Promise<NodeAuditLogListDto> {
+  async getAuditLog(
+    @TeamSlug() _: string,
+    @NodeId() nodeId: string,
+    @Query() query: NodeAuditLogQueryDto,
+  ): Promise<NodeAuditLogListDto> {
     return await this.service.getAuditLog(nodeId, query)
   }
 }

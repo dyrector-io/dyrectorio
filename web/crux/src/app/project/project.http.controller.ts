@@ -120,7 +120,8 @@ export default class ProjectHttpController {
   @ApiConflictResponse({ description: 'Project name taken.' })
   @UseInterceptors(ProjectUpdateValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID)
-  async updateProject(@TeamSlug() _: string, 
+  async updateProject(
+    @TeamSlug() _: string,
     @ProjectId() id: string,
     @Body() request: UpdateProjectDto,
     @IdentityFromRequest() identity: Identity,

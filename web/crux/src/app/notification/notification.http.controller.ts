@@ -62,7 +62,10 @@ export default class NotificationHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for notification details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for notification details.' })
   @ApiNotFoundResponse({ description: 'Notification not found.' })
-  async getNotificationDetails(@TeamSlug() _: string, @NotificationId() notificationId: string): Promise<NotificationDetailsDto> {
+  async getNotificationDetails(
+    @TeamSlug() _: string,
+    @NotificationId() notificationId: string,
+  ): Promise<NotificationDetailsDto> {
     return this.service.getNotificationDetails(notificationId)
   }
 
@@ -105,7 +108,8 @@ export default class NotificationHttpController {
   @ApiNotFoundResponse({ description: 'Notification not found.' })
   @ApiConflictResponse({ description: 'Notification name taken.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
-  async updateNotification(@TeamSlug() _: string,
+  async updateNotification(
+    @TeamSlug() _: string,
     @NotificationId() notificationId: string,
     @Body() request: UpdateNotificationDto,
     @IdentityFromRequest() identity: Identity,

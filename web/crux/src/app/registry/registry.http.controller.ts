@@ -114,7 +114,8 @@ export default class RegistryHttpController {
   @ApiNotFoundResponse({ description: 'Registry not found.' })
   @ApiConflictResponse({ description: 'Registry name taken.' })
   @UuidParams(PARAM_REGISTRY_ID)
-  async updateRegistry(@TeamSlug() _: string,
+  async updateRegistry(
+    @TeamSlug() _: string,
     @RegistryId() id: string,
     @Body() request: UpdateRegistryDto,
     @IdentityFromRequest() identity: Identity,

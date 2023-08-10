@@ -104,7 +104,10 @@ export default class DeployHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for deployment details.' })
   @ApiNotFoundResponse({ description: 'Deployment not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
-  async getDeploymentDetails(@TeamSlug() _: string, @DeploymentId() deploymentId: string): Promise<DeploymentDetailsDto> {
+  async getDeploymentDetails(
+    @TeamSlug() _: string,
+    @DeploymentId() deploymentId: string,
+  ): Promise<DeploymentDetailsDto> {
     return await this.service.getDeploymentDetails(deploymentId)
   }
 
@@ -120,7 +123,11 @@ export default class DeployHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for an instance.' })
   @ApiNotFoundResponse({ description: 'Instance not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
-  async getInstance(@TeamSlug() _: string, @DeploymentId() _deploymentId: string, @InstanceId() instanceId: string): Promise<InstanceDto> {
+  async getInstance(
+    @TeamSlug() _: string,
+    @DeploymentId() _deploymentId: string,
+    @InstanceId() instanceId: string,
+  ): Promise<InstanceDto> {
     return await this.service.getInstance(instanceId)
   }
 
@@ -136,7 +143,8 @@ export default class DeployHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for instance secrets.' })
   @ApiNotFoundResponse({ description: 'Instance secrets not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
-  async getDeploymentSecrets(@TeamSlug() _: string,
+  async getDeploymentSecrets(
+    @TeamSlug() _: string,
     @DeploymentId() _deploymentId: string,
     @InstanceId() instanceId: string,
   ): Promise<InstanceSecretsDto> {
@@ -158,7 +166,8 @@ export default class DeployHttpController {
   @ApiConflictResponse({ description: 'Prefix taken for the node.' })
   @UseGuards(DeployCreateTeamAccessGuard)
   @UseInterceptors(DeployCreateValidationInterceptor)
-  async createDeployment(@TeamSlug() _: string,
+  async createDeployment(
+    @TeamSlug() _: string,
     @Body() request: CreateDeploymentDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreatedResponse<DeploymentDto>> {
@@ -182,7 +191,8 @@ export default class DeployHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment.' })
   @ApiNotFoundResponse({ description: 'Deployment not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
-  async patchDeployment(@TeamSlug() _: string,
+  async patchDeployment(
+    @TeamSlug() _: string,
     @DeploymentId() deploymentId: string,
     @Body() request: PatchDeploymentDto,
     @IdentityFromRequest() identity: Identity,
@@ -203,7 +213,8 @@ export default class DeployHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for an instance.' })
   @ApiNotFoundResponse({ description: 'Instance not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
-  async patchInstance(@TeamSlug() _: string,
+  async patchInstance(
+    @TeamSlug() _: string,
     @DeploymentId() deploymentId: string,
     @InstanceId() instanceId: string,
     @Body() request: PatchInstanceDto,
@@ -239,7 +250,8 @@ export default class DeployHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   @AuthStrategy('deploy-token')
-  async startDeployment(@TeamSlug() _: string,
+  async startDeployment(
+    @TeamSlug() _: string,
     @DeploymentId() deploymentId: string,
     @IdentityFromRequest() identity: Identity,
     @Body() request: StartDeploymentDto,
@@ -261,7 +273,8 @@ export default class DeployHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment.' })
   @UseInterceptors(DeployCopyValidationInterceptor)
   @UuidParams(PARAM_DEPLOYMENT_ID)
-  async copyDeployment(@TeamSlug() _: string,
+  async copyDeployment(
+    @TeamSlug() _: string,
     @DeploymentId() deploymentId: string,
     @Body() request: CopyDeploymentDto,
     @IdentityFromRequest() identity: Identity,
@@ -286,7 +299,8 @@ export default class DeployHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment log.' })
   @ApiNotFoundResponse({ description: 'Deployment log not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
-  async deploymentLog(@TeamSlug() _: string,
+  async deploymentLog(
+    @TeamSlug() _: string,
     @DeploymentId() deploymentId: string,
     @Query() query: DeploymentLogPaginationQuery,
   ): Promise<DeploymentLogListDto> {
@@ -307,7 +321,8 @@ export default class DeployHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for a deployment token.' })
   @UuidParams(PARAM_DEPLOYMENT_ID)
   @UseInterceptors(DeployCreateDeployTokenValidationInterceptor)
-  async createDeploymentToken(@TeamSlug() _: string,
+  async createDeploymentToken(
+    @TeamSlug() _: string,
     @TeamSlug() teamSlug: string,
     @DeploymentId() deploymentId: string,
     @Body() request: CreateDeploymentTokenDto,
