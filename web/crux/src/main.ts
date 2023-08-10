@@ -8,6 +8,7 @@ import { Logger as PinoLogger } from 'nestjs-pino'
 import { join } from 'path'
 import AppModule from './app.module'
 import AuditLoggerInterceptor from './app/audit.logger/audit.logger.interceptor'
+import { metricsServerBootstrap } from './app/metrics/metrics.server'
 import JwtAuthGuard from './app/token/jwt-auth.guard'
 import createSwaggerConfig from './config/swagger.config'
 import HttpExceptionFilter from './filters/http.exception-filter'
@@ -19,7 +20,6 @@ import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import prismaBootstrap from './services/prisma.bootstrap'
 import { PRODUCTION } from './shared/const'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
-import { metricsServerBootstrap } from './app/metrics/metrics.server'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 

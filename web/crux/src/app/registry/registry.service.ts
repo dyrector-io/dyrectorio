@@ -11,7 +11,11 @@ import RegistryMapper from './registry.mapper'
 export default class RegistryService {
   private readonly registryChangedEvent = new Subject<string>()
 
-  constructor(private teamRepository: TeamRepository, private prisma: PrismaService, private mapper: RegistryMapper) {
+  constructor(
+    private teamRepository: TeamRepository,
+    private prisma: PrismaService,
+    private mapper: RegistryMapper,
+  ) {
     this.initMetrics()
   }
 

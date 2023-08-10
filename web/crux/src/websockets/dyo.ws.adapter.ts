@@ -22,9 +22,9 @@ import {
 } from 'rxjs'
 import JwtAuthGuard, { AuthorizedHttpRequest } from 'src/app/token/jwt-auth.guard'
 import { WebSocketExceptionOptions } from 'src/exception/websocket-exception'
+import WsMetrics from 'src/shared/metrics/ws.metrics'
 import { v4 as uuid } from 'uuid'
 import { WebSocketServer } from 'ws'
-import WsMetrics from 'src/shared/metrics/ws.metrics'
 import WsClientSetup from './client-setup'
 import {
   SubscriptionMessage,
