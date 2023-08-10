@@ -602,6 +602,128 @@ export default class DeployService {
     })
   }
 
+  async finishDeployment(nodeId: string, finishedDeployment: Deployment, status: DeploymentStatusEnum) {
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
+      select: {
+        status: true,
+        prefix: true,
+        version: {
+          select: {
+            id: true,
+            type: true,
+            deployments: {
+              select: {
+                id: true,
+              },
+              where: {
+                nodeId,
+              },
+            },
+          },
+        },
+      },
+      where: {
+        id: finishedDeployment.id,
+      },
+    })
+
+    const finalStatus = status === 'successful' ? 'successful' : 'failed'
+
+    if (deployment.status !== finalStatus) {
+      // update status for sure
+
+      await this.prisma.deployment.update({
+        where: {
+          id: finishedDeployment.id,
+        },
+        data: {
+          status: finalStatus,
+        },
+      })
+
+      deployment.status = finalStatus
+    }
+
+    if (finalStatus !== 'successful') {
+      return
+    }
+
+    await this.prisma.$transaction(async prisma => {
+      await prisma.deployment.updateMany({
+        data: {
+          status: DeploymentStatusEnum.obsolete,
+        },
+        where: {
+          id: {
+            not: finishedDeployment.id,
+          },
+          versionId: deployment.version.id,
+          nodeId,
+          prefix: deployment.prefix,
+          status: {
+            not: DeploymentStatusEnum.preparing,
+          },
+        },
+      })
+
+      const parentVersionIds = await collectParentVersionIds(prisma, deployment.version.id)
+      await prisma.deployment.updateMany({
+        data: {
+          status: DeploymentStatusEnum.obsolete,
+        },
+        where: {
+          versionId: {
+            in: parentVersionIds,
+          },
+          nodeId,
+          prefix: deployment.prefix,
+          status: {
+            not: DeploymentStatusEnum.preparing,
+          },
+        },
+      })
+
+      const childVersionIds = await collectChildVersionIds(prisma, deployment.version.id)
+      await prisma.deployment.updateMany({
+        data: {
+          status: DeploymentStatusEnum.downgraded,
+        },
+        where: {
+          versionId: {
+            in: childVersionIds,
+          },
+          nodeId,
+          prefix: deployment.prefix,
+        },
+      })
+
+      if (deployment.version.type === 'rolling') {
+        return
+      }
+
+      const configUpserts = Array.from(finishedDeployment.mergedConfigs).map(it => {
+        const [key, config] = it
+        const dbConfig = this.containerMapper.configDataToDb(config)
+
+        return prisma.instanceContainerConfig.upsert({
+          where: {
+            instanceId: key,
+          },
+          update: {
+            ...dbConfig,
+          },
+          create: {
+            ...dbConfig,
+            id: undefined,
+            instanceId: key,
+          },
+        })
+      })
+
+      await Promise.all(configUpserts)
+    })
+  }
+
   async subscribeToDeploymentEvents(id: string): Promise<Observable<DeploymentEventListMessage>> {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
