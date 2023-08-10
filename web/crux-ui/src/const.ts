@@ -38,3 +38,5 @@ export const UID_MAX = 2147483647
 export const STORAGE_TEAM_SLUG = 'teamSlug'
 
 export const COOKIE_TEAM_SLUG = 'crux_team_slug'
+
+export const TOAST_DURATION = 5000 // sec in millis

@@ -183,7 +183,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
 
   const onDeploymentCreated = async (deploymentId: string) => await router.push(routes.deployment.details(deploymentId))
 
-  const onCreateDiscard = async () => setCreating(false)
+  const onCreateDiscard = () => setCreating(false)
 
   return (
     <Layout title={t('common:deployments')}>

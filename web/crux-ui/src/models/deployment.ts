@@ -1,5 +1,5 @@
 import { Audit } from './audit'
-import { DeploymentStatus, slugify } from './common'
+import { DeploymentStatus, DyoApiError, slugify } from './common'
 import { ContainerIdentifier, ContainerState, InstanceContainerConfigData, UniqueKeyValue } from './container'
 import { ImageConfigProperty, ImageDeletedMessage } from './image'
 import { Instance } from './instance'
@@ -202,3 +202,5 @@ export const lastDeploymentStatusOfEvents = (events: DeploymentEvent[]): Deploym
     .filter(it => it.type === 'deployment-status')
     .sort((one, other) => new Date(other.createdAt).getTime() - new Date(one.createdAt).getTime())
     .at(0)?.deploymentStatus ?? null
+
+export const deploymentHasError = (dto: DyoApiError): boolean => dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing'

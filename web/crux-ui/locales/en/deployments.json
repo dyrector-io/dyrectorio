@@ -16,8 +16,6 @@
   "noItems": "You haven't made a deployment.",
   "addDeployment": "Add deployment",
   "nodeRequired": "You can't create deployment without having at least one node",
-  "projectRequired": "You can't create deployment without having at least one project",
-  "versionRequired": "You can't create deployment without having at least one version",
   "noVersions": "You haven't added a version to this project yet.",
   "alreadyHaveDeployment": "You already have a deployment with the same prefix for that node",
   "canNotCopyInProgress": "You can not copy an ",

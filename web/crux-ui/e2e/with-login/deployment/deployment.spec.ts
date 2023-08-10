@@ -118,5 +118,5 @@ test('Can create from deployments page', async ({ page }) => {
   await page.locator('button:has-text("Add")').click()
 
   await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**`)
-  await expect(page.locator('span:has-text("Preparing")')).toBeVisible()
+  await expect(page.locator('span:has-text("Preparing")').first()).toBeVisible()
 })

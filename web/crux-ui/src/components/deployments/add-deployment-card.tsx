@@ -1,3 +1,4 @@
+import { TOAST_DURATION } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
@@ -16,6 +17,7 @@ import {
   DyoNode,
   Project,
   Version,
+  deploymentHasError,
   projectNameToDeploymentPrefix,
 } from '@app/models'
 import { fetcher, sendForm } from '@app/utils'
@@ -40,14 +42,14 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   const { data: projects, error: fetchProjectsError } = useSWR<Project[]>(routes.project.api.list(), fetcher)
 
   const handleApiError = apiErrorHandler((stringId: string, status: number, dto: DyoApiError) => {
-    if (dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing') {
+    if (deploymentHasError(dto)) {
       onAdd(dto.value)
 
       return {
         toast: dto.description,
         toastOptions: {
           className: '!bg-warning-orange',
-          duration: 5000,
+          duration: TOAST_DURATION,
         },
       }
     }
@@ -203,7 +205,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
                   <DyoChips
                     choices={versions ?? []}
                     converter={(it: Version) => it.name}
-                    selection={(versions ?? []).find(it => it.id === formik.values.versionId)}
+                    selection={versions?.find(it => it.id === formik.values.versionId)}
                     onSelectionChange={it => {
                       formik.setFieldValue('versionId', it.id)
                     }}
