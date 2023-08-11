@@ -322,7 +322,6 @@ export default class DeployHttpController {
   @UuidParams(PARAM_DEPLOYMENT_ID)
   @UseInterceptors(DeployCreateDeployTokenValidationInterceptor)
   async createDeploymentToken(
-    @TeamSlug() _: string,
     @TeamSlug() teamSlug: string,
     @DeploymentId() deploymentId: string,
     @Body() request: CreateDeploymentTokenDto,

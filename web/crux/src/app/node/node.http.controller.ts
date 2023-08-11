@@ -64,7 +64,7 @@ export default class NodeHttpController {
     description: 'Data of nodes listed.',
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for nodes.' })
-  async getNodes(@TeamSlug() _: string, @TeamSlug() teamSlug: string): Promise<NodeDto[]> {
+  async getNodes(@TeamSlug() teamSlug: string): Promise<NodeDto[]> {
     return this.service.getNodes(teamSlug)
   }
 
