@@ -2,10 +2,11 @@ package dagent
 
 import (
 	"context"
-	"os"
+	"fmt"
 
 	"github.com/rs/zerolog/log"
 
+	commonConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/update"
@@ -13,7 +14,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
-func Serve(cfg *config.Configuration) {
+func Serve(cfg *config.Configuration) error {
 	utils.PreflightChecks()
 	log.Info().Msg("Starting dyrector.io DAgent service")
 
@@ -33,29 +34,35 @@ func Serve(cfg *config.Configuration) {
 		}
 	}
 
-	grpcParams := grpc.TokenToConnectionParams(cfg.JwtToken)
+	publicKey, keyErr := commonConfig.GetPublicKey(cfg.SecretPrivateKey)
+	if keyErr != nil {
+		return keyErr
+	}
+
+	grpcParams := grpc.GetConnectionParams(cfg.JwtToken, publicKey)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
-	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, &grpc.WorkerFunctions{
-		Deploy:               utils.DeployImage,
-		Watch:                utils.WatchContainers,
-		Delete:               utils.DeleteContainerByPrefixAndName,
-		SecretList:           utils.SecretList,
-		SelfUpdate:           update.SelfUpdate,
-		GetSelfContainerName: update.GetSelfContainerName,
-		Close:                grpcClose,
-		ContainerCommand:     utils.ContainerCommand,
-		DeleteContainers:     utils.DeleteContainers,
-		ContainerLog:         utils.ContainerLog,
+	return grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, &grpc.WorkerFunctions{
+		Deploy:           utils.DeployImage,
+		Watch:            utils.WatchContainers,
+		Delete:           utils.DeleteContainerByPrefixAndName,
+		SecretList:       utils.SecretList,
+		SelfUpdate:       update.SelfUpdate,
+		Close:            grpcClose,
+		ContainerCommand: utils.ContainerCommand,
+		DeleteContainers: utils.DeleteContainers,
+		ContainerLog:     utils.ContainerLog,
 	}, cfg)
 }
 
 func grpcClose(ctx context.Context, reason agent.CloseReason, options grpc.UpdateOptions) error {
 	if reason == agent.CloseReason_SELF_DESTRUCT {
-		return update.RemoveSelf(ctx, options)
-	} else if reason == agent.CloseReason_SHUTDOWN || reason == agent.CloseReason_REVOKE_TOKEN {
+		log.Info().Msg("Self destruct")
+		err := update.RemoveSelf(ctx, options)
+		if err != nil {
+			log.Error().Err(err).Msg("error while self-destructing")
+		}
+	} else if reason == agent.CloseReason_SHUTDOWN {
 		log.Info().Msg("Remote shutdown requested")
-		os.Exit(0)
 	}
-
-	return nil
+	return fmt.Errorf("close reason not implemented: %s", agent.CloseReason_name[int32(reason)])
 }

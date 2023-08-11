@@ -34,9 +34,7 @@ func serve(_ *cli.Context) error {
 
 	log.Info().Msg("Configuration loaded.")
 
-	dagent.Serve(&cfg)
-
-	return nil
+	return dagent.Serve(&cfg)
 }
 
 func getHealth(_ *cli.Context) error {

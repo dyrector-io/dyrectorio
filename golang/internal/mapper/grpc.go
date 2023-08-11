@@ -26,6 +26,10 @@ import (
 )
 
 func mapInstanceConfig(in *agent.InstanceConfig) v1.InstanceConfig {
+	if in == nil {
+		return v1.InstanceConfig{}
+	}
+
 	instanceConfig := v1.InstanceConfig{
 		ContainerPreName:  in.Prefix,
 		Name:              in.Prefix,
@@ -80,6 +84,10 @@ func MapDeployImage(req *agent.DeployRequest, appConfig *config.CommonConfigurat
 
 func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 	cc := in.Common
+
+	if cc == nil {
+		return v1.ContainerConfig{}
+	}
 
 	containerConfig := v1.ContainerConfig{
 		Container:        cc.Name,

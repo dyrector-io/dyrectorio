@@ -73,8 +73,7 @@ func loadConfiguration() (*config.Configuration, *k8s.Secret) {
 func serve(_ *cli.Context) error {
 	cfg, secretHandler := loadConfiguration()
 
-	crane.Serve(cfg, secretHandler)
-	return nil
+	return crane.Serve(cfg, secretHandler)
 }
 
 func initKey(cCtx *cli.Context) error {

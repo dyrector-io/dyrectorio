@@ -2,19 +2,18 @@ package crane
 
 import (
 	"context"
-	"os"
+	"fmt"
 
 	"github.com/rs/zerolog/log"
 	"k8s.io/apimachinery/pkg/api/resource"
 
+	commonConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/crux"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
-
-	commonConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
 )
 
 // checks before start
@@ -29,16 +28,21 @@ func preflightChecks(cfg *config.Configuration) {
 	}
 }
 
-func Serve(cfg *config.Configuration, secretStore commonConfig.SecretStore) {
+func Serve(cfg *config.Configuration, secretStore commonConfig.SecretStore) error {
 	preflightChecks(cfg)
 	log.Info().Msg("Starting dyrector.io crane service.")
 
 	// TODO(robot9706): Implement updater
 	log.Debug().Msg("No update was set up")
 
-	grpcParams := grpc.TokenToConnectionParams(cfg.JwtToken)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
-	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, &grpc.WorkerFunctions{
+	publicKey, keyErr := commonConfig.GetPublicKey(cfg.SecretPrivateKey)
+	if keyErr != nil {
+		return keyErr
+	}
+	grpcParams := grpc.GetConnectionParams(cfg.JwtToken, publicKey)
+
+	return grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, &grpc.WorkerFunctions{
 		Deploy:           k8s.Deploy,
 		Watch:            crux.WatchDeploymentsByPrefix,
 		Delete:           k8s.Delete,
@@ -52,6 +56,7 @@ func Serve(cfg *config.Configuration, secretStore commonConfig.SecretStore) {
 
 func grpcClose(ctx context.Context, reason agent.CloseReason, _ grpc.UpdateOptions) error {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
+
 	if reason == agent.CloseReason_SHUTDOWN {
 		log.Info().Msg("Remote shutdown requested")
 
@@ -68,9 +73,10 @@ func grpcClose(ctx context.Context, reason agent.CloseReason, _ grpc.UpdateOptio
 				log.Fatal().Err(err).Msgf("error while scaling shutting down own container")
 			}
 		}
-		os.Exit(0)
-	}
-	log.Error().Int32("reason", int32(reason)).Msg("Close reason not implemented")
 
+		log.Info().Msg("Terminating...")
+	} else if reason != agent.CloseReason_CLOSE_REASON_UNSPECIFIED {
+		return fmt.Errorf("close reason not implemented: %s", reason)
+	}
 	return nil
 }
