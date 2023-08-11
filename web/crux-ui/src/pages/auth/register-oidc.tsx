@@ -11,7 +11,7 @@ import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { DyoErrorDto, Register } from '@app/models'
 import { API_AUTH_REGISTER, ROUTE_LOGIN, ROUTE_LOGOUT, ROUTE_SETTINGS } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, upsertDyoError } from '@app/utils'
-import { registerSchema } from '@app/validations'
+import { registerWithOidcSchema } from '@app/validations'
 import { RegistrationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import { cookieOf, forwardCookie } from '@server/cookie'
@@ -45,8 +45,9 @@ const RegisterOidcPage = (props: RegisterPageProps) => {
       email: (findAttributes(ui, 'traits.email')?.value as string) ?? '',
       firstName: (findAttributes(ui, 'traits.name.first')?.value as string) ?? '',
       lastName: (findAttributes(ui, 'traits.name.last')?.value as string) ?? '',
+      method: 'oidc',
     },
-    validationSchema: registerSchema,
+    validationSchema: registerWithOidcSchema,
     onSubmit: async values => {
       const captcha = await recaptcha.current?.executeAsync()
 

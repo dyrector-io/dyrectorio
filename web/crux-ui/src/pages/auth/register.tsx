@@ -23,7 +23,7 @@ import {
   upsertDyoError,
   upsertError,
 } from '@app/utils'
-import { registerSchema } from '@app/validations'
+import { registerWithPasswordSchema } from '@app/validations'
 import { RegistrationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import { cookieOf, forwardCookie } from '@server/cookie'
@@ -93,8 +93,9 @@ const RegisterPage = (props: RegisterPageProps) => {
       confirmPassword: '',
       firstName: '',
       lastName: '',
+      method: 'password',
     },
-    validationSchema: registerSchema,
+    validationSchema: registerWithPasswordSchema,
     onSubmit: async values => {
       if (values.password !== values.confirmPassword) {
         setErrors(upsertError(errors, 'confirmPassword', 'confirmPassMismatch'))
@@ -188,7 +189,6 @@ const RegisterPage = (props: RegisterPageProps) => {
               type="password"
               onChange={formik.handleChange}
               value={formik.values.password}
-              message={formik.errors.password ?? findMessage(ui, 'password')}
             />
 
             <DyoInput
@@ -197,6 +197,12 @@ const RegisterPage = (props: RegisterPageProps) => {
               type="password"
               onChange={formik.handleChange}
               value={formik.values.confirmPassword}
+            />
+            <DyoMessage
+              message={formik.errors.password ? formik.errors.password : findMessage(ui, 'password')}
+              messageType="error"
+            />
+            <DyoMessage
               message={
                 formik.errors.confirmPassword ?? findError(errors, 'confirmPassword', it => t(`errors:${it.error}`))
               }
