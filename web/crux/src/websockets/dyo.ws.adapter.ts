@@ -22,6 +22,7 @@ import {
 } from 'rxjs'
 import JwtAuthGuard, { AuthorizedHttpRequest } from 'src/app/token/jwt-auth.guard'
 import { WebSocketExceptionOptions } from 'src/exception/websocket-exception'
+import WsMetrics from 'src/shared/metrics/ws.metrics'
 import { v4 as uuid } from 'uuid'
 import { WebSocketServer } from 'ws'
 import WsClientSetup from './client-setup'
@@ -35,6 +36,7 @@ import {
   WsRouteMatch,
   WsTransform,
   ensurePathFormat,
+  handlerKeyOf,
   namespaceOf,
 } from './common'
 import WsRoute from './route'
@@ -58,6 +60,8 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     private readonly authGuard: JwtAuthGuard,
   ) {
     super(appContext)
+
+    WsMetrics.connections().set(0)
   }
 
   bindErrorHandler(server: any) {
@@ -199,6 +203,8 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
         return
       }
 
+      WsMetrics.messageTypeSend(handlerKeyOf(response)).inc()
+
       client.send(JSON.stringify(response))
     }
 
@@ -215,6 +221,8 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     const message: WsMessage = JSON.parse(buffer.data)
 
     this.logger.verbose(`Received ${buffer.data}`)
+
+    WsMetrics.messageTypeReceive(handlerKeyOf(message)).inc()
 
     if (message.type === WS_TYPE_SUBSCRIBE || message.type === WS_TYPE_UNSUBSCRIBE) {
       return from(this.onSubscriptionMessage(client, message)).pipe(mergeAll())
@@ -277,6 +285,8 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
         return
       }
 
+      WsMetrics.messageTypeSend(handlerKeyOf(msg)).inc()
+
       client.send(JSON.stringify(msg))
     }
     client.on(CLOSE_EVENT, () => this.onClientDisconnect(client))
@@ -284,11 +294,13 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     client.setup = new WsClientSetup(client, client.token, () => this.bindClientMessageHandlers(client))
     client.setup.start()
 
+    WsMetrics.connections().inc()
     this.logger.log(`Connected ${client.token} clients: ${this.server?.clients?.size}`)
   }
 
   private onClientDisconnect(client: WsClient) {
     this.logger.log(`Disconnected ${client.token} clients: ${this.server?.clients?.size}`)
+    WsMetrics.connections().dec()
 
     this.routes.forEach(it => it.onClientDisconnect(client))
 
