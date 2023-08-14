@@ -14,9 +14,15 @@ import {
   GitlabRegistryDetailsDto,
   GoogleRegistryDetailsDto,
   HubRegistryDetailsDto,
+  RegistryType,
   V2RegistryDetailsDto,
 } from './registry.dto'
 import RegistryService from './registry.service'
+
+export type RegistryClientEntry = {
+  client: RegistryApiClient
+  type: RegistryType
+}
 
 @Injectable()
 export default class RegistryClientProvider {
@@ -24,7 +30,7 @@ export default class RegistryClientProvider {
 
   private registryIdToHubCache: Map<string, string> = new Map()
 
-  private clients: Map<string, RegistryApiClient> = new Map()
+  private clients: Map<string, RegistryClientEntry> = new Map()
 
   private registriesByTeam: Map<string, string[]> = new Map() // teamId to registyIds
 
@@ -43,7 +49,7 @@ export default class RegistryClientProvider {
     registries.forEach(registryId => this.invalidate(registryId, REGISTRY_HUB_CACHE_EXPIRATION * 60 * 1000))
   }
 
-  async getByRegistryId(teamId: string, registryId: string): Promise<RegistryApiClient> {
+  async getByRegistryId(teamId: string, registryId: string): Promise<RegistryClientEntry> {
     let client = this.clients.get(registryId)
     if (client) {
       await this.authorize(teamId, registryId)
@@ -112,16 +118,19 @@ export default class RegistryClientProvider {
           : null,
       )
 
-    client =
-      registry.type === 'v2'
-        ? createV2(registry.details as V2RegistryDetailsDto)
-        : registry.type === 'hub'
-        ? createHub(registry.details as HubRegistryDetailsDto)
-        : registry.type === 'github'
-        ? createGithub(registry.details as GithubRegistryDetailsDto)
-        : registry.type === 'gitlab'
-        ? createGitlab(registry.details as GitlabRegistryDetailsDto)
-        : createGoogle(registry.details as GoogleRegistryDetailsDto)
+    client = {
+      type: registry.type,
+      client:
+        registry.type === 'v2'
+          ? createV2(registry.details as V2RegistryDetailsDto)
+          : registry.type === 'hub'
+          ? createHub(registry.details as HubRegistryDetailsDto)
+          : registry.type === 'github'
+          ? createGithub(registry.details as GithubRegistryDetailsDto)
+          : registry.type === 'gitlab'
+          ? createGitlab(registry.details as GitlabRegistryDetailsDto)
+          : createGoogle(registry.details as GoogleRegistryDetailsDto),
+    }
 
     this.clients.set(registry.id, client)
 

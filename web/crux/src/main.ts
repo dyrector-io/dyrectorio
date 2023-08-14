@@ -8,6 +8,7 @@ import { Logger as PinoLogger } from 'nestjs-pino'
 import { join } from 'path'
 import AppModule from './app.module'
 import AuditLoggerInterceptor from './app/audit.logger/audit.logger.interceptor'
+import metricsServerBootstrap from './app/metrics/metrics.server'
 import JwtAuthGuard from './app/token/jwt-auth.guard'
 import createSwaggerConfig from './config/swagger.config'
 import HttpExceptionFilter from './filters/http.exception-filter'
@@ -61,6 +62,7 @@ const bootstrap = async () => {
 
   const agentOptions = loadGrpcOptions(configService.get<string>('GRPC_AGENT_PORT'))
   const httpOptions = configService.get<string>('HTTP_API_PORT', '1848')
+  const metricOptions = configService.get<number>('METRICS_API_PORT', 0)
 
   const authGuard = app.get(JwtAuthGuard)
   app.useGlobalFilters(new HttpExceptionFilter())
@@ -87,6 +89,10 @@ const bootstrap = async () => {
   })
 
   await prismaBootstrap(app)
+
+  if (metricOptions > 0) {
+    await metricsServerBootstrap(app, metricOptions)
+  }
 
   await app.startAllMicroservices()
   await app.listen(httpOptions)

@@ -8,7 +8,6 @@ import DashboardModule from './app/dashboard/dashboard.module'
 import DeployModule from './app/deploy/deploy.module'
 import HealthModule from './app/health/health.module'
 import ImageModule from './app/image/image.module'
-import MetricsHttpController from './app/metrics/metrics.http.controller'
 import NodeModule from './app/node/node.module'
 import NotificationModule from './app/notification/notification.module'
 import ProjectModule from './app/project/project.module'
@@ -42,9 +41,10 @@ const imports = [
   StorageModule,
   ConfigModule.forRoot(appConfig),
   EmailModule,
-  PrometheusModule.register({
-    controller: MetricsHttpController,
-  }),
+  {
+    ...PrometheusModule.register(),
+    controllers: [], // Found no other way to unset the default controller
+  },
 ]
 
 if (process.env.NODE_ENV === 'production') {
