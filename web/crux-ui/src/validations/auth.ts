@@ -13,6 +13,7 @@ export const registerWithOidcSchema = yup.object().shape({
   provider: yup.mixed<OidcProvider>().oneOf([...OIDC_PROVIDER_VALUES]),
   firstName: identityNameRule.required(),
   lastName: identityNameRule.required(),
+  email: yup.string().email().required(),
 })
 
 export const registerSchema = yup.object().shape({
