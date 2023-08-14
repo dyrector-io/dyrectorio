@@ -144,9 +144,9 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
           }
           if (seenKeys[env.key]) {
             throw new CruxPreconditionFailedException({
-              message: `Environment variable "${env.key}" (${it.configBundle.name}) is already defined by ${
+              message: `Environment variable ${env.key} in ${it.configBundle.name} is already defined by ${
                 seenKeys[env.key]
-              }. Please define the key in the deployment or resolve the conflicts in the bundles.`,
+              }. Please define the key in the deployment or resolve the conflict in the bundles.`,
               property: 'configBundleId',
               value: it.configBundle.id,
             })

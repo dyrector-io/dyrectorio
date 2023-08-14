@@ -7,7 +7,6 @@ import useTeamRoutes from '@app/hooks/use-team-routes'
 import useSWR from 'swr'
 import { fetcher } from '@app/utils'
 import { DyoLabel } from '@app/elements/dyo-label'
-import DyoChips from '@app/elements/dyo-chips'
 import { ConfigBundleOption } from '@app/models/config-bundle'
 import DyoMultiSelect from '@app/elements/dyo-multi-select'
 import DyoIcon from '@app/elements/dyo-icon'
@@ -47,7 +46,7 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
           onSelectionChange={it => actions.onConfigBundlesSelected(it)}
         />
 
-        <Link className='ml-2 my-auto' href={teamRoutes.configBundles.list()} passHref>
+        <Link className="ml-2 my-auto" href={teamRoutes.configBundles.list()} passHref>
           <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
         </Link>
       </div>

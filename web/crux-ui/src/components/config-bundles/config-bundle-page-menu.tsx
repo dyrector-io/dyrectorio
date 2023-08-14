@@ -1,7 +1,6 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
-import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import React from 'react'
 

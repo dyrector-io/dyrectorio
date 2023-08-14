@@ -590,21 +590,19 @@ export default class AgentService {
       }
 
       if (finishedDeployment.sharedEnvironment.length > 0) {
-        await this.prisma.$transaction(async prisma => {
-          await prisma.deployment.update({
-            where: {
-              id: finishedDeployment.id,
-            },
-            data: {
-              environment: toPrismaJson(finishedDeployment.sharedEnvironment),
-            },
-          })
+        await prisma.deployment.update({
+          where: {
+            id: finishedDeployment.id,
+          },
+          data: {
+            environment: toPrismaJson(finishedDeployment.sharedEnvironment),
+          },
+        })
 
-          await prisma.configBundleOnDeployments.deleteMany({
-            where: {
-              deploymentId: finishedDeployment.id,
-            },
-          })
+        await prisma.configBundleOnDeployments.deleteMany({
+          where: {
+            deploymentId: finishedDeployment.id,
+          },
         })
       }
 

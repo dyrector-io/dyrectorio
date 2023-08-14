@@ -1,6 +1,5 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import {
-  ConfigBundle,
   Deployment,
   DeploymentEvent,
   DeploymentEventTypeEnum,

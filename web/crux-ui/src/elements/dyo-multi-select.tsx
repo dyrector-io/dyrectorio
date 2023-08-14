@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import React, { ForwardedRef, forwardRef, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import DyoIcon from './dyo-icon'
 import DyoMessage from './dyo-message'
 import DyoCheckbox from './dyo-checkbox'
@@ -88,14 +88,16 @@ const DyoMultiSelect = <T,>(props: DyoMultiSelectProps<T>) => {
           <div
             className={clsx(
               'w-full appearance-none bg-medium leading-7 h-11 pl-4 p-2 ring-2 focus:outline-none focus:dark',
-              disabled ? 'text-bright-muted ring-light-grey-muted cursor-not-allowed' : 'text-bright ring-light-grey cursor-pointer',
+              disabled
+                ? 'text-bright-muted ring-light-grey-muted cursor-not-allowed'
+                : 'text-bright ring-light-grey cursor-pointer',
               'line-clamp-1 pr-6',
               selectorVisible ? 'rounded-t-md' : 'rounded-md',
             )}
             onClick={toggleDropdown}
           >
             <label>
-              {!selection || selection.length == 0
+              {!selection || selection.length === 0
                 ? t('none')
                 : selection
                     .map(it => {
@@ -117,6 +119,7 @@ const DyoMultiSelect = <T,>(props: DyoMultiSelectProps<T>) => {
               const itemId = idConverter(it)
               return (
                 <div
+                  key={itemId}
                   className="p-2 flex flex-row items-center cursor-pointer hover:bg-medium-eased"
                   onClick={e => toggleSelection(e, itemId)}
                 >
