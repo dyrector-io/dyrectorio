@@ -103,7 +103,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    await deploy(deployment.id)
+    await deploy(deployment.id, state.deployInstances)
   }
 
   useWebsocketTranslate(t)
