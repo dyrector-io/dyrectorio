@@ -269,7 +269,7 @@ func (cl *ClientLoop) grpcLoop(connParams *ConnectionParams) error {
 	var err error
 	defer func() {
 		if grpcConn != nil && grpcConn.Conn != nil {
-			grpcConn.Conn.Close()
+			logdefer.LogDeferredErr(grpcConn.Conn.Close, log.Warn(), "could not close grpc connection")
 		}
 	}()
 
