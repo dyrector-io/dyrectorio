@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { expect, Page } from '@playwright/test'
+import { expect, test, Page } from '@playwright/test'
 import { exec, ExecOptions } from 'child_process'
 import { DAGENT_NODE, screenshotPath, TEAM_ROUTES } from './common'
 import { fillDeploymentPrefix } from './projects'
@@ -77,13 +77,36 @@ export const deployWithDagent = async (
   }
 
   expect(page.url()).toContain(TEAM_ROUTES.deployment.deploy(deploymentId))
+
+  const status = page.locator('span:text-is("In progress")')
+  if (!(await page.isVisible('span:text-is("In progress")'))) {
+    await status.waitFor({
+      state: 'visible',
+    })
+  }
+  await status.waitFor({
+    state: 'detached',
+  })
+
+  if (await page.isVisible('span:text-is("Failed")')) {
+    await page.pause()
+    throw new Error('Deployment failed')
+  }
+
   await page.getByText('Successful').waitFor()
 
   return deploymentId
 }
 
-export const deploy = async (page: Page, deploymentId: string, ignoreResult?: boolean): Promise<string> => {
-  await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+export const deploy = async (
+  page: Page,
+  deploymentId: string,
+  ignoreResult?: boolean,
+  navigate?: boolean,
+): Promise<string> => {
+  if (navigate !== false) {
+    await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+  }
 
   const deploy = page.getByText('Deploy', {
     exact: true,
@@ -97,6 +120,22 @@ export const deploy = async (page: Page, deploymentId: string, ignoreResult?: bo
   }
 
   expect(page.url()).toContain(TEAM_ROUTES.deployment.deploy(deploymentId))
+
+  const status = page.locator('span:text-is("In progress")')
+  if (!(await page.isVisible('span:text-is("In progress")'))) {
+    await status.waitFor({
+      state: 'visible',
+    })
+  }
+  await status.waitFor({
+    state: 'detached',
+  })
+
+  if (await page.isVisible('span:text-is("Failed")')) {
+    await page.pause()
+    throw new Error('Deployment failed')
+  }
+
   await page.getByText('Successful').waitFor()
 
   return deploymentId

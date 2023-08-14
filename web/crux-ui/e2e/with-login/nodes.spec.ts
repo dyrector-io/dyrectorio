@@ -4,6 +4,7 @@ import { DAGENT_NODE, screenshotPath, TEAM_ROUTES } from '../utils/common'
 test('Install dagent should be successful', async ({ page }) => {
   await page.goto(TEAM_ROUTES.node.list())
 
+  await page.locator('input[placeholder="Search"]').type(DAGENT_NODE)
   await page.locator(`h3:has-text("${DAGENT_NODE}")`).click()
   await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
 

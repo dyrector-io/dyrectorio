@@ -1,6 +1,6 @@
 import { ProjectType } from '@app/models'
 import { expect, Page, test } from '@playwright/test'
-import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, USER_TEAM_SLUG } from '../../utils/common'
+import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from '../../utils/common'
 import { createNode } from '../../utils/nodes'
 import {
   addDeploymentToVersion,
@@ -11,6 +11,7 @@ import {
   createVersion,
   fillDeploymentPrefix,
 } from '../../utils/projects'
+import { deploy } from 'e2e/utils/node-helper'
 
 const setup = async (
   page: Page,
@@ -119,4 +120,37 @@ test('Can create from deployments page', async ({ page }) => {
 
   await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**`)
   await expect(page.locator('span:has-text("Preparing")').first()).toBeVisible()
+})
+
+test('Select specific instances to deploy', async ({ page }) => {
+  const projectName = 'select-instance'
+  const prefix = projectName
+
+  const projectId = await createProject(page, projectName, 'versionless')
+
+  await addImageToVersionlessProject(page, projectId, 'nginx')
+  await addImageToVersionlessProject(page, projectId, 'busybox')
+
+  const { id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, prefix)
+
+  const instanceBody = await page.locator('.table-row-group')
+  const instanceRow = await instanceBody.locator('.table-row')
+
+  await instanceRow.nth(1).locator('img[alt="check"]').click()
+
+  await deploy(page, deploymentId, false, false)
+
+  await page.goto(TEAM_ROUTES.node.list())
+
+  await page.locator('input[placeholder="Search"]').type(DAGENT_NODE)
+  await page.click(`h3:has-text("${DAGENT_NODE}")`)
+
+  await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
+
+  await page.locator('input[placeholder="Search"]').type(prefix)
+
+  const containerBody = await page.locator('.table-row-group')
+  const nodeContainerRow = await containerBody.locator('.table-row')
+
+  await expect(nodeContainerRow).toHaveCount(1)
 })
