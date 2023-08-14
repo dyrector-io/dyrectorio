@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { Observable, Subject } from 'rxjs'
 import PrismaService from 'src/services/prisma.service'
+import RegistryMetrics from 'src/shared/metrics/registry.metrics'
 import TeamRepository from '../team/team.repository'
 import { CreateRegistryDto, RegistryDetailsDto, RegistryDto, UpdateRegistryDto } from './registry.dto'
 import RegistryMapper from './registry.mapper'
@@ -14,7 +15,9 @@ export default class RegistryService {
     private teamRepository: TeamRepository,
     private prisma: PrismaService,
     private mapper: RegistryMapper,
-  ) {}
+  ) {
+    this.initMetrics()
+  }
 
   async checkRegistryIsInTeam(teamId: string, registryId: string): Promise<boolean> {
     const registries = await this.prisma.registry.count({
@@ -72,6 +75,8 @@ export default class RegistryService {
       },
     })
 
+    RegistryMetrics.count(registry.type).inc()
+
     return this.mapper.detailsToDto(registry)
   }
 
@@ -95,16 +100,33 @@ export default class RegistryService {
   }
 
   async deleteRegistry(id: string): Promise<void> {
-    await this.prisma.registry.delete({
+    const deleted = await this.prisma.registry.delete({
       where: {
         id,
+      },
+      select: {
+        type: true,
       },
     })
 
     this.registryChangedEvent.next(id)
+
+    RegistryMetrics.count(deleted.type).dec()
   }
 
   watchRegistryEvents(): Observable<string> {
     return this.registryChangedEvent.asObservable()
+  }
+
+  private async initMetrics() {
+    const counts = await this.prisma.registry.groupBy({
+      by: ['type'],
+      _count: {
+        _all: true,
+      },
+    })
+
+    // eslint-disable-next-line no-underscore-dangle
+    counts.forEach(it => RegistryMetrics.count(it.type).set(it._count._all))
   }
 }
