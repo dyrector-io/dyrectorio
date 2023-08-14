@@ -12,7 +12,7 @@ export const registerWithPasswordSchema = yup.object().shape({
 export const registerWithOidcSchema = yup.object().shape({
   provider: yup.mixed<OidcProvider>().oneOf([...OIDC_PROVIDER_VALUES]),
   firstName: identityNameRule.required(),
-  lastName: identityNameRule.required(),
+  lastName: identityNameRule.min(0),
   email: yup.string().email().required(),
 })
 
