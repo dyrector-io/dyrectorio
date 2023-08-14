@@ -154,7 +154,7 @@ const resourceConfigRule = yup
       })
       .nullable()
       .optional(),
-    memory: yup
+    requests: yup
       .object()
       .shape({
         cpu: yup.string().nullable(),
@@ -319,7 +319,7 @@ const markerRule = yup
   .optional()
 
 const containerConfigBaseSchema = yup.object().shape({
-  name: yup.string().required(),
+  name: yup.string().required().matches(/^\S+$/g),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
   routing: routingRule,
   expose: exposeRule,
