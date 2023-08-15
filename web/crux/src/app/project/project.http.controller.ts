@@ -51,7 +51,7 @@ export default class ProjectHttpController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    description: "Returns a list of a team's projects and their details.",
+    description: "Returns a list of a team's projects and their details. `teamSlug` needs to be included in URL.",
     summary: 'Fetch the projects list.',
   })
   @ApiOkResponse({
@@ -68,7 +68,7 @@ export default class ProjectHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      "Returns a project's details. The response should contain an array, consisting of the project's `name`, `id`, `type`, `description`, `deletability`, versions and version related data, including version `name` and `id`, `changelog`, increasibility.",
+      "Returns a project's details. `teamSlug` and `ProjectID` needs to be included in URL. The response should contain an array, consisting of the project's `name`, `id`, `type`, `description`, `deletability`, versions and version related data, including version `name` and `id`, `changelog`, increasibility.",
     summary: 'Fetch details of a project.',
   })
   @ApiOkResponse({ type: ProjectDetailsDto, description: 'Details of a project.' })
@@ -76,7 +76,7 @@ export default class ProjectHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for project details.' })
   @ApiNotFoundResponse({ description: 'Project not found.' })
   @UuidParams(PARAM_PROJECT_ID)
-  async getProjectDetails(@ProjectId() id: string): Promise<ProjectDetailsDto> {
+  async getProjectDetails(@TeamSlug() _: string, @ProjectId() id: string): Promise<ProjectDetailsDto> {
     return this.service.getProjectDetails(id)
   }
 
@@ -84,7 +84,7 @@ export default class ProjectHttpController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
-      'Create a new project for a team. Newly created team has a `type` and a `name` as required variables, and optionally a `description` and a `changelog`.',
+      'Create a new project for a team. `teamSlug` needs to be included in URL. Newly created team has a `type` and a `name` as required variables, and optionally a `description` and a `changelog`.',
     summary: 'Create a new project for a team.',
   })
   @CreatedWithLocation()
@@ -110,7 +110,7 @@ export default class ProjectHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      'Updates a project. `projectId` is a required variable to identify which project is modified, `name`, `description` and `changelog` can be adjusted with this call.',
+      'Updates a project. `teamSlug` is required in URL, as well as `projectId` to identify which project is modified, `name`, `description` and `changelog` can be adjusted with this call.',
     summary: 'Update a project.',
   })
   @ApiNoContentResponse({ description: 'Project details are modified.' })
@@ -121,6 +121,7 @@ export default class ProjectHttpController {
   @UseInterceptors(ProjectUpdateValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID)
   async updateProject(
+    @TeamSlug() _: string,
     @ProjectId() id: string,
     @Body() request: UpdateProjectDto,
     @IdentityFromRequest() identity: Identity,
@@ -131,28 +132,29 @@ export default class ProjectHttpController {
   @Delete(ROUTE_PROJECT_ID)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Deletes a project with the specified `projectId`',
+    description: 'Deletes a project with the specified `projectId`. `teamSlug` and `ProjectID` are required in URL.',
     summary: 'Delete a project.',
   })
   @ApiNoContentResponse({ description: 'Project deleted.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for a project.' })
   @ApiNotFoundResponse({ description: 'Project not found.' })
   @UuidParams(PARAM_PROJECT_ID)
-  async deleteProject(@ProjectId() id: string): Promise<void> {
+  async deleteProject(@TeamSlug() _: string, @ProjectId() id: string): Promise<void> {
     return this.service.deleteProject(id)
   }
 
   @Post(`${ROUTE_PROJECT_ID}/convert`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Converts a project to versioned with the specified `projectId`',
+    description:
+      'Converts a project to versioned with the specified `projectId`. `teamSlug` and `ProjectID` are required in URL.',
     summary: 'Convert a project to versioned.',
   })
   @ApiNoContentResponse({ description: 'Project converted.' })
   @ApiBadRequestResponse({ description: 'Bad request for project conversion.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for project conversion.' })
   @UuidParams(PARAM_PROJECT_ID)
-  async convertProject(@ProjectId() id: string): Promise<void> {
+  async convertProject(@TeamSlug() _: string, @ProjectId() id: string): Promise<void> {
     return this.service.convertProjectToVersioned(id)
   }
 }

@@ -8,7 +8,7 @@
   </a>
 </p>
 
-<div align="center">dyrector.io is a self-hosted continuous delivery platform.
+<div align="center">dyrector.io is a self-hosted continuous delivery & deployment platform with version management.
 
 <p align="center">
   <a href="https://github.com/dyrector-io/dyrectorio/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/dyrector-io/dyrectorio" alt="GitHub tag (latest by date)"/></a>
