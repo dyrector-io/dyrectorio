@@ -1,6 +1,7 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
+import RegistryMetrics from 'src/shared/metrics/registry.metrics'
 import { WsAuthorize, WsMessage } from 'src/websockets/common'
 import { UseGlobalWsFilters, UseGlobalWsGuards } from 'src/websockets/decorators/ws.gateway.decorators'
 import WsParam from 'src/websockets/decorators/ws.param.decorator'
@@ -16,6 +17,9 @@ import {
 } from './registry.message'
 
 const TeamSlug = () => WsParam('teamSlug')
+
+const METRICS_CATALOG = 'catalog'
+const METRICS_TAGS = 'tags'
 
 @WebSocketGateway({
   namespace: ':teamSlug/registries',
@@ -42,7 +46,9 @@ export default class RegistryWebSocketGateway {
     const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
     const api = await this.registryClients.getByRegistryId(teamId, message.registryId)
-    const images = await api.catalog(message.filter)
+
+    RegistryMetrics.apiRequest(api.type, METRICS_CATALOG).inc()
+    const images = await api.client.catalog(message.filter)
 
     return {
       type: 'find-image-result',
@@ -66,7 +72,9 @@ export default class RegistryWebSocketGateway {
     const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
     const api = await this.registryClients.getByRegistryId(teamId, message.registryId)
-    const tags = message.images.map(it => api.tags(it))
+
+    RegistryMetrics.apiRequest(api.type, METRICS_TAGS).inc()
+    const tags = message.images.map(it => api.client.tags(it))
 
     return {
       type: 'registry-image-tags',

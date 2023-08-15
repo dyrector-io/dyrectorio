@@ -2,8 +2,6 @@ import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { AgentEventTypeEnum, DeploymentEventTypeEnum, DeploymentStatusEnum } from '@prisma/client'
-import { InjectMetric } from '@willsoto/nestjs-prometheus'
-import { Gauge } from 'prom-client'
 import {
   EMPTY,
   Observable,
@@ -39,6 +37,7 @@ import {
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import AgentMetrics from 'src/shared/metrics/agent.metrics'
 import { getAgentVersionFromPackage } from 'src/shared/package'
 import { PRODUCTION } from '../../shared/const'
 import DeployService from '../deploy/deploy.service'
@@ -63,7 +62,6 @@ export default class AgentService {
     private readonly configService: ConfigService,
     private readonly notificationService: DomainNotificationService,
     private readonly deployService: DeployService,
-    @InjectMetric('agent_online_count') private agentCount: Gauge<string>,
   ) {}
 
   getById(id: string): Agent {
@@ -272,7 +270,7 @@ export default class AgentService {
     const token = generateAgentToken(id, 'connection')
 
     const signedToken = this.jwtService.sign(token)
-    
+
     agent.startUpdate(tag, signedToken)
 
     this.createAgentAudit(id, 'update', {
@@ -346,7 +344,8 @@ export default class AgentService {
         this.logger.log(`Left: ${agent.id}`)
 
         this.agents.delete(agent.id)
-        this.agentCount.dec()
+
+        AgentMetrics.connectedCount().dec()
 
         await this.prisma.deployment.updateMany({
           where: {
@@ -361,7 +360,7 @@ export default class AgentService {
 
       agent.onDisconnected()
     } else if (status === 'connected') {
-      this.agentCount.inc()
+      AgentMetrics.connectedCount().inc()
       agent.onConnected()
     } else {
       this.logger.warn(`Unknown NodeConnectionStatus ${status}`)
@@ -379,7 +378,7 @@ export default class AgentService {
     connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))
 
     this.logger.log(`Agent joined with id: ${request.id}, key: ${!!agent.publicKey}`)
-    this.agentCount.inc()
+    AgentMetrics.connectedCount().inc()
     this.logServiceInfo()
 
     this.createAgentAudit(agent.id, 'connected', request)

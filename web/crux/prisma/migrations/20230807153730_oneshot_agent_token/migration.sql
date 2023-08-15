@@ -1,6 +1,7 @@
-select "id", "createdBy" from "Node"
+select "id", "createdBy"
 into "_prisma_migrations_NodeIds"
-where "token" is not null
+from "Node"
+where "token" is not null;
 
 -- AlterEnum
 ALTER TYPE "AgentEventTypeEnum" ADD VALUE 'installed';
