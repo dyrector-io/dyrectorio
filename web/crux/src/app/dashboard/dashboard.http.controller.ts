@@ -16,7 +16,7 @@ export default class DashboardHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      'Response should include `users`, number of `auditLogEntries`, `projects`, `versions`, `deployments`, `failedDeployments`, details of `nodes`, `latestDeployments` and `auditLog` entries.',
+      '`teamSlug` is required in URL. Response should include `users`, number of `auditLogEntries`, `projects`, `versions`, `deployments`, `failedDeployments`, details of `nodes`, `latestDeployments` and `auditLog` entries.',
     summary: 'Fetch dashboard data of latest activities.',
   })
   @ApiOkResponse({ type: DashboardDto, description: 'Dashboard data listed.' })
