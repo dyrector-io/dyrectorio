@@ -198,10 +198,12 @@ const RegisterPage = (props: RegisterPageProps) => {
               onChange={formik.handleChange}
               value={formik.values.confirmPassword}
             />
+
             <DyoMessage
               message={formik.errors.password ? formik.errors.password : findMessage(ui, 'password')}
               messageType="error"
             />
+
             <DyoMessage
               message={
                 formik.errors.confirmPassword ?? findError(errors, 'confirmPassword', it => t(`errors:${it.error}`))
