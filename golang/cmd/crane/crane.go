@@ -62,7 +62,7 @@ func loadConfiguration() (*config.Configuration, error) {
 		return nil, err
 	}
 
-	commonConfig.InjectSecret(secret, &cfg.CommonConfiguration)
+	commonConfig.InjectPrivateKey(&cfg.CommonConfiguration, secret)
 
 	log.Info().Msg("Configuration loaded.")
 	return cfg, nil

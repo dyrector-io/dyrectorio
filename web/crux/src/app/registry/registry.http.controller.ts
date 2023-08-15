@@ -23,6 +23,7 @@ import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
 import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
 import { CreateRegistryDto, RegistryDetailsDto, RegistryDto, UpdateRegistryDto } from './registry.dto'
 import RegistryService from './registry.service'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 
 const PARAM_TEAM_SLUG = 'teamSlug'
 const PARAM_REGISTRY_ID = 'registryId'
@@ -86,6 +87,7 @@ export default class RegistryHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for registry creation.' })
   @ApiConflictResponse({ description: 'Registry name taken.' })
   @UseGuards(RegistryAccessValidationGuard)
+  @AuditLogLevel('no-data')
   async createRegistry(
     @TeamSlug() teamSlug: string,
     @Body() request: CreateRegistryDto,
@@ -114,6 +116,7 @@ export default class RegistryHttpController {
   @ApiNotFoundResponse({ description: 'Registry not found.' })
   @ApiConflictResponse({ description: 'Registry name taken.' })
   @UuidParams(PARAM_REGISTRY_ID)
+  @AuditLogLevel('no-data')
   async updateRegistry(
     @RegistryId() id: string,
     @Body() request: UpdateRegistryDto,

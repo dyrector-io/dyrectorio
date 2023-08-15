@@ -70,9 +70,10 @@ export class Agent {
   }
 
   constructor(options: AgentOptions) {
+
     this.connection = options.connection
     this.eventChannel = options.eventChannel
-    this.connection = options.connection
+    this.outdated = options.outdated
 
     const { info } = options
     this.version = info.version

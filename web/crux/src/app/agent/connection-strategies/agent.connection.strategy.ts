@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { Node } from 'prisma/prisma-client'
@@ -12,10 +12,12 @@ import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { getPackageVersion } from 'src/shared/package'
 import AgentService from '../agent.service'
 
+@Injectable()
 export default class AgentConnectionStrategy {
   protected readonly logger = new Logger(AgentConnectionStrategy.name)
 
   constructor(
+    @Inject(forwardRef(() => AgentService))
     protected readonly service: AgentService,
     protected readonly prisma: PrismaService,
     protected readonly jwtService: JwtService,

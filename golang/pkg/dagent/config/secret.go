@@ -24,3 +24,20 @@ func (field *KeyFromFile) SetValue(secretPath string) error {
 	*field = KeyFromFile(key)
 	return nil
 }
+
+type JwtFromFile string
+
+func (field *JwtFromFile) SetValue(jwtPath string) error {
+	log.Debug().Str("jwtPath", jwtPath).Msg("Loading config from file")
+	if jwtPath == "" {
+		return fmt.Errorf("env jwt file value can't be empty")
+	}
+
+	jwt, err := config.ReadJwtFromFile(jwtPath)
+	if err != nil {
+		return err
+	}
+
+	*field = JwtFromFile(jwt)
+	return nil
+}

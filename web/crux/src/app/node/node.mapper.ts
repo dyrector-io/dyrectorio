@@ -72,14 +72,14 @@ export default class NodeMapper {
     }
   }
 
-  detailsToDto(node: NodeWithToken, hasDeployment: boolean): NodeDetailsDto {
+  detailsToDto(node: NodeDetails): NodeDetailsDto {
     const installer = this.agentService.getInstallerByNodeId(node.id)
 
     return {
       ...this.toDto(node),
       hasToken: !!node.token,
       install: installer ? this.installerToDto(installer) : null,
-      inUse: hasDeployment,
+      inUse: node._count.deployments > 0,
     }
   }
 
@@ -144,5 +144,11 @@ export default class NodeMapper {
       default:
         return ContainerOperation.UNRECOGNIZED
     }
+  }
+}
+
+type NodeDetails = NodeWithToken & {
+  _count: {
+    deployments: number
   }
 }

@@ -4,7 +4,9 @@ import { CruxNotFoundException } from 'src/exception/crux-exception'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import AgentConnectionStrategy from './agent.connection.strategy'
+import { Injectable } from '@nestjs/common'
 
+@Injectable()
 export default class AgentConnectionInstallStrategy extends AgentConnectionStrategy {
   override async execute(connection: GrpcNodeConnection, info: AgentInfo): Promise<Agent> {
     const token = this.parseToken(connection, info)

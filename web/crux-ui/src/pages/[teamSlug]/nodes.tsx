@@ -1,6 +1,6 @@
 import { Layout } from '@app/components/layout'
 import DyoNodeCard from '@app/components/nodes/dyo-node-card'
-import EditNodeCard from '@app/components/nodes/edit-node-card'
+import EditNodeSection from '@app/components/nodes/edit-node-section'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
@@ -103,7 +103,7 @@ const NodesPage = (props: NodesPageProps) => {
         <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
       </PageHeading>
 
-      {!creating ? null : <EditNodeCard className="mb-4" submitRef={submitRef} onNodeEdited={onNodeEdited} />}
+      {!creating ? null : <EditNodeSection className="mb-4" submitRef={submitRef} onNodeEdited={onNodeEdited} />}
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>

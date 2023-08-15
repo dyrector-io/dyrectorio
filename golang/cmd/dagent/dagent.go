@@ -23,11 +23,18 @@ func serve(cCtx *cli.Context) error {
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed to load configuration")
 	}
-	if err := cfg.ParseAndSetJWT(os.Getenv("GRPC_TOKEN")); err != nil {
-		log.Panic().Err(err).Msg("Failed to parse env GRPC_TOKEN")
+
+	err = commonConfig.InjectToken(&cfg.CommonConfiguration, cfg.SecretTokenPath, string(cfg.SecretTokenFile))
+	if err != nil {
+		log.Panic().Err(err).Msg("Failed to load connection token")
+	}
+	if cfg.GrpcToken == nil {
+		if err := cfg.ParseAndSetJWT(os.Getenv("GRPC_TOKEN")); err != nil {
+			log.Panic().Err(err).Msg("Failed to parse env GRPC_TOKEN")
+		}
 	}
 
-	commonConfig.InjectSecret(string(cfg.SecretPrivateKeyFile), &cfg.CommonConfiguration)
+	commonConfig.InjectPrivateKey(&cfg.CommonConfiguration, string(cfg.SecretPrivateKeyFile))
 
 	log.Info().Msg("Configuration loaded.")
 

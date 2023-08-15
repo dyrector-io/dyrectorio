@@ -62,12 +62,17 @@ type ContainerWatchContext struct {
 	Error  chan error
 }
 
+type UpdateOptions struct {
+	UpdateAlways  bool
+	UseContainers bool
+}
+
 type (
 	DeployFunc           func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
 	WatchFunc            func(context.Context, string) (*ContainerWatchContext, error)
 	DeleteFunc           func(context.Context, string, string) error
 	SecretListFunc       func(context.Context, string, string) ([]string, error)
-	SelfUpdateFunc       func(context.Context, string, int32) error
+	SelfUpdateFunc       func(context.Context, *agent.AgentUpdateRequest, UpdateOptions) error
 	CloseFunc            func(context.Context, agent.CloseReason) error
 	ContainerCommandFunc func(context.Context, *common.ContainerCommandRequest) error
 	DeleteContainersFunc func(context.Context, *common.DeleteContainersRequest) error
@@ -235,7 +240,7 @@ func grpcProcessCommand(
 	case command.GetListSecrets() != nil:
 		go executeSecretList(ctx, command.GetListSecrets(), workerFuncs.SecretList, appConfig)
 	case command.GetUpdate() != nil:
-		go executeUpdate(ctx, command.GetUpdate(), workerFuncs.SelfUpdate)
+		go executeUpdate(ctx, command.GetUpdate(), workerFuncs.SelfUpdate, appConfig)
 	case command.GetClose() != nil:
 		go executeClose(ctx, command.GetClose(), workerFuncs.Close)
 	case command.GetContainerCommand() != nil:
@@ -591,25 +596,51 @@ func executeSecretList(
 	}
 }
 
-func executeUpdate(ctx context.Context, command *agent.AgentUpdateRequest, updateFunc SelfUpdateFunc) {
+func executeUpdate(ctx context.Context, command *agent.AgentUpdateRequest, updateFunc SelfUpdateFunc, appConfig *config.CommonConfiguration) {
 	if updateFunc == nil {
 		log.Error().Msg("Self update function not implemented")
 		return
 	}
 
-	err := updateFunc(ctx, command.Tag, command.TimeoutSeconds)
+	_, err := config.ValidateAndCreateJWT(command.Token)
 	if err != nil {
-		log.Error().Stack().Err(err).Msg("Update error")
+		log.Error().Msg("Jwt validation failed")
 
-		errorString := err.Error()
-		resp := &agent.AgentAbortUpdate{
-			Error: strings.ToUpper(errorString[0:1]) + errorString[1:],
-		}
+		abortUpdate(ctx, err)
+		return
+	}
 
-		_, err := grpcConn.Client.AbortUpdate(ctx, resp)
-		if err != nil {
-			log.Error().Stack().Err(err).Msg("Update abort request error")
+	config.WriteJwtToFile(appConfig.SecretTokenPath, command.Token)
+
+	options := UpdateOptions{
+		UpdateAlways:  false,
+		UseContainers: true,
+	}
+
+	if appConfig.Debug {
+		options = UpdateOptions{
+			UpdateAlways:  appConfig.DebugUpdateAlways,
+			UseContainers: appConfig.DebugUpdateUseContainers,
 		}
+	}
+
+	err = updateFunc(ctx, command, options)
+	if err != nil {
+		abortUpdate(ctx, err)
+	}
+}
+
+func abortUpdate(ctx context.Context, err error) {
+	log.Error().Stack().Err(err).Msg("Update error")
+
+	errorString := err.Error()
+	resp := &agent.AgentAbortUpdate{
+		Error: strings.ToUpper(errorString[0:1]) + errorString[1:],
+	}
+
+	_, err = grpcConn.Client.AbortUpdate(ctx, resp)
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("Update abort request error")
 	}
 }
 

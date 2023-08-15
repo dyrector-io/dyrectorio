@@ -272,6 +272,7 @@ export default class AgentService {
     const token = generateAgentToken(id, 'connection')
 
     const signedToken = this.jwtService.sign(token)
+    
     agent.startUpdate(tag, signedToken)
 
     this.createAgentAudit(id, 'update', {
@@ -340,7 +341,7 @@ export default class AgentService {
   private async onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === 'unreachable') {
       const storedAgent = this.agents.get(agent.id)
-      if (agent !== storedAgent) {
+      if (agent === storedAgent) {
         await this.createAgentAudit(agent.id, 'left')
         this.logger.log(`Left: ${agent.id}`)
 

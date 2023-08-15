@@ -111,6 +111,51 @@ func IsExpiredKey(fileContent string) (bool, error) {
 	return privateKeyObj.IsExpired(), nil
 }
 
-func InjectSecret(secret string, appConfig *CommonConfiguration) {
-	appConfig.SecretPrivateKey = secret
+func InjectPrivateKey(appConfig *CommonConfiguration, privateKey string) {
+	appConfig.SecretPrivateKey = privateKey
+}
+
+func InjectToken(appConfig *CommonConfiguration, tokenPath, token string) error {
+	appConfig.SecretTokenPath = tokenPath
+
+	if token == "" {
+		return nil
+	}
+
+	log.Debug().Str("conntoken", token).Msg("cica")
+
+	var err error
+	appConfig.GrpcToken, err = ValidateAndCreateJWT(token)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ReadJwtFromFile(jwtPath string) (string, error) {
+	log.Info().Msgf("Looking for jwt file: %v", jwtPath)
+	fileContent, err := os.ReadFile(jwtPath) //#nosec G304 -- secret path comes from an env
+
+	if errors.Is(err, syscall.EISDIR) {
+		return "", fmt.Errorf("jwt path is a directory: %w", err)
+	}
+
+	if errors.Is(err, os.ErrNotExist) {
+		return "", nil
+	} else if err != nil {
+		return "", fmt.Errorf("jwt file can't be read: %w", err)
+	}
+
+	return string(fileContent), nil
+}
+
+func WriteJwtToFile(jwtPath, token string) error {
+	fileErr := os.WriteFile(jwtPath, []byte(token), os.ModePerm)
+	if fileErr != nil {
+		return fileErr
+	}
+
+	log.Info().Msgf("Connection token saved")
+	return nil
 }

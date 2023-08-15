@@ -1,6 +1,6 @@
 import { Layout } from '@app/components/layout'
 import DyoNodeCard from '@app/components/nodes/dyo-node-card'
-import EditNodeCard from '@app/components/nodes/edit-node-card'
+import EditNodeSection from '@app/components/nodes/edit-node-section'
 import NodeAuditList from '@app/components/nodes/node-audit-list'
 import NodeConnectionCard from '@app/components/nodes/node-connection-card'
 import NodeContainersList from '@app/components/nodes/node-containers-list'
@@ -96,7 +96,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
       </PageHeading>
 
       {state.section === 'editing' ? (
-        <EditNodeCard node={node} onNodeEdited={onNodeEdited} submitRef={submitRef} />
+        <EditNodeSection node={node} onNodeEdited={onNodeEdited} submitRef={submitRef} />
       ) : (
         <>
           <div className="flex flex-row gap-4 mb-4">
