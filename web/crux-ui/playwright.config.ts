@@ -94,6 +94,7 @@ const config: PlaywrightTestConfig = {
     createProject('dashboard', 'with-login/dashboard.spec.ts'),
     createProject('team', 'with-login/team.spec.ts'),
     createProject('storage', 'with-login/storage.spec.ts'),
+    createProject('config-bundle', 'with-login/config-bundle.spec.ts'),
   ],
 }
 

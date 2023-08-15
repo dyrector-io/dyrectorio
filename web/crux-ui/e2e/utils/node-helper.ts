@@ -120,6 +120,34 @@ export const deploy = async (
   return deploymentId
 }
 
+export const deploy = async (
+  page: Page,
+  deploymentId: string,
+  ignoreResult?: boolean,
+  navigate?: boolean,
+): Promise<string> => {
+  if (navigate !== false) {
+    await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+  }
+
+  const deploy = page.getByText('Deploy', {
+    exact: true,
+  })
+
+  await deploy.click()
+  await page.waitForURL(TEAM_ROUTES.deployment.deploy(deploymentId))
+
+  if (ignoreResult) {
+    return deploymentId
+  }
+
+  expect(page.url()).toContain(TEAM_ROUTES.deployment.deploy(deploymentId))
+
+  await waitForDeployment(page)
+
+  return deploymentId
+}
+
 const logCmdOutput = (err: Error, stdOut: string, stdErr: string, logStdOut?: boolean) => {
   if (logStdOut) {
     console.info(stdOut)
