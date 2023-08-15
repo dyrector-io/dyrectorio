@@ -58,7 +58,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
       {item.image.createdAt ? utcDateToLocale(item.image.createdAt) : t('common:new')}
     </span>,
     <div>
-      <div className='inline-block mr-2'>
+      <div className="inline-block mr-2">
         <Link href={routes.project.versions(state.project.id).imageDetails(state.version.id, item.image.id)} passHref>
           <DyoIcon src="/image_config_icon.svg" alt={t('common:settings')} size="md" />
         </Link>

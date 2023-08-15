@@ -274,12 +274,14 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
         </div>
 
         {deploymentIsCopiable(item.status) ? (
-          <Image
+          <DyoIcon
+            className={clsx(
+              deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30',
+              'aspect-square',
+            )}
             src="/copy.svg"
             alt={t('common:copy')}
-            width={24}
-            height={24}
-            className={deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+            size="md"
             onClick={() => actions.copyDeployment(item.id)}
           />
         ) : null}

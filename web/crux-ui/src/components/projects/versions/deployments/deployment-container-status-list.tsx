@@ -24,8 +24,8 @@ interface DeploymentContainerStatusListProps {
 }
 
 type ContainerInstance = {
-  id: ContainerIdentifier,
-  instanceId: string,
+  id: ContainerIdentifier
+  instanceId: string
 }
 
 const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps) => {
@@ -34,7 +34,6 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
 
   const { deployment } = props
   const now = utcNow()
-
 
   const [instanceId, setInstanceId] = useState<ContainerInstance[]>()
   const [containers, setContainers] = useState<Container[]>(() =>
@@ -102,7 +101,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
           name: it.config?.name ?? it.image.config.name,
         },
         instanceId: it.id,
-      }))
+      })),
     )
   }, [deployment])
 
@@ -117,9 +116,9 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       <span>{formatContainerTime(container)}</span>,
       <ContainerStatusTag className="inline-block" state={container.state} />,
       <span>{container.reason}</span>,
-      <span className='flex flex-row mr-14 justify-end'>
+      <span className="flex flex-row mr-14 justify-end">
         {container.state && (
-          <div className='inline-block mr-2'>
+          <div className="inline-block mr-2">
             <Link href={logUrl} passHref>
               <DyoIcon src="/note.svg" alt={t('showLogs')} size="md" />
             </Link>
@@ -130,7 +129,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
             <DyoIcon src="/instance_config_icon.svg" alt={t('common:settings')} size="md" />
           </Link>
         )}
-      </span>
+      </span>,
     ]
     /* eslint-enable react/jsx-key */
   }

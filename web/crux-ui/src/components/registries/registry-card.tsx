@@ -9,6 +9,7 @@ import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import Link from 'next/link'
 import RegistryTypeTag from './registry-type-tag'
+import DyoIcon from '@app/elements/dyo-icon'
 
 interface RegistryCardProps extends Omit<DyoCardProps, 'children'> {
   registry: Registry
@@ -23,7 +24,7 @@ const RegistryCard = (props: RegistryCardProps) => {
   const title = (
     <div className="flex flex-row">
       {!registry.icon ? (
-        <Image src="/default_registry.svg" width={17} height={21} alt={t('altDefaultRegistryPicture')} />
+        <DyoIcon src="/default_registry.svg" size="md" alt={t('altDefaultRegistryPicture')} />
       ) : (
         <DyoBadge large icon={registry.icon} />
       )}
