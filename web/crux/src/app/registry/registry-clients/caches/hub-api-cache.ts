@@ -1,3 +1,5 @@
+import RegistryMetrics from 'src/shared/metrics/registry.metrics'
+
 type CacheEntry = {
   createdAt: number
   data: any
@@ -16,13 +18,17 @@ class HubApiCache {
     const entry = this.entries.get(url)
 
     if (!entry) {
+      RegistryMetrics.hubCacheMiss().inc()
       return null
     }
 
     if (now - entry.createdAt >= this.expirationMillis) {
+      RegistryMetrics.hubCacheMiss().inc()
       this.entries.delete(url)
       return null
     }
+
+    RegistryMetrics.hubCacheHit().inc()
 
     return entry.data
   }

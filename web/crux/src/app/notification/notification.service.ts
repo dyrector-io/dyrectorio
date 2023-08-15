@@ -1,8 +1,9 @@
 import { HttpService } from '@nestjs/axios'
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { lastValueFrom } from 'rxjs'
+import { catchError, lastValueFrom, map, of } from 'rxjs'
 import TeamRepository from 'src/app/team/team.repository'
+import { CruxBadRequestException } from 'src/exception/crux-exception'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import {
@@ -140,6 +141,17 @@ export default class NotificationService {
       },
     })
 
-    await lastValueFrom(this.httpService.post(notification.url, { content: TEST_MESSAGE, text: TEST_MESSAGE }))
+    const success = await lastValueFrom(
+      this.httpService.post(notification.url, { content: TEST_MESSAGE, text: TEST_MESSAGE }).pipe(
+        map(it => it.status === 200),
+        catchError(() => of(false)),
+      ),
+    )
+
+    if (!success) {
+      throw new CruxBadRequestException({
+        message: 'Webhook test failed',
+      })
+    }
   }
 }
