@@ -284,7 +284,7 @@ const initContainerVolumeLinkRule = yup.array(
 const initContainerRule = yup
   .array(
     yup.object().shape({
-      name: yup.string().required(),
+      name: yup.string().required().matches(/^\S+$/g),
       image: yup.string().required(),
       command: uniqueKeysOnlySchema.default([]).nullable(),
       args: uniqueKeysOnlySchema.default([]).nullable(),
