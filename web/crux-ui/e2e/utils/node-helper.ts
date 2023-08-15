@@ -34,31 +34,12 @@ export const installDagent = async (page: Page) => {
 }
 
 const waitForDeployment = async (page: Page) => {
-  if (await page.isVisible('span:text-is("Successful")')) {
-    return
-  }
+  await page.waitForSelector('span:text-is("Successful"), span:text-is("Failed")')
 
   if (await page.isVisible('span:text-is("Failed")')) {
     await page.pause()
     throw new Error('Deployment failed')
   }
-
-  const inProgressStatus = page.locator('span:text-is("In progress")')
-  if (!(await page.isVisible('span:text-is("In progress")'))) {
-    await inProgressStatus.waitFor({
-      state: 'visible',
-    })
-  }
-  await inProgressStatus.waitFor({
-    state: 'detached',
-  })
-
-  if (await page.isVisible('span:text-is("Failed")')) {
-    await page.pause()
-    throw new Error('Deployment failed')
-  }
-
-  await page.getByText('Successful').waitFor()
 }
 
 export const deployWithDagent = async (
