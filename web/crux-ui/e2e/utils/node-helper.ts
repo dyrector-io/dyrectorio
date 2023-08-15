@@ -33,6 +33,34 @@ export const installDagent = async (page: Page) => {
   await page.screenshot({ path: screenshotPath('node-dagent-install-successful'), fullPage: true })
 }
 
+const waitForDeployment = async (page: Page) => {
+  if (await page.isVisible('span:text-is("Successful")')) {
+    return
+  }
+
+  if (await page.isVisible('span:text-is("Failed")')) {
+    await page.pause()
+    throw new Error('Deployment failed')
+  }
+
+  const inProgressStatus = page.locator('span:text-is("In progress")')
+  if (!(await page.isVisible('span:text-is("In progress")'))) {
+    await inProgressStatus.waitFor({
+      state: 'visible',
+    })
+  }
+  await inProgressStatus.waitFor({
+    state: 'detached',
+  })
+
+  if (await page.isVisible('span:text-is("Failed")')) {
+    await page.pause()
+    throw new Error('Deployment failed')
+  }
+
+  await page.getByText('Successful').waitFor()
+}
+
 export const deployWithDagent = async (
   page: Page,
   prefix: string,
@@ -78,22 +106,7 @@ export const deployWithDagent = async (
 
   expect(page.url()).toContain(TEAM_ROUTES.deployment.deploy(deploymentId))
 
-  const status = page.locator('span:text-is("In progress")')
-  if (!(await page.isVisible('span:text-is("In progress")'))) {
-    await status.waitFor({
-      state: 'visible',
-    })
-  }
-  await status.waitFor({
-    state: 'detached',
-  })
-
-  if (await page.isVisible('span:text-is("Failed")')) {
-    await page.pause()
-    throw new Error('Deployment failed')
-  }
-
-  await page.getByText('Successful').waitFor()
+  await waitForDeployment(page)
 
   return deploymentId
 }
@@ -121,22 +134,7 @@ export const deploy = async (
 
   expect(page.url()).toContain(TEAM_ROUTES.deployment.deploy(deploymentId))
 
-  const status = page.locator('span:text-is("In progress")')
-  if (!(await page.isVisible('span:text-is("In progress")'))) {
-    await status.waitFor({
-      state: 'visible',
-    })
-  }
-  await status.waitFor({
-    state: 'detached',
-  })
-
-  if (await page.isVisible('span:text-is("Failed")')) {
-    await page.pause()
-    throw new Error('Deployment failed')
-  }
-
-  await page.getByText('Successful').waitFor()
+  await waitForDeployment(page)
 
   return deploymentId
 }
