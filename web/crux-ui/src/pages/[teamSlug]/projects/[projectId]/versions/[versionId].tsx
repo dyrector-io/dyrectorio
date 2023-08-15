@@ -93,7 +93,6 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
     <Layout title={t('versionsName', { project: project.name, name: version.name })} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
         <WebSocketSaveIndicator className="mx-3" state={state.saveState} />
-
         {!version.deletable && !version.mutable ? null : (
           <DetailsPageMenu
             onDelete={!version.default ? (version.deletable ? onDelete : null) : null}
