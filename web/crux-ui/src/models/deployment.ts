@@ -69,6 +69,7 @@ export type CreateDeployment = {
   versionId: string
   nodeId: string
   prefix: string
+  protected: boolean
   note?: string | undefined
 }
 

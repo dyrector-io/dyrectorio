@@ -100,7 +100,6 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
         const otherProtected = await this.prisma.deployment.findFirst({
           where: {
             protected: true,
-            versionId: deployment.versionId,
             nodeId: deployment.nodeId,
             prefix: deployment.prefix,
           },
@@ -108,7 +107,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
 
         if (otherProtected != null) {
           throw new CruxPreconditionFailedException({
-            message: "There's a protected deployment in the version with the same node and prefix",
+            message: "There's a protected deployment with the same node and prefix",
             property: 'protectedDeploymentId',
             value: otherProtected.id,
           })

@@ -167,6 +167,9 @@ export class CreateDeploymentDto {
   @IsString()
   prefix: string
 
+  @IsBoolean()
+  protected: boolean
+
   @IsString()
   @IsOptional()
   note?: string | null

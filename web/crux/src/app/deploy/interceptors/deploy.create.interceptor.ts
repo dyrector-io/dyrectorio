@@ -62,6 +62,24 @@ export default class DeployCreateValidationInterceptor implements NestIntercepto
       })
     }
 
+    if (body.protected) {
+      const otherProtected = await this.prisma.deployment.findFirst({
+        where: {
+          protected: true,
+          nodeId: body.nodeId,
+          prefix: body.prefix,
+        },
+      })
+
+      if (otherProtected != null) {
+        throw new CruxPreconditionFailedException({
+          message: "There's already a protected deployment with the same node and prefix.",
+          property: 'deploymentId',
+          value: otherProtected.id,
+        })
+      }
+    }
+
     return next.handle()
   }
 }

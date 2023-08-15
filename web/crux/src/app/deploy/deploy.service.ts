@@ -190,6 +190,7 @@ export default class DeployService {
         note: request.note,
         createdBy: identity.id,
         prefix: request.prefix,
+        protected: request.protected,
         instances: {
           createMany: {
             data: version.images.map(it => ({
