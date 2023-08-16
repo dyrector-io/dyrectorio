@@ -7,7 +7,6 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import { Storage } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import Link from 'next/link'
 
 interface StorageCardProps extends Omit<DyoCardProps, 'children'> {

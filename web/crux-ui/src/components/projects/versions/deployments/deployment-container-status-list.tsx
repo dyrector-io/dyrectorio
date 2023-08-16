@@ -89,9 +89,8 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     return timeAgo(t, seconds)
   }
 
-  const getInstanceId = (container: Container) => {
-    return instanceId?.find(it => it.id.name === container.id.name && it.id.prefix === container.id.prefix)?.instanceId
-  }
+  const getInstanceId = (container: Container) => instanceId?.find(it => it.id.name === container.id.name && it.id.prefix === container.id.prefix)?.instanceId
+  
 
   useEffect(() => {
     setInstanceId(() =>
