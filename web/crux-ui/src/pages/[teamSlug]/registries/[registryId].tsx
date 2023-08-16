@@ -4,20 +4,37 @@ import RegistryCard from '@app/components/registries/registry-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
+import Paginator, { PaginationSettings } from '@app/components/shared/paginator'
+import { DyoCard } from '@app/elements/dyo-card'
+import { DyoList } from '@app/elements/dyo-list'
 import { defaultApiErrorHandler } from '@app/errors'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { RegistryDetails, RegistryDetailsDto, registryDetailsDtoToUI, registryDetailsToRegistry } from '@app/models'
+import useWebSocket from '@app/hooks/use-websocket'
+import {
+  FindImageMessage,
+  FindImageResult,
+  FindImageResultMessage,
+  RegistryDetails,
+  RegistryDetailsDto,
+  WS_TYPE_FIND_IMAGE,
+  WS_TYPE_FIND_IMAGE_RESULT,
+  registryDetailsDtoToUI,
+  registryDetailsToRegistry,
+} from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
+import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface RegistryDetailsPageProps {
   registry: RegistryDetails
 }
+
+const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
 
 const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   const { registry: propsRegistry } = props
@@ -29,6 +46,51 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   const [registry, setRegistry] = useState(propsRegistry)
   const [editing, setEditing] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
+
+  const [images, setImages] = useState<FindImageResult[]>([])
+  const [pagination, setPagination] = useState<PaginationSettings>(defaultPagination)
+  const [total, setTotal] = useState(0)
+  const [display, setDisplay] = useState<FindImageResult[]>([])
+
+  const headers = ['common:image']
+  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 px-2 font-semibold'
+  const headerClasses = [
+    clsx('rounded-tl-lg pl-6', defaultHeaderClass),
+    ...Array.from({ length: headers.length - 3 }).map(() => defaultHeaderClass),
+    clsx('text-center', defaultHeaderClass),
+    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
+  ]
+
+  const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
+  const itemClasses = [
+    clsx('pl-6', defaultItemClass),
+    ...Array.from({ length: headerClasses.length - 3 }).map(() => defaultItemClass),
+    clsx('text-center', defaultItemClass),
+    clsx('pr-6 text-center', defaultItemClass),
+  ]
+
+  const itemTemplate = (item: FindImageResult) => [item.name]
+
+  const sock = useWebSocket(routes.registry.socket())
+
+  const getImages = () => {
+    sock.send(WS_TYPE_FIND_IMAGE, {
+      registryId: registry.id,
+      filter: '',
+    } as FindImageMessage)
+  }
+
+  sock.on(WS_TYPE_FIND_IMAGE_RESULT, (message: FindImageResultMessage) => {
+    if (message.registryId === registry?.id) {
+      setTotal(message.images.length)
+      setImages(
+        message.images.map(it => ({
+          name: it.name,
+        })),
+      )
+      setPagination(defaultPagination)
+    }
+  })
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -48,6 +110,15 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       handleApiError(res)
     }
   }
+
+  useEffect(() => {
+    getImages()
+  }, [])
+
+  useEffect(() => {
+    const skip = pagination.pageNumber * pagination.pageSize
+    setDisplay(images.slice(skip, skip + pagination.pageSize))
+  }, [pagination, images])
 
   const pageLink: BreadcrumbLink = {
     name: t('common:registries'),
@@ -86,6 +157,20 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
           onRegistryEdited={onRegistryEdited}
           submitRef={submitRef}
         />
+      )}
+
+      {images?.length > 0 && (
+        <DyoCard className="relative mt-4">
+          <DyoList
+            headers={[...headers.map(h => t(h)), '']}
+            headerClassName={headerClasses}
+            itemClassName={itemClasses}
+            data={display}
+            noSeparator
+            footer={<Paginator onChanged={setPagination} length={total} defaultPagination={defaultPagination} />}
+            itemBuilder={itemTemplate}
+          />
+        </DyoCard>
       )}
     </Layout>
   )
