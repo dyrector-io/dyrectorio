@@ -166,10 +166,10 @@ test('Incremental versions should keep config bundle environments after a succes
 
   await addImageToVersion(page, projectId, versionId, 'nginx')
 
-  const sock = waitSocket(page)
-
   const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE)
 
+  const sock = waitSocket(page)
+  await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
   const ws = await sock
   const wsRoute = TEAM_ROUTES.deployment.detailsSocket(deploymentId)
   const wsPatchReceived = waitSocketReceived(ws, wsRoute, WS_TYPE_PATCH_RECEIVED)
