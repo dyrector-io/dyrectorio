@@ -19,7 +19,7 @@ const TeamStatItem = (props: TeamStatItemProps) => {
   return (
     <div className="flex flex-row flex-grow">
       <div className="mr-2 my-auto">
-        <Image alt={icon} src={`/team-stats/${icon}.svg`} width={64} height={64} />
+        <Image className='aspect-square' alt={icon} src={`/team-stats/${icon}.svg`} width={64} height={64} />
       </div>
 
       <div className="flex flex-col text-bright">

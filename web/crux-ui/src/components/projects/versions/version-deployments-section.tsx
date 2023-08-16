@@ -277,7 +277,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           <DyoIcon
             className={clsx(
               deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30',
-              'aspect-square',
+              'aspect-square mr-2',
             )}
             src="/copy.svg"
             alt={t('common:copy')}
