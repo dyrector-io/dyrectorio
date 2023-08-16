@@ -279,7 +279,7 @@ export default class DeployService {
   }
 
   async patchDeployment(deploymentId: string, req: PatchDeploymentDto, identity: Identity): Promise<void> {
-    await this.prisma.deployment.update({
+    const updatedDeployment = await this.prisma.deployment.update({
       where: {
         id: deploymentId,
       },
@@ -291,6 +291,17 @@ export default class DeployService {
           ? req.environment.map(it => this.containerMapper.uniqueKeyValueDtoToDb(it))
           : undefined,
         updatedBy: identity.id,
+      },
+      select: {
+        version: {
+          select: {
+            project: {
+              select: {
+                teamId: true,
+              },
+            },
+          },
+        },
       },
     })
 
@@ -314,6 +325,7 @@ export default class DeployService {
             data: toConnect.map(it => ({
               deploymentId,
               configBundleId: it,
+              teamId: updatedDeployment.version.project.teamId,
             })),
           })
 

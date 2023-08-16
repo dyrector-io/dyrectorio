@@ -18,15 +18,16 @@ model Team {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
   updatedBy String?  @db.Uuid
 
-  registries    Registry[]
-  projects      Project[]
-  nodes         Node[]
-  users         UsersOnTeams[]
-  invitations   UserInvitation[]
-  auditLog      AuditLog[]
-  notifications Notification[]
-  storages      Storage[]
-  configBundles ConfigBundle[]
+  registries                Registry[]
+  projects                  Project[]
+  nodes                     Node[]
+  users                     UsersOnTeams[]
+  invitations               UserInvitation[]
+  auditLog                  AuditLog[]
+  notifications             Notification[]
+  storages                  Storage[]
+  configBundles             ConfigBundle[]
+  configBundleOnDeployments ConfigBundleOnDeployments[]
 }
 
 model Token {
@@ -546,11 +547,14 @@ model ConfigBundle {
 }
 
 model ConfigBundleOnDeployments {
-  deployment   Deployment @relation(fields: [deploymentId], references: [id])
+  deployment   Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
   deploymentId String     @db.Uuid
 
   configBundle   ConfigBundle @relation(fields: [configBundleId], references: [id])
   configBundleId String       @db.Uuid
+
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String @db.Uuid
 
   @@id([deploymentId, configBundleId])
 }

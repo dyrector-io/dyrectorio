@@ -5,5 +5,6 @@
     "new": "New config bundle",
     "noItems": "You haven't added a config bundle. To add a new one, click 'Add' on the top right.",
     "environment": "Environment",
-    "tips": "Config bundles are environments which can be assigned to deployments."
+    "tips": "Config bundles are environments which can be assigned to deployments.",
+    "inUse": "This config bundle is already in use in some deployments."
 }

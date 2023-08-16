@@ -16,6 +16,7 @@ CREATE TABLE "ConfigBundle" (
 CREATE TABLE "ConfigBundleOnDeployments" (
     "deploymentId" UUID NOT NULL,
     "configBundleId" UUID NOT NULL,
+    "teamId" UUID NOT NULL,
 
     CONSTRAINT "ConfigBundleOnDeployments_pkey" PRIMARY KEY ("deploymentId","configBundleId")
 );
@@ -27,7 +28,10 @@ CREATE UNIQUE INDEX "ConfigBundle_name_teamId_key" ON "ConfigBundle"("name", "te
 ALTER TABLE "ConfigBundle" ADD CONSTRAINT "ConfigBundle_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ConfigBundleOnDeployments" ADD CONSTRAINT "ConfigBundleOnDeployments_deploymentId_fkey" FOREIGN KEY ("deploymentId") REFERENCES "Deployment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ConfigBundleOnDeployments" ADD CONSTRAINT "ConfigBundleOnDeployments_deploymentId_fkey" FOREIGN KEY ("deploymentId") REFERENCES "Deployment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ConfigBundleOnDeployments" ADD CONSTRAINT "ConfigBundleOnDeployments_configBundleId_fkey" FOREIGN KEY ("configBundleId") REFERENCES "ConfigBundle"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ConfigBundleOnDeployments" ADD CONSTRAINT "ConfigBundleOnDeployments_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
