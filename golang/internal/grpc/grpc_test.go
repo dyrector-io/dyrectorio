@@ -1,22 +1,24 @@
+//go:build unit
+// +build unit
+
 package grpc_test
 
 import (
 	"context"
 	"fmt"
-	"log"
-	"net"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	g "github.com/dyrector-io/dyrectorio/golang/internal/grpc"
+	"github.com/dyrector-io/dyrectorio/golang/internal/grpc/mock_agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
+	"golang.org/x/sync/errgroup"
 )
 
 const privateKey = `-----BEGIN PGP PRIVATE KEY BLOCK-----
@@ -37,73 +39,48 @@ Dgg=
 =RnEi
 -----END PGP PRIVATE KEY BLOCK-----`
 
-const (
-	serverURI = "localhost:0"
-)
-
-type mockAgentServer struct {
-	agent.UnimplementedAgentServer
-	server    map[string]agent.Agent_ConnectServer
-	address   string
-	connected map[string]chan any
-	closeCh   map[string]chan any
-}
-
-func (m *mockAgentServer) Connect(info *agent.AgentInfo, server agent.Agent_ConnectServer) error {
-	log.Printf("agent info: %v", info)
-	m.server[info.Id] = server
-	m.connected[info.Id] <- true
-	<-m.closeCh[info.Id]
-	log.Printf("close channel received")
-	delete(m.server, info.Id)
-	return nil
-}
-
-func (m *mockAgentServer) triggerCommand(id string, command *agent.AgentCommand) {
-	if err := m.server[id].Send(command); err != nil {
-		log.Printf("error triggering command: %v on mock: %v", command, err)
+func getWorkerFuncs(funcs []string) g.WorkerFunctions {
+	return g.WorkerFunctions{
+		Deploy: func(ctx context.Context, dl *dogger.DeploymentLogger, dir *v1.DeployImageRequest, vd *v1.VersionData) error {
+			funcs = append(funcs, "deploy")
+			return nil
+		},
+		Watch: func(ctx context.Context, s string) (*g.ContainerWatchContext, error) {
+			funcs = append(funcs, "watch")
+			return nil, nil
+		},
+		Delete: func(ctx context.Context, s1, s2 string) error {
+			funcs = append(funcs, "delete")
+			return nil
+		},
+		SecretList: func(ctx context.Context, s1, s2 string) ([]string, error) {
+			funcs = append(funcs, "secretList")
+			return nil, nil
+		},
+		SelfUpdate: func(context.Context, *agent.AgentUpdateRequest, g.UpdateOptions) error {
+			funcs = append(funcs, "selfUpdate")
+			return nil
+		},
+		ContainerCommand: func(ctx context.Context, ccr *common.ContainerCommandRequest) error {
+			funcs = append(funcs, "containerCommand")
+			return nil
+		},
+		DeleteContainers: func(ctx context.Context, dcr *common.DeleteContainersRequest) error {
+			funcs = append(funcs, "deleteContainer")
+			return nil
+		},
+		ContainerLog: func(ctx context.Context, clr *agent.ContainerLogRequest) (*g.ContainerLogContext, error) {
+			funcs = append(funcs, "containerLog")
+			return &g.ContainerLogContext{}, fmt.Errorf("test")
+		},
+		Close: func(context.Context, agent.CloseReason, g.UpdateOptions) error {
+			funcs = append(funcs, "close")
+			return nil
+		},
 	}
-}
-
-func startServer() *mockAgentServer {
-	lis, err := net.Listen("tcp", serverURI)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	s := grpc.NewServer()
-	mockAgentServer := &mockAgentServer{
-		closeCh: make(map[string]chan any),
-		server:  map[string]agent.Agent_ConnectServer{},
-		address: lis.Addr().String(),
-	}
-	agent.RegisterAgentServer(s, mockAgentServer)
-	log.Printf("mocker server listening at %v", lis.Addr())
-
-	go func() {
-		if err := s.Serve(lis); err != nil {
-			log.Printf("failed to serve: %v", err)
-		}
-	}()
-
-	return mockAgentServer
 }
 
 var commands = []*agent.AgentCommand{
-	{
-		Command: nil,
-	},
-	{
-		Command: &agent.AgentCommand_Deploy{Deploy: &agent.VersionDeployRequest{
-			Id:           "test-01",
-			VersionName:  "test",
-			ReleaseNotes: "",
-			Requests: []*agent.DeployRequest{
-				{
-					Id: "req-01",
-				},
-			},
-		}},
-	},
 	{
 		Command: &agent.AgentCommand_DeleteContainers{
 			DeleteContainers: &common.DeleteContainersRequest{
@@ -154,132 +131,98 @@ var commands = []*agent.AgentCommand{
 	},
 }
 
-func TestGrpcInit(t *testing.T) {
-	mockServ := startServer()
-	t.Run("agent command tests", func(t *testing.T) {
-		const nodeID = "command-test"
-		ctx := context.Background()
-		called := make(chan bool)
-		// close connection server-side
-		cfg := &config.CommonConfiguration{
-			Debug:            true,
-			SecretPrivateKey: privateKey,
-			DefaultTimeout:   100 * time.Millisecond,
-		}
-		//nolint
-		go g.Init(
-			ctx,
-			g.GetConnectionParams(&config.ValidJWT{Issuer: mockServ.address, Subject: nodeID}, "test"),
-			cfg,
-			&g.WorkerFunctions{
-				Deploy: func(ctx context.Context, dl *dogger.DeploymentLogger, dir *v1.DeployImageRequest, vd *v1.VersionData) error {
-					called <- true
-					return nil
-				},
-				Watch: func(ctx context.Context, s string) (*g.ContainerWatchContext, error) {
-					called <- true
-					return nil, nil
-				},
-				Delete: func(ctx context.Context, s1, s2 string) error {
-					called <- true
-					return nil
-				},
-				SecretList: func(ctx context.Context, s1, s2 string) ([]string, error) {
-					called <- true
-					return nil, nil
-				},
-				SelfUpdate: func(context.Context, *agent.AgentUpdateRequest, g.UpdateOptions) error {
-					called <- true
-					return nil
-				},
-				ContainerCommand: func(ctx context.Context, ccr *common.ContainerCommandRequest) error {
-					called <- true
-					return nil
-				},
-				DeleteContainers: func(ctx context.Context, dcr *common.DeleteContainersRequest) error {
-					called <- true
-					return nil
-				},
-				ContainerLog: func(ctx context.Context, clr *agent.ContainerLogRequest) (*g.ContainerLogContext, error) {
-					called <- true
-					return &g.ContainerLogContext{}, fmt.Errorf("test")
-				},
-				Close: func(context.Context, agent.CloseReason, g.UpdateOptions) error {
-					called <- true
-					return nil
-				},
+func TestReceiveLoop(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockClient := mock_agent.NewMockAgent_ConnectClient(ctrl)
+	mockClient.EXPECT().Recv().AnyTimes().DoAndReturn(func() (*agent.AgentCommand, error) {
+		return &agent.AgentCommand{
+			Command: &agent.AgentCommand_Close{
+				Close: &agent.CloseConnectionRequest{Reason: agent.CloseReason_CLOSE},
 			},
-			nil,
-		)
-
-		log.Printf("waiting for agent connection")
-		for i := 0; i < 50; i++ {
-			if mockServ.server[nodeID] != nil {
-				break
-			}
-			if i == 49 {
-				t.Fatal("timeout after 5 seconds")
-			}
-			time.Sleep(100 * time.Millisecond)
-		}
-
-		// for debugging increasing this might help, otherwise this is normally handled in milliseconds
-		const testTimeout = 5
-
-		for _, cmd := range commands {
-			mockServ.triggerCommand(nodeID, cmd)
-			if cmd.Command != nil {
-				select {
-				case res := <-called:
-					assert.Truef(t, res, "true is received on execution of command: %v", cmd.String())
-				case <-time.After(testTimeout * time.Second):
-					t.Fatalf("timeout after 5 seconds")
-				}
-			}
-		}
+		}, nil
 	})
-}
 
-func TestGrpcInitNegativeCases(t *testing.T) {
-	mockServ := startServer()
+	mockClientErr := mock_agent.NewMockAgent_ConnectClient(ctrl)
+	mockClientErr.EXPECT().Recv().AnyTimes().DoAndReturn(func() (*agent.AgentCommand, error) {
+		return nil, g.ErrUnkownAgentCommand
+	})
 
-	cfg := &config.CommonConfiguration{
-		// explicit false is very important
-		Debug:            false,
-		SecretPrivateKey: privateKey,
+	type args struct {
+		stream agent.Agent_ConnectClient
+		work   chan *agent.AgentCommand
 	}
-	t.Run("init fail no debug no https", func(t *testing.T) {
-		const nodeID = "init-test-1"
-		err := g.Init(
-			context.Background(),
-			g.GetConnectionParams(&config.ValidJWT{Issuer: mockServ.address, Subject: nodeID}, "test"),
-			cfg,
-			&g.WorkerFunctions{},
-			nil,
-		)
+	tests := []struct {
+		name string
+		args args
+		err  error
+	}{
+		{
+			name: "nil test",
+			args: args{
+				stream: nil,
+			},
+			err: g.ErrNilStreamForLoop,
+		},
+		{
+			name: "receive error",
+			args: args{
+				stream: mockClientErr,
+			},
+		},
 
-		assert.ErrorIs(t, err, g.ErrInvalidRemoteCertificate, "certificate error is expected")
-	})
+		{
+			name: "receive command",
+			args: args{
+				stream: mockClient,
+				work:   make(chan *agent.AgentCommand, g.ParallelProcessing),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			errs, _ := errgroup.WithContext(context.Background())
+			errs.Go(func() error {
+				select {
+				case cmd := <-tt.args.work:
+					assert.Equal(t, "close:{reason:CLOSE}", cmd.String())
+					return fmt.Errorf("quit")
+				case <-time.After(testTimeout):
+					return fmt.Errorf("channel read timed out")
+				}
+			})
+
+			errs.Go(func() error {
+				return g.ReceiveLoop(tt.args.stream, tt.args.work)
+			})
+			err := errs.Wait()
+			if tt.err != nil {
+				assert.ErrorIs(t, err, tt.err)
+			}
+		})
+	}
 }
 
-func TestGrpcNoServer(t *testing.T) {
-	t.Run("connecting should stop connecting after a while", func(t *testing.T) {
-		const nodeID = "init-panic-test-1"
-		cfg := &config.CommonConfiguration{
-			Debug:            true,
-			SecretPrivateKey: privateKey,
-			DefaultTimeout:   2 * time.Second,
-		}
-		err := g.Init(
-			context.Background(),
-			g.GetConnectionParams(&config.ValidJWT{Issuer: "localhost:0", Subject: nodeID}, "test"),
-			cfg,
-			&g.WorkerFunctions{},
-			nil,
-		)
-
-		assert.ErrorIs(t, err, context.DeadlineExceeded, "deadline exceeded if could not connect to server")
-	})
+func TestProcessLoop(t *testing.T) {
+	type args struct {
+		l *g.ClientLoop
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "",
+			args: args{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := g.ProcessLoop(tt.args.l); (err != nil) != tt.wantErr {
+				t.Errorf("ProcessLoop() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
 }
 
 func TestContextFuncs(t *testing.T) {

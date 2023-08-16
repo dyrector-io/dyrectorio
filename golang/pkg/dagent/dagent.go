@@ -41,7 +41,7 @@ func Serve(cfg *config.Configuration) error {
 
 	grpcParams := grpc.GetConnectionParams(cfg.JwtToken, publicKey)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
-	return grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, &grpc.WorkerFunctions{
+	return grpc.StartGrpcClient(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
 		Deploy:           utils.DeployImage,
 		Watch:            utils.WatchContainers,
 		Delete:           utils.DeleteContainerByPrefixAndName,

@@ -10,10 +10,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var health = Status{
-	Connected: false,
-}
-
 func sendHealthData(conn net.Conn, healthData *Status) error {
 	data, err := json.Marshal(healthData)
 	if err != nil {
@@ -32,7 +28,7 @@ func acceptLoop(socket net.Listener) {
 			break
 		}
 
-		err = sendHealthData(conn, &health)
+		// err = sendHealthData(conn, &health)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to write health socket")
 		}
@@ -45,7 +41,7 @@ func acceptLoop(socket net.Listener) {
 }
 
 func SetHealthGRPCStatus(connected bool) {
-	health.Connected = connected
+	// health.Connected = connected
 }
 
 func Serve(ctx context.Context) error {

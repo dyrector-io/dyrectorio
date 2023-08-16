@@ -28,6 +28,7 @@ require (
 	github.com/docker/docker v23.0.5+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/google/go-containerregistry v0.15.1
+	go.uber.org/mock v0.2.0
 	golang.org/x/sync v0.1.0
 )
 
