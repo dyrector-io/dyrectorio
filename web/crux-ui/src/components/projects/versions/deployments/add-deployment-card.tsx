@@ -1,3 +1,4 @@
+import { TOAST_DURATION } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
@@ -9,7 +10,14 @@ import DyoTextArea from '@app/elements/dyo-text-area'
 import { apiErrorHandler, defaultTranslator } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { CreateDeployment, Deployment, DyoApiError, DyoNode, projectNameToDeploymentPrefix } from '@app/models'
+import {
+  CreateDeployment,
+  Deployment,
+  DyoApiError,
+  DyoNode,
+  deploymentHasError,
+  projectNameToDeploymentPrefix,
+} from '@app/models'
 import { fetcher, sendForm } from '@app/utils'
 import { createDeploymentSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
@@ -34,14 +42,14 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(routes.node.api.list(), fetcher)
 
   const handleApiError = apiErrorHandler((stringId: string, status: number, dto: DyoApiError) => {
-    if (dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing') {
+    if (deploymentHasError(dto)) {
       onAdd(dto.value)
 
       return {
         toast: dto.description,
         toastOptions: {
           className: '!bg-warning-orange',
-          duration: 5000,
+          duration: TOAST_DURATION,
         },
       }
     }
