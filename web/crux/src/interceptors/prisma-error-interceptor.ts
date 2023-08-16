@@ -60,7 +60,7 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
 
     if (err.code === UUID_INVALID) {
       return new CruxBadRequestException({
-        message: 'Invalid uuid',
+        message: `UUID_INVALID ${err.message}, ${err.stack ?? 'no stack'}, ${JSON.stringify(err.meta)}`,
       })
     }
 
