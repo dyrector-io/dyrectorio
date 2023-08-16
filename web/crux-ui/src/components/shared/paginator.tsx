@@ -2,7 +2,6 @@ import DyoButton from '@app/elements/dyo-button'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 type PaginationType = 'first' | 'last' | 'next' | 'previous'
@@ -177,7 +176,7 @@ const Paginator = (props: PaginatorProps) => {
           thin
           disabled={disabled}
         >
-          <DyoIcon className='aspect-square h-6 m-auto' src="/carets_right.svg" size="md" alt="carets right" />
+          <DyoIcon className="aspect-square h-6 m-auto" src="/carets_right.svg" size="md" alt="carets right" />
         </DyoButton>
       </div>
     </div>

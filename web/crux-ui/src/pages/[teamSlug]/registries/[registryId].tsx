@@ -72,13 +72,6 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
 
   const sock = useWebSocket(routes.registry.socket())
 
-  const getImages = () => {
-    sock.send(WS_TYPE_FIND_IMAGE, {
-      registryId: registry.id,
-      filter: '',
-    } as FindImageMessage)
-  }
-
   sock.on(WS_TYPE_FIND_IMAGE_RESULT, (message: FindImageResultMessage) => {
     if (message.registryId === registry?.id) {
       setTotal(message.images.length)
@@ -110,10 +103,17 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
     }
   }
 
-  const getPagedImages = () => images.slice(pagination.pageNumber * pagination.pageSize, pagination.pageNumber * pagination.pageSize + pagination.pageSize)
+  const getPagedImages = () =>
+    images.slice(
+      pagination.pageNumber * pagination.pageSize,
+      pagination.pageNumber * pagination.pageSize + pagination.pageSize,
+    )
 
   useEffect(() => {
-    getImages()
+    sock.send(WS_TYPE_FIND_IMAGE, {
+      registryId: registry.id,
+      filter: '',
+    } as FindImageMessage)
   }, [])
 
   const pageLink: BreadcrumbLink = {
