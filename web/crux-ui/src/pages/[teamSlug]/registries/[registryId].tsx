@@ -50,7 +50,6 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   const [images, setImages] = useState<FindImageResult[]>([])
   const [pagination, setPagination] = useState<PaginationSettings>(defaultPagination)
   const [total, setTotal] = useState(0)
-  const [display, setDisplay] = useState<FindImageResult[]>([])
 
   const headers = ['common:image']
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 px-2 font-semibold'
@@ -111,14 +110,11 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
     }
   }
 
+  const getPagedImages = () => images.slice(pagination.pageNumber * pagination.pageSize, pagination.pageNumber * pagination.pageSize + pagination.pageSize)
+
   useEffect(() => {
     getImages()
   }, [])
-
-  useEffect(() => {
-    const skip = pagination.pageNumber * pagination.pageSize
-    setDisplay(images.slice(skip, skip + pagination.pageSize))
-  }, [pagination, images])
 
   const pageLink: BreadcrumbLink = {
     name: t('common:registries'),
@@ -165,7 +161,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
             headers={[...headers.map(h => t(h)), '']}
             headerClassName={headerClasses}
             itemClassName={itemClasses}
-            data={display}
+            data={getPagedImages()}
             noSeparator
             footer={<Paginator onChanged={setPagination} length={total} defaultPagination={defaultPagination} />}
             itemBuilder={itemTemplate}

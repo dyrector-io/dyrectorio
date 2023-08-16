@@ -177,13 +177,7 @@ const Paginator = (props: PaginatorProps) => {
           thin
           disabled={disabled}
         >
-          <Image
-            className="aspect-square h-6 m-auto"
-            src="/carets_right.svg"
-            width={24}
-            height={24}
-            alt="carets right"
-          />
+          <DyoIcon className='aspect-square h-6 m-auto' src="/carets_right.svg" size="md" alt="carets right" />
         </DyoButton>
       </div>
     </div>
