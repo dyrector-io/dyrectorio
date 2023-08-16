@@ -80,7 +80,7 @@ test('Container log should appear after a successful deployment', async ({ page 
   const runningTag = containerRow.locator(':text-is("Running")')
   await expect(runningTag).toBeVisible()
 
-  const showLogs = containerRow.locator('span:text-is("Show logs")')
+  const showLogs = containerRow.getByRole('link', { name: 'Show logs' })
 
   await showLogs.click()
   await page.waitForURL(`${TEAM_ROUTES.node.list()}/**/log**`)
