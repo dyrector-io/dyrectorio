@@ -22,7 +22,6 @@
   "delete": "Delete",
 
   "home": "Home",
-  "settings": "Settings",
   "components": "Components",
 
   "logout": "Log out",
@@ -214,5 +213,8 @@
     "registryRateLimit": "Rate limit reached, please try again later",
     "registryUnauthorized": "Unauthorized",
     "deployRequiredSecrets": "The following instances have missing required secrets: {{instances}}"
-  }
+  },
+
+  "imageConfig":"Image config",
+  "instanceConfig":"Container config"
 }

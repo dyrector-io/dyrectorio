@@ -125,7 +125,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
         )}
         {instanceId?.length > 0 && (
           <Link href={routes.deployment.instanceDetails(deployment.id, getInstanceId(container))} passHref>
-            <DyoIcon src="/instance_config_icon.svg" alt={t('common:settings')} size="md" />
+            <DyoIcon src="/instance_config_icon.svg" alt={t('common:instanceConfig')} size="md" />
           </Link>
         )}
       </span>,
