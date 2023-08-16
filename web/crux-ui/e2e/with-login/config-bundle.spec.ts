@@ -9,7 +9,7 @@ test('Creating a config bundle', async ({ page }) => {
   const ENV_VALUE = 'bundle-value'
 
   const configBundleId = await createConfigBundle(page, BUNDLE_NAME, {
-    ENV_KEY: ENV_VALUE,
+    [ENV_KEY]: ENV_VALUE,
   })
 
   await page.goto(TEAM_ROUTES.configBundles.details(configBundleId))
