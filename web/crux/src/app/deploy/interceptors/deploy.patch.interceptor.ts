@@ -69,12 +69,21 @@ export default class DeployPatchValidationInterceptor implements NestInterceptor
           protected: true,
           nodeId: deployment.nodeId,
           prefix: deployment.prefix,
+          versionId:
+            deployment.version.type === 'incremental'
+              ? {
+                  not: deployment.versionId,
+                }
+              : undefined,
         },
       })
 
       if (otherProtected != null) {
         throw new CruxPreconditionFailedException({
-          message: "There's already a protected deployment with the same node and prefix.",
+          message:
+            deployment.version.type === 'incremental'
+              ? "There's a protected deployment with the same node and prefix in a different version"
+              : "There's a protected deployment with the same node and prefix",
           property: 'deploymentId',
           value: otherProtected.id,
         })
