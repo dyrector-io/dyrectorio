@@ -2,12 +2,16 @@ import { Layout } from '@app/components/layout'
 import EditRegistryCard from '@app/components/registries/edit-registry-card'
 import RegistryCard from '@app/components/registries/registry-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
+import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import Paginator, { PaginationSettings } from '@app/components/shared/paginator'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoChips from '@app/elements/dyo-chips'
+import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoList } from '@app/elements/dyo-list'
 import { defaultApiErrorHandler } from '@app/errors'
+import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -36,6 +40,8 @@ interface RegistryDetailsPageProps {
 
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
 
+type SortingMode = 'none' | 'A-Z' | 'Z-A'
+
 const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   const { registry: propsRegistry } = props
 
@@ -48,10 +54,17 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   const submitRef = useRef<() => Promise<any>>()
 
   const [images, setImages] = useState<FindImageResult[]>([])
-  const [pagination, setPagination] = useState<PaginationSettings>(defaultPagination)
+
+  const [pagination, setPagination] = useState<PaginationSettings>()
   const [total, setTotal] = useState(0)
 
-  const headers = ['common:image']
+  const filters = useFilters<FindImageResult, TextFilter>({
+    initialData: images,
+    filters: [textFilterFor<FindImageResult>(it => [it.name])],
+  })
+  const [sorting, setSorting] = useState<SortingMode>('none')
+
+  const headers = ['common:images']
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 px-2 font-semibold'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
@@ -103,8 +116,24 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
     }
   }
 
+  const pageLink: BreadcrumbLink = {
+    name: t('common:registries'),
+    url: routes.registry.list(),
+  }
+
+  const sortItems = (items: FindImageResult[]) => {
+    const sorted = [...items]
+    if (sorting === 'A-Z') {
+      sorted.sort((a, b) => (a.name < b.name ? -1 : 1))
+    } else if (sorting === 'Z-A') {
+      sorted.sort((a, b) => (a.name > b.name ? -1 : 1))
+    }
+
+    return sorted
+  }
+
   const getPagedImages = () =>
-    images.slice(
+    sortItems(filters.filtered).slice(
       pagination.pageNumber * pagination.pageSize,
       pagination.pageNumber * pagination.pageSize + pagination.pageSize,
     )
@@ -116,10 +145,14 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
     } as FindImageMessage)
   }, [])
 
-  const pageLink: BreadcrumbLink = {
-    name: t('common:registries'),
-    url: routes.registry.list(),
-  }
+  useEffect(() => {
+    filters.setItems(images)
+  }, [images, sorting])
+
+  useEffect(() => {
+    setTotal(filters.filtered.length)
+    setPagination(defaultPagination)
+  }, [filters.filtered])
 
   return (
     <Layout title={t('registriesName', registry)}>
@@ -155,18 +188,34 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
         />
       )}
 
-      {images?.length > 0 && (
-        <DyoCard className="relative mt-4">
-          <DyoList
-            headers={[...headers.map(h => t(h)), '']}
-            headerClassName={headerClasses}
-            itemClassName={itemClasses}
-            data={getPagedImages()}
-            noSeparator
-            footer={<Paginator onChanged={setPagination} length={total} defaultPagination={defaultPagination} />}
-            itemBuilder={itemTemplate}
-          />
-        </DyoCard>
+      {images.length < 1 ? (
+        <div className="items-center self-center pt-8">
+          <DyoLabel>{t('common:noNameFound', { name: t('common:images') })}</DyoLabel>
+        </div>
+      ) : (
+        <>
+          <div className="mt-8">
+            <Filters setTextFilter={it => filters.setFilter({ text: it })}>
+              <DyoChips
+                className="pl-6"
+                choices={['none', 'A-Z', 'Z-A']}
+                selection={sorting}
+                onSelectionChange={it => setSorting(it as SortingMode)}
+              />
+            </Filters>
+          </div>
+          <DyoCard className="relative mt-4">
+            <DyoList
+              headers={[...headers.map(h => t(h)), '']}
+              headerClassName={headerClasses}
+              itemClassName={itemClasses}
+              data={getPagedImages()}
+              noSeparator
+              footer={<Paginator onChanged={setPagination} length={total} defaultPagination={defaultPagination} />}
+              itemBuilder={itemTemplate}
+            />
+          </DyoCard>
+        </>
       )}
     </Layout>
   )

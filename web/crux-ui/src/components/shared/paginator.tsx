@@ -98,7 +98,7 @@ const Paginator = (props: PaginatorProps) => {
           thin
           disabled={disabled}
         >
-          <DyoIcon className="aspect-square h-6 m-auto" src="/carets_left.svg" size="md" alt={t('first')} />
+          <DyoIcon className="aspect-square h-6 m-auto pt-0.5" src="/carets_left.svg" size="md" alt={t('first')} />
         </DyoButton>
         <DyoButton
           className="w-8 text-xl"
@@ -107,7 +107,7 @@ const Paginator = (props: PaginatorProps) => {
           thin
           disabled={disabled}
         >
-          <DyoIcon className="aspect-square h-6 m-auto" src="/caret_left.svg" size="md" alt={t('previous')} />
+          <DyoIcon className="aspect-square h-6 m-auto pt-0.5" src="/caret_left.svg" size="md" alt={t('previous')} />
         </DyoButton>
         {pagination.pageNumber - 2 >= 0 && (
           <DyoButton
@@ -167,7 +167,7 @@ const Paginator = (props: PaginatorProps) => {
           thin
           disabled={disabled}
         >
-          <DyoIcon className="aspect-square h-6 m-auto" src="/caret_right.svg" size="md" alt={t('next')} />
+          <DyoIcon className="aspect-square h-6 m-auto pt-0.5" src="/caret_right.svg" size="md" alt={t('next')} />
         </DyoButton>
         <DyoButton
           className="w-8 text-xl"
@@ -176,7 +176,7 @@ const Paginator = (props: PaginatorProps) => {
           thin
           disabled={disabled}
         >
-          <DyoIcon className="aspect-square h-6 m-auto" src="/carets_right.svg" size="md" alt={t('last')} />
+          <DyoIcon className="aspect-square h-6 m-auto pt-0.5" src="/carets_right.svg" size="md" alt={t('last')} />
         </DyoButton>
       </div>
     </div>
