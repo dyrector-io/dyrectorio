@@ -392,6 +392,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   disabled={disabled}
                 />
               )}
+              <DyoMessage
+                message={fieldErrors.find(it => it.path?.startsWith('secrets'))?.message}
+                messageType="error"
+              />
             </div>
           )}
 
@@ -408,6 +412,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 items={config.commands}
                 editorOptions={editorOptions}
                 disabled={disabled}
+              />
+              <DyoMessage
+                message={fieldErrors.find(it => it.path?.startsWith('commands'))?.message}
+                messageType="error"
               />
             </div>
           )}
@@ -426,6 +434,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
+              <DyoMessage message={fieldErrors.find(it => it.path?.startsWith('args'))?.message} messageType="error" />
             </div>
           )}
         </div>
