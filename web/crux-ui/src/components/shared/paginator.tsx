@@ -69,7 +69,7 @@ const Paginator = (props: PaginatorProps) => {
       <div>
         <a className="text-light-eased mx-4">{t('itemsPerPage')}</a>
         <select
-          className="bg-transparent h-8 ring-2 ring-light-grey rounded-md text-slate-500 focus:outline-none"
+          className="bg-transparent h-8 ring-2 ring-light-grey rounded-md !text-white focus:outline-none"
           onChange={e => {
             const newMaxPage = Math.ceil(length / pageSizes[e.target.value]) - 1
             const newPagination: PaginationSettings = {
