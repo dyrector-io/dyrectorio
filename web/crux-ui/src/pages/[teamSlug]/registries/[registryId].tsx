@@ -193,12 +193,12 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       )}
 
       {images.length < 1 ? (
-        <div className="items-center self-center pt-8">
+        <div className="items-center self-center mt-4">
           <DyoLabel>{t('common:noNameFound', { name: t('common:images') })}</DyoLabel>
         </div>
       ) : (
         <>
-          <div className="mt-8">
+          <div className="mt-4">
             <Filters setTextFilter={it => filters.setFilter({ text: it })}>
               <DyoChips
                 className="pl-6"
