@@ -156,10 +156,9 @@ test('Deleting node', async ({ page }) => {
 
   await page.locator('button:has-text("Delete"):left-of(:has-text("Cancel"))').click()
 
-  await page.goto(TEAM_ROUTES.node.list())
   await page.waitForURL(TEAM_ROUTES.node.list())
 
-  await expect(await page.locator(`h3:has-text("${name}")`).count()).toEqual(0)
+  await expect(await page.locator(`h3:has-text("${name}")`)).not.toBeVisible()
 })
 
 test('Logs should show agent events', async ({ page }) => {

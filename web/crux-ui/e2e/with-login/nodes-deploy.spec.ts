@@ -117,7 +117,9 @@ test('Container log should appear on a node container', async ({ page }) => {
   const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
   await nodeButton.click()
 
-  await page.locator('input[placeholder="Search"]').type(`${prefix}-${imageName}`)
+  await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
+
+  await page.locator('input[placeholder="Search"]').type(`pw-${prefix}-${imageName}`)
 
   const nodeContainerRow = await page.locator(`span:text-is("pw-${prefix}-${imageName}") >> xpath=../..`)
   await expect(nodeContainerRow).toHaveCount(1)
