@@ -20,6 +20,8 @@ import {
   FindImageResultMessage,
   RegistryDetails,
   RegistryDetailsDto,
+  SORTING_TYPE_VALUES,
+  SortingType,
   WS_TYPE_FIND_IMAGE,
   WS_TYPE_FIND_IMAGE_RESULT,
   registryDetailsDtoToUI,
@@ -39,8 +41,6 @@ interface RegistryDetailsPageProps {
 }
 
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
-
-type SortingMode = 'none' | 'A-Z' | 'Z-A'
 
 const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   const { registry: propsRegistry } = props
@@ -62,7 +62,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
     initialData: images,
     filters: [textFilterFor<FindImageResult>(it => [it.name])],
   })
-  const [sorting, setSorting] = useState<SortingMode>('none')
+  const [sorting, setSorting] = useState<SortingType>('none')
 
   const headers = ['common:images']
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 px-2 font-semibold'
@@ -123,13 +123,17 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
 
   const sortItems = (items: FindImageResult[]) => {
     const sorted = [...items]
-    if (sorting === 'A-Z') {
-      sorted.sort((a, b) => (a.name < b.name ? -1 : 1))
-    } else if (sorting === 'Z-A') {
-      sorted.sort((a, b) => (a.name > b.name ? -1 : 1))
+    switch (sorting) {
+      case 'az': {
+        return sorted.sort((a, b) => (a.name < b.name ? -1 : 1))
+      }
+      case 'za': {
+        return sorted.sort((a, b) => (a.name > b.name ? -1 : 1))
+      }
+      default: {
+        return sorted
+      }
     }
-
-    return sorted
   }
 
   const getPagedImages = () =>
@@ -198,9 +202,10 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
             <Filters setTextFilter={it => filters.setFilter({ text: it })}>
               <DyoChips
                 className="pl-6"
-                choices={['none', 'A-Z', 'Z-A']}
+                choices={SORTING_TYPE_VALUES}
+                converter={(it: SortingType) => t(`common:sorting.${it}`)}
                 selection={sorting}
-                onSelectionChange={it => setSorting(it as SortingMode)}
+                onSelectionChange={it => setSorting(it)}
               />
             </Filters>
           </div>

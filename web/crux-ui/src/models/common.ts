@@ -42,6 +42,11 @@ export type PaginationQuery = {
   to: string
 }
 
+// sorting
+
+export const SORTING_TYPE_VALUES = ['none', 'az', 'za'] as const
+export type SortingType = (typeof SORTING_TYPE_VALUES)[number]
+
 // https://gist.github.com/codeguy/6684588?permalink_comment_id=3426313#gistcomment-3426313
 export const slugify = (value: string) =>
   value
