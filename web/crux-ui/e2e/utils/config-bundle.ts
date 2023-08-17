@@ -1,7 +1,7 @@
 import { TEAM_ROUTES } from './common'
 import { Page, expect } from '@playwright/test'
 import { waitSocket, waitSocketReceived } from './websocket'
-import { WS_TYPE_PATCH_RECEIVED } from '@app/models'
+import { WS_TYPE_PATCH_RECEIVED } from '@app/models/config-bundle'
 
 export const createConfigBundle = async (page: Page, name: string, data: Record<string, string>): Promise<string> => {
   await page.goto(TEAM_ROUTES.configBundles.list())
