@@ -64,8 +64,8 @@ export const ImageHorizontalList = <T,>(props: ImageHorizontalListProps<T>) => {
     return elements
   }
 
-  const tableContent = (data: Array<string[]> | Array<React.ReactNode[]>) => {
-    const items: React.JSX.Element[] = data.map((item, index) => {
+  const buildItems = () =>
+    data.map((item, index) => {
       return (
         <div
           key={`${key}-${getColIndex(index)}-${getRowIndex(index)}`}
@@ -86,6 +86,9 @@ export const ImageHorizontalList = <T,>(props: ImageHorizontalListProps<T>) => {
         </div>
       )
     })
+
+  const tableContent = data => {
+    const items: React.JSX.Element[] = buildItems()
 
     const rowContent: React.JSX.Element[] = []
     for (let i = 0; i < rows; i++) {

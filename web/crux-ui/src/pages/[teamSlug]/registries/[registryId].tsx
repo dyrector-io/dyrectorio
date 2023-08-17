@@ -147,7 +147,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
 
   useEffect(() => {
     setTotal(filters.filtered.length)
-    setPagination({ pageNumber: 0, pageSize: pagination ? pagination.pageSize : defaultPagination.pageSize })
+    setPagination(p => ({ pageNumber: 0, pageSize: p ? p.pageSize : defaultPagination.pageSize }))
   }, [filters.filtered])
 
   return (
