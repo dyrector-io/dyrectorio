@@ -65,29 +65,25 @@ export const ImageHorizontalList = <T,>(props: ImageHorizontalListProps<T>) => {
   }
 
   const buildItems = () =>
-    data.map((item, index) => {
-      return (
-        <div
-          key={`${key}-${getColIndex(index)}-${getRowIndex(index)}`}
-          className={clsx(
-            'table-cell align-middle',
-            !noSeparator && getRowIndex(index) < rows - 1 ? 'border-b-2 border-light-grey' : null,
-            !noSeparator && getColIndex(index) < columnNum - 1 ? 'border-r-2 border-light-grey' : null,
-            'h-12 min-h-min text-light-eased p-2 text-center',
-            columnWidthClass,
-          )}
-          onClick={
-            cellClick
-              ? () => cellClick(propsData[getRowIndex(index)], getRowIndex(index), getColIndex(index))
-              : undefined
-          }
-        >
-          {item}
-        </div>
-      )
-    })
+    data.map((item, index) => (
+      <div
+        key={`${key}-${getColIndex(index)}-${getRowIndex(index)}`}
+        className={clsx(
+          'table-cell align-middle',
+          !noSeparator && getRowIndex(index) < rows - 1 ? 'border-b-2 border-light-grey' : null,
+          !noSeparator && getColIndex(index) < columnNum - 1 ? 'border-r-2 border-light-grey' : null,
+          'h-12 min-h-min text-light-eased p-2 text-center',
+          columnWidthClass,
+        )}
+        onClick={
+          cellClick ? () => cellClick(propsData[getRowIndex(index)], getRowIndex(index), getColIndex(index)) : undefined
+        }
+      >
+        {item}
+      </div>
+    ))
 
-  const tableContent = data => {
+  const tableContent = () => {
     const items: React.JSX.Element[] = buildItems()
 
     const rowContent: React.JSX.Element[] = []
@@ -118,7 +114,7 @@ export const ImageHorizontalList = <T,>(props: ImageHorizontalListProps<T>) => {
         key={key}
         className={clsx('table w-full rounded-lg overflow-auto', className, columnWidths && 'table-fixed')}
       >
-        <div className="table-row-group">{tableContent(data)}</div>
+        <div className="table-row-group">{tableContent()}</div>
       </div>
       <div className={clsx(footerClassName)}>{footer}</div>
     </>
