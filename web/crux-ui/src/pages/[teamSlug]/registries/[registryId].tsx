@@ -1,5 +1,6 @@
 import { Layout } from '@app/components/layout'
 import EditRegistryCard from '@app/components/registries/edit-registry-card'
+import { ImageHorizontalList } from '@app/components/registries/image-horizontal-list'
 import RegistryCard from '@app/components/registries/registry-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
@@ -9,7 +10,6 @@ import Paginator, { PaginationSettings } from '@app/components/shared/paginator'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { DyoList } from '@app/elements/dyo-list'
 import { defaultApiErrorHandler } from '@app/errors'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useTeamRoutes from '@app/hooks/use-team-routes'
@@ -65,20 +65,12 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   const [sorting, setSorting] = useState<SortingType>('none')
 
   const headers = ['common:images']
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 px-2 font-semibold'
-  const headerClasses = [
-    clsx('rounded-tl-lg pl-6', defaultHeaderClass),
-    ...Array.from({ length: headers.length - 3 }).map(() => defaultHeaderClass),
-    clsx('text-center', defaultHeaderClass),
-    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
-  ]
-
-  const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
-  const itemClasses = [
-    clsx('pl-6', defaultItemClass),
-    ...Array.from({ length: headerClasses.length - 3 }).map(() => defaultItemClass),
-    clsx('text-center', defaultItemClass),
-    clsx('pr-6 text-center', defaultItemClass),
+  const defaultTitleClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 px-2 font-semibold'
+  const titleClass = [
+    clsx('rounded-tl-lg pl-6', defaultTitleClass),
+    ...Array.from({ length: headers.length - 3 }).map(() => defaultTitleClass),
+    clsx('text-center', defaultTitleClass),
+    clsx('rounded-tr-lg pr-6 text-center', defaultTitleClass),
   ]
 
   const itemTemplate = (item: FindImageResult) => [item.name]
@@ -155,7 +147,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
 
   useEffect(() => {
     setTotal(filters.filtered.length)
-    setPagination(defaultPagination)
+    setPagination({ pageNumber: 0, pageSize: pagination ? pagination.pageSize : defaultPagination.pageSize })
   }, [filters.filtered])
 
   return (
@@ -210,10 +202,9 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
             </Filters>
           </div>
           <DyoCard className="relative mt-4">
-            <DyoList
-              headers={[...headers.map(h => t(h)), '']}
-              headerClassName={headerClasses}
-              itemClassName={itemClasses}
+            <ImageHorizontalList
+              title={t('common:images')}
+              titleClassName={titleClass}
               data={getPagedImages()}
               noSeparator
               footer={<Paginator onChanged={setPagination} length={total} defaultPagination={defaultPagination} />}
