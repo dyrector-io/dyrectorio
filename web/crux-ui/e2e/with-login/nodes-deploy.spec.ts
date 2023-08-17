@@ -64,7 +64,7 @@ test('Container log should appear after a successful deployment', async ({ page 
 
   const projectId = await createProject(page, 'deploy-log-test', 'versionless')
   await addImageToVersionlessProject(page, projectId, imageName)
-  const { url, id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, prefix)
+  const { url, id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, { prefix })
 
   await page.goto(url)
 
@@ -96,7 +96,7 @@ test('Container log should appear on a node container', async ({ page }) => {
 
   const porjectId = await createProject(page, 'node-deploy-log-test', 'versionless')
   await addImageToVersionlessProject(page, porjectId, imageName)
-  const { url, id: deploymentId } = await addDeploymentToVersionlessProject(page, porjectId, DAGENT_NODE, prefix)
+  const { url, id: deploymentId } = await addDeploymentToVersionlessProject(page, porjectId, DAGENT_NODE, { prefix })
 
   await page.goto(url)
 

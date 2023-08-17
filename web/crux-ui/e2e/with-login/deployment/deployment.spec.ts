@@ -36,8 +36,8 @@ test('Can create multiple preparings to the same node with different prefixes', 
 
   const { projectId } = await setup(page, nodeName, projectName)
   await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
-  const one = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOne)
-  const other = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOther)
+  const one = await addDeploymentToVersionlessProject(page, projectId, nodeName, { prefix: prefixOne })
+  const other = await addDeploymentToVersionlessProject(page, projectId, nodeName, { prefix: prefixOther })
 
   await page.goto(one.url)
   await page.waitForSelector(`label:has-text("Prefix: pw-${prefixOne}")`)
@@ -55,12 +55,12 @@ test('Can not create multiple preparings to the same node with the same prefix',
 
   const { projectId } = await setup(page, nodeName, projectName)
   await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
-  const one = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOne)
+  const one = await addDeploymentToVersionlessProject(page, projectId, nodeName, { prefix: prefixOne })
   await page.goto(one.url)
   await page.waitForSelector(`label:has-text("Prefix: pw-${prefixOne}")`)
   await expect(await page.locator(`label:has-text("Prefix: pw-${prefixOne}")`)).toHaveCount(1)
 
-  const other = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefixOne)
+  const other = await addDeploymentToVersionlessProject(page, projectId, nodeName, { prefix: prefixOne })
 
   expect(other.id, one.id)
   await page.goto(other.url)
@@ -77,21 +77,13 @@ test('Cannot create multiple deployments with the same node and prefix for a rol
 
   await addImageToVersion(page, projectId, versionId, 'nginx')
 
-  const { url: firstDeploymentUrl } = await addDeploymentToVersion(
-    page,
-    projectId,
-    versionId,
-    DAGENT_NODE,
-    'test-prefix',
-  )
+  const { url: firstDeploymentUrl } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, {
+    prefix: 'test-prefix',
+  })
 
-  const { url: secondDeploymentUrl } = await addDeploymentToVersion(
-    page,
-    projectId,
-    versionId,
-    DAGENT_NODE,
-    'test-prefix',
-  )
+  const { url: secondDeploymentUrl } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, {
+    prefix: 'test-prefix',
+  })
 
   await expect(page.url()).toEqual(firstDeploymentUrl)
   await expect(firstDeploymentUrl).toEqual(secondDeploymentUrl)
@@ -131,7 +123,7 @@ test('Select specific instances to deploy', async ({ page }) => {
   await addImageToVersionlessProject(page, projectId, 'nginx')
   await addImageToVersionlessProject(page, projectId, 'busybox')
 
-  const { id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, prefix)
+  const { id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, { prefix })
 
   const instanceBody = await page.locator('.table-row-group')
   const instanceRow = await instanceBody.locator('.table-row')

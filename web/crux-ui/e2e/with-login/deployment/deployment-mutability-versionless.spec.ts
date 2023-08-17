@@ -9,7 +9,7 @@ test.describe('Versionless Project', () => {
   test('preparing deployment should be mutable', async ({ page }) => {
     const projectId = await createProject(page, 'versionless-mutability-1', 'versionless')
     await addImageToVersionlessProject(page, projectId, image)
-    await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, 'versionless-preparing')
+    await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, { prefix: 'versionless-preparing' })
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
