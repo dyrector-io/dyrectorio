@@ -58,8 +58,8 @@
 
   "sorting":{
     "none":"None",
-    "az":"A-Z",
-    "za":"Z-A"
+    "asc":"Ascending",
+    "desc":"Descending"
   },
 
   "altDefaultRegistryPicture": "Picture of registry",

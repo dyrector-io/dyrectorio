@@ -44,7 +44,7 @@ export type PaginationQuery = {
 
 // sorting
 
-export const SORTING_TYPE_VALUES = ['none', 'az', 'za'] as const
+export const SORTING_TYPE_VALUES = ['none', 'asc', 'desc'] as const
 export type SortingType = (typeof SORTING_TYPE_VALUES)[number]
 
 // https://gist.github.com/codeguy/6684588?permalink_comment_id=3426313#gistcomment-3426313

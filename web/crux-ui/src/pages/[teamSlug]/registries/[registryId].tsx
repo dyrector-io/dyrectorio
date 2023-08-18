@@ -122,10 +122,10 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   const sortItems = (items: FindImageResult[]) => {
     const sorted = [...items]
     switch (sorting) {
-      case 'az': {
+      case 'asc': {
         return sorted.sort((a, b) => (a.name < b.name ? -1 : 1))
       }
-      case 'za': {
+      case 'desc': {
         return sorted.sort((a, b) => (a.name > b.name ? -1 : 1))
       }
       default: {
