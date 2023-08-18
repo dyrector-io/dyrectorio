@@ -62,7 +62,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
   }
 
   const onDelete = async () => {
-    const res = await fetch(routes.project.versions(project.id).details(version.id), {
+    const res = await fetch(routes.project.versions(project.id).api.details(version.id), {
       method: 'DELETE',
     })
 

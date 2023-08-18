@@ -8,7 +8,7 @@ test('Can create team', async ({ page }) => {
 
   await createTeam(page, teamName, slug)
 
-  page.goto(ROUTE_TEAMS)
+  await page.goto(ROUTE_TEAMS)
   await expect(page.locator(`h4:has-text('${teamName}')`)).toBeVisible()
 })
 
