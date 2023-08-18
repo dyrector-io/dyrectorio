@@ -151,7 +151,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
 
   useEffect(() => {
     filters.setItems(images)
-  }, [images, sorting])
+  }, [images])
 
   useEffect(() => {
     setTotal(filters.filtered.length)
@@ -209,6 +209,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
               />
             </Filters>
           </div>
+
           <DyoCard className="relative mt-4">
             <DyoList
               headers={[...headers.map(h => t(h)), '']}
