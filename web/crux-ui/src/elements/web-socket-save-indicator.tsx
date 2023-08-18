@@ -49,7 +49,7 @@ const WebSocketSaveIndicator = (props: WebSocketSaveIndicatorProps) => {
     }
   }, [state, stopFade])
 
-  const label = t(`saveState.${state}`)
+  const label = state ? t(`saveState.${state}`) : null
 
   return (
     !!state && (
