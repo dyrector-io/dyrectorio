@@ -94,7 +94,7 @@ const VersionViewList = (props: VersionViewListProps) => {
         />
       </div>
       <Link href={routes.project.versions(state.projectId).imageDetails(state.version.id, item.id)} passHref>
-        <DyoIcon src="/settings.svg" alt={t('common:settings')} size="md" />
+        <DyoIcon src="/image_config_icon.svg" alt={t('common:imageConfig')} size="md" />
       </Link>
     </div>,
   ]

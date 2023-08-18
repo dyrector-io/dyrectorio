@@ -57,9 +57,16 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
     <span suppressHydrationWarning>
       {item.image.createdAt ? utcDateToLocale(item.image.createdAt) : t('common:new')}
     </span>,
-    <Link href={routes.deployment.instanceDetails(state.deployment.id, item.id)} passHref>
-      <DyoIcon src="/settings.svg" alt={t('common:settings')} size="md" />
-    </Link>,
+    <div>
+      <div className="inline-block mr-2">
+        <Link href={routes.project.versions(state.project.id).imageDetails(state.version.id, item.image.id)} passHref>
+          <DyoIcon src="/image_config_icon.svg" alt={t('common:imageConfig')} size="md" />
+        </Link>
+      </div>
+      <Link href={routes.deployment.instanceDetails(state.deployment.id, item.id)} passHref>
+        <DyoIcon src="/instance_config_icon.svg" alt={t('common:instanceConfig')} size="md" />
+      </Link>
+    </div>,
   ]
 
   const headerBuilder = (header: string, index: number) =>

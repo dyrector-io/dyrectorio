@@ -78,7 +78,7 @@ const VersionCard = (props: VersionCardProps) => {
 
         {!onSetAsDefaultClick || version.default ? null : (
           <DyoImgButton
-            className="px-2 h-6"
+            className="px-2 h-6 aspect-square"
             disabled={disabled}
             src="/home_bold.svg"
             alt={t('common:default')}
