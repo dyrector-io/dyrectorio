@@ -157,7 +157,7 @@ export const fillDeploymentPrefix = async (page: Page, prefix: string) => {
 }
 
 export const deleteVersion = async (page: Page, projectId: string, versionId: string) => {
-  await page.goto(versionUrl(projectId, versionId))
+  await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionId))
 
   const deleteButton = page.locator('button:has-text("Delete")')
   await expect(deleteButton).toHaveCount(1)
@@ -165,11 +165,11 @@ export const deleteVersion = async (page: Page, projectId: string, versionId: st
   const confirmDeleteButton = page.locator('div[role=dialog]').locator('button:has-text("Delete")')
   await expect(confirmDeleteButton).toHaveCount(1)
   await confirmDeleteButton.click()
-  await page.waitForURL(`${ROUTE_PROJECTS}/**`)
+  await page.waitForURL(`${TEAM_ROUTES.project.list()}/**`)
 }
 
 export const deleteDeployment = async (page: Page, deploymentId: string) => {
-  await page.goto(deploymentUrl(deploymentId))
+  await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
   const deleteButton = page.locator('button:has-text("Delete")')
   await expect(deleteButton).toHaveCount(1)
@@ -177,11 +177,12 @@ export const deleteDeployment = async (page: Page, deploymentId: string) => {
   const confirmDeleteButton = page.locator('div[role=dialog]').locator('button:has-text("Delete")')
   await expect(confirmDeleteButton).toHaveCount(1)
   await confirmDeleteButton.click()
-  await page.waitForURL(`${ROUTE_PROJECTS}/**`)
+  await page.waitForURL(`${TEAM_ROUTES.project.list()}/**`)
 }
 
 export const copyDeployment = async (page: Page, deploymentId: string, newName: string) => {
-  await page.goto(deploymentUrl(deploymentId))
+  await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+
   await page.locator('button:has-text("Copy")').click()
   await fillDeploymentPrefix(page, `${newName}`)
   await page.locator('button:has-text("Copy")').click()
