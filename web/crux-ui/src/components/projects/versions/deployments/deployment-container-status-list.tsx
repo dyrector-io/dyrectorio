@@ -1,5 +1,6 @@
 import ContainerStatusIndicator from '@app/components/nodes/container-status-indicator'
 import ContainerStatusTag from '@app/components/nodes/container-status-tag'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
@@ -21,6 +22,10 @@ interface DeploymentContainerStatusListProps {
   deployment: DeploymentRoot
 }
 
+type ContainerWithInstance = Container & {
+  instanceId: string
+}
+
 const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps) => {
   const { t } = useTranslation('deployments')
   const routes = useTeamRoutes()
@@ -28,8 +33,9 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
   const { deployment } = props
   const now = utcNow()
 
-  const [containers, setContainers] = useState<Container[]>(() =>
+  const [containers, setContainers] = useState<ContainerWithInstance[]>(() =>
     deployment.instances.map(it => ({
+      instanceId: it.id,
       id: {
         prefix: deployment.prefix,
         name: it.config?.name ?? it.image.config.name,
@@ -51,8 +57,8 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       } as WatchContainerStatusMessage),
   })
 
-  const merge = (weak: Container[], strong: Container[]): Container[] => {
-    if (!strong) {
+  const merge = (weak: ContainerWithInstance[], strong: Container[]): ContainerWithInstance[] => {
+    if (!strong || strong.length === 0) {
       return weak
     }
 
@@ -62,7 +68,12 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       const name = containerPrefixNameOf(it.id)
 
       const index = containerNames.indexOf(name)
-      return index < 0 ? it : strong[index]
+      return index < 0
+        ? it
+        : {
+            ...strong[index],
+            instanceId: it.instanceId,
+          }
     })
   }
 
@@ -81,7 +92,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     return timeAgo(t, seconds)
   }
 
-  const itemTemplate = (container: Container) => {
+  const itemTemplate = (container: ContainerWithInstance) => {
     const logUrl = routes.node.containerLog(deployment.node.id, container.id)
 
     /* eslint-disable react/jsx-key */
@@ -92,11 +103,18 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       <span>{formatContainerTime(container)}</span>,
       <ContainerStatusTag className="inline-block" state={container.state} />,
       <span>{container.reason}</span>,
-      container.state && (
-        <Link href={logUrl} passHref>
-          <span className="cursor-pointer text-dyo-blue">{t('showLogs')}</span>
+      <span className="flex flex-row mr-14 justify-end">
+        {container.state && (
+          <div className="inline-block mr-2">
+            <Link href={logUrl} passHref>
+              <DyoIcon src="/note.svg" alt={t('showLogs')} size="md" />
+            </Link>
+          </div>
+        )}
+        <Link href={routes.deployment.instanceDetails(deployment.id, container.instanceId)} passHref>
+          <DyoIcon src="/instance_config_icon.svg" alt={t('common:instanceConfig')} size="md" />
         </Link>
-      ),
+      </span>,
     ]
     /* eslint-enable react/jsx-key */
   }
