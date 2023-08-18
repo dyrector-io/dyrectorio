@@ -6,7 +6,6 @@ import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   Container,
-  ContainerIdentifier,
   containerPrefixNameOf,
   ContainersStateListMessage,
   DeploymentRoot,
@@ -17,14 +16,13 @@ import {
 import { timeAgo, utcNow } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 interface DeploymentContainerStatusListProps {
   deployment: DeploymentRoot
 }
 
-type ContainerInstance = {
-  id: ContainerIdentifier
+type ContainerWithInstance = Container & {
   instanceId: string
 }
 
@@ -35,9 +33,9 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
   const { deployment } = props
   const now = utcNow()
 
-  const [instanceId, setInstanceId] = useState<ContainerInstance[]>()
-  const [containers, setContainers] = useState<Container[]>(() =>
+  const [containers, setContainers] = useState<ContainerWithInstance[]>(() =>
     deployment.instances.map(it => ({
+      instanceId: it.id,
       id: {
         prefix: deployment.prefix,
         name: it.config?.name ?? it.image.config.name,
@@ -59,8 +57,8 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       } as WatchContainerStatusMessage),
   })
 
-  const merge = (weak: Container[], strong: Container[]): Container[] => {
-    if (!strong) {
+  const merge = (weak: ContainerWithInstance[], strong: Container[]): ContainerWithInstance[] => {
+    if (!strong || strong.length == 0) {
       return weak
     }
 
@@ -70,7 +68,12 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       const name = containerPrefixNameOf(it.id)
 
       const index = containerNames.indexOf(name)
-      return index < 0 ? it : strong[index]
+      return index < 0
+        ? it
+        : {
+            ...strong[index],
+            instanceId: it.instanceId,
+          }
     })
   }
 
@@ -89,22 +92,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     return timeAgo(t, seconds)
   }
 
-  const getInstanceId = (container: Container) =>
-    instanceId?.find(it => it.id.name === container.id.name && it.id.prefix === container.id.prefix)?.instanceId
-
-  useEffect(() => {
-    setInstanceId(() =>
-      deployment.instances.map(it => ({
-        id: {
-          prefix: deployment.prefix,
-          name: it.config?.name ?? it.image.config.name,
-        },
-        instanceId: it.id,
-      })),
-    )
-  }, [deployment])
-
-  const itemTemplate = (container: Container) => {
+  const itemTemplate = (container: ContainerWithInstance) => {
     const logUrl = routes.node.containerLog(deployment.node.id, container.id)
 
     /* eslint-disable react/jsx-key */
@@ -123,11 +111,9 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
             </Link>
           </div>
         )}
-        {instanceId?.length > 0 && (
-          <Link href={routes.deployment.instanceDetails(deployment.id, getInstanceId(container))} passHref>
-            <DyoIcon src="/instance_config_icon.svg" alt={t('common:instanceConfig')} size="md" />
-          </Link>
-        )}
+        <Link href={routes.deployment.instanceDetails(deployment.id, container.instanceId)} passHref>
+          <DyoIcon src="/instance_config_icon.svg" alt={t('common:instanceConfig')} size="md" />
+        </Link>
       </span>,
     ]
     /* eslint-enable react/jsx-key */
