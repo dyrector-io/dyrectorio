@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Identity, Session } from '@ory/kratos-client'
-import { Team, UserInvitation, UsersOnTeams } from '@prisma/client'
-import { IdentityTraits, invitationExpired, nameOfIdentity } from 'src/domain/identity'
+import { Team, UserInvitation, UserRoleEnum, UsersOnTeams } from '@prisma/client'
+import { IdentityTraits, invitationExpired, nameOfIdentity, nameOrEmailOfIdentity } from 'src/domain/identity'
 import { BasicTeamDto, TeamDetailsDto, TeamDto, TeamStatisticsDto } from './team.dto'
 import { UserDto, UserMetaDto } from './user.dto'
 
@@ -14,10 +14,11 @@ export default class TeamMapper {
     }
   }
 
-  toBasicDto(it: Pick<Team, 'id' | 'name'>): BasicTeamDto {
+  toBasicDto(it: TeamWithBasicData): BasicTeamDto {
     return {
       id: it.id,
       name: it.name,
+      slug: it.slug,
     }
   }
 
@@ -29,12 +30,17 @@ export default class TeamMapper {
   }
 
   toUserMetaDto(teams: MetaTeam[], invitations: MetaInvitation[], identity: Identity): UserMetaDto {
-    const activeTeam = teams.find(it => it.active)
-
     return {
-      activeTeamId: activeTeam?.teamId,
-      user: !activeTeam ? null : this.userToDto(activeTeam, identity, null),
-      teams: teams.map(it => it.team),
+      user: {
+        id: identity.id,
+        name: nameOrEmailOfIdentity(identity),
+      },
+      teams: teams.map(it => ({
+        id: it.teamId,
+        name: it.team.name,
+        slug: it.team.slug,
+        role: it.role,
+      })),
       invitations: invitations.map(it => it.team),
     }
   }
@@ -52,7 +58,7 @@ export default class TeamMapper {
     }
   }
 
-  userToDto(activeTeam: UsersOnTeams, identity: Identity, session: Session): UserDto {
+  userToDto(team: UsersOnTeams, identity: Identity, session: Session): UserDto {
     const traits = identity.traits as IdentityTraits
     if (!traits) {
       return null
@@ -62,7 +68,7 @@ export default class TeamMapper {
       id: identity.id,
       name: nameOfIdentity(identity),
       email: traits.email,
-      role: activeTeam.role,
+      role: team.role,
       status: 'verified',
       lastLogin: session ? new Date(session.authenticated_at) : null,
     }
@@ -139,12 +145,13 @@ type TeamDetails = TeamWithUsers &
     invitations: UserInvitation[]
   }
 
-type TeamWithIdAndName = Pick<Team, 'id' | 'name'>
+type TeamWithBasicData = Pick<Team, 'id' | 'name' | 'slug'>
 
 type MetaTeam = UsersOnTeams & {
-  team: TeamWithIdAndName
+  team: TeamWithBasicData
+  role: UserRoleEnum
 }
 
 type MetaInvitation = {
-  team: TeamWithIdAndName
+  team: TeamWithBasicData
 }

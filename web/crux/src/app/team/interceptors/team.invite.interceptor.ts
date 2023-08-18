@@ -1,4 +1,5 @@
 import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common'
+import { UserInvitationStatusEnum } from '@prisma/client'
 import { Observable } from 'rxjs'
 import RecaptchaService from 'src/app/team/recaptcha.service'
 import {
@@ -8,14 +9,17 @@ import {
 } from 'src/exception/crux-exception'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
-import { UserInvitationStatusEnum } from '@prisma/client'
 import { InviteUserDto } from '../team.dto'
 
 @Injectable()
 export default class TeamInviteUserValitationInterceptor implements NestInterceptor {
   private readonly logger = new Logger()
 
-  constructor(private prisma: PrismaService, private kratos: KratosService, private recaptcha: RecaptchaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private kratos: KratosService,
+    private recaptcha: RecaptchaService,
+  ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest()

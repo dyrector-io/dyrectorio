@@ -1,5 +1,4 @@
 import { HEADER_SET_COOKIE } from '@app/const'
-import { missingParameter } from '@app/error-responses'
 import { DEFAULT_SERVICE_INFO, IdentityPublicMetadata, ServiceInfo } from '@app/models'
 import {
   Configuration,
@@ -7,6 +6,7 @@ import {
   Identity,
   IdentityApi,
   MetadataApi,
+  RegistrationFlow,
   Session,
   VerifiableIdentityAddress,
 } from '@ory/kratos-client'
@@ -109,15 +109,6 @@ export const verifiableEmailOfIdentity = (user: Identity): VerifiableIdentityAdd
 
 export const userVerified = (user: Identity) => verifiableEmailOfIdentity(user)?.verified
 
-export const cookieOf = (request: http.IncomingMessage): string => {
-  const { cookie } = request.headers
-  if (!cookie) {
-    throw missingParameter('cookie')
-  }
-
-  return cookie
-}
-
 export const flowOfUrl = (url: string): string => new URL(url).searchParams.get('flow')
 
 export const obtainKratosSession = async (cookie: string): Promise<Session> => {
@@ -165,18 +156,6 @@ export const sessionOfContext = (context: NextPageContext): Session => {
   return cruxContext.session
 }
 
-export const forwardCookieToResponse = (res: http.OutgoingMessage, from: { headers: any }) => {
-  const cookie = from.headers[HEADER_SET_COOKIE]
-  if (cookie) {
-    res.setHeader(HEADER_SET_COOKIE, cookie)
-  } else {
-    res.removeHeader(HEADER_SET_COOKIE)
-  }
-}
-
-export const forwardCookie = (context: NextPageContext, from: { headers: any }) =>
-  forwardCookieToResponse(context.res, from)
-
 export type IncomingMessageWithSession = http.IncomingMessage & {
   session?: Session
   cookie?: string
@@ -184,5 +163,8 @@ export type IncomingMessageWithSession = http.IncomingMessage & {
 
 export const assambleKratosRecoveryUrl = (flow: string, code: string): string =>
   `${process.env.KRATOS_URL}/self-service/recovery?flow=${flow}&code=${code}`
+
+export const registrationOidcInvalid = (flow: RegistrationFlow) =>
+  flow.ui.nodes.some(it => it.group === 'oidc' && it.messages.length > 0)
 
 export default kratos

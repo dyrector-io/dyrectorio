@@ -5,9 +5,10 @@ import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import DyoSwitch from '@app/elements/dyo-switch'
+import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   CreateNotification,
   NotificationDetails,
@@ -16,7 +17,6 @@ import {
   NOTIFICATION_TYPE_VALUES,
   UpdateNotification,
 } from '@app/models'
-import { API_NOTIFICATIONS, notificationApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { notificationSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
@@ -34,6 +34,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
   const { notification: propsNotification, submitRef, onNotificationEdited, className } = props
 
   const { t } = useTranslation('notifications')
+  const routes = useTeamRoutes()
 
   const [notification, setNotification] = useState<NotificationDetails>(
     propsNotification ?? {
@@ -64,8 +65,8 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       }
 
       const res = await (editMode
-        ? sendForm('PUT', notificationApiUrl(notification.id), request as UpdateNotification)
-        : sendForm('POST', API_NOTIFICATIONS, request as CreateNotification))
+        ? sendForm('PUT', routes.notification.api.details(notification.id), request as UpdateNotification)
+        : sendForm('POST', routes.notification.api.list(), request as CreateNotification))
 
       if (res.ok) {
         let result: NotificationDetails
@@ -137,11 +138,12 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
           </div>
 
           <div className="flex flex-row justify-between mt-8 items-end">
-            <div className="flex flex-col">
-              <DyoLabel className="mb-2.5">{t('active')}</DyoLabel>
-
-              <DyoSwitch fieldName="active" checked={formik.values.active} setFieldValue={formik.setFieldValue} />
-            </div>
+            <DyoToggle
+              name="active"
+              checked={formik.values.active}
+              setFieldValue={formik.setFieldValue}
+              label={t('active')}
+            />
           </div>
         </div>
 

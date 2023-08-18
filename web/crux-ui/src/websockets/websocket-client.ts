@@ -1,15 +1,7 @@
 import { WS_CONNECT_DELAY_PER_TRY, WS_MAX_CONNECT_TRY } from '@app/const'
 import { Logger } from '@app/logger'
 import { WsErrorMessage, WS_TYPE_ERROR } from '@app/models'
-import {
-  SubscriptionMessage,
-  SubscriptionRedirectMessage,
-  WsErrorHandler,
-  WsMessage,
-  WS_TYPE_SUBBED,
-  WS_TYPE_SUB_REDIRECT,
-  WS_TYPE_UNSUBBED,
-} from './common'
+import { SubscriptionMessage, WsErrorHandler, WsMessage, WS_TYPE_SUBBED, WS_TYPE_UNSUBBED } from './common'
 import WebSocketClientEndpoint from './websocket-client-endpoint'
 import WebSocketClientRoute from './websocket-client-route'
 
@@ -26,8 +18,6 @@ class WebSocketClient {
 
   private routes: Map<string, WebSocketClientRoute> = new Map()
 
-  private redirectedRoutes: Map<string, string> = new Map()
-
   private errorHandler: WsErrorHandler = null
 
   get connected(): boolean {
@@ -35,14 +25,7 @@ class WebSocketClient {
   }
 
   async register(endpoint: WebSocketClientEndpoint) {
-    let { path } = endpoint
-
-    const redirected = this.redirectedRoutes.get(path)
-    if (redirected) {
-      // if we have a route registered with the same path which was already redirected
-      // we just use that path
-      path = redirected
-    }
+    const { path } = endpoint
 
     this.logger.debug('Registering endpoint for', path)
 
@@ -63,7 +46,7 @@ class WebSocketClient {
   }
 
   remove(endpoint: WebSocketClientEndpoint) {
-    const path = this.redirectedRoutes.get(endpoint.path) ?? endpoint.path
+    const { path } = endpoint
 
     this.logger.debug('Remove endpoint:', path)
 
@@ -82,7 +65,6 @@ class WebSocketClient {
   close() {
     this.routes.forEach(route => route.clear())
     this.routes.clear()
-    this.redirectedRoutes.clear()
 
     this.clearSocket()
     this.logger.debug('Connection closed.')
@@ -95,12 +77,6 @@ class WebSocketClient {
   private removeRoute(route: WebSocketClientRoute) {
     const { path } = route
     this.routes.delete(path)
-
-    const { redirectedFrom } = route
-    if (redirectedFrom) {
-      this.redirectedRoutes.delete(redirectedFrom)
-      this.logger.verbose('Route redirection deleted', redirectedFrom)
-    }
 
     if (this.routes.size < 1) {
       this.logger.debug('There is no routes open. Closing connection.')
@@ -160,31 +136,6 @@ class WebSocketClient {
 
   private onSubscriptionMessage(message: WsMessage<SubscriptionMessage>): void {
     const { type } = message
-
-    if (type === WS_TYPE_SUB_REDIRECT) {
-      // redirection
-      // we have to repeat the subscription request with the provided path
-
-      const msg = message.data as SubscriptionRedirectMessage
-      const { redirect, path } = msg
-      const route = this.routes.get(path)
-      if (!route) {
-        // can't find the route we got the redirection message for
-
-        this.logger.debug('Redirected route not found', path)
-        return
-      }
-
-      // replace the old route with the corrected one
-      this.routes.delete(path)
-      this.routes.set(redirect, route)
-
-      // save the redirection
-      this.redirectedRoutes.set(path, redirect)
-
-      route.onRedirect(redirect)
-      return
-    }
 
     const route = this.routes.get(message.data.path)
     if (type === WS_TYPE_SUBBED) {
@@ -281,7 +232,7 @@ class WebSocketClient {
 
         if (message.type === WS_TYPE_ERROR && this.errorHandler) {
           this.errorHandler(message.data as WsErrorMessage)
-        } else if (type === WS_TYPE_SUBBED || type === WS_TYPE_UNSUBBED || message.type === WS_TYPE_SUB_REDIRECT) {
+        } else if (type === WS_TYPE_SUBBED || type === WS_TYPE_UNSUBBED) {
           this.onSubscriptionMessage(message as WsMessage<SubscriptionMessage>)
           return
         }
@@ -290,7 +241,7 @@ class WebSocketClient {
       }
 
       this.clearSocket()
-      this.socket = new WebSocket(WebSocketClient.assembleWsUrl())
+      this.socket = new WebSocket(this.assembleWsUrl())
 
       const ws = this.socket
       ws.addEventListener('open', onOpen)
@@ -307,11 +258,16 @@ class WebSocketClient {
     })
   }
 
-  private static assembleWsUrl() {
+  private assembleWsUrl() {
     const { location } = window
-    // TODO create some warning when we are in production build but the connection is insecure
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-    return `${protocol}//${location.host}/api`
+    const url = `${protocol}//${location.host}/api`
+
+    if (process.env.NODE_ENV === 'production' && protocol === 'ws:') {
+      this.logger.warn('Insecure WebSocket connection in production environment!')
+    }
+
+    return url
   }
 }
 

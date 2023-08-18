@@ -5,10 +5,14 @@ import NodeService from '../node.service'
 
 @Injectable()
 export default class NodeTeamAccessGuard implements CanActivate {
-  constructor(private readonly service: NodeService, private readonly reflector: Reflector) {}
+  constructor(
+    private readonly service: NodeService,
+    private readonly reflector: Reflector,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest()
+    const teamSlug = req.params.teamSlug as string
     const nodeId = req.params.nodeId as string
 
     if (!nodeId) {
@@ -22,6 +26,6 @@ export default class NodeTeamAccessGuard implements CanActivate {
 
     const identity = identityOfRequest(context)
 
-    return await this.service.checkNodeIsInTheActiveTeam(nodeId, identity)
+    return await this.service.checkNodeIsInTheTeam(teamSlug, nodeId, identity)
   }
 }

@@ -1,6 +1,6 @@
 import { ROUTE_LOGIN } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { screenshotPath, USER_EMAIL, USER_PASSWORD } from '../utils/common'
+import { screenshotPath, TEAM_ROUTES, USER_EMAIL, USER_PASSWORD } from '../utils/common'
 
 test('without cookie should redirect to the login page', async ({ page }) => {
   await page.goto('/')
@@ -40,5 +40,5 @@ test('should log in with valid credentials', async ({ page }) => {
 
   await page.screenshot({ path: screenshotPath('login-successful'), fullPage: true })
 
-  await expect(page).toHaveURL(`/dashboard`)
+  await expect(page).toHaveURL(`${TEAM_ROUTES.dashboard.index()}`)
 })

@@ -29,8 +29,9 @@ interface SecretStatusProps {
 }
 
 const SecretStatus = (props: SecretStatusProps) => {
-  const { t } = useTranslation('common')
   const { className, present } = props
+
+  const { t } = useTranslation('common')
 
   return <DyoIndicator className={className} color={colorOfStatus(present)} title={t(altOfStatus(present))} />
 }

@@ -1,9 +1,9 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
+import { VersionTypeEnum } from '@prisma/client'
 import { Observable } from 'rxjs'
 import { checkDeploymentMutability } from 'src/domain/deployment'
 import { CruxConflictException, CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
-import { VersionTypeEnum } from '@prisma/client'
 import { PatchDeploymentDto } from '../deploy.dto'
 
 @Injectable()

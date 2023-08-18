@@ -13,7 +13,8 @@ import { API_SETTINGS_CHANGE_PASSWORD, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_LOGOUT } 
 import { findAttributes, findMessage, redirectTo, sendForm, withContextErrorHandling } from '@app/utils'
 import { passwordSchema } from '@app/validations'
 import { SettingsFlow } from '@ory/kratos-client'
-import kratos, { forwardCookie, identityWasRecovered, obtainSessionFromRequest } from '@server/kratos'
+import { forwardCookie } from '@server/cookie'
+import kratos, { identityWasRecovered, obtainSessionFromRequest } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -99,9 +100,7 @@ const NewPasswordPage = (props: NewPasswordPageProps) => {
                 grow
               />
 
-              {ui.messages?.map((it, index) => (
-                <DyoMessage key={`error-${index}`} message={it.text} />
-              ))}
+              {ui.messages?.map((it, index) => <DyoMessage key={`error-${index}`} message={it.text} />)}
 
               <DyoButton className="mt-8" type="submit">
                 {t('common:save')}

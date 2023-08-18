@@ -25,6 +25,8 @@ import {
 } from '@app/models/container'
 import useTranslation from 'next-translate/useTranslation'
 import ConfigSectionLabel from './config-section-label'
+import DyoMessage from '@app/elements/dyo-message'
+import { ValidationError } from 'yup'
 
 type DagentConfigSectionBaseProps<T> = {
   config: T
@@ -34,6 +36,7 @@ type DagentConfigSectionBaseProps<T> = {
   selectedFilters: ImageConfigProperty[]
   editorOptions: ItemEditorState
   disabled?: boolean
+  fieldErrors: ValidationError[]
 }
 
 type ImageDagentConfigSectionProps = DagentConfigSectionBaseProps<DagentConfigDetails> & {
@@ -48,7 +51,6 @@ type InstanceDagentConfigSectionProps = DagentConfigSectionBaseProps<InstanceDag
 type DagentConfigSectionProps = ImageDagentConfigSectionProps | InstanceDagentConfigSectionProps
 
 const DagentConfigSection = (props: DagentConfigSectionProps) => {
-  const { t } = useTranslation('container')
   const {
     config: propsConfig,
     resetableConfig: propsResetableConfig,
@@ -58,7 +60,10 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
     onChange,
     editorOptions,
     disabled,
+    fieldErrors,
   } = props
+
+  const { t } = useTranslation('container')
 
   const disabledOnImage = configType === 'image' || disabled
   // eslint-disable-next-line react/destructuring-assignment
@@ -108,6 +113,10 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               editorOptions={editorOptions}
               disabled={disabled}
             />
+            <DyoMessage
+              message={fieldErrors.find(it => it.path?.startsWith('networks'))?.message}
+              messageType="error"
+            />
           </div>
         )}
 
@@ -123,6 +132,10 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               items={config.dockerLabels ?? []}
               editorOptions={editorOptions}
               disabled={disabled}
+            />
+            <DyoMessage
+              message={fieldErrors.find(it => it.path?.startsWith('dockerLabels'))?.message}
+              messageType="error"
             />
           </div>
         )}
@@ -164,7 +177,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               <DyoChips
                 className="mb-2 ml-2"
                 choices={CONTAINER_LOG_DRIVER_VALUES}
-                selection={config.logConfig?.driver ?? 'none'}
+                selection={config.logConfig?.driver ?? 'nodeDefault'}
                 converter={(it: ContainerLogDriverType) => t(`dagent.logDrivers.${it}`)}
                 onSelectionChange={it => onChange({ logConfig: { ...config.logConfig, driver: it } })}
                 disabled={disabled}
@@ -178,6 +191,10 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
                 onChange={it => onChange({ logConfig: { ...config.logConfig, options: it } })}
                 editorOptions={editorOptions}
                 disabled={disabled}
+              />
+              <DyoMessage
+                message={fieldErrors.find(it => it.path?.startsWith('logConfig.options'))?.message}
+                messageType="error"
               />
             </div>
           </div>

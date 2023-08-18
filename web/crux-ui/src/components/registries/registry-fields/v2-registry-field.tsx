@@ -1,6 +1,6 @@
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import DyoSwitch from '@app/elements/dyo-switch'
+import DyoToggle from '@app/elements/dyo-toggle'
 import { V2RegistryDetails } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
@@ -25,20 +25,23 @@ const V2RegistryFields = (props: EditRegistryTypeProps<V2RegistryDetails>) => {
         message={formik.errors.url}
       />
 
-      <div className="flex mt-8">
-        <DyoLabel className="mr-2">{t('private')}</DyoLabel>
+      <DyoToggle
+        className="mt-8"
+        name="private"
+        label={t('private')}
+        checked={formik.values.private}
+        setFieldValue={(field, value, shouldValidate) => {
+          if (!value) {
+            formik.setFieldValue('user', '', false)
+            formik.setFieldValue('token', '', false)
+          }
 
-        <DyoSwitch
-          fieldName="private"
-          checked={formik.values.private}
-          setFieldValue={(field: string, value: boolean, shouldValidate?: boolean | undefined) => {
-            if (!value) {
-              formik.setFieldValue('user', '', false)
-              formik.setFieldValue('token', '', false)
-            }
-            return formik.setFieldValue(field, value, shouldValidate)
-          }}
-        />
+          return formik.setFieldValue(field, value, shouldValidate)
+        }}
+      />
+
+      <div className="flex mt-8">
+        <DyoLabel className="mr-2">{}</DyoLabel>
       </div>
 
       {!formik.values.private ? null : (

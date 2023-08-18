@@ -1,23 +1,14 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Onboarding as OnboardingDto, OnboardingItem } from '@app/models'
-import {
-  deploymentDeployUrl,
-  deploymentUrl,
-  imageConfigUrl,
-  nodeUrl,
-  projectUrl,
-  ROUTE_NODES,
-  ROUTE_PROJECTS,
-  ROUTE_TEAMS_CREATE,
-  teamUrl,
-  versionUrl,
-} from '@app/routes'
+import { ROUTE_TEAMS_CREATE, TeamRoutes, teamUrl } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
+import { useMemo } from 'react'
 import OnboardingEntry from './onboarding-entry'
 
 type OnbardingLinkFactory = (onboarding: OnboardingDto, item: OnboardingItem) => string | null
-const onboardingLinkFactories: Record<keyof OnboardingDto, OnbardingLinkFactory> = {
+const onboardingLinkFactories = (routes: TeamRoutes): Record<keyof OnboardingDto, OnbardingLinkFactory> => ({
   signUp: () => null,
   createTeam: (onboarding, item) => {
     if (!onboarding.signUp.done) {
@@ -31,14 +22,14 @@ const onboardingLinkFactories: Record<keyof OnboardingDto, OnbardingLinkFactory>
       return null
     }
 
-    return item.done ? nodeUrl(item.resourceId) : ROUTE_NODES
+    return item.done ? routes.node.details(item.resourceId) : routes.node.list()
   },
   createProject: (onboarding, item) => {
     if (!onboarding.createNode.done) {
       return null
     }
 
-    return item.done ? projectUrl(item.resourceId) : ROUTE_PROJECTS
+    return item.done ? routes.project.details(item.resourceId) : routes.project.list()
   },
   createVersion: (onboarding, item) => {
     const projectId = onboarding.createProject.resourceId
@@ -46,7 +37,7 @@ const onboardingLinkFactories: Record<keyof OnboardingDto, OnbardingLinkFactory>
       return null
     }
 
-    return item.done ? versionUrl(projectId, item.resourceId) : projectUrl(projectId)
+    return item.done ? routes.project.versions(projectId).details(item.resourceId) : routes.project.details(projectId)
   },
   addImages: (onboarding, item) => {
     const projectId = onboarding.createProject.resourceId
@@ -56,8 +47,8 @@ const onboardingLinkFactories: Record<keyof OnboardingDto, OnbardingLinkFactory>
     }
 
     return item.done
-      ? imageConfigUrl(projectId, versionId, item.resourceId)
-      : versionUrl(projectId, versionId, { section: 'images' })
+      ? routes.project.versions(projectId).imageDetails(versionId, item.resourceId)
+      : routes.project.versions(projectId).details(versionId, { section: 'images' })
   },
   addDeployment: (onboarding, item) => {
     if (!onboarding.addImages.done) {
@@ -67,7 +58,9 @@ const onboardingLinkFactories: Record<keyof OnboardingDto, OnbardingLinkFactory>
     const projectId = onboarding.createProject.resourceId
     const versionId = onboarding.createVersion.resourceId
 
-    return item.done ? deploymentUrl(item.resourceId) : versionUrl(projectId, versionId, { section: 'deployments' })
+    return item.done
+      ? routes.deployment.details(item.resourceId)
+      : routes.project.versions(projectId).details(versionId, { section: 'deployments' })
   },
   deploy: (onboarding, item) => {
     const deploymentId = onboarding.addDeployment.resourceId
@@ -75,9 +68,9 @@ const onboardingLinkFactories: Record<keyof OnboardingDto, OnbardingLinkFactory>
       return null
     }
 
-    return item.done ? deploymentDeployUrl(deploymentId) : deploymentUrl(deploymentId)
+    return item.done ? routes.deployment.deploy(deploymentId) : routes.deployment.details(deploymentId)
   },
-}
+})
 
 type OnboardingProps = {
   onboarding?: OnboardingDto
@@ -85,9 +78,12 @@ type OnboardingProps = {
 }
 
 const Onboarding = (props: OnboardingProps) => {
-  const { t } = useTranslation('dashboard')
-
   const { onboarding, onClose } = props
+
+  const { t } = useTranslation('dashboard')
+  const routes = useTeamRoutes()
+
+  const linkFactories = useMemo(() => onboardingLinkFactories(routes), [routes])
 
   const lastOnboardIndex = Object.keys(onboarding).length - 1
   const nextOnboardIndex = Object.values(onboarding).findIndex(it => !it.done)
@@ -99,7 +95,7 @@ const Onboarding = (props: OnboardingProps) => {
           const first = index === 0
           const last = index === lastOnboardIndex
 
-          const linkFactory = onboardingLinkFactories[key]
+          const linkFactory = linkFactories[key]
 
           return (
             <OnboardingEntry

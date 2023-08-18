@@ -8,28 +8,28 @@ import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
-import DyoSwitch from '@app/elements/dyo-switch'
+import DyoToggle from '@app/elements/dyo-toggle'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
-  CommonConfigProperty,
   COMMON_CONFIG_PROPERTIES,
-  filterContains,
-  filterEmpty,
+  CommonConfigProperty,
   ImageConfigProperty,
   StorageOption,
+  filterContains,
+  filterEmpty,
 } from '@app/models'
 import {
+  CONTAINER_EXPOSE_STRATEGY_VALUES,
+  CONTAINER_VOLUME_TYPE_VALUES,
   CommonConfigDetails,
   ContainerConfigData,
   ContainerConfigExposeStrategy,
   ContainerConfigVolume,
-  CONTAINER_EXPOSE_STRATEGY_VALUES,
-  CONTAINER_VOLUME_TYPE_VALUES,
   InitContainerVolumeLink,
   InstanceCommonConfigDetails,
-  mergeConfigs,
   VolumeType,
+  mergeConfigs,
 } from '@app/models/container'
-import { API_STORAGES_OPTIONS } from '@app/routes'
 import { fetcher, toNumber } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -65,6 +65,8 @@ type CommonConfigSectionProps = ImageCommonConfigSectionProps | InstanceCommonCo
 
 const CommonConfigSection = (props: CommonConfigSectionProps) => {
   const { t } = useTranslation('container')
+  const routes = useTeamRoutes()
+
   const {
     disabled,
     onChange,
@@ -79,7 +81,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
     resetableConfig: propsResetableConfig,
   } = props
 
-  const { data: storages } = useSWR<StorageOption[]>(API_STORAGES_OPTIONS, fetcher)
+  const { data: storages } = useSWR<StorageOption[]>(routes.storage.api.options(), fetcher)
 
   const disabledOnImage = configType === 'image' || disabled
   // eslint-disable-next-line react/destructuring-assignment
@@ -200,9 +202,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 {t('common.tty').toUpperCase()}
               </ConfigSectionLabel>
 
-              <DyoSwitch
+              <DyoToggle
                 className="ml-2"
-                fieldName="tty"
+                name="tty"
                 checked={config.tty}
                 disabled={disabled}
                 onCheckedChange={it => onChange({ tty: it })}
@@ -263,16 +265,15 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   disabled={disabled}
                 />
 
-                <div className="flex flex-row break-inside-avoid mb-8">
-                  <DyoLabel className="my-auto mr-12">{t('common.keepFiles')}</DyoLabel>
-
-                  <DyoSwitch
-                    fieldName="configContainer.keepFiles"
-                    checked={config.configContainer?.keepFiles}
-                    onCheckedChange={it => onChange({ configContainer: { ...config.configContainer, keepFiles: it } })}
-                    disabled={disabled}
-                  />
-                </div>
+                <DyoToggle
+                  className="break-inside-avoid mb-8"
+                  name="configContainer.keepFiles"
+                  labelClassName="text-light-eased mr-11"
+                  checked={config.configContainer?.keepFiles}
+                  onCheckedChange={it => onChange({ configContainer: { ...config.configContainer, keepFiles: it } })}
+                  disabled={disabled}
+                  label={t('common.keepFiles')}
+                />
               </div>
             </div>
           )}
@@ -318,17 +319,16 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   disabled={disabled}
                 />
 
-                <div className="flex flex-row break-inside-avoid my-4">
-                  <DyoLabel className="my-auto mr-12">{t('common.stripPath')}</DyoLabel>
-
-                  <DyoSwitch
-                    id="routing.stripPath"
-                    fieldName="routing.stripPath"
-                    checked={config.routing?.stripPath ?? false}
-                    onCheckedChange={it => onChange({ routing: { ...config.routing, stripPath: it } })}
-                    disabled={disabled}
-                  />
-                </div>
+                <DyoToggle
+                  id="routing.stripPath"
+                  className="break-inside-avoid my-4"
+                  labelClassName="text-light-eased mr-11"
+                  name="routing.stripPath"
+                  checked={config.routing?.stripPath ?? false}
+                  onCheckedChange={it => onChange({ routing: { ...config.routing, stripPath: it } })}
+                  disabled={disabled}
+                  label={t('common.stripPath')}
+                />
 
                 <MultiInput
                   id="routing.uploadLimit"
@@ -392,6 +392,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   disabled={disabled}
                 />
               )}
+              <DyoMessage
+                message={fieldErrors.find(it => it.path?.startsWith('secrets'))?.message}
+                messageType="error"
+              />
             </div>
           )}
 
@@ -408,6 +412,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 items={config.commands}
                 editorOptions={editorOptions}
                 disabled={disabled}
+              />
+              <DyoMessage
+                message={fieldErrors.find(it => it.path?.startsWith('commands'))?.message}
+                messageType="error"
               />
             </div>
           )}
@@ -426,6 +434,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
+              <DyoMessage message={fieldErrors.find(it => it.path?.startsWith('args'))?.message} messageType="error" />
             </div>
           )}
         </div>
@@ -792,7 +801,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     valuePlaceholder={t('common.path')}
                     items={item.volumes?.map(it => ({ id: it.id, key: it.name, value: it.path }))}
                     onChange={it => {
-                      const volumes = it.map(i => ({ id: i.id, name: i.key, path: i.value } as InitContainerVolumeLink))
+                      const volumes = it.map(i => ({ id: i.id, name: i.key, path: i.value }) as InitContainerVolumeLink)
                       onPatch({ volumes })
                     }}
                     editorOptions={editorOptions}
@@ -839,15 +848,12 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 </div>
 
                 <div className="flex flex-row justify-between">
-                  <div className="flex flex-row">
-                    <DyoLabel className="my-auto mr-4">{t('common.useParent').toLocaleUpperCase()}</DyoLabel>
-
-                    <DyoSwitch
-                      checked={item.useParentConfig}
-                      onCheckedChange={it => onPatch({ useParentConfig: it })}
-                      disabled={disabled}
-                    />
-                  </div>
+                  <DyoToggle
+                    checked={item.useParentConfig}
+                    onCheckedChange={it => onPatch({ useParentConfig: it })}
+                    disabled={disabled}
+                    label={t('common.useParent').toLocaleUpperCase()}
+                  />
 
                   {removeButton()}
                 </div>

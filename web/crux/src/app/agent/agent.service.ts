@@ -2,8 +2,6 @@ import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { AgentEventTypeEnum, DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
-import { InjectMetric } from '@willsoto/nestjs-prometheus'
-import { Gauge } from 'prom-client'
 import {
   EMPTY,
   Observable,
@@ -38,6 +36,7 @@ import {
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import AgentMetrics from 'src/shared/metrics/agent.metrics'
 import { getAgentVersionFromPackage, getPackageVersion } from 'src/shared/package'
 import { JWT_EXPIRATION, PRODUCTION } from '../../shared/const'
 import ContainerMapper from '../container/container.mapper'
@@ -55,7 +54,6 @@ export default class AgentService {
   private eventChannelByTeamId: Map<string, Subject<AgentConnectionMessage>> = new Map()
 
   constructor(
-    @InjectMetric('agent_online_count') private agentCount: Gauge<string>,
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
@@ -116,6 +114,7 @@ export default class AgentService {
   }
 
   async install(
+    teamSlug: string,
     nodeId: string,
     nodeName: string,
     nodeType: NodeTypeEnum,
@@ -135,6 +134,7 @@ export default class AgentService {
 
       installer = new AgentInstaller(
         this.configService,
+        teamSlug,
         nodeId,
         nodeName,
         this.jwtService.sign(token),
@@ -351,7 +351,7 @@ export default class AgentService {
       this.logger.log(`Left: ${agent.id}`)
       agent.onDisconnected()
       this.agents.delete(agent.id)
-      this.agentCount.dec()
+      AgentMetrics.connectedCount().dec()
 
       await this.prisma.deployment.updateMany({
         where: {
@@ -365,7 +365,7 @@ export default class AgentService {
 
       await agentEventPromise
     } else if (status === 'connected') {
-      this.agentCount.inc()
+      AgentMetrics.connectedCount().inc()
       agent.onConnected()
     } else {
       this.logger.warn(`Unknown NodeConnectionStatus ${status}`)
@@ -453,7 +453,7 @@ export default class AgentService {
     connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))
 
     this.logger.log(`Agent joined with id: ${request.id}, key: ${!!agent.publicKey}`)
-    this.agentCount.inc()
+    AgentMetrics.connectedCount().inc()
     this.logServiceInfo()
 
     this.createAgentAudit(agent.id, 'connected', request)

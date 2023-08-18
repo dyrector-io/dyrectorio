@@ -77,6 +77,7 @@
     },
     "drivers": "Drivers",
     "logDrivers": {
+      "nodeDefault": "Node default",
       "none": "None",
       "gcplogs": "Gcplogs",
       "local": "Local",
@@ -121,7 +122,8 @@
     "labels": "Labels",
     "annotations": "Annotations",
     "service": "Service",
-    "deployment": "Deployment"
+    "deployment": "Deployment",
+    "ingress": "Ingress"
   },
   "sensitiveKey": "Sensitive config data should be stored as secrets"
 }

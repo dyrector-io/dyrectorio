@@ -15,10 +15,10 @@ export type Logout = {
 }
 
 export const AUTHENTICATION_METHOD_VALUES = ['password', 'oidc'] as const
-export type AuthenticationMethod = typeof AUTHENTICATION_METHOD_VALUES[number]
+export type AuthenticationMethod = (typeof AUTHENTICATION_METHOD_VALUES)[number]
 
 export const OIDC_PROVIDER_VALUES = ['google', 'gitlab', 'github', 'azure'] as const
-export type OidcProvider = typeof OIDC_PROVIDER_VALUES[number]
+export type OidcProvider = (typeof OIDC_PROVIDER_VALUES)[number]
 
 export type OidcAvailability = {
   gitlab: boolean
@@ -67,6 +67,9 @@ export type RegisterWithPassword = RegisterBase & {
 export type RegisterWithOidc = RegisterBase & {
   method: 'oidc'
   provider: OidcProvider
+  email?: string
+  firstName?: string
+  lastName?: string
 }
 
 export type Register = RegisterWithPassword | RegisterWithOidc
@@ -84,7 +87,7 @@ const KRATOS_LOCATION_CHANGE_REQUIRED_TYPE_VALUE = [KRATOS_LOCATION_CHANGE_REQUI
 
 export type KratosLocationChangeRequiredError = {
   error: {
-    id: typeof KRATOS_LOCATION_CHANGE_REQUIRED_TYPE_VALUE[number]
+    id: (typeof KRATOS_LOCATION_CHANGE_REQUIRED_TYPE_VALUE)[number]
   }
   redirect_browser_to: string
 }

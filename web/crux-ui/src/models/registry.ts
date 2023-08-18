@@ -1,12 +1,12 @@
 import { REGISTRY_GITHUB_URL, REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from '@app/const'
 
 export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github', 'google', 'unchecked'] as const
-export type RegistryType = typeof REGISTRY_TYPE_VALUES[number]
+export type RegistryType = (typeof REGISTRY_TYPE_VALUES)[number]
 
 export const GITHUB_NAMESPACE_VALUES = ['organization', 'user'] as const
 export const GITLAB_NAMESPACE_VALUES = ['group', 'project'] as const
-export type GitlabNamespace = typeof GITLAB_NAMESPACE_VALUES[number]
-export type GithubNamespace = typeof GITHUB_NAMESPACE_VALUES[number]
+export type GitlabNamespace = (typeof GITLAB_NAMESPACE_VALUES)[number]
+export type GithubNamespace = (typeof GITHUB_NAMESPACE_VALUES)[number]
 export type RegistryNamespace = GitlabNamespace | GithubNamespace
 
 export type BasicRegistry = {

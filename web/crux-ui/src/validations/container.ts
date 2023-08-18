@@ -15,7 +15,6 @@ import {
   VolumeType,
 } from '@app/models/container'
 import * as yup from 'yup'
-import { AnyObject } from 'yup/lib/types'
 
 export const uniqueKeySchema = yup
   .array(
@@ -111,7 +110,7 @@ const deploymentStrategyRule = yup
 const logDriverRule = yup
   .mixed<ContainerLogDriverType>()
   .oneOf([...CONTAINER_LOG_DRIVER_VALUES])
-  .default('none')
+  .default('nodeDefault')
   .required()
 
 const volumeTypeRule = yup
@@ -155,7 +154,7 @@ const resourceConfigRule = yup
       })
       .nullable()
       .optional(),
-    memory: yup
+    requests: yup
       .object()
       .shape({
         cpu: yup.string().nullable(),
@@ -190,7 +189,7 @@ const storageRule = yup
   .optional()
 
 const createOverlapTest = (
-  schema: yup.NumberSchema<number, AnyObject, number>,
+  schema: yup.NumberSchema<number, any, number>,
   portRanges: ContainerConfigPortRange[],
   field: Exclude<keyof ContainerConfigPortRange, 'id'>,
 ) =>
@@ -285,7 +284,7 @@ const initContainerVolumeLinkRule = yup.array(
 const initContainerRule = yup
   .array(
     yup.object().shape({
-      name: yup.string().required(),
+      name: yup.string().required().matches(/^\S+$/g),
       image: yup.string().required(),
       command: uniqueKeysOnlySchema.default([]).nullable(),
       args: uniqueKeysOnlySchema.default([]).nullable(),
@@ -320,7 +319,7 @@ const markerRule = yup
   .optional()
 
 const containerConfigBaseSchema = yup.object().shape({
-  name: yup.string().required(),
+  name: yup.string().required().matches(/^\S+$/g),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
   routing: routingRule,
   expose: exposeRule,

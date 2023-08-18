@@ -23,6 +23,7 @@ export const SERVICE_STATUS_CHECK_INTERVAL = 5000 // sec in millis
 
 export const INVITE_LINK_EXPIRATION = '12h'
 export const ATTRIB_CSRF = 'csrf_token'
+export const ATTRIB_OIDC_PROVIDER = 'provider'
 export const HEADER_SET_COOKIE = 'set-cookie'
 export const HEADER_LOCATION = 'location'
 export const AUTH_RESEND_DELAY = 30 // seconds
@@ -33,3 +34,9 @@ export const KRATOS_ERROR_NO_VERIFIED_EMAIL_ADDRESS = 4000010
 export const STORAGE_VIEW_MODE = 'view-mode'
 
 export const UID_MAX = 2147483647
+
+export const STORAGE_TEAM_SLUG = 'teamSlug'
+
+export const COOKIE_TEAM_SLUG = 'crux_team_slug'
+
+export const TOAST_DURATION = 5000 // sec in millis

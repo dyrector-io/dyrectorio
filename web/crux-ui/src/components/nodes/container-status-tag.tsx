@@ -9,6 +9,7 @@ interface ContainerStatusTagProps {
 
 const ContainerStatusTag = (props: ContainerStatusTagProps) => {
   const { state, className } = props
+
   const { t } = useTranslation('common')
 
   const statusToBgColor = () => {

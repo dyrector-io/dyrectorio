@@ -72,8 +72,6 @@ interface SecretKeyInputProps {
 }
 
 const SecretKeyInput = (props: SecretKeyInputProps) => {
-  const { t } = useTranslation('common')
-
   const {
     label,
     labelClassName,
@@ -86,6 +84,8 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
     onChange: propsOnChange,
     onResetSection: propsOnResetSection,
   } = props
+
+  const { t } = useTranslation('common')
 
   const [state, dispatch] = useRepatch(items ?? [])
 
@@ -160,8 +160,7 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
             <div className="flex-0">
               <DyoToggle
                 id="required"
-                nameChecked={t('required')}
-                nameUnchecked={t('notRequired')}
+                label={t('required')}
                 checked={required}
                 disabled={disabled}
                 onCheckedChange={it => onChange(index, { required: it })}

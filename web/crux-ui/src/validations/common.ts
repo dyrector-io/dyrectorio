@@ -1,11 +1,10 @@
 import * as yup from 'yup'
-import { ValidateOptions } from 'yup/lib/types'
 import { DYO_ICONS } from '../elements/dyo-icon-picker'
 
 export const getValidationError = (
-  schema: yup.AnySchema,
+  schema: yup.Schema,
   candidate: any,
-  options?: ValidateOptions,
+  options?: yup.ValidateOptions,
 ): yup.ValidationError => {
   try {
     schema.validateSync(candidate, options)

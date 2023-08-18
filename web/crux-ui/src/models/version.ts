@@ -4,7 +4,7 @@ import { VersionImage } from './image'
 import { DyoNode } from './node'
 
 export const VERSION_TYPE_VALUES = ['incremental', 'rolling'] as const
-export type VersionType = typeof VERSION_TYPE_VALUES[number]
+export type VersionType = (typeof VERSION_TYPE_VALUES)[number]
 
 export type BasicVersion = {
   id: string
@@ -51,4 +51,4 @@ export type VersionDetails = Version & {
 export type VersionAddSectionState = 'image' | 'deployment' | 'none'
 
 export const VERSION_SECTIONS_STATE_VALUES = ['images', 'deployments', 'reorder'] as const
-export type VersionSectionsState = typeof VERSION_SECTIONS_STATE_VALUES[number]
+export type VersionSectionsState = (typeof VERSION_SECTIONS_STATE_VALUES)[number]

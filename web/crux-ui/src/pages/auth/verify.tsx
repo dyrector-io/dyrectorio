@@ -25,7 +25,8 @@ import {
 import { verifyCodeSchema, verifyEmailSchema } from '@app/validations'
 import { VerificationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
-import kratos, { forwardCookie, obtainSessionFromRequest, verifiableEmailOfIdentity } from '@server/kratos'
+import { forwardCookie } from '@server/cookie'
+import kratos, { obtainSessionFromRequest, verifiableEmailOfIdentity } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
@@ -117,7 +118,7 @@ const VerifyPage = (props: VerifyProps) => {
   }
 
   const restartVerification = () => {
-    window.location.replace(verificationUrl(email, { restart: true }))
+    window.location.replace(verificationUrl({ email, restart: true }))
   }
 
   const emailAvailable = !!formik.values.email
@@ -252,6 +253,12 @@ const getPageServerSideProps = async (context: NextPageContext) => {
       if (!queryEmail) {
         email = session.identity.traits.email ?? null
       }
+    }
+  } else if (!queryEmail) {
+    const session = await obtainSessionFromRequest(context.req)
+
+    if (session) {
+      email = session.identity.traits.email ?? null
     }
   }
 

@@ -20,7 +20,10 @@ export type InviteTemplateOptions = {
 export default class EmailBuilder {
   private host: string
 
-  constructor(configService: ConfigService, private templateBuilder: NotificationTemplateBuilder) {
+  constructor(
+    configService: ConfigService,
+    private templateBuilder: NotificationTemplateBuilder,
+  ) {
     this.host = configService.get<string>('CRUX_UI_URL')
   }
 

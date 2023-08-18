@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { readFileSync } from 'fs'
+import Handlebars from 'handlebars'
 import { join } from 'path'
 import { cwd } from 'process'
-import Handlebars from 'handlebars'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 
 type TemplateEntry = {

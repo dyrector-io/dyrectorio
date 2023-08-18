@@ -1,12 +1,12 @@
 import EditorBadge from '@app/components/editor/editor-badge'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { ProjectDetails, VERSION_SECTIONS_STATE_VALUES } from '@app/models'
-import { deploymentUrl } from '@app/routes'
 import { parseStringUnionType } from '@app/utils'
 import { useRouter } from 'next/dist/client/router'
 import React, { useEffect, useRef } from 'react'
 import AddDeploymentCard from './deployments/add-deployment-card'
 import CopyDeploymentCard from './deployments/copy-deployment-card'
-import SelectImagesCard from './images/select-images-card'
+import AddImagesCard from './images/add-images-card'
 import { VerionState, VersionActions, VersionSection } from './use-version-state'
 import VersionDeploymentsSection from './version-deployments-section'
 import VersionImagesSection from './version-images-section'
@@ -26,6 +26,7 @@ interface VersionSectionsProps {
 const VersionSections = (props: VersionSectionsProps) => {
   const { state, actions, setTopBarContent, project } = props
 
+  const routes = useTeamRoutes()
   const router = useRouter()
 
   const { editors } = state.editor
@@ -44,7 +45,7 @@ const VersionSections = (props: VersionSectionsProps) => {
 
   const saveImageOrderRef = useRef<VoidFunction>()
 
-  const onDeploymentCreated = async (deploymentId: string) => await router.push(deploymentUrl(deploymentId))
+  const onDeploymentCreated = async (deploymentId: string) => await router.push(routes.deployment.details(deploymentId))
 
   return (
     <>
@@ -56,7 +57,7 @@ const VersionSections = (props: VersionSectionsProps) => {
           saveImageOrderRef={saveImageOrderRef}
         />
       ) : state.addSection === 'image' ? (
-        <SelectImagesCard onImagesSelected={actions.addImages} onDiscard={actions.discardAddSection} />
+        <AddImagesCard onImagesSelected={actions.addImages} onDiscard={actions.discardAddSection} />
       ) : state.addSection === 'deployment' ? (
         <AddDeploymentCard
           className="mb-4 p-8"

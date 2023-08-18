@@ -1,12 +1,11 @@
-import { deploymentDeployUrl, projectUrl, ROUTE_DEPLOYMENTS, ROUTE_NODES, versionUrl } from '@app/routes'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { expect, Page } from '@playwright/test'
 import { exec, ExecOptions } from 'child_process'
-import { DAGENT_NODE, screenshotPath } from './common'
+import { DAGENT_NODE, screenshotPath, TEAM_ROUTES } from './common'
 import { fillDeploymentPrefix } from './projects'
 
 export const installDagent = async (page: Page) => {
-  await page.goto(ROUTE_NODES)
+  await page.goto(TEAM_ROUTES.node.list())
 
   await page.locator('button:has-text("Add")').click()
 
@@ -26,6 +25,7 @@ export const installDagent = async (page: Page) => {
   const commandInput = await page.locator('input[readonly]')
   const curl = await commandInput.inputValue()
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   exec(curl, getInstallScriptExecSettings(), logCmdOutput)
 
   await page.waitForSelector('div.bg-dyo-green')
@@ -42,9 +42,9 @@ export const deployWithDagent = async (
   testName?: string,
 ): Promise<string> => {
   if (versionId) {
-    await page.goto(versionUrl(projectId, versionId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionId))
   } else {
-    await page.goto(projectUrl(projectId))
+    await page.goto(TEAM_ROUTES.project.details(projectId))
   }
 
   await page.locator('button:has-text("Add deployment")').click()
@@ -56,7 +56,7 @@ export const deployWithDagent = async (
   await fillDeploymentPrefix(page, prefix)
 
   await page.locator('button:has-text("Add")').click()
-  await page.waitForURL(`${ROUTE_DEPLOYMENTS}/**`)
+  await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**`)
 
   const deploymentId = page.url().split('/').pop()
 
@@ -65,7 +65,7 @@ export const deployWithDagent = async (
   })
 
   await deploy.click()
-  await page.waitForURL(deploymentDeployUrl(deploymentId))
+  await page.waitForURL(TEAM_ROUTES.deployment.deploy(deploymentId))
 
   if (ignoreResult) {
     return deploymentId
@@ -76,7 +76,7 @@ export const deployWithDagent = async (
     await page.screenshot({ path: screenshotPath(`dagent-deploy-after-1s-${testName}`), fullPage: true })
   }
 
-  expect(page.url()).toContain(deploymentDeployUrl(deploymentId))
+  expect(page.url()).toContain(TEAM_ROUTES.deployment.deploy(deploymentId))
   await page.getByText('Successful').waitFor()
 
   return deploymentId

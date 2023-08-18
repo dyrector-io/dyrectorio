@@ -12,8 +12,8 @@ import {
   CruxPreconditionFailedException,
 } from 'src/exception/crux-exception'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
-import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { PRODUCTION } from 'src/shared/const'
+import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { getAgentVersionFromPackage } from 'src/shared/package'
 import { Agent, AgentConnectionMessage } from './agent'
 
@@ -22,6 +22,7 @@ export default class AgentInstaller {
 
   constructor(
     readonly configService: ConfigService,
+    readonly teamSlug: string,
     readonly nodeId: string,
     readonly nodeName: string,
     readonly token: string,
@@ -49,7 +50,9 @@ export default class AgentInstaller {
   }
 
   getCommand(): string {
-    const scriptUrl = `${this.configService.get<string>('CRUX_UI_URL')}/api/nodes/${this.nodeId}/script`
+    const scriptUrl = `${this.configService.get<string>('CRUX_UI_URL')}/api/${this.teamSlug}/nodes/${
+      this.nodeId
+    }/script`
 
     switch (this.scriptType) {
       case 'shell':

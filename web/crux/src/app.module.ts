@@ -8,7 +8,6 @@ import DashboardModule from './app/dashboard/dashboard.module'
 import DeployModule from './app/deploy/deploy.module'
 import HealthModule from './app/health/health.module'
 import ImageModule from './app/image/image.module'
-import MetricsController from './app/metrics/metrics.controller'
 import NodeModule from './app/node/node.module'
 import NotificationModule from './app/notification/notification.module'
 import ProjectModule from './app/project/project.module'
@@ -19,6 +18,7 @@ import TemplateModule from './app/template/template.module'
 import VersionModule from './app/version/version.module'
 import appConfig from './config/app.config'
 import pinoLoggerConfig from './config/pino.logger.config'
+import TeamAccessGuard from './guards/team-access.guard'
 import UuidValidationGuard from './guards/uuid-params.validation.guard'
 import EmailModule from './mailer/email.module'
 import ShutdownService from './services/application.shutdown.service'
@@ -41,9 +41,10 @@ const imports = [
   StorageModule,
   ConfigModule.forRoot(appConfig),
   EmailModule,
-  PrometheusModule.register({
-    controller: MetricsController,
-  }),
+  {
+    ...PrometheusModule.register(),
+    controllers: [], // Found no other way to unset the default controller
+  },
 ]
 
 if (process.env.NODE_ENV === 'production') {
@@ -53,6 +54,6 @@ if (process.env.NODE_ENV === 'production') {
 @Module({
   imports,
   controllers: [],
-  providers: [PrismaService, ShutdownService, UuidValidationGuard],
+  providers: [PrismaService, ShutdownService, UuidValidationGuard, TeamAccessGuard],
 })
 export default class AppModule {}

@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsBoolean, IsIn, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
-import { VersionDto } from '../version/version.dto'
 import { AuditDto } from '../audit/audit.dto'
+import { VersionDto } from '../version/version.dto'
 
 export const PROJECT_TYPE_VALUES = ['versionless', 'versioned'] as const
 export type ProjectTypeDto = (typeof PROJECT_TYPE_VALUES)[number]

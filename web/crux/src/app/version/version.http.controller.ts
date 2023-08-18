@@ -43,17 +43,20 @@ import {
 } from './version.dto'
 import VersionService from './version.service'
 
+const PARAM_TEAM_SLUG = 'teamSlug'
 const PARAM_PROJECT_ID = 'projectId'
 const PARAM_VERSION_ID = 'versionId'
 const ProjectId = () => Param(PARAM_PROJECT_ID)
 const VersionId = () => Param(PARAM_VERSION_ID)
+const TeamSlug = () => Param(PARAM_TEAM_SLUG)
 
+const ROUTE_TEAM_SLUG = ':teamSlug'
 const ROUTE_PROJECTS = 'projects'
 const ROUTE_PROJECT_ID = ':projectId'
 const ROUTE_VERSION_ID = ':versionId'
 const ROUTE_VERSIONS = 'versions'
 
-@Controller(`${ROUTE_PROJECTS}/${ROUTE_PROJECT_ID}/${ROUTE_VERSIONS}`)
+@Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_PROJECTS}/${ROUTE_PROJECT_ID}/${ROUTE_VERSIONS}`)
 @ApiTags(ROUTE_VERSIONS)
 @UseGuards(VersionTeamAccessGuard)
 export default class VersionHttpController {
@@ -63,7 +66,7 @@ export default class VersionHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      "Returns an array containing the every version that belong to a project. `projectId` refers to the project's ID. Details include the version's `name`, `id`, `type`, `audit` log details, `changelog`, and increasibility.",
+      "Returns an array containing the every version that belong to a project. `teamSlug` and `ProjectId` must be included in URL. `ProjectId` refers to the project's ID. Details include the version's `name`, `id`, `type`, `audit` log details, `changelog`, and increasibility.",
     summary: 'Fetch the list of all the versions under a project.',
   })
   @ApiOkResponse({
@@ -74,6 +77,7 @@ export default class VersionHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for project versions.' })
   @UuidParams(PARAM_PROJECT_ID)
   async getVersions(
+    @TeamSlug() _: string,
     @ProjectId() projectId: string,
     @IdentityFromRequest() identity: Identity,
     @Query() query: VersionListQuery,
@@ -84,7 +88,7 @@ export default class VersionHttpController {
   @Get(ROUTE_VERSION_ID)
   @ApiOperation({
     description:
-      "Returns the details of a version in the project. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Details include the version's `name`, `id`, `type`, `audit` log details, `changelog`, increasibility, mutability, deletability, and all image related data, including `name`, `id`, `tag`, `order` and configuration data of the images.",
+      "Returns the details of a version in the project. `teamSlug` and `ProjectId` must be included in URL. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Details include the version's `name`, `id`, `type`, `audit` log details, `changelog`, increasibility, mutability, deletability, and all image related data, including `name`, `id`, `tag`, `order` and configuration data of the images.",
     summary: 'Retrieve the details of a version of a project.',
   })
   @ApiOkResponse({ type: VersionDetailsDto, description: 'Details of a version under a project is fetched.' })
@@ -92,7 +96,11 @@ export default class VersionHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for version details.' })
   @ApiNotFoundResponse({ description: 'Version not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
-  async getVersion(@ProjectId() _projectId: string, @VersionId() versionId: string): Promise<VersionDetailsDto> {
+  async getVersion(
+    @TeamSlug() _: string,
+    @ProjectId() _projectId: string,
+    @VersionId() versionId: string,
+  ): Promise<VersionDetailsDto> {
     return await this.service.getVersionDetails(versionId)
   }
 
@@ -102,7 +110,7 @@ export default class VersionHttpController {
   @UseInterceptors(VersionCreateValidationInterceptor)
   @ApiOperation({
     description:
-      "Creates a new version in a project. `projectId` refers to the project's ID. Request must include the `name` and `type` of the version, `changelog` is optionable. Response should include the `name`, `id`, `changelog`, increasibility, `type`, and `audit` log details of the version.",
+      "Creates a new version in a project. `projectId` refers to the project's ID. `teamSlug` and `ProjectId` must be included in URL, request's body need to include `name` and `type` of the version, `changelog` is optionable. Response should include the `name`, `id`, `changelog`, increasibility, `type`, and `audit` log details of the version.",
     summary: 'Create a new version.',
   })
   @ApiBody({ type: CreateVersionDto })
@@ -112,6 +120,7 @@ export default class VersionHttpController {
   @ApiConflictResponse({ description: 'Version name taken.' })
   @UuidParams(PARAM_PROJECT_ID)
   async createVersion(
+    @TeamSlug() _: string,
     @ProjectId() projectId: string,
     @Body() request: CreateVersionDto,
     @IdentityFromRequest() identity: Identity,
@@ -128,7 +137,7 @@ export default class VersionHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      "Updates a version's `name` and `changelog`. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.",
+      "Updates a version's `name` and `changelog`. `teamSlug`, `ProjectId` and `VersionId` must be included in URL. `projectId` refers to the project's ID, `versionId` refers to the version's ID.",
     summary: 'Modify version.',
   })
   @ApiNoContentResponse({ description: 'Changelog of a version is updated.' })
@@ -140,6 +149,7 @@ export default class VersionHttpController {
   @ApiBody({ type: UpdateVersionDto })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async updateVersion(
+    @TeamSlug() _: string,
     @ProjectId() _projectId: string,
     @VersionId() versionId: string,
     @Body() request: UpdateVersionDto,
@@ -152,7 +162,7 @@ export default class VersionHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      "This call deletes a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.",
+      "This call deletes a version.  `teamSlug`, `ProjectId` and `VersionId` must be included in URL. `projectId` refers to the project's ID, `versionId` refers to the version's ID.",
     summary: 'Delete a version.',
   })
   @ApiNoContentResponse({ description: 'Version deleted.' })
@@ -160,7 +170,11 @@ export default class VersionHttpController {
   @ApiNotFoundResponse({ description: 'Version not found.' })
   @UseInterceptors(VersionDeleteValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
-  async deleteVersion(@ProjectId() _projectId: string, @VersionId() versionId: string): Promise<void> {
+  async deleteVersion(
+    @TeamSlug() _: string,
+    @ProjectId() _projectId: string,
+    @VersionId() versionId: string,
+  ): Promise<void> {
     return await this.service.deleteVersion(versionId)
   }
 
@@ -168,7 +182,7 @@ export default class VersionHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      "This call turns a version into the default one, resulting other versions within this project later inherit images, deployments and their configurations from it. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.",
+      "This call turns a version into the default one, resulting other versions within this project later inherit images, deployments and their configurations from it.  `teamSlug`, `ProjectId` and `VersionId` must be included in URL. `projectId` refers to the project's ID, `versionId` refers to the version's ID.",
     summary:
       'Turn version into a default one of the versioned project other versions under it will inherit images and deployments from.',
   })
@@ -179,7 +193,11 @@ export default class VersionHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for setting version as default.' })
   @ApiNotFoundResponse({ description: 'Version not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
-  async setDefaultVersion(@ProjectId() projectId: string, @VersionId() versionId: string): Promise<void> {
+  async setDefaultVersion(
+    @TeamSlug() _: string,
+    @ProjectId() projectId: string,
+    @VersionId() versionId: string,
+  ): Promise<void> {
     return await this.service.setDefaultVersion(projectId, versionId)
   }
 
@@ -188,7 +206,7 @@ export default class VersionHttpController {
   @CreatedWithLocation()
   @ApiOperation({
     description:
-      "Increases the version of a project with a new child version. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `name` refers to the name of the new version. All are required variables.",
+      "Increases the version of a project with a new child version. `teamSlug`, `ProjectId` and `VersionId` must be included in URL. `projectId` refers to the project's ID, `versionId` refers to the version's ID. `name` refers to the name of the new version, and is required in the body.",
     summary: 'Increase a the version of a versioned project with a new version.',
   })
   @UseInterceptors(VersionIncreaseValidationInterceptor)
@@ -198,6 +216,7 @@ export default class VersionHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for increasing version.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async increaseVersion(
+    @TeamSlug() _: string,
     @ProjectId() projectId: string,
     @VersionId() versionId: string,
     @Body() request: IncreaseVersionDto,

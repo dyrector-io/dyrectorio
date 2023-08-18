@@ -1,16 +1,16 @@
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { Test, TestingModule } from '@nestjs/testing'
-import DomainNotificationService from 'src/services/domain.notification.service'
-import PrismaService from 'src/services/prisma.service'
-import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import { getToken } from '@willsoto/nestjs-prometheus'
-import { PRODUCTION } from 'src/shared/const'
 import { Subject, firstValueFrom } from 'rxjs'
 import { major, minor } from 'semver'
-import AgentService from './agent.service'
+import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
+import DomainNotificationService from 'src/services/domain.notification.service'
+import PrismaService from 'src/services/prisma.service'
+import { PRODUCTION } from 'src/shared/const'
 import ContainerMapper from '../container/container.mapper'
 import { NodeConnectionStatus } from '../node/node.dto'
+import AgentService from './agent.service'
 
 const GrpcNodeConnectionMock = jest.fn().mockImplementation(() => ({
   nodeId: 'agent-id',

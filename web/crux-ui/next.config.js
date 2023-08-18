@@ -7,7 +7,7 @@ if (resultOrder) {
 } else if (process.env.NODE_ENV !== 'production') {
   dns.setDefaultResultOrder('ipv4first')
 }
-const nextTranslate = require('next-translate')
+const nextTranslate = require('next-translate-plugin')
 
 module.exports = {
   ...nextTranslate(),

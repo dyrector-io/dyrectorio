@@ -15,7 +15,11 @@ export class GoogleRegistryClient implements RegistryApiClient {
 
   private client: JWT
 
-  constructor(private url: string, private imageNamePrefix: string, options?: GoogleClientOptions) {
+  constructor(
+    private url: string,
+    private imageNamePrefix: string,
+    options?: GoogleClientOptions,
+  ) {
     if (options?.username) {
       if (!options.password) {
         throw new CruxUnauthorizedException({

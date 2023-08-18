@@ -10,6 +10,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   CreateRegistryDto,
   GithubRegistryDetails,
@@ -26,7 +27,6 @@ import {
   UpdateRegistryDto,
   V2RegistryDetails,
 } from '@app/models'
-import { API_REGISTRIES, registryApiUrl } from '@app/routes'
 import { FormikProps, sendForm } from '@app/utils'
 import { registrySchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
@@ -49,6 +49,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
   const { className, registry: propsRegistry, onRegistryEdited, submitRef } = props
 
   const { t } = useTranslation('registries')
+  const routes = useTeamRoutes()
 
   const [registry, setRegistry] = useState<RegistryDetails>(
     propsRegistry ?? {
@@ -87,8 +88,8 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
       }
 
       const res = await (!editing
-        ? sendForm('POST', API_REGISTRIES, body as CreateRegistryDto)
-        : sendForm('PUT', registryApiUrl(registry.id), body as UpdateRegistryDto))
+        ? sendForm('POST', routes.registry.api.list(), body as CreateRegistryDto)
+        : sendForm('PUT', routes.registry.api.details(registry.id), body as UpdateRegistryDto))
 
       if (res.ok) {
         let result: RegistryDetails

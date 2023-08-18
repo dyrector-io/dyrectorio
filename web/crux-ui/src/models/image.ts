@@ -109,10 +109,10 @@ export const ALL_CONFIG_PROPERTIES = [
 
 export const CRANE_CONFIG_FILTER_VALUES = CRANE_CONFIG_PROPERTIES.filter(it => it !== 'extraLBAnnotations')
 
-export type CommonConfigProperty = typeof COMMON_CONFIG_PROPERTIES[number]
-export type CraneConfigProperty = typeof CRANE_CONFIG_PROPERTIES[number]
-export type DagentConfigProperty = typeof DAGENT_CONFIG_PROPERTIES[number]
-export type ImageConfigProperty = typeof ALL_CONFIG_PROPERTIES[number]
+export type CommonConfigProperty = (typeof COMMON_CONFIG_PROPERTIES)[number]
+export type CraneConfigProperty = (typeof CRANE_CONFIG_PROPERTIES)[number]
+export type DagentConfigProperty = (typeof DAGENT_CONFIG_PROPERTIES)[number]
+export type ImageConfigProperty = (typeof ALL_CONFIG_PROPERTIES)[number]
 
 export type BaseImageConfigFilterType = 'all' | 'common' | 'dagent' | 'crane'
 

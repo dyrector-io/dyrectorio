@@ -1,5 +1,5 @@
-import { imageConfigUrl, versionWsUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
+import { TEAM_ROUTES } from 'e2e/utils/common'
 import {
   wsPatchMatchCustomHeader,
   wsPatchMatchDeploymentAnnotations,
@@ -37,13 +37,13 @@ test.describe('Image kubernetes config from editor', () => {
     const { projectId, versionId, imageId } = await setup(page, 'deployment-strategy-editor', '1.0.0', 'redis')
 
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     const strategy = 'rolling'
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentStrategy(strategy))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentStrategy(strategy))
     await page.locator(`button:has-text("${strategy}")`).click()
     await wsSent
 
@@ -56,9 +56,9 @@ test.describe('Image kubernetes config from editor', () => {
     const { projectId, versionId, imageId } = await setup(page, 'custom-headers-editor', '1.0.0', 'redis')
 
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     await page.locator('button:has-text("Custom headers")').click()
 
@@ -67,7 +67,7 @@ test.describe('Image kubernetes config from editor', () => {
       .locator('div.grid:has(label:has-text("CUSTOM HEADERS")) input[placeholder="Header name"]')
       .first()
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchCustomHeader(header))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchCustomHeader(header))
     await input.fill(header)
     await wsSent
 
@@ -80,28 +80,28 @@ test.describe('Image kubernetes config from editor', () => {
     const { projectId, versionId, imageId } = await setup(page, 'proxy-headers-editor', '1.0.0', 'redis')
 
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     await page.locator('button:has-text("Proxy headers")').click()
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchProxyHeader(true))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchProxyHeader(true))
     await page.locator('button[aria-checked="false"]:right-of(label:has-text("PROXY HEADERS"))').click()
     await wsSent
 
     await page.reload()
 
-    await expect(page.locator('button[aria-checked="true"]:right-of(label:has-text("PROXY HEADERS"))')).toBeVisible()
+    await expect(page.locator(':right-of(:text("PROXY HEADERS"))').getByRole('switch', { checked: true })).toBeVisible()
   })
 
   test('Load balancer should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'load-balancer-editor', '1.0.0', 'redis')
 
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     await page.locator('button:has-text("Use load balancer")').click()
 
@@ -111,6 +111,7 @@ test.describe('Image kubernetes config from editor', () => {
     let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchLoadBalancer(true))
     await page.locator('button[aria-checked="false"]:right-of(label:has-text("USE LOAD BALANCER"))').click()
     await wsSent
+
     wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchLBAnnotations(key, value))
     await page.locator('div.grid:has(label:has-text("USE LOAD BALANCER")) input[placeholder="Key"]').first().fill(key)
     await page
@@ -122,7 +123,7 @@ test.describe('Image kubernetes config from editor', () => {
     await page.reload()
 
     await expect(
-      page.locator('button[aria-checked="true"]:right-of(label:has-text("USE LOAD BALANCER"))'),
+      page.locator(':right-of(:text("USE LOAD BALANCER"))').getByRole('switch', { checked: true }),
     ).toBeVisible()
     await expect(
       page.locator('div.grid:has(label:has-text("USE LOAD BALANCER")) input[placeholder="Key"]').first(),
@@ -136,9 +137,9 @@ test.describe('Image kubernetes config from editor', () => {
     const { projectId, versionId, imageId } = await setup(page, 'health-check-editor', '1.0.0', 'redis')
 
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     await page.locator('button:has-text("Health check config")').click()
 
@@ -149,7 +150,7 @@ test.describe('Image kubernetes config from editor', () => {
 
     const hcConf = page.locator('div.grid:has(label:has-text("HEALTH CHECK CONFIG"))')
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchHealthCheck(port, liveness, readiness, startup))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchHealthCheck(port, liveness, readiness, startup))
     await hcConf.locator('input[placeholder="Port"]').fill(port.toString())
     await hcConf.getByLabel('Liveness probe').fill(liveness)
     await hcConf.getByLabel('Readiness probe').fill(readiness)
@@ -167,9 +168,9 @@ test.describe('Image kubernetes config from editor', () => {
   test('Resource config should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'resource-config-editor', '1.0.0', 'redis')
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     await page.locator('button:has-text("Resource config")').click()
 
@@ -180,7 +181,7 @@ test.describe('Image kubernetes config from editor', () => {
 
     const rsConf = page.locator('div.grid:has(label:has-text("RESOURCE CONFIG"))')
 
-    let wsSent = wsPatchSent(
+    const wsSent = wsPatchSent(
       ws,
       wsRoute, WS_TYPE_PATCH_IMAGE,
       wsPatchMatchResourceConfig(cpuLimits, cpuRequests, memoryLimits, memoryRequests),
@@ -199,13 +200,16 @@ test.describe('Image kubernetes config from editor', () => {
     await expect(rsConf.locator('input').nth(3)).toHaveValue(memoryRequests)
   })
 
+  const getCategoryDiv = async (category: string, page: Page) =>
+    page.locator(`div.max-h-128 > div:nth-child(2):near(label:has-text("${category}"))`)
+
   test('Labels should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'labels-editor', '1.0.0', 'redis')
 
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     await page.getByRole('button', { name: 'Labels', exact: true }).click()
 
@@ -243,9 +247,9 @@ test.describe('Image kubernetes config from editor', () => {
     const { projectId, versionId, imageId } = await setup(page, 'annotations-editor', '1.0.0', 'redis')
 
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(versionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     await page.getByRole('button', { name: 'Annotations', exact: true }).click()
 
@@ -279,7 +283,3 @@ test.describe('Image kubernetes config from editor', () => {
     await expect(ingressDiv.locator('input[placeholder="Value"]').first()).toHaveValue(value)
   })
 })
-
-const getCategoryDiv = async (category: string, page: Page) => {
-  return page.locator(`div.max-h-128 > div:nth-child(2):near(label:has-text("${category}"))`)
-}

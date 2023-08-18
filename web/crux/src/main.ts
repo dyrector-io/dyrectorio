@@ -1,23 +1,25 @@
 import { ServerCredentials } from '@grpc/grpc-js'
-import { ValidationPipe, Logger } from '@nestjs/common'
+import { Logger, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { MicroserviceOptions, Transport } from '@nestjs/microservices'
 import { SwaggerModule } from '@nestjs/swagger'
-import { join } from 'path'
 import { Logger as PinoLogger } from 'nestjs-pino'
+import { join } from 'path'
 import AppModule from './app.module'
-import JwtAuthGuard from './app/token/jwt-auth.guard'
-import HttpExceptionFilter from './filters/http.exception-filter'
-import UuidValidationGuard from './guards/uuid-params.validation.guard'
-import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
-import createSwaggerConfig from './config/swagger.config'
-import DyoWsAdapter from './websockets/dyo.ws.adapter'
 import AuditLoggerInterceptor from './app/audit.logger/audit.logger.interceptor'
-import { PRODUCTION } from './shared/const'
+import metricsServerBootstrap from './app/metrics/metrics.server'
+import JwtAuthGuard from './app/token/jwt-auth.guard'
+import createSwaggerConfig from './config/swagger.config'
+import HttpExceptionFilter from './filters/http.exception-filter'
+import TeamAccessGuard from './guards/team-access.guard'
+import UuidValidationGuard from './guards/uuid-params.validation.guard'
 import CreatedWithLocationInterceptor from './interceptors/created-with-location.interceptor'
-import prismaBootstrap from './services/prisma.bootstrap'
 import HttpLoggerInterceptor from './interceptors/http.logger.interceptor'
+import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
+import prismaBootstrap from './services/prisma.bootstrap'
+import { PRODUCTION } from './shared/const'
+import DyoWsAdapter from './websockets/dyo.ws.adapter'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -60,10 +62,11 @@ const bootstrap = async () => {
 
   const agentOptions = loadGrpcOptions(configService.get<string>('GRPC_AGENT_PORT'))
   const httpOptions = configService.get<string>('HTTP_API_PORT', '1848')
+  const metricOptions = configService.get<number>('METRICS_API_PORT', 0)
 
   const authGuard = app.get(JwtAuthGuard)
   app.useGlobalFilters(new HttpExceptionFilter())
-  app.useGlobalGuards(authGuard, app.get(UuidValidationGuard))
+  app.useGlobalGuards(authGuard, app.get(TeamAccessGuard), app.get(UuidValidationGuard))
   app.useGlobalInterceptors(
     new HttpLoggerInterceptor(),
     app.get(PrismaErrorInterceptor),
@@ -86,6 +89,10 @@ const bootstrap = async () => {
   })
 
   await prismaBootstrap(app)
+
+  if (metricOptions > 0) {
+    await metricsServerBootstrap(app, metricOptions)
+  }
 
   await app.startAllMicroservices()
   await app.listen(httpOptions)

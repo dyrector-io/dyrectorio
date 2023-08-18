@@ -1,5 +1,5 @@
 import { Audit } from './audit'
-import { DeploymentStatus } from './common'
+import { DeploymentStatus, DyoApiError, slugify } from './common'
 import { ContainerIdentifier, ContainerState, InstanceContainerConfigData, UniqueKeyValue } from './container'
 import { ImageConfigProperty, ImageDeletedMessage } from './image'
 import { Instance } from './instance'
@@ -49,7 +49,7 @@ export type DeploymentRoot = Omit<DeploymentDetails, 'project' | 'version' | 'no
 }
 
 export const DEPLOYMENT_EVENT_TYPE_VALUES = ['log', 'deployment-status', 'container-state'] as const
-export type DeploymentEventType = typeof DEPLOYMENT_EVENT_TYPE_VALUES[number]
+export type DeploymentEventType = (typeof DEPLOYMENT_EVENT_TYPE_VALUES)[number]
 
 export type DeploymentEventContainerState = {
   instanceId: string
@@ -195,20 +195,13 @@ export const deploymentIsCopiable = (status: DeploymentStatus) => status !== 'in
 
 export const deploymentLogVisible = (status: DeploymentStatus) => status !== 'preparing'
 
-export const slugify = (name: string, separator: string) =>
-  name
-    .toString()
-    .normalize('NFD') // split an accented letter in the base letter and the acent
-    .replace(/[\u0300-\u036f]/g, '') // remove all previously split accents
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9 ]/g, '') // remove all chars not letters, numbers and spaces (to be replaced)
-    .replace(/\s+/g, separator)
-
-export const projectNameToDeploymentPrefix = (name: string) => slugify(name, '-')
+export const projectNameToDeploymentPrefix = (name: string) => slugify(name)
 
 export const lastDeploymentStatusOfEvents = (events: DeploymentEvent[]): DeploymentStatus | null =>
   events
     .filter(it => it.type === 'deployment-status')
     .sort((one, other) => new Date(other.createdAt).getTime() - new Date(one.createdAt).getTime())
     .at(0)?.deploymentStatus ?? null
+
+export const deploymentHasError = (dto: DyoApiError): boolean =>
+  dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing'

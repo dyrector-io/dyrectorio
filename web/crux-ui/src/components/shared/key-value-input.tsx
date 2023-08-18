@@ -78,7 +78,7 @@ interface KeyValueInputProps {
   onResetSection?: VoidFunction
   type?: HTMLInputTypeAttribute | undefined
   editorOptions: ItemEditorState
-  hint?: { hintValidation: yup.BaseSchema; hintText: string }
+  hint?: { hintValidation: yup.Schema; hintText: string }
 }
 
 const KeyValueInput = (props: KeyValueInputProps) => {

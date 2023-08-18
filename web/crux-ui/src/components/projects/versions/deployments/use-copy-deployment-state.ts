@@ -1,6 +1,6 @@
 import { DyoApiErrorHandler } from '@app/errors'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { DeploymentDetails } from '@app/models'
-import { deploymentApiUrl } from '@app/routes'
 import { useState } from 'react'
 
 type UseCopyDeploymentStateOptions = {
@@ -10,6 +10,8 @@ type UseCopyDeploymentStateOptions = {
 const useCopyDeploymentState = (
   options: UseCopyDeploymentStateOptions,
 ): [DeploymentDetails, (deploymentId: string | null) => Promise<void>] => {
+  const routes = useTeamRoutes()
+
   const [target, setTarget] = useState<DeploymentDetails>(null)
   const { handleApiError } = options
 
@@ -19,7 +21,7 @@ const useCopyDeploymentState = (
       return
     }
 
-    const res = await fetch(deploymentApiUrl(deploymentId))
+    const res = await fetch(routes.deployment.api.details(deploymentId))
     if (!res.ok) {
       handleApiError(res)
       return

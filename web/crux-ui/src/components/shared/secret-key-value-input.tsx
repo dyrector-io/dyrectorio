@@ -102,8 +102,6 @@ interface SecretKeyValueInputProps {
 }
 
 const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
-  const { t } = useTranslation('common')
-
   const {
     disabled,
     className,
@@ -117,6 +115,8 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
     definedSecrets,
     onSubmit: propsOnSubmit,
   } = props
+
+  const { t } = useTranslation('common')
 
   const [state, dispatch] = useReducer(reducer, items ?? [])
   const [changed, setChanged] = useState<boolean>(false)
@@ -300,7 +300,7 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
       {elements.map((it, index) => renderItem(it, index))}
 
       {!disabled && (
-        <div className="flex flex-row flex-grow p-1 justify-end">
+        <div className="flex flex-row flex-grow p-1 mr-14 justify-end">
           <DyoButton className="px-10 mr-1" disabled={!changed} secondary onClick={onDiscard}>
             {t('discard')}
           </DyoButton>

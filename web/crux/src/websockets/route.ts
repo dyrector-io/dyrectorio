@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common'
 import { MessageMappingProperties } from '@nestjs/websockets'
-import { EMPTY, Observable, firstValueFrom, of, tap } from 'rxjs'
+import { EMPTY, Observable, firstValueFrom, of } from 'rxjs'
+import WsMetrics from 'src/shared/metrics/ws.metrics'
 import {
   SubscriptionMessage,
   WS_TYPE_AUTHORIZE,
@@ -31,6 +32,8 @@ export default class WsRoute {
   constructor(readonly path: string) {
     this.logger = new Logger(`${WsRoute.name} ${path}`)
 
+    WsMetrics.routeNamespaces(this.path).set(this.countNamespaces())
+
     const parts = path.split('/').filter(it => it.length > 0)
     this.matchers = parts.map(it => {
       if (it[0] === ':') {
@@ -49,6 +52,10 @@ export default class WsRoute {
     })
   }
 
+  countNamespaces() {
+    return this.namespaces.size
+  }
+
   close() {
     this.namespaces.forEach(it => it.close())
     this.namespaces.clear()
@@ -59,7 +66,7 @@ export default class WsRoute {
 
   matches(messageType: string): WsRouteMatch | null {
     const parts = messageType.split('/').filter(it => it.length > 0)
-    if (this.matchers.length > parts.length) {
+    if (this.matchers.length !== parts.length) {
       return null
     }
 
@@ -80,7 +87,6 @@ export default class WsRoute {
     client: WsClient,
     match: WsRouteMatch,
     message: WsMessage<SubscriptionMessage>,
-    redirect?: boolean,
   ): Promise<Observable<WsMessage>> {
     const callbacks = this.callbacks.get(client.token)
     const { authorize, transform } = callbacks
@@ -93,16 +99,8 @@ export default class WsRoute {
       ...message,
       params: match.params,
     }
+
     const authorizationRes = transform(authorize(authMessage))
-    if (redirect) {
-      return authorizationRes.pipe(
-        tap(it => {
-          if (typeof it === 'boolean') {
-            throw new Error('Missing WsRedirectInterceptor')
-          }
-        }),
-      )
-    }
 
     const authorized = (await firstValueFrom(authorizationRes)) as boolean
     if (!authorized) {
@@ -186,6 +184,8 @@ export default class WsRoute {
       this.namespaces.set(path, ns)
 
       this.logger.verbose(`Namespace created ${path}`)
+
+      WsMetrics.routeNamespaces(this.path).set(this.countNamespaces())
     }
 
     return ns
@@ -205,6 +205,8 @@ export default class WsRoute {
     if (shouldRemove) {
       this.namespaces.delete(namespacePath)
       this.logger.verbose(`Namespace deleted ${namespacePath}`)
+
+      WsMetrics.routeNamespaces(this.path).set(this.countNamespaces())
     }
 
     return res

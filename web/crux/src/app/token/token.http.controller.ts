@@ -13,6 +13,7 @@ import {
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
+import { DisableTeamAccessGuard } from 'src/guards/team-access.guard'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
 import TokenAccessGuard from './guards/token.access.guard'
@@ -30,6 +31,7 @@ const ROUTE_TOKEN_ID = ':tokenId'
 @Controller(ROUTE_TOKENS)
 @ApiTags(ROUTE_TOKENS)
 @UseGuards(TokenAccessGuard)
+@DisableTeamAccessGuard()
 export default class TokenHttpController {
   constructor(private service: TokenService) {}
 

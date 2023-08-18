@@ -14,9 +14,9 @@ type DeploymentTokenCardProps = {
 }
 
 const DeploymentTokenCard = (props: DeploymentTokenCardProps) => {
-  const { t } = useTranslation('deployments')
-
   const { className, token, onCreate, onRevoke } = props
+
+  const { t } = useTranslation('deployments')
 
   return (
     <DyoCard className={clsx('flex flex-col gap-2', className)}>

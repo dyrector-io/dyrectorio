@@ -36,16 +36,18 @@ import ImageAddToVersionValidationInterceptor from './interceptors/image.add-ima
 import DeleteImageValidationInterceptor from './interceptors/image.delete.interceptor'
 import OrderImagesValidationInterceptor from './interceptors/image.order.interceptor'
 
+const PARAM_TEAM_SLUG = 'teamSlug'
 const PARAM_IMAGE_ID = 'imageId'
 const PARAM_VERSION_ID = 'versionId'
 const PARAM_PROJECT_ID = 'projectId'
+const TeamSlug = () => Param(PARAM_TEAM_SLUG)
 const ProjectId = () => Param(PARAM_PROJECT_ID)
 const VersionId = () => Param(PARAM_VERSION_ID)
 const ImageId = () => Param(PARAM_IMAGE_ID)
 
 const ROUTE_IMAGE_ID = ':imageId'
 
-@Controller('/projects/:projectId/versions/:versionId/images')
+@Controller(':teamSlug/projects/:projectId/versions/:versionId/images')
 @ApiTags('version/images')
 @UseGuards(ImageTeamAccessGuard)
 export default class ImageHttpController {
@@ -55,7 +57,7 @@ export default class ImageHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      "Fetch details of images within a version. `ProjectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables.</br></br>Details come in an array, including `name`, `id`, `tag`, `order`, and config details of the image.",
+      "Fetch details of images within a version. `ProjectId` refers to the project's ID, `versionId` refers to the version's ID. Both, and `teamSlug` are required in the URL.</br></br>Details come in an array, including `name`, `id`, `tag`, `order`, and config details of the image.",
     summary: 'Fetch data of all images of a version.',
   })
   @ApiOkResponse({
@@ -65,7 +67,11 @@ export default class ImageHttpController {
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for images.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
-  async getImagesByVersionId(@ProjectId() _projectId: string, @VersionId() versionId: string): Promise<ImageDto[]> {
+  async getImagesByVersionId(
+    @TeamSlug() _: string,
+    @ProjectId() _projectId: string,
+    @VersionId() versionId: string,
+  ): Promise<ImageDto[]> {
     return await this.service.getImagesByVersionId(versionId)
   }
 
@@ -73,7 +79,7 @@ export default class ImageHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      "Fetch details of an image within a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required parameters.</br></br>Image details consists `name`, `id`, `tag`, `order`, and the config of the image.",
+      "Fetch details of an image within a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All, and `teamSlug` are required in the URL.</br></br>Image details consists `name`, `id`, `tag`, `order`, and the config of the image.",
     summary: 'Fetch data of an image of a version.',
   })
   @ApiOkResponse({ type: ImageDto, description: 'Data of an image.' })
@@ -82,6 +88,7 @@ export default class ImageHttpController {
   @ApiNotFoundResponse({ description: 'Image not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async getImageDetails(
+    @TeamSlug() _: string,
     @ProjectId() _projectId: string,
     @VersionId() _versionId: string,
     @ImageId() imageId: string,
@@ -94,7 +101,7 @@ export default class ImageHttpController {
   @CreatedWithLocation()
   @ApiOperation({
     description:
-      "Add new images to a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `registryId` refers to the registry's ID, `images` refers to the name(s) of the images you'd like to add. All are required variables.",
+      "Add new images to a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID. These, and `teamSlug` are required in the URL. `registryId` refers to the registry's ID, `images` refers to the name(s) of the images you'd like to add. These are required variables in the body.",
     summary: 'Add images to a version.',
   })
   @ApiBody({ type: AddImagesDto, isArray: true })
@@ -105,6 +112,7 @@ export default class ImageHttpController {
   @UseInterceptors(ImageAddToVersionValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async addImagesToVersion(
+    @TeamSlug() teamSlug: string,
     @ProjectId() projectId: string,
     @VersionId() versionId: string,
     @Body() request: AddImagesDto[],
@@ -113,7 +121,7 @@ export default class ImageHttpController {
     const images = await this.service.addImagesToVersion(versionId, request, identity)
 
     return {
-      url: `/projects/${projectId}/versions/${versionId}/images`,
+      url: `${teamSlug}/projects/${projectId}/versions/${versionId}/images`,
       body: images,
     }
   }
@@ -122,7 +130,7 @@ export default class ImageHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      "Modify the configuration variables of an image. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required variables. `Tag` refers to the version of the image, `config` is an object of configuration variables.",
+      "Modify the configuration variables of an image. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All, and `teamSlug` are required in the URL. `Tag` refers to the version of the image, `config` is an object of configuration variables.",
     summary: 'Configure an image of a version.',
   })
   @ApiBody({ type: PatchImageDto })
@@ -132,6 +140,7 @@ export default class ImageHttpController {
   @ApiNotFoundResponse({ description: 'Image not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async patchImage(
+    @TeamSlug() _: string,
     @ProjectId() _projectId: string,
     @VersionId() _versionId: string,
     @ImageId() imageId: string,
@@ -145,7 +154,7 @@ export default class ImageHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      "Delete an image. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All are required variables.",
+      "Delete an image. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All, and `teamSlug` are required in the URL.",
     summary: 'Delete an image from a version.',
   })
   @ApiNoContentResponse({ description: 'Delete an image from a version.' })
@@ -154,6 +163,7 @@ export default class ImageHttpController {
   @UseInterceptors(DeleteImageValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async deleteImage(
+    @TeamSlug() _: string,
     @ProjectId() _projectId: string,
     @VersionId() _versionId: string,
     @ImageId() imageId: string,
@@ -165,7 +175,7 @@ export default class ImageHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      "Edit image deployment order of a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both are required variables. Request should include the IDs of the images in an array.",
+      "Edit image deployment order of a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID. Both, and `teamSlug` are required in the URL. Request body should include the IDs of the images in an array.",
     summary: 'Edit image deployment order of a version.',
   })
   @ApiNoContentResponse({ description: 'Image order modified.' })
@@ -176,6 +186,7 @@ export default class ImageHttpController {
   @UseInterceptors(OrderImagesValidationInterceptor)
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID)
   async orderImages(
+    @TeamSlug() _: string,
     @ProjectId() _projectId: string,
     @VersionId() _versionId: string,
     @Body() request: string[],

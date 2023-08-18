@@ -1,6 +1,7 @@
+import { DeploymentStatusEnum } from '@prisma/client'
 import { Subject, firstValueFrom, skip } from 'rxjs'
-import { CloseReason } from 'src/grpc/protobuf/proto/agent'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
+import { CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerCommandRequest,
   ContainerOperation,
@@ -9,7 +10,6 @@ import {
   DeploymentStatusMessage,
   Empty,
 } from 'src/grpc/protobuf/proto/common'
-import { DeploymentStatusEnum } from '@prisma/client'
 import { DEFAULT_CONTAINER_LOG_TAIL } from 'src/shared/const'
 import { Agent, AgentConnectionMessage } from './agent'
 

@@ -5,10 +5,11 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import DyoSwitch from '@app/elements/dyo-switch'
+import DyoToggle from '@app/elements/dyo-toggle'
 import TimeLabel from '@app/elements/time-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import useTimer from '@app/hooks/use-timer'
 import {
   NodeDetails,
@@ -19,7 +20,6 @@ import {
   NODE_INSTALL_SCRIPT_TYPE_VALUES,
   NODE_TYPE_VALUES,
 } from '@app/models'
-import { nodeScriptApiUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
 import { nodeGenerateScriptSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
@@ -37,9 +37,10 @@ interface DyoNodeSetupProps {
 }
 
 const DyoNodeSetup = (props: DyoNodeSetupProps) => {
-  const { t } = useTranslation('nodes')
-
   const { node, onNodeTypeChanged, onNodeInstallChanged } = props
+
+  const { t } = useTranslation('nodes')
+  const routes = useTeamRoutes()
 
   const [remaining, startCountdown, cancelCountdown] = useTimer(
     node.install ? expiresIn(new Date(node.install.expireAt)) : null,
@@ -49,7 +50,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const onDiscard = async () => {
-    const res = await fetch(nodeScriptApiUrl(node.id), {
+    const res = await fetch(routes.node.api.script(node.id), {
       method: 'DELETE',
     })
 
@@ -79,7 +80,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
         cancelCountdown()
       }
 
-      const res = await sendForm('POST', nodeScriptApiUrl(node.id), values)
+      const res = await sendForm('POST', routes.node.api.script(node.id), values)
 
       if (!res.ok) {
         setSubmitting(false)
@@ -128,15 +129,18 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
           {node.type === 'docker' && (
             <div className="flex flex-col">
-              <DyoHeading element="h4" className="text-lg text-bright mb-2">
+              <DyoHeading element="h4" className="text-lg text-bright">
                 {t('traefik')}
               </DyoHeading>
 
-              <div className="flex flex-row mb-2">
-                <DyoLabel className="my-auto mx-4">{t('installTraefik')}</DyoLabel>
-
-                <DyoSwitch name="traefik" checked={!!formik.values.dagentTraefik} onCheckedChange={onTraefikChanged} />
-              </div>
+              <DyoToggle
+                className="mx-4 my-2"
+                labelClassName="text-light-eased"
+                name="traefik"
+                checked={!!formik.values.dagentTraefik}
+                onCheckedChange={onTraefikChanged}
+                label={t('installTraefik')}
+              />
 
               {formik.values.dagentTraefik && (
                 <div className="ml-2 mb-2">

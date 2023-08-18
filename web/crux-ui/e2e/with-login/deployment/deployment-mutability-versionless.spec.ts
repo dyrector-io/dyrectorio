@@ -1,6 +1,5 @@
-import { deploymentUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { DAGENT_NODE, screenshotPath } from '../../utils/common'
+import { DAGENT_NODE, screenshotPath, TEAM_ROUTES } from '../../utils/common'
 import { deployWithDagent } from '../../utils/node-helper'
 import { addDeploymentToVersionlessProject, addImageToVersionlessProject, createProject } from '../../utils/projects'
 
@@ -29,7 +28,7 @@ test.describe('Versionless Project', () => {
 
     const deploymentId = await deployWithDagent(page, prefix, projectId, '', false, testInfo.title)
 
-    await page.goto(deploymentUrl(deploymentId))
+    await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
     await page.screenshot({ path: screenshotPath('versionless-prod-successful-deployment'), fullPage: true })
 

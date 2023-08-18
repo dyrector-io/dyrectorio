@@ -1,6 +1,5 @@
-import { imageConfigUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
-import { screenshotPath } from '../../utils/common'
+import { screenshotPath, TEAM_ROUTES } from '../../utils/common'
 import { createImage, createProject, createVersion } from '../../utils/projects'
 
 const setup = async (
@@ -24,7 +23,7 @@ test.describe('View state', () => {
   test('Editor state should show the configuration fields', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'editor-state-conf', '1.0.0', 'redis')
 
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
 
     const editorButton = await page.waitForSelector('button:has-text("Editor")')
 
@@ -40,7 +39,7 @@ test.describe('View state', () => {
   test('JSON state should show the json editor', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'editor-state-json', '1.0.0', 'redis')
 
-    await page.goto(imageConfigUrl(projectId, versionId, imageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
 

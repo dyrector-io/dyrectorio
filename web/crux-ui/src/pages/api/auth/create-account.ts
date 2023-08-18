@@ -3,15 +3,10 @@ import { missingParameter } from '@app/error-responses'
 import { CreateAccount, toKratosLocationChangeRequiredError } from '@app/models'
 import { userInvitationApiUrl } from '@app/routes'
 import { UpdateRecoveryFlowWithCodeMethod } from '@ory/kratos-client'
+import { cookieOf, forwardCookieToResponse } from '@server/cookie'
 import { fetchCrux } from '@server/crux-api'
 import { useErrorMiddleware } from '@server/error-middleware'
-import kratos, {
-  cookieOf,
-  flowOfUrl,
-  forwardCookieToResponse,
-  identityRecovered,
-  obtainSessionFromResponse,
-} from '@server/kratos'
+import kratos, { flowOfUrl, identityRecovered, obtainSessionFromResponse } from '@server/kratos'
 import useKratosErrorMiddleware from '@server/kratos-error-middleware'
 import { withMiddlewares } from '@server/middlewares'
 import { NextApiRequest, NextApiResponse } from 'next'

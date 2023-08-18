@@ -1,9 +1,9 @@
 import { finalize, Observable, startWith, Subject } from 'rxjs'
+import { Agent } from 'src/domain/agent'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
 import { ContainerState, ContainerStateItem, ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
-import { Agent } from 'src/domain/agent'
 
 export type ContainerStatusStreamCompleter = Subject<unknown>
 
@@ -16,7 +16,10 @@ export default class ContainerStatusWatcher {
 
   private state: Record<string, ContainerStateItem> = {}
 
-  constructor(private prefix: string, private oneShot: boolean) {}
+  constructor(
+    private prefix: string,
+    private oneShot: boolean,
+  ) {}
 
   start(commandChannel: Subject<AgentCommand>) {
     if (this.started) {
@@ -45,6 +48,7 @@ export default class ContainerStatusWatcher {
           map[it] = this.state[it]
           return map
         }, {})
+
       this.state = updated.reduce((map, it) => {
         map[Agent.containerPrefixNameOf(it.id)] = it
         return map
@@ -67,11 +71,7 @@ export default class ContainerStatusWatcher {
 
   watch(): Observable<ContainerStateListMessage> {
     return this.stream.pipe(
-      // necessary, because of: https://github.com/nestjs/nest/issues/8111
-      startWith({
-        prefix: this.prefix,
-        data: [],
-      }),
+      startWith(this.mapStateToMessage()),
       finalize(() => this.onWatcherDisconnected()),
     )
   }
