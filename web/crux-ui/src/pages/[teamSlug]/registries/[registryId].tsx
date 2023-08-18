@@ -53,13 +53,11 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   const [editing, setEditing] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
-  const [images, setImages] = useState<FindImageResult[]>([])
-
   const [pagination, setPagination] = useState<PaginationSettings>()
   const [total, setTotal] = useState(0)
 
   const filters = useFilters<FindImageResult, TextFilter>({
-    initialData: images,
+    initialData: [],
     filters: [textFilterFor<FindImageResult>(it => [it.name])],
   })
   const [sorting, setSorting] = useState<SortingType>('none')
@@ -88,7 +86,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   sock.on(WS_TYPE_FIND_IMAGE_RESULT, (message: FindImageResultMessage) => {
     if (message.registryId === registry?.id) {
       setTotal(message.images.length)
-      setImages(
+      filters.setItems(
         message.images.map(it => ({
           name: it.name,
         })),
@@ -150,10 +148,6 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   }, [])
 
   useEffect(() => {
-    filters.setItems(images)
-  }, [images])
-
-  useEffect(() => {
     setTotal(filters.filtered.length)
     setPagination(p => ({ pageNumber: 0, pageSize: p ? p.pageSize : defaultPagination.pageSize }))
   }, [filters.filtered])
@@ -192,7 +186,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
         />
       )}
 
-      {images.length < 1 ? (
+      {filters.items.length < 1 ? (
         <div className="items-center self-center mt-4">
           <DyoLabel>{t('common:noNameFound', { name: t('common:images') })}</DyoLabel>
         </div>
@@ -203,7 +197,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
               <DyoChips
                 className="pl-6"
                 choices={SORTING_TYPE_VALUES}
-                converter={(it: SortingType) => t(`common:sorting.${it}`)}
+                converter={(it: SortingType) => t(`sorting.${it}`)}
                 selection={sorting}
                 onSelectionChange={it => setSorting(it)}
               />

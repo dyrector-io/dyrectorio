@@ -107,8 +107,6 @@ test('Image list should be visible', async ({ page }) => {
   await expect(await page.locator('label[for=imageNamePrefix]')).toContainText('Organization name or username')
   await page.locator('input[name=imageNamePrefix]').fill('library')
 
-  await page.screenshot({ path: screenshotPath('registry_new_filled'), fullPage: true })
-
   await page.locator('text=Save').click()
 
   await page.waitForURL(TEAM_ROUTES.registry.list())

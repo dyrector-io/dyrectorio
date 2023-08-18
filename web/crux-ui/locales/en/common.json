@@ -214,12 +214,6 @@
 
   "storages": "Storages",
 
-  "sorting":{
-    "none":"None",
-    "az":"A-Z",
-    "za":"Z-A"
-  },
-
   "errors": {
     "registryRateLimit": "Rate limit reached, please try again later",
     "registryUnauthorized": "Unauthorized",
