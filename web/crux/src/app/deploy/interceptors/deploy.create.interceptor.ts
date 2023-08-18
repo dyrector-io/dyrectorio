@@ -77,7 +77,7 @@ export default class DeployCreateValidationInterceptor implements NestIntercepto
         },
       })
 
-      if (otherProtected != null) {
+      if (otherProtected) {
         throw new CruxPreconditionFailedException({
           message:
             version.type === 'incremental'

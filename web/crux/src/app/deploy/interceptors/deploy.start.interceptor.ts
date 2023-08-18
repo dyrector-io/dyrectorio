@@ -111,7 +111,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
           },
         })
 
-        if (otherProtected != null) {
+        if (otherProtected) {
           throw new CruxPreconditionFailedException({
             message:
               deployment.version.type === 'incremental'
