@@ -114,8 +114,9 @@ test('Image list should be visible', async ({ page }) => {
   await page.waitForURL(TEAM_ROUTES.registry.list())
 
   await page.locator(`h3:has-text("${registryName}")`).click()
+  await expect(page.locator('button:has-text("Edit")')).toBeVisible()
 
-  await page.locator('input[placeholder="Search"]').fill('nginx')
+  await page.locator('input[placeholder="Search"]').type('nginx')
 
   await expect(page.getByText('nginx')).toHaveCount(1)
 })
