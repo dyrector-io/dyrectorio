@@ -47,8 +47,8 @@ export const ImageDisplay = <T,>(props: ImageHorizontalListProps<T>) => {
   const data: Array<string[]> | Array<React.ReactNode[]> = !props
     ? []
     : isArrayOfStringArrays(propsData)
-      ? (propsData as any as string[][])
-      : propsData.map((it, index) => itemBuilder(it, index))
+    ? (propsData as any as string[][])
+    : propsData.map((it, index) => itemBuilder(it, index))
 
   const rows = Math.ceil(data.length / columnNum)
   const getColIndex = (index: number) => index % columnNum
@@ -80,7 +80,7 @@ export const ImageDisplay = <T,>(props: ImageHorizontalListProps<T>) => {
     for (let i = 0; i < rows; i++) {
       content.push(
         <div className="table-row" key={`${key}-row-${i}`}>
-          {items.slice(i * columnNum,(i * columnNum)+columnNum)}
+          {items.slice(i * columnNum, i * columnNum + columnNum)}
         </div>,
       )
     }
@@ -92,17 +92,12 @@ export const ImageDisplay = <T,>(props: ImageHorizontalListProps<T>) => {
     <div className={className}>
       {title && (
         <div className="w-full text-center">
-          <div
-            className={clsx('align-middle', titleClassName ?? 'text-bright font-bold h-8 mb-4 ml-2 mr-auto')}
-          >
+          <div className={clsx('align-middle', titleClassName ?? 'text-bright font-bold h-8 mb-4 ml-2 mr-auto')}>
             {title}
           </div>
         </div>
       )}
-      <div
-        key={key}
-        className={clsx('table w-full rounded-lg overflow-auto table-fixed')}
-      >
+      <div key={key} className={clsx('table w-full rounded-lg overflow-auto table-fixed')}>
         <div className="table-row-group">{tableContent()}</div>
       </div>
       <div className={clsx(footerClassName)}>{footer}</div>

@@ -94,7 +94,7 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   await page.locator('button:text-is("Add")').click()
 })
 
-test("Image list should be visible", async ({ page }) => {
+test('Image list should be visible', async ({ page }) => {
   const registryName = 'TEST REGISTRY IMAGE LIST'
 
   await page.goto(TEAM_ROUTES.registry.list())
@@ -115,7 +115,7 @@ test("Image list should be visible", async ({ page }) => {
 
   await page.locator(`h3:has-text("${registryName}")`).click()
 
-  await page.locator('input[placeholder="Search"]').fill("nginx")
+  await page.locator('input[placeholder="Search"]').fill('nginx')
 
-  await expect(page.getByText("nginx")).toHaveCount(1)
+  await expect(page.getByText('nginx')).toHaveCount(1)
 })
