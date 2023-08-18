@@ -64,7 +64,6 @@
     "google-auth-library": "^9.0.0",
     "google-protobuf": "^3.21.2",
     "handlebars": "^4.7.8",
-    "isolated-vm": "^4.6.0",
     "nestjs-pino": "^3.3.0",
     "nodemailer": "^6.9.4",
     "passport": "^0.6.0",
@@ -109,9 +108,6 @@
     "typescript": "^5.1.6"
   },
   "overrides": {
-    "vm2": "$isolated-vm"
-  },
-  "resolutions": {
-    "vm2": "isolated-vm"
+    "degenerator": "5.0.0"
   }
 }
