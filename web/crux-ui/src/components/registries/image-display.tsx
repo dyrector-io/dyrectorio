@@ -9,8 +9,9 @@ export type ImageHorizontalListProps<T> = {
   className?: string
   titleClassName?: string | string[]
   footerClassName?: string | string[]
-  columnWidths?: string[]
-  title?: string[]
+  columnNum?: number
+  columnClass?: string | string[]
+  title?: string
   footer?: React.ReactNode
   data: T[]
   noSeparator?: boolean
@@ -18,16 +19,14 @@ export type ImageHorizontalListProps<T> = {
   cellClick?: (data: T, rowIndex: number, columnIndex: number) => void
 }
 
-const columnNum = 5
-const columnWidthClass = 'w-2/12'
-
-export const ImageHorizontalList = <T,>(props: ImageHorizontalListProps<T>) => {
+export const ImageDisplay = <T,>(props: ImageHorizontalListProps<T>) => {
   const {
     key,
     className,
     titleClassName,
     footerClassName,
-    columnWidths,
+    columnNum = 5,
+    columnClass = 'w-2/12',
     title,
     footer,
     data: propsData,
@@ -48,21 +47,12 @@ export const ImageHorizontalList = <T,>(props: ImageHorizontalListProps<T>) => {
   const data: Array<string[]> | Array<React.ReactNode[]> = !props
     ? []
     : isArrayOfStringArrays(propsData)
-    ? (propsData as any as string[][])
-    : propsData.map((it, index) => itemBuilder(it, index))
+      ? (propsData as any as string[][])
+      : propsData.map((it, index) => itemBuilder(it, index))
 
   const rows = Math.ceil(data.length / columnNum)
   const getColIndex = (index: number) => index % columnNum
   const getRowIndex = (index: number) => Math.floor(index / columnNum)
-
-  const rowData = (items: React.JSX.Element[], from: number, amt: number) => {
-    const elements: React.JSX.Element[] = []
-    for (let i = from; i < from + amt; i++) {
-      elements.push(items[i])
-    }
-
-    return elements
-  }
 
   const buildItems = () =>
     data.map((item, index) => (
@@ -73,7 +63,7 @@ export const ImageHorizontalList = <T,>(props: ImageHorizontalListProps<T>) => {
           !noSeparator && getRowIndex(index) < rows - 1 ? 'border-b-2 border-light-grey' : null,
           !noSeparator && getColIndex(index) < columnNum - 1 ? 'border-r-2 border-light-grey' : null,
           'h-12 min-h-min text-light-eased p-2 text-center',
-          columnWidthClass,
+          columnClass,
         )}
         onClick={
           cellClick ? () => cellClick(propsData[getRowIndex(index)], getRowIndex(index), getColIndex(index)) : undefined
@@ -86,24 +76,23 @@ export const ImageHorizontalList = <T,>(props: ImageHorizontalListProps<T>) => {
   const tableContent = () => {
     const items: React.JSX.Element[] = buildItems()
 
-    const rowContent: React.JSX.Element[] = []
+    const content: React.JSX.Element[] = []
     for (let i = 0; i < rows; i++) {
-      rowContent.push(
-        <div className="table-row" key={`${key}-${i}`}>
-          {rowData(items, i * columnNum, columnNum)}
+      content.push(
+        <div className="table-row" key={`${key}-row-${i}`}>
+          {items.slice(i * columnNum,(i * columnNum)+columnNum)}
         </div>,
       )
     }
 
-    return rowContent
+    return content
   }
 
   return (
-    <>
+    <div className={className}>
       {title && (
         <div className="w-full text-center">
           <div
-            key={`${key}-header`}
             className={clsx('align-middle', titleClassName ?? 'text-bright font-bold h-8 mb-4 ml-2 mr-auto')}
           >
             {title}
@@ -112,11 +101,11 @@ export const ImageHorizontalList = <T,>(props: ImageHorizontalListProps<T>) => {
       )}
       <div
         key={key}
-        className={clsx('table w-full rounded-lg overflow-auto', className, columnWidths && 'table-fixed')}
+        className={clsx('table w-full rounded-lg overflow-auto table-fixed')}
       >
         <div className="table-row-group">{tableContent()}</div>
       </div>
       <div className={clsx(footerClassName)}>{footer}</div>
-    </>
+    </div>
   )
 }

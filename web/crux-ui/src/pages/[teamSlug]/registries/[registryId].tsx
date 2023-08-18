@@ -1,6 +1,6 @@
 import { Layout } from '@app/components/layout'
 import EditRegistryCard from '@app/components/registries/edit-registry-card'
-import { ImageHorizontalList } from '@app/components/registries/image-horizontal-list'
+import { ImageDisplay } from '@app/components/registries/image-display'
 import RegistryCard from '@app/components/registries/registry-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
@@ -202,7 +202,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
             </Filters>
           </div>
           <DyoCard className="relative mt-4">
-            <ImageHorizontalList
+            <ImageDisplay
               title={t('common:images')}
               titleClassName={titleClass}
               data={getPagedImages()}
