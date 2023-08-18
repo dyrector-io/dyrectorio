@@ -9,11 +9,13 @@ test.describe('Versionless Project', () => {
   test('preparing deployment should be mutable', async ({ page }) => {
     const projectId = await createProject(page, 'versionless-mutability-1', 'versionless')
     await addImageToVersionlessProject(page, projectId, image)
-    await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, 'versionless-preparing')
+    await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, { prefix: 'versionless-preparing' })
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
-    const configButton = await page.locator(`[alt="Settings"]:right-of(div:has-text("${image}"))`).first()
+    const configButton = await page
+      .locator(`[src="/instance_config_icon.svg"]:right-of(div:has-text("${image}"))`)
+      .first()
     await configButton.click()
 
     await page.waitForSelector('input[id="common.containerName"]')
@@ -34,7 +36,9 @@ test.describe('Versionless Project', () => {
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
-    const configButton = await page.locator(`[alt="Settings"]:right-of(div:has-text("${image}"))`).first()
+    const configButton = await page
+      .locator(`[src="/instance_config_icon.svg"]:right-of(div:has-text("${image}"))`)
+      .first()
     await configButton.click()
 
     await page.waitForSelector('input[id="common.containerName"]')

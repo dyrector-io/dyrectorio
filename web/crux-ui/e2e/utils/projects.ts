@@ -41,7 +41,6 @@ export const createVersion = async (page: Page, projectId: string, name: string,
   await page.locator('button:has-text("Save")').click()
 
   const item = await page.waitForSelector(`h5:has-text("${name}")`)
-
   await item.click()
 
   await page.waitForSelector('button:has-text("Add image")')
@@ -65,7 +64,7 @@ export const createImage = async (page: Page, projectId: string, versionId: stri
 
   await page.waitForSelector('button:has-text("Add image")')
 
-  const settingsButton = await page.waitForSelector(`[src="/settings.svg"]:right-of(:text("${image}"))`)
+  const settingsButton = await page.waitForSelector(`[src="/image_config_icon.svg"]:right-of(:text("${image}"))`)
   await settingsButton.click()
 
   await page.waitForSelector(`h2:has-text("Image")`)
@@ -105,14 +104,21 @@ export const addDeploymentToVersionlessProject = async (
   page: Page,
   projectId: string,
   nodeName: string,
-  prefix: string | null,
+  options?: {
+    prefix?: string
+    protected?: boolean
+  },
 ): Promise<{ id: string; url: string }> => {
   await page.goto(TEAM_ROUTES.project.details(projectId))
 
   await page.locator('button:has-text("Add deployment")').click()
   await expect(page.locator('h4:has-text("Add deployment")')).toHaveCount(1)
 
-  await fillDeploymentPrefix(page, prefix)
+  await fillDeploymentPrefix(page, options?.prefix)
+
+  if (options?.protected) {
+    await page.click('button:right-of(:has-text("Protected"))')
+  }
 
   await page.locator(`button:has-text("${nodeName}")`).click()
 
@@ -131,14 +137,21 @@ export const addDeploymentToVersion = async (
   projectId: string,
   versionId: string,
   nodeName: string,
-  prefix: string = null,
+  options?: {
+    prefix?: string
+    protected?: boolean
+  },
 ): Promise<{ id: string; url: string }> => {
   await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionId))
 
   await page.locator('button:has-text("Add deployment")').click()
   await expect(page.locator('h4:has-text("Add deployment")')).toHaveCount(1)
 
-  await fillDeploymentPrefix(page, prefix)
+  await fillDeploymentPrefix(page, options?.prefix)
+
+  if (options?.protected) {
+    await page.click('button:right-of(:has-text("Protected"))')
+  }
 
   await page.locator(`button:has-text("${nodeName}")`).click()
 

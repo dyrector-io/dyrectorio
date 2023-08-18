@@ -32,7 +32,7 @@ test.describe('Versionless Project', () => {
 
     const { projectId } = await setup(page, nodeName, projectName)
     await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
-    await addDeploymentToVersionlessProject(page, projectId, nodeName, prefix)
+    await addDeploymentToVersionlessProject(page, projectId, nodeName, { prefix })
 
     await page.goto(TEAM_ROUTES.deployment.list())
 
@@ -59,7 +59,7 @@ test.describe('Versionless Project', () => {
     await createNode(page, otherNode)
 
     await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
-    const { id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefix)
+    const { id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, nodeName, { prefix })
 
     await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
@@ -84,7 +84,7 @@ test.describe('Versionless Project', () => {
     const { projectId } = await setup(page, nodeName, projectName)
 
     await addImageToVersionlessProject(page, projectId, NGINX_TEST_IMAGE_WITH_TAG)
-    const { id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, nodeName, prefix)
+    const { id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, nodeName, { prefix })
 
     await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 

@@ -6,8 +6,9 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
-import { apiErrorHandler, defaultApiErrorHandler, defaultTranslator } from '@app/errors'
+import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
+import { useDeploy } from '@app/hooks/use-deploy'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import {
   dateSort,
@@ -26,17 +27,13 @@ import {
   deploymentIsDeployable,
   DeploymentStatus,
   DEPLOYMENT_STATUS_VALUES,
-  DyoErrorDto,
   NodeEventMessage,
   NodeStatus,
-  StartDeployment,
   VersionDetails,
   WS_TYPE_NODE_EVENT,
 } from '@app/models'
-import { TeamRoutes } from '@app/routes'
-import { sendForm, utcDateToLocale } from '@app/utils'
+import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
-import { Translate } from 'next-translate'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import Image from 'next/image'
@@ -44,49 +41,6 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import DeploymentStatusTag from './deployments/deployment-status-tag'
 import { VersionActions } from './use-version-state'
-
-type ErrorInstance = {
-  id: string
-  name: string
-}
-
-export const deployStartErrorHandler = (t: Translate) =>
-  apiErrorHandler((stringId: string, status: number, dto: DyoErrorDto) => {
-    if (status === 412) {
-      const instances: ErrorInstance[] = dto.value
-      return {
-        toast: t('common:errors.deployRequiredSecrets', {
-          instances: instances.reduce((message, it) => `${message}\n${it.name}`, ''),
-        }),
-        toastOptions: {
-          className: '!bg-error-red text-center min-w-[32rem]',
-        },
-      }
-    }
-    return defaultTranslator(t)(stringId, status, dto)
-  })
-
-export const startDeployment = async (
-  routes: TeamRoutes,
-  deploymentId: string,
-  deployInstances?: string[],
-): Promise<Response | null> => {
-  const res = await sendForm(
-    'POST',
-    routes.deployment.api.start(deploymentId),
-    deployInstances
-      ? ({
-          instances: deployInstances,
-        } as StartDeployment)
-      : null,
-  )
-
-  if (!res.ok) {
-    return res
-  }
-
-  return null
-}
 
 interface VersionDeploymentsSectionProps {
   version: VersionDetails
@@ -114,10 +68,11 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const router = useRouter()
 
   const handleApiError = defaultApiErrorHandler(t)
-  const handleDeployStartError = deployStartErrorHandler(t)
 
   const [showInfo, setShowInfo] = useState<DeploymentByVersion>(null)
   const [confirmModalConfig, confirm] = useConfirmation()
+
+  const deploy = useDeploy({ router, teamRoutes: routes, t, confirm })
 
   const onDeploy = async (deployment: DeploymentByVersion) => {
     const confirmed = await confirm({
@@ -133,12 +88,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       return
     }
 
-    const res = await startDeployment(routes, deployment.id)
-    if (res) {
-      handleDeployStartError(res)
-    } else {
-      await router.push(routes.deployment.deploy(deployment.id))
-    }
+    await deploy(deployment.id)
   }
 
   const onDeleteDeployment = async (deployment: DeploymentByVersion) => {
@@ -274,12 +224,14 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
         </div>
 
         {deploymentIsCopiable(item.status) ? (
-          <Image
+          <DyoIcon
+            className={clsx(
+              deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30',
+              'aspect-square mr-2',
+            )}
             src="/copy.svg"
             alt={t('common:copy')}
-            width={24}
-            height={24}
-            className={deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+            size="md"
             onClick={() => actions.copyDeployment(item.id)}
           />
         ) : null}
