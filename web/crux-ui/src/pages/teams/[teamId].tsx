@@ -277,7 +277,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
         />
       )}
     </div>,
-    <div>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('common:never')}</div>,
+    <div suppressHydrationWarning>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('common:never')}</div>,
     <UserStatusTag className="w-fit mx-auto" status={it.status} />,
     <>
       {!userStatusReinvitable(it.status) || countdown > 0 ? null : (

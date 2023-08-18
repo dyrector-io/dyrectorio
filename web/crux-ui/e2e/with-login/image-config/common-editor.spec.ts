@@ -128,7 +128,7 @@ test.describe('Image common config from editor', () => {
     const internalInput = page.locator('input[placeholder="Internal"]')
     const externalInput = page.locator('input[placeholder="External"]')
 
-    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchPorts(internal, external))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchPorts(internal, external))
     await internalInput.fill(internal)
     await externalInput.fill(external)
     await wsSent
@@ -161,7 +161,12 @@ test.describe('Image common config from editor', () => {
     const externalInputFrom = await page.locator('input[placeholder="From"]').nth(1)
     const externalInputTo = await page.locator('input[placeholder="To"]').nth(1)
 
-    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchPortRange(internalFrom, externalFrom, internalTo, externalTo))
+    let wsSent = wsPatchSent(
+      ws,
+      wsRoute,
+      WS_TYPE_PATCH_IMAGE,
+      wsPatchMatchPortRange(internalFrom, externalFrom, internalTo, externalTo),
+    )
     await internalInputFrom.fill(internalFrom)
     await internalInputTo.fill(internalTo)
     await externalInputFrom.fill(externalFrom)
@@ -259,7 +264,12 @@ test.describe('Image common config from editor', () => {
     const uploadLimit = '1024'
     const stripPath = true
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchRouting(domain, path, uploadLimit, stripPath))
+    const wsSent = wsPatchSent(
+      ws,
+      wsRoute,
+      WS_TYPE_PATCH_IMAGE,
+      wsPatchMatchRouting(domain, path, uploadLimit, stripPath),
+    )
     await page.locator('input[placeholder="Domain"]').fill(domain)
     await page.locator('input[placeholder="Path"]').fill(path)
     if (stripPath) {
@@ -346,7 +356,7 @@ test.describe('Image common config from editor', () => {
 
     await page.locator('button:has-text("Init containers")').click()
 
-    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE)
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE)
     await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Init containers"))`).first().click()
     await wsSent
 
@@ -354,7 +364,8 @@ test.describe('Image common config from editor', () => {
 
     wsSent = wsPatchSent(
       ws,
-      wsRoute,WS_TYPE_PATCH_IMAGE,
+      wsRoute,
+      WS_TYPE_PATCH_IMAGE,
       wsPatchMatchInitContainer(name, image, volName, volPath, arg, cmd, envKey, envVal),
     )
     await confDiv.getByLabel('NAME').fill(name)
@@ -388,7 +399,7 @@ test.describe('Image common config from editor', () => {
 
     await page.locator('button:has-text("Volume")').click()
 
-    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE)
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE)
     await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Volume"))`).first().click()
     await wsSent
 
@@ -397,7 +408,7 @@ test.describe('Image common config from editor', () => {
     const path = '/test/volume'
     const volumeClass = 'class'
 
-    wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchVolume(name, size, path, volumeClass))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchVolume(name, size, path, volumeClass))
     await page.getByLabel('Name').fill(name)
     await page.getByLabel('Size').fill(size)
     await page.getByLabel('Path').fill(path)
@@ -425,7 +436,7 @@ test.describe('Image common config from editor', () => {
 
     await page.locator('button:has-text("Volume")').click()
 
-    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE)
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE)
     await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Volume"))`).first().click()
     await wsSent
 
@@ -434,7 +445,7 @@ test.describe('Image common config from editor', () => {
     const path = '/storage/volume'
     const volumeClass = 'class'
 
-    wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchVolume(volumeName, size, path, volumeClass))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchVolume(volumeName, size, path, volumeClass))
     await page.getByLabel('Name').fill(volumeName)
     await page.getByLabel('Size').fill(size)
     await page.getByLabel('Path').fill(path)
@@ -445,7 +456,7 @@ test.describe('Image common config from editor', () => {
     const bucketPath = '/storage/'
     await page.locator('button:has-text("Storage")').click()
 
-    wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchStorage(storageId, bucketPath, volumeName))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchStorage(storageId, bucketPath, volumeName))
     await storageDiv.locator(`button:has-text("${storageName}")`).click()
     await storageDiv.locator('input[placeholder="Bucket path"]').fill(bucketPath)
     await storageDiv.locator(`button:has-text("${volumeName}")`).click()

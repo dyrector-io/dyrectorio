@@ -30,7 +30,7 @@ test('In progress deployment should be not deletable', async ({ page }) => {
       args: [],
       name: 'sleep',
       image: 'alpine:3.14',
-      command: ['sleep', '2'],
+      command: ['sleep', '20'],
       volumes: [],
       environment: {},
       useParentConfig: false,
@@ -41,8 +41,6 @@ test('In progress deployment should be not deletable', async ({ page }) => {
   await wsSent
 
   const deploymentId = await deployWithDagent(page, 'versioned-deletability', projectId, versionId, true)
-
-  await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
   await expect(await page.getByText('In progress')).toHaveCount(1)
   await expect(await page.locator('button:has-text("Delete")')).toHaveCount(0)

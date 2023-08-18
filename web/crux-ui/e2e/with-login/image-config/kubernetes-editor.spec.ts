@@ -150,7 +150,12 @@ test.describe('Image kubernetes config from editor', () => {
 
     const hcConf = page.locator('div.grid:has(label:has-text("HEALTH CHECK CONFIG"))')
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchHealthCheck(port, liveness, readiness, startup))
+    const wsSent = wsPatchSent(
+      ws,
+      wsRoute,
+      WS_TYPE_PATCH_IMAGE,
+      wsPatchMatchHealthCheck(port, liveness, readiness, startup),
+    )
     await hcConf.locator('input[placeholder="Port"]').fill(port.toString())
     await hcConf.getByLabel('Liveness probe').fill(liveness)
     await hcConf.getByLabel('Readiness probe').fill(readiness)
@@ -183,7 +188,8 @@ test.describe('Image kubernetes config from editor', () => {
 
     const wsSent = wsPatchSent(
       ws,
-      wsRoute, WS_TYPE_PATCH_IMAGE,
+      wsRoute,
+      WS_TYPE_PATCH_IMAGE,
       wsPatchMatchResourceConfig(cpuLimits, cpuRequests, memoryLimits, memoryRequests),
     )
     await rsConf.locator('input').nth(0).fill(cpuLimits)
@@ -220,15 +226,15 @@ test.describe('Image kubernetes config from editor', () => {
     const serviceDiv = await getCategoryDiv('Service', page)
     const ingressDiv = await getCategoryDiv('Ingress', page)
 
-    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentLabel(key, value))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentLabel(key, value))
     await deploymentDiv.locator('input[placeholder="Key"]').first().fill(key)
     await deploymentDiv.locator('input[placeholder="Value"]').first().fill(value)
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchServiceLabel(key, value))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchServiceLabel(key, value))
     await serviceDiv.locator('input[placeholder="Key"]').first().fill(key)
     await serviceDiv.locator('input[placeholder="Value"]').first().fill(value)
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchIngressLabel(key, value))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchIngressLabel(key, value))
     await ingressDiv.locator('input[placeholder="Key"]').first().fill(key)
     await ingressDiv.locator('input[placeholder="Value"]').first().fill(value)
     await wsSent
@@ -260,15 +266,15 @@ test.describe('Image kubernetes config from editor', () => {
     const serviceDiv = await getCategoryDiv('Service', page)
     const ingressDiv = await getCategoryDiv('Ingress', page)
 
-    let wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentAnnotations(key, value))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentAnnotations(key, value))
     await deploymentDiv.locator('input[placeholder="Key"]').first().fill(key)
     await deploymentDiv.locator('input[placeholder="Value"]').first().fill(value)
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchServiceAnnotations(key, value))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchServiceAnnotations(key, value))
     await serviceDiv.locator('input[placeholder="Key"]').first().fill(key)
     await serviceDiv.locator('input[placeholder="Value"]').first().fill(value)
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute,WS_TYPE_PATCH_IMAGE, wsPatchMatchIngressAnnotations(key, value))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchIngressAnnotations(key, value))
     await ingressDiv.locator('input[placeholder="Key"]').first().fill(key)
     await ingressDiv.locator('input[placeholder="Value"]').first().fill(value)
     await wsSent

@@ -207,7 +207,6 @@ export const copyDeployment = async (page: Page, deploymentId: string, newName: 
   }
 }
 
-
 export const deleteProject = async (page: Page, projectId: string): Promise<void> => {
   await page.goto(TEAM_ROUTES.project.details(projectId))
   await page.locator('button:has-text("Delete")').click()

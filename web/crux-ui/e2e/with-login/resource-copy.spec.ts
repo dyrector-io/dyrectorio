@@ -1,7 +1,6 @@
 import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_INSTANCE } from '@app/models'
-import { ROUTE_DEPLOYMENTS, deploymentUrl, deploymentWsUrl, imageConfigUrl, projectUrl, versionUrl, versionWsUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG } from 'e2e/utils/common'
+import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, waitForURLExcept } from 'e2e/utils/common'
 import { addPortsToContainerConfig } from 'e2e/utils/container-config'
 import {
   addDeploymentToVersion,
@@ -29,11 +28,11 @@ test.describe('Deleting default version', () => {
 
     await deleteVersion(page, projectId, defaultVersionId)
 
-    await page.goto(projectUrl(projectId))
+    await page.goto(TEAM_ROUTES.project.details(projectId))
 
     expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
-    await page.goto(versionUrl(projectId, newVersionId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
 
     const imagesTableBody = await page.locator('.table-row-group')
     const imagesRows = await imagesTableBody.locator('.table-row')
@@ -51,9 +50,9 @@ test.describe('Deleting default version', () => {
     const defaultVersionImageId = await createImage(page, projectId, defaultVersionId, NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocket(page)
-    await page.goto(imageConfigUrl(projectId, defaultVersionId, defaultVersionImageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(defaultVersionId, defaultVersionImageId))
     const ws = await sock
-    const wsRoute = versionWsUrl(defaultVersionId)
+    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(defaultVersionId)
 
     const internal = '1000'
     const external = '2000'
@@ -63,11 +62,11 @@ test.describe('Deleting default version', () => {
 
     await deleteVersion(page, projectId, defaultVersionId)
 
-    await page.goto(projectUrl(projectId))
+    await page.goto(TEAM_ROUTES.project.details(projectId))
 
     expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
-    await page.goto(versionUrl(projectId, newVersionId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
 
     const imagesTableBody = await page.locator('.table-row-group')
     const imagesRows = await imagesTableBody.locator('.table-row')
@@ -75,7 +74,7 @@ test.describe('Deleting default version', () => {
     await expect(imagesRows).toHaveCount(1)
     await expect(page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
 
-    const settingsButton = await page.waitForSelector(`[src="/settings.svg"]:right-of(:text("nginx"))`)
+    const settingsButton = await page.waitForSelector(`[src="/image_config_icon.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
 
     await page.waitForSelector(`h2:has-text("Image")`)
@@ -95,19 +94,19 @@ test.describe('Deleting default version', () => {
     const defaultVersionName = 'default-version'
     const defaultVersionId = await createVersion(page, projectId, defaultVersionName, 'Rolling')
     await addImageToVersion(page, projectId, defaultVersionId, NGINX_TEST_IMAGE_WITH_TAG)
-    await addDeploymentToVersion(page, projectId, defaultVersionId, DAGENT_NODE, prefix)
+    await addDeploymentToVersion(page, projectId, defaultVersionId, DAGENT_NODE, { prefix })
 
     const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
 
-    await page.goto(versionUrl(projectId, defaultVersionId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).details(defaultVersionId))
 
     await deleteVersion(page, projectId, defaultVersionId)
 
-    await page.goto(projectUrl(projectId))
+    await page.goto(TEAM_ROUTES.project.details(projectId))
 
     expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
-    await page.goto(versionUrl(projectId, newVersionId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
 
     await page.locator('button:has-text("Deployments")').click()
 
@@ -126,19 +125,19 @@ test.describe('Deleting default version', () => {
     const defaultVersionName = 'default-version'
     const defaultVersionId = await createVersion(page, projectId, defaultVersionName, 'Rolling')
     await addImageToVersion(page, projectId, defaultVersionId, NGINX_TEST_IMAGE_WITH_TAG)
-    await addDeploymentToVersion(page, projectId, defaultVersionId, DAGENT_NODE, prefix)
+    await addDeploymentToVersion(page, projectId, defaultVersionId, DAGENT_NODE, { prefix })
 
     const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
 
-    await page.goto(versionUrl(projectId, defaultVersionId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).details(defaultVersionId))
 
     await deleteVersion(page, projectId, defaultVersionId)
 
-    await page.goto(projectUrl(projectId))
+    await page.goto(TEAM_ROUTES.project.details(projectId))
 
     expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
-    await page.goto(versionUrl(projectId, newVersionId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
 
     await page.locator('button:has-text("Deployments")').click()
 
@@ -163,16 +162,12 @@ test.describe('Deleting default version', () => {
     const defaultVersionName = 'default-version'
     const defaultVersionId = await createVersion(page, projectId, defaultVersionName, 'Rolling')
     await addImageToVersion(page, projectId, defaultVersionId, NGINX_TEST_IMAGE_WITH_TAG)
-    const { id: defaultDeploymentId } = await addDeploymentToVersion(
-      page,
-      projectId,
-      defaultVersionId,
-      DAGENT_NODE,
+    const { id: defaultDeploymentId } = await addDeploymentToVersion(page, projectId, defaultVersionId, DAGENT_NODE, {
       prefix,
-    )
+    })
 
     const sock = waitSocket(page)
-    await page.goto(deploymentUrl(defaultDeploymentId))
+    await page.goto(TEAM_ROUTES.deployment.details(defaultDeploymentId))
 
     const instancesTableBody = await page.locator('.table-row-group')
     const instancesRows = await instancesTableBody.locator('.table-row')
@@ -180,12 +175,12 @@ test.describe('Deleting default version', () => {
     await expect(instancesRows).toHaveCount(1)
     await expect(page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
 
-    const settingsButton = await page.waitForSelector(`[src="/settings.svg"]:right-of(:text("nginx"))`)
+    const settingsButton = await page.waitForSelector(`[src="/instance_config_icon.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
 
     await page.waitForSelector(`h2:has-text("Container")`)
     const ws = await sock
-    const wsRoute = deploymentWsUrl(defaultDeploymentId)
+    const wsRoute = TEAM_ROUTES.deployment.detailsSocket(defaultDeploymentId)
 
     const internal = '1000'
     const external = '2000'
@@ -193,15 +188,15 @@ test.describe('Deleting default version', () => {
 
     const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
 
-    await page.goto(versionUrl(projectId, defaultVersionId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).details(defaultVersionId))
 
     await deleteVersion(page, projectId, defaultVersionId)
 
-    await page.goto(projectUrl(projectId))
+    await page.goto(TEAM_ROUTES.project.details(projectId))
 
     expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
-    await page.goto(versionUrl(projectId, newVersionId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
 
     await page.locator('button:has-text("Deployments")').click()
 
@@ -219,7 +214,7 @@ test.describe('Deleting default version', () => {
 
     await expect(page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
     const newVersionDeploymentSettingsButton = await page.waitForSelector(
-      `[src="/settings.svg"]:right-of(:text("nginx"))`,
+      `[src="/instance_config_icon.svg"]:right-of(:text("nginx"))`,
     )
     await newVersionDeploymentSettingsButton.click()
 
@@ -236,22 +231,24 @@ test.describe('Deleting default version', () => {
 test.describe("Deleting copied deployment's parent", () => {
   test('should not affect the instances of the child deployment', async ({ page }) => {
     const projectName = 'delete-parent-deploy-check-copy'
-    const projectId = await createProject(page, projectName, "versioned")
-    const versionName = "version"
-    const versionId = await createVersion(page, projectId, versionName, "Incremental")
+    const projectId = await createProject(page, projectName, 'versioned')
+    const versionName = 'version'
+    const versionId = await createVersion(page, projectId, versionName, 'Incremental')
     await addImageToVersion(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
-    const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, projectName)
+    const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, {
+      prefix: projectName,
+    })
     const { id: deploymentCopyId } = await copyDeployment(page, deploymentId, projectName.concat('-copy'))
 
     await deleteDeployment(page, deploymentId)
 
-    await page.goto(versionUrl(projectId, versionId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionId))
 
     await page.locator('button:has-text("Deployments")').click()
     await expect(page.locator('.table-row-group .table-row')).toHaveCount(1)
 
-    await page.goto(deploymentUrl(deploymentCopyId))
+    await page.goto(TEAM_ROUTES.deployment.details(deploymentCopyId))
     await expect(page.locator('.table-row-group .table-row')).toHaveCount(1)
   })
 
@@ -263,11 +260,11 @@ test.describe("Deleting copied deployment's parent", () => {
     const versionName = 'version'
     const versionId = await createVersion(page, projectId, versionName, 'Rolling')
     await addImageToVersion(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
-    const { id: parentDeploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, prefix)
+    const { id: parentDeploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, { prefix })
 
     const sock = waitSocket(page)
 
-    await page.goto(deploymentUrl(parentDeploymentId))
+    await page.goto(TEAM_ROUTES.deployment.details(parentDeploymentId))
 
     const instancesTableBody = await page.locator('.table-row-group')
     const instancesRows = await instancesTableBody.locator('.table-row')
@@ -275,18 +272,18 @@ test.describe("Deleting copied deployment's parent", () => {
     await expect(instancesRows).toHaveCount(1)
     await expect(page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
 
-    const settingsButton = await page.waitForSelector(`[src="/settings.svg"]:right-of(:text("nginx"))`)
+    const settingsButton = await page.waitForSelector(`[src="/instance_config_icon.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
-    await page.waitForURL(`${ROUTE_DEPLOYMENTS}/**/instances/**`)
+    await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**/instances/**`)
 
     const ws = await sock
-    const wsRoute = deploymentWsUrl(parentDeploymentId)
+    const wsRoute = TEAM_ROUTES.deployment.detailsSocket(parentDeploymentId)
 
     const internal = '1000'
     const external = '2000'
     await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_INSTANCE, internal, external)
 
-    await page.goto(deploymentUrl(parentDeploymentId))
+    await page.goto(TEAM_ROUTES.deployment.details(parentDeploymentId))
 
     const copyButton = page.locator('button:has-text("Copy")')
     await copyButton.click()
@@ -294,11 +291,13 @@ test.describe("Deleting copied deployment's parent", () => {
     await page.locator(`button:has-text("${DAGENT_NODE}")`).click()
     await fillDeploymentPrefix(page, `${prefix}-other`)
 
+    const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
+    await waitForURLExcept(page, { startsWith: `${TEAM_ROUTES.deployment.list()}/`, except: currentUrl })
 
     await deleteDeployment(page, parentDeploymentId)
 
-    await page.goto(versionUrl(projectId, versionId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionId))
 
     await page.locator('button:has-text("Deployments")').click()
 
@@ -315,7 +314,9 @@ test.describe("Deleting copied deployment's parent", () => {
     await expect(instanceRows).toHaveCount(1)
 
     await expect(page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
-    const newDeploymentSettingsButton = await page.waitForSelector(`[src="/settings.svg"]:right-of(:text("nginx"))`)
+    const newDeploymentSettingsButton = await page.waitForSelector(
+      `[src="/instance_config_icon.svg"]:right-of(:text("nginx"))`,
+    )
     await newDeploymentSettingsButton.click()
 
     await page.waitForSelector(`h2:has-text("Container")`)

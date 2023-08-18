@@ -139,6 +139,7 @@ test('Select specific instances to deploy', async ({ page }) => {
 
   await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
 
+  await page.waitForSelector('button:text-is("Containers")')
   await page.locator('input[placeholder="Search"]').type(prefix)
 
   const containerBody = await page.locator('.table-row-group')
