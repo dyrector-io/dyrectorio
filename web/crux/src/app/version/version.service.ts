@@ -235,6 +235,7 @@ export default class VersionService {
                 environment: deployment.environment ?? [],
                 events: undefined,
                 instances: undefined,
+                protected: false,
               },
             })
 
