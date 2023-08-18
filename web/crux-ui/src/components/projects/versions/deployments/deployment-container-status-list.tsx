@@ -58,7 +58,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
   })
 
   const merge = (weak: ContainerWithInstance[], strong: Container[]): ContainerWithInstance[] => {
-    if (!strong || strong.length == 0) {
+    if (!strong || strong.length === 0) {
       return weak
     }
 
