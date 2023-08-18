@@ -146,31 +146,34 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     <span suppressHydrationWarning>{auditToLocaleDate(item.audit)}</span>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
     <>
-      <Link href={routes.deployment.details(item.id)} passHref>
-        <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
-      </Link>
-
       <div className="inline-block mr-2">
-        <DyoIcon
-          src="/note.svg"
-          alt={t('common:note')}
-          size="md"
-          className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-          onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
-        />
+        <Link href={routes.deployment.details(item.id)} passHref>
+          <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
+        </Link>
       </div>
+
+      <DyoIcon
+        src="/note.svg"
+        alt={t('common:note')}
+        size="md"
+        className={clsx(
+          !!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30',
+          'mr-2',
+        )}
+        onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
+      />
 
       <DyoIcon
         src="/copy.svg"
         alt={t('common:copy')}
         size="md"
-        className={deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+        className={clsx(deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30', 'mr-2')}
         onClick={() => deploymentIsCopiable(item.status) && setCopyDeploymentTarget(item.id)}
       />
 
       {deploymentIsDeletable(item.status) ? (
         <DyoIcon
-          className="aspect-square cursor-pointer ml-2"
+          className="aspect-square cursor-pointer"
           src="/trash-can.svg"
           alt={t('common:delete')}
           size="md"
