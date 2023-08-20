@@ -22,7 +22,7 @@ const DyoNodeCard = (props: DyoNodeCardProps) => {
 
   const title = (
     <div className="flex flex-row">
-      {node.icon ? <DyoBadge icon={node.icon} /> : null}
+      {node.icon ? <DyoBadge large icon={node.icon} /> : null}
 
       <DyoHeading
         className={clsx('text-xl text-bright font-semibold my-auto mr-auto', node.icon ? 'ml-4' : null)}

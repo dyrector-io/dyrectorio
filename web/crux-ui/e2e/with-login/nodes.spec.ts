@@ -4,6 +4,7 @@ import { DAGENT_NODE, screenshotPath, TEAM_ROUTES } from '../utils/common'
 test('Install dagent should be successful', async ({ page }) => {
   await page.goto(TEAM_ROUTES.node.list())
 
+  await page.locator('input[placeholder="Search"]').type(DAGENT_NODE)
   await page.locator(`h3:has-text("${DAGENT_NODE}")`).click()
   await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
 
@@ -155,10 +156,9 @@ test('Deleting node', async ({ page }) => {
 
   await page.locator('button:has-text("Delete"):left-of(:has-text("Cancel"))').click()
 
-  await page.goto(TEAM_ROUTES.node.list())
   await page.waitForURL(TEAM_ROUTES.node.list())
 
-  await expect(await page.locator(`h3:has-text("${name}")`).count()).toEqual(0)
+  await expect(await page.locator(`h3:has-text("${name}")`)).not.toBeVisible()
 })
 
 test('Logs should show agent events', async ({ page }) => {

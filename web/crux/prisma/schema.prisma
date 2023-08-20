@@ -263,6 +263,7 @@ model Deployment {
   versionId   String               @db.Uuid
   nodeId      String               @db.Uuid
   tries       Int                  @default(0)
+  protected   Boolean              @default(false)
 
   version Version @relation(fields: [versionId], references: [id], onDelete: Cascade)
   node    Node    @relation(fields: [nodeId], references: [id], onDelete: Cascade)

@@ -396,6 +396,10 @@ class ProjectRoutes {
 }
 
 // deployment
+export type DeployStartUrlParams = AnchorUrlParams & {
+  ignoreProtected?: boolean
+}
+
 class DeploymentApi {
   private readonly root: string
 
@@ -409,7 +413,10 @@ class DeploymentApi {
 
   copy = (id: string) => `${this.details(id)}/copy`
 
-  start = (id: string) => `${this.details(id)}/start`
+  start = (id: string, ignoreProtected?: boolean) =>
+    appendUrlParams(`${this.details(id)}/start`, {
+      ignoreProtected,
+    } as DeployStartUrlParams)
 
   token = (id: string) => `${this.details(id)}/token`
 
