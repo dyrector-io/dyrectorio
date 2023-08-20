@@ -3,19 +3,19 @@ import { CruxBadRequestException } from 'src/exception/crux-exception'
 import { UID_MAX } from 'src/shared/const'
 import * as yup from 'yup'
 import {
-  CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
-  CONTAINER_EXPOSE_STRATEGY_VALUES,
-  CONTAINER_LOG_DRIVER_VALUES,
-  CONTAINER_NETWORK_MODE_VALUES,
-  CONTAINER_RESTART_POLICY_TYPE_VALUES,
-  CONTAINER_VOLUME_TYPE_VALUES,
-  ContainerDeploymentStrategyType,
-  ContainerExposeStrategy,
-  ContainerLogDriverType,
-  ContainerNetworkMode,
-  ContainerRestartPolicyType,
-  ContainerVolumeType,
-  PORT_MAX,
+CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
+CONTAINER_EXPOSE_STRATEGY_VALUES,
+CONTAINER_LOG_DRIVER_VALUES,
+CONTAINER_NETWORK_MODE_VALUES,
+CONTAINER_RESTART_POLICY_TYPE_VALUES,
+CONTAINER_VOLUME_TYPE_VALUES,
+ContainerDeploymentStrategyType,
+ContainerExposeStrategy,
+ContainerLogDriverType,
+ContainerNetworkMode,
+ContainerRestartPolicyType,
+ContainerVolumeType,
+PORT_MAX,
 } from './container'
 
 export const nameRuleOptional = yup.string().trim().min(3).max(70)
@@ -199,7 +199,8 @@ const createOverlapTest = (
   )
 
 const portConfigRule = yup.mixed().when('portRanges', portRanges => {
-  if (!portRanges) {
+  // TODO(amorfevo): quickfixed, but why are we able to come here with such strange values at all?
+  if (!portRanges || !portRanges[0] || portRanges[0].length === 0) {
     return yup
       .array(
         yup.object().shape({

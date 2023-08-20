@@ -207,7 +207,8 @@ const createOverlapTest = (
   )
 
 const portConfigRule = yup.mixed().when('portRanges', portRanges => {
-  if (!portRanges) {
+  // TODO(amorfevo): quickfixed, but why are we able to come here with such strange values at all?
+  if (!portRanges || !portRanges[0] || portRanges[0].length === 0) {
     return yup
       .array(
         yup.object().shape({
