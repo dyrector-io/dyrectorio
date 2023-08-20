@@ -19,8 +19,6 @@
       "tag": "2.4.0",
       "config": {
         "name": "mlflow",
-        "tty": false,
-        "expose": "expose",
         "ports": [
           {
             "external": 5001,
@@ -35,7 +33,8 @@
         ],
         "networks": ["mlflow"],
         "networkMode": "bridge",
-        "restartPolicy": "unless-stopped"
+        "restartPolicy": "unless-stopped",
+        "deploymentStrategy": "recreate"
       }
     }
   ]
