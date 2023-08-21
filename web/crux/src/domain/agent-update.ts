@@ -2,12 +2,34 @@ import { Subject } from 'rxjs'
 import { CruxPreconditionFailedException, CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import { AgentToken } from './agent-token'
+
+export type AgentUpdateOptions = {
+  token: AgentToken
+  signedToken: string
+  startedAt: Date
+  startedBy: string
+}
+
+export type AgentUpdateResult = {
+  startedBy: string
+}
 
 export default class AgentUpdate {
-  constructor(
-    private readonly token: string,
-    private readonly startedAt: Date,
-  ) {}
+  private readonly token: AgentToken
+
+  private readonly signedToken: string
+
+  private readonly startedAt: Date
+
+  private readonly startedBy: string
+
+  constructor(options: AgentUpdateOptions) {
+    this.token = options.token
+    this.signedToken = options.signedToken
+    this.startedAt = options.startedAt
+    this.startedBy = options.startedBy
+  }
 
   get expired(): boolean {
     const now = new Date().getTime()
@@ -19,23 +41,31 @@ export default class AgentUpdate {
       update: {
         tag,
         timeoutSeconds: AgentUpdate.TIMEOUT_SECONDS,
-        token: this.token,
+        token: this.signedToken,
       },
     })
   }
 
-  complete(connection: GrpcNodeConnection) {
+  complete(connection: GrpcNodeConnection): AgentUpdateResult {
     if (this.expired) {
       throw new CruxPreconditionFailedException({
         message: 'Update timeout.',
       })
     }
 
-    if (connection.jwt !== this.token) {
+    if (connection.jwt !== this.signedToken) {
       throw new CruxUnauthorizedException({
         message: 'Invalid token.',
       })
     }
+
+    return {
+      startedBy: this.startedBy
+    }
+  }
+
+  onTokenReplaced(): AgentToken {
+    return this.token
   }
 
   public static TIMEOUT_SECONDS = 60 * 5

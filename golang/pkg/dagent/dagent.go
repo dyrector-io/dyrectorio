@@ -45,13 +45,13 @@ func Serve(cfg *config.Configuration) {
 		ContainerCommand: utils.ContainerCommand,
 		DeleteContainers: utils.DeleteContainers,
 		ContainerLog:     utils.ContainerLog,
-	})
+	}, cfg)
 }
 
-func grpcClose(ctx context.Context, reason agent.CloseReason) error {
+func grpcClose(ctx context.Context, reason agent.CloseReason, options grpc.UpdateOptions) error {
 	if reason == agent.CloseReason_SELF_DESTRUCT {
-		return update.RemoveSelf(ctx)
-	} else if reason == agent.CloseReason_SHUTDOWN {
+		return update.RemoveSelf(ctx, options)
+	} else if reason == agent.CloseReason_SHUTDOWN || reason == agent.CloseReason_REVOKE_TOKEN {
 		log.Info().Msg("Remote shutdown requested")
 		os.Exit(0)
 	}

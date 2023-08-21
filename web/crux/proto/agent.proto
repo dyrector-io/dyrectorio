@@ -30,6 +30,7 @@ service Agent {
   rpc AbortUpdate(AgentAbortUpdate) returns (common.Empty);
   rpc DeleteContainers(common.DeleteContainersRequest) returns (common.Empty);
   rpc ContainerLog(stream common.ContainerLogMessage) returns (common.Empty);
+  rpc TokenReplaced(common.Empty) returns (common.Empty);
 }
 
 /**
@@ -279,6 +280,7 @@ enum CloseReason {
   CLOSE = 1;
   SELF_DESTRUCT = 2;
   SHUTDOWN = 3;
+  REVOKE_TOKEN = 4;
 }
 
 message CloseConnectionRequest { CloseReason reason = 1; }

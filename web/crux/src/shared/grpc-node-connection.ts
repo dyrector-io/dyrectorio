@@ -72,9 +72,9 @@ export default class GrpcNodeConnection {
     return this.statusChannel.asObservable()
   }
 
-  replaceToken(signedToken: string, token: AgentToken) {
-    this.signedToken = signedToken
+  replaceToken(token: AgentToken, signedToken: string) {
     this.token = token
+    this.signedToken = signedToken
   }
 
   getStringMetadataOrThrow(key: string): string {

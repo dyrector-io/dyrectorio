@@ -72,6 +72,9 @@
     "left": "Left",
     "kicked": "Kicked",
     "update": "Update",
-    "containerCommand": "Container command"
+    "containerCommand": "Container command",
+    "installed": "Installed",
+    "updateCompleted": "Update completed",
+    "tokenReplaced": "Token replaced"
   }
 }

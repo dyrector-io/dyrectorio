@@ -57,12 +57,13 @@ func loadConfiguration() (*config.Configuration, error) {
 	}
 	client := k8s.NewClient(cfg)
 	secretHandler := k8s.NewSecret(context.Background(), client)
-	secret, err := secretHandler.GetValidSecret()
+	privateKey, err := secretHandler.GetValidPrivateKey()
 	if err != nil {
 		return nil, err
 	}
 
-	commonConfig.InjectPrivateKey(&cfg.CommonConfiguration, secret)
+	commonConfig.InjectPrivateKey(&cfg.CommonConfiguration, privateKey)
+	// commonConfig.InjectToken(&cfg.CommonConfiguration, )
 
 	log.Info().Msg("Configuration loaded.")
 	return cfg, nil
@@ -95,7 +96,7 @@ func initKey(cCtx *cli.Context) error {
 	}
 
 	secretHandler := k8s.NewSecret(context.Background(), client)
-	_, err = secretHandler.GetValidSecret()
+	_, err = secretHandler.GetValidPrivateKey()
 	if err != nil {
 		log.Error().Err(err).Send()
 		return err

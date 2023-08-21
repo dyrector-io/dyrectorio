@@ -171,7 +171,7 @@ func (s *Secret) ApplyRegistryAuthSecret(ctx context.Context,
 	return nil
 }
 
-func (s *Secret) GetValidSecret() (string, error) {
+func (s *Secret) GetValidPrivateKey() (string, error) {
 	namespace := s.appConfig.Namespace
 	name := s.appConfig.SecretName
 

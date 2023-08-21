@@ -84,8 +84,8 @@ export default class AgentConnectionStrategy {
     }
   }
 
-  protected throwIfTokenIsInvalid(node: NodeWithToken, token: AgentToken, requiredType: AgentTokenType = 'connection') {
-    if (!node.token || node.token.nonce !== token.nonce || token.type !== requiredType) {
+  protected throwIfTokenIsInvalid(node: NodeWithToken, token: AgentToken) {
+    if (!node.token || node.token.nonce !== token.nonce || token.type !== 'connection') {
       throw new CruxUnauthorizedException({
         message: 'Invalid token.',
       })

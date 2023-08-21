@@ -19,6 +19,7 @@ import { BasicNode, NodeScriptType } from './node'
 export type AgentInstallerOptions = {
   token: AgentToken
   signedToken: string
+  startedBy: string
   scriptType: NodeScriptType
   rootPath?: string | null
   dagentTraefikAcmeEmail?: string | null
@@ -46,7 +47,11 @@ export default class AgentInstaller {
 
   get expired(): boolean {
     const now = new Date()
-    return now > this.expirationDate
+    return now.getTime() - this.expirationDate.getTime() > JWT_EXPIRATION_MILLIS
+  }
+
+  get startedBy(): string {
+    return this.options.startedBy
   }
 
   getCommand(): string {
@@ -69,8 +74,6 @@ export default class AgentInstaller {
   }
 
   getScript(): string {
-    this.throwIfExpired()
-
     const configLocalDeployment = this.configService.get<string>('LOCAL_DEPLOYMENT')
     const configLocalDeploymentNetwork = this.configService.get<string>('LOCAL_DEPLOYMENT_NETWORK')
     const disableForcePull = this.configService.get<boolean>('AGENT_INSTALL_SCRIPT_DISABLE_PULL', false)
@@ -115,7 +118,6 @@ export default class AgentInstaller {
       outdated: false,
     })
 
-    agent.replaceToken(connection.jwt)
     return agent
   }
 
@@ -131,10 +133,12 @@ export default class AgentInstaller {
   }
 
   private throwIfExpired() {
-    throw new CruxPreconditionFailedException({
-      message: 'Install script expired',
-      property: 'expireAt',
-    })
+    if (this.expired) {
+      throw new CruxPreconditionFailedException({
+        message: 'Install script expired',
+        property: 'expireAt',
+      })
+    }
   }
 
   private getInstallScriptExtension(nodeType: NodeTypeEnum, scriptType: NodeScriptType): string {

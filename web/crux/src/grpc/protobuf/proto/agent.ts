@@ -48,6 +48,7 @@ export enum CloseReason {
   CLOSE = 1,
   SELF_DESTRUCT = 2,
   SHUTDOWN = 3,
+  REVOKE_TOKEN = 4,
   UNRECOGNIZED = -1,
 }
 
@@ -65,6 +66,9 @@ export function closeReasonFromJSON(object: any): CloseReason {
     case 3:
     case 'SHUTDOWN':
       return CloseReason.SHUTDOWN
+    case 4:
+    case 'REVOKE_TOKEN':
+      return CloseReason.REVOKE_TOKEN
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -82,6 +86,8 @@ export function closeReasonToJSON(object: CloseReason): string {
       return 'SELF_DESTRUCT'
     case CloseReason.SHUTDOWN:
       return 'SHUTDOWN'
+    case CloseReason.REVOKE_TOKEN:
+      return 'REVOKE_TOKEN'
     case CloseReason.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
@@ -1472,6 +1478,8 @@ export interface AgentClient {
   deleteContainers(request: DeleteContainersRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
   containerLog(request: Observable<ContainerLogMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  tokenReplaced(request: Empty, metadata: Metadata, ...rest: any): Observable<Empty>
 }
 
 /** Service handling deployment of containers and fetching statuses */
@@ -1514,11 +1522,13 @@ export interface AgentController {
     metadata: Metadata,
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
+
+  tokenReplaced(request: Empty, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 }
 
 export function AgentControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['connect', 'secretList', 'abortUpdate', 'deleteContainers']
+    const grpcMethods: string[] = ['connect', 'secretList', 'abortUpdate', 'deleteContainers', 'tokenReplaced']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('Agent', method)(constructor.prototype[method], method, descriptor)

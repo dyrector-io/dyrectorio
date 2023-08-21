@@ -229,8 +229,8 @@ export default class NodeHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for node details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for node details.' })
   @UuidParams(PARAM_NODE_ID)
-  updateNodeAgent(@NodeId() nodeId: string) {
-    this.service.updateAgent(nodeId)
+  async updateNodeAgent(@NodeId() nodeId: string, @IdentityFromRequest() identity: Identity) {
+    await this.service.updateAgent(nodeId, identity)
   }
 
   @Get(`${ROUTE_NODE_ID}/audit`)

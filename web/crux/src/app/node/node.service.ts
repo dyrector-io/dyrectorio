@@ -126,7 +126,7 @@ export default class NodeService {
       },
     })
 
-    this.agentService.kick(id, 'delete-node', identity.id)
+    await this.agentService.kick(id, 'delete-node', identity.id)
   }
 
   async updateNode(id: string, req: UpdateNodeDto, identity: Identity): Promise<void> {
@@ -172,6 +172,7 @@ export default class NodeService {
       req.rootPath ?? null,
       req.scriptType,
       req.dagentTraefik ?? null,
+      identity,
     )
 
     return this.mapper.installerToDto(installer)
@@ -193,12 +194,14 @@ export default class NodeService {
         id,
       },
       data: {
-        token: null,
         updatedBy: identity.id,
+        token: {
+          delete: true,
+        }
       },
     })
 
-    this.agentService.kick(id, 'revoke-token', identity.id)
+    await this.agentService.kick(id, 'revoke-token', identity.id)
   }
 
   async subscribeToNodeEvents(teamSlug: string): Promise<Observable<AgentConnectionMessage>> {
@@ -239,8 +242,8 @@ export default class NodeService {
     return stream.watch()
   }
 
-  updateAgent(id: string) {
-    this.agentService.updateAgent(id)
+  async updateAgent(id: string, identity: Identity): Promise<void> {
+    await this.agentService.updateAgent(id, identity)
   }
 
   startContainer(nodeId: string, prefix: string, name: string) {

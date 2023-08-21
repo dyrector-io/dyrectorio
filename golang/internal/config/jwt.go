@@ -7,30 +7,41 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+type TokenType string
+
+const (
+	Connection TokenType = "connection"
+	Install    TokenType = "install"
+)
+
 type ValidJWT struct {
 	Issuer           string
 	Subject          string
 	IssuedAt         time.Time
+	Type             TokenType
+	Nonce            string
 	StringifiedToken string
 }
 
 type CustomClaims struct {
 	jwt.RegisteredClaims
+	Type  TokenType
+	Nonce string
 }
 
-func (config *CommonConfiguration) ParseAndSetJWT(unvalidatedToken string) error {
-	if unvalidatedToken == "" {
-		return fmt.Errorf("JWT cannot be empty")
-	}
+// func (config *CommonConfiguration) ParseAndSetJWT(unvalidatedToken string) error {
+// 	if unvalidatedToken == "" {
+// 		return fmt.Errorf("JWT cannot be empty")
+// 	}
 
-	token, err := ValidateAndCreateJWT(unvalidatedToken)
-	if err != nil {
-		return err
-	}
+// 	token, err := ValidateAndCreateJWT(unvalidatedToken)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	config.GrpcToken = token
-	return nil
-}
+// 	config.GrpcToken = token
+// 	return nil
+// }
 
 func (c *CustomClaims) Valid() error {
 	vErr := new(jwt.ValidationError)
@@ -96,5 +107,7 @@ func ValidateAndCreateJWT(unvalidatedToken string) (*ValidJWT, error) {
 		Subject:          claims.Subject,
 		IssuedAt:         claims.IssuedAt.Time,
 		StringifiedToken: unvalidatedToken,
+		Type:             claims.Type,
+		Nonce:            claims.Nonce,
 	}, nil
 }

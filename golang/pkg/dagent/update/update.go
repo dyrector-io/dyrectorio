@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -189,7 +190,7 @@ func ExecuteSelfUpdate(ctx context.Context, cli client.APIClient, command *agent
 	return err
 }
 
-func RemoveSelf(ctx context.Context) error {
+func RemoveSelf(ctx context.Context, options grpc.UpdateOptions) error {
 	if _selfUpdateDeadline == nil {
 		return nil
 	}
@@ -200,12 +201,17 @@ func RemoveSelf(ctx context.Context) error {
 		return nil
 	}
 
+	log.Info().Msg("Update finished, shutting down")
+
+	if !options.UseContainers {
+		log.Warn().Msg("Container updates are disabled. Self destruction message received. Exiting")
+		os.Exit(0)
+	}
+
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return err
 	}
-
-	log.Info().Msg("Update finished, shutting down")
 
 	self, err := utils.GetOwnContainer(ctx, cli)
 	if err != nil {

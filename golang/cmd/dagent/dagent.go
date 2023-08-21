@@ -12,8 +12,6 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 
 	cli "github.com/urfave/cli/v2"
-
-	commonConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
 )
 
 func serve(cCtx *cli.Context) error {
@@ -24,17 +22,15 @@ func serve(cCtx *cli.Context) error {
 		log.Panic().Err(err).Msg("Failed to load configuration")
 	}
 
-	err = commonConfig.InjectToken(&cfg.CommonConfiguration, cfg.SecretTokenPath, string(cfg.SecretTokenFile))
+	cfg.InjectPrivateKey(&cfg)
 	if err != nil {
-		log.Panic().Err(err).Msg("Failed to load connection token")
-	}
-	if cfg.GrpcToken == nil {
-		if err := cfg.ParseAndSetJWT(os.Getenv("GRPC_TOKEN")); err != nil {
-			log.Panic().Err(err).Msg("Failed to parse env GRPC_TOKEN")
-		}
+		log.Panic().Err(err).Msg("Failed to load secrets private key")
 	}
 
-	commonConfig.InjectPrivateKey(&cfg.CommonConfiguration, string(cfg.SecretPrivateKeyFile))
+	err = cfg.InjectGrpcToken(&cfg)
+	if err != nil {
+		log.Panic().Err(err).Msg("Failed to load grpc token")
+	}
 
 	log.Info().Msg("Configuration loaded.")
 

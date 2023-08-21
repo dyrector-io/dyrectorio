@@ -435,14 +435,15 @@ model NotificationEvent {
 }
 
 model NodeEvent {
-  id        String             @id @default(uuid()) @db.Uuid
-  nodeId    String             @db.Uuid
-  createdAt DateTime           @default(now()) @db.Timestamptz(6)
-  event     AgentEventTypeEnum
+  id        String            @id @default(uuid()) @db.Uuid
+  nodeId    String            @db.Uuid
+  createdAt DateTime          @default(now()) @db.Timestamptz(6)
+  event     NodeEventTypeEnum
   data      Json?
 
   node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
-	@@map("AgentEvent")
+
+  @@map("NodeEvent")
 }
 
 enum ProjectTypeEnum {
@@ -504,13 +505,15 @@ enum NotificationEventTypeEnum {
   userInvited
 }
 
-enum AgentEventTypeEnum {
+enum NodeEventTypeEnum {
   installed
   connected
   left
   kicked
   update
+  updateCompleted
   containerCommand
+  tokenReplaced
 }
 
 model Storage {

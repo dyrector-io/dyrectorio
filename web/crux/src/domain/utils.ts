@@ -1,8 +1,9 @@
 /* eslint-disable no-await-in-loop, no-constant-condition */
 import { Prisma, PrismaClient } from '@prisma/client'
-import { JsonNull } from 'prisma'
-import { Timestamp } from 'src/grpc/google/protobuf/timestamp'
 import { randomBytes } from 'crypto'
+import { JsonNull } from 'prisma'
+import { MonoTypeOperatorFunction, TapObserver, concatMap, of, pipe, tap } from 'rxjs'
+import { Timestamp } from 'src/grpc/google/protobuf/timestamp'
 
 export type PrismaTransactionClient = Omit<
   PrismaClient,
@@ -90,5 +91,9 @@ export const toPrismaJson = <T>(val: T): T | JsonNull => {
   return val
 }
 
-export const generateNonce = () =>
-  randomBytes(128).toString('hex')
+export const generateNonce = () => randomBytes(128).toString('hex')
+
+export const tapOnce = <T>(
+  observerOrNext?: Partial<TapObserver<T>> | ((value: T) => void),
+): MonoTypeOperatorFunction<T> =>
+  pipe(concatMap((it, index) => (index === 0 ? of(it).pipe(tap(observerOrNext)) : of(it))))

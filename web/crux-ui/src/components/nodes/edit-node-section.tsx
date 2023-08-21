@@ -150,21 +150,19 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
         <EditNodeCard className="w-1/2 p-8" submitRef={submitRef} onNodeEdited={onNodeEdited} node={node} />
 
         <div className="flex flex-col flex-grow w-1/2">
-          {node.status !== 'unreachable' && <NodeConnectionCard className="mb-4 p-6" node={node} />}
-
-          {/* <DyoCard className="flex-grow w-full p-8"> */}
+          {node.hasToken && <NodeConnectionCard className="mb-4 p-6" node={node} />}
 
           {!editing ? (
-            <DyoCard className="text-bright p-8">{t('youCanInstall')}</DyoCard>
-          ) : node.status !== 'unreachable' || node.hasToken ? (
-            <DyoCard className="flex flex-col p-8 text-bright">
+            <DyoCard className="h-full text-bright p-8">{t('youCanInstall')}</DyoCard>
+          ) : node.hasToken ? (
+            <DyoCard className="flex flex-col h-full p-8 text-bright">
               <DyoHeading element="h4" className="text-lg text-bright">
                 {t('agentSettings')}
               </DyoHeading>
 
-              {node.status === 'outdated' && <span className="my-4">{t('updateRequired')}</span>}
+              {node.status === 'outdated' && <span className="mt-4">{t('updateRequired')}</span>}
 
-              <div className="flex flex-row gap-4">
+              <div className="flex flex-row gap-4 mt-4">
                 {node.hasToken && (
                   <DyoButton className="px-6" secondary onClick={onRevokeToken}>
                     {t('tokens:revoke')}

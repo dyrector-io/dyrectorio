@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
-import { AgentEventTypeEnum, DeploymentEventTypeEnum, DeploymentStatusEnum } from '@prisma/client'
+import { Identity } from '@ory/kratos-client'
+import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeEventTypeEnum } from '@prisma/client'
 import {
   EMPTY,
   Observable,
@@ -86,6 +87,7 @@ export default class AgentService {
 
     if (installer?.expired) {
       this.installers.delete(nodeId)
+      this.logger.debug(`Installer for node ${nodeId} is expired.`)
       return null
     }
 
@@ -117,6 +119,7 @@ export default class AgentService {
     rootPath: string | null,
     scriptType: NodeScriptTypeDto,
     traefik: DagentTraefikOptionsDto | null,
+    identity: Identity,
   ): Promise<AgentInstaller> {
     let installer = this.getInstallerByNodeId(node.id)
     if (installer) {
@@ -135,9 +138,10 @@ export default class AgentService {
     installer = new AgentInstaller(this.configService, teamSlug, node, {
       token,
       signedToken: this.jwtService.sign(token),
+      startedBy: identity.id,
       rootPath,
       scriptType,
-      dagentTraefikAcmeEmail: traefik.acmeEmail,
+      dagentTraefikAcmeEmail: traefik?.acmeEmail,
     })
 
     this.installers.set(node.id, installer)
@@ -159,11 +163,11 @@ export default class AgentService {
     return Empty
   }
 
-  kick(nodeId: string, reason: AgentKickReason, user?: string) {
+  async kick(nodeId: string, reason: AgentKickReason, user?: string): Promise<void> {
     const agent = this.getById(nodeId)
-    agent?.close(CloseReason.SHUTDOWN)
+    agent?.close(reason === 'revoke-token' ? CloseReason.REVOKE_TOKEN : CloseReason.SHUTDOWN)
 
-    this.createAgentAudit(nodeId, 'kicked', {
+    await this.createAgentAudit(nodeId, 'kicked', {
       reason,
       user,
     })
@@ -263,7 +267,7 @@ export default class AgentService {
     return of(Empty)
   }
 
-  updateAgent(id: string) {
+  async updateAgent(id: string, identity: Identity): Promise<void> {
     const agent = this.getByIdOrThrow(id)
     const tag = this.getAgentImageTag()
 
@@ -271,9 +275,14 @@ export default class AgentService {
 
     const signedToken = this.jwtService.sign(token)
 
-    agent.startUpdate(tag, signedToken)
+    agent.startUpdate(tag, {
+      token,
+      signedToken,
+      startedAt: new Date(),
+      startedBy: identity.id,
+    })
 
-    this.createAgentAudit(id, 'update', {
+    await this.createAgentAudit(id, 'update', {
       fromVersion: agent.version,
       tag,
     })
@@ -336,16 +345,44 @@ export default class AgentService {
     )
   }
 
+  async tokenReplaced(connection: GrpcNodeConnection): Promise<Empty> {
+    const agent = this.getByIdOrThrow(connection.nodeId)
+
+    const replacement = agent.onTokenReplaced()
+    const { token, startedBy } = replacement
+
+    await this.prisma.nodeToken.upsert({
+      where: {
+        nodeId: agent.id,
+      },
+      create: {
+        nodeId: agent.id,
+        nonce: token.nonce,
+        createdBy: startedBy,
+      },
+      update: {
+        nonce: token.nonce,
+        createdBy: startedBy,
+      },
+    })
+
+    await this.createAgentAudit(agent.id, 'tokenReplaced')
+
+    return Empty
+  }
+
   private async onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === 'unreachable') {
       const storedAgent = this.agents.get(agent.id)
+
+      // there should be no awaits between this if and the agents.delete() call
+      // so we can be sure it happens in the same microtask
       if (agent === storedAgent) {
-        await this.createAgentAudit(agent.id, 'left')
         this.logger.log(`Left: ${agent.id}`)
-
         this.agents.delete(agent.id)
-
         AgentMetrics.connectedCount().dec()
+
+        await this.createAgentAudit(agent.id, 'left')
 
         await this.prisma.deployment.updateMany({
           where: {
@@ -360,8 +397,12 @@ export default class AgentService {
 
       agent.onDisconnected()
     } else if (status === 'connected') {
+      this.agents.set(agent.id, agent)
+
+      this.logger.log(`Agent joined with id: ${agent.id}, key: ${!!agent.publicKey}`)
       AgentMetrics.connectedCount().inc()
-      agent.onConnected()
+      this.logServiceInfo()
+      await this.createAgentAudit(agent.id, 'connected', agent.info)
     } else {
       this.logger.warn(`Unknown NodeConnectionStatus ${status}`)
     }
@@ -373,17 +414,11 @@ export default class AgentService {
   ): Promise<Observable<AgentCommand>> {
     const strategy = this.connectionStrategies.select(connection)
     const agent = await strategy.execute(connection, request)
+    this.logger.verbose('Connection strategy completed')
 
-    this.agents.set(agent.id, agent)
-    connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))
+    await this.onAgentConnectionStatusChange(agent, agent.outdated ? 'outdated' : 'connected')
 
-    this.logger.log(`Agent joined with id: ${request.id}, key: ${!!agent.publicKey}`)
-    AgentMetrics.connectedCount().inc()
-    this.logServiceInfo()
-
-    this.createAgentAudit(agent.id, 'connected', request)
-
-    return agent.onConnected()
+    return agent.onConnected(it => this.onAgentConnectionStatusChange(agent, it))
   }
 
   private async createDeploymentEvents(id: string, tryCount: number, events: DeploymentProgressEvent[]) {
@@ -409,7 +444,7 @@ export default class AgentService {
     })
   }
 
-  public async createAgentAudit(nodeId: string, event: AgentEventTypeEnum, data?: any) {
+  public async createAgentAudit(nodeId: string, event: NodeEventTypeEnum, data?: any) {
     try {
       await this.prisma.nodeEvent.create({
         data: {

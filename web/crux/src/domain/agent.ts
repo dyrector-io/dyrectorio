@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
-import { catchError, finalize, Observable, of, Subject, throwError, timeout, TimeoutError } from 'rxjs'
+import { buffer, bufferWhen, catchError, connect, finalize, Observable, of, ReplaySubject, share, Subject, Subscription, tap, throwError, timeout, TimeoutError } from 'rxjs'
 import { NodeConnectionStatus } from 'src/app/node/node.dto'
 import {
   CruxConflictException,
@@ -18,7 +18,8 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import { CONTAINER_DELETE_TIMEOUT, DEFAULT_CONTAINER_LOG_TAIL } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
-import AgentUpdate from './agent-update'
+import { AgentToken } from './agent-token'
+import AgentUpdate, { AgentUpdateOptions, AgentUpdateResult } from './agent-update'
 import ContainerLogStream, { ContainerLogStreamCompleter } from './container-log-stream'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
 import Deployment from './deployment'
@@ -30,10 +31,16 @@ export type AgentOptions = {
   outdated: boolean
 }
 
+type AgentTokenReplacement = {
+  startedBy: string
+  token: AgentToken
+  signedToken: string
+}
+
 export class Agent {
   public static SECRET_TIMEOUT = 5000
 
-  private commandChannel = new Subject<AgentCommand>()
+  private readonly commandChannel = new ReplaySubject<AgentCommand>()
 
   private deployments: Map<string, Deployment> = new Map()
 
@@ -47,15 +54,17 @@ export class Agent {
 
   private update: AgentUpdate | null = null
 
+  private replacementToken: AgentTokenReplacement | null = null
+
+  private statusSubscriber: Subscription
+
   private readonly eventChannel: Subject<AgentConnectionMessage>
 
   private readonly connection: GrpcNodeConnection
 
+  readonly info: AgentInfo
+
   readonly outdated: boolean
-
-  readonly version: string
-
-  readonly publicKey: string
 
   get id(): string {
     return this.connection.nodeId
@@ -65,19 +74,23 @@ export class Agent {
     return this.connection.address
   }
 
+  get version(): string {
+    return this.info.version
+  }
+
+  get publicKey(): string {
+    return this.info.publicKey
+  }
+
   get connected() {
     return this.getConnectionStatus() === 'connected'
   }
 
   constructor(options: AgentOptions) {
-
     this.connection = options.connection
+    this.info = options.info
     this.eventChannel = options.eventChannel
     this.outdated = options.outdated
-
-    const { info } = options
-    this.version = info.version
-    this.publicKey = info.publicKey
   }
 
   getConnectionStatus(): NodeConnectionStatus {
@@ -163,13 +176,20 @@ export class Agent {
     } as AgentCommand)
   }
 
-  replaceToken(token: string) {
-    this.throwIfCommandsAreDisabled()
+  replaceToken(replacement: AgentTokenReplacement) {
+    if (this.replacementToken) {
+      throw new CruxConflictException({
+        message: 'Token replacement is already in progress',
+        property: 'token'
+      })
+    }
+
+    this.replacementToken = replacement
 
     this.commandChannel.next({
       replaceToken: {
-        token,
-      }
+        token: replacement.signedToken,
+      },
     })
   }
 
@@ -198,7 +218,9 @@ export class Agent {
     )
   }
 
-  onConnected(): Observable<AgentCommand> {
+  onConnected(statusListener: (status: NodeConnectionStatus) => void): Observable<AgentCommand> {
+    this.statusSubscriber = this.connection.status().subscribe(statusListener)
+
     this.eventChannel.next({
       id: this.id,
       address: this.address,
@@ -224,6 +246,7 @@ export class Agent {
       address: null,
       version: null,
       connectedAt: null,
+      updating: false,
     })
   }
 
@@ -328,11 +351,11 @@ export class Agent {
     this.secretsWatchers.delete(key)
   }
 
-  startUpdate(tag: string, token: string) {
+  startUpdate(tag: string, options: AgentUpdateOptions) {
     if (this.deployments.size > 0) {
       throw new CruxPreconditionFailedException({
         message: 'Can not update an agent, while you have an in progress deployments',
-        property: 'deployments'
+        property: 'deployments',
       })
     }
 
@@ -344,8 +367,7 @@ export class Agent {
       })
     }
 
-    const now = new Date()
-    this.update = new AgentUpdate(token, now)
+    this.update = new AgentUpdate(options)
     this.update.start(this.commandChannel, tag)
   }
 
@@ -360,11 +382,20 @@ export class Agent {
     })
   }
 
-  onUpdateCompleted(connection: GrpcNodeConnection) {
+  onUpdateCompleted(connection: GrpcNodeConnection): AgentUpdateResult {
     this.deployments.forEach(it => it.onDisconnected())
-    this.update.complete(connection)
 
-    this.close(CloseReason.SELF_DESTRUCT)
+    const result = this.update.complete(connection)
+
+    try {
+      this.statusSubscriber.unsubscribe()
+
+      this.close(CloseReason.SELF_DESTRUCT)
+    } catch {
+      /* empty */
+    }
+
+    return result
   }
 
   onContainerDeleted(request: DeleteContainersRequest) {
@@ -374,6 +405,25 @@ export class Agent {
       this.deleteContainersRequests.delete(reqId)
       result.complete()
     }
+  }
+
+  /**
+   * returns with the new token
+   */
+  onTokenReplaced(): AgentTokenReplacement {
+    if (!this.replacementToken) {
+      throw new CruxPreconditionFailedException({
+        message: 'Replacement was not requested',
+      })
+    }
+
+    const replacement = this.replacementToken
+    const { token, signedToken } = replacement
+
+    this.connection.replaceToken(token, signedToken)
+
+    this.replacementToken = null
+    return replacement
   }
 
   debugInfo(logger: Logger) {
@@ -388,6 +438,14 @@ export class Agent {
     if (this.updating) {
       throw new CruxPreconditionFailedException({
         message: 'Node is updating',
+        property: 'id',
+        value: this.id,
+      })
+    }
+
+    if (this.replacementToken) {
+      throw new CruxPreconditionFailedException({
+        message: 'Node is replacing connection token',
         property: 'id',
         value: this.id,
       })

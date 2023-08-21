@@ -20,8 +20,41 @@ type Configuration struct {
 	TraefikPort     uint16 `yaml:"traefikPort"          env:"TRAEFIK_PORT"           env-default:"80"`
 	TraefikTLSPort  uint16 `yaml:"traefikTLSPort"       env:"TRAEFIK_TLS_PORT"       env-default:"443"`
 	WebhookToken    string `yaml:"webhookToken"         env:"WEBHOOK_TOKEN"          env-default:""`
-	// for injecting secrets,
-	SecretPrivateKeyFile KeyFromFile `yaml:"secretPrivateKeyFile" env:"SECRET_PRIVATE_KEY_FILE"  env-default:"/srv/dagent/private.key"`
-	SecretTokenFile      JwtFromFile `yaml:"secretTokenFile"      env:"SECRET_TOKEN_FILE"        env-default:"/srv/dagent/token.jwt"`
-	SecretTokenPath      string      `yaml:"secretTokenFile"      env:"SECRET_TOKEN_FILE"        env-default:"/srv/dagent/token.jwt"`
+}
+
+const (
+	privateKeyFileName           = "secret.key"
+	connectionTokenFileName      = "token.jwt"
+	nonceBlacklistFileName       = "token-nonce.blacklist"
+	filePermReadWriteOnlyByOwner = 0o600
+)
+
+func (c *Configuration) CheckPermissions() error {
+	path := c.appendPathMountPath(connectionTokenFileName)
+	return checkFilePermissions(path)
+}
+
+func (c *Configuration) GetConnectionToken() (string, error) {
+	path := c.appendPathMountPath(connectionTokenFileName)
+	return readStringFromFile(path)
+}
+
+func (c *Configuration) SaveConnectionToken(token string) error {
+	path := c.appendPathMountPath(connectionTokenFileName)
+	return writeStringToFile(path, token)
+}
+
+func (c *Configuration) GetBlacklistedNonce() (string, error) {
+	path := c.appendPathMountPath(nonceBlacklistFileName)
+	return readStringFromFile(path)
+}
+
+func (c *Configuration) BlacklistNonce(value string) error {
+	path := c.appendPathMountPath(nonceBlacklistFileName)
+	return writeStringToFile(path, value)
+}
+
+func (c *Configuration) LoadPrivateKey() (string, error) {
+	path := c.appendPathMountPath(privateKeyFileName)
+	return c.checkOrGenerateKeys(path)
 }
