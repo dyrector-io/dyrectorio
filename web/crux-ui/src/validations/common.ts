@@ -35,4 +35,5 @@ export const iconRule = yup
 
 export const nameRule = yup.string().required().trim().min(3).max(70)
 export const descriptionRule = yup.string().optional()
-export const identityNameRule = yup.string().trim().min(1).max(16)
+export const identityNameRule = yup.string().trim().max(16)
+export const passwordLengthRule = yup.string().min(8).max(70)
