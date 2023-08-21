@@ -294,6 +294,7 @@ test.describe("Deleting copied deployment's parent", () => {
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
     await waitForURLExcept(page, { startsWith: `${TEAM_ROUTES.deployment.list()}/`, except: currentUrl })
+    await expect(page.locator('.table-row-group')).toBeVisible()
 
     await deleteDeployment(page, parentDeploymentId)
 

@@ -59,12 +59,20 @@ const config: PlaywrightTestConfig = {
     //   ignoreHTTPSErrors: true,
     // },
     viewport: { width: 1920, height: 1080 },
+
+    // Advanced low level timeouts for faster test failure
+    // https://playwright.dev/docs/test-timeouts#advanced-low-level-timeouts
+    actionTimeout: 30 * 1000,
+    navigationTimeout: 30 * 1000,
   },
   projects: [
     {
       name: 'global-setup',
       testMatch: /global\.setup\.spec\.ts/,
       teardown: 'global-teardown',
+      use: {
+        ...devices['Desktop Chromium'],
+      },
     },
     {
       name: 'global-teardown',
