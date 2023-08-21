@@ -2,6 +2,7 @@ import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger'
 import { Deployment, DeploymentToken, Instance, InstanceContainerConfig, Node, Project, Version } from '@prisma/client'
 import { Type } from 'class-transformer'
 import {
+  IsBoolean,
   IsDate,
   IsIn,
   IsInt,
@@ -39,6 +40,9 @@ export class BasicDeploymentDto {
 
   @IsString()
   prefix: string
+
+  @IsBoolean()
+  protected: boolean
 
   @ApiProperty({ enum: DEPLOYMENT_STATUS_VALUES })
   @IsIn(DEPLOYMENT_STATUS_VALUES)
@@ -163,6 +167,9 @@ export class CreateDeploymentDto {
   @IsString()
   prefix: string
 
+  @IsBoolean()
+  protected: boolean
+
   @IsString()
   @IsOptional()
   note?: string | null
@@ -176,6 +183,10 @@ export class PatchDeploymentDto {
   @IsString()
   @IsOptional()
   prefix?: string | null
+
+  @IsBoolean()
+  @IsOptional()
+  protected?: boolean
 
   @IsOptional()
   @ValidateNested({ each: true })

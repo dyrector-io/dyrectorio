@@ -86,6 +86,7 @@ export default class DeployMapper {
     return {
       id: it.id,
       prefix: it.prefix,
+      protected: it.protected,
       status: this.statusToDto(it.status),
       updatedAt: it.updatedAt ?? it.createdAt,
       node: this.nodeMapper.toBasicWithStatusDto(it.node, nodeStatus),
@@ -96,6 +97,7 @@ export default class DeployMapper {
     return {
       id: it.id,
       prefix: it.prefix,
+      protected: it.protected,
       note: it.note,
       status: this.statusToDto(it.status),
       audit: this.auditMapper.toDto(it),

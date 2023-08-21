@@ -190,6 +190,7 @@ export default class DeployService {
         note: request.note,
         createdBy: identity.id,
         prefix: request.prefix,
+        protected: request.protected,
         instances: {
           createMany: {
             data: version.images.map(it => ({
@@ -275,6 +276,7 @@ export default class DeployService {
       data: {
         note: req.note ?? undefined,
         prefix: req.prefix ?? undefined,
+        protected: req.protected ?? undefined,
         environment: req.environment
           ? req.environment.map(it => this.containerMapper.uniqueKeyValueDtoToDb(it))
           : undefined,
