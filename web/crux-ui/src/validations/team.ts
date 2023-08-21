@@ -16,7 +16,7 @@ export const selectTeamSchema = yup.object().shape({
 
 export const createTeamSchema = yup.object().shape({
   name: nameRule,
-  slug: teamSlugRule,
+  slug: teamSlugRule.required(),
 })
 
 export const updateTeamSchema = createTeamSchema
