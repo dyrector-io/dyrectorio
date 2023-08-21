@@ -91,7 +91,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
 
             {container.state && (
               <Link href={routes.node.containerLog(state.node.id, container.id)} passHref>
-                <DyoIcon src="/note.svg" alt={t('logs')} size="md" />
+                <DyoIcon className="align-bottom" src="/note.svg" alt={t('logs')} size="md" />
               </Link>
             )}
 

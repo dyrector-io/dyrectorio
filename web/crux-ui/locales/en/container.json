@@ -121,7 +121,8 @@
     "labels": "Labels",
     "annotations": "Annotations",
     "service": "Service",
-    "deployment": "Deployment"
+    "deployment": "Deployment",
+    "ingress": "Ingress"
   },
   "sensitiveKey": "Sensitive config data should be stored as secrets"
 }
