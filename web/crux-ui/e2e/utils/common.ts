@@ -14,6 +14,7 @@ import { Locator, Page } from '@playwright/test'
 import path from 'path'
 import { v4 as uuid } from 'uuid'
 import MailSlurper from './mail-slurper'
+import { ChildProcess, ExecException, ExecOptions, exec } from 'child_process'
 
 export const MAILSLURPER_TIMEOUT = 30000 // millis
 export const USER_EMAIL = 'john.doe@example.com'
@@ -172,3 +173,37 @@ export const clearInput = async (input: Locator) => {
 
 export const waitForURLExcept = async (page: Page, options: { startsWith: string; except: string }) =>
   await page.waitForURL(it => it.toString() !== options.except && it.pathname.startsWith(options.startsWith))
+
+export const getExecOptions = (): ExecOptions =>
+  process.platform === 'win32'
+    ? {
+        shell: 'C:\\Program Files\\git\\bin\\bash.exe',
+      }
+    : null
+
+export const logCmdOutput = (logStdOut: boolean) => (err: Error, stdOut: string, stdErr: string) => {
+  if (logStdOut) {
+    console.info(stdOut)
+  }
+
+  if (err) {
+    console.error(err)
+  }
+
+  if (stdErr) {
+    console.error(stdErr)
+  }
+}
+
+export const execAsync = (
+  command: string,
+  options: ExecOptions,
+  callback?: (error: ExecException | null, stdout: string, stderr: string) => void,
+) => {
+  return new Promise<ChildProcess>(resolve => {
+    const childProcess = exec(command, options, (error: ExecException | null, stdout: string, stderr: string) => {
+      callback?.call(null, error, stdout, stderr)
+      resolve(childProcess)
+    })
+  })
+}

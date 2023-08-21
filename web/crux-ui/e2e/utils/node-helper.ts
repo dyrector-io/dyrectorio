@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { expect, test, Page } from '@playwright/test'
 import { exec, ExecOptions } from 'child_process'
-import { DAGENT_NODE, screenshotPath, TEAM_ROUTES } from './common'
+import { DAGENT_NODE, execAsync, getExecOptions, logCmdOutput, screenshotPath, TEAM_ROUTES } from './common'
 import { fillDeploymentPrefix } from './projects'
 
 export const installDagent = async (page: Page) => {
@@ -26,7 +26,7 @@ export const installDagent = async (page: Page) => {
   const curl = await commandInput.inputValue()
 
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  exec(curl, getInstallScriptExecSettings(), logCmdOutput)
+  await execAsync(curl, getInstallScriptExecSettings(), logCmdOutput(false))
 
   await page.waitForSelector('div.bg-dyo-green')
 
@@ -120,33 +120,15 @@ export const deploy = async (
   return deploymentId
 }
 
-const logCmdOutput = (err: Error, stdOut: string, stdErr: string, logStdOut?: boolean) => {
-  if (logStdOut) {
-    console.info(stdOut)
-  }
-
-  if (err) {
-    console.error(err)
-  }
-
-  if (stdErr) {
-    console.error(stdErr)
-  }
-}
-
-const getInstallScriptExecSettings = (): ExecOptions => {
-  switch (process.platform) {
-    case 'darwin':
-      return {
+const getInstallScriptExecSettings = (): ExecOptions => ({
+  ...getExecOptions(),
+  ...(process.platform === 'darwin'
+    ? {
         env: { ...process.env },
       }
-    case 'win32':
-      return {
-        shell: 'C:\\Program Files\\git\\git-bash.exe',
-      }
-    default:
-      return {
+    : process.platform === 'win32'
+    ? null
+    : {
         env: { ...process.env, ROOTLESS: 'true', PERSISTENCE_FOLDER: `${__dirname}/dagent` },
-      }
-  }
-}
+      }),
+})
