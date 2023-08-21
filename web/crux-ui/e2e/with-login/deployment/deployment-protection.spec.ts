@@ -35,10 +35,16 @@ test('Protecting a deployment should fail while an incremental protected deploym
 
   await deploymentsRows.first().click()
   await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**`)
+  const editDeploymentId = page.url().split('/').pop()
 
   await page.click('button:text-is("Edit")')
   await page.click('button:right-of(:has-text("Protected"))')
+
+  const patchRequest = page.waitForResponse(it =>
+    it.url().includes(TEAM_ROUTES.deployment.api.details(editDeploymentId)),
+  )
   await page.click('button:text-is("Save")')
+  await patchRequest
 
   const toast = page.getByRole('status')
   await toast.waitFor()
