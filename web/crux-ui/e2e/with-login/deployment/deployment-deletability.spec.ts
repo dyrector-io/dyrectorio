@@ -67,12 +67,6 @@ test('Delete deployment should work', async ({ page }, testInfo) => {
   await page.waitForURL(`${TEAM_ROUTES.project.details(projectId)}**`)
 })
 
-const deleteRefreshDeployment = async (page: Page, projectName: string): Promise<void> => {
-  await page.locator(`img[src="/trash-can.svg"]:right-of(div.p-2:has-text('pw-${projectName}'))`).first().click()
-  await page.locator('h4:has-text("Are you sure?")')
-  await page.locator('button:has-text("Delete")').click()
-}
-
 test('Deleting a deployment should refresh deployment list', async ({ page }) => {
   const projectName = 'project-delete-refresh-test'
 

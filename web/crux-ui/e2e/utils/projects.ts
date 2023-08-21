@@ -178,7 +178,8 @@ export const deleteVersion = async (page: Page, projectId: string, versionId: st
   const confirmDeleteButton = page.locator('div[role=dialog]').locator('button:has-text("Delete")')
   await expect(confirmDeleteButton).toHaveCount(1)
   await confirmDeleteButton.click()
-  await page.waitForURL(`${TEAM_ROUTES.project.list()}/**`)
+
+  await page.waitForURL(TEAM_ROUTES.project.details(projectId))
 }
 
 export const deleteDeployment = async (page: Page, deploymentId: string) => {
@@ -189,8 +190,10 @@ export const deleteDeployment = async (page: Page, deploymentId: string) => {
   await deleteButton.click()
   const confirmDeleteButton = page.locator('div[role=dialog]').locator('button:has-text("Delete")')
   await expect(confirmDeleteButton).toHaveCount(1)
+
+  const currentUrl = page.url()
   await confirmDeleteButton.click()
-  await page.waitForURL(`${TEAM_ROUTES.project.list()}/**`)
+  await page.waitForURL(it => it.toString() != currentUrl)
 }
 
 export const copyDeployment = async (page: Page, deploymentId: string, newName: string) => {
