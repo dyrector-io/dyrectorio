@@ -583,10 +583,10 @@ jobs:
         if: always()
         run: |
           mkdir logs
-          docker logs dyo-e2e_crux-ui &> logs/e2e-crux-ui.log
-          docker logs dyo-e2e_crux &> logs/e2e-crux.log
-          docker logs dyo-e2e_kratos &> logs/e2e-kratos.log
-          docker logs dagent &> logs/e2e-dagent.log
+          docker logs dyo-e2e_crux-ui > logs/e2e-crux-ui.log 2>&1
+          docker logs dyo-e2e_crux > logs/e2e-crux.log 2>&1
+          docker logs dyo-e2e_kratos > logs/e2e-kratos.log 2>&1
+          docker logs dagent > logs/e2e-dagent.log 2>&1
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
