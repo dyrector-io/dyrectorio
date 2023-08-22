@@ -1,4 +1,5 @@
 import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
+import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { ConfigBundle } from '@app/models/config-bundle'
 import clsx from 'clsx'
@@ -18,7 +19,7 @@ const ConfigBundleCard = (props: ConfigBundleCardProps) => {
 
   const title = (
     <div className="flex flex-row">
-      <Image src="/default_config_bundle.svg" width={17} height={21} alt={t('altDefaultConfigBundlePicture')} />
+      <Image src="/config_bundle.svg" width={17} height={21} alt={t('altDefaultConfigBundlePicture')} />
 
       <DyoHeading className="text-xl text-bright font-semibold ml-2 my-auto mr-auto" element="h3">
         {configBundle.name}
@@ -29,6 +30,14 @@ const ConfigBundleCard = (props: ConfigBundleCardProps) => {
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
       {titleHref ? <Link href={titleHref}>{title}</Link> : title}
+
+      <DyoExpandableText
+        text={configBundle.description}
+        lineClamp={2}
+        className="text-md text-light mt-2 max-h-44"
+        buttonClassName="ml-auto"
+        modalTitle={configBundle.name}
+      />
     </DyoCard>
   )
 }

@@ -40,7 +40,7 @@ const TeamSlug = () => WsParam('teamSlug')
 const ConfigBundleId = () => WsParam('configBundleId')
 
 @WebSocketGateway({
-  namespace: ':teamSlug/configbundles/:configBundleId',
+  namespace: ':teamSlug/config-bundles/:configBundleId',
 })
 @UseGlobalWsFilters()
 @UseGlobalWsGuards()

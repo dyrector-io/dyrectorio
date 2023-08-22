@@ -41,6 +41,7 @@ export type ConfigBundleActions = {
   onDelete: () => Promise<void>
   onEditEnv: (envs: UniqueKeyValue[]) => void
   onEditName: (name: string) => void
+  onEditDescription: (description: string) => void
 }
 
 export const useConfigBundleDetailsState = (
@@ -101,20 +102,21 @@ export const useConfigBundleDetailsState = (
   }
 
   const onPatch = (patch: Partial<ConfigBundleDetails>) => {
-    const newConfig = {
+    const newBundle = {
       ...configBundle,
       ...patch,
     }
-    setConfigBundle(newConfig)
+    setConfigBundle(newBundle)
 
-    const validationErrors = getValidationError(configBundlePatchSchema, newConfig, { abortEarly: false })?.inner ?? []
+    const validationErrors = getValidationError(configBundlePatchSchema, newBundle, { abortEarly: false })?.inner ?? []
     setFieldErrors(validationErrors)
 
     if (validationErrors.length < 1) {
       throttle(() => {
         sock.send(WS_TYPE_PATCH_CONFIG_BUNDLE, {
-          name: newConfig.name,
-          environment: newConfig.environment,
+          name: newBundle.name,
+          description: newBundle.description,
+          environment: newBundle.environment,
         } as PatchConfigBundleMessage)
       })
     }
@@ -123,6 +125,8 @@ export const useConfigBundleDetailsState = (
   const onEditEnv = (envs: UniqueKeyValue[]) => onPatch({ environment: envs })
 
   const onEditName = (name: string) => onPatch({ name })
+
+  const onEditDescription = (description: string) => onPatch({ description })
 
   useEffect(() => {
     const reactNode = (
@@ -150,6 +154,7 @@ export const useConfigBundleDetailsState = (
       onDelete,
       onEditEnv,
       onEditName,
+      onEditDescription,
     },
   ]
 }

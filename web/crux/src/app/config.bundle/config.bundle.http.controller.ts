@@ -44,7 +44,7 @@ const TeamSlug = () => Param(PARAM_TEAM_SLUG)
 const ConfigBundleId = () => Param(PARAM_CONFIG_BUNDLE_ID)
 
 const ROUTE_TEAM_SLUG = ':teamSlug'
-const ROUTE_CONFIG_BUNDLES = 'configbundles'
+const ROUTE_CONFIG_BUNDLES = 'config-bundles'
 const ROUTE_CONFIG_BUNDLE_ID = ':configBundleId'
 
 @Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_CONFIG_BUNDLES}`)

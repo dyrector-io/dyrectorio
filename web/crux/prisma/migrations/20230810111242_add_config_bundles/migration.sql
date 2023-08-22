@@ -2,6 +2,7 @@
 CREATE TABLE "ConfigBundle" (
     "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
+    "description" TEXT,
     "data" JSONB NOT NULL,
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdBy" UUID NOT NULL,

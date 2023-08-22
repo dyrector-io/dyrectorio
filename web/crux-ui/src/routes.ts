@@ -551,7 +551,7 @@ class ConfigBundleRoutes {
   private readonly root: string
 
   constructor(root: string) {
-    this.root = `${root}/configbundles`
+    this.root = `${root}/config-bundles`
   }
 
   private _api: ConfigBundleApi

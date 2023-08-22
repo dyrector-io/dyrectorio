@@ -1,7 +1,7 @@
 import { IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator'
 import { UniqueKeyValueDto } from '../container/container.dto'
 
-export class BasicConfigBundleDto {
+class BasicConfigBundleDto {
   @IsUUID()
   id: string
 
@@ -9,9 +9,13 @@ export class BasicConfigBundleDto {
   name: string
 }
 
-export class ConfigBundleDto extends BasicConfigBundleDto {}
+export class ConfigBundleDto extends BasicConfigBundleDto {
+  @IsString()
+  @IsOptional()
+  description?: string
+}
 
-export class ConfigBundleDetailsDto extends BasicConfigBundleDto {
+export class ConfigBundleDetailsDto extends ConfigBundleDto {
   @ValidateNested({ each: true })
   environment: UniqueKeyValueDto[]
 }
@@ -19,12 +23,20 @@ export class ConfigBundleDetailsDto extends BasicConfigBundleDto {
 export class CreateConfigBundleDto {
   @IsString()
   name: string
+
+  @IsString()
+  @IsOptional()
+  description?: string
 }
 
 export class PatchConfigBundleDto {
   @IsString()
   @IsOptional()
   name?: string
+
+  @IsString()
+  @IsOptional()
+  description?: string
 
   @ValidateNested({ each: true })
   @IsOptional()

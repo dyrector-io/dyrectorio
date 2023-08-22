@@ -1,6 +1,5 @@
 {
     "configBundleName": "Config bundle - {{name}}",
-    "name": "Name",
     "view": "View {{name}}",
     "new": "New config bundle",
     "noItems": "You haven't added a config bundle. To add a new one, click 'Add' on the top right.",

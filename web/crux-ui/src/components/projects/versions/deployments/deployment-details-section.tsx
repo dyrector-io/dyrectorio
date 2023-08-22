@@ -31,6 +31,10 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
 
   const { data: configBundleOptions } = useSWR<ConfigBundleOption[]>(teamRoutes.configBundles.api.options(), fetcher)
 
+  const configBundlesHres = deployment.configBundleIds?.length === 1
+    ? teamRoutes.configBundles.details(deployment.configBundleIds[0])
+    : teamRoutes.configBundles.list()
+
   return (
     <DeploymentDetailsCard className={className} deployment={deployment}>
       <div className="max-w-lg mb-3 flex flex-row mt-2">
@@ -46,7 +50,7 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
           onSelectionChange={it => actions.onConfigBundlesSelected(it)}
         />
 
-        <Link className="ml-2 my-auto" href={teamRoutes.configBundles.list()} passHref>
+        <Link className="ml-2 my-auto" href={configBundlesHres} passHref>
           <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
         </Link>
       </div>

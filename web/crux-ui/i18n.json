@@ -43,7 +43,7 @@
     "/[teamSlug]/dashboard": ["dashboard"],
     "/[teamSlug]/storages": ["storages"],
     "/[teamSlug]/storages/[storageId]": ["storages"],
-    "/[teamSlug]/configbundles": ["config-bundles"],
-    "/[teamSlug]/configbundles/[configBundleId]": ["config-bundles"]
+    "/[teamSlug]/config-bundles": ["config-bundles"],
+    "/[teamSlug]/config-bundles/[configBundleId]": ["config-bundles"]
   }
 }

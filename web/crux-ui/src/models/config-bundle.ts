@@ -5,14 +5,17 @@ export type BasicConfigBundle = {
   name: string
 }
 
-export type ConfigBundle = BasicConfigBundle
+export type ConfigBundle = BasicConfigBundle & {
+  description?: string
+}
 
-export type ConfigBundleDetails = BasicConfigBundle & {
+export type ConfigBundleDetails = ConfigBundle & {
   environment: UniqueKeyValue[]
 }
 
 export type CreateConfigBundle = {
   name: string
+  description?: string
 }
 
 export type UpdateConfigBundle = CreateConfigBundle & {
@@ -25,12 +28,14 @@ export type ConfigBundleOption = BasicConfigBundle
 export const WS_TYPE_PATCH_CONFIG_BUNDLE = 'patch-config-bundle'
 export type PatchConfigBundleMessage = {
   name?: string
+  description?: string
   environment?: UniqueKeyValue[]
 }
 
 export const WS_TYPE_CONFIG_BUNDLE_UPDATED = 'config-bundle-updated'
 export type ConfigBundleUpdatedMessage = {
   name?: string
+  description?: string
   environment?: UniqueKeyValue[]
 }
 

@@ -169,7 +169,7 @@ test('Incremental versions should keep config bundle environments after a succes
   const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE)
 
   await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
-  const ws = await waitSocket(page) // TODO(@robot9706): We usually have to put this before a navigation, but in this case that just doesn't work
+  const ws = await waitSocket(page) // We usually have to put this before a navigation, but in this case that just doesn't work
 
   const wsRoute = TEAM_ROUTES.deployment.detailsSocket(deploymentId)
   const wsPatchReceived = waitSocketReceived(ws, wsRoute, WS_TYPE_PATCH_RECEIVED)

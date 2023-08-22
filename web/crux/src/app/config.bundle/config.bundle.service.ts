@@ -57,6 +57,7 @@ export default class ConfigBundleService {
     const configBundle = await this.prisma.configBundle.create({
       data: {
         name: req.name,
+        description: req.description,
         data: [],
         teamId,
         createdBy: identity.id,
@@ -73,6 +74,7 @@ export default class ConfigBundleService {
       },
       data: {
         name: req.name ?? undefined,
+        description: req.description ?? undefined,
         data: req.environment ? toPrismaJson(req.environment) : undefined,
         updatedBy: identity.id,
       },
@@ -122,24 +124,24 @@ export default class ConfigBundleService {
   }
 
   async onEditorJoined(
-    deploymentId: string,
+    configBundleId: string,
     clientToken: string,
     identity: Identity,
   ): Promise<[EditorMessage, EditorMessage[]]> {
-    const editors = await this.editorServices.getOrCreateService(deploymentId)
+    const editors = await this.editorServices.getOrCreateService(configBundleId)
 
     const me = editors.onClientJoin(clientToken, identity)
 
     return [me, editors.getEditors()]
   }
 
-  async onEditorLeft(deploymentId: string, clientToken: string): Promise<EditorLeftMessage> {
-    const editors = await this.editorServices.getOrCreateService(deploymentId)
+  async onEditorLeft(configBundleId: string, clientToken: string): Promise<EditorLeftMessage> {
+    const editors = await this.editorServices.getOrCreateService(configBundleId)
     const message = editors.onClientLeft(clientToken)
 
     if (editors.editorCount < 1) {
-      this.logger.verbose(`All editors left removing ${deploymentId}`)
-      this.editorServices.free(deploymentId)
+      this.logger.verbose(`All editors left removing ${configBundleId}`)
+      this.editorServices.free(configBundleId)
     }
 
     return message

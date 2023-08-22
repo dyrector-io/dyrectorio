@@ -3,6 +3,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
+import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTeamRoutes from '@app/hooks/use-team-routes'
@@ -30,6 +31,7 @@ const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
   const formik = useDyoFormik({
     initialValues: {
       name: propsConfigBundle?.name ?? '',
+      description: propsConfigBundle?.description ?? '',
     },
     validationSchema: configBundleCreateSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
@@ -82,6 +84,15 @@ const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
             onChange={formik.handleChange}
             value={formik.values.name}
             message={formik.errors.name}
+          />
+
+          <DyoTextArea
+            className="h-48"
+            grow
+            name="description"
+            label={t('common:description')}
+            onChange={formik.handleChange}
+            value={formik.values.description}
           />
         </div>
 

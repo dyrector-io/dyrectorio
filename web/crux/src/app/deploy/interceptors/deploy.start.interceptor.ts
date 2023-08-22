@@ -133,7 +133,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
       const deploymentEnv = (deployment.environment as UniqueKeyValue[]) ?? []
       const deploymentEnvKeys = deploymentEnv.map(it => it.key)
 
-      const seenKeys: Record<string, string> = {} // Environment key -> config bundle name
+      const envToBundle: Record<string, string> = {} // [Environment key]: config bundle name
 
       deployment.configBundles.forEach(it => {
         const bundleEnv = (it.configBundle.data as UniqueKeyValue[]) ?? []
@@ -142,17 +142,17 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
           if (deploymentEnvKeys.includes(env.key)) {
             return
           }
-          if (seenKeys[env.key]) {
+          if (envToBundle[env.key]) {
             throw new CruxPreconditionFailedException({
               message: `Environment variable ${env.key} in ${it.configBundle.name} is already defined by ${
-                seenKeys[env.key]
+                envToBundle[env.key]
               }. Please define the key in the deployment or resolve the conflict in the bundles.`,
               property: 'configBundleId',
               value: it.configBundle.id,
             })
           }
 
-          seenKeys[env.key] = it.configBundle.name
+          envToBundle[env.key] = it.configBundle.name
         })
       })
     }

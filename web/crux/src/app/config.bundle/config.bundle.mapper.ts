@@ -9,6 +9,7 @@ export default class ConfigBundleMapper {
     return {
       id: configBundle.id,
       name: configBundle.name,
+      description: configBundle.description,
     }
   }
 
