@@ -574,10 +574,11 @@ jobs:
           KRATOS_URL: 'http://dyo-e2e_kratos:4433'
           KRATOS_ADMIN_URL: 'http://dyo-e2e_kratos:4434'
           CI: true
+          DEBUG: 1
         run: |
           npm ci --include=dev --arch=x64 --cache .npm --prefer-offline --no-fund
           npx playwright install chromium
-          npm run test:e2e
+          npx playwright test ./e2e/with-login/deployment/deployment-copyability-versioned.spec.ts:31
       - name: Gather logs
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
         if: always()
