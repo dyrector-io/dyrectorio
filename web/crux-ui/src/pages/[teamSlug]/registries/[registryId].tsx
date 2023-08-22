@@ -190,7 +190,9 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       )}
 
       {loading ? (
-        <LoadingIndicator className="mt-4" />
+        <div className='w-full flex justify-center mt-4'>
+          <LoadingIndicator />
+        </div>
       ) : filters.items.length < 1 ? (
         <div className="items-center self-center mt-4">
           <DyoLabel>{t('common:noNameFound', { name: t('common:images') })}</DyoLabel>
