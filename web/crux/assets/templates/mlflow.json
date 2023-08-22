@@ -1,0 +1,41 @@
+{
+  "name": "MLflow",
+  "description": "Open-source platform for the machine learning lifecycle.",
+  "technologies": ["Docker"],
+  "registries": [
+    {
+      "name": "Docker Hub MLflow",
+      "type": "hub",
+      "details": {
+        "imageNamePrefix": "adacotechjp"
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "mlflow",
+      "registryName": "Docker Hub MLflow",
+      "image": "mlflow",
+      "tag": "2.4.0",
+      "config": {
+        "name": "mlflow",
+        "ports": [
+          {
+            "external": 5001,
+            "internal": 5000
+          }
+        ],
+        "environment": [
+          {
+            "key": "TZ",
+            "value": "UTC"
+          }
+        ],
+        "networks": ["mlflow"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless-stopped",
+        "deploymentStrategy": "recreate"
+      }
+    }
+  ]
+}
