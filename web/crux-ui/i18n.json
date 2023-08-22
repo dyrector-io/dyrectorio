@@ -9,6 +9,7 @@
     "/auth/login": ["login"],
     "/auth/recovery": ["recovery"],
     "/auth/register": ["register"],
+    "/auth/register-oidc": ["register"],
     "/auth/create-account": ["create-account"],
     "/auth/settings": ["settings", "tokens"],
     "/auth/settings/edit-profile": ["settings"],
