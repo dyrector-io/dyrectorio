@@ -10,8 +10,16 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoList } from '@app/elements/dyo-list'
+import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import {
+  SortFunctions,
+  SortHeaderBuilderMapping,
+  sortHeaderBuilder,
+  stringSort,
+  useSorting,
+} from '@app/hooks/use-sorting'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -20,8 +28,6 @@ import {
   FindImageResultMessage,
   RegistryDetails,
   RegistryDetailsDto,
-  SORTING_TYPE_VALUES,
-  SortingType,
   WS_TYPE_FIND_IMAGE,
   WS_TYPE_FIND_IMAGE_RESULT,
   registryDetailsDtoToUI,
@@ -42,17 +48,24 @@ interface RegistryDetailsPageProps {
 
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
 
+type FindImageResultSorting = 'name'
+const sortHeaders: SortHeaderBuilderMapping<FindImageResultSorting> = {
+  'common:images': 'name',
+}
+
 const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   const { registry: propsRegistry } = props
 
   const { t } = useTranslation('registries')
   const routes = useTeamRoutes()
   const router = useRouter()
+  const handleApiError = defaultApiErrorHandler(t)
 
   const [registry, setRegistry] = useState(propsRegistry)
   const [editing, setEditing] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
+  const [loading, setLoading] = useState(false)
   const [pagination, setPagination] = useState<PaginationSettings>()
   const [total, setTotal] = useState(0)
 
@@ -60,7 +73,63 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
     initialData: [],
     filters: [textFilterFor<FindImageResult>(it => [it.name])],
   })
-  const [sorting, setSorting] = useState<SortingType>('none')
+
+  const sortFunctions: SortFunctions<FindImageResult> = {
+    name: stringSort,
+  }
+  const sorting = useSorting<FindImageResult, FindImageResultSorting>(filters.filtered, {
+    sortFunctions,
+  })
+
+  const sock = useWebSocket(routes.registry.socket())
+  sock.on(WS_TYPE_FIND_IMAGE_RESULT, (message: FindImageResultMessage) => {
+    if (message.registryId === registry?.id) {
+      setLoading(false)
+      setTotal(message.images.length)
+      filters.setItems(
+        message.images.map(it => ({
+          name: it.name,
+        })),
+      )
+      setPagination(defaultPagination)
+    }
+  })
+
+  useEffect(() => {
+    sock.send(WS_TYPE_FIND_IMAGE, {
+      registryId: registry.id,
+      filter: '',
+    } as FindImageMessage)
+    setLoading(true)
+  }, [])
+
+  useEffect(() => {
+    setTotal(filters.filtered.length)
+    setPagination(p => ({ pageNumber: 0, pageSize: p ? p.pageSize : defaultPagination.pageSize }))
+  }, [filters.filtered])
+
+  const onRegistryEdited = reg => {
+    setEditing(false)
+    setRegistry(reg)
+  }
+
+  const onDelete = async () => {
+    const res = await fetch(routes.registry.api.details(registry.id), {
+      method: 'DELETE',
+    })
+
+    if (res.ok) {
+      router.replace(routes.registry.list())
+    } else {
+      handleApiError(res)
+    }
+  }
+
+  const getPagedImages = () =>
+    sorting.items.slice(
+      pagination.pageNumber * pagination.pageSize,
+      pagination.pageNumber * pagination.pageSize + pagination.pageSize,
+    )
 
   const headers = ['common:images']
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 px-2 font-semibold'
@@ -81,76 +150,10 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
 
   const itemTemplate = (item: FindImageResult) => [item.name]
 
-  const sock = useWebSocket(routes.registry.socket())
-
-  sock.on(WS_TYPE_FIND_IMAGE_RESULT, (message: FindImageResultMessage) => {
-    if (message.registryId === registry?.id) {
-      setTotal(message.images.length)
-      filters.setItems(
-        message.images.map(it => ({
-          name: it.name,
-        })),
-      )
-      setPagination(defaultPagination)
-    }
-  })
-
-  const handleApiError = defaultApiErrorHandler(t)
-
-  const onRegistryEdited = reg => {
-    setEditing(false)
-    setRegistry(reg)
-  }
-
-  const onDelete = async () => {
-    const res = await fetch(routes.registry.api.details(registry.id), {
-      method: 'DELETE',
-    })
-
-    if (res.ok) {
-      router.replace(routes.registry.list())
-    } else {
-      handleApiError(res)
-    }
-  }
-
   const pageLink: BreadcrumbLink = {
     name: t('common:registries'),
     url: routes.registry.list(),
   }
-
-  const sortItems = (items: FindImageResult[]) => {
-    const sorted = [...items]
-    switch (sorting) {
-      case 'asc': {
-        return sorted.sort((a, b) => (a.name < b.name ? -1 : 1))
-      }
-      case 'desc': {
-        return sorted.sort((a, b) => (a.name > b.name ? -1 : 1))
-      }
-      default: {
-        return sorted
-      }
-    }
-  }
-
-  const getPagedImages = () =>
-    sortItems(filters.filtered).slice(
-      pagination.pageNumber * pagination.pageSize,
-      pagination.pageNumber * pagination.pageSize + pagination.pageSize,
-    )
-
-  useEffect(() => {
-    sock.send(WS_TYPE_FIND_IMAGE, {
-      registryId: registry.id,
-      filter: '',
-    } as FindImageMessage)
-  }, [])
-
-  useEffect(() => {
-    setTotal(filters.filtered.length)
-    setPagination(p => ({ pageNumber: 0, pageSize: p ? p.pageSize : defaultPagination.pageSize }))
-  }, [filters.filtered])
 
   return (
     <Layout title={t('registriesName', registry)}>
@@ -186,33 +189,30 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
         />
       )}
 
-      {filters.items.length < 1 ? (
+      {loading ? (
+        <LoadingIndicator className="mt-4" />
+      ) : filters.items.length < 1 ? (
         <div className="items-center self-center mt-4">
           <DyoLabel>{t('common:noNameFound', { name: t('common:images') })}</DyoLabel>
         </div>
       ) : (
         <>
           <div className="mt-4">
-            <Filters setTextFilter={it => filters.setFilter({ text: it })}>
-              <DyoChips
-                className="pl-6"
-                choices={SORTING_TYPE_VALUES}
-                converter={(it: SortingType) => t(`sorting.${it}`)}
-                selection={sorting}
-                onSelectionChange={it => setSorting(it)}
-              />
-            </Filters>
+            <Filters setTextFilter={it => filters.setFilter({ text: it })} />
           </div>
 
           <DyoCard className="relative mt-4">
             <DyoList
-              headers={[...headers.map(h => t(h)), '']}
+              headers={[...headers, '']}
               headerClassName={headerClasses}
               itemClassName={itemClasses}
               data={getPagedImages()}
               noSeparator
-              footer={<Paginator onChanged={setPagination} length={total} defaultPagination={defaultPagination} />}
+              headerBuilder={sortHeaderBuilder<FindImageResult, FindImageResultSorting>(sorting, sortHeaders, text =>
+                t(text),
+              )}
               itemBuilder={itemTemplate}
+              footer={<Paginator onChanged={setPagination} length={total} defaultPagination={defaultPagination} />}
             />
           </DyoCard>
         </>

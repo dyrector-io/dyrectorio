@@ -56,12 +56,6 @@
     "group": "Group"
   },
 
-  "sorting":{
-    "none":"None",
-    "asc":"Ascending",
-    "desc":"Descending"
-  },
-
   "altDefaultRegistryPicture": "Picture of registry",
   "errors": {
     "preconditionFailed": "This registry is already in use",
