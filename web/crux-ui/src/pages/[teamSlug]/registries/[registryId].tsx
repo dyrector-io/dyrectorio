@@ -7,7 +7,6 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import Paginator, { PaginationSettings } from '@app/components/shared/paginator'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoList } from '@app/elements/dyo-list'
 import LoadingIndicator from '@app/elements/loading-indicator'
@@ -190,7 +189,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       )}
 
       {loading ? (
-        <div className='w-full flex justify-center mt-4'>
+        <div className="w-full flex justify-center mt-4">
           <LoadingIndicator />
         </div>
       ) : filters.items.length < 1 ? (
