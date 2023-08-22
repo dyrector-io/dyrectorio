@@ -8,7 +8,7 @@
   </a>
 </p>
 
-<div align="center">dyrector.io is a self-hosted continuous delivery & deployment platform with version management.
+<p align="center"><b>dyrector.io is a self-hosted continuous delivery & deployment platform with version management.</b></p>
 
 <p align="center">
   <a href="https://github.com/dyrector-io/dyrectorio/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/dyrector-io/dyrectorio" alt="GitHub tag (latest by date)"/></a>
@@ -19,24 +19,28 @@
     <a href="https://github.com/dyrector-io/dyrectorio/issues" target="_blank"><img src="https://img.shields.io/github/issues-raw/dyrector-io/dyrectorio" alt="GitHub issues"/></a>
     <a href="https://twitter.com/dyrectorio" target="_blank"><img src="https://img.shields.io/twitter/follow/dyrectorio?style=social" alt="Twitter Follow"/></a>
 </p>
-</div>
-
-## Overview
 
 dyrector.io helps engineer & DevOps teams and individual developers to shift their focus from maintaining and setting up their containerized applications to developing their software. The platform achieves this by offering continuous delivery and version management capabilities to your OCI containers.
 
-> **Warning**
-> The platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
-
 Join our Discord and connect with other members to share and learn together. If you like the project, give us a Star.
 
-## Getting started
-You have various options to set up the platform right away:
-- [CLI](./GETTING_STARTED.md) 
-- [SaaS](#hosted-version-saas) 
-- [docker-compose.yaml](./docker-compose.yaml)
+dyrector.io is also available as a fully managed <a href="https://app.dyrectorio.com" target="_blank">SaaS dyrector.io Platform</a> ⛅ including a free tier.
 
-## 🌊 Use cases
+<p align="center">
+<strong><a href="./GETTING_STARTED.md">Getting Started</a> • <a href="#use-cases">Use Cases</a> • <a href="#community">Community</a> • <a href="./CONTRIBUTING.md">Contributing</a> • <a href="#feedback">Feedback</a>
+
+</strong>
+</p>
+
+## Getting started
+
+You have various options to set up the platform right away:
+
+-   [CLI](./GETTING_STARTED.md)
+-   [SaaS](#hosted-version-saas)
+-   [docker-compose.yaml](./docker-compose.yaml)
+
+## Use cases
 
 #### 🚢 Container utilization without commands
 
