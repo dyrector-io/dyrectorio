@@ -34,7 +34,7 @@ export const installDagent = async (page: Page) => {
 }
 
 const waitForDeployment = async (page: Page) => {
-  await page.waitForSelector('span:text-is("Successful"), span:text-is("Failed")')
+  await page.waitForSelector('span:text-is("Successful"), span:text-is("Failed")', { timeout: 2 * 60 * 1000 })
 
   if (await page.isVisible('span:text-is("Failed")')) {
     await page.pause()
