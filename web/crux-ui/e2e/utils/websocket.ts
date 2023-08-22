@@ -18,6 +18,8 @@ export const waitSocketReceived = (
       : (data: { payload: string }) => {
           const message: WsMessage = JSON.parse(data.payload as string)
 
+          console.log(`RECV '${message.type}' '${type}'`)
+
           if (type && message.type !== `${route}/${type}`) {
             return false
           }
@@ -42,6 +44,8 @@ export const waitSocketSent = async (
       ? undefined
       : data => {
           const message: WsMessage = JSON.parse(data.payload as string)
+
+          console.log(`SENT '${message.type}' '${type}'`)
 
           if (type && message.type !== `${route}/${type}`) {
             return false
