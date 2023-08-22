@@ -30,6 +30,7 @@ import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import { ImageDeletedMessage, WS_TYPE_IMAGE_DELETED } from '../version/version.message'
 import { PatchDeploymentDto, PatchInstanceDto } from './deploy.dto'
 import {
+  DeploymentEnvUpdatedMessage,
   DeploymentEventListMessage,
   DeploymentEventMessage,
   GetInstanceMessage,
@@ -231,10 +232,23 @@ export default class DeployWebSocketGateway {
 
     await this.service.patchDeployment(deploymentId, cruxReq, identity)
 
-    subscription.sendToAllExcept(client, {
+    const configBundleEnvironment = await this.service.getConfigBundleEnvironmentsById(deploymentId)
+
+    const response: WsMessage<DeploymentEnvUpdatedMessage> = {
       type: WS_TYPE_DEPLOYMENT_ENV_UPDATED,
-      data: message,
-    } as WsMessage<any>)
+      data: {
+        ...message,
+        configBundleEnvironment,
+      },
+    } as WsMessage<DeploymentEnvUpdatedMessage>
+
+    if (message.configBundleIds) {
+      // If config bundles change send the response to every client
+      // so the configBundleEnvironments will update
+      subscription.sendToAll(response)
+    } else {
+      subscription.sendToAllExcept(client, response)
+    }
 
     return {
       type: WS_TYPE_PATCH_RECEIVED,

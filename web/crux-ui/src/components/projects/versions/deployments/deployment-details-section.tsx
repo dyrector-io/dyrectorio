@@ -31,9 +31,10 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
 
   const { data: configBundleOptions } = useSWR<ConfigBundleOption[]>(teamRoutes.configBundles.api.options(), fetcher)
 
-  const configBundlesHres = deployment.configBundleIds?.length === 1
-    ? teamRoutes.configBundles.details(deployment.configBundleIds[0])
-    : teamRoutes.configBundles.list()
+  const configBundlesHres =
+    deployment.configBundleIds?.length === 1
+      ? teamRoutes.configBundles.details(deployment.configBundleIds[0])
+      : teamRoutes.configBundles.list()
 
   return (
     <DeploymentDetailsCard className={className} deployment={deployment}>
@@ -62,6 +63,13 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
         label={t('images:environment').toUpperCase()}
         items={deployment.environment ?? []}
         onChange={actions.onEnvironmentEdited}
+        hint={key =>
+          deployment.configBundleEnvironment[key]
+            ? t('bundleNameVariableWillBeOverwritten', {
+                configBundle: deployment.configBundleEnvironment[key],
+              })
+            : null
+        }
       />
     </DeploymentDetailsCard>
   )

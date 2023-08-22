@@ -1,11 +1,19 @@
 import { Audit } from './audit'
 import { DeploymentStatus, DyoApiError, slugify } from './common'
-import { ContainerIdentifier, ContainerState, InstanceContainerConfigData, UniqueKeyValue } from './container'
+import {
+  ContainerIdentifier,
+  ContainerState,
+  InstanceContainerConfigData,
+  UniqueKey,
+  UniqueKeyValue,
+} from './container'
 import { ImageConfigProperty, ImageDeletedMessage } from './image'
 import { Instance } from './instance'
 import { DyoNode } from './node'
 import { BasicProject, ProjectDetails } from './project'
 import { BasicVersion, VersionDetails, VersionType } from './version'
+
+export type EnvironmentToConfigBundleNameMap = Record<string, string>
 
 export type Deployment = {
   id: string
@@ -38,6 +46,7 @@ export type DeploymentTokenCreated = DeploymentToken & {
 
 export type DeploymentDetails = Deployment & {
   environment: UniqueKeyValue[]
+  configBundleEnvironment: EnvironmentToConfigBundleNameMap
   publicKey?: string
   configBundleIds?: string[]
   token: DeploymentToken
@@ -117,6 +126,7 @@ export const WS_TYPE_DEPLOYMENT_ENV_UPDATED = 'deployment-env-updated'
 export type DeploymentEnvUpdatedMessage = {
   environment?: UniqueKeyValue[]
   configBundleIds?: string[]
+  configBundleEnvironment: EnvironmentToConfigBundleNameMap
 }
 
 export const WS_TYPE_PATCH_INSTANCE = 'patch-instance'

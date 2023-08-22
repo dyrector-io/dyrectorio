@@ -35,6 +35,7 @@ import {
   DeploymentLogListDto,
   DeploymentLogPaginationQuery,
   DeploymentTokenCreatedDto,
+  EnvironmentToConfigBundleNameMap,
   InstanceDto,
   InstanceSecretsDto,
   PatchDeploymentDto,
@@ -105,11 +106,7 @@ export default class DeployService {
         node: true,
         configBundles: {
           include: {
-            configBundle: {
-              select: {
-                id: true,
-              },
-            },
+            configBundle: true,
           },
         },
         version: {
@@ -145,8 +142,11 @@ export default class DeployService {
     })
 
     const publicKey = this.agentService.getById(deployment.nodeId)?.publicKey
+    const configBundleEnvironments = this.getConfigBundleEnvironmentKeys(
+      deployment.configBundles.map(it => it.configBundle),
+    )
 
-    return this.mapper.toDetailsDto(deployment, publicKey)
+    return this.mapper.toDetailsDto(deployment, publicKey, configBundleEnvironments)
   }
 
   async getDeploymentEvents(deploymentId: string): Promise<DeploymentEventDto[]> {
@@ -978,6 +978,23 @@ export default class DeployService {
     return message
   }
 
+  async getConfigBundleEnvironmentsById(deploymentId: string): Promise<EnvironmentToConfigBundleNameMap> {
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
+      where: {
+        id: deploymentId,
+      },
+      include: {
+        configBundles: {
+          include: {
+            configBundle: true,
+          },
+        },
+      },
+    })
+
+    return this.getConfigBundleEnvironmentKeys(deployment.configBundles.map(it => it.configBundle))
+  }
+
   private async transformImageEvent(event: ImageEvent): Promise<DeploymentImageEvent> {
     const deployments = await this.prisma.deployment.findMany({
       select: {
@@ -1048,5 +1065,18 @@ export default class DeployService {
     })
 
     return Object.values(mergedEnvironment)
+  }
+
+  private getConfigBundleEnvironmentKeys(configBundles: ConfigBundle[]): EnvironmentToConfigBundleNameMap {
+    const envToBundle: EnvironmentToConfigBundleNameMap = {}
+
+    configBundles.forEach(bundle => {
+      const bundleEnv = (bundle.data as UniqueKeyValue[]) ?? []
+      bundleEnv.forEach(it => {
+        envToBundle[it.key] = bundle.name
+      })
+    })
+
+    return envToBundle
   }
 }

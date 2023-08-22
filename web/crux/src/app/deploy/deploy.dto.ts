@@ -7,6 +7,7 @@ import {
   IsIn,
   IsInt,
   IsJWT,
+  IsObject,
   IsOptional,
   IsString,
   IsUUID,
@@ -33,6 +34,8 @@ import { BasicVersionDto } from '../version/version.dto'
 
 const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete'] as const
 export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]
+
+export type EnvironmentToConfigBundleNameMap = Record<string, string>
 
 export class BasicDeploymentDto {
   @IsUUID()
@@ -141,6 +144,9 @@ export class DeploymentTokenCreatedDto extends DeploymentTokenDto {
 export class DeploymentDetailsDto extends DeploymentDto {
   @ValidateNested({ each: true })
   environment: UniqueKeyValueDto[]
+
+  @IsObject()
+  configBundleEnvironment: EnvironmentToConfigBundleNameMap
 
   @IsString()
   @IsOptional()

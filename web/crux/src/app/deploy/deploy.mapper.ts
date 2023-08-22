@@ -52,6 +52,7 @@ import {
   DeploymentWithBasicNodeDto,
   DeploymentWithNode,
   DeploymentWithNodeVersion,
+  EnvironmentToConfigBundleNameMap,
   InstanceContainerConfigDto,
   InstanceDetails,
   InstanceDto,
@@ -107,7 +108,11 @@ export default class DeployMapper {
     }
   }
 
-  toDetailsDto(deployment: DeploymentDetails, publicKey?: string): DeploymentDetailsDto {
+  toDetailsDto(
+    deployment: DeploymentDetails,
+    publicKey?: string,
+    configBundleEnvironment?: EnvironmentToConfigBundleNameMap,
+  ): DeploymentDetailsDto {
     return {
       ...this.toDto(deployment),
       token: deployment.tokens.length > 0 ? deployment.tokens[0] : null,
@@ -116,6 +121,7 @@ export default class DeployMapper {
       configBundleIds: deployment.configBundles.map(it => it.configBundle.id),
       environment: deployment.environment as UniqueKeyValue[],
       instances: deployment.instances.map(it => this.instanceToDto(it)),
+      configBundleEnvironment: configBundleEnvironment ?? {},
     }
   }
 

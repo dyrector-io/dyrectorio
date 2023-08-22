@@ -103,7 +103,9 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
               </div>
 
               <div className="flex-1 flex flex-col gap-2">
-                <DyoLabel className="text-bright font-semibold tracking-wide mb-2 mt-8">{t('common:description')}</DyoLabel>
+                <DyoLabel className="text-bright font-semibold tracking-wide mb-2 mt-8">
+                  {t('common:description')}
+                </DyoLabel>
 
                 <MultiTextArea
                   id="description"

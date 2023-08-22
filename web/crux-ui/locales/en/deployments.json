@@ -26,5 +26,6 @@
   "noInstancesSelected": "No instances selected to deploy.",
   "jwtToken": "JWT token",
   "protected": "Protected",
-  "configBundle": "Config bundle"
+  "configBundle": "Config bundle",
+  "bundleNameVariableWillBeOverwritten": "Bundle {{configBundle}} variable will be overwritten."
 }
