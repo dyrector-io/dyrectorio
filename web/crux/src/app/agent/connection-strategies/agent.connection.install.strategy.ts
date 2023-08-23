@@ -1,11 +1,11 @@
+import { Injectable } from '@nestjs/common'
 import { Agent } from 'src/domain/agent'
 import { AgentToken, generateAgentToken } from 'src/domain/agent-token'
-import { CruxNotFoundException, CruxUnauthorizedException } from 'src/exception/crux-exception'
+import { NodeWithToken } from 'src/domain/node'
+import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import AgentConnectionStrategy from './agent.connection.strategy'
-import { Injectable } from '@nestjs/common'
-import { NodeWithToken } from 'src/domain/node'
 
 @Injectable()
 export default class AgentConnectionInstallStrategy extends AgentConnectionStrategy {

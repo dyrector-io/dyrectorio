@@ -1,3 +1,4 @@
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { AgentToken } from 'src/domain/agent-token'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
@@ -7,7 +8,6 @@ import AgentConnectionInstallStrategy from './connection-strategies/agent.connec
 import AgentConnectionLegacyStrategy from './connection-strategies/agent.connection.legacy.strategy'
 import AgentConnectionStrategy from './connection-strategies/agent.connection.strategy'
 import AgentConnectionUpdateStrategy from './connection-strategies/agent.connection.update.strategy'
-import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common'
 
 @Injectable()
 export default class AgentConnectionStrategyProvider {

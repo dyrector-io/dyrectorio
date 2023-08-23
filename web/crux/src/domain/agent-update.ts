@@ -60,7 +60,7 @@ export default class AgentUpdate {
     }
 
     return {
-      startedBy: this.startedBy
+      startedBy: this.startedBy,
     }
   }
 

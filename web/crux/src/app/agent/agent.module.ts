@@ -7,12 +7,12 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import ContainerModule from '../container/container.module'
+import DeployModule from '../deploy/deploy.module'
 import ImageModule from '../image/image.module'
 import TeamRepository from '../team/team.repository'
+import { AGENT_STRATEGY_TYPES } from './agent.connection-strategy.provider'
 import AgentController from './agent.grpc.controller'
 import AgentService from './agent.service'
-import { AGENT_STRATEGY_TYPES } from './agent.connection-strategy.provider'
-import DeployModule from '../deploy/deploy.module'
 
 @Module({
   imports: [HttpModule, CruxJwtModule, ImageModule, ContainerModule, forwardRef(() => DeployModule)],

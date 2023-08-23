@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { Identity } from '@ory/kratos-client'
 import { Prisma } from '@prisma/client'
 import { EmptyError, Observable, filter, firstValueFrom, map, mergeAll, mergeWith, of, timeout } from 'rxjs'
@@ -34,7 +35,6 @@ import {
   WatchContainerLogMessage,
   WatchContainersStateMessage,
 } from './node.message'
-import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export default class NodeService {
@@ -89,9 +89,9 @@ export default class NodeService {
         _count: {
           select: {
             deployments: true,
-          }
-        }
-      }
+          },
+        },
+      },
     })
 
     return this.mapper.detailsToDto(node)
@@ -197,7 +197,7 @@ export default class NodeService {
         updatedBy: identity.id,
         token: {
           delete: true,
-        }
+        },
       },
     })
 

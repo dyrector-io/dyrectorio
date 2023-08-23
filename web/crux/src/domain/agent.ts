@@ -1,6 +1,17 @@
 import { Logger } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
-import { buffer, bufferWhen, catchError, connect, finalize, Observable, of, ReplaySubject, share, Subject, Subscription, tap, throwError, timeout, TimeoutError } from 'rxjs'
+import {
+  catchError,
+  finalize,
+  Observable,
+  of,
+  ReplaySubject,
+  Subject,
+  Subscription,
+  throwError,
+  timeout,
+  TimeoutError,
+} from 'rxjs'
 import { NodeConnectionStatus } from 'src/app/node/node.dto'
 import {
   CruxConflictException,
@@ -180,7 +191,7 @@ export class Agent {
     if (this.replacementToken) {
       throw new CruxConflictException({
         message: 'Token replacement is already in progress',
-        property: 'token'
+        property: 'token',
       })
     }
 
