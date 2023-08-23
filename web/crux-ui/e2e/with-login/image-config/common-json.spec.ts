@@ -1,4 +1,5 @@
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
+import { test } from '../../utils/test.fixture'
 import { TEAM_ROUTES } from 'e2e/utils/common'
 import { createStorage } from 'e2e/utils/storages'
 import {
@@ -43,6 +44,7 @@ test.describe('Image common config from JSON', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -69,6 +71,7 @@ test.describe('Image common config from JSON', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -93,6 +96,7 @@ test.describe('Image common config from JSON', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -119,6 +123,7 @@ test.describe('Image common config from JSON', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -143,6 +148,7 @@ test.describe('Image common config from JSON', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -176,6 +182,7 @@ test.describe('Image common config from JSON', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -227,6 +234,7 @@ test.describe('Image common config from JSON', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -255,6 +263,7 @@ test.describe('Image common config from JSON', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -281,6 +290,7 @@ test.describe('Image common config from JSON', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -306,6 +316,7 @@ test.describe('Image common config from JSON', () => {
     const { projectId, versionId, imageId } = await setup(page, 'routing-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -342,6 +353,7 @@ test.describe('Image common config from JSON', () => {
     const { projectId, versionId, imageId } = await setup(page, 'environment-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -369,6 +381,7 @@ test.describe('Image common config from JSON', () => {
     const { projectId, versionId, imageId } = await setup(page, 'config-container-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -400,6 +413,7 @@ test.describe('Image common config from JSON', () => {
     const { projectId, versionId, imageId } = await setup(page, 'init-container-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -455,6 +469,7 @@ test.describe('Image common config from JSON', () => {
     const { projectId, versionId, imageId } = await setup(page, 'volume-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -485,6 +500,7 @@ test.describe('Image common config from JSON', () => {
   test('Storage should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'storage-json', '1.0.0', 'redis')
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const volumeName = 'volume-name'
     const size = '1024'
@@ -496,6 +512,7 @@ test.describe('Image common config from JSON', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 

@@ -248,6 +248,7 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 
 	commands := []string{
 		"--log.level=INFO",
+		"--accesslog=true",
 		"--api.insecure=true",
 		"--providers.docker=true",
 		"--providers.docker.exposedbydefault=false",

@@ -1,4 +1,5 @@
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
+import { test } from '../utils/test.fixture'
 import { screenshotPath, TEAM_ROUTES } from '../utils/common'
 import { createImage, createProject, createVersion } from '../utils/projects'
 import { waitSocket, wsPatchSent } from '../utils/websocket'
@@ -26,9 +27,9 @@ test.describe('View state', () => {
     const { projectId, versionId, imageId } = await setup(page, 'editor-state-conf', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const editorButton = await page.waitForSelector('button:has-text("Editor")')
-
     await editorButton.click()
 
     const selector = await page.locator('label:has-text("Filters")').first()
@@ -42,9 +43,9 @@ test.describe('View state', () => {
     const { projectId, versionId, imageId } = await setup(page, 'editor-state-json', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
-
     await jsonEditorButton.click()
 
     await page.screenshot({ path: screenshotPath('image-config-json'), fullPage: true })
@@ -59,6 +60,7 @@ test.describe('Filters', () => {
     const { projectId, versionId, imageId } = await setup(page, 'filter-all', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const allButton = await page.locator('button:has-text("All")')
 
@@ -70,6 +72,7 @@ test.describe('Filters', () => {
     const { projectId, versionId, imageId } = await setup(page, 'filter-select', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     await page.locator(`button:has-text("Common")`).first().click()
 
@@ -82,9 +85,9 @@ test.describe('Filters', () => {
     const { projectId, versionId, imageId } = await setup(page, 'sub-filter', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const subFilter = await page.locator(`button:has-text("Network mode")`)
-
     await subFilter.click()
 
     const mainFilter = await page.locator(`button:has-text("Docker")`).first()
@@ -96,9 +99,9 @@ test.describe('Filters', () => {
     const { projectId, versionId, imageId } = await setup(page, 'sub-deselect', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const subFilter = await page.locator(`button:has-text("Deployment strategy")`)
-
     await subFilter.click()
 
     const configField = await page.locator(`label:has-text("Kubernetes")`)
@@ -120,6 +123,7 @@ test.describe('Image configurations', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -152,6 +156,7 @@ test.describe('Image configurations', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 

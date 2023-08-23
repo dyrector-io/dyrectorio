@@ -1,5 +1,6 @@
 import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_INSTANCE } from '@app/models'
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../utils/test.fixture'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, waitForURLExcept } from 'e2e/utils/common'
 import { addPortsToContainerConfig } from 'e2e/utils/container-config'
 import {
@@ -31,10 +32,12 @@ test.describe('Deleting default version', () => {
     await deleteVersion(page, projectId, defaultVersionId)
 
     await page.goto(TEAM_ROUTES.project.details(projectId))
+    await page.waitForSelector('h2:text-is("Projects")')
 
     expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
+    await page.waitForSelector('h2:text-is("Versions")')
 
     const imagesTableBody = await page.locator('.table-row-group')
     const imagesRows = await imagesTableBody.locator('.table-row')
@@ -53,6 +56,7 @@ test.describe('Deleting default version', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(defaultVersionId, defaultVersionImageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(defaultVersionId)
 
@@ -65,10 +69,12 @@ test.describe('Deleting default version', () => {
     await deleteVersion(page, projectId, defaultVersionId)
 
     await page.goto(TEAM_ROUTES.project.details(projectId))
+    await page.waitForSelector('h2:text-is("Projects")')
 
     expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
+    await page.waitForSelector('h2:text-is("Versions")')
 
     const imagesTableBody = await page.locator('.table-row-group')
     const imagesRows = await imagesTableBody.locator('.table-row')
@@ -101,14 +107,17 @@ test.describe('Deleting default version', () => {
     const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(defaultVersionId))
+    await page.waitForSelector('h2:text-is("Versions")')
 
     await deleteVersion(page, projectId, defaultVersionId)
 
     await page.goto(TEAM_ROUTES.project.details(projectId))
+    await page.waitForSelector('h2:text-is("Projects")')
 
     expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
+    await page.waitForSelector('h2:text-is("Versions")')
 
     await page.locator('button:has-text("Deployments")').click()
 
@@ -132,14 +141,17 @@ test.describe('Deleting default version', () => {
     const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(defaultVersionId))
+    await page.waitForSelector('h2:text-is("Versions")')
 
     await deleteVersion(page, projectId, defaultVersionId)
 
     await page.goto(TEAM_ROUTES.project.details(projectId))
+    await page.waitForSelector('h2:text-is("Projects")')
 
     expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
+    await page.waitForSelector('h2:text-is("Versions")')
 
     await page.locator('button:has-text("Deployments")').click()
 
@@ -170,6 +182,7 @@ test.describe('Deleting default version', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.deployment.details(defaultDeploymentId))
+    await page.waitForSelector('h2:text-is("Deployments")')
 
     const instancesTableBody = await page.locator('.table-row-group')
     const instancesRows = await instancesTableBody.locator('.table-row')
@@ -191,14 +204,17 @@ test.describe('Deleting default version', () => {
     const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(defaultVersionId))
+    await page.waitForSelector('h2:text-is("Versions")')
 
     await deleteVersion(page, projectId, defaultVersionId)
 
     await page.goto(TEAM_ROUTES.project.details(projectId))
+    await page.waitForSelector('h2:text-is("Projects")')
 
     expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
+    await page.waitForSelector('h2:text-is("Versions")')
 
     await page.locator('button:has-text("Deployments")').click()
 
@@ -246,11 +262,13 @@ test.describe("Deleting copied deployment's parent", () => {
     await deleteDeployment(page, deploymentId)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionId))
+    await page.waitForSelector('h2:text-is("Versions")')
 
     await page.locator('button:has-text("Deployments")').click()
     await expect(page.locator('.table-row-group .table-row')).toHaveCount(1)
 
     await page.goto(TEAM_ROUTES.deployment.details(deploymentCopyId))
+    await page.waitForSelector('h2:text-is("Deployments")')
     await expect(page.locator('.table-row-group .table-row')).toHaveCount(1)
   })
 
@@ -267,6 +285,7 @@ test.describe("Deleting copied deployment's parent", () => {
     const sock = waitSocket(page)
 
     await page.goto(TEAM_ROUTES.deployment.details(parentDeploymentId))
+    await page.waitForSelector('h2:text-is("Deployments")')
 
     const instancesTableBody = await page.locator('.table-row-group')
     const instancesRows = await instancesTableBody.locator('.table-row')
@@ -277,6 +296,7 @@ test.describe("Deleting copied deployment's parent", () => {
     const settingsButton = await page.waitForSelector(`[src="/instance_config_icon.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
     await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**/instances/**`)
+    await page.waitForSelector('h2:text-is("Container")')
 
     const ws = await sock
     const wsRoute = TEAM_ROUTES.deployment.detailsSocket(parentDeploymentId)
@@ -286,6 +306,7 @@ test.describe("Deleting copied deployment's parent", () => {
     await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_INSTANCE, internal, external)
 
     await page.goto(TEAM_ROUTES.deployment.details(parentDeploymentId))
+    await page.waitForSelector('h2:text-is("Deployments")')
 
     const copyButton = page.locator('button:has-text("Copy")')
     await copyButton.click()
@@ -296,11 +317,13 @@ test.describe("Deleting copied deployment's parent", () => {
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
     await waitForURLExcept(page, { startsWith: `${TEAM_ROUTES.deployment.list()}/`, except: currentUrl })
+    await page.waitForSelector('h2:text-is("Deployments")')
     await expect(page.locator('.table-row-group')).toBeVisible()
 
     await deleteDeployment(page, parentDeploymentId)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionId))
+    await page.waitForSelector('h2:text-is("Versions")')
 
     await page.locator('button:has-text("Deployments")').click()
 

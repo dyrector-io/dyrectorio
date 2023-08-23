@@ -1,4 +1,5 @@
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
+import { test } from '../../utils/test.fixture'
 import { TEAM_ROUTES } from 'e2e/utils/common'
 import { waitSocket, wsPatchSent } from 'e2e/utils/websocket'
 import {
@@ -31,6 +32,7 @@ test.describe('Image docker config from JSON', () => {
     const { projectId, versionId, imageId } = await setup(page, 'networkmode-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -58,6 +60,7 @@ test.describe('Image docker config from JSON', () => {
     const { projectId, versionId, imageId } = await setup(page, 'dockerlabel-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -89,6 +92,7 @@ test.describe('Image docker config from JSON', () => {
     const { projectId, versionId, imageId } = await setup(page, 'restartpolicy-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -114,6 +118,7 @@ test.describe('Image docker config from JSON', () => {
     const { projectId, versionId, imageId } = await setup(page, 'logconfig-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -144,6 +149,7 @@ test.describe('Image docker config from JSON', () => {
     const { projectId, versionId, imageId } = await setup(page, 'networks-json', '1.0.0', 'redis')
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 

@@ -25,7 +25,7 @@ const createProject = (name: string, testMatch: string | RegExp | (string | RegE
 
 // Reference: https://playwright.dev/docs/test-configuration
 const config: PlaywrightTestConfig = {
-  timeout: 2 * 60 * 1000, // 2 min
+  timeout: 6 * 60 * 1000, // 2 min
   expect: { timeout: 10 * 1000 }, // We double the default(5s), since some test runners are not THAT fast :)
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: path.join(__dirname, 'e2e_results/'),

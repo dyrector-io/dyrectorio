@@ -1,5 +1,6 @@
 import { ProjectType, WS_TYPE_PATCH_IMAGE } from '@app/models'
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
+import { test } from '../../utils/test.fixture'
 import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, waitForURLExcept } from '../../utils/common'
 import { deployWithDagent } from '../../utils/node-helper'
 import { createNode } from '../../utils/nodes'
@@ -42,6 +43,7 @@ test.describe('Versioned Project', () => {
 
     const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, nodeName, { prefix })
     await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+    await page.waitForSelector('h2:text-is("Deployments")')
 
     const copyButton = page.locator('button:has-text("Copy")')
     await copyButton.click()
@@ -52,6 +54,7 @@ test.describe('Versioned Project', () => {
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
     await waitForURLExcept(page, { startsWith: `${TEAM_ROUTES.deployment.list()}/`, except: currentUrl })
+    await page.waitForSelector('h2:text-is("Deployments")')
 
     await expect(await page.locator('.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
@@ -67,6 +70,7 @@ test.describe('Versioned Project', () => {
     const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, nodeName, { prefix })
 
     await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+    await page.waitForSelector('h2:text-is("Deployments")')
 
     const copyButton = await page.locator('button:has-text("Copy")')
     await copyButton.click()
@@ -77,6 +81,7 @@ test.describe('Versioned Project', () => {
     const currentUrl = page.url()
     await page.locator('button:has-text("Copy")').click()
     await waitForURLExcept(page, { startsWith: `${TEAM_ROUTES.deployment.list()}/`, except: currentUrl })
+    await page.waitForSelector('h2:text-is("Deployments")')
 
     await expect(await page.locator('.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
@@ -92,6 +97,7 @@ test.describe('Versioned Project', () => {
     await addDeploymentToVersion(page, projectId, versionId, nodeName, { prefix })
 
     await page.goto(TEAM_ROUTES.deployment.list())
+    await page.waitForSelector('h2:text-is("Deployments")')
 
     const copyButton = await page.locator(`[alt="Copy"]:right-of(div:has-text("${projectName}"))`).first()
     await copyButton.click()
@@ -116,6 +122,7 @@ test.describe('Versioned Project', () => {
 
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -145,6 +152,7 @@ test.describe('Versioned Project', () => {
     const deploymentId = await deployWithDagent(page, 'versioned-copiability-inprogress', projectId, versionId, true)
 
     await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+    await page.waitForSelector('h2:text-is("Deployments")')
 
     await expect(await page.getByText('In progress')).toHaveCount(1)
     await expect(await page.locator('button:has-text("Delete")')).toHaveCount(0)

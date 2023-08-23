@@ -1,4 +1,5 @@
-import { Page, expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../../utils/test.fixture'
 import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import { deployWithDagent } from '../../utils/node-helper'
 import { addImageToVersion, createImage, createProject, createVersion } from '../../utils/projects'
@@ -14,6 +15,7 @@ test('In progress deployment should be not deletable', async ({ page }) => {
 
   const sock = waitSocket(page)
   await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+  await page.waitForSelector('h2:text-is("Image")')
   const ws = await sock
   const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -56,6 +58,7 @@ test('Delete deployment should work', async ({ page }, testInfo) => {
   const deploymentId = await deployWithDagent(page, 'versioned-delete', projectId, versionId, false, testInfo.title)
 
   await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+  await page.waitForSelector('h2:text-is("Deployments")')
 
   await expect(await page.locator('button:has-text("Delete")')).toHaveCount(1)
 
@@ -65,6 +68,7 @@ test('Delete deployment should work', async ({ page }, testInfo) => {
 
   await page.locator('button:has-text("Delete")').nth(1).click()
   await page.waitForURL(`${TEAM_ROUTES.project.details(projectId)}**`)
+  await page.waitForSelector('h2:text-is("Projects")')
 })
 
 test('Deleting a deployment should refresh deployment list', async ({ page }) => {
@@ -83,6 +87,8 @@ test('Deleting a deployment should refresh deployment list', async ({ page }) =>
   }
 
   await page.goto(TEAM_ROUTES.deployment.list())
+  await page.waitForSelector('h2:text-is("Deployments")')
+
   deleteRefreshDeployment()
   await expect(page.locator(`div.p-2:has-text('pw-${projectName}')`)).toHaveCount(1)
   deleteRefreshDeployment()
