@@ -345,6 +345,12 @@ export default class DeployMapper {
             service: this.mapKeyValueToMap(config.annotations?.service),
           }
         : null,
+      metrics: config.metrics?.enabled
+        ? {
+            path: config.metrics.path ?? null,
+            port: config.metrics.port?.toString() ?? null,
+          }
+        : null,
     }
   }
 

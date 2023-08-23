@@ -319,6 +319,16 @@ const markerRule = yup
   .nullable()
   .optional()
 
+const metricsRule = yup
+  .object()
+  .shape({
+    path: yup.string().nullable(),
+    port: portNumberRule.optional().nullable(),
+  })
+  .default({})
+  .nullable()
+  .optional()
+
 const containerConfigBaseSchema = yup.object().shape({
   name: yup.string().required().matches(/^\S+$/g),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
@@ -353,6 +363,7 @@ const containerConfigBaseSchema = yup.object().shape({
   resourceConfig: resourceConfigRule,
   labels: markerRule,
   annotations: markerRule,
+  metrics: metricsRule,
 })
 
 export const containerConfigSchema = containerConfigBaseSchema.shape({

@@ -1,5 +1,16 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger'
-import { IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, Max, Min, ValidateNested } from 'class-validator'
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  Min,
+  ValidateNested,
+} from 'class-validator'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
@@ -257,6 +268,16 @@ export class MarkerDto {
   ingress?: UniqueKeyValueDto[]
 }
 
+export class MetricsDto {
+  @IsOptional()
+  @IsString()
+  path?: string
+
+  @IsOptional()
+  @IsNumber()
+  port?: number
+}
+
 export class ContainerConfigDto {
   // common
   @IsString()
@@ -378,6 +399,10 @@ export class ContainerConfigDto {
   @IsOptional()
   @ValidateNested()
   labels?: MarkerDto
+
+  @IsOptional()
+  @ValidateNested()
+  metrics?: MetricsDto
 }
 
 export class PartialContainerConfigDto extends PartialType(ContainerConfigDto) {}

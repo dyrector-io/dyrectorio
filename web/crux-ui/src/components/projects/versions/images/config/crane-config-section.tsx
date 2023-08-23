@@ -496,6 +496,80 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
             </div>
           </div>
         )}
+
+        {/* metrics */}
+        {filterContains('metrics', selectedFilters) && (
+          <div className="grid break-inside-avoid mb-8">
+            <ConfigSectionLabel
+              disabled={disabledOnImage || resetableConfig.metrics === null}
+              onResetSection={() => onResetSection('metrics')}
+            >
+              {t('crane.metrics').toUpperCase()}
+            </ConfigSectionLabel>
+
+            <DyoToggle
+              className="ml-2 mb-3"
+              name="metrics"
+              checked={config.metrics?.enabled ?? false}
+              onCheckedChange={it =>
+                onChange({
+                  metrics: {
+                    ...config.metrics,
+                    enabled: it,
+                  },
+                })
+              }
+              disabled={disabled}
+            />
+
+            {config.metrics?.enabled && (
+              <>
+                <MultiInput
+                  id="crane.metrics.path"
+                  containerClassName="max-w-lg mb-3"
+                  label={t('crane.metricsPath')}
+                  labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
+                  grow
+                  value={config.metrics?.path ?? ''}
+                  placeholder={t('crane.placeholders.metricsPath')}
+                  onPatch={it => {
+                    onChange({
+                      metrics: {
+                        ...config.metrics,
+                        path: it,
+                      },
+                    })
+                  }}
+                  editorOptions={editorOptions}
+                  message={fieldErrors.find(it => it.path?.startsWith('metrics.path'))?.message}
+                  disabled={disabled}
+                />
+
+                <MultiInput
+                  id="crane.metrics.port"
+                  containerClassName="max-w-lg mb-3"
+                  label={t('crane.metricsPort')}
+                  labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
+                  grow
+                  value={config.metrics?.port ?? ''}
+                  placeholder={t('crane.placeholders.metricsPort')}
+                  onPatch={it => {
+                    const val = toNumber(it)
+                    onChange({
+                      metrics: {
+                        ...config.metrics,
+                        port: val,
+                      },
+                    })
+                  }}
+                  editorOptions={editorOptions}
+                  message={fieldErrors.find(it => it.path?.startsWith('metrics.port'))?.message}
+                  disabled={disabled}
+                />
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

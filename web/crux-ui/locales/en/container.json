@@ -118,12 +118,21 @@
     "loadBalancer": "Load balancer",
     "useLoadBalancer": "Use load balancer",
     "extraLBAnnotations": "Extra LB annotations",
-    "placeholders": { "headerName": "Header name", "cpuUsageExample": "10m", "memoryUsageExample": "512Mi" },
     "labels": "Labels",
     "annotations": "Annotations",
     "service": "Service",
     "deployment": "Deployment",
-    "ingress": "Ingress"
+    "ingress": "Ingress",
+    "metrics": "Metrics",
+    "metricsPath": "Metrics path",
+    "metricsPort": "Metrics port",
+    "placeholders": {
+      "headerName": "Header name",
+      "cpuUsageExample": "10m",
+      "memoryUsageExample": "512Mi",
+      "metricsPath": "/metrics",
+      "metricsPort": "80"
+    }
   },
   "sensitiveKey": "Sensitive config data should be stored as secrets"
 }
