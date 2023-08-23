@@ -24,6 +24,8 @@ const setup = async (
   return { projectId, versionId, imageId }
 }
 
+test.describe.configure({ mode: 'parallel' })
+
 test.describe('Image docker config from JSON', () => {
   test('Network mode should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'networkmode-json', '1.0.0', 'redis')

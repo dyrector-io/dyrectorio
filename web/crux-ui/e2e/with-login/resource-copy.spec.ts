@@ -15,6 +15,8 @@ import {
 } from 'e2e/utils/projects'
 import { waitSocket } from 'e2e/utils/websocket'
 
+test.describe.configure({ mode: 'parallel' })
+
 test.describe('Deleting default version', () => {
   test('should not affect images of a new version', async ({ page }) => {
     const projectName = 'delete-default-check-images'

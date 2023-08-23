@@ -2,6 +2,7 @@ import { expect, Page, test } from '@playwright/test'
 import { screenshotPath, TEAM_ROUTES } from '../utils/common'
 import { createImage, createProject, createVersion } from '../utils/projects'
 import { waitSocket, wsPatchSent } from '../utils/websocket'
+import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 
 const setup = async (
   page: Page,
@@ -124,7 +125,7 @@ test.describe('Image configurations', () => {
 
     await page.locator('button:has-text("Ports")').click()
 
-    let wsSent = wsPatchSent(ws, wsRoute)
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE)
     const addPortsButton = await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
     await addPortsButton.click()
     await wsSent
@@ -135,7 +136,7 @@ test.describe('Image configurations', () => {
     const internalInput = page.locator('input[placeholder="Internal"]')
     const externalInput = page.locator('input[placeholder="External"]')
 
-    wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchPorts(internal, external))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchPorts(internal, external))
     await internalInput.type(internal)
     await externalInput.type(external)
     await wsSent
@@ -166,7 +167,7 @@ test.describe('Image configurations', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.ports = [{ internal: internalAsNumber, external: externalAsNumber }]
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchPorts(internal, external))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchPorts(internal, external))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 

@@ -35,6 +35,8 @@ const setup = async (
   return { projectId, versionId, imageId }
 }
 
+test.describe.configure({ mode: 'parallel' })
+
 test.describe('Image common config from editor', () => {
   test('Container name should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'name-editor', '1.0.0', 'redis')
