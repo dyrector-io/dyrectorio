@@ -44,3 +44,9 @@ type CommonConfiguration struct {
 	// injected from crane/dagent
 	SecretPrivateKey string
 }
+
+const (
+	PrivateKeyFileName      = "secret.key"
+	ConnectionTokenFileName = "token.jwt"
+	NonceBlacklistFileName  = "token-nonce.blacklist"
+)

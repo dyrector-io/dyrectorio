@@ -22,39 +22,34 @@ type Configuration struct {
 	WebhookToken    string `yaml:"webhookToken"         env:"WEBHOOK_TOKEN"          env-default:""`
 }
 
-const (
-	privateKeyFileName           = "secret.key"
-	connectionTokenFileName      = "token.jwt"
-	nonceBlacklistFileName       = "token-nonce.blacklist"
-	filePermReadWriteOnlyByOwner = 0o600
-)
+const filePermReadWriteOnlyByOwner = 0o600
 
 func (c *Configuration) CheckPermissions() error {
-	path := c.appendPathMountPath(connectionTokenFileName)
+	path := c.appendPathMountPath(config.ConnectionTokenFileName)
 	return checkFilePermissions(path)
 }
 
 func (c *Configuration) GetConnectionToken() (string, error) {
-	path := c.appendPathMountPath(connectionTokenFileName)
+	path := c.appendPathMountPath(config.ConnectionTokenFileName)
 	return readStringFromFile(path)
 }
 
 func (c *Configuration) SaveConnectionToken(token string) error {
-	path := c.appendPathMountPath(connectionTokenFileName)
+	path := c.appendPathMountPath(config.ConnectionTokenFileName)
 	return writeStringToFile(path, token)
 }
 
 func (c *Configuration) GetBlacklistedNonce() (string, error) {
-	path := c.appendPathMountPath(nonceBlacklistFileName)
+	path := c.appendPathMountPath(config.NonceBlacklistFileName)
 	return readStringFromFile(path)
 }
 
 func (c *Configuration) BlacklistNonce(value string) error {
-	path := c.appendPathMountPath(nonceBlacklistFileName)
+	path := c.appendPathMountPath(config.NonceBlacklistFileName)
 	return writeStringToFile(path, value)
 }
 
 func (c *Configuration) LoadPrivateKey() (string, error) {
-	path := c.appendPathMountPath(privateKeyFileName)
+	path := c.appendPathMountPath(config.PrivateKeyFileName)
 	return c.checkOrGenerateKeys(path)
 }

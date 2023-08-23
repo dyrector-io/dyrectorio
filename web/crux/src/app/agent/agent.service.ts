@@ -163,6 +163,11 @@ export default class AgentService {
     return Empty
   }
 
+  async completeInstaller(installer: AgentInstaller) {
+    this.installers.delete(installer.node.id)
+    await this.createAgentAudit(installer.node.id, 'installed')
+  }
+
   async kick(nodeId: string, reason: AgentKickReason, user?: string): Promise<void> {
     const agent = this.getById(nodeId)
     agent?.close(reason === 'revoke-token' ? CloseReason.REVOKE_TOKEN : CloseReason.SHUTDOWN)

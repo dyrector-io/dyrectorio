@@ -178,19 +178,26 @@ func Init(grpcContext context.Context,
 	}
 
 	ctx, cancel := context.WithCancel(grpcContext)
+	loop := ClientLoop{
+		cancel:      cancel,
+		AppConfig:   appConfig,
+		Ctx:         ctx,
+		WorkerFuncs: workerFuncs,
+		Secrets:     secrets,
+	}
 
-	err := health.Serve(ctx)
+	err := health.Serve(loop.Ctx)
 	if err != nil {
 		log.Warn().Err(err).Msg("Failed to start serving health")
 	}
 
-	ctx = metadata.AppendToOutgoingContext(ctx, contextMetadataToken, connParams.token)
+	loop.Ctx = metadata.AppendToOutgoingContext(loop.Ctx, contextMetadataToken, connParams.token)
 
 	if grpcConn.Conn == nil {
 		var creds credentials.TransportCredentials
 
 		httpAddr := fmt.Sprintf("https://%s", connParams.address)
-		certPool, err := fetchCertificatesFromURL(ctx, httpAddr)
+		certPool, err := fetchCertificatesFromURL(loop.Ctx, httpAddr)
 		if err != nil {
 			if appConfig.Debug {
 				log.Warn().Err(err).Msg("Secure mode is disabled in demo/dev environment, falling back to plain-text gRPC")
@@ -223,7 +230,7 @@ func Init(grpcContext context.Context,
 			state := conn.GetState()
 			if state != connectivity.Ready {
 				log.Debug().Msgf("Waiting for state to change: %d", state)
-				conn.WaitForStateChange(ctx, state)
+				conn.WaitForStateChange(loop.Ctx, state)
 				log.Debug().Msgf("State Changed to: %d", conn.GetState())
 			} else {
 				break
@@ -235,14 +242,6 @@ func Init(grpcContext context.Context,
 		grpcConn.Conn = conn
 	}
 
-	loop := ClientLoop{
-		cancel:      cancel,
-		AppConfig:   appConfig,
-		Ctx:         ctx,
-		WorkerFuncs: workerFuncs,
-		Secrets:     secrets,
-	}
-
 	loop.grpcLoop(connParams)
 }
 
@@ -251,7 +250,7 @@ func (l *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 	case command.GetDeploy() != nil:
 		go executeVersionDeployRequest(l.Ctx, command.GetDeploy(), l.WorkerFuncs.Deploy, l.AppConfig)
 	case command.GetContainerState() != nil:
-		go executeWatchContainerStatus(l.Ctx, command.GetContainerState(), l.WorkerFuncs.Watch)
+		go executeWatchContainerState(l.Ctx, command.GetContainerState(), l.WorkerFuncs.Watch)
 	case command.GetContainerDelete() != nil:
 		go executeDeleteContainer(l.Ctx, command.GetContainerDelete(), l.WorkerFuncs.Delete)
 	case command.GetDeployLegacy() != nil:
@@ -311,7 +310,7 @@ func (l *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 		err = stream.RecvMsg(command)
 		if err != nil {
 			s := status.Convert(err)
-			if s != nil && s.Code() == codes.Unauthenticated {
+			if s != nil && (s.Code() == codes.Unauthenticated || s.Code() == codes.PermissionDenied) {
 				if l.AppConfig.GrpcToken.Type == config.Connection {
 					log.Error().Err(err).Msg("Invalid connection token. Removing")
 
@@ -468,7 +467,7 @@ func streamContainerStatus(
 	}
 }
 
-func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateRequest, watchFn WatchFunc) {
+func executeWatchContainerState(ctx context.Context, req *agent.ContainerStateRequest, watchFn WatchFunc) {
 	if watchFn == nil {
 		log.Error().Msg("Watch function not implemented")
 		return
@@ -858,7 +857,14 @@ func (l *ClientLoop) executeReplaceToken(command *agent.ReplaceTokenRequest) err
 		log.Panic().Err(err).Msg("Failed to write the jwt token.")
 	}
 
-	l.Ctx = metadata.AppendToOutgoingContext(l.Ctx, contextMetadataToken, command.Token)
+	md, ok := metadata.FromOutgoingContext(l.Ctx)
+	if !ok {
+		md = metadata.Pairs(contextMetadataToken, command.GetToken())
+	} else {
+		md.Set(contextMetadataToken, command.GetToken())
+	}
+
+	l.Ctx = metadata.NewOutgoingContext(l.Ctx, md)
 	return nil
 }
 

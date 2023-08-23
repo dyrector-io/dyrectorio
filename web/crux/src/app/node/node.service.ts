@@ -336,7 +336,7 @@ export default class NodeService {
     prefix: string,
     oneShot: boolean,
   ): Observable<ContainerStateListMessage> {
-    this.logger.debug(`Opening container state stream for prefix: ${nodeId} - ${prefix}`)
+    this.logger.debug(`Opening container state stream for node - prefix: ${nodeId} - ${prefix}`)
 
     const agent = this.agentService.getByIdOrThrow(nodeId)
     const watcher = agent.upsertContainerStatusWatcher(prefix ?? '', oneShot)

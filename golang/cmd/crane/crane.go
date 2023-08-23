@@ -6,7 +6,6 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	commonConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/health"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/internal/version"
@@ -46,42 +45,44 @@ func main() {
 	}
 }
 
-func loadConfiguration() (*config.Configuration, error) {
+func loadConfiguration() (*config.Configuration, *k8s.Secret, error) {
 	cfg := &config.Configuration{}
+
 	err := util.ReadConfig(cfg)
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed to load configuration")
 	}
-	if err = cfg.ParseAndSetJWT(os.Getenv("GRPC_TOKEN")); err != nil {
-		log.Panic().Err(err).Msg("Failed to parse env GRPC_TOKEN")
-	}
+
 	client := k8s.NewClient(cfg)
 	secretHandler := k8s.NewSecret(context.Background(), client)
-	privateKey, err := secretHandler.GetValidPrivateKey()
+
+	cfg.InjectPrivateKey(secretHandler)
 	if err != nil {
-		return nil, err
+		log.Panic().Err(err).Msg("Failed to load secrets private key")
 	}
 
-	commonConfig.InjectPrivateKey(&cfg.CommonConfiguration, privateKey)
-	// commonConfig.InjectToken(&cfg.CommonConfiguration, )
+	err = cfg.InjectGrpcToken(secretHandler)
+	if err != nil {
+		log.Panic().Err(err).Msg("Failed to load grpc token")
+	}
 
 	log.Info().Msg("Configuration loaded.")
-	return cfg, nil
+	return cfg, secretHandler, nil
 }
 
 func serve(cCtx *cli.Context) error {
-	cfg, err := loadConfiguration()
+	cfg, secretHandler, err := loadConfiguration()
 	if err != nil {
 		log.Error().Err(err).Msg("Startup error")
 		return err
 	}
 
-	crane.Serve(cfg)
+	crane.Serve(cfg, secretHandler)
 	return nil
 }
 
 func initKey(cCtx *cli.Context) error {
-	cfg, err := loadConfiguration()
+	cfg, secretHandler, err := loadConfiguration()
 	if err != nil {
 		return err
 	}
@@ -95,8 +96,7 @@ func initKey(cCtx *cli.Context) error {
 		return err
 	}
 
-	secretHandler := k8s.NewSecret(context.Background(), client)
-	_, err = secretHandler.GetValidPrivateKey()
+	_, err = secretHandler.GetOrCreatePrivateKey()
 	if err != nil {
 		log.Error().Err(err).Send()
 		return err

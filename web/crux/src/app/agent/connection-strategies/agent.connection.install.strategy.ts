@@ -34,7 +34,7 @@ export default class AgentConnectionInstallStrategy extends AgentConnectionStrat
       info,
     })
 
-    await this.service.createAgentAudit(agent.id, 'installed')
+    await this.service.completeInstaller(installer)
 
     this.logger.verbose('Installer completed, replacing the install token.')
     agent.replaceToken({

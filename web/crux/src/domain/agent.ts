@@ -368,11 +368,13 @@ export class Agent {
     }
 
     this.update = new AgentUpdate(options)
+    this.replacementToken = options
     this.update.start(this.commandChannel, tag)
   }
 
   onUpdateAborted(error?: string) {
     this.update = null
+    this.replacementToken = null
 
     this.eventChannel.next({
       id: this.id,
