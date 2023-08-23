@@ -4,7 +4,6 @@ import {
   ContainerIdentifier,
   ContainerState,
   InstanceContainerConfigData,
-  UniqueKey,
   UniqueKeyValue,
 } from './container'
 import { ImageConfigProperty, ImageDeletedMessage } from './image'
