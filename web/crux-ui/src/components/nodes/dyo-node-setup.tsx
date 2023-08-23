@@ -230,7 +230,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                 />
 
                 <div onClick={onCopyScript} className="cursor-pointer ml-2 h-11 w-11 flex items-center justify-center">
-                  <DyoIcon size="md" src="/copy-alt.svg" alt={t('copy')} />
+                  <DyoIcon size="md" src="/copy-alt.svg" alt={t('common:copy')} />
                 </div>
               </div>
 

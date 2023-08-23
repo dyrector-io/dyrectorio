@@ -198,8 +198,9 @@ const createOverlapTest = (
       : true,
   )
 
-const portConfigRule = yup.mixed().when('portRanges', portRanges => {
-  if (!portRanges) {
+// note: here yup passes reference as array
+const portConfigRule = yup.mixed().when('portRanges', ([portRanges]) => {
+  if (!portRanges?.length) {
     return yup
       .array(
         yup.object().shape({
@@ -273,7 +274,7 @@ const initContainerVolumeLinkRule = yup.array(
 const initContainerRule = yup
   .array(
     yup.object().shape({
-      name: yup.string().required(),
+      name: yup.string().required().matches(/^\S+$/g),
       image: yup.string().required(),
       command: uniqueKeysOnlySchema.default([]).nullable(),
       args: uniqueKeysOnlySchema.default([]).nullable(),
@@ -322,7 +323,7 @@ const uniqueSecretKeyValuesSchema = yup
   .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
 
 export const containerConfigSchema = yup.object().shape({
-  name: yup.string().required(),
+  name: yup.string().required().matches(/^\S+$/g),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
   secrets: uniqueSecretKeyValuesSchema.default([]).nullable(),
   routing: routingRule,

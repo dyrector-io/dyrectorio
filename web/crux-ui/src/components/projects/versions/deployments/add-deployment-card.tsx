@@ -7,6 +7,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
+import DyoToggle from '@app/elements/dyo-toggle'
 import { apiErrorHandler, defaultTranslator } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTeamRoutes from '@app/hooks/use-team-routes'
@@ -62,6 +63,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       nodeId: null as string,
       note: '',
       prefix: projectNameToDeploymentPrefix(projectName),
+      protected: false,
     },
     validationSchema: createDeploymentSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
@@ -144,6 +146,14 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
             onChange={formik.handleChange}
             value={formik.values.prefix}
             message={formik.errors.prefix}
+          />
+
+          <DyoToggle
+            className="mt-8 mb-2.5"
+            name="protected"
+            label={t('protected')}
+            checked={formik.values.protected}
+            setFieldValue={formik.setFieldValue}
           />
 
           <DyoTextArea

@@ -4,6 +4,7 @@ import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoTextArea from '@app/elements/dyo-text-area'
+import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTeamRoutes from '@app/hooks/use-team-routes'
@@ -75,6 +76,14 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
           onChange={formik.handleChange}
           value={formik.values.prefix}
           message={formik.errors.prefix}
+        />
+
+        <DyoToggle
+          className="mt-8 mb-2.5"
+          name="protected"
+          label={t('protected')}
+          checked={formik.values.protected}
+          setFieldValue={formik.setFieldValue}
         />
 
         <DyoTextArea

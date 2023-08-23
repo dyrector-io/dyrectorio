@@ -20,7 +20,7 @@ const NotificationCard = (props: NotificationCardProps) => {
   const { t } = useTranslation('notifications')
 
   const getDefaultImage = (
-    <DyoIcon className="aspect-square" src="/notification.svg" size="sm" alt={t('altNotificationPicture')} />
+    <DyoIcon className="aspect-square" src="/notification.svg" size="md" alt={t('altNotificationPicture')} />
   )
 
   const title = (
