@@ -1,11 +1,6 @@
 import { Audit } from './audit'
 import { DeploymentStatus, DyoApiError, slugify } from './common'
-import {
-  ContainerIdentifier,
-  ContainerState,
-  InstanceContainerConfigData,
-  UniqueKeyValue,
-} from './container'
+import { ContainerIdentifier, ContainerState, InstanceContainerConfigData, UniqueKeyValue } from './container'
 import { ImageConfigProperty, ImageDeletedMessage } from './image'
 import { Instance } from './instance'
 import { DyoNode } from './node'
