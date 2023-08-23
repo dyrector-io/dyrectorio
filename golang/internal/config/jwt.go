@@ -29,20 +29,6 @@ type CustomClaims struct {
 	Nonce string
 }
 
-// func (config *CommonConfiguration) ParseAndSetJWT(unvalidatedToken string) error {
-// 	if unvalidatedToken == "" {
-// 		return fmt.Errorf("JWT cannot be empty")
-// 	}
-
-// 	token, err := ValidateAndCreateJWT(unvalidatedToken)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	config.GrpcToken = token
-// 	return nil
-// }
-
 func (c *CustomClaims) Valid() error {
 	vErr := new(jwt.ValidationError)
 	// https://www.rfc-editor.org/rfc/rfc7519#page-10

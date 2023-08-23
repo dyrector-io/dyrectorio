@@ -18,7 +18,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 )
 
@@ -116,21 +115,44 @@ func (s *Secret) getSecretClient(namespace string) (v1.SecretInterface, error) {
 	return clientset.CoreV1().Secrets(namespace), nil
 }
 
-func (s *Secret) PatchOpaqueSecret(ctx context.Context, namespace, name string, values map[string]any) (
+func (s *Secret) UpsertOpaqueSecrets(ctx context.Context, values map[string][]byte) (
 	version string, err error,
 ) {
+	namespace := s.appConfig.Namespace
+	name := s.appConfig.SecretName
+
+	secrets, version, err := s.GetSecret(namespace, name)
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return version, err
+		}
+
+		secrets = map[string][]byte{}
+	}
+
+	for key, value := range values {
+		secrets[key] = value
+	}
+
+	return s.applyOpaqueSecrets(ctx, secrets)
+}
+
+func (s *Secret) applyOpaqueSecrets(ctx context.Context, values map[string][]byte) (
+	version string, err error,
+) {
+	namespace := s.appConfig.Namespace
+	name := s.appConfig.SecretName
+
 	cli, err := s.getSecretClient(namespace)
 	if err != nil {
 		return "", err
 	}
 
-	data, err := json.Marshal(values)
-	if err != nil {
-		return "", err
-	}
+	secrets := corev1.Secret(name, namespace).WithData(values)
 
-	result, err := cli.Patch(ctx, name, types.MergePatchType, data, metav1.PatchOptions{
+	result, err := cli.Apply(ctx, secrets, metav1.ApplyOptions{
 		FieldManager: s.appConfig.FieldManagerName,
+		Force:        s.appConfig.ForceOnConflicts,
 	})
 	if err != nil {
 		return "", err
@@ -180,39 +202,31 @@ func (s *Secret) GetOrCreatePrivateKey() (string, error) {
 		return "", fmt.Errorf("secret name or namespace can't be empty")
 	}
 
-	keyStr, keyErr := commonConfig.GenerateKeyString()
-	if keyErr != nil {
-		return "", keyErr
-	}
-
-	objects, version, err := s.GetSecret(namespace, name)
+	keyStr, version, err := s.getSecretByKey(commonConfig.PrivateKeyFileName)
 	if err != nil {
-		if errors.IsNotFound(err) {
-			return keyStr, s.addValidSecret(commonConfig.PrivateKeyFileName, keyStr)
-		}
-		return "", fmt.Errorf("k8s stored secret %s/%s was on error: %w", namespace, name, err)
+		return "", fmt.Errorf("k8s stored secret %s/%s was on error: %w", err)
 	}
 
-	secretContent := ""
-	for secretFileName, secretFileContent := range objects {
-		if secretFileName == commonConfig.PrivateKeyFileName {
-			secretContent = string(secretFileContent)
-			break
+	if keyStr == "" {
+		keyStr, keyErr := commonConfig.GenerateKeyString()
+		if keyErr != nil {
+			return "", keyErr
 		}
-	}
-	if secretContent == "" {
-		return "", fmt.Errorf("k8s stored secret %s/%s was empty (resourceVersion: %s)", namespace, name, version)
+
+		return keyStr, s.addValidSecret(commonConfig.PrivateKeyFileName, keyStr)
 	}
 
-	isExpired, err := commonConfig.IsExpiredKey(secretContent)
+	isExpired, err := commonConfig.IsExpiredKey(keyStr)
 	if err != nil {
 		return "", fmt.Errorf("handling k8s stored secret %s/%s was on error: %w", namespace, name, err)
 	}
+
 	if isExpired {
-		log.Printf("k8s stored secret %s/%s was expired (resourceVersion: %s), so renewing...", namespace, name, version)
+		log.Warn().Str("namespace", namespace).Str("name", name).Str("resourceVersion", version).Msg("k8s stored secret was expired. Renewing...")
 		return keyStr, s.addValidSecret(commonConfig.PrivateKeyFileName, keyStr)
 	}
-	return secretContent, nil
+
+	return keyStr, nil
 }
 
 func (s *Secret) addValidSecret(key, value string) error {
@@ -221,8 +235,8 @@ func (s *Secret) addValidSecret(key, value string) error {
 
 	log.Printf("storing k8s secret at %s/%s", namespace, name)
 
-	secret := map[string]any{}
-	secret[key] = value
+	secret := map[string][]byte{}
+	secret[key] = []byte(value)
 
 	nsHandler := NewNamespaceClient(s.ctx, namespace, s.client)
 	nsErr := nsHandler.EnsureExists(namespace)
@@ -231,7 +245,7 @@ func (s *Secret) addValidSecret(key, value string) error {
 	}
 
 	secretHandler := NewSecret(s.ctx, s.client)
-	storedVersion, storingErr := secretHandler.PatchOpaqueSecret(s.ctx, namespace, name, secret)
+	storedVersion, storingErr := secretHandler.UpsertOpaqueSecrets(s.ctx, secret)
 	if storingErr != nil {
 		return storingErr
 	}

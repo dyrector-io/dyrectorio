@@ -310,7 +310,7 @@ func (l *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 		err = stream.RecvMsg(command)
 		if err != nil {
 			s := status.Convert(err)
-			if s != nil && (s.Code() == codes.Unauthenticated || s.Code() == codes.PermissionDenied) {
+			if s != nil && (s.Code() == codes.Unauthenticated || s.Code() == codes.PermissionDenied || s.Code() == codes.NotFound) {
 				if l.AppConfig.GrpcToken.Type == config.Connection {
 					log.Error().Err(err).Msg("Invalid connection token. Removing")
 
@@ -351,17 +351,6 @@ func (l *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 		}
 
 		l.grpcProcessCommand(command)
-		/// todo
-		/// install-token unauthorized -> blacklist nonce on the agent and shutdown
-		/// conn token unauthorized -> delete token and use install token to reconnect
-		/// save the last connection error on crux
-		///
-
-		/// crane
-		/// save connection token to secrets
-		/// load connection token on start
-		/// blacklist customresource
-		/// kcr definition?
 	}
 }
 

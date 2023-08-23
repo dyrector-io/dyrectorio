@@ -58,7 +58,7 @@ func loadConfiguration() (*config.Configuration, *k8s.Secret, error) {
 
 	cfg.InjectPrivateKey(secretHandler)
 	if err != nil {
-		log.Panic().Err(err).Msg("Failed to load secrets private key")
+		log.Panic().Err(err).Msg("Failed to load private key")
 	}
 
 	err = cfg.InjectGrpcToken(secretHandler)

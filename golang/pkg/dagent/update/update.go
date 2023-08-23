@@ -155,11 +155,11 @@ func ExecuteSelfUpdate(ctx context.Context, cli client.APIClient, command *agent
 	}
 
 	if newImageID == ownImage.ID {
-		if options.UpdateAlways {
-			log.Warn().Msg("Updating matching image tags")
+		if !options.UpdateAlways {
+			return errors.New("already using desired image")
 		}
 
-		return errors.New("already using desired image")
+		log.Warn().Msg("Updating matching image tags")
 	}
 
 	originalName := container.Names[0]
