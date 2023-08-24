@@ -311,7 +311,7 @@ func (l *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 		if err != nil {
 			s := status.Convert(err)
 			if s != nil && (s.Code() == codes.Unauthenticated || s.Code() == codes.PermissionDenied || s.Code() == codes.NotFound) {
-				if l.AppConfig.GrpcToken.Type == config.Connection {
+				if l.AppConfig.JwtToken.Type == config.Connection {
 					log.Error().Err(err).Msg("Invalid connection token. Removing")
 
 					// overwrite jwt token
@@ -325,7 +325,7 @@ func (l *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 
 				} else {
 					log.Error().Err(err).Msg("Invalid install token. Blacklisting nonce")
-					err = l.Secrets.BlacklistNonce(l.AppConfig.GrpcToken.Nonce)
+					err = l.Secrets.BlacklistNonce(l.AppConfig.JwtToken.Nonce)
 					if err != nil {
 						log.Error().Err(err).Msg("Failed to blacklist the install token")
 					}

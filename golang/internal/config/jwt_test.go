@@ -45,7 +45,7 @@ func TestConfigSetValueValid(t *testing.T) {
 	err := cfg.ParseAndSetJWT(tokenStr)
 
 	assert.Nil(t, err, "for a valid token error should be nil")
-	assert.EqualValues(t, tokenStr, cfg.GrpcToken.StringifiedToken)
+	assert.EqualValues(t, tokenStr, cfg.JwtToken.StringifiedToken)
 }
 
 func TestConfigSetValueInvalid(t *testing.T) {

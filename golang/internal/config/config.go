@@ -29,7 +29,7 @@ type CommonConfiguration struct {
 	DefaultTag               string        `yaml:"defaultTag"                env:"DEFAULT_TAG"                 env-default:"latest"`
 	DefaultTimeout           time.Duration `yaml:"defaultTimeout"            env:"DEFAULT_TIMEOUT"             env-default:"5s"`
 	GrpcKeepalive            time.Duration `yaml:"grpcKeepalive"             env:"GRPC_KEEPALIVE"              env-default:"60s"`
-	InstallToken             string        `yaml:"grpcToken"                 env:"GRPC_TOKEN"                  env-default:""`
+	GrpcToken                string        `yaml:"grpcToken"                 env:"GRPC_TOKEN"                  env-default:""`
 	Name                     string        `yaml:"name"                      env:"NAME"                        env-default:"dagent-go"`
 	Debug                    bool          `yaml:"debug"                     env:"DEBUG"                       env-default:"false"`
 	DebugUpdateAlways        bool          `yaml:"debugUpdateAlways"         env:"DEBUG_UPDATE_ALWAYS"         env-default:"false"`
@@ -40,7 +40,7 @@ type CommonConfiguration struct {
 	// DefaultRegistry container registry used for container name expansion
 	DefaultRegistry string `yaml:"registry"             env:"DEFAULT_REGISTRY"                 env-default:"index.docker.io"`
 	// gRPC token is set separately, because nested structures are not yet suppported in cleanenv
-	GrpcToken *ValidJWT
+	JwtToken *ValidJWT
 	// injected from crane/dagent
 	SecretPrivateKey string
 }
