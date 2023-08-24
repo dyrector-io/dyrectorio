@@ -13,7 +13,6 @@ import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import {
-  SortFunctions,
   SortHeaderBuilderMapping,
   sortHeaderBuilder,
   stringSort,
@@ -73,11 +72,10 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
     filters: [textFilterFor<FindImageResult>(it => [it.name])],
   })
 
-  const sortFunctions: SortFunctions<FindImageResult> = {
-    name: stringSort,
-  }
   const sorting = useSorting<FindImageResult, FindImageResultSorting>(filters.filtered, {
-    sortFunctions,
+    sortFunctions: {
+      name: stringSort,
+    },
   })
 
   const sock = useWebSocket(routes.registry.socket())
