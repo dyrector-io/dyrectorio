@@ -1,13 +1,17 @@
+import { Audit } from '@app/models'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 export type SortDirection = 'asc' | 'desc'
 
-export type SortFunction<Item> = (field: string, a: Item, b: Item) => number
-export type SortFunctions<Item> = { [key: string]: SortFunction<Item> }
+export type SortFunction = (a: any, b: any) => number
+export type SortFunctions = { [key: string]: SortFunction }
+
+export type FieldGetters<Item> = { [key: string]: (item: Item) => any }
 
 export interface SortOptions<Item, Fields extends string> {
-  sortFunctions: SortFunctions<Item>
+  sortFunctions: SortFunctions
+  fieldGetters?: FieldGetters<Item>
   initialField?: Fields
   initialDirection?: SortDirection
 }
@@ -27,7 +31,8 @@ interface SortState<Fields extends string> {
 const sortData = <Item, Fields extends string>(
   items: Item[],
   sortBy: SortState<Fields>,
-  functions: SortFunctions<Item>,
+  functions: SortFunctions,
+  fieldGetters?: FieldGetters<Item>,
 ): Item[] => {
   if (!sortBy || !sortBy.field || !sortBy.direction) {
     return items
@@ -37,7 +42,8 @@ const sortData = <Item, Fields extends string>(
   const direction = sortBy.direction === 'desc' ? -1 : 1
 
   return [...items].sort((a, b) => {
-    const order = sortFunction(sortBy.field, a, b)
+    const getter = fieldGetters?.[sortBy.field] ?? ((item: Item) => item[sortBy.field as string])
+    const order = sortFunction(getter(a), getter(b))
     return order * direction
   })
 }
@@ -46,7 +52,7 @@ export const useSorting = <Item, Fields extends string>(
   data: Item[],
   options: SortOptions<Item, Fields>,
 ): SortConfig<Item, Fields> => {
-  const { sortFunctions, initialField, initialDirection } = options
+  const { sortFunctions, fieldGetters, initialField, initialDirection } = options
 
   const [sortBy, setSortBy] = useState<SortState<Fields>>(
     initialField && initialDirection
@@ -56,10 +62,10 @@ export const useSorting = <Item, Fields extends string>(
         }
       : null,
   )
-  const [items, setItems] = useState<Item[]>(data ? sortData(data, sortBy, sortFunctions) : [])
+  const [items, setItems] = useState<Item[]>(data ? sortData(data, sortBy, sortFunctions, fieldGetters) : [])
 
   useEffect(() => {
-    setItems(sortData(data, sortBy, sortFunctions))
+    setItems(sortData(data, sortBy, sortFunctions, fieldGetters))
   }, [data, sortBy])
 
   const toggleSorting = (field: Fields) => {
@@ -123,16 +129,37 @@ export const sortHeaderBuilder =
       translate(header)
     )
 
-export const stringSort = <Item,>(field: string, a: Item, b: Item): number => (a[field] ?? '').localeCompare(b[field])
+export const auditFieldGetter = <Item extends { audit: Audit }>(value: Item) =>
+  value.audit.updatedAt ?? value.audit.createdAt
 
-export const dateSort = <Item,>(field: string, a: Item, b: Item): number => {
-  if (a[field] && b[field]) {
-    return new Date(b[field]).getTime() - new Date(a[field]).getTime()
+export const stringSort = (a: string | null, b: string | null): number => (a ?? '').localeCompare(b)
+
+export const dateSort = (a: string | null, b: string | null): number => {
+  if (a && b) {
+    return new Date(b).getTime() - new Date(a).getTime()
   }
-  if (a[field]) {
+  if (a) {
     return 1
   }
-  if (b[field]) {
+  if (b) {
+    return -1
+  }
+  return 0
+}
+
+export const enumSort =
+  (values: readonly any[]) =>
+  (a: string, b: string): number =>
+    values.indexOf(a) - values.indexOf(b)
+
+export const numberSort = (a: number | null, b: number | null) => {
+  if (a && b) {
+    return Math.sign(b - a)
+  }
+  if (a) {
+    return 1
+  }
+  if (b) {
     return -1
   }
   return 0
