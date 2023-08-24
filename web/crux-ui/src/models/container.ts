@@ -181,9 +181,9 @@ export type ContainerStorage = {
 }
 
 export type Metrics = {
-  enabled?: boolean
-  port?: number
+  enabled: boolean
   path?: string
+  port?: number
 }
 
 export type ContainerConfigData = {

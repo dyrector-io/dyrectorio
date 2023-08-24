@@ -150,7 +150,7 @@ export type Storage = {
 }
 
 export type Metrics = {
-  enabled?: boolean
+  enabled: boolean
   path?: string
   port?: number
 }

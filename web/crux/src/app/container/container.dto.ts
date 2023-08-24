@@ -269,6 +269,9 @@ export class MarkerDto {
 }
 
 export class MetricsDto {
+  @IsBoolean()
+  enabled: boolean
+
   @IsOptional()
   @IsString()
   path?: string
