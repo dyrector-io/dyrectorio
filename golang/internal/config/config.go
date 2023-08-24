@@ -39,7 +39,7 @@ type CommonConfiguration struct {
 	ReadHeaderTimeout        time.Duration `yaml:"readHeaderTimeout"         env:"READ_HEADER_TIMEOUT"         env-default:"15s"`
 	// DefaultRegistry container registry used for container name expansion
 	DefaultRegistry string `yaml:"registry"             env:"DEFAULT_REGISTRY"                 env-default:"index.docker.io"`
-	// GRPC token is set separately, because nested structures are not yet suppported in cleanenv
+	// gRPC token is set separately, because nested structures are not yet suppported in cleanenv
 	GrpcToken *ValidJWT
 	// injected from crane/dagent
 	SecretPrivateKey string

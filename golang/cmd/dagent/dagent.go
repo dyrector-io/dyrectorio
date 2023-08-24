@@ -29,7 +29,7 @@ func serve(cCtx *cli.Context) error {
 
 	err = cfg.InjectGrpcToken(&cfg)
 	if err != nil {
-		log.Panic().Err(err).Msg("Failed to load grpc token")
+		log.Panic().Err(err).Msg("Failed to load gRPC token")
 	}
 
 	log.Info().Msg("Configuration loaded.")

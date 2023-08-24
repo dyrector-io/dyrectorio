@@ -63,7 +63,7 @@ func loadConfiguration() (*config.Configuration, *k8s.Secret, error) {
 
 	err = cfg.InjectGrpcToken(secretHandler)
 	if err != nil {
-		log.Panic().Err(err).Msg("Failed to load grpc token")
+		log.Panic().Err(err).Msg("Failed to load gRPC token")
 	}
 
 	log.Info().Msg("Configuration loaded.")
