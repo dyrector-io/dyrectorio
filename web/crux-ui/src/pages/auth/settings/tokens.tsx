@@ -49,6 +49,8 @@ const TokensPage = (props: TokensPageProps) => {
   })
 
   const sorting = useSorting<Token, TokenSorting>(filters.filtered, {
+    initialField: 'createdAt',
+    initialDirection: 'asc',
     sortFunctions: {
       name: stringSort,
       createdAt: dateSort,

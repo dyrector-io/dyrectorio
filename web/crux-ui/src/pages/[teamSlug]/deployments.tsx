@@ -101,6 +101,8 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   })
 
   const sorting = useSorting<Deployment, DeploymentSorting>(filters.filtered, {
+    initialField: 'updatedAt',
+    initialDirection: 'asc',
     sortFunctions: {
       project: stringSort,
       version: stringSort,

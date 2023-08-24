@@ -129,6 +129,8 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   })
 
   const sorting = useSorting<DeploymentByVersion, DeploymentSorting>(filters.filtered, {
+    initialField: 'updatedAt',
+    initialDirection: 'asc',
     sortFunctions: {
       node: nodeSort,
       prefix: stringSort,

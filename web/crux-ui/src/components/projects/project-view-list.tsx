@@ -33,6 +33,8 @@ const ProjectViewList = (props: ProjectViewListProps) => {
   const router = useRouter()
 
   const sorting = useSorting<Project, ProjectSorting>(projects, {
+    initialField: 'name',
+    initialDirection: 'asc',
     sortFunctions: {
       name: stringSort,
       versionCount: numberSort,

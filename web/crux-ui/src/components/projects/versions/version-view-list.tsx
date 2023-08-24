@@ -31,6 +31,8 @@ const VersionViewList = (props: VersionViewListProps) => {
   const [tagsModalTarget, setTagsModalTarget] = useState<VersionImage>(null)
 
   const sorting = useSorting<VersionImage, VersionImageSorting>(state.version.images, {
+    initialField: 'containerName',
+    initialDirection: 'asc',
     sortFunctions: {
       containerName: stringSort,
       registry: stringSort,

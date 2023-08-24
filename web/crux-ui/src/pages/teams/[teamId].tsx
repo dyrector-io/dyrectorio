@@ -87,6 +87,8 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const submitRef = useRef<() => Promise<any>>()
 
   const sorting = useSorting<User, UserSorting>(team.users, {
+    initialField: 'name',
+    initialDirection: 'asc',
     sortFunctions: {
       name: stringSort,
       email: stringSort,

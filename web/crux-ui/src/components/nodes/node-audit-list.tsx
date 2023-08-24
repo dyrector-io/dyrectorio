@@ -82,6 +82,9 @@ const NodeAuditList = (props: NodeAuditListProps) => {
   }
 
   const sorting = useSorting<NodeAuditLog, NodeAuditLogSorting>(data, {
+    initialField: 'createdAt',
+    initialDirection: 'asc',
+    initialDataSorted: true,
     sortFunctions: {
       createdAt: dateSort,
       event: stringSort,

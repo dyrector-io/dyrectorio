@@ -41,6 +41,8 @@ const NodeContainersList = (props: NodeContainersListProps) => {
   const routes = useTeamRoutes()
 
   const sorting = useSorting<Container, ContainerSorting>(containerItems, {
+    initialField: 'createdAt',
+    initialDirection: 'asc',
     sortFunctions: {
       name: stringSort,
       imageTag: stringSort,

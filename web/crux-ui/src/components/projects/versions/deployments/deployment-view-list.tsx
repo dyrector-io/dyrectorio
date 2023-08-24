@@ -26,6 +26,8 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
   const { instances, deployInstances } = state
 
   const sorting = useSorting<Instance, InstanceSorting>(instances, {
+    initialField: 'createdAt',
+    initialDirection: 'asc',
     sortFunctions: {
       containerName: stringSort,
       registry: stringSort,

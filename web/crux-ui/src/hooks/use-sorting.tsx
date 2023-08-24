@@ -14,6 +14,7 @@ export interface SortOptions<Item, Fields extends string> {
   fieldGetters?: FieldGetters<Item>
   initialField?: Fields
   initialDirection?: SortDirection
+  initialDataSorted?: boolean
 }
 
 export interface SortConfig<Item, Fields extends string> {
@@ -52,7 +53,7 @@ export const useSorting = <Item, Fields extends string>(
   data: Item[],
   options: SortOptions<Item, Fields>,
 ): SortConfig<Item, Fields> => {
-  const { sortFunctions, fieldGetters, initialField, initialDirection } = options
+  const { sortFunctions, fieldGetters, initialField, initialDirection, initialDataSorted } = options
 
   const [sortBy, setSortBy] = useState<SortState<Fields>>(
     initialField && initialDirection
@@ -62,7 +63,9 @@ export const useSorting = <Item, Fields extends string>(
         }
       : null,
   )
-  const [items, setItems] = useState<Item[]>(data ? sortData(data, sortBy, sortFunctions, fieldGetters) : [])
+  const [items, setItems] = useState<Item[]>(
+    data ? (initialDataSorted === true ? data : sortData(data, sortBy, sortFunctions, fieldGetters)) : [],
+  )
 
   useEffect(() => {
     setItems(sortData(data, sortBy, sortFunctions, fieldGetters))
