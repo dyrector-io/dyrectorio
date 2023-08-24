@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
 import { Identity } from '@ory/kratos-client'
 import { Prisma } from '@prisma/client'
 import { EmptyError, Observable, filter, firstValueFrom, map, mergeAll, mergeWith, of, timeout } from 'rxjs'
@@ -46,7 +45,6 @@ export default class NodeService {
     private readonly agentService: AgentService,
     private readonly mapper: NodeMapper,
     private readonly notificationService: DomainNotificationService,
-    private readonly configService: ConfigService,
   ) {}
 
   async checkNodeIsInTheTeam(teamSlug: string, nodeId: string, identity: Identity): Promise<boolean> {

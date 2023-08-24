@@ -202,31 +202,32 @@ func (s *Secret) GetOrCreatePrivateKey() (string, error) {
 		return "", fmt.Errorf("secret name or namespace can't be empty")
 	}
 
-	keyStr, version, err := s.getSecretByKey(commonConfig.PrivateKeyFileName)
+	var privateKey string
+	privateKey, version, err := s.getSecretByKey(commonConfig.PrivateKeyFileName)
 	if err != nil {
-		return "", fmt.Errorf("k8s stored secret %s/%s was on error: %w", err)
+		return "", fmt.Errorf("k8s stored secret %s/%s was on error: %w", namespace, name, err)
 	}
 
-	if keyStr == "" {
-		keyStr, keyErr := commonConfig.GenerateKeyString()
-		if keyErr != nil {
-			return "", keyErr
+	if privateKey == "" {
+		privateKey, err = commonConfig.GenerateKeyString()
+		if err != nil {
+			return "", err
 		}
 
-		return keyStr, s.addValidSecret(commonConfig.PrivateKeyFileName, keyStr)
+		return privateKey, s.addValidSecret(commonConfig.PrivateKeyFileName, privateKey)
 	}
 
-	isExpired, err := commonConfig.IsExpiredKey(keyStr)
+	isExpired, err := commonConfig.IsExpiredKey(privateKey)
 	if err != nil {
 		return "", fmt.Errorf("handling k8s stored secret %s/%s was on error: %w", namespace, name, err)
 	}
 
 	if isExpired {
 		log.Warn().Str("namespace", namespace).Str("name", name).Str("resourceVersion", version).Msg("k8s stored secret was expired. Renewing...")
-		return keyStr, s.addValidSecret(commonConfig.PrivateKeyFileName, keyStr)
+		return privateKey, s.addValidSecret(commonConfig.PrivateKeyFileName, privateKey)
 	}
 
-	return keyStr, nil
+	return privateKey, nil
 }
 
 func (s *Secret) addValidSecret(key, value string) error {

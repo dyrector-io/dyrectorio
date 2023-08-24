@@ -51,5 +51,5 @@ func (c *Configuration) BlacklistNonce(value string) error {
 
 func (c *Configuration) LoadPrivateKey() (string, error) {
 	path := c.appendPathMountPath(config.PrivateKeyFileName)
-	return c.checkOrGenerateKeys(path)
+	return c.CheckOrGenerateKeys(path)
 }

@@ -14,7 +14,7 @@ import (
 	config "github.com/dyrector-io/dyrectorio/golang/internal/config"
 )
 
-func (c *Configuration) checkOrGenerateKeys(path string) (string, error) {
+func (c *Configuration) CheckOrGenerateKeys(path string) (string, error) {
 	if path == "" {
 		return "", fmt.Errorf("env private key file value can't be empty")
 	}

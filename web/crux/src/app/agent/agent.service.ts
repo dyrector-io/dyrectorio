@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { Identity } from '@ory/kratos-client'
@@ -57,11 +57,13 @@ export default class AgentService {
   private eventChannelByTeamId: Map<string, Subject<AgentConnectionMessage>> = new Map()
 
   constructor(
+    @Inject(forwardRef(() => AgentConnectionStrategyProvider))
     private readonly connectionStrategies: AgentConnectionStrategyProvider,
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly notificationService: DomainNotificationService,
+    @Inject(forwardRef(() => DeployService))
     private readonly deployService: DeployService,
   ) {}
 
@@ -380,7 +382,7 @@ export default class AgentService {
     if (status === 'unreachable') {
       const storedAgent = this.agents.get(agent.id)
 
-      // there should be no awaits between this if and the agents.delete() call
+      // there should be no awaits between this and the agents.delete() call
       // so we can be sure it happens in the same microtask
       if (agent === storedAgent) {
         this.logger.log(`Left: ${agent.id}`)
@@ -401,12 +403,13 @@ export default class AgentService {
       }
 
       agent.onDisconnected()
-    } else if (status === 'connected') {
+    } else if (status === 'connected' || status === 'outdated') {
       this.agents.set(agent.id, agent)
 
       this.logger.log(`Agent joined with id: ${agent.id}, key: ${!!agent.publicKey}`)
       AgentMetrics.connectedCount().inc()
       this.logServiceInfo()
+
       await this.createAgentAudit(agent.id, 'connected', agent.info)
     } else {
       this.logger.warn(`Unknown NodeConnectionStatus ${status}`)

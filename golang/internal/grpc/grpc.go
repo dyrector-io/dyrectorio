@@ -315,7 +315,7 @@ func (l *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 					log.Error().Err(err).Msg("Invalid connection token. Removing")
 
 					// overwrite jwt token
-					err := l.Secrets.SaveConnectionToken("")
+					err = l.Secrets.SaveConnectionToken("")
 					if err != nil {
 						log.Err(err).Msg("Failed to delete the invalid connection token. Exiting")
 
