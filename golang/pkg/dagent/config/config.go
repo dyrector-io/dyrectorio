@@ -25,31 +25,31 @@ type Configuration struct {
 const filePermReadWriteOnlyByOwner = 0o600
 
 func (c *Configuration) CheckPermissions() error {
-	path := c.appendPathMountPath(config.ConnectionTokenFileName)
+	path := c.appendInternalMountPath(config.ConnectionTokenFileName)
 	return checkFilePermissions(path)
 }
 
 func (c *Configuration) GetConnectionToken() (string, error) {
-	path := c.appendPathMountPath(config.ConnectionTokenFileName)
+	path := c.appendInternalMountPath(config.ConnectionTokenFileName)
 	return readStringFromFile(path)
 }
 
 func (c *Configuration) SaveConnectionToken(token string) error {
-	path := c.appendPathMountPath(config.ConnectionTokenFileName)
+	path := c.appendInternalMountPath(config.ConnectionTokenFileName)
 	return writeStringToFile(path, token)
 }
 
 func (c *Configuration) GetBlacklistedNonce() (string, error) {
-	path := c.appendPathMountPath(config.NonceBlacklistFileName)
+	path := c.appendInternalMountPath(config.NonceBlacklistFileName)
 	return readStringFromFile(path)
 }
 
 func (c *Configuration) BlacklistNonce(value string) error {
-	path := c.appendPathMountPath(config.NonceBlacklistFileName)
+	path := c.appendInternalMountPath(config.NonceBlacklistFileName)
 	return writeStringToFile(path, value)
 }
 
 func (c *Configuration) LoadPrivateKey() (string, error) {
-	path := c.appendPathMountPath(config.PrivateKeyFileName)
+	path := c.appendInternalMountPath(config.PrivateKeyFileName)
 	return c.CheckOrGenerateKeys(path)
 }

@@ -105,7 +105,7 @@ func writeStringToFile(path, value string) error {
 	return nil
 }
 
-func (c *Configuration) appendPathMountPath(path string) string {
+func (c *Configuration) appendInternalMountPath(path string) string {
 	return filepath.Join(c.InternalMountPath, path)
 }
 
