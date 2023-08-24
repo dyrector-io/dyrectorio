@@ -54,7 +54,7 @@ export default class AgentConnectionStrategy {
     const nodeId = token.sub
     if (request.id !== nodeId) {
       throw new CruxBadRequestException({
-        message: 'Id mismatch.',
+        message: 'Node id mismatch.',
       })
     }
 

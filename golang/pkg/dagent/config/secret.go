@@ -33,7 +33,8 @@ func (c *Configuration) CheckOrGenerateKeys(path string) (string, error) {
 		return "", fmt.Errorf("key file can't be read: %w", err)
 	}
 
-	// exists but expired -> migrate present keys?!
+	// NOTE(@m8vago): If we have a private key which is expired,
+	// should we generate a new one and rewrite the existing container secrets?
 	privateKeyObj, keyErr := crypto.NewKeyFromArmored(string(fileContent))
 
 	if keyErr != nil {

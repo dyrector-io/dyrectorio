@@ -103,7 +103,7 @@ func (c *CommonConfiguration) InjectPrivateKey(secrets SecretStore) error {
 
 func (c *CommonConfiguration) InjectGrpcToken(secrets SecretStore) error {
 	token, err := secrets.GetConnectionToken()
-	if err == nil && token != "" {
+	if token != "" {
 		c.JwtToken, err = ValidateJwtAndCheckNonceBlacklist(secrets, token)
 		if err == nil {
 			return nil
