@@ -13,6 +13,7 @@ import {
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   VolumeType,
+  ContainerPort,
 } from '@app/models/container'
 import * as yup from 'yup'
 
@@ -319,15 +320,27 @@ const markerRule = yup
   .nullable()
   .optional()
 
-const metricsRule = yup
-  .object()
-  .shape({
-    path: yup.string().nullable(),
-    port: portNumberRule.optional().nullable(),
-  })
-  .default({})
-  .nullable()
-  .optional()
+const createMetricsPortRule = (ports: ContainerPort[]) => {
+  if (!ports?.length) {
+    return portNumberRule.nullable().optional()
+  }
+
+  return portNumberRule.test('metric-port', '${path} is missing the external port definition', value =>
+    value && ports.length > 0 ? ports.some(it => it.external === value) : true,
+  )
+}
+
+const metricsRule = yup.mixed().when('ports', ([ports]) => {
+  return yup
+    .object()
+    .shape({
+      path: yup.string().nullable(),
+      port: createMetricsPortRule(ports),
+    })
+    .default({})
+    .nullable()
+    .optional()
+})
 
 const containerConfigBaseSchema = yup.object().shape({
   name: yup.string().required().matches(/^\S+$/g),

@@ -82,7 +82,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
   const externalPorts = config.ports?.filter(it => !!it.external) ?? []
 
   useEffect(() => {
-    if (config.metrics.enabled && !config.metrics.port && externalPorts.length > 0) {
+    if (config.metrics?.enabled && !config.metrics.port && externalPorts.length > 0) {
       onChange({
         metrics: {
           ...config.metrics,
