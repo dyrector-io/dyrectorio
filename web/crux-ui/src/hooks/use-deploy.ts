@@ -5,7 +5,6 @@ import { sendForm } from '@app/utils'
 import { Translate } from 'next-translate'
 import { NextRouter } from 'next/router'
 import { DyoConfirmationAction } from './use-confirmation'
-import { expect, test } from '@playwright/test'
 
 export type UseDeployOptions = {
   router: NextRouter

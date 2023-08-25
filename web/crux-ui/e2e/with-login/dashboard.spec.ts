@@ -1,6 +1,6 @@
 import { API_USERS_ME_PREFERENCES_ONBOARDING, ROUTE_PROFILE } from '@app/routes'
-import { expect, test } from '@playwright/test'
-// import { test } from '../utils/test.fixture'
+import { expect } from '@playwright/test'
+import { test } from '../utils/test.fixture'
 import { TEAM_ROUTES } from 'e2e/utils/common'
 
 test.describe('Onboarding', () => {
