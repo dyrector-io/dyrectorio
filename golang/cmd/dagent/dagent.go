@@ -22,7 +22,7 @@ func serve(cCtx *cli.Context) error {
 		log.Panic().Err(err).Msg("Failed to load configuration")
 	}
 
-	cfg.InjectPrivateKey(&cfg)
+	err = cfg.InjectPrivateKey(&cfg)
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed to load secrets private key")
 	}

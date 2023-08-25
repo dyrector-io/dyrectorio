@@ -56,7 +56,7 @@ func loadConfiguration() (*config.Configuration, *k8s.Secret, error) {
 	client := k8s.NewClient(cfg)
 	secretHandler := k8s.NewSecret(context.Background(), client)
 
-	cfg.InjectPrivateKey(secretHandler)
+	err = cfg.InjectPrivateKey(secretHandler)
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed to load private key")
 	}
