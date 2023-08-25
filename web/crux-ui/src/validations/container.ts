@@ -325,13 +325,14 @@ const createMetricsPortRule = (ports: ContainerPort[]) => {
     return portNumberRule.nullable().optional()
   }
 
+  // eslint-disable-next-line no-template-curly-in-string
   return portNumberRule.test('metric-port', '${path} is missing the external port definition', value =>
     value && ports.length > 0 ? ports.some(it => it.external === value) : true,
   )
 }
 
-const metricsRule = yup.mixed().when('ports', ([ports]) => {
-  return yup
+const metricsRule = yup.mixed().when('ports', ([ports]) =>
+  yup
     .object()
     .shape({
       path: yup.string().nullable(),
@@ -339,8 +340,8 @@ const metricsRule = yup.mixed().when('ports', ([ports]) => {
     })
     .default({})
     .nullable()
-    .optional()
-})
+    .optional(),
+)
 
 const containerConfigBaseSchema = yup.object().shape({
   name: yup.string().required().matches(/^\S+$/g),
