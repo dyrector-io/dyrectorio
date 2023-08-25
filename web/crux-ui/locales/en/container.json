@@ -126,12 +126,12 @@
     "metrics": "Metrics",
     "metricsPath": "Metrics path",
     "metricsPort": "Metrics port",
+    "noExternalPortsDefined": "No external ports defined.",
     "placeholders": {
       "headerName": "Header name",
       "cpuUsageExample": "10m",
       "memoryUsageExample": "512Mi",
-      "metricsPath": "/metrics",
-      "metricsPort": "80"
+      "metricsPath": "/metrics"
     }
   },
   "sensitiveKey": "Sensitive config data should be stored as secrets"
