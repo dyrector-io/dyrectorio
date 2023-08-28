@@ -1,11 +1,12 @@
 # dyrector.io platform maintainers
 
-| Name              | GitHub ID      | Scope                      |
-| ----------------- | -------------- | -------------------------- |
-| Mate Vago         | @m8vago        | Web (crux and crux-ui)     |
-| Nandor Magyar     | @nandor-magyar | Golang releated components |
-| Szilveszter Liszy | @c3ppc3pp      | CLI and CI pipelines       |
-| Levente Orban     | @polaroi8d     | Releases & Issues          |
+| Name       | GitHub ID      | Scope                      |
+| ---------- | -------------- | -------------------------- |
+| Mate       | @m8vago        | Web components             |
+| Bence      | @robot9706     | Web components             |
+| Nandor     | @nandor-magyar | Golang releated components |
+| @core-team | @core-team     | CLI and CI pipelines       |
+| Levente    | @polaroi8d     | Releases & Issues          |
 
 Please use [GitHub Issues](https://github.com/dyrector-io/dyrectorio/issues) for reporting non-security issues,
 and [GitHub Discussions](https://github.com/dyrector-io/dyrectorio/discussions)
