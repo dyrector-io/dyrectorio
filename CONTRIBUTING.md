@@ -13,16 +13,24 @@ If you're worried or don’t know where to start, check out our next section exp
 ## Development
 
 1. Run `make upd` in the repo's root folder.
-  - Save your `DATABASE_URL=<connection_string>` environment variable for later.
+
+-   Save your `DATABASE_URL=<connection_string>` environment variable for later.
+
 2. Go to the `web/crux` directory: `cd web/crux`
 3. Install dependencies `npm ci`
 4. Copy the _env.example_ file as _.env_ `cp .env.example .env`
-  - Paste `DATABASE_URL=<connection_string>` variable from step 1 to _.env_
+
+-   Paste `DATABASE_URL=<connection_string>` variable from step 1 to _.env_
+
 5. On Linux:
-  - Uncomment the `DNS_DEFAULT_RESULT_ORDER=ipv4first` line in the _.env_ file
-  - Change the `CRUX_AGENT_ADDRESS` variable's value to `172.17.0.1:5000`
+
+-   Uncomment the `DNS_DEFAULT_RESULT_ORDER=ipv4first` line in the _.env_ file
+-   Change the `CRUX_AGENT_ADDRESS` variable's value to `172.17.0.1:5000`
+
 6. On Mac / Windows you may have to edit your OS's hosts file to be sure the `host.docker.internal` domain resolves to docker's bridge network.
-  - Alternatively you can use your machine's LAN IP.
+
+-   Alternatively you can use your machine's LAN IP.
+
 7. Deploy the database with `npm run prisma:migrate`
 8. Start the backend with `npm run start`
 9. Go to the `web/crux-ui` directory: `cd web/crux-ui`
@@ -38,37 +46,50 @@ If you're worried or don’t know where to start, check out our next section exp
 Read more about the CLI in the [documentation](https://docs.dyrector.io/get-started/cli).
 
 ## Testing
+
 Unit tests:
-- In the `web/crux` or `web/crux-ui` folder respectively:
+
+-   In the `web/crux` or `web/crux-ui` folder respectively:
+
 1. Run `npm ci`.
 2. Start the tests with `npm run test`.
 
 End-to-end tests:
+
 1. Run `make upd` in the repo's root folder.
-  - Save your `DATABASE_URL=<connection_string>` environment variable for later.
+
+-   Save your `DATABASE_URL=<connection_string>` environment variable for later.
+
 2. Go to the `web/crux` directory: `cd web/crux`
 3. Install dependencies `npm ci`
 4. Build the package `npm run build`
 5. Copy the _env.example_ file as _.env_ `cp .env.example .env`
 6. On Linux:
-  - Uncomment the `DNS_DEFAULT_RESULT_ORDER=ipv4first` line in the _.env_ file
-  - Change the `CRUX_AGENT_ADDRESS` variable's value to `172.17.0.1:5000`
+
+-   Uncomment the `DNS_DEFAULT_RESULT_ORDER=ipv4first` line in the _.env_ file
+-   Change the `CRUX_AGENT_ADDRESS` variable's value to `172.17.0.1:5000`
+
 6. On Mac / Windows you may have to edit your OS's hosts file to be sure the `host.docker.internal` domain resolves to docker's bridge network.
-  - Alternatively you can use your machine's LAN IP.
+
+-   Alternatively you can use your machine's LAN IP.
+
 7. Deploy the database with `npm run prisma:migrate`
 8. Start the backend in production mode with `npm run start:prod`
 9. Repeat steps 3-5 in the `web/crux-ui` folder in a different terminal
 10. Start the frontend in production mode with `npm run start:prod`
 11. Be sure that `chromium` is installed on your system
-  - You may have to run `npx playwright install-deps`
-  - More info: https://playwright.dev/docs/intro
-  - Additional note: On some systems like Manjaro, `npx playwright install-deps` does not work 
+
+-   You may have to run `npx playwright install-deps`
+-   More info: https://playwright.dev/docs/intro
+-   Additional note: On some systems like Manjaro, `npx playwright install-deps` does not work
     (warning message: "your OS is not officially supported by Playwright").
     In this case, you can run `npm init playwright@latest` and when prompted with the question "Install Playwright operating system dependencies", choose "No".
     After that, for Manjaro, you need to separately install Playwright from the AUR repository with the package manager and everything works just fine.
+
 12. In a different terminal go to the `web/crux-ui` folder and run `npm run test:e2e`
-  - If you want to run a specific test file from the `web/crux-ui/e2e` folder you can do it with `DEBUG=1 npx playwright test <file_name>`
-  - If you want to open the inspector to see the tests running you can do it with `PWDEBUG=1 npx playwright test <file_name>`
+
+-   If you want to run a specific test file from the `web/crux-ui/e2e` folder you can do it with `DEBUG=1 npx playwright test <file_name>`
+-   If you want to open the inspector to see the tests running you can do it with `PWDEBUG=1 npx playwright test <file_name>`
 
 ## Changelog
 
@@ -80,13 +101,13 @@ make release
 
 ## Git branching strategy
 
-We have two persistent branches: main, develop. 
+We have two persistent branches: main, develop.
 PRs are going into develop.
 The develop branch is always fast-forward mergable to main.
 PR titles must follow the conventional commit guidelines.
 
 Release: a release commit is made to develop, package versions are bumped, develop is fast-forward merged into main.
-Hotfix: in rare occassions, a hotfix/** branch is created from main and the PR targets the main branch,
+Hotfix: in rare occassions, a hotfix/\*\* branch is created from main and the PR targets the main branch,
 develop must be rebased to main -- using rebase-onto.
 
 ## Submit a Pull Request
