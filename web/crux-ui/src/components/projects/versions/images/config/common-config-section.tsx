@@ -110,7 +110,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
 
   const onPortsChanged = (ports: ContainerConfigPort[]) => {
     const externalPorts = ports.filter(it => !!it.external)
-    const metricsPortGone = !!config.metrics.port && externalPorts.some(it => it.external === config.metrics.port)
+    const metricsPortGone = !!config.metrics?.port && externalPorts.some(it => it.external === config.metrics.port)
     onChange({
       ports,
       ...(metricsPortGone
