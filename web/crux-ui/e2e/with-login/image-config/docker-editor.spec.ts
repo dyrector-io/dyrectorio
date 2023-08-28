@@ -1,7 +1,7 @@
 import { expect, Page } from '@playwright/test'
 import { test } from '../../utils/test.fixture'
 import { TEAM_ROUTES } from 'e2e/utils/common'
-import { waitSocket, wsPatchSent } from 'e2e/utils/websocket'
+import { waitSocketRef, wsPatchSent } from 'e2e/utils/websocket'
 import {
   wsPatchMatchDockerLabel,
   wsPatchMatchLogConfig,
@@ -28,7 +28,7 @@ const setup = async (
 test.describe('Image docker config from editor', () => {
   test('Network mode should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'networkmode-editor', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
@@ -49,7 +49,7 @@ test.describe('Image docker config from editor', () => {
 
   test('Docker labels should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'dockerlabel-editor', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
@@ -75,7 +75,7 @@ test.describe('Image docker config from editor', () => {
 
   test('Restart policy should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'restartpolicy-editor', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
@@ -94,7 +94,7 @@ test.describe('Image docker config from editor', () => {
 
   test('Log config should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'logconfig-editor', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
@@ -123,7 +123,7 @@ test.describe('Image docker config from editor', () => {
 
   test('Networks should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'networks-editor', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock

@@ -11,7 +11,7 @@ import {
   createVersion,
   fillDeploymentPrefix,
 } from '../../utils/projects'
-import { waitSocket, wsPatchSent } from '../../utils/websocket'
+import { waitSocketRef as waitSocketRef, wsPatchSent } from '../../utils/websocket'
 
 const setup = async (
   page: Page,
@@ -120,7 +120,7 @@ test.describe('Versioned Project', () => {
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
     const imageId = await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock

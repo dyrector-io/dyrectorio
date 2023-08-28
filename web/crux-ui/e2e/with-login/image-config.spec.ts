@@ -2,7 +2,7 @@ import { expect, Page } from '@playwright/test'
 import { test } from '../utils/test.fixture'
 import { screenshotPath, TEAM_ROUTES } from '../utils/common'
 import { createImage, createProject, createVersion } from '../utils/projects'
-import { waitSocket, wsPatchSent } from '../utils/websocket'
+import { waitSocketRef, wsPatchSent } from '../utils/websocket'
 import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 
 const setup = async (
@@ -121,7 +121,7 @@ test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the config field', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'port-editor', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
@@ -154,7 +154,7 @@ test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the json editor', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'port-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock

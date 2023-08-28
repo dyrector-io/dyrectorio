@@ -189,7 +189,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       </Link>,
       item.prefix,
       <DeploymentStatusTag className="w-fit m-auto" status={item.status} />,
-      <>{utcDateToLocale(item.updatedAt)}</>,
+      <span suppressHydrationWarning>{utcDateToLocale(item.updatedAt)}</span>,
       <div className="flex justify-center">
         <Link className="mr-2 inline-block cursor-pointer" href={routes.deployment.details(item.id)} passHref>
           <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />

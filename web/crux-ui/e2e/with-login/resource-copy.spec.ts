@@ -1,5 +1,5 @@
 import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_INSTANCE } from '@app/models'
-import { expect } from '@playwright/test'
+import { expect, WebSocket } from '@playwright/test'
 import { test } from '../utils/test.fixture'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, waitForURLExcept } from 'e2e/utils/common'
 import { addPortsToContainerConfig } from 'e2e/utils/container-config'
@@ -14,7 +14,7 @@ import {
   deleteVersion,
   fillDeploymentPrefix,
 } from 'e2e/utils/projects'
-import { waitSocket } from 'e2e/utils/websocket'
+import { waitSocketRef } from 'e2e/utils/websocket'
 
 test.describe.configure({ mode: 'parallel' })
 
@@ -32,7 +32,7 @@ test.describe('Deleting default version', () => {
     await deleteVersion(page, projectId, defaultVersionId)
 
     await page.goto(TEAM_ROUTES.project.details(projectId))
-    await page.waitForSelector('h2:text-is("Projects")')
+    await page.waitForSelector('img[alt="Projects"]:right-of(h2:text-is("Projects"))')
 
     expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
@@ -54,7 +54,7 @@ test.describe('Deleting default version', () => {
     const defaultVersionId = await createVersion(page, projectId, defaultVersionName, 'Rolling')
     const defaultVersionImageId = await createImage(page, projectId, defaultVersionId, NGINX_TEST_IMAGE_WITH_TAG)
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(defaultVersionId, defaultVersionImageId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
@@ -180,10 +180,10 @@ test.describe('Deleting default version', () => {
       prefix,
     })
 
-    const sock = waitSocket(page)
+    const refWSPromise = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.deployment.details(defaultDeploymentId))
     await page.waitForSelector('h2:text-is("Deployments")')
-    const ws = await sock
+    const wsRef = await refWSPromise
 
     const instancesTableBody = await page.locator('.table-row-group')
     const instancesRows = await instancesTableBody.locator('.table-row')
@@ -199,7 +199,7 @@ test.describe('Deleting default version', () => {
 
     const internal = '1000'
     const external = '2000'
-    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_INSTANCE, internal, external)
+    await addPortsToContainerConfig(page, wsRef, wsRoute, WS_TYPE_PATCH_INSTANCE, internal, external)
 
     const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
 
@@ -282,7 +282,7 @@ test.describe("Deleting copied deployment's parent", () => {
     await addImageToVersion(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
     const { id: parentDeploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, { prefix })
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.deployment.details(parentDeploymentId))
     await page.waitForSelector('h2:text-is("Deployments")')
     const ws = await sock

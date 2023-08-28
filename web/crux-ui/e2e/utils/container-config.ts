@@ -1,11 +1,11 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { expect, Page, WebSocket } from '@playwright/test'
-import { wsPatchSent } from './websocket'
+import { expect, Page } from '@playwright/test'
+import { WebSocketRef, wsPatchSent } from './websocket'
 import { wsPatchMatchPorts } from './websocket-match'
 
 export const addPortsToContainerConfig = async (
   page: Page,
-  ws: WebSocket,
+  ws: WebSocketRef,
   wsRoute: string,
   sentWsType: string,
   internal: string,
