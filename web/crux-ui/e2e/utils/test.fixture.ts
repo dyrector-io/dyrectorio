@@ -7,7 +7,14 @@ const REQUEST_THROTTLE = process.env.REQUESTTHROTTLE
 
 export const test = base.extend({})
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page }, testInfo) => {
+  page.on('console', it => {
+    const type = it.type()
+    if (type === 'error' || type === 'warning' || type === 'trace') {
+      console.log(`[${testInfo.title}] ${type.toUpperCase()} ${it.text()}`)
+    }
+  })
+
   if (THROTTLE) {
     const client = await (page.context() as ChromiumBrowserContext).newCDPSession(page)
     await client.send('Emulation.setCPUThrottlingRate', { rate: CPU_THROTTLE ? Number.parseInt(CPU_THROTTLE) : 2 })

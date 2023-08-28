@@ -3,6 +3,7 @@ import { expect, Page } from '@playwright/test'
 import { ExecOptions } from 'child_process'
 import { DAGENT_NODE, execAsync, getExecOptions, logCmdOutput, screenshotPath, TEAM_ROUTES } from './common'
 import { fillDeploymentPrefix } from './projects'
+import { Readable } from 'stream'
 
 export const installDagent = async (page: Page) => {
   await page.goto(TEAM_ROUTES.node.list())
@@ -26,10 +27,17 @@ export const installDagent = async (page: Page) => {
   const commandInput = await page.locator('input[readonly]')
   const curl = await commandInput.inputValue()
 
+  const installOutput: string[] = []
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  await execAsync(curl, getInstallScriptExecSettings(), logCmdOutput(false))
+  await execAsync(curl, getInstallScriptExecSettings(), storeCmdOutput(installOutput))
 
-  await page.waitForSelector('div.bg-dyo-green')
+  try {
+    await page.waitForSelector('div.bg-dyo-green')
+  } catch (err) {
+    console.log('[E2E] Agent install failed, script output:')
+    installOutput.forEach(it => console.log(it))
+    throw err
+  }
 
   await page.screenshot({ path: screenshotPath('node-dagent-install-successful'), fullPage: true })
 }
@@ -137,3 +145,15 @@ const getInstallScriptExecSettings = (): ExecOptions => ({
         env: { ...process.env, ROOTLESS: 'true', PERSISTENCE_FOLDER: `${__dirname}/dagent` },
       }),
 })
+
+export const storeCmdOutput = (storage: string[]) => (err: Error, stdOut: string, stdErr: string) => {
+  storage.push(stdOut)
+
+  if (err) {
+    storage.push(`${err.message} at ${err.stack}`)
+  }
+
+  if (stdErr) {
+    storage.push(stdErr)
+  }
+}
