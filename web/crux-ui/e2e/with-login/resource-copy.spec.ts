@@ -183,6 +183,7 @@ test.describe('Deleting default version', () => {
     const sock = waitSocket(page)
     await page.goto(TEAM_ROUTES.deployment.details(defaultDeploymentId))
     await page.waitForSelector('h2:text-is("Deployments")')
+    const ws = await sock
 
     const instancesTableBody = await page.locator('.table-row-group')
     const instancesRows = await instancesTableBody.locator('.table-row')
@@ -194,7 +195,6 @@ test.describe('Deleting default version', () => {
     await settingsButton.click()
 
     await page.waitForSelector(`h2:has-text("Container")`)
-    const ws = await sock
     const wsRoute = TEAM_ROUTES.deployment.detailsSocket(defaultDeploymentId)
 
     const internal = '1000'
@@ -283,9 +283,9 @@ test.describe("Deleting copied deployment's parent", () => {
     const { id: parentDeploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, { prefix })
 
     const sock = waitSocket(page)
-
     await page.goto(TEAM_ROUTES.deployment.details(parentDeploymentId))
     await page.waitForSelector('h2:text-is("Deployments")')
+    const ws = await sock
 
     const instancesTableBody = await page.locator('.table-row-group')
     const instancesRows = await instancesTableBody.locator('.table-row')
@@ -298,7 +298,6 @@ test.describe("Deleting copied deployment's parent", () => {
     await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**/instances/**`)
     await page.waitForSelector('h2:text-is("Container")')
 
-    const ws = await sock
     const wsRoute = TEAM_ROUTES.deployment.detailsSocket(parentDeploymentId)
 
     const internal = '1000'

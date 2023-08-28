@@ -10,9 +10,16 @@ export const test = base.extend({})
 test.beforeEach(async ({ page }, testInfo) => {
   page.on('console', it => {
     const type = it.type()
-    if (type === 'error' || type === 'warning' || type === 'trace') {
-      console.log(`[${testInfo.title}] ${type.toUpperCase()} ${it.text()}`)
+    if (type !== 'error' && type !== 'warning' && type !== 'trace') {
+      return
     }
+
+    const text = it.text()
+    if (text.includes("Insecure WebSocket connection in production environment!")) {
+      return
+    }
+
+    console.log(`[${testInfo.title}] ${type.toUpperCase()} ${it.text()}`)
   })
 
   if (THROTTLE) {
