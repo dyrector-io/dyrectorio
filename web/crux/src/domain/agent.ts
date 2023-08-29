@@ -42,7 +42,7 @@ export type AgentOptions = {
   outdated: boolean
 }
 
-type AgentTokenReplacement = {
+export type AgentTokenReplacement = {
   startedBy: string
   token: AgentToken
   signedToken: string
@@ -433,7 +433,7 @@ export class Agent {
     const replacement = this.replacementToken
     const { token, signedToken } = replacement
 
-    this.connection.replaceToken(token, signedToken)
+    this.connection.onTokenReplaced(token, signedToken)
 
     this.replacementToken = null
     return replacement

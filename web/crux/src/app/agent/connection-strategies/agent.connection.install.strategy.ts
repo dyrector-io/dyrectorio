@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Agent } from 'src/domain/agent'
-import { AgentToken, generateAgentToken } from 'src/domain/agent-token'
+import { AgentToken } from 'src/domain/agent-token'
 import { NodeWithToken } from 'src/domain/node'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
@@ -23,8 +23,7 @@ export default class AgentConnectionInstallStrategy extends AgentConnectionStrat
       })
     }
 
-    const connToken = generateAgentToken(node.id, 'connection')
-    const signedConnToken = this.jwtService.sign(connToken)
+    const replacement = this.service.generateConnectionTokenFor(node.id, node.createdBy)
 
     const eventChannel = await this.service.getNodeEventsByTeam(node.teamId)
 
@@ -37,11 +36,7 @@ export default class AgentConnectionInstallStrategy extends AgentConnectionStrat
     await this.service.completeInstaller(installer)
 
     this.logger.verbose('Installer completed, replacing the install token.')
-    agent.replaceToken({
-      token: connToken,
-      signedToken: signedConnToken,
-      startedBy: installer.startedBy,
-    })
+    agent.replaceToken(replacement)
 
     return agent
   }

@@ -79,28 +79,30 @@ type ClientLoop struct {
 }
 
 type (
-	DeployFunc           func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
-	WatchFunc            func(context.Context, string) (*ContainerWatchContext, error)
-	DeleteFunc           func(context.Context, string, string) error
-	SecretListFunc       func(context.Context, string, string) ([]string, error)
-	SelfUpdateFunc       func(context.Context, *agent.AgentUpdateRequest, UpdateOptions) error
-	CloseFunc            func(context.Context, agent.CloseReason, UpdateOptions) error
-	ContainerCommandFunc func(context.Context, *common.ContainerCommandRequest) error
-	DeleteContainersFunc func(context.Context, *common.DeleteContainersRequest) error
-	ContainerLogFunc     func(context.Context, *agent.ContainerLogRequest) (*ContainerLogContext, error)
-	ReplaceTokenFunc     func(context.Context, *agent.ReplaceTokenRequest) error
+	DeployFunc               func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
+	WatchFunc                func(context.Context, string) (*ContainerWatchContext, error)
+	DeleteFunc               func(context.Context, string, string) error
+	SecretListFunc           func(context.Context, string, string) ([]string, error)
+	SelfUpdateFunc           func(context.Context, *agent.AgentUpdateRequest, UpdateOptions) error
+	GetSelfContainerNameFunc func(context.Context) (string, error)
+	CloseFunc                func(context.Context, agent.CloseReason, UpdateOptions) error
+	ContainerCommandFunc     func(context.Context, *common.ContainerCommandRequest) error
+	DeleteContainersFunc     func(context.Context, *common.DeleteContainersRequest) error
+	ContainerLogFunc         func(context.Context, *agent.ContainerLogRequest) (*ContainerLogContext, error)
+	ReplaceTokenFunc         func(context.Context, *agent.ReplaceTokenRequest) error
 )
 
 type WorkerFunctions struct {
-	Deploy           DeployFunc
-	Watch            WatchFunc
-	Delete           DeleteFunc
-	SecretList       SecretListFunc
-	SelfUpdate       SelfUpdateFunc
-	Close            CloseFunc
-	ContainerCommand ContainerCommandFunc
-	DeleteContainers DeleteContainersFunc
-	ContainerLog     ContainerLogFunc
+	Deploy               DeployFunc
+	Watch                WatchFunc
+	Delete               DeleteFunc
+	SecretList           SecretListFunc
+	SelfUpdate           SelfUpdateFunc
+	GetSelfContainerName GetSelfContainerNameFunc
+	Close                CloseFunc
+	ContainerCommand     ContainerCommandFunc
+	DeleteContainers     DeleteContainersFunc
+	ContainerLog         ContainerLogFunc
 }
 
 type contextKey int
@@ -268,7 +270,7 @@ func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 	case command.GetContainerLog() != nil:
 		go executeContainerLog(cl.Ctx, command.GetContainerLog(), cl.WorkerFuncs.ContainerLog)
 	case command.GetReplaceToken() != nil:
-		// should be sync?
+		// NOTE(@m8vago): should be sync?
 		cl.executeReplaceToken(command.GetReplaceToken())
 	default:
 		log.Warn().Msg("Unknown agent command")
@@ -291,8 +293,16 @@ func (cl *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 				log.Panic().Stack().Err(keyErr).Str("publicKey", publicKey).Msg("gRPC public key error")
 			}
 
+			containerName := ""
+			if cl.WorkerFuncs.GetSelfContainerName != nil {
+				containerName, err = cl.WorkerFuncs.GetSelfContainerName(cl.Ctx)
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to get the agent's container name")
+				}
+			}
+
 			stream, err = grpcConn.Client.Connect(
-				cl.Ctx, &agent.AgentInfo{Id: connParams.nodeID, Version: version.BuildVersion(), PublicKey: publicKey},
+				cl.Ctx, &agent.AgentInfo{Id: connParams.nodeID, Version: version.BuildVersion(), PublicKey: publicKey, ContainerName: &containerName},
 				grpc.WaitForReady(true),
 			)
 			if err != nil {

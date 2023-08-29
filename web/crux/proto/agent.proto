@@ -41,6 +41,7 @@ message AgentInfo {
   string id = 1;
   string version = 2;
   string publicKey = 3;
+  optional string containerName = 4;
 }
 
 message AgentCommand {

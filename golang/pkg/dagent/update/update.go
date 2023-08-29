@@ -119,6 +119,21 @@ func SelfUpdate(ctx context.Context, command *agent.AgentUpdateRequest, options 
 	return RewriteUpdateErrors(ExecuteSelfUpdate(ctx, cli, command, options))
 }
 
+func GetSelfContainerName(ctx context.Context) (string, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return "", err
+	}
+
+	container, err := utils.GetOwnContainer(ctx, cli)
+	if err != nil {
+		return "", err
+	}
+
+	name := container.Names[0]
+	return name, nil
+}
+
 func ExecuteSelfUpdate(ctx context.Context, cli client.APIClient, command *agent.AgentUpdateRequest, options grpc.UpdateOptions) error {
 	tag := command.Tag
 	timeoutSeconds := command.TimeoutSeconds
@@ -239,12 +254,15 @@ func RewriteUpdateErrors(err error) (newErr error) {
 	if errdefs.IsNotFound(err) || errdefs.IsUnknown(err) || client.IsErrNotFound(err) || strings.Contains(err.Error(), "manifest unknown") {
 		newErr = ErrUpdateImageNotFound
 	}
+
 	if errdefs.IsUnauthorized(err) {
 		newErr = ErrUpdateUnauthorized
 	}
+
 	log.Debug().Errs("update-errors", []error{err, newErr}).Msg("original and the rewritten error")
 	if newErr != nil {
 		return newErr
 	}
+
 	return err
 }

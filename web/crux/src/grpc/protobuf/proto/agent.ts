@@ -99,6 +99,7 @@ export interface AgentInfo {
   id: string
   version: string
   publicKey: string
+  containerName?: string | undefined
 }
 
 export interface AgentCommand {
@@ -383,6 +384,7 @@ export const AgentInfo = {
       id: isSet(object.id) ? String(object.id) : '',
       version: isSet(object.version) ? String(object.version) : '',
       publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
+      containerName: isSet(object.containerName) ? String(object.containerName) : undefined,
     }
   },
 
@@ -391,6 +393,7 @@ export const AgentInfo = {
     message.id !== undefined && (obj.id = message.id)
     message.version !== undefined && (obj.version = message.version)
     message.publicKey !== undefined && (obj.publicKey = message.publicKey)
+    message.containerName !== undefined && (obj.containerName = message.containerName)
     return obj
   },
 }

@@ -18,7 +18,7 @@ import {
   takeUntil,
 } from 'rxjs'
 import { coerce, major, minor } from 'semver'
-import { Agent, AgentConnectionMessage } from 'src/domain/agent'
+import { Agent, AgentConnectionMessage, AgentTokenReplacement } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { generateAgentToken } from 'src/domain/agent-token'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
@@ -45,6 +45,7 @@ import DeployService from '../deploy/deploy.service'
 import { DagentTraefikOptionsDto, NodeConnectionStatus, NodeScriptTypeDto } from '../node/node.dto'
 import AgentConnectionStrategyProvider from './agent.connection-strategy.provider'
 import { AgentKickReason } from './agent.dto'
+import AgentConnectionLegacyStrategy from './connection-strategies/agent.connection.legacy.strategy'
 
 @Injectable()
 export default class AgentService {
@@ -378,6 +379,40 @@ export default class AgentService {
     return Empty
   }
 
+  agentVersionSupported(version: string): boolean {
+    if (this.configService.get<string>('NODE_ENV') !== PRODUCTION) {
+      return true
+    }
+
+    if (!version.includes('-')) {
+      return false
+    }
+
+    const agentVersion = coerce(version)
+    if (!agentVersion) {
+      return false
+    }
+
+    const majorMinor = `${major(agentVersion)}.${minor(agentVersion)}`
+
+    return getAgentVersionFromPackage(this.configService) === majorMinor
+  }
+
+  getAgentImageTag() {
+    return this.configService.get<string>('CRUX_AGENT_IMAGE') ?? getAgentVersionFromPackage(this.configService)
+  }
+
+  generateConnectionTokenFor(nodeId: string, startedBy: string): AgentTokenReplacement {
+    const token = generateAgentToken(nodeId, 'connection')
+    const signedToken = this.jwtService.sign(token)
+
+    return {
+      signedToken,
+      token,
+      startedBy,
+    }
+  }
+
   private async onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === 'unreachable') {
       const storedAgent = this.agents.get(agent.id)
@@ -423,6 +458,14 @@ export default class AgentService {
     const strategy = this.connectionStrategies.select(connection)
     const agent = await strategy.execute(connection, request)
     this.logger.verbose('Connection strategy completed')
+
+    if (agent.id === AgentConnectionLegacyStrategy.LEGACY_NONCE) {
+      // self destruct message is already in the queue
+      // we just have to return the command channel
+
+      // command channel is already completed so no need for onDisconnected() call
+      return agent.onConnected(AgentConnectionLegacyStrategy.CONNECTION_STATUS_LISTENER)
+    }
 
     await this.onAgentConnectionStatusChange(agent, agent.outdated ? 'outdated' : 'connected')
 
@@ -473,28 +516,5 @@ export default class AgentService {
   private logServiceInfo(): void {
     this.logger.debug(`Agents: ${this.agents.size}`)
     this.agents.forEach(it => it.debugInfo(this.logger))
-  }
-
-  agentVersionSupported(version: string): boolean {
-    if (this.configService.get<string>('NODE_ENV') !== PRODUCTION) {
-      return true
-    }
-
-    if (!version.includes('-')) {
-      return false
-    }
-
-    const agentVersion = coerce(version)
-    if (!agentVersion) {
-      return false
-    }
-
-    const majorMinor = `${major(agentVersion)}.${minor(agentVersion)}`
-
-    return getAgentVersionFromPackage(this.configService) === majorMinor
-  }
-
-  getAgentImageTag() {
-    return this.configService.get<string>('CRUX_AGENT_IMAGE') ?? getAgentVersionFromPackage(this.configService)
   }
 }

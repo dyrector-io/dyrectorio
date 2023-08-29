@@ -72,11 +72,6 @@ export default class GrpcNodeConnection {
     return this.statusChannel.asObservable()
   }
 
-  replaceToken(token: AgentToken, signedToken: string) {
-    this.token = token
-    this.signedToken = signedToken
-  }
-
   getStringMetadataOrThrow(key: string): string {
     const value = this.metadata.getMap()[key]
     if (typeof value !== 'string') {
@@ -104,6 +99,11 @@ export default class GrpcNodeConnection {
     }
 
     return value
+  }
+
+  onTokenReplaced(token: AgentToken, signedToken: string) {
+    this.token = token
+    this.signedToken = signedToken
   }
 
   private onClose() {
