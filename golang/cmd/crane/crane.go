@@ -45,7 +45,7 @@ func main() {
 	}
 }
 
-func loadConfiguration() (*config.Configuration, *k8s.Secret, error) {
+func loadConfiguration() (*config.Configuration, *k8s.Secret) {
 	cfg := &config.Configuration{}
 
 	err := util.ReadConfig(cfg)
@@ -67,30 +67,23 @@ func loadConfiguration() (*config.Configuration, *k8s.Secret, error) {
 	}
 
 	log.Info().Msg("Configuration loaded.")
-	return cfg, secretHandler, nil
+	return cfg, secretHandler
 }
 
 func serve(cCtx *cli.Context) error {
-	cfg, secretHandler, err := loadConfiguration()
-	if err != nil {
-		log.Error().Err(err).Msg("Startup error")
-		return err
-	}
+	cfg, secretHandler := loadConfiguration()
 
 	crane.Serve(cfg, secretHandler)
 	return nil
 }
 
 func initKey(cCtx *cli.Context) error {
-	cfg, secretHandler, err := loadConfiguration()
-	if err != nil {
-		return err
-	}
+	cfg, secretHandler := loadConfiguration()
 
 	client := k8s.NewClient(cfg)
 	namespace := cfg.Namespace
 	namespaceHandler := k8s.NewNamespaceClient(cCtx.Context, namespace, client)
-	err = namespaceHandler.EnsureExists(namespace)
+	err := namespaceHandler.EnsureExists(namespace)
 	if err != nil {
 		log.Error().Err(err).Send()
 		return err

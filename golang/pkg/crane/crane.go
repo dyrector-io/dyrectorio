@@ -38,7 +38,7 @@ func Serve(cfg *config.Configuration, secretStore commonConfig.SecretStore) {
 
 	grpcParams := grpc.TokenToConnectionParams(cfg.JwtToken)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
-	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
+	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, &grpc.WorkerFunctions{
 		Deploy:           k8s.Deploy,
 		Watch:            crux.WatchDeploymentsByPrefix,
 		Delete:           k8s.Delete,

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -108,8 +107,8 @@ type WorkerFunctions struct {
 type contextKey int
 
 const (
-	contextConfigKey     contextKey = 0
-	contextMetadataToken            = "dyo-node-token"
+	contextConfigKey        contextKey = 0
+	contextMetadataKeyToken            = "dyo-node-token" // #nosec G101
 )
 
 func TokenToConnectionParams(grpcToken *config.ValidJWT) *ConnectionParams {
@@ -171,7 +170,7 @@ func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool,
 func Init(grpcContext context.Context,
 	connParams *ConnectionParams,
 	appConfig *config.CommonConfiguration,
-	workerFuncs WorkerFunctions,
+	workerFuncs *WorkerFunctions,
 	secrets config.SecretStore,
 ) {
 	log.Info().Msg("Spinning up gRPC Agent client...")
@@ -184,7 +183,7 @@ func Init(grpcContext context.Context,
 		cancel:      cancel,
 		AppConfig:   appConfig,
 		Ctx:         ctx,
-		WorkerFuncs: workerFuncs,
+		WorkerFuncs: *workerFuncs,
 		Secrets:     secrets,
 	}
 
@@ -193,7 +192,7 @@ func Init(grpcContext context.Context,
 		log.Warn().Err(err).Msg("Failed to start serving health")
 	}
 
-	loop.Ctx = metadata.AppendToOutgoingContext(loop.Ctx, contextMetadataToken, connParams.token)
+	loop.Ctx = metadata.AppendToOutgoingContext(loop.Ctx, contextMetadataKeyToken, connParams.token)
 
 	if grpcConn.Conn == nil {
 		var creds credentials.TransportCredentials
@@ -271,7 +270,10 @@ func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 		go executeContainerLog(cl.Ctx, command.GetContainerLog(), cl.WorkerFuncs.ContainerLog)
 	case command.GetReplaceToken() != nil:
 		// NOTE(@m8vago): should be sync?
-		cl.executeReplaceToken(command.GetReplaceToken())
+		err := cl.executeReplaceToken(command.GetReplaceToken())
+		if err != nil {
+			log.Error().Err(err).Msg("Token replacement failed")
+		}
 	default:
 		log.Warn().Msg("Unknown agent command")
 	}
@@ -321,29 +323,8 @@ func (cl *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 		if err != nil {
 			s := status.Convert(err)
 			if s != nil && (s.Code() == codes.Unauthenticated || s.Code() == codes.PermissionDenied || s.Code() == codes.NotFound) {
-				if cl.AppConfig.JwtToken.Type == config.Connection {
-					log.Error().Err(err).Msg("Invalid connection token. Removing")
-
-					// overwrite JWT token
-					err = cl.Secrets.SaveConnectionToken("")
-					if err != nil {
-						log.Err(err).Msg("Failed to delete the invalid connection token. Exiting")
-
-						os.Exit(1)
-						return
-					}
-
-				} else {
-					log.Error().Err(err).Msg("Invalid install token. Blacklisting nonce")
-					err = cl.Secrets.BlacklistNonce(cl.AppConfig.JwtToken.Nonce)
-					if err != nil {
-						log.Error().Err(err).Msg("Failed to blacklist the install token")
-					}
-
-					log.Debug().Msg("Exiting")
-					os.Exit(1)
-					return
-				}
+				cl.handleGrpcTokenError(err)
+				break
 			}
 
 			grpcConn.Client = nil
@@ -361,6 +342,25 @@ func (cl *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 		}
 
 		cl.grpcProcessCommand(command)
+	}
+}
+
+func (cl *ClientLoop) handleGrpcTokenError(err error) {
+	if cl.AppConfig.JwtToken.Type == config.Connection {
+		log.Error().Err(err).Msg("Invalid connection token. Removing")
+
+		// overwrite JWT token
+		err = cl.Secrets.SaveConnectionToken("")
+		if err != nil {
+			log.Err(err).Msg("Failed to delete the invalid connection token")
+		}
+	} else {
+		log.Error().Err(err).Msg("Invalid install token. Blacklisting nonce")
+
+		err = cl.Secrets.BlacklistNonce(cl.AppConfig.JwtToken.Nonce)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to blacklist the install token")
+		}
 	}
 }
 
@@ -858,9 +858,9 @@ func (cl *ClientLoop) executeReplaceToken(command *agent.ReplaceTokenRequest) er
 
 	md, ok := metadata.FromOutgoingContext(cl.Ctx)
 	if !ok {
-		md = metadata.Pairs(contextMetadataToken, command.GetToken())
+		md = metadata.Pairs(contextMetadataKeyToken, command.GetToken())
 	} else {
-		md.Set(contextMetadataToken, command.GetToken())
+		md.Set(contextMetadataKeyToken, command.GetToken())
 	}
 
 	cl.Ctx = metadata.NewOutgoingContext(cl.Ctx, md)
