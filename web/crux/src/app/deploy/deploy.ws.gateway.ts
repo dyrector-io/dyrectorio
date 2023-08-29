@@ -221,7 +221,6 @@ export default class DeployWebSocketGateway {
   async patchDeploymentEnvironment(
     @DeploymentId() deploymentId: string,
     @SocketMessage() message: PatchDeploymentEnvMessage,
-    @IdentityFromSocket() identity: Identity,
     @SocketClient() client: WsClient,
     @SocketSubscription() subscription: WsSubscription,
   ): Promise<WsMessage<null>> {
@@ -230,7 +229,7 @@ export default class DeployWebSocketGateway {
       configBundleIds: message.configBundleIds,
     }
 
-    await this.service.patchDeployment(deploymentId, cruxReq, identity)
+    await this.service.patchDeployment(deploymentId, cruxReq)
 
     const configBundleEnvironment = await this.service.getConfigBundleEnvironmentsById(deploymentId)
 

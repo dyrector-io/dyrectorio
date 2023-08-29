@@ -278,7 +278,7 @@ export default class DeployService {
     return this.mapper.toDto(deployment)
   }
 
-  async patchDeployment(deploymentId: string, req: PatchDeploymentDto, identity: Identity): Promise<void> {
+  async patchDeployment(deploymentId: string, req: PatchDeploymentDto): Promise<void> {
     if (req.configBundleIds) {
       const connections = await this.prisma.deployment.findFirst({
         where: {
