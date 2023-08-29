@@ -325,7 +325,6 @@ export default class DeployService {
             data: toConnect.map(it => ({
               deploymentId,
               configBundleId: it,
-              teamId: updatedDeployment.version.project.teamId,
             })),
           })
 

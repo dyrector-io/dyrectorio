@@ -27,7 +27,6 @@ model Team {
   notifications             Notification[]
   storages                  Storage[]
   configBundles             ConfigBundle[]
-  configBundleOnDeployments ConfigBundleOnDeployments[]
 }
 
 model Token {
@@ -551,11 +550,8 @@ model ConfigBundleOnDeployments {
   deployment   Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
   deploymentId String     @db.Uuid
 
-  configBundle   ConfigBundle @relation(fields: [configBundleId], references: [id])
+  configBundle   ConfigBundle @relation(fields: [configBundleId], references: [id], onDelete: Cascade)
   configBundleId String       @db.Uuid
-
-  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  teamId String @db.Uuid
 
   @@id([deploymentId, configBundleId])
 }

@@ -13,7 +13,10 @@ interface DyoCheckboxProps {
 const DyoCheckbox = (props: DyoCheckboxProps) => {
   const { className, name, checked, setFieldValue, onCheckedChange } = props
 
-  const handleCheckedChange = (isChecked: boolean, event: any) => {
+  const handleCheckedChange = (
+    isChecked: boolean,
+    event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.ChangeEvent<HTMLInputElement>,
+  ) => {
     setFieldValue?.call(this, name, isChecked, false)
     onCheckedChange?.call(this, isChecked, event)
   }

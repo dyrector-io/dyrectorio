@@ -32,7 +32,7 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
 
   const onWsError = (error: Error) => {
     // eslint-disable-next-line
-    console.error('ws', 'edit-deployment', error)
+    console.error('ws', 'edit-config-bundle', error)
     toast(t('errors:connectionLost'))
   }
 
