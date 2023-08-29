@@ -4,17 +4,17 @@ File for all the secret key file parsing and initializiation
 package config
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/rs/zerolog/log"
 )
 
-type NonceBlacklistedError struct{}
-
-func (m *NonceBlacklistedError) Error() string {
-	return "nonce is blacklisted"
-}
+var (
+	ErrNonceBlacklisted    = errors.New("nonce is blacklisted")
+	ErrNoGrpcTokenProvided = errors.New("no grpc token provided")
+)
 
 type SecretStore interface {
 	CheckPermissions() error
@@ -85,7 +85,7 @@ func ValidateJwtAndCheckNonceBlacklist(secrets SecretStore, unvalidatedToken str
 	}
 
 	if blacklistedNonce != "" && token.Nonce == blacklistedNonce {
-		return nil, &NonceBlacklistedError{}
+		return nil, ErrNonceBlacklisted
 	}
 
 	return token, nil
@@ -116,7 +116,7 @@ func (c *CommonConfiguration) InjectGrpcToken(secrets SecretStore) error {
 	}
 
 	if token == "" {
-		return fmt.Errorf("no token provided")
+		return ErrNoGrpcTokenProvided
 	}
 
 	c.JwtToken, err = ValidateJwtAndCheckNonceBlacklist(secrets, token)
