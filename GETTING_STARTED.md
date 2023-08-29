@@ -3,6 +3,7 @@
 Our CLI tool lets you run and manage the entire, fully functional stack for development purposes.
 
 Stack:
+
 -   UI Service (crux-ui)
 -   Backend Service (crux)
 -   PostgreSQL database

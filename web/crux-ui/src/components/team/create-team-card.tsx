@@ -62,7 +62,6 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
           grow
           name="name"
           type="text"
-          required
           label={t('common:name')}
           onChange={e => {
             const { value } = e.target
@@ -79,7 +78,6 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
           grow
           name="slug"
           type="text"
-          required
           label={t('common:slug')}
           onChange={formik.handleChange}
           value={formik.values.slug}

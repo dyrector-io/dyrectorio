@@ -198,8 +198,9 @@ const createOverlapTest = (
       : true,
   )
 
-const portConfigRule = yup.mixed().when('portRanges', portRanges => {
-  if (!portRanges) {
+// note: here yup passes reference as array
+const portConfigRule = yup.mixed().when('portRanges', ([portRanges]) => {
+  if (!portRanges?.length) {
     return yup
       .array(
         yup.object().shape({
