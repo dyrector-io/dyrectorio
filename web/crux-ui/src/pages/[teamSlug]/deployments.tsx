@@ -16,6 +16,7 @@ import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import { auditFieldGetter, dateSort, enumSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   Deployment,
@@ -39,6 +40,7 @@ interface DeploymentsPageProps {
 }
 
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
+type DeploymentSorting = 'project' | 'version' | 'node' | 'prefix' | 'updatedAt' | 'status'
 
 const DeploymentsPage = (props: DeploymentsPageProps) => {
   const { deployments: propsDeployments } = props
@@ -96,6 +98,25 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
       enumFilterFor<Deployment, DeploymentStatus>(it => [it.status]),
     ],
     initialData: deployments,
+  })
+
+  const sorting = useSorting<Deployment, DeploymentSorting>(filters.filtered, {
+    initialField: 'updatedAt',
+    initialDirection: 'asc',
+    sortFunctions: {
+      project: stringSort,
+      version: stringSort,
+      node: stringSort,
+      prefix: stringSort,
+      updatedAt: dateSort,
+      status: enumSort(DEPLOYMENT_STATUS_VALUES),
+    },
+    fieldGetters: {
+      project: it => it.project.name,
+      version: it => it.version.name,
+      node: it => it.node.name,
+      updatedAt: auditFieldGetter,
+    },
   })
 
   useEffect(() => filters.setItems(deployments), [deployments])
@@ -226,12 +247,24 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           </Filters>
           <DyoCard className="relative mt-4">
             <DyoList
-              headers={[...headers.map(h => t(h)), '']}
+              headers={[...headers, '']}
               headerClassName={headerClasses}
               itemClassName={itemClasses}
-              data={filters.filtered}
+              data={sorting.items}
               noSeparator
               itemBuilder={itemTemplate}
+              headerBuilder={sortHeaderBuilder<Deployment, DeploymentSorting>(
+                sorting,
+                {
+                  'common:project': 'project',
+                  'common:version': 'version',
+                  'common:node': 'node',
+                  'common:prefix': 'prefix',
+                  'common:updatedAt': 'updatedAt',
+                  'common:status': 'status',
+                },
+                text => t(text),
+              )}
               cellClick={onCellClick}
             />
           </DyoCard>
