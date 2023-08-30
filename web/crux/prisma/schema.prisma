@@ -252,6 +252,7 @@ model ContainerConfig {
   customHeaders      Json?
   annotations        Json?
   labels             Json?
+  metrics            Json?
 
   image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId String @unique @db.Uuid
@@ -351,6 +352,7 @@ model InstanceContainerConfig {
   customHeaders      Json?
   annotations        Json?
   labels             Json?
+  metrics            Json?
 
   instance Instance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
   storage  Storage? @relation(fields: [storageId], references: [id], onDelete: Cascade)

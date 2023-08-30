@@ -259,6 +259,7 @@ describe('DeployMapper', () => {
         type: 'mem',
       },
     ],
+    metrics: null,
   }
 
   const fullInstance: InstanceContainerConfigData = {
@@ -481,6 +482,7 @@ describe('DeployMapper', () => {
         type: 'rwo',
       },
     ],
+    metrics: null,
   }
 
   const generateUndefinedInstance = (): InstanceContainerConfigData => {
