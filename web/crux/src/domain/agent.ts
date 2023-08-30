@@ -34,6 +34,7 @@ import AgentUpdate, { AgentUpdateOptions, AgentUpdateResult } from './agent-upda
 import ContainerLogStream, { ContainerLogStreamCompleter } from './container-log-stream'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
 import Deployment from './deployment'
+import { BufferedSubject } from './utils'
 
 export type AgentOptions = {
   eventChannel: Subject<AgentConnectionMessage>
@@ -51,7 +52,7 @@ export type AgentTokenReplacement = {
 export class Agent {
   public static SECRET_TIMEOUT = 5000
 
-  private readonly commandChannel = new ReplaySubject<AgentCommand>()
+  private readonly commandChannel = new BufferedSubject<AgentCommand>()
 
   private deployments: Map<string, Deployment> = new Map()
 
