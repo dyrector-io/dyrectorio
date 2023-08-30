@@ -89,6 +89,7 @@ export default class ImageMapper {
       capabilities: toPrismaJson(config.capabilities),
       annotations: toPrismaJson(config.annotations),
       labels: toPrismaJson(config.labels),
+      metrics: toPrismaJson(config.metrics),
     }
   }
 

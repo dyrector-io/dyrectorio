@@ -1,4 +1,5 @@
 import { ContainerConfigPortRangeDto } from 'src/app/container/container.dto'
+import { ContainerPort } from 'src/app/node/node.dto'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 import { UID_MAX } from 'src/shared/const'
 import * as yup from 'yup'
@@ -322,6 +323,29 @@ const uniqueSecretKeyValuesSchema = yup
   .ensure()
   .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
 
+const createMetricsPortRule = (ports: ContainerPort[]) => {
+  if (!ports?.length) {
+    return portNumberOptionalRule.nullable().optional()
+  }
+
+  // eslint-disable-next-line no-template-curly-in-string
+  return portNumberOptionalRule.test('metric-port', '${path} is missing the external port definition', value =>
+    value && ports.length > 0 ? ports.some(it => it.external === value) : true,
+  )
+}
+
+const metricsRule = yup.mixed().when('ports', ([ports]) =>
+  yup
+    .object()
+    .shape({
+      path: yup.string().nullable(),
+      port: createMetricsPortRule(ports),
+    })
+    .default({})
+    .nullable()
+    .optional(),
+)
+
 export const containerConfigSchema = yup.object().shape({
   name: yup.string().required().matches(/^\S+$/g),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
@@ -358,6 +382,7 @@ export const containerConfigSchema = yup.object().shape({
   resourceConfig: resourceConfigRule,
   annotations: markerRule,
   labels: markerRule,
+  metrics: metricsRule,
 })
 
 export const instanceContainerConfigSchema = yup.object().shape({
@@ -396,6 +421,7 @@ export const instanceContainerConfigSchema = yup.object().shape({
   resourceConfig: resourceConfigRule.nullable(),
   annotations: markerRule.nullable(),
   labels: markerRule.nullable(),
+  metrics: metricsRule,
 })
 
 export const deploymentSchema = yup.object({
