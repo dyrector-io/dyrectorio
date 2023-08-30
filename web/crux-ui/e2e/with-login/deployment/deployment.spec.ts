@@ -12,6 +12,8 @@ import {
   createVersion,
   fillDeploymentPrefix,
 } from '../../utils/projects'
+import { createConfigBundle } from 'e2e/utils/config-bundle'
+import { waitSocket, waitSocketReceived } from 'e2e/utils/websocket'
 import { deploy } from 'e2e/utils/node-helper'
 
 const setup = async (
@@ -134,7 +136,7 @@ test('Select specific instances to deploy', async ({ page }) => {
   const instanceBody = await page.locator('.table-row-group')
   const instanceRow = await instanceBody.locator('.table-row')
 
-  await instanceRow.nth(1).locator('img[alt="check"]').click()
+  await instanceRow.locator('img[alt="check"]:left-of(div:text-is("busybox"))').click()
 
   await deploy(page, deploymentId, false, false)
 
@@ -154,4 +156,44 @@ test('Select specific instances to deploy', async ({ page }) => {
   const nodeContainerRow = await containerBody.locator('.table-row')
 
   await expect(nodeContainerRow).toHaveCount(1)
+})
+
+test('Incremental versions should keep config bundle environments after a successful deployment', async ({ page }) => {
+  const bundleName = 'IncrementalConfigBundle'
+  const projectName = 'IncrementalConfigBundleProject'
+  const versionName = '1.0.0'
+
+  const BUNDLE_ENV = 'BUNDLE_ENV'
+  const BUNDLE_VALUE = 'BUNDLE_VALUE'
+
+  await createConfigBundle(page, bundleName, {
+    [BUNDLE_ENV]: BUNDLE_VALUE,
+  })
+
+  const projectId = await createProject(page, projectName, 'versioned')
+  const versionId = await createVersion(page, projectId, versionName, 'Incremental')
+
+  await addImageToVersion(page, projectId, versionId, 'nginx')
+
+  const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE)
+
+  await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+  const ws = await waitSocket(page) // We usually have to put this before a navigation, but in this case that just doesn't work
+
+  const wsRoute = TEAM_ROUTES.deployment.detailsSocket(deploymentId)
+  const wsPatchReceived = waitSocketReceived(ws, wsRoute, WS_TYPE_PATCH_RECEIVED)
+
+  await page.click('label:text-is("None"):right-of(label:text-is("Config bundle"))')
+  await page.click(`label:text-is("${bundleName}"):below(label:text-is("None"))`)
+
+  await wsPatchReceived
+
+  await deploy(page, deploymentId, false, false)
+
+  await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+
+  await expect(page.locator('label:text-is("None"):right-of(label:text-is("Config bundle"))')).toHaveCount(1)
+
+  await expect(page.locator('input[placeholder="Key"]').first()).toHaveValue(BUNDLE_ENV)
+  await expect(page.locator('input[placeholder="Value"]').first()).toHaveValue(BUNDLE_VALUE)
 })

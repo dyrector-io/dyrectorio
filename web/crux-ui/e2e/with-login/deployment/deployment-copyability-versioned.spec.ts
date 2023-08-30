@@ -139,7 +139,7 @@ test.describe('Versioned Project', () => {
         args: [],
         name: 'sleep',
         image: 'alpine:3.14',
-        command: ['sleep', '2'],
+        command: ['sleep', '20'],
         volumes: [],
         environment: {},
         useParentConfig: false,

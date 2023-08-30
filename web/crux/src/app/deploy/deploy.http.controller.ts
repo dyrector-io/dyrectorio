@@ -195,9 +195,8 @@ export default class DeployHttpController {
     @TeamSlug() _: string,
     @DeploymentId() deploymentId: string,
     @Body() request: PatchDeploymentDto,
-    @IdentityFromRequest() identity: Identity,
   ): Promise<void> {
-    await this.service.patchDeployment(deploymentId, request, identity)
+    await this.service.patchDeployment(deploymentId, request)
   }
 
   @Patch(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)

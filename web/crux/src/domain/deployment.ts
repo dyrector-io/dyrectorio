@@ -15,7 +15,7 @@ import {
   containerStateToJSON,
   deploymentStatusToJSON,
 } from 'src/grpc/protobuf/proto/common'
-import { ContainerState, MergedContainerConfigData } from './container'
+import { ContainerState, MergedContainerConfigData, UniqueKeyValue } from './container'
 
 export type DeploymentProgressContainerEvent = {
   instanceId: string
@@ -124,6 +124,7 @@ export default class Deployment {
     private readonly request: VersionDeployRequest,
     public notification: DeploymentNotification,
     public mergedConfigs: Map<string, MergedContainerConfigData>,
+    public sharedEnvironment: UniqueKeyValue[],
     public readonly tries: number,
   ) {
     this.id = request.id

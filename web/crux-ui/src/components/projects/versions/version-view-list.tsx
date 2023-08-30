@@ -12,11 +12,14 @@ import Link from 'next/link'
 import { useState } from 'react'
 import EditImageTags from './images/edit-image-tags'
 import { selectTagsOfImage, VerionState, VersionActions } from './use-version-state'
+import { dateSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 
 interface VersionViewListProps {
   state: VerionState
   actions: VersionActions
 }
+
+type VersionImageSorting = 'containerName' | 'registry' | 'imageTag' | 'createdAt'
 
 const VersionViewList = (props: VersionViewListProps) => {
   const { state, actions } = props
@@ -26,6 +29,22 @@ const VersionViewList = (props: VersionViewListProps) => {
 
   const [deleteModal, confirmDelete] = useConfirmation()
   const [tagsModalTarget, setTagsModalTarget] = useState<VersionImage>(null)
+
+  const sorting = useSorting<VersionImage, VersionImageSorting>(state.version.images, {
+    initialField: 'containerName',
+    initialDirection: 'asc',
+    sortFunctions: {
+      containerName: stringSort,
+      registry: stringSort,
+      imageTag: stringSort,
+      createdAt: dateSort,
+    },
+    fieldGetters: {
+      containerName: it => it.config.name,
+      registry: it => it.registry.name,
+      imageTag: it => `${it.name}${it.tag ? `:${it.tag}` : null}`,
+    },
+  })
 
   const columnWidths = ['', 'w-3/12', 'w-2/12', 'w-3/12', 'w-28']
   const headers = ['containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions']
@@ -103,13 +122,23 @@ const VersionViewList = (props: VersionViewListProps) => {
     <>
       <DyoCard className="relative mt-4">
         <DyoList
-          headers={[...headers.map(h => t(h))]}
+          headers={headers}
           headerClassName={headerClasses}
           columnWidths={columnWidths}
           itemClassName={itemClasses}
-          data={state.version.images}
+          data={sorting.items}
           noSeparator
           itemBuilder={itemTemplate}
+          headerBuilder={sortHeaderBuilder<VersionImage, VersionImageSorting>(
+            sorting,
+            {
+              containerName: 'containerName',
+              'common:registry': 'registry',
+              imageTag: 'imageTag',
+              'common:createdAt': 'createdAt',
+            },
+            text => t(text),
+          )}
         />
       </DyoCard>
 

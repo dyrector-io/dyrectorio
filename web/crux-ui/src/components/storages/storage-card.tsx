@@ -22,7 +22,7 @@ const StorageCard = (props: StorageCardProps) => {
   const title = (
     <div className="flex flex-row">
       {!storage.icon ? (
-        <DyoIcon src="/default_storage.svg" size="md" alt={t('altDefaultStoragePicture')} />
+        <DyoIcon src="/storage.svg" size="md" alt={t('altDefaultStoragePicture')} />
       ) : (
         <DyoBadge large icon={storage.icon} />
       )}
