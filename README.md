@@ -38,21 +38,25 @@ You have various options to set up the platform right away:
 
 ## 🌊 Use cases
 
-#### 🚢 Container utilization without commands
+#### 🚢 Manage environments without SSH or kubectl
 
-Interact with containers in Docker, Podman & Kubernetes without any experience to these technologies. Deploy, start, stop, and restart containers running locally or in remote infrastructures via the platform.
+Replace multiple tools with a single platform that allows you to manage your entire infrastructure and the containerized applications that run on it. You're also able to initiate deployments to multiple environments simultaneously instead of repeated, manual processes.
 
-#### ⛴️ Configuration Abstractions & JSON editing
+#### ⛴️ Instant test environments for QA
 
-Configuration screen lets you to filter out the unnecessary common, Docker or Kubernetes variables to avoid misconfiguration. JSON editing is still available.
+QA no longer needs help to test your services. Empower QA to independently configure and deploy different versions of microservices to a test environment on their own. They can turn even their own local machine or any remote infrastructure they have access to, into a test environment.
 
-#### ⛵️ Multi-Instance Deployments
+#### ⛵️ Container management across environments
 
-Trigger deployments of the same stack to multiple environments from one interface using the same or various configurations.
+Whether you're a developer or an indie hacker, bring your own infrastructure and manage all of your containers and applications from one place while our software is running either as a SaaS or on your infrastructure.
 
-#### 🛳️ Instant sandbox environments
+#### 🛳️ CD & Version Management
 
-Turn your local setup into a test & demo environment by deploying your container to it via the platform.
+Bring transparency to your SDLC by configuring versions and deployments of your containerized stack from any registry using our platform. Automate your deployments by generating a CD token you can use with GitHub Actions and turn deployments painless and effortless while you can focus more on the development of your software.
+
+#### 🛠️ Manage container settings without access
+
+Editing container settings no longer requires direct access or expertise in JSON formatting. Our platform provides a user-friendly JSON editor, enabling you to modify settings without accessing the containers. In case of deployment issues, you can easily make necessary adjustments using the platform's config editor screen. Additionally, you can create bundle configurations to avoid manual configuration for each container.
 
 ## Demo
 
