@@ -4,6 +4,7 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus'
 import { LoggerModule } from 'nestjs-pino'
 import AgentModule from './app/agent/agent.module'
 import AuditModule from './app/audit/audit.module'
+import ConfigBundleModule from './app/config.bundle/config.bundle.module'
 import DashboardModule from './app/dashboard/dashboard.module'
 import DeployModule from './app/deploy/deploy.module'
 import HealthModule from './app/health/health.module'
@@ -39,6 +40,7 @@ const imports = [
   TemplateModule,
   DashboardModule,
   StorageModule,
+  ConfigBundleModule,
   ConfigModule.forRoot(appConfig),
   EmailModule,
   {

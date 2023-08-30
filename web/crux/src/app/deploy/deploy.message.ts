@@ -1,6 +1,6 @@
 import { InstanceContainerConfigData, UniqueKeyValue } from 'src/domain/container'
 import { ImageConfigProperty } from '../image/image.const'
-import { DeploymentEventDto, InstanceDetails, InstanceDto } from './deploy.dto'
+import { DeploymentEventDto, EnvironmentToConfigBundleNameMap, InstanceDetails, InstanceDto } from './deploy.dto'
 
 export const WS_TYPE_FETCH_DEPLOYMENT_EVENTS = 'fetch-deployment-events'
 
@@ -25,10 +25,17 @@ export type InstanceUpdatedMessage = InstanceContainerConfigData & {
 }
 
 export const WS_TYPE_PATCH_DEPLOYMENT_ENV = 'patch-deployment-env'
-export type PatchDeploymentEnvMessage = UniqueKeyValue[]
+export type PatchDeploymentEnvMessage = {
+  environment?: UniqueKeyValue[]
+  configBundleIds?: string[]
+}
 
 export const WS_TYPE_DEPLOYMENT_ENV_UPDATED = 'deployment-env-updated'
-export type DeploymentEnvUpdatedMessage = UniqueKeyValue[]
+export type DeploymentEnvUpdatedMessage = {
+  environment?: UniqueKeyValue[]
+  configBundleIds?: string[]
+  configBundleEnvironment?: EnvironmentToConfigBundleNameMap
+}
 
 export const WS_TYPE_GET_INSTANCE = 'get-instance'
 export type GetInstanceMessage = {

@@ -1,4 +1,4 @@
-import { ROUTE_PROFILE } from '@app/routes'
+import { API_USERS_ME_PREFERENCES_ONBOARDING, ROUTE_PROFILE } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { TEAM_ROUTES } from 'e2e/utils/common'
 
@@ -9,13 +9,18 @@ test.describe('Onboarding', () => {
     await expect(page.locator('label:has-text("Onboarding")')).toBeVisible()
 
     await page.goto(ROUTE_PROFILE)
+
+    let saveOnboarding = page.waitForResponse(it => it.url().includes(API_USERS_ME_PREFERENCES_ONBOARDING))
     await page.getByRole('switch', { name: 'Onboarding tips' }).click()
+    await saveOnboarding
 
     await page.goto(TEAM_ROUTES.dashboard.index())
     await expect(page.locator('label:has-text("Onboarding")')).not.toBeVisible()
 
     await page.goto(ROUTE_PROFILE)
+    saveOnboarding = page.waitForResponse(it => it.url().includes(API_USERS_ME_PREFERENCES_ONBOARDING))
     await page.getByRole('switch', { name: 'Onboarding tips' }).click()
+    await saveOnboarding
 
     await page.goto(TEAM_ROUTES.dashboard.index())
     await expect(page.locator('label:has-text("Onboarding")')).toBeVisible()

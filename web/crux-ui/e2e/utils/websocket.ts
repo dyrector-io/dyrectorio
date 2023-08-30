@@ -55,10 +55,15 @@ export const waitSocketSent = (
         },
   )
 
-export const wsPatchSent = async (ws: WebSocket, route: string, match: (payload: any) => boolean = null) => {
+export const wsPatchSent = async (
+  ws: WebSocket,
+  route: string,
+  match: (payload: any) => boolean = null,
+  sentWsType?: string,
+) => {
   const frameReceived = waitSocketReceived(ws, route, WS_TYPE_PATCH_RECEIVED)
 
-  await waitSocketSent(ws, route, WS_TYPE_PATCH_IMAGE, match)
+  await waitSocketSent(ws, route, sentWsType ?? WS_TYPE_PATCH_IMAGE, match)
 
   await frameReceived
 }

@@ -119,7 +119,7 @@ export default class StorageHttpController {
     const storage = await this.service.createStorage(teamSlug, request, identity)
 
     return {
-      url: `${ROUTE_TEAM_SLUG}/storages/${storage.id}`,
+      url: `${ROUTE_TEAM_SLUG}/${ROUTE_STORAGES}/${storage.id}`,
       body: storage,
     }
   }

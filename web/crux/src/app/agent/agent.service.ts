@@ -21,7 +21,7 @@ import { Agent, AgentConnectionMessage, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import Deployment, { DeploymentProgressEvent } from 'src/domain/deployment'
 import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
-import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
+import { collectChildVersionIds, collectParentVersionIds, toPrismaJson } from 'src/domain/utils'
 import { CruxConflictException, CruxNotFoundException, CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
@@ -489,6 +489,12 @@ export default class AgentService {
       select: {
         status: true,
         prefix: true,
+        environment: true,
+        configBundles: {
+          include: {
+            configBundle: true,
+          },
+        },
         version: {
           select: {
             id: true,
@@ -581,6 +587,23 @@ export default class AgentService {
 
       if (deployment.version.type === 'rolling') {
         return
+      }
+
+      if (finishedDeployment.sharedEnvironment.length > 0) {
+        await prisma.deployment.update({
+          where: {
+            id: finishedDeployment.id,
+          },
+          data: {
+            environment: toPrismaJson(finishedDeployment.sharedEnvironment),
+          },
+        })
+
+        await prisma.configBundleOnDeployments.deleteMany({
+          where: {
+            deploymentId: finishedDeployment.id,
+          },
+        })
       }
 
       const configUpserts = Array.from(finishedDeployment.mergedConfigs).map(it => {
