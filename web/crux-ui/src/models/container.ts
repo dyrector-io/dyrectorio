@@ -189,6 +189,12 @@ export type ContainerStorage = {
   bucket?: string
 }
 
+export type Metrics = {
+  enabled: boolean
+  path?: string
+  port?: number
+}
+
 export type ContainerConfigData = {
   // common
   name: string
@@ -225,6 +231,7 @@ export type ContainerConfigData = {
   resourceConfig?: ContainerConfigResourceConfig
   annotations?: Marker
   labels?: Marker
+  metrics?: Metrics
 }
 
 type DagentSpecificConfig = 'logConfig' | 'restartPolicy' | 'networkMode' | 'networks' | 'dockerLabels'
@@ -238,6 +245,7 @@ type CraneSpecificConfig =
   | 'resourceConfig'
   | 'labels'
   | 'annotations'
+  | 'metrics'
 
 export type DagentConfigDetails = Pick<ContainerConfigData, DagentSpecificConfig>
 export type CraneConfigDetails = Pick<ContainerConfigData, CraneSpecificConfig>
@@ -356,6 +364,14 @@ const mergeMarker = (image: Marker, instance: Marker): Marker => {
   }
 }
 
+const mergeMetrics = (image: Metrics, instance: Metrics): Metrics => {
+  if (!instance) {
+    return image?.enabled ? image : null
+  }
+
+  return instance
+}
+
 export const mergeConfigs = (
   image: ContainerConfigData,
   instance: InstanceContainerConfigData,
@@ -390,6 +406,7 @@ export const mergeConfigs = (
     deploymentStrategy: instance.deploymentStrategy ?? instance.deploymentStrategy ?? 'recreate',
     labels: mergeMarker(image.labels, instance.labels),
     annotations: mergeMarker(image.annotations, instance.annotations),
+    metrics: mergeMetrics(image.metrics, instance.metrics),
 
     // dagent
     logConfig: instance.logConfig ?? image.logConfig,

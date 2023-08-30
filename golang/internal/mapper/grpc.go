@@ -206,6 +206,13 @@ func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.Conta
 			Ingress:    crane.Annotations.Ingress,
 		}
 	}
+
+	if crane.Metrics != nil {
+		containerConfig.Metrics = &v1.Metrics{
+			Path: crane.Metrics.Path,
+			Port: crane.Metrics.Path,
+		}
+	}
 }
 
 func mapRestartPolicy(policy string) builder.RestartPolicyName {
