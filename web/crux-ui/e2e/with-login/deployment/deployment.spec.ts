@@ -1,4 +1,4 @@
-import { ProjectType } from '@app/models'
+import { ProjectType, WS_TYPE_PATCH_RECEIVED } from '@app/models'
 import { expect, Page } from '@playwright/test'
 import { test } from '../../utils/test.fixture'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from '../../utils/common'
@@ -13,7 +13,7 @@ import {
   fillDeploymentPrefix,
 } from '../../utils/projects'
 import { createConfigBundle } from 'e2e/utils/config-bundle'
-import { waitSocket, waitSocketReceived } from 'e2e/utils/websocket'
+import { waitSocketRef, waitSocketReceived } from 'e2e/utils/websocket'
 import { deploy } from 'e2e/utils/node-helper'
 
 const setup = async (
@@ -178,7 +178,7 @@ test('Incremental versions should keep config bundle environments after a succes
   const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE)
 
   await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
-  const ws = await waitSocket(page) // We usually have to put this before a navigation, but in this case that just doesn't work
+  const ws = await waitSocketRef(page) // We usually have to put this before a navigation, but in this case that just doesn't work
 
   const wsRoute = TEAM_ROUTES.deployment.detailsSocket(deploymentId)
   const wsPatchReceived = waitSocketReceived(ws, wsRoute, WS_TYPE_PATCH_RECEIVED)
