@@ -369,10 +369,6 @@ const mergeMetrics = (image: Metrics, instance: Metrics): Metrics => {
     return image?.enabled ? image : null
   }
 
-  if (!image) {
-    return null
-  }
-
   return instance
 }
 

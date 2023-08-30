@@ -133,10 +133,6 @@ export default class ContainerMapper {
       return image?.enabled ? image : null
     }
 
-    if (!image) {
-      return null
-    }
-
     return instance
   }
 
