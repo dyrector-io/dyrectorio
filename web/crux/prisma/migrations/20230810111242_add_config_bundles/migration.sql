@@ -22,7 +22,10 @@ CREATE TABLE "ConfigBundleOnDeployments" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ConfigBundle_name_key" ON "ConfigBundle"("name");
+CREATE UNIQUE INDEX "ConfigBundle_name_teamId_key" ON "ConfigBundle"("name", "teamId");
+
+-- AddForeignKey
+ALTER TABLE "ConfigBundle" ADD CONSTRAINT "ConfigBundle_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ConfigBundleOnDeployments" ADD CONSTRAINT "ConfigBundleOnDeployments_deploymentId_fkey" FOREIGN KEY ("deploymentId") REFERENCES "Deployment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
