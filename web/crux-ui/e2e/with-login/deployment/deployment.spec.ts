@@ -128,7 +128,7 @@ test('Select specific instances to deploy', async ({ page }) => {
   const instanceBody = await page.locator('.table-row-group')
   const instanceRow = await instanceBody.locator('.table-row')
 
-  await instanceRow.nth(1).locator('img[alt="check"]').click()
+  await instanceRow.locator('img[alt="check"]:left-of(div:text-is("busybox"))').click()
 
   await deploy(page, deploymentId, false, false)
 
