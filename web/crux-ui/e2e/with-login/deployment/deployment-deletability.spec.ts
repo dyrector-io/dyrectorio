@@ -29,7 +29,7 @@ test('In progress deployment should be not deletable', async ({ page }) => {
       args: [],
       name: 'sleep',
       image: 'alpine:3.14',
-      command: ['sleep', '2'],
+      command: ['sleep', '20'],
       volumes: [],
       environment: {},
       useParentConfig: false,

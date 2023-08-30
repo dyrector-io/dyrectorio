@@ -12,13 +12,7 @@ import { DyoList } from '@app/elements/dyo-list'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import {
-  SortFunctions,
-  SortHeaderBuilderMapping,
-  sortHeaderBuilder,
-  stringSort,
-  useSorting,
-} from '@app/hooks/use-sorting'
+import { SortHeaderBuilderMapping, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -73,11 +67,12 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
     filters: [textFilterFor<FindImageResult>(it => [it.name])],
   })
 
-  const sortFunctions: SortFunctions<FindImageResult> = {
-    name: stringSort,
-  }
   const sorting = useSorting<FindImageResult, FindImageResultSorting>(filters.filtered, {
-    sortFunctions,
+    initialField: 'name',
+    initialDirection: 'asc',
+    sortFunctions: {
+      name: stringSort,
+    },
   })
 
   const sock = useWebSocket(routes.registry.socket())

@@ -1,6 +1,15 @@
 import { v4 as uuid } from 'uuid'
 
-export type ContainerState = 'created' | 'restarting' | 'running' | 'removing' | 'paused' | 'exited' | 'dead'
+export const CONTAINER_STATE_VALUES = [
+  'created',
+  'restarting',
+  'running',
+  'removing',
+  'paused',
+  'exited',
+  'dead',
+] as const
+export type ContainerState = (typeof CONTAINER_STATE_VALUES)[number]
 
 export type ContainerPort = {
   internal: number
