@@ -180,10 +180,10 @@ test.describe('Deleting default version', () => {
       prefix,
     })
 
-    const refWSPromise = waitSocketRef(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.deployment.details(defaultDeploymentId))
     await page.waitForSelector('h2:text-is("Deployments")')
-    const wsRef = await refWSPromise
+    const ws = await sock
 
     const instancesTableBody = await page.locator('.table-row-group')
     const instancesRows = await instancesTableBody.locator('.table-row')
@@ -199,7 +199,7 @@ test.describe('Deleting default version', () => {
 
     const internal = '1000'
     const external = '2000'
-    await addPortsToContainerConfig(page, wsRef, wsRoute, WS_TYPE_PATCH_INSTANCE, internal, external)
+    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_INSTANCE, internal, external)
 
     const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
 
