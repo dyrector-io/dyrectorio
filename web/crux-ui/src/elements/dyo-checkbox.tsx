@@ -7,7 +7,10 @@ interface DyoCheckboxProps {
   name?: string
   checked?: boolean
   setFieldValue?: FormikSetFieldValue
-  onCheckedChange?: (checked: boolean, event: any) => void
+  onCheckedChange?: (
+    checked: boolean,
+    event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.ChangeEvent<HTMLInputElement>,
+  ) => void
 }
 
 const DyoCheckbox = (props: DyoCheckboxProps) => {
