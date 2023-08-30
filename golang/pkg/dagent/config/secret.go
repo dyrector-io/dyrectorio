@@ -111,11 +111,11 @@ func (c *Configuration) appendInternalMountPath(path string) string {
 }
 
 func checkFilePermissions(path string) error {
-	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, filePermReadWriteOnlyByOwner)
+	file, err := os.OpenFile(filepath.Clean(path), os.O_RDWR|os.O_CREATE, filePermReadWriteOnlyByOwner)
 	if err != nil {
 		return err
 	}
 
-	defer file.Close()
-	return nil
+	// refaining from defer so we can return the error
+	return file.Close()
 }
