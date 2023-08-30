@@ -2,17 +2,28 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Project } from '@app/models'
+import { PROJECT_TYPE_VALUES, Project } from '@app/models'
 import { auditToLocaleDate } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import ProjectTypeTag from './project-type-tag'
+import {
+  auditFieldGetter,
+  dateSort,
+  enumSort,
+  numberSort,
+  sortHeaderBuilder,
+  stringSort,
+  useSorting,
+} from '@app/hooks/use-sorting'
 
 export interface ProjectViewListProps {
   projects: Project[]
 }
+
+type ProjectSorting = 'name' | 'versionCount' | 'updatedAt' | 'type'
 
 const ProjectViewList = (props: ProjectViewListProps) => {
   const { projects } = props
@@ -20,6 +31,20 @@ const ProjectViewList = (props: ProjectViewListProps) => {
   const { t } = useTranslation('projects')
   const routes = useTeamRoutes()
   const router = useRouter()
+
+  const sorting = useSorting<Project, ProjectSorting>(projects, {
+    initialField: 'name',
+    initialDirection: 'asc',
+    sortFunctions: {
+      name: stringSort,
+      versionCount: numberSort,
+      updatedAt: dateSort,
+      type: enumSort(PROJECT_TYPE_VALUES),
+    },
+    fieldGetters: {
+      updatedAt: auditFieldGetter,
+    },
+  })
 
   const columnWidths = ['w-6/12', 'w-1/12', 'w-2/12', 'w-2/12', 'w-1/12']
   const headers = ['name', 'versions', 'common:updatedAt', 'type', 'common:actions']
@@ -61,13 +86,23 @@ const ProjectViewList = (props: ProjectViewListProps) => {
   return (
     <DyoCard className="relative mt-4">
       <DyoList
-        headers={[...headers.map(h => t(h)), '']}
+        headers={[...headers, '']}
         headerClassName={headerClasses}
         columnWidths={columnWidths}
         itemClassName={itemClasses}
-        data={projects}
+        data={sorting.items}
         noSeparator
         itemBuilder={itemTemplate}
+        headerBuilder={sortHeaderBuilder<Project, ProjectSorting>(
+          sorting,
+          {
+            name: 'name',
+            versions: 'versionCount',
+            'common:updatedAt': 'updatedAt',
+            type: 'type',
+          },
+          text => t(text),
+        )}
         cellClick={onCellClick}
       />
     </DyoCard>

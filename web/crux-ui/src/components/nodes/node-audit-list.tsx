@@ -21,6 +21,7 @@ import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
 import JsonEditor from '../shared/json-editor'
+import { dateSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 
 type NodeAuditFilter = {
   from: Date
@@ -31,6 +32,8 @@ type NodeAuditFilter = {
 interface NodeAuditListProps {
   node: DyoNode
 }
+
+type NodeAuditLogSorting = 'createdAt' | 'event'
 
 const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11'
 const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
@@ -43,6 +46,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
 
   const { t } = useTranslation('nodes')
   const routes = useTeamRoutes()
+  const throttle = useThrottling(1000)
 
   const endOfToday = getEndOfToday()
 
@@ -54,7 +58,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
     eventType: null,
   })
   const [pagination, setPagination] = useState<PaginationSettings>(defaultPagination)
-  const throttle = useThrottling(1000)
+  const [showInfo, setShowInfo] = useState<NodeAuditLog>(null)
 
   const fetchData = async () => {
     const { from, to } = filter
@@ -77,12 +81,21 @@ const NodeAuditList = (props: NodeAuditListProps) => {
     }
   }
 
+  const sorting = useSorting<NodeAuditLog, NodeAuditLogSorting>(data, {
+    initialField: 'createdAt',
+    initialDirection: 'asc',
+    initialDataSorted: true,
+    sortFunctions: {
+      createdAt: dateSort,
+      event: stringSort,
+    },
+  })
+
   useEffect(() => {
     throttle(fetchData, true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination, filter])
 
-  const [showInfo, setShowInfo] = useState<NodeAuditLog>(null)
   const onShowInfoClick = (logEntry: NodeAuditLog) => setShowInfo(logEntry)
 
   const onDateRangedChanged = dates => {
@@ -92,7 +105,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
     setFilter({ ...filter, from: start, to: end })
   }
 
-  const listHeaders = ['common:date', 'common:event', 'common:data', 'common:actions'].map(it => t(it))
+  const listHeaders = ['common:date', 'common:event', 'common:data', 'common:actions']
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: listHeaders.length - 2 }).map(() => defaultHeaderClass),
@@ -160,10 +173,18 @@ const NodeAuditList = (props: NodeAuditListProps) => {
           headerClassName={headerClasses}
           itemClassName={itemClasses}
           columnWidths={columnWidths}
-          data={data}
+          data={sorting.items}
           headers={listHeaders}
           footer={<Paginator onChanged={setPagination} length={total} defaultPagination={defaultPagination} />}
           itemBuilder={itemTemplate}
+          headerBuilder={sortHeaderBuilder<NodeAuditLog, NodeAuditLogSorting>(
+            sorting,
+            {
+              'common:date': 'createdAt',
+              'common:event': 'event',
+            },
+            text => t(text),
+          )}
         />
       </DyoCard>
       {!showInfo ? null : (
