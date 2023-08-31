@@ -52,6 +52,7 @@ import {
   DeploymentWithBasicNodeDto,
   DeploymentWithNode,
   DeploymentWithNodeVersion,
+  EnvironmentToConfigBundleNameMap,
   InstanceContainerConfigDto,
   InstanceDetails,
   InstanceDto,
@@ -86,6 +87,7 @@ export default class DeployMapper {
     return {
       id: it.id,
       prefix: it.prefix,
+      protected: it.protected,
       status: this.statusToDto(it.status),
       updatedAt: it.updatedAt ?? it.createdAt,
       node: this.nodeMapper.toBasicWithStatusDto(it.node, nodeStatus),
@@ -96,6 +98,7 @@ export default class DeployMapper {
     return {
       id: it.id,
       prefix: it.prefix,
+      protected: it.protected,
       note: it.note,
       status: this.statusToDto(it.status),
       audit: this.auditMapper.toDto(it),
@@ -105,14 +108,20 @@ export default class DeployMapper {
     }
   }
 
-  toDetailsDto(deployment: DeploymentDetails, publicKey?: string): DeploymentDetailsDto {
+  toDetailsDto(
+    deployment: DeploymentDetails,
+    publicKey?: string,
+    configBundleEnvironment?: EnvironmentToConfigBundleNameMap,
+  ): DeploymentDetailsDto {
     return {
       ...this.toDto(deployment),
       token: deployment.tokens.length > 0 ? deployment.tokens[0] : null,
       lastTry: deployment.tries,
       publicKey,
+      configBundleIds: deployment.configBundles.map(it => it.configBundle.id),
       environment: deployment.environment as UniqueKeyValue[],
       instances: deployment.instances.map(it => this.instanceToDto(it)),
+      configBundleEnvironment: configBundleEnvironment ?? {},
     }
   }
 
@@ -267,10 +276,12 @@ export default class DeployMapper {
     return events
   }
 
-  deploymentToAgentInstanceConfig(deployment: Deployment): InstanceConfig {
+  deploymentToAgentInstanceConfig(deployment: Deployment, mergedEnvironment: UniqueKeyValue[]): InstanceConfig {
+    const environmentMap = this.mapKeyValueToMap(mergedEnvironment)
+
     return {
       prefix: deployment.prefix,
-      environment: this.mapKeyValueToMap((deployment.environment as UniqueKeyValue[]) ?? []),
+      environment: environmentMap,
     }
   }
 
@@ -341,6 +352,12 @@ export default class DeployMapper {
             deployment: this.mapKeyValueToMap(config.annotations?.deployment),
             ingress: this.mapKeyValueToMap(config.annotations?.ingress),
             service: this.mapKeyValueToMap(config.annotations?.service),
+          }
+        : null,
+      metrics: config.metrics?.enabled
+        ? {
+            path: config.metrics.path ?? null,
+            port: config.metrics.port?.toString() ?? null,
           }
         : null,
     }

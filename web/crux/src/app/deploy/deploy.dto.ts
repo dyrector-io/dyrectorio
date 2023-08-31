@@ -2,10 +2,12 @@ import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger'
 import { Deployment, DeploymentToken, Instance, InstanceContainerConfig, Node, Project, Version } from '@prisma/client'
 import { Type } from 'class-transformer'
 import {
+  IsBoolean,
   IsDate,
   IsIn,
   IsInt,
   IsJWT,
+  IsObject,
   IsOptional,
   IsString,
   IsUUID,
@@ -33,12 +35,17 @@ import { BasicVersionDto } from '../version/version.dto'
 const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete'] as const
 export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]
 
+export type EnvironmentToConfigBundleNameMap = Record<string, string>
+
 export class BasicDeploymentDto {
   @IsUUID()
   id: string
 
   @IsString()
   prefix: string
+
+  @IsBoolean()
+  protected: boolean
 
   @ApiProperty({ enum: DEPLOYMENT_STATUS_VALUES })
   @IsIn(DEPLOYMENT_STATUS_VALUES)
@@ -138,6 +145,9 @@ export class DeploymentDetailsDto extends DeploymentDto {
   @ValidateNested({ each: true })
   environment: UniqueKeyValueDto[]
 
+  @IsObject()
+  configBundleEnvironment: EnvironmentToConfigBundleNameMap
+
   @IsString()
   @IsOptional()
   publicKey?: string | null
@@ -151,6 +161,10 @@ export class DeploymentDetailsDto extends DeploymentDto {
 
   @ValidateNested()
   token: DeploymentTokenDto
+
+  @IsString({ each: true })
+  @IsOptional()
+  configBundleIds: string[]
 }
 
 export class CreateDeploymentDto {
@@ -162,6 +176,9 @@ export class CreateDeploymentDto {
 
   @IsString()
   prefix: string
+
+  @IsBoolean()
+  protected: boolean
 
   @IsString()
   @IsOptional()
@@ -177,9 +194,17 @@ export class PatchDeploymentDto {
   @IsOptional()
   prefix?: string | null
 
+  @IsBoolean()
+  @IsOptional()
+  protected?: boolean
+
   @IsOptional()
   @ValidateNested({ each: true })
   environment?: UniqueKeyValueDto[] | null
+
+  @IsString({ each: true })
+  @IsOptional()
+  configBundleIds?: string[]
 }
 
 export class PatchInstanceDto {
@@ -291,4 +316,9 @@ export type InstanceDetails = Instance & {
 export type DeploymentDetails = DeploymentWithNodeVersion & {
   tokens: Pick<DeploymentToken, 'id' | 'name' | 'createdAt' | 'expiresAt'>[]
   instances: InstanceDetails[]
+  configBundles: {
+    configBundle: {
+      id: string
+    }
+  }[]
 }

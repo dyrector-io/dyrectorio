@@ -396,6 +396,10 @@ class ProjectRoutes {
 }
 
 // deployment
+export type DeployStartUrlParams = AnchorUrlParams & {
+  ignoreProtected?: boolean
+}
+
 class DeploymentApi {
   private readonly root: string
 
@@ -409,7 +413,10 @@ class DeploymentApi {
 
   copy = (id: string) => `${this.details(id)}/copy`
 
-  start = (id: string) => `${this.details(id)}/start`
+  start = (id: string, ignoreProtected?: boolean) =>
+    appendUrlParams(`${this.details(id)}/start`, {
+      ignoreProtected,
+    } as DeployStartUrlParams)
 
   token = (id: string) => `${this.details(id)}/token`
 
@@ -524,6 +531,46 @@ class StorageRoutes {
   details = (id: string) => `${this.root}/${id}`
 }
 
+// config bundle
+
+class ConfigBundleApi {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `/api${root}`
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+
+  options = () => `${this.root}/options`
+}
+
+class ConfigBundleRoutes {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `${root}/config-bundles`
+  }
+
+  private _api: ConfigBundleApi
+
+  get api() {
+    if (!this._api) {
+      this._api = new ConfigBundleApi(this.root)
+    }
+
+    return this._api
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+
+  detailsSocket = (id: string) => this.details(id)
+}
+
 export class TeamRoutes {
   readonly root: string
 
@@ -546,6 +593,8 @@ export class TeamRoutes {
   private _notification: NotificationRoutes
 
   private _storage: StorageRoutes
+
+  private _configBundles: ConfigBundleRoutes
 
   get audit() {
     if (!this._audit) {
@@ -609,6 +658,14 @@ export class TeamRoutes {
     }
 
     return this._storage
+  }
+
+  get configBundles() {
+    if (!this._configBundles) {
+      this._configBundles = new ConfigBundleRoutes(this.root)
+    }
+
+    return this._configBundles
   }
 
   static fromContext(context: NextPageContext): TeamRoutes | null {

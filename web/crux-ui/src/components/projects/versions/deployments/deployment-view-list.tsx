@@ -9,11 +9,14 @@ import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import { DeploymentActions, DeploymentState } from './use-deployment-state'
+import { dateSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 
 export interface DeploymentViewListProps {
   state: DeploymentState
   actions: DeploymentActions
 }
+
+type InstanceSorting = 'containerName' | 'registry' | 'imageTag' | 'createdAt'
 
 const DeploymentViewList = (props: DeploymentViewListProps) => {
   const { t } = useTranslation('images')
@@ -22,12 +25,25 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
   const { state, actions } = props
   const { instances, deployInstances } = state
 
+  const sorting = useSorting<Instance, InstanceSorting>(instances, {
+    initialField: 'createdAt',
+    initialDirection: 'asc',
+    sortFunctions: {
+      containerName: stringSort,
+      registry: stringSort,
+      imageTag: stringSort,
+      createdAt: dateSort,
+    },
+    fieldGetters: {
+      containerName: it => it.config?.name ?? it.image.config.name,
+      registry: it => it.image.registry.name,
+      imageTag: it => `${it.image.name}${it.image.tag ? `:${it.image.tag}` : null}`,
+      createdAt: it => it.image.createdAt,
+    },
+  })
+
   const columnWidths = ['w-12', 'w-4/12', 'w-2/12', 'w-2/12', 'w-4/12', 'w-28']
-  const headers = [
-    '',
-    ...['containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions'].map(it => t(it)),
-    '',
-  ]
+  const headers = ['', 'containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions', '']
   const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
@@ -57,11 +73,28 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
     <span suppressHydrationWarning>
       {item.image.createdAt ? utcDateToLocale(item.image.createdAt) : t('common:new')}
     </span>,
-    <Link href={routes.deployment.instanceDetails(state.deployment.id, item.id)} passHref>
-      <DyoIcon src="/settings.svg" alt={t('common:settings')} size="md" />
-    </Link>,
+    <div>
+      <div className="inline-block mr-2">
+        <Link href={routes.project.versions(state.project.id).imageDetails(state.version.id, item.image.id)} passHref>
+          <DyoIcon src="/image_config_icon.svg" alt={t('common:imageConfig')} size="md" />
+        </Link>
+      </div>
+      <Link href={routes.deployment.instanceDetails(state.deployment.id, item.id)} passHref>
+        <DyoIcon src="/instance_config_icon.svg" alt={t('common:instanceConfig')} size="md" />
+      </Link>
+    </div>,
   ]
 
+  const sortingHeaderBuilder = sortHeaderBuilder<Instance, InstanceSorting>(
+    sorting,
+    {
+      containerName: 'containerName',
+      'common:registry': 'registry',
+      imageTag: 'imageTag',
+      'common:createdAt': 'createdAt',
+    },
+    text => t(text),
+  )
   const headerBuilder = (header: string, index: number) =>
     index === 0 ? (
       <DyoCheckbox
@@ -70,7 +103,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
         onCheckedChange={it => actions.onAllInstancesToggled(it)}
       />
     ) : (
-      header
+      sortingHeaderBuilder(header)
     )
 
   return (
@@ -80,7 +113,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
         headerClassName={headerClasses}
         columnWidths={columnWidths}
         itemClassName={itemClasses}
-        data={instances}
+        data={sorting.items}
         noSeparator
         itemBuilder={itemTemplate}
         headerBuilder={headerBuilder}

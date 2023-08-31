@@ -259,6 +259,7 @@ describe('DeployMapper', () => {
         type: 'mem',
       },
     ],
+    metrics: null,
   }
 
   const fullInstance: InstanceContainerConfigData = {
@@ -481,6 +482,7 @@ describe('DeployMapper', () => {
         type: 'rwo',
       },
     ],
+    metrics: null,
   }
 
   const generateUndefinedInstance = (): InstanceContainerConfigData => {
@@ -695,6 +697,7 @@ describe('DeployMapper', () => {
       id: 'deployment-id',
       prefix: 'deployment-prefix',
       note: 'deployment note',
+      protected: false,
       status: DeploymentStatusEnum.inProgress,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -725,6 +728,7 @@ describe('DeployMapper', () => {
       id: 'deployment-id',
       prefix: 'deployment-prefix',
       note: 'deployment note',
+      protected: false,
       status: 'in-progress',
       audit: {
         createdAt: input.createdAt,

@@ -2,11 +2,11 @@ import DyoBadge from '@app/elements/dyo-badge'
 import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { Storage } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import Link from 'next/link'
 
 interface StorageCardProps extends Omit<DyoCardProps, 'children'> {
@@ -22,7 +22,7 @@ const StorageCard = (props: StorageCardProps) => {
   const title = (
     <div className="flex flex-row">
       {!storage.icon ? (
-        <Image src="/default_storage.svg" width={17} height={21} alt={t('altDefaultRegistryPicture')} />
+        <DyoIcon src="/storage.svg" size="md" alt={t('altDefaultStoragePicture')} />
       ) : (
         <DyoBadge large icon={storage.icon} />
       )}

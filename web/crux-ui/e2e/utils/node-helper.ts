@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { expect, Page } from '@playwright/test'
+import { expect, test, Page } from '@playwright/test'
 import { exec, ExecOptions } from 'child_process'
 import { DAGENT_NODE, screenshotPath, TEAM_ROUTES } from './common'
 import { fillDeploymentPrefix } from './projects'
@@ -31,6 +31,15 @@ export const installDagent = async (page: Page) => {
   await page.waitForSelector('div.bg-dyo-green')
 
   await page.screenshot({ path: screenshotPath('node-dagent-install-successful'), fullPage: true })
+}
+
+const waitForDeployment = async (page: Page) => {
+  await page.waitForSelector('span:text-is("Successful"), span:text-is("Failed")', { timeout: 2 * 60 * 1000 })
+
+  if (await page.isVisible('span:text-is("Failed")')) {
+    await page.pause()
+    throw new Error('Deployment failed')
+  }
 }
 
 export const deployWithDagent = async (
@@ -77,7 +86,36 @@ export const deployWithDagent = async (
   }
 
   expect(page.url()).toContain(TEAM_ROUTES.deployment.deploy(deploymentId))
-  await page.getByText('Successful').waitFor()
+
+  await waitForDeployment(page)
+
+  return deploymentId
+}
+
+export const deploy = async (
+  page: Page,
+  deploymentId: string,
+  ignoreResult?: boolean,
+  navigate?: boolean,
+): Promise<string> => {
+  if (navigate !== false) {
+    await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+  }
+
+  const deploy = page.getByText('Deploy', {
+    exact: true,
+  })
+
+  await deploy.click()
+  await page.waitForURL(TEAM_ROUTES.deployment.deploy(deploymentId))
+
+  if (ignoreResult) {
+    return deploymentId
+  }
+
+  expect(page.url()).toContain(TEAM_ROUTES.deployment.deploy(deploymentId))
+
+  await waitForDeployment(page)
 
   return deploymentId
 }

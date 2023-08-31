@@ -15,16 +15,22 @@ import {
 } from '@app/models'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
+  CommonConfigDetails,
   ContainerConfigData,
   ContainerDeploymentStrategyType,
+  ContainerPort,
   CraneConfigDetails,
+  InstanceContainerConfigData,
   InstanceCraneConfigDetails,
   mergeConfigs,
+  portToString,
 } from '@app/models/container'
 import { nullify, toNumber } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { ValidationError } from 'yup'
 import ConfigSectionLabel from './config-section-label'
+import DyoMessage from '@app/elements/dyo-message'
+import { useEffect } from 'react'
 
 type CraneConfigSectionBaseProps<T> = {
   config: T
@@ -37,11 +43,15 @@ type CraneConfigSectionBaseProps<T> = {
   fieldErrors: ValidationError[]
 }
 
-type ImageCraneConfigSectionProps = CraneConfigSectionBaseProps<CraneConfigDetails> & {
+type ImageCraneConfigSectionProps = CraneConfigSectionBaseProps<
+  CraneConfigDetails & Pick<CommonConfigDetails, 'ports'>
+> & {
   configType: 'image'
 }
 
-type InstanceCraneConfigSectionProps = CraneConfigSectionBaseProps<InstanceCraneConfigDetails> & {
+type InstanceCraneConfigSectionProps = CraneConfigSectionBaseProps<
+  InstanceCraneConfigDetails & Pick<InstanceContainerConfigData, 'ports'>
+> & {
   configType: 'instance'
   imageConfig: ContainerConfigData
 }
@@ -68,6 +78,19 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
   const imageConfig = configType === 'instance' ? props.imageConfig : null
   const resetableConfig = propsResetableConfig ?? propsConfig
   const config = configType === 'instance' ? mergeConfigs(imageConfig, propsConfig) : propsConfig
+
+  const externalPorts = config.ports?.filter(it => !!it.external) ?? []
+
+  useEffect(() => {
+    if (config.metrics?.enabled && !config.metrics.port && externalPorts.length > 0) {
+      onChange({
+        metrics: {
+          ...config.metrics,
+          port: externalPorts[0].external,
+        },
+      })
+    }
+  }, [config])
 
   return !filterEmpty([...CRANE_CONFIG_FILTER_VALUES], selectedFilters) ? null : (
     <div className="my-4">
@@ -204,6 +227,10 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               disabled={disabled}
               onResetSection={resetableConfig.customHeaders ? () => onResetSection('customHeaders') : null}
             />
+            <DyoMessage
+              message={fieldErrors.find(it => it.path?.startsWith('customHeaders'))?.message}
+              messageType="error"
+            />
           </div>
         )}
 
@@ -239,6 +266,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                   })
                 }
                 editorOptions={editorOptions}
+                message={fieldErrors.find(it => it.path?.startsWith('resourceConfig.limits.cpu'))?.message}
                 disabled={disabled}
               />
 
@@ -261,6 +289,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                   })
                 }
                 editorOptions={editorOptions}
+                message={fieldErrors.find(it => it.path?.startsWith('resourceConfig.limits.memory'))?.message}
                 disabled={disabled}
               />
 
@@ -285,6 +314,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                   })
                 }
                 editorOptions={editorOptions}
+                message={fieldErrors.find(it => it.path?.startsWith('resourceConfig.requests.cpu'))?.message}
                 disabled={disabled}
               />
 
@@ -307,6 +337,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                   })
                 }
                 editorOptions={editorOptions}
+                message={fieldErrors.find(it => it.path?.startsWith('resourceConfig.requests.memory'))?.message}
                 disabled={disabled}
               />
             </div>
@@ -388,6 +419,10 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
+              <DyoMessage
+                message={fieldErrors.find(it => it.path?.startsWith('labels.deployment'))?.message}
+                messageType="error"
+              />
             </div>
 
             <div className="grid mb-8 break-inside-avoid">
@@ -400,23 +435,31 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
+              <DyoMessage
+                message={fieldErrors.find(it => it.path?.startsWith('labels.service'))?.message}
+                messageType="error"
+              />
             </div>
 
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
                 className="max-h-128 overflow-y-auto"
                 labelClassName="mb-2 ml-2"
-                label={t('common.ingress')}
+                label={t('crane.ingress')}
                 onChange={it => onChange({ labels: { ...config.labels, ingress: it } })}
                 items={config.labels?.ingress ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
+              <DyoMessage
+                message={fieldErrors.find(it => it.path?.startsWith('labels.ingress'))?.message}
+                messageType="error"
+              />
             </div>
           </div>
         )}
 
-        {/* Labels */}
+        {/* Annotations */}
         {filterContains('annotations', selectedFilters) && (
           <div className="flex flex-col">
             <ConfigSectionLabel
@@ -436,6 +479,10 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
+              <DyoMessage
+                message={fieldErrors.find(it => it.path?.startsWith('annotations.deployment'))?.message}
+                messageType="error"
+              />
             </div>
 
             <div className="grid mb-8 break-inside-avoid">
@@ -448,19 +495,114 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
+              <DyoMessage
+                message={fieldErrors.find(it => it.path?.startsWith('annotations.service'))?.message}
+                messageType="error"
+              />
             </div>
 
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
                 className="max-h-128 overflow-y-auto"
                 labelClassName="mb-2 ml-2"
-                label={t('common.ingress')}
+                label={t('crane.ingress')}
                 onChange={it => onChange({ annotations: { ...config.annotations, ingress: it } })}
                 items={config.annotations?.ingress ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
+              <DyoMessage
+                message={fieldErrors.find(it => it.path?.startsWith('annotations.ingress'))?.message}
+                messageType="error"
+              />
             </div>
+          </div>
+        )}
+
+        {/* metrics */}
+        {filterContains('metrics', selectedFilters) && (
+          <div className="grid break-inside-avoid mb-8">
+            <ConfigSectionLabel
+              disabled={disabledOnImage || resetableConfig.metrics === null}
+              onResetSection={() => onResetSection('metrics')}
+            >
+              {t('crane.metrics').toUpperCase()}
+            </ConfigSectionLabel>
+
+            <DyoToggle
+              className="ml-2 mb-3"
+              name="metrics"
+              checked={config.metrics?.enabled ?? false}
+              onCheckedChange={it =>
+                onChange({
+                  metrics: {
+                    ...config.metrics,
+                    enabled: it,
+                  },
+                })
+              }
+              disabled={disabled}
+            />
+
+            {config.metrics?.enabled && (
+              <>
+                <MultiInput
+                  id="crane.metrics.path"
+                  containerClassName="max-w-lg mb-3"
+                  label={t('crane.metricsPath')}
+                  labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
+                  grow
+                  value={config.metrics?.path ?? ''}
+                  placeholder={t('crane.placeholders.metricsPath')}
+                  onPatch={it => {
+                    onChange({
+                      metrics: {
+                        ...config.metrics,
+                        path: it,
+                      },
+                    })
+                  }}
+                  editorOptions={editorOptions}
+                  message={fieldErrors.find(it => it.path?.startsWith('metrics.path'))?.message}
+                  disabled={disabled}
+                />
+
+                {externalPorts.length > 0 ? (
+                  <div className="max-w-lg mb-3 flex flex-row">
+                    <DyoLabel className="my-auto w-40 whitespace-nowrap text-light-eased">
+                      {t('crane.metricsPort')}
+                    </DyoLabel>
+
+                    <DyoChips
+                      className="w-full ml-2"
+                      choices={externalPorts.map(it => it.external)}
+                      selection={config.metrics?.port ?? null}
+                      converter={(it: number | null) => {
+                        const selectedPort = config.ports?.find(port => port.external === it)
+                        return portToString(selectedPort as ContainerPort)
+                      }}
+                      onSelectionChange={it =>
+                        onChange({
+                          metrics: {
+                            ...config.metrics,
+                            port: it,
+                          },
+                        })
+                      }
+                      disabled={disabled}
+                    />
+                  </div>
+                ) : (
+                  <div className="max-w-lg mb-3 flex flex-col">
+                    <DyoLabel className="my-auto w-40 whitespace-nowrap text-light-eased">
+                      {t('crane.metricsPort')}
+                    </DyoLabel>
+
+                    <DyoMessage messageType="info" message={t('crane.noExternalPortsDefined')} />
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
       </div>

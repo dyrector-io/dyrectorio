@@ -40,7 +40,7 @@ test.describe('Versioned Project', () => {
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
     await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
-    const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, nodeName, prefix)
+    const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, nodeName, { prefix })
     await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
     const copyButton = page.locator('button:has-text("Copy")')
@@ -64,7 +64,7 @@ test.describe('Versioned Project', () => {
     const { projectId } = await setup(page, nodeName, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
     await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
-    const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, nodeName, prefix)
+    const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, nodeName, { prefix })
 
     await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
@@ -89,7 +89,7 @@ test.describe('Versioned Project', () => {
     const { projectId } = await setup(page, nodeName, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '1.0.0', 'Incremental')
     await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
-    await addDeploymentToVersion(page, projectId, versionId, nodeName, prefix)
+    await addDeploymentToVersion(page, projectId, versionId, nodeName, { prefix })
 
     await page.goto(TEAM_ROUTES.deployment.list())
 
@@ -132,7 +132,7 @@ test.describe('Versioned Project', () => {
         args: [],
         name: 'sleep',
         image: 'alpine:3.14',
-        command: ['sleep', '2'],
+        command: ['sleep', '20'],
         volumes: [],
         environment: {},
         useParentConfig: false,

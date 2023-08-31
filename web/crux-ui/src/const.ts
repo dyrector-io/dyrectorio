@@ -4,8 +4,9 @@ export const NODE_SETUP_SCRIPT_TIMEOUT = 600 // 10 min in seconds
 export const GRPC_STREAM_RECONNECT_TIMEOUT = 5_000 // millis
 export const IMAGE_FILTER_MIN_LENGTH = 1 // characters
 export const IMAGE_WS_REQUEST_DELAY = 500 // millis
-export const INSTANCE_WS_REQUEST_DELAY = IMAGE_WS_REQUEST_DELAY // millis
+export const INSTANCE_WS_REQUEST_DELAY = 500 // millis
 export const DEPLOYMENT_EDIT_WS_REQUEST_DELAY = 500 // millis
+export const CONFIG_BUNDLE_EDIT_WS_REQUEST_DELAY = 500 // millis
 export const WS_CONNECT_DELAY_PER_TRY = 5_000 // millis
 export const WS_MAX_CONNECT_TRY = 20
 
@@ -38,3 +39,5 @@ export const UID_MAX = 2147483647
 export const STORAGE_TEAM_SLUG = 'teamSlug'
 
 export const COOKIE_TEAM_SLUG = 'crux_team_slug'
+
+export const TOAST_DURATION = 5000 // sec in millis

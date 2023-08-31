@@ -1,5 +1,5 @@
 import { Audit } from './audit'
-import { DeploymentStatus, slugify } from './common'
+import { DeploymentStatus, DyoApiError, slugify } from './common'
 import { ContainerIdentifier, ContainerState, InstanceContainerConfigData, UniqueKeyValue } from './container'
 import { ImageConfigProperty, ImageDeletedMessage } from './image'
 import { Instance } from './instance'
@@ -7,10 +7,13 @@ import { DyoNode } from './node'
 import { BasicProject, ProjectDetails } from './project'
 import { BasicVersion, VersionDetails, VersionType } from './version'
 
+export type EnvironmentToConfigBundleNameMap = Record<string, string>
+
 export type Deployment = {
   id: string
   audit: Audit
   prefix: string
+  protected: boolean
   status: DeploymentStatus
   note?: string
   node: DyoNode
@@ -37,7 +40,9 @@ export type DeploymentTokenCreated = DeploymentToken & {
 
 export type DeploymentDetails = Deployment & {
   environment: UniqueKeyValue[]
+  configBundleEnvironment: EnvironmentToConfigBundleNameMap
   publicKey?: string
+  configBundleIds?: string[]
   token: DeploymentToken
   instances: Instance[]
 }
@@ -68,6 +73,7 @@ export type CreateDeployment = {
   versionId: string
   nodeId: string
   prefix: string
+  protected: boolean
   note?: string | undefined
 }
 
@@ -75,6 +81,7 @@ export type PatchDeployment = {
   id: string
   prefix?: string
   note?: string
+  protected?: boolean
   environment?: UniqueKeyValue[]
 }
 
@@ -104,10 +111,17 @@ export type StartDeployment = {
 // ws
 
 export const WS_TYPE_PATCH_DEPLOYMENT_ENV = 'patch-deployment-env'
-export type PatchDeploymentEnvMessage = UniqueKeyValue[]
+export type PatchDeploymentEnvMessage = {
+  environment?: UniqueKeyValue[]
+  configBundleIds?: string[]
+}
 
 export const WS_TYPE_DEPLOYMENT_ENV_UPDATED = 'deployment-env-updated'
-export type DeploymentEnvUpdatedMessage = UniqueKeyValue[]
+export type DeploymentEnvUpdatedMessage = {
+  environment?: UniqueKeyValue[]
+  configBundleIds?: string[]
+  configBundleEnvironment: EnvironmentToConfigBundleNameMap
+}
 
 export const WS_TYPE_PATCH_INSTANCE = 'patch-instance'
 export type PatchInstanceMessage = {
@@ -202,3 +216,6 @@ export const lastDeploymentStatusOfEvents = (events: DeploymentEvent[]): Deploym
     .filter(it => it.type === 'deployment-status')
     .sort((one, other) => new Date(other.createdAt).getTime() - new Date(one.createdAt).getTime())
     .at(0)?.deploymentStatus ?? null
+
+export const deploymentHasError = (dto: DyoApiError): boolean =>
+  dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing'

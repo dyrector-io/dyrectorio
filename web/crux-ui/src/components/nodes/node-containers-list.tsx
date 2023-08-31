@@ -6,8 +6,10 @@ import DyoIcon from '@app/elements/dyo-icon'
 import DyoImgButton from '@app/elements/dyo-img-button'
 import { DyoList } from '@app/elements/dyo-list'
 import LoadingIndicator from '@app/elements/loading-indicator'
+import { dateSort, enumSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
+  CONTAINER_STATE_VALUES,
   Container,
   containerIsRestartable,
   containerIsStartable,
@@ -26,6 +28,8 @@ interface NodeContainersListProps {
   actions: NodeDetailsActions
 }
 
+type ContainerSorting = 'name' | 'imageTag' | 'state' | 'reason' | 'createdAt'
+
 const NodeContainersList = (props: NodeContainersListProps) => {
   const { state, actions } = props
   const {
@@ -35,6 +39,22 @@ const NodeContainersList = (props: NodeContainersListProps) => {
 
   const { t } = useTranslation('nodes')
   const routes = useTeamRoutes()
+
+  const sorting = useSorting<Container, ContainerSorting>(containerItems, {
+    initialField: 'createdAt',
+    initialDirection: 'asc',
+    sortFunctions: {
+      name: stringSort,
+      imageTag: stringSort,
+      state: enumSort(CONTAINER_STATE_VALUES),
+      reason: stringSort,
+      createdAt: dateSort,
+    },
+    fieldGetters: {
+      name: it => containerPrefixNameOf(it.id),
+      imageTag: it => imageName(it.imageName, it.imageTag),
+    },
+  })
 
   const headers = [
     'common:name',
@@ -91,7 +111,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
 
             {container.state && (
               <Link href={routes.node.containerLog(state.node.id, container.id)} passHref>
-                <DyoIcon src="/note.svg" alt={t('logs')} size="md" />
+                <DyoIcon className="align-bottom" src="/note.svg" alt={t('logs')} size="md" />
               </Link>
             )}
 
@@ -124,12 +144,23 @@ const NodeContainersList = (props: NodeContainersListProps) => {
   return (
     <DyoCard className="mt-4">
       <DyoList
-        headers={[...headers.map(h => t(h))]}
+        headers={headers}
         headerClassName={headerClasses}
         columnWidths={columnWidths}
         itemClassName={itemClasses}
-        data={containerItems}
+        data={sorting.items}
         itemBuilder={itemBuilder}
+        headerBuilder={sortHeaderBuilder<Container, ContainerSorting>(
+          sorting,
+          {
+            'common:name': 'name',
+            'images:imageTag': 'imageTag',
+            'common:state': 'state',
+            'common:reason': 'reason',
+            'common:createdAt': 'createdAt',
+          },
+          text => t(text),
+        )}
         footer={
           <Paginator
             onChanged={actions.setContainerPagination}

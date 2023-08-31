@@ -1,7 +1,8 @@
 export const USER_ROLE_VALUES = ['owner', 'admin', 'user'] as const
 export type UserRole = (typeof USER_ROLE_VALUES)[number]
 
-export type UserStatus = 'pending' | 'verified' | 'expired' | 'declined'
+export const USER_STATUS_VALUES = ['pending', 'verified', 'expired', 'declined'] as const
+export type UserStatus = (typeof USER_STATUS_VALUES)[number]
 
 export type User = {
   id: string

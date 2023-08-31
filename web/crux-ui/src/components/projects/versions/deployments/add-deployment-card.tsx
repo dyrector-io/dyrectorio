@@ -1,3 +1,4 @@
+import { TOAST_DURATION } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
@@ -6,10 +7,18 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
+import DyoToggle from '@app/elements/dyo-toggle'
 import { apiErrorHandler, defaultTranslator } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { CreateDeployment, Deployment, DyoApiError, DyoNode, projectNameToDeploymentPrefix } from '@app/models'
+import {
+  CreateDeployment,
+  Deployment,
+  DyoApiError,
+  DyoNode,
+  deploymentHasError,
+  projectNameToDeploymentPrefix,
+} from '@app/models'
 import { fetcher, sendForm } from '@app/utils'
 import { createDeploymentSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
@@ -34,14 +43,14 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(routes.node.api.list(), fetcher)
 
   const handleApiError = apiErrorHandler((stringId: string, status: number, dto: DyoApiError) => {
-    if (dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing') {
+    if (deploymentHasError(dto)) {
       onAdd(dto.value)
 
       return {
         toast: dto.description,
         toastOptions: {
           className: '!bg-warning-orange',
-          duration: 5000,
+          duration: TOAST_DURATION,
         },
       }
     }
@@ -54,6 +63,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       nodeId: null as string,
       note: '',
       prefix: projectNameToDeploymentPrefix(projectName),
+      protected: false,
     },
     validationSchema: createDeploymentSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
@@ -136,6 +146,14 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
             onChange={formik.handleChange}
             value={formik.values.prefix}
             message={formik.errors.prefix}
+          />
+
+          <DyoToggle
+            className="mt-8 mb-2.5"
+            name="protected"
+            label={t('protected')}
+            checked={formik.values.protected}
+            setFieldValue={formik.setFieldValue}
           />
 
           <DyoTextArea

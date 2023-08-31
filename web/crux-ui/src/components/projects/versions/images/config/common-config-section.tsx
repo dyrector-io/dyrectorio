@@ -24,9 +24,12 @@ import {
   CommonConfigDetails,
   ContainerConfigData,
   ContainerConfigExposeStrategy,
+  ContainerConfigPort,
   ContainerConfigVolume,
+  CraneConfigDetails,
   InitContainerVolumeLink,
   InstanceCommonConfigDetails,
+  InstanceCraneConfigDetails,
   VolumeType,
   mergeConfigs,
 } from '@app/models/container'
@@ -52,11 +55,15 @@ type CommonConfigSectionBaseProps<T> = {
   publicKey?: string
 }
 
-type ImageCommonConfigSectionProps = CommonConfigSectionBaseProps<CommonConfigDetails> & {
+type ImageCommonConfigSectionProps = CommonConfigSectionBaseProps<
+  CommonConfigDetails & Pick<CraneConfigDetails, 'metrics'>
+> & {
   configType: 'image'
 }
 
-type InstanceCommonConfigSectionProps = CommonConfigSectionBaseProps<InstanceCommonConfigDetails> & {
+type InstanceCommonConfigSectionProps = CommonConfigSectionBaseProps<
+  InstanceCommonConfigDetails & Pick<InstanceCraneConfigDetails, 'metrics'>
+> & {
   configType: 'instance'
   imageConfig: ContainerConfigData
 }
@@ -100,6 +107,22 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             }
           : undefined,
     })
+
+  const onPortsChanged = (ports: ContainerConfigPort[]) => {
+    const externalPorts = ports.filter(it => !!it.external)
+    const metricsPortGone = !!config.metrics?.port && externalPorts.some(it => it.external === config.metrics.port)
+    onChange({
+      ports,
+      ...(metricsPortGone
+        ? null
+        : {
+            metrics: {
+              ...config.metrics,
+              port: null,
+            },
+          }),
+    })
+  }
 
   return !filterEmpty([...COMMON_CONFIG_PROPERTIES], selectedFilters) ? null : (
     <div className="my-4">
@@ -392,6 +415,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   disabled={disabled}
                 />
               )}
+              <DyoMessage
+                message={fieldErrors.find(it => it.path?.startsWith('secrets'))?.message}
+                messageType="error"
+              />
             </div>
           )}
 
@@ -408,6 +435,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 items={config.commands}
                 editorOptions={editorOptions}
                 disabled={disabled}
+              />
+              <DyoMessage
+                message={fieldErrors.find(it => it.path?.startsWith('commands'))?.message}
+                messageType="error"
               />
             </div>
           )}
@@ -426,6 +457,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
+              <DyoMessage message={fieldErrors.find(it => it.path?.startsWith('args'))?.message} messageType="error" />
             </div>
           )}
         </div>
@@ -448,7 +480,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   className="w-full ml-2"
                   choices={storages ? [null, ...storages.map(it => it.id)] : [null]}
                   selection={config.storage?.storageId ?? null}
-                  converter={(it: string) => storages?.find(storage => storage.id === it)?.name ?? t('common.none')}
+                  converter={(it: string) => storages?.find(storage => storage.id === it)?.name ?? t('common:none')}
                   onSelectionChange={it =>
                     onChange({
                       storage: { ...config.storage, storageId: it },
@@ -482,7 +514,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   choices={config.volumes ? [null, ...config.volumes.filter(it => it.name).map(it => it.name)] : [null]}
                   selection={config.storage?.path ?? null}
                   converter={(it: string) =>
-                    config.volumes?.find(volume => volume.name === it)?.name ?? t('common.none')
+                    config.volumes?.find(volume => volume.name === it)?.name ?? t('common:none')
                   }
                   onSelectionChange={it =>
                     onChange({
@@ -509,7 +541,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             disabled={disabled}
             items={config.ports}
             label={t('common.ports')}
-            onPatch={it => onChange({ ports: it })}
+            onPatch={it => onPortsChanged(it)}
             onResetSection={resetableConfig.ports ? () => onResetSection('ports') : null}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`ports[${index}]`))?.message}
             emptyItemFactory={() => ({

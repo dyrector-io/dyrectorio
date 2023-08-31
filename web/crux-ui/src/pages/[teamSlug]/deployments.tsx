@@ -1,3 +1,4 @@
+import AddDeploymentCard from '@app/components/deployments/add-deployment-card'
 import { Layout } from '@app/components/layout'
 import CopyDeploymentCard from '@app/components/projects/versions/deployments/copy-deployment-card'
 import DeploymentStatusTag from '@app/components/projects/versions/deployments/deployment-status-tag'
@@ -5,6 +6,7 @@ import useCopyDeploymentState from '@app/components/projects/versions/deployment
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
@@ -14,6 +16,7 @@ import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import { auditFieldGetter, dateSort, enumSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   Deployment,
@@ -37,6 +40,7 @@ interface DeploymentsPageProps {
 }
 
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
+type DeploymentSorting = 'project' | 'version' | 'node' | 'prefix' | 'updatedAt' | 'status'
 
 const DeploymentsPage = (props: DeploymentsPageProps) => {
   const { deployments: propsDeployments } = props
@@ -46,6 +50,8 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   const router = useRouter()
 
   const [deployments, setDeployments] = useState(propsDeployments)
+
+  const [creating, setCreating] = useState(false)
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -92,6 +98,25 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
       enumFilterFor<Deployment, DeploymentStatus>(it => [it.status]),
     ],
     initialData: deployments,
+  })
+
+  const sorting = useSorting<Deployment, DeploymentSorting>(filters.filtered, {
+    initialField: 'updatedAt',
+    initialDirection: 'asc',
+    sortFunctions: {
+      project: stringSort,
+      version: stringSort,
+      node: stringSort,
+      prefix: stringSort,
+      updatedAt: dateSort,
+      status: enumSort(DEPLOYMENT_STATUS_VALUES),
+    },
+    fieldGetters: {
+      project: it => it.project.name,
+      version: it => it.version.name,
+      node: it => it.node.name,
+      updatedAt: auditFieldGetter,
+    },
   })
 
   useEffect(() => filters.setItems(deployments), [deployments])
@@ -142,31 +167,34 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     <span suppressHydrationWarning>{auditToLocaleDate(item.audit)}</span>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
     <>
-      <Link href={routes.deployment.details(item.id)} passHref>
-        <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
-      </Link>
-
       <div className="inline-block mr-2">
-        <DyoIcon
-          src="/note.svg"
-          alt={t('common:note')}
-          size="md"
-          className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-          onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
-        />
+        <Link href={routes.deployment.details(item.id)} passHref>
+          <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
+        </Link>
       </div>
+
+      <DyoIcon
+        src="/note.svg"
+        alt={t('common:note')}
+        size="md"
+        className={clsx(
+          !!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30',
+          'mr-2',
+        )}
+        onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
+      />
 
       <DyoIcon
         src="/copy.svg"
         alt={t('common:copy')}
         size="md"
-        className={deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+        className={clsx(deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30', 'mr-2')}
         onClick={() => deploymentIsCopiable(item.status) && setCopyDeploymentTarget(item.id)}
       />
 
       {deploymentIsDeletable(item.status) ? (
         <DyoIcon
-          className="aspect-square cursor-pointer ml-2"
+          className="aspect-square cursor-pointer"
           src="/trash-can.svg"
           alt={t('common:delete')}
           size="md"
@@ -177,9 +205,21 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   ]
   /* eslint-enable react/jsx-key */
 
+  const onDeploymentCreated = async (deploymentId: string) => await router.push(routes.deployment.details(deploymentId))
+
+  const onCreateDiscard = () => setCreating(false)
+
   return (
     <Layout title={t('common:deployments')}>
-      <PageHeading pageLink={selfLink} />
+      <PageHeading pageLink={selfLink}>
+        {!creating && (
+          <DyoButton className="ml-auto px-4" onClick={() => setCreating(true)}>
+            {t('common:add')}
+          </DyoButton>
+        )}
+      </PageHeading>
+
+      {creating && <AddDeploymentCard className="mb-4 p-8" onAdd={onDeploymentCreated} onDiscard={onCreateDiscard} />}
 
       {!copyDeploymentTarget ? null : (
         <CopyDeploymentCard
@@ -207,12 +247,24 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           </Filters>
           <DyoCard className="relative mt-4">
             <DyoList
-              headers={[...headers.map(h => t(h)), '']}
+              headers={[...headers, '']}
               headerClassName={headerClasses}
               itemClassName={itemClasses}
-              data={filters.filtered}
+              data={sorting.items}
               noSeparator
               itemBuilder={itemTemplate}
+              headerBuilder={sortHeaderBuilder<Deployment, DeploymentSorting>(
+                sorting,
+                {
+                  'common:project': 'project',
+                  'common:version': 'version',
+                  'common:node': 'node',
+                  'common:prefix': 'prefix',
+                  'common:updatedAt': 'updatedAt',
+                  'common:status': 'status',
+                },
+                text => t(text),
+              )}
               cellClick={onCellClick}
             />
           </DyoCard>

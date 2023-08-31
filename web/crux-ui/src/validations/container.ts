@@ -13,6 +13,7 @@ import {
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   VolumeType,
+  ContainerPort,
 } from '@app/models/container'
 import * as yup from 'yup'
 
@@ -154,7 +155,7 @@ const resourceConfigRule = yup
       })
       .nullable()
       .optional(),
-    memory: yup
+    requests: yup
       .object()
       .shape({
         cpu: yup.string().nullable(),
@@ -206,8 +207,9 @@ const createOverlapTest = (
       : true,
   )
 
-const portConfigRule = yup.mixed().when('portRanges', portRanges => {
-  if (!portRanges) {
+// note: here yup passes reference as array
+const portConfigRule = yup.mixed().when('portRanges', ([portRanges]) => {
+  if (!portRanges?.length) {
     return yup
       .array(
         yup.object().shape({
@@ -284,7 +286,7 @@ const initContainerVolumeLinkRule = yup.array(
 const initContainerRule = yup
   .array(
     yup.object().shape({
-      name: yup.string().required(),
+      name: yup.string().required().matches(/^\S+$/g),
       image: yup.string().required(),
       command: uniqueKeysOnlySchema.default([]).nullable(),
       args: uniqueKeysOnlySchema.default([]).nullable(),
@@ -318,8 +320,31 @@ const markerRule = yup
   .nullable()
   .optional()
 
+const createMetricsPortRule = (ports: ContainerPort[]) => {
+  if (!ports?.length) {
+    return portNumberRule.nullable().optional()
+  }
+
+  // eslint-disable-next-line no-template-curly-in-string
+  return portNumberRule.test('metric-port', '${path} is missing the external port definition', value =>
+    value && ports.length > 0 ? ports.some(it => it.external === value) : true,
+  )
+}
+
+const metricsRule = yup.mixed().when('ports', ([ports]) =>
+  yup
+    .object()
+    .shape({
+      path: yup.string().nullable(),
+      port: createMetricsPortRule(ports),
+    })
+    .default({})
+    .nullable()
+    .optional(),
+)
+
 const containerConfigBaseSchema = yup.object().shape({
-  name: yup.string().required(),
+  name: yup.string().required().matches(/^\S+$/g),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
   routing: routingRule,
   expose: exposeRule,
@@ -352,6 +377,7 @@ const containerConfigBaseSchema = yup.object().shape({
   resourceConfig: resourceConfigRule,
   labels: markerRule,
   annotations: markerRule,
+  metrics: metricsRule,
 })
 
 export const containerConfigSchema = containerConfigBaseSchema.shape({

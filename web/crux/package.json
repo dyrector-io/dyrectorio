@@ -1,6 +1,6 @@
 {
   "name": "crux",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Open-source delivery platform that helps developers to deliver applications efficiently by simplifying software releases and operations in any environment.",
   "author": "dyrector.io",
   "private": true,
@@ -38,7 +38,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.9.0",
     "@grpc/proto-loader": "^0.7.8",
-    "@nestjs-modules/mailer": "^1.7.1",
+    "@nestjs-modules/mailer": "^1.9.1",
     "@nestjs/axios": "^3.0.0",
     "@nestjs/cli": "^10.1.11",
     "@nestjs/common": "^10.1.3",
@@ -106,5 +106,8 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.1.6"
+  },
+  "overrides": {
+    "degenerator": "5.0.0"
   }
 }

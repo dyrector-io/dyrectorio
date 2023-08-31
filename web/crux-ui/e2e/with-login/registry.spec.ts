@@ -92,4 +92,34 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   await expect(page.locator('button:text-is("Add")')).toBeVisible()
 
   await page.locator('button:text-is("Add")').click()
+
+  const imagesTableBody = await page.locator('.table-row-group')
+  const imagesRows = await imagesTableBody.locator('.table-row')
+
+  await expect(imagesRows).toHaveCount(1)
+})
+
+test('Image list should be visible', async ({ page }) => {
+  const registryName = 'TEST REGISTRY IMAGE LIST'
+
+  await page.goto(TEAM_ROUTES.registry.list())
+
+  await page.locator('text=Add').click()
+  await expect(page.locator('h4')).toContainText('New registry')
+
+  await page.locator('input[name=name] >> visible=true').fill(registryName)
+  await page.locator('form >> text=Docker Hub').click()
+  await expect(await page.locator('label[for=imageNamePrefix]')).toContainText('Organization name or username')
+  await page.locator('input[name=imageNamePrefix]').fill('library')
+
+  await page.locator('text=Save').click()
+
+  await page.waitForURL(TEAM_ROUTES.registry.list())
+
+  await page.locator(`h3:has-text("${registryName}")`).click()
+  await expect(page.locator('button:has-text("Edit")')).toBeVisible()
+
+  await page.locator('input[placeholder="Search"]').type('nginx')
+
+  await expect(page.getByText('nginx')).toHaveCount(1)
 })
