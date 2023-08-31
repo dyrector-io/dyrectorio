@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../utils/test.fixture'
 import { DAGENT_NODE, TEAM_ROUTES } from '../utils/common'
 import { addDeploymentToVersion, createImage, createProject, createVersion } from '../utils/projects'
 
@@ -7,6 +8,7 @@ test('Add incremental version should work', async ({ page }) => {
   await createVersion(page, projectId, '1.0.0', 'Incremental')
 
   await page.goto(TEAM_ROUTES.project.details(projectId))
+  await page.waitForSelector('h2:text-is("Projects")')
 
   await expect(await page.locator('h5:has-text("1.0.0")')).toBeVisible()
 })
@@ -16,6 +18,7 @@ test('Add rolling version should work', async ({ page }) => {
   await createVersion(page, projectId, '1.0.0', 'Rolling')
 
   await page.goto(TEAM_ROUTES.project.details(projectId))
+  await page.waitForSelector('h2:text-is("Projects")')
 
   await expect(await page.locator('h5:has-text("1.0.0")')).toBeVisible()
 })
@@ -29,12 +32,14 @@ test("New version should get the default version's images and deployments", asyn
   const childVersionId = await createVersion(page, projectId, '2.0.0', 'Incremental')
 
   await page.goto(TEAM_ROUTES.project.details(projectId))
+  await page.waitForSelector('h2:text-is("Projects")')
 
   await expect(page.locator('.bg-dyo-blue:has-text("Incremental")')).toHaveCount(2)
   await expect(page.locator('div.card:has(h5:has-text("1.0.0")) .bg-error-red:has-text("DEFAULT")')).toHaveCount(1)
   await expect(page.locator('div.card:has(h5:has-text("2.0.0")) .bg-error-red:has-text("DEFAULT")')).toHaveCount(0)
 
   await page.goto(TEAM_ROUTES.project.versions(projectId).details(childVersionId, { section: 'images' }))
+  await page.waitForSelector('h2:text-is("Versions")')
 
   const imagesTableBody = await page.locator('.table-row-group')
   const imagesRows = await imagesTableBody.locator('.table-row')
@@ -42,6 +47,7 @@ test("New version should get the default version's images and deployments", asyn
   await expect(imagesRows).toHaveCount(1)
 
   await page.goto(TEAM_ROUTES.project.versions(projectId).details(childVersionId, { section: 'deployments' }))
+  await page.waitForSelector('h2:text-is("Versions")')
 
   await expect(await page.locator(`h3:has-text("You haven't added a deployment to this version")`)).toHaveCount(0)
 })
@@ -54,6 +60,7 @@ test('Change default version should work', async ({ page }) => {
   await createImage(page, projectId, versionTwo, 'redis')
 
   await page.goto(TEAM_ROUTES.project.details(projectId))
+  await page.waitForSelector('h2:text-is("Projects")')
 
   await page.locator('img[src="/home_bold.svg"]:below(h5:has-text("2.0.0"))').first().click()
 
@@ -65,6 +72,7 @@ test('Change default version should work', async ({ page }) => {
 
   const versionThreeId = await createVersion(page, projectId, '3.0.0', 'Incremental')
   await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionThreeId, { section: 'images' }))
+  await page.waitForSelector('h2:text-is("Versions")')
 
   const imagesTableBody = await page.locator('.table-row-group')
   const imagesRows = await imagesTableBody.locator('.table-row')
@@ -81,6 +89,7 @@ test('Increase version should work', async ({ page }) => {
   await addDeploymentToVersion(page, projectId, versionOne, DAGENT_NODE)
 
   await page.goto(TEAM_ROUTES.project.details(projectId))
+  await page.waitForSelector('h2:text-is("Projects")')
 
   await page.locator('img[src="/arrow_up_bold.svg"]:below(h5:has-text("1.0.0"))').first().click()
 
@@ -89,6 +98,7 @@ test('Increase version should work', async ({ page }) => {
 
   await page.locator('button:has-text("Save")').click()
   await page.waitForURL(`${TEAM_ROUTES.project.details(projectId)}/versions/**`)
+  await page.waitForSelector('h2:text-is("Versions")')
 
   const imagesTableBody = await page.locator('.table-row-group')
   const imagesRows = await imagesTableBody.locator('.table-row')

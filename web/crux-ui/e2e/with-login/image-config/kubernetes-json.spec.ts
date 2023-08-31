@@ -1,4 +1,5 @@
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
+import { test } from '../../utils/test.fixture'
 import { TEAM_ROUTES } from 'e2e/utils/common'
 import {
   wsPatchMatchCustomHeader,
@@ -16,7 +17,8 @@ import {
   wsPatchMatchServiceLabel,
 } from 'e2e/utils/websocket-match'
 import { createImage, createProject, createVersion } from '../../utils/projects'
-import { waitSocket, wsPatchSent } from '../../utils/websocket'
+import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
+import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 
 const setup = async (
   page: Page,
@@ -35,8 +37,9 @@ test.describe('Image kubernetes config from JSON', () => {
   test('Deployment strategy should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'deployment-strategy-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -49,7 +52,7 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.deploymentStrategy = strategy
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchDeploymentStrategy(strategy))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentStrategy(strategy))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -61,8 +64,9 @@ test.describe('Image kubernetes config from JSON', () => {
   test('Custom headers should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'custom-headers-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -75,7 +79,7 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.customHeaders = [header]
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchCustomHeader(header))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchCustomHeader(header))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -90,8 +94,9 @@ test.describe('Image kubernetes config from JSON', () => {
   test('Proxy headers should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'proxy-headers-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -102,7 +107,7 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.proxyHeaders = true
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchProxyHeader(true))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchProxyHeader(true))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -114,8 +119,9 @@ test.describe('Image kubernetes config from JSON', () => {
   test('Load balancer should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'load-balancer-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -129,11 +135,11 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.useLoadBalancer = true
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchLoadBalancer(true))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchLoadBalancer(true))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
     json.extraLBAnnotations = { [key]: value }
-    wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchLBAnnotations(key, value))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchLBAnnotations(key, value))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -153,8 +159,9 @@ test.describe('Image kubernetes config from JSON', () => {
   test('Health check config should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'health-check-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -170,7 +177,12 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.healthCheckConfig = { port, livenessProbe: liveness, readinessProbe: readiness, startupProbe: startup }
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchHealthCheck(port, liveness, readiness, startup))
+    const wsSent = wsPatchSent(
+      ws,
+      wsRoute,
+      WS_TYPE_PATCH_IMAGE,
+      wsPatchMatchHealthCheck(port, liveness, readiness, startup),
+    )
     jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -186,8 +198,9 @@ test.describe('Image kubernetes config from JSON', () => {
   test('Resource config should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'resource-config-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -209,6 +222,7 @@ test.describe('Image kubernetes config from JSON', () => {
     const wsSent = wsPatchSent(
       ws,
       wsRoute,
+      WS_TYPE_PATCH_IMAGE,
       wsPatchMatchResourceConfig(cpuLimits, cpuRequests, memoryLimits, memoryRequests),
     )
     await jsonEditor.fill(JSON.stringify(json))
@@ -229,8 +243,9 @@ test.describe('Image kubernetes config from JSON', () => {
   test('Labels should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'labels-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -243,15 +258,15 @@ test.describe('Image kubernetes config from JSON', () => {
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchDeploymentLabel(key, value))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentLabel(key, value))
     json.labels = { deployment: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchServiceLabel(key, value))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchServiceLabel(key, value))
     json.labels = { deployment: { [key]: value }, service: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchIngressLabel(key, value))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchIngressLabel(key, value))
     json.labels = { deployment: { [key]: value }, service: { [key]: value }, ingress: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
@@ -272,8 +287,9 @@ test.describe('Image kubernetes config from JSON', () => {
   test('Annotations should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'annotations-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -286,15 +302,15 @@ test.describe('Image kubernetes config from JSON', () => {
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchDeploymentAnnotations(key, value))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentAnnotations(key, value))
     json.annotations = { deployment: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchServiceAnnotations(key, value))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchServiceAnnotations(key, value))
     json.annotations = { deployment: { [key]: value }, service: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchIngressAnnotations(key, value))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchIngressAnnotations(key, value))
     json.annotations = { deployment: { [key]: value }, service: { [key]: value }, ingress: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
