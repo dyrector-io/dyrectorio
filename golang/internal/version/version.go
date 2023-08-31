@@ -6,7 +6,7 @@ import (
 
 var (
 	// Version represents the version of the application
-	Version = "0.7.0"
+	Version = "0.8.0"
 	// CommitHash is the hash of the commit used for the build
 	CommitHash = "n/a"
 	// BuildTimestamp represents the timestamp when the build was created
