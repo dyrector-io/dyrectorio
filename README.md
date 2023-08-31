@@ -44,7 +44,7 @@ Replace multiple tools with a single platform that allows you to manage your ent
 
 #### ⛴️ Instant test environments for QA
 
-QA no longer needs help to test your services. Empower QA to independently configure and deploy different versions of microservices to a test environment on their own. They can turn even their own local machine or any remote infrastructure they have access to, into a test environment.
+QA no longer needs help to test your services. Enable them to autonomously configure and deploy various versions of microservices to test environments. They have the flexibility to run arbitrary workloads on any accessible nodes, potentially transforming their local machines or any remote infrastructures into testing platforms.
 
 #### ⛵️ Container management across environments
 
@@ -58,7 +58,7 @@ Bring transparency to your SDLC by configuring versions and deployments of your 
 
 Editing container settings no longer requires direct access or expertise in JSON formatting. Our platform provides a user-friendly JSON editor, enabling you to modify settings without accessing the containers. In case of deployment issues, you can easily make necessary adjustments using the platform's config editor screen. Additionally, you can create bundle configurations to avoid manual configuration for each container.
 
-## Demo
+## Demo (2 mins)
 
 https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a7e4-c6ec4f727b7f.mp4
 
