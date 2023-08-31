@@ -1,5 +1,6 @@
 import { ROUTE_LOGIN, ROUTE_REGISTER, verificationUrl } from '@app/routes'
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../utils/test.fixture'
 import { deleteUserByEmail, kratosFromBaseURL, screenshotPath, USER_EMAIL, USER_PASSWORD } from '../utils/common'
 
 const REGISTERED_USER_EMAIL = `r.${USER_EMAIL}`

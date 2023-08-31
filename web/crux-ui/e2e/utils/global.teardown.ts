@@ -1,4 +1,4 @@
-import { exec, ExecOptions } from 'child_process'
+import { exec, ExecOptions, execSync } from 'child_process'
 /* eslint-disable import/no-extraneous-dependencies */
 import { internalError } from '@app/error-responses'
 import { UserMeta } from '@app/models'
@@ -8,10 +8,13 @@ import { BASE_URL } from '../../playwright.config'
 import {
   cruxUrlFromEnv,
   deleteUserByEmail,
+  execAsync,
+  getExecOptions,
   getUserByEmail,
   getUserSessionToken,
   kratosFromConfig,
   kratosFrontendFromConfig,
+  logCmdOutput,
   USER_EMAIL,
 } from './common'
 
@@ -84,15 +87,19 @@ export const globalTeardown = async () => {
   logInfo('fetch', 'delete user')
   await deleteUserByEmail(kratos, USER_EMAIL)
 
-  const settings: ExecOptions =
-    process.platform === 'win32'
-      ? {
-          shell: 'C:\\Program Files\\git\\git-bash.exe',
-        }
-      : null
+  const settings = getExecOptions()
 
   logInfo('docker', 'remove stack')
 
-  exec(`docker rm -f $(docker ps -a -q --filter "name=^pw")`, settings)
-  exec('docker rm -f dagent', settings)
+  await execAsync(`docker rm -f $(docker ps -a -q --filter "name=^pw")`, settings)
+
+  if (!process.env.CI) {
+    // When running in CI a pipeline step will gather the dagent logs
+    const dagentInspect = await execAsync('docker inspect dagent', settings)
+    if (dagentInspect.exitCode === 0) {
+      logInfo('Saved dagent logs to ./e2e_results/dagent.log')
+      await execAsync('docker logs dagent > ./e2e_results/dagent.log 2>&1', settings, logCmdOutput(true))
+    }
+    await execAsync('docker rm -f dagent', settings)
+  }
 }

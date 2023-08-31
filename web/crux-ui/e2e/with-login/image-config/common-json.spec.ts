@@ -1,4 +1,5 @@
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
+import { test } from '../../utils/test.fixture'
 import { TEAM_ROUTES } from 'e2e/utils/common'
 import { createStorage } from 'e2e/utils/storages'
 import {
@@ -19,7 +20,8 @@ import {
   wsPatchMatchVolume,
 } from 'e2e/utils/websocket-match'
 import { createImage, createProject, createVersion } from '../../utils/projects'
-import { waitSocket, wsPatchSent } from '../../utils/websocket'
+import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
+import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 
 const setup = async (
   page: Page,
@@ -34,12 +36,15 @@ const setup = async (
   return { projectId, versionId, imageId }
 }
 
+test.describe.configure({ mode: 'parallel' })
+
 test.describe('Image common config from JSON', () => {
   test('Container name should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'name-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -52,7 +57,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.name = name
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchContainerName(name))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchContainerName(name))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -64,8 +69,9 @@ test.describe('Image common config from JSON', () => {
   test('Expose strategy should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'expose-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -76,7 +82,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.expose = 'exposeWithTls'
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchExpose('exposeWithTls'))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchExpose('exposeWithTls'))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -88,8 +94,9 @@ test.describe('Image common config from JSON', () => {
   test('User should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'user-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -102,7 +109,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.user = user
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchUser(user))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchUser(user))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -114,8 +121,9 @@ test.describe('Image common config from JSON', () => {
   test('TTY should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'tty-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -126,7 +134,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.tty = true
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchTTY(true))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchTTY(true))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -138,8 +146,9 @@ test.describe('Image common config from JSON', () => {
   test('Port should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'port-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -155,7 +164,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.ports = [{ internal: internalAsNumber, external: externalAsNumber }]
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchPorts(internal, external))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchPorts(internal, external))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -171,8 +180,9 @@ test.describe('Image common config from JSON', () => {
   test('Port ranges should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'port-range-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -197,7 +207,12 @@ test.describe('Image common config from JSON', () => {
       },
     ]
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchPortRange(internalFrom, externalFrom, internalTo, externalTo))
+    const wsSent = wsPatchSent(
+      ws,
+      wsRoute,
+      WS_TYPE_PATCH_IMAGE,
+      wsPatchMatchPortRange(internalFrom, externalFrom, internalTo, externalTo),
+    )
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -217,8 +232,9 @@ test.describe('Image common config from JSON', () => {
   test('Secrets should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'secrets-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -232,7 +248,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.secrets = [{ key: secret, required: true }]
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchSecret(secret, true))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchSecret(secret, true))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -245,8 +261,9 @@ test.describe('Image common config from JSON', () => {
   test('Commands should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'commands-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -259,7 +276,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.commands = [command]
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchCommand(command))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchCommand(command))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -271,8 +288,9 @@ test.describe('Image common config from JSON', () => {
   test('Arguments should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'arguments-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -285,7 +303,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.args = [argument]
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchArgument(argument))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchArgument(argument))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -296,8 +314,9 @@ test.describe('Image common config from JSON', () => {
 
   test('Routing should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'routing-json', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -313,7 +332,12 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.routing = { domain, path, uploadLimit, stripPath }
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchRouting(domain, path, uploadLimit, stripPath))
+    const wsSent = wsPatchSent(
+      ws,
+      wsRoute,
+      WS_TYPE_PATCH_IMAGE,
+      wsPatchMatchRouting(domain, path, uploadLimit, stripPath),
+    )
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -327,8 +351,9 @@ test.describe('Image common config from JSON', () => {
 
   test('Environment should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'environment-json', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -342,7 +367,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.environment = { [key]: value }
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchEnvironment(key, value))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchEnvironment(key, value))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -354,8 +379,9 @@ test.describe('Image common config from JSON', () => {
 
   test('Config container should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'config-container-json', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -370,7 +396,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.configContainer = { image: img, volume, path, keepFiles: true }
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchConfigContainer(img, volume, path, true))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchConfigContainer(img, volume, path, true))
     jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -385,8 +411,9 @@ test.describe('Image common config from JSON', () => {
 
   test('Init containers should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'init-container-json', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -419,6 +446,7 @@ test.describe('Image common config from JSON', () => {
     const wsSent = wsPatchSent(
       ws,
       wsRoute,
+      WS_TYPE_PATCH_IMAGE,
       wsPatchMatchInitContainer(name, image, volName, volPath, arg, cmd, envKey, envVal),
     )
     jsonEditor.fill(JSON.stringify(json))
@@ -439,8 +467,9 @@ test.describe('Image common config from JSON', () => {
 
   test('Volume should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'volume-json', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -456,7 +485,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.volumes = [{ name: name, path: path, type: 'rwo', class: volumeClass, size: size }]
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchVolume(name, size, path, volumeClass))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchVolume(name, size, path, volumeClass))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -471,6 +500,7 @@ test.describe('Image common config from JSON', () => {
   test('Storage should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'storage-json', '1.0.0', 'redis')
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const volumeName = 'volume-name'
     const size = '1024'
@@ -480,8 +510,9 @@ test.describe('Image common config from JSON', () => {
     const storageName = 'image-json-storage'
     const storageId = await createStorage(page, storageName, 'storage.com', '1234', '12345')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -493,7 +524,7 @@ test.describe('Image common config from JSON', () => {
     json.volumes = [{ name: volumeName, path: path, type: 'rwo', class: volumeClass, size: size }]
     json.storage = { storageId: storageId, bucket: bucketPath, path: volumeName }
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchStorage(storageId, bucketPath, volumeName))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchStorage(storageId, bucketPath, volumeName))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
