@@ -3,8 +3,6 @@ import { WsMessage } from '@app/websockets/common'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Page, WebSocket } from 'playwright'
 
-const DEBUG = !!process.env.REQUESTTHROTTLE
-
 export type WebSocketRef = {
   current?: WebSocket
 }
@@ -13,8 +11,8 @@ export type WebSocketRef = {
  * Waits for the first WebSocket of the page, then updates the ref
  * each time the socket changes.
  */
-export const waitSocketRef = (page: Page): Promise<WebSocketRef> => {
-  return new Promise<WebSocketRef>(resolve => {
+export const waitSocketRef = (page: Page): Promise<WebSocketRef> =>
+  new Promise<WebSocketRef>(resolve => {
     const ref: WebSocketRef = {
       current: null,
     }
@@ -23,8 +21,8 @@ export const waitSocketRef = (page: Page): Promise<WebSocketRef> => {
       if (it.url().endsWith('/api')) {
         ref.current = it
 
-        if (DEBUG) {
-          it.on('close', it => {
+        if (process.env.DEBUG) {
+          it.on('close', () => {
             console.debug('Socket closed')
           })
           it.on('socketerror', err => {
@@ -36,20 +34,19 @@ export const waitSocketRef = (page: Page): Promise<WebSocketRef> => {
       }
     })
   })
-}
 
-export const waitSocketReceived = (
+export const waitSocketReceived = async (
   wsRef: WebSocketRef,
   route: string,
   type: string = null,
   match: (data: any) => boolean = null,
-) => {
+): Promise<void> => {
   const ws = wsRef.current
   if (!ws) {
     throw new Error('waitSocketReceived socket ref is null!')
   }
 
-  ws.waitForEvent(
+  await ws.waitForEvent(
     'framereceived',
     !type && !match
       ? undefined
@@ -74,7 +71,7 @@ export const waitSocketSent = async (
   route: string,
   type: string = null,
   match: (data: any) => boolean = null,
-) => {
+): Promise<void> => {
   const ws = wsRef.current
   if (!ws) {
     throw new Error('waitSocketSent socket ref is null!')
@@ -105,7 +102,7 @@ export const wsPatchSent = async (
   route: string,
   sentWsType: string,
   match: (payload: any) => boolean = null,
-) => {
+): Promise<void> => {
   const frameReceived = waitSocketReceived(wsRef, route, WS_TYPE_PATCH_RECEIVED)
 
   await waitSocketSent(wsRef, route, sentWsType, match)
