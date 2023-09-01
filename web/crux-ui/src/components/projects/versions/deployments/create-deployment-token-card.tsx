@@ -8,12 +8,12 @@ import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateDeploymentToken, DeploymentDetails, DeploymentToken, DeploymentTokenCreated } from '@app/models'
 import { apiDocsUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
 import { createDeploymentTokenSchema } from '@app/validations'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject, useEffect, useState } from 'react'
 
@@ -46,33 +46,32 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useFormik({
-    validationSchema: createDeploymentTokenSchema,
-    initialValues: {
-      name: '',
-      expirationInDays: EXPIRATION_VALUES[0],
-    } as CreateDeploymentToken,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
+  const formik = useDyoFormik(
+    {
+      validationSchema: createDeploymentTokenSchema,
+      initialValues: {
+        name: '',
+        expirationInDays: EXPIRATION_VALUES[0],
+      } as CreateDeploymentToken,
+      onSubmit: async (values, { setSubmitting, setFieldError }) => {
+        setSubmitting(true)
 
-      const res = await sendForm('PUT', routes.deployment.api.token(deployment.id), values as CreateDeploymentToken)
+        const res = await sendForm('PUT', routes.deployment.api.token(deployment.id), values as CreateDeploymentToken)
 
-      if (res.ok) {
-        const json = await res.json()
-        const result = json as DeploymentTokenCreated
+        if (res.ok) {
+          const json = await res.json()
+          const result = json as DeploymentTokenCreated
 
-        setSubmitting(false)
-        setToken(result)
-      } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
-      }
+          setSubmitting(false)
+          setToken(result)
+        } else {
+          setSubmitting(false)
+          handleApiError(res, setFieldError)
+        }
+      },
     },
-  })
-
-  useEffect(() => {
-    submitRef.current = formik.submitForm
-  }, [submitRef, formik.submitForm])
+    submitRef,
+  )
 
   return (
     <DyoCard className={className}>

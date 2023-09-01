@@ -41,35 +41,34 @@ const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
     }
   }, [nodes, t])
 
-  const formik = useDyoFormik({
-    initialValues: {
-      nodeId: deployment.node.id,
-      prefix: deployment.version.type === 'incremental' ? deployment.prefix : `${deployment.prefix}-copy`,
-      note: deployment.note,
-    } as CopyDeployment,
-    validationSchema: copyDeploymentSchema,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
+  const formik = useDyoFormik(
+    {
+      initialValues: {
+        nodeId: deployment.node.id,
+        prefix: deployment.version.type === 'incremental' ? deployment.prefix : `${deployment.prefix}-copy`,
+        note: deployment.note,
+      } as CopyDeployment,
+      validationSchema: copyDeploymentSchema,
+      onSubmit: async (values, { setSubmitting, setFieldError }) => {
+        setSubmitting(true)
 
-      const res = await sendForm('POST', routes.deployment.api.copy(deployment.id), values)
+        const res = await sendForm('POST', routes.deployment.api.copy(deployment.id), values)
 
-      setSubmitting(false)
+        setSubmitting(false)
 
-      if (res.ok) {
-        const copiedDeployment = (await res.json()) as Deployment
-        onDeplyomentCopied(copiedDeployment.id)
-      } else if (res.status === 409) {
-        // There is already a deployment for the selected node with the same prefix
-        toast.error(t('alreadyHaveDeployment'))
-      } else {
-        handleApiError(res, setFieldError)
-      }
+        if (res.ok) {
+          const copiedDeployment = (await res.json()) as Deployment
+          onDeplyomentCopied(copiedDeployment.id)
+        } else if (res.status === 409) {
+          // There is already a deployment for the selected node with the same prefix
+          toast.error(t('alreadyHaveDeployment'))
+        } else {
+          handleApiError(res, setFieldError)
+        }
+      },
     },
-  })
-
-  useEffect(() => {
-    submitRef.current = formik.submitForm
-  }, [submitRef, formik.submitForm])
+    submitRef,
+  )
 
   return (
     <DyoCard className={className}>

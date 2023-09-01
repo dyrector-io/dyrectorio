@@ -42,60 +42,59 @@ const EditTeamCard = (props: EditTeamCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik({
-    initialValues: {
-      name: team.name,
-      slug: team.slug,
-    },
-    validationSchema: !editing ? createTeamSchema : updateTeamSchema,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      const body: CreateTeam | UpdateTeam = {
-        ...values,
-      }
-
-      if (editing && propsTeam.slug !== body.slug) {
-        const confirmed = await confirm({
-          title: t('areYouSureChangeSlug', propsTeam),
-          description: t('changingSlugHaveToAdjust'),
-        })
-
-        if (!confirmed) {
-          return
+  const formik = useDyoFormik(
+    {
+      initialValues: {
+        name: team.name,
+        slug: team.slug,
+      },
+      validationSchema: !editing ? createTeamSchema : updateTeamSchema,
+      onSubmit: async (values, { setSubmitting, setFieldError }) => {
+        const body: CreateTeam | UpdateTeam = {
+          ...values,
         }
-      }
 
-      setSubmitting(true)
+        if (editing && propsTeam.slug !== body.slug) {
+          const confirmed = await confirm({
+            title: t('areYouSureChangeSlug', propsTeam),
+            description: t('changingSlugHaveToAdjust'),
+          })
 
-      const res = await (!editing
-        ? sendForm('POST', API_TEAMS, body as CreateTeam)
-        : sendForm('PUT', teamApiUrl(team.id), body as UpdateTeam))
+          if (!confirmed) {
+            return
+          }
+        }
 
-      if (res.ok) {
-        let result: Team
-        if (res.status !== 204) {
-          const json = await res.json()
-          result = json as Team
+        setSubmitting(true)
+
+        const res = await (!editing
+          ? sendForm('POST', API_TEAMS, body as CreateTeam)
+          : sendForm('PUT', teamApiUrl(team.id), body as UpdateTeam))
+
+        if (res.ok) {
+          let result: Team
+          if (res.status !== 204) {
+            const json = await res.json()
+            result = json as Team
+          } else {
+            result = {
+              ...team,
+              name: values.name,
+              slug: values.slug,
+            } as Team
+          }
+
+          setTeam(result)
+          setSubmitting(false)
+          onTeamEdited(result)
         } else {
-          result = {
-            ...team,
-            name: values.name,
-            slug: values.slug,
-          } as Team
+          setSubmitting(false)
+          handleApiError(res, setFieldError)
         }
-
-        setTeam(result)
-        setSubmitting(false)
-        onTeamEdited(result)
-      } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
-      }
+      },
     },
-  })
-
-  useEffect(() => {
-    submitRef.current = formik.submitForm
-  }, [submitRef, formik.submitForm])
+    submitRef,
+  )
 
   return (
     <DyoCard className={className}>

@@ -52,45 +52,44 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik({
-    initialValues: {
-      ...notification,
-    },
-    validationSchema: notificationSchema,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
+  const formik = useDyoFormik(
+    {
+      initialValues: {
+        ...notification,
+      },
+      validationSchema: notificationSchema,
+      onSubmit: async (values, { setSubmitting, setFieldError }) => {
+        setSubmitting(true)
 
-      const request: CreateNotification | UpdateNotification = {
-        ...values,
-      }
-
-      const res = await (editMode
-        ? sendForm('PUT', routes.notification.api.details(notification.id), request as UpdateNotification)
-        : sendForm('POST', routes.notification.api.list(), request as CreateNotification))
-
-      if (res.ok) {
-        let result: NotificationDetails
-        if (res.status !== 204) {
-          result = (await res.json()) as NotificationDetails
-        } else {
-          result = {
-            ...values,
-          }
+        const request: CreateNotification | UpdateNotification = {
+          ...values,
         }
 
-        setNotification(result)
-        setSubmitting(false)
-        onNotificationEdited(result as NotificationDetails)
-      } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
-      }
-    },
-  })
+        const res = await (editMode
+          ? sendForm('PUT', routes.notification.api.details(notification.id), request as UpdateNotification)
+          : sendForm('POST', routes.notification.api.list(), request as CreateNotification))
 
-  useEffect(() => {
-    submitRef.current = formik.submitForm
-  }, [submitRef, formik.submitForm])
+        if (res.ok) {
+          let result: NotificationDetails
+          if (res.status !== 204) {
+            result = (await res.json()) as NotificationDetails
+          } else {
+            result = {
+              ...values,
+            }
+          }
+
+          setNotification(result)
+          setSubmitting(false)
+          onNotificationEdited(result as NotificationDetails)
+        } else {
+          setSubmitting(false)
+          handleApiError(res, setFieldError)
+        }
+      },
+    },
+    submitRef,
+  )
 
   return (
     <DyoCard className={className}>

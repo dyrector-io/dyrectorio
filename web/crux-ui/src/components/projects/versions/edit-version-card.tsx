@@ -47,44 +47,43 @@ const EditVersionCard = (props: EditVersionCardProps) => {
 
   const [versionHint, setVersionHint] = useVersionHint(version.name)
 
-  const formik = useDyoFormik({
-    initialValues: {
-      ...version,
-    },
-    validationSchema: !editing ? createVersionSchema : updateVersionSchema,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
+  const formik = useDyoFormik(
+    {
+      initialValues: {
+        ...version,
+      },
+      validationSchema: !editing ? createVersionSchema : updateVersionSchema,
+      onSubmit: async (values, { setSubmitting, setFieldError }) => {
+        setSubmitting(true)
 
-      const body: CreateVersion | UpdateVersion = values
+        const body: CreateVersion | UpdateVersion = values
 
-      const res = await (!editing
-        ? sendForm('POST', routes.project.versions(project.id).api.list(), body as CreateVersion)
-        : sendForm('PUT', routes.project.versions(project.id).api.details(version.id), body as UpdateVersion))
+        const res = await (!editing
+          ? sendForm('POST', routes.project.versions(project.id).api.list(), body as CreateVersion)
+          : sendForm('PUT', routes.project.versions(project.id).api.details(version.id), body as UpdateVersion))
 
-      if (res.ok) {
-        let result: EditableVersion
-        if (res.status !== 204) {
-          const json = await res.json()
-          result = json as EditableVersion
+        if (res.ok) {
+          let result: EditableVersion
+          if (res.status !== 204) {
+            const json = await res.json()
+            result = json as EditableVersion
+          } else {
+            result = {
+              ...values,
+            } as EditableVersion
+          }
+
+          setVersion(result)
+          setSubmitting(false)
+          onVersionEdited(result)
         } else {
-          result = {
-            ...values,
-          } as EditableVersion
+          setSubmitting(false)
+          handleApiError(res, setFieldError)
         }
-
-        setVersion(result)
-        setSubmitting(false)
-        onVersionEdited(result)
-      } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
-      }
+      },
     },
-  })
-
-  useEffect(() => {
-    submitRef.current = formik.submitForm
-  }, [submitRef, formik.submitForm])
+    submitRef,
+  )
 
   return (
     <DyoCard className={className}>

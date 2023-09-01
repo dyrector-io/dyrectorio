@@ -33,33 +33,32 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
 
   const [versionHint, setVersionHint] = useVersionHint(null)
 
-  const formik = useDyoFormik({
-    initialValues: {
-      name: '',
-      changelog: '',
+  const formik = useDyoFormik(
+    {
+      initialValues: {
+        name: '',
+        changelog: '',
+      },
+      validationSchema: increaseVersionSchema,
+      onSubmit: async (values, { setSubmitting, setFieldError }) => {
+        setSubmitting(true)
+
+        const body: IncreaseVersion = values
+
+        const res = await sendForm('POST', routes.project.versions(project.id).api.increase(parent.id), body)
+
+        if (res.ok) {
+          const result = (await res.json()) as Version
+          setSubmitting(false)
+          onVersionIncreased(result)
+        } else {
+          setSubmitting(false)
+          handleApiError(res, setFieldError)
+        }
+      },
     },
-    validationSchema: increaseVersionSchema,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
-      const body: IncreaseVersion = values
-
-      const res = await sendForm('POST', routes.project.versions(project.id).api.increase(parent.id), body)
-
-      if (res.ok) {
-        const result = (await res.json()) as Version
-        setSubmitting(false)
-        onVersionIncreased(result)
-      } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
-      }
-    },
-  })
-
-  useEffect(() => {
-    submitRef.current = formik.submitForm
-  }, [submitRef, formik.submitForm])
+    submitRef,
+  )
 
   return (
     <DyoCard className={className}>

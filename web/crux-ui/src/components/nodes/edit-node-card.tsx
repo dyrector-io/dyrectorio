@@ -151,50 +151,49 @@ const EditNodeCard = (props: EditNodeCardProps) => {
     })
   }
 
-  const formik = useDyoFormik({
-    initialValues: node,
-    validationSchema: nodeSchema,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
+  const formik = useDyoFormik(
+    {
+      initialValues: node,
+      validationSchema: nodeSchema,
+      onSubmit: async (values, { setSubmitting, setFieldError }) => {
+        setSubmitting(true)
 
-      const body: CreateNode | UpdateNode = {
-        ...values,
-      }
-
-      const res = await (!editing
-        ? sendForm('POST', routes.node.api.list(), body as CreateNode)
-        : sendForm('PUT', routes.node.api.details(node.id), body as UpdateNode))
-
-      if (res.ok) {
-        let result: NodeDetails
-        if (res.status !== 204) {
-          const json = await res.json()
-          result = {
-            ...json,
-            status: node.status,
-          } as NodeDetails
-        } else {
-          result = {
-            ...values,
-            id: node.id,
-            status: node.status,
-            type: node.type,
-          } as NodeDetails
+        const body: CreateNode | UpdateNode = {
+          ...values,
         }
 
-        setNode(result)
-        setSubmitting(false)
-        onNodeEdited(result, editing)
-      } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
-      }
-    },
-  })
+        const res = await (!editing
+          ? sendForm('POST', routes.node.api.list(), body as CreateNode)
+          : sendForm('PUT', routes.node.api.details(node.id), body as UpdateNode))
 
-  useEffect(() => {
-    submitRef.current = formik.submitForm
-  }, [submitRef, formik.submitForm])
+        if (res.ok) {
+          let result: NodeDetails
+          if (res.status !== 204) {
+            const json = await res.json()
+            result = {
+              ...json,
+              status: node.status,
+            } as NodeDetails
+          } else {
+            result = {
+              ...values,
+              id: node.id,
+              status: node.status,
+              type: node.type,
+            } as NodeDetails
+          }
+
+          setNode(result)
+          setSubmitting(false)
+          onNodeEdited(result, editing)
+        } else {
+          setSubmitting(false)
+          handleApiError(res, setFieldError)
+        }
+      },
+    },
+    submitRef,
+  )
 
   const inputClassName = 'my-2 w-full'
 

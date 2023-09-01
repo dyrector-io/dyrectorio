@@ -28,44 +28,43 @@ const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik({
-    initialValues: {
-      name: propsConfigBundle?.name ?? '',
-      description: propsConfigBundle?.description ?? '',
-    },
-    validationSchema: configBundleCreateSchema,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
+  const formik = useDyoFormik(
+    {
+      initialValues: {
+        name: propsConfigBundle?.name ?? '',
+        description: propsConfigBundle?.description ?? '',
+      },
+      validationSchema: configBundleCreateSchema,
+      onSubmit: async (values, { setSubmitting, setFieldError }) => {
+        setSubmitting(true)
 
-      const body: CreateConfigBundle = {
-        ...values,
-      }
-
-      const res = await sendForm('POST', routes.configBundles.api.list(), body)
-
-      if (res.ok) {
-        let result: ConfigBundle
-        if (res.status !== 204) {
-          result = (await res.json()) as ConfigBundle
-        } else {
-          result = {
-            id: propsConfigBundle.id,
-            ...values,
-          }
+        const body: CreateConfigBundle = {
+          ...values,
         }
 
-        setSubmitting(false)
-        onCreated(result)
-      } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
-      }
-    },
-  })
+        const res = await sendForm('POST', routes.configBundles.api.list(), body)
 
-  useEffect(() => {
-    submitRef.current = formik.submitForm
-  }, [submitRef, formik.submitForm])
+        if (res.ok) {
+          let result: ConfigBundle
+          if (res.status !== 204) {
+            result = (await res.json()) as ConfigBundle
+          } else {
+            result = {
+              id: propsConfigBundle.id,
+              ...values,
+            }
+          }
+
+          setSubmitting(false)
+          onCreated(result)
+        } else {
+          setSubmitting(false)
+          handleApiError(res, setFieldError)
+        }
+      },
+    },
+    submitRef,
+  )
 
   return (
     <DyoCard className={className}>

@@ -37,41 +37,40 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik({
-    initialValues: {
-      name: propsTemplate.name,
-      description: propsTemplate.description,
-      type: 'versionless' as ProjectType,
+  const formik = useDyoFormik(
+    {
+      initialValues: {
+        name: propsTemplate.name,
+        description: propsTemplate.description,
+        type: 'versionless' as ProjectType,
+      },
+      validationSchema: applyTemplateSchema,
+      enableReinitialize: true,
+      onSubmit: async (values, { setSubmitting, setFieldError }) => {
+        setSubmitting(true)
+
+        const body: CreateProjectFromTemplate = {
+          id: propsTemplate.id,
+          ...values,
+          teamSlug: routes?.teamSlug,
+        }
+
+        const res = await sendForm('POST', API_TEMPLATES, body)
+
+        if (res.ok) {
+          const json = await res.json()
+          const result = json as Project
+
+          setSubmitting(false)
+          await onTemplateApplied(result.id)
+        } else {
+          setSubmitting(false)
+          handleApiError(res, setFieldError)
+        }
+      },
     },
-    validationSchema: applyTemplateSchema,
-    enableReinitialize: true,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
-      const body: CreateProjectFromTemplate = {
-        id: propsTemplate.id,
-        ...values,
-        teamSlug: routes?.teamSlug,
-      }
-
-      const res = await sendForm('POST', API_TEMPLATES, body)
-
-      if (res.ok) {
-        const json = await res.json()
-        const result = json as Project
-
-        setSubmitting(false)
-        await onTemplateApplied(result.id)
-      } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
-      }
-    },
-  })
-
-  useEffect(() => {
-    submitRef.current = formik.submitForm
-  }, [submitRef, formik.submitForm])
+    submitRef,
+  )
 
   return (
     <DyoCard className={className}>

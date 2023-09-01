@@ -48,40 +48,43 @@ const SettingsPage = (props: SettingsFlow) => {
 
   const onDiscard = () => router.replace(ROUTE_SETTINGS)
 
-  const formik = useDyoFormik({
-    initialValues: {
-      password: '',
-      confirmPassword: '',
+  const formik = useDyoFormik(
+    {
+      initialValues: {
+        password: '',
+        confirmPassword: '',
+      },
+      validationSchema: passwordSchema,
+      onSubmit: async values => {
+        if (values.password !== values.confirmPassword) {
+          setConfirmError(t('errors:confirmPassMismatch'))
+          return
+        }
+
+        setConfirmError(null)
+
+        const data: ChangePassword = {
+          flow: id,
+          csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
+          password: values.password,
+        }
+
+        const res = await sendForm('POST', API_SETTINGS_CHANGE_PASSWORD, data)
+
+        if (res.ok) {
+          router.replace(ROUTE_SETTINGS)
+        } else if (res.status === 410) {
+          await router.reload()
+        } else if (res.status === 403) {
+          router.replace(`${ROUTE_LOGIN}?refresh=${encodeURIComponent(identity.traits.email)}`)
+        } else {
+          const result = await res.json()
+          setUi(result.ui)
+        }
+      },
     },
-    validationSchema: passwordSchema,
-    onSubmit: async values => {
-      if (values.password !== values.confirmPassword) {
-        setConfirmError(t('errors:confirmPassMismatch'))
-        return
-      }
-
-      setConfirmError(null)
-
-      const data: ChangePassword = {
-        flow: id,
-        csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
-        password: values.password,
-      }
-
-      const res = await sendForm('POST', API_SETTINGS_CHANGE_PASSWORD, data)
-
-      if (res.ok) {
-        router.replace(ROUTE_SETTINGS)
-      } else if (res.status === 410) {
-        await router.reload()
-      } else if (res.status === 403) {
-        router.replace(`${ROUTE_LOGIN}?refresh=${encodeURIComponent(identity.traits.email)}`)
-      } else {
-        const result = await res.json()
-        setUi(result.ui)
-      }
-    },
-  })
+    saveRef,
+  )
 
   const pageLink: BreadcrumbLink = {
     name: t('common:profile'),
@@ -94,10 +97,6 @@ const SettingsPage = (props: SettingsFlow) => {
       url: ROUTE_SETTINGS_CHANGE_PASSWORD,
     },
   ]
-
-  useEffect(() => {
-    saveRef.current = formik.submitForm
-  }, [saveRef, formik.submitForm])
 
   return (
     <Layout title={t('changePass')}>

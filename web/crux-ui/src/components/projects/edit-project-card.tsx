@@ -45,46 +45,45 @@ const EditProjectCard = (props: EditProjectCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik({
-    initialValues: {
-      ...project,
-    },
-    validationSchema: !editing ? createProjectSchema : updateProjectSchema,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
+  const formik = useDyoFormik(
+    {
+      initialValues: {
+        ...project,
+      },
+      validationSchema: !editing ? createProjectSchema : updateProjectSchema,
+      onSubmit: async (values, { setSubmitting, setFieldError }) => {
+        setSubmitting(true)
 
-      const body: CreateProject | UpdateProject = {
-        ...values,
-      }
-
-      const res = await (!editing
-        ? sendForm('POST', routes.project.api.list(), body as CreateProject)
-        : sendForm('PUT', routes.project.api.details(project.id), body as UpdateProject))
-
-      if (res.ok) {
-        let result: Project
-        if (res.status !== 204) {
-          const json = await res.json()
-          result = json as Project
-        } else {
-          result = {
-            ...values,
-          } as Project
+        const body: CreateProject | UpdateProject = {
+          ...values,
         }
 
-        setProject(result)
-        setSubmitting(false)
-        onProjectEdited(result)
-      } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
-      }
-    },
-  })
+        const res = await (!editing
+          ? sendForm('POST', routes.project.api.list(), body as CreateProject)
+          : sendForm('PUT', routes.project.api.details(project.id), body as UpdateProject))
 
-  useEffect(() => {
-    submitRef.current = formik.submitForm
-  }, [submitRef, formik.submitForm])
+        if (res.ok) {
+          let result: Project
+          if (res.status !== 204) {
+            const json = await res.json()
+            result = json as Project
+          } else {
+            result = {
+              ...values,
+            } as Project
+          }
+
+          setProject(result)
+          setSubmitting(false)
+          onProjectEdited(result)
+        } else {
+          setSubmitting(false)
+          handleApiError(res, setFieldError)
+        }
+      },
+    },
+    submitRef,
+  )
 
   return (
     <DyoCard className={className}>

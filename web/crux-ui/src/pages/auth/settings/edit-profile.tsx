@@ -46,39 +46,38 @@ const SettingsPage = (props: SettingsFlow) => {
 
   const onDiscard = () => router.replace(ROUTE_SETTINGS)
 
-  const formik = useDyoFormik({
-    initialValues: {
-      email: findAttributes(ui, 'traits.email').value,
-      firstName: findAttributes(ui, 'traits.name.first').value ?? '',
-      lastName: findAttributes(ui, 'traits.name.last').value ?? '',
-    },
-    validationSchema: userProfileSchema,
-    onSubmit: async values => {
-      const data: EditProfile = {
-        flow: id,
-        csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
-        email: values.email,
-        firstName: values.firstName.trim(),
-        lastName: values.lastName.trim(),
-      }
-      const res = await sendForm('POST', API_SETTINGS_EDIT_PROFILE, data)
+  const formik = useDyoFormik(
+    {
+      initialValues: {
+        email: findAttributes(ui, 'traits.email').value,
+        firstName: findAttributes(ui, 'traits.name.first').value ?? '',
+        lastName: findAttributes(ui, 'traits.name.last').value ?? '',
+      },
+      validationSchema: userProfileSchema,
+      onSubmit: async values => {
+        const data: EditProfile = {
+          flow: id,
+          csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
+          email: values.email,
+          firstName: values.firstName.trim(),
+          lastName: values.lastName.trim(),
+        }
+        const res = await sendForm('POST', API_SETTINGS_EDIT_PROFILE, data)
 
-      if (res.ok) {
-        router.replace(ROUTE_SETTINGS)
-      } else if (res.status === 410) {
-        await router.reload()
-      } else if (res.status === 403) {
-        router.replace(`${ROUTE_LOGIN}?refresh=${encodeURIComponent(identity.traits.email)}`)
-      } else {
-        const result = await res.json()
-        setUi(result.ui)
-      }
+        if (res.ok) {
+          router.replace(ROUTE_SETTINGS)
+        } else if (res.status === 410) {
+          await router.reload()
+        } else if (res.status === 403) {
+          router.replace(`${ROUTE_LOGIN}?refresh=${encodeURIComponent(identity.traits.email)}`)
+        } else {
+          const result = await res.json()
+          setUi(result.ui)
+        }
+      },
     },
-  })
-
-  useEffect(() => {
-    saveRef.current = formik.submitForm
-  }, [saveRef, formik.submitForm])
+    saveRef,
+  )
 
   const pageLink: BreadcrumbLink = {
     name: t('common:profile'),
