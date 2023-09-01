@@ -1,4 +1,5 @@
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
+import { test } from '../utils/test.fixture'
 import { TEAM_ROUTES } from 'e2e/utils/common'
 import { createProjectFromTemplate } from '../utils/templates'
 
@@ -58,6 +59,7 @@ const testVersionedTemplate = async (
 
   await page.locator('text="Images"').click()
   await page.waitForURL(`${TEAM_ROUTES.project.details(projectId)}/versions/**`)
+  await page.waitForSelector('h2:text-is("Versions")')
 
   const imageTableBody = await page.locator('.table-row-group')
   const imageRows = await imageTableBody.locator('.table-row')

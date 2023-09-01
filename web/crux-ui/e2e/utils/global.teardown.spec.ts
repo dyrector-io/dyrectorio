@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { test } from './test.fixture'
 import { globalTeardown } from './global.teardown'
 
 test('teardown', async () => {

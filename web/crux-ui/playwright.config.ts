@@ -12,18 +12,16 @@ export const STORAGE_STATE = path.join(__dirname, 'storageState.json')
 const DEBUG = !!process.env.DEBUG || !!process.env.PWDEBUG
 const CI = !!process.env.CI
 
-const createProject = (name: string, testMatch: string | RegExp | (string | RegExp)[], deps?: string[]) => {
-  return {
-    name,
-    testMatch,
-    // If running in DEBUG mode only depend on 'global-setup' so any test can run without running the whole project structure
-    dependencies: DEBUG ? ['global-setup'] : deps ?? ['global-setup'],
-    use: {
-      ...devices['Desktop Chromium'],
-      storageState: STORAGE_STATE,
-    },
-  }
-}
+const createProject = (name: string, testMatch: string | RegExp | (string | RegExp)[], deps?: string[]) => ({
+  name,
+  testMatch,
+  // If running in DEBUG mode only depend on 'global-setup' so any test can run without running the whole project structure
+  dependencies: DEBUG ? ['global-setup'] : deps ?? ['global-setup'],
+  use: {
+    ...devices['Desktop Chromium'],
+    storageState: STORAGE_STATE,
+  },
+})
 
 // Reference: https://playwright.dev/docs/test-configuration
 const config: PlaywrightTestConfig = {
@@ -61,12 +59,20 @@ const config: PlaywrightTestConfig = {
     //   ignoreHTTPSErrors: true,
     // },
     viewport: { width: 1920, height: 1080 },
+
+    // Advanced low level timeouts for faster test failure
+    // https://playwright.dev/docs/test-timeouts#advanced-low-level-timeouts
+    actionTimeout: 30 * 1000,
+    navigationTimeout: 30 * 1000,
   },
   projects: [
     {
       name: 'global-setup',
       testMatch: /global\.setup\.spec\.ts/,
       teardown: 'global-teardown',
+      use: {
+        ...devices['Desktop Chromium'],
+      },
     },
     {
       name: 'global-teardown',
@@ -77,7 +83,7 @@ const config: PlaywrightTestConfig = {
     },
     {
       name: 'without-login',
-      testMatch: /without\-login\/.*spec\.ts/,
+      testMatch: /without-login\/.*spec\.ts/,
       use: {
         ...devices['Desktop Chromium'],
       },
@@ -88,9 +94,10 @@ const config: PlaywrightTestConfig = {
     createProject('template', 'with-login/template.spec.ts'),
     createProject('project', 'with-login/project.spec.ts'),
     createProject('version', 'with-login/version.spec.ts'),
+    createProject('image-config', /with-login\/image\-config\/(.*)/, ['registry', 'template', 'version']),
     createProject('deployment', /with-login\/deployment(.*)\.spec\.ts/, ['image-config', 'nodes']),
     createProject('dagent-deploy', 'with-login/nodes-deploy.spec.ts', ['deployment']),
-    createProject('image-config', /with-login\/image\-config\/(.*)/, ['registry', 'template', 'version']),
+    createProject('resource-copy', 'with-login/resource-copy.spec.ts', ['template', 'version', 'deployment', 'nodes']),
     createProject('dashboard', 'with-login/dashboard.spec.ts'),
     createProject('team', 'with-login/team.spec.ts'),
     createProject('storage', 'with-login/storage.spec.ts'),

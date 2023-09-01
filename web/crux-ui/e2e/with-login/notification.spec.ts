@@ -1,11 +1,12 @@
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
+import { test } from '../utils/test.fixture'
 import { TEAM_ROUTES } from 'e2e/utils/common'
 
 const testCreateNotification = async (page: Page, typeChipText: string, hookUrl: string) => {
   const notificationName = `TEST NOTIFICATION ${typeChipText.toUpperCase()}`
 
   await page.goto(TEAM_ROUTES.notification.list())
-  await page.waitForURL(TEAM_ROUTES.notification.list())
+  await page.waitForSelector('h2:text-is("Notifications")')
 
   await page.locator('button:has-text("Add")').click()
   await expect(page.locator('h4')).toContainText('New notification')
@@ -17,6 +18,7 @@ const testCreateNotification = async (page: Page, typeChipText: string, hookUrl:
   await page.locator('text=Save').click()
 
   await page.waitForURL(TEAM_ROUTES.notification.list())
+  await page.waitForSelector('h2:text-is("Notifications")')
 
   await expect(page.locator(`h3:text("${notificationName}")`)).toHaveCount(1)
 }

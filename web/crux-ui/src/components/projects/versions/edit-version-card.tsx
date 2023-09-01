@@ -14,7 +14,7 @@ import { CreateVersion, EditableVersion, Project, UpdateVersion, VERSION_TYPE_VA
 import { sendForm } from '@app/utils'
 import { createVersionSchema, updateVersionSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { MutableRefObject, useEffect, useState } from 'react'
 
 interface EditVersionCardProps {
   className?: string
@@ -82,9 +82,9 @@ const EditVersionCard = (props: EditVersionCardProps) => {
     },
   })
 
-  if (submitRef) {
+  useEffect(() => {
     submitRef.current = formik.submitForm
-  }
+  }, [submitRef, formik.submitForm])
 
   return (
     <DyoCard className={className}>

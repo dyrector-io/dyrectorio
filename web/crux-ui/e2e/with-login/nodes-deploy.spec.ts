@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../utils/test.fixture'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, screenshotPath, TEAM_ROUTES } from '../utils/common'
 import { deployWithDagent } from '../utils/node-helper'
 import {
@@ -43,6 +44,7 @@ test('Second successful deployment should make the first deployment obsolete', a
   await expect(secondDeployStatus).toHaveCount(1)
 
   await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionId, { section: 'deployments' }))
+  await page.waitForSelector('h2:text-is("Versions")')
   await page.screenshot({ path: screenshotPath('deployment-should-be-obsolete'), fullPage: true })
 
   const deploymentsTableBody = await page.locator('.table-row-group')
@@ -67,12 +69,14 @@ test('Container log should appear after a successful deployment', async ({ page 
   const { url, id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, { prefix })
 
   await page.goto(url)
+  await page.waitForSelector('h2:text-is("Deployments")')
 
   const deployButtonSelector = 'button:text-is("Deploy")'
   await page.waitForSelector(deployButtonSelector)
 
   await page.locator(deployButtonSelector).click()
   await page.waitForURL(TEAM_ROUTES.deployment.deploy(deploymentId))
+  await page.waitForSelector('h2:text-is("Deployments")')
 
   const containerRow = page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
@@ -84,6 +88,7 @@ test('Container log should appear after a successful deployment', async ({ page 
 
   await showLogs.click()
   await page.waitForURL(`${TEAM_ROUTES.node.list()}/**/log**`)
+  await page.waitForSelector('h2:text-is("Nodes")')
 
   await page.waitForSelector('div.font-roboto')
   const terminal = page.locator('div.font-roboto')
@@ -99,12 +104,14 @@ test('Container log should appear on a node container', async ({ page }) => {
   const { url, id: deploymentId } = await addDeploymentToVersionlessProject(page, porjectId, DAGENT_NODE, { prefix })
 
   await page.goto(url)
+  await page.waitForSelector('h2:text-is("Deployments")')
 
   const deployButtonSelector = 'button:text-is("Deploy")'
   await page.waitForSelector(deployButtonSelector)
 
   await page.locator(deployButtonSelector).click()
   await page.waitForURL(TEAM_ROUTES.deployment.deploy(deploymentId))
+  await page.waitForSelector('h2:text-is("Deployments")')
 
   const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
@@ -113,12 +120,15 @@ test('Container log should appear on a node container', async ({ page }) => {
   await expect(runningTag).toBeVisible()
 
   await page.goto(TEAM_ROUTES.node.list())
+  await page.waitForSelector('h2:text-is("Nodes")')
 
   const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
   await nodeButton.click()
 
   await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
+  await page.waitForSelector('h2:text-is("Nodes")')
 
+  await page.waitForSelector('button:text-is("Containers")')
   await page.locator('input[placeholder="Search"]').type(`pw-${prefix}-${imageName}`)
 
   const nodeContainerRow = await page.locator(`span:text-is("pw-${prefix}-${imageName}") >> xpath=../..`)
@@ -135,6 +145,7 @@ test('Container log should appear on a node container', async ({ page }) => {
       name: `pw-${prefix}-${imageName}`,
     }),
   )
+  await page.waitForSelector('h2:text-is("Nodes")')
 
   await page.waitForSelector('div.font-roboto')
   const terminal = await page.locator('div.font-roboto')
@@ -143,11 +154,12 @@ test('Container log should appear on a node container', async ({ page }) => {
 
 test('Container list should show containers on the node screen', async ({ page }) => {
   await page.goto(TEAM_ROUTES.node.list())
+  await page.waitForSelector('h2:text-is("Nodes")')
+
+  await page.locator('input[placeholder="Search"]').type(`dagent`)
 
   const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
   await nodeButton.click()
-
-  await page.locator('input[placeholder="Search"]').type(`dagent`)
 
   const tableBody = await page.locator('.table-row-group')
 
