@@ -36,7 +36,7 @@
     "formik": "^2.4.3",
     "next": "^13.4.12",
     "next-translate": "2.5.2",
-    "openpgp": "^5.9.0",
+    "openpgp": "^5.10.1",
     "prismjs": "^1.29.0",
     "react": "^18.2.0",
     "react-datepicker": "^4.16.0",
