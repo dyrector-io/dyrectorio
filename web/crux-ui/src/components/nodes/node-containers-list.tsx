@@ -26,16 +26,25 @@ import Link from 'next/link'
 interface NodeContainersListProps {
   state: NodeDetailsState
   actions: NodeDetailsActions
+  showHidden?: boolean
 }
 
 type ContainerSorting = 'name' | 'imageTag' | 'state' | 'reason' | 'createdAt'
 
+const isHiddenServiceCategory = (it: string | null) => it && it.startsWith('_')
+
+const isKubeSystemNamespace = (it: string | null) => it && it == 'kube-system'
+
+const isContainerHidden = (it: Container) => {
+  const serviceCategory = it.labels['org.dyrectorio.service-category']
+  const kubeNamespace = it.labels['io.kubernetes.pod.namespace']
+
+  return isHiddenServiceCategory(serviceCategory) || isKubeSystemNamespace(kubeNamespace)
+}
+
 const NodeContainersList = (props: NodeContainersListProps) => {
-  const { state, actions } = props
-  const {
-    containerFilters: { filtered: containers },
-    containerItems,
-  } = state
+  const { state, actions, showHidden } = props
+  const { containerItems } = state
 
   const { t } = useTranslation('nodes')
   const routes = useTeamRoutes()
@@ -55,6 +64,8 @@ const NodeContainersList = (props: NodeContainersListProps) => {
       imageTag: it => imageName(it.imageName, it.imageTag),
     },
   })
+
+  const listItems = showHidden ? sorting.items : sorting.items.filter(it => !isContainerHidden(it))
 
   const headers = [
     'common:name',
@@ -148,7 +159,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
         headerClassName={headerClasses}
         columnWidths={columnWidths}
         itemClassName={itemClasses}
-        data={sorting.items}
+        data={listItems}
         itemBuilder={itemBuilder}
         headerBuilder={sortHeaderBuilder<Container, ContainerSorting>(
           sorting,
@@ -164,7 +175,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
         footer={
           <Paginator
             onChanged={actions.setContainerPagination}
-            length={containers.length}
+            length={listItems.length}
             defaultPagination={{
               pageNumber: 0,
               pageSize: 10,

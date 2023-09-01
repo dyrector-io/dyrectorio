@@ -201,6 +201,8 @@ export class ContainerDto {
   imageTag: string
 
   ports: ContainerPort[]
+
+  labels: Record<string, string>
 }
 
 export class NodeAuditLogQueryDto extends PaginationQuery {

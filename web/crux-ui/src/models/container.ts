@@ -29,6 +29,7 @@ export type Container = {
   state: ContainerState
   reason: string // kubernetes reason (like crashloop backoff) or docker state
   ports: ContainerPort[]
+  labels: Record<string, string>
 }
 
 export type ContainerOperation = 'start' | 'stop' | 'restart'
@@ -788,3 +789,14 @@ export const containerPrefixNameOf = (id: ContainerIdentifier): string =>
 export const containerIsStartable = (state: ContainerState) => state !== 'running' && state !== 'removing'
 export const containerIsStopable = (state: ContainerState) => state === 'running' || state === 'paused'
 export const containerIsRestartable = (state: ContainerState) => state === 'running'
+
+const serviceCategoryIsHidden = (it: string | null) => it && it.startsWith('_')
+
+const kubeNamespaceIsSystem = (it: string | null) => it && it == 'kube-system'
+
+const containerIsHidden = (it: Container) => {
+  const serviceCategory = it.labels['org.dyrectorio.service-category']
+  const kubeNamespace = it.labels['io.kubernetes.pod.namespace']
+
+  return serviceCategoryIsHidden(serviceCategory) || kubeNamespaceIsSystem(kubeNamespace)
+}

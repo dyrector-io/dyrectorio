@@ -552,6 +552,12 @@ export interface ContainerStateItem {
   imageName: string
   imageTag: string
   ports: ContainerStateItemPort[]
+  labels: { [key: string]: string }
+}
+
+export interface ContainerStateItem_LabelsEntry {
+  key: string
+  value: string
 }
 
 export interface ContainerLogMessage {
@@ -745,6 +751,7 @@ function createBaseContainerStateItem(): ContainerStateItem {
     imageName: '',
     imageTag: '',
     ports: [],
+    labels: {},
   }
 }
 
@@ -760,6 +767,12 @@ export const ContainerStateItem = {
       imageName: isSet(object.imageName) ? String(object.imageName) : '',
       imageTag: isSet(object.imageTag) ? String(object.imageTag) : '',
       ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => ContainerStateItemPort.fromJSON(e)) : [],
+      labels: isObject(object.labels)
+        ? Object.entries(object.labels).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
     }
   },
 
@@ -778,6 +791,29 @@ export const ContainerStateItem = {
     } else {
       obj.ports = []
     }
+    obj.labels = {}
+    if (message.labels) {
+      Object.entries(message.labels).forEach(([k, v]) => {
+        obj.labels[k] = v
+      })
+    }
+    return obj
+  },
+}
+
+function createBaseContainerStateItem_LabelsEntry(): ContainerStateItem_LabelsEntry {
+  return { key: '', value: '' }
+}
+
+export const ContainerStateItem_LabelsEntry = {
+  fromJSON(object: any): ContainerStateItem_LabelsEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: ContainerStateItem_LabelsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
     return obj
   },
 }
@@ -1056,6 +1092,10 @@ function fromJsonTimestamp(o: any): Timestamp {
   } else {
     return Timestamp.fromJSON(o)
   }
+}
+
+function isObject(value: any): boolean {
+  return typeof value === 'object' && value !== null
 }
 
 function isSet(value: any): boolean {

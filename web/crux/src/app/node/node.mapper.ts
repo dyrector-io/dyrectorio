@@ -98,17 +98,7 @@ export default class NodeMapper {
   containerStateMessageToContainerMessage(list: ContainerStateListMessage): ContainersStateListMessage {
     return {
       prefix: list.prefix ?? '',
-      containers:
-        list.data?.map(it => ({
-          id: it.id,
-          imageName: it.imageName,
-          imageTag: it.imageTag,
-          command: it.command,
-          ports: it.ports,
-          state: this.containerStateToDto(it.state),
-          reason: it.reason,
-          createdAt: fromTimestamp(it.createdAt),
-        })) ?? [],
+      containers: list.data?.map(it => this.containerStateItemToDto(it)) ?? [],
     }
   }
 
@@ -126,6 +116,7 @@ export default class NodeMapper {
           internal: port.internal,
           external: port.external,
         })) ?? [],
+      labels: it.labels,
     }
   }
 
