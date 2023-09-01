@@ -33,7 +33,7 @@ import kratos from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const SettingsPage = (props: SettingsFlow) => {
   const { ui: propsUi, id, identity } = props
@@ -76,7 +76,9 @@ const SettingsPage = (props: SettingsFlow) => {
     },
   })
 
-  saveRef.current = formik.submitForm
+  useEffect(() => {
+    saveRef.current = formik.submitForm
+  }, [saveRef, formik.submitForm])
 
   const pageLink: BreadcrumbLink = {
     name: t('common:profile'),

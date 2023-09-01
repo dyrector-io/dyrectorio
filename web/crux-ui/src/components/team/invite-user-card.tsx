@@ -11,7 +11,7 @@ import { teamUserListApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { inviteUserSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useRef } from 'react'
+import { MutableRefObject, useEffect, useRef } from 'react'
 import ReCAPTCHA from 'react-google-recaptcha'
 
 interface InviteUserCardProps {
@@ -72,9 +72,9 @@ const InviteUserCard = (props: InviteUserCardProps) => {
     },
   })
 
-  if (submitRef) {
+  useEffect(() => {
     submitRef.current = formik.submitForm
-  }
+  }, [submitRef, formik.submitForm])
 
   return (
     <DyoCard className={className}>

@@ -67,9 +67,9 @@ const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
     },
   })
 
-  if (submitRef) {
+  useEffect(() => {
     submitRef.current = formik.submitForm
-  }
+  }, [submitRef, formik.submitForm])
 
   return (
     <DyoCard className={className}>

@@ -14,7 +14,7 @@ import { CreateStorage, Storage, StorageDetails, UpdateStorage } from '@app/mode
 import { sendForm } from '@app/utils'
 import { storageSchema } from '@app/validations/storage'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { MutableRefObject, useEffect, useState } from 'react'
 
 interface EditStorageCardProps {
   className?: string
@@ -82,9 +82,9 @@ const EditStorageCard = (props: EditStorageCardProps) => {
     },
   })
 
-  if (submitRef) {
+  useEffect(() => {
     submitRef.current = formik.submitForm
-  }
+  }, [submitRef, formik.submitForm])
 
   return (
     <DyoCard className={className}>

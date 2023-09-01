@@ -30,7 +30,7 @@ import { sendForm } from '@app/utils'
 import { nodeSchema } from '@app/validations'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject } from 'react'
+import { MutableRefObject, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import DyoNodeSetup from './dyo-node-setup'
 import NodeConnectionCard from './node-connection-card'
@@ -192,9 +192,9 @@ const EditNodeCard = (props: EditNodeCardProps) => {
     },
   })
 
-  if (submitRef) {
+  useEffect(() => {
     submitRef.current = formik.submitForm
-  }
+  }, [submitRef, formik.submitForm])
 
   const inputClassName = 'my-2 w-full'
 

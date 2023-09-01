@@ -11,7 +11,7 @@ import { ConfigBundle, CreateConfigBundle } from '@app/models/config-bundle'
 import { sendForm } from '@app/utils'
 import { configBundleCreateSchema } from '@app/validations/config-bundle'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject } from 'react'
+import { MutableRefObject, useEffect } from 'react'
 
 interface AddConfigBundleCardProps {
   className?: string
@@ -63,9 +63,9 @@ const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
     },
   })
 
-  if (submitRef) {
+  useEffect(() => {
     submitRef.current = formik.submitForm
-  }
+  }, [submitRef, formik.submitForm])
 
   return (
     <DyoCard className={className}>

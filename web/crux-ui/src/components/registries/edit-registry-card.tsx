@@ -30,7 +30,7 @@ import {
 import { FormikProps, sendForm } from '@app/utils'
 import { registrySchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { MutableRefObject, useEffect, useState } from 'react'
 import GithubRegistryFields from './registry-fields/github-registry-field'
 import GitlabRegistryFields from './registry-fields/gitlab-registry-field'
 import GoogleRegistryFields from './registry-fields/google-registry-field'
@@ -112,9 +112,9 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
     },
   })
 
-  if (submitRef) {
+  useEffect(() => {
     submitRef.current = formik.submitForm
-  }
+  }, [submitRef, formik.submitForm])
 
   const registryType = formik.values.type
 

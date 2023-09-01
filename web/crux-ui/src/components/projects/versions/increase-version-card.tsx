@@ -13,7 +13,7 @@ import { IncreaseVersion, Project, Version } from '@app/models'
 import { sendForm } from '@app/utils'
 import { increaseVersionSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject } from 'react'
+import { MutableRefObject, useEffect } from 'react'
 
 interface IncreaseVersionCardProps {
   className?: string
@@ -57,9 +57,9 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
     },
   })
 
-  if (submitRef) {
+  useEffect(() => {
     submitRef.current = formik.submitForm
-  }
+  }, [submitRef, formik.submitForm])
 
   return (
     <DyoCard className={className}>

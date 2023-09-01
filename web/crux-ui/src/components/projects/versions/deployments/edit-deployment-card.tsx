@@ -12,7 +12,7 @@ import { DeploymentDetails, PatchDeployment } from '@app/models'
 import { sendForm } from '@app/utils'
 import { updateDeploymentSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 interface EditDeploymentCardProps {
   className?: string
@@ -56,9 +56,9 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
     },
   })
 
-  if (submitRef) {
+  useEffect(() => {
     submitRef.current = formik.submitForm
-  }
+  }, [submitRef, formik.submitForm])
 
   return (
     <DyoCard className={className}>

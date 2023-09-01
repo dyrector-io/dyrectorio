@@ -20,7 +20,7 @@ import {
 import { sendForm } from '@app/utils'
 import { notificationSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { MutableRefObject, useEffect, useState } from 'react'
 import { NotificationEventList } from './notification-event-list'
 
 interface EditNotificationCardProps {
@@ -88,9 +88,9 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
     },
   })
 
-  if (submitRef) {
+  useEffect(() => {
     submitRef.current = formik.submitForm
-  }
+  }, [submitRef, formik.submitForm])
 
   return (
     <DyoCard className={className}>

@@ -12,7 +12,7 @@ import { sendForm } from '@app/utils'
 import { generateTokenSchema } from '@app/validations/token'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject } from 'react'
+import { MutableRefObject, useEffect } from 'react'
 
 const EXPIRATION_VALUES = [30, 60, 90, 0]
 
@@ -53,9 +53,9 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
     },
   })
 
-  if (submitRef) {
+  useEffect(() => {
     submitRef.current = formik.submitForm
-  }
+  }, [submitRef, formik.submitForm])
 
   return (
     <DyoCard className={className}>
