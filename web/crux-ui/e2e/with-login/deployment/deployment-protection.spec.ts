@@ -1,4 +1,5 @@
-import { expect, Page, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../../utils/test.fixture'
 import { DAGENT_NODE, TEAM_ROUTES } from 'e2e/utils/common'
 import { deploy } from 'e2e/utils/node-helper'
 import {
@@ -35,10 +36,17 @@ test('Protecting a deployment should fail while an incremental protected deploym
 
   await deploymentsRows.first().click()
   await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**`)
+  await page.waitForSelector('h2:text-is("Deployments")')
+  const editDeploymentId = page.url().split('/').pop()
 
   await page.click('button:text-is("Edit")')
   await page.click('button:right-of(:has-text("Protected"))')
+
+  const patchRequest = page.waitForResponse(it =>
+    it.url().includes(TEAM_ROUTES.deployment.api.details(editDeploymentId)),
+  )
   await page.click('button:text-is("Save")')
+  await patchRequest
 
   const toast = page.getByRole('status')
   await toast.waitFor()
