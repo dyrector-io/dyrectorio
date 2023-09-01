@@ -12,7 +12,7 @@
 
   "nodeAlreadyInUse": "This node is already in use in some deployments.",
 
-  "installTheAgent": "Install the agent",
+  "agentInstall": "Agent installation",
   "generateScript": "Generate script",
   "scriptExpiresIn": "The script expires in:",
   "address": "Address",

@@ -112,7 +112,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
   return (
     <DyoCard>
       <DyoHeading element="h4" className="text-lg text-bright mb-4">
-        {t('installTheAgent')}
+        {t('agentInstall')}
       </DyoHeading>
 
       <div className="text-bright mb-4">
