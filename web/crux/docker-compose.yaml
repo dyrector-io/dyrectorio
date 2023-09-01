@@ -12,6 +12,8 @@ services:
     command: migrate
     networks:
       - crux-intranet
+    labels:
+      - org.dyrectorio.service-category=_internal
   crux:
     container_name: crux
     depends_on:
@@ -34,6 +36,8 @@ services:
     command: serve
     networks:
       - crux-intranet
+    labels:
+      - org.dyrectorio.service-category=_internal
 volumes:
   crux-db:
 networks:
