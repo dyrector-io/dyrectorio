@@ -6,13 +6,13 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { GeneratedToken, GenerateToken } from '@app/models'
 import { API_TOKENS } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { generateTokenSchema } from '@app/validations/token'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useEffect } from 'react'
+import { MutableRefObject } from 'react'
 
 const EXPIRATION_VALUES = [30, 60, 90, 0]
 
@@ -29,7 +29,7 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useFormik(
+  const formik = useDyoFormik(
     {
       validationSchema: generateTokenSchema,
       initialValues: {

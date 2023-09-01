@@ -15,7 +15,7 @@ import { apiDocsUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
 import { createDeploymentTokenSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useEffect, useState } from 'react'
+import { MutableRefObject, useState } from 'react'
 
 const EXPIRATION_VALUES = [30, 60, 90, null]
 

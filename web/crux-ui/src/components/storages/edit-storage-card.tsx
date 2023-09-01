@@ -14,7 +14,7 @@ import { CreateStorage, Storage, StorageDetails, UpdateStorage } from '@app/mode
 import { sendForm } from '@app/utils'
 import { storageSchema } from '@app/validations/storage'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useEffect, useState } from 'react'
+import { MutableRefObject, useState } from 'react'
 
 interface EditStorageCardProps {
   className?: string

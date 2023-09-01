@@ -13,7 +13,7 @@ import { API_TEAMS, teamApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createTeamSchema, updateTeamSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useEffect, useState } from 'react'
+import { MutableRefObject, useState } from 'react'
 
 interface EditTeamCardProps {
   className?: string

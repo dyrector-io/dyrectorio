@@ -33,7 +33,7 @@ import kratos from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 const SettingsPage = (props: SettingsFlow) => {
   const { ui: propsUi, id, identity } = props

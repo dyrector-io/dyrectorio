@@ -20,7 +20,7 @@ import {
 import { sendForm } from '@app/utils'
 import { notificationSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useEffect, useState } from 'react'
+import { MutableRefObject, useState } from 'react'
 import { NotificationEventList } from './notification-event-list'
 
 interface EditNotificationCardProps {

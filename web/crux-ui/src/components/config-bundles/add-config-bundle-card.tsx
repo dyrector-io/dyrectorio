@@ -11,7 +11,7 @@ import { ConfigBundle, CreateConfigBundle } from '@app/models/config-bundle'
 import { sendForm } from '@app/utils'
 import { configBundleCreateSchema } from '@app/validations/config-bundle'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useEffect } from 'react'
+import { MutableRefObject } from 'react'
 
 interface AddConfigBundleCardProps {
   className?: string

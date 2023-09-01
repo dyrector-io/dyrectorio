@@ -13,7 +13,7 @@ import { CreateProject, EditableProject, Project, UpdateProject } from '@app/mod
 import { sendForm } from '@app/utils'
 import { createProjectSchema, updateProjectSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useEffect, useState } from 'react'
+import { MutableRefObject, useState } from 'react'
 
 interface EditProjectCardProps {
   className?: string

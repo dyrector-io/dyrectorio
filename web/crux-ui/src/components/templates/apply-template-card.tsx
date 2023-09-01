@@ -15,7 +15,7 @@ import { sendForm } from '@app/utils'
 import { applyTemplateSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { MutableRefObject, useEffect } from 'react'
+import { MutableRefObject } from 'react'
 
 interface ApplyTemplateCardProps {
   className?: string

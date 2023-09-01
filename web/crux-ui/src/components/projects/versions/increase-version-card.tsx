@@ -13,7 +13,7 @@ import { IncreaseVersion, Project, Version } from '@app/models'
 import { sendForm } from '@app/utils'
 import { increaseVersionSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useEffect } from 'react'
+import { MutableRefObject } from 'react'
 
 interface IncreaseVersionCardProps {
   className?: string

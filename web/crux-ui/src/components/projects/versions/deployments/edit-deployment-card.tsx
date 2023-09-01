@@ -12,7 +12,7 @@ import { DeploymentDetails, PatchDeployment } from '@app/models'
 import { sendForm } from '@app/utils'
 import { updateDeploymentSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import React, { useEffect } from 'react'
+import React from 'react'
 
 interface EditDeploymentCardProps {
   className?: string
