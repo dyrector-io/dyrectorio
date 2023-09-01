@@ -1,5 +1,6 @@
 import { ROUTE_LOGIN } from '@app/routes'
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../utils/test.fixture'
 import { screenshotPath, TEAM_ROUTES, USER_EMAIL, USER_PASSWORD } from '../utils/common'
 
 test('without cookie should redirect to the login page', async ({ page }) => {

@@ -1,5 +1,6 @@
 import { ROUTE_TEAMS, teamUrl } from '@app/routes'
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../utils/test.fixture'
 import { createTeam, deleteTeam } from 'e2e/utils/teams'
 
 test('Can create team', async ({ page }) => {
@@ -9,6 +10,8 @@ test('Can create team', async ({ page }) => {
   await createTeam(page, teamName, slug)
 
   await page.goto(ROUTE_TEAMS)
+  await page.waitForSelector('h2:text-is("Teams")')
+
   await expect(page.locator(`h4:has-text('${teamName}')`)).toBeVisible()
 })
 
@@ -19,6 +22,8 @@ test('Cant create teams with same name', async ({ page }) => {
   await createTeam(page, teamName, slug)
 
   await page.goto(ROUTE_TEAMS)
+  await page.waitForSelector('h2:text-is("Teams")')
+
   await page.locator('button:has-text("Add")').click()
   await page.locator('input[id="name"]').fill(teamName)
   await page.locator('input[id="slug"]').fill(`${slug}-2`)
@@ -34,6 +39,8 @@ test('Cant create teams with same slug', async ({ page }) => {
   await createTeam(page, teamName, slug)
 
   await page.goto(ROUTE_TEAMS)
+  await page.waitForSelector('h2:text-is("Teams")')
+
   await page.locator('button:has-text("Add")').click()
   await page.locator('input[id="name"]').fill(`${teamName}-2`)
   await page.locator('input[id="slug"]').fill(slug)
@@ -49,6 +56,8 @@ test('Can edit team', async ({ page }) => {
   const teamId = await createTeam(page, teamName, slug)
 
   await page.goto(teamUrl(teamId))
+  await page.waitForSelector('h2:text-is("Teams")')
+
   await page.locator('button:has-text("Edit")').click()
   await expect(page.locator('input[id="name"]')).toHaveValue(teamName)
 
@@ -66,16 +75,22 @@ test('Can delete team', async ({ page }) => {
   const teamId = await createTeam(page, teamName, slug)
 
   await page.goto(ROUTE_TEAMS)
+  await page.waitForSelector('h2:text-is("Teams")')
+
   await expect(page.locator(`h4:has-text('${teamName}')`)).toBeVisible()
 
   await deleteTeam(page, teamId)
 
   await page.goto(ROUTE_TEAMS)
+  await page.waitForSelector('h2:text-is("Teams")')
+
   await expect(page.locator(`h4:has-text('${teamName}')`)).not.toBeVisible()
 })
 
 test('Minimum name length requirement should work', async ({ page }) => {
   await page.goto(ROUTE_TEAMS)
+  await page.waitForSelector('h2:text-is("Teams")')
+
   await page.locator('button:has-text("Add")').click()
   await page.locator('h4:has-text("Create new team") >> visible=true')
   await page.locator('input[name="name"]').fill('12')

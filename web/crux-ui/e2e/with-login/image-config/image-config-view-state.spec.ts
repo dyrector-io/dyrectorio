@@ -1,4 +1,5 @@
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
+import { test } from '../../utils/test.fixture'
 import { screenshotPath, TEAM_ROUTES } from '../../utils/common'
 import { createImage, createProject, createVersion } from '../../utils/projects'
 
@@ -24,6 +25,7 @@ test.describe('View state', () => {
     const { projectId, versionId, imageId } = await setup(page, 'editor-state-conf', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const editorButton = await page.waitForSelector('button:has-text("Editor")')
 
@@ -40,6 +42,7 @@ test.describe('View state', () => {
     const { projectId, versionId, imageId } = await setup(page, 'editor-state-json', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
 
