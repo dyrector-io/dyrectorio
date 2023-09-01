@@ -14,5 +14,5 @@ func GetPrefixLabelFilter(prefix string) string {
 }
 
 func GetHiddenServiceCategory(category string) string {
-	return "_" + category;
+	return "_" + category
 }

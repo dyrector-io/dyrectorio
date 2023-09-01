@@ -11,6 +11,7 @@ import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   CONTAINER_STATE_VALUES,
   Container,
+  containerIsHidden,
   containerIsRestartable,
   containerIsStartable,
   containerIsStopable,
@@ -30,17 +31,6 @@ interface NodeContainersListProps {
 }
 
 type ContainerSorting = 'name' | 'imageTag' | 'state' | 'reason' | 'createdAt'
-
-const isHiddenServiceCategory = (it: string | null) => it && it.startsWith('_')
-
-const isKubeSystemNamespace = (it: string | null) => it && it == 'kube-system'
-
-const isContainerHidden = (it: Container) => {
-  const serviceCategory = it.labels['org.dyrectorio.service-category']
-  const kubeNamespace = it.labels['io.kubernetes.pod.namespace']
-
-  return isHiddenServiceCategory(serviceCategory) || isKubeSystemNamespace(kubeNamespace)
-}
 
 const NodeContainersList = (props: NodeContainersListProps) => {
   const { state, actions, showHidden } = props
@@ -65,7 +55,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
     },
   })
 
-  const listItems = showHidden ? sorting.items : sorting.items.filter(it => !isContainerHidden(it))
+  const listItems = showHidden ? sorting.items : sorting.items.filter(it => !containerIsHidden(it))
 
   const headers = [
     'common:name',

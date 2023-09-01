@@ -790,11 +790,9 @@ export const containerIsStartable = (state: ContainerState) => state !== 'runnin
 export const containerIsStopable = (state: ContainerState) => state === 'running' || state === 'paused'
 export const containerIsRestartable = (state: ContainerState) => state === 'running'
 
-const serviceCategoryIsHidden = (it: string | null) => it && it.startsWith('_')
-
-const kubeNamespaceIsSystem = (it: string | null) => it && it == 'kube-system'
-
-const containerIsHidden = (it: Container) => {
+export const serviceCategoryIsHidden = (it: string | null) => it && it.startsWith('_')
+export const kubeNamespaceIsSystem = (it: string | null) => it && it === 'kube-system'
+export const containerIsHidden = (it: Container) => {
   const serviceCategory = it.labels['org.dyrectorio.service-category']
   const kubeNamespace = it.labels['io.kubernetes.pod.namespace']
 
