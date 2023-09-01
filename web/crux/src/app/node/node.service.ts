@@ -40,11 +40,11 @@ export default class NodeService {
   private readonly logger = new Logger(NodeService.name)
 
   constructor(
-    private teamRepository: TeamRepository,
-    private prisma: PrismaService,
-    private agentService: AgentService,
-    private mapper: NodeMapper,
-    private notificationService: DomainNotificationService,
+    private readonly teamRepository: TeamRepository,
+    private readonly prisma: PrismaService,
+    private readonly agentService: AgentService,
+    private readonly mapper: NodeMapper,
+    private readonly notificationService: DomainNotificationService,
   ) {}
 
   async checkNodeIsInTheTeam(teamSlug: string, nodeId: string, identity: Identity): Promise<boolean> {
@@ -82,15 +82,17 @@ export default class NodeService {
       where: {
         id,
       },
-    })
-
-    const deploymentExists = await this.prisma.deployment.findFirst({
-      where: {
-        nodeId: id,
+      include: {
+        token: true,
+        _count: {
+          select: {
+            deployments: true,
+          },
+        },
       },
     })
 
-    return this.mapper.detailsToDto(node, !!deploymentExists)
+    return this.mapper.detailsToDto(node)
   }
 
   async createNode(teamSlug: string, req: CreateNodeDto, identity: Identity): Promise<NodeDto> {
@@ -122,7 +124,7 @@ export default class NodeService {
       },
     })
 
-    this.agentService.kick(id, 'delete-node', identity.id)
+    await this.agentService.kick(id, 'delete-node', identity.id)
   }
 
   async updateNode(id: string, req: UpdateNodeDto, identity: Identity): Promise<void> {
@@ -156,18 +158,19 @@ export default class NodeService {
         updatedBy: identity.id,
       },
       select: {
+        id: true,
         name: true,
+        type: true,
       },
     })
 
-    const installer = await this.agentService.install(
+    const installer = await this.agentService.startInstallation(
       teamSlug,
-      id,
-      node.name,
-      nodeType,
+      node,
       req.rootPath ?? null,
       req.scriptType,
       req.dagentTraefik ?? null,
+      identity,
     )
 
     return this.mapper.installerToDto(installer)
@@ -189,12 +192,14 @@ export default class NodeService {
         id,
       },
       data: {
-        token: null,
         updatedBy: identity.id,
+        token: {
+          delete: true,
+        },
       },
     })
 
-    this.agentService.kick(id, 'revoke-token', identity.id)
+    await this.agentService.kick(id, 'revoke-token', identity.id)
   }
 
   async subscribeToNodeEvents(teamSlug: string): Promise<Observable<AgentConnectionMessage>> {
@@ -235,8 +240,8 @@ export default class NodeService {
     return stream.watch()
   }
 
-  updateAgent(id: string) {
-    this.agentService.updateAgent(id)
+  async updateAgent(id: string, identity: Identity): Promise<void> {
+    await this.agentService.updateAgent(id, identity)
   }
 
   startContainer(nodeId: string, prefix: string, name: string) {
@@ -329,7 +334,7 @@ export default class NodeService {
     prefix: string,
     oneShot: boolean,
   ): Observable<ContainerStateListMessage> {
-    this.logger.debug(`Opening container state stream for prefix: ${nodeId} - ${prefix}`)
+    this.logger.debug(`Opening container state stream for node - prefix: ${nodeId} - ${prefix}`)
 
     const agent = this.agentService.getByIdOrThrow(nodeId)
     const watcher = agent.upsertContainerStatusWatcher(prefix ?? '', oneShot)
@@ -360,7 +365,7 @@ export default class NodeService {
   async getAuditLog(nodeId: string, query: NodeAuditLogQueryDto): Promise<NodeAuditLogListDto> {
     const { skip, take, from, to } = query
 
-    const where: Prisma.AgentEventWhereInput = {
+    const where: Prisma.NodeEventWhereInput = {
       nodeId,
       AND: {
         createdAt: {
@@ -378,7 +383,7 @@ export default class NodeService {
     }
 
     const [auditLog, total] = await this.prisma.$transaction([
-      this.prisma.agentEvent.findMany({
+      this.prisma.nodeEvent.findMany({
         where,
         orderBy: {
           createdAt: 'desc',
@@ -391,7 +396,7 @@ export default class NodeService {
           data: true,
         },
       }),
-      this.prisma.agentEvent.count({ where }),
+      this.prisma.nodeEvent.count({ where }),
     ])
 
     return {

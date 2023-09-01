@@ -4,23 +4,55 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { getToken } from '@willsoto/nestjs-prometheus'
 import { Subject, firstValueFrom } from 'rxjs'
 import { major, minor } from 'semver'
+import { AgentToken } from 'src/domain/agent-token'
+import { NodeWithToken } from 'src/domain/node'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import { PRODUCTION } from 'src/shared/const'
 import ContainerMapper from '../container/container.mapper'
+import DeployService from '../deploy/deploy.service'
 import { NodeConnectionStatus } from '../node/node.dto'
+import { AGENT_STRATEGY_TYPES } from './agent.connection-strategy.provider'
 import AgentService from './agent.service'
 
 const GrpcNodeConnectionMock = jest.fn().mockImplementation(() => ({
   nodeId: 'agent-id',
   address: 'localhost',
   connectedAt: new Date(),
-  jwt: 'node-jwt',
+  jwt: 'connection-token',
   status: jest.fn().mockReturnValue(new Subject<NodeConnectionStatus>()),
 }))
 
-const createAgentEventMock = jest.fn()
+const CONNECTION_TOKEN: AgentToken = {
+  iat: 0,
+  iss: 'localhost:8000',
+  nonce: 'connection-token-nonce',
+  sub: 'node-id',
+  type: 'connection',
+  version: '0.1.0',
+}
+
+const JwtServiceMock = jest.fn().mockImplementation(() => ({
+  decode: jest.fn((signedToken: string): AgentToken => {
+    switch (signedToken) {
+      default:
+        return CONNECTION_TOKEN
+    }
+  }),
+}))
+
+const createNodeEventMock = jest.fn()
+
+const nodeWithTokenMock: Pick<NodeWithToken, 'id' | 'teamId' | 'token'> = {
+  id: 'node-id',
+  teamId: 'team-id',
+  token: {
+    nodeId: 'node-id',
+    nonce: 'connection-token-nonce',
+    createdBy: 'user-id',
+  },
+}
 
 const mockModules = (env: string, packageVersion: string) => [
   {
@@ -36,33 +68,30 @@ const mockModules = (env: string, packageVersion: string) => [
         new Promise(resolve => {
           fn({
             node: {
-              findUniqueOrThrow: jest.fn().mockReturnValue({
-                id: 'node-id',
-                teamId: 'team-id',
-                token: 'node-jwt',
-              }),
+              findUniqueOrThrow: jest.fn().mockReturnValue(nodeWithTokenMock),
               update: jest.fn(),
-            },
-            agentEvent: {
-              create: jest.fn(),
             },
           }).then(() => {
             resolve(null)
           })
         }),
+      node: {
+        findUniqueOrThrow: jest.fn().mockReturnValue(nodeWithTokenMock),
+        update: jest.fn(),
+      },
+      nodeEvent: {
+        create: createNodeEventMock,
+      },
       team: {
         findUniqueOrThrow: jest.fn().mockReturnValue({
           id: 'team-id',
         }),
       },
-      agentEvent: {
-        create: createAgentEventMock,
-      },
     },
   },
   {
     provide: JwtService,
-    useValue: jest.mocked(JwtService),
+    useValue: new JwtServiceMock(),
   },
   {
     provide: ConfigService,
@@ -89,12 +118,17 @@ const mockModules = (env: string, packageVersion: string) => [
     provide: ContainerMapper,
     useValue: jest.mocked(ContainerMapper),
   },
+  {
+    provide: DeployService,
+    useValue: jest.mocked(DeployService),
+  },
+  ...AGENT_STRATEGY_TYPES,
   AgentService,
 ]
 
 describe('AgentService', () => {
   beforeEach(() => {
-    createAgentEventMock.mockReset()
+    createNodeEventMock.mockReset()
   })
 
   describe('production environment', () => {
@@ -112,7 +146,7 @@ describe('AgentService', () => {
 
     it('handleConnect should let an agent connect with the correct version', async () => {
       const info: AgentInfo = {
-        id: 'agent-id',
+        id: 'node-id',
         version: '1.2.3-githash (1234-5-67)',
         publicKey: 'key',
       }
@@ -126,12 +160,12 @@ describe('AgentService', () => {
       await eventPromise
       expect(agentSub.closed).toBe(false)
 
-      expect(createAgentEventMock).toHaveBeenCalled()
+      expect(createNodeEventMock).toHaveBeenCalled()
     })
 
     it('handleConnect should let an agent connect with and incorrect version and mark it as outdated', async () => {
       const info: AgentInfo = {
-        id: 'agent-id',
+        id: 'node-id',
         version: '2.3.4-githash (1234-5-67)',
         publicKey: 'key',
       }
@@ -149,7 +183,7 @@ describe('AgentService', () => {
         status: 'outdated',
       })
 
-      expect(createAgentEventMock).toHaveBeenCalled()
+      expect(createNodeEventMock).toHaveBeenCalled()
     })
   })
 
@@ -168,7 +202,7 @@ describe('AgentService', () => {
 
     it('handleConnect should let an agent connect with an invalid version', async () => {
       const info: AgentInfo = {
-        id: 'agent-id',
+        id: 'node-id',
         version: 'dev-n/a',
         publicKey: 'key',
       }
@@ -182,7 +216,7 @@ describe('AgentService', () => {
       await eventPromise
       expect(agentSub.closed).toEqual(false)
 
-      expect(createAgentEventMock).toHaveBeenCalled()
+      expect(createNodeEventMock).toHaveBeenCalled()
     })
   })
 })

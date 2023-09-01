@@ -6,7 +6,6 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	commonConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/health"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/internal/version"
@@ -46,56 +45,51 @@ func main() {
 	}
 }
 
-func loadConfiguration() (*config.Configuration, error) {
+func loadConfiguration() (*config.Configuration, *k8s.Secret) {
 	cfg := &config.Configuration{}
+
 	err := util.ReadConfig(cfg)
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed to load configuration")
 	}
-	if err = cfg.ParseAndSetJWT(os.Getenv("GRPC_TOKEN")); err != nil {
-		log.Panic().Err(err).Msg("Failed to parse env GRPC_TOKEN")
-	}
+
 	client := k8s.NewClient(cfg)
 	secretHandler := k8s.NewSecret(context.Background(), client)
-	secret, err := secretHandler.GetValidSecret()
+
+	err = cfg.InjectPrivateKey(secretHandler)
 	if err != nil {
-		return nil, err
+		log.Panic().Err(err).Msg("Failed to load private key")
 	}
 
-	commonConfig.InjectSecret(secret, &cfg.CommonConfiguration)
+	err = cfg.InjectGrpcToken(secretHandler)
+	if err != nil {
+		log.Panic().Err(err).Msg("Failed to load gRPC token")
+	}
 
 	log.Info().Msg("Configuration loaded.")
-	return cfg, nil
+	return cfg, secretHandler
 }
 
 func serve(cCtx *cli.Context) error {
-	cfg, err := loadConfiguration()
-	if err != nil {
-		log.Error().Err(err).Msg("Startup error")
-		return err
-	}
+	cfg, secretHandler := loadConfiguration()
 
-	crane.Serve(cfg)
+	crane.Serve(cfg, secretHandler)
 	return nil
 }
 
 func initKey(cCtx *cli.Context) error {
-	cfg, err := loadConfiguration()
-	if err != nil {
-		return err
-	}
+	cfg, secretHandler := loadConfiguration()
 
 	client := k8s.NewClient(cfg)
 	namespace := cfg.Namespace
 	namespaceHandler := k8s.NewNamespaceClient(cCtx.Context, namespace, client)
-	err = namespaceHandler.EnsureExists(namespace)
+	err := namespaceHandler.EnsureExists(namespace)
 	if err != nil {
 		log.Error().Err(err).Send()
 		return err
 	}
 
-	secretHandler := k8s.NewSecret(context.Background(), client)
-	_, err = secretHandler.GetValidSecret()
+	_, err = secretHandler.GetOrCreatePrivateKey()
 	if err != nil {
 		log.Error().Err(err).Send()
 		return err

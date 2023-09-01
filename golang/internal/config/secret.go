@@ -6,46 +6,23 @@ package config
 import (
 	"errors"
 	"fmt"
-	"os"
-	"syscall"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/rs/zerolog/log"
 )
 
-func CheckGenerateKeys(secretPath string) (string, error) {
-	log.Info().Msgf("Checking key file: %v", secretPath)
-	fileContent, err := os.ReadFile(secretPath) //#nosec G304 -- secret path comes from an env
+var (
+	ErrNonceBlacklisted    = errors.New("nonce is blacklisted")
+	ErrNoGrpcTokenProvided = errors.New("no grpc token provided")
+)
 
-	if errors.Is(err, syscall.EISDIR) {
-		return "", fmt.Errorf("key path is a directory: %w", err)
-	}
-
-	if errors.Is(err, os.ErrNotExist) {
-		log.Debug().Msgf("Key file does not exist: %v", secretPath)
-		return generateKey(secretPath)
-	} else if err != nil {
-		return "", fmt.Errorf("key file can't be read: %w", err)
-	}
-
-	// exists but expired -> migrate present keys?!
-	privateKeyObj, keyErr := crypto.NewKeyFromArmored(string(fileContent))
-
-	if keyErr != nil {
-		return "", keyErr
-	}
-
-	if privateKeyObj == nil {
-		return "", fmt.Errorf("key file is nil: %v", secretPath)
-	}
-
-	if !privateKeyObj.IsExpired() {
-		keyStr, keyErr := privateKeyObj.ArmorWithCustomHeaders("", "")
-
-		return keyStr, keyErr
-	}
-	log.Debug().Msgf("Key file is expired: %v", secretPath)
-	return generateKey(secretPath)
+type SecretStore interface {
+	CheckPermissions() error
+	LoadPrivateKey() (string, error)
+	GetConnectionToken() (string, error)
+	SaveConnectionToken(value string) error
+	GetBlacklistedNonce() (string, error)
+	BlacklistNonce(value string) error
 }
 
 func GenerateKeyString() (string, error) {
@@ -65,21 +42,6 @@ func GenerateKeyString() (string, error) {
 	if keyErr != nil {
 		return "", keyErr
 	}
-	return keyStr, nil
-}
-
-func generateKey(secretPath string) (string, error) {
-	keyStr, keyErr := GenerateKeyString()
-	if keyErr != nil {
-		return "", keyErr
-	}
-
-	fileErr := os.WriteFile(secretPath, []byte(keyStr), os.ModePerm)
-	if fileErr != nil {
-		return "", fileErr
-	}
-	log.Info().Msgf("New key is generated and saved")
-
 	return keyStr, nil
 }
 
@@ -111,6 +73,56 @@ func IsExpiredKey(fileContent string) (bool, error) {
 	return privateKeyObj.IsExpired(), nil
 }
 
-func InjectSecret(secret string, appConfig *CommonConfiguration) {
-	appConfig.SecretPrivateKey = secret
+func ValidateJwtAndCheckNonceBlacklist(secrets SecretStore, unvalidatedToken string) (*ValidJWT, error) {
+	blacklistedNonce, err := secrets.GetBlacklistedNonce()
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := ValidateAndCreateJWT(unvalidatedToken)
+	if err != nil {
+		return nil, err
+	}
+
+	if blacklistedNonce != "" && token.Nonce == blacklistedNonce {
+		return nil, ErrNonceBlacklisted
+	}
+
+	return token, nil
+}
+
+func (c *CommonConfiguration) InjectPrivateKey(secrets SecretStore) error {
+	key, err := secrets.LoadPrivateKey()
+	if err != nil {
+		return err
+	}
+
+	c.SecretPrivateKey = key
+	return nil
+}
+
+func (c *CommonConfiguration) InjectGrpcToken(secrets SecretStore) error {
+	token, err := secrets.GetConnectionToken()
+	if token != "" {
+		c.JwtToken, err = ValidateJwtAndCheckNonceBlacklist(secrets, token)
+		if err == nil {
+			return nil
+		}
+	}
+
+	token = c.GrpcToken
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to validate the connection token. Failing back to the install token")
+	}
+
+	if token == "" {
+		return ErrNoGrpcTokenProvided
+	}
+
+	c.JwtToken, err = ValidateJwtAndCheckNonceBlacklist(secrets, token)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
