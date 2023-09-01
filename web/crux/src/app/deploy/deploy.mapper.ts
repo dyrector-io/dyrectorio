@@ -71,6 +71,7 @@ export default class DeployMapper {
     private auditMapper: AuditMapper,
     @Inject(forwardRef(() => VersionMapper))
     private versionMapper: VersionMapper,
+    @Inject(forwardRef(() => NodeMapper))
     private nodeMapper: NodeMapper,
   ) {}
 

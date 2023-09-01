@@ -31,31 +31,6 @@ func (j jwtTest) run(t *testing.T) {
 	}
 }
 
-func TestConfigSetValueEmpty(t *testing.T) {
-	cfg := &CommonConfiguration{}
-	err := cfg.ParseAndSetJWT("")
-
-	assert.ErrorContains(t, err, "JWT cannot be empty", "field is required, error is expected")
-}
-
-func TestConfigSetValueValid(t *testing.T) {
-	cfg := &CommonConfiguration{}
-	tokenStr := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaXNzIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMj" +
-		"J9.QIsEkshiagbAqIetkMcOtk0PJxH0i_KPGf8lKxTwZh8"
-	err := cfg.ParseAndSetJWT(tokenStr)
-
-	assert.Nil(t, err, "for a valid token error should be nil")
-	assert.EqualValues(t, tokenStr, cfg.GrpcToken.StringifiedToken)
-}
-
-func TestConfigSetValueInvalid(t *testing.T) {
-	cfg := &CommonConfiguration{}
-	err := cfg.ParseAndSetJWT("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaXNzIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMj" +
-		"J9")
-
-	assert.Errorf(t, err, "invalid token should throw error")
-}
-
 func TestJWTValidation(t *testing.T) {
 	tests := []jwtTest{
 		{

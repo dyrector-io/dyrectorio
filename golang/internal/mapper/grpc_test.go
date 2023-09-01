@@ -374,7 +374,7 @@ func testAppConfig() *config.CommonConfiguration {
 		ReadHeaderTimeout:    30 * time.Second,
 		DefaultRegistry:      "",
 		SecretPrivateKey:     "",
-		GrpcToken: &config.ValidJWT{
+		JwtToken: &config.ValidJWT{
 			Issuer:           "test-issuer",
 			Subject:          "test-subject",
 			StringifiedToken: "test-token",

@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import { Node, NodeTypeEnum } from '@prisma/client'
 import { AgentConnectionMessage } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { ContainerState } from 'src/domain/container'
+import { NodeWithToken } from 'src/domain/node'
 import { fromTimestamp } from 'src/domain/utils'
 import {
   ContainerOperation,
@@ -28,7 +29,7 @@ import { ContainersStateListMessage } from './node.message'
 
 @Injectable()
 export default class NodeMapper {
-  constructor(private agentService: AgentService) {}
+  constructor(@Inject(forwardRef(() => AgentService)) private agentService: AgentService) {}
 
   toDto(node: Node): NodeDto {
     return {
@@ -71,14 +72,14 @@ export default class NodeMapper {
     }
   }
 
-  detailsToDto(node: Node, hasDeployment: boolean): NodeDetailsDto {
+  detailsToDto(node: NodeDetails): NodeDetailsDto {
     const installer = this.agentService.getInstallerByNodeId(node.id)
 
     return {
       ...this.toDto(node),
       hasToken: !!node.token,
       install: installer ? this.installerToDto(installer) : null,
-      inUse: hasDeployment,
+      inUse: node._count.deployments > 0,
     }
   }
 
@@ -143,5 +144,11 @@ export default class NodeMapper {
       default:
         return ContainerOperation.UNRECOGNIZED
     }
+  }
+}
+
+type NodeDetails = NodeWithToken & {
+  _count: {
+    deployments: number
   }
 }

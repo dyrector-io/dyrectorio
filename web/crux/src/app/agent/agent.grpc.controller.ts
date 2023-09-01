@@ -57,4 +57,8 @@ export default class AgentController implements GrpcAgentController {
   containerLog(request: Observable<ContainerLogMessage>, _: Metadata, call: NodeGrpcCall): Observable<Empty> {
     return this.service.handleContainerLog(call.connection, request)
   }
+
+  async tokenReplaced(_: Empty, __: Metadata, call: NodeGrpcCall): Promise<Empty> {
+    return await this.service.tokenReplaced(call.connection)
+  }
 }

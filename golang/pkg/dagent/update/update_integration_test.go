@@ -7,8 +7,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/update"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -21,7 +23,14 @@ func TestUpdateContainarizedOnly(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = update.ExecuteSelfUpdate(context.TODO(), cli, "anything", 30)
+	err = update.ExecuteSelfUpdate(context.TODO(), cli, &agent.AgentUpdateRequest{
+		Tag:            "anything",
+		TimeoutSeconds: 30,
+		Token:          "token",
+	}, grpc.UpdateOptions{
+		UpdateAlways:  false,
+		UseContainers: true,
+	})
 	assert.ErrorIs(t, err, &utils.UnknownContainerError{}, "Without containerized context update always fails")
 }
 

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { Identity } from '@ory/kratos-client'
@@ -13,7 +13,7 @@ import {
 } from 'src/domain/container'
 import Deployment from 'src/domain/deployment'
 import { DeploymentTokenPayload, DeploymentTokenScriptGenerator } from 'src/domain/deployment-token'
-import { toPrismaJson } from 'src/domain/utils'
+import { collectChildVersionIds, collectParentVersionIds, toPrismaJson } from 'src/domain/utils'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import PrismaService from 'src/services/prisma.service'
@@ -53,7 +53,7 @@ export default class DeployService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly agentService: AgentService,
+    @Inject(forwardRef(() => AgentService)) private readonly agentService: AgentService,
     readonly imageEventService: ImageEventService,
     private readonly mapper: DeployMapper,
     private readonly containerMapper: ContainerMapper,
@@ -642,6 +642,151 @@ export default class DeployService {
       data: {
         status: DeploymentStatusEnum.inProgress,
       },
+    })
+  }
+
+  async finishDeployment(nodeId: string, finishedDeployment: Deployment, status: DeploymentStatusEnum) {
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
+      select: {
+        status: true,
+        prefix: true,
+        environment: true,
+        configBundles: {
+          include: {
+            configBundle: true,
+          },
+        },
+        version: {
+          select: {
+            id: true,
+            type: true,
+            deployments: {
+              select: {
+                id: true,
+              },
+              where: {
+                nodeId,
+              },
+            },
+          },
+        },
+      },
+      where: {
+        id: finishedDeployment.id,
+      },
+    })
+
+    const finalStatus = status === 'successful' ? 'successful' : 'failed'
+
+    if (deployment.status !== finalStatus) {
+      // update status for sure
+
+      await this.prisma.deployment.update({
+        where: {
+          id: finishedDeployment.id,
+        },
+        data: {
+          status: finalStatus,
+        },
+      })
+
+      deployment.status = finalStatus
+    }
+
+    if (finalStatus !== 'successful') {
+      return
+    }
+
+    await this.prisma.$transaction(async prisma => {
+      await prisma.deployment.updateMany({
+        data: {
+          status: DeploymentStatusEnum.obsolete,
+        },
+        where: {
+          id: {
+            not: finishedDeployment.id,
+          },
+          versionId: deployment.version.id,
+          nodeId,
+          prefix: deployment.prefix,
+          status: {
+            not: DeploymentStatusEnum.preparing,
+          },
+        },
+      })
+
+      const parentVersionIds = await collectParentVersionIds(prisma, deployment.version.id)
+      await prisma.deployment.updateMany({
+        data: {
+          status: DeploymentStatusEnum.obsolete,
+        },
+        where: {
+          versionId: {
+            in: parentVersionIds,
+          },
+          nodeId,
+          prefix: deployment.prefix,
+          status: {
+            not: DeploymentStatusEnum.preparing,
+          },
+        },
+      })
+
+      const childVersionIds = await collectChildVersionIds(prisma, deployment.version.id)
+      await prisma.deployment.updateMany({
+        data: {
+          status: DeploymentStatusEnum.downgraded,
+        },
+        where: {
+          versionId: {
+            in: childVersionIds,
+          },
+          nodeId,
+          prefix: deployment.prefix,
+        },
+      })
+
+      if (deployment.version.type === 'rolling') {
+        return
+      }
+
+      if (finishedDeployment.sharedEnvironment.length > 0) {
+        await prisma.deployment.update({
+          where: {
+            id: finishedDeployment.id,
+          },
+          data: {
+            environment: toPrismaJson(finishedDeployment.sharedEnvironment),
+          },
+        })
+
+        await prisma.configBundleOnDeployments.deleteMany({
+          where: {
+            deploymentId: finishedDeployment.id,
+          },
+        })
+      }
+
+      const configUpserts = Array.from(finishedDeployment.mergedConfigs).map(it => {
+        const [key, config] = it
+        const dbConfig = this.containerMapper.configDataToDb(config)
+
+        return prisma.instanceContainerConfig.upsert({
+          where: {
+            instanceId: key,
+          },
+          update: {
+            ...dbConfig,
+          },
+          create: {
+            ...dbConfig,
+            id: undefined,
+            instanceId: key,
+          },
+        })
+      })
+
+      await Promise.all(configUpserts)
     })
   }
 

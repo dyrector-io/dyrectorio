@@ -55,7 +55,7 @@ func (dog *DeploymentLogger) SetRequestID(requestID string) {
 	dog.requestID = requestID
 }
 
-// Writes to all available streams: std.out and grpc streams
+// Writes to all available streams: std.out and gRPC streams
 func (dog *DeploymentLogger) Write(messages ...string) {
 	for i := range messages {
 		log.Info().Str("deployment", dog.deploymentID).Msg(messages[i])
