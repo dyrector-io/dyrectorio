@@ -1,3 +1,5 @@
+import { coerce } from "semver"
+
 export const REGISTRY_HUB_URL = 'hub.docker.com'
 export const REGISTRY_GITHUB_URL = 'ghcr.io'
 export const PRODUCTION = 'production'
@@ -15,6 +17,9 @@ export const JWT_EXPIRATION_MILLIS = 10 * 60 * 1000 // 10 minutes
 export const CONTAINER_DELETE_TIMEOUT = 1000 // millis
 
 export const DEFAULT_CONTAINER_LOG_TAIL = 40
+
+const AGENT_PROTO_COMPATIBILITY_VERSION = '0.8.0'
+export const AGENT_SUPPORTED_MINIMUM_VERSION = coerce(AGENT_PROTO_COMPATIBILITY_VERSION)
 
 export const API_CREATED_LOCATION_HEADERS = {
   Location: {

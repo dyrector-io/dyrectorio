@@ -743,7 +743,7 @@ export const portToString = (port: ContainerPort): string => {
     return `${external}->None`
   }
 
-  throw new Error('Missing Port Information, provide either an internal or external port number.')
+  return ''
 }
 
 export const containerPortsToString = (ports: ContainerPort[], truncateAfter: number = 2): string => {
