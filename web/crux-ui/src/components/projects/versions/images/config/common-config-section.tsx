@@ -96,6 +96,8 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
   const resetableConfig = propsResetableConfig ?? propsConfig
   const config = configType === 'instance' ? mergeConfigs(imageConfig, propsConfig) : propsConfig
 
+  const exposedPorts = config.ports?.filter(it => !!it.internal) ?? []
+
   const onVolumesChanged = (it: ContainerConfigVolume[]) =>
     onChange({
       volumes: it,
@@ -369,6 +371,35 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   editorOptions={editorOptions}
                   disabled={disabled}
                 />
+                <div className="max-w-lg mb-3 flex flex-row">
+                  <DyoLabel className="my-auto w-40 whitespace-nowrap text-light-eased">{t('common.port')}</DyoLabel>
+
+                  {exposedPorts.length > 0 ? (
+                    <DyoChips
+                      className="w-full ml-2"
+                      choices={config.ports.map(it => it.internal)}
+                      selection={config.routing?.port ?? null}
+                      converter={(it: number | null) =>
+                        config.ports?.find(port => port?.internal === it)?.internal?.toString()
+                      }
+                      onSelectionChange={it =>
+                        onChange({
+                          routing: {
+                            ...config.routing,
+                            port: it,
+                          },
+                        })
+                      }
+                      disabled={disabled}
+                    />
+                  ) : (
+                    <DyoMessage
+                      className="w-full ml-2"
+                      messageType="info"
+                      message={t('common.noInternalPortsDefined')}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           )}

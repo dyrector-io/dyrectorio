@@ -341,8 +341,8 @@ const createMetricsPortRule = (ports: ContainerPort[]) => {
   }
 
   // eslint-disable-next-line no-template-curly-in-string
-  return portNumberRule.test('metric-port', '${path} is missing the external port definition', value =>
-    value && ports.length > 0 ? ports.some(it => it.external === value) : true,
+  return portNumberRule.test('metric-port', '${path} is missing the internal port definition', value =>
+    value && ports.length > 0 ? ports.some(it => it.internal === value) : true,
   )
 }
 
