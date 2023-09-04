@@ -1,4 +1,4 @@
-import { coerce } from "semver"
+import { coerce } from 'semver'
 
 export const REGISTRY_HUB_URL = 'hub.docker.com'
 export const REGISTRY_GITHUB_URL = 'ghcr.io'
