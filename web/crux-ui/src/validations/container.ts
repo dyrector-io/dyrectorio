@@ -1,19 +1,20 @@
 import { UID_MAX } from '@app/const'
 import {
-  ContainerConfigExposeStrategy,
-  ContainerConfigPortRange,
-  ContainerDeploymentStrategyType,
-  ContainerLogDriverType,
-  ContainerNetworkMode,
-  ContainerRestartPolicyType,
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
   CONTAINER_LOG_DRIVER_VALUES,
   CONTAINER_NETWORK_MODE_VALUES,
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
-  VolumeType,
+  ContainerConfigExposeStrategy,
+  ContainerConfigPortRange,
+  ContainerDeploymentStrategyType,
+  ContainerLogDriverType,
+  ContainerNetworkMode,
   ContainerPort,
+  ContainerRestartPolicyType,
+  Metrics,
+  VolumeType,
 } from '@app/models/container'
 import * as yup from 'yup'
 
@@ -331,17 +332,24 @@ const createMetricsPortRule = (ports: ContainerPort[]) => {
   )
 }
 
-const metricsRule = yup.mixed().when('ports', ([ports]) =>
-  yup
+const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
+  const portRule = createMetricsPortRule(ports)
+
+  return yup
     .object()
-    .shape({
-      path: yup.string().nullable(),
-      port: createMetricsPortRule(ports),
+    .when({
+      is: (it: Metrics) => it.enabled,
+      then: schema =>
+        schema.shape({
+          enabled: yup.boolean(),
+          path: yup.string().nullable(),
+          port: portRule,
+        }),
     })
-    .default({})
     .nullable()
-    .optional(),
-)
+    .optional()
+    .default(null)
+})
 
 const containerConfigBaseSchema = yup.object().shape({
   name: yup.string().required().matches(/^\S+$/g),
