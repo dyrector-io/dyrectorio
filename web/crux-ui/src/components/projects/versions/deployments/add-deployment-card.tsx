@@ -66,6 +66,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       protected: false,
     },
     validationSchema: createDeploymentSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

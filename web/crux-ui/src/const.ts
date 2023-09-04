@@ -41,3 +41,37 @@ export const STORAGE_TEAM_SLUG = 'teamSlug'
 export const COOKIE_TEAM_SLUG = 'crux_team_slug'
 
 export const TOAST_DURATION = 5000 // sec in millis
+
+export const DYO_ICONS = [
+  'goat',
+  'jellyfish',
+  'kangaroo',
+  'shark',
+  'sloth',
+  'buffalo',
+  'cat',
+  'llama',
+  'bug',
+  'shrimp',
+  'donkey',
+  'flamingo',
+  'lion',
+  'hedgehog',
+  'giraffe',
+  'penguin',
+  'bat',
+  'goose',
+  'seal',
+  'spider',
+  'squirrel',
+  'monkey',
+  'gecko',
+  'owl',
+  'dog',
+  'rhino',
+  'bee',
+  'dino',
+  'sheep',
+  'crow',
+  'snail',
+]

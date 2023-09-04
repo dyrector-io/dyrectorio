@@ -5,6 +5,7 @@ import clsx from 'clsx'
 import { useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
 import ConfigSectionLabel from './config-section-label'
+import { ErrorWithPath } from '@app/validations'
 
 const addItem =
   <T extends Item>(item: Omit<T, 'id'>): RepatchAction<InternalState<T>> =>
@@ -98,10 +99,11 @@ interface ExtendableItemListProps<T extends Item> {
   items: T[]
   renderItem: (
     item: T,
+    error: ErrorWithPath,
     removeButton: (className?: string) => React.ReactNode,
     onPatch: (item: Partial<Omit<T, 'id'>>) => void,
   ) => React.ReactNode
-  findErrorMessage: (index: number) => string
+  findErrorMessage: (index: number) => ErrorWithPath
   onPatch: (items: T[]) => void
   onResetSection: VoidFunction
   emptyItemFactory: () => Omit<T, 'id'>
@@ -164,7 +166,7 @@ const ExtendableItemList = <T extends Item>(props: ExtendableItemListProps<T>) =
           }
         >
           {items.map((item, index) => {
-            const message = findErrorMessage(index)
+            const error = findErrorMessage(index)
             const removeButton = (removeButtonClassName: string) =>
               !disabled && (
                 <DyoImgButton
@@ -184,7 +186,7 @@ const ExtendableItemList = <T extends Item>(props: ExtendableItemListProps<T>) =
                 onFocus={() => dispatch(focusItem(item.id))}
                 onBlur={() => dispatch(focusItem(null))}
               >
-                {renderItem(item, removeButton, it =>
+                {renderItem(item, error, removeButton, it =>
                   reduceAndSendPatch(
                     changeItem({
                       ...item,
@@ -193,7 +195,7 @@ const ExtendableItemList = <T extends Item>(props: ExtendableItemListProps<T>) =
                   ),
                 )}
 
-                {message ? <DyoMessage message={message} messageType="error" marginClassName="m-2" /> : null}
+                {error ? <DyoMessage message={error.message} messageType="error" marginClassName="m-2" /> : null}
               </div>
             )
           })}

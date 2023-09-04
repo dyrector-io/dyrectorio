@@ -2,6 +2,7 @@ import { FormikSetFieldValue } from '@app/utils'
 import clsx from 'clsx'
 import { useState } from 'react'
 import DyoBadge from './dyo-badge'
+import { DYO_ICONS } from '@app/const'
 
 interface DyoIconPickerProps {
   className?: string
@@ -9,40 +10,6 @@ interface DyoIconPickerProps {
   value?: string
   setFieldValue: FormikSetFieldValue
 }
-
-export const DYO_ICONS = [
-  'goat',
-  'jellyfish',
-  'kangaroo',
-  'shark',
-  'sloth',
-  'buffalo',
-  'cat',
-  'llama',
-  'bug',
-  'shrimp',
-  'donkey',
-  'flamingo',
-  'lion',
-  'hedgehog',
-  'giraffe',
-  'penguin',
-  'bat',
-  'goose',
-  'seal',
-  'spider',
-  'squirrel',
-  'monkey',
-  'gecko',
-  'owl',
-  'dog',
-  'rhino',
-  'bee',
-  'dino',
-  'sheep',
-  'crow',
-  'snail',
-]
 
 const DyoIconPicker = (props: DyoIconPickerProps) => {
   const { name, value, setFieldValue, className } = props

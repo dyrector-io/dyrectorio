@@ -21,7 +21,6 @@ import useTeamRoutes from '@app/hooks/use-team-routes'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
-  configToFilters,
   ContainerConfigData,
   DeleteImageMessage,
   ImageConfigProperty,
@@ -42,14 +41,14 @@ import {
 } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { getContainerConfigFieldErrors, jsonErrorOf } from '@app/validations/image'
+import { ContainerConfigValidationErrors, getContainerConfigFieldErrors, jsonErrorOf } from '@app/validations'
 import { WsMessage } from '@app/websockets/common'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 import { useEffect, useRef, useState } from 'react'
-import { ValidationError } from 'yup'
+import configToFilters from '@app/components/projects/versions/images/config/config-to-filters'
 
 interface ImageDetailsPageProps {
   project: ProjectDetails
@@ -61,16 +60,19 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const { image, project, version } = props
 
   const { t } = useTranslation('images')
+  const { t: tError } = useTranslation('container')
   const routes = useTeamRoutes()
 
   const [config, setConfig] = useState<ContainerConfigData>(image.config)
   const [viewState, setViewState] = useState<ViewState>('editor')
-  const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() => getContainerConfigFieldErrors(image.config))
+  const [fieldErrors, setFieldErrors] = useState<ContainerConfigValidationErrors>(() =>
+    getContainerConfigFieldErrors(image.config, tError),
+  )
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
   const [saveState, setSaveState] = useState<WebSocketSaveState>(null)
 
-  const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], config))
+  const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], config, fieldErrors))
 
   const patch = useRef<Partial<ContainerConfigData>>({})
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
@@ -111,7 +113,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
     const value = { ...config, ...newConfig }
     setConfig(value)
 
-    const errors = getContainerConfigFieldErrors(value)
+    const errors = getContainerConfigFieldErrors(value, tError)
     setFieldErrors(errors)
     setJsonError(jsonErrorOf(errors))
 
@@ -137,7 +139,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
 
     setConfig(newConfig)
 
-    const errors = getContainerConfigFieldErrors(newConfig)
+    const errors = getContainerConfigFieldErrors(newConfig, tError)
     setFieldErrors(errors)
     setJsonError(jsonErrorOf(errors))
 

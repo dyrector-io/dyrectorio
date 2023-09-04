@@ -68,6 +68,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       projectId: null as string,
     },
     validationSchema: createFullDeploymentSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

@@ -32,6 +32,7 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
   const formik = useDyoFormik({
     initialValues: deployment,
     validationSchema: updateDeploymentSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

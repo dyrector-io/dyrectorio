@@ -8,6 +8,7 @@ import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateDeploymentToken, DeploymentDetails, DeploymentToken, DeploymentTokenCreated } from '@app/models'
 import { apiDocsUrl } from '@app/routes'
@@ -46,8 +47,9 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useFormik({
+  const formik = useDyoFormik({
     validationSchema: createDeploymentTokenSchema,
+    t,
     initialValues: {
       name: '',
       expirationInDays: EXPIRATION_VALUES[0],

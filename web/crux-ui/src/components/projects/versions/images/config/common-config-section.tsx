@@ -17,8 +17,6 @@ import {
   StorageOption,
   filterContains,
   filterEmpty,
-} from '@app/models'
-import {
   CONTAINER_EXPOSE_STRATEGY_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   CommonConfigDetails,
@@ -32,15 +30,15 @@ import {
   InstanceCraneConfigDetails,
   VolumeType,
   mergeConfigs,
-} from '@app/models/container'
+} from '@app/models'
 import { fetcher, toNumber } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import useSWR from 'swr'
 import { v4 as uuid } from 'uuid'
-import { ValidationError } from 'yup'
 import ConfigSectionLabel from './config-section-label'
 import ExtendableItemList from './extendable-item-list'
+import { ContainerConfigValidationErrors, findErrorFor, findErrorStartsWith, matchError } from '@app/validations'
 
 type CommonConfigSectionBaseProps<T> = {
   disabled?: boolean
@@ -50,7 +48,7 @@ type CommonConfigSectionBaseProps<T> = {
   resetableConfig?: T
   onChange: (config: Partial<T>) => void
   onResetSection: (section: CommonConfigProperty) => void
-  fieldErrors: ValidationError[]
+  fieldErrors: ContainerConfigValidationErrors
   definedSecrets?: string[]
   publicKey?: string
 }
@@ -152,7 +150,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   placeholder={t('common.containerName')}
                   onPatch={it => onChange({ name: it })}
                   editorOptions={editorOptions}
-                  message={fieldErrors.find(it => it.path?.startsWith('name'))?.message}
+                  message={findErrorFor(fieldErrors, 'name')}
                   disabled={disabled}
                 />
               </div>
@@ -187,7 +185,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     onChange({ user: configType === 'instance' || val === 0 ? val : val ?? -1 })
                   }}
                   editorOptions={editorOptions}
-                  message={fieldErrors.find(it => it.path?.startsWith('user'))?.message}
+                  message={findErrorFor(fieldErrors, 'user')}
                   disabled={disabled}
                 />
               </div>
@@ -256,7 +254,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   value={config.configContainer?.image ?? ''}
                   onPatch={it => onChange({ configContainer: { ...config.configContainer, image: it } })}
                   editorOptions={editorOptions}
-                  message={fieldErrors.find(it => it.path?.startsWith('configContainer.image'))?.message}
+                  message={findErrorFor(fieldErrors, 'configContainer.image')}
                   disabled={disabled}
                 />
 
@@ -270,7 +268,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   value={config.configContainer?.volume ?? ''}
                   onPatch={it => onChange({ configContainer: { ...config.configContainer, volume: it } })}
                   editorOptions={editorOptions}
-                  message={fieldErrors.find(it => it.path?.startsWith('configContainer.volume'))?.message}
+                  message={findErrorFor(fieldErrors, 'configContainer.volume')}
                   disabled={disabled}
                 />
 
@@ -284,7 +282,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   value={config.configContainer?.path ?? ''}
                   onPatch={it => onChange({ configContainer: { ...config.configContainer, path: it } })}
                   editorOptions={editorOptions}
-                  message={fieldErrors.find(it => it.path?.startsWith('configContainer.path'))?.message}
+                  message={findErrorFor(fieldErrors, 'configContainer.path')}
                   disabled={disabled}
                 />
 
@@ -323,7 +321,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   placeholder={t('common.domain')}
                   onPatch={it => onChange({ routing: { ...config.routing, domain: it } })}
                   editorOptions={editorOptions}
-                  message={fieldErrors.find(it => it.path?.startsWith('routing.domain'))?.message}
+                  message={findErrorFor(fieldErrors, 'routing.domain')}
                   disabled={disabled}
                 />
 
@@ -338,7 +336,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   placeholder={t('common.path')}
                   onPatch={it => onChange({ routing: { ...config.routing, path: it } })}
                   editorOptions={editorOptions}
-                  message={fieldErrors.find(it => it.path?.startsWith('routing.path'))?.message}
+                  message={findErrorFor(fieldErrors, 'routing.path')}
                   disabled={disabled}
                 />
 
@@ -382,6 +380,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 items={config.environment}
                 editorOptions={editorOptions}
                 disabled={disabled}
+                findErrorMessage={index => findErrorStartsWith(fieldErrors, `environment[${index}]`)}
               />
             </div>
           )}
@@ -415,10 +414,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   disabled={disabled}
                 />
               )}
-              <DyoMessage
-                message={fieldErrors.find(it => it.path?.startsWith('secrets'))?.message}
-                messageType="error"
-              />
+              <DyoMessage message={findErrorFor(fieldErrors, 'secrets')} messageType="error" />
             </div>
           )}
 
@@ -436,10 +432,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
-              <DyoMessage
-                message={fieldErrors.find(it => it.path?.startsWith('commands'))?.message}
-                messageType="error"
-              />
+              <DyoMessage message={findErrorFor(fieldErrors, 'commands')} messageType="error" />
             </div>
           )}
 
@@ -457,7 +450,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
-              <DyoMessage message={fieldErrors.find(it => it.path?.startsWith('args'))?.message} messageType="error" />
+              <DyoMessage message={findErrorFor(fieldErrors, 'args')} messageType="error" />
             </div>
           )}
         </div>
@@ -503,7 +496,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 onPatch={it => onChange({ storage: { ...config.storage, bucket: it } })}
                 editorOptions={editorOptions}
                 disabled={disabled || !config.storage?.storageId}
-                message={fieldErrors.find(it => it.path?.startsWith('storage.bucket'))?.message}
+                message={findErrorFor(fieldErrors, 'storage.bucket')}
               />
 
               <div className="max-w-lg mb-3 flex flex-row">
@@ -525,7 +518,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 />
               </div>
               <DyoMessage
-                message={fieldErrors.find(it => it.path?.startsWith('storage.path'))?.message}
+                message={findErrorFor(fieldErrors, 'storage.path')}
                 marginClassName="my-2"
                 className="text-xs italic"
               />
@@ -543,12 +536,12 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             label={t('common.ports')}
             onPatch={it => onPortsChanged(it)}
             onResetSection={resetableConfig.ports ? () => onResetSection('ports') : null}
-            findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`ports[${index}]`))?.message}
+            findErrorMessage={index => findErrorStartsWith(fieldErrors, `ports[${index}]`)}
             emptyItemFactory={() => ({
               external: null,
               internal: null,
             })}
-            renderItem={(item, removeButton, onPatch) => (
+            renderItem={(item, error, removeButton, onPatch) => (
               <div className="flex flex-row flex-grow">
                 <div className="w-6/12 ml-2">
                   <MultiInput
@@ -558,6 +551,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     placeholder={t('common.external')}
                     value={item.external ?? ''}
                     type="number"
+                    invalid={matchError(error, 'external')}
                     onPatch={it => {
                       const value = Number.parseInt(it, 10)
                       const external = Number.isNaN(value) ? null : value
@@ -579,6 +573,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     placeholder={t('common.internal')}
                     value={item.internal ?? ''}
                     type="number"
+                    invalid={matchError(error, 'internal')}
                     onPatch={it =>
                       onPatch({
                         internal: toNumber(it),
@@ -605,10 +600,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               external: { from: null, to: null },
               internal: { from: null, to: null },
             })}
-            findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`portRanges[${index}]`))?.message}
+            findErrorMessage={index => findErrorStartsWith(fieldErrors, `portRanges[${index}]`)}
             onPatch={it => onChange({ portRanges: it })}
             onResetSection={resetableConfig.portRanges ? () => onResetSection('portRanges') : null}
-            renderItem={(item, removeButton, onPatch) => (
+            renderItem={(item, error, removeButton, onPatch) => (
               <div className="flex flex-col gap-2">
                 <DyoLabel>{t('common.internal').toUpperCase()}</DyoLabel>
 
@@ -623,6 +618,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     onPatch={it => onPatch({ ...item, internal: { ...item.internal, from: toNumber(it) } })}
                     editorOptions={editorOptions}
                     disabled={disabled}
+                    invalid={matchError(error, 'internal.from')}
                   />
 
                   <MultiInput
@@ -635,6 +631,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     onPatch={it => onPatch({ ...item, internal: { ...item.internal, to: toNumber(it) } })}
                     editorOptions={editorOptions}
                     disabled={disabled}
+                    invalid={matchError(error, 'internal.to')}
                   />
                 </div>
 
@@ -652,6 +649,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     onPatch={it => onPatch({ ...item, external: { ...item.external, from: toNumber(it) } })}
                     editorOptions={editorOptions}
                     disabled={disabled}
+                    invalid={matchError(error, 'external.from')}
                   />
 
                   <MultiInput
@@ -664,6 +662,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     onPatch={it => onPatch({ ...item, external: { ...item.external, to: toNumber(it) } })}
                     editorOptions={editorOptions}
                     disabled={disabled}
+                    invalid={matchError(error, 'external.from')}
                   />
 
                   {removeButton()}
@@ -685,10 +684,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               path: null,
               type: 'rwo' as VolumeType,
             })}
-            findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`volumes[${index}]`))?.message}
+            findErrorMessage={index => findErrorStartsWith(fieldErrors, `volumes[${index}]`)}
             onPatch={it => onVolumesChanged(it)}
             onResetSection={resetableConfig.volumes ? () => onResetSection('volumes') : null}
-            renderItem={(item, removeButton, onPatch) => (
+            renderItem={(item, error, removeButton, onPatch) => (
               <div className="grid break-inside-avoid">
                 <div className="flex flex-row">
                   <MultiInput
@@ -702,6 +701,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     onPatch={it => onPatch({ name: it })}
                     editorOptions={editorOptions}
                     disabled={disabled}
+                    invalid={matchError(error, 'name')}
                   />
 
                   <MultiInput
@@ -715,6 +715,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     onPatch={it => onPatch({ size: it })}
                     editorOptions={editorOptions}
                     disabled={disabled}
+                    invalid={matchError(error, 'size')}
                   />
                 </div>
 
@@ -730,6 +731,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     onPatch={it => onPatch({ path: it })}
                     editorOptions={editorOptions}
                     disabled={disabled}
+                    invalid={matchError(error, 'path')}
                   />
 
                   <MultiInput
@@ -743,6 +745,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     onPatch={it => onPatch({ class: it })}
                     editorOptions={editorOptions}
                     disabled={disabled}
+                    invalid={matchError(error, 'class')}
                   />
                 </div>
 
@@ -784,10 +787,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               volumes: [],
               useParentConfig: false,
             })}
-            findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`initContainers[${index}]`))?.message}
+            findErrorMessage={index => findErrorStartsWith(fieldErrors, `initContainers[${index}]`)}
             onPatch={it => onChange({ initContainers: it })}
             onResetSection={resetableConfig.initContainers ? () => onResetSection('initContainers') : null}
-            renderItem={(item, removeButton, onPatch) => (
+            renderItem={(item, error, removeButton, onPatch) => (
               <div className="grid">
                 <MultiInput
                   id={`common.initContainers-${item.id}-name`}
@@ -800,6 +803,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   onPatch={it => onPatch({ name: it })}
                   editorOptions={editorOptions}
                   disabled={disabled}
+                  invalid={matchError(error, 'name')}
                 />
 
                 <MultiInput
@@ -813,6 +817,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   onPatch={it => onPatch({ image: it })}
                   editorOptions={editorOptions}
                   disabled={disabled}
+                  invalid={matchError(error, 'image')}
                 />
 
                 <div className="flex flex-col mb-2">

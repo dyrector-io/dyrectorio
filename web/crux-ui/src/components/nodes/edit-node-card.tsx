@@ -37,6 +37,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
   const formik = useDyoFormik({
     initialValues: node,
     validationSchema: nodeSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

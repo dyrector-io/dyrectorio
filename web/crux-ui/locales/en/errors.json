@@ -15,5 +15,7 @@
   "internalError": "Something went wrong. Please try again later.",
 
   "invalidCredentials": "Invalid credentials",
-  "confirmPassMismatch": "Passwords must match"
+  "confirmPassMismatch": "Passwords must match",
+
+  "deploymentInvalid": "The configuration of {{target}} has some problems. Please open the configuration and check for any errors."
 }

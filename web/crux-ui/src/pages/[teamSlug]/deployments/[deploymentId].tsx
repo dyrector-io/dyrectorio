@@ -22,6 +22,7 @@ import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
 import {
   DeploymentDetails,
   DeploymentRoot,
+  Instance,
   mergeConfigs,
   NodeDetails,
   ProjectDetails,
@@ -46,6 +47,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const { deployment: propsDeployment } = props
 
   const { t } = useTranslation('deployments')
+  const { t: tError } = useTranslation('container')
   const routes = useTeamRoutes()
 
   const router = useRouter()
@@ -87,19 +89,20 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     }
 
     let error: ValidationError
+    let instance: Instance
 
     let i = 0
 
     while (!error && i < deployment.instances.length) {
-      const instance = deployment.instances[i]
+      instance = deployment.instances[i]
       const mergedConfig = mergeConfigs(instance.image.config, instance.config)
-      error = getValidationError(containerConfigSchema, mergedConfig)
+      error = getValidationError(containerConfigSchema, mergedConfig, null, tError)
       i++
     }
 
     if (error) {
       console.error(error)
-      toast.error(t('errors:invalid'))
+      toast.error(t('errors:deploymentInvalid', { target: instance.config?.name ?? instance.image.config.name }))
       return
     }
 

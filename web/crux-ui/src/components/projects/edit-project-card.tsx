@@ -50,6 +50,7 @@ const EditProjectCard = (props: EditProjectCardProps) => {
       ...project,
     },
     validationSchema: !editing ? createProjectSchema : updateProjectSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

@@ -1,4 +1,6 @@
 {
+  "sensitiveKey": "Sensitive config data should be stored as secrets",
+
   "base": {
     "all": "All",
     "dagent": "Docker",
@@ -52,6 +54,8 @@
     "storage": "Storage",
     "bucketPath": "Bucket path",
     "buketPathTips": "You can also use any subfolder of a bucket by specifying its path (\"bucket/folder/sub-folder\").",
+    "key": "Key",
+    "value": "Value",
     "placeholders": {
       "port": "Port",
       "path": "Path",
@@ -133,5 +137,9 @@
       "metricsPath": "/metrics"
     }
   },
-  "sensitiveKey": "Sensitive config data should be stored as secrets"
+
+  "validation": {
+    "kubernetesQuantity": "match the Kubernetes quantity format",
+    "noSensitive": "not contain sensitive keywords"
+  }
 }

@@ -2,14 +2,16 @@ import { CONFIG_BUNDLE_EDIT_WS_REQUEST_DELAY } from '@app/const'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
-import { UniqueKeyValue, WS_TYPE_PATCH_RECEIVED, WebSocketSaveState } from '@app/models'
 import {
   ConfigBundleDetails,
   ConfigBundleUpdatedMessage,
   PatchConfigBundleMessage,
   WS_TYPE_CONFIG_BUNDLE_UPDATED,
   WS_TYPE_PATCH_CONFIG_BUNDLE,
-} from '@app/models/config-bundle'
+  UniqueKeyValue,
+  WS_TYPE_CONFIG_BUNDLE_PATCH_RECEIVED,
+  WebSocketSaveState,
+} from '@app/models'
 import { useEffect, useState } from 'react'
 import useEditorState from '../editor/use-editor-state'
 import useItemEditorState, { ItemEditorState } from '../editor/use-item-editor-state'
@@ -17,8 +19,7 @@ import { toastWarning } from '@app/utils'
 import { useRouter } from 'next/router'
 import useTranslation from 'next-translate/useTranslation'
 import { ValidationError } from 'yup'
-import { getValidationError } from '@app/validations'
-import { configBundlePatchSchema } from '@app/validations/config-bundle'
+import { getValidationError, configBundlePatchSchema } from '@app/validations'
 import EditorBadge from '../editor/editor-badge'
 
 export type ConfigBundleStateOptions = {
@@ -70,7 +71,7 @@ export const useConfigBundleDetailsState = (
       }
     },
     onReceive: message => {
-      if (message.type === WS_TYPE_PATCH_RECEIVED) {
+      if (message.type === WS_TYPE_CONFIG_BUNDLE_PATCH_RECEIVED) {
         setSaveState('saved')
       }
     },

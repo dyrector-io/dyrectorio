@@ -52,6 +52,7 @@ const EditVersionCard = (props: EditVersionCardProps) => {
       ...version,
     },
     validationSchema: !editing ? createVersionSchema : updateVersionSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

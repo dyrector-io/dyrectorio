@@ -57,6 +57,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       ...notification,
     },
     validationSchema: notificationSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
