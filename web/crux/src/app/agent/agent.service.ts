@@ -17,7 +17,7 @@ import {
   startWith,
   takeUntil,
 } from 'rxjs'
-import { coerce, major, minor } from 'semver'
+import { coerce } from 'semver'
 import { Agent, AgentConnectionMessage, AgentTokenReplacement } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { generateAgentToken } from 'src/domain/agent-token'
@@ -39,8 +39,8 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import AgentMetrics from 'src/shared/metrics/agent.metrics'
-import { getAgentVersionFromPackage } from 'src/shared/package'
-import { AGENT_SUPPORTED_MINIMUM_VERSION, PRODUCTION } from '../../shared/const'
+import { getAgentVersionFromPackage, getPackageVersion } from 'src/shared/package'
+import { AGENT_SUPPORTED_MINIMUM_VERSION } from '../../shared/const'
 import DeployService from '../deploy/deploy.service'
 import { DagentTraefikOptionsDto, NodeConnectionStatus, NodeScriptTypeDto } from '../node/node.dto'
 import AgentConnectionStrategyProvider from './agent.connection-strategy.provider'
@@ -389,11 +389,10 @@ export default class AgentService {
       return false
     }
 
-    return agentVersion.compare(AGENT_SUPPORTED_MINIMUM_VERSION) >= 0 // agent version is newer (bigger) or the same
-  }
+    const packageVersion = coerce(getPackageVersion(this.configService))
 
-  getAgentImageTag() {
-    return this.configService.get<string>('CRUX_AGENT_IMAGE') ?? getAgentVersionFromPackage(this.configService)
+    return agentVersion.compare(AGENT_SUPPORTED_MINIMUM_VERSION) >= 0 && // agent version is newer (bigger) or the same
+      agentVersion.compare(packageVersion) <= 0
   }
 
   generateConnectionTokenFor(nodeId: string, startedBy: string): AgentTokenReplacement {
@@ -505,6 +504,10 @@ export default class AgentService {
       }
       throw err
     }
+  }
+
+  private getAgentImageTag() {
+    return this.configService.get<string>('CRUX_AGENT_IMAGE') ?? getAgentVersionFromPackage(this.configService)
   }
 
   private logServiceInfo(): void {

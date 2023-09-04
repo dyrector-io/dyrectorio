@@ -20,7 +20,6 @@ import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import prismaBootstrap from './services/prisma.bootstrap'
 import { PRODUCTION } from './shared/const'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
-import { coerce } from 'semver'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 

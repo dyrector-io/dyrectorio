@@ -1,4 +1,3 @@
-import { ArgumentMetadata, UsePipes, ValidationPipe } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'

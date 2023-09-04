@@ -585,7 +585,7 @@ func getPortSet(portRanges []PortRangeBinding, portList []PortBinding) nat.PortS
 		for port <= portRange.Internal.To && port != 0 {
 			exposedPort, _ := nat.NewPort("tcp", fmt.Sprint(port))
 			portSet[exposedPort] = struct{}{}
-			port += 1
+			port++
 		}
 	}
 
