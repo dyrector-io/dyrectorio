@@ -42,42 +42,40 @@ const SettingsPage = (props: SettingsFlow) => {
   const router = useRouter()
 
   const [ui, setUi] = useState(propsUi)
-  const saveRef = useRef<() => Promise<any>>()
+  const submitRef = useRef<() => Promise<any>>()
 
   const onDiscard = () => router.replace(ROUTE_SETTINGS)
 
-  const formik = useDyoFormik(
-    {
-      initialValues: {
-        email: findAttributes(ui, 'traits.email').value,
-        firstName: findAttributes(ui, 'traits.name.first').value ?? '',
-        lastName: findAttributes(ui, 'traits.name.last').value ?? '',
-      },
-      validationSchema: userProfileSchema,
-      onSubmit: async values => {
-        const data: EditProfile = {
-          flow: id,
-          csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
-          email: values.email,
-          firstName: values.firstName.trim(),
-          lastName: values.lastName.trim(),
-        }
-        const res = await sendForm('POST', API_SETTINGS_EDIT_PROFILE, data)
-
-        if (res.ok) {
-          router.replace(ROUTE_SETTINGS)
-        } else if (res.status === 410) {
-          await router.reload()
-        } else if (res.status === 403) {
-          router.replace(`${ROUTE_LOGIN}?refresh=${encodeURIComponent(identity.traits.email)}`)
-        } else {
-          const result = await res.json()
-          setUi(result.ui)
-        }
-      },
+  const formik = useDyoFormik({
+    submitRef,
+    initialValues: {
+      email: findAttributes(ui, 'traits.email').value,
+      firstName: findAttributes(ui, 'traits.name.first').value ?? '',
+      lastName: findAttributes(ui, 'traits.name.last').value ?? '',
     },
-    saveRef,
-  )
+    validationSchema: userProfileSchema,
+    onSubmit: async values => {
+      const data: EditProfile = {
+        flow: id,
+        csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
+        email: values.email,
+        firstName: values.firstName.trim(),
+        lastName: values.lastName.trim(),
+      }
+      const res = await sendForm('POST', API_SETTINGS_EDIT_PROFILE, data)
+
+      if (res.ok) {
+        router.replace(ROUTE_SETTINGS)
+      } else if (res.status === 410) {
+        await router.reload()
+      } else if (res.status === 403) {
+        router.replace(`${ROUTE_LOGIN}?refresh=${encodeURIComponent(identity.traits.email)}`)
+      } else {
+        const result = await res.json()
+        setUi(result.ui)
+      }
+    },
+  })
 
   const pageLink: BreadcrumbLink = {
     name: t('common:profile'),
@@ -94,7 +92,7 @@ const SettingsPage = (props: SettingsFlow) => {
   return (
     <Layout title={t('editProfile')}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        <SaveDiscardPageMenu saveRef={saveRef} onDiscard={onDiscard} />
+        <SaveDiscardPageMenu saveRef={submitRef} onDiscard={onDiscard} />
       </PageHeading>
       <DyoCard>
         <DyoForm

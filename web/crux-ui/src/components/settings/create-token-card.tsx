@@ -29,32 +29,30 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik(
-    {
-      validationSchema: generateTokenSchema,
-      initialValues: {
-        name: '',
-        expirationInDays: EXPIRATION_VALUES[0],
-      } as GenerateToken,
-      onSubmit: async (values, { setSubmitting, setFieldError }) => {
-        setSubmitting(true)
-
-        const res = await sendForm('POST', API_TOKENS, values as GenerateToken)
-
-        if (res.ok) {
-          const json = await res.json()
-          const result = json as GeneratedToken
-
-          setSubmitting(false)
-          onTokenCreated(result)
-        } else {
-          setSubmitting(false)
-          handleApiError(res, setFieldError)
-        }
-      },
-    },
+  const formik = useDyoFormik({
     submitRef,
-  )
+    validationSchema: generateTokenSchema,
+    initialValues: {
+      name: '',
+      expirationInDays: EXPIRATION_VALUES[0],
+    } as GenerateToken,
+    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+      setSubmitting(true)
+
+      const res = await sendForm('POST', API_TOKENS, values as GenerateToken)
+
+      if (res.ok) {
+        const json = await res.json()
+        const result = json as GeneratedToken
+
+        setSubmitting(false)
+        onTokenCreated(result)
+      } else {
+        setSubmitting(false)
+        handleApiError(res, setFieldError)
+      }
+    },
+  })
 
   return (
     <DyoCard className={className}>

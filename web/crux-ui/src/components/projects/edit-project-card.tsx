@@ -45,45 +45,43 @@ const EditProjectCard = (props: EditProjectCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik(
-    {
-      initialValues: {
-        ...project,
-      },
-      validationSchema: !editing ? createProjectSchema : updateProjectSchema,
-      onSubmit: async (values, { setSubmitting, setFieldError }) => {
-        setSubmitting(true)
-
-        const body: CreateProject | UpdateProject = {
-          ...values,
-        }
-
-        const res = await (!editing
-          ? sendForm('POST', routes.project.api.list(), body as CreateProject)
-          : sendForm('PUT', routes.project.api.details(project.id), body as UpdateProject))
-
-        if (res.ok) {
-          let result: Project
-          if (res.status !== 204) {
-            const json = await res.json()
-            result = json as Project
-          } else {
-            result = {
-              ...values,
-            } as Project
-          }
-
-          setProject(result)
-          setSubmitting(false)
-          onProjectEdited(result)
-        } else {
-          setSubmitting(false)
-          handleApiError(res, setFieldError)
-        }
-      },
-    },
+  const formik = useDyoFormik({
     submitRef,
-  )
+    initialValues: {
+      ...project,
+    },
+    validationSchema: !editing ? createProjectSchema : updateProjectSchema,
+    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+      setSubmitting(true)
+
+      const body: CreateProject | UpdateProject = {
+        ...values,
+      }
+
+      const res = await (!editing
+        ? sendForm('POST', routes.project.api.list(), body as CreateProject)
+        : sendForm('PUT', routes.project.api.details(project.id), body as UpdateProject))
+
+      if (res.ok) {
+        let result: Project
+        if (res.status !== 204) {
+          const json = await res.json()
+          result = json as Project
+        } else {
+          result = {
+            ...values,
+          } as Project
+        }
+
+        setProject(result)
+        setSubmitting(false)
+        onProjectEdited(result)
+      } else {
+        setSubmitting(false)
+        handleApiError(res, setFieldError)
+      }
+    },
+  })
 
   return (
     <DyoCard className={className}>

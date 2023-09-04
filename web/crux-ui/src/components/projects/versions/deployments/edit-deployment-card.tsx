@@ -29,35 +29,33 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik(
-    {
-      initialValues: deployment,
-      validationSchema: updateDeploymentSchema,
-      onSubmit: async (values, { setSubmitting, setFieldError }) => {
-        setSubmitting(true)
-
-        const transformedValues = updateDeploymentSchema.cast(values) as any
-
-        const body: PatchDeployment = {
-          ...transformedValues,
-        }
-
-        const res = await sendForm('PATCH', routes.deployment.api.details(deployment.id), body)
-
-        setSubmitting(false)
-
-        if (res.ok) {
-          onDeploymentEdited({
-            ...deployment,
-            ...transformedValues,
-          })
-        } else {
-          handleApiError(res, setFieldError)
-        }
-      },
-    },
+  const formik = useDyoFormik({
     submitRef,
-  )
+    initialValues: deployment,
+    validationSchema: updateDeploymentSchema,
+    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+      setSubmitting(true)
+
+      const transformedValues = updateDeploymentSchema.cast(values) as any
+
+      const body: PatchDeployment = {
+        ...transformedValues,
+      }
+
+      const res = await sendForm('PATCH', routes.deployment.api.details(deployment.id), body)
+
+      setSubmitting(false)
+
+      if (res.ok) {
+        onDeploymentEdited({
+          ...deployment,
+          ...transformedValues,
+        })
+      } else {
+        handleApiError(res, setFieldError)
+      }
+    },
+  })
 
   return (
     <DyoCard className={className}>

@@ -46,32 +46,30 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik(
-    {
-      validationSchema: createDeploymentTokenSchema,
-      initialValues: {
-        name: '',
-        expirationInDays: EXPIRATION_VALUES[0],
-      } as CreateDeploymentToken,
-      onSubmit: async (values, { setSubmitting, setFieldError }) => {
-        setSubmitting(true)
-
-        const res = await sendForm('PUT', routes.deployment.api.token(deployment.id), values as CreateDeploymentToken)
-
-        if (res.ok) {
-          const json = await res.json()
-          const result = json as DeploymentTokenCreated
-
-          setSubmitting(false)
-          setToken(result)
-        } else {
-          setSubmitting(false)
-          handleApiError(res, setFieldError)
-        }
-      },
-    },
+  const formik = useDyoFormik({
     submitRef,
-  )
+    validationSchema: createDeploymentTokenSchema,
+    initialValues: {
+      name: '',
+      expirationInDays: EXPIRATION_VALUES[0],
+    } as CreateDeploymentToken,
+    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+      setSubmitting(true)
+
+      const res = await sendForm('PUT', routes.deployment.api.token(deployment.id), values as CreateDeploymentToken)
+
+      if (res.ok) {
+        const json = await res.json()
+        const result = json as DeploymentTokenCreated
+
+        setSubmitting(false)
+        setToken(result)
+      } else {
+        setSubmitting(false)
+        handleApiError(res, setFieldError)
+      }
+    },
+  })
 
   return (
     <DyoCard className={className}>

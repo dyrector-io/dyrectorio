@@ -28,43 +28,41 @@ const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik(
-    {
-      initialValues: {
-        name: propsConfigBundle?.name ?? '',
-        description: propsConfigBundle?.description ?? '',
-      },
-      validationSchema: configBundleCreateSchema,
-      onSubmit: async (values, { setSubmitting, setFieldError }) => {
-        setSubmitting(true)
-
-        const body: CreateConfigBundle = {
-          ...values,
-        }
-
-        const res = await sendForm('POST', routes.configBundles.api.list(), body)
-
-        if (res.ok) {
-          let result: ConfigBundle
-          if (res.status !== 204) {
-            result = (await res.json()) as ConfigBundle
-          } else {
-            result = {
-              id: propsConfigBundle.id,
-              ...values,
-            }
-          }
-
-          setSubmitting(false)
-          onCreated(result)
-        } else {
-          setSubmitting(false)
-          handleApiError(res, setFieldError)
-        }
-      },
-    },
+  const formik = useDyoFormik({
     submitRef,
-  )
+    initialValues: {
+      name: propsConfigBundle?.name ?? '',
+      description: propsConfigBundle?.description ?? '',
+    },
+    validationSchema: configBundleCreateSchema,
+    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+      setSubmitting(true)
+
+      const body: CreateConfigBundle = {
+        ...values,
+      }
+
+      const res = await sendForm('POST', routes.configBundles.api.list(), body)
+
+      if (res.ok) {
+        let result: ConfigBundle
+        if (res.status !== 204) {
+          result = (await res.json()) as ConfigBundle
+        } else {
+          result = {
+            id: propsConfigBundle.id,
+            ...values,
+          }
+        }
+
+        setSubmitting(false)
+        onCreated(result)
+      } else {
+        setSubmitting(false)
+        handleApiError(res, setFieldError)
+      }
+    },
+  })
 
   return (
     <DyoCard className={className}>

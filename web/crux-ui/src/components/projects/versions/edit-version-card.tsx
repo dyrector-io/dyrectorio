@@ -47,43 +47,41 @@ const EditVersionCard = (props: EditVersionCardProps) => {
 
   const [versionHint, setVersionHint] = useVersionHint(version.name)
 
-  const formik = useDyoFormik(
-    {
-      initialValues: {
-        ...version,
-      },
-      validationSchema: !editing ? createVersionSchema : updateVersionSchema,
-      onSubmit: async (values, { setSubmitting, setFieldError }) => {
-        setSubmitting(true)
-
-        const body: CreateVersion | UpdateVersion = values
-
-        const res = await (!editing
-          ? sendForm('POST', routes.project.versions(project.id).api.list(), body as CreateVersion)
-          : sendForm('PUT', routes.project.versions(project.id).api.details(version.id), body as UpdateVersion))
-
-        if (res.ok) {
-          let result: EditableVersion
-          if (res.status !== 204) {
-            const json = await res.json()
-            result = json as EditableVersion
-          } else {
-            result = {
-              ...values,
-            } as EditableVersion
-          }
-
-          setVersion(result)
-          setSubmitting(false)
-          onVersionEdited(result)
-        } else {
-          setSubmitting(false)
-          handleApiError(res, setFieldError)
-        }
-      },
-    },
+  const formik = useDyoFormik({
     submitRef,
-  )
+    initialValues: {
+      ...version,
+    },
+    validationSchema: !editing ? createVersionSchema : updateVersionSchema,
+    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+      setSubmitting(true)
+
+      const body: CreateVersion | UpdateVersion = values
+
+      const res = await (!editing
+        ? sendForm('POST', routes.project.versions(project.id).api.list(), body as CreateVersion)
+        : sendForm('PUT', routes.project.versions(project.id).api.details(version.id), body as UpdateVersion))
+
+      if (res.ok) {
+        let result: EditableVersion
+        if (res.status !== 204) {
+          const json = await res.json()
+          result = json as EditableVersion
+        } else {
+          result = {
+            ...values,
+          } as EditableVersion
+        }
+
+        setVersion(result)
+        setSubmitting(false)
+        onVersionEdited(result)
+      } else {
+        setSubmitting(false)
+        handleApiError(res, setFieldError)
+      }
+    },
+  })
 
   return (
     <DyoCard className={className}>

@@ -41,34 +41,32 @@ const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
     }
   }, [nodes, t])
 
-  const formik = useDyoFormik(
-    {
-      initialValues: {
-        nodeId: deployment.node.id,
-        prefix: deployment.version.type === 'incremental' ? deployment.prefix : `${deployment.prefix}-copy`,
-        note: deployment.note,
-      } as CopyDeployment,
-      validationSchema: copyDeploymentSchema,
-      onSubmit: async (values, { setSubmitting, setFieldError }) => {
-        setSubmitting(true)
-
-        const res = await sendForm('POST', routes.deployment.api.copy(deployment.id), values)
-
-        setSubmitting(false)
-
-        if (res.ok) {
-          const copiedDeployment = (await res.json()) as Deployment
-          onDeplyomentCopied(copiedDeployment.id)
-        } else if (res.status === 409) {
-          // There is already a deployment for the selected node with the same prefix
-          toast.error(t('alreadyHaveDeployment'))
-        } else {
-          handleApiError(res, setFieldError)
-        }
-      },
-    },
+  const formik = useDyoFormik({
     submitRef,
-  )
+    initialValues: {
+      nodeId: deployment.node.id,
+      prefix: deployment.version.type === 'incremental' ? deployment.prefix : `${deployment.prefix}-copy`,
+      note: deployment.note,
+    } as CopyDeployment,
+    validationSchema: copyDeploymentSchema,
+    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+      setSubmitting(true)
+
+      const res = await sendForm('POST', routes.deployment.api.copy(deployment.id), values)
+
+      setSubmitting(false)
+
+      if (res.ok) {
+        const copiedDeployment = (await res.json()) as Deployment
+        onDeplyomentCopied(copiedDeployment.id)
+      } else if (res.status === 409) {
+        // There is already a deployment for the selected node with the same prefix
+        toast.error(t('alreadyHaveDeployment'))
+      } else {
+        handleApiError(res, setFieldError)
+      }
+    },
+  })
 
   return (
     <DyoCard className={className}>

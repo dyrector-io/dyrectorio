@@ -46,44 +46,42 @@ const EditStorageCard = (props: EditStorageCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik(
-    {
-      initialValues: {
-        ...storage,
-      },
-      validationSchema: storageSchema,
-      onSubmit: async (values, { setSubmitting, setFieldError }) => {
-        setSubmitting(true)
-
-        const body: CreateStorage | UpdateStorage = {
-          ...values,
-        }
-
-        const res = await (!editing
-          ? sendForm('POST', routes.storage.api.list(), body as CreateStorage)
-          : sendForm('PUT', routes.storage.api.details(storage.id), body as UpdateStorage))
-
-        if (res.ok) {
-          let result: StorageDetails
-          if (res.status !== 204) {
-            result = (await res.json()) as StorageDetails
-          } else {
-            result = {
-              ...values,
-            }
-          }
-
-          setStorage(result)
-          setSubmitting(false)
-          onStorageEdited(result)
-        } else {
-          setSubmitting(false)
-          handleApiError(res, setFieldError)
-        }
-      },
-    },
+  const formik = useDyoFormik({
     submitRef,
-  )
+    initialValues: {
+      ...storage,
+    },
+    validationSchema: storageSchema,
+    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+      setSubmitting(true)
+
+      const body: CreateStorage | UpdateStorage = {
+        ...values,
+      }
+
+      const res = await (!editing
+        ? sendForm('POST', routes.storage.api.list(), body as CreateStorage)
+        : sendForm('PUT', routes.storage.api.details(storage.id), body as UpdateStorage))
+
+      if (res.ok) {
+        let result: StorageDetails
+        if (res.status !== 204) {
+          result = (await res.json()) as StorageDetails
+        } else {
+          result = {
+            ...values,
+          }
+        }
+
+        setStorage(result)
+        setSubmitting(false)
+        onStorageEdited(result)
+      } else {
+        setSubmitting(false)
+        handleApiError(res, setFieldError)
+      }
+    },
+  })
 
   return (
     <DyoCard className={className}>

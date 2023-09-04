@@ -42,59 +42,57 @@ const EditTeamCard = (props: EditTeamCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik(
-    {
-      initialValues: {
-        name: team.name,
-        slug: team.slug,
-      },
-      validationSchema: !editing ? createTeamSchema : updateTeamSchema,
-      onSubmit: async (values, { setSubmitting, setFieldError }) => {
-        const body: CreateTeam | UpdateTeam = {
-          ...values,
-        }
-
-        if (editing && propsTeam.slug !== body.slug) {
-          const confirmed = await confirm({
-            title: t('areYouSureChangeSlug', propsTeam),
-            description: t('changingSlugHaveToAdjust'),
-          })
-
-          if (!confirmed) {
-            return
-          }
-        }
-
-        setSubmitting(true)
-
-        const res = await (!editing
-          ? sendForm('POST', API_TEAMS, body as CreateTeam)
-          : sendForm('PUT', teamApiUrl(team.id), body as UpdateTeam))
-
-        if (res.ok) {
-          let result: Team
-          if (res.status !== 204) {
-            const json = await res.json()
-            result = json as Team
-          } else {
-            result = {
-              ...team,
-              name: values.name,
-              slug: values.slug,
-            } as Team
-          }
-
-          setTeam(result)
-          setSubmitting(false)
-          onTeamEdited(result)
-        } else {
-          setSubmitting(false)
-          handleApiError(res, setFieldError)
-        }
-      },
-    },
+  const formik = useDyoFormik({
     submitRef,
-  )
+    initialValues: {
+      name: team.name,
+      slug: team.slug,
+    },
+    validationSchema: !editing ? createTeamSchema : updateTeamSchema,
+    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+      const body: CreateTeam | UpdateTeam = {
+        ...values,
+      }
+
+      if (editing && propsTeam.slug !== body.slug) {
+        const confirmed = await confirm({
+          title: t('areYouSureChangeSlug', propsTeam),
+          description: t('changingSlugHaveToAdjust'),
+        })
+
+        if (!confirmed) {
+          return
+        }
+      }
+
+      setSubmitting(true)
+
+      const res = await (!editing
+        ? sendForm('POST', API_TEAMS, body as CreateTeam)
+        : sendForm('PUT', teamApiUrl(team.id), body as UpdateTeam))
+
+      if (res.ok) {
+        let result: Team
+        if (res.status !== 204) {
+          const json = await res.json()
+          result = json as Team
+        } else {
+          result = {
+            ...team,
+            name: values.name,
+            slug: values.slug,
+          } as Team
+        }
+
+        setTeam(result)
+        setSubmitting(false)
+        onTeamEdited(result)
+      } else {
+        setSubmitting(false)
+        handleApiError(res, setFieldError)
+      }
+    },
+  })
 
   return (
     <DyoCard className={className}>

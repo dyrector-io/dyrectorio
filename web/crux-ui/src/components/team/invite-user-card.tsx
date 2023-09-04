@@ -38,42 +38,40 @@ const InviteUserCard = (props: InviteUserCardProps) => {
   })
 
   const recaptcha = useRef<ReCAPTCHA>()
-  const formik = useDyoFormik(
-    {
-      initialValues: {
-        email: '',
-        firstName: '',
-        lastName: '',
-      },
-      validationSchema: inviteUserSchema,
-      onSubmit: async (values, { setSubmitting, setFieldError }) => {
-        setSubmitting(true)
-
-        const captcha = await recaptcha.current?.executeAsync()
-
-        const request: InviteUser = {
-          ...values,
-          captcha,
-        }
-
-        const res = await sendForm('POST', teamUserListApiUrl(team.id), request)
-
-        if (res.ok) {
-          const json = await res.json()
-          const user = json as User
-
-          setSubmitting(false)
-          onUserInvited(user)
-        } else {
-          recaptcha.current?.reset()
-
-          setSubmitting(false)
-          handleApiError(res, setFieldError)
-        }
-      },
-    },
+  const formik = useDyoFormik({
     submitRef,
-  )
+    initialValues: {
+      email: '',
+      firstName: '',
+      lastName: '',
+    },
+    validationSchema: inviteUserSchema,
+    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+      setSubmitting(true)
+
+      const captcha = await recaptcha.current?.executeAsync()
+
+      const request: InviteUser = {
+        ...values,
+        captcha,
+      }
+
+      const res = await sendForm('POST', teamUserListApiUrl(team.id), request)
+
+      if (res.ok) {
+        const json = await res.json()
+        const user = json as User
+
+        setSubmitting(false)
+        onUserInvited(user)
+      } else {
+        recaptcha.current?.reset()
+
+        setSubmitting(false)
+        handleApiError(res, setFieldError)
+      }
+    },
+  })
 
   return (
     <DyoCard className={className}>

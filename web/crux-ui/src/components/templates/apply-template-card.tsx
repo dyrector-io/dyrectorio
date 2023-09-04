@@ -37,40 +37,38 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik(
-    {
-      initialValues: {
-        name: propsTemplate.name,
-        description: propsTemplate.description,
-        type: 'versionless' as ProjectType,
-      },
-      validationSchema: applyTemplateSchema,
-      enableReinitialize: true,
-      onSubmit: async (values, { setSubmitting, setFieldError }) => {
-        setSubmitting(true)
-
-        const body: CreateProjectFromTemplate = {
-          id: propsTemplate.id,
-          ...values,
-          teamSlug: routes?.teamSlug,
-        }
-
-        const res = await sendForm('POST', API_TEMPLATES, body)
-
-        if (res.ok) {
-          const json = await res.json()
-          const result = json as Project
-
-          setSubmitting(false)
-          await onTemplateApplied(result.id)
-        } else {
-          setSubmitting(false)
-          handleApiError(res, setFieldError)
-        }
-      },
-    },
+  const formik = useDyoFormik({
     submitRef,
-  )
+    initialValues: {
+      name: propsTemplate.name,
+      description: propsTemplate.description,
+      type: 'versionless' as ProjectType,
+    },
+    validationSchema: applyTemplateSchema,
+    enableReinitialize: true,
+    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+      setSubmitting(true)
+
+      const body: CreateProjectFromTemplate = {
+        id: propsTemplate.id,
+        ...values,
+        teamSlug: routes?.teamSlug,
+      }
+
+      const res = await sendForm('POST', API_TEMPLATES, body)
+
+      if (res.ok) {
+        const json = await res.json()
+        const result = json as Project
+
+        setSubmitting(false)
+        await onTemplateApplied(result.id)
+      } else {
+        setSubmitting(false)
+        handleApiError(res, setFieldError)
+      }
+    },
+  })
 
   return (
     <DyoCard className={className}>

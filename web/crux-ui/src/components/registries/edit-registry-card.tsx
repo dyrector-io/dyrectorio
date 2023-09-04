@@ -71,49 +71,47 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik(
-    {
-      initialValues: {
-        ...registry,
-      },
-      validationSchema: registrySchema,
-      onSubmit: async (values, { setSubmitting, setFieldError }) => {
-        setSubmitting(true)
-
-        const transformedValues = registrySchema.cast(values) as any
-
-        const body = {
-          ...registryCreateToDto({
-            ...transformedValues,
-          }),
-        }
-
-        const res = await (!editing
-          ? sendForm('POST', routes.registry.api.list(), body as CreateRegistryDto)
-          : sendForm('PUT', routes.registry.api.details(registry.id), body as UpdateRegistryDto))
-
-        if (res.ok) {
-          let result: RegistryDetails
-          if (res.status !== 204) {
-            const json = await res.json()
-            result = json as RegistryDetails
-          } else {
-            result = {
-              ...values,
-            }
-          }
-
-          setRegistry(result)
-          setSubmitting(false)
-          onRegistryEdited(registryDetailsToRegistry(result))
-        } else {
-          setSubmitting(false)
-          handleApiError(res, setFieldError)
-        }
-      },
-    },
+  const formik = useDyoFormik({
     submitRef,
-  )
+    initialValues: {
+      ...registry,
+    },
+    validationSchema: registrySchema,
+    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+      setSubmitting(true)
+
+      const transformedValues = registrySchema.cast(values) as any
+
+      const body = {
+        ...registryCreateToDto({
+          ...transformedValues,
+        }),
+      }
+
+      const res = await (!editing
+        ? sendForm('POST', routes.registry.api.list(), body as CreateRegistryDto)
+        : sendForm('PUT', routes.registry.api.details(registry.id), body as UpdateRegistryDto))
+
+      if (res.ok) {
+        let result: RegistryDetails
+        if (res.status !== 204) {
+          const json = await res.json()
+          result = json as RegistryDetails
+        } else {
+          result = {
+            ...values,
+          }
+        }
+
+        setRegistry(result)
+        setSubmitting(false)
+        onRegistryEdited(registryDetailsToRegistry(result))
+      } else {
+        setSubmitting(false)
+        handleApiError(res, setFieldError)
+      }
+    },
+  })
 
   const registryType = formik.values.type
 
