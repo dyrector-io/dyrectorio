@@ -16,6 +16,7 @@ import {
   ContainerNetworkMode,
   ContainerRestartPolicyType,
   ContainerVolumeType,
+  Metrics,
   PORT_MAX,
 } from './container'
 
@@ -334,17 +335,24 @@ const createMetricsPortRule = (ports: ContainerPort[]) => {
   )
 }
 
-const metricsRule = yup.mixed().when('ports', ([ports]) =>
-  yup
+const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
+  const portRule = createMetricsPortRule(ports)
+
+  return yup
     .object()
-    .shape({
-      path: yup.string().nullable(),
-      port: createMetricsPortRule(ports),
+    .when({
+      is: (it: Metrics) => it?.enabled,
+      then: schema =>
+        schema.shape({
+          enabled: yup.boolean(),
+          path: yup.string().nullable(),
+          port: portRule,
+        }),
     })
-    .default({})
     .nullable()
-    .optional(),
-)
+    .optional()
+    .default(null)
+})
 
 export const containerConfigSchema = yup.object().shape({
   name: yup.string().required().matches(/^\S+$/g),

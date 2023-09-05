@@ -305,7 +305,7 @@ func builderToDockerConfig(dc *DockerContainerBuilder) (hostConfig *container.Ho
 	}
 
 	portListNat := portListToNatBinding(dc.portRanges, dc.portList)
-	exposedPortSet := getPortSet(dc.portList)
+	exposedPortSet := getPortSet(dc.portRanges, dc.portList)
 	hostConfig = &container.HostConfig{
 		Mounts:       dc.mountList,
 		PortBindings: portListNat,
@@ -544,7 +544,7 @@ func portListToNatBinding(portRanges []PortRangeBinding, portList []PortBinding)
 		// the latest go-connections pkg provides on more return value, not yet needed imported by docker-cli
 
 		portMapping, _ := nat.ParsePortSpec(
-			fmt.Sprintf("0.0.0.0:%v-%v:%v-%v/tcp",
+			fmt.Sprintf("%v-%v:%v-%v",
 				p.External.From,
 				p.External.To,
 				p.Internal.From,
@@ -562,7 +562,7 @@ func portListToNatBinding(portRanges []PortRangeBinding, portList []PortBinding)
 			portExternal, _ := nat.NewPort("tcp", fmt.Sprint(*p.PortBinding))
 			portBinding = []nat.PortBinding{
 				{
-					HostIP:   "0.0.0.0",
+					HostIP:   "", // this way docker binds booth ipv4 and ipv6
 					HostPort: portExternal.Port(),
 				},
 			}
@@ -574,16 +574,26 @@ func portListToNatBinding(portRanges []PortRangeBinding, portList []PortBinding)
 	return portMap
 }
 
-func getPortSet(portList []PortBinding) nat.PortSet {
-	if len(portList) == 0 {
+func getPortSet(portRanges []PortRangeBinding, portList []PortBinding) nat.PortSet {
+	if len(portRanges) == 0 && len(portList) == 0 {
 		return nil
 	}
 	portSet := nat.PortSet{}
+
+	for _, portRange := range portRanges {
+		port := portRange.Internal.From
+		for port <= portRange.Internal.To && port != 0 {
+			exposedPort, _ := nat.NewPort("tcp", fmt.Sprint(port))
+			portSet[exposedPort] = struct{}{}
+			port++
+		}
+	}
 
 	for _, port := range portList {
 		exposedPort, _ := nat.NewPort("tcp", fmt.Sprint(port.ExposedPort))
 		portSet[exposedPort] = struct{}{}
 	}
+
 	return portSet
 }
 

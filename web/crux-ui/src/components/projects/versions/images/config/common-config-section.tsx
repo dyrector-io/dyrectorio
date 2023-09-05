@@ -109,19 +109,22 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
     })
 
   const onPortsChanged = (ports: ContainerConfigPort[]) => {
-    const externalPorts = ports.filter(it => !!it.external)
-    const metricsPortGone = !!config.metrics?.port && externalPorts.some(it => it.external === config.metrics.port)
-    onChange({
+    let patch: Partial<InstanceCommonConfigDetails & Pick<InstanceCraneConfigDetails, 'metrics'>> = {
       ports,
-      ...(metricsPortGone
-        ? null
-        : {
-            metrics: {
-              ...config.metrics,
-              port: null,
-            },
-          }),
-    })
+    }
+
+    if (config.metrics) {
+      const metricsPort = ports.find(it => it.internal === config.metrics.port)
+      patch = {
+        ...patch,
+        metrics: {
+          ...config.metrics,
+          port: metricsPort?.internal ?? null,
+        },
+      }
+    }
+
+    onChange(patch)
   }
 
   return !filterEmpty([...COMMON_CONFIG_PROPERTIES], selectedFilters) ? null : (
