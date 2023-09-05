@@ -15,6 +15,8 @@ services:
     volumes:
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
     restart: unless-stopped
+    labels:
+      - org.dyrectorio.service-category=_internal
   crux:
     container_name: crux
     image: ghcr.io/dyrector-io/dyrectorio/web/crux:${DYO_VERSION:-stable}
@@ -57,6 +59,7 @@ services:
       - traefik.http.routers.crux-http.entrypoints=web
       - traefik.http.routers.crux-http.service=crux-http
       - traefik.http.services.crux-http.loadbalancer.server.port=1848
+      - org.dyrectorio.service-category=_internal
       # ports:
       #   - 1848:1848 # http API
   crux-migrate:
@@ -70,6 +73,8 @@ services:
       crux-postgres:
         condition: service_healthy
     restart: 'no'
+    labels:
+      - org.dyrectorio.service-category=_internal
   crux-postgres:
     container_name: crux-postgres
     image: docker.io/library/postgres:13-alpine
@@ -84,6 +89,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    labels:
+      - org.dyrectorio.service-category=_internal
   crux-ui:
     container_name: crux-ui
     image: ghcr.io/dyrector-io/dyrectorio/web/crux-ui:${DYO_VERSION:-stable}
@@ -108,6 +115,7 @@ services:
       - traefik.http.routers.crux-ui.rule=Host(`${DOMAIN}`)
       - traefik.http.routers.crux-ui.entrypoints=web
       - traefik.http.services.crux-ui.loadbalancer.server.port=3000
+      - org.dyrectorio.service-category=_internal
   kratos:
     container_name: kratos
     image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
@@ -146,6 +154,7 @@ services:
       - traefik.http.middlewares.kratos-strip.stripprefix.prefixes=/kratos
       - traefik.http.middlewares.kratos-ratelimit.ratelimit.average=100
       - traefik.http.routers.kratos.middlewares=kratos-strip,kratos-ratelimit
+      - org.dyrectorio.service-category=_internal
   kratos-migrate:
     container_name: kratos-migrate
     image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
@@ -157,6 +166,8 @@ services:
       kratos-postgres:
         condition: service_healthy
     restart: 'no'
+    labels:
+      - org.dyrectorio.service-category=_internal
   kratos-postgres:
     container_name: kratos-postgres
     image: docker.io/library/postgres:13-alpine
@@ -171,6 +182,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    labels:
+      - org.dyrectorio.service-category=_internal
   # This is insecure, do not use this in production or on the public internet
   # example URI: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true
   mailslurper:
@@ -180,6 +193,8 @@ services:
       - 4436:4436 # web UI
       - 4437:4437 # http API
     restart: unless-stopped
+    labels:
+      - org.dyrectorio.service-category=_internal
 volumes:
   crux-db:
   kratos-db:

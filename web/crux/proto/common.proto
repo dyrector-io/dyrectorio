@@ -70,6 +70,7 @@ message ContainerStateItem {
   string imageTag = 106;
 
   repeated ContainerStateItemPort ports = 1000;
+  map<string, string> labels = 1001;
 }
 
 message ContainerLogMessage {

@@ -278,7 +278,7 @@ export default class DeployService {
     return this.mapper.toDto(deployment)
   }
 
-  async patchDeployment(deploymentId: string, req: PatchDeploymentDto): Promise<void> {
+  async patchDeployment(deploymentId: string, req: PatchDeploymentDto, identity: Identity): Promise<void> {
     if (req.configBundleIds) {
       const connections = await this.prisma.deployment.findFirst({
         where: {
@@ -313,6 +313,21 @@ export default class DeployService {
         })
       }
     }
+
+    await this.prisma.deployment.update({
+      where: {
+        id: deploymentId,
+      },
+      data: {
+        note: req.note ?? undefined,
+        prefix: req.prefix ?? undefined,
+        protected: req.protected ?? undefined,
+        environment: req.environment
+          ? req.environment.map(it => this.containerMapper.uniqueKeyValueDtoToDb(it))
+          : undefined,
+        updatedBy: identity.id,
+      },
+    })
   }
 
   async patchInstance(
