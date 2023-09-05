@@ -422,6 +422,7 @@ func MapContainerState(it *dockerTypes.Container, prefix string) *common.Contain
 		Ports:     mapContainerPorts(&it.Ports),
 		ImageName: imageName[0],
 		ImageTag:  imageTag,
+		Labels:    it.Labels,
 	}
 }
 
@@ -484,7 +485,8 @@ func MapDeploymentLatestPodToStateItem(
 		CreatedAt: timestamppb.New(
 			time.UnixMilli(deployment.GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
 		),
-		Ports: []*common.ContainerStateItemPort{},
+		Ports:  []*common.ContainerStateItemPort{},
+		Labels: deployment.Labels,
 	}
 
 	if containers := deployment.Spec.Template.Spec.Containers; containers != nil {
