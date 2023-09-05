@@ -20,6 +20,7 @@ import (
 
 	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/iancoleman/strcase"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -169,7 +170,7 @@ func mapDagentConfig(dagent *agent.DagentContainerConfig, containerConfig *v1.Co
 }
 
 func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.ContainerConfig) {
-	containerConfig.DeploymentStrategy = crane.DeploymentStatregy.String()
+	containerConfig.DeploymentStrategy = strcase.ToCamel(crane.DeploymentStrategy.String())
 
 	if crane.ProxyHeaders != nil {
 		containerConfig.ProxyHeaders = *crane.ProxyHeaders

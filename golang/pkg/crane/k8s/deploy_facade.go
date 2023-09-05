@@ -152,14 +152,10 @@ func (d *DeployFacade) PreDeploy() error {
 		return err
 	}
 
-	if err := d.secret.applySecrets(
+	return d.secret.applySecrets(
 		d.namespace.name,
 		d.params.ContainerConfig.Container,
-		d.params.ContainerConfig.Secrets); err != nil {
-		return err
-	}
-
-	return nil
+		d.params.ContainerConfig.Secrets)
 }
 
 func (d *DeployFacade) Deploy() error {
@@ -265,7 +261,7 @@ func (d *DeployFacade) Clear() error {
 }
 
 func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest,
-	versionData *v1.VersionData,
+	_ *v1.VersionData,
 ) error {
 	cfg := grpc.GetConfigFromContext(c).(*config.Configuration)
 	dog.Write(deployImageRequest.Strings(&cfg.CommonConfiguration)...)
@@ -307,8 +303,5 @@ func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest 
 		return err
 	}
 
-	if err := deployFacade.PostDeploy(); err != nil {
-		return err
-	}
-	return nil
+	return deployFacade.PostDeploy()
 }

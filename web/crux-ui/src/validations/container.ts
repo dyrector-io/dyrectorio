@@ -74,17 +74,6 @@ const portNumberBaseRule = yup.number().positive().lessThan(65536)
 const portNumberOptionalRule = portNumberBaseRule.nullable()
 const portNumberRule = portNumberBaseRule.nullable().required()
 
-const routingRule = yup
-  .object()
-  .shape({
-    domain: yup.string().nullable(),
-    path: yup.string().nullable(),
-    stripPath: yup.bool().nullable(),
-    uploadLimit: yup.string().nullable(),
-  })
-  .default({})
-  .nullable()
-
 const exposeRule = yup
   .mixed<ContainerConfigExposeStrategy>()
   .oneOf([...CONTAINER_EXPOSE_STRATEGY_VALUES])
@@ -320,6 +309,31 @@ const markerRule = yup
   .default({})
   .nullable()
   .optional()
+
+const createRoutingPortRule = (ports: ContainerPort[]) => {
+  if (!ports?.length) {
+    return portNumberRule.nullable().optional()
+  }
+
+  // eslint-disable-next-line no-template-curly-in-string
+  return portNumberRule.test('routing-port', '${path} is missing the internal port definition', value =>
+    value && ports.length > 0 ? ports.some(it => it.internal === value) : true,
+  )
+}
+
+const routingRule = yup.mixed().when('ports', ([ports]) =>
+  yup
+    .object()
+    .shape({
+      domain: yup.string().nullable(),
+      path: yup.string().nullable(),
+      stripPath: yup.bool().nullable(),
+      uploadLimit: yup.string().nullable(),
+      port: createRoutingPortRule(ports),
+    })
+    .default({})
+    .nullable(),
+)
 
 const createMetricsPortRule = (ports: ContainerPort[]) => {
   if (!ports?.length) {

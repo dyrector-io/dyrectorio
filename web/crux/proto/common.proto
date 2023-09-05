@@ -96,7 +96,7 @@ enum RestartPolicy {
 enum DeploymentStrategy {
   DEPLOYMENT_STRATEGY_UNSPECIFIED = 0;
   RECREATE = 1;
-  ROLLING = 2;
+  ROLLING_UPDATE = 2;
 }
 
 enum VolumeType {

@@ -223,7 +223,7 @@ export function restartPolicyToJSON(object: RestartPolicy): string {
 export enum DeploymentStrategy {
   DEPLOYMENT_STRATEGY_UNSPECIFIED = 0,
   RECREATE = 1,
-  ROLLING = 2,
+  ROLLING_UPDATE = 2,
   UNRECOGNIZED = -1,
 }
 
@@ -236,8 +236,8 @@ export function deploymentStrategyFromJSON(object: any): DeploymentStrategy {
     case 'RECREATE':
       return DeploymentStrategy.RECREATE
     case 2:
-    case 'ROLLING':
-      return DeploymentStrategy.ROLLING
+    case 'ROLLING_UPDATE':
+      return DeploymentStrategy.ROLLING_UPDATE
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -251,8 +251,8 @@ export function deploymentStrategyToJSON(object: DeploymentStrategy): string {
       return 'DEPLOYMENT_STRATEGY_UNSPECIFIED'
     case DeploymentStrategy.RECREATE:
       return 'RECREATE'
-    case DeploymentStrategy.ROLLING:
-      return 'ROLLING'
+    case DeploymentStrategy.ROLLING_UPDATE:
+      return 'ROLLING_UPDATE'
     case DeploymentStrategy.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'

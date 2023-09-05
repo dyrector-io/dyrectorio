@@ -327,16 +327,17 @@ test.describe('Image common config from JSON', () => {
     const path = 'routing-path.test.com'
     const uploadLimit = '1024'
     const stripPath = true
+    const port = 1000
 
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
-    json.routing = { domain, path, uploadLimit, stripPath }
+    json.routing = { domain, path, uploadLimit, stripPath, port }
 
     const wsSent = wsPatchSent(
       ws,
       wsRoute,
       WS_TYPE_PATCH_IMAGE,
-      wsPatchMatchRouting(domain, path, uploadLimit, stripPath),
+      wsPatchMatchRouting(domain, path, uploadLimit, stripPath, port),
     )
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
@@ -433,8 +434,8 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.initContainers = [
       {
-        name: name,
-        image: image,
+        name,
+        image,
         args: [arg],
         command: [cmd],
         environment: { [envKey]: envVal },
@@ -483,7 +484,7 @@ test.describe('Image common config from JSON', () => {
 
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
-    json.volumes = [{ name: name, path: path, type: 'rwo', class: volumeClass, size: size }]
+    json.volumes = [{ name, path, type: 'rwo', class: volumeClass, size }]
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchVolume(name, size, path, volumeClass))
     await jsonEditor.fill(JSON.stringify(json))
@@ -521,8 +522,8 @@ test.describe('Image common config from JSON', () => {
 
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
-    json.volumes = [{ name: volumeName, path: path, type: 'rwo', class: volumeClass, size: size }]
-    json.storage = { storageId: storageId, bucket: bucketPath, path: volumeName }
+    json.volumes = [{ name: volumeName, path, type: 'rwo', class: volumeClass, size }]
+    json.storage = { storageId, bucket: bucketPath, path: volumeName }
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchStorage(storageId, bucketPath, volumeName))
     await jsonEditor.fill(JSON.stringify(json))
