@@ -116,7 +116,7 @@ export default class NodeMapper {
           internal: port.internal,
           external: port.external,
         })) ?? [],
-      labels: it.labels,
+      labels: it.labels ?? {},
     }
   }
 
