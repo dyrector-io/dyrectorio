@@ -2,6 +2,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoCheckbox from '@app/elements/dyo-checkbox'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
+import { dateSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Instance } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
@@ -9,7 +10,6 @@ import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import { DeploymentActions, DeploymentState } from './use-deployment-state'
-import { dateSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 
 export interface DeploymentViewListProps {
   state: DeploymentState
@@ -43,7 +43,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
   })
 
   const columnWidths = ['w-12', 'w-4/12', 'w-2/12', 'w-2/12', 'w-4/12', 'w-28']
-  const headers = ['', 'containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions', '']
+  const headers = ['', 'containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions']
   const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
@@ -93,7 +93,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
       imageTag: 'imageTag',
       'common:createdAt': 'createdAt',
     },
-    text => t(text),
+    text => (text ? t(text) : ''),
   )
   const headerBuilder = (header: string, index: number) =>
     index === 0 ? (
