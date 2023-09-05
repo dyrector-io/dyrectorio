@@ -338,7 +338,7 @@ const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
   return yup
     .object()
     .when({
-      is: (it: Metrics) => it.enabled,
+      is: (it: Metrics) => it?.enabled,
       then: schema =>
         schema.shape({
           enabled: yup.boolean(),
