@@ -50,7 +50,7 @@ func Serve(cfg *config.Configuration, secretStore commonConfig.SecretStore) {
 	}, secretStore)
 }
 
-func grpcClose(ctx context.Context, reason agent.CloseReason, updateOptions grpc.UpdateOptions) error {
+func grpcClose(ctx context.Context, reason agent.CloseReason, _ grpc.UpdateOptions) error {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 	if reason == agent.CloseReason_SHUTDOWN {
 		log.Info().Msg("Remote shutdown requested")
@@ -69,9 +69,8 @@ func grpcClose(ctx context.Context, reason agent.CloseReason, updateOptions grpc
 			}
 		}
 		os.Exit(0)
-	} else {
-		log.Error().Int32("reason", int32(reason)).Msg("Close reason not implemented")
 	}
+	log.Error().Int32("reason", int32(reason)).Msg("Close reason not implemented")
 
 	return nil
 }
