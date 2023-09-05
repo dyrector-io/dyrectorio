@@ -13,6 +13,7 @@
     "containerName": "Container name",
     "port": "Port",
     "exposePort": "Expose port",
+    "default": "Default",
     "noInternalPortsDefined": "No internal ports defined.",
     "portBinding": "Port binding",
     "volumes": "Volumes",

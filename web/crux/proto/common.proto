@@ -137,6 +137,7 @@ message Routing {
   optional string path = 101;
   optional bool stripPath = 102;
   optional string uploadLimit = 103;
+  optional uint32 port = 104;
 }
 
 message ConfigContainer {

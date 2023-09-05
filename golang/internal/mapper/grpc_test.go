@@ -63,6 +63,7 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 			ExposeTLS:          true,
 			IngressHost:        "test-domain",
 			IngressName:        "",
+			IngressPort:        12345,
 			IngressUploadLimit: "5Mi",
 			Shared:             false,
 			ConfigContainer: &v1.ConfigContainer{
@@ -226,6 +227,7 @@ func testDeployRequest() *agent.DeployRequest {
 			Routing: &common.Routing{
 				Domain:      pointer.ToString("test-domain"),
 				UploadLimit: &upLimit,
+				Port:        pointer.ToUint32(12345),
 			},
 			ConfigContainer: &common.ConfigContainer{
 				Image:     "test-image",

@@ -15,7 +15,7 @@ func TestContains(t *testing.T) {
 	assert.False(t, util.Contains(arr, "xs"), "xs is not part of the array, so it must be false")
 }
 
-func TestContainsCustom(t *testing.T) {
+func TestContainsMatcher(t *testing.T) {
 	arr := []int{1, 2, 3, 4, 5, 6}
 
 	intCompareFn := func(i1, i2 int) bool {

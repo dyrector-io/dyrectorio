@@ -31,7 +31,8 @@ type ingress struct {
 type DeployIngressOptions struct {
 	namespace, containerName, ingressName, ingressHost, ingressPath, uploadLimit string
 	stripPrefix                                                                  bool
-	ports                                                                        []int32
+	port                                                                         uint16
+	portList                                                                     []int32
 	tls, proxyHeaders                                                            bool
 	customHeaders                                                                []string
 	labels                                                                       map[string]string
@@ -52,8 +53,13 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 		log.Error().Err(err).Stack().Msg("Error with ingress client")
 	}
 
-	if len(options.ports) == 0 {
+	if options.port == 0 && len(options.portList) == 0 {
 		return errors.New("empty ports, nothing to expose")
+	}
+
+	routedPort := options.port
+	if routedPort == 0 {
+		routedPort = uint16(options.portList[0])
 	}
 
 	ingressDomain := domain.GetHostRule(
@@ -89,7 +95,7 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 							netv1.IngressBackend().WithService(
 								netv1.IngressServiceBackend().
 									WithName(options.containerName).
-									WithPort(netv1.ServiceBackendPort().WithNumber(options.ports[0])),
+									WithPort(netv1.ServiceBackendPort().WithNumber(int32(routedPort))),
 							),
 						),
 				)))

@@ -127,6 +127,7 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		containerConfig.IngressUploadLimit = pointer.GetString(cc.Routing.UploadLimit)
 		containerConfig.IngressPath = pointer.GetString(cc.Routing.Path)
 		containerConfig.IngressStripPath = pointer.GetBool(cc.Routing.StripPath)
+		containerConfig.IngressPort = uint16(pointer.GetUint32(cc.Routing.Port))
 	}
 
 	if cc.ConfigContainer != nil {
@@ -391,6 +392,9 @@ func mapVolumeLinks(in []*agent.VolumeLink) []v1.VolumeLink {
 }
 
 func MapContainerState(it *dockerTypes.Container, prefix string) *common.ContainerStateItem {
+	if it == nil {
+		return nil
+	}
 	name := ""
 	if len(it.Names) > 0 {
 		name = strings.TrimPrefix(it.Names[0], "/")

@@ -310,29 +310,23 @@ const markerRule = yup
   .nullable()
   .optional()
 
-const createRoutingPortRule = (ports: ContainerPort[]) => {
-  if (!ports?.length) {
-    return portNumberRule.nullable().optional()
-  }
-
-  // eslint-disable-next-line no-template-curly-in-string
-  return portNumberRule.test('routing-port', '${path} is missing the internal port definition', value =>
-    value && ports.length > 0 ? ports.some(it => it.internal === value) : true,
-  )
-}
-
-const routingRule = yup.mixed().when('ports', ([ports]) =>
+const routingRule = yup.mixed().when('ports', () =>
   yup
     .object()
     .shape({
       domain: yup.string().nullable(),
-      path: yup.string().nullable(),
+      path: yup
+        .string()
+        .nullable()
+        .optional()
+        .test('path', 'Should start with a leading "/"', (it: string) => (it ? it.startsWith('/') : true)),
       stripPath: yup.bool().nullable(),
       uploadLimit: yup.string().nullable(),
-      port: createRoutingPortRule(ports),
+      port: portNumberRule.nullable().optional().notRequired(),
     })
-    .default({})
-    .nullable(),
+    .nullable()
+    .optional()
+    .default(null),
 )
 
 const createMetricsPortRule = (ports: ContainerPort[]) => {

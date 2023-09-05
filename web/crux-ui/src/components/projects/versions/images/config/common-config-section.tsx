@@ -126,6 +126,16 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
       }
     }
 
+    if (config.routing) {
+      const routingPort = ports.find(it => it.internal === config.routing.port)
+      patch = {
+        ...patch,
+        routing: {
+          ...config.routing,
+          port: routingPort?.internal ?? null,
+        },
+      }
+    }
     onChange(patch)
   }
 
@@ -377,11 +387,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   {exposedPorts.length > 0 ? (
                     <DyoChips
                       className="w-full ml-2"
-                      choices={config.ports.map(it => it.internal)}
+                      choices={[null, ...exposedPorts.map(it => it.internal)]}
                       selection={config.routing?.port ?? null}
-                      converter={(it: number | null) =>
-                        config.ports?.find(port => port?.internal === it)?.internal?.toString()
-                      }
+                      converter={(it: number | null) => it?.toString() ?? t('common.default')}
                       onSelectionChange={it =>
                         onChange({
                           routing: {
