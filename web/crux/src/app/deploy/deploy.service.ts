@@ -279,7 +279,6 @@ export default class DeployService {
   }
 
   async patchDeployment(deploymentId: string, req: PatchDeploymentDto, identity: Identity): Promise<void> {
-    console.log('patchdeployment')
     if (req.configBundleIds) {
       const connections = await this.prisma.deployment.findFirst({
         where: {
@@ -315,7 +314,6 @@ export default class DeployService {
       }
     }
 
-    console.log('updaaate', req)
     await this.prisma.deployment.update({
       where: {
         id: deploymentId,
