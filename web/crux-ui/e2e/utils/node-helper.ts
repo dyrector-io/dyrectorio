@@ -34,8 +34,8 @@ export const installDagent = async (page: Page) => {
   try {
     await page.waitForSelector('div.bg-dyo-green')
   } catch (err) {
-    console.log('[E2E] Agent install failed, script output:')
-    installOutput.forEach(it => console.log(it))
+    console.info('[E2E] Agent install failed, script output:')
+    installOutput.forEach(it => console.error(it))
     throw err
   }
 
