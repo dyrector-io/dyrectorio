@@ -237,7 +237,13 @@ class WebSocketClient {
           return
         }
 
-        this.routes.forEach(r => r.onMessage(message))
+        const path = WebSocketClientRoute.routePathOf(message)
+        const route = this.routes.get(path)
+        if (!route) {
+          this.logger.error(`Route not found: ${path}`)
+        }
+
+        route.onMessage(message)
       }
 
       this.clearSocket()
