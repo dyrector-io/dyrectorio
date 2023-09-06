@@ -14,7 +14,7 @@ import { CreateVersion, EditableVersion, Project, UpdateVersion, VERSION_TYPE_VA
 import { sendForm } from '@app/utils'
 import { createVersionSchema, updateVersionSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useEffect, useState } from 'react'
+import { MutableRefObject, useState } from 'react'
 
 interface EditVersionCardProps {
   className?: string
@@ -48,6 +48,7 @@ const EditVersionCard = (props: EditVersionCardProps) => {
   const [versionHint, setVersionHint] = useVersionHint(version.name)
 
   const formik = useDyoFormik({
+    submitRef,
     initialValues: {
       ...version,
     },
@@ -81,10 +82,6 @@ const EditVersionCard = (props: EditVersionCardProps) => {
       }
     },
   })
-
-  useEffect(() => {
-    submitRef.current = formik.submitForm
-  }, [submitRef, formik.submitForm])
 
   return (
     <DyoCard className={className}>

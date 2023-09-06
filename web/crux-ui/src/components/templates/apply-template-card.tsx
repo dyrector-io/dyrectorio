@@ -38,6 +38,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
+    submitRef,
     initialValues: {
       name: propsTemplate.name,
       description: propsTemplate.description,
@@ -68,10 +69,6 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
       }
     },
   })
-
-  if (submitRef) {
-    submitRef.current = formik.submitForm
-  }
 
   return (
     <DyoCard className={className}>
