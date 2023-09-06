@@ -14,7 +14,7 @@ import (
 	cli "github.com/urfave/cli/v2"
 )
 
-func serve(cCtx *cli.Context) error {
+func serve(_ *cli.Context) error {
 	cfg := config.Configuration{}
 
 	err := util.ReadConfig(&cfg)
@@ -39,7 +39,7 @@ func serve(cCtx *cli.Context) error {
 	return nil
 }
 
-func getHealth(cCtx *cli.Context) error {
+func getHealth(_ *cli.Context) error {
 	healthy, err := health.GetHealthy()
 	if err != nil {
 		log.Error().Err(err).Send()

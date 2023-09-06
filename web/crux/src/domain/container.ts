@@ -64,6 +64,7 @@ export type Routing = {
   path?: string
   stripPrefix?: boolean
   uploadLimit?: string
+  port?: number
 }
 
 export type Volume = {

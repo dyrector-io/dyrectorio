@@ -96,7 +96,7 @@ enum RestartPolicy {
 enum DeploymentStrategy {
   DEPLOYMENT_STRATEGY_UNSPECIFIED = 0;
   RECREATE = 1;
-  ROLLING = 2;
+  ROLLING_UPDATE = 2;
 }
 
 enum VolumeType {
@@ -137,6 +137,7 @@ message Routing {
   optional string path = 101;
   optional bool stripPath = 102;
   optional string uploadLimit = 103;
+  optional uint32 port = 104;
 }
 
 message ConfigContainer {

@@ -70,7 +70,7 @@ func loadConfiguration() (*config.Configuration, *k8s.Secret) {
 	return cfg, secretHandler
 }
 
-func serve(cCtx *cli.Context) error {
+func serve(_ *cli.Context) error {
 	cfg, secretHandler := loadConfiguration()
 
 	crane.Serve(cfg, secretHandler)
@@ -98,7 +98,7 @@ func initKey(cCtx *cli.Context) error {
 	return nil
 }
 
-func getHealth(cCtx *cli.Context) error {
+func getHealth(_ *cli.Context) error {
 	healthy, err := health.GetHealthy()
 	if err != nil {
 		log.Error().Err(err).Send()

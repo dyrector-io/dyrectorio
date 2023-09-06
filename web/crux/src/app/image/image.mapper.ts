@@ -102,7 +102,7 @@ export default class ImageMapper {
       case DeploymentStrategy.recreate:
         return ProtoDeploymentStrategy.RECREATE
       case DeploymentStrategy.rolling:
-        return ProtoDeploymentStrategy.ROLLING
+        return ProtoDeploymentStrategy.ROLLING_UPDATE
       default:
         return ProtoDeploymentStrategy.DEPLOYMENT_STRATEGY_UNSPECIFIED
     }
@@ -116,7 +116,7 @@ export default class ImageMapper {
     switch (type) {
       case ProtoDeploymentStrategy.RECREATE:
         return DeploymentStrategy.recreate
-      case ProtoDeploymentStrategy.ROLLING:
+      case ProtoDeploymentStrategy.ROLLING_UPDATE:
         return DeploymentStrategy.rolling
       default:
         return DeploymentStrategy.recreate
