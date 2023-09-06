@@ -434,14 +434,20 @@ export const instanceContainerConfigSchema = yup.object().shape({
 
 export const deploymentSchema = yup.object({
   environment: uniqueKeyValuesSchema,
-  instances: yup.array(
-    yup.object({
-      image: yup.object({
-        config: containerConfigSchema,
+  instances: yup
+    .array(
+      yup.object({
+        image: yup.object({
+          config: containerConfigSchema,
+        }),
+        config: instanceContainerConfigSchema.nullable(),
       }),
-      config: instanceContainerConfigSchema.nullable(),
-    }),
-  ),
+    )
+    .test(
+      'containerNameAreUnique',
+      'Container names must be unique',
+      instances => new Set(instances.map(it => it.image.config.name)).size === instances.length,
+    ),
 })
 
 const templateRegistrySchema = yup.object().shape({
@@ -531,6 +537,7 @@ export const yupValidate = (schema: yup.AnySchema, candidate: any) => {
       message: 'Validation failed',
       property: validationError.path,
       value: validationError.errors,
+      error: validationError.type,
     })
   }
 }

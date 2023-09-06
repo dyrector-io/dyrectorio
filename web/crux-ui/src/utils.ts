@@ -112,17 +112,6 @@ export const getUserDateFormat = (fallback: string) => {
   return dateFormat?.indexOf('yyyy') > -1 ? dateFormat : fallback // if the format is invalid, use fallback
 }
 
-// array
-export const fold = <T, R>(items: T[], initialValue: R, combine: (previous: R, current: T) => R): R => {
-  let value = initialValue
-  for (let i = 0; i < items.length; i++) {
-    value = combine(value, items[i])
-  }
-  return value
-}
-
-export const distinct = <T>(items: T[]): T[] => Array.from(new Set(items))
-
 // auth related
 export const findAttributes = (ui: UiContainer, name: string): UiNodeInputAttributes => {
   const node = ui.nodes.find(it => (it.attributes as UiNodeInputAttributes).name === name)

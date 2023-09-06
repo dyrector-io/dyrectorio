@@ -241,6 +241,7 @@ class WebSocketClient {
         const route = this.routes.get(path)
         if (!route) {
           this.logger.error(`Route not found: ${path}`)
+          return
         }
 
         route.onMessage(message)

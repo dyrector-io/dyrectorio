@@ -29,14 +29,13 @@ import {
 } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { containerConfigSchema, getValidationError } from '@app/validations'
+import { containerConfigSchema, getValidationError, startDeploymentSchema } from '@app/validations'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useRef } from 'react'
 import toast from 'react-hot-toast'
-import { ValidationError } from 'yup'
 
 interface DeploymentDetailsPageProps {
   deployment: DeploymentRoot
@@ -86,20 +85,16 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    let error: ValidationError
-
-    let i = 0
-
-    while (!error && i < deployment.instances.length) {
+    let error = getValidationError(startDeploymentSchema, deployment)
+    for (let i = 0; !error && i < deployment.instances.length; i++) {
       const instance = deployment.instances[i]
       const mergedConfig = mergeConfigs(instance.image.config, instance.config)
       error = getValidationError(containerConfigSchema, mergedConfig)
-      i++
     }
 
     if (error) {
-      console.error(error)
-      toast.error(t('errors:invalid'))
+      console.error(error.message, error)
+      toast.error(t('errors:validationFailed', error))
       return
     }
 

@@ -15,5 +15,6 @@
   "internalError": "Something went wrong. Please try again later.",
 
   "invalidCredentials": "Invalid credentials",
-  "confirmPassMismatch": "Passwords must match"
+  "confirmPassMismatch": "Passwords must match",
+  "validationFailed": "Validation failed ({{path}}): {{message}}"
 }
