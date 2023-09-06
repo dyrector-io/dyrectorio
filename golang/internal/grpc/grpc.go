@@ -64,8 +64,11 @@ type ContainerWatchContext struct {
 	Error  chan error
 }
 
+// UpdateOptions options to increase update testability
 type UpdateOptions struct {
-	UpdateAlways  bool
+	// always execute the update, regardless of the actual version
+	UpdateAlways bool
+	// if false will not restart by itself, only a message printed about the token events
 	UseContainers bool
 }
 
@@ -312,10 +315,9 @@ func (cl *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 				time.Sleep(time.Second)
 				grpcConn.Client = nil
 				continue
-			} else {
-				log.Info().Msg("Stream connection is up")
-				health.SetHealthGRPCStatus(true)
 			}
+			log.Info().Msg("Stream connection is up")
+			health.SetHealthGRPCStatus(true)
 		}
 
 		command := new(agent.AgentCommand)

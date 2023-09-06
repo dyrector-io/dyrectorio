@@ -1,9 +1,6 @@
 #!/bin/sh
 set -e
 
-# migrating away from deployments because of the limited restartPolicy
-kubectl delete -n dyrectorio deployment dyrectorio-k8s-agent || true
-
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Namespace
