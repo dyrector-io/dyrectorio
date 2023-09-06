@@ -270,15 +270,27 @@ test.describe('Image common config from editor', () => {
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
+    await page.locator('button:has-text("Ports")').click()
+
+    const addPortsButton = await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
+    await addPortsButton.click()
+    const internal = '1000'
+
+    const internalInput = page.locator('input[placeholder="Internal"]')
+
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchPorts(internal))
+    await internalInput.fill(internal)
+    await wsSent
+
     await page.locator('button:has-text("Routing")').click()
 
-    const domain = 'routing-domain'
-    const path = 'routing-path.test.com'
+    const domain = 'routing-domain-example.com'
+    const path = '/testpath'
     const uploadLimit = '1024'
     const stripPath = true
-    const routedPort = 1000
+    const routedPort = Number.parseInt(internal, 10)
 
-    const wsSent = wsPatchSent(
+    wsSent = wsPatchSent(
       ws,
       wsRoute,
       WS_TYPE_PATCH_IMAGE,
@@ -290,6 +302,7 @@ test.describe('Image common config from editor', () => {
       await page.getByRole('switch', { checked: false }).click()
     }
     await page.locator('input[placeholder="Upload limit"]').fill(uploadLimit)
+    await page.click(`button:text-is("${routedPort}"):right-of(:text-is("Port"))`)
     await wsSent
 
     await page.reload()

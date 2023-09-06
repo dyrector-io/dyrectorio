@@ -323,14 +323,15 @@ test.describe('Image common config from JSON', () => {
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
     await jsonEditorButton.click()
 
-    const domain = 'routing-domain'
-    const path = 'routing-path.test.com'
+    const domain = 'routing-domain-example.com'
+    const path = '/testpath'
     const uploadLimit = '1024'
     const stripPath = true
     const port = 1000
 
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
+    json.ports = [{ internal: port, external: null }]
     json.routing = { domain, path, uploadLimit, stripPath, port }
 
     const wsSent = wsPatchSent(

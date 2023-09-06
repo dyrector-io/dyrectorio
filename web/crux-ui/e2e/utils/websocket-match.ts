@@ -1,6 +1,6 @@
-export const wsPatchMatchPorts = (internalPort: string, externalPort: string) => (payload: any) => {
+export const wsPatchMatchPorts = (internalPort: string, externalPort?: string) => (payload: any) => {
   const internal = Number.parseInt(internalPort, 10)
-  const external = Number.parseInt(externalPort, 10)
+  const external = externalPort ? Number.parseInt(externalPort, 10) : null
 
   return payload.config?.ports?.some(it => it.internal === internal && it.external === external)
 }
