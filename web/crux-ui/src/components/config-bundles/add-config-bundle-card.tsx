@@ -29,6 +29,7 @@ const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
+    submitRef,
     initialValues: {
       name: propsConfigBundle?.name ?? '',
       description: propsConfigBundle?.description ?? '',
@@ -62,10 +63,6 @@ const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
       }
     },
   })
-
-  if (submitRef) {
-    submitRef.current = formik.submitForm
-  }
 
   return (
     <DyoCard className={className}>
