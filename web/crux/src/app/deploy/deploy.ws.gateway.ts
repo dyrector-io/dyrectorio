@@ -232,7 +232,7 @@ export default class DeployWebSocketGateway {
 
     await this.service.patchDeployment(deploymentId, cruxReq, identity)
 
-    const configBundleEnvironment = await this.service.getConfigBundleEnvironmentsById(deploymentId)
+    const configBundleEnvironment = await this.service.getConfigBundleEnvironmentById(deploymentId)
 
     const response: WsMessage<DeploymentEnvUpdatedMessage> = {
       type: WS_TYPE_DEPLOYMENT_ENV_UPDATED,
@@ -244,7 +244,7 @@ export default class DeployWebSocketGateway {
 
     if (message.configBundleIds) {
       // If config bundles change send the response to every client
-      // so the configBundleEnvironments will update
+      // so the configBundleEnvironment will update
       subscription.sendToAll(response)
     } else {
       subscription.sendToAllExcept(client, response)

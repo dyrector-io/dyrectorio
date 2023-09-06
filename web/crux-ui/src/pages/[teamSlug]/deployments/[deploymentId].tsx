@@ -29,7 +29,7 @@ import {
 } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { containerConfigSchema, getValidationError, startDeploymentSchema } from '@app/validations'
+import { getValidationError, startDeploymentSchema } from '@app/validations'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -69,8 +69,8 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   const { project, version, deployment, node } = state
 
-  const onDeploymentCopied = async (deploymentId: string) => {
-    await router.push(routes.deployment.details(deploymentId))
+  const onDeploymentCopied = async (newDeploymentId: string) => {
+    await router.push(routes.deployment.details(newDeploymentId))
     router.reload()
   }
 
@@ -85,13 +85,17 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    let error = getValidationError(startDeploymentSchema, deployment)
-    for (let i = 0; !error && i < deployment.instances.length; i++) {
-      const instance = deployment.instances[i]
-      const mergedConfig = mergeConfigs(instance.image.config, instance.config)
-      error = getValidationError(containerConfigSchema, mergedConfig)
+    const selectedInstances = deployment.instances.filter(it => state.deployInstances.includes(it.id))
+
+    const target: DeploymentDetails = {
+      ...deployment,
+      instances: selectedInstances.map(it => ({
+        ...it,
+        config: mergeConfigs(it.image.config, it.config),
+      })),
     }
 
+    const error = getValidationError(startDeploymentSchema, target)
     if (error) {
       console.error(error.message, error)
       toast.error(t('errors:validationFailed', error))

@@ -291,7 +291,7 @@ const initContainerRule = yup
       image: yup.string().required(),
       command: uniqueKeysOnlySchema.default([]).nullable(),
       args: uniqueKeysOnlySchema.default([]).nullable(),
-      environments: uniqueKeyValuesSchema.default([]).nullable(),
+      environment: uniqueKeyValuesSchema.default([]).nullable(),
       useParentConfig: yup.boolean().default(false).required(),
       volumes: initContainerVolumeLinkRule.default([]).nullable(),
     }),
@@ -353,7 +353,7 @@ const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
 
 const containerConfigBaseSchema = yup.object().shape({
   name: yup.string().required().matches(/^\S+$/g),
-  environments: uniqueKeyValuesSchema.default([]).nullable(),
+  environment: uniqueKeyValuesSchema.default([]).nullable(),
   routing: routingRule,
   expose: exposeRule,
   user: yup.number().default(null).min(-1).max(UID_MAX).nullable(),

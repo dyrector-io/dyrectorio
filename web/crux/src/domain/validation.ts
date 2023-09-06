@@ -280,7 +280,7 @@ const initContainerRule = yup
       image: yup.string().required(),
       command: uniqueKeysOnlySchema.default([]).nullable(),
       args: uniqueKeysOnlySchema.default([]).nullable(),
-      environments: uniqueKeyValuesSchema.default([]).nullable(),
+      environment: uniqueKeyValuesSchema.default([]).nullable(),
       useParentConfig: yup.boolean().default(false).required(),
       volumes: initContainerVolumeLinkRule.default([]).nullable(),
     }),
@@ -356,7 +356,7 @@ const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
 
 export const containerConfigSchema = yup.object().shape({
   name: yup.string().required().matches(/^\S+$/g),
-  environments: uniqueKeyValuesSchema.default([]).nullable(),
+  environment: uniqueKeyValuesSchema.default([]).nullable(),
   secrets: uniqueSecretKeyValuesSchema.default([]).nullable(),
   routing: routingRule,
   expose: exposeRule,
@@ -395,7 +395,7 @@ export const containerConfigSchema = yup.object().shape({
 
 export const instanceContainerConfigSchema = yup.object().shape({
   name: yup.string().nullable(),
-  environments: uniqueKeyValuesSchema.default([]).nullable(),
+  environment: uniqueKeyValuesSchema.default([]).nullable(),
   secrets: uniqueKeyValuesSchema.default([]).nullable(),
   routing: routingRule.nullable(),
   expose: instanceExposeRule,
@@ -432,21 +432,18 @@ export const instanceContainerConfigSchema = yup.object().shape({
   metrics: metricsRule,
 })
 
-export const deploymentSchema = yup.object({
+export const startDeploymentSchema = yup.object({
   environment: uniqueKeyValuesSchema,
   instances: yup
     .array(
       yup.object({
-        image: yup.object({
-          config: containerConfigSchema,
-        }),
         config: instanceContainerConfigSchema.nullable(),
       }),
     )
     .test(
       'containerNameAreUnique',
       'Container names must be unique',
-      instances => new Set(instances.map(it => it.image.config.name)).size === instances.length,
+      instances => new Set(instances.map(it => it.config.name)).size === instances.length,
     ),
 })
 

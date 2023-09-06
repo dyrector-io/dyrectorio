@@ -20,19 +20,34 @@ type ErrorInstance = {
   name: string
 }
 
+const toastClassName = '!bg-error-red text-center min-w-[32rem]'
+
 const deployStartErrorHandler = (t: Translate) =>
   apiErrorHandler((stringId: string, status: number, dto: DyoErrorDto) => {
     if (status === 412 && dto.property === 'instanceIds') {
       const instances: ErrorInstance[] = dto.value
       return {
-        toast: t('common:errors.deployRequiredSecrets', {
+        toast: t('errors:deployRequiredSecrets', {
           instances: instances.reduce((message, it) => `${message}\n${it.name}`, ''),
         }),
         toastOptions: {
-          className: '!bg-error-red text-center min-w-[32rem]',
+          className: toastClassName,
         },
       }
     }
+
+    if (status === 400 && dto.error === 'keysAreUnique') {
+      return {
+        toast: t('errors:validationFailed', {
+          message: dto.description,
+          path: dto.property,
+        }),
+        toastOptions: {
+          className: toastClassName,
+        },
+      }
+    }
+
     return defaultTranslator(t)(stringId, status, dto)
   })
 

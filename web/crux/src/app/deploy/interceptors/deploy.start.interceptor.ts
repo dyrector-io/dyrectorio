@@ -1,22 +1,33 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import AgentService from 'src/app/agent/agent.service'
-import { UniqueKeyValue, UniqueSecretKey, UniqueSecretKeyValue } from 'src/domain/container'
+import ContainerMapper from 'src/app/container/container.mapper'
+import {
+  ContainerConfigData,
+  InstanceContainerConfigData,
+  UniqueKeyValue,
+  UniqueSecretKey,
+  UniqueSecretKeyValue,
+} from 'src/domain/container'
 import { checkDeploymentDeployability } from 'src/domain/deployment'
-import { deploymentSchema, yupValidate } from 'src/domain/validation'
+import { startDeploymentSchema, yupValidate } from 'src/domain/validation'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
+import { StartDeploymentDto } from '../deploy.dto'
 
 @Injectable()
 export default class DeployStartValidationInterceptor implements NestInterceptor {
   constructor(
     private prisma: PrismaService,
     private agentService: AgentService,
+    private containerMapper: ContainerMapper,
   ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest()
     const deploymentId = req.params.deploymentId as string
+
+    const dto = req.body as StartDeploymentDto
 
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       include: {
@@ -35,6 +46,13 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
               },
             },
           },
+          where: !dto.instances
+            ? undefined
+            : {
+                id: {
+                  in: dto.instances,
+                },
+              },
         },
       },
       where: {
@@ -57,7 +75,20 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
       })
     }
 
-    yupValidate(deploymentSchema, deployment)
+    const instances = deployment.instances.map(it => ({
+      ...it,
+      config: this.containerMapper.mergeConfigs(
+        it.image.config as any as ContainerConfigData,
+        it.config as any as InstanceContainerConfigData,
+      ),
+    }))
+
+    const target = {
+      ...deployment,
+      instances,
+    }
+
+    yupValidate(startDeploymentSchema, target)
 
     const node = this.agentService.getById(deployment.nodeId)
     if (!node?.connected) {
