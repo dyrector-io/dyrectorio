@@ -33,7 +33,7 @@ export default class AgentConnectionLegacyStrategy extends AgentConnectionStrate
             })
           }
 
-          this.deleteOldAgentContainer(connectedAgent, incomingAgent)
+          await this.deleteOldAgentContainer(connectedAgent, incomingAgent)
         }
         // generate new token for the now up to date agent
         const replacement = this.service.generateConnectionTokenFor(incomingAgent.id, node.createdBy)
@@ -63,7 +63,7 @@ export default class AgentConnectionLegacyStrategy extends AgentConnectionStrate
       outdated: true,
     })
 
-    this.deleteOldAgentContainer(incomingAgent, connectedAgent)
+    await this.deleteOldAgentContainer(incomingAgent, connectedAgent)
     return incomingAgent
   }
 

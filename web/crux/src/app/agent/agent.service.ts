@@ -212,7 +212,7 @@ export default class AgentService {
       }),
       finalize(async () => {
         const status = agent.onDeploymentFinished(deployment)
-        this.deployService.finishDeployment(agent.id, deployment, status)
+        await this.deployService.finishDeployment(agent.id, deployment, status)
 
         const messageType: NotificationMessageType =
           deployment.getStatus() === 'successful' ? 'successful-deploy' : 'failed-deploy'
