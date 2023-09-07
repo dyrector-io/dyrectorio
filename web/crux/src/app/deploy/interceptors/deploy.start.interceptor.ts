@@ -79,7 +79,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
       ...it,
       config: this.containerMapper.mergeConfigs(
         it.image.config as any as ContainerConfigData,
-        it.config as any as InstanceContainerConfigData,
+        (it.config ?? {}) as any as InstanceContainerConfigData,
       ),
     }))
 
