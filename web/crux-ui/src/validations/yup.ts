@@ -2,8 +2,6 @@ import * as yup from 'yup'
 
 type Message = string | ((params: any) => string)
 
-const strReg = /\$\{\s*((\w|\:|\.)+)\s*\}/g
-
 const createMessage = (original: Message) => (params: any) => {
   const newParams = {
     ...params,
@@ -12,16 +10,18 @@ const createMessage = (original: Message) => (params: any) => {
   }
 
   if (typeof original === 'string') {
-    return original.replace(strReg, (_, key) => yup.printValue(newParams[key]))
+    return original.replace(/\$\{\s*((\w|:|\.)+)\s*\}/g, (_, key) => yup.printValue(newParams[key]))
   }
 
   return original(newParams)
 }
 
 const getYupLocale = () => {
-  const newLocale: yup.LocaleObject = {}
+  // TODO(@robot9706): Unable to access translation here, but we need to set the
+  // locale before creating schemas or it won't work
   const overrides: yup.LocaleObject = {
     mixed: {
+      // eslint-disable-next-line no-template-curly-in-string
       required: '${path} is required',
       notType: ({ path, type }) => `${path} is not ${type}`,
     },
@@ -30,6 +30,7 @@ const getYupLocale = () => {
     },
   }
 
+  const newLocale: yup.LocaleObject = {}
   Object.keys(yup.defaultLocale).forEach(typeKey => {
     const typeLocale = yup.defaultLocale[typeKey]
     const overrideLocale = overrides[typeKey]

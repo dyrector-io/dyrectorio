@@ -22,12 +22,7 @@ const createRegistryCredentialRole = (label: string) =>
       is: (type, _private) =>
         type === 'gitlab' || type === 'github' || ((type === 'v2' || type === 'google') && _private),
       then: () => yup.string().required().label(label),
-      // eslint-disable-next-line no-unneeded-ternary
-      otherwise: () =>
-        yup
-          .mixed()
-          .transform(it => (it ? it : undefined))
-          .label(label),
+      otherwise: () => yup.mixed().label(label),
     })
 
 const googleRegistryUrls = ['gcr.io', 'us.gcr.io', 'eu.gcr.io', 'asia.gcr.io'] as const
@@ -36,12 +31,14 @@ const typeLabel = (
   schema: Schema<any, any, any>,
   labels: Record<string, string | ((s: Schema<any, any, any>) => Schema<any, any, any>)>,
 ) =>
-  Object.entries(labels).reduce((it, [labelType, label]) => {
-    return it.when('type', {
-      is: type => type === labelType,
-      then: s => (typeof label === 'string' ? s.label(label) : label(s)),
-    })
-  }, schema)
+  Object.entries(labels).reduce(
+    (it, [labelType, label]) =>
+      it.when('type', {
+        is: type => type === labelType,
+        then: s => (typeof label === 'string' ? s.label(label) : label(s)),
+      }),
+    schema,
+  )
 
 export const registrySchema = yup.object().shape({
   name: nameRule,
@@ -121,4 +118,5 @@ export const registrySchema = yup.object().shape({
   }),
 })
 
+// eslint-disable-next-line no-template-curly-in-string
 export const nameTagSchema = yup.string().matches(/^[^:]+(:[^:]+)?$/, { message: '${images:invalidImageFormat}' })

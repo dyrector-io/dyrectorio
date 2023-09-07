@@ -16,25 +16,23 @@ const useDyoFormik = <Values extends FormikValues>(options: DyoFormikOptions<Val
     validateOnChange: false,
     ...formikOptions,
     validationSchema: options.validationSchema
-      ? () => {
-          return {
-            ...options.validationSchema,
-            validateSync: (values: any, validationOptions: any) => {
-              try {
-                return options.validationSchema.validateSync(values, validationOptions)
-              } catch (err) {
-                throw t ? yupErrorTranslate(err, t) : err
-              }
-            },
-            validate: (values: any, validationOptions: any) =>
-              new Promise<void>((resolve, reject) => {
-                options.validationSchema
-                  .validate(values, validationOptions)
-                  .then(() => resolve())
-                  .catch(err => reject(t ? yupErrorTranslate(err, t) : err))
-              }),
-          }
-        }
+      ? () => ({
+          ...options.validationSchema,
+          validateSync: (values: any, validationOptions: any) => {
+            try {
+              return options.validationSchema.validateSync(values, validationOptions)
+            } catch (err) {
+              throw t ? yupErrorTranslate(err, t) : err
+            }
+          },
+          validate: (values: any, validationOptions: any) =>
+            new Promise<void>((resolve, reject) => {
+              options.validationSchema
+                .validate(values, validationOptions)
+                .then(() => resolve())
+                .catch(err => reject(t ? yupErrorTranslate(err, t) : err))
+            }),
+        })
       : null,
   })
 

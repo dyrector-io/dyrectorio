@@ -1,9 +1,9 @@
-import { DYO_ICONS } from '@app/const'
+import { DYO_ICONS } from '@app/elements/dyo-icon-picker'
 import yup from './yup'
 import { Translate } from 'next-translate'
 
 export const yupErrorTranslate = (error: yup.ValidationError, t: Translate): yup.ValidationError => {
-  const tMessage = (message: string) => message.replaceAll(/\$\{\s*((\w|\:|\.)+)\s*\}/g, (_, key) => t(key))
+  const tMessage = (message: string) => message.replaceAll(/\$\{\s*((\w|:|\.)+)\s*\}/g, (_, key) => t(key))
 
   if (error.inner.length === 0) {
     return {

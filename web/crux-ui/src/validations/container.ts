@@ -354,25 +354,28 @@ const markerRule = yup
   .nullable()
   .optional()
 
-const routingRule = yup.mixed().when('ports', () =>
-  yup
-    .object()
-    .shape({
-      domain: yup.string().nullable().label('common.domain'),
-      path: yup
-        .string()
-        .nullable()
-        .optional()
-        .test('path', 'Should start with a leading "/"', (it: string) => (it ? it.startsWith('/') : true))
-        .label('common.path'),
-      stripPath: yup.bool().nullable().label('common.stripPath'),
-      uploadLimit: yup.string().nullable().label('common.uploadLimit'),
-      port: portNumberRule.nullable().optional().notRequired().label('common.port'),
-    })
-    .nullable()
-    .optional()
-    .default(null),
-).label('common.routing')
+const routingRule = yup
+  .mixed()
+  .when('ports', () =>
+    yup
+      .object()
+      .shape({
+        domain: yup.string().nullable().label('common.domain'),
+        path: yup
+          .string()
+          .nullable()
+          .optional()
+          .test('path', 'Should start with a leading "/"', (it: string) => (it ? it.startsWith('/') : true))
+          .label('common.path'),
+        stripPath: yup.bool().nullable().label('common.stripPath'),
+        uploadLimit: yup.string().nullable().label('common.uploadLimit'),
+        port: portNumberRule.nullable().optional().notRequired().label('common.port'),
+      })
+      .nullable()
+      .optional()
+      .default(null),
+  )
+  .label('common.routing')
 
 const createMetricsPortRule = (ports: ContainerPort[]) => {
   if (!ports?.length) {
