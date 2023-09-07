@@ -42,6 +42,7 @@ const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
   }, [nodes, t])
 
   const formik = useDyoFormik({
+    submitRef,
     initialValues: {
       nodeId: deployment.node.id,
       prefix: deployment.version.type === 'incremental' ? deployment.prefix : `${deployment.prefix}-copy`,
@@ -67,10 +68,6 @@ const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
       }
     },
   })
-
-  if (submitRef) {
-    submitRef.current = formik.submitForm
-  }
 
   return (
     <DyoCard className={className}>

@@ -222,11 +222,6 @@
     "description": "There is a protected deployment with the same node and prefix. Continuing the deployment could result in unexpected behaviour. Are you sure want to continue?"
   },
 
-  "deployProtection": {
-    "title": "Deployment protection",
-    "description": "There is a protected deployment with the same node and prefix. Continuing the deployment could result in unexpected behaviour. Are you sure want to continue?"
-  },
-
   "errors": {
     "registryRateLimit": "Rate limit reached, please try again later",
     "registryUnauthorized": "Unauthorized",

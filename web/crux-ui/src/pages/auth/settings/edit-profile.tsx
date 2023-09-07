@@ -42,11 +42,12 @@ const SettingsPage = (props: SettingsFlow) => {
   const router = useRouter()
 
   const [ui, setUi] = useState(propsUi)
-  const saveRef = useRef<() => Promise<any>>()
+  const submitRef = useRef<() => Promise<any>>()
 
   const onDiscard = () => router.replace(ROUTE_SETTINGS)
 
   const formik = useDyoFormik({
+    submitRef,
     initialValues: {
       email: findAttributes(ui, 'traits.email').value,
       firstName: findAttributes(ui, 'traits.name.first').value ?? '',
@@ -77,8 +78,6 @@ const SettingsPage = (props: SettingsFlow) => {
     },
   })
 
-  saveRef.current = formik.submitForm
-
   const pageLink: BreadcrumbLink = {
     name: t('common:profile'),
     url: ROUTE_SETTINGS,
@@ -94,7 +93,7 @@ const SettingsPage = (props: SettingsFlow) => {
   return (
     <Layout title={t('editProfile')}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        <SaveDiscardPageMenu saveRef={saveRef} onDiscard={onDiscard} />
+        <SaveDiscardPageMenu saveRef={submitRef} onDiscard={onDiscard} />
       </PageHeading>
       <DyoCard>
         <DyoForm

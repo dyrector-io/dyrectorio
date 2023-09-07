@@ -14,7 +14,6 @@ import { CreateDeploymentToken, DeploymentDetails, DeploymentToken, DeploymentTo
 import { apiDocsUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
 import { createDeploymentTokenSchema } from '@app/validations'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject, useState } from 'react'
 
@@ -48,6 +47,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
+    submitRef,
     validationSchema: createDeploymentTokenSchema,
     t,
     initialValues: {
@@ -71,10 +71,6 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
       }
     },
   })
-
-  if (submitRef) {
-    submitRef.current = formik.submitForm
-  }
 
   return (
     <DyoCard className={className}>

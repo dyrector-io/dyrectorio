@@ -94,6 +94,8 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
   const resetableConfig = propsResetableConfig ?? propsConfig
   const config = configType === 'instance' ? mergeConfigs(imageConfig, propsConfig) : propsConfig
 
+  const exposedPorts = config.ports?.filter(it => !!it.internal) ?? []
+
   const onVolumesChanged = (it: ContainerConfigVolume[]) =>
     onChange({
       volumes: it,
@@ -107,19 +109,32 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
     })
 
   const onPortsChanged = (ports: ContainerConfigPort[]) => {
-    const externalPorts = ports.filter(it => !!it.external)
-    const metricsPortGone = !!config.metrics?.port && externalPorts.some(it => it.external === config.metrics.port)
-    onChange({
+    let patch: Partial<InstanceCommonConfigDetails & Pick<InstanceCraneConfigDetails, 'metrics'>> = {
       ports,
-      ...(metricsPortGone
-        ? null
-        : {
-            metrics: {
-              ...config.metrics,
-              port: null,
-            },
-          }),
-    })
+    }
+
+    if (config.metrics) {
+      const metricsPort = ports.find(it => it.internal === config.metrics.port)
+      patch = {
+        ...patch,
+        metrics: {
+          ...config.metrics,
+          port: metricsPort?.internal ?? null,
+        },
+      }
+    }
+
+    if (config.routing) {
+      const routingPort = ports.find(it => it.internal === config.routing.port)
+      patch = {
+        ...patch,
+        routing: {
+          ...config.routing,
+          port: routingPort?.internal ?? null,
+        },
+      }
+    }
+    onChange(patch)
   }
 
   return !filterEmpty([...COMMON_CONFIG_PROPERTIES], selectedFilters) ? null : (
@@ -364,6 +379,33 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   editorOptions={editorOptions}
                   disabled={disabled}
                 />
+                <div className="max-w-lg mb-3 flex flex-row">
+                  <DyoLabel className="my-auto w-40 whitespace-nowrap text-light-eased">{t('common.port')}</DyoLabel>
+
+                  {exposedPorts.length > 0 ? (
+                    <DyoChips
+                      className="w-full ml-2"
+                      choices={[null, ...exposedPorts.map(it => it.internal)]}
+                      selection={config.routing?.port ?? null}
+                      converter={(it: number | null) => it?.toString() ?? t('common.default')}
+                      onSelectionChange={it =>
+                        onChange({
+                          routing: {
+                            ...config.routing,
+                            port: it,
+                          },
+                        })
+                      }
+                      disabled={disabled}
+                    />
+                  ) : (
+                    <DyoMessage
+                      className="w-full ml-2"
+                      messageType="info"
+                      message={t('common.noInternalPortsDefined')}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           )}

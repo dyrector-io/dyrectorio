@@ -43,6 +43,7 @@ const EditTeamCard = (props: EditTeamCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
+    submitRef,
     initialValues: {
       name: team.name,
       slug: team.slug,
@@ -93,10 +94,6 @@ const EditTeamCard = (props: EditTeamCardProps) => {
       }
     },
   })
-
-  if (submitRef) {
-    submitRef.current = formik.submitForm
-  }
 
   return (
     <DyoCard className={className}>

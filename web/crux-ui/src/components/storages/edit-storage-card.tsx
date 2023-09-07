@@ -47,6 +47,7 @@ const EditStorageCard = (props: EditStorageCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
+    submitRef,
     initialValues: {
       ...storage,
     },
@@ -82,10 +83,6 @@ const EditStorageCard = (props: EditStorageCardProps) => {
       }
     },
   })
-
-  if (submitRef) {
-    submitRef.current = formik.submitForm
-  }
 
   return (
     <DyoCard className={className}>

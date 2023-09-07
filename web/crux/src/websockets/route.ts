@@ -135,7 +135,9 @@ export default class WsRoute {
     const { token } = client
     if (this.callbacks.has(token)) {
       this.logger.error(`Client already connected ${token}`)
-      // TODO(@m8vago): check when this error could occour
+
+      // NOTE (@m8vago): This normally never happens, unless we unintentionally
+      // overwrite the clients' token to the same uuid
       throw new Error('Duplicated client')
     }
 

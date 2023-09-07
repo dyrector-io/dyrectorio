@@ -29,6 +29,7 @@ export type Container = {
   state: ContainerState
   reason: string // kubernetes reason (like crashloop backoff) or docker state
   ports: ContainerPort[]
+  labels: Record<string, string>
 }
 
 export type ContainerOperation = 'start' | 'stop' | 'restart'
@@ -103,6 +104,7 @@ export type ContainerConfigRouting = {
   path?: string
   stripPath?: boolean
   uploadLimit?: string
+  port?: number
 }
 
 export type ContainerConfigVolume = {
@@ -743,7 +745,7 @@ export const portToString = (port: ContainerPort): string => {
     return `${external}->None`
   }
 
-  throw new Error('Missing Port Information, provide either an internal or external port number.')
+  return '?'
 }
 
 export const containerPortsToString = (ports: ContainerPort[], truncateAfter: number = 2): string => {
@@ -788,3 +790,12 @@ export const containerPrefixNameOf = (id: ContainerIdentifier): string =>
 export const containerIsStartable = (state: ContainerState) => state !== 'running' && state !== 'removing'
 export const containerIsStopable = (state: ContainerState) => state === 'running' || state === 'paused'
 export const containerIsRestartable = (state: ContainerState) => state === 'running'
+
+export const serviceCategoryIsHidden = (it: string | null) => it && it.startsWith('_')
+export const kubeNamespaceIsSystem = (it: string | null) => it && it === 'kube-system'
+export const containerIsHidden = (it: Container) => {
+  const serviceCategory = it.labels['org.dyrectorio.service-category']
+  const kubeNamespace = it.labels['io.kubernetes.pod.namespace']
+
+  return serviceCategoryIsHidden(serviceCategory) || kubeNamespaceIsSystem(kubeNamespace)
+}

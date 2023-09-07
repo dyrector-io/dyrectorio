@@ -1,21 +1,22 @@
 import { UID_MAX } from '@app/const'
 import {
-  ContainerConfigExposeStrategy,
-  ContainerConfigPortRange,
-  ContainerDeploymentStrategyType,
-  ContainerLogDriverType,
-  ContainerNetworkMode,
-  ContainerRestartPolicyType,
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
   CONTAINER_LOG_DRIVER_VALUES,
   CONTAINER_NETWORK_MODE_VALUES,
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
-  VolumeType,
+  ContainerConfigExposeStrategy,
+  ContainerConfigPortRange,
+  ContainerDeploymentStrategyType,
+  ContainerLogDriverType,
+  ContainerNetworkMode,
   ContainerPort,
+  ContainerRestartPolicyType,
+  Metrics,
+  VolumeType,
 } from '@app/models'
-import yup from './yup'
+import * as yup from 'yup'
 
 export const uniqueKeySchema = yup
   .array(
@@ -93,18 +94,6 @@ export const sensitiveKeyRule = yup.string().matches(sensitiveKeywordRegExp).met
 const portNumberBaseRule = yup.number().positive().lessThan(65536)
 const portNumberOptionalRule = portNumberBaseRule.nullable()
 const portNumberRule = portNumberBaseRule.nullable().required()
-
-const routingRule = yup
-  .object()
-  .shape({
-    domain: yup.string().nullable().label('common.domain'),
-    path: yup.string().nullable().label('common.path'),
-    stripPath: yup.bool().nullable().label('common.stripPath'),
-    uploadLimit: yup.string().nullable().label('common.uploadLimit'),
-  })
-  .default({})
-  .nullable()
-  .label('common.routing')
 
 const exposeRule = yup
   .mixed<ContainerConfigExposeStrategy>()
@@ -365,6 +354,26 @@ const markerRule = yup
   .nullable()
   .optional()
 
+const routingRule = yup.mixed().when('ports', () =>
+  yup
+    .object()
+    .shape({
+      domain: yup.string().nullable().label('common.domain'),
+      path: yup
+        .string()
+        .nullable()
+        .optional()
+        .test('path', 'Should start with a leading "/"', (it: string) => (it ? it.startsWith('/') : true))
+        .label('common.path'),
+      stripPath: yup.bool().nullable().label('common.stripPath'),
+      uploadLimit: yup.string().nullable().label('common.uploadLimit'),
+      port: portNumberRule.nullable().optional().notRequired().label('common.port'),
+    })
+    .nullable()
+    .optional()
+    .default(null),
+).label('common.routing')
+
 const createMetricsPortRule = (ports: ContainerPort[]) => {
   if (!ports?.length) {
     return portNumberRule.nullable().optional().label('crane.metricsPort')
@@ -380,18 +389,25 @@ const createMetricsPortRule = (ports: ContainerPort[]) => {
   )
 }
 
-const metricsRule = yup.mixed().when('ports', ([ports]) =>
-  yup
+const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
+  const portRule = createMetricsPortRule(ports)
+
+  return yup
     .object()
-    .shape({
-      path: yup.string().nullable().label('crane.metricsPath'),
-      port: createMetricsPortRule(ports),
+    .when({
+      is: (it: Metrics) => it?.enabled,
+      then: schema =>
+        schema.shape({
+          enabled: yup.boolean(),
+          path: yup.string().nullable().label('crane.metricsPath'),
+          port: portRule,
+        }),
     })
-    .default({})
     .nullable()
     .optional()
-    .label('crane.metrics'),
-)
+    .default(null)
+    .label('crane.metrics')
+})
 
 const containerConfigBaseSchema = yup.object().shape({
   name: yup

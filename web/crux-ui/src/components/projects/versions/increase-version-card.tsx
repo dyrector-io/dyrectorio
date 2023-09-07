@@ -34,6 +34,7 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
   const [versionHint, setVersionHint] = useVersionHint(null)
 
   const formik = useDyoFormik({
+    submitRef,
     initialValues: {
       name: '',
       changelog: '',
@@ -57,10 +58,6 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
       }
     },
   })
-
-  if (submitRef) {
-    submitRef.current = formik.submitForm
-  }
 
   return (
     <DyoCard className={className}>

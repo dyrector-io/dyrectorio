@@ -44,11 +44,12 @@ const SettingsPage = (props: SettingsFlow) => {
 
   const [ui, setUi] = useState(propsUi)
   const [confirmError, setConfirmError] = useState<string>(null)
-  const saveRef = useRef<() => Promise<any>>()
+  const submitRef = useRef<() => Promise<any>>()
 
   const onDiscard = () => router.replace(ROUTE_SETTINGS)
 
   const formik = useDyoFormik({
+    submitRef,
     initialValues: {
       password: '',
       confirmPassword: '',
@@ -96,12 +97,10 @@ const SettingsPage = (props: SettingsFlow) => {
     },
   ]
 
-  saveRef.current = formik.submitForm
-
   return (
     <Layout title={t('changePass')}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        <SaveDiscardPageMenu saveRef={saveRef} onDiscard={onDiscard} />
+        <SaveDiscardPageMenu saveRef={submitRef} onDiscard={onDiscard} />
       </PageHeading>
 
       <DyoCard className="text-bright p-8">

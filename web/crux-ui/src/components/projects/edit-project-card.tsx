@@ -46,6 +46,7 @@ const EditProjectCard = (props: EditProjectCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
+    submitRef,
     initialValues: {
       ...project,
     },
@@ -82,10 +83,6 @@ const EditProjectCard = (props: EditProjectCardProps) => {
       }
     },
   })
-
-  if (submitRef) {
-    submitRef.current = formik.submitForm
-  }
 
   return (
     <DyoCard className={className}>

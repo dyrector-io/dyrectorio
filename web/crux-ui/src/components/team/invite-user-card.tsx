@@ -39,6 +39,7 @@ const InviteUserCard = (props: InviteUserCardProps) => {
 
   const recaptcha = useRef<ReCAPTCHA>()
   const formik = useDyoFormik({
+    submitRef,
     initialValues: {
       email: '',
       firstName: '',
@@ -72,10 +73,6 @@ const InviteUserCard = (props: InviteUserCardProps) => {
       }
     },
   })
-
-  if (submitRef) {
-    submitRef.current = formik.submitForm
-  }
 
   return (
     <DyoCard className={className}>

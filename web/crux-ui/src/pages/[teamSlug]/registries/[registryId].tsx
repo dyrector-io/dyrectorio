@@ -90,6 +90,10 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   })
 
   useEffect(() => {
+    if (registry.type === 'unchecked') {
+      return
+    }
+
     sock.send(WS_TYPE_FIND_IMAGE, {
       registryId: registry.id,
       filter: '',
@@ -183,7 +187,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
         />
       )}
 
-      {loading ? (
+      {registry.type === 'unchecked' ? null : loading ? (
         <div className="w-full flex justify-center mt-4">
           <LoadingIndicator />
         </div>

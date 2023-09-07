@@ -16,6 +16,7 @@ import {
   ContainerNetworkMode,
   ContainerRestartPolicyType,
   ContainerVolumeType,
+  Metrics,
   PORT_MAX,
 } from './container'
 
@@ -329,22 +330,29 @@ const createMetricsPortRule = (ports: ContainerPort[]) => {
   }
 
   // eslint-disable-next-line no-template-curly-in-string
-  return portNumberOptionalRule.test('metric-port', '${path} is missing the external port definition', value =>
-    value && ports.length > 0 ? ports.some(it => it.external === value) : true,
+  return portNumberOptionalRule.test('metric-port', '${path} is missing the internal port definition', value =>
+    value && ports.length > 0 ? ports.some(it => it.internal === value) : true,
   )
 }
 
-const metricsRule = yup.mixed().when('ports', ([ports]) =>
-  yup
+const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
+  const portRule = createMetricsPortRule(ports)
+
+  return yup
     .object()
-    .shape({
-      path: yup.string().nullable(),
-      port: createMetricsPortRule(ports),
+    .when({
+      is: (it: Metrics) => it?.enabled,
+      then: schema =>
+        schema.shape({
+          enabled: yup.boolean(),
+          path: yup.string().nullable(),
+          port: portRule,
+        }),
     })
-    .default({})
     .nullable()
-    .optional(),
-)
+    .optional()
+    .default(null)
+})
 
 export const containerConfigSchema = yup.object().shape({
   name: yup.string().required().matches(/^\S+$/g),

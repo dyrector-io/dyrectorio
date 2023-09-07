@@ -35,6 +35,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
   const editing = !!node.id
 
   const formik = useDyoFormik({
+    submitRef,
     initialValues: node,
     validationSchema: nodeSchema,
     t,
@@ -74,10 +75,6 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       }
     },
   })
-
-  if (submitRef) {
-    submitRef.current = formik.submitForm
-  }
 
   const inputClassName = 'my-2 w-full'
 
