@@ -95,5 +95,5 @@ test('Minimum name length requirement should work', async ({ page }) => {
   await page.locator('h4:has-text("Create new team") >> visible=true')
   await page.locator('input[name="name"]').fill('12')
   await page.locator('button:has-text("Save")').click()
-  await expect(page.locator('p:has-text("name must be at least 3 characters")')).toBeVisible()
+  await expect(page.locator('p:has-text("Name must be at least 3 characters")')).toBeVisible()
 })
