@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
+import RegistryMetrics from 'src/shared/metrics/registry.metrics'
 import PrismaService from './prisma.service'
 
 const prismaBootstrap = async (app: INestApplication) => {
@@ -15,6 +16,17 @@ const prismaBootstrap = async (app: INestApplication) => {
       status: DeploymentStatusEnum.failed,
     },
   })
+
+  // NOTE(@robot9706): Count number of registries by type and init metrics
+  const counts = await prisma.registry.groupBy({
+    by: ['type'],
+    _count: {
+      _all: true,
+    },
+  })
+
+  // eslint-disable-next-line no-underscore-dangle
+  counts.forEach(it => RegistryMetrics.count(it.type).set(it._count._all))
 }
 
 export default prismaBootstrap

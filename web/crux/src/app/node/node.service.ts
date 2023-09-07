@@ -244,8 +244,8 @@ export default class NodeService {
     await this.agentService.updateAgent(id, identity)
   }
 
-  startContainer(nodeId: string, prefix: string, name: string) {
-    this.sendContainerOperation(
+  async startContainer(nodeId: string, prefix: string, name: string): Promise<void> {
+    await this.sendContainerOperation(
       nodeId,
       {
         prefix,
@@ -255,8 +255,8 @@ export default class NodeService {
     )
   }
 
-  stopContainer(nodeId: string, prefix: string, name: string) {
-    this.sendContainerOperation(
+  async stopContainer(nodeId: string, prefix: string, name: string): Promise<void> {
+    await this.sendContainerOperation(
       nodeId,
       {
         prefix,
@@ -266,8 +266,8 @@ export default class NodeService {
     )
   }
 
-  restartContainer(nodeId: string, prefix: string, name: string) {
-    this.sendContainerOperation(
+  async restartContainer(nodeId: string, prefix: string, name: string): Promise<void> {
+    await this.sendContainerOperation(
       nodeId,
       {
         prefix,
