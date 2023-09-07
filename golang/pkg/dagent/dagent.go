@@ -14,7 +14,7 @@ import (
 )
 
 func Serve(cfg *config.Configuration) {
-	utils.PreflightChecks(cfg)
+	utils.PreflightChecks()
 	log.Info().Msg("Starting dyrector.io DAgent service")
 
 	if cfg.TraefikEnabled {

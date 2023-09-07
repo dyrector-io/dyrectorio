@@ -75,6 +75,12 @@ export class ContainerConfigRoutingDto {
   @IsString()
   @IsOptional()
   uploadLimit?: string
+
+  @IsInt()
+  @IsOptional()
+  @Min(PORT_MIN)
+  @Max(PORT_MAX)
+  port?: number
 }
 
 export class ConfigContainerDto {

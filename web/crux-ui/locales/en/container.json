@@ -11,7 +11,10 @@
   "common": {
     "user": "User",
     "containerName": "Container name",
+    "port": "Port",
     "exposePort": "Expose port",
+    "default": "Default",
+    "noInternalPortsDefined": "No internal ports defined.",
     "portBinding": "Port binding",
     "volumes": "Volumes",
     "capabilities": "Capabilities",
@@ -103,7 +106,6 @@
     "deploymentStrategy": "Deployment strategy",
     "deploymentStrategies": { "recreate": "Recreate", "rolling": "Rolling" },
     "healthCheckConfig": "Health check config",
-    "port": "Port",
     "livenessProbe": "Liveness probe",
     "readinessProbe": "Readiness probe",
     "startupProbe": "Startup probe",
@@ -125,7 +127,6 @@
     "metrics": "Metrics",
     "metricsPath": "Metrics path",
     "metricsPort": "Metrics port",
-    "noExternalPortsDefined": "No external ports defined.",
     "placeholders": {
       "headerName": "Header name",
       "cpuUsageExample": "10m",

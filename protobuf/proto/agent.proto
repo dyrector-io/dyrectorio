@@ -178,7 +178,7 @@ message Metrics {
 }
 
 message CraneContainerConfig {
-  optional common.DeploymentStrategy deploymentStatregy = 100;
+  optional common.DeploymentStrategy deploymentStrategy = 100;
   optional common.HealthCheckConfig healthCheckConfig = 101;
   optional common.ResourceConfig resourceConfig = 102;
   optional bool proxyHeaders = 103;

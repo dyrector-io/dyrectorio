@@ -20,6 +20,7 @@ import (
 
 	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/iancoleman/strcase"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -126,6 +127,7 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		containerConfig.IngressUploadLimit = pointer.GetString(cc.Routing.UploadLimit)
 		containerConfig.IngressPath = pointer.GetString(cc.Routing.Path)
 		containerConfig.IngressStripPath = pointer.GetBool(cc.Routing.StripPath)
+		containerConfig.IngressPort = uint16(pointer.GetUint32(cc.Routing.Port))
 	}
 
 	if cc.ConfigContainer != nil {
@@ -169,7 +171,7 @@ func mapDagentConfig(dagent *agent.DagentContainerConfig, containerConfig *v1.Co
 }
 
 func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.ContainerConfig) {
-	containerConfig.DeploymentStrategy = crane.DeploymentStatregy.String()
+	containerConfig.DeploymentStrategy = strcase.ToCamel(crane.DeploymentStrategy.String())
 
 	if crane.ProxyHeaders != nil {
 		containerConfig.ProxyHeaders = *crane.ProxyHeaders
@@ -390,6 +392,9 @@ func mapVolumeLinks(in []*agent.VolumeLink) []v1.VolumeLink {
 }
 
 func MapContainerState(it *dockerTypes.Container, prefix string) *common.ContainerStateItem {
+	if it == nil {
+		return nil
+	}
 	name := ""
 	if len(it.Names) > 0 {
 		name = strings.TrimPrefix(it.Names[0], "/")

@@ -104,6 +104,7 @@ export type ContainerConfigRouting = {
   path?: string
   stripPath?: boolean
   uploadLimit?: string
+  port?: number
 }
 
 export type ContainerConfigVolume = {

@@ -268,7 +268,7 @@ export interface Metrics {
 }
 
 export interface CraneContainerConfig {
-  deploymentStatregy?: DeploymentStrategy | undefined
+  deploymentStrategy?: DeploymentStrategy | undefined
   healthCheckConfig?: HealthCheckConfig | undefined
   resourceConfig?: ResourceConfig | undefined
   proxyHeaders?: boolean | undefined
@@ -1050,8 +1050,8 @@ function createBaseCraneContainerConfig(): CraneContainerConfig {
 export const CraneContainerConfig = {
   fromJSON(object: any): CraneContainerConfig {
     return {
-      deploymentStatregy: isSet(object.deploymentStatregy)
-        ? deploymentStrategyFromJSON(object.deploymentStatregy)
+      deploymentStrategy: isSet(object.deploymentStrategy)
+        ? deploymentStrategyFromJSON(object.deploymentStrategy)
         : undefined,
       healthCheckConfig: isSet(object.healthCheckConfig)
         ? HealthCheckConfig.fromJSON(object.healthCheckConfig)
@@ -1074,9 +1074,9 @@ export const CraneContainerConfig = {
 
   toJSON(message: CraneContainerConfig): unknown {
     const obj: any = {}
-    message.deploymentStatregy !== undefined &&
-      (obj.deploymentStatregy =
-        message.deploymentStatregy !== undefined ? deploymentStrategyToJSON(message.deploymentStatregy) : undefined)
+    message.deploymentStrategy !== undefined &&
+      (obj.deploymentStrategy =
+        message.deploymentStrategy !== undefined ? deploymentStrategyToJSON(message.deploymentStrategy) : undefined)
     message.healthCheckConfig !== undefined &&
       (obj.healthCheckConfig = message.healthCheckConfig
         ? HealthCheckConfig.toJSON(message.healthCheckConfig)

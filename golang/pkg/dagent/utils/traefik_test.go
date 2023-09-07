@@ -220,3 +220,50 @@ func TestLocalhost(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expected, labels)
 }
+
+func TestGetTraefikLabelsWithPorts(t *testing.T) {
+	instanceConfig := &v1.InstanceConfig{
+		ContainerPreName: "prefix",
+	}
+	containerConfig := &v1.ContainerConfig{
+		Container: "name",
+		Ports: []container.PortBinding{
+			{ExposedPort: 8888, PortBinding: pointer.ToUint16(1)},
+		},
+		IngressName: "domain.test",
+		IngressHost: "root.domain",
+		IngressPort: 8888,
+	}
+	cfg := &dagentConfig.Configuration{}
+
+	expected := map[string]string{
+		"traefik.enable":                                             "true",
+		"traefik.http.routers.prefix-name.rule":                      "Host(`domain.test.root.domain`)",
+		"traefik.http.routers.prefix-name.entrypoints":               "web",
+		"traefik.http.services.prefix-name.loadbalancer.server.port": "8888",
+	}
+
+	labels, err := GetTraefikLabels(instanceConfig, containerConfig, cfg)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, labels)
+}
+
+func TestGetTraefikLabelsWithInvalidPort(t *testing.T) {
+	instanceConfig := &v1.InstanceConfig{
+		ContainerPreName: "prefix",
+	}
+	containerConfig := &v1.ContainerConfig{
+		Container: "name",
+		Ports: []container.PortBinding{
+			{ExposedPort: 8888, PortBinding: pointer.ToUint16(1)},
+		},
+		IngressName: "domain.test",
+		IngressHost: "root.domain",
+		IngressPort: 8889,
+	}
+	cfg := &dagentConfig.Configuration{}
+
+	labels, err := GetTraefikLabels(instanceConfig, containerConfig, cfg)
+	assert.ErrorIs(t, err, ErrExposedPortNotFound)
+	assert.Nil(t, labels)
+}

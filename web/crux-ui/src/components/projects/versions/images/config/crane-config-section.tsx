@@ -18,12 +18,10 @@ import {
   CommonConfigDetails,
   ContainerConfigData,
   ContainerDeploymentStrategyType,
-  ContainerPort,
   CraneConfigDetails,
   InstanceContainerConfigData,
   InstanceCraneConfigDetails,
   mergeConfigs,
-  portToString,
 } from '@app/models/container'
 import { nullify, toNumber } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
@@ -79,14 +77,14 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
   const resetableConfig = propsResetableConfig ?? propsConfig
   const config = configType === 'instance' ? mergeConfigs(imageConfig, propsConfig) : propsConfig
 
-  const externalPorts = config.ports?.filter(it => !!it.external) ?? []
+  const ports = config.ports?.filter(it => !!it.internal) ?? []
 
   useEffect(() => {
-    if (config.metrics?.enabled && !config.metrics.port && externalPorts.length > 0) {
+    if (config.metrics?.enabled && !config.metrics.port && ports.length > 0) {
       onChange({
         metrics: {
           ...config.metrics,
-          port: externalPorts[0].external,
+          port: ports[0].internal,
         },
       })
     }
@@ -133,7 +131,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
             <div className="ml-2">
               <MultiInput
                 id="crane.port"
-                label={t('crane.port')}
+                label={t('common.port')}
                 containerClassName="max-w-lg mb-3"
                 labelClassName="my-auto mr-4 w-20"
                 grow
@@ -567,7 +565,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                   disabled={disabled}
                 />
 
-                {externalPorts.length > 0 ? (
+                {ports.length > 0 ? (
                   <div className="max-w-lg mb-3 flex flex-row">
                     <DyoLabel className="my-auto w-40 whitespace-nowrap text-light-eased">
                       {t('crane.metricsPort')}
@@ -575,12 +573,11 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
 
                     <DyoChips
                       className="w-full ml-2"
-                      choices={externalPorts.map(it => it.external)}
+                      choices={ports.map(it => it.internal)}
                       selection={config.metrics?.port ?? null}
-                      converter={(it: number | null) => {
-                        const selectedPort = config.ports?.find(port => port.external === it)
-                        return portToString(selectedPort as ContainerPort)
-                      }}
+                      converter={(it: number | null) =>
+                        config.ports?.find(port => port.internal === it).internal.toString()
+                      }
                       onSelectionChange={it =>
                         onChange({
                           metrics: {
@@ -598,7 +595,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                       {t('crane.metricsPort')}
                     </DyoLabel>
 
-                    <DyoMessage messageType="info" message={t('crane.noExternalPortsDefined')} />
+                    <DyoMessage messageType="info" message={t('common.noInternalPortsDefined')} />
                   </div>
                 )}
               </>
