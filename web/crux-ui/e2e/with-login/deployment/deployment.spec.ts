@@ -158,7 +158,7 @@ test('Select specific instances to deploy', async ({ page }) => {
   await expect(nodeContainerRow).toHaveCount(1)
 })
 
-test('Incremental versions should keep config bundle environments after a successful deployment', async ({ page }) => {
+test('Incremental versions should keep config bundle environment after a successful deployment', async ({ page }) => {
   const bundleName = 'IncrementalConfigBundle'
   const projectName = 'IncrementalConfigBundleProject'
   const versionName = '1.0.0'
