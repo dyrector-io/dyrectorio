@@ -27,7 +27,7 @@ export const uniqueKeySchema = yup
         .ensure()
         .matches(/^\S+$/g)
         .label('common.key')
-        .meta({ regex: 'common:validation.notContainWhitespaces' }), // all characters are non-whitespaces
+        .meta({ regex: 'errors:notContainWhitespaces' }), // all characters are non-whitespaces
     }),
   )
   .ensure()
@@ -44,7 +44,7 @@ export const uniqueKeyValuesSchema = yup
         .ensure()
         .matches(/^\S+$/g)
         .label('common.key')
-        .meta({ regex: 'common:validation.notContainWhitespaces' }), // all characters are non-whitespaces
+        .meta({ regex: 'errors:notContainWhitespaces' }), // all characters are non-whitespaces
       value: yup.string().ensure().label('common.value'),
     }),
   )
@@ -62,7 +62,7 @@ export const shellCommandSchema = yup
         .ensure()
         .matches(/^\S.*\S$/g) // any characters but no trailing whitespaces
         .label('common.key')
-        .meta({ regex: 'common:validation.notContainWhitespaces' }),
+        .meta({ regex: 'errors:notContainWhitespaces' }),
       value: yup.string().ensure().label('common.value'),
     }),
   )
@@ -78,7 +78,7 @@ export const uniqueKeysOnlySchema = yup
         .ensure()
         .matches(/^\S+$/g)
         .label('common.key')
-        .meta({ regex: 'common:validation.notContainWhitespaces' }),
+        .meta({ regex: 'errors:notContainWhitespaces' }),
     }),
   )
   .ensure()
@@ -318,7 +318,7 @@ const initContainerRule = yup
         .required()
         .matches(/^\S+$/g)
         .label('common.name')
-        .meta({ regex: 'common:validation.notContainWhitespaces' }),
+        .meta({ regex: 'errors:notContainWhitespaces' }),
       image: yup.string().required().label('common.image'),
       command: uniqueKeysOnlySchema.default([]).nullable().label('common.images'),
       args: uniqueKeysOnlySchema.default([]).nullable().label('common.arguments'),
@@ -418,7 +418,7 @@ const containerConfigBaseSchema = yup.object().shape({
     .required()
     .matches(/^\S+$/g)
     .label('common.containerName')
-    .meta({ regex: 'common:validation.notContainWhitespaces' }),
+    .meta({ regex: 'errors:notContainWhitespaces' }),
   environment: uniqueKeyValuesSchema.default([]).nullable().label('common.environment'),
   routing: routingRule,
   expose: exposeRule,

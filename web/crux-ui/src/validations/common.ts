@@ -2,6 +2,11 @@ import { DYO_ICONS } from '@app/elements/dyo-icon-picker'
 import yup from './yup'
 import { Translate } from 'next-translate'
 
+export type ErrorWithPath = {
+  path: string
+  message: string
+}
+
 export const yupErrorTranslate = (error: yup.ValidationError, t: Translate): yup.ValidationError => {
   const tMessage = (message: string) => message.replaceAll(/\$\{\s*((\w|:|\.)+)\s*\}/g, (_, key) => t(key))
 

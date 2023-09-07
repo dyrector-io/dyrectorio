@@ -10,6 +10,8 @@ const createMessage = (original: Message) => (params: any) => {
   }
 
   if (typeof original === 'string') {
+    // NOTE(@robot9706): The regex below matches string interpolation parameters with extra dots and colons.
+    // For example ${common:errors.validation}.
     return original.replace(/\$\{\s*((\w|:|\.)+)\s*\}/g, (_, key) => yup.printValue(newParams[key]))
   }
 

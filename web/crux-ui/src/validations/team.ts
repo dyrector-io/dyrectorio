@@ -8,7 +8,7 @@ export const teamSlugRule = yup
   .max(16)
   .matches(/^\S*$/)
   .label('common:slug')
-  .meta({ regex: 'common:validation.notContainWhitespaces' })
+  .meta({ regex: 'errors:notContainWhitespaces' })
 
 export const inviteUserSchema = yup.object().shape({
   email: yup.string().email().required().label('common:email'),

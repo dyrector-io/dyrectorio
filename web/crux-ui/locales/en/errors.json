@@ -17,5 +17,7 @@
   "invalidCredentials": "Invalid credentials",
   "confirmPassMismatch": "Passwords must match",
 
-  "deploymentInvalid": "The configuration of {{target}} has some problems. Please open the configuration and check for any errors."
+  "deploymentInvalid": "The configuration of {{target}} has some problems. Please open the configuration and check for any errors.",
+
+  "notContainWhitespaces": "not contain whitespaces"
 }

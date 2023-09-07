@@ -229,9 +229,5 @@
   },
 
   "imageConfig":"Image config",
-  "instanceConfig":"Container config",
-
-  "validation": {
-    "notContainWhitespaces": "not contain whitespaces"
-  }
+  "instanceConfig":"Container config"
 }
