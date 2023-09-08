@@ -30,14 +30,13 @@ import {
 } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { containerConfigSchema, getValidationError } from '@app/validations'
+import { getValidationError, startDeploymentSchema } from '@app/validations'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useRef } from 'react'
 import toast from 'react-hot-toast'
-import { ValidationError } from 'yup'
 
 interface DeploymentDetailsPageProps {
   deployment: DeploymentRoot
@@ -72,8 +71,8 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   const { project, version, deployment, node } = state
 
-  const onDeploymentCopied = async (deploymentId: string) => {
-    await router.push(routes.deployment.details(deploymentId))
+  const onDeploymentCopied = async (newDeploymentId: string) => {
+    await router.push(routes.deployment.details(newDeploymentId))
     router.reload()
   }
 
@@ -88,21 +87,20 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    let error: ValidationError
-    let instance: Instance
+    const selectedInstances = deployment.instances.filter(it => state.deployInstances.includes(it.id))
 
-    let i = 0
-
-    while (!error && i < deployment.instances.length) {
-      instance = deployment.instances[i]
-      const mergedConfig = mergeConfigs(instance.image.config, instance.config)
-      error = getValidationError(containerConfigSchema, mergedConfig, null, tError)
-      i++
+    const target: DeploymentDetails = {
+      ...deployment,
+      instances: selectedInstances.map(it => ({
+        ...it,
+        config: mergeConfigs(it.image.config, it.config),
+      })),
     }
 
+    const error = getValidationError(startDeploymentSchema, target)
     if (error) {
-      console.error(error)
-      toast.error(t('errors:deploymentInvalid', { target: instance.config?.name ?? instance.image.config.name }))
+      console.error(error.message, error)
+      toast.error(t('errors:validationFailed', error))
       return
     }
 

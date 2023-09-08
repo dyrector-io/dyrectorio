@@ -247,7 +247,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           </Filters>
           <DyoCard className="relative mt-4">
             <DyoList
-              headers={[...headers, '']}
+              headers={[...headers]}
               headerClassName={headerClasses}
               itemClassName={itemClasses}
               data={sorting.items}

@@ -66,6 +66,7 @@ const mockModules = (env: string, packageVersion: string) => [
     useValue: {
       $transaction: (fn: (prisma: any) => Promise<void>) =>
         new Promise(resolve => {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           fn({
             node: {
               findUniqueOrThrow: jest.fn().mockReturnValue(nodeWithTokenMock),

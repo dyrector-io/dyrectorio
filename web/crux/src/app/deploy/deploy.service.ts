@@ -142,11 +142,11 @@ export default class DeployService {
     })
 
     const publicKey = this.agentService.getById(deployment.nodeId)?.publicKey
-    const configBundleEnvironments = this.getConfigBundleEnvironmentKeys(
+    const configBundleEnvironment = this.getConfigBundleEnvironmentKeys(
       deployment.configBundles.map(it => it.configBundle),
     )
 
-    return this.mapper.toDetailsDto(deployment, publicKey, configBundleEnvironments)
+    return this.mapper.toDetailsDto(deployment, publicKey, configBundleEnvironment)
   }
 
   async getDeploymentEvents(deploymentId: string): Promise<DeploymentEventDto[]> {
@@ -1111,7 +1111,7 @@ export default class DeployService {
     return message
   }
 
-  async getConfigBundleEnvironmentsById(deploymentId: string): Promise<EnvironmentToConfigBundleNameMap> {
+  async getConfigBundleEnvironmentById(deploymentId: string): Promise<EnvironmentToConfigBundleNameMap> {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id: deploymentId,

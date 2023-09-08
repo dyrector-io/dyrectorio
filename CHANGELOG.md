@@ -1,8 +1,35 @@
 # CHANGELOG
 
 
+<a name="0.8.1"></a>
+## [0.8.1](https://github.com/dyrector-io/dyrectorio/compare/0.8.0...0.8.1) (2023-09-07)
+
+### Doc
+
+* update readme ([#802](https://github.com/dyrector-io/dyrectorio/issues/802))
+
+### Feat
+
+* add explicit port routing & go tools bump ([#808](https://github.com/dyrector-io/dyrectorio/issues/808))
+* **(crux-ui):** useEffect submitRef update ([#806](https://github.com/dyrector-io/dyrectorio/issues/806))
+* service category label for platform containers & hide containers based on category ([#807](https://github.com/dyrector-io/dyrectorio/issues/807))
+* oneshot agent install tokens ([#796](https://github.com/dyrector-io/dyrectorio/issues/796))
+
+### Fix
+
+* **(crux):** floating promises ([#814](https://github.com/dyrector-io/dyrectorio/issues/814))
+* missing translations in lists ([#811](https://github.com/dyrector-io/dyrectorio/issues/811))
+* **(web):** validate container name duplication ([#812](https://github.com/dyrector-io/dyrectorio/issues/812))
+* port range exposing and various bugfixes ([#809](https://github.com/dyrector-io/dyrectorio/issues/809))
+* **(ci):** fix the trailing whitespace error ([#804](https://github.com/dyrector-io/dyrectorio/issues/804))
+
+### Refactor
+
+* **(web):** optimize ws client routing ([#810](https://github.com/dyrector-io/dyrectorio/issues/810))
+
+
 <a name="0.8.0"></a>
-## [0.8.0](https://github.com/dyrector-io/dyrectorio/compare/0.7.0...0.8.0) (2023-08-30)
+## [0.8.0](https://github.com/dyrector-io/dyrectorio/compare/0.7.0...0.8.0) (2023-08-31)
 
 ### Chore
 

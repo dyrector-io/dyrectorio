@@ -17,7 +17,11 @@
   "invalidCredentials": "Invalid credentials",
   "confirmPassMismatch": "Passwords must match",
 
-  "deploymentInvalid": "The configuration of {{target}} has some problems. Please open the configuration and check for any errors.",
+  "validationFailed": "Validation failed ({{path}}): {{message}}",
+
+  "registryRateLimit": "Rate limit reached, please try again later",
+  "registryUnauthorized": "Unauthorized",
+  "deployRequiredSecrets": "The following instances have missing required secrets: {{instances}}",
 
   "notContainWhitespaces": "not contain whitespaces",
 
