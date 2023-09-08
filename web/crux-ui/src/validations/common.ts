@@ -9,15 +9,15 @@ export type ErrorWithPath = {
 }
 
 export const yupErrorTranslate = (error: yup.ValidationError, t: Translate): yup.ValidationError => {
-  const tMessage = (message: string, error: ValidationError) => {
+  const tMessage = (message: string, values: ValidationError) => {
     const {
       label,
       path,
       regex,
       spec: { meta },
-    } = error.params as any
+    } = values.params as any
     const params = {
-      ...error.params,
+      ...values.params,
       path: label ? t(label) : path,
       regex: meta?.regex ? t(meta.regex) : regex,
     }

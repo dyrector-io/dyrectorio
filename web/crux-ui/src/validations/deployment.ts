@@ -50,3 +50,8 @@ export const startDeploymentSchema = yup.object({
       instances => new Set(instances.map(it => it.config.name)).size === instances.length,
     ),
 })
+
+export const validationErrorToInstance = (field: string): number => {
+  const indexMatch = field?.match(/^instances\[(?<instance>.*)\]/)?.groups?.instance
+  return indexMatch ? Number.parseInt(indexMatch, 10) : null
+}

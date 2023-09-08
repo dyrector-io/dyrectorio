@@ -17,7 +17,9 @@
   "invalidCredentials": "Invalid credentials",
   "confirmPassMismatch": "Passwords must match",
 
-  "validationFailed": "Validation failed ({{path}}): {{message}}",
+  "validationFailedForDeployment": "Validation failed for deployment. Please open the deployment details and check for any instance configuration errors.",
+  "validationFailedForInstance": "Validation failed for instance '{{path}}'",
+  "validationFailedForInstanceMessage": "Validation failed for instance '{{path}}': {{message}}",
 
   "registryRateLimit": "Rate limit reached, please try again later",
   "registryUnauthorized": "Unauthorized",

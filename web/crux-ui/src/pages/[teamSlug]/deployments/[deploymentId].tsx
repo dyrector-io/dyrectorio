@@ -19,18 +19,9 @@ import useConfirmation from '@app/hooks/use-confirmation'
 import { useDeploy } from '@app/hooks/use-deploy'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
-import {
-  DeploymentDetails,
-  DeploymentRoot,
-  Instance,
-  mergeConfigs,
-  NodeDetails,
-  ProjectDetails,
-  VersionDetails,
-} from '@app/models'
+import { DeploymentDetails, DeploymentRoot, NodeDetails, ProjectDetails, VersionDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { getValidationError, startDeploymentSchema } from '@app/validations'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -46,16 +37,12 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const { deployment: propsDeployment } = props
 
   const { t } = useTranslation('deployments')
-  const { t: tError } = useTranslation('container')
   const routes = useTeamRoutes()
 
   const router = useRouter()
   const submitRef = useRef<() => Promise<any>>()
 
   const handleApiError = defaultApiErrorHandler(t)
-
-  const [confirmModalConfig, confirm] = useConfirmation()
-  const deploy = useDeploy({ router, teamRoutes: routes, t, confirm })
 
   const onWsError = (error: Error) => {
     // eslint-disable-next-line
@@ -70,6 +57,9 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   })
 
   const { project, version, deployment, node } = state
+
+  const [confirmModalConfig, confirm] = useConfirmation()
+  const deploy = useDeploy({ router, teamRoutes: routes, t, confirm })
 
   const onDeploymentCopied = async (newDeploymentId: string) => {
     await router.push(routes.deployment.details(newDeploymentId))
@@ -87,24 +77,10 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    const selectedInstances = deployment.instances.filter(it => state.deployInstances.includes(it.id))
-
-    const target: DeploymentDetails = {
-      ...deployment,
-      instances: selectedInstances.map(it => ({
-        ...it,
-        config: mergeConfigs(it.image.config, it.config),
-      })),
-    }
-
-    const error = getValidationError(startDeploymentSchema, target)
-    if (error) {
-      console.error(error.message, error)
-      toast.error(t('errors:validationFailed', error))
-      return
-    }
-
-    await deploy(deployment.id, state.deployInstances)
+    await deploy({
+      deployment,
+      deployInstances: state.deployInstances,
+    })
   }
 
   useWebsocketTranslate(t)
