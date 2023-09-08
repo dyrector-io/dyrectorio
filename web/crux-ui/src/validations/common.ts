@@ -1,6 +1,7 @@
 import { DYO_ICONS } from '@app/elements/dyo-icon-picker'
 import yup from './yup'
 import { Translate } from 'next-translate'
+import { ValidationError } from 'yup'
 
 export type ErrorWithPath = {
   path: string
@@ -8,18 +9,32 @@ export type ErrorWithPath = {
 }
 
 export const yupErrorTranslate = (error: yup.ValidationError, t: Translate): yup.ValidationError => {
-  const tMessage = (message: string) => message.replaceAll(/\$\{\s*((\w|:|\.)+)\s*\}/g, (_, key) => t(key))
+  const tMessage = (message: string, error: ValidationError) => {
+    const {
+      label,
+      path,
+      regex,
+      spec: { meta },
+    } = error.params as any
+    const params = {
+      ...error.params,
+      path: label ? t(label) : path,
+      regex: meta?.regex ? t(meta.regex) : regex,
+    }
+
+    return t(message, params)
+  }
 
   if (error.inner.length === 0) {
     return {
       ...error,
-      message: tMessage(error.message),
-      errors: error.errors.map(it => tMessage(it)),
+      message: tMessage(error.message, error),
+      errors: error.errors.map(it => tMessage(it, error)),
     }
   }
 
   const errors = error.inner.map(it => {
-    const message = tMessage(it.message)
+    const message = tMessage(it.message, it)
     return {
       ...it,
       message,

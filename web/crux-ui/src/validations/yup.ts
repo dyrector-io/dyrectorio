@@ -1,49 +1,16 @@
 import * as yup from 'yup'
 
-type Message = string | ((params: any) => string)
-
-const createMessage = (original: Message) => (params: any) => {
-  const newParams = {
-    ...params,
-    path: params.label ? `\${${params.label}}` : params.path,
-    regex: params.spec?.meta?.regex ? `\${${params.spec?.meta?.regex}}` : params.regex,
-  }
-
-  if (typeof original === 'string') {
-    // NOTE(@robot9706): The regex below matches string interpolation parameters with extra dots and colons.
-    // For example ${common:errors.validation}.
-    return original.replace(/\$\{\s*((\w|:|\.)+)\s*\}/g, (_, key) => yup.printValue(newParams[key]))
-  }
-
-  return original(newParams)
-}
-
+// NOTE(@robot9706): Replace each yup locale object with `errors:yup.[type].[message]`.
+// Types and messages are defined here: https://github.com/jquense/yup/blob/master/src/locale.ts
+// Each message should have an entry in errors.json
 const getYupLocale = () => {
-  // TODO(@robot9706): Unable to access translation here, but we need to set the
-  // locale before creating schemas or it won't work
-  const overrides: yup.LocaleObject = {
-    mixed: {
-      // eslint-disable-next-line no-template-curly-in-string
-      required: '${path} is required',
-      notType: ({ path, type }) => `${path} is not ${type}`,
-    },
-    string: {
-      matches: ({ path, regex }) => `${path} must ${regex}`,
-    },
-  }
-
   const newLocale: yup.LocaleObject = {}
   Object.keys(yup.defaultLocale).forEach(typeKey => {
     const typeLocale = yup.defaultLocale[typeKey]
-    const overrideLocale = overrides[typeKey]
-
     const newTypeLocale = {}
 
     Object.keys(typeLocale).forEach(messageKey => {
-      const yupMessage = typeLocale[messageKey] as Message
-      const overrideMessage = overrideLocale?.[messageKey] as Message
-
-      newTypeLocale[messageKey] = createMessage(overrideMessage ?? yupMessage)
+      newTypeLocale[messageKey] = `errors:yup.${typeKey}.${messageKey}`
     })
 
     newLocale[typeKey] = newTypeLocale
@@ -52,9 +19,9 @@ const getYupLocale = () => {
   return newLocale
 }
 
-// NOTE(@robot9706): Yup setLocale must be called before creating any schemas,
-// otherwise the custom locale won't be used
-// https://github.com/jquense/yup/issues/293 (https://github.com/jquense/yup/issues/293#issuecomment-414450125)
+// NOTE(@robot9706): Yup setLocale must be called before creating any schemas, otherwise the custom locale won't be used.
+// To achieve this use "import yup from './yup'" in validation schema files.
+// https://github.com/jquense/yup/issues/293#issuecomment-414450125
 // https://github.com/jquense/yup/pull/1371
 yup.setLocale(getYupLocale())
 
