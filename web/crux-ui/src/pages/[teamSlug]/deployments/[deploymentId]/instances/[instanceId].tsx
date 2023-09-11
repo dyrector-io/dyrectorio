@@ -52,7 +52,6 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   const { project, version } = deployment
 
   const { t } = useTranslation('images')
-  const { t: tError } = useTranslation('container')
   const routes = useTeamRoutes()
 
   const onWsError = (error: Error) => {
@@ -78,7 +77,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   })
 
   const [fieldErrors, setFieldErrors] = useState<ContainerConfigValidationErrors>(() =>
-    getMergedContainerConfigFieldErrors(mergeConfigs(instance.image.config, state.config), tError),
+    getMergedContainerConfigFieldErrors(mergeConfigs(instance.image.config, state.config), t),
   )
   const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], state.config, fieldErrors))
   const [viewState, setViewState] = useState<ViewState>('editor')
@@ -111,7 +110,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     }
 
     const merged = mergeConfigs(instance.image.config, applied)
-    const errors = getMergedContainerConfigFieldErrors(merged, tError)
+    const errors = getMergedContainerConfigFieldErrors(merged, t)
     setFieldErrors(errors)
     setJsonError(jsonErrorOf(errors))
 
@@ -122,7 +121,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     const newConfig = actions.resetSection(section)
 
     const merged = mergeConfigs(instance.image.config, newConfig)
-    const errors = getMergedContainerConfigFieldErrors(merged, tError)
+    const errors = getMergedContainerConfigFieldErrors(merged, t)
     setFieldErrors(errors)
     setJsonError(jsonErrorOf(errors))
   }

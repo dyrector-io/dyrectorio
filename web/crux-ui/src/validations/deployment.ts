@@ -16,7 +16,7 @@ export const updateDeploymentSchema = yup.object().shape({
 
 export const createDeploymentSchema = updateDeploymentSchema.concat(
   yup.object().shape({
-    nodeId: yup.mixed().nullable().required().label('node'),
+    nodeId: yup.mixed().nullable().required().label('common:node'),
   }),
 )
 

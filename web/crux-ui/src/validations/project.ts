@@ -12,6 +12,6 @@ export const createProjectSchema = updateProjectSchema.concat(
     type: yup
       .mixed<ProjectType>()
       .oneOf([...PROJECT_TYPE_VALUES])
-      .label('versioning'),
+      .label('projects:versioning'),
   }),
 )

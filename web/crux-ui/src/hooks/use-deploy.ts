@@ -40,6 +40,7 @@ const toastClassName = '!bg-error-red text-center min-w-[42rem]'
 export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
   const { router, teamRoutes, t, confirm } = opts
   const handleApiError = defaultApiErrorHandler(t)
+
   const { t: tContainer } = useTranslation('container')
 
   const deploy = async (options: DeployOptions) => {

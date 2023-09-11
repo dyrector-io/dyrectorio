@@ -58,14 +58,14 @@ export const registrySchema = yup.object().shape({
       gitlab: it =>
         it.when('namespace', {
           is: namespace => namespace === 'group',
-          then: s => s.label('group'),
-          otherwise: s => s.label('project'),
+          then: s => s.label('registries:group'),
+          otherwise: s => s.label('registries:project'),
         }),
       github: it =>
         it.when('namespace', {
           is: namespace => namespace === 'organization',
-          then: s => s.label('organization'),
-          otherwise: s => s.label('userName'),
+          then: s => s.label('registries:organization'),
+          otherwise: s => s.label('registries:userName'),
         }),
       google: 'organization',
     },
@@ -73,7 +73,7 @@ export const registrySchema = yup.object().shape({
   url: yup
     .string()
     .meta(shouldResetMetaData)
-    .label('url')
+    .label('registries:url')
     .when(['type', 'selfManaged', 'local'], {
       is: (type, selfManaged, local) =>
         type === 'v2' || type === 'google' || (type === 'gitlab' && selfManaged) || (type === 'unchecked' && !local),
@@ -82,17 +82,17 @@ export const registrySchema = yup.object().shape({
     .when(['type'], { is: type => type === 'google', then: s => s.oneOf([...googleRegistryUrls]) }),
   apiUrl: yup
     .string()
-    .label('apiUrl')
+    .label('registries:apiUrl')
     .meta(shouldResetMetaData)
     .when(['type', 'selfManaged'], {
       is: (type, selfManaged) => type === 'gitlab' && selfManaged,
       then: s => s.required(),
     }),
-  selfManaged: yup.mixed().meta(shouldResetMetaData).label('selfManaged'),
-  private: yup.mixed().meta(shouldResetMetaData).label('private'),
+  selfManaged: yup.mixed().meta(shouldResetMetaData).label('registries:selfManaged'),
+  private: yup.mixed().meta(shouldResetMetaData).label('registries:private'),
   namespace: yup
     .mixed<RegistryNamespace>()
-    .label('namespaceType')
+    .label('registries:namespaceType')
     .when(['type'], {
       is: type => type === 'gitlab',
       then: () =>

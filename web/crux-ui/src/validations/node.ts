@@ -13,17 +13,17 @@ export const nodeGenerateScriptSchema = yup.object().shape({
     .mixed<NodeType>()
     .oneOf([...NODE_TYPE_VALUES])
     .required()
-    .label('technology'),
-  rootPath: yup.string().label('persistentDataPath'),
+    .label('nodes:technology'),
+  rootPath: yup.string().label('nodes:persistentDataPath'),
   scriptType: yup
     .mixed<NodeInstallScriptType>()
     .oneOf([...NODE_INSTALL_SCRIPT_TYPE_VALUES])
     .required()
-    .label('type'),
+    .label('nodes:type'),
   dagentTraefik: yup
     .object()
     .shape({
-      acmeEmail: yup.string().email().required().label('traefikAcmeEmail'),
+      acmeEmail: yup.string().email().required().label('nodes:traefikAcmeEmail'),
     })
     .nullable()
     .default(null),

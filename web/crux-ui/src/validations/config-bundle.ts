@@ -8,5 +8,5 @@ export const configBundleCreateSchema = yup.object().shape({
 
 export const configBundlePatchSchema = yup.object().shape({
   name: nameRule.optional().nullable(),
-  environment: yup.array().optional().nullable().label('environment'),
+  environment: yup.array().optional().nullable().label('config-bundles:environment'),
 })

@@ -60,13 +60,12 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const { image, project, version } = props
 
   const { t } = useTranslation('images')
-  const { t: tError } = useTranslation('container')
   const routes = useTeamRoutes()
 
   const [config, setConfig] = useState<ContainerConfigData>(image.config)
   const [viewState, setViewState] = useState<ViewState>('editor')
   const [fieldErrors, setFieldErrors] = useState<ContainerConfigValidationErrors>(() =>
-    getContainerConfigFieldErrors(image.config, tError),
+    getContainerConfigFieldErrors(image.config, t),
   )
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
@@ -113,7 +112,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
     const value = { ...config, ...newConfig }
     setConfig(value)
 
-    const errors = getContainerConfigFieldErrors(value, tError)
+    const errors = getContainerConfigFieldErrors(value, t)
     setFieldErrors(errors)
     setJsonError(jsonErrorOf(errors))
 
@@ -139,7 +138,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
 
     setConfig(newConfig)
 
-    const errors = getContainerConfigFieldErrors(newConfig, tError)
+    const errors = getContainerConfigFieldErrors(newConfig, t)
     setFieldErrors(errors)
     setJsonError(jsonErrorOf(errors))
 

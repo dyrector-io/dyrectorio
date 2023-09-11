@@ -9,7 +9,7 @@ export const notificationSchema = yup.object().shape({
     .mixed<NotificationType>()
     .oneOf([...NOTIFICATION_TYPE_VALUES])
     .required()
-    .label('notificationType'),
+    .label('notifications:notificationType'),
   url: yup
     .string()
     .url()
@@ -43,5 +43,5 @@ export const notificationSchema = yup.object().shape({
       return schema.matches(pattern, errorMsg)
     })
     .required()
-    .label('url'),
+    .label('notifications:url'),
 })

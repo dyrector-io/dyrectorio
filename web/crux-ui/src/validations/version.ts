@@ -18,6 +18,6 @@ export const createVersionSchema = updateVersionSchema.concat(
     type: yup
       .mixed<VersionType>()
       .oneOf([...VERSION_TYPE_VALUES])
-      .label('type'),
+      .label('versions:type'),
   }),
 )
