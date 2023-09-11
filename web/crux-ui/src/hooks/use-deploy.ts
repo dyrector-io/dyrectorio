@@ -43,7 +43,8 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
   const { t: tContainer } = useTranslation('container')
 
   const deploy = async (options: DeployOptions) => {
-    const { deploymentId, deployment, deployInstances, ignoreProtected } = options
+    const { deploymentId: optionsDeploymentId, deployment, deployInstances, ignoreProtected } = options
+    const deploymentId = optionsDeploymentId ?? deployment?.id
 
     if (deployment) {
       const selectedInstances = deployInstances
