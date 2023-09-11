@@ -102,27 +102,57 @@ func (c *CommonConfiguration) InjectPrivateKey(secrets SecretStore) error {
 }
 
 func (c *CommonConfiguration) InjectGrpcToken(secrets SecretStore) error {
-	token, err := secrets.GetConnectionToken()
-	if token != "" {
-		c.JwtToken, err = ValidateJwtAndCheckNonceBlacklist(secrets, token)
-		if err == nil {
-			return nil
+	// read and validate connection token
+	connectionTokenStr, err := secrets.GetConnectionToken()
+	var connectionToken *ValidJWT
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get the connection token.")
+	} else if connectionTokenStr != "" {
+		connectionToken, err = ValidateJwtAndCheckNonceBlacklist(secrets, connectionTokenStr)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to validate the connection token.")
 		}
 	}
 
-	token = c.GrpcToken
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to validate the connection token. Failing back to the install token")
+	// set up install token
+	if c.GrpcToken != "" {
+		// set the token from the environment as a fallback
+		c.JwtToken, err = ValidateJwtAndCheckNonceBlacklist(secrets, c.GrpcToken)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to validate the grpc token supplied in the environment variables.")
+		}
 	}
 
-	if token == "" {
-		return ErrNoGrpcTokenProvided
+	if c.JwtToken == nil {
+		if connectionToken == nil {
+			return ErrNoGrpcTokenProvided
+		}
+
+		// there is no token in the environment
+		c.JwtToken = connectionToken
+		return nil
 	}
 
-	c.JwtToken, err = ValidateJwtAndCheckNonceBlacklist(secrets, token)
-	if err != nil {
-		return err
+	if connectionToken == nil {
+		// there is no connection token
+		return nil
 	}
 
+	if c.JwtToken.Issuer != connectionToken.Issuer {
+		log.Info().
+			Str("environmentIssuer", c.JwtToken.Issuer).
+			Str("connectionTokenIssuer", connectionToken.Issuer).
+			Msg("Token issuer mismatch. Falling back to the environment's grpc token.")
+
+		err = secrets.SaveConnectionToken("") // delete the connection token
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to delete the connection token.")
+		}
+
+		return nil
+	}
+
+	// we are using the connection token when the issuers are matching
+	c.JwtToken = connectionToken
 	return nil
 }
