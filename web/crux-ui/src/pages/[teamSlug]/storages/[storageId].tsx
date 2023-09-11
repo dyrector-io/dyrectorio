@@ -5,6 +5,7 @@ import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import EditStorageCard from '@app/components/storages/edit-storage-card'
 import StorageCard from '@app/components/storages/storage-card'
 import { defaultApiErrorHandler } from '@app/errors'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { StorageDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
@@ -13,7 +14,7 @@ import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 interface StorageDetailsPageProps {
   storage: StorageDetails
@@ -28,7 +29,7 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
 
   const [storage, setStorage] = useState(propsStorage)
   const [editing, setEditing] = useState(false)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -71,7 +72,7 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
           onDelete={onDelete}
           editing={editing}
           setEditing={setEditing}
-          submitRef={submitRef}
+          submit={submit}
           deleteModalTitle={t('common:areYouSureDeleteName', { name: storage.name })}
           deleteModalDescription={t('common:proceedYouLoseAllDataToName', {
             name: storage.name,
@@ -82,7 +83,7 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
       {!editing ? (
         <StorageCard storage={storage} />
       ) : (
-        <EditStorageCard className="p-8" storage={storage} onStorageEdited={onStorageEdited} submitRef={submitRef} />
+        <EditStorageCard className="p-8" storage={storage} onStorageEdited={onStorageEdited} submit={submit} />
       )}
     </Layout>
   )

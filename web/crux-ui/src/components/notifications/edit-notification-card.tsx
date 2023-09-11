@@ -20,18 +20,19 @@ import {
 import { sendForm } from '@app/utils'
 import { notificationSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { useState } from 'react'
 import { NotificationEventList } from './notification-event-list'
+import { SubmitHook } from '@app/hooks/use-submit'
 
 interface EditNotificationCardProps {
   notification?: NotificationDetails
-  submitRef: MutableRefObject<() => Promise<any>>
+  submit: SubmitHook
   onNotificationEdited: (notifcation: NotificationDetails) => void
   className?: string
 }
 
 const EditNotificationCard = (props: EditNotificationCardProps) => {
-  const { notification: propsNotification, submitRef, onNotificationEdited, className } = props
+  const { notification: propsNotification, submit, onNotificationEdited, className } = props
 
   const { t } = useTranslation('notifications')
   const routes = useTeamRoutes()
@@ -53,7 +54,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       ...notification,
     },

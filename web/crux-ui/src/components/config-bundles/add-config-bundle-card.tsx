@@ -6,22 +6,22 @@ import { DyoInput } from '@app/elements/dyo-input'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { ConfigBundle, CreateConfigBundle } from '@app/models/config-bundle'
 import { sendForm } from '@app/utils'
 import { configBundleCreateSchema } from '@app/validations/config-bundle'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject } from 'react'
 
 interface AddConfigBundleCardProps {
   className?: string
   configBundle?: ConfigBundle
   onCreated: (configBundle: ConfigBundle) => void
-  submitRef: MutableRefObject<() => Promise<any>>
+  submit: SubmitHook
 }
 
 const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
-  const { className, configBundle: propsConfigBundle, onCreated, submitRef } = props
+  const { className, configBundle: propsConfigBundle, onCreated, submit } = props
 
   const { t } = useTranslation('config-bundles')
   const routes = useTeamRoutes()
@@ -29,7 +29,7 @@ const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       name: propsConfigBundle?.name ?? '',
       description: propsConfigBundle?.description ?? '',

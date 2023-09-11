@@ -15,6 +15,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { dateSort, enumSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useTimer from '@app/hooks/use-timer'
 import {
@@ -51,7 +52,7 @@ import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { useSWRConfig } from 'swr'
 
@@ -84,7 +85,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const canEdit = userIsAdmin(actor)
   const canDelete = userIsOwner(actor)
 
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const sorting = useSorting<User, UserSorting>(team.users, {
     initialField: 'name',
@@ -337,20 +338,20 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
             setEditing={it => setDetailsState(it ? 'editing' : 'none')}
             deleteModalTitle={t('common:areYouSureDeleteName', { name: team.name })}
             onDelete={canDelete ? onDeleteTeam : null}
-            submitRef={submitRef}
+            submit={submit}
             onAdd={canEdit ? onInviteUser : null}
           />
         )}
       </PageHeading>
 
       {detailsState === 'editing' ? (
-        <EditTeamCard className="mb-8 px-8 py-6" team={team} submitRef={submitRef} onTeamEdited={onTeamEdited} />
+        <EditTeamCard className="mb-8 px-8 py-6" team={team} submit={submit} onTeamEdited={onTeamEdited} />
       ) : detailsState === 'inviting' ? (
         <InviteUserCard
           className="mb-8 px-8 py-6"
           team={team}
           recaptchaSiteKey={recaptchaSiteKey}
-          submitRef={submitRef}
+          submit={submit}
           onUserInvited={onUserInvited}
         />
       ) : null}

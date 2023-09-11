@@ -19,22 +19,22 @@ import {
 } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject } from 'react'
 import toast from 'react-hot-toast'
 import DyoNodeSetup from './dyo-node-setup'
 import EditNodeCard from './edit-node-card'
 import NodeConnectionCard from './node-connection-card'
 import useNodeState from './use-node-state'
+import { SubmitHook } from '@app/hooks/use-submit'
 
 interface EditNodeSectionProps {
   className?: string
   node?: NodeDetails
   onNodeEdited: (node: NodeDetails, shouldClose?: boolean) => void
-  submitRef?: MutableRefObject<() => Promise<any>>
+  submit?: SubmitHook
 }
 
 const EditNodeSection = (props: EditNodeSectionProps) => {
-  const { className, node: propsNode, onNodeEdited: propsOnNodeEdited, submitRef } = props
+  const { className, node: propsNode, onNodeEdited: propsOnNodeEdited, submit } = props
 
   const { t } = useTranslation('nodes')
   const routes = useTeamRoutes()
@@ -147,7 +147,7 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
   return (
     <>
       <div className={clsx(className, 'flex flex-row gap-4')}>
-        <EditNodeCard className="w-1/2 p-8" submitRef={submitRef} onNodeEdited={onNodeEdited} node={node} />
+        <EditNodeCard className="w-1/2 p-8" submit={submit} onNodeEdited={onNodeEdited} node={node} />
 
         <div className="flex flex-col flex-grow w-1/2">
           {node.hasToken && <NodeConnectionCard className="mb-4 p-6" node={node} />}

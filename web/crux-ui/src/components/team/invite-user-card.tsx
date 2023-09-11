@@ -6,12 +6,13 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { apiErrorHandler, defaultTranslator } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import { DyoErrorDto, InviteUser, TeamDetails, User } from '@app/models'
 import { teamUserListApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { inviteUserSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useRef } from 'react'
+import { useRef } from 'react'
 import ReCAPTCHA from 'react-google-recaptcha'
 
 interface InviteUserCardProps {
@@ -19,11 +20,11 @@ interface InviteUserCardProps {
   team: TeamDetails
   recaptchaSiteKey?: string
   onUserInvited: (project: User) => void
-  submitRef?: MutableRefObject<() => Promise<any>>
+  submit?: SubmitHook
 }
 
 const InviteUserCard = (props: InviteUserCardProps) => {
-  const { team, className, onUserInvited, submitRef, recaptchaSiteKey } = props
+  const { team, className, onUserInvited, submit, recaptchaSiteKey } = props
 
   const { t } = useTranslation('teams')
 
@@ -39,7 +40,7 @@ const InviteUserCard = (props: InviteUserCardProps) => {
 
   const recaptcha = useRef<ReCAPTCHA>()
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       email: '',
       firstName: '',

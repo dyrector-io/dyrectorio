@@ -8,23 +8,23 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { IncreaseVersion, Project, Version } from '@app/models'
 import { sendForm } from '@app/utils'
 import { increaseVersionSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject } from 'react'
 
 interface IncreaseVersionCardProps {
   className?: string
   project: Project
   parent: Version
   onVersionIncreased: (version: Version) => void
-  submitRef?: MutableRefObject<() => Promise<any>>
+  submit?: SubmitHook
 }
 
 const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
-  const { className, parent, project, onVersionIncreased, submitRef } = props
+  const { className, parent, project, onVersionIncreased, submit } = props
 
   const { t } = useTranslation('versions')
   const routes = useTeamRoutes()
@@ -34,7 +34,7 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
   const [versionHint, setVersionHint] = useVersionHint(null)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       name: '',
       changelog: '',

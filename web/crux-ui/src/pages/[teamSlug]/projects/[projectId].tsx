@@ -13,6 +13,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   EditableProject,
@@ -31,7 +32,7 @@ import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import toast from 'react-hot-toast'
 
 interface ProjectDetailsPageProps {
@@ -52,7 +53,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
   const [saveState, setSaveState] = useState<WebSocketSaveState>(null)
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
 
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const [convertModelConfig, confirmConvert] = useConfirmation()
 
@@ -179,7 +180,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
           onDelete={project.deletable ? onDelete : null}
           editing={editState !== 'version-list'}
           setEditing={editing => setEditState(editing ? 'edit-project' : 'version-list')}
-          submitRef={submitRef}
+          submit={submit}
           deleteModalTitle={t('common:areYouSureDeleteName', { name: project.name })}
           deleteModalDescription={t('proceedYouLoseAllDataToName', {
             name: project.name,
@@ -200,13 +201,13 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
           className="mb-8 px-8 py-6"
           project={projectDetailsToEditableProject(project)}
           onProjectEdited={onProjectEdited}
-          submitRef={submitRef}
+          submit={submit}
         />
       ) : editState === 'add-version' ? (
         <EditVersionCard
           className="mb-8 px-8 py-6"
           project={project}
-          submitRef={submitRef}
+          submit={submit}
           onVersionEdited={onVersionCreated}
         />
       ) : (
@@ -215,7 +216,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
           project={project}
           parent={increaseTarget}
           onVersionIncreased={onVersionIncreased}
-          submitRef={submitRef}
+          submit={submit}
         />
       )}
 

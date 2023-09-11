@@ -9,26 +9,27 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateVersion, EditableVersion, Project, UpdateVersion, VERSION_TYPE_VALUES } from '@app/models'
 import { sendForm } from '@app/utils'
 import { createVersionSchema, updateVersionSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { useState } from 'react'
 
 interface EditVersionCardProps {
   className?: string
   project: Project
   version?: EditableVersion
   onVersionEdited: (version: EditableVersion) => void
-  submitRef?: MutableRefObject<() => Promise<any>>
+  submit?: SubmitHook
 }
 
 const EditVersionCard = (props: EditVersionCardProps) => {
   const { t } = useTranslation('versions')
   const routes = useTeamRoutes()
 
-  const { project, className, version: propsVersion, onVersionEdited, submitRef } = props
+  const { project, className, version: propsVersion, onVersionEdited, submit } = props
 
   const [version, setVersion] = useState<EditableVersion>(
     propsVersion ?? {
@@ -48,7 +49,7 @@ const EditVersionCard = (props: EditVersionCardProps) => {
   const [versionHint, setVersionHint] = useVersionHint(version.name)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       ...version,
     },

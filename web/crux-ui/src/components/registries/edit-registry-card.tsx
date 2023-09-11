@@ -30,23 +30,24 @@ import {
 import { FormikProps, sendForm } from '@app/utils'
 import { registrySchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { useState } from 'react'
 import GithubRegistryFields from './registry-fields/github-registry-field'
 import GitlabRegistryFields from './registry-fields/gitlab-registry-field'
 import GoogleRegistryFields from './registry-fields/google-registry-field'
 import HubRegistryFields from './registry-fields/hub-registry-fields'
 import UncheckedRegistryFields from './registry-fields/unchecked-registry-field'
 import V2RegistryFields from './registry-fields/v2-registry-field'
+import { SubmitHook } from '@app/hooks/use-submit'
 
 interface EditRegistryCardProps {
   className?: string
   registry?: RegistryDetails
   onRegistryEdited: (registry: Registry) => void
-  submitRef: MutableRefObject<() => Promise<any>>
+  submit: SubmitHook
 }
 
 const EditRegistryCard = (props: EditRegistryCardProps) => {
-  const { className, registry: propsRegistry, onRegistryEdited, submitRef } = props
+  const { className, registry: propsRegistry, onRegistryEdited, submit } = props
 
   const { t } = useTranslation('registries')
   const routes = useTeamRoutes()
@@ -72,7 +73,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       ...registry,
     },

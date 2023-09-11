@@ -7,6 +7,7 @@ import DyoTextArea from '@app/elements/dyo-text-area'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Project, ProjectType } from '@app/models'
 import { CreateProjectFromTemplate, Template } from '@app/models/template'
@@ -15,17 +16,16 @@ import { sendForm } from '@app/utils'
 import { applyTemplateSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { MutableRefObject } from 'react'
 
 interface ApplyTemplateCardProps {
   className?: string
   template: Template
   onTemplateApplied: (projectId: string) => Promise<void>
-  submitRef?: MutableRefObject<() => Promise<any>>
+  submit?: SubmitHook
 }
 
 const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
-  const { template: propsTemplate, className, onTemplateApplied, submitRef } = props
+  const { template: propsTemplate, className, onTemplateApplied, submit } = props
 
   const { t } = useTranslation('templates')
   const routes = useTeamRoutes()
@@ -38,7 +38,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       name: propsTemplate.name,
       description: propsTemplate.description,

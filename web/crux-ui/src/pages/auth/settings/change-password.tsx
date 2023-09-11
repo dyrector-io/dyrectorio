@@ -11,6 +11,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import useSubmit from '@app/hooks/use-submit'
 import { ChangePassword } from '@app/models'
 import { appendTeamSlug } from '@app/providers/team-routes'
 import {
@@ -34,7 +35,7 @@ import kratos from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 const SettingsPage = (props: SettingsFlow) => {
   const { ui: propsUi, id, identity } = props
@@ -44,12 +45,12 @@ const SettingsPage = (props: SettingsFlow) => {
 
   const [ui, setUi] = useState(propsUi)
   const [confirmError, setConfirmError] = useState<string>(null)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const onDiscard = () => router.replace(ROUTE_SETTINGS)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       password: '',
       confirmPassword: '',
@@ -99,7 +100,7 @@ const SettingsPage = (props: SettingsFlow) => {
   return (
     <Layout title={t('changePass')}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        <SaveDiscardPageMenu saveRef={submitRef} onDiscard={onDiscard} />
+        <SaveDiscardPageMenu saveRef={submit} onDiscard={onDiscard} />
       </PageHeading>
 
       <DyoCard className="text-bright p-8">

@@ -9,22 +9,23 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateStorage, Storage, StorageDetails, UpdateStorage } from '@app/models'
 import { sendForm } from '@app/utils'
 import { storageSchema } from '@app/validations/storage'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { useState } from 'react'
 
 interface EditStorageCardProps {
   className?: string
   storage?: StorageDetails
   onStorageEdited: (registry: Storage) => void
-  submitRef: MutableRefObject<() => Promise<any>>
+  submit: SubmitHook
 }
 
 const EditStorageCard = (props: EditStorageCardProps) => {
-  const { className, storage: propsStorage, onStorageEdited, submitRef } = props
+  const { className, storage: propsStorage, onStorageEdited, submit } = props
 
   const { t } = useTranslation('storages')
   const routes = useTeamRoutes()
@@ -47,7 +48,7 @@ const EditStorageCard = (props: EditStorageCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       ...storage,
     },

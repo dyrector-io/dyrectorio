@@ -1,12 +1,13 @@
 import { FormikConfig, FormikValues, useFormik } from 'formik'
-import { MutableRefObject, useEffect } from 'react'
+import { useEffect } from 'react'
+import { SubmitHook } from './use-submit'
 
 type DyoFormikOptions<Values> = FormikConfig<Values> & {
-  submitRef?: MutableRefObject<() => Promise<any>>
+  submit?: SubmitHook
 }
 
 const useDyoFormik = <Values extends FormikValues>(options: DyoFormikOptions<Values>) => {
-  const { submitRef, ...formikOptions } = options
+  const { submit, ...formikOptions } = options
 
   const formik = useFormik({
     validateOnBlur: false,
@@ -15,12 +16,12 @@ const useDyoFormik = <Values extends FormikValues>(options: DyoFormikOptions<Val
   })
 
   useEffect(() => {
-    if (!submitRef) {
+    if (!submit) {
       return
     }
 
-    submitRef.current = formik.submitForm
-  }, [submitRef, formik.submitForm])
+    submit.set(formik.submitForm)
+  }, [submit, formik.submitForm])
 
   return formik
 }

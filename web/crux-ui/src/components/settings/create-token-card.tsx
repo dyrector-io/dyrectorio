@@ -7,30 +7,30 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import { GeneratedToken, GenerateToken } from '@app/models'
 import { API_TOKENS } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { generateTokenSchema } from '@app/validations/token'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject } from 'react'
 
 const EXPIRATION_VALUES = [30, 60, 90, 0]
 
 interface CreateTokenCardProps {
   className?: string
-  submitRef?: MutableRefObject<() => Promise<any>>
+  submit?: SubmitHook
   onTokenCreated: (token: GeneratedToken) => void
 }
 
 const CreateTokenCard = (props: CreateTokenCardProps) => {
-  const { className, submitRef, onTokenCreated } = props
+  const { className, submit, onTokenCreated } = props
 
   const { t } = useTranslation('settings')
 
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     validationSchema: generateTokenSchema,
     initialValues: {
       name: '',

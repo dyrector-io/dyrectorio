@@ -10,6 +10,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import useSubmit from '@app/hooks/use-submit'
 import { EditProfile } from '@app/models'
 import { appendTeamSlug } from '@app/providers/team-routes'
 import {
@@ -33,7 +34,7 @@ import kratos from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 const SettingsPage = (props: SettingsFlow) => {
   const { ui: propsUi, id, identity } = props
@@ -42,12 +43,12 @@ const SettingsPage = (props: SettingsFlow) => {
   const router = useRouter()
 
   const [ui, setUi] = useState(propsUi)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const onDiscard = () => router.replace(ROUTE_SETTINGS)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       email: findAttributes(ui, 'traits.email').value,
       firstName: findAttributes(ui, 'traits.name.first').value ?? '',
@@ -92,7 +93,7 @@ const SettingsPage = (props: SettingsFlow) => {
   return (
     <Layout title={t('editProfile')}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        <SaveDiscardPageMenu saveRef={submitRef} onDiscard={onDiscard} />
+        <SaveDiscardPageMenu saveRef={submit} onDiscard={onDiscard} />
       </PageHeading>
       <DyoCard>
         <DyoForm

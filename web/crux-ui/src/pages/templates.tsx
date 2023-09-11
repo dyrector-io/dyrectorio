@@ -5,6 +5,7 @@ import ApplyTemplateCard from '@app/components/templates/apply-template-card'
 import TemplateCard from '@app/components/templates/template-card'
 import DyoButton from '@app/elements/dyo-button'
 import DyoWrap from '@app/elements/dyo-wrap'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Template } from '@app/models'
 import { appendTeamSlug } from '@app/providers/team-routes'
@@ -14,7 +15,7 @@ import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 interface TemplatesPageProps {
   templates: Template[]
@@ -28,7 +29,7 @@ const TemplatesPage = (props: TemplatesPageProps) => {
   const routes = useTeamRoutes()
 
   const [applying, setApplying] = useState<Template | null>(null)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const pageLink: BreadcrumbLink = {
     name: t('common:templates'),
@@ -55,16 +56,14 @@ const TemplatesPage = (props: TemplatesPageProps) => {
             <DyoButton className="ml-auto px-4" secondary onClick={() => setApplying(null)}>
               {t('common:discard')}
             </DyoButton>
-            <DyoButton className="px-4 ml-4" onClick={() => submitRef.current()}>
+            <DyoButton className="px-4 ml-4" onClick={() => submit.submit()}>
               {t('common:add')}
             </DyoButton>
           </>
         )}
       </PageHeading>
 
-      {applying && (
-        <ApplyTemplateCard template={applying} onTemplateApplied={onTemplateApplied} submitRef={submitRef} />
-      )}
+      {applying && <ApplyTemplateCard template={applying} onTemplateApplied={onTemplateApplied} submit={submit} />}
 
       <DyoWrap>
         {templates.map(it => (

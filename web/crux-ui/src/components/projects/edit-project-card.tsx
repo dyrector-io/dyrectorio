@@ -8,22 +8,23 @@ import DyoTextArea from '@app/elements/dyo-text-area'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateProject, EditableProject, Project, UpdateProject } from '@app/models'
 import { sendForm } from '@app/utils'
 import { createProjectSchema, updateProjectSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { useState } from 'react'
 
 interface EditProjectCardProps {
   className?: string
   project?: EditableProject
   onProjectEdited: (project: Project) => void
-  submitRef?: MutableRefObject<() => Promise<any>>
+  submit?: SubmitHook
 }
 
 const EditProjectCard = (props: EditProjectCardProps) => {
-  const { project: propsProject, className, onProjectEdited, submitRef } = props
+  const { project: propsProject, className, onProjectEdited, submit } = props
 
   const { t } = useTranslation('projects')
   const routes = useTeamRoutes()
@@ -46,7 +47,7 @@ const EditProjectCard = (props: EditProjectCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       ...project,
     },

@@ -12,6 +12,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { dateSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
+import useSubmit from '@app/hooks/use-submit'
 import { GeneratedToken, Token } from '@app/models'
 import { appendTeamSlug } from '@app/providers/team-routes'
 import { API_TOKENS, ROUTE_INDEX, ROUTE_SETTINGS, ROUTE_SETTINGS_EDIT_PROFILE, tokensApiUrl } from '@app/routes'
@@ -21,7 +22,7 @@ import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 
 interface TokensPageProps {
@@ -37,7 +38,7 @@ const TokensPage = (props: TokensPageProps) => {
 
   const [showToken, setShowToken] = useState<GeneratedToken>(null)
   const [creating, setCreating] = useState(false)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const [deleteModalConfig, confirmDelete] = useConfirmation()
 
@@ -160,16 +161,14 @@ const TokensPage = (props: TokensPageProps) => {
               {t('common:discard')}
             </DyoButton>
 
-            <DyoButton className="px-4 ml-4" onClick={() => submitRef.current()}>
+            <DyoButton className="px-4 ml-4" onClick={() => submit.submit()}>
               {t('common:save')}
             </DyoButton>
           </>
         )}
       </PageHeading>
 
-      {!creating ? null : (
-        <CreateTokenCard className="mb-8 px-8 py-6" submitRef={submitRef} onTokenCreated={onCreated} />
-      )}
+      {!creating ? null : <CreateTokenCard className="mb-8 px-8 py-6" submit={submit} onTokenCreated={onCreated} />}
 
       {!showToken ? null : <ShowTokenCard className="mb-4" token={showToken} />}
 

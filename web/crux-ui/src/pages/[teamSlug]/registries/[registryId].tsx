@@ -13,6 +13,7 @@ import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { SortHeaderBuilderMapping, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -33,7 +34,7 @@ import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface RegistryDetailsPageProps {
   registry: RegistryDetails
@@ -56,7 +57,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
 
   const [registry, setRegistry] = useState(propsRegistry)
   const [editing, setEditing] = useState(false)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const [loading, setLoading] = useState(false)
   const [pagination, setPagination] = useState<PaginationSettings>()
@@ -168,7 +169,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
           onDelete={onDelete}
           editing={editing}
           setEditing={setEditing}
-          submitRef={submitRef}
+          submit={submit}
           deleteModalTitle={t('common:areYouSureDeleteName', { name: registry.name })}
           deleteModalDescription={t('common:proceedYouLoseAllDataToName', {
             name: registry.name,
@@ -179,12 +180,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       {!editing ? (
         <RegistryCard registry={registryDetailsToRegistry(registry)} />
       ) : (
-        <EditRegistryCard
-          className="p-8"
-          registry={registry}
-          onRegistryEdited={onRegistryEdited}
-          submitRef={submitRef}
-        />
+        <EditRegistryCard className="p-8" registry={registry} onRegistryEdited={onRegistryEdited} submit={submit} />
       )}
 
       {registry.type === 'unchecked' ? null : loading ? (

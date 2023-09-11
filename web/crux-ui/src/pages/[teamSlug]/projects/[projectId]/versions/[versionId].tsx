@@ -8,6 +8,7 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { EditableVersion, ProjectDetails, VersionDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
@@ -16,7 +17,7 @@ import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 import toast from 'react-hot-toast'
 
 interface VersionDetailsPageProps {
@@ -35,7 +36,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
   const [version, setVersion] = useState(propsVersion)
   const [editing, setEditing] = useState(anchorLinkOf(router) === '#edit')
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const initialSection = parseVersionSectionState(router.query.section as string, 'images')
   const [state, actions] = useVersionState({
@@ -100,7 +101,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
             editing={editing}
             setEditing={setEditing}
             disableEditing={!version.mutable}
-            submitRef={submitRef}
+            submit={submit}
             deleteModalTitle={t('common:areYouSureDeleteName', { name: version.name })}
             deleteModalDescription={t('proceedYouLoseAllDataToName', {
               name: version.name,
@@ -116,7 +117,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
           className="mb-8 px-8 py-6"
           project={project}
           version={version}
-          submitRef={submitRef}
+          submit={submit}
           onVersionEdited={onVersionEdited}
         />
       )}
