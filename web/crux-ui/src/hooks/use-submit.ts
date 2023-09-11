@@ -1,33 +1,33 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 
 export type SubmitHook = {
-  submit: VoidFunction
+  trigger: VoidFunction
   set: (target: VoidFunction) => void
 }
 
 const useSubmit = (): SubmitHook => {
-  const submitRef = useRef<VoidFunction>(null)
-  const submitIfSet = useRef<boolean>(false)
+  const [targetFunc, setTargetFunc] = useState<VoidFunction>(null)
+  const submitWhenSet = useRef<boolean>(false)
 
-  const submit = () => {
-    if (submitRef.current) {
-      submitIfSet.current = false
-      submitRef.current()
+  const trigger = () => {
+    if (targetFunc) {
+      submitWhenSet.current = false
+      targetFunc()
     } else {
-      submitIfSet.current = true
+      submitWhenSet.current = true
     }
   }
 
   const set = (target: VoidFunction) => {
-    submitRef.current = target
-    if (submitIfSet.current) {
-      submitIfSet.current = false
+    setTargetFunc(target)
+    if (submitWhenSet.current) {
+      submitWhenSet.current = false
       target()
     }
   }
 
   return {
-    submit,
+    trigger,
     set,
   }
 }

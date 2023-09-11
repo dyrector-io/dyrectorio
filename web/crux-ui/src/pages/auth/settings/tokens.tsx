@@ -161,7 +161,7 @@ const TokensPage = (props: TokensPageProps) => {
               {t('common:discard')}
             </DyoButton>
 
-            <DyoButton className="px-4 ml-4" onClick={() => submit.submit()}>
+            <DyoButton className="px-4 ml-4" onClick={() => submit.trigger()}>
               {t('common:save')}
             </DyoButton>
           </>

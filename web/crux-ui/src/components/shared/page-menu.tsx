@@ -36,7 +36,7 @@ export const ListPageMenu = (props: ListPageMenuProps) => {
         {texts.discard ?? t('discard')}
       </DyoButton>
 
-      <DyoButton className="px-4 ml-4" onClick={() => submit.submit()}>
+      <DyoButton className="px-4 ml-4" onClick={() => submit.trigger()}>
         {texts.save ?? t('save')}
       </DyoButton>
     </>
@@ -128,7 +128,7 @@ export const DetailsPageMenu = (props: React.PropsWithChildren<DetailsPageMenuPr
 
       {children}
 
-      <DyoButton className="px-6 ml-2" onClick={() => submit.submit()}>
+      <DyoButton className="px-6 ml-2" onClick={() => submit.trigger()}>
         {texts.save ?? t('save')}
       </DyoButton>
     </>
@@ -148,7 +148,7 @@ export const SaveDiscardPageMenu = (props: SaveDiscardPageMenuProps) => {
   const { t } = useTranslation('common')
 
   const onSaveSaveClick = () => {
-    saveRef.submit()
+    saveRef.trigger()
     onSave?.call(null)
   }
 
