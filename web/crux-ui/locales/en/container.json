@@ -140,7 +140,10 @@
   },
 
   "validation": {
-    "kubernetesQuantity": "match the Kubernetes quantity format",
-    "noSensitive": "not contain sensitive keywords"
+    "kubernetesQuantity": "{{path}} must be a valid Kubernetes quantity",
+    "noSensitive": "{{path}} must not contain sensitive keywords",
+    "pathOverlapsSomePortranges": "{{path}} overlaps some portranges",
+    "missingExternalPort": "{{path}} is missing the external port definition",
+    "shouldStartWithSlash": "{{path}} should start with a slash"
   }
 }

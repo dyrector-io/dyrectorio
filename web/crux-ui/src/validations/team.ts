@@ -1,14 +1,8 @@
 import { UserRole, USER_ROLE_VALUES } from '@app/models'
 import yup from './yup'
-import { identityNameRule, nameRule } from './common'
+import { identityNameRule, matchNoWhitespace, nameRule } from './common'
 
-export const teamSlugRule = yup
-  .string()
-  .min(3)
-  .max(16)
-  .matches(/^\S*$/)
-  .label('common:slug')
-  .meta({ regex: 'errors:notContainWhitespaces' })
+export const teamSlugRule = matchNoWhitespace(yup.string().min(3).max(16).label('common:slug'))
 
 export const inviteUserSchema = yup.object().shape({
   email: yup.string().email().required().label('common:email'),

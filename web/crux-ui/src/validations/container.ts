@@ -17,17 +17,20 @@ import {
   VolumeType,
 } from '@app/models'
 import * as yup from 'yup'
+import { matchNoTrailingWhitespace, matchNoWhitespace } from './common'
+
+const ERROR_NO_SENSITIVE = 'container:validation.noSensitive'
+const ERROR_INVALID_KUBERNETES_QUANTITY = 'container:validation.kubernetesQuantity'
+
+const unsafeKeywords = ['password', 'secret', 'token']
+const unsafeKeywordsRegex = new RegExp(`^((?!(${unsafeKeywords.join('|')})).)*$`, 'i')
+
+export const unsafeKeyRule = yup.string().matches(unsafeKeywordsRegex, ERROR_NO_SENSITIVE)
 
 export const uniqueKeySchema = yup
   .array(
     yup.object().shape({
-      key: yup
-        .string()
-        .required()
-        .ensure()
-        .matches(/^\S+$/g)
-        .label('container:common.key')
-        .meta({ regex: 'errors:notContainWhitespaces' }), // all characters are non-whitespaces
+      key: matchNoWhitespace(yup.string().required().ensure().label('container:common.key')),
     }),
   )
   .ensure()
@@ -38,13 +41,19 @@ export const uniqueKeySchema = yup
 export const uniqueKeyValuesSchema = yup
   .array(
     yup.object().shape({
-      key: yup
-        .string()
-        .required()
-        .ensure()
-        .matches(/^\S+$/g)
-        .label('container:common.key')
-        .meta({ regex: 'errors:notContainWhitespaces' }), // all characters are non-whitespaces
+      key: matchNoWhitespace(yup.string().required().ensure().label('container:common.key')),
+      value: yup.string().ensure().label('container:common.value'),
+    }),
+  )
+  .ensure()
+  .test('keysAreUnique', 'Keys must be unique', arr =>
+    arr ? new Set(arr.map(it => it.key)).size === arr.length : true,
+  )
+
+export const unsafeUniqueKeyValuesSchema = yup
+  .array(
+    yup.object().shape({
+      key: matchNoWhitespace(unsafeKeyRule.required().ensure().label('container:common.key')),
       value: yup.string().ensure().label('container:common.value'),
     }),
   )
@@ -56,13 +65,7 @@ export const uniqueKeyValuesSchema = yup
 export const shellCommandSchema = yup
   .array(
     yup.object().shape({
-      key: yup
-        .string()
-        .required()
-        .ensure()
-        .matches(/^\S.*\S$/g) // any characters but no trailing whitespaces
-        .label('container:common.key')
-        .meta({ regex: 'errors:notContainWhitespaces' }),
+      key: matchNoTrailingWhitespace(yup.string().required().ensure().label('container:common.key')),
       value: yup.string().ensure().label('container:common.value'),
     }),
   )
@@ -72,24 +75,13 @@ export const shellCommandSchema = yup
 export const uniqueKeysOnlySchema = yup
   .array(
     yup.object().shape({
-      key: yup
-        .string()
-        .required()
-        .ensure()
-        .matches(/^\S+$/g)
-        .label('container:common.key')
-        .meta({ regex: 'errors:notContainWhitespaces' }),
+      key: matchNoWhitespace(yup.string().required().ensure().label('container:common.key')),
     }),
   )
   .ensure()
   .test('keysAreUnique', 'Keys must be unique', arr =>
     arr ? new Set(arr.map(it => it.key)).size === arr.length : true,
   )
-
-const sensitiveKeywords = ['password', 'secret', 'token']
-const sensitiveKeywordRegExp = new RegExp(`^((?!(${sensitiveKeywords.join('|')})).)*$`, 'i')
-
-export const sensitiveKeyRule = yup.string().matches(sensitiveKeywordRegExp).meta({ regex: 'validation.noSensitive' })
 
 const portNumberBaseRule = yup.number().positive().lessThan(65536)
 const portNumberOptionalRule = portNumberBaseRule.nullable()
@@ -216,7 +208,7 @@ const createOverlapTest = (
   field: Exclude<keyof ContainerConfigPortRange, 'id'>,
 ) =>
   // eslint-disable-next-line no-template-curly-in-string
-  schema.test('port-range-overlap', '{path} overlaps some port ranges', value =>
+  schema.test('port-range-overlap', 'container:validation.pathOverlapsSomePortranges', value =>
     value && portRanges.length > 0
       ? !portRanges.some(it => {
           const portRange = it[field]
@@ -291,9 +283,8 @@ const volumeConfigRule = yup
       size: yup
         .string()
         .nullable()
-        .matches(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/)
-        .label('container:common.size')
-        .meta({ regex: 'validation.kubernetesQuantity' }),
+        .matches(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/, ERROR_INVALID_KUBERNETES_QUANTITY)
+        .label('container:common.size'),
       class: yup.string().nullable().label('container:common.class'),
       type: volumeTypeRule,
     }),
@@ -313,12 +304,7 @@ const initContainerVolumeLinkRule = yup.array(
 const initContainerRule = yup
   .array(
     yup.object().shape({
-      name: yup
-        .string()
-        .required()
-        .matches(/^\S+$/g)
-        .label('container:common.name')
-        .meta({ regex: 'errors:notContainWhitespaces' }),
+      name: matchNoWhitespace(yup.string().required().label('container:common.name')),
       image: yup.string().required().label('container:common.image'),
       command: uniqueKeysOnlySchema.default([]).nullable().label('container:common.images'),
       args: uniqueKeysOnlySchema.default([]).nullable().label('container:common.arguments'),
@@ -365,7 +351,7 @@ const routingRule = yup
           .string()
           .nullable()
           .optional()
-          .test('path', 'Should start with a leading "/"', (it: string) => (it ? it.startsWith('/') : true))
+          .test('path', 'container:validation.shouldStartWithSlash', (it: string) => (it ? it.startsWith('/') : true))
           .label('container:common.path'),
         stripPath: yup.bool().nullable().label('container:common.stripPath'),
         uploadLimit: yup.string().nullable().label('container:common.uploadLimit'),
@@ -385,7 +371,7 @@ const createMetricsPortRule = (ports: ContainerPort[]) => {
   return (
     portNumberRule
       // eslint-disable-next-line no-template-curly-in-string
-      .test('metric-port', '${path} is missing the external port definition', value =>
+      .test('metric-port', 'container:validation.missingExternalPort', value =>
         value && ports.length > 0 ? ports.some(it => it.external === value) : true,
       )
       .label('container:crane.metricsPort')
@@ -413,13 +399,8 @@ const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
 })
 
 const containerConfigBaseSchema = yup.object().shape({
-  name: yup
-    .string()
-    .required()
-    .matches(/^\S+$/g)
-    .label('container:common.containerName')
-    .meta({ regex: 'errors:notContainWhitespaces' }),
-  environment: uniqueKeyValuesSchema.default([]).nullable().label('container:common.environment'),
+  name: matchNoWhitespace(yup.string().required().label('container:common.containerName')),
+  environment: unsafeUniqueKeyValuesSchema.default([]).nullable().label('container:common.environment'),
   routing: routingRule,
   expose: exposeRule,
   user: yup.number().default(null).min(-1).max(UID_MAX).nullable().label('container:common.user'),
