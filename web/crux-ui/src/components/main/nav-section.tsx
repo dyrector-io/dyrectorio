@@ -27,7 +27,7 @@ export const NavSection = (props: NavSectionProps) => {
       <p className="text-bright px-6 text-sm tracking-widest">{title.toUpperCase()}</p>
       <ul className="list-none flex flex-col text-bright">
         {options.map((option, index) => (
-          <li key={index} className="flex flex-row items-center mt-2">
+          <li key={index} className="flex flex-row items-center mt-auto">
             <NavButton href={option.link} icon={optionToIcon(option)} target={option.target}>
               {t(option.text)}
             </NavButton>

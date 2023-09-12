@@ -127,7 +127,7 @@ export const Sidebar = (props: SidebarProps) => {
       </div>
 
       {sidebarSections && (
-        <div className="flex flex-col flex-grow pb-4">
+        <div className="flex flex-col grow pb-4">
           <div className="mt-6 flex text-bright">
             <NavButton href={routes.dashboard.index()} icon={<DyoIcon src="/dashboard.svg" alt={t('dashboard')} />}>
               {t('dashboard')}
@@ -137,7 +137,7 @@ export const Sidebar = (props: SidebarProps) => {
           {sidebarSections.map((it, index) => (
             <NavSection
               key={index}
-              className={index < sidebarSections.length - 1 ? 'mt-6' : 'mt-auto mt-6'}
+              className={index < sidebarSections.length - 1 ? 'mt-6' : 'mt-auto'}
               title={t(it.title)}
               options={it.items}
             />
