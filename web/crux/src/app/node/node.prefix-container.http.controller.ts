@@ -1,4 +1,4 @@
-import { Controller, Delete, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common'
+import { Controller, Delete, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common'
 import {
   ApiBadRequestResponse,
   ApiForbiddenResponse,
@@ -24,6 +24,9 @@ import {
 } from './node.const'
 import NodeService from './node.service'
 
+const PARAM_TEAM_SLUG = 'teamSlug'
+const TeamSlug = () => Param(PARAM_TEAM_SLUG)
+
 @Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_PREFIX}/${ROUTE_CONTAINERS}`)
 @ApiTags(ROUTE_NODES)
 @UseGuards(NodeTeamAccessGuard)
@@ -40,7 +43,12 @@ export default class NodePrefixContainerHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for container starting.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for container starting.' })
   @UuidParams(PARAM_NODE_ID)
-  async startContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Promise<void> {
+  async startContainer(
+    @TeamSlug() _: string,
+    @NodeId() nodeId: string,
+    @Prefix() prefix: string,
+    @Name() name: string,
+  ): Promise<void> {
     await this.service.startContainer(nodeId, prefix, name)
   }
 
@@ -54,7 +62,12 @@ export default class NodePrefixContainerHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for container stopping.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for container stopping.' })
   @UuidParams(PARAM_NODE_ID)
-  async stopContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Promise<void> {
+  async stopContainer(
+    @TeamSlug() _: string,
+    @NodeId() nodeId: string,
+    @Prefix() prefix: string,
+    @Name() name: string,
+  ): Promise<void> {
     await this.service.stopContainer(nodeId, prefix, name)
   }
 
@@ -68,7 +81,12 @@ export default class NodePrefixContainerHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for container restarting.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for container restarting.' })
   @UuidParams(PARAM_NODE_ID)
-  async restartContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Promise<void> {
+  async restartContainer(
+    @TeamSlug() _: string,
+    @NodeId() nodeId: string,
+    @Prefix() prefix: string,
+    @Name() name: string,
+  ): Promise<void> {
     await this.service.restartContainer(nodeId, prefix, name)
   }
 
@@ -82,7 +100,7 @@ export default class NodePrefixContainerHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for container delete.' })
   @ApiNotFoundResponse({ description: 'Container not found.' })
   @UuidParams(PARAM_NODE_ID)
-  deleteAllContainers(@NodeId() nodeId: string, @Prefix() prefix: string): Observable<void> {
+  deleteAllContainers(@TeamSlug() _: string, @NodeId() nodeId: string, @Prefix() prefix: string): Observable<void> {
     return from(this.service.deleteAllContainers(nodeId, prefix)).pipe(mergeAll())
   }
 
@@ -96,7 +114,12 @@ export default class NodePrefixContainerHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for container delete.' })
   @ApiNotFoundResponse({ description: 'Container not found.' })
   @UuidParams(PARAM_NODE_ID)
-  deleteContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Observable<void> {
+  deleteContainer(
+    @TeamSlug() _: string,
+    @NodeId() nodeId: string,
+    @Prefix() prefix: string,
+    @Name() name: string,
+  ): Observable<void> {
     return from(this.service.deleteContainer(nodeId, prefix, name)).pipe(mergeAll())
   }
 }
