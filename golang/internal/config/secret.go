@@ -119,7 +119,7 @@ func (c *CommonConfiguration) InjectGrpcToken(secrets SecretStore) error {
 		// set the token from the environment as a fallback
 		c.JwtToken, err = ValidateJwtAndCheckNonceBlacklist(secrets, c.GrpcToken)
 		if err != nil {
-			log.Error().Err(err).Msg("Failed to validate the grpc token supplied in the environment variables.")
+			log.Error().Err(err).Msg("Failed to validate the gRPC token supplied in the environment variables.")
 		}
 	}
 
