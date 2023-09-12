@@ -72,6 +72,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
+    submitRef,
     initialValues: {
       ...registry,
     },
@@ -111,10 +112,6 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
       }
     },
   })
-
-  if (submitRef) {
-    submitRef.current = formik.submitForm
-  }
 
   const registryType = formik.values.type
 

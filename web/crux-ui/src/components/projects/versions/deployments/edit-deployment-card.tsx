@@ -30,6 +30,7 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
+    submitRef,
     initialValues: deployment,
     validationSchema: updateDeploymentSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
@@ -55,10 +56,6 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
       }
     },
   })
-
-  if (submitRef) {
-    submitRef.current = formik.submitForm
-  }
 
   return (
     <DyoCard className={className}>

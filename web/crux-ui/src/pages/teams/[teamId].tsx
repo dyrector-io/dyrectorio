@@ -14,6 +14,7 @@ import { DyoList } from '@app/elements/dyo-list'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
+import { dateSort, enumSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useTimer from '@app/hooks/use-timer'
 import {
@@ -21,6 +22,8 @@ import {
   Team,
   TeamDetails,
   User,
+  USER_ROLE_VALUES,
+  USER_STATUS_VALUES,
   userIsAdmin,
   userIsOwner,
   UserRole,
@@ -58,6 +61,8 @@ interface TeamDetailsPageProps {
   recaptchaSiteKey?: string
 }
 
+type UserSorting = 'name' | 'email' | 'role' | 'status' | 'lastLogin'
+
 const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const { me, team: propsTeam, recaptchaSiteKey } = props
 
@@ -80,6 +85,18 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const canDelete = userIsOwner(actor)
 
   const submitRef = useRef<() => Promise<any>>()
+
+  const sorting = useSorting<User, UserSorting>(team.users, {
+    initialField: 'name',
+    initialDirection: 'asc',
+    sortFunctions: {
+      name: stringSort,
+      email: stringSort,
+      role: enumSort(USER_ROLE_VALUES),
+      status: enumSort(USER_STATUS_VALUES),
+      lastLogin: dateSort,
+    },
+  })
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -238,9 +255,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     },
   ]
 
-  const listHeaders = [
-    ...['common:name', 'common:email', 'role', 'lastLogin', 'common:status', 'common:actions'].map(it => t(it)),
-  ]
+  const listHeaders = ['common:name', 'common:email', 'role', 'lastLogin', 'common:status', 'common:actions']
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased px-2 py-3 font-semibold'
   const headerClassNames = [
     clsx(defaultHeaderClass, 'rounded-tl-lg pl-6'),
@@ -277,7 +292,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
         />
       )}
     </div>,
-    <div>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('common:never')}</div>,
+    <div suppressHydrationWarning>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('common:never')}</div>,
     <UserStatusTag className="w-fit mx-auto" status={it.status} />,
     <>
       {!userStatusReinvitable(it.status) || countdown > 0 ? null : (
@@ -347,7 +362,18 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
           headers={listHeaders}
           headerClassName={headerClassNames}
           itemClassName={itemClass}
-          data={team.users}
+          data={sorting.items}
+          headerBuilder={sortHeaderBuilder<User, UserSorting>(
+            sorting,
+            {
+              'common:name': 'name',
+              'common:email': 'email',
+              role: 'role',
+              lastLogin: 'lastLogin',
+              'common:status': 'status',
+            },
+            text => t(text),
+          )}
           itemBuilder={itemTemplate}
         />
 

@@ -2,12 +2,10 @@ import { MessageType } from '@app/elements/dyo-input'
 import useRepatch from '@app/hooks/use-repatch'
 
 import { UniqueKeyValue } from '@app/models'
-import { getValidationError } from '@app/validations'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { HTMLInputTypeAttribute, useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
-import * as yup from 'yup'
 import MultiInput from '../editor/multi-input'
 import { ItemEditorState } from '../editor/use-item-editor-state'
 import ConfigSectionLabel from '../projects/versions/images/config/config-section-label'
@@ -78,7 +76,7 @@ interface KeyValueInputProps {
   onResetSection?: VoidFunction
   type?: HTMLInputTypeAttribute | undefined
   editorOptions: ItemEditorState
-  hint?: { hintValidation: yup.Schema; hintText: string }
+  hint?: (key: string) => string | undefined
 }
 
 const KeyValueInput = (props: KeyValueInputProps) => {
@@ -107,10 +105,10 @@ const KeyValueInput = (props: KeyValueInputProps) => {
 
     keyValues.forEach(item => {
       const keyUniqueErr = result.find(it => it.key === item.key) ? t('keyMustUnique') : null
-      const hintErr = !keyUniqueErr && hint ? getValidationError(hint.hintValidation, item.key) : null
+      const hintErr = !keyUniqueErr && hint ? hint(item.key) : null
       result.push({
         ...item,
-        message: keyUniqueErr ?? (hintErr ? hint.hintText : null),
+        message: keyUniqueErr ?? hintErr,
         messageType: (keyUniqueErr ? 'error' : 'info') as MessageType,
       })
     })

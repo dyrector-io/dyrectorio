@@ -1,4 +1,5 @@
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
+import { test } from '../../utils/test.fixture'
 import { TEAM_ROUTES } from 'e2e/utils/common'
 import { createImage, createProject, createVersion } from '../../utils/projects'
 
@@ -24,6 +25,7 @@ test.describe('Filters', () => {
     const { projectId, versionId, imageId } = await setup(page, 'filter-all', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const allButton = await page.locator('button:has-text("All")')
 
@@ -35,6 +37,7 @@ test.describe('Filters', () => {
     const { projectId, versionId, imageId } = await setup(page, 'filter-select', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     await page.locator(`button:has-text("Common")`).first().click()
 
@@ -47,6 +50,7 @@ test.describe('Filters', () => {
     const { projectId, versionId, imageId } = await setup(page, 'sub-filter', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const subFilter = await page.locator(`button:has-text("Network mode")`)
 
@@ -61,6 +65,7 @@ test.describe('Filters', () => {
     const { projectId, versionId, imageId } = await setup(page, 'sub-deselect', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const subFilter = await page.locator(`button:has-text("Deployment strategy")`)
 

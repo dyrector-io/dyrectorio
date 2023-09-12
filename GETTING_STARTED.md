@@ -32,3 +32,7 @@ Stack:
 2. Execute `make up` in the project root
 3. Open the `localhost:8000`
 4. Happy deploying! 🎬
+
+## Development resources
+
+[Development](./DEVELOPMENT.md)

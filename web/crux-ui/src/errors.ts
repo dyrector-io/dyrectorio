@@ -19,6 +19,7 @@ type CruxApiError = {
   message: string
   property?: string
   value?: string
+  error: string
 }
 
 export const defaultTranslator: (t: Translate) => Translator = t => (stringId, status, dto) => {
@@ -54,6 +55,7 @@ export const apiErrorHandler =
         setErrorValue(dyoError.property, translation.input)
       }
     } catch (err) {
+      console.error('Failed to handle api error', res.status, res.url)
       translation = translator(null, 500, null)
     }
 

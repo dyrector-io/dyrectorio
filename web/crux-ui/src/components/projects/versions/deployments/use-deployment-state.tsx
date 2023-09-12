@@ -88,6 +88,7 @@ export type DeploymentActions = {
   onRevokeDeploymentToken: VoidFunction
   onInstanceSelected: (id: string, deploy: boolean) => void
   onAllInstancesToggled: (deploy: boolean) => void
+  onConfigBundlesSelected: (configBundleId?: string[]) => void
 }
 
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
@@ -159,7 +160,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   sock.on(WS_TYPE_DEPLOYMENT_ENV_UPDATED, (message: DeploymentEnvUpdatedMessage) => {
     setDeployment({
       ...deployment,
-      environment: message,
+      ...message,
     })
   })
 
@@ -201,7 +202,22 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       environment,
     })
     throttle(() => {
-      sock.send(WS_TYPE_PATCH_DEPLOYMENT_ENV, environment)
+      sock.send(WS_TYPE_PATCH_DEPLOYMENT_ENV, {
+        environment,
+      })
+    })
+  }
+
+  const onConfigBundlesSelected = configBundleIds => {
+    setSaveState('saving')
+    setDeployment({
+      ...deployment,
+      configBundleIds,
+    })
+    throttle(() => {
+      sock.send(WS_TYPE_PATCH_DEPLOYMENT_ENV, {
+        configBundleIds,
+      })
     })
   }
 
@@ -374,6 +390,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       onInstanceSelected,
       onAllInstancesToggled,
       updateInstanceConfig,
+      onConfigBundlesSelected,
     },
   ]
 }

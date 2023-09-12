@@ -109,7 +109,7 @@ export const DyoConfirmationModal = (props: DyoConfirmationModalProps) => {
       onClose={() => onClose(false)}
       buttons={
         <>
-          <DyoButton color={config.confirmColor} onClick={() => onClose(true)}>
+          <DyoButton autoFocus color={config.confirmColor} onClick={() => onClose(true)}>
             {config.confirmText ?? t('confirm')}
           </DyoButton>
 

@@ -103,6 +103,9 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
     NotificationEvent: 'notificationEvent',
     Token: 'token',
     Storage: 'storage',
-    AgentEvent: 'agentEvent',
+    NodeEvent: 'nodeEvent',
+    NodeToken: 'token', // its thrown on agent connections, so in that context this is a gRPC token
+    ConfigBundle: 'configBundle',
+    ConfigBundleOnDeployments: 'configBundleOnDeployments',
   }
 }

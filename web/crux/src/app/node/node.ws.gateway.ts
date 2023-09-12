@@ -43,7 +43,10 @@ export default class NodeWebSocketGateway {
   }
 
   @SubscribeMessage('update-agent')
-  updateAgent(@SocketMessage() message: UpdateNodeMessage) {
-    this.service.updateAgent(message.id)
+  async updateAgent(
+    @SocketMessage() message: UpdateNodeMessage,
+    @IdentityFromSocket() identity: Identity,
+  ): Promise<void> {
+    await this.service.updateAgent(message.id, identity)
   }
 }

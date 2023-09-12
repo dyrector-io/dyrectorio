@@ -1,18 +1,22 @@
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../utils/test.fixture'
 import { DAGENT_NODE, screenshotPath, TEAM_ROUTES } from '../utils/common'
 
 test('Install dagent should be successful', async ({ page }) => {
   await page.goto(TEAM_ROUTES.node.list())
+  await page.waitForSelector('h2:text-is("Nodes")')
 
   await page.locator('input[placeholder="Search"]').type(DAGENT_NODE)
   await page.locator(`h3:has-text("${DAGENT_NODE}")`).click()
   await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
+  await page.waitForSelector('h2:text-is("Nodes")')
 
   await expect(await page.locator('span:has-text("Connected")')).toHaveCount(1)
 })
 
 test('After adding a new node the setup process should be shown', async ({ page }) => {
   await page.goto(TEAM_ROUTES.node.list())
+  await page.waitForSelector('h2:text-is("Nodes")')
 
   await page.locator('button:has-text("Add")').click()
 
@@ -35,6 +39,7 @@ test('After adding a new node the setup process should be shown', async ({ page 
 
 test('Should not create the new node if the name already exist', async ({ page }) => {
   await page.goto(TEAM_ROUTES.node.list())
+  await page.waitForSelector('h2:text-is("Nodes")')
 
   await page.locator('button:has-text("Add")').click()
 
@@ -51,6 +56,7 @@ test('Should not create the new node if the name already exist', async ({ page }
 
 test('Generate script should show the curl command and the script', async ({ page }) => {
   await page.goto(TEAM_ROUTES.node.list())
+  await page.waitForSelector('h2:text-is("Nodes")')
 
   await page.locator('button:has-text("Add")').click()
 
@@ -87,6 +93,7 @@ test('Generate script should show the curl command and the script', async ({ pag
 
 test('Generate script should show script type selector for Docker', async ({ page }) => {
   await page.goto(TEAM_ROUTES.node.list())
+  await page.waitForSelector('h2:text-is("Nodes")')
 
   await page.locator('button:has-text("Add")').click()
 
@@ -108,6 +115,7 @@ test('Generate script should show script type selector for Docker', async ({ pag
 
 test('Docker generate script should show Traefik options', async ({ page }) => {
   await page.goto(TEAM_ROUTES.node.list())
+  await page.waitForSelector('h2:text-is("Nodes")')
 
   await page.locator('button:has-text("Add")').click()
 
@@ -142,6 +150,7 @@ test('Deleting node', async ({ page }) => {
   const name = 'PW_DELETE_NODE'
 
   await page.goto(TEAM_ROUTES.node.list())
+  await page.waitForSelector('h2:text-is("Nodes")')
 
   await page.locator('button:has-text("Add")').click()
 
@@ -151,23 +160,26 @@ test('Deleting node', async ({ page }) => {
 
   await page.locator(`h3:has-text("${name}")`).click()
   await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
+  await page.waitForSelector('h2:text-is("Nodes")')
 
   await page.locator('button:has-text("Delete")').click()
 
   await page.locator('button:has-text("Delete"):left-of(:has-text("Cancel"))').click()
 
   await page.waitForURL(TEAM_ROUTES.node.list())
+  await page.waitForSelector('h2:text-is("Nodes")')
 
   await expect(await page.locator(`h3:has-text("${name}")`)).not.toBeVisible()
 })
 
 test('Logs should show agent events', async ({ page }) => {
   await page.goto(TEAM_ROUTES.node.list())
+  await page.waitForSelector('h2:text-is("Nodes")')
+
+  await page.locator('input[placeholder="Search"]').type(`dagent`)
 
   const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
   await nodeButton.click()
-
-  await page.locator('input[placeholder="Search"]').type(`dagent`)
 
   await page.locator('button:has-text("Logs")').click()
 

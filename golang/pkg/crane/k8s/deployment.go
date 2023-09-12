@@ -98,6 +98,7 @@ func (d *Deployment) DeployDeployment(p *deploymentParams) error {
 		WithSpec(
 			appsv1.DeploymentSpec().
 				WithReplicas(1).
+				WithStrategy(appsv1.DeploymentStrategy().WithType(kappsv1.DeploymentStrategyType(p.containerConfig.DeploymentStrategy))).
 				WithSelector(metav1.LabelSelector().WithMatchLabels(map[string]string{
 					"app": name,
 				})).

@@ -12,7 +12,7 @@ export const createProjectFromTemplate = async (
   projectType: ProjectType,
 ): Promise<string> => {
   await page.goto(ROUTE_TEMPLATES)
-  await page.waitForURL(ROUTE_TEMPLATES)
+  await page.waitForSelector('h2:text-is("Templates")')
 
   const templateTitle = await page.waitForSelector(`h5:has-text("${templateName}")`)
   const templateCard = await templateTitle.$('xpath=../..')

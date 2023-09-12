@@ -16,8 +16,10 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/errdefs"
+	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/update"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/assert"
 )
@@ -138,23 +140,40 @@ func (d *DockerClientErrMock) ContainerList(ctx context.Context, opts types.Cont
 	return []types.Container{{}}, errors.New("test error")
 }
 
+var defaultUpdateOptions = grpc.UpdateOptions{
+	UpdateAlways:  false,
+	UseContainers: true,
+}
+
 func TestSelfUpdateNotFound(t *testing.T) {
 	cli := NewMockClient(WithImageCount(1), WithImage("nginx"), WithExistenceDenial())
 	t.Setenv("HOSTNAME", "own-container")
-	err := update.ExecuteSelfUpdate(context.TODO(), cli, "notfound-tag", 1)
+	err := update.ExecuteSelfUpdate(context.TODO(), cli, &agent.AgentUpdateRequest{
+		Token:          "token",
+		Tag:            "notfound-tag",
+		TimeoutSeconds: 1,
+	}, defaultUpdateOptions)
 	assert.ErrorIs(t, update.RewriteUpdateErrors(err), update.ErrUpdateImageNotFound)
 }
 
 func TestSelfUpdateInvalid(t *testing.T) {
 	cli := NewMockClient(WithImageCount(1))
 	t.Setenv("HOSTNAME", "own-container")
-	err := update.ExecuteSelfUpdate(context.TODO(), cli, "-----", 1)
+	err := update.ExecuteSelfUpdate(context.TODO(), cli, &agent.AgentUpdateRequest{
+		Token:          "token",
+		Tag:            "-----",
+		TimeoutSeconds: 1,
+	}, defaultUpdateOptions)
 	assert.ErrorIs(t, update.RewriteUpdateErrors(err), image.ErrInvalidTag)
 }
 
 func TestSelfUpdateOK(t *testing.T) {
 	cli := NewMockClient(WithImage("nginx"), WithImageCount(1))
 	t.Setenv("HOSTNAME", "nginx")
-	err := update.ExecuteSelfUpdate(context.TODO(), cli, "latest", 1)
+	err := update.ExecuteSelfUpdate(context.TODO(), cli, &agent.AgentUpdateRequest{
+		Token:          "token",
+		Tag:            "latest",
+		TimeoutSeconds: 1,
+	}, defaultUpdateOptions)
 	assert.NoError(t, err, "no error for updating to nginx")
 }

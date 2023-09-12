@@ -40,8 +40,8 @@ export default class NodePrefixContainerHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for container starting.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for container starting.' })
   @UuidParams(PARAM_NODE_ID)
-  startContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string) {
-    this.service.startContainer(nodeId, prefix, name)
+  async startContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Promise<void> {
+    await this.service.startContainer(nodeId, prefix, name)
   }
 
   @Post(`${ROUTE_NAME}/stop`)
@@ -54,8 +54,8 @@ export default class NodePrefixContainerHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for container stopping.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for container stopping.' })
   @UuidParams(PARAM_NODE_ID)
-  stopContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string) {
-    this.service.stopContainer(nodeId, prefix, name)
+  async stopContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Promise<void> {
+    await this.service.stopContainer(nodeId, prefix, name)
   }
 
   @Post(`${ROUTE_NAME}/restart`)
@@ -68,8 +68,8 @@ export default class NodePrefixContainerHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for container restarting.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for container restarting.' })
   @UuidParams(PARAM_NODE_ID)
-  restartContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string) {
-    this.service.restartContainer(nodeId, prefix, name)
+  async restartContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Promise<void> {
+    await this.service.restartContainer(nodeId, prefix, name)
   }
 
   @Delete()

@@ -53,6 +53,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
+    submitRef,
     initialValues: {
       ...notification,
     },
@@ -87,10 +88,6 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       }
     },
   })
-
-  if (submitRef) {
-    submitRef.current = formik.submitForm
-  }
 
   return (
     <DyoCard className={className}>

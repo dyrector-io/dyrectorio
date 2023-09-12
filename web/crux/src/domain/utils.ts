@@ -1,6 +1,8 @@
 /* eslint-disable no-await-in-loop, no-constant-condition */
 import { Prisma, PrismaClient } from '@prisma/client'
+import { randomBytes } from 'crypto'
 import { JsonNull } from 'prisma'
+import { MonoTypeOperatorFunction, Observer, Subject, Subscription, TapObserver, concatMap, of, pipe, tap } from 'rxjs'
 import { Timestamp } from 'src/grpc/google/protobuf/timestamp'
 
 export type PrismaTransactionClient = Omit<
@@ -87,4 +89,34 @@ export const toPrismaJson = <T>(val: T): T | JsonNull => {
   }
 
   return val
+}
+
+export const generateNonce = () => randomBytes(128).toString('hex')
+
+export const tapOnce = <T>(
+  observerOrNext?: Partial<TapObserver<T>> | ((value: T) => void),
+): MonoTypeOperatorFunction<T> =>
+  pipe(concatMap((it, index) => (index === 0 ? of(it).pipe(tap(observerOrNext)) : of(it))))
+
+export class BufferedSubject<T> extends Subject<T> {
+  private buffer: T[] = []
+
+  override next(value: T): void {
+    if (this.observed) {
+      super.next(value)
+      return
+    }
+
+    this.buffer.push(value)
+  }
+
+  override subscribe(observerOrNext?: Partial<Observer<T>> | ((value: T) => void)): Subscription
+  override subscribe(next?: (value: T) => void, error?: (error: any) => void, complete?: () => void): Subscription {
+    const sub = super.subscribe(next, error, complete)
+
+    this.buffer.forEach(it => super.next(it))
+    this.buffer = []
+
+    return sub
+  }
 }

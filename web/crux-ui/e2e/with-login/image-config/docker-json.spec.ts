@@ -1,6 +1,7 @@
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
+import { test } from '../../utils/test.fixture'
 import { TEAM_ROUTES } from 'e2e/utils/common'
-import { waitSocket, wsPatchSent } from 'e2e/utils/websocket'
+import { waitSocketRef, wsPatchSent } from 'e2e/utils/websocket'
 import {
   wsPatchMatchDockerLabel,
   wsPatchMatchLogConfig,
@@ -9,6 +10,7 @@ import {
   wsPatchMatchRestartPolicy,
 } from 'e2e/utils/websocket-match'
 import { createImage, createProject, createVersion } from '../../utils/projects'
+import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 
 const setup = async (
   page: Page,
@@ -23,11 +25,14 @@ const setup = async (
   return { projectId, versionId, imageId }
 }
 
+test.describe.configure({ mode: 'parallel' })
+
 test.describe('Image docker config from JSON', () => {
   test('Network mode should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'networkmode-json', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -40,7 +45,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.networkMode = mode
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchNetworkMode(mode))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchNetworkMode(mode))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -53,8 +58,9 @@ test.describe('Image docker config from JSON', () => {
 
   test('Docker labels should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'dockerlabel-json', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -68,7 +74,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.dockerLabels = { [key]: value }
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchDockerLabel(key, value))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDockerLabel(key, value))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -84,8 +90,9 @@ test.describe('Image docker config from JSON', () => {
 
   test('Restart policy should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'restartpolicy-json', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -96,7 +103,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.restartPolicy = 'always'
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchRestartPolicy('always'))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchRestartPolicy('always'))
     jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -109,8 +116,9 @@ test.describe('Image docker config from JSON', () => {
 
   test('Log config should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'logconfig-json', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -125,7 +133,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.logConfig = { driver: type, options: { [key]: value } }
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchLogConfig(type, key, value))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchLogConfig(type, key, value))
     jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -139,8 +147,9 @@ test.describe('Image docker config from JSON', () => {
 
   test('Networks should be saved', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'networks-json', '1.0.0', 'redis')
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -155,7 +164,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.networks = [network]
 
-    let wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchNetwork(network))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchNetwork(network))
     jsonEditor.fill(JSON.stringify(json))
     await wsSent
 

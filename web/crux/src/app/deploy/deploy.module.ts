@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { Module, forwardRef } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { CruxJwtModuleImports } from 'src/config/jwt.config'
 import KratosService from 'src/services/kratos.service'
@@ -21,7 +21,7 @@ import DeployWebSocketGateway from './deploy.ws.gateway'
 
 @Module({
   imports: [
-    AgentModule,
+    forwardRef(() => AgentModule),
     ImageModule,
     EditorModule,
     ContainerModule,

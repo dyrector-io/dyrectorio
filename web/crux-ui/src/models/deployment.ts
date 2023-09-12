@@ -7,6 +7,8 @@ import { DyoNode } from './node'
 import { BasicProject, ProjectDetails } from './project'
 import { BasicVersion, VersionDetails, VersionType } from './version'
 
+export type EnvironmentToConfigBundleNameMap = Record<string, string>
+
 export type Deployment = {
   id: string
   audit: Audit
@@ -38,7 +40,9 @@ export type DeploymentTokenCreated = DeploymentToken & {
 
 export type DeploymentDetails = Deployment & {
   environment: UniqueKeyValue[]
+  configBundleEnvironment: EnvironmentToConfigBundleNameMap
   publicKey?: string
+  configBundleIds?: string[]
   token: DeploymentToken
   instances: Instance[]
 }
@@ -107,10 +111,17 @@ export type StartDeployment = {
 // ws
 
 export const WS_TYPE_PATCH_DEPLOYMENT_ENV = 'patch-deployment-env'
-export type PatchDeploymentEnvMessage = UniqueKeyValue[]
+export type PatchDeploymentEnvMessage = {
+  environment?: UniqueKeyValue[]
+  configBundleIds?: string[]
+}
 
 export const WS_TYPE_DEPLOYMENT_ENV_UPDATED = 'deployment-env-updated'
-export type DeploymentEnvUpdatedMessage = UniqueKeyValue[]
+export type DeploymentEnvUpdatedMessage = {
+  environment?: UniqueKeyValue[]
+  configBundleIds?: string[]
+  configBundleEnvironment: EnvironmentToConfigBundleNameMap
+}
 
 export const WS_TYPE_PATCH_INSTANCE = 'patch-instance'
 export type PatchInstanceMessage = {

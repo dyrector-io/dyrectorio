@@ -46,6 +46,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       imageName: it.image.name,
       imageTag: it.image.tag,
       ports: [],
+      labels: {},
     })),
   )
 

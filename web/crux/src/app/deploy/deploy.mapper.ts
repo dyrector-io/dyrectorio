@@ -52,6 +52,7 @@ import {
   DeploymentWithBasicNodeDto,
   DeploymentWithNode,
   DeploymentWithNodeVersion,
+  EnvironmentToConfigBundleNameMap,
   InstanceContainerConfigDto,
   InstanceDetails,
   InstanceDto,
@@ -70,6 +71,7 @@ export default class DeployMapper {
     private auditMapper: AuditMapper,
     @Inject(forwardRef(() => VersionMapper))
     private versionMapper: VersionMapper,
+    @Inject(forwardRef(() => NodeMapper))
     private nodeMapper: NodeMapper,
   ) {}
 
@@ -107,14 +109,20 @@ export default class DeployMapper {
     }
   }
 
-  toDetailsDto(deployment: DeploymentDetails, publicKey?: string): DeploymentDetailsDto {
+  toDetailsDto(
+    deployment: DeploymentDetails,
+    publicKey?: string,
+    configBundleEnvironment?: EnvironmentToConfigBundleNameMap,
+  ): DeploymentDetailsDto {
     return {
       ...this.toDto(deployment),
       token: deployment.tokens.length > 0 ? deployment.tokens[0] : null,
       lastTry: deployment.tries,
       publicKey,
+      configBundleIds: deployment.configBundles.map(it => it.configBundle.id),
       environment: deployment.environment as UniqueKeyValue[],
       instances: deployment.instances.map(it => this.instanceToDto(it)),
+      configBundleEnvironment: configBundleEnvironment ?? {},
     }
   }
 
@@ -269,10 +277,12 @@ export default class DeployMapper {
     return events
   }
 
-  deploymentToAgentInstanceConfig(deployment: Deployment): InstanceConfig {
+  deploymentToAgentInstanceConfig(deployment: Deployment, mergedEnvironment: UniqueKeyValue[]): InstanceConfig {
+    const environmentMap = this.mapKeyValueToMap(mergedEnvironment)
+
     return {
       prefix: deployment.prefix,
-      environment: this.mapKeyValueToMap((deployment.environment as UniqueKeyValue[]) ?? []),
+      environment: environmentMap,
     }
   }
 
@@ -322,8 +332,8 @@ export default class DeployMapper {
     return {
       customHeaders: this.mapUniqueKeyToStringArray(config.customHeaders),
       extraLBAnnotations: this.mapKeyValueToMap(config.extraLBAnnotations),
-      deploymentStatregy:
-        this.imageMapper.deploymentStrategyToProto(config.deploymentStrategy) ?? ProtoDeploymentStrategy.ROLLING,
+      deploymentStrategy:
+        this.imageMapper.deploymentStrategyToProto(config.deploymentStrategy) ?? ProtoDeploymentStrategy.ROLLING_UPDATE,
       healthCheckConfig: config.healthCheckConfig,
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
@@ -343,6 +353,12 @@ export default class DeployMapper {
             deployment: this.mapKeyValueToMap(config.annotations?.deployment),
             ingress: this.mapKeyValueToMap(config.annotations?.ingress),
             service: this.mapKeyValueToMap(config.annotations?.service),
+          }
+        : null,
+      metrics: config.metrics?.enabled
+        ? {
+            path: config.metrics.path ?? null,
+            port: config.metrics.port?.toString() ?? null,
           }
         : null,
     }

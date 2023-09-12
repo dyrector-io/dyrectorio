@@ -68,6 +68,11 @@ export const sidebarSectionsOf = (routes: TeamRoutes): MenuSection[] => [
         text: 'storages',
         link: routes.storage.list(),
       },
+      {
+        icon: '/config_bundle.svg',
+        text: 'configBundles',
+        link: routes.configBundles.list(),
+      },
     ],
   },
   {

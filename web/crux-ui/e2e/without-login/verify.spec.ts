@@ -1,5 +1,6 @@
 import { ROUTE_LOGIN, ROUTE_VERIFICATION } from '@app/routes'
-import { expect, test as base } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test as base } from '../utils/test.fixture'
 import {
   createUser,
   deleteUserByEmail,

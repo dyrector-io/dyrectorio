@@ -1,3 +1,5 @@
+import { coerce } from 'semver'
+
 export const REGISTRY_HUB_URL = 'hub.docker.com'
 export const REGISTRY_GITHUB_URL = 'ghcr.io'
 export const PRODUCTION = 'production'
@@ -11,10 +13,14 @@ export const VERSIONLESS_PROJECT_VERSION_NAME = 'rolling'
 
 const DAY_IN_MILLIS = 24 * 60 * 60 * 1000
 export const TEAM_INVITATION_EXPIRATION = 7 * DAY_IN_MILLIS
-export const JWT_EXPIRATION = 10 * 60 * 1000 // 10 minutes
+export const JWT_EXPIRATION_MILLIS = 10 * 60 * 1000 // 10 minutes
 export const CONTAINER_DELETE_TIMEOUT = 1000 // millis
 
 export const DEFAULT_CONTAINER_LOG_TAIL = 40
+
+// NOTE(@m8vago): This should be incremented, when a new release includes a proto file change
+const AGENT_PROTO_COMPATIBILITY_MINIMUM_VERSION = '0.8.1'
+export const AGENT_SUPPORTED_MINIMUM_VERSION = coerce(AGENT_PROTO_COMPATIBILITY_MINIMUM_VERSION)
 
 export const API_CREATED_LOCATION_HEADERS = {
   Location: {
