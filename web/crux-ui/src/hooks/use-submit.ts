@@ -20,14 +20,18 @@ const useSubmit = (): SubmitHook => {
     if (stateRef.current.submit) {
       stateRef.current.submitWhenSet = false
       stateRef.current.submit()
+      console.info('TRIGGER - SUBMIT')
     } else {
       stateRef.current.submitWhenSet = true
+      console.info('TRIGGER - UNABLE')
     }
   }
 
   const set = (target: VoidFunction) => {
+    console.info('SET')
     stateRef.current.submit = target
     if (stateRef.current.submitWhenSet) {
+      console.info('SET - TRIGGER')
       stateRef.current.submitWhenSet = false
       target?.call(null)
     }
