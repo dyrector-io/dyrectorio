@@ -15,5 +15,10 @@
   "internalError": "Something went wrong. Please try again later.",
 
   "invalidCredentials": "Invalid credentials",
-  "confirmPassMismatch": "Passwords must match"
+  "confirmPassMismatch": "Passwords must match",
+  "validationFailed": "Validation failed ({{path}}): {{message}}",
+
+  "registryRateLimit": "Rate limit reached, please try again later",
+  "registryUnauthorized": "Unauthorized",
+  "deployRequiredSecrets": "The following instances have missing required secrets: {{instances}}"
 }

@@ -48,6 +48,7 @@ export enum CloseReason {
   CLOSE = 1,
   SELF_DESTRUCT = 2,
   SHUTDOWN = 3,
+  REVOKE_TOKEN = 4,
   UNRECOGNIZED = -1,
 }
 
@@ -65,6 +66,9 @@ export function closeReasonFromJSON(object: any): CloseReason {
     case 3:
     case 'SHUTDOWN':
       return CloseReason.SHUTDOWN
+    case 4:
+    case 'REVOKE_TOKEN':
+      return CloseReason.REVOKE_TOKEN
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -82,6 +86,8 @@ export function closeReasonToJSON(object: CloseReason): string {
       return 'SELF_DESTRUCT'
     case CloseReason.SHUTDOWN:
       return 'SHUTDOWN'
+    case CloseReason.REVOKE_TOKEN:
+      return 'REVOKE_TOKEN'
     case CloseReason.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
@@ -93,6 +99,7 @@ export interface AgentInfo {
   id: string
   version: string
   publicKey: string
+  containerName?: string | undefined
 }
 
 export interface AgentCommand {
@@ -106,6 +113,7 @@ export interface AgentCommand {
   containerCommand?: ContainerCommandRequest | undefined
   deleteContainers?: DeleteContainersRequest | undefined
   containerLog?: ContainerLogRequest | undefined
+  replaceToken?: ReplaceTokenRequest | undefined
 }
 
 /**
@@ -260,7 +268,7 @@ export interface Metrics {
 }
 
 export interface CraneContainerConfig {
-  deploymentStatregy?: DeploymentStrategy | undefined
+  deploymentStrategy?: DeploymentStrategy | undefined
   healthCheckConfig?: HealthCheckConfig | undefined
   resourceConfig?: ResourceConfig | undefined
   proxyHeaders?: boolean | undefined
@@ -342,6 +350,11 @@ export interface DeployRequestLegacy {
 export interface AgentUpdateRequest {
   tag: string
   timeoutSeconds: number
+  token: string
+}
+
+export interface ReplaceTokenRequest {
+  token: string
 }
 
 export interface AgentAbortUpdate {
@@ -371,6 +384,7 @@ export const AgentInfo = {
       id: isSet(object.id) ? String(object.id) : '',
       version: isSet(object.version) ? String(object.version) : '',
       publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
+      containerName: isSet(object.containerName) ? String(object.containerName) : undefined,
     }
   },
 
@@ -379,6 +393,7 @@ export const AgentInfo = {
     message.id !== undefined && (obj.id = message.id)
     message.version !== undefined && (obj.version = message.version)
     message.publicKey !== undefined && (obj.publicKey = message.publicKey)
+    message.containerName !== undefined && (obj.containerName = message.containerName)
     return obj
   },
 }
@@ -406,6 +421,7 @@ export const AgentCommand = {
         ? DeleteContainersRequest.fromJSON(object.deleteContainers)
         : undefined,
       containerLog: isSet(object.containerLog) ? ContainerLogRequest.fromJSON(object.containerLog) : undefined,
+      replaceToken: isSet(object.replaceToken) ? ReplaceTokenRequest.fromJSON(object.replaceToken) : undefined,
     }
   },
 
@@ -437,6 +453,8 @@ export const AgentCommand = {
         : undefined)
     message.containerLog !== undefined &&
       (obj.containerLog = message.containerLog ? ContainerLogRequest.toJSON(message.containerLog) : undefined)
+    message.replaceToken !== undefined &&
+      (obj.replaceToken = message.replaceToken ? ReplaceTokenRequest.toJSON(message.replaceToken) : undefined)
     return obj
   },
 }
@@ -1032,8 +1050,8 @@ function createBaseCraneContainerConfig(): CraneContainerConfig {
 export const CraneContainerConfig = {
   fromJSON(object: any): CraneContainerConfig {
     return {
-      deploymentStatregy: isSet(object.deploymentStatregy)
-        ? deploymentStrategyFromJSON(object.deploymentStatregy)
+      deploymentStrategy: isSet(object.deploymentStrategy)
+        ? deploymentStrategyFromJSON(object.deploymentStrategy)
         : undefined,
       healthCheckConfig: isSet(object.healthCheckConfig)
         ? HealthCheckConfig.fromJSON(object.healthCheckConfig)
@@ -1056,9 +1074,9 @@ export const CraneContainerConfig = {
 
   toJSON(message: CraneContainerConfig): unknown {
     const obj: any = {}
-    message.deploymentStatregy !== undefined &&
-      (obj.deploymentStatregy =
-        message.deploymentStatregy !== undefined ? deploymentStrategyToJSON(message.deploymentStatregy) : undefined)
+    message.deploymentStrategy !== undefined &&
+      (obj.deploymentStrategy =
+        message.deploymentStrategy !== undefined ? deploymentStrategyToJSON(message.deploymentStrategy) : undefined)
     message.healthCheckConfig !== undefined &&
       (obj.healthCheckConfig = message.healthCheckConfig
         ? HealthCheckConfig.toJSON(message.healthCheckConfig)
@@ -1347,7 +1365,7 @@ export const DeployRequestLegacy = {
 }
 
 function createBaseAgentUpdateRequest(): AgentUpdateRequest {
-  return { tag: '', timeoutSeconds: 0 }
+  return { tag: '', timeoutSeconds: 0, token: '' }
 }
 
 export const AgentUpdateRequest = {
@@ -1355,6 +1373,7 @@ export const AgentUpdateRequest = {
     return {
       tag: isSet(object.tag) ? String(object.tag) : '',
       timeoutSeconds: isSet(object.timeoutSeconds) ? Number(object.timeoutSeconds) : 0,
+      token: isSet(object.token) ? String(object.token) : '',
     }
   },
 
@@ -1362,6 +1381,23 @@ export const AgentUpdateRequest = {
     const obj: any = {}
     message.tag !== undefined && (obj.tag = message.tag)
     message.timeoutSeconds !== undefined && (obj.timeoutSeconds = Math.round(message.timeoutSeconds))
+    message.token !== undefined && (obj.token = message.token)
+    return obj
+  },
+}
+
+function createBaseReplaceTokenRequest(): ReplaceTokenRequest {
+  return { token: '' }
+}
+
+export const ReplaceTokenRequest = {
+  fromJSON(object: any): ReplaceTokenRequest {
+    return { token: isSet(object.token) ? String(object.token) : '' }
+  },
+
+  toJSON(message: ReplaceTokenRequest): unknown {
+    const obj: any = {}
+    message.token !== undefined && (obj.token = message.token)
     return obj
   },
 }
@@ -1445,6 +1481,8 @@ export interface AgentClient {
   deleteContainers(request: DeleteContainersRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
   containerLog(request: Observable<ContainerLogMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  tokenReplaced(request: Empty, metadata: Metadata, ...rest: any): Observable<Empty>
 }
 
 /** Service handling deployment of containers and fetching statuses */
@@ -1487,11 +1525,13 @@ export interface AgentController {
     metadata: Metadata,
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
+
+  tokenReplaced(request: Empty, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 }
 
 export function AgentControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['connect', 'secretList', 'abortUpdate', 'deleteContainers']
+    const grpcMethods: string[] = ['connect', 'secretList', 'abortUpdate', 'deleteContainers', 'tokenReplaced']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('Agent', method)(constructor.prototype[method], method, descriptor)

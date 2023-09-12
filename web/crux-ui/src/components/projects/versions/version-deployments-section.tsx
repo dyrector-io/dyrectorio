@@ -10,14 +10,7 @@ import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { useDeploy } from '@app/hooks/use-deploy'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import {
-  dateSort,
-  SortFunctions,
-  sortHeaderBuilder,
-  SortHeaderBuilderMapping,
-  stringSort,
-  useSorting,
-} from '@app/hooks/use-sorting'
+import { dateSort, enumSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -31,6 +24,8 @@ import {
   NodeStatus,
   VersionDetails,
   WS_TYPE_NODE_EVENT,
+  DyoNode,
+  NODE_STATUS_VALUES,
 } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
@@ -48,16 +43,23 @@ interface VersionDeploymentsSectionProps {
 }
 
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
+type DeploymentSorting = 'node' | 'prefix' | 'updatedAt' | 'status'
 
-type DeploymentSorting = 'prefix' | 'updatedAt' | 'status'
-const sortHeaders: SortHeaderBuilderMapping<DeploymentSorting> = {
-  'common:prefix': 'prefix',
-  'common:status': 'status',
-  'common:date': 'updatedAt',
+const nodeSort = (a: DyoNode, b: DyoNode) => {
+  if (a && b) {
+    if (a.status !== b.status) {
+      return enumSort(NODE_STATUS_VALUES)(a.status, b.status)
+    }
+    return stringSort(a.name, b.name)
+  }
+  if (a) {
+    return 1
+  }
+  if (b) {
+    return -1
+  }
+  return 0
 }
-
-const statusSort = (field: string, a: DeploymentByVersion, b: DeploymentByVersion) =>
-  DEPLOYMENT_STATUS_VALUES.indexOf(a.status) - DEPLOYMENT_STATUS_VALUES.indexOf(b.status)
 
 const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const { version, actions } = props
@@ -126,13 +128,18 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     initialData: version.deployments,
   })
 
-  const sortFunctions: SortFunctions<DeploymentByVersion> = {
-    prefix: stringSort,
-    status: statusSort,
-    updatedAt: dateSort,
-  }
   const sorting = useSorting<DeploymentByVersion, DeploymentSorting>(filters.filtered, {
-    sortFunctions,
+    initialField: 'updatedAt',
+    initialDirection: 'asc',
+    sortFunctions: {
+      node: nodeSort,
+      prefix: stringSort,
+      status: enumSort(DEPLOYMENT_STATUS_VALUES),
+      updatedAt: dateSort,
+    },
+    fieldGetters: {
+      node: it => it.node,
+    },
   })
 
   useEffect(() => filters.setItems(version.deployments), [filters, version.deployments])
@@ -189,7 +196,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       </Link>,
       item.prefix,
       <DeploymentStatusTag className="w-fit m-auto" status={item.status} />,
-      <>{utcDateToLocale(item.updatedAt)}</>,
+      <span suppressHydrationWarning>{utcDateToLocale(item.updatedAt)}</span>,
       <div className="flex justify-center">
         <Link className="mr-2 inline-block cursor-pointer" href={routes.deployment.details(item.id)} passHref>
           <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
@@ -276,8 +283,15 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
               noSeparator
               data={sorting.items}
               itemBuilder={itemTemplate}
-              headerBuilder={sortHeaderBuilder<DeploymentByVersion, DeploymentSorting>(sorting, sortHeaders, text =>
-                t(text),
+              headerBuilder={sortHeaderBuilder<DeploymentByVersion, DeploymentSorting>(
+                sorting,
+                {
+                  'common:node': 'node',
+                  'common:prefix': 'prefix',
+                  'common:status': 'status',
+                  'common:date': 'updatedAt',
+                },
+                text => t(text),
               )}
               cellClick={onCellClick}
             />

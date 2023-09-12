@@ -42,6 +42,8 @@
     "/templates": ["templates", "projects"],
     "/[teamSlug]/dashboard": ["dashboard"],
     "/[teamSlug]/storages": ["storages"],
-    "/[teamSlug]/storages/[storageId]": ["storages"]
+    "/[teamSlug]/storages/[storageId]": ["storages"],
+    "/[teamSlug]/config-bundles": ["config-bundles"],
+    "/[teamSlug]/config-bundles/[configBundleId]": ["config-bundles"]
   }
 }

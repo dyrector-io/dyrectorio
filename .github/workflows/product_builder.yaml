@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       # yamlfmt resides here because alpine doesn't provide yamlfmt package
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -139,7 +139,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -163,7 +163,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -189,7 +189,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -220,7 +220,7 @@ jobs:
       - go_integration
       - gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -583,9 +583,10 @@ jobs:
         if: always()
         run: |
           mkdir logs
-          docker logs dyo-e2e_crux-ui > logs/e2e-crux-ui.log
-          docker logs dyo-e2e_crux > logs/e2e-crux.log
-          docker logs dyo-e2e_kratos > logs/e2e-kratos.log
+          docker logs dyo-e2e_crux-ui > logs/e2e-crux-ui.log 2>&1
+          docker logs dyo-e2e_crux > logs/e2e-crux.log 2>&1
+          docker logs dyo-e2e_kratos > logs/e2e-kratos.log 2>&1
+          docker logs dagent > logs/e2e-dagent.log 2>&1
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
@@ -614,7 +615,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}

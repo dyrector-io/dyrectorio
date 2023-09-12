@@ -1,9 +1,11 @@
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../utils/test.fixture'
 import { clearInput, NGINX_TEST_IMAGE_WITH_TAG, screenshotPath, TEAM_ROUTES } from '../utils/common'
 import { createProject } from '../utils/projects'
 
 test('adding a new registry should work', async ({ page }) => {
   await page.goto(TEAM_ROUTES.registry.list())
+  await page.waitForSelector('h2:text-is("Registries")')
 
   await page.locator('text=Add').click()
   await expect(page.locator('h4')).toContainText('New registry')
@@ -18,6 +20,7 @@ test('adding a new registry should work', async ({ page }) => {
   await page.locator('text=Save').click()
 
   await page.waitForURL(TEAM_ROUTES.registry.list())
+  await page.waitForSelector('h2:text-is("Registries")')
 
   await expect(page.locator(`h3:text("TEST REGISTRY")`)).toHaveCount(1)
 
@@ -26,6 +29,7 @@ test('adding a new registry should work', async ({ page }) => {
 
 test('minimum name length requirement should work', async ({ page }) => {
   await page.goto(TEAM_ROUTES.registry.list())
+  await page.waitForSelector('h2:text-is("Registries")')
 
   await page.locator('text=Add').click()
   await expect(page.locator('h4')).toContainText('New registry')
@@ -46,6 +50,7 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   const registryName = 'REGISTRY_UNCHECKED'
 
   await page.goto(TEAM_ROUTES.registry.list())
+  await page.waitForSelector('h2:text-is("Registries")')
 
   await page.locator('text=Add').click()
   await expect(page.locator('h4')).toContainText('New registry')
@@ -92,6 +97,11 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   await expect(page.locator('button:text-is("Add")')).toBeVisible()
 
   await page.locator('button:text-is("Add")').click()
+
+  const imagesTableBody = await page.locator('.table-row-group')
+  const imagesRows = await imagesTableBody.locator('.table-row')
+
+  await expect(imagesRows).toHaveCount(1)
 })
 
 test('Image list should be visible', async ({ page }) => {

@@ -7,9 +7,18 @@ export type NodeType = (typeof NODE_TYPE_VALUES)[number]
 export const NODE_INSTALL_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
 export type NodeInstallScriptType = (typeof NODE_INSTALL_SCRIPT_TYPE_VALUES)[number]
 
-export type NodeStatus = 'unreachable' | 'connected' | 'outdated'
+export const NODE_STATUS_VALUES = ['unreachable', 'connected', 'outdated'] as const
+export type NodeStatus = (typeof NODE_STATUS_VALUES)[number]
 
-export const NODE_EVENT_TYPE_VALUES = ['connected', 'kicked', 'left', 'update', 'containerCommand'] as const
+export const NODE_EVENT_TYPE_VALUES = [
+  'connected',
+  'kicked',
+  'left',
+  'update',
+  'containerCommand',
+  'installed',
+  'updateCompleted',
+] as const
 export type NodeEventType = (typeof NODE_EVENT_TYPE_VALUES)[number]
 
 export type NodeConnection = {

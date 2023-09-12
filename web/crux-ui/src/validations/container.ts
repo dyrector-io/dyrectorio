@@ -1,17 +1,19 @@
 import { UID_MAX } from '@app/const'
 import {
-  ContainerConfigExposeStrategy,
-  ContainerConfigPortRange,
-  ContainerDeploymentStrategyType,
-  ContainerLogDriverType,
-  ContainerNetworkMode,
-  ContainerRestartPolicyType,
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
   CONTAINER_LOG_DRIVER_VALUES,
   CONTAINER_NETWORK_MODE_VALUES,
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
+  ContainerConfigExposeStrategy,
+  ContainerConfigPortRange,
+  ContainerDeploymentStrategyType,
+  ContainerLogDriverType,
+  ContainerNetworkMode,
+  ContainerPort,
+  ContainerRestartPolicyType,
+  Metrics,
   VolumeType,
 } from '@app/models/container'
 import * as yup from 'yup'
@@ -71,17 +73,6 @@ export const sensitiveKeyRule = yup.string().matches(sensitiveKeywordRegExp)
 const portNumberBaseRule = yup.number().positive().lessThan(65536)
 const portNumberOptionalRule = portNumberBaseRule.nullable()
 const portNumberRule = portNumberBaseRule.nullable().required()
-
-const routingRule = yup
-  .object()
-  .shape({
-    domain: yup.string().nullable(),
-    path: yup.string().nullable(),
-    stripPath: yup.bool().nullable(),
-    uploadLimit: yup.string().nullable(),
-  })
-  .default({})
-  .nullable()
 
 const exposeRule = yup
   .mixed<ContainerConfigExposeStrategy>()
@@ -289,7 +280,7 @@ const initContainerRule = yup
       image: yup.string().required(),
       command: uniqueKeysOnlySchema.default([]).nullable(),
       args: uniqueKeysOnlySchema.default([]).nullable(),
-      environments: uniqueKeyValuesSchema.default([]).nullable(),
+      environment: uniqueKeyValuesSchema.default([]).nullable(),
       useParentConfig: yup.boolean().default(false).required(),
       volumes: initContainerVolumeLinkRule.default([]).nullable(),
     }),
@@ -319,9 +310,58 @@ const markerRule = yup
   .nullable()
   .optional()
 
+const routingRule = yup.mixed().when('ports', () =>
+  yup
+    .object()
+    .shape({
+      domain: yup.string().nullable(),
+      path: yup
+        .string()
+        .nullable()
+        .optional()
+        .test('path', 'Should start with a leading "/"', (it: string) => (it ? it.startsWith('/') : true)),
+      stripPath: yup.bool().nullable(),
+      uploadLimit: yup.string().nullable(),
+      port: portNumberRule.nullable().optional().notRequired(),
+    })
+    .nullable()
+    .optional()
+    .default(null),
+)
+
+const createMetricsPortRule = (ports: ContainerPort[]) => {
+  if (!ports?.length) {
+    return portNumberRule.nullable().optional()
+  }
+
+  // eslint-disable-next-line no-template-curly-in-string
+  return portNumberRule.test('metric-port', '${path} is missing the internal port definition', value =>
+    value && ports.length > 0 ? ports.some(it => it.internal === value) : true,
+  )
+}
+
+const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
+  const portRule = createMetricsPortRule(ports)
+
+  return yup
+    .object()
+    .when({
+      is: (it: Metrics) => it?.enabled,
+      then: schema =>
+        schema.shape({
+          enabled: yup.boolean(),
+          path: yup.string().nullable(),
+          port: portRule,
+        }),
+    })
+    .nullable()
+    .optional()
+    .default(null)
+})
+
 const containerConfigBaseSchema = yup.object().shape({
   name: yup.string().required().matches(/^\S+$/g),
-  environments: uniqueKeyValuesSchema.default([]).nullable(),
+  environment: uniqueKeyValuesSchema.default([]).nullable(),
   routing: routingRule,
   expose: exposeRule,
   user: yup.number().default(null).min(-1).max(UID_MAX).nullable(),
@@ -353,6 +393,7 @@ const containerConfigBaseSchema = yup.object().shape({
   resourceConfig: resourceConfigRule,
   labels: markerRule,
   annotations: markerRule,
+  metrics: metricsRule,
 })
 
 export const containerConfigSchema = containerConfigBaseSchema.shape({

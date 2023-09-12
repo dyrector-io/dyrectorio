@@ -11,6 +11,7 @@ import { DyoList } from '@app/elements/dyo-list'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import { dateSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 import { GeneratedToken, Token } from '@app/models'
 import { appendTeamSlug } from '@app/providers/team-routes'
 import { API_TOKENS, ROUTE_INDEX, ROUTE_SETTINGS, ROUTE_SETTINGS_EDIT_PROFILE, tokensApiUrl } from '@app/routes'
@@ -26,6 +27,8 @@ import { toast } from 'react-hot-toast'
 interface TokensPageProps {
   tokens: Token[]
 }
+
+type TokenSorting = 'name' | 'createdAt' | 'expiresAt'
 
 const TokensPage = (props: TokensPageProps) => {
   const { tokens } = props
@@ -43,6 +46,16 @@ const TokensPage = (props: TokensPageProps) => {
     filters: [
       textFilterFor<GeneratedToken>(it => [it.name, utcDateToLocale(it.createdAt), utcDateToLocale(it.expiresAt)]),
     ],
+  })
+
+  const sorting = useSorting<Token, TokenSorting>(filters.filtered, {
+    initialField: 'createdAt',
+    initialDirection: 'asc',
+    sortFunctions: {
+      name: stringSort,
+      createdAt: dateSort,
+      expiresAt: dateSort,
+    },
   })
 
   const onCreated = (token: GeneratedToken) => {
@@ -165,12 +178,21 @@ const TokensPage = (props: TokensPageProps) => {
           <Filters setTextFilter={it => filters.setFilter({ text: it })} />
           <DyoCard className="relative mt-4">
             <DyoList
-              headers={[...headers.map(h => t(h)), '']}
+              headers={[...headers, '']}
               headerClassName={headerClasses}
               columnWidths={columnWidths}
               itemClassName={itemClasses}
-              data={filters.filtered}
+              data={sorting.items}
               noSeparator
+              headerBuilder={sortHeaderBuilder<Token, TokenSorting>(
+                sorting,
+                {
+                  'common:name': 'name',
+                  'common:createdAt': 'createdAt',
+                  'tokens:expiresAt': 'expiresAt',
+                },
+                text => t(text),
+              )}
               itemBuilder={itemTemplate}
             />
           </DyoCard>

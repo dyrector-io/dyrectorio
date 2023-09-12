@@ -54,8 +54,8 @@ export default class NodeGlobalContainerHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for container starting.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for container starting.' })
   @UuidParams(PARAM_NODE_ID)
-  startContainer(@NodeId() nodeId: string, @Name() name: string) {
-    this.service.startContainer(nodeId, GLOBAL_PREFIX, name)
+  async startContainer(@NodeId() nodeId: string, @Name() name: string): Promise<void> {
+    await this.service.startContainer(nodeId, GLOBAL_PREFIX, name)
   }
 
   @Post(`${ROUTE_NAME}/stop`)
@@ -68,8 +68,8 @@ export default class NodeGlobalContainerHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for container stopping.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for container stopping.' })
   @UuidParams(PARAM_NODE_ID)
-  stopContainer(@NodeId() nodeId: string, @Name() name: string) {
-    this.service.stopContainer(nodeId, GLOBAL_PREFIX, name)
+  async stopContainer(@NodeId() nodeId: string, @Name() name: string): Promise<void> {
+    await this.service.stopContainer(nodeId, GLOBAL_PREFIX, name)
   }
 
   @Post(`${ROUTE_NAME}/restart`)
@@ -82,8 +82,8 @@ export default class NodeGlobalContainerHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for container restarting.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for container restarting.' })
   @UuidParams(PARAM_NODE_ID)
-  restartContainer(@NodeId() nodeId: string, @Name() name: string) {
-    this.service.restartContainer(nodeId, GLOBAL_PREFIX, name)
+  async restartContainer(@NodeId() nodeId: string, @Name() name: string): Promise<void> {
+    await this.service.restartContainer(nodeId, GLOBAL_PREFIX, name)
   }
 
   @Delete(`${ROUTE_NAME}`)

@@ -24,11 +24,13 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 type Connection struct {
@@ -62,33 +64,55 @@ type ContainerWatchContext struct {
 	Error  chan error
 }
 
+// UpdateOptions options to increase update testability
+type UpdateOptions struct {
+	// always execute the update, regardless of the actual version
+	UpdateAlways bool
+	// if false will not restart by itself, only a message printed about the token events
+	UseContainers bool
+}
+
+type ClientLoop struct {
+	Ctx         context.Context
+	WorkerFuncs WorkerFunctions
+	Secrets     config.SecretStore
+	cancel      context.CancelFunc
+	AppConfig   *config.CommonConfiguration
+}
+
 type (
-	DeployFunc           func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
-	WatchFunc            func(context.Context, string) (*ContainerWatchContext, error)
-	DeleteFunc           func(context.Context, string, string) error
-	SecretListFunc       func(context.Context, string, string) ([]string, error)
-	SelfUpdateFunc       func(context.Context, string, int32) error
-	CloseFunc            func(context.Context, agent.CloseReason) error
-	ContainerCommandFunc func(context.Context, *common.ContainerCommandRequest) error
-	DeleteContainersFunc func(context.Context, *common.DeleteContainersRequest) error
-	ContainerLogFunc     func(context.Context, *agent.ContainerLogRequest) (*ContainerLogContext, error)
+	DeployFunc               func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
+	WatchFunc                func(context.Context, string) (*ContainerWatchContext, error)
+	DeleteFunc               func(context.Context, string, string) error
+	SecretListFunc           func(context.Context, string, string) ([]string, error)
+	SelfUpdateFunc           func(context.Context, *agent.AgentUpdateRequest, UpdateOptions) error
+	GetSelfContainerNameFunc func(context.Context) (string, error)
+	CloseFunc                func(context.Context, agent.CloseReason, UpdateOptions) error
+	ContainerCommandFunc     func(context.Context, *common.ContainerCommandRequest) error
+	DeleteContainersFunc     func(context.Context, *common.DeleteContainersRequest) error
+	ContainerLogFunc         func(context.Context, *agent.ContainerLogRequest) (*ContainerLogContext, error)
+	ReplaceTokenFunc         func(context.Context, *agent.ReplaceTokenRequest) error
 )
 
 type WorkerFunctions struct {
-	Deploy           DeployFunc
-	Watch            WatchFunc
-	Delete           DeleteFunc
-	SecretList       SecretListFunc
-	SelfUpdate       SelfUpdateFunc
-	Close            CloseFunc
-	ContainerCommand ContainerCommandFunc
-	DeleteContainers DeleteContainersFunc
-	ContainerLog     ContainerLogFunc
+	Deploy               DeployFunc
+	Watch                WatchFunc
+	Delete               DeleteFunc
+	SecretList           SecretListFunc
+	SelfUpdate           SelfUpdateFunc
+	GetSelfContainerName GetSelfContainerNameFunc
+	Close                CloseFunc
+	ContainerCommand     ContainerCommandFunc
+	DeleteContainers     DeleteContainersFunc
+	ContainerLog         ContainerLogFunc
 }
 
 type contextKey int
 
-const contextConfigKey contextKey = 0
+const (
+	contextConfigKey        contextKey = 0
+	contextMetadataKeyToken            = "dyo-node-token" // #nosec G101
+)
 
 func TokenToConnectionParams(grpcToken *config.ValidJWT) *ConnectionParams {
 	return &ConnectionParams{
@@ -149,7 +173,8 @@ func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool,
 func Init(grpcContext context.Context,
 	connParams *ConnectionParams,
 	appConfig *config.CommonConfiguration,
-	workerFuncs WorkerFunctions,
+	workerFuncs *WorkerFunctions,
+	secrets config.SecretStore,
 ) {
 	log.Info().Msg("Spinning up gRPC Agent client...")
 	if grpcConn == nil {
@@ -157,19 +182,26 @@ func Init(grpcContext context.Context,
 	}
 
 	ctx, cancel := context.WithCancel(grpcContext)
+	loop := ClientLoop{
+		cancel:      cancel,
+		AppConfig:   appConfig,
+		Ctx:         ctx,
+		WorkerFuncs: *workerFuncs,
+		Secrets:     secrets,
+	}
 
-	err := health.Serve(ctx)
+	err := health.Serve(loop.Ctx)
 	if err != nil {
 		log.Warn().Err(err).Msg("Failed to start serving health")
 	}
 
-	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-node-token", connParams.token)
+	loop.Ctx = metadata.AppendToOutgoingContext(loop.Ctx, contextMetadataKeyToken, connParams.token)
 
 	if grpcConn.Conn == nil {
 		var creds credentials.TransportCredentials
 
 		httpAddr := fmt.Sprintf("https://%s", connParams.address)
-		certPool, err := fetchCertificatesFromURL(ctx, httpAddr)
+		certPool, err := fetchCertificatesFromURL(loop.Ctx, httpAddr)
 		if err != nil {
 			if appConfig.Debug {
 				log.Warn().Err(err).Msg("Secure mode is disabled in demo/dev environment, falling back to plain-text gRPC")
@@ -202,7 +234,7 @@ func Init(grpcContext context.Context,
 			state := conn.GetState()
 			if state != connectivity.Ready {
 				log.Debug().Msgf("Waiting for state to change: %d", state)
-				conn.WaitForStateChange(ctx, state)
+				conn.WaitForStateChange(loop.Ctx, state)
 				log.Debug().Msgf("State Changed to: %d", conn.GetState())
 			} else {
 				break
@@ -214,65 +246,68 @@ func Init(grpcContext context.Context,
 		grpcConn.Conn = conn
 	}
 
-	grpcLoop(ctx, connParams, workerFuncs, cancel, appConfig)
+	loop.grpcLoop(connParams)
 }
 
-func grpcProcessCommand(
-	ctx context.Context,
-	workerFuncs WorkerFunctions,
-	command *agent.AgentCommand,
-	appConfig *config.CommonConfiguration,
-) {
+func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 	switch {
 	case command.GetDeploy() != nil:
-		go executeVersionDeployRequest(ctx, command.GetDeploy(), workerFuncs.Deploy, appConfig)
+		go executeVersionDeployRequest(cl.Ctx, command.GetDeploy(), cl.WorkerFuncs.Deploy, cl.AppConfig)
 	case command.GetContainerState() != nil:
-		go executeWatchContainerStatus(ctx, command.GetContainerState(), workerFuncs.Watch)
+		go executeWatchContainerState(cl.Ctx, command.GetContainerState(), cl.WorkerFuncs.Watch)
 	case command.GetContainerDelete() != nil:
-		go executeDeleteContainer(ctx, command.GetContainerDelete(), workerFuncs.Delete)
+		go executeDeleteContainer(cl.Ctx, command.GetContainerDelete(), cl.WorkerFuncs.Delete)
 	case command.GetDeployLegacy() != nil:
-		go executeVersionDeployLegacyRequest(ctx, command.GetDeployLegacy(), workerFuncs.Deploy, appConfig)
+		go executeVersionDeployLegacyRequest(cl.Ctx, command.GetDeployLegacy(), cl.WorkerFuncs.Deploy, cl.AppConfig)
 	case command.GetListSecrets() != nil:
-		go executeSecretList(ctx, command.GetListSecrets(), workerFuncs.SecretList, appConfig)
+		go executeSecretList(cl.Ctx, command.GetListSecrets(), cl.WorkerFuncs.SecretList, cl.AppConfig)
 	case command.GetUpdate() != nil:
-		go executeUpdate(ctx, command.GetUpdate(), workerFuncs.SelfUpdate)
+		go executeUpdate(cl, command.GetUpdate(), cl.WorkerFuncs.SelfUpdate)
 	case command.GetClose() != nil:
-		go executeClose(ctx, command.GetClose(), workerFuncs.Close)
+		go cl.executeClose(command.GetClose())
 	case command.GetContainerCommand() != nil:
-		go executeContainerCommand(ctx, command.GetContainerCommand(), workerFuncs.ContainerCommand)
+		go executeContainerCommand(cl.Ctx, command.GetContainerCommand(), cl.WorkerFuncs.ContainerCommand)
 	case command.GetDeleteContainers() != nil:
-		go executeDeleteMultipleContainers(ctx, command.GetDeleteContainers(), workerFuncs.DeleteContainers)
+		go executeDeleteMultipleContainers(cl.Ctx, command.GetDeleteContainers(), cl.WorkerFuncs.DeleteContainers)
 	case command.GetContainerLog() != nil:
-		go executeContainerLog(ctx, command.GetContainerLog(), workerFuncs.ContainerLog)
+		go executeContainerLog(cl.Ctx, command.GetContainerLog(), cl.WorkerFuncs.ContainerLog)
+	case command.GetReplaceToken() != nil:
+		// NOTE(@m8vago): should be sync?
+		err := cl.executeReplaceToken(command.GetReplaceToken())
+		if err != nil {
+			log.Error().Err(err).Msg("Token replacement failed")
+		}
 	default:
 		log.Warn().Msg("Unknown agent command")
 	}
 }
 
-func grpcLoop(
-	ctx context.Context,
-	connParams *ConnectionParams,
-	workerFuncs WorkerFunctions,
-	cancel context.CancelFunc,
-	appConfig *config.CommonConfiguration,
-) {
+func (cl *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 	var stream agent.Agent_ConnectClient
 	var err error
-	defer cancel()
+	defer cl.cancel()
 	defer grpcConn.Conn.Close()
 	for {
 		if grpcConn.Client == nil {
 			client := agent.NewAgentClient(grpcConn.Conn)
 			grpcConn.SetClient(client)
 
-			publicKey, keyErr := config.GetPublicKey(appConfig.SecretPrivateKey)
+			publicKey, keyErr := config.GetPublicKey(cl.AppConfig.SecretPrivateKey)
 
 			if keyErr != nil {
 				log.Panic().Stack().Err(keyErr).Str("publicKey", publicKey).Msg("gRPC public key error")
 			}
 
+			containerName := ""
+			if cl.WorkerFuncs.GetSelfContainerName != nil {
+				containerName, err = cl.WorkerFuncs.GetSelfContainerName(cl.Ctx)
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to get the agent's container name")
+				}
+			}
+
 			stream, err = grpcConn.Client.Connect(
-				ctx, &agent.AgentInfo{Id: connParams.nodeID, Version: version.BuildVersion(), PublicKey: publicKey},
+				cl.Ctx, &agent.AgentInfo{Id: connParams.nodeID, Version: version.BuildVersion(), PublicKey: publicKey, ContainerName: &containerName},
 				grpc.WaitForReady(true),
 			)
 			if err != nil {
@@ -280,15 +315,20 @@ func grpcLoop(
 				time.Sleep(time.Second)
 				grpcConn.Client = nil
 				continue
-			} else {
-				log.Info().Msg("Stream connection is up")
-				health.SetHealthGRPCStatus(true)
 			}
+			log.Info().Msg("Stream connection is up")
+			health.SetHealthGRPCStatus(true)
 		}
 
 		command := new(agent.AgentCommand)
 		err = stream.RecvMsg(command)
 		if err != nil {
+			s := status.Convert(err)
+			if s != nil && (s.Code() == codes.Unauthenticated || s.Code() == codes.PermissionDenied || s.Code() == codes.NotFound) {
+				cl.handleGrpcTokenError(err)
+				break
+			}
+
 			grpcConn.Client = nil
 			health.SetHealthGRPCStatus(false)
 
@@ -299,11 +339,30 @@ func grpcLoop(
 				// TODO replace the line above with an error status code check and terminate dagent accordingly
 			}
 
-			time.Sleep(appConfig.DefaultTimeout)
+			time.Sleep(cl.AppConfig.DefaultTimeout)
 			continue
 		}
 
-		grpcProcessCommand(ctx, workerFuncs, command, appConfig)
+		cl.grpcProcessCommand(command)
+	}
+}
+
+func (cl *ClientLoop) handleGrpcTokenError(err error) {
+	if cl.AppConfig.JwtToken.Type == config.Connection {
+		log.Error().Err(err).Msg("Invalid connection token. Removing")
+
+		// overwrite JWT token
+		err = cl.Secrets.SaveConnectionToken("")
+		if err != nil {
+			log.Err(err).Msg("Failed to delete the invalid connection token")
+		}
+	} else {
+		log.Error().Err(err).Msg("Invalid install token. Blacklisting nonce")
+
+		err = cl.Secrets.BlacklistNonce(cl.AppConfig.JwtToken.Nonce)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to blacklist the install token")
+		}
 	}
 }
 
@@ -409,7 +468,7 @@ func streamContainerStatus(
 	}
 }
 
-func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateRequest, watchFn WatchFunc) {
+func executeWatchContainerState(ctx context.Context, req *agent.ContainerStateRequest, watchFn WatchFunc) {
 	if watchFn == nil {
 		log.Error().Msg("Watch function not implemented")
 		return
@@ -591,29 +650,50 @@ func executeSecretList(
 	}
 }
 
-func executeUpdate(ctx context.Context, command *agent.AgentUpdateRequest, updateFunc SelfUpdateFunc) {
+func executeUpdate(loop *ClientLoop, command *agent.AgentUpdateRequest, updateFunc SelfUpdateFunc) {
 	if updateFunc == nil {
 		log.Error().Msg("Self update function not implemented")
 		return
 	}
 
-	err := updateFunc(ctx, command.Tag, command.TimeoutSeconds)
+	_, err := config.ValidateAndCreateJWT(command.Token)
 	if err != nil {
-		log.Error().Stack().Err(err).Msg("Update error")
+		log.Error().Msg("JWT validation failed")
 
-		errorString := err.Error()
-		resp := &agent.AgentAbortUpdate{
-			Error: strings.ToUpper(errorString[0:1]) + errorString[1:],
-		}
+		abortUpdate(loop.Ctx, err)
+		return
+	}
 
-		_, err := grpcConn.Client.AbortUpdate(ctx, resp)
-		if err != nil {
-			log.Error().Stack().Err(err).Msg("Update abort request error")
-		}
+	err = loop.executeReplaceToken(&agent.ReplaceTokenRequest{
+		Token: command.Token,
+	})
+
+	if err == nil {
+		err = updateFunc(loop.Ctx, command, updateOptionsFromAppConfig(loop.AppConfig))
+	}
+
+	if err != nil {
+		abortUpdate(loop.Ctx, err)
 	}
 }
 
-func executeClose(ctx context.Context, command *agent.CloseConnectionRequest, closeFunc CloseFunc) {
+func abortUpdate(ctx context.Context, err error) {
+	log.Error().Stack().Err(err).Msg("Update error")
+
+	errorString := err.Error()
+	resp := &agent.AgentAbortUpdate{
+		Error: strings.ToUpper(errorString[0:1]) + errorString[1:],
+	}
+
+	_, err = grpcConn.Client.AbortUpdate(ctx, resp)
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("Update abort request error")
+	}
+}
+
+func (cl *ClientLoop) executeClose(command *agent.CloseConnectionRequest) {
+	closeFunc := cl.WorkerFuncs.Close
+
 	if closeFunc == nil {
 		log.Error().Msg("Close function not implemented")
 		return
@@ -621,11 +701,14 @@ func executeClose(ctx context.Context, command *agent.CloseConnectionRequest, cl
 
 	log.Debug().Str("reason", agent.CloseReason_name[int32(command.GetReason())]).Msg("gRPC connection remotely closed")
 
-	if closeFunc == nil {
-		return
+	if command.Reason == agent.CloseReason_REVOKE_TOKEN {
+		err := cl.Secrets.SaveConnectionToken("")
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to delete connection token")
+		}
 	}
 
-	err := closeFunc(ctx, command.Reason)
+	err := closeFunc(cl.Ctx, command.Reason, updateOptionsFromAppConfig(cl.AppConfig))
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Close handler error")
 	}
@@ -752,6 +835,53 @@ func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest
 	<-streamCtx.Done()
 
 	log.Trace().Str("prefix", prefix).Str("name", name).Msg("Container log exited")
+}
+
+func (cl *ClientLoop) executeReplaceToken(command *agent.ReplaceTokenRequest) error {
+	log.Debug().Msg("Replace token requested")
+
+	err := cl.Secrets.CheckPermissions()
+	if err != nil {
+		log.Error().Err(err).Msg("Token file permission check failed")
+		return err
+	}
+
+	_, err = grpcConn.Client.TokenReplaced(cl.Ctx, &common.Empty{})
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to report token replacement, falling back to the old token")
+		return err
+	}
+
+	err = cl.Secrets.SaveConnectionToken(command.GetToken())
+	if err != nil {
+		// NOTE(@m8vago): For example, out of space?
+		log.Panic().Err(err).Msg("Failed to write the JWT token.")
+	}
+
+	md, ok := metadata.FromOutgoingContext(cl.Ctx)
+	if !ok {
+		md = metadata.Pairs(contextMetadataKeyToken, command.GetToken())
+	} else {
+		md.Set(contextMetadataKeyToken, command.GetToken())
+	}
+
+	cl.Ctx = metadata.NewOutgoingContext(cl.Ctx, md)
+	return nil
+}
+
+func updateOptionsFromAppConfig(appConfig *config.CommonConfiguration) UpdateOptions {
+	if appConfig.Debug {
+		return UpdateOptions{
+			UpdateAlways:  appConfig.DebugUpdateAlways,
+			UseContainers: appConfig.DebugUpdateUseContainers,
+		}
+	}
+
+	// production
+	return UpdateOptions{
+		UpdateAlways:  false,
+		UseContainers: true,
+	}
 }
 
 func WithGRPCConfig(parentContext context.Context, cfg any) context.Context {

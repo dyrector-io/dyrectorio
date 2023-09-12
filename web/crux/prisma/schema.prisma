@@ -18,14 +18,15 @@ model Team {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
   updatedBy String?  @db.Uuid
 
-  registries    Registry[]
-  projects      Project[]
-  nodes         Node[]
-  users         UsersOnTeams[]
-  invitations   UserInvitation[]
-  auditLog      AuditLog[]
-  notifications Notification[]
-  storages      Storage[]
+  registries                Registry[]
+  projects                  Project[]
+  nodes                     Node[]
+  users                     UsersOnTeams[]
+  invitations               UserInvitation[]
+  auditLog                  AuditLog[]
+  notifications             Notification[]
+  storages                  Storage[]
+  configBundles             ConfigBundle[]
 }
 
 model Token {
@@ -76,7 +77,6 @@ model Node {
   type           NodeTypeEnum? @default(docker)
   description    String?
   icon           String?
-  token          String?
   address        String?
   connectedAt    DateTime?     @db.Timestamptz(6)
   disconnectedAt DateTime?     @db.Timestamptz(6)
@@ -84,9 +84,18 @@ model Node {
   teamId         String        @db.Uuid
 
   deployments Deployment[]
-  events      AgentEvent[]
+  events      NodeEvent[]
+  token       NodeToken?
 
   @@unique([name, teamId])
+}
+
+model NodeToken {
+  nodeId    String @id @unique @db.Uuid
+  nonce     String
+  createdBy String @db.Uuid
+
+  node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
 }
 
 model Registry {
@@ -212,7 +221,7 @@ model ContainerConfig {
   secrets         Json?
   capabilities    Json?
   expose          ExposeStrategy
-  routing          Json?
+  routing         Json?
   configContainer Json?
   user            Int            @default(-1)
   tty             Boolean
@@ -243,6 +252,7 @@ model ContainerConfig {
   customHeaders      Json?
   annotations        Json?
   labels             Json?
+  metrics            Json?
 
   image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId String @unique @db.Uuid
@@ -268,9 +278,10 @@ model Deployment {
   version Version @relation(fields: [versionId], references: [id], onDelete: Cascade)
   node    Node    @relation(fields: [nodeId], references: [id], onDelete: Cascade)
 
-  instances Instance[]
-  events    DeploymentEvent[]
-  tokens    DeploymentToken[]
+  instances     Instance[]
+  events        DeploymentEvent[]
+  tokens        DeploymentToken[]
+  configBundles ConfigBundleOnDeployments[]
 }
 
 model DeploymentToken {
@@ -310,7 +321,7 @@ model InstanceContainerConfig {
   secrets         Json?
   capabilities    Json?
   expose          ExposeStrategy?
-  routing          Json?
+  routing         Json?
   configContainer Json?
   user            Int?
   tty             Boolean?
@@ -341,6 +352,7 @@ model InstanceContainerConfig {
   customHeaders      Json?
   annotations        Json?
   labels             Json?
+  metrics            Json?
 
   instance Instance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
   storage  Storage? @relation(fields: [storageId], references: [id], onDelete: Cascade)
@@ -427,14 +439,16 @@ model NotificationEvent {
   @@unique([event, notificationId])
 }
 
-model AgentEvent {
-  id        String             @id @default(uuid()) @db.Uuid
-  nodeId    String             @db.Uuid
-  createdAt DateTime           @default(now()) @db.Timestamptz(6)
-  event     AgentEventTypeEnum
+model NodeEvent {
+  id        String            @id @default(uuid()) @db.Uuid
+  nodeId    String            @db.Uuid
+  createdAt DateTime          @default(now()) @db.Timestamptz(6)
+  event     NodeEventTypeEnum
   data      Json?
 
   node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@map("NodeEvent")
 }
 
 enum ProjectTypeEnum {
@@ -496,12 +510,15 @@ enum NotificationEventTypeEnum {
   userInvited
 }
 
-enum AgentEventTypeEnum {
+enum NodeEventTypeEnum {
+  installed
   connected
   left
   kicked
   update
+  updateCompleted
   containerCommand
+  tokenReplaced
 }
 
 model Storage {
@@ -524,4 +541,32 @@ model Storage {
   instanceConfigs  InstanceContainerConfig[]
 
   @@unique([name, teamId])
+}
+
+model ConfigBundle {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  data        Json
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  createdBy   String   @db.Uuid
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  updatedBy   String?  @db.Uuid
+
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String @db.Uuid
+
+  deployments ConfigBundleOnDeployments[]
+
+  @@unique([name, teamId])
+}
+
+model ConfigBundleOnDeployments {
+  deployment   Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+  deploymentId String     @db.Uuid
+
+  configBundle   ConfigBundle @relation(fields: [configBundleId], references: [id], onDelete: Cascade)
+  configBundleId String       @db.Uuid
+
+  @@id([deploymentId, configBundleId])
 }

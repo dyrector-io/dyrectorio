@@ -4,15 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
 
+	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	"github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/mount"
@@ -103,7 +106,7 @@ func createNewDAgentContainer(ctx context.Context, cli client.APIClient, oldCont
 	return nil
 }
 
-func SelfUpdate(ctx context.Context, tag string, timeoutSeconds int32) error {
+func SelfUpdate(ctx context.Context, command *agent.AgentUpdateRequest, options grpc.UpdateOptions) error {
 	if _selfUpdateDeadline != nil && time.Now().Unix() > *_selfUpdateDeadline {
 		return errors.New("update already in progress")
 	}
@@ -113,10 +116,36 @@ func SelfUpdate(ctx context.Context, tag string, timeoutSeconds int32) error {
 		return err
 	}
 
-	return RewriteUpdateErrors(ExecuteSelfUpdate(ctx, cli, tag, timeoutSeconds))
+	return RewriteUpdateErrors(ExecuteSelfUpdate(ctx, cli, command, options))
 }
 
-func ExecuteSelfUpdate(ctx context.Context, cli client.APIClient, tag string, timeoutSeconds int32) error {
+func GetSelfContainerName(ctx context.Context) (string, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return "", err
+	}
+
+	container, err := utils.GetOwnContainer(ctx, cli)
+	if err != nil {
+		return "", err
+	}
+
+	name := container.Names[0]
+	return name, nil
+}
+
+func ExecuteSelfUpdate(ctx context.Context, cli client.APIClient, command *agent.AgentUpdateRequest, options grpc.UpdateOptions) error {
+	tag := command.Tag
+	timeoutSeconds := command.TimeoutSeconds
+	unixTime := time.Now().Unix() + int64(timeoutSeconds)
+
+	if !options.UseContainers {
+		log.Warn().Msg("Container updates are disabled. Waiting for self destruction message")
+
+		_selfUpdateDeadline = &unixTime
+		return nil
+	}
+
 	container, err := utils.GetOwnContainer(ctx, cli)
 	if err != nil {
 		return err
@@ -141,7 +170,11 @@ func ExecuteSelfUpdate(ctx context.Context, cli client.APIClient, tag string, ti
 	}
 
 	if newImageID == ownImage.ID {
-		return errors.New("already using desired image")
+		if !options.UpdateAlways {
+			return errors.New("already using desired image")
+		}
+
+		log.Warn().Msg("Updating matching image tags")
 	}
 
 	originalName := container.Names[0]
@@ -168,13 +201,11 @@ func ExecuteSelfUpdate(ctx context.Context, cli client.APIClient, tag string, ti
 		return err
 	}
 
-	unixTime := time.Now().Unix() + int64(timeoutSeconds)
 	_selfUpdateDeadline = &unixTime
-
 	return err
 }
 
-func RemoveSelf(ctx context.Context) error {
+func RemoveSelf(ctx context.Context, options grpc.UpdateOptions) error {
 	if _selfUpdateDeadline == nil {
 		return nil
 	}
@@ -185,12 +216,17 @@ func RemoveSelf(ctx context.Context) error {
 		return nil
 	}
 
+	log.Info().Msg("Update finished, shutting down")
+
+	if !options.UseContainers {
+		log.Warn().Msg("Container updates are disabled. Self destruction message received. Exiting")
+		os.Exit(0)
+	}
+
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return err
 	}
-
-	log.Info().Msg("Update finished, shutting down")
 
 	self, err := utils.GetOwnContainer(ctx, cli)
 	if err != nil {
@@ -211,15 +247,22 @@ func RemoveSelf(ctx context.Context) error {
 }
 
 func RewriteUpdateErrors(err error) (newErr error) {
+	if err == nil {
+		return nil
+	}
+
 	if errdefs.IsNotFound(err) || errdefs.IsUnknown(err) || client.IsErrNotFound(err) || strings.Contains(err.Error(), "manifest unknown") {
 		newErr = ErrUpdateImageNotFound
 	}
+
 	if errdefs.IsUnauthorized(err) {
 		newErr = ErrUpdateUnauthorized
 	}
+
 	log.Debug().Errs("update-errors", []error{err, newErr}).Msg("original and the rewritten error")
 	if newErr != nil {
 		return newErr
 	}
+
 	return err
 }

@@ -1,7 +1,7 @@
 //go:build unit
 // +build unit
 
-package mapper_test
+package mapper
 
 import (
 	"testing"
@@ -11,7 +11,6 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
-	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
@@ -25,7 +24,7 @@ func TestMapDeployImageRequest(t *testing.T) {
 	req := testDeployRequest()
 	cfg := testAppConfig()
 
-	res := mapper.MapDeployImage(req, cfg)
+	res := MapDeployImage(req, cfg)
 	expected := testExpectedCommon(req)
 
 	assert.Equal(t, expected, res)
@@ -64,6 +63,7 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 			ExposeTLS:          true,
 			IngressHost:        "test-domain",
 			IngressName:        "",
+			IngressPort:        12345,
 			IngressUploadLimit: "5Mi",
 			Shared:             false,
 			ConfigContainer: &v1.ConfigContainer{
@@ -106,7 +106,7 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 				Service:    map[string]string{"annot2": "value2"},
 				Ingress:    map[string]string{"annot3": "value3"},
 			},
-			DeploymentStrategy: "RECREATE",
+			DeploymentStrategy: "Recreate",
 			Labels: v1.Markers{
 				Deployment: map[string]string{"label1": "value1"},
 				Service:    map[string]string{"label2": "value2"},
@@ -157,14 +157,14 @@ func TestMapPorts(t *testing.T) {
 		},
 	}
 
-	bindings := mapper.MapPorts(ps)
+	bindings := MapPorts(ps)
 	assert.Equal(t, expected, bindings)
 }
 
 func TestMapSecrets(t *testing.T) {
 	kvl := testKeyValueList()
 
-	m := mapper.MapSecrets(kvl)
+	m := MapSecrets(kvl)
 	expected := map[string]string{
 		"testKey-1": "testID-1",
 		"testKey-2": "testID-2",
@@ -174,13 +174,13 @@ func TestMapSecrets(t *testing.T) {
 }
 
 func TestMapDockerContainerEventToContainerState(t *testing.T) {
-	assert.Equal(t, common.ContainerState_WAITING, mapper.MapDockerContainerEventToContainerState("create"))
-	assert.Equal(t, common.ContainerState_REMOVED, mapper.MapDockerContainerEventToContainerState("destroy"))
-	assert.Equal(t, common.ContainerState_WAITING, mapper.MapDockerContainerEventToContainerState("pause"))
-	assert.Equal(t, common.ContainerState_RUNNING, mapper.MapDockerContainerEventToContainerState("restart"))
-	assert.Equal(t, common.ContainerState_RUNNING, mapper.MapDockerContainerEventToContainerState("start"))
-	assert.Equal(t, common.ContainerState_EXITED, mapper.MapDockerContainerEventToContainerState("stop"))
-	assert.Equal(t, common.ContainerState_EXITED, mapper.MapDockerContainerEventToContainerState("die"))
+	assert.Equal(t, common.ContainerState_WAITING, MapDockerContainerEventToContainerState("create"))
+	assert.Equal(t, common.ContainerState_REMOVED, MapDockerContainerEventToContainerState("destroy"))
+	assert.Equal(t, common.ContainerState_WAITING, MapDockerContainerEventToContainerState("pause"))
+	assert.Equal(t, common.ContainerState_RUNNING, MapDockerContainerEventToContainerState("restart"))
+	assert.Equal(t, common.ContainerState_RUNNING, MapDockerContainerEventToContainerState("start"))
+	assert.Equal(t, common.ContainerState_EXITED, MapDockerContainerEventToContainerState("stop"))
+	assert.Equal(t, common.ContainerState_EXITED, MapDockerContainerEventToContainerState("die"))
 }
 
 func testDeployRequest() *agent.DeployRequest {
@@ -227,6 +227,7 @@ func testDeployRequest() *agent.DeployRequest {
 			Routing: &common.Routing{
 				Domain:      pointer.ToString("test-domain"),
 				UploadLimit: &upLimit,
+				Port:        pointer.ToUint32(12345),
 			},
 			ConfigContainer: &common.ConfigContainer{
 				Image:     "test-image",
@@ -354,7 +355,7 @@ func testCraneConfig() *agent.CraneContainerConfig {
 			ReadinessProbe: &rProbe,
 			StartupProbe:   &sProbe,
 		},
-		DeploymentStatregy: common.DeploymentStrategy_RECREATE.Enum(),
+		DeploymentStrategy: common.DeploymentStrategy_RECREATE.Enum(),
 	}
 }
 
@@ -374,7 +375,7 @@ func testAppConfig() *config.CommonConfiguration {
 		ReadHeaderTimeout:    30 * time.Second,
 		DefaultRegistry:      "",
 		SecretPrivateKey:     "",
-		GrpcToken: &config.ValidJWT{
+		JwtToken: &config.ValidJWT{
 			Issuer:           "test-issuer",
 			Subject:          "test-subject",
 			StringifiedToken: "test-token",
@@ -480,10 +481,38 @@ func TestMapDeployImageLogConfig(t *testing.T) {
 			req := testDeployRequestWithLogDriver(tC.driver)
 			cfg := testAppConfig()
 
-			res := mapper.MapDeployImage(req, cfg)
+			res := MapDeployImage(req, cfg)
 			expected := testExpectedCommonWithLogConfigType(req, tC.want)
 
 			assert.Equal(t, expected, res)
+		})
+	}
+}
+
+func TestCraneDeploymentStrategyMapping(t *testing.T) {
+	craneConfig := testCraneConfig()
+	testCases := []struct {
+		strat *common.DeploymentStrategy
+		exp   string
+		desc  string
+	}{
+		{
+			desc:  "expected Recreate",
+			exp:   "Recreate",
+			strat: common.DeploymentStrategy_RECREATE.Enum(),
+		},
+		{
+			desc:  "expected RollingUpdate",
+			exp:   "RollingUpdate",
+			strat: common.DeploymentStrategy_ROLLING_UPDATE.Enum(),
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			craneConfig.DeploymentStrategy = tC.strat
+			resultConfig := v1.ContainerConfig{}
+			mapCraneConfig(craneConfig, &resultConfig)
+			assert.Equalf(t, tC.exp, resultConfig.DeploymentStrategy, "%s got: %s", tC.desc, resultConfig.DeploymentStrategy)
 		})
 	}
 }

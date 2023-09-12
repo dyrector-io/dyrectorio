@@ -2,6 +2,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoCheckbox from '@app/elements/dyo-checkbox'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
+import { dateSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Instance } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
@@ -15,6 +16,8 @@ export interface DeploymentViewListProps {
   actions: DeploymentActions
 }
 
+type InstanceSorting = 'containerName' | 'registry' | 'imageTag' | 'createdAt'
+
 const DeploymentViewList = (props: DeploymentViewListProps) => {
   const { t } = useTranslation('images')
   const routes = useTeamRoutes()
@@ -22,12 +25,25 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
   const { state, actions } = props
   const { instances, deployInstances } = state
 
+  const sorting = useSorting<Instance, InstanceSorting>(instances, {
+    initialField: 'createdAt',
+    initialDirection: 'asc',
+    sortFunctions: {
+      containerName: stringSort,
+      registry: stringSort,
+      imageTag: stringSort,
+      createdAt: dateSort,
+    },
+    fieldGetters: {
+      containerName: it => it.config?.name ?? it.image.config.name,
+      registry: it => it.image.registry.name,
+      imageTag: it => `${it.image.name}${it.image.tag ? `:${it.image.tag}` : null}`,
+      createdAt: it => it.image.createdAt,
+    },
+  })
+
   const columnWidths = ['w-12', 'w-4/12', 'w-2/12', 'w-2/12', 'w-4/12', 'w-28']
-  const headers = [
-    '',
-    ...['containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions'].map(it => t(it)),
-    '',
-  ]
+  const headers = ['', 'containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions']
   const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
@@ -69,6 +85,16 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
     </div>,
   ]
 
+  const sortingHeaderBuilder = sortHeaderBuilder<Instance, InstanceSorting>(
+    sorting,
+    {
+      containerName: 'containerName',
+      'common:registry': 'registry',
+      imageTag: 'imageTag',
+      'common:createdAt': 'createdAt',
+    },
+    text => (text ? t(text) : ''),
+  )
   const headerBuilder = (header: string, index: number) =>
     index === 0 ? (
       <DyoCheckbox
@@ -77,7 +103,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
         onCheckedChange={it => actions.onAllInstancesToggled(it)}
       />
     ) : (
-      header
+      sortingHeaderBuilder(header)
     )
 
   return (
@@ -87,7 +113,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
         headerClassName={headerClasses}
         columnWidths={columnWidths}
         itemClassName={itemClasses}
-        data={instances}
+        data={sorting.items}
         noSeparator
         itemBuilder={itemTemplate}
         headerBuilder={headerBuilder}

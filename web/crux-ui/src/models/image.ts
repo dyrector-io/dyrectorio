@@ -91,6 +91,7 @@ export const CRANE_CONFIG_PROPERTIES = [
   'resourceConfig',
   'labels',
   'annotations',
+  'metrics',
 ] as const
 
 export const DAGENT_CONFIG_PROPERTIES = [

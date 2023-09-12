@@ -11,7 +11,10 @@
   "common": {
     "user": "User",
     "containerName": "Container name",
+    "port": "Port",
     "exposePort": "Expose port",
+    "default": "Default",
+    "noInternalPortsDefined": "No internal ports defined.",
     "portBinding": "Port binding",
     "volumes": "Volumes",
     "capabilities": "Capabilities",
@@ -49,7 +52,6 @@
     "internal": "Internal",
     "from": "From",
     "to": "To",
-    "none": "None",
     "storage": "Storage",
     "bucketPath": "Bucket path",
     "buketPathTips": "You can also use any subfolder of a bucket by specifying its path (\"bucket/folder/sub-folder\").",
@@ -104,7 +106,6 @@
     "deploymentStrategy": "Deployment strategy",
     "deploymentStrategies": { "recreate": "Recreate", "rolling": "Rolling" },
     "healthCheckConfig": "Health check config",
-    "port": "Port",
     "livenessProbe": "Liveness probe",
     "readinessProbe": "Readiness probe",
     "startupProbe": "Startup probe",
@@ -118,12 +119,20 @@
     "loadBalancer": "Load balancer",
     "useLoadBalancer": "Use load balancer",
     "extraLBAnnotations": "Extra LB annotations",
-    "placeholders": { "headerName": "Header name", "cpuUsageExample": "10m", "memoryUsageExample": "512Mi" },
     "labels": "Labels",
     "annotations": "Annotations",
     "service": "Service",
     "deployment": "Deployment",
-    "ingress": "Ingress"
+    "ingress": "Ingress",
+    "metrics": "Metrics",
+    "metricsPath": "Metrics path",
+    "metricsPort": "Metrics port",
+    "placeholders": {
+      "headerName": "Header name",
+      "cpuUsageExample": "10m",
+      "memoryUsageExample": "512Mi",
+      "metricsPath": "/metrics"
+    }
   },
   "sensitiveKey": "Sensitive config data should be stored as secrets"
 }

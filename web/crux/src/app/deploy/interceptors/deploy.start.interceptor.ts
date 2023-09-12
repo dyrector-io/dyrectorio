@@ -1,26 +1,42 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import AgentService from 'src/app/agent/agent.service'
-import { UniqueSecretKey, UniqueSecretKeyValue } from 'src/domain/container'
+import ContainerMapper from 'src/app/container/container.mapper'
+import {
+  ContainerConfigData,
+  InstanceContainerConfigData,
+  UniqueKeyValue,
+  UniqueSecretKey,
+  UniqueSecretKeyValue,
+} from 'src/domain/container'
 import { checkDeploymentDeployability } from 'src/domain/deployment'
-import { deploymentSchema, yupValidate } from 'src/domain/validation'
+import { startDeploymentSchema, yupValidate } from 'src/domain/validation'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
+import { StartDeploymentDto } from '../deploy.dto'
 
 @Injectable()
 export default class DeployStartValidationInterceptor implements NestInterceptor {
   constructor(
     private prisma: PrismaService,
     private agentService: AgentService,
+    private containerMapper: ContainerMapper,
   ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest()
     const deploymentId = req.params.deploymentId as string
 
+    const dto = req.body as StartDeploymentDto
+
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       include: {
         version: true,
+        configBundles: {
+          include: {
+            configBundle: true,
+          },
+        },
         instances: {
           include: {
             config: true,
@@ -30,6 +46,13 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
               },
             },
           },
+          where: !dto.instances
+            ? undefined
+            : {
+                id: {
+                  in: dto.instances,
+                },
+              },
         },
       },
       where: {
@@ -39,7 +62,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
 
     if (deployment.instances.length < 1) {
       throw new CruxPreconditionFailedException({
-        message: 'There is no instances to deploy',
+        message: 'There are no instances to deploy',
         property: 'instances',
       })
     }
@@ -52,7 +75,20 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
       })
     }
 
-    yupValidate(deploymentSchema, deployment)
+    const instances = deployment.instances.map(it => ({
+      ...it,
+      config: this.containerMapper.mergeConfigs(
+        it.image.config as any as ContainerConfigData,
+        (it.config ?? {}) as any as InstanceContainerConfigData,
+      ),
+    }))
+
+    const target = {
+      ...deployment,
+      instances,
+    }
+
+    yupValidate(startDeploymentSchema, target)
 
     const node = this.agentService.getById(deployment.nodeId)
     if (!node?.connected) {
@@ -122,6 +158,34 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
           })
         }
       }
+    }
+
+    if (deployment.configBundles.length > 0) {
+      const deploymentEnv = (deployment.environment as UniqueKeyValue[]) ?? []
+      const deploymentEnvKeys = deploymentEnv.map(it => it.key)
+
+      const envToBundle: Record<string, string> = {} // [Environment key]: config bundle name
+
+      deployment.configBundles.forEach(it => {
+        const bundleEnv = (it.configBundle.data as UniqueKeyValue[]) ?? []
+
+        bundleEnv.forEach(env => {
+          if (deploymentEnvKeys.includes(env.key)) {
+            return
+          }
+          if (envToBundle[env.key]) {
+            throw new CruxPreconditionFailedException({
+              message: `Environment variable ${env.key} in ${it.configBundle.name} is already defined by ${
+                envToBundle[env.key]
+              }. Please define the key in the deployment or resolve the conflict in the bundles.`,
+              property: 'configBundleId',
+              value: it.configBundle.id,
+            })
+          }
+
+          envToBundle[env.key] = it.configBundle.name
+        })
+      })
     }
 
     return next.handle()

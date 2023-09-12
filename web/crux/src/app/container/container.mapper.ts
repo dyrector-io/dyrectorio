@@ -4,6 +4,7 @@ import {
   ContainerConfigData,
   InstanceContainerConfigData,
   MergedContainerConfigData,
+  Metrics,
   UniqueKeyValue,
   UniqueSecretKey,
   UniqueSecretKeyValue,
@@ -105,6 +106,7 @@ export default class ContainerMapper {
       capabilities: toPrismaJson(config.capabilities),
       annotations: toPrismaJson(config.annotations),
       labels: toPrismaJson(config.labels),
+      metrics: toPrismaJson(config.metrics),
     }
   }
 
@@ -124,6 +126,14 @@ export default class ContainerMapper {
       }))
 
     return [...missing, ...instanceSecrets]
+  }
+
+  mergeMetrics(instance: Metrics, image: Metrics): Metrics {
+    if (!instance) {
+      return image?.enabled ? image : null
+    }
+
+    return instance
   }
 
   mergeConfigs(image: ContainerConfigData, instance: InstanceContainerConfigData): MergedContainerConfigData {
@@ -172,6 +182,7 @@ export default class ContainerMapper {
               ingress: instance.annotations?.ingress ?? image.annotations?.ingress ?? [],
             }
           : null,
+      metrics: this.mergeMetrics(instance.metrics, image.metrics),
 
       // dagent
       logConfig: instance.logConfig ?? image.logConfig,

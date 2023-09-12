@@ -9,12 +9,16 @@ const useWebsocketTranslate = (t: Translate) => {
   const { t: defaultTranslate } = useTranslation('common')
 
   useEffect(() => {
-    wsContext.client.setErrorHandler(msg => defaultWsErrorHandler(t)(msg))
+    if (wsContext.client) {
+      wsContext.client.setErrorHandler(msg => defaultWsErrorHandler(t)(msg))
+    }
     return () => {
-      wsContext.client.setErrorHandler(msg => defaultWsErrorHandler(defaultTranslate)(msg))
+      if (wsContext.client) {
+        wsContext.client.setErrorHandler(msg => defaultWsErrorHandler(defaultTranslate)(msg))
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [wsContext.client])
 }
 
 export default useWebsocketTranslate

@@ -1,8 +1,68 @@
 # CHANGELOG
 
 
+<a name="0.8.1"></a>
+## [0.8.1](https://github.com/dyrector-io/dyrectorio/compare/0.8.0...0.8.1) (2023-09-07)
+
+### Doc
+
+* update readme ([#802](https://github.com/dyrector-io/dyrectorio/issues/802))
+
+### Feat
+
+* add explicit port routing & go tools bump ([#808](https://github.com/dyrector-io/dyrectorio/issues/808))
+* **(crux-ui):** useEffect submitRef update ([#806](https://github.com/dyrector-io/dyrectorio/issues/806))
+* service category label for platform containers & hide containers based on category ([#807](https://github.com/dyrector-io/dyrectorio/issues/807))
+* oneshot agent install tokens ([#796](https://github.com/dyrector-io/dyrectorio/issues/796))
+
+### Fix
+
+* **(crux):** floating promises ([#814](https://github.com/dyrector-io/dyrectorio/issues/814))
+* missing translations in lists ([#811](https://github.com/dyrector-io/dyrectorio/issues/811))
+* **(web):** validate container name duplication ([#812](https://github.com/dyrector-io/dyrectorio/issues/812))
+* port range exposing and various bugfixes ([#809](https://github.com/dyrector-io/dyrectorio/issues/809))
+* **(ci):** fix the trailing whitespace error ([#804](https://github.com/dyrector-io/dyrectorio/issues/804))
+
+### Refactor
+
+* **(web):** optimize ws client routing ([#810](https://github.com/dyrector-io/dyrectorio/issues/810))
+
+
+<a name="0.8.0"></a>
+## [0.8.0](https://github.com/dyrector-io/dyrectorio/compare/0.7.0...0.8.0) (2023-08-31)
+
+### Chore
+
+* readme styling ([#794](https://github.com/dyrector-io/dyrectorio/issues/794))
+* **(crux):** fix vm2 critical vuln using npm audit fix ([#793](https://github.com/dyrector-io/dyrectorio/issues/793))
+
+### Doc
+
+* update readme ([#787](https://github.com/dyrector-io/dyrectorio/issues/787))
+
+### Feat
+
+* **(web):** crane metrics config ([#797](https://github.com/dyrector-io/dyrectorio/issues/797))
+* **(web):** config bundles ([#788](https://github.com/dyrector-io/dyrectorio/issues/788))
+* **(crux-ui):** add sorting to tables ([#798](https://github.com/dyrector-io/dyrectorio/issues/798))
+* **(crux-ui):** image list on registry page ([#791](https://github.com/dyrector-io/dyrectorio/issues/791))
+* **(crux):** add mlops template ([#792](https://github.com/dyrector-io/dyrectorio/issues/792))
+* **(web):** protected deployment ([#781](https://github.com/dyrector-io/dyrectorio/issues/781))
+* **(crux-ui):** separate image and instance config buttons ([#790](https://github.com/dyrector-io/dyrectorio/issues/790))
+* **(crux-ui):** deployment page create card ([#782](https://github.com/dyrector-io/dyrectorio/issues/782))
+* **(crux):** moved metric endpoint to other port ([#780](https://github.com/dyrector-io/dyrectorio/issues/780))
+
+### Fix
+
+* **(crux-ui):** register and team card validation ([#784](https://github.com/dyrector-io/dyrectorio/issues/784))
+* **(crux-ui):** image config error text ([#789](https://github.com/dyrector-io/dyrectorio/issues/789))
+* **(crux):** teamslug param for docs ([#783](https://github.com/dyrector-io/dyrectorio/issues/783))
+* **(crux):** notification webhook test ([#774](https://github.com/dyrector-io/dyrectorio/issues/774))
+* container builder image priority ([#779](https://github.com/dyrector-io/dyrectorio/issues/779))
+
+
 <a name="0.7.0"></a>
-## [0.7.0](https://github.com/dyrector-io/dyrectorio/compare/0.6.1...0.7.0) (2023-08-07)
+## [0.7.0](https://github.com/dyrector-io/dyrectorio/compare/0.6.1...0.7.0) (2023-08-08)
 
 ### Chore
 

@@ -223,7 +223,7 @@ export function restartPolicyToJSON(object: RestartPolicy): string {
 export enum DeploymentStrategy {
   DEPLOYMENT_STRATEGY_UNSPECIFIED = 0,
   RECREATE = 1,
-  ROLLING = 2,
+  ROLLING_UPDATE = 2,
   UNRECOGNIZED = -1,
 }
 
@@ -236,8 +236,8 @@ export function deploymentStrategyFromJSON(object: any): DeploymentStrategy {
     case 'RECREATE':
       return DeploymentStrategy.RECREATE
     case 2:
-    case 'ROLLING':
-      return DeploymentStrategy.ROLLING
+    case 'ROLLING_UPDATE':
+      return DeploymentStrategy.ROLLING_UPDATE
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -251,8 +251,8 @@ export function deploymentStrategyToJSON(object: DeploymentStrategy): string {
       return 'DEPLOYMENT_STRATEGY_UNSPECIFIED'
     case DeploymentStrategy.RECREATE:
       return 'RECREATE'
-    case DeploymentStrategy.ROLLING:
-      return 'ROLLING'
+    case DeploymentStrategy.ROLLING_UPDATE:
+      return 'ROLLING_UPDATE'
     case DeploymentStrategy.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
@@ -552,6 +552,12 @@ export interface ContainerStateItem {
   imageName: string
   imageTag: string
   ports: ContainerStateItemPort[]
+  labels: { [key: string]: string }
+}
+
+export interface ContainerStateItem_LabelsEntry {
+  key: string
+  value: string
 }
 
 export interface ContainerLogMessage {
@@ -563,6 +569,7 @@ export interface Routing {
   path?: string | undefined
   stripPath?: boolean | undefined
   uploadLimit?: string | undefined
+  port?: number | undefined
 }
 
 export interface ConfigContainer {
@@ -745,6 +752,7 @@ function createBaseContainerStateItem(): ContainerStateItem {
     imageName: '',
     imageTag: '',
     ports: [],
+    labels: {},
   }
 }
 
@@ -760,6 +768,12 @@ export const ContainerStateItem = {
       imageName: isSet(object.imageName) ? String(object.imageName) : '',
       imageTag: isSet(object.imageTag) ? String(object.imageTag) : '',
       ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => ContainerStateItemPort.fromJSON(e)) : [],
+      labels: isObject(object.labels)
+        ? Object.entries(object.labels).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
     }
   },
 
@@ -778,6 +792,29 @@ export const ContainerStateItem = {
     } else {
       obj.ports = []
     }
+    obj.labels = {}
+    if (message.labels) {
+      Object.entries(message.labels).forEach(([k, v]) => {
+        obj.labels[k] = v
+      })
+    }
+    return obj
+  },
+}
+
+function createBaseContainerStateItem_LabelsEntry(): ContainerStateItem_LabelsEntry {
+  return { key: '', value: '' }
+}
+
+export const ContainerStateItem_LabelsEntry = {
+  fromJSON(object: any): ContainerStateItem_LabelsEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: ContainerStateItem_LabelsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
     return obj
   },
 }
@@ -809,6 +846,7 @@ export const Routing = {
       path: isSet(object.path) ? String(object.path) : undefined,
       stripPath: isSet(object.stripPath) ? Boolean(object.stripPath) : undefined,
       uploadLimit: isSet(object.uploadLimit) ? String(object.uploadLimit) : undefined,
+      port: isSet(object.port) ? Number(object.port) : undefined,
     }
   },
 
@@ -818,6 +856,7 @@ export const Routing = {
     message.path !== undefined && (obj.path = message.path)
     message.stripPath !== undefined && (obj.stripPath = message.stripPath)
     message.uploadLimit !== undefined && (obj.uploadLimit = message.uploadLimit)
+    message.port !== undefined && (obj.port = Math.round(message.port))
     return obj
   },
 }
@@ -1056,6 +1095,10 @@ function fromJsonTimestamp(o: any): Timestamp {
   } else {
     return Timestamp.fromJSON(o)
   }
+}
+
+function isObject(value: any): boolean {
+  return typeof value === 'object' && value !== null
 }
 
 function isSet(value: any): boolean {
