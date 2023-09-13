@@ -25,6 +25,31 @@ test.beforeEach(async ({ page }, testInfo) => {
     console.log(`[${testInfo.title}] ${type.toUpperCase()} ${it.text()}`)
   })
 
+  page.on('request', it => {
+    if (!it.url().includes('/api/')) {
+      return
+    }
+    console.info(`Request started to ${it.url()}`)
+  })
+  page.on('requestfailed', it => {
+    if (!it.url().includes('/api/')) {
+      return
+    }
+    console.info(`Request failed to ${it.url()}`)
+  })
+  page.on('requestfinished', it => {
+    if (!it.url().includes('/api/')) {
+      return
+    }
+    console.info(`Request finished to ${it.url()}`)
+  })
+  page.on('response', it => {
+    if (!it.url().includes('/api/')) {
+      return
+    }
+    console.info(`Response to ${it.url()}`)
+  })
+
   if (CPU_THROTTLE) {
     const client = await (page.context() as ChromiumBrowserContext).newCDPSession(page)
     await client.send('Emulation.setCPUThrottlingRate', { rate: CPU_THROTTLE ? Number.parseInt(CPU_THROTTLE) : 2 })

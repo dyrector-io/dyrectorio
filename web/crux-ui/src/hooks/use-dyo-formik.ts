@@ -1,4 +1,4 @@
-import { FormikConfig, FormikValues, useFormik } from 'formik'
+import { FormikConfig, FormikHelpers, FormikValues, useFormik } from 'formik'
 import { useEffect } from 'react'
 import { SubmitHook } from './use-submit'
 
@@ -13,15 +13,39 @@ const useDyoFormik = <Values extends FormikValues>(options: DyoFormikOptions<Val
     validateOnBlur: false,
     validateOnChange: false,
     ...formikOptions,
+    validationSchema: () => ({
+      ...options.validationSchema,
+      validateSync: (values: any, validationOptions: any) => {
+        console.info('FORMIK - VALIDATE SYNC')
+        if (options.validationSchema) {
+          return options.validationSchema.validateSync(values, validationOptions)
+        }
+        return true
+      },
+      validate: (values: any, validationOptions: any) => {
+        console.info('FORMIK - VALIDATE')
+        if (options.validationSchema) {
+          return options.validationSchema.validate(values, validationOptions)
+        }
+        return Promise.resolve(true)
+      },
+    }),
+    onSubmit: async (values: Values, helpers: FormikHelpers<Values>) => {
+      console.info('FORMIK - SUBMIT')
+      if (options.onSubmit) {
+        const result = options.onSubmit(values, helpers)
+        if (typeof result === 'object') {
+          await result
+        }
+      } else {
+        console.error('FORMIK - NO SUBMIT')
+      }
+    },
   })
 
-  useEffect(() => {
-    if (!submit) {
-      return
-    }
-
+  if (submit) {
     submit.set(formik.submitForm)
-  }, [submit, formik.submitForm])
+  }
 
   return formik
 }

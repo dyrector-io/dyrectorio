@@ -242,8 +242,9 @@ export const sendForm = async <Dto>(
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   url: string,
   body?: Dto,
-): Promise<Response> =>
-  await fetch(url, {
+): Promise<Response> => {
+  console.info(`sending form to ${method} '${url}'`)
+  const data = await fetch(url, {
     method,
     headers: body
       ? {
@@ -252,6 +253,11 @@ export const sendForm = async <Dto>(
       : undefined,
     body: body ? JSON.stringify(body) : null,
   })
+
+  console.info(`got result ${data.status}`)
+
+  return data
+}
 
 // routing
 export const anchorLinkOf = (router: NextRouter): string => {
