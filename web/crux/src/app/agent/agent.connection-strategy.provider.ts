@@ -39,11 +39,15 @@ export default class AgentConnectionStrategyProvider {
     if (token.type === 'connection') {
       const agent = this.service.getById(token.sub)
       if (!agent) {
-        this.logger.verbose(`${connection.nodeId} - Connection token detected. No connected agent found. Using default strategy.`)
+        this.logger.verbose(
+          `${connection.nodeId} - Connection token detected. No connected agent found. Using default strategy.`,
+        )
         return this.defaultStrategy
       }
 
-      this.logger.verbose(`${connection.nodeId} - Connection token detected. Connected agent found. Using update strategy.`)
+      this.logger.verbose(
+        `${connection.nodeId} - Connection token detected. Connected agent found. Using update strategy.`,
+      )
       return this.update
     }
 
