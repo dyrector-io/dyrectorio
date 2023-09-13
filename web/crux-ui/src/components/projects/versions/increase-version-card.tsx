@@ -40,6 +40,7 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
       changelog: '',
     },
     validationSchema: increaseVersionSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

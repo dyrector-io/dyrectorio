@@ -48,6 +48,7 @@ const RegisterOidcPage = (props: RegisterPageProps) => {
       method: 'oidc',
     },
     validationSchema: registerWithOidcSchema,
+    t,
     onSubmit: async values => {
       const captcha = await recaptcha.current?.executeAsync()
 

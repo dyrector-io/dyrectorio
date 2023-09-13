@@ -77,6 +77,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
       ...registry,
     },
     validationSchema: registrySchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

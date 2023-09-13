@@ -49,6 +49,17 @@ module.exports = {
     'no-plusplus': 'off',
     'max-classes-per-file': 'off',
     'import/order': 'off',
+    'no-restricted-imports': [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["@app/validations/*"],
+            "message": "Importing sub-paths from @app/validations results in yup localizations not working. Please import @app/validations instead."
+          },
+        ],
+      },
+    ],
   },
   overrides: [
     {
