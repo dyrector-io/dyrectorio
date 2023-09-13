@@ -32,7 +32,7 @@ If you're worried or don’t know where to start, check out our next section exp
 -   Alternatively you can use your machine's LAN IP.
 
 7. Deploy the database with `npm run prisma:migrate`
-8. Start the backend in developmnt mode with `npm start`
+8. Start the backend in development mode with `npm start`
 9. Repeat steps 3-5 in the `web/crux-ui` folder in a different terminal
 10. Start the frontend in development mode with `npm start`
 11. After you navigated to `localhost:8000` (this is the default Traefik port) you will see a Login screen
