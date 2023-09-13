@@ -415,7 +415,7 @@ export default class AgentService {
       // there should be no awaits between this and the agents.delete() call
       // so we can be sure it happens in the same microtask
       if (agent === storedAgent) {
-        this.logger.log(`Left: ${agent.id}`)
+        this.logger.log(`Left: ${agent.id}, version: ${agent.version}`)
         this.agents.delete(agent.id)
         AgentMetrics.connectedCount().dec()
 
@@ -434,9 +434,18 @@ export default class AgentService {
 
       agent.onDisconnected()
     } else if (status === 'connected' || status === 'outdated') {
+      if (this.agents.has(agent.id)) {
+        this.logger.warn(
+          `Agent connection divergence: ${agent.id} was emitting a ${status} status, while there was an agent with the same ID already connected. Sending shutdown.`,
+        )
+
+        agent.close(CloseReason.SHUTDOWN)
+        return
+      }
+
       this.agents.set(agent.id, agent)
 
-      this.logger.log(`Agent joined with id: ${agent.id}, key: ${!!agent.publicKey}`)
+      this.logger.log(`Agent joined with id: ${agent.id}, version: ${agent.version} key: ${!!agent.publicKey}`)
       AgentMetrics.connectedCount().inc()
       this.logServiceInfo()
 
@@ -459,6 +468,7 @@ export default class AgentService {
       // we just have to return the command channel
 
       // command channel is already completed so no need for onDisconnected() call
+      this.logger.verbose('Crashing legacy agent intercepted.')
       return agent.onConnected(AgentConnectionLegacyStrategy.CONNECTION_STATUS_LISTENER)
     }
 
@@ -513,7 +523,7 @@ export default class AgentService {
   }
 
   private logServiceInfo(): void {
-    this.logger.debug(`Agents: ${this.agents.size}`)
+    this.logger.verbose(`Agents: ${this.agents.size}`)
     this.agents.forEach(it => it.debugInfo(this.logger))
   }
 }

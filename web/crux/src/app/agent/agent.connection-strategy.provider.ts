@@ -27,23 +27,23 @@ export default class AgentConnectionStrategyProvider {
     const token = this.jwtService.decode(connection.jwt) as AgentToken
 
     if (!token.version) {
-      this.logger.verbose('No version found in the token. Using legacy strategy.')
+      this.logger.verbose(`${connection.nodeId} - No version found in the token. Using legacy strategy.`)
       return this.legacy
     }
 
     if (token.type === 'install') {
-      this.logger.verbose('Install token detected. Using install strategy.')
+      this.logger.verbose(`${connection.nodeId} -  Install token detected. Using install strategy.`)
       return this.install
     }
 
     if (token.type === 'connection') {
       const agent = this.service.getById(token.sub)
       if (!agent) {
-        this.logger.verbose('Connection token detected. No connected agent found. Using default strategy.')
+        this.logger.verbose(`${connection.nodeId} - Connection token detected. No connected agent found. Using default strategy.`)
         return this.defaultStrategy
       }
 
-      this.logger.verbose('Connection token detected. Connected agent found. Using update strategy.')
+      this.logger.verbose(`${connection.nodeId} - Connection token detected. Connected agent found. Using update strategy.`)
       return this.update
     }
 
