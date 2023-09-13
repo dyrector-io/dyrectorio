@@ -12,8 +12,6 @@ import {
   ImageConfigProperty,
   filterContains,
   filterEmpty,
-} from '@app/models'
-import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CommonConfigDetails,
   ContainerConfigData,
@@ -22,13 +20,13 @@ import {
   InstanceContainerConfigData,
   InstanceCraneConfigDetails,
   mergeConfigs,
-} from '@app/models/container'
+} from '@app/models'
 import { nullify, toNumber } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import { ValidationError } from 'yup'
 import ConfigSectionLabel from './config-section-label'
 import DyoMessage from '@app/elements/dyo-message'
 import { useEffect } from 'react'
+import { ContainerConfigValidationErrors, findErrorFor } from '@app/validations'
 
 type CraneConfigSectionBaseProps<T> = {
   config: T
@@ -38,7 +36,7 @@ type CraneConfigSectionBaseProps<T> = {
   selectedFilters: ImageConfigProperty[]
   editorOptions: ItemEditorState
   disabled?: boolean
-  fieldErrors: ValidationError[]
+  fieldErrors: ContainerConfigValidationErrors
 }
 
 type ImageCraneConfigSectionProps = CraneConfigSectionBaseProps<
@@ -145,7 +143,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 }
                 editorOptions={editorOptions}
                 disabled={disabled}
-                message={fieldErrors.find(it => it.path?.startsWith('healthCheckConfig.port'))?.message}
+                message={findErrorFor(fieldErrors, 'healthCheckConfig.port')}
               />
 
               <MultiInput
@@ -165,7 +163,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 }
                 editorOptions={editorOptions}
                 disabled={disabled}
-                message={fieldErrors.find(it => it.path?.startsWith('healthCheckConfig.livenessProbe'))?.message}
+                message={findErrorFor(fieldErrors, 'healthCheckConfig.livenessProbe')}
               />
 
               <MultiInput
@@ -185,7 +183,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 }
                 editorOptions={editorOptions}
                 disabled={disabled}
-                message={fieldErrors.find(it => it.path?.startsWith('healthCheckConfig.readinessProbe'))?.message}
+                message={findErrorFor(fieldErrors, 'healthCheckConfig.readinessProbe')}
               />
 
               <MultiInput
@@ -205,7 +203,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 }
                 editorOptions={editorOptions}
                 disabled={disabled}
-                message={fieldErrors.find(it => it.path?.startsWith('healthCheckConfig.startupProbe'))?.message}
+                message={findErrorFor(fieldErrors, 'healthCheckConfig.startupProbe')}
               />
             </div>
           </div>
@@ -225,10 +223,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               disabled={disabled}
               onResetSection={resetableConfig.customHeaders ? () => onResetSection('customHeaders') : null}
             />
-            <DyoMessage
-              message={fieldErrors.find(it => it.path?.startsWith('customHeaders'))?.message}
-              messageType="error"
-            />
+            <DyoMessage message={findErrorFor(fieldErrors, 'customHeaders')} messageType="error" />
           </div>
         )}
 
@@ -264,7 +259,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                   })
                 }
                 editorOptions={editorOptions}
-                message={fieldErrors.find(it => it.path?.startsWith('resourceConfig.limits.cpu'))?.message}
+                message={findErrorFor(fieldErrors, 'resourceConfig.limits.cpu')}
                 disabled={disabled}
               />
 
@@ -287,7 +282,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                   })
                 }
                 editorOptions={editorOptions}
-                message={fieldErrors.find(it => it.path?.startsWith('resourceConfig.limits.memory'))?.message}
+                message={findErrorFor(fieldErrors, 'resourceConfig.limits.memory')}
                 disabled={disabled}
               />
 
@@ -312,7 +307,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                   })
                 }
                 editorOptions={editorOptions}
-                message={fieldErrors.find(it => it.path?.startsWith('resourceConfig.requests.cpu'))?.message}
+                message={findErrorFor(fieldErrors, 'resourceConfig.requests.cpu')}
                 disabled={disabled}
               />
 
@@ -335,7 +330,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                   })
                 }
                 editorOptions={editorOptions}
-                message={fieldErrors.find(it => it.path?.startsWith('resourceConfig.requests.memory'))?.message}
+                message={findErrorFor(fieldErrors, 'resourceConfig.requests.memory')}
                 disabled={disabled}
               />
             </div>
@@ -417,10 +412,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
-              <DyoMessage
-                message={fieldErrors.find(it => it.path?.startsWith('labels.deployment'))?.message}
-                messageType="error"
-              />
+              <DyoMessage message={findErrorFor(fieldErrors, 'labels.deployment')} messageType="error" />
             </div>
 
             <div className="grid mb-8 break-inside-avoid">
@@ -433,10 +425,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
-              <DyoMessage
-                message={fieldErrors.find(it => it.path?.startsWith('labels.service'))?.message}
-                messageType="error"
-              />
+              <DyoMessage message={findErrorFor(fieldErrors, 'labels.service')} messageType="error" />
             </div>
 
             <div className="grid mb-8 break-inside-avoid">
@@ -449,10 +438,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
-              <DyoMessage
-                message={fieldErrors.find(it => it.path?.startsWith('labels.ingress'))?.message}
-                messageType="error"
-              />
+              <DyoMessage message={findErrorFor(fieldErrors, 'labels.ingress')} messageType="error" />
             </div>
           </div>
         )}
@@ -477,10 +463,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
-              <DyoMessage
-                message={fieldErrors.find(it => it.path?.startsWith('annotations.deployment'))?.message}
-                messageType="error"
-              />
+              <DyoMessage message={findErrorFor(fieldErrors, 'annotations.deployment')} messageType="error" />
             </div>
 
             <div className="grid mb-8 break-inside-avoid">
@@ -493,10 +476,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
-              <DyoMessage
-                message={fieldErrors.find(it => it.path?.startsWith('annotations.service'))?.message}
-                messageType="error"
-              />
+              <DyoMessage message={findErrorFor(fieldErrors, 'annotations.service')} messageType="error" />
             </div>
 
             <div className="grid mb-8 break-inside-avoid">
@@ -509,10 +489,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
-              <DyoMessage
-                message={fieldErrors.find(it => it.path?.startsWith('annotations.ingress'))?.message}
-                messageType="error"
-              />
+              <DyoMessage message={findErrorFor(fieldErrors, 'annotations.ingress')} messageType="error" />
             </div>
           </div>
         )}
@@ -561,7 +538,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                     })
                   }}
                   editorOptions={editorOptions}
-                  message={fieldErrors.find(it => it.path?.startsWith('metrics.path'))?.message}
+                  message={findErrorFor(fieldErrors, 'metrics.path')}
                   disabled={disabled}
                 />
 

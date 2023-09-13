@@ -49,6 +49,7 @@ const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
       note: deployment.note,
     } as CopyDeployment,
     validationSchema: copyDeploymentSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

@@ -34,7 +34,7 @@
     "/[teamSlug]/notifications": ["notifications"],
     "/[teamSlug]/notifications/[notificationId]": ["notifications"],
     "/[teamSlug]/deployments": ["deployments"],
-    "/[teamSlug]/deployments/[deploymentId]": ["images", "deployments", "nodes", "tokens"],
+    "/[teamSlug]/deployments/[deploymentId]": ["images", "deployments", "nodes", "tokens", "container"],
     "/[teamSlug]/deployments/[deploymentId]/deploy": ["deployments"],
     "/[teamSlug]/deployments/[deploymentId]/log": [],
     "/[teamSlug]/deployments/[deploymentId]/instances/[instanceId]": ["images", "deployments", "container"],

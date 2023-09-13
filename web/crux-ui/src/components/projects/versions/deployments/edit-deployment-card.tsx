@@ -33,6 +33,7 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
     submitRef,
     initialValues: deployment,
     validationSchema: updateDeploymentSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

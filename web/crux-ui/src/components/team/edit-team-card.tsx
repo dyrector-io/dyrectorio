@@ -49,6 +49,7 @@ const EditTeamCard = (props: EditTeamCardProps) => {
       slug: team.slug,
     },
     validationSchema: !editing ? createTeamSchema : updateTeamSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       const body: CreateTeam | UpdateTeam = {
         ...values,

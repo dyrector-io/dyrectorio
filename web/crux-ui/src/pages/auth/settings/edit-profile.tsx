@@ -54,6 +54,7 @@ const SettingsPage = (props: SettingsFlow) => {
       lastName: findAttributes(ui, 'traits.name.last').value ?? '',
     },
     validationSchema: userProfileSchema,
+    t,
     onSubmit: async values => {
       const data: EditProfile = {
         flow: id,

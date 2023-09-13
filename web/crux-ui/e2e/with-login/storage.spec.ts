@@ -24,7 +24,7 @@ test('Required field text should show up', async ({ page }) => {
   await page.locator('button:has-text("Add")').click()
   await page.locator('h4:has-text("New storage") >> visible=true')
   await page.locator('button:has-text("Save")').click()
-  await expect(page.getByText(/\**is a required field/)).toHaveCount(4)
+  await expect(page.getByText(/\**is required/)).toHaveCount(4)
 })
 
 test('Wrong url should show error', async ({ page }) => {
@@ -37,7 +37,7 @@ test('Wrong url should show error', async ({ page }) => {
   await page.locator('button:has-text("Edit")').click()
   await page.locator('input[id="url"]').fill('https://notaurl')
   await page.locator('button:has-text("Save")').click()
-  await expect(page.locator('div[role="status"]:has-text("url must be a URL address")')).toBeVisible()
+  await expect(page.locator('div[role="status"]:has-text("URL must be a URL address")')).toBeVisible()
 })
 
 test('Minimum name length requirement should work', async ({ page }) => {
@@ -48,7 +48,7 @@ test('Minimum name length requirement should work', async ({ page }) => {
   await page.locator('h4:has-text("New storage") >> visible=true')
   await page.locator('input[name="name"]').fill('12')
   await page.locator('button:has-text("Save")').click()
-  await expect(page.locator('p:has-text("name must be at least 3 characters")')).toBeVisible()
+  await expect(page.locator('p:has-text("Name must be at least 3 characters")')).toBeVisible()
 })
 
 test('Can edit storage name', async ({ page }) => {
