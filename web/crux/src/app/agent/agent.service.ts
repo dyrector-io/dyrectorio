@@ -381,6 +381,10 @@ export default class AgentService {
 
   agentVersionSupported(version: string): boolean {
     const agentVersion = this.getAgentSemVer(version)
+    if (!agentVersion) {
+      return false
+    }
+
     const packageVersion = coerce(getPackageVersion(this.configService))
 
     return (
@@ -391,6 +395,10 @@ export default class AgentService {
 
   agentVersionIsUpToDate(version: string): boolean {
     const agentVersion = this.getAgentSemVer(version)
+    if (!agentVersion) {
+      return false
+    }
+
     const packageVersion = coerce(getPackageVersion(this.configService))
 
     return agentVersion.compare(packageVersion) === 0

@@ -273,7 +273,7 @@ describe('agent', () => {
       const eventChannelActual = await eventChannelPromise
       const expected: AgentConnectionMessage = {
         id: AGENT_ID,
-        status: 'updating',
+        status: 'connected',
         error: 'test',
       }
       expect(eventChannelActual).toEqual(expected)
