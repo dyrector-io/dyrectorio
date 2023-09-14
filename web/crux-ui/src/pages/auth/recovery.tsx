@@ -61,6 +61,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
       code: '',
     },
     validationSchema: recoverySchema,
+    t,
     onSubmit: async values => {
       const captcha = await recaptcha.current?.executeAsync()
 

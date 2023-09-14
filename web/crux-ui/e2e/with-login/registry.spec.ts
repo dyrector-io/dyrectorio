@@ -41,7 +41,7 @@ test('minimum name length requirement should work', async ({ page }) => {
 
   await page.locator('text=Save').click()
 
-  await expect(await page.locator('p.text-error-red')).toContainText('name must be at least 3 characters')
+  await expect(await page.locator('p.text-error-red')).toContainText('Name must be at least 3 characters')
 
   await page.screenshot({ path: screenshotPath('registry_new_name_length'), fullPage: true })
 })

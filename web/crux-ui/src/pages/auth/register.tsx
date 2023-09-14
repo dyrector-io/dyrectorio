@@ -96,6 +96,7 @@ const RegisterPage = (props: RegisterPageProps) => {
       method: 'password',
     },
     validationSchema: registerWithPasswordSchema,
+    t,
     onSubmit: async values => {
       if (values.password !== values.confirmPassword) {
         setErrors(upsertError(errors, 'confirmPassword', 'confirmPassMismatch'))

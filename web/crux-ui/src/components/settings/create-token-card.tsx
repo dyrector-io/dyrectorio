@@ -10,7 +10,7 @@ import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { GeneratedToken, GenerateToken } from '@app/models'
 import { API_TOKENS } from '@app/routes'
 import { sendForm } from '@app/utils'
-import { generateTokenSchema } from '@app/validations/token'
+import { generateTokenSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject } from 'react'
 
@@ -32,6 +32,7 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
   const formik = useDyoFormik({
     submitRef,
     validationSchema: generateTokenSchema,
+    t,
     initialValues: {
       name: '',
       expirationInDays: EXPIRATION_VALUES[0],

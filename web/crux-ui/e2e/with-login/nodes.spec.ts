@@ -135,15 +135,15 @@ test('Docker generate script should show Traefik options', async ({ page }) => {
   await traefikToggle.click()
 
   await expect(await page.locator('label:has-text("Traefik ACME email")')).toBeVisible()
-  await expect(await page.locator('p:has-text("ACME email is a required field")')).not.toBeVisible()
+  await expect(await page.locator('p:has-text("Traefik ACME email is required")')).not.toBeVisible()
 
   await page.click('button:text-is("Generate script")')
-  await expect(await page.locator('p:has-text("ACME email is a required field")')).toBeVisible()
+  await expect(await page.locator('p:has-text("Traefik ACME email is required")')).toBeVisible()
 
   const acmeEmailInput = await page.locator('input[name="dagentTraefik.acmeEmail"]')
   await acmeEmailInput.type('a@b.c')
   await page.click('button:text-is("Generate script")')
-  await expect(await page.locator('p:has-text("ACME email is a required field")')).not.toBeVisible()
+  await expect(await page.locator('p:has-text("Traefik ACME email is required")')).not.toBeVisible()
 })
 
 test('Deleting node', async ({ page }) => {

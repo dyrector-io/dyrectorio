@@ -107,6 +107,7 @@ const VerifyPage = (props: VerifyProps) => {
       code: flowEmailSent ? findAttributes(ui, 'code')?.value ?? '' : null,
     },
     validationSchema: !flowEmailSent ? verifyEmailSchema : verifyCodeSchema,
+    t,
     onSubmit: async values =>
       submitFlow(!flowEmailSent ? values.email : null, flowEmailSent ? values.code.trim() : null),
   })
