@@ -35,16 +35,16 @@ const useDyoFormik = <Values extends FormikValues>(options: DyoFormikOptions<Val
         })
       : null,
     onSubmit: async (values: Values, helpers: FormikHelpers<Values>) => {
-        console.info('FORMIK - SUBMIT')
-        if (options.onSubmit) {
-          const result = options.onSubmit(values, helpers)
-          if (typeof result === 'object') {
-            await result
-          }
-        } else {
-          console.error('FORMIK - NO SUBMIT')
+      console.info('FORMIK - SUBMIT')
+      if (options.onSubmit) {
+        const result = options.onSubmit(values, helpers)
+        if (typeof result === 'object') {
+          await result
         }
-      },
+      } else {
+        console.error('FORMIK - NO SUBMIT')
+      }
+    },
   })
 
   if (submit) {
