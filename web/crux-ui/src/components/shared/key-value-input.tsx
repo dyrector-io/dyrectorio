@@ -4,11 +4,13 @@ import useRepatch from '@app/hooks/use-repatch'
 import { UniqueKeyValue } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { HTMLInputTypeAttribute, useEffect } from 'react'
+import { Fragment, HTMLInputTypeAttribute, useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
 import MultiInput from '../editor/multi-input'
 import { ItemEditorState } from '../editor/use-item-editor-state'
 import ConfigSectionLabel from '../projects/versions/images/config/config-section-label'
+import { ErrorWithPath } from '@app/validations'
+import DyoMessage from '@app/elements/dyo-message'
 
 const EMPTY_KEY_VALUE_PAIR = {
   id: uuid(),
@@ -77,6 +79,7 @@ interface KeyValueInputProps {
   type?: HTMLInputTypeAttribute | undefined
   editorOptions: ItemEditorState
   hint?: (key: string) => string | undefined
+  findErrorMessage?: (index: number) => ErrorWithPath
 }
 
 const KeyValueInput = (props: KeyValueInputProps) => {
@@ -94,6 +97,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
     keyPlaceholder,
     valuePlaceholder,
     type,
+    findErrorMessage,
   } = props
 
   const { t } = useTranslation('common')
@@ -103,13 +107,14 @@ const KeyValueInput = (props: KeyValueInputProps) => {
   const stateToElements = (keyValues: UniqueKeyValue[]) => {
     const result = []
 
-    keyValues.forEach(item => {
+    keyValues.forEach((item, index) => {
+      const error = findErrorMessage?.call(null, index)
       const keyUniqueErr = result.find(it => it.key === item.key) ? t('keyMustUnique') : null
       const hintErr = !keyUniqueErr && hint ? hint(item.key) : null
       result.push({
         ...item,
-        message: keyUniqueErr ?? hintErr,
-        messageType: (keyUniqueErr ? 'error' : 'info') as MessageType,
+        message: keyUniqueErr ?? hintErr ?? error?.message,
+        messageType: (keyUniqueErr || error ? 'error' : 'info') as MessageType,
       })
     })
 
@@ -150,39 +155,42 @@ const KeyValueInput = (props: KeyValueInputProps) => {
     const valueId = `${entry.id}-value`
 
     return (
-      <div key={entry.id} className="flex flex-row flex-grow p-2">
-        <div className="basis-5/12">
-          <MultiInput
-            key={keyId}
-            id={keyId}
-            disabled={disabled}
-            editorOptions={editorOptions}
-            className="w-full mr-2"
-            grow
-            placeholder={keyPlaceholder ?? t('key')}
-            value={key ?? ''}
-            message={message}
-            type={type}
-            messageType={messageType}
-            onPatch={it => onChange(index, it, value)}
-          />
-        </div>
+      <Fragment key={entry.id}>
+        <div className="flex flex-row flex-grow p-2">
+          <div className="basis-5/12">
+            <MultiInput
+              key={keyId}
+              id={keyId}
+              disabled={disabled}
+              editorOptions={editorOptions}
+              className="w-full mr-2"
+              grow
+              placeholder={keyPlaceholder ?? t('key')}
+              value={key ?? ''}
+              type={type}
+              onPatch={it => onChange(index, it, value)}
+              invalid={!!message}
+            />
+          </div>
 
-        <div className="basis-7/12 pl-2">
-          <MultiInput
-            key={valueId}
-            id={valueId}
-            disabled={disabled || valueDisabled}
-            editorOptions={editorOptions}
-            className="w-full"
-            grow
-            placeholder={valuePlaceholder ?? t('value')}
-            value={value ?? ''}
-            type={type}
-            onPatch={it => onChange(index, key, it)}
-          />
+          <div className="basis-7/12 pl-2">
+            <MultiInput
+              key={valueId}
+              id={valueId}
+              disabled={disabled || valueDisabled}
+              editorOptions={editorOptions}
+              className="w-full"
+              grow
+              placeholder={valuePlaceholder ?? t('value')}
+              value={value ?? ''}
+              type={type}
+              onPatch={it => onChange(index, key, it)}
+              invalid={!!message}
+            />
+          </div>
         </div>
-      </div>
+        {message && <DyoMessage message={message} messageType={messageType} marginClassName="ml-2" />}
+      </Fragment>
     )
   }
 

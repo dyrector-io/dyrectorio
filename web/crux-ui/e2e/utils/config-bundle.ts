@@ -1,7 +1,7 @@
 import { TEAM_ROUTES } from './common'
 import { Page, expect } from '@playwright/test'
 import { waitSocketRef, wsPatchSent } from './websocket'
-import { PatchConfigBundleMessage, WS_TYPE_PATCH_CONFIG_BUNDLE } from '@app/models/config-bundle'
+import { PatchConfigBundleMessage, WS_TYPE_PATCH_CONFIG_BUNDLE } from '@app/models'
 
 const matchPatchEnvironment = (expected: Record<string, string>) => (message: PatchConfigBundleMessage) =>
   Object.entries(expected).every(

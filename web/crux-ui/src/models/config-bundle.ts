@@ -39,4 +39,4 @@ export type ConfigBundleUpdatedMessage = {
   environment?: UniqueKeyValue[]
 }
 
-export const WS_TYPE_PATCH_RECEIVED = 'patch-received'
+export const WS_TYPE_CONFIG_BUNDLE_PATCH_RECEIVED = 'patch-received'

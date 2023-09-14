@@ -76,8 +76,8 @@ const AddImagesCard = (props: AddImagesCardProps) => {
       setImages([])
       setSearching(false)
 
-      const error = getValidationError(nameTagSchema, filter)
-      setInputMessage(error?.message ? t(error?.message) : null)
+      const error = getValidationError(nameTagSchema, filter, null, t)
+      setInputMessage(error?.message ?? null)
 
       setSelected(
         filter && !error

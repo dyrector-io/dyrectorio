@@ -1,5 +1,5 @@
-import { ProjectType, PROJECT_TYPE_VALUES } from '@app/models/project'
-import * as yup from 'yup'
+import { ProjectType, PROJECT_TYPE_VALUES } from '@app/models'
+import yup from './yup'
 import { descriptionRule, nameRule } from './common'
 
 export const updateProjectSchema = yup.object().shape({
@@ -9,6 +9,9 @@ export const updateProjectSchema = yup.object().shape({
 
 export const createProjectSchema = updateProjectSchema.concat(
   yup.object().shape({
-    type: yup.mixed<ProjectType>().oneOf([...PROJECT_TYPE_VALUES]),
+    type: yup
+      .mixed<ProjectType>()
+      .oneOf([...PROJECT_TYPE_VALUES])
+      .label('projects:versioning'),
   }),
 )
