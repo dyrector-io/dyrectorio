@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
-import { firstValueFrom } from 'rxjs'
+import { Subject, firstValueFrom } from 'rxjs'
 import { Agent } from 'src/domain/agent'
+import { generateAgentToken } from 'src/domain/agent-token'
 import { CruxConflictException } from 'src/exception/crux-exception'
 import { AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
@@ -55,11 +56,14 @@ export default class AgentConnectionLegacyStrategy extends AgentConnectionStrate
     // this legacy token is already replaced or
     // we send a shutdown to the incoming agent
     info.id = AgentConnectionLegacyStrategy.LEGACY_NONCE
+    const legacyToken = generateAgentToken(AgentConnectionLegacyStrategy.LEGACY_NONCE, 'install')
+    const signedLegacyToken = this.jwtService.sign(legacyToken)
+    connection.onTokenReplaced(legacyToken, signedLegacyToken)
 
-    const incomingAgent = await this.createAgent({
+    const incomingAgent = new Agent({
       connection,
+      eventChannel: new Subject(),
       info,
-      node,
       outdated: true,
     })
 
