@@ -13,6 +13,7 @@ import {
 import { containerConfigSchema, getValidationError } from '@app/validations'
 import { useState } from 'react'
 import { DeploymentActions, DeploymentState } from '../use-deployment-state'
+import useTranslation from 'next-translate/useTranslation'
 
 export type InstanceStateOptions = {
   deploymentState: DeploymentState
@@ -34,6 +35,8 @@ export type InstanceActions = {
 }
 
 const useInstanceState = (options: InstanceStateOptions) => {
+  const { t } = useTranslation('container')
+
   const { instance, deploymentState, deploymentActions } = options
   const { sock } = deploymentState
 
@@ -50,7 +53,7 @@ const useInstanceState = (options: InstanceStateOptions) => {
 
   const mergedConfig = mergeConfigs(instance.image.config, instance.config)
 
-  const errorMessage = parseError ?? getValidationError(containerConfigSchema, mergedConfig)?.message
+  const errorMessage = parseError ?? getValidationError(containerConfigSchema, mergedConfig, null, t)?.message
 
   const resetSection = (section: ImageConfigProperty): InstanceContainerConfigData => {
     const newConfig = { ...instance.config } as any

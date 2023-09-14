@@ -13,7 +13,7 @@ import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateStorage, Storage, StorageDetails, UpdateStorage } from '@app/models'
 import { sendForm } from '@app/utils'
-import { storageSchema } from '@app/validations/storage'
+import { storageSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
@@ -53,6 +53,7 @@ const EditStorageCard = (props: EditStorageCardProps) => {
       ...storage,
     },
     validationSchema: storageSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

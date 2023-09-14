@@ -47,6 +47,7 @@ const InviteUserCard = (props: InviteUserCardProps) => {
       lastName: '',
     },
     validationSchema: inviteUserSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

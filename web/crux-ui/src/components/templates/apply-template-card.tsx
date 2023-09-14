@@ -9,8 +9,7 @@ import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Project, ProjectType } from '@app/models'
-import { CreateProjectFromTemplate, Template } from '@app/models/template'
+import { Project, ProjectType, CreateProjectFromTemplate, Template } from '@app/models'
 import { API_TEMPLATES, ROUTE_INDEX } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { applyTemplateSchema } from '@app/validations'
@@ -45,6 +44,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
       type: 'versionless' as ProjectType,
     },
     validationSchema: applyTemplateSchema,
+    t,
     enableReinitialize: true,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)

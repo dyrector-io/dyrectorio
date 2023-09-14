@@ -19,7 +19,6 @@ import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
-  configToFilters,
   DeploymentDetails,
   DeploymentRoot,
   ImageConfigProperty,
@@ -35,14 +34,13 @@ import {
 } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { jsonErrorOf } from '@app/validations/image'
-import { getMergedContainerConfigFieldErrors } from '@app/validations/instance'
+import { jsonErrorOf, getMergedContainerConfigFieldErrors, ContainerConfigValidationErrors } from '@app/validations'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import { ValidationError } from 'yup'
+import configToFilters from '@app/components/projects/versions/images/config/config-to-filters'
 
 interface InstanceDetailsPageProps {
   deployment: DeploymentRoot
@@ -78,11 +76,11 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     deploymentActions,
   })
 
-  const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], state.config))
-  const [viewState, setViewState] = useState<ViewState>('editor')
-  const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() =>
-    getMergedContainerConfigFieldErrors(mergeConfigs(instance.image.config, state.config)),
+  const [fieldErrors, setFieldErrors] = useState<ContainerConfigValidationErrors>(() =>
+    getMergedContainerConfigFieldErrors(mergeConfigs(instance.image.config, state.config), t),
   )
+  const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], state.config, fieldErrors))
+  const [viewState, setViewState] = useState<ViewState>('editor')
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
 
@@ -112,7 +110,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     }
 
     const merged = mergeConfigs(instance.image.config, applied)
-    const errors = getMergedContainerConfigFieldErrors(merged)
+    const errors = getMergedContainerConfigFieldErrors(merged, t)
     setFieldErrors(errors)
     setJsonError(jsonErrorOf(errors))
 
@@ -123,7 +121,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     const newConfig = actions.resetSection(section)
 
     const merged = mergeConfigs(instance.image.config, newConfig)
-    const errors = getMergedContainerConfigFieldErrors(merged)
+    const errors = getMergedContainerConfigFieldErrors(merged, t)
     setFieldErrors(errors)
     setJsonError(jsonErrorOf(errors))
   }

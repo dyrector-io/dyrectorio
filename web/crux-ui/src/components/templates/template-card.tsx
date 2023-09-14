@@ -3,7 +3,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoTag from '@app/elements/dyo-tag'
-import { Template } from '@app/models/template'
+import { Template } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 import TemplateImage from './template-image'
 

@@ -8,9 +8,9 @@ import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { ConfigBundle, CreateConfigBundle } from '@app/models/config-bundle'
+import { ConfigBundle, CreateConfigBundle } from '@app/models'
 import { sendForm } from '@app/utils'
-import { configBundleCreateSchema } from '@app/validations/config-bundle'
+import { configBundleCreateSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 
 interface AddConfigBundleCardProps {
@@ -35,6 +35,7 @@ const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
       description: propsConfigBundle?.description ?? '',
     },
     validationSchema: configBundleCreateSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

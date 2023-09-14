@@ -38,6 +38,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
     submit,
     initialValues: node,
     validationSchema: nodeSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

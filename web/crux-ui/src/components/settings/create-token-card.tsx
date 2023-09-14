@@ -11,7 +11,7 @@ import { SubmitHook } from '@app/hooks/use-submit'
 import { GeneratedToken, GenerateToken } from '@app/models'
 import { API_TOKENS } from '@app/routes'
 import { sendForm } from '@app/utils'
-import { generateTokenSchema } from '@app/validations/token'
+import { generateTokenSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 
 const EXPIRATION_VALUES = [30, 60, 90, 0]
@@ -32,6 +32,7 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
   const formik = useDyoFormik({
     submit,
     validationSchema: generateTokenSchema,
+    t,
     initialValues: {
       name: '',
       expirationInDays: EXPIRATION_VALUES[0],

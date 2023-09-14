@@ -50,6 +50,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
   const formik = useDyoFormik({
     submit,
     validationSchema: createDeploymentTokenSchema,
+    t,
     initialValues: {
       name: '',
       expirationInDays: EXPIRATION_VALUES[0],

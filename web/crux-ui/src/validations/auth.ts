@@ -1,19 +1,19 @@
 import { OidcProvider, OIDC_PROVIDER_VALUES } from '@app/models'
-import * as yup from 'yup'
+import yup from './yup'
 import { identityNameRule, passwordLengthRule } from './common'
 
 export const registerWithPasswordSchema = yup.object().shape({
-  password: passwordLengthRule.required(),
-  email: yup.string().email().required(),
-  firstName: identityNameRule.required(),
-  lastName: identityNameRule.min(0),
+  password: passwordLengthRule.required().label('common:password'),
+  email: yup.string().email().required().label('common:email'),
+  firstName: identityNameRule.required().label('common:firstName'),
+  lastName: identityNameRule.min(0).label('common:lastName'),
 })
 
 export const registerWithOidcSchema = yup.object().shape({
   provider: yup.mixed<OidcProvider>().oneOf([...OIDC_PROVIDER_VALUES]),
-  firstName: identityNameRule.required(),
-  lastName: identityNameRule.min(0),
-  email: yup.string().email().required(),
+  firstName: identityNameRule.required().label('common:firstName'),
+  lastName: identityNameRule.min(0).label('common:lastName'),
+  email: yup.string().email().required().label('common:email'),
 })
 
 export const registerSchema = yup.object().shape({
@@ -41,24 +41,24 @@ export const registerSchema = yup.object().shape({
 })
 
 export const verifyEmailSchema = yup.object().shape({
-  email: yup.string().email().required(),
+  email: yup.string().email().required().label('common:email'),
 })
 
 export const verifyCodeSchema = yup.object().shape({
-  code: yup.string().required(),
+  code: yup.string().required().label('common:code'),
 })
 
 export const passwordSchema = yup.object().shape({
-  password: yup.string().required().label('Password'),
+  password: yup.string().required().label('common:password'),
   confirmPassword: yup.string().required().label('Confirm password'),
 })
 
 export const userProfileSchema = yup.object().shape({
-  email: yup.string().email().required(),
-  firstName: identityNameRule.required(),
-  lastName: identityNameRule.min(0),
+  email: yup.string().email().required().label('common:email'),
+  firstName: identityNameRule.required().label('common:firstName'),
+  lastName: identityNameRule.min(0).label('common:lastName'),
 })
 
 export const recoverySchema = yup.object().shape({
-  email: yup.string().email().required(),
+  email: yup.string().email().required().label('common:email'),
 })

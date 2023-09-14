@@ -194,6 +194,6 @@ export default class Deployment {
   }
 
   debugInfo(logger: Logger): void {
-    logger.debug(`> ${this.id}, open: ${!this.statusChannel.closed}`)
+    logger.verbose(`> ${this.id}, open: ${!this.statusChannel.closed}`)
   }
 }
