@@ -54,11 +54,14 @@ jobs:
           echo "org_name=$org_name"
           echo "response=$response"
 
-          if [[ $response == *"\"role\":\"maintainer\""* ]] || [[ $response == *"\"role\":\"member\""* ]]; then
-            echo "The PR author $pr_author is a member of the team $TEAM_SLUG."
+          state=$(echo "$response" | jq -r '.state')
+          role=$(echo "$response" | jq -r '.role')
+          
+          if [[ "$state" == "active" && ( "$role" == "member" || "$role" == "maintainer" ) ]]; then
+            echo "The PR author $pr_author is a member/maintainer of the team $TEAM_SLUG."
             echo "member=true" >> $GITHUB_OUTPUT
           else
-            echo "The PR author $pr_author is NOT a member of the team $TEAM_SLUG."
+            echo "The PR author $pr_author is NOT a member/maintainer of the team $TEAM_SLUG."
           fi
   assign_runner:
     runs-on: ubuntu-22.04
