@@ -6,7 +6,7 @@ import { randomUUID } from 'crypto'
 import { setDefaultResultOrder } from 'dns'
 import http from 'http'
 import { IdentityTraits, KRATOS_IDENTITY_SCHEMA, KratosInvitation } from 'src/domain/identity'
-import { PRODUCTION } from 'src/shared/const'
+import { KRATOS_LIST_PAGE_SIZE, PRODUCTION } from 'src/shared/const'
 
 type KratosListHeaders = {
   link?: string
@@ -51,7 +51,7 @@ export default class KratosService {
       if (!identities) {
         // eslint-disable-next-line no-await-in-loop
         identities = await this.identity.listIdentities({
-          perPage: 128,
+          perPage: KRATOS_LIST_PAGE_SIZE,
         })
       } else {
         const headers = identities.headers as KratosListHeaders
