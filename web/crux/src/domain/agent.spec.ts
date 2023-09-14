@@ -79,7 +79,6 @@ describe('agent', () => {
         status: 'connected',
         version: AGENT_VERSION,
         connectedAt: agentConnection.connectedAt,
-        updating: false,
       }
       expect(actual).toEqual(expected)
     })
@@ -99,7 +98,6 @@ describe('agent', () => {
         status: 'unreachable',
         version: null,
         connectedAt: null,
-        updating: false,
       }
       expect(actual).toEqual(expected)
     })
@@ -275,9 +273,8 @@ describe('agent', () => {
       const eventChannelActual = await eventChannelPromise
       const expected: AgentConnectionMessage = {
         id: AGENT_ID,
-        status: 'connected',
+        status: 'updating',
         error: 'test',
-        updating: false,
       }
       expect(eventChannelActual).toEqual(expected)
     })

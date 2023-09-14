@@ -17,7 +17,7 @@ import {
   startWith,
   takeUntil,
 } from 'rxjs'
-import { coerce } from 'semver'
+import { SemVer, coerce } from 'semver'
 import { Agent, AgentConnectionMessage, AgentTokenReplacement } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { generateAgentToken } from 'src/domain/agent-token'
@@ -380,21 +380,20 @@ export default class AgentService {
   }
 
   agentVersionSupported(version: string): boolean {
-    if (!version.includes('-')) {
-      return false
-    }
-
-    const agentVersion = coerce(version)
-    if (!agentVersion) {
-      return false
-    }
-
+    const agentVersion = this.getAgentSemVer(version)
     const packageVersion = coerce(getPackageVersion(this.configService))
 
     return (
       agentVersion.compare(AGENT_SUPPORTED_MINIMUM_VERSION) >= 0 && // agent version is newer (bigger) or the same
       agentVersion.compare(packageVersion) <= 0
     )
+  }
+
+  agentVersionIsUpToDate(version: string): boolean {
+    const agentVersion = this.getAgentSemVer(version)
+    const packageVersion = coerce(getPackageVersion(this.configService))
+
+    return agentVersion.compare(packageVersion) === 0
   }
 
   generateConnectionTokenFor(nodeId: string, startedBy: string): AgentTokenReplacement {
@@ -406,6 +405,19 @@ export default class AgentService {
       token,
       startedBy,
     }
+  }
+
+  private getAgentSemVer(version: string): SemVer | null {
+    if (!version.includes('-')) {
+      return null
+    }
+
+    const semver = coerce(version)
+    if (!semver) {
+      return null
+    }
+
+    return semver
   }
 
   private async onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {

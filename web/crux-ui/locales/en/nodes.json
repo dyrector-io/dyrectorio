@@ -52,6 +52,7 @@
   "persistentDataExplanation": "Stores basic operational data and serves as a base path for containers using relative volume names. Environment variables are resolved, but it is suggested to use absolute paths and avoid special characters.",
   "optionalLeaveEmptyForDefaults": "Optional, leave empty for default paths",
   "update": "Update",
+  "updateAvailable": "There is an update available for your node. You can update it with the update button below.",
   "updateRequired": "This agent is incompatible with the current version of dyrector.io. You can update it with the update button below.",
   "updateError": "Failed to update agent: {{error}}",
   "ports": "Ports (External -> Internal)",
