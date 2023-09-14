@@ -11,7 +11,7 @@ import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
-import { DyoNode, NodeEventMessage, NodeStatus, WS_TYPE_NODE_EVENT } from '@app/models'
+import { DyoNode, NODE_STATUS_VALUES, NodeEventMessage, NodeStatus, WS_TYPE_NODE_EVENT } from '@app/models'
 import { ROUTE_DOCS, TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
@@ -26,8 +26,6 @@ import { useSWRConfig } from 'swr'
 interface NodesPageProps {
   nodes: DyoNode[]
 }
-
-const nodeStatusFilters = ['connected', 'unreachable'] as const
 
 type NodeFilter = TextFilter & EnumFilter<NodeStatus>
 
@@ -109,8 +107,8 @@ const NodesPage = (props: NodesPageProps) => {
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
               className="pl-6"
-              choices={nodeStatusFilters}
-              converter={it => t(`statusFilters.${it}`)}
+              choices={NODE_STATUS_VALUES}
+              converter={it => t(`common:nodeStatuses.${it}`)}
               selection={filters.filter?.enum}
               onSelectionChange={type => {
                 filters.setFilter({

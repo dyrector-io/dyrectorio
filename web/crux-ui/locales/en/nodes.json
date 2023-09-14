@@ -44,10 +44,6 @@
     "shell": "Shell",
     "powershell": "PowerShell"
   },
-  "statusFilters": {
-    "connected": "Connected",
-    "unreachable": "Unreachable"
-  },
   "persistentDataPath": "Persistent data path",
   "persistentDataExplanation": "Stores basic operational data and serves as a base path for containers using relative volume names. Environment variables are resolved, but it is suggested to use absolute paths and avoid special characters.",
   "optionalLeaveEmptyForDefaults": "Optional, leave empty for default paths",
