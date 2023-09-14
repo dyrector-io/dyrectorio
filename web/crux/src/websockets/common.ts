@@ -62,6 +62,10 @@ export type WsClient = WebSocket & {
   connectionRequest: AuthorizedHttpRequest
   sendWsMessage: WsSendClientMessage
   subscriptions: Map<string, WsSubscription>
+
+  // NOTE(@robot9706): Used by jwt-auth.guard WS strategy to be able to call
+  // unsubscribe methods when the session is invalid (for cleanup)
+  disconnecting: boolean
 }
 
 export type WsTransform = (data: any | Promise<any> | Observable<any>) => Observable<any>

@@ -101,13 +101,15 @@ export default class VersionWebSocketGateway {
     @SocketClient() client: WsClient,
     @VersionId() versionId: string,
     @SocketSubscription() subscription: WsSubscription,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const data = await this.service.onEditorLeft(versionId, client.token)
     const message: WsMessage<EditorLeftMessage> = {
       type: WS_TYPE_EDITOR_LEFT,
       data,
     }
     subscription.sendToAllExcept(client, message)
+
+    return true
   }
 
   @AuditLogLevel('disabled')

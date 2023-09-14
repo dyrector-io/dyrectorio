@@ -119,14 +119,14 @@ export default class WsRoute {
     return ns.onSubscribe(client, callbacks, message)
   }
 
-  onUnsubscribe(
+  async onUnsubscribe(
     client: WsClient,
     match: WsRouteMatch,
     message: WsMessage<SubscriptionMessage>,
-  ): Observable<WsMessage<SubscriptionMessage>> {
+  ): Promise<Observable<WsMessage<SubscriptionMessage>>> {
     const { path } = match
 
-    const res = this.removeClientFromNamespace(client, path, message)
+    const res = await this.removeClientFromNamespace(client, path, message)
 
     return res ? of(res) : EMPTY
   }
@@ -169,10 +169,10 @@ export default class WsRoute {
     })
   }
 
-  onClientDisconnect(client: WsClient) {
+  async onClientDisconnect(client: WsClient): Promise<void> {
     const subscriptionPaths = Array.from(client.subscriptions.keys())
 
-    Array.from(subscriptionPaths).forEach(it => this.removeClientFromNamespace(client, it, null))
+    await Promise.all(Array.from(subscriptionPaths).map(it => this.removeClientFromNamespace(client, it, null)))
 
     this.callbacks.delete(client.token)
   }
@@ -193,17 +193,17 @@ export default class WsRoute {
     return ns
   }
 
-  private removeClientFromNamespace(
+  private async removeClientFromNamespace(
     client: WsClient,
     namespacePath: string,
     message: WsMessage<SubscriptionMessage> | null,
-  ): WsMessage<SubscriptionMessage> {
+  ): Promise<WsMessage<SubscriptionMessage>> {
     const ns = this.namespaces.get(namespacePath)
     if (!ns) {
       return null
     }
 
-    const { res, shouldRemove } = ns.onUnsubscribe(client, message)
+    const { res, shouldRemove } = await ns.onUnsubscribe(client, message)
     if (shouldRemove) {
       this.namespaces.delete(namespacePath)
       this.logger.verbose(`Namespace deleted ${namespacePath}`)

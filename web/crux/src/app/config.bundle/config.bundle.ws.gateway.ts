@@ -87,13 +87,15 @@ export default class ConfigBundleWebSocketGateway {
     @SocketClient() client: WsClient,
     @ConfigBundleId() configBundleId: string,
     @SocketSubscription() subscription: WsSubscription,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const data = await this.service.onEditorLeft(configBundleId, client.token)
     const message: WsMessage<EditorLeftMessage> = {
       type: WS_TYPE_EDITOR_LEFT,
       data,
     }
     subscription.sendToAllExcept(client, message)
+
+    return true
   }
 
   @SubscribeMessage(WS_TYPE_PATCH_CONFIG_BUNDLE)

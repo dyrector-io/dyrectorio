@@ -6,7 +6,7 @@ import { Request as ExpressRequest } from 'express'
 import { RequestAuthenticationData } from 'src/domain/identity'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import KratosService, { hasKratosSession } from 'src/services/kratos.service'
-import { WsClient } from 'src/websockets/common'
+import { WS_TYPE_UNSUBSCRIBE, WsClient } from 'src/websockets/common'
 
 export type AuthStrategyType = 'user-token' | 'deploy-token' | 'disabled'
 export const AUTH_STRATEGY = 'auth-strategy'
@@ -109,6 +109,13 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
 
   private canActivateWs(context: ExecutionContext): boolean {
     const client: WsClient = context.switchToWs().getClient()
+    if (client.disconnecting) {
+      // NOTE(@robot9706): When a client is disconnecting disallow any handlers
+      // except WsUnsubscribe for cleanup
+      const message = this.reflector.get('message', context.getHandler())
+      return message === WS_TYPE_UNSUBSCRIBE
+    }
+
     const req = client.connectionRequest as AuthorizedHttpRequest
 
     const now = new Date().getTime()

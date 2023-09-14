@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common'
-import { EMPTY, Observable, Subject, filter, first, map, mergeWith, of, takeUntil } from 'rxjs'
+import { EMPTY, Observable, Subject, filter, first, firstValueFrom, map, mergeWith, of, takeUntil } from 'rxjs'
 import {
   SubscriptionMessage,
   WS_TYPE_SUBBED,
@@ -87,7 +87,7 @@ export default class WsNamespace implements WsSubscription {
     return of(res).pipe(first())
   }
 
-  onUnsubscribe(client: WsClient, message: WsMessage<SubscriptionMessage> | null): UnsubcribeResult {
+  async onUnsubscribe(client: WsClient, message: WsMessage<SubscriptionMessage> | null): Promise<UnsubcribeResult> {
     const { token } = client
 
     const resources = this.clients.get(token)
@@ -112,16 +112,21 @@ export default class WsNamespace implements WsSubscription {
 
     const { unsubscribe, transform, completer } = resources
 
+    if (unsubscribe) {
+      const unsubscribeResult = await firstValueFrom(transform(unsubscribe(message)))
+      if (!unsubscribeResult) {
+        this.logger.warn(`${this.path} @WsUnsubscribe returned undefined`)
+        return {
+          res: null,
+          shouldRemove: this.clients.size < 1,
+        }
+      }
+    }
+
+    client.subscriptions.delete(this.path)
+
     completer.next(undefined)
     this.clients.delete(token)
-
-    if (unsubscribe) {
-      transform(unsubscribe(message))
-        .pipe(first())
-        .subscribe(() => client.subscriptions.delete(this.path))
-    } else {
-      client.subscriptions.delete(this.path)
-    }
 
     this.logger.verbose(`${token} unsubscribed`)
 

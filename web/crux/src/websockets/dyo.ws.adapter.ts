@@ -266,7 +266,7 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     if (message.type === WS_TYPE_SUBSCRIBE) {
       res = await route.onSubscribe(client, match, message)
     } else if (message.type === WS_TYPE_UNSUBSCRIBE) {
-      res = route.onUnsubscribe(client, match, message)
+      res = await route.onUnsubscribe(client, match, message)
     } else {
       const err = new Error(`Invalid subscription type ${message.type}`)
       this.logger.verbose(err)
@@ -280,8 +280,9 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     client.token = uuid()
     client.connectionRequest = req as AuthorizedHttpRequest
     client.subscriptions = new Map()
+    client.disconnecting = false
     client.sendWsMessage = msg => {
-      if (!msg || client.readyState !== WebSocketReadyState.OPEN_STATE) {
+      if (!msg || client.readyState !== WebSocketReadyState.OPEN_STATE || client.disconnecting) {
         return
       }
 
@@ -298,11 +299,17 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     this.logger.log(`Connected ${client.token} clients: ${this.server?.clients?.size}`)
   }
 
-  private onClientDisconnect(client: WsClient) {
+  private async onClientDisconnect(client: WsClient) {
+    client.disconnecting = true
+
     this.logger.log(`Disconnected ${client.token} clients: ${this.server?.clients?.size}`)
     WsMetrics.connections().dec()
 
-    this.routes.forEach(it => it.onClientDisconnect(client))
+    await Promise.all(this.routes.map(it => it.onClientDisconnect(client)))
+
+    if (client?.subscriptions?.size > 0) {
+      this.logger.warn(`Client ${client.token} failed to cleanup all subscriptions!`)
+    }
 
     client?.setup?.onClientDisconnect()
   }
