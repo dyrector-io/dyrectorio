@@ -56,7 +56,8 @@ jobs:
 
           state=$(echo "$response" | jq -r '.state')
           role=$(echo "$response" | jq -r '.role')
-          
+
+          # we check both "member" and "maintainer" roles, because for some reason github api can give back any of them
           if [[ "$state" == "active" && ( "$role" == "member" || "$role" == "maintainer" ) ]]; then
             echo "The PR author $pr_author is a member/maintainer of the team $TEAM_SLUG."
             echo "member=true" >> $GITHUB_OUTPUT
