@@ -136,7 +136,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   const nodeId = context.query.nodeId as string
 
   const node = await getCruxFromContext<NodeDetails>(context, routes.node.api.details(nodeId))
-  const deployments = await getCruxFromContext<Deployment[]>(context, routes.deployment.api.listForNode(nodeId))
+  const deployments = await getCruxFromContext<Deployment[]>(context, routes.node.api.deployments(nodeId))
 
   return {
     props: {

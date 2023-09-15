@@ -107,10 +107,7 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
         src="/note.svg"
         alt={t('common:note')}
         size="md"
-        className={clsx(
-          !!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30',
-          'mr-2',
-        )}
+        className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
         onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
       />
     </>,
