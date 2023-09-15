@@ -30,28 +30,28 @@ test.beforeEach(async ({ page }, testInfo) => {
       return
     }
 
-    console.info(`Request started to ${it.url()}`)
+    console.info(`[${testInfo.title}] Request started to ${it.url()}`)
   })
   page.on('requestfailed', it => {
     if (!it.url().includes('/api/')) {
       return
     }
 
-    console.info(`Request failed to ${it.url()}`)
+    console.info(`[${testInfo.title}] Request failed to ${it.url()}`)
   })
   page.on('requestfinished', it => {
     if (!it.url().includes('/api/')) {
       return
     }
 
-    console.info(`Request finished to ${it.url()}`)
+    console.info(`[${testInfo.title}] Request finished to ${it.url()}`)
   })
   page.on('response', it => {
     if (!it.url().includes('/api/')) {
       return
     }
 
-    console.info(`Response to ${it.url()}`)
+    console.info(`[${testInfo.title}] Response to ${it.url()}`)
   })
 
   if (CPU_THROTTLE) {
