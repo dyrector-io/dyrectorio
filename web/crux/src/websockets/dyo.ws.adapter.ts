@@ -291,6 +291,7 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
       client.send(JSON.stringify(msg))
     }
     client.on(CLOSE_EVENT, () => this.onClientDisconnect(client))
+    client.unsubscribeAll = () => this.onClientDisconnect(client)
 
     client.setup = new WsClientSetup(client, client.token, () => this.bindClientMessageHandlers(client))
     client.setup.start()
@@ -299,7 +300,11 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     this.logger.log(`Connected ${client.token} clients: ${this.server?.clients?.size}`)
   }
 
-  private async onClientDisconnect(client: WsClient) {
+  private async onClientDisconnect(client: WsClient): Promise<void> {
+    if (client.disconnecting) {
+      return
+    }
+
     client.disconnecting = true
 
     this.logger.log(`Disconnected ${client.token} clients: ${this.server?.clients?.size}`)

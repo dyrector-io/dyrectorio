@@ -39,7 +39,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
       return await this.canActivateHttp(context, context.switchToHttp().getRequest(), strategy)
     }
     if (type === 'ws') {
-      return this.canActivateWs(context)
+      return await this.canActivateWs(context)
     }
 
     this.logger.error(`Invalid context ${type}`)
@@ -107,7 +107,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
     req.headers.authorization = `Bearer ${token}`
   }
 
-  private canActivateWs(context: ExecutionContext): boolean {
+  private async canActivateWs(context: ExecutionContext): Promise<boolean> {
     const client: WsClient = context.switchToWs().getClient()
     if (client.disconnecting) {
       // NOTE(@robot9706): When a client is disconnecting disallow any handlers
@@ -123,6 +123,9 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
 
     if (!sessionExpiresAt || sessionExpiresAt <= now) {
       this.logger.debug('WebSocket session expired.')
+
+      await client.unsubscribeAll()
+
       client.close()
       throw new CruxUnauthorizedException()
     }
