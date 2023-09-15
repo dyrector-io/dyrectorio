@@ -1,7 +1,9 @@
 import ContainerStatusIndicator from '@app/components/nodes/container-status-indicator'
 import ContainerStatusTag from '@app/components/nodes/container-status-tag'
+import { SECOND_IN_MILLIS } from '@app/const'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
+import useInterval from '@app/hooks/use-interval'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -49,6 +51,10 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       labels: {},
     })),
   )
+
+  useInterval(() => {
+    setContainers([...containers])
+  }, SECOND_IN_MILLIS)
 
   const sock = useWebSocket(routes.node.detailsSocket(deployment.node.id), {
     onOpen: () =>
