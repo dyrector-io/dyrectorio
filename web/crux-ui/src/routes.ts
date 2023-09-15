@@ -409,6 +409,8 @@ class DeploymentApi {
 
   list = () => this.root
 
+  listForNode = (nodeId: string) => `${this.root}?nodeId=${encodeURIComponent(nodeId)}`
+
   details = (id: string) => `${this.root}/${id}`
 
   copy = (id: string) => `${this.details(id)}/copy`

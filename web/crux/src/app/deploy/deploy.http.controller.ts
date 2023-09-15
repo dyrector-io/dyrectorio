@@ -88,8 +88,8 @@ export default class DeployHttpController {
     description: 'List of deployments.',
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
-  async getDeployments(@TeamSlug() teamSlug: string): Promise<DeploymentDto[]> {
-    return await this.service.getDeployments(teamSlug)
+  async getDeployments(@TeamSlug() teamSlug: string, @Query('nodeId') nodeId?: string): Promise<DeploymentDto[]> {
+    return await this.service.getDeployments(teamSlug, nodeId)
   }
 
   @Get(ROUTE_DEPLOYMENT_ID)
