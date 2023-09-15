@@ -53,7 +53,7 @@ export default class AgentConnectionLegacyStrategy extends AgentConnectionStrate
       })
     }
 
-    // this legacy token is already replaced or
+    // this legacy token is already replaced
     // we send a shutdown to the incoming agent
     info.id = AgentConnectionLegacyStrategy.LEGACY_NONCE
     const legacyToken = generateAgentToken(AgentConnectionLegacyStrategy.LEGACY_NONCE, 'install')
