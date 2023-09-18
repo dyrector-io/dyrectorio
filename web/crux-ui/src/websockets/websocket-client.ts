@@ -6,6 +6,8 @@ import WebSocketClientEndpoint from './websocket-client-endpoint'
 import WebSocketClientRoute from './websocket-client-route'
 
 class WebSocketClient {
+  public static ERROR_SESSION_EXPIRED = 4000
+
   private logger = new Logger('WebSocketClient') // need to be explicit string because of production build uglification
 
   private socket?: WebSocket
@@ -91,7 +93,9 @@ class WebSocketClient {
 
     const ws = this.socket
     this.socket = null
-    ws.close()
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.close()
+    }
     this.destroyListeners?.call(null)
   }
 
@@ -203,7 +207,7 @@ class WebSocketClient {
         this.routes.forEach(it => it.onSocketOpen())
       }
 
-      const onClose = () => {
+      const onClose = (it: CloseEvent) => {
         if (!resolved) {
           resolved = true
           setTimeout(() => resolve(false), failTimeout)
@@ -211,8 +215,15 @@ class WebSocketClient {
 
         this.logger.info('Disconnected')
 
-        this.routes.forEach(it => it.onSocketClose())
-        this.reconnect()
+        this.routes.forEach(route => route.onSocketClose())
+        if (it.code === WebSocketClient.ERROR_SESSION_EXPIRED) {
+          this.errorHandler({
+            status: WebSocketClient.ERROR_SESSION_EXPIRED,
+            message: it.reason,
+          })
+        } else {
+          this.reconnect()
+        }
       }
 
       const onError = ev => {

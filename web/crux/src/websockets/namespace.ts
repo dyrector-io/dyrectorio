@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common'
-import { EMPTY, Observable, Subject, filter, first, firstValueFrom, map, mergeWith, of, takeUntil } from 'rxjs'
+import { EMPTY, Observable, Subject, filter, first, map, mergeWith, of, takeUntil } from 'rxjs'
 import {
   SubscriptionMessage,
   WS_TYPE_SUBBED,
@@ -87,16 +87,16 @@ export default class WsNamespace implements WsSubscription {
     return of(res).pipe(first())
   }
 
-  async onUnsubscribe(client: WsClient, message: WsMessage<SubscriptionMessage> | null): Promise<UnsubcribeResult> {
+  onUnsubscribe(client: WsClient, message: WsMessage<SubscriptionMessage> | null): Observable<UnsubcribeResult> {
     const { token } = client
 
     const resources = this.clients.get(token)
     if (!resources) {
       this.logger.warn(`undefined resource for '${token}'`)
-      return {
+      return of({
         res: null,
         shouldRemove: this.clients.size < 1,
-      }
+      })
     }
 
     // When the connection is killed, we get an empty message,
@@ -113,14 +113,27 @@ export default class WsNamespace implements WsSubscription {
     const { unsubscribe, transform, completer } = resources
 
     if (unsubscribe) {
-      const unsubscribeResult = await firstValueFrom(transform(unsubscribe(message)))
-      if (!unsubscribeResult) {
-        this.logger.warn(`${this.path} @WsUnsubscribe returned undefined`)
-        return {
-          res: null,
-          shouldRemove: this.clients.size < 1,
-        }
-      }
+      return transform(unsubscribe(message)).pipe(
+        first(),
+        map(() => {
+          client.subscriptions.delete(this.path)
+
+          completer.next(undefined)
+          this.clients.delete(token)
+
+          this.logger.verbose(`${token} unsubscribed`)
+
+          return {
+            res: {
+              type: WS_TYPE_UNSUBBED,
+              data: {
+                path: this.path,
+              },
+            },
+            shouldRemove: this.clients.size < 1,
+          }
+        }),
+      )
     }
 
     client.subscriptions.delete(this.path)
@@ -130,7 +143,7 @@ export default class WsNamespace implements WsSubscription {
 
     this.logger.verbose(`${token} unsubscribed`)
 
-    return {
+    return of({
       res: {
         type: WS_TYPE_UNSUBBED,
         data: {
@@ -138,7 +151,7 @@ export default class WsNamespace implements WsSubscription {
         },
       },
       shouldRemove: this.clients.size < 1,
-    }
+    })
   }
 
   onMessage(client: WsClient, message: WsMessage): Observable<WsMessage> {

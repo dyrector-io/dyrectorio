@@ -109,10 +109,10 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
 
   private async canActivateWs(context: ExecutionContext): Promise<boolean> {
     const client: WsClient = context.switchToWs().getClient()
+    const message = this.reflector.get('message', context.getHandler())
     if (client.disconnecting) {
       // NOTE(@robot9706): When a client is disconnecting disallow any handlers
       // except WsUnsubscribe for cleanup
-      const message = this.reflector.get('message', context.getHandler())
       return message === WS_TYPE_UNSUBSCRIBE
     }
 
@@ -124,9 +124,6 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
     if (!sessionExpiresAt || sessionExpiresAt <= now) {
       this.logger.debug('WebSocket session expired.')
 
-      await client.unsubscribeAll()
-
-      client.close()
       throw new CruxUnauthorizedException()
     }
 

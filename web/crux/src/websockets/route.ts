@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { MessageMappingProperties } from '@nestjs/websockets'
-import { EMPTY, Observable, firstValueFrom, of } from 'rxjs'
+import { EMPTY, Observable, firstValueFrom, forkJoin, map, of, switchMap } from 'rxjs'
 import WsMetrics from 'src/shared/metrics/ws.metrics'
 import {
   SubscriptionMessage,
@@ -119,16 +119,14 @@ export default class WsRoute {
     return ns.onSubscribe(client, callbacks, message)
   }
 
-  async onUnsubscribe(
+  onUnsubscribe(
     client: WsClient,
     match: WsRouteMatch,
     message: WsMessage<SubscriptionMessage>,
-  ): Promise<Observable<WsMessage<SubscriptionMessage>>> {
+  ): Observable<WsMessage<SubscriptionMessage>> {
     const { path } = match
 
-    const res = await this.removeClientFromNamespace(client, path, message)
-
-    return res ? of(res) : EMPTY
+    return this.removeClientFromNamespace(client, path, message).pipe(switchMap(it => of(it) ?? EMPTY))
   }
 
   onClientBind(client: WsClient, handlers: MessageMappingProperties[], transform: WsTransform) {
@@ -169,12 +167,18 @@ export default class WsRoute {
     })
   }
 
-  async onClientDisconnect(client: WsClient): Promise<void> {
+  onClientDisconnect(client: WsClient): Observable<void> {
     const subscriptionPaths = Array.from(client.subscriptions.keys())
 
-    await Promise.all(Array.from(subscriptionPaths).map(it => this.removeClientFromNamespace(client, it, null)))
+    const unsubscribes = Array.from(subscriptionPaths).map(it => this.removeClientFromNamespace(client, it, null))
 
-    this.callbacks.delete(client.token)
+    return unsubscribes.length
+      ? forkJoin(unsubscribes).pipe(
+          map(() => {
+            this.callbacks.delete(client.token)
+          }),
+        )
+      : of()
   }
 
   private upsertNamespace(match: WsRouteMatch): WsNamespace {
@@ -193,25 +197,28 @@ export default class WsRoute {
     return ns
   }
 
-  private async removeClientFromNamespace(
+  private removeClientFromNamespace(
     client: WsClient,
     namespacePath: string,
     message: WsMessage<SubscriptionMessage> | null,
-  ): Promise<WsMessage<SubscriptionMessage>> {
+  ): Observable<WsMessage<SubscriptionMessage>> {
     const ns = this.namespaces.get(namespacePath)
     if (!ns) {
-      return null
+      return EMPTY
     }
 
-    const { res, shouldRemove } = await ns.onUnsubscribe(client, message)
-    if (shouldRemove) {
-      this.namespaces.delete(namespacePath)
-      this.logger.verbose(`Namespace deleted ${namespacePath}`)
+    return ns.onUnsubscribe(client, message).pipe(
+      map(({ res, shouldRemove }) => {
+        if (shouldRemove) {
+          this.namespaces.delete(namespacePath)
+          this.logger.verbose(`Namespace deleted ${namespacePath}`)
 
-      WsMetrics.routeNamespaces(this.path).set(this.countNamespaces())
-    }
+          WsMetrics.routeNamespaces(this.path).set(this.countNamespaces())
+        }
 
-    return res
+        return res
+      }),
+    )
   }
 
   private pathFromParts(parts: string[], from?: number, to?: number): string {

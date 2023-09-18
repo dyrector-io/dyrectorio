@@ -240,13 +240,13 @@ describe('WsNamespace', () => {
     })
 
     it('should return UnsubscribeResult with a null when the client is not subscribed', async () => {
-      const result = await namespace.onUnsubscribe(client, unsubscribeMessage)
+      const result = await firstValueFrom(namespace.onUnsubscribe(client, unsubscribeMessage))
 
       expect(result.res).toBe(null)
     })
 
     it('should return UnsubscribeResult with shouldRemove true when the client is not subscribed and there is no other client subscribed', async () => {
-      const result = await namespace.onUnsubscribe(client, unsubscribeMessage)
+      const result = await firstValueFrom(namespace.onUnsubscribe(client, unsubscribeMessage))
 
       expect(result.shouldRemove).toBe(true)
     })
@@ -315,7 +315,7 @@ describe('WsNamespace', () => {
       callbacks.unsubscribe = unsubscribe
       namespace.onSubscribe(client, callbacks, subscribeMessage)
 
-      const unsub = namespace.onUnsubscribe(client, unsubscribeMessage)
+      const unsub = await firstValueFrom(namespace.onUnsubscribe(client, unsubscribeMessage))
 
       unsubSubject.complete()
       await unsub
@@ -335,7 +335,7 @@ describe('WsNamespace', () => {
       })
 
       it('should return UnsubscribeResult with shouldRemove false when the client is not subscribed', async () => {
-        const result = await namespace.onUnsubscribe(client, unsubscribeMessage)
+        const result = await firstValueFrom(namespace.onUnsubscribe(client, unsubscribeMessage))
 
         expect(result.shouldRemove).toBe(false)
       })
@@ -343,19 +343,19 @@ describe('WsNamespace', () => {
       it('should return UnsubscribeResult with shouldRemove false', async () => {
         namespace.onSubscribe(client, callbacks, subscribeMessage)
 
-        const result = await namespace.onUnsubscribe(client, unsubscribeMessage)
+        const result = await firstValueFrom(namespace.onUnsubscribe(client, unsubscribeMessage))
 
         expect(result.shouldRemove).toBe(false)
       })
 
       it('should return UnsubscribeResult with an observable containing the correct unsubbed message', async () => {
-        const result = await namespace.onUnsubscribe(subscribedClient, unsubscribeMessage)
+        const result = await firstValueFrom(namespace.onUnsubscribe(subscribedClient, unsubscribeMessage))
 
         expect(result.res).toEqual(successfulUnsubscribeMessage)
       })
 
       it('should return UnsubscribeResult with shouldRemove true, when this was the last client', async () => {
-        const result = await namespace.onUnsubscribe(subscribedClient, unsubscribeMessage)
+        const result = await firstValueFrom(namespace.onUnsubscribe(subscribedClient, unsubscribeMessage))
 
         expect(result.shouldRemove).toBe(true)
       })
