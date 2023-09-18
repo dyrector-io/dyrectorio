@@ -1,6 +1,5 @@
 import { ProjectType, WS_TYPE_PATCH_IMAGE } from '@app/models'
-import { expect, Page } from '@playwright/test'
-import { test } from '../../utils/test.fixture'
+import { Page, expect } from '@playwright/test'
 import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, waitForURLExcept } from '../../utils/common'
 import { deployWithDagent } from '../../utils/node-helper'
 import { createNode } from '../../utils/nodes'
@@ -11,7 +10,8 @@ import {
   createVersion,
   fillDeploymentPrefix,
 } from '../../utils/projects'
-import { waitSocketRef as waitSocketRef, wsPatchSent } from '../../utils/websocket'
+import { test } from '../../utils/test.fixture'
+import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
 
 const setup = async (
   page: Page,

@@ -1,3 +1,5 @@
+import { UniqueSecretKeyValue } from '@app/models'
+
 export const wsPatchMatchPorts = (internalPort: string, externalPort?: string) => (payload: any) => {
   const internal = Number.parseInt(internalPort, 10)
   const external = externalPort ? Number.parseInt(externalPort, 10) : null
@@ -19,6 +21,24 @@ export const wsPatchMatchPortRange =
         it.external.from === external &&
         it.internal.to === internalTo &&
         it.external.to === externalTo,
+    )
+  }
+
+export const wsPatchMatchEverySecret =
+  (secretKeys: string[]) =>
+  (payload: any): boolean => {
+    const payloadSecrertKeys: string[] = payload.config?.secrets?.map(it => it?.key) ?? []
+    return secretKeys.every(it => payloadSecrertKeys.includes(it))
+  }
+
+export const wsPatchMatchNonNullSecretValues =
+  (secretKeys: string[]) =>
+  (payload: any): boolean => {
+    const payloadSecrets: UniqueSecretKeyValue[] = payload.config?.secrets ?? []
+
+    return (
+      secretKeys.every(secKey => payloadSecrets.find(it => it.key === secKey)) &&
+      payloadSecrets.every(it => typeof it.value === 'string')
     )
   }
 
