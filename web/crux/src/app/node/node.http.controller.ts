@@ -60,7 +60,7 @@ export default class NodeHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      "Fetch data of deployment targets. Request must include `teamSlug` in URL. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, and `name`.",
+      "Fetch data of deployment targets. Request must include `teamSlug` in URL. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `id`, and `name`.",
     summary: 'Get data of nodes that belong to your team.',
   })
   @ApiOkResponse({
@@ -77,7 +77,7 @@ export default class NodeHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      "Fetch data of a specific node. Request must include `teamSlug` in URL, and `nodeId` in body. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, `name`, `hasToken`, and agent installation details.",
+      "Fetch data of a specific node. Request must include `teamSlug` in URL, and `nodeId` in body. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updatable`, `id`, `name`, `hasToken`, and agent installation details.",
     summary: 'Get data of nodes that belong to your team.',
   })
   @ApiOkResponse({ type: NodeDetailsDto, description: 'Data of the node.' })
@@ -93,7 +93,7 @@ export default class NodeHttpController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
-      "Request must include the `teamSlug` in URL, and node's `name` in body. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, and `name`.",
+      "Request must include the `teamSlug` in URL, and node's `name` in body. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `id`, and `name`.",
     summary: 'Create new node.',
   })
   @CreatedWithLocation()
@@ -192,7 +192,7 @@ export default class NodeHttpController {
   @ApiProduces('text/plain')
   @ApiOperation({
     description:
-      "Request must include the `teamSlug` in URL, and node's `name` in body. Response should include `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, `name`, `hasToken`, and `install` details.",
+      "Request must include the `teamSlug` in URL, and node's `name` in body. Response should include `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updatable`, `id`, `name`, `hasToken`, and `install` details.",
     summary: 'Fetch install script.',
   })
   @ApiOkResponse({ type: NodeDetailsDto, description: 'Install script.' })

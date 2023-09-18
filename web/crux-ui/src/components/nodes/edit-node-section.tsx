@@ -11,7 +11,6 @@ import {
   NodeDetails,
   NodeEventMessage,
   NodeInstall,
-  nodeIsUpdateable,
   NodeType,
   UpdateNodeAgentMessage,
   WS_TYPE_NODE_EVENT,
@@ -78,7 +77,6 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
       address: message.address ?? node.address,
       status: message.status,
       hasToken: message.status === 'connected' || node.hasToken,
-      updating: message.updating ?? node.updating,
       install: message.status === 'connected' ? null : node.install,
     } as NodeDetails
 
@@ -140,7 +138,7 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
 
     setNode({
       ...node,
-      updating: true,
+      status: 'updating',
     })
   }
 
@@ -160,7 +158,9 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
                 {t('agentSettings')}
               </DyoHeading>
 
-              {node.status === 'outdated' && <span className="mt-4">{t('updateRequired')}</span>}
+              {node.updatable && (
+                <span className="mt-4">{t(node.status === 'outdated' ? 'updateRequired' : 'updateAvailable')}</span>
+              )}
 
               <div className="flex flex-row gap-4 mt-4">
                 {node.hasToken && (
@@ -174,11 +174,11 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
                   secondary
                   danger={node.status === 'outdated'}
                   onClick={onUpdateNode}
-                  disabled={!nodeIsUpdateable(node)}
+                  disabled={!node.updatable}
                 >
                   <span className="flex">
                     {t('update')}
-                    {node.updating && <LoadingIndicator className="inline-block ml-2" />}
+                    {node.status === 'updating' && <LoadingIndicator className="inline-block ml-2" />}
                   </span>
                 </DyoButton>
               </div>
