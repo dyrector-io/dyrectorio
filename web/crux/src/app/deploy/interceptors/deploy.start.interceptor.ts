@@ -91,9 +91,9 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
     yupValidate(startDeploymentSchema, target)
 
     const node = this.agentService.getById(deployment.nodeId)
-    if (!node?.connected) {
+    if (!node?.ready) {
       throw new CruxPreconditionFailedException({
-        message: 'Node is unreachable',
+        message: 'Node is busy or unreachable',
         property: 'nodeId',
         value: deployment.nodeId,
       })

@@ -17,7 +17,7 @@ import {
   startWith,
   takeUntil,
 } from 'rxjs'
-import { coerce } from 'semver'
+import { SemVer, coerce } from 'semver'
 import { Agent, AgentConnectionMessage, AgentTokenReplacement } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { generateAgentToken } from 'src/domain/agent-token'
@@ -380,11 +380,7 @@ export default class AgentService {
   }
 
   agentVersionSupported(version: string): boolean {
-    if (!version.includes('-')) {
-      return false
-    }
-
-    const agentVersion = coerce(version)
+    const agentVersion = this.getAgentSemVer(version)
     if (!agentVersion) {
       return false
     }
@@ -397,6 +393,17 @@ export default class AgentService {
     )
   }
 
+  agentVersionIsUpToDate(version: string): boolean {
+    const agentVersion = this.getAgentSemVer(version)
+    if (!agentVersion) {
+      return false
+    }
+
+    const packageVersion = coerce(getPackageVersion(this.configService))
+
+    return agentVersion.compare(packageVersion) === 0
+  }
+
   generateConnectionTokenFor(nodeId: string, startedBy: string): AgentTokenReplacement {
     const token = generateAgentToken(nodeId, 'connection')
     const signedToken = this.jwtService.sign(token)
@@ -406,6 +413,19 @@ export default class AgentService {
       token,
       startedBy,
     }
+  }
+
+  private getAgentSemVer(version: string): SemVer | null {
+    if (!version.includes('-')) {
+      return null
+    }
+
+    const semver = coerce(version)
+    if (!semver) {
+      return null
+    }
+
+    return semver
   }
 
   private async onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
