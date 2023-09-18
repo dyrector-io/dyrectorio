@@ -6,7 +6,8 @@ import WebSocketClientEndpoint from './websocket-client-endpoint'
 import WebSocketClientRoute from './websocket-client-route'
 
 class WebSocketClient {
-  public static ERROR_SESSION_EXPIRED = 4000
+  // NOTE(@robot9706): According to the WebSocket spec the 4000-4999 code range is available to applications
+  public static ERROR_UNAUTHORIZE = 4401
 
   private logger = new Logger('WebSocketClient') // need to be explicit string because of production build uglification
 
@@ -21,6 +22,8 @@ class WebSocketClient {
   private routes: Map<string, WebSocketClientRoute> = new Map()
 
   private errorHandler: WsErrorHandler = null
+
+  private kicked: boolean = false
 
   get connected(): boolean {
     return this.socket?.readyState === WebSocket.OPEN
@@ -76,6 +79,17 @@ class WebSocketClient {
     this.errorHandler = handler
   }
 
+  reset() {
+    if (this.socket && this.socket?.readyState !== WebSocket.CLOSED) {
+      return
+    }
+
+    this.kicked = false
+    this.connectionAttemptCount = 0
+
+    this.reconnect()
+  }
+
   private removeRoute(route: WebSocketClientRoute) {
     const { path } = route
     this.routes.delete(path)
@@ -93,9 +107,7 @@ class WebSocketClient {
 
     const ws = this.socket
     this.socket = null
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.close()
-    }
+    ws.close()
     this.destroyListeners?.call(null)
   }
 
@@ -107,6 +119,10 @@ class WebSocketClient {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       // we are already connected
       return true
+    }
+
+    if (this.kicked) {
+      return false
     }
 
     // if there is already a connctionAttempt wait for the result
@@ -215,12 +231,15 @@ class WebSocketClient {
 
         this.logger.info('Disconnected')
 
+        this.errorHandler({
+          status: it.code,
+          message: it.reason,
+        })
+
         this.routes.forEach(route => route.onSocketClose())
-        if (it.code === WebSocketClient.ERROR_SESSION_EXPIRED) {
-          this.errorHandler({
-            status: WebSocketClient.ERROR_SESSION_EXPIRED,
-            message: it.reason,
-          })
+
+        if (it.code === WebSocketClient.ERROR_UNAUTHORIZE) {
+          this.kicked = true
         } else {
           this.reconnect()
         }

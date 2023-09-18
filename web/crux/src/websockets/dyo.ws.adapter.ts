@@ -9,9 +9,10 @@ import {
   Observable,
   Subject,
   catchError,
+  combineLatest,
   filter,
+  finalize,
   first,
-  forkJoin,
   from,
   fromEvent,
   mergeAll,
@@ -49,7 +50,8 @@ export enum WebSocketReadyState {
   CLOSED_STATE = 3,
 }
 
-const ERROR_SESSION_EXPIRED = 4000
+// NOTE(@robot9706): According to the WebSocket spec the 4000-4999 code range is available to applications
+const ERROR_UNAUTHORIZED = 4401
 
 export default class DyoWsAdapter extends AbstractWsAdapter {
   private readonly logger = new Logger(DyoWsAdapter.name)
@@ -314,7 +316,7 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     client.expireTimeout = setTimeout(() => {
       this.logger.warn(`Session expired for ${client.token}`)
       client.unsubscribeAll()
-      client.close(ERROR_SESSION_EXPIRED, 'Expired')
+      client.close(ERROR_UNAUTHORIZED, 'Expired')
     }, expireTime)
   }
 
@@ -331,13 +333,17 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     WsMetrics.connections().dec()
 
     const routeDisconnects = this.routes.map(it => it.onClientDisconnect(client))
-    forkJoin(routeDisconnects).subscribe(() => {
-      if (client?.subscriptions?.size > 0) {
-        this.logger.warn(`Client ${client.token} failed to cleanup all subscriptions!`)
-      }
+    combineLatest(routeDisconnects)
+      .pipe(
+        finalize(() => {
+          if (client?.subscriptions?.size > 0) {
+            this.logger.warn(`Client ${client.token} failed to cleanup all subscriptions!`)
+          }
 
-      client?.setup?.onClientDisconnect()
-    })
+          client?.setup?.onClientDisconnect()
+        }),
+      )
+      .subscribe()
   }
 
   private findRouteByPath(path: string): [WsRoute, WsRouteMatch] {

@@ -39,7 +39,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
       return await this.canActivateHttp(context, context.switchToHttp().getRequest(), strategy)
     }
     if (type === 'ws') {
-      return await this.canActivateWs(context)
+      return this.canActivateWs(context)
     }
 
     this.logger.error(`Invalid context ${type}`)
@@ -107,7 +107,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
     req.headers.authorization = `Bearer ${token}`
   }
 
-  private async canActivateWs(context: ExecutionContext): Promise<boolean> {
+  private canActivateWs(context: ExecutionContext): boolean {
     const client: WsClient = context.switchToWs().getClient()
     const message = this.reflector.get('message', context.getHandler())
     if (client.disconnecting) {

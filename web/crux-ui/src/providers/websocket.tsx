@@ -1,5 +1,4 @@
 import { defaultWsErrorHandler } from '@app/errors'
-import { ROUTE_LOGIN } from '@app/routes'
 import { isServerSide } from '@app/utils'
 import WebSocketClient from '@app/websockets/websocket-client'
 import useTranslation from 'next-translate/useTranslation'
@@ -25,14 +24,8 @@ export const WebSocketProvider = (props: React.PropsWithChildren<{}>) => {
 
     const client = new WebSocketClient()
 
-    const wsErrorHandler = defaultWsErrorHandler(t)
-    client.setErrorHandler(msg => {
-      if (msg.status === WebSocketClient.ERROR_SESSION_EXPIRED) {
-        router.push(ROUTE_LOGIN)
-        return
-      }
-      wsErrorHandler(msg)
-    })
+    const wsErrorHandler = defaultWsErrorHandler(t, router)
+    client.setErrorHandler(wsErrorHandler)
 
     return client
   })

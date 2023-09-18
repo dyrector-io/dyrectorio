@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { MessageMappingProperties } from '@nestjs/websockets'
-import { EMPTY, Observable, firstValueFrom, forkJoin, map, of, switchMap } from 'rxjs'
+import { EMPTY, Observable, combineLatest, firstValueFrom, map, of, switchMap } from 'rxjs'
 import WsMetrics from 'src/shared/metrics/ws.metrics'
 import {
   SubscriptionMessage,
@@ -173,12 +173,12 @@ export default class WsRoute {
     const unsubscribes = Array.from(subscriptionPaths).map(it => this.removeClientFromNamespace(client, it, null))
 
     return unsubscribes.length
-      ? forkJoin(unsubscribes).pipe(
+      ? combineLatest(unsubscribes).pipe(
           map(() => {
             this.callbacks.delete(client.token)
           }),
         )
-      : of()
+      : EMPTY
   }
 
   private upsertNamespace(match: WsRouteMatch): WsNamespace {

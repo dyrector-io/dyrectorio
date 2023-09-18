@@ -137,7 +137,7 @@ export default class DeployWebSocketGateway {
     @SocketClient() client: WsClient,
     @DeploymentId() deploymentId: string,
     @SocketSubscription() subscription: WsSubscription,
-  ) {
+  ): Promise<void> {
     const data = await this.service.onEditorLeft(deploymentId, client.token)
     const message: WsMessage<EditorLeftMessage> = {
       type: WS_TYPE_EDITOR_LEFT,
