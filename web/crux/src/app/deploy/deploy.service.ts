@@ -833,7 +833,7 @@ export default class DeployService {
     return this.deploymentImageEvents.pipe(filter(it => it.deploymentIds.includes(deploymentId)))
   }
 
-  async getDeployments(teamSlug: string): Promise<DeploymentDto[]> {
+  async getDeployments(teamSlug: string, nodeId?: string): Promise<DeploymentDto[]> {
     const deployments = await this.prisma.deployment.findMany({
       where: {
         version: {
@@ -843,6 +843,7 @@ export default class DeployService {
             },
           },
         },
+        nodeId,
       },
       include: {
         version: {

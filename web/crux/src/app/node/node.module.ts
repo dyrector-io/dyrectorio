@@ -6,6 +6,7 @@ import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import AgentModule from '../agent/agent.module'
 import AuditLoggerModule from '../audit.logger/audit.logger.module'
+import DeployModule from '../deploy/deploy.module'
 import TeamModule from '../team/team.module'
 import TeamRepository from '../team/team.repository'
 import NodeContainerWebSocketGateway from './node.container.ws.gateway'
@@ -17,7 +18,7 @@ import NodeService from './node.service'
 import NodeWebSocketGateway from './node.ws.gateway'
 
 @Module({
-  imports: [AgentModule, TeamModule, HttpModule, AuditLoggerModule],
+  imports: [AgentModule, TeamModule, HttpModule, AuditLoggerModule, DeployModule],
   exports: [NodeMapper],
   controllers: [NodeHttpController, NodePrefixContainerHttpController, NodeGlobalContainerHttpController],
   providers: [
