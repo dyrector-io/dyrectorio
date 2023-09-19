@@ -201,6 +201,8 @@ class NodeApi {
 
   audit = (id: string, query: AuditLogQuery) => urlQuery(`${this.details(id)}/audit`, query)
 
+  deployments = (id: string) => `${this.details(id)}/deployments`
+
   // node-global-container
   globalContainerList = (id: string) => `${this.details(id)}/containers`
 
