@@ -55,20 +55,16 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
       name: '',
       expirationInDays: EXPIRATION_VALUES[0],
     } as CreateDeploymentToken,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const res = await sendForm('PUT', routes.deployment.api.token(deployment.id), values as CreateDeploymentToken)
 
       if (res.ok) {
         const json = await res.json()
         const result = json as DeploymentTokenCreated
 
-        setSubmitting(false)
         setToken(result)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })
@@ -118,8 +114,8 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
             choices={EXPIRATION_VALUES}
             selection={formik.values.expirationInDays}
             converter={it => (it ? t('common:days', { days: it }) : t('common:never'))}
-            onSelectionChange={it => {
-              formik.setFieldValue('expirationInDays', it, false)
+            onSelectionChange={async (it): Promise<void> => {
+              await formik.setFieldValue('expirationInDays', it, false)
             }}
           />
 

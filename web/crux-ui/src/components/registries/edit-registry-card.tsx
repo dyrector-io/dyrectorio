@@ -10,6 +10,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   CreateRegistryDto,
@@ -17,15 +18,15 @@ import {
   GitlabRegistryDetails,
   GoogleRegistryDetails,
   HubRegistryDetails,
-  Registry,
-  registryCreateToDto,
-  RegistryDetails,
-  registryDetailsToRegistry,
-  RegistryType,
   REGISTRY_TYPE_VALUES,
+  Registry,
+  RegistryDetails,
+  RegistryType,
   UncheckedRegistryDetails,
   UpdateRegistryDto,
   V2RegistryDetails,
+  registryCreateToDto,
+  registryDetailsToRegistry,
 } from '@app/models'
 import { FormikProps, sendForm } from '@app/utils'
 import { registrySchema } from '@app/validations'
@@ -37,7 +38,6 @@ import GoogleRegistryFields from './registry-fields/google-registry-field'
 import HubRegistryFields from './registry-fields/hub-registry-fields'
 import UncheckedRegistryFields from './registry-fields/unchecked-registry-field'
 import V2RegistryFields from './registry-fields/v2-registry-field'
-import { SubmitHook } from '@app/hooks/use-submit'
 
 interface EditRegistryCardProps {
   className?: string
@@ -79,9 +79,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
     },
     validationSchema: registrySchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const transformedValues = registrySchema.cast(values) as any
 
       const body = {
@@ -106,40 +104,38 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
         }
 
         setRegistry(result)
-        setSubmitting(false)
         onRegistryEdited(registryDetailsToRegistry(result))
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })
 
   const registryType = formik.values.type
 
-  const onRegistryTypeChange = (changedRegistry: RegistryType) => {
+  const onRegistryTypeChange = async (changedRegistry: RegistryType): Promise<void> => {
     if (registryType !== changedRegistry) {
       const meta = registrySchema.describe()
       const registrySchemaFieldDescription = Object.entries(meta.fields)
 
-      registrySchemaFieldDescription.map(it => {
-        const [field, value]: [string, any] = it
-        if (value.meta?.reset) {
-          formik.setFieldValue(field, '', false)
-          formik.setFieldError(field, '')
-        }
-
-        return it
-      })
+      await Promise.all(
+        registrySchemaFieldDescription.map(async (it): Promise<void> => {
+          const [field, value]: [string, any] = it
+          if (value.meta?.reset) {
+            await formik.setFieldValue(field, '', false)
+            await formik.setFieldError(field, '')
+          }
+        }),
+      )
     }
 
     if (changedRegistry === 'github') {
-      formik.setFieldValue('namespace', 'organization', false)
+      await formik.setFieldValue('namespace', 'organization', false)
     } else if (changedRegistry === 'gitlab') {
-      formik.setFieldValue('namespace', 'group', false)
+      await formik.setFieldValue('namespace', 'group', false)
     }
 
-    formik.setFieldValue('type', changedRegistry, false)
+    await formik.setFieldValue('type', changedRegistry, false)
   }
 
   return (

@@ -67,11 +67,11 @@ const SettingsPage = (props: SettingsFlow) => {
       const res = await sendForm('POST', API_SETTINGS_EDIT_PROFILE, data)
 
       if (res.ok) {
-        router.replace(ROUTE_SETTINGS)
+        await router.replace(ROUTE_SETTINGS)
       } else if (res.status === 410) {
         await router.reload()
       } else if (res.status === 403) {
-        router.replace(`${ROUTE_LOGIN}?refresh=${encodeURIComponent(identity.traits.email)}`)
+        await router.replace(`${ROUTE_LOGIN}?refresh=${encodeURIComponent(identity.traits.email)}`)
       } else {
         const result = await res.json()
         setUi(result.ui)

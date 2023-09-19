@@ -55,9 +55,8 @@ const EditVersionCard = (props: EditVersionCardProps) => {
     },
     validationSchema: !editing ? createVersionSchema : updateVersionSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+    onSubmit: async (values, { setFieldError }) => {
       console.info('Saving version')
-      setSubmitting(true)
 
       const body: CreateVersion | UpdateVersion = values
 
@@ -79,11 +78,9 @@ const EditVersionCard = (props: EditVersionCardProps) => {
         }
 
         setVersion(result)
-        setSubmitting(false)
         onVersionEdited(result)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })
@@ -132,8 +129,8 @@ const EditVersionCard = (props: EditVersionCardProps) => {
               choices={VERSION_TYPE_VALUES}
               selection={formik.values.type}
               converter={it => t(it)}
-              onSelectionChange={type => {
-                formik.setFieldValue('type', type, false)
+              onSelectionChange={async (type): Promise<void> => {
+                await formik.setFieldValue('type', type, false)
               }}
             />
           </>

@@ -35,10 +35,10 @@ const TeamsPage = (props: TeamsPageProps) => {
 
   const submit = useSubmit()
 
-  const onCreated = (team: Team) => {
+  const onCreated = async (team: Team): Promise<void> => {
     setCreating(false)
     setTeams([...teams, team])
-    mutate(API_USERS_ME)
+    await mutate(API_USERS_ME)
   }
 
   const selfLink: BreadcrumbLink = {

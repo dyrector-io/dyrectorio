@@ -60,9 +60,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
     },
     validationSchema: notificationSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const request: CreateNotification | UpdateNotification = {
         ...values,
       }
@@ -82,11 +80,9 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
         }
 
         setNotification(result)
-        setSubmitting(false)
         onNotificationEdited(result as NotificationDetails)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })
@@ -131,7 +127,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
               converter={(it: NotificationType) => t(`type.${it}`)}
               onSelectionChange={async it => {
                 await formik.setFieldValue('type', it)
-                formik.validateField('url')
+                await formik.validateField('url')
               }}
             />
           </div>

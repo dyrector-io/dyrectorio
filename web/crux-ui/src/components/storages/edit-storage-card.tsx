@@ -54,9 +54,7 @@ const EditStorageCard = (props: EditStorageCardProps) => {
     },
     validationSchema: storageSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const body: CreateStorage | UpdateStorage = {
         ...values,
       }
@@ -76,11 +74,9 @@ const EditStorageCard = (props: EditStorageCardProps) => {
         }
 
         setStorage(result)
-        setSubmitting(false)
         onStorageEdited(result)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })

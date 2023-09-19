@@ -67,9 +67,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
     },
     validationSchema: createDeploymentSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const transformedValues = createDeploymentSchema.cast(values) as any
 
       const body: CreateDeployment = {
@@ -84,12 +82,10 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         onAdd(result.id)
       } else if (res.status === 409) {
         // Handle preparing deployment exists or rolling version has deployment errors
-        handleApiError(res.clone())
+        await handleApiError(res.clone())
       } else {
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 
@@ -98,9 +94,10 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       toast.error(t('nodeRequired'))
     }
     if (nodes?.length === 1 && !formik.values.nodeId) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       formik.setFieldValue('nodeId', nodes[0].id)
     }
-  }, [nodes, t])
+  }, [nodes, t, formik])
 
   return (
     <DyoCard className={className}>

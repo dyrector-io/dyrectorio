@@ -51,7 +51,7 @@ const EditTeamCard = (props: EditTeamCardProps) => {
     },
     validationSchema: !editing ? createTeamSchema : updateTeamSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+    onSubmit: async (values, { setFieldError }) => {
       const body: CreateTeam | UpdateTeam = {
         ...values,
       }
@@ -66,8 +66,6 @@ const EditTeamCard = (props: EditTeamCardProps) => {
           return
         }
       }
-
-      setSubmitting(true)
 
       const res = await (!editing
         ? sendForm('POST', API_TEAMS, body as CreateTeam)
@@ -87,11 +85,9 @@ const EditTeamCard = (props: EditTeamCardProps) => {
         }
 
         setTeam(result)
-        setSubmitting(false)
         onTeamEdited(result)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })
@@ -112,10 +108,10 @@ const EditTeamCard = (props: EditTeamCardProps) => {
           type="text"
           required
           label={t('common:name')}
-          onChange={e => {
+          onChange={async e => {
             const { value } = e.target
 
-            formik.setFieldValue('slug', teamSlugFromName(value), false)
+            await formik.setFieldValue('slug', teamSlugFromName(value), false)
             formik.handleChange(e)
           }}
           value={formik.values.name}

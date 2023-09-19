@@ -35,9 +35,7 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
     initialValues: deployment,
     validationSchema: updateDeploymentSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const transformedValues = updateDeploymentSchema.cast(values) as any
 
       const body: PatchDeployment = {
@@ -46,15 +44,13 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
 
       const res = await sendForm('PATCH', routes.deployment.api.details(deployment.id), body)
 
-      setSubmitting(false)
-
       if (res.ok) {
         onDeploymentEdited({
           ...deployment,
           ...transformedValues,
         })
       } else {
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })

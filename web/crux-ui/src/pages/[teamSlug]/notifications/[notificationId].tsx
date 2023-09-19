@@ -44,11 +44,11 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
     })
 
     if (!res.ok) {
-      handleApiError(res)
+      await handleApiError(res)
       return
     }
 
-    router.replace(routes.notification.list())
+    await router.replace(routes.notification.list())
   }
 
   const pageLink: BreadcrumbLink = {

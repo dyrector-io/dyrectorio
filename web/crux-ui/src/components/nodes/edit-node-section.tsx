@@ -108,7 +108,7 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
     })
 
     if (!res.ok) {
-      handleApiError(res)
+      await handleApiError(res)
       return
     }
 

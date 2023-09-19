@@ -31,6 +31,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
   const router = useRouter()
 
   if (!routes) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     router.push(ROUTE_INDEX)
   }
 
@@ -46,9 +47,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
     validationSchema: applyTemplateSchema,
     t,
     enableReinitialize: true,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const body: CreateProjectFromTemplate = {
         id: propsTemplate.id,
         ...values,
@@ -61,11 +60,9 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
         const json = await res.json()
         const result = json as Project
 
-        setSubmitting(false)
         await onTemplateApplied(result.id)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })

@@ -44,11 +44,11 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(routes.storage.list())
+      await router.replace(routes.storage.list())
     } else if (res.status === 412) {
       toastWarning(t('inUse'))
     } else {
-      handleApiError(res)
+      await handleApiError(res)
     }
   }
 

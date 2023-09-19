@@ -53,7 +53,7 @@ const UserRoleAction = (props: UserRoleActionProps) => {
     if (res.ok) {
       onRoleUpdated(updatedRole)
     } else {
-      handleApiError(res)
+      await handleApiError(res)
     }
 
     setUpdating(false)

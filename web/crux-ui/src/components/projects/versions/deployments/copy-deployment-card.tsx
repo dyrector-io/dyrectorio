@@ -51,12 +51,8 @@ const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
     } as CopyDeployment,
     validationSchema: copyDeploymentSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const res = await sendForm('POST', routes.deployment.api.copy(deployment.id), values)
-
-      setSubmitting(false)
 
       if (res.ok) {
         const copiedDeployment = (await res.json()) as Deployment
@@ -65,7 +61,7 @@ const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
         // There is already a deployment for the selected node with the same prefix
         toast.error(t('alreadyHaveDeployment'))
       } else {
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })

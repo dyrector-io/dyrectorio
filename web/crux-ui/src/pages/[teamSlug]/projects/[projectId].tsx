@@ -73,7 +73,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(routes.project.list())
+      await router.replace(routes.project.list())
     } else {
       toast(t('errors:oops'))
     }
@@ -109,7 +109,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
     })
 
     if (!res.ok) {
-      handleApiError(res)
+      await handleApiError(res)
       return
     }
 

@@ -53,9 +53,7 @@ const EditProjectCard = (props: EditProjectCardProps) => {
     },
     validationSchema: !editing ? createProjectSchema : updateProjectSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const body: CreateProject | UpdateProject = {
         ...values,
       }
@@ -76,11 +74,9 @@ const EditProjectCard = (props: EditProjectCardProps) => {
         }
 
         setProject(result)
-        setSubmitting(false)
         onProjectEdited(result)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })

@@ -111,7 +111,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(routes.project.details(project.id, { section: 'deployments' }))
+      await router.replace(routes.project.details(project.id, { section: 'deployments' }))
     } else {
       toast(t('errors:oops'))
     }

@@ -77,6 +77,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   })
 
   const sock = useWebSocket(routes.registry.socket())
+
   sock.on(WS_TYPE_FIND_IMAGE_RESULT, (message: FindImageResultMessage) => {
     if (message.registryId === registry?.id) {
       setLoading(false)
@@ -99,8 +100,9 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       registryId: registry.id,
       filter: '',
     } as FindImageMessage)
+
     setLoading(true)
-  }, [])
+  }, [registry.type, registry.id, sock])
 
   useEffect(() => {
     setTotal(filters.filtered.length)
@@ -118,9 +120,9 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(routes.registry.list())
+      await router.replace(routes.registry.list())
     } else {
-      handleApiError(res)
+      await handleApiError(res)
     }
   }
 
@@ -205,7 +207,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
               data={getPagedImages()}
               noSeparator
               headerBuilder={sortHeaderBuilder<FindImageResult, FindImageResultSorting>(sorting, sortHeaders, text =>
-                t(text),
+                text ? t(text) : '',
               )}
               itemBuilder={itemTemplate}
               footer={<Paginator onChanged={setPagination} length={total} defaultPagination={defaultPagination} />}

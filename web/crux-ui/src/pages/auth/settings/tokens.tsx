@@ -113,7 +113,7 @@ const TokensPage = (props: TokensPageProps) => {
       return
     }
 
-    onDelete(item)
+    await onDelete(item)
   }
 
   const itemTemplate = (item: GeneratedToken) => [

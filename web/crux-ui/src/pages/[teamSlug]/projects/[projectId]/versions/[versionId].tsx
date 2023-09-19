@@ -68,7 +68,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(routes.project.details(project.id))
+      await router.replace(routes.project.details(project.id))
     } else {
       toast(t('errors:oops'))
     }

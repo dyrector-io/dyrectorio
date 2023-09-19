@@ -32,6 +32,10 @@ test.beforeEach(async ({ page }, testInfo) => {
 
     console.info(`[${testInfo.title}] Request started to ${it.url()}`)
   })
+
+  page.on('close', it => {
+    console.info(`[${testInfo.title}] Page close ${it.url()}`)
+  })
   page.on('requestfailed', it => {
     if (!it.url().includes('/api/')) {
       return

@@ -50,6 +50,7 @@ export const Layout = (props: LayoutProps) => {
 
   const router = useRouter()
   if (error) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     router.replace(ROUTE_LOGIN)
   }
 

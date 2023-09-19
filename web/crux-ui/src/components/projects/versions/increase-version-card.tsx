@@ -41,20 +41,16 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
     },
     validationSchema: increaseVersionSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const body: IncreaseVersion = values
 
       const res = await sendForm('POST', routes.project.versions(project.id).api.increase(parent.id), body)
 
       if (res.ok) {
         const result = (await res.json()) as Version
-        setSubmitting(false)
         onVersionIncreased(result)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })

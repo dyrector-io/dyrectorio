@@ -36,9 +36,7 @@ const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
     },
     validationSchema: configBundleCreateSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const body: CreateConfigBundle = {
         ...values,
       }
@@ -56,11 +54,9 @@ const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
           }
         }
 
-        setSubmitting(false)
         onCreated(result)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })

@@ -115,7 +115,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
         pageNumber: currentPageNumber,
       })
     }
-  }, [containerFilters.filtered])
+  }, [currentPageNumber, containerPagination])
 
   sock.on(WS_TYPE_CONTAINERS_STATE_LIST, (message: ContainersStateListMessage) => {
     containerFilters.setItems(message.containers)

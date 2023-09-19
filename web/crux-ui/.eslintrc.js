@@ -43,6 +43,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/no-throw-literal': 'off',
     '@typescript-eslint/return-await': 'off',
+    '@typescript-eslint/no-floating-promises': 'error',
     'no-await-in-loop': 'off',
     'no-nested-ternary': 'off',
     'no-param-reassign': 'off',

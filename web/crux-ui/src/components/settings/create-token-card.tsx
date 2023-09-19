@@ -37,20 +37,16 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
       name: '',
       expirationInDays: EXPIRATION_VALUES[0],
     } as GenerateToken,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const res = await sendForm('POST', API_TOKENS, values as GenerateToken)
 
       if (res.ok) {
         const json = await res.json()
         const result = json as GeneratedToken
 
-        setSubmitting(false)
         onTokenCreated(result)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })
@@ -80,8 +76,8 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
           choices={EXPIRATION_VALUES}
           selection={formik.values.expirationInDays}
           converter={it => (it === 0 ? t('common:never') : t('common:days', { days: it }))}
-          onSelectionChange={it => {
-            formik.setFieldValue('expirationInDays', it, false)
+          onSelectionChange={async it => {
+            await formik.setFieldValue('expirationInDays', it, false)
           }}
         />
 

@@ -48,9 +48,7 @@ const InviteUserCard = (props: InviteUserCardProps) => {
     },
     validationSchema: inviteUserSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const captcha = await recaptcha.current?.executeAsync()
 
       const request: InviteUser = {
@@ -64,13 +62,11 @@ const InviteUserCard = (props: InviteUserCardProps) => {
         const json = await res.json()
         const user = json as User
 
-        setSubmitting(false)
         onUserInvited(user)
       } else {
         recaptcha.current?.reset()
 
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })

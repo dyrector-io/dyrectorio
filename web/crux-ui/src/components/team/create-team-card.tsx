@@ -31,20 +31,16 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
     },
     validationSchema: createTeamSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const res = await sendForm('POST', API_TEAMS, values as CreateTeam)
 
       if (res.ok) {
         const json = await res.json()
         const team = json as Team
 
-        setSubmitting(false)
         onTeamCreated(team)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })
@@ -64,11 +60,11 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
           name="name"
           type="text"
           label={t('common:name')}
-          onChange={e => {
-            const { value } = e.target
+          onChange={async (ev): Promise<void> => {
+            const { value } = ev.target
 
-            formik.setFieldValue('slug', teamSlugFromName(value), false)
-            formik.handleChange(e)
+            await formik.setFieldValue('slug', teamSlugFromName(value), false)
+            formik.handleChange(ev)
           }}
           value={formik.values.name}
           message={formik.errors.name}

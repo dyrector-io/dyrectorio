@@ -174,7 +174,7 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
       return
     }
 
-    handleApiError(res)
+    await handleApiError(res)
   }
 
   return deploy

@@ -88,13 +88,13 @@ export const useConfigBundleDetailsState = (
     })
   })
 
-  const onDelete = async () => {
+  const onDelete = async (): Promise<void> => {
     const res = await fetch(routes.configBundles.api.details(configBundle.id), {
       method: 'DELETE',
     })
 
     if (res.ok) {
-      router.replace(routes.configBundles.list())
+      await router.replace(routes.configBundles.list())
     } else if (res.status === 412) {
       toastWarning(t('inUse'))
     } else {

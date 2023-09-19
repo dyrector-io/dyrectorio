@@ -101,7 +101,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const sendDeleteUserRequest = async (user: User) => {
+  const sendDeleteUserRequest = async (user: User): Promise<void> => {
     const res = await fetch(teamUserApiUrl(team.id, user.id), {
       method: 'DELETE',
     })
@@ -112,17 +112,17 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
         users: team.users.filter(it => it.id !== user.id),
       })
     } else {
-      handleApiError(res)
+      await handleApiError(res)
     }
   }
 
-  const sendLeaveUserRequest = async () => {
+  const sendLeaveUserRequest = async (): Promise<void> => {
     const res = await fetch(teamUserLeaveApiUrl(team.id), {
       method: 'DELETE',
     })
 
     if (!res.ok) {
-      handleApiError(res)
+      await handleApiError(res)
       return
     }
 
@@ -133,11 +133,11 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     await router.replace(ROUTE_INDEX)
   }
 
-  const onTeamEdited = (newTeam: Team) => {
+  const onTeamEdited = async (newTeam: Team): Promise<void> => {
     setDetailsState('none')
 
     if (activeTeam) {
-      router.replace(selectTeamUrl(newTeam.slug))
+      await router.replace(selectTeamUrl(newTeam.slug))
       return
     }
 
@@ -146,16 +146,16 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
       ...newTeam,
     })
 
-    mutate(API_USERS_ME)
+    await mutate(API_USERS_ME)
   }
 
-  const onDeleteTeam = async () => {
+  const onDeleteTeam = async (): Promise<void> => {
     const res = await fetch(teamApiUrl(team.id), {
       method: 'DELETE',
     })
 
     if (!res.ok) {
-      handleApiError(res)
+      await handleApiError(res)
       return
     }
 
@@ -169,7 +169,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
 
   const onInviteUser = () => setDetailsState('inviting')
 
-  const onReinviteUser = async (user: User) => {
+  const onReinviteUser = async (user: User): Promise<void> => {
     startCountdown(AUTH_RESEND_DELAY)
 
     const res = await fetch(teamUserReinviteUrl(team.id, user.id), {
@@ -191,7 +191,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     } else if (res.status === 412) {
       toast.error(t('invitationNotExpired'))
     } else {
-      handleApiError(res)
+      await handleApiError(res)
     }
   }
 
@@ -203,7 +203,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     })
   }
 
-  const onDeleteUser = async (user: User) => {
+  const onDeleteUser = async (user: User): Promise<void> => {
     const confirmed = await confirmDelete({
       title: t('common:areYouSureDeleteName', { name: user.name }),
       confirmText: t('common:delete'),
@@ -217,7 +217,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     await sendDeleteUserRequest(user)
   }
 
-  const onUserRoleUpdated = (userId: string, role: UserRole) => {
+  const onUserRoleUpdated = (userId: string, role: UserRole): Promise<void> => {
     const index = team.users.findIndex(it => it.id === userId)
     if (index < 0) {
       return
@@ -231,7 +231,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     })
   }
 
-  const onLeaveTeam = async () => {
+  const onLeaveTeam = async (): Promise<void> => {
     const confirmed = await confirmDelete({
       title: t('leaveTeam'),
       description: t('areYouSureWantToLeave', { name: team.name }),

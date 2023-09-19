@@ -54,7 +54,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
     })
 
     if (!res.ok) {
-      handleApiError(res)
+      await handleApiError(res)
       return
     }
 
