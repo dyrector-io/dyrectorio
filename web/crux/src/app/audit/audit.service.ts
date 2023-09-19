@@ -63,14 +63,12 @@ export default class AuditService {
       return {}
     }
 
-    const userIds = await this.kratos.getIdentityIdsByEmail(filter)
+    const user = await this.kratos.getIdentityByEmail(filter)
 
     return {
       OR: [
         {
-          userId: {
-            in: userIds,
-          },
+          userId: user.id,
         },
         {
           event: {

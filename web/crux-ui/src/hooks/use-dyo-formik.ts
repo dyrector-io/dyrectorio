@@ -1,17 +1,39 @@
+import { yupErrorTranslate } from '@app/validations'
 import { FormikConfig, FormikValues, useFormik } from 'formik'
+import { Translate } from 'next-translate'
 import { MutableRefObject, useEffect } from 'react'
 
-type DyoFormikOptions<Values> = FormikConfig<Values> & {
+export type DyoFormikOptions<Values> = FormikConfig<Values> & {
   submitRef?: MutableRefObject<() => Promise<any>>
+  t?: Translate
 }
 
 const useDyoFormik = <Values extends FormikValues>(options: DyoFormikOptions<Values>) => {
-  const { submitRef, ...formikOptions } = options
+  const { submitRef, t, ...formikOptions } = options
 
   const formik = useFormik({
     validateOnBlur: false,
     validateOnChange: false,
     ...formikOptions,
+    validationSchema: options.validationSchema
+      ? () => ({
+          ...options.validationSchema,
+          validateSync: (values: any, validationOptions: any) => {
+            try {
+              return options.validationSchema.validateSync(values, validationOptions)
+            } catch (err) {
+              throw t ? yupErrorTranslate(err, t) : err
+            }
+          },
+          validate: async (values: any, validationOptions: any) => {
+            try {
+              await options.validationSchema.validate(values, validationOptions)
+            } catch (err) {
+              throw t ? yupErrorTranslate(err, t) : err
+            }
+          },
+        })
+      : null,
   })
 
   useEffect(() => {

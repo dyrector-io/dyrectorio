@@ -74,6 +74,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
       dagentTraefik: null,
     },
     validationSchema: nodeGenerateScriptSchema,
+    t,
     onSubmit: async (values, { setSubmitting }) => {
       setSubmitting(true)
 

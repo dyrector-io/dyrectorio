@@ -65,20 +65,22 @@ export default class NodeMapper {
     return {
       id: node.id,
       address: agent?.address,
-      status: agent?.outdated ? 'outdated' : agent?.getConnectionStatus() ?? 'unreachable',
+      status: agent?.getConnectionStatus() ?? 'unreachable',
       connectedAt: node.connectedAt ?? null,
       version: agent?.version,
-      updating: agent?.updating,
     }
   }
 
   detailsToDto(node: NodeDetails): NodeDetailsDto {
     const installer = this.agentService.getInstallerByNodeId(node.id)
 
+    const agent = this.agentService.getById(node.id)
+
     return {
       ...this.toDto(node),
       hasToken: !!node.token,
       install: installer ? this.installerToDto(installer) : null,
+      updatable: agent && (agent.outdated || !this.agentService.agentVersionIsUpToDate(agent.version)),
       inUse: node._count.deployments > 0,
     }
   }

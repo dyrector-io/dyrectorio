@@ -127,7 +127,8 @@
   "nodeStatuses": {
     "connected": "Connected",
     "unreachable": "Unreachable",
-    "outdated": "Outdated"
+    "outdated": "Outdated",
+    "updating": "Updating"
   },
 
   "deploymentStatuses": {

@@ -90,7 +90,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       return
     }
 
-    await deploy(deployment.id)
+    await deploy({ deploymentId: deployment.id })
   }
 
   const onDeleteDeployment = async (deployment: DeploymentByVersion) => {

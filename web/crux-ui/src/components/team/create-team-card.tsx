@@ -30,6 +30,7 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
       slug: '',
     },
     validationSchema: createTeamSchema,
+    t,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

@@ -38,6 +38,7 @@ const NewPasswordPage = (props: NewPasswordPageProps) => {
       confirmPassword: '',
     },
     validationSchema: passwordSchema,
+    t,
     onSubmit: async values => {
       if (values.password !== values.confirmPassword) {
         setConfirmError(t('errors:confirmPassMismatch'))

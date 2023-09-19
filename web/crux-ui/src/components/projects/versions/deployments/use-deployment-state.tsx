@@ -135,7 +135,6 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       ...node,
       status: message.status,
       address: message.address,
-      updating: message.updating ?? node.updating,
     })
   })
 

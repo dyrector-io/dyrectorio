@@ -16,3 +16,7 @@ and can not be used unless an update is performed.
 While creating a new release, the `AGENT_PROTO_COMPATIBILITY_MINIMUM_VERSION` should be incremented to the version number of the new release when:
  - The agent proto changed in a way that is incompatible with the old agents
  - The internal working of the agent changed in a way that is incompatible with the new Crux
+
+## Container labels
+
+Each container in the dyrector.io stack has an `org.dyrectorio.service-category` label. When `org.dyrectorio.service-category`:`_internal`, the running containers of dyrector.io stack will be hidden from Docker Desktop UI and other tools.

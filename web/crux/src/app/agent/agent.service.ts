@@ -17,7 +17,7 @@ import {
   startWith,
   takeUntil,
 } from 'rxjs'
-import { coerce } from 'semver'
+import { SemVer, coerce } from 'semver'
 import { Agent, AgentConnectionMessage, AgentTokenReplacement } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { generateAgentToken } from 'src/domain/agent-token'
@@ -380,11 +380,7 @@ export default class AgentService {
   }
 
   agentVersionSupported(version: string): boolean {
-    if (!version.includes('-')) {
-      return false
-    }
-
-    const agentVersion = coerce(version)
+    const agentVersion = this.getAgentSemVer(version)
     if (!agentVersion) {
       return false
     }
@@ -395,6 +391,17 @@ export default class AgentService {
       agentVersion.compare(AGENT_SUPPORTED_MINIMUM_VERSION) >= 0 && // agent version is newer (bigger) or the same
       agentVersion.compare(packageVersion) <= 0
     )
+  }
+
+  agentVersionIsUpToDate(version: string): boolean {
+    const agentVersion = this.getAgentSemVer(version)
+    if (!agentVersion) {
+      return false
+    }
+
+    const packageVersion = coerce(getPackageVersion(this.configService))
+
+    return agentVersion.compare(packageVersion) === 0
   }
 
   generateConnectionTokenFor(nodeId: string, startedBy: string): AgentTokenReplacement {
@@ -408,6 +415,19 @@ export default class AgentService {
     }
   }
 
+  private getAgentSemVer(version: string): SemVer | null {
+    if (!version.includes('-')) {
+      return null
+    }
+
+    const semver = coerce(version)
+    if (!semver) {
+      return null
+    }
+
+    return semver
+  }
+
   private async onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === 'unreachable') {
       const storedAgent = this.agents.get(agent.id)
@@ -415,7 +435,7 @@ export default class AgentService {
       // there should be no awaits between this and the agents.delete() call
       // so we can be sure it happens in the same microtask
       if (agent === storedAgent) {
-        this.logger.log(`Left: ${agent.id}`)
+        this.logger.log(`Left: ${agent.id}, version: ${agent.version}`)
         this.agents.delete(agent.id)
         AgentMetrics.connectedCount().dec()
 
@@ -434,9 +454,18 @@ export default class AgentService {
 
       agent.onDisconnected()
     } else if (status === 'connected' || status === 'outdated') {
+      if (this.agents.has(agent.id)) {
+        this.logger.warn(
+          `Agent connection divergence: ${agent.id} was emitting a ${status} status, while there was an agent with the same ID already connected. Sending shutdown.`,
+        )
+
+        agent.close(CloseReason.SHUTDOWN)
+        return
+      }
+
       this.agents.set(agent.id, agent)
 
-      this.logger.log(`Agent joined with id: ${agent.id}, key: ${!!agent.publicKey}`)
+      this.logger.log(`Agent joined with id: ${agent.id}, version: ${agent.version} key: ${!!agent.publicKey}`)
       AgentMetrics.connectedCount().inc()
       this.logServiceInfo()
 
@@ -459,6 +488,7 @@ export default class AgentService {
       // we just have to return the command channel
 
       // command channel is already completed so no need for onDisconnected() call
+      this.logger.verbose('Crashing legacy agent intercepted.')
       return agent.onConnected(AgentConnectionLegacyStrategy.CONNECTION_STATUS_LISTENER)
     }
 
@@ -513,7 +543,7 @@ export default class AgentService {
   }
 
   private logServiceInfo(): void {
-    this.logger.debug(`Agents: ${this.agents.size}`)
+    this.logger.verbose(`Agents: ${this.agents.size}`)
     this.agents.forEach(it => it.debugInfo(this.logger))
   }
 }

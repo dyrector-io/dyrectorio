@@ -55,6 +55,7 @@ const SettingsPage = (props: SettingsFlow) => {
       confirmPassword: '',
     },
     validationSchema: passwordSchema,
+    t,
     onSubmit: async values => {
       if (values.password !== values.confirmPassword) {
         setConfirmError(t('errors:confirmPassMismatch'))
