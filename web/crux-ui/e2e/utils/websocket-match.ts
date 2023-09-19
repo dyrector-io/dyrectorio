@@ -27,8 +27,8 @@ export const wsPatchMatchPortRange =
 export const wsPatchMatchEverySecret =
   (secretKeys: string[]) =>
   (payload: any): boolean => {
-    const payloadSecrertKeys: string[] = payload.config?.secrets?.map(it => it?.key) ?? []
-    return secretKeys.every(it => payloadSecrertKeys.includes(it))
+    const payloadSecretKeys: string[] = payload.config?.secrets?.map(it => it?.key) ?? []
+    return secretKeys.every(it => payloadSecretKeys.includes(it))
   }
 
 export const wsPatchMatchNonNullSecretValues =
