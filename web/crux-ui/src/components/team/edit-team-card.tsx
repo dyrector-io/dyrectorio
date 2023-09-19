@@ -108,11 +108,11 @@ const EditTeamCard = (props: EditTeamCardProps) => {
           type="text"
           required
           label={t('common:name')}
-          onChange={async e => {
-            const { value } = e.target
+          onChange={async ev => {
+            formik.handleChange(ev)
 
+            const { value } = ev.target
             await formik.setFieldValue('slug', teamSlugFromName(value), false)
-            formik.handleChange(e)
           }}
           value={formik.values.name}
           message={formik.errors.name}

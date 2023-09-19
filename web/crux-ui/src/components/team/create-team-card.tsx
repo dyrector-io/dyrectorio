@@ -61,10 +61,10 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
           type="text"
           label={t('common:name')}
           onChange={async (ev): Promise<void> => {
-            const { value } = ev.target
-
-            await formik.setFieldValue('slug', teamSlugFromName(value), false)
             formik.handleChange(ev)
+
+            const { value } = ev.target
+            await formik.setFieldValue('slug', teamSlugFromName(value), false)
           }}
           value={formik.values.name}
           message={formik.errors.name}

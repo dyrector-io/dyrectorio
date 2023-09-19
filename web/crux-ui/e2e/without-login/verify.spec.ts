@@ -1,15 +1,16 @@
 import { ROUTE_LOGIN, ROUTE_VERIFICATION } from '@app/routes'
 import { expect } from '@playwright/test'
-import { test as base } from '../utils/test.fixture'
 import {
+  USER_PASSWORD,
   createUser,
   deleteUserByEmail,
   extractKratosLinkFromMail,
   kratosFromBaseURL,
+  kratosFromConfig,
   mailslurperFromBaseURL,
   screenshotPath,
-  USER_PASSWORD,
 } from '../utils/common'
+import { test as base } from '../utils/test.fixture'
 
 const VERIFYABLE_PASSWORD = `v.${USER_PASSWORD}`
 
@@ -65,7 +66,7 @@ test('should verify address', async ({ baseURL, page, email }) => {
   await expect(page.locator('h1')).toContainText('Log in')
 })
 
-test('Account verification logout should work', async ({ baseURL, page, email }) => {
+test('Account verification logout should work', async ({ page, email }) => {
   await page.goto(ROUTE_VERIFICATION)
   await expect(page.locator('h1')).toContainText('Account verification')
 
@@ -78,10 +79,10 @@ test('Account verification logout should work', async ({ baseURL, page, email })
 
 test.beforeEach(async ({ baseURL, email }) => {
   const kratos = kratosFromBaseURL(baseURL)
-  createUser(kratos, email, VERIFYABLE_PASSWORD)
+  await createUser(kratos, email, VERIFYABLE_PASSWORD)
 })
 
 test.afterEach(async ({ baseURL, email }) => {
   const kratos = kratosFromBaseURL(baseURL)
-  deleteUserByEmail(kratos, email)
+  await deleteUserByEmail(kratos, email)
 })

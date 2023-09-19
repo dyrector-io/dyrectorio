@@ -101,9 +101,9 @@ const EditVersionCard = (props: EditVersionCardProps) => {
           type="name"
           required
           label={t('common:name')}
-          onChange={e => {
-            formik.handleChange(e)
-            setVersionHint(e.target.value)
+          onChange={ev => {
+            formik.handleChange(ev)
+            setVersionHint(ev.target.value)
           }}
           value={formik.values.name}
           message={versionHint ?? formik.errors.name}

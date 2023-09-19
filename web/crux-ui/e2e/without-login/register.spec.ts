@@ -37,5 +37,5 @@ test('should register with eligible credentials', async ({ page }) => {
 
 test.afterAll(async ({ baseURL }) => {
   const kratos = kratosFromBaseURL(baseURL)
-  deleteUserByEmail(kratos, REGISTERED_USER_EMAIL)
+  await deleteUserByEmail(kratos, REGISTERED_USER_EMAIL)
 })
