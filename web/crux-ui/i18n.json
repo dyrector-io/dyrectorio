@@ -22,7 +22,7 @@
     "/[teamSlug]/projects/[projectId]/versions/[versionId]": ["versions", "images", "deployments"],
     "/[teamSlug]/projects/[projectId]/versions/[versionId]/images/[imageId]": ["images", "container"],
     "/[teamSlug]/nodes": ["nodes", "tokens"],
-    "/[teamSlug]/nodes/[nodeId]": ["nodes", "images", "tokens"],
+    "/[teamSlug]/nodes/[nodeId]": ["nodes", "images", "tokens", "deployments"],
     "/[teamSlug]/nodes/[nodeId]/log": [],
     "/[teamSlug]/registries": ["registries"],
     "/[teamSlug]/registries/[registryId]": ["registries"],
