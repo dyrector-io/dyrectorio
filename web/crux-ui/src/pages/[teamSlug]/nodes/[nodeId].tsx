@@ -4,6 +4,7 @@ import EditNodeSection from '@app/components/nodes/edit-node-section'
 import NodeAuditList from '@app/components/nodes/node-audit-list'
 import NodeConnectionCard from '@app/components/nodes/node-connection-card'
 import NodeContainersList from '@app/components/nodes/node-containers-list'
+import NodeDeploymentList from '@app/components/nodes/node-deployment-list'
 import NodeSectionsHeading from '@app/components/nodes/node-sections-heading'
 import useNodeDetailsState from '@app/components/nodes/use-node-details-state'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
@@ -14,7 +15,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { NodeDetails } from '@app/models'
+import { Deployment, NodeDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
@@ -25,10 +26,11 @@ import { useSWRConfig } from 'swr'
 
 interface NodeDetailsPageProps {
   node: NodeDetails
+  deployments: Deployment[]
 }
 
 const NodeDetailsPage = (props: NodeDetailsPageProps) => {
-  const { node: propsNode } = props
+  const { node: propsNode, deployments } = props
 
   const { t } = useTranslation('nodes')
   const routes = useTeamRoutes()
@@ -113,8 +115,10 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
 
               <NodeContainersList state={state} actions={actions} />
             </>
-          ) : (
+          ) : state.section === 'logs' ? (
             <NodeAuditList node={node} />
+          ) : (
+            <NodeDeploymentList deployments={deployments} />
           )}
         </>
       )}
@@ -132,10 +136,12 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   const nodeId = context.query.nodeId as string
 
   const node = await getCruxFromContext<NodeDetails>(context, routes.node.api.details(nodeId))
+  const deployments = await getCruxFromContext<Deployment[]>(context, routes.node.api.deployments(nodeId))
 
   return {
     props: {
       node,
+      deployments,
     },
   }
 }

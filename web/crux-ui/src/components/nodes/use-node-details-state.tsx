@@ -24,7 +24,7 @@ import { useEffect, useState } from 'react'
 import { PaginationSettings } from '../shared/paginator'
 import useNodeState from './use-node-state'
 
-export type NodeDetailsSection = 'editing' | 'containers' | 'logs'
+export type NodeDetailsSection = 'editing' | 'containers' | 'logs' | 'deployments'
 
 export type ContainerTargetStates = { [key: string]: ContainerState } // containerName to targetState
 

@@ -27,6 +27,8 @@ import {
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
+import { DeploymentDto } from '../deploy/deploy.dto'
+import DeployService from '../deploy/deploy.service'
 import { DisableAuth, IdentityFromRequest } from '../token/jwt-auth.guard'
 import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
 import { NodeId, PARAM_NODE_ID, ROUTE_NODES, ROUTE_NODE_ID, ROUTE_TEAM_SLUG, TeamSlug } from './node.const'
@@ -49,13 +51,16 @@ import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
 @ApiTags(ROUTE_NODES)
 @UseGuards(NodeTeamAccessGuard)
 export default class NodeHttpController {
-  constructor(private service: NodeService) {}
+  constructor(
+    private service: NodeService,
+    private deployService: DeployService,
+  ) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      "Fetch data of deployment targets. Request must include `teamSlug` in URL. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, and `name`.",
+      "Fetch data of deployment targets. Request must include `teamSlug` in URL. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `id`, and `name`.",
     summary: 'Get data of nodes that belong to your team.',
   })
   @ApiOkResponse({
@@ -72,7 +77,7 @@ export default class NodeHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      "Fetch data of a specific node. Request must include `teamSlug` in URL, and `nodeId` in body. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, `name`, `hasToken`, and agent installation details.",
+      "Fetch data of a specific node. Request must include `teamSlug` in URL, and `nodeId` in body. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updatable`, `id`, `name`, `hasToken`, and agent installation details.",
     summary: 'Get data of nodes that belong to your team.',
   })
   @ApiOkResponse({ type: NodeDetailsDto, description: 'Data of the node.' })
@@ -88,7 +93,7 @@ export default class NodeHttpController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
-      "Request must include the `teamSlug` in URL, and node's `name` in body. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, and `name`.",
+      "Request must include the `teamSlug` in URL, and node's `name` in body. Response should include an array with the node's `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `id`, and `name`.",
     summary: 'Create new node.',
   })
   @CreatedWithLocation()
@@ -187,7 +192,7 @@ export default class NodeHttpController {
   @ApiProduces('text/plain')
   @ApiOperation({
     description:
-      "Request must include the `teamSlug` in URL, and node's `name` in body. Response should include `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updating`, `id`, `name`, `hasToken`, and `install` details.",
+      "Request must include the `teamSlug` in URL, and node's `name` in body. Response should include `type`, `status`, `description`, `icon`, `address`, `connectedAt` date, `version`, `updatable`, `id`, `name`, `hasToken`, and `install` details.",
     summary: 'Fetch install script.',
   })
   @ApiOkResponse({ type: NodeDetailsDto, description: 'Install script.' })
@@ -250,5 +255,22 @@ export default class NodeHttpController {
     @Query() query: NodeAuditLogQueryDto,
   ): Promise<NodeAuditLogListDto> {
     return await this.service.getAuditLog(nodeId, query)
+  }
+
+  @Get(`${ROUTE_NODE_ID}/deployments`)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    description:
+      'Get the list of deployments. Request needs to include `teamSlug` in URL. A deployment should include `id`, `prefix`, `status`, `note`, `audit` log details, project `name`, `id`, `type`, version `name`, `type`, `id`, and node `name`, `id`, `type`.',
+    summary: 'Fetch the list of deployments.',
+  })
+  @ApiOkResponse({
+    type: DeploymentDto,
+    isArray: true,
+    description: 'List of deployments.',
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
+  async getDeployments(@TeamSlug() teamSlug: string, @NodeId() nodeId: string): Promise<DeploymentDto[]> {
+    return await this.deployService.getDeployments(teamSlug, nodeId)
   }
 }
