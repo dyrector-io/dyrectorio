@@ -84,6 +84,10 @@ class WebSocketClient {
       return
     }
 
+    if (!this.kicked) {
+      return
+    }
+
     this.kicked = false
     this.connectionAttemptCount = 0
 
