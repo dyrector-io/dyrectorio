@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }, testInfo) => {
       return
     }
 
-    console.log(`[${testInfo.title}] ${type.toUpperCase()} ${it.text()}`)
+    console.info(`[${testInfo.title}] ${type.toUpperCase()} ${it.text()}`)
   })
 
   if (CPU_THROTTLE) {
