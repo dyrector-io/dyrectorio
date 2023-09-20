@@ -1,8 +1,6 @@
-FROM ubuntu:kinetic
+FROM ubuntu:lunar
 
 RUN apt-get update && apt-get install -y docker-compose nodejs npm jq pip curl zstd
-
-RUN pip install yq
 
 RUN mkdir playwright
 

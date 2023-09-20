@@ -15,6 +15,7 @@ import { sendForm } from '@app/utils'
 import { applyTemplateSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 
 interface ApplyTemplateCardProps {
   className?: string
@@ -30,10 +31,12 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
   const routes = useTeamRoutes()
   const router = useRouter()
 
-  if (!routes) {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    router.push(ROUTE_INDEX)
-  }
+  useEffect(() => {
+    if (!routes) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      router.push(ROUTE_INDEX)
+    }
+  }, [routes, router])
 
   const handleApiError = defaultApiErrorHandler(t)
 

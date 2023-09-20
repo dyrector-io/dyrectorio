@@ -5,7 +5,7 @@ import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import Head from 'next/head'
-import React from 'react'
+import React, { useEffect } from 'react'
 import useSWR from 'swr'
 import Footer from './main/footer'
 import { Sidebar } from './main/sidebar'
@@ -49,10 +49,13 @@ export const Layout = (props: LayoutProps) => {
   )
 
   const router = useRouter()
-  if (error) {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    router.replace(ROUTE_LOGIN)
-  }
+
+  useEffect(() => {
+    if (error) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      router.replace(ROUTE_LOGIN)
+    }
+  }, [error, router])
 
   return (
     <>
