@@ -4,14 +4,12 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
-import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
+import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { auditFieldGetter, dateSort, enumSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Deployment, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
 import { auditToLocaleDate } from '@app/utils'
-import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -22,7 +20,6 @@ interface NodeDeploymentListProps {
 }
 
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
-type DeploymentSorting = 'project' | 'version' | 'prefix' | 'updatedAt' | 'status'
 
 const NodeDeploymentList = (props: NodeDeploymentListProps) => {
   const { deployments: propsDeployments } = props
@@ -41,78 +38,7 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
     initialData: propsDeployments,
   })
 
-  const sorting = useSorting<Deployment, DeploymentSorting>(filters.filtered, {
-    initialField: 'updatedAt',
-    initialDirection: 'asc',
-    sortFunctions: {
-      project: stringSort,
-      version: stringSort,
-      prefix: stringSort,
-      updatedAt: dateSort,
-      status: enumSort(DEPLOYMENT_STATUS_VALUES),
-    },
-    fieldGetters: {
-      project: it => it.project.name,
-      version: it => it.version.name,
-      updatedAt: auditFieldGetter,
-    },
-  })
-
-  const headers = [
-    'common:project',
-    'common:version',
-    'common:prefix',
-    'common:updatedAt',
-    'common:status',
-    'common:actions',
-  ]
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 px-2 font-semibold'
-  const headerClasses = [
-    clsx('rounded-tl-lg pl-6', defaultHeaderClass),
-    ...Array.from({ length: headers.length - 3 }).map(() => defaultHeaderClass),
-    clsx('text-center', defaultHeaderClass),
-    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
-  ]
-
-  const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
-  const itemClasses = [
-    clsx('pl-6', defaultItemClass),
-    ...Array.from({ length: headerClasses.length - 3 }).map(() => defaultItemClass),
-    clsx('text-center', defaultItemClass),
-    clsx('pr-6 text-center', defaultItemClass),
-  ]
-
-  const onCellClick = async (data: Deployment, row: number, col: number) => {
-    if (col >= headers.length - 1) {
-      return
-    }
-
-    await router.push(routes.deployment.details(data.id))
-  }
-
-  const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [
-    item.project.name,
-    item.version.name,
-    <span>{item.prefix}</span>,
-    <span suppressHydrationWarning>{auditToLocaleDate(item.audit)}</span>,
-    <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
-    <>
-      <div className="inline-block mr-2">
-        <Link href={routes.deployment.details(item.id)} passHref>
-          <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
-        </Link>
-      </div>
-
-      <DyoIcon
-        src="/note.svg"
-        alt={t('common:note')}
-        size="md"
-        className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-        onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
-      />
-    </>,
-  ]
-  /* eslint-enable react/jsx-key */
+  const onRowClick = async (data: Deployment) => await router.push(routes.deployment.details(data.id))
 
   return (
     <>
@@ -132,26 +58,72 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
             />
           </Filters>
           <DyoCard className="relative mt-4">
-            <DyoList
-              headers={[...headers]}
-              headerClassName={headerClasses}
-              itemClassName={itemClasses}
-              data={sorting.items}
-              noSeparator
-              itemBuilder={itemTemplate}
-              headerBuilder={sortHeaderBuilder<Deployment, DeploymentSorting>(
-                sorting,
-                {
-                  'common:project': 'project',
-                  'common:version': 'version',
-                  'common:prefix': 'prefix',
-                  'common:updatedAt': 'updatedAt',
-                  'common:status': 'status',
-                },
-                text => t(text),
-              )}
-              cellClick={onCellClick}
-            />
+            <DyoTable data={filters.filtered} onRowClick={onRowClick}>
+              <DyoColumn
+                header={t('common:project')}
+                body={(it: Deployment) => it.project.name}
+                width="16%"
+                sortable
+                sortField="project.name"
+                sort={sortString}
+              />
+              <DyoColumn
+                header={t('common:version')}
+                body={(it: Deployment) => it.version.name}
+                width="16%"
+                sortable
+                sortField="version.name"
+                sort={sortString}
+              />
+              <DyoColumn
+                header={t('common:prefix')}
+                field="prefix"
+                width="16%"
+                sortable
+                sortField="prefix"
+                sort={sortString}
+              />
+              <DyoColumn
+                header={t('common:updatedAt')}
+                body={(it: Deployment) => auditToLocaleDate(it.audit)}
+                width="16%"
+                suppressHydrationWarning
+                sortable
+                sortField={it => it.audit.updatedAt ?? it.audit.createdAt}
+                sort={sortDate}
+              />
+              <DyoColumn
+                header={t('common:status')}
+                body={(it: Deployment) => <DeploymentStatusTag status={it.status} className="w-fit mx-auto" />}
+                width="16%"
+                sortable
+                sortField="status"
+                sort={sortEnum(DEPLOYMENT_STATUS_VALUES)}
+              />
+              <DyoColumn
+                header={t('common:actions')}
+                width="16%"
+                align="center"
+                preventClickThrough
+                body={(it: Deployment) => (
+                  <>
+                    <div className="inline-block mr-2">
+                      <Link href={routes.deployment.details(it.id)} passHref>
+                        <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
+                      </Link>
+                    </div>
+
+                    <DyoIcon
+                      src="/note.svg"
+                      alt={t('common:note')}
+                      size="md"
+                      className={!!it.note && it.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+                      onClick={() => !!it.note && it.note.length > 0 && setShowInfo(it)}
+                    />
+                  </>
+                )}
+              />
+            </DyoTable>
           </DyoCard>
         </>
       ) : (

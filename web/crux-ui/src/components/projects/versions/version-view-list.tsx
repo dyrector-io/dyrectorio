@@ -1,25 +1,21 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
-import { DyoList } from '@app/elements/dyo-list'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { DeleteImageMessage, VersionImage, WS_TYPE_DELETE_IMAGE } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
-import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import { useState } from 'react'
 import EditImageTags from './images/edit-image-tags'
 import { selectTagsOfImage, VerionState, VersionActions } from './use-version-state'
-import { dateSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
+import DyoTable, { DyoColumn, sortDate, sortString } from '@app/elements/dyo-table'
 
 interface VersionViewListProps {
   state: VerionState
   actions: VersionActions
 }
-
-type VersionImageSorting = 'containerName' | 'registry' | 'imageTag' | 'createdAt'
 
 const VersionViewList = (props: VersionViewListProps) => {
   const { state, actions } = props
@@ -29,37 +25,6 @@ const VersionViewList = (props: VersionViewListProps) => {
 
   const [deleteModal, confirmDelete] = useConfirmation()
   const [tagsModalTarget, setTagsModalTarget] = useState<VersionImage>(null)
-
-  const sorting = useSorting<VersionImage, VersionImageSorting>(state.version.images, {
-    initialField: 'containerName',
-    initialDirection: 'asc',
-    sortFunctions: {
-      containerName: stringSort,
-      registry: stringSort,
-      imageTag: stringSort,
-      createdAt: dateSort,
-    },
-    fieldGetters: {
-      containerName: it => it.config.name,
-      registry: it => it.registry.name,
-      imageTag: it => `${it.name}${it.tag ? `:${it.tag}` : null}`,
-    },
-  })
-
-  const columnWidths = ['', 'w-3/12', 'w-2/12', 'w-3/12', 'w-28']
-  const headers = ['containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions']
-  const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11'
-  const headerClasses = [
-    clsx('rounded-tl-lg pl-6', defaultHeaderClass),
-    ...Array.from({ length: headers.length - 2 }).map(() => defaultHeaderClass),
-    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
-  ]
-  const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
-  const itemClasses = [
-    clsx('pl-6', defaultItemClass),
-    ...Array.from({ length: headers.length - 2 }).map(() => defaultItemClass),
-    clsx('pr-6 text-center', defaultItemClass),
-  ]
 
   const onDelete = async (item: VersionImage) => {
     const confirmed = await confirmDelete({
@@ -83,63 +48,63 @@ const VersionViewList = (props: VersionViewListProps) => {
     actions.fetchImageTags(it)
   }
 
-  const itemTemplate = (item: VersionImage) => [
-    item.config.name,
-    item.registry.name,
-    <div className="flex items-center">
-      <a>
-        {item.name}
-        {item.tag ? `:${item.tag}` : null}
-      </a>
-    </div>,
-    <span suppressHydrationWarning>{item.createdAt ? utcDateToLocale(item.createdAt) : t('common:new')}</span>,
-    <div className="flex flex-wrap justify-center">
-      <div className="inline-block">
-        <DyoIcon
-          className="cursor-pointer"
-          src="/archive.svg"
-          alt={t('tag')}
-          size="md"
-          onClick={() => onOpenTagsDialog(item)}
-        />
-      </div>
-      <div className="inline-block">
-        <DyoIcon
-          className="cursor-pointer"
-          alt={t('common:delete')}
-          src="/trash-can.svg"
-          size="md"
-          onClick={() => onDelete(item)}
-        />
-      </div>
-      <Link href={routes.project.versions(state.projectId).imageDetails(state.version.id, item.id)} passHref>
-        <DyoIcon src="/image_config_icon.svg" alt={t('common:imageConfig')} size="md" />
-      </Link>
-    </div>,
-  ]
-
   return (
     <>
       <DyoCard className="relative mt-4">
-        <DyoList
-          headers={headers}
-          headerClassName={headerClasses}
-          columnWidths={columnWidths}
-          itemClassName={itemClasses}
-          data={sorting.items}
-          noSeparator
-          itemBuilder={itemTemplate}
-          headerBuilder={sortHeaderBuilder<VersionImage, VersionImageSorting>(
-            sorting,
-            {
-              containerName: 'containerName',
-              'common:registry': 'registry',
-              imageTag: 'imageTag',
-              'common:createdAt': 'createdAt',
-            },
-            text => t(text),
-          )}
-        />
+        <DyoTable data={state.version.images}>
+          <DyoColumn header={t('containerName')} field="config.name" sortable sort={sortString} />
+          <DyoColumn header={t('common:registry')} field="registry.name" sortable sort={sortString} />
+          <DyoColumn
+            header={t('imageTag')}
+            sortable
+            sortField={(it: VersionImage) => (it.tag ? `${it.name}:${it.tag}` : it.name)}
+            sort={sortString}
+            body={(it: VersionImage) => (
+              <a>
+                {it.name}
+                {it.tag ? `:${it.tag}` : null}
+              </a>
+            )}
+          />
+          <DyoColumn
+            header={t('common:createdAt')}
+            sortable
+            sortField="createdAt"
+            sort={sortDate}
+            suppressHydrationWarning
+            body={(it: VersionImage) => (it.createdAt ? utcDateToLocale(it.createdAt) : t('common:new'))}
+          />
+          <DyoColumn
+            header={t('common:actions')}
+            width="10%"
+            align="center"
+            body={(it: VersionImage) => (
+              <>
+                <div className="inline-block">
+                  <DyoIcon
+                    className="cursor-pointer"
+                    src="/archive.svg"
+                    alt={t('tag')}
+                    size="md"
+                    onClick={() => onOpenTagsDialog(it)}
+                  />
+                </div>
+                <div className="inline-block">
+                  <DyoIcon
+                    className="cursor-pointer"
+                    alt={t('common:delete')}
+                    src="/trash-can.svg"
+                    size="md"
+                    onClick={() => onDelete(it)}
+                  />
+                </div>
+                <Link href={routes.project.versions(state.projectId).imageDetails(state.version.id, it.id)} passHref>
+                  <DyoIcon src="/image_config_icon.svg" alt={t('common:imageConfig')} size="md" />
+                </Link>
+              </>
+            )}
+          />
+        </DyoTable>
       </DyoCard>
 
       <DyoConfirmationModal config={deleteModal} className="w-1/4" />

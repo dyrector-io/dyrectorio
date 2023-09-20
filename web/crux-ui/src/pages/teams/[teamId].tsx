@@ -10,11 +10,10 @@ import { AUTH_RESEND_DELAY, COOKIE_TEAM_SLUG } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
-import { DyoList } from '@app/elements/dyo-list'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
-import { dateSort, enumSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useTimer from '@app/hooks/use-timer'
 import {
@@ -47,7 +46,6 @@ import { captchaDisabled } from '@server/captcha'
 import { getCookie } from '@server/cookie'
 import { getCruxFromContext } from '@server/crux-api'
 import { sessionOfContext } from '@server/kratos'
-import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -60,8 +58,6 @@ interface TeamDetailsPageProps {
   team: TeamDetails
   recaptchaSiteKey?: string
 }
-
-type UserSorting = 'name' | 'email' | 'role' | 'status' | 'lastLogin'
 
 const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const { me, team: propsTeam, recaptchaSiteKey } = props
@@ -85,18 +81,6 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const canDelete = userIsOwner(actor)
 
   const submitRef = useRef<() => Promise<any>>()
-
-  const sorting = useSorting<User, UserSorting>(team.users, {
-    initialField: 'name',
-    initialDirection: 'asc',
-    sortFunctions: {
-      name: stringSort,
-      email: stringSort,
-      role: enumSort(USER_ROLE_VALUES),
-      status: enumSort(USER_STATUS_VALUES),
-      lastLogin: dateSort,
-    },
-  })
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -255,72 +239,10 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     },
   ]
 
-  const listHeaders = ['common:name', 'common:email', 'role', 'lastLogin', 'common:status', 'common:actions']
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased px-2 py-3 font-semibold'
-  const headerClassNames = [
-    clsx(defaultHeaderClass, 'rounded-tl-lg pl-6'),
-    ...Array.from({ length: listHeaders.length - 3 }).map(() => defaultHeaderClass),
-    clsx(defaultHeaderClass, 'text-center'),
-    clsx(defaultHeaderClass, 'rounded-tr-lg pr-6 text-center'),
-  ]
-
-  const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
-  const itemClass = [
-    clsx('pl-6', defaultItemClass),
-    ...Array.from({ length: listHeaders.length - 3 }).map(() => defaultItemClass),
-    clsx('text-center', defaultItemClass),
-    clsx('pr-6 text-center', defaultItemClass),
-  ]
-
   const pageMenuTexts: DetailsPageTexts = {
     addDetailsItem: t('invite'),
     save: detailsState === 'inviting' ? t('send') : null,
   }
-
-  /* eslint-disable react/jsx-key */
-  const itemTemplate = (it: User) => [
-    <div className="font-semibold py-1 h-8">{it.name}</div>,
-    <div>{it.email}</div>,
-    <div className="flex flex-row">
-      <span>{t(roleToText(it.role))}</span>
-      {!canEdit || it.status !== 'verified' ? null : (
-        <UserRoleAction
-          className="flex ml-2"
-          teamId={team.id}
-          user={it}
-          onRoleUpdated={role => onUserRoleUpdated(it.id, role)}
-        />
-      )}
-    </div>,
-    <div suppressHydrationWarning>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('common:never')}</div>,
-    <UserStatusTag className="w-fit mx-auto" status={it.status} />,
-    <>
-      {!userStatusReinvitable(it.status) || countdown > 0 ? null : (
-        <div className="mr-2 inline-block">
-          <DyoIcon
-            className="aspect-square cursor-pointer"
-            src="/restart.svg"
-            alt={t('reinvite')}
-            size="md"
-            onClick={() => onReinviteUser(it)}
-          />
-        </div>
-      )}
-
-      {detailsState !== 'none' || !canEdit || it.role === 'owner' ? null : (
-        <div className="inline-block">
-          <DyoIcon
-            className="aspect-square cursor-pointer"
-            src="/trash-can.svg"
-            alt={t('common:delete')}
-            size="md"
-            onClick={() => onDeleteUser(it)}
-          />
-        </div>
-      )}
-    </>,
-  ]
-  /* eslint-enable react/jsx-key */
 
   return (
     <Layout title={t('teamsName', team)}>
@@ -356,27 +278,83 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
       ) : null}
 
       <DyoCard className="relative">
-        <DyoList
-          className=""
-          noSeparator
-          headers={listHeaders}
-          headerClassName={headerClassNames}
-          itemClassName={itemClass}
-          data={sorting.items}
-          headerBuilder={sortHeaderBuilder<User, UserSorting>(
-            sorting,
-            {
-              'common:name': 'name',
-              'common:email': 'email',
-              role: 'role',
-              lastLogin: 'lastLogin',
-              'common:status': 'status',
-            },
-            text => t(text),
-          )}
-          itemBuilder={itemTemplate}
-        />
-
+        <DyoTable data={team.users}>
+          <DyoColumn
+            header={t('common:name')}
+            field="name"
+            bodyClassName="font-semibold"
+            width="15%"
+            sortable
+            sort={sortString}
+          />
+          <DyoColumn header={t('common:email')} field="email" sortable sort={sortString} />
+          <DyoColumn
+            header={t('role')}
+            sortable
+            sortField="role"
+            sort={sortEnum(USER_ROLE_VALUES)}
+            body={(it: User) => (
+              <div className="flex flex-row">
+                <span>{t(roleToText(it.role))}</span>
+                {!canEdit || it.status !== 'verified' ? null : (
+                  <UserRoleAction
+                    className="flex ml-2"
+                    teamId={team.id}
+                    user={it}
+                    onRoleUpdated={role => onUserRoleUpdated(it.id, role)}
+                  />
+                )}
+              </div>
+            )}
+          />
+          <DyoColumn
+            header={t('lastLogin')}
+            sortable
+            sortField="lastLogin"
+            sort={sortDate}
+            body={(it: User) => (
+              <div suppressHydrationWarning>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('common:never')}</div>
+            )}
+          />
+          <DyoColumn
+            header={t('common:status')}
+            sortable
+            sortField="status"
+            sort={sortEnum(USER_STATUS_VALUES)}
+            body={(it: User) => <UserStatusTag className="w-fit mx-auto" status={it.status} />}
+          />
+          <DyoColumn
+            header={t('common:actions')}
+            width="16%"
+            align="center"
+            body={(it: User) => (
+              <>
+                {!userStatusReinvitable(it.status) || countdown > 0 ? null : (
+                  <div className="mr-2 inline-block">
+                    <DyoIcon
+                      className="aspect-square cursor-pointer"
+                      src="/restart.svg"
+                      alt={t('reinvite')}
+                      size="md"
+                      onClick={() => onReinviteUser(it)}
+                    />
+                  </div>
+                )}
+                {detailsState !== 'none' || !canEdit || it.role === 'owner' ? null : (
+                  <div className="inline-block">
+                    <DyoIcon
+                      className="aspect-square cursor-pointer"
+                      src="/trash-can.svg"
+                      alt={t('common:delete')}
+                      size="md"
+                      onClick={() => onDeleteUser(it)}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          />
+        </DyoTable>
         <DyoConfirmationModal config={deleteModalConfig} className="w-1/4" />
       </DyoCard>
     </Layout>

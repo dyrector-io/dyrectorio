@@ -10,6 +10,7 @@ import DyoDatePicker from '@app/elements/dyo-date-picker'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
+import DyoTable, { DyoColumn } from '@app/elements/dyo-table'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import { AuditLog, AuditLogList, AuditLogQuery, auditToMethod } from '@app/models'
@@ -163,16 +164,58 @@ const AuditLogPage = () => {
         </Filters>
 
         <DyoCard className="relative mt-4 overflow-auto">
-          <DyoList
-            noSeparator
-            headerClassName={headerClassNames}
-            itemClassName={itemClasses}
-            columnWidths={columnWidths}
-            data={data}
-            headers={listHeaders}
-            footer={<Paginator onChanged={setPagination} length={total} defaultPagination={defaultPagination} />}
-            itemBuilder={itemTemplate}
-          />
+          <DyoTable data={data} pagination="server" paginationTotal={total} onServerPagination={setPagination}>
+            <DyoColumn
+              header=""
+              width="40px"
+              body={(it: AuditLog) =>
+                it.actorType === 'deployment-token' ? (
+                  <DyoIcon src="/robot-avatar.svg" alt={t('common:robotAvatar')} size="xl" />
+                ) : (
+                  <UserDefaultAvatar />
+                )
+              }
+            />
+            <DyoColumn
+              header={t('common:name')}
+              width="16%"
+              body={(it: AuditLog) => (
+                <div title={it.actorType !== 'user' ? null : it.user.email} className="font-semibold min-w-max">
+                  {it.name}
+                </div>
+              )}
+            />
+            <DyoColumn
+              header={t('common:date')}
+              suppressHydrationWarning
+              bodyClassName="min-w-max"
+              body={(it: AuditLog) => utcDateToLocale(it.createdAt)}
+            />
+            <DyoColumn header={t('common:method')} body={(it: AuditLog) => auditToMethod(it)} />
+            <DyoColumn header={t('common:event')} field="event" />
+            <DyoColumn
+              header={t('common:data')}
+              body={(it: AuditLog) => (
+                <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(it)}>
+                  {JSON.stringify(it.data)}
+                </div>
+              )}
+            />
+            <DyoColumn
+              header={t('common:actions')}
+              width="10%"
+              align="center"
+              body={(it: AuditLog) => (
+                <DyoIcon
+                  className="aspect-square cursor-pointer"
+                  src="/eye.svg"
+                  alt={t('common:view')}
+                  size="md"
+                  onClick={() => onShowInfoClick(it)}
+                />
+              )}
+            />
+          </DyoTable>
         </DyoCard>
       </>
 
