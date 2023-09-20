@@ -85,7 +85,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
       - name: Run validation
         # if it's not a PR we skip
         if: ${{ github.event_name == 'pull_request' }}
