@@ -2,8 +2,8 @@ import { Session, UiContainer, UiNodeInputAttributes } from '@ory/kratos-client'
 import { getCookie, setCookie } from '@server/cookie'
 import { postCruxFromContext } from '@server/crux-api'
 import {
-  identityWasRecovered,
   IncomingMessageWithSession,
+  identityWasRecovered,
   obtainSessionFromRequest,
   verifiableEmailOfIdentity,
 } from '@server/kratos'
@@ -243,20 +243,24 @@ export const sendForm = async <Dto>(
   url: string,
   body?: Dto,
 ): Promise<Response> => {
-  console.info(`sending form to ${method} '${url}'`)
-  const data = await fetch(url, {
-    method,
-    headers: body
-      ? {
-          'Content-Type': 'application/json',
-        }
-      : undefined,
-    body: body ? JSON.stringify(body) : null,
-  })
+  try {
+    console.info(`sending form to ${method} '${url}'`)
+    const data = await fetch(url, {
+      method,
+      headers: body
+        ? {
+            'Content-Type': 'application/json',
+          }
+        : undefined,
+      body: body ? JSON.stringify(body) : null,
+    })
 
-  console.info(`got result ${data.status}`)
-
-  return data
+    console.info(`got result ${data.status}`)
+    return data
+  } catch (err) {
+    console.error('sendFormError', err)
+    throw err
+  }
 }
 
 // routing
