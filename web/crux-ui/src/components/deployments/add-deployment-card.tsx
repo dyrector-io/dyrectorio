@@ -202,7 +202,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
             ) : !versions && formik.values.projectId ? (
               <DyoLabel>{t('common:loading')}</DyoLabel>
             ) : versions.length === 0 ? (
-              <DyoLabel>{t('noVersions')}</DyoLabel>
+              <DyoMessage message={t('noVersions')} />
             ) : (
               currentProject.type === 'versioned' && (
                 <>

@@ -60,6 +60,7 @@ const EditVersionCard = (props: EditVersionCardProps) => {
 
       const body: CreateVersion | UpdateVersion = values
 
+      console.info('routes', routes)
       const res = await (!editing
         ? sendForm('POST', routes.project.versions(project.id).api.list(), body as CreateVersion)
         : sendForm('PUT', routes.project.versions(project.id).api.details(version.id), body as UpdateVersion))

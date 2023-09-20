@@ -941,6 +941,8 @@ export default class DeployService {
       },
     })
 
+    const differentNode = oldDeployment.nodeId !== newDeployment.nodeId
+
     await this.prisma.$transaction(
       oldDeployment.instances.map(it =>
         this.prisma.instance.create({
@@ -962,7 +964,7 @@ export default class DeployService {
                     commands: toPrismaJson(it.config.commands),
                     args: toPrismaJson(it.config.args),
                     environment: toPrismaJson(it.config.environment),
-                    secrets: toPrismaJson(it.config.secrets),
+                    secrets: differentNode ? null : toPrismaJson(it.config.secrets),
                     initContainers: toPrismaJson(it.config.initContainers),
                     logConfig: toPrismaJson(it.config.logConfig),
                     restartPolicy: it.config.restartPolicy,
