@@ -833,7 +833,7 @@ export default class DeployService {
     return this.deploymentImageEvents.pipe(filter(it => it.deploymentIds.includes(deploymentId)))
   }
 
-  async getDeployments(teamSlug: string): Promise<DeploymentDto[]> {
+  async getDeployments(teamSlug: string, nodeId?: string): Promise<DeploymentDto[]> {
     const deployments = await this.prisma.deployment.findMany({
       where: {
         version: {
@@ -843,6 +843,7 @@ export default class DeployService {
             },
           },
         },
+        nodeId,
       },
       include: {
         version: {
@@ -940,6 +941,8 @@ export default class DeployService {
       },
     })
 
+    const differentNode = oldDeployment.nodeId !== newDeployment.nodeId
+
     await this.prisma.$transaction(
       oldDeployment.instances.map(it =>
         this.prisma.instance.create({
@@ -961,7 +964,7 @@ export default class DeployService {
                     commands: toPrismaJson(it.config.commands),
                     args: toPrismaJson(it.config.args),
                     environment: toPrismaJson(it.config.environment),
-                    secrets: toPrismaJson(it.config.secrets),
+                    secrets: differentNode ? null : toPrismaJson(it.config.secrets),
                     initContainers: toPrismaJson(it.config.initContainers),
                     logConfig: toPrismaJson(it.config.logConfig),
                     restartPolicy: it.config.restartPolicy,

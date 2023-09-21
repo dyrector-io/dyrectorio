@@ -67,6 +67,10 @@ export class Agent {
 
   readonly outdated: boolean
 
+  private get connected() {
+    return !this.commandChannel.closed
+  }
+
   get id(): string {
     return this.connection.nodeId
   }
@@ -83,7 +87,7 @@ export class Agent {
     return this.info.publicKey
   }
 
-  get connected() {
+  get ready(): boolean {
     return this.getConnectionStatus() === 'connected'
   }
 
@@ -95,7 +99,19 @@ export class Agent {
   }
 
   getConnectionStatus(): NodeConnectionStatus {
-    return !this.commandChannel.closed ? 'connected' : 'unreachable'
+    if (!this.connected) {
+      return 'unreachable'
+    }
+
+    if (this.updating) {
+      return 'updating'
+    }
+
+    if (this.outdated) {
+      return 'outdated'
+    }
+
+    return 'connected'
   }
 
   getDeployment(id: string): Deployment {
@@ -225,10 +241,9 @@ export class Agent {
     this.eventChannel.next({
       id: this.id,
       address: this.address,
-      status: this.outdated ? 'outdated' : 'connected',
+      status: this.getConnectionStatus(),
       version: this.version,
       connectedAt: this.connection.connectedAt,
-      updating: false,
     })
 
     return this.commandChannel.asObservable()
@@ -247,7 +262,6 @@ export class Agent {
       address: null,
       version: null,
       connectedAt: null,
-      updating: false,
     })
   }
 
@@ -379,9 +393,8 @@ export class Agent {
 
     this.eventChannel.next({
       id: this.id,
-      status: this.outdated ? 'outdated' : 'connected',
+      status: this.getConnectionStatus(),
       error,
-      updating: false,
     })
   }
 
@@ -397,6 +410,12 @@ export class Agent {
     } catch {
       /* empty */
     }
+
+    this.update = null
+    this.eventChannel.next({
+      id: this.id,
+      status: this.getConnectionStatus(),
+    })
 
     return result
   }
@@ -430,10 +449,10 @@ export class Agent {
   }
 
   debugInfo(logger: Logger) {
-    logger.debug(`Agent id: ${this.id}, open: ${!this.commandChannel.closed}`)
-    logger.debug(`Deployments: ${this.deployments.size}`)
-    logger.debug(`Watchers: ${this.statusWatchers.size}`)
-    logger.debug(`Log streams: ${this.logStreams.size}`)
+    logger.verbose(`Agent id: ${this.id}, open: ${!this.commandChannel.closed}`)
+    logger.verbose(`Deployments: ${this.deployments.size}`)
+    logger.verbose(`Watchers: ${this.statusWatchers.size}`)
+    logger.verbose(`Log streams: ${this.logStreams.size}`)
     this.deployments.forEach(it => it.debugInfo(logger))
   }
 
@@ -482,5 +501,4 @@ export type AgentConnectionMessage = {
   version?: string
   connectedAt?: Date
   error?: string
-  updating?: boolean
 }
