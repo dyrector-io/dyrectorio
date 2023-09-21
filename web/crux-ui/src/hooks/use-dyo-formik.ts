@@ -1,6 +1,7 @@
 import { yupErrorTranslate } from '@app/validations'
 import { FormikConfig, FormikHelpers, FormikValues, useFormik } from 'formik'
 import { Translate } from 'next-translate'
+import { useEffect } from 'react'
 import { SubmitHook } from './use-submit'
 
 export type DyoFormikOptions<Values> = FormikConfig<Values> & {
@@ -47,9 +48,13 @@ const useDyoFormik = <Values extends FormikValues>(options: DyoFormikOptions<Val
     },
   })
 
-  if (submit) {
-    submit.set(formik.submitForm)
-  }
+  const submitSet = submit?.set
+
+  useEffect(() => {
+    if (submitSet) {
+      submitSet(formik.submitForm, formik.isSubmitting)
+    }
+  }, [submitSet, formik.submitForm, formik.isSubmitting])
 
   return formik
 }

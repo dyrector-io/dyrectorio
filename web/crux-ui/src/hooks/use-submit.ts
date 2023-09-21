@@ -1,10 +1,11 @@
-import { useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 type SubmitFunc = () => Promise<void>
 
 export type SubmitHook = {
+  disabled: boolean
   trigger: VoidFunction
-  set: (target: SubmitFunc) => void
+  set: (target: SubmitFunc, submit: boolean) => void
 }
 
 type State = {
@@ -18,7 +19,9 @@ const useSubmit = (): SubmitHook => {
     submitWhenSet: false,
   })
 
-  const trigger = () => {
+  const [disabled, setDisabled] = useState(false)
+
+  const trigger = useCallback(() => {
     if (stateRef.current.submit) {
       stateRef.current.submitWhenSet = false
       console.info('TRIGGER - SUBMIT')
@@ -30,10 +33,14 @@ const useSubmit = (): SubmitHook => {
       stateRef.current.submitWhenSet = true
       console.info('TRIGGER - UNABLE')
     }
-  }
+  }, [])
 
-  const set = (target: SubmitFunc) => {
+  const set = useCallback((target: SubmitFunc, submitting: boolean) => {
     console.info('SET')
+
+    console.info('disabled?', submitting)
+    setDisabled(submitting)
+
     stateRef.current.submit = target
     if (stateRef.current.submitWhenSet) {
       console.info('SET - TRIGGER')
@@ -43,11 +50,12 @@ const useSubmit = (): SubmitHook => {
         .then(() => console.info('submitted 2'))
         .catch(err => console.error(err))
     }
-  }
+  }, [])
 
   return {
     trigger,
     set,
+    disabled,
   }
 }
 

@@ -128,7 +128,7 @@ export const DetailsPageMenu = (props: React.PropsWithChildren<DetailsPageMenuPr
 
       {children}
 
-      <DyoButton className="px-6 ml-2" onClick={() => submit.trigger()}>
+      <DyoButton disabled={submit.disabled} className="px-6 ml-2" onClick={() => submit.trigger()}>
         {texts.save ?? t('save')}
       </DyoButton>
     </>

@@ -159,7 +159,7 @@ const VerifyPage = (props: VerifyProps) => {
                       name="email"
                       type="email"
                       onChange={formik.handleChange}
-                      value={formik.values.email}
+                      value={formik.values.email ?? ''}
                       message={findMessage(ui, 'email')}
                     />
                   )}
@@ -177,7 +177,7 @@ const VerifyPage = (props: VerifyProps) => {
                         name="code"
                         type="text"
                         onChange={formik.handleChange}
-                        value={formik.values.code}
+                        value={formik.values.code ?? ''}
                         message={findMessage(ui, 'code')}
                       />
 
