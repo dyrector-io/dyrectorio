@@ -30,7 +30,7 @@ test.beforeEach(async ({ page }, testInfo) => {
       return
     }
 
-    console.info(`[${testInfo.title}] Request started to ${it.url()}`)
+    console.info(`[${testInfo.title}] Request started ${it.method()} ${it.url()}`)
   })
 
   page.on('close', it => {
@@ -41,14 +41,15 @@ test.beforeEach(async ({ page }, testInfo) => {
       return
     }
 
-    console.info(`[${testInfo.title}] Request failed to ${it.url()}`)
+    console.info(`[${testInfo.title}] Request failed ${it.method()} ${it.url()}`)
   })
-  page.on('requestfinished', it => {
+  page.on('requestfinished', async it => {
     if (!it.url().includes('/api/')) {
       return
     }
 
-    console.info(`[${testInfo.title}] Request finished to ${it.url()}`)
+    const res = await it.response()
+    console.info(`[${testInfo.title}] Request finished ${res.status()} ${it.method()} ${it.url()}`)
   })
   page.on('response', it => {
     if (!it.url().includes('/api/')) {
