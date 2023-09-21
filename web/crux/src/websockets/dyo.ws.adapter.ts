@@ -9,7 +9,9 @@ import {
   Observable,
   Subject,
   catchError,
+  combineLatest,
   filter,
+  finalize,
   first,
   from,
   fromEvent,
@@ -47,6 +49,9 @@ export enum WebSocketReadyState {
   CLOSING_STATE = 2,
   CLOSED_STATE = 3,
 }
+
+// NOTE(@robot9706): According to the WebSocket spec the 4000-4999 code range is available to applications
+const ERROR_UNAUTHORIZED = 4401
 
 export default class DyoWsAdapter extends AbstractWsAdapter {
   private readonly logger = new Logger(DyoWsAdapter.name)
@@ -280,8 +285,9 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     client.token = uuid()
     client.connectionRequest = req as AuthorizedHttpRequest
     client.subscriptions = new Map()
+    client.disconnecting = false
     client.sendWsMessage = msg => {
-      if (!msg || client.readyState !== WebSocketReadyState.OPEN_STATE) {
+      if (!msg || client.readyState !== WebSocketReadyState.OPEN_STATE || client.disconnecting) {
         return
       }
 
@@ -290,6 +296,9 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
       client.send(JSON.stringify(msg))
     }
     client.on(CLOSE_EVENT, () => this.onClientDisconnect(client))
+    client.unsubscribeAll = () => this.onClientDisconnect(client)
+
+    this.startClientExpiryTimer(client)
 
     client.setup = new WsClientSetup(client, client.token, () => this.bindClientMessageHandlers(client))
     client.setup.start()
@@ -298,13 +307,43 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     this.logger.log(`Connected ${client.token} clients: ${this.server?.clients?.size}`)
   }
 
+  private startClientExpiryTimer(client: WsClient) {
+    const { sessionExpiresAt } = client.connectionRequest
+
+    const now = new Date().getTime()
+    const expireTime = sessionExpiresAt - now
+
+    client.expireTimeout = setTimeout(() => {
+      this.logger.warn(`Session expired for ${client.token}`)
+      client.unsubscribeAll()
+      client.close(ERROR_UNAUTHORIZED, 'Expired')
+    }, expireTime)
+  }
+
   private onClientDisconnect(client: WsClient) {
+    if (client.disconnecting) {
+      return
+    }
+
+    clearTimeout(client.expireTimeout)
+
+    client.disconnecting = true
+
     this.logger.log(`Disconnected ${client.token} clients: ${this.server?.clients?.size}`)
     WsMetrics.connections().dec()
 
-    this.routes.forEach(it => it.onClientDisconnect(client))
+    const routeDisconnects = this.routes.map(it => it.onClientDisconnect(client))
+    combineLatest(routeDisconnects)
+      .pipe(
+        finalize(() => {
+          if (client?.subscriptions?.size > 0) {
+            this.logger.warn(`Client ${client.token} failed to cleanup all subscriptions!`)
+          }
 
-    client?.setup?.onClientDisconnect()
+          client?.setup?.onClientDisconnect()
+        }),
+      )
+      .subscribe()
   }
 
   private findRouteByPath(path: string): [WsRoute, WsRouteMatch] {
