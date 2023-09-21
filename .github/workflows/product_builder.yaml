@@ -83,7 +83,7 @@ jobs:
     needs: assign_runner
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup node
         uses: actions/setup-node@v3
       - name: Run validation
@@ -108,7 +108,7 @@ jobs:
       image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run YAML linting
         run: yamlfmt -lint .
   gather_changes:
@@ -124,7 +124,7 @@ jobs:
       minorversion: ${{ steps.settag.outputs.minorversion }}
       release: ${{ steps.release.outputs.release }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -175,7 +175,7 @@ jobs:
     if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag') || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Golang caches
         uses: actions/cache/restore@v3
         with:
@@ -199,7 +199,7 @@ jobs:
     if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Golang caches
         uses: actions/cache/restore@v3
         with:
@@ -223,7 +223,7 @@ jobs:
     if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Golang caches
         uses: actions/cache/restore@v3
         with:
@@ -249,7 +249,7 @@ jobs:
     if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Golang caches
         uses: actions/cache/restore@v3
         with:
@@ -274,7 +274,7 @@ jobs:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Golang caches
         uses: actions/cache/restore@v3
         with:
@@ -339,7 +339,7 @@ jobs:
     if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup NPM caches
         uses: actions/cache/restore@v3
         with:
@@ -365,7 +365,7 @@ jobs:
     if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup NPM caches
         uses: actions/cache/restore@v3
         with:
@@ -393,7 +393,7 @@ jobs:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       # fixes: fatal: unsafe repository
       - name: Adding workspace
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -427,7 +427,7 @@ jobs:
     if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup NPM caches
         uses: actions/cache/restore@v3
         with:
@@ -448,7 +448,7 @@ jobs:
     if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup NPM caches
         uses: actions/cache/restore@v3
         with:
@@ -473,7 +473,7 @@ jobs:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       # fixes: fatal: unsafe repository
       - name: Adding workspace
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -507,7 +507,7 @@ jobs:
     if: ${{ (needs.gather_changes.outputs.kratos == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Docker build
         run: docker build -t ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
       - name: Docker save
@@ -535,7 +535,7 @@ jobs:
       needs.gather_changes.result == 'success'
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       # - name: crane - artifact download
       #   if: needs.gather_changes.outputs.agents == 'true'
       #   uses: actions/download-artifact@v3
@@ -686,7 +686,7 @@ jobs:
           username: dyrectorio
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Golang caches
         uses: actions/cache/restore@v3
         with:
