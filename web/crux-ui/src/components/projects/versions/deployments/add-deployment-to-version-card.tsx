@@ -26,7 +26,7 @@ import { useEffect } from 'react'
 import toast from 'react-hot-toast'
 import useSWR from 'swr'
 
-interface AddDeploymentCardProps {
+interface AddDeploymentToVersionCardProps {
   className?: string
   projectName: string
   versionId: string
@@ -34,7 +34,7 @@ interface AddDeploymentCardProps {
   onDiscard: VoidFunction
 }
 
-const AddDeploymentCard = (props: AddDeploymentCardProps) => {
+const AddDeploymentToVersionCard = (props: AddDeploymentToVersionCardProps) => {
   const { projectName, versionId, className, onAdd, onDiscard } = props
 
   const { t } = useTranslation('deployments')
@@ -171,4 +171,4 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   )
 }
 
-export default AddDeploymentCard
+export default AddDeploymentToVersionCard
