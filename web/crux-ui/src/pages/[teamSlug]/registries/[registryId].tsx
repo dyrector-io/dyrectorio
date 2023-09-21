@@ -36,8 +36,6 @@ interface RegistryDetailsPageProps {
   registry: RegistryDetails
 }
 
-type FindImageResultSorting = 'name'
-
 const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   const { registry: propsRegistry } = props
 
@@ -152,7 +150,13 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
           </div>
 
           <DyoCard className="relative mt-4">
-            <DyoTable data={filters.filtered} pagination="client" initialSortColumn={0} initialSortDirection="asc">
+            <DyoTable
+              data={filters.filtered}
+              dataKey="name"
+              pagination="client"
+              initialSortColumn={0}
+              initialSortDirection="asc"
+            >
               <DyoColumn header={t('common:images')} field="name" sortable sort={sortString} />
             </DyoTable>
           </DyoCard>

@@ -9,7 +9,6 @@ import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { useDeploy } from '@app/hooks/use-deploy'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { enumSort, stringSort } from '@app/hooks/use-sorting'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -49,9 +48,9 @@ const sortNode = (statuses: Record<string, NodeStatus>) => (a: DyoNode, b: DyoNo
     const aStatus = statuses[a.id]
     const bStatus = statuses[b.id]
     if (aStatus !== bStatus) {
-      return enumSort(NODE_STATUS_VALUES)(aStatus, bStatus)
+      return sortEnum(NODE_STATUS_VALUES)(aStatus, bStatus)
     }
-    return stringSort(a.name, b.name)
+    return sortString(a.name, b.name)
   }
   if (a) {
     return 1
@@ -167,10 +166,16 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           </Filters>
 
           <DyoCard className="mt-4">
-            <DyoTable data={filters.filtered} onRowClick={onRowClick} initialSortColumn={2} initialSortDirection="asc">
+            <DyoTable
+              data={filters.filtered}
+              dataKey="id"
+              onRowClick={onRowClick}
+              initialSortColumn={2}
+              initialSortDirection="asc"
+            >
               <DyoColumn
                 header={t('common:node')}
-                width="20%"
+                className="w-2/12"
                 sortable
                 sortField="node"
                 sort={sortNode(nodeStatuses)}
@@ -185,10 +190,10 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
                   </Link>
                 )}
               />
-              <DyoColumn header={t('common:prefix')} field="prefix" sortable sort={sortString} />
+              <DyoColumn header={t('common:prefix')} field="prefix" className="w-2/12" sortable sort={sortString} />
               <DyoColumn
                 header={t('common:status')}
-                width="15%"
+                className="w-2/12 text-center"
                 sortable
                 sortField="status"
                 sort={sortEnum(DEPLOYMENT_STATUS_VALUES)}
@@ -204,8 +209,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
               />
               <DyoColumn
                 header={t('common:actions')}
-                width="16%"
-                align="center"
+                className="w-48 text-center"
                 preventClickThrough
                 body={(it: DeploymentByVersion) => (
                   <>

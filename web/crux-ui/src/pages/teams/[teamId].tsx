@@ -278,18 +278,19 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
       ) : null}
 
       <DyoCard className="relative">
-        <DyoTable data={team.users}>
+        <DyoTable data={team.users} dataKey="id" initialSortColumn={0} initialSortDirection="asc">
           <DyoColumn
             header={t('common:name')}
             field="name"
+            className="w-2/12"
             bodyClassName="font-semibold"
-            width="15%"
             sortable
             sort={sortString}
           />
-          <DyoColumn header={t('common:email')} field="email" sortable sort={sortString} />
+          <DyoColumn header={t('common:email')} field="email" className="w-3/12" sortable sort={sortString} />
           <DyoColumn
             header={t('role')}
+            className="w-1/12"
             sortable
             sortField="role"
             sort={sortEnum(USER_ROLE_VALUES)}
@@ -309,6 +310,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
           />
           <DyoColumn
             header={t('lastLogin')}
+            className="w-2/12"
             sortable
             sortField="lastLogin"
             sort={sortDate}
@@ -318,6 +320,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
           />
           <DyoColumn
             header={t('common:status')}
+            className="text-center"
             sortable
             sortField="status"
             sort={sortEnum(USER_STATUS_VALUES)}
@@ -325,8 +328,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
           />
           <DyoColumn
             header={t('common:actions')}
-            width="16%"
-            align="center"
+            className="w-40 text-center"
             body={(it: User) => (
               <>
                 {!userStatusReinvitable(it.status) || countdown > 0 ? null : (

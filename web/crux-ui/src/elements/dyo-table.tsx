@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { PropsWithChildren, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Paginator, { PaginationSettings } from '@app/components/shared/paginator'
 import DyoCheckbox from './dyo-checkbox'
@@ -31,13 +31,13 @@ export const sortNumber = (a: number, b: number) => {
 
 export const sortDate = (a: string, b: string): number => {
   if (a && b) {
-    return new Date(a).getTime() - new Date(b).getTime()
+    return new Date(b).getTime() - new Date(a).getTime()
   }
   if (a) {
-    return -1
+    return 1
   }
   if (b) {
-    return 1
+    return -1
   }
   return 0
 }
@@ -55,11 +55,6 @@ export interface DyoColumnProps {
   field?: string
   body?: (it: any) => React.ReactNode
 
-  /** Width of the column in percent or pixel */
-  width?: string
-
-  align?: 'left' | 'center' | 'right'
-
   className?: string
   headerClassName?: string
   bodyClassName?: string
@@ -76,9 +71,11 @@ export interface DyoColumnProps {
 
   suppressHydrationWarning?: boolean
   preventClickThrough?: boolean
+
+  children?: React.ReactNode
 }
 
-export const DyoColumn = (_: DyoColumnProps) => <></>
+export const DyoColumn = (_: DyoColumnProps) => null
 
 export interface DyoCheckboxColumnProps {
   allSelected: boolean
@@ -92,7 +89,7 @@ export const dyoCheckboxColumn = (props: DyoCheckboxColumnProps & DyoColumnProps
 
   return (
     <DyoColumn
-      width="24px"
+      className="w-12"
       header={() => <DyoCheckbox {...rest} checked={allSelected} onCheckedChange={onAllChange} />}
       body={(it: any) => (
         <DyoCheckbox {...rest} checked={selected.includes(it.id)} onCheckedChange={check => onChange(it.id, check)} />
@@ -135,6 +132,15 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
     ? (children as React.ReactElement<DyoColumnProps>[])?.map(it => it.props)
     : [(children as React.ReactElement<DyoColumnProps>).props]
 
+  if (process.env.NODE_ENV === 'development') {
+    columns.forEach((it, index) => {
+      console.error(
+        !(!!it.body && !!it.field),
+        `A column can only have either the field or the body defined, index: ${index}`,
+      )
+    })
+  }
+
   const [pagination, setPagination] = useState<PaginationSettings>({ pageNumber: 0, pageSize: 10 })
   const [data, setData] = useState(propData)
   const [sort, setSort] = useState<SortState>(() => {
@@ -164,11 +170,11 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
 
     const direction = sortBy.direction === 'desc' ? -1 : 1
 
-    const { field, sortField, sort } = columns[sortBy.column]
+    const { field, sortField, sort: sortFunc } = columns[sortBy.column]
     const dataField = sortField ?? field
 
     return [...items].sort((a, b) => {
-      const order = sort(getField(a, dataField), getField(b, dataField), a, b)
+      const order = sortFunc(getField(a, dataField), getField(b, dataField), a, b)
       return order * direction
     })
   }
@@ -228,26 +234,26 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
   }, [propData, sort, pagination])
 
   return (
-    <table className={className ?? 'w-full'}>
-      <colgroup>
-        {columns.map((it, index) => (
-          <col key={index} width={it.width}></col>
-        ))}
-      </colgroup>
+    <table className={clsx('table-fixed', className ?? 'w-full')}>
       <thead>
         <tr>
           {columns.map((it, index) => {
-            const roundClass = index === 0 ? 'rounded-tl-lg' : index === columns.length - 1 ? 'rounded-tr-lg' : null
-            const alignClass = it.align ? `text-${it.align}` : null
+            const roundPaddingClass =
+              columns.length === 1
+                ? 'rounded-t-lg px-6'
+                : index === 0
+                ? 'rounded-tl-lg pl-6'
+                : index === columns.length - 1
+                ? 'rounded-tr-lg pr-6'
+                : null
             const cursorClass = it.sortable ? 'cursor-pointer' : null
 
             return (
               <th
                 key={index}
                 className={clsx(
-                  'text-left align-middle pl-6 uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11',
-                  roundClass,
-                  alignClass,
+                  'text-left align-middle uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11',
+                  roundPaddingClass,
                   cursorClass,
                   it.className,
                   it.headerClassName,
@@ -273,31 +279,31 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
         </tr>
       </thead>
       <tbody>
-        {data.map(it => {
+        {data.map((it, rowIndex) => {
           const click = onRowClick ? () => onRowClick(it) : null
 
+          const key = dataKey ? getField(it, dataKey) : rowIndex
+
           return (
-            <tr key={getField(it, dataKey ?? 'id')}>
+            <tr key={key} className="hover:bg-medium-muted">
               {columns.map((col, index) => {
-                const data = col.field ? getField(it, col.field) : col.body ? col.body(it) : null
-                const alignClass = col.align ? `text-${col.align}` : null
+                const cellData = col.field ? getField(it, col.field) : col.body ? col.body(it) : null
+                const paddingClass = index === 0 ? 'pl-6' : index === columns.length - 1 ? 'pr-6' : null
                 const cursorClass = click && !col.preventClickThrough ? 'cursor-pointer' : null
 
                 return (
                   <td
                     key={index}
                     className={clsx(
-                      col.className,
-                      col.bodyClassName,
-                      'align-middle pl-6 h-12 min-h-min text-light-eased p-2',
-                      alignClass,
+                      'align-middle h-12 min-h-min text-light-eased p-2',
+                      paddingClass,
                       cursorClass,
                       col.className,
                       col.bodyClassName,
                     )}
                     onClick={click && !col.preventClickThrough ? click : null}
                   >
-                    {data}
+                    {cellData}
                   </td>
                 )
               })}

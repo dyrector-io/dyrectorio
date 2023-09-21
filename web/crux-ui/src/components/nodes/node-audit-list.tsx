@@ -127,7 +127,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
         >
           <DyoColumn
             header={t('common:date')}
-            width="18%"
+            className="w-2/12"
             suppressHydrationWarning
             body={(it: NodeAuditLog) => utcDateToLocale(it.createdAt)}
             sortable
@@ -136,7 +136,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
           />
           <DyoColumn
             header={t('common:event')}
-            width="15%"
+            className="w-48"
             body={(it: NodeAuditLog) => t(`auditEvents.${it.event}`)}
             sortable
             sortField="event"
@@ -152,8 +152,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
           />
           <DyoColumn
             header={t('common:actions')}
-            width="15%"
-            align="center"
+            className="w-24 text-center"
             body={(it: NodeAuditLog) =>
               it.data ? (
                 <DyoIcon

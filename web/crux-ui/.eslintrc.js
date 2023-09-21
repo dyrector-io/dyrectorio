@@ -60,6 +60,12 @@ module.exports = {
         ],
       },
     ],
+    'react/no-unstable-nested-components': [
+      'error',
+      {
+        'allowAsProps': true,
+      },
+    ],
   },
   overrides: [
     {

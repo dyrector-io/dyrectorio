@@ -3,19 +3,17 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import PageHeading from '@app/components/shared/page-heading'
-import Paginator, { PaginationSettings } from '@app/components/shared/paginator'
+import { PaginationSettings } from '@app/components/shared/paginator'
 import UserDefaultAvatar from '@app/components/team/user-default-avatar'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoDatePicker from '@app/elements/dyo-date-picker'
 import DyoIcon from '@app/elements/dyo-icon'
-import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import DyoTable, { DyoColumn } from '@app/elements/dyo-table'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import { AuditLog, AuditLogList, AuditLogQuery, auditToMethod } from '@app/models'
 import { getEndOfToday, utcDateToLocale } from '@app/utils'
-import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
 
@@ -25,9 +23,6 @@ type AuditFilter = {
   filter?: string
 }
 
-const defaultHeaderClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11'
-const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
-const columnWidths = ['w-16', 'w-1/6', 'w-48', 'w-32', 'w-1/6', '', 'w-24']
 const sixDays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
 
@@ -45,8 +40,6 @@ const AuditLogPage = () => {
   })
   const [pagination, setPagination] = useState<PaginationSettings>(defaultPagination)
   const throttle = useThrottling(1000)
-
-  // Data fetching
 
   const fetchData = async () => {
     const { from, to } = filter
@@ -80,11 +73,9 @@ const AuditLogPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination])
 
-  // Info modal:
   const [showInfo, setShowInfo] = useState<AuditLog>(null)
   const onShowInfoClick = (logEntry: AuditLog) => setShowInfo(logEntry)
 
-  // Handlers
   const onDateRangedChanged = dates => {
     const [start, end] = dates
     if (end !== null) end.setHours(23, 59, 59, 999) // end of the day
@@ -96,55 +87,10 @@ const AuditLogPage = () => {
     setFilter({ ...filter, filter: text })
   }
 
-  // Render
   const selfLink: BreadcrumbLink = {
     name: t('common:audit'),
     url: routes.audit.list(),
   }
-
-  const listHeaders = [
-    '',
-    ...['common:name', 'common:date', 'common:method', 'common:event', 'common:data', 'common:actions'].map(it =>
-      t(it),
-    ),
-  ]
-
-  const headerClassNames = [
-    ...Array.from({ length: listHeaders.length - 1 }).map(() => defaultHeaderClassName),
-    clsx('pr-6 text-center', defaultHeaderClassName),
-  ]
-
-  const itemClasses = [
-    ...Array.from({ length: headerClassNames.length - 1 }).map(() => defaultItemClass),
-    clsx('pr-6 text-center', defaultItemClass),
-  ]
-
-  const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
-    <div className="w-10 ml-auto">
-      {log.actorType === 'deployment-token' ? (
-        <DyoIcon src="/robot-avatar.svg" alt={t('common:robotAvatar')} size="xl" />
-      ) : (
-        <UserDefaultAvatar />
-      )}
-    </div>,
-    <div title={log.actorType !== 'user' ? null : log.user.email} className="font-semibold min-w-max">
-      {log.name}
-    </div>,
-    <div className="min-w-max">{utcDateToLocale(log.createdAt)}</div>,
-    <div>{auditToMethod(log)}</div>,
-    <div>{log.event}</div>,
-    <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
-      {JSON.stringify(log.data)}
-    </div>,
-    <DyoIcon
-      className="aspect-square cursor-pointer"
-      src="/eye.svg"
-      alt={t('common:view')}
-      size="md"
-      onClick={() => onShowInfoClick(log)}
-    />,
-  ]
-  /* eslint-enable react/jsx-key */
 
   return (
     <Layout title={t('common:audit')}>
@@ -164,21 +110,26 @@ const AuditLogPage = () => {
         </Filters>
 
         <DyoCard className="relative mt-4 overflow-auto">
-          <DyoTable data={data} pagination="server" paginationTotal={total} onServerPagination={setPagination}>
+          <DyoTable
+            data={data}
+            dataKey="createdAt"
+            pagination="server"
+            paginationTotal={total}
+            onServerPagination={setPagination}
+          >
             <DyoColumn
-              header=""
-              width="40px"
+              className="w-16"
               body={(it: AuditLog) =>
                 it.actorType === 'deployment-token' ? (
-                  <DyoIcon src="/robot-avatar.svg" alt={t('common:robotAvatar')} size="xl" />
+                  <DyoIcon src="/robot-avatar.svg" alt={t('common:robotAvatar')} size="xl" className="mx-auto" />
                 ) : (
-                  <UserDefaultAvatar />
+                  <UserDefaultAvatar className="mx-auto" />
                 )
               }
             />
             <DyoColumn
               header={t('common:name')}
-              width="16%"
+              className="w-1/6"
               body={(it: AuditLog) => (
                 <div title={it.actorType !== 'user' ? null : it.user.email} className="font-semibold min-w-max">
                   {it.name}
@@ -187,12 +138,13 @@ const AuditLogPage = () => {
             />
             <DyoColumn
               header={t('common:date')}
+              className="w-48"
               suppressHydrationWarning
               bodyClassName="min-w-max"
               body={(it: AuditLog) => utcDateToLocale(it.createdAt)}
             />
-            <DyoColumn header={t('common:method')} body={(it: AuditLog) => auditToMethod(it)} />
-            <DyoColumn header={t('common:event')} field="event" />
+            <DyoColumn header={t('common:method')} className="w-32" body={(it: AuditLog) => auditToMethod(it)} />
+            <DyoColumn header={t('common:event')} className="w-1/6" field="event" />
             <DyoColumn
               header={t('common:data')}
               body={(it: AuditLog) => (
@@ -203,8 +155,7 @@ const AuditLogPage = () => {
             />
             <DyoColumn
               header={t('common:actions')}
-              width="10%"
-              align="center"
+              className="w-24 text-center"
               body={(it: AuditLog) => (
                 <DyoIcon
                   className="aspect-square cursor-pointer"

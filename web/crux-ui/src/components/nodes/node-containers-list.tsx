@@ -39,10 +39,10 @@ const NodeContainersList = (props: NodeContainersListProps) => {
 
   return (
     <DyoCard className="mt-4">
-      <DyoTable data={listItems}>
+      <DyoTable data={listItems} pagination="client" initialSortColumn={4} initialSortDirection="asc">
         <DyoColumn
           header={t('common:name')}
-          width="16%"
+          className="w-2/12"
           body={(it: Container) => containerPrefixNameOf(it.id)}
           sortable
           sortField={(it: Container) => containerPrefixNameOf(it.id)}
@@ -50,7 +50,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
         />
         <DyoColumn
           header={t('images:imageTag')}
-          width="25%"
+          className="w-3/12"
           sortable
           sortField={(it: Container) => imageName(it.imageName, it.imageTag)}
           sort={sortString}
@@ -59,16 +59,15 @@ const NodeContainersList = (props: NodeContainersListProps) => {
         />
         <DyoColumn
           header={t('common:state')}
-          width="8%"
+          className="w-1/12 text-center"
           sortable
           sortField="state"
           sort={sortEnum(CONTAINER_STATE_VALUES)}
           body={(it: Container) => <ContainerStatusTag className="inline-block" state={it.state} />}
         />
-        <DyoColumn header={t('common:reason')} field="reason" width="8%" sortable sort={sortString} />
+        <DyoColumn header={t('common:reason')} field="reason" className="w-1/12" sortable sort={sortString} />
         <DyoColumn
           header={t('common:createdAt')}
-          width="12%"
           sortable
           sortField="createdAt"
           sort={sortDate}
@@ -77,15 +76,13 @@ const NodeContainersList = (props: NodeContainersListProps) => {
         />
         <DyoColumn
           header={t('ports')}
-          width="16%"
           body={(it: Container) =>
             !it.ports ? null : <span className="overflow-hidden truncate">{containerPortsToString(it.ports)}</span>
           }
         />
         <DyoColumn
           header={t('common:actions')}
-          width="12%"
-          align="center"
+          className="w-40 text-center"
           bodyClassName="flex flex-wrap gap-1 justify-center items-center"
           body={(it: Container) => {
             const name = containerPrefixNameOf(it.id)

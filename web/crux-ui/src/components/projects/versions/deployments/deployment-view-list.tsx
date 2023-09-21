@@ -18,19 +18,20 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
   const routes = useTeamRoutes()
 
   const { state, actions } = props
-  const { instances, deployInstances } = state
+  const { instances, deployInstances, project, version, deployment } = state
 
   return (
     <DyoCard className="relative mt-4">
-      <DyoTable data={instances} initialSortColumn={4} initialSortDirection="asc">
+      <DyoTable data={instances} dataKey="id" initialSortColumn={4} initialSortDirection="asc">
         {dyoCheckboxColumn({
-          allSelected: state.instances.length === state.deployInstances.length,
-          selected: state.deployInstances,
+          allSelected: instances.length === deployInstances.length,
+          selected: deployInstances,
           onAllChange: actions.onAllInstancesToggled,
           onChange: actions.onInstanceSelected,
         })}
         <DyoColumn
           header={t('containerName')}
+          className="w-4/12"
           sortable
           sortField={(it: Instance) => it.config?.name ?? it.image.config.name}
           sort={sortString}
@@ -38,6 +39,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
         />
         <DyoColumn
           header={t('common:registry')}
+          className="w-2/12"
           sortable
           sortField={(it: Instance) => it.image.registry.name}
           sort={sortString}
@@ -45,6 +47,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
         />
         <DyoColumn
           header={t('imageTag')}
+          className="w-2/12"
           sortable
           sortField={(it: Instance) => (it.image.tag ? `${it.image.name}:${it.image.tag}` : it.image.name)}
           sort={sortString}
@@ -52,6 +55,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
         />
         <DyoColumn
           header={t('common:createdAt')}
+          className="w-4/12"
           sortable
           sortField="image.createdAt"
           sort={sortDate}
@@ -59,19 +63,15 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
         />
         <DyoColumn
           header={t('common:actions')}
-          width="10%"
-          align="center"
+          className="w-40 text-center"
           body={(it: Instance) => (
             <>
               <div className="inline-block mr-2">
-                <Link
-                  href={routes.project.versions(state.project.id).imageDetails(state.version.id, it.image.id)}
-                  passHref
-                >
+                <Link href={routes.project.versions(project.id).imageDetails(version.id, it.image.id)} passHref>
                   <DyoIcon src="/image_config_icon.svg" alt={t('common:imageConfig')} size="md" />
                 </Link>
               </div>
-              <Link href={routes.deployment.instanceDetails(state.deployment.id, it.id)} passHref>
+              <Link href={routes.deployment.instanceDetails(deployment.id, it.id)} passHref>
                 <DyoIcon src="/instance_config_icon.svg" alt={t('common:instanceConfig')} size="md" />
               </Link>
             </>

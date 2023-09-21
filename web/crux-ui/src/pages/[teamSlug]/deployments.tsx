@@ -148,13 +148,32 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
             />
           </Filters>
           <DyoCard className="relative mt-4">
-            <DyoTable data={filters.filtered} onRowClick={onRowClick}>
-              <DyoColumn header={t('common:project')} field="project.name" sortable sort={sortString} />
-              <DyoColumn header={t('common:version')} field="version.name" sortable sort={sortString} />
-              <DyoColumn header={t('common:node')} field="node.name" sortable sort={sortString} />
-              <DyoColumn header={t('common:prefix')} field="prefix" sortable sort={sortString} />
+            <DyoTable
+              data={filters.filtered}
+              dataKey="id"
+              onRowClick={onRowClick}
+              initialSortColumn={4}
+              initialSortDirection="asc"
+            >
+              <DyoColumn
+                header={t('common:project')}
+                field="project.name"
+                className="w-2/12"
+                sortable
+                sort={sortString}
+              />
+              <DyoColumn
+                header={t('common:version')}
+                field="version.name"
+                className="w-2/12"
+                sortable
+                sort={sortString}
+              />
+              <DyoColumn header={t('common:node')} field="node.name" className="w-2/12" sortable sort={sortString} />
+              <DyoColumn header={t('common:prefix')} field="prefix" className="w-2/12" sortable sort={sortString} />
               <DyoColumn
                 header={t('common:updatedAt')}
+                className="w-2/12"
                 suppressHydrationWarning
                 sortable
                 sortField={(it: Deployment) => it.audit.updatedAt ?? it.audit.createdAt}
@@ -163,6 +182,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
               />
               <DyoColumn
                 header={t('common:status')}
+                className="w-2/12 text-center"
                 sortable
                 sortField="status"
                 sort={sortEnum(DEPLOYMENT_STATUS_VALUES)}
@@ -170,7 +190,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
               />
               <DyoColumn
                 header={t('common:actions')}
-                align="center"
+                className="w-40 text-center"
                 preventClickThrough
                 body={(it: Deployment) => (
                   <>

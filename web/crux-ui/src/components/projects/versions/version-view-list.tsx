@@ -51,11 +51,18 @@ const VersionViewList = (props: VersionViewListProps) => {
   return (
     <>
       <DyoCard className="relative mt-4">
-        <DyoTable data={state.version.images}>
+        <DyoTable data={state.version.images} dataKey="id" initialSortColumn={0} initialSortDirection="asc">
           <DyoColumn header={t('containerName')} field="config.name" sortable sort={sortString} />
-          <DyoColumn header={t('common:registry')} field="registry.name" sortable sort={sortString} />
+          <DyoColumn
+            header={t('common:registry')}
+            field="registry.name"
+            className="w-3/12"
+            sortable
+            sort={sortString}
+          />
           <DyoColumn
             header={t('imageTag')}
+            className="w-2/12"
             sortable
             sortField={(it: VersionImage) => (it.tag ? `${it.name}:${it.tag}` : it.name)}
             sort={sortString}
@@ -68,6 +75,7 @@ const VersionViewList = (props: VersionViewListProps) => {
           />
           <DyoColumn
             header={t('common:createdAt')}
+            className="w-3/12"
             sortable
             sortField="createdAt"
             sort={sortDate}
@@ -76,8 +84,7 @@ const VersionViewList = (props: VersionViewListProps) => {
           />
           <DyoColumn
             header={t('common:actions')}
-            width="10%"
-            align="center"
+            className="w-40 text-center"
             body={(it: VersionImage) => (
               <>
                 <div className="inline-block">

@@ -128,10 +128,11 @@ const TokensPage = (props: TokensPageProps) => {
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })} />
           <DyoCard className="relative mt-4">
-            <DyoTable data={filters.filtered}>
-              <DyoColumn header={t('common:name')} field="name" width="60%" sortable sort={sortString} />
+            <DyoTable data={filters.filtered} dataKey="id" initialSortColumn={1} initialSortDirection="asc">
+              <DyoColumn header={t('common:name')} field="name" className="w-7/12" sortable sort={sortString} />
               <DyoColumn
                 header={t('common:createdAt')}
+                className="w-2/12"
                 body={(it: Token) => utcDateToLocale(it.createdAt)}
                 suppressHydrationWarning
                 sortable
@@ -140,6 +141,7 @@ const TokensPage = (props: TokensPageProps) => {
               />
               <DyoColumn
                 header={t('tokens:expiresAt')}
+                className="w-2/12"
                 body={(it: Token) => (it.expiresAt ? utcDateToLocale(it.expiresAt) : t('common:never'))}
                 suppressHydrationWarning
                 sortable
@@ -148,8 +150,7 @@ const TokensPage = (props: TokensPageProps) => {
               />
               <DyoColumn
                 header={t('common:actions')}
-                width="10%"
-                align="center"
+                className="w-40 text-center"
                 body={(it: Token) => (
                   <DyoIcon
                     className="aspect-square cursor-pointer"

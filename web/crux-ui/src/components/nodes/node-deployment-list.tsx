@@ -58,11 +58,17 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
             />
           </Filters>
           <DyoCard className="relative mt-4">
-            <DyoTable data={filters.filtered} onRowClick={onRowClick}>
+            <DyoTable
+              data={filters.filtered}
+              dataKey="id"
+              onRowClick={onRowClick}
+              initialSortColumn={3}
+              initialSortDirection="asc"
+            >
               <DyoColumn
                 header={t('common:project')}
                 body={(it: Deployment) => it.project.name}
-                width="16%"
+                className="w-3/12"
                 sortable
                 sortField="project.name"
                 sort={sortString}
@@ -70,7 +76,7 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
               <DyoColumn
                 header={t('common:version')}
                 body={(it: Deployment) => it.version.name}
-                width="16%"
+                className="w-1/12"
                 sortable
                 sortField="version.name"
                 sort={sortString}
@@ -78,7 +84,7 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
               <DyoColumn
                 header={t('common:prefix')}
                 field="prefix"
-                width="16%"
+                className="w-2/12"
                 sortable
                 sortField="prefix"
                 sort={sortString}
@@ -86,7 +92,7 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
               <DyoColumn
                 header={t('common:updatedAt')}
                 body={(it: Deployment) => auditToLocaleDate(it.audit)}
-                width="16%"
+                className="w-2/12"
                 suppressHydrationWarning
                 sortable
                 sortField={it => it.audit.updatedAt ?? it.audit.createdAt}
@@ -95,15 +101,14 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
               <DyoColumn
                 header={t('common:status')}
                 body={(it: Deployment) => <DeploymentStatusTag status={it.status} className="w-fit mx-auto" />}
-                width="16%"
+                className="text-center"
                 sortable
                 sortField="status"
                 sort={sortEnum(DEPLOYMENT_STATUS_VALUES)}
               />
               <DyoColumn
                 header={t('common:actions')}
-                width="16%"
-                align="center"
+                className="w-40 text-center"
                 preventClickThrough
                 body={(it: Deployment) => (
                   <>
