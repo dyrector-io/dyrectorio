@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 
-type SubmitFunc = () => Promise<void>
+type SubmitFunc = () => Promise<any>
 
 export type SubmitHook = {
   disabled: boolean
