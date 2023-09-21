@@ -31,10 +31,11 @@ rules:
   apiGroups:
   - ""
   resources:
-  - pvc
+  - persistentvolumeclaims
   verbs:
   - get
   - list
+  - patch
   - create
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -78,19 +79,6 @@ aggregationRule:
   - matchLabels:
       rbac.dyrector.io/crane: "restricted-api-access"
 rules: []
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: dyrectorio-crane
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: dyrectorio-crane
-subjects:
-- kind: ServiceAccount
-  name: default
-  namespace: dyrectorio
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
