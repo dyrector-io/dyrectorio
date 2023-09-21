@@ -36,9 +36,9 @@ const useSubmit = (): SubmitHook => {
   }, [])
 
   const set = useCallback((target: SubmitFunc, submitting: boolean) => {
-    console.info('SET')
+    console.info('SET - overwrite:', !!stateRef.current.submit, 'disabled?', submitting)
 
-    console.info('disabled?', submitting)
+    console.info()
     setDisabled(submitting)
 
     stateRef.current.submit = target

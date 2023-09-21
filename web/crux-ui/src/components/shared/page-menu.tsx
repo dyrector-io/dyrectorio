@@ -36,7 +36,7 @@ export const ListPageMenu = (props: ListPageMenuProps) => {
         {texts.discard ?? t('discard')}
       </DyoButton>
 
-      <DyoButton className="px-4 ml-4" onClick={() => submit.trigger()}>
+      <DyoButton disabled={submit.disabled} className="px-4 ml-4" onClick={() => submit.trigger()}>
         {texts.save ?? t('save')}
       </DyoButton>
     </>

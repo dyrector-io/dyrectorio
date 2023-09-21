@@ -104,7 +104,7 @@ test.describe('Image docker config from JSON', () => {
     json.restartPolicy = 'always'
 
     let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchRestartPolicy('always'))
-    jsonEditor.fill(JSON.stringify(json))
+    await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
     await page.reload()
@@ -134,7 +134,7 @@ test.describe('Image docker config from JSON', () => {
     json.logConfig = { driver: type, options: { [key]: value } }
 
     let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchLogConfig(type, key, value))
-    jsonEditor.fill(JSON.stringify(json))
+    await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
     await page.reload()
@@ -165,7 +165,7 @@ test.describe('Image docker config from JSON', () => {
     json.networks = [network]
 
     let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchNetwork(network))
-    jsonEditor.fill(JSON.stringify(json))
+    await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
     await page.reload()
