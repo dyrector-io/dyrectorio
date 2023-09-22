@@ -87,16 +87,16 @@ export default class WsNamespace implements WsSubscription {
     return of(res).pipe(first())
   }
 
-  onUnsubscribe(client: WsClient, message: WsMessage<SubscriptionMessage> | null): UnsubcribeResult {
+  onUnsubscribe(client: WsClient, message: WsMessage<SubscriptionMessage> | null): Observable<UnsubcribeResult> {
     const { token } = client
 
     const resources = this.clients.get(token)
     if (!resources) {
       this.logger.warn(`undefined resource for '${token}'`)
-      return {
+      return of({
         res: null,
         shouldRemove: this.clients.size < 1,
-      }
+      })
     }
 
     // When the connection is killed, we get an empty message,
@@ -112,20 +112,38 @@ export default class WsNamespace implements WsSubscription {
 
     const { unsubscribe, transform, completer } = resources
 
+    if (unsubscribe) {
+      return transform(unsubscribe(message)).pipe(
+        first(),
+        map(() => {
+          client.subscriptions.delete(this.path)
+
+          completer.next(undefined)
+          this.clients.delete(token)
+
+          this.logger.verbose(`${token} unsubscribed`)
+
+          return {
+            res: {
+              type: WS_TYPE_UNSUBBED,
+              data: {
+                path: this.path,
+              },
+            },
+            shouldRemove: this.clients.size < 1,
+          }
+        }),
+      )
+    }
+
+    client.subscriptions.delete(this.path)
+
     completer.next(undefined)
     this.clients.delete(token)
 
-    if (unsubscribe) {
-      transform(unsubscribe(message))
-        .pipe(first())
-        .subscribe(() => client.subscriptions.delete(this.path))
-    } else {
-      client.subscriptions.delete(this.path)
-    }
-
     this.logger.verbose(`${token} unsubscribed`)
 
-    return {
+    return of({
       res: {
         type: WS_TYPE_UNSUBBED,
         data: {
@@ -133,7 +151,7 @@ export default class WsNamespace implements WsSubscription {
         },
       },
       shouldRemove: this.clients.size < 1,
-    }
+    })
   }
 
   onMessage(client: WsClient, message: WsMessage): Observable<WsMessage> {
