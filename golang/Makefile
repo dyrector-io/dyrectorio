@@ -225,7 +225,7 @@ k3d-init-base:
 		PORT_END=6493
 		FIRST_AVAILABLE_PORT=$$(comm -23 <(seq $$PORT_START $$PORT_END | sort) <(ss -tln | awk '{print $$4}' | cut -d':' -f2 | sort -u) | head -n 1)
 		CRANE_TEST_CLUSTER_NAME=crane-test-${GITHUB_RUN}
-		CRANE_TEST_API_PORT=172.17.0.1:$$FIRST_AVAILABLE_PORT
+		CRANE_TEST_API_PORT=172.17.0.1:$FIRST_AVAILABLE_PORT
     endif
 	k3d cluster create --api-port $(CRANE_TEST_API_PORT) $(CRANE_TEST_CLUSTER_NAME)
 
