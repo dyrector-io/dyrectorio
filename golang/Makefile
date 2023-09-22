@@ -213,31 +213,45 @@ k3d-check:
         echo "k3d is required for integration test, install it and add to PATH!"; \
     fi
 
+# Default values for local environment
+CRANE_TEST_CLUSTER_NAME := crane-test
+CRANE_TEST_API_PORT := 172.17.0.1:6443
+
+.PHONY: k3d-init-base
+k3d-init-base:
+	# If GITHUB_RUN is provided, override the default values
+    ifdef GITHUB_RUN
+		PORT_START=6443
+		PORT_END=6493
+		FIRST_AVAILABLE_PORT=$$(comm -23 <(seq $$PORT_START $$PORT_END | sort) <(ss -tln | awk '{print $$4}' | cut -d':' -f2 | sort -u) | head -n 1)
+		CRANE_TEST_CLUSTER_NAME=crane-test-${GITHUB_RUN}
+		CRANE_TEST_API_PORT=172.17.0.1:$$FIRST_AVAILABLE_PORT
+    endif
+	k3d cluster create --api-port $(CRANE_TEST_API_PORT) $(CRANE_TEST_CLUSTER_NAME)
+
 # init k3d with basic
 .PHONY: k3d-init
-k3d-init: k3d-check
-	k3d cluster create --api-port 172.17.0.1:6443 crane-test
+k3d-init: k3d-check k3d-init-base
 
 # init k3d with ext
 .PHONY: k3d-init-ext
-k3d-init-ext: k3d-check
-	k3d cluster create --api-port 172.17.0.1:6443 crane-test && \
-	k3d kubeconfig get crane-test > k3d-auth.yaml && \
+k3d-init-ext: k3d-check k3d-init-base
+	k3d kubeconfig get $(CRANE_TEST_CLUSTER_NAME) > k3d-auth.yaml && \
 	KUBECONFIG=$(PWD)/k3d-auth.yaml kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/bundle.yaml
 	KUBECONFIG=$(PWD)/k3d-auth.yaml kubectl apply -f ./crane-test.yaml
 
 # config k3d
 .PHONY: k3d-config
 k3d-config:
-	k3d kubeconfig get crane-test > k3d-auth.yaml
+	k3d kubeconfig get $(CRANE_TEST_CLUSTER_NAME) > k3d-auth.yaml
 
 .PHONY: k3d-start
 k3d-start:
-	k3d cluster start crane-test
+	k3d cluster start $(CRANE_TEST_CLUSTER_NAME)
 
 .PHONY: k3d-stop
 k3d-stop:
-	k3d cluster stop crane-test
+	k3d cluster stop $(CRANE_TEST_CLUSTER_NAME)
 
 # make sure to have k3s set and configured
 .PHONY: k3d-test
@@ -245,8 +259,9 @@ k3d-test: k3d-config
 	export KUBECONFIG='$(PWD)/k3d-auth.yaml'
 	go test -tags=integration -race ./pkg/crane/...
 
+.PHONY: k3d-rm
 k3d-rm:
-	k3d cluster delete crane-test
+	k3d cluster delete $(CRANE_TEST_CLUSTER_NAME)
 
 # dependency: valid & working k8s configuration
 .PHONY: test-unit
