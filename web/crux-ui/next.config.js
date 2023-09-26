@@ -12,6 +12,6 @@ const nextTranslate = require('next-translate-plugin')
 module.exports = {
   ...nextTranslate(),
   eslint: {
-    dirs: ['src'],
+    dirs: ['src', 'e2e'],
   },
 }

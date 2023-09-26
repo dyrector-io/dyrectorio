@@ -1,6 +1,5 @@
 import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_INSTANCE } from '@app/models'
-import { expect, WebSocket } from '@playwright/test'
-import { test } from '../utils/test.fixture'
+import { expect } from '@playwright/test'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, waitForURLExcept } from 'e2e/utils/common'
 import { addPortsToContainerConfig } from 'e2e/utils/container-config'
 import {
@@ -15,6 +14,7 @@ import {
   fillDeploymentPrefix,
 } from 'e2e/utils/projects'
 import { waitSocketRef } from 'e2e/utils/websocket'
+import { test } from '../utils/test.fixture'
 
 test.describe.configure({ mode: 'parallel' })
 
@@ -34,7 +34,7 @@ test.describe('Deleting default version', () => {
     await page.goto(TEAM_ROUTES.project.details(projectId))
     await page.waitForSelector('img[alt="Projects"]:right-of(h2:text-is("Projects"))')
 
-    expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
+    await expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
     await page.waitForSelector('h2:text-is("Versions")')
@@ -71,7 +71,7 @@ test.describe('Deleting default version', () => {
     await page.goto(TEAM_ROUTES.project.details(projectId))
     await page.waitForSelector('h2:text-is("Projects")')
 
-    expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
+    await expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
     await page.waitForSelector('h2:text-is("Versions")')
@@ -114,7 +114,7 @@ test.describe('Deleting default version', () => {
     await page.goto(TEAM_ROUTES.project.details(projectId))
     await page.waitForSelector('h2:text-is("Projects")')
 
-    expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
+    await expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
     await page.waitForSelector('h2:text-is("Versions")')
@@ -148,7 +148,7 @@ test.describe('Deleting default version', () => {
     await page.goto(TEAM_ROUTES.project.details(projectId))
     await page.waitForSelector('h2:text-is("Projects")')
 
-    expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
+    await expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
     await page.waitForSelector('h2:text-is("Versions")')
@@ -211,7 +211,7 @@ test.describe('Deleting default version', () => {
     await page.goto(TEAM_ROUTES.project.details(projectId))
     await page.waitForSelector('h2:text-is("Projects")')
 
-    expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
+    await expect(page.locator(`:has-text("${defaultVersionName}")`)).toHaveCount(0)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).details(newVersionId))
     await page.waitForSelector('h2:text-is("Versions")')

@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import { test as base } from '@playwright/test'
 import type { ChromiumBrowserContext } from 'playwright-core'
 
@@ -7,6 +8,7 @@ const DEBUG = !!process.env.REQUESTTHROTTLE
 
 const LOG_LEVELS = DEBUG ? ['error', 'warning', 'info', 'debug', 'trace'] : ['error', 'warning']
 
+// eslint-disable-next-line import/prefer-default-export
 export const test = base.extend({})
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -61,12 +63,13 @@ test.beforeEach(async ({ page }, testInfo) => {
 
   if (CPU_THROTTLE) {
     const client = await (page.context() as ChromiumBrowserContext).newCDPSession(page)
-    await client.send('Emulation.setCPUThrottlingRate', { rate: CPU_THROTTLE ? Number.parseInt(CPU_THROTTLE) : 2 })
+    await client.send('Emulation.setCPUThrottlingRate', { rate: CPU_THROTTLE ? Number.parseInt(CPU_THROTTLE, 10) : 2 })
   }
 
   if (REQUEST_THROTTLE) {
     await page.route('**/*', async route => {
-      await new Promise(resolve => setTimeout(resolve, REQUEST_THROTTLE ? Number.parseInt(REQUEST_THROTTLE) : 100))
+      // eslint-disable-next-line no-promise-executor-return
+      await new Promise(resolve => setTimeout(resolve, REQUEST_THROTTLE ? Number.parseInt(REQUEST_THROTTLE, 10) : 100))
       await route.continue()
     })
   }

@@ -1,6 +1,6 @@
 import { ROUTE_LOGIN, ROUTE_TEAMS_CREATE } from '@app/routes'
 import { expect } from '@playwright/test'
-import { createUser, deleteUserByEmail, kratosFromConfig, screenshotPath, TEAM_ROUTES } from '../utils/common'
+import { createUser, deleteUserByEmail, kratosFromConfig, screenshotPath } from '../utils/common'
 import { test } from '../utils/test.fixture'
 
 const LOGIN_TEST_USER = 'test-login@example.com'

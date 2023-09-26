@@ -45,7 +45,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.networkMode = mode
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchNetworkMode(mode))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchNetworkMode(mode))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -74,7 +74,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.dockerLabels = { [key]: value }
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDockerLabel(key, value))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDockerLabel(key, value))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -103,7 +103,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.restartPolicy = 'always'
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchRestartPolicy('always'))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchRestartPolicy('always'))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -133,7 +133,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.logConfig = { driver: type, options: { [key]: value } }
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchLogConfig(type, key, value))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchLogConfig(type, key, value))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -164,7 +164,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.networks = [network]
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchNetwork(network))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchNetwork(network))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 

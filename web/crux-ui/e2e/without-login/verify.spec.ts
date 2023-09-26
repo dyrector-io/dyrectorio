@@ -6,7 +6,6 @@ import {
   deleteUserByEmail,
   extractKratosLinkFromMail,
   kratosFromBaseURL,
-  kratosFromConfig,
   mailslurperFromBaseURL,
   screenshotPath,
 } from '../utils/common'

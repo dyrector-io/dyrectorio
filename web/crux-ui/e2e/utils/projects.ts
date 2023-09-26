@@ -206,7 +206,7 @@ export const deleteDeployment = async (page: Page, deploymentId: string) => {
 
   const currentUrl = page.url()
   await confirmDeleteButton.click()
-  await page.waitForURL(it => it.toString() != currentUrl)
+  await page.waitForURL(it => it.toString() !== currentUrl)
 }
 
 export const copyDeployment = async (page: Page, deploymentId: string, newName: string) => {

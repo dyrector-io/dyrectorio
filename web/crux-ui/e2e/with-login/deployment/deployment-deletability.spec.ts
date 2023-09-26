@@ -42,7 +42,7 @@ test('In progress deployment should be not deletable', async ({ page }) => {
   await jsonContainer.fill(JSON.stringify(configObject))
   await wsSent
 
-  const deploymentId = await deployWithDagent(page, 'versioned-deletability', projectId, versionId, true)
+  await deployWithDagent(page, 'versioned-deletability', projectId, versionId, true)
 
   await expect(await page.getByText('In progress')).toHaveCount(1)
   await expect(await page.locator('button:has-text("Delete")')).toHaveCount(0)
@@ -89,8 +89,8 @@ test('Deleting a deployment should refresh deployment list', async ({ page }) =>
   await page.goto(TEAM_ROUTES.deployment.list())
   await page.waitForSelector('h2:text-is("Deployments")')
 
-  deleteRefreshDeployment()
+  await deleteRefreshDeployment()
   await expect(page.locator(`div.p-2:has-text('pw-${projectName}')`)).toHaveCount(1)
-  deleteRefreshDeployment()
+  await deleteRefreshDeployment()
   await expect(page.locator(`div.p-2:has-text('pw-${projectName}')`)).toHaveCount(0)
 })

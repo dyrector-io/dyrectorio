@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { expect, Page } from '@playwright/test'
 import { WebSocketRef, wsPatchSent } from './websocket'
@@ -17,7 +18,7 @@ export const addPortsToContainerConfig = async (
   const json = JSON.parse(await jsonEditor.inputValue())
   json.ports = [{ internal: Number.parseInt(internal, 10), external: Number.parseInt(external, 10) }]
 
-  let wsSent = wsPatchSent(ws, wsRoute, sentWsType, wsPatchMatchPorts(internal, external))
+  const wsSent = wsPatchSent(ws, wsRoute, sentWsType, wsPatchMatchPorts(internal, external))
   await jsonEditor.fill(JSON.stringify(json))
   await wsSent
 
