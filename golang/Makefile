@@ -213,20 +213,21 @@ k3d-check:
         echo "k3d is required for integration test, install it and add to PATH!"; \
     fi
 
-# Default values for local environment
+# default values for local environment
 CRANE_TEST_CLUSTER_NAME := crane-test
 CRANE_TEST_API_PORT := 172.17.0.1:6443
 
+# conditionally override defaults for github runs
+ifdef GITHUB_RUN
+  PORT_START := 6443
+  PORT_END := 6493
+  FIRST_AVAILABLE_PORT := $(shell comm -23 <(seq $(PORT_START) $(PORT_END) | sort) <(ss -tln | awk '{print $$4}' | cut -d':' -f2 | sort -u) | head -n 1)
+  CRANE_TEST_CLUSTER_NAME := crane-test-$(GITHUB_RUN)
+  CRANE_TEST_API_PORT := 172.17.0.1:$(FIRST_AVAILABLE_PORT)
+endif
+
 .PHONY: k3d-init-base
 k3d-init-base:
-	# If GITHUB_RUN is provided, override the default values
-    ifdef GITHUB_RUN
-		PORT_START=6443
-		PORT_END=6493
-		FIRST_AVAILABLE_PORT=$$(comm -23 <(seq $$PORT_START $$PORT_END | sort) <(ss -tln | awk '{print $$4}' | cut -d':' -f2 | sort -u) | head -n 1)
-		CRANE_TEST_CLUSTER_NAME=crane-test-${GITHUB_RUN}
-		CRANE_TEST_API_PORT=172.17.0.1:$FIRST_AVAILABLE_PORT
-    endif
 	k3d cluster create --api-port $(CRANE_TEST_API_PORT) $(CRANE_TEST_CLUSTER_NAME)
 
 # init k3d with basic
