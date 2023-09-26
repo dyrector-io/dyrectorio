@@ -19,7 +19,6 @@ export const createProject = async (page: Page, name: string, type: ProjectType)
   await page.locator('button:has-text("Save")').click()
 
   await page.waitForURL(`${TEAM_ROUTES.project.list()}/**`)
-  await page.waitForLoadState('networkidle')
   await page.waitForSelector(`h5:text-is("${name}")`)
 
   if (type === 'versionless') {
