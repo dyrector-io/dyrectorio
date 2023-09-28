@@ -235,17 +235,14 @@ jobs:
       - name: Load go mod
         run: go mod tidy
       - name: Set GITHUB_RUN parameter
+        if: always() && startsWith(needs.assign_runner.outputs.runner, 'ubuntu-') == false
         run: echo "GITHUB_RUN_PARAM=GITHUB_RUN=${{ github.run_id }}" >> $GITHUB_ENV
-        if: startsWith(needs.assign_runner.outputs.runner, 'ubuntu-') == false
-      - name: Pre-cleanup k3d cluster
-        run: |
-          make k3d-stop ${{ env.GITHUB_RUN_PARAM }} 2>/dev/null || true
-          make k3d-rm ${{ env.GITHUB_RUN_PARAM }} 2>/dev/null || true
       - name: Init k3d
         run: make k3d-init ${{ env.GITHUB_RUN_PARAM }}
       - name: Run integration tests
         run: make k3d-test ${{ env.GITHUB_RUN_PARAM }}
       - name: Post-cleanup k3d cluster
+        if: always()
         run: |
           make k3d-stop ${{ env.GITHUB_RUN_PARAM }} 2>/dev/null || true
           make k3d-rm ${{ env.GITHUB_RUN_PARAM }} 2>/dev/null || true
