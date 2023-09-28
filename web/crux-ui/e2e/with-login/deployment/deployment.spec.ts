@@ -133,8 +133,7 @@ test('Select specific instances to deploy', async ({ page }) => {
 
   const { id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, { prefix })
 
-  const instanceBody = await page.locator('.table-row-group')
-  const instanceRow = await instanceBody.locator('.table-row')
+  const instanceRow = await page.locator('table.w-full >> tbody >> tr')
 
   await instanceRow.locator('img[alt="check"]:left-of(div:text-is("busybox"))').click()
 
@@ -152,9 +151,7 @@ test('Select specific instances to deploy', async ({ page }) => {
   await page.waitForSelector('button:text-is("Containers")')
   await page.locator('input[placeholder="Search"]').type(prefix)
 
-  const containerBody = await page.locator('.table-row-group')
-  const nodeContainerRow = await containerBody.locator('.table-row')
-
+  const nodeContainerRow = await page.locator('table.w-full >> tbody >> tr')
   await expect(nodeContainerRow).toHaveCount(1)
 })
 

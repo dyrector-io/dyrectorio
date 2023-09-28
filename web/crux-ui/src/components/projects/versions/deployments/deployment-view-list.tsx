@@ -59,6 +59,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
           sortable
           sortField="image.createdAt"
           sort={sortDate}
+          suppressHydrationWarning
           body={(it: Instance) => (it.image.createdAt ? utcDateToLocale(it.image.createdAt) : t('common:new'))}
         />
         <DyoColumn

@@ -98,9 +98,7 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
 
   await page.locator('button:text-is("Add")').click()
 
-  const imagesTableBody = await page.locator('.table-row-group')
-  const imagesRows = await imagesTableBody.locator('.table-row')
-
+  const imagesRows = await page.locator('table.w-full >> tbody >> tr')
   await expect(imagesRows).toHaveCount(1)
 })
 

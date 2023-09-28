@@ -107,7 +107,7 @@ test.describe('Project', () => {
 
     const projNum: number = tileView
       ? await page.locator('div.card.w-full').count()
-      : await page.locator('div.table-row-group div.table-row').count()
+      : await page.locator('table.w-full >> tbody >> tr').count()
     versioned
       ? await page.locator('button:has-text("Versioned")').click()
       : await page.locator('button:has-text("Versionless")').click()
@@ -115,7 +115,7 @@ test.describe('Project', () => {
     expect(
       tileView
         ? await page.locator('div.card.w-full').count()
-        : await page.locator('div.table-row-group div.table-row').count(),
+        : await page.locator('table.w-full >> tbody >> tr').count(),
     ).toBeLessThan(projNum)
   }
 

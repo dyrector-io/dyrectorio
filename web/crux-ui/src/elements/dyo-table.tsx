@@ -225,10 +225,13 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
     setData(sorted)
   }, [propData, sort])
 
-  const pageItems = data.slice(
-    pagination.pageNumber * pagination.pageSize,
-    pagination.pageNumber * pagination.pageSize + pagination.pageSize,
-  )
+  const pageItems =
+    propPagination === 'client'
+      ? data.slice(
+          pagination.pageNumber * pagination.pageSize,
+          pagination.pageNumber * pagination.pageSize + pagination.pageSize,
+        )
+      : data
 
   return (
     <table className={clsx('table-fixed', className ?? 'w-full')}>
