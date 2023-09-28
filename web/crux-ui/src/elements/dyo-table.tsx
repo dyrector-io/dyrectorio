@@ -134,7 +134,8 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
 
   if (process.env.NODE_ENV === 'development') {
     columns.forEach((it, index) => {
-      console.error(
+      // eslint-disable-next-line no-console
+      console.assert(
         !(!!it.body && !!it.field),
         `A column can only have either the field or the body defined, index: ${index}`,
       )
@@ -214,24 +215,20 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
   useEffect(() => {
     const sorted = sort ? sortData(propData, sort) : propData
 
-    if (propPagination === 'client') {
-      if (pagination.pageNumber * pagination.pageSize >= propData.length) {
-        setPagination({
-          ...pagination,
-          pageNumber: Math.max(0, Math.floor(propData.length / pagination.pageSize) - 1),
-        })
-      }
-
-      const pageItems = sorted.slice(
-        pagination.pageNumber * pagination.pageSize,
-        pagination.pageNumber * pagination.pageSize + pagination.pageSize,
-      )
-      setData(pageItems)
-      return
+    if (propPagination === 'client' && pagination.pageNumber * pagination.pageSize >= propData.length) {
+      setPagination({
+        ...pagination,
+        pageNumber: Math.max(0, Math.floor(propData.length / pagination.pageSize) - 1),
+      })
     }
 
     setData(sorted)
-  }, [propData, sort, pagination])
+  }, [propData, sort])
+
+  const pageItems = data.slice(
+    pagination.pageNumber * pagination.pageSize,
+    pagination.pageNumber * pagination.pageSize + pagination.pageSize,
+  )
 
   return (
     <table className={clsx('table-fixed', className ?? 'w-full')}>
@@ -279,7 +276,7 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
         </tr>
       </thead>
       <tbody>
-        {data.map((it, rowIndex) => {
+        {pageItems.map((it, rowIndex) => {
           const click = onRowClick ? () => onRowClick(it) : null
 
           const key = dataKey ? getField(it, dataKey) : rowIndex
