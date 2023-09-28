@@ -655,7 +655,7 @@ jobs:
           name: e2e-trace
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e_results
       - name: Teardown using cli
-        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --debug down
+        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --debug -p dyo-e2e down
       - name: Save NPM caches
         uses: actions/cache/save@v3
         with:
