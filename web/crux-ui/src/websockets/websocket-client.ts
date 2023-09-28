@@ -6,6 +6,9 @@ import WebSocketClientEndpoint from './websocket-client-endpoint'
 import WebSocketClientRoute from './websocket-client-route'
 
 class WebSocketClient {
+  // NOTE(@robot9706): According to the WebSocket spec the 4000-4999 code range is available to applications
+  public static ERROR_UNAUTHORIZE = 4401
+
   private logger = new Logger('WebSocketClient') // need to be explicit string because of production build uglification
 
   private socket?: WebSocket
@@ -19,6 +22,8 @@ class WebSocketClient {
   private routes: Map<string, WebSocketClientRoute> = new Map()
 
   private errorHandler: WsErrorHandler = null
+
+  private kicked: boolean = false
 
   get connected(): boolean {
     return this.socket?.readyState === WebSocket.OPEN
@@ -74,6 +79,21 @@ class WebSocketClient {
     this.errorHandler = handler
   }
 
+  reset() {
+    if (this.socket && this.socket?.readyState !== WebSocket.CLOSED) {
+      return
+    }
+
+    if (!this.kicked) {
+      return
+    }
+
+    this.kicked = false
+    this.connectionAttemptCount = 0
+
+    this.reconnect()
+  }
+
   private removeRoute(route: WebSocketClientRoute) {
     const { path } = route
     this.routes.delete(path)
@@ -103,6 +123,10 @@ class WebSocketClient {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       // we are already connected
       return true
+    }
+
+    if (this.kicked) {
+      return false
     }
 
     // if there is already a connctionAttempt wait for the result
@@ -203,7 +227,7 @@ class WebSocketClient {
         this.routes.forEach(it => it.onSocketOpen())
       }
 
-      const onClose = () => {
+      const onClose = (it: CloseEvent) => {
         if (!resolved) {
           resolved = true
           setTimeout(() => resolve(false), failTimeout)
@@ -211,8 +235,18 @@ class WebSocketClient {
 
         this.logger.info('Disconnected')
 
-        this.routes.forEach(it => it.onSocketClose())
-        this.reconnect()
+        this.errorHandler({
+          status: it.code,
+          message: it.reason,
+        })
+
+        this.routes.forEach(route => route.onSocketClose())
+
+        if (it.code === WebSocketClient.ERROR_UNAUTHORIZE) {
+          this.kicked = true
+        } else {
+          this.reconnect()
+        }
       }
 
       const onError = ev => {

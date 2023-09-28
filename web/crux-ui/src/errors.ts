@@ -2,6 +2,9 @@ import { Translate } from 'next-translate'
 import toast, { ToastOptions } from 'react-hot-toast'
 import { fromApiError } from './error-responses'
 import { DyoErrorDto, WsErrorMessage } from './models'
+import WebSocketClient from './websockets/websocket-client'
+import { ROUTE_LOGIN } from './routes'
+import { NextRouter } from 'next/router'
 
 export type DyoApiErrorHandler = (res: Response, setErrorValue?: FormikSetErrorValue) => Promise<void>
 
@@ -77,4 +80,11 @@ export const wsErrorHandler = (translator: Translator) => (message: WsErrorMessa
   toaster(translation.toast)
 }
 
-export const defaultWsErrorHandler = (t: Translate) => wsErrorHandler(defaultTranslator(t))
+export const defaultWsErrorHandler = (t: Translate, router: NextRouter) => (msg: WsErrorMessage) => {
+  const defaultErrorHandler = wsErrorHandler(defaultTranslator(t))
+  if (msg.status === WebSocketClient.ERROR_UNAUTHORIZE) {
+    router.push(ROUTE_LOGIN)
+    return
+  }
+  defaultErrorHandler(msg)
+}
