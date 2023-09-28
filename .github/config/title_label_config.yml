@@ -1,4 +1,5 @@
-pr:cicd: [^cicd]
+pr:build: [^build]
+pr:ci: [^ci]
 pr:chore: [^chore]
 pr:doc: [^doc]
 pr:feat: [^feat]
