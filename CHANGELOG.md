@@ -1,6 +1,31 @@
 # CHANGELOG
 
 
+<a name="0.8.2"></a>
+## [0.8.2](https://github.com/dyrector-io/dyrectorio/compare/0.8.1...0.8.2) (2023-09-21)
+
+### Doc
+
+* update development.md ([#821](https://github.com/dyrector-io/dyrectorio/issues/821))
+
+### Feat
+
+* **(web):** node deployment list ([#826](https://github.com/dyrector-io/dyrectorio/issues/826))
+* **(web):** agent update button availability ([#822](https://github.com/dyrector-io/dyrectorio/issues/822))
+* **(crux-ui):** yup localization ([#813](https://github.com/dyrector-io/dyrectorio/issues/813))
+
+### Fix
+
+* **(crux):** WS session expire cleanup ([#823](https://github.com/dyrector-io/dyrectorio/issues/823))
+* copying a deployment now does not copies the secret values to a different node ([#828](https://github.com/dyrector-io/dyrectorio/issues/828))
+* shorthash mismatch ([#825](https://github.com/dyrector-io/dyrectorio/issues/825))
+* **(crux-ui):** versionless type tag not showing & update deployment uptime counters ([#824](https://github.com/dyrector-io/dyrectorio/issues/824))
+* update env.examples ([#817](https://github.com/dyrector-io/dyrectorio/issues/817))
+* kratos user list pagination ([#820](https://github.com/dyrector-io/dyrectorio/issues/820))
+* **(crux):** legacy agent update ([#819](https://github.com/dyrector-io/dyrectorio/issues/819))
+* **(agent):** crashing on install and connection token mismatch ([#815](https://github.com/dyrector-io/dyrectorio/issues/815))
+
+
 <a name="0.8.1"></a>
 ## [0.8.1](https://github.com/dyrector-io/dyrectorio/compare/0.8.0...0.8.1) (2023-09-07)
 
