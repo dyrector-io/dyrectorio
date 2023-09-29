@@ -132,7 +132,7 @@ test('Container log should appear on a node container', async ({ page }) => {
   await page.waitForSelector('button:text-is("Containers")')
   await page.locator('input[placeholder="Search"]').type(`pw-${prefix}-${imageName}`)
 
-  const nodeContainerRow = await page.locator(`span:text-is("pw-${prefix}-${imageName}") >> xpath=../..`)
+  const nodeContainerRow = await page.locator(`td:text-is("pw-${prefix}-${imageName}") >> xpath=../..`)
   await expect(nodeContainerRow).toHaveCount(1)
 
   const logButton = await nodeContainerRow.locator('img[src*="/note.svg"]')

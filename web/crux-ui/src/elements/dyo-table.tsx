@@ -301,6 +301,7 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
                       col.className,
                       col.bodyClassName,
                     )}
+                    suppressHydrationWarning={col.suppressHydrationWarning}
                     onClick={click && !col.preventClickThrough ? click : null}
                   >
                     {cellData}

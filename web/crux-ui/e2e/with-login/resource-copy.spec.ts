@@ -42,7 +42,7 @@ test.describe('Deleting default version', () => {
     const imagesRows = await page.locator('table.w-full >> tbody >> tr')
 
     await expect(imagesRows).toHaveCount(1)
-    await expect(page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
+    await expect(page.locator('td:has-text("nginx")').first()).toBeVisible()
   })
 
   test('should not affect the image config of a new version', async ({ page }) => {
@@ -78,7 +78,7 @@ test.describe('Deleting default version', () => {
     const imagesRows = await page.locator('table.w-full >> tbody >> tr')
 
     await expect(imagesRows).toHaveCount(1)
-    await expect(page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
+    await expect(page.locator('td:has-text("nginx")').first()).toBeVisible()
 
     const settingsButton = await page.waitForSelector(`[src="/image_config_icon.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
@@ -122,7 +122,7 @@ test.describe('Deleting default version', () => {
     const deploymentRows = await page.locator('table.w-full >> tbody >> tr')
 
     await expect(deploymentRows).toHaveCount(1)
-    await expect(page.locator(`div.table-cell:has-text("${prefix}")`)).toBeVisible()
+    await expect(page.locator(`td:has-text("${prefix}")`)).toBeVisible()
   })
 
   test('should not affect the instances of the deployment of a new version', async ({ page }) => {
@@ -183,7 +183,7 @@ test.describe('Deleting default version', () => {
     const instancesRows = await page.locator('table.w-full >> tbody >> tr')
 
     await expect(instancesRows).toHaveCount(1)
-    await expect(page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
+    await expect(page.locator('td:has-text("nginx")').first()).toBeVisible()
 
     const settingsButton = await page.waitForSelector(`[src="/instance_config_icon.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
@@ -222,7 +222,7 @@ test.describe('Deleting default version', () => {
     const instanceRows = await page.locator('table.w-full >> tbody >> tr')
     await expect(instanceRows).toHaveCount(1)
 
-    await expect(page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
+    await expect(page.locator('td:has-text("nginx")').first()).toBeVisible()
     const newVersionDeploymentSettingsButton = await page.waitForSelector(
       `[src="/instance_config_icon.svg"]:right-of(:text("nginx"))`,
     )
@@ -282,7 +282,7 @@ test.describe("Deleting copied deployment's parent", () => {
     const instancesRows = await page.locator('table.w-full >> tbody >> tr')
 
     await expect(instancesRows).toHaveCount(1)
-    await expect(page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
+    await expect(page.locator('td:has-text("nginx")').first()).toBeVisible()
 
     const settingsButton = await page.waitForSelector(`[src="/instance_config_icon.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
@@ -327,7 +327,7 @@ test.describe("Deleting copied deployment's parent", () => {
     const instanceRows = await page.locator('table.w-full >> tbody >> tr')
     await expect(instanceRows).toHaveCount(1)
 
-    await expect(page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
+    await expect(page.locator('td:has-text("nginx")').first()).toBeVisible()
     const newDeploymentSettingsButton = await page.waitForSelector(
       `[src="/instance_config_icon.svg"]:right-of(:text("nginx"))`,
     )

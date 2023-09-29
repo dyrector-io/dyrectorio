@@ -76,8 +76,8 @@ test('Change default version should work', async ({ page }) => {
   const imagesRows = await page.locator('table.w-full >> tbody >> tr')
 
   await expect(imagesRows).toHaveCount(1)
-  await expect(await page.locator('.table-cell:has-text("redis")').first()).toBeVisible()
-  await expect(await page.locator('.table-cell:has-text("nginx")')).toHaveCount(0)
+  await expect(await page.locator('td:has-text("redis")').first()).toBeVisible()
+  await expect(await page.locator('td:has-text("nginx")')).toHaveCount(0)
 })
 
 test('Increase version should work', async ({ page }) => {
@@ -101,7 +101,7 @@ test('Increase version should work', async ({ page }) => {
   const imagesRows = await page.locator('table.w-full >> tbody >> tr')
 
   await expect(imagesRows).toHaveCount(1)
-  await expect(await page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
+  await expect(await page.locator('td:has-text("nginx")').first()).toBeVisible()
 
   const deploymentsRow = await page.locator('table.w-full >> tbody >> tr')
 

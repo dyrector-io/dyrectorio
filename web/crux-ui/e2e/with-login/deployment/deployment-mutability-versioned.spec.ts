@@ -20,7 +20,7 @@ test.describe('Versioned Project incremental version', () => {
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
     const configButton = await page
-      .locator(`[src="/instance_config_icon.svg"]:right-of(div:has-text("${image}"))`)
+      .locator(`[src="/instance_config_icon.svg"]:right-of(:has-text("${image}"))`)
       .first()
     await configButton.click()
 
@@ -48,7 +48,7 @@ test.describe('Versioned Project incremental version', () => {
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(0)
 
     const configButton = await page
-      .locator(`[src="/instance_config_icon.svg"]:right-of(div:has-text("${image}"))`)
+      .locator(`[src="/instance_config_icon.svg"]:right-of(:has-text("${image}"))`)
       .first()
     await configButton.click()
 
@@ -78,7 +78,7 @@ test.describe('Versioned Project incremental version', () => {
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(0)
 
     const configButton = await page
-      .locator(`[src="/instance_config_icon.svg"]:right-of(div:has-text("${image}"))`)
+      .locator(`[src="/instance_config_icon.svg"]:right-of(:has-text("${image}"))`)
       .first()
     await configButton.click()
 
