@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
+	"github.com/dyrector-io/dyrectorio/golang/internal/pointer"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
@@ -19,20 +20,16 @@ type RegistryTestCase struct {
 	ExpectedUrl string
 }
 
-func NewPTR[T any](value T) *T {
-	return &value
-}
-
 func TestRegistryWithTable(t *testing.T) {
 	testCases := []RegistryTestCase{
 		{
-			Registry:    NewPTR[string](""),
-			RegistryUrl: NewPTR[string]("test"),
+			Registry:    pointer.NewPTR[string](""),
+			RegistryUrl: pointer.NewPTR[string]("test"),
 			ExpectedUrl: "test",
 		},
 		{
-			Registry:    NewPTR[string]("other"),
-			RegistryUrl: NewPTR[string]("test"),
+			Registry:    pointer.NewPTR[string]("other"),
+			RegistryUrl: pointer.NewPTR[string]("test"),
 			ExpectedUrl: "test",
 		},
 		{
@@ -41,7 +38,7 @@ func TestRegistryWithTable(t *testing.T) {
 			ExpectedUrl: "",
 		},
 		{
-			Registry:    NewPTR[string]("other"),
+			Registry:    pointer.NewPTR[string]("other"),
 			RegistryUrl: nil,
 			ExpectedUrl: "other",
 		},
