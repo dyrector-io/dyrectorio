@@ -15,6 +15,7 @@ import (
 )
 
 type RegistryTestCase struct {
+	Name        string
 	Registry    *string
 	RegistryUrl *string
 	ExpectedUrl string
@@ -23,21 +24,25 @@ type RegistryTestCase struct {
 func TestRegistryWithTable(t *testing.T) {
 	testCases := []RegistryTestCase{
 		{
+			Name:        "Test registry url",
 			Registry:    pointer.NewPTR[string](""),
 			RegistryUrl: pointer.NewPTR[string]("test"),
 			ExpectedUrl: "test",
 		},
 		{
+			Name:        "Test registry url priority",
 			Registry:    pointer.NewPTR[string]("other"),
 			RegistryUrl: pointer.NewPTR[string]("test"),
 			ExpectedUrl: "test",
 		},
 		{
+			Name:        "Test registry url empty",
 			Registry:    nil,
 			RegistryUrl: nil,
 			ExpectedUrl: "",
 		},
 		{
+			Name:        "Test registry url registry",
 			Registry:    pointer.NewPTR[string]("other"),
 			RegistryUrl: nil,
 			ExpectedUrl: "other",
@@ -45,14 +50,16 @@ func TestRegistryWithTable(t *testing.T) {
 	}
 
 	for _, tC := range testCases {
-		if tC.RegistryUrl == nil {
-			url := imageHelper.GetRegistryURL(tC.Registry, nil)
-			assert.Equal(t, url, tC.ExpectedUrl)
-		} else {
-			auth := &imageHelper.RegistryAuth{URL: *tC.RegistryUrl}
-			url := imageHelper.GetRegistryURL(tC.Registry, auth)
-			assert.Equal(t, url, tC.ExpectedUrl)
-		}
+		t.Run(tC.Name, func(t *testing.T) {
+			if tC.RegistryUrl == nil {
+				url := imageHelper.GetRegistryURL(tC.Registry, nil)
+				assert.Equal(t, url, tC.ExpectedUrl)
+			} else {
+				auth := &imageHelper.RegistryAuth{URL: *tC.RegistryUrl}
+				url := imageHelper.GetRegistryURL(tC.Registry, auth)
+				assert.Equal(t, url, tC.ExpectedUrl)
+			}
+		})
 	}
 }
 
