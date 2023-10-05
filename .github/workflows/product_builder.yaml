@@ -184,7 +184,14 @@ jobs:
       - name: Init k3d
         run: make k3d-init
       - name: Run integration tests
-        run: make k3d-test
+        run: |
+          export KUBECONFIG='$(PWD)/k3d-auth.yaml'
+          make test-integration
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: golang-integration-coverage
+          path: ${{ env.GOLANG_WORKING_DIRECTORY }}/**.cov
   go_test:
     runs-on: ubuntu-22.04
     needs: gather_changes
@@ -209,8 +216,35 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Run unit tests with coverage
         run: make test-unit-with-coverage
+      - name: Upload unit test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: golang-unit-coverage
+          path: ${{ env.GOLANG_WORKING_DIRECTORY }}/**.cov
+  go_coverage_upload:
+    runs-on: ubuntu-22.04
+    needs:
+      - go_security
+      - go_lint
+      - go_test
+      - go_integration
+      - gather_changes
+    steps:
+      - name: Download integration test results from artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: golang-integration-coverage
+          path: cov-files
+      - name: Download unit test results from artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: golang-unit-coverage
+          path: cov-files
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3
+        with:
+          files: cov-files/**.cov
+          name: golang-coverage
   go_build:
     runs-on: ubuntu-22.04
     needs:
