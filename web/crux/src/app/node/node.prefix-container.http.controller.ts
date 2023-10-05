@@ -113,6 +113,6 @@ export default class NodePrefixContainerHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for container inspection.' })
   @UuidParams(PARAM_NODE_ID)
   async inspectContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Promise<ContainerInspectionDto> {
-    await this.service.inspectContainer(nodeId, prefix, name)
+    return await this.service.inspectContainer(nodeId, prefix, name)
   }
 }

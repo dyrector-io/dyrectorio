@@ -239,15 +239,10 @@ export class NodeAuditLogListDto extends PaginatedList<NodeAuditLogDto> {
   total: number
 }
 
-// TODO(@amorfevo): implement it
 export class ContainerInspectionDto {
-  // @ValidateNested()
-  // container: ContainerIdentifierDto
+  @ValidateNested()
+  container: ContainerIdentifierDto
 
-  // @IsString()
-  // publicKey: string
-
-  // @IsOptional()
-  // @IsString({ each: true })
-  // keys?: string[] | null
+  @IsString()
+  inspection: string
 }
