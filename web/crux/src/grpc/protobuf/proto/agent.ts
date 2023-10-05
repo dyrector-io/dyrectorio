@@ -114,8 +114,8 @@ export interface AgentCommand {
   containerCommand?: ContainerCommandRequest | undefined
   deleteContainers?: DeleteContainersRequest | undefined
   containerLog?: ContainerLogRequest | undefined
-  containerInspect?: ContainerInspectRequest | undefined
   replaceToken?: ReplaceTokenRequest | undefined
+  containerInspect?: ContainerInspectRequest | undefined
 }
 
 /**
@@ -428,10 +428,10 @@ export const AgentCommand = {
         ? DeleteContainersRequest.fromJSON(object.deleteContainers)
         : undefined,
       containerLog: isSet(object.containerLog) ? ContainerLogRequest.fromJSON(object.containerLog) : undefined,
+      replaceToken: isSet(object.replaceToken) ? ReplaceTokenRequest.fromJSON(object.replaceToken) : undefined,
       containerInspect: isSet(object.containerInspect)
         ? ContainerInspectRequest.fromJSON(object.containerInspect)
         : undefined,
-      replaceToken: isSet(object.replaceToken) ? ReplaceTokenRequest.fromJSON(object.replaceToken) : undefined,
     }
   },
 
@@ -463,12 +463,12 @@ export const AgentCommand = {
         : undefined)
     message.containerLog !== undefined &&
       (obj.containerLog = message.containerLog ? ContainerLogRequest.toJSON(message.containerLog) : undefined)
+    message.replaceToken !== undefined &&
+      (obj.replaceToken = message.replaceToken ? ReplaceTokenRequest.toJSON(message.replaceToken) : undefined)
     message.containerInspect !== undefined &&
       (obj.containerInspect = message.containerInspect
         ? ContainerInspectRequest.toJSON(message.containerInspect)
         : undefined)
-    message.replaceToken !== undefined &&
-      (obj.replaceToken = message.replaceToken ? ReplaceTokenRequest.toJSON(message.replaceToken) : undefined)
     return obj
   },
 }

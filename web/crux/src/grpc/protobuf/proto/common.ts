@@ -565,6 +565,8 @@ export interface ContainerLogMessage {
 }
 
 export interface ContainerInspectMessage {
+  prefix: string
+  name: string
   inspection: string
 }
 
@@ -840,16 +842,22 @@ export const ContainerLogMessage = {
 }
 
 function createBaseContainerInspectMessage(): ContainerInspectMessage {
-  return { inspection: '' }
+  return { prefix: '', name: '', inspection: '' }
 }
 
 export const ContainerInspectMessage = {
   fromJSON(object: any): ContainerInspectMessage {
-    return { inspection: isSet(object.inspection) ? String(object.inspection) : '' }
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      inspection: isSet(object.inspection) ? String(object.inspection) : '',
+    }
   },
 
   toJSON(message: ContainerInspectMessage): unknown {
     const obj: any = {}
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.name !== undefined && (obj.name = message.name)
     message.inspection !== undefined && (obj.inspection = message.inspection)
     return obj
   },

@@ -78,7 +78,9 @@ message ContainerLogMessage {
 }
 
 message ContainerInspectMessage {
-  string inspection = 100;
+  string prefix = 1;
+  string name = 2;
+  string inspection = 3;
 }
 
 enum NetworkMode {

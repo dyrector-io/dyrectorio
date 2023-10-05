@@ -57,8 +57,8 @@ message AgentCommand {
     common.ContainerCommandRequest containerCommand = 8;
     common.DeleteContainersRequest deleteContainers = 9;
     ContainerLogRequest containerLog = 10;
-    ContainerInspectRequest containerInspect = 11;
-    ReplaceTokenRequest replaceToken = 12;
+    ReplaceTokenRequest replaceToken = 11;
+    ContainerInspectRequest containerInspect = 12;
   }
 }
 

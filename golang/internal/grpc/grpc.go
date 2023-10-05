@@ -858,6 +858,8 @@ func executeContainerInspect(ctx context.Context, command *agent.ContainerInspec
 	}
 
 	resp := &common.ContainerInspectMessage{
+		Prefix:     prefix,
+		Name:       name,
 		Inspection: inspection,
 	}
 
