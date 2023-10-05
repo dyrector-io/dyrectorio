@@ -4,6 +4,7 @@ ApiBadRequestResponse,
 ApiForbiddenResponse,
 ApiNoContentResponse,
 ApiNotFoundResponse,
+ApiOkResponse,
 ApiOperation,
 ApiTags,
 } from '@nestjs/swagger'
@@ -23,6 +24,7 @@ ROUTE_PREFIX,
 ROUTE_TEAM_SLUG,
 } from './node.const'
 import NodeService from './node.service'
+import { ContainerInspectionDto } from './node.dto'
 
 @Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_PREFIX}/${ROUTE_CONTAINERS}`)
 @ApiTags(ROUTE_NODES)
@@ -101,16 +103,16 @@ export default class NodePrefixContainerHttpController {
   }
 
   @Get(`${ROUTE_NAME}/inspect`)
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description: 'Request must include `nodeId`, `prefix`, and `name`.',
-    summary: 'Inspect a container deployed with dyrector.io on a node.',
+    summary: 'Inspect a container.',
   })
-  @ApiNoContentResponse({ description: 'Container started.' })
-  @ApiBadRequestResponse({ description: 'Bad request for container starting.' })
-  @ApiForbiddenResponse({ description: 'Unauthorized request for container starting.' })
+  @ApiOkResponse({ type: ContainerInspectionDto, description: 'Container inspection.' })
+  @ApiBadRequestResponse({ description: 'Bad request for container inspection.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for container inspection.' })
   @UuidParams(PARAM_NODE_ID)
-  async inspectContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Promise<string> {
+  async inspectContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Promise<ContainerInspectionDto> {
     await this.service.inspectContainer(nodeId, prefix, name)
   }
 }

@@ -354,22 +354,12 @@ export default class AgentService {
     )
   }
 
-  // handleSecretList(connection: GrpcNodeConnection, request: ListSecretsResponse): Observable<Empty> {
-  //   const agent = this.getByIdOrThrow(connection.nodeId)
-
-  //   agent.onContainerSecrets(request)
-
-  //   return of(Empty)
-  // }
-
   handleContainerInspect(connection: GrpcNodeConnection, request: ContainerInspectMessage): Observable<Empty> {
     const agent = this.getByIdOrThrow(connection.nodeId)
+    
+    agent.onContainerInspect(request)
 
-    // const inspection = await this.agentService.inspectContainer(container)
-    const inspection = agent.inspectContainer(container)
-    agent.onContainerSecrets(request)
-
-    return Empty
+    return of(Empty)
   }
 
   async tokenReplaced(connection: GrpcNodeConnection): Promise<Empty> {
