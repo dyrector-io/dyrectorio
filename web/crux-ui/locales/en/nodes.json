@@ -3,6 +3,7 @@
 
   "containers": "Containers",
   "logs": "Logs",
+  "inspect": "Inspect",
 
   "add": "Add node",
   "new": "New node",

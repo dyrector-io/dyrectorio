@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -784,4 +785,34 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 	}
 
 	return logContext, nil
+}
+
+func ContainerInspect(ctx context.Context, request *agent.ContainerInspectRequest) (string, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return "", err
+	}
+
+	prefix := request.Container.Prefix
+	name := request.Container.Name
+
+	container, err := GetContainerByPrefixAndName(ctx, cli, prefix, name)
+	if err != nil {
+		return "", err
+	}
+
+	containerInfo, err := cli.ContainerInspect(ctx, container.ID)
+	if err != nil {
+		return "", err
+	}
+
+	inspectionJSON, err := json.Marshal(containerInfo)
+	if err != nil {
+		return "", err
+	}
+	inspection := string(inspectionJSON)
+	// TODO(@amorfevo): maybe this works too
+	// inspection := fmt.Sprintf("%+v", containerInfo)
+
+	return inspection, nil
 }

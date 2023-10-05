@@ -1,26 +1,26 @@
-import { Controller, Delete, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common'
+import { Controller,Delete,Get,HttpCode,HttpStatus,Post,UseGuards } from '@nestjs/common'
 import {
-  ApiBadRequestResponse,
-  ApiForbiddenResponse,
-  ApiNoContentResponse,
-  ApiNotFoundResponse,
-  ApiOperation,
-  ApiTags,
+ApiBadRequestResponse,
+ApiForbiddenResponse,
+ApiNoContentResponse,
+ApiNotFoundResponse,
+ApiOperation,
+ApiTags,
 } from '@nestjs/swagger'
-import { Observable, from, mergeAll } from 'rxjs'
+import { Observable,from,mergeAll } from 'rxjs'
 import UuidParams from 'src/decorators/api-params.decorator'
 import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
 import {
-  Name,
-  NodeId,
-  PARAM_NODE_ID,
-  Prefix,
-  ROUTE_CONTAINERS,
-  ROUTE_NAME,
-  ROUTE_NODES,
-  ROUTE_NODE_ID,
-  ROUTE_PREFIX,
-  ROUTE_TEAM_SLUG,
+Name,
+NodeId,
+PARAM_NODE_ID,
+Prefix,
+ROUTE_CONTAINERS,
+ROUTE_NAME,
+ROUTE_NODES,
+ROUTE_NODE_ID,
+ROUTE_PREFIX,
+ROUTE_TEAM_SLUG,
 } from './node.const'
 import NodeService from './node.service'
 
@@ -98,5 +98,19 @@ export default class NodePrefixContainerHttpController {
   @UuidParams(PARAM_NODE_ID)
   deleteContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Observable<void> {
     return from(this.service.deleteContainer(nodeId, prefix, name)).pipe(mergeAll())
+  }
+
+  @Get(`${ROUTE_NAME}/inspect`)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    description: 'Request must include `nodeId`, `prefix`, and `name`.',
+    summary: 'Inspect a container deployed with dyrector.io on a node.',
+  })
+  @ApiNoContentResponse({ description: 'Container started.' })
+  @ApiBadRequestResponse({ description: 'Bad request for container starting.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for container starting.' })
+  @UuidParams(PARAM_NODE_ID)
+  async inspectContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Promise<string> {
+    await this.service.inspectContainer(nodeId, prefix, name)
   }
 }

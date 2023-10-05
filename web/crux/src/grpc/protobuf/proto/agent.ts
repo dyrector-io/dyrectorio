@@ -6,6 +6,7 @@ import {
   ConfigContainer,
   ContainerCommandRequest,
   ContainerIdentifier,
+  ContainerInspectMessage,
   ContainerLogMessage,
   ContainerStateListMessage,
   DeleteContainersRequest,
@@ -113,6 +114,7 @@ export interface AgentCommand {
   containerCommand?: ContainerCommandRequest | undefined
   deleteContainers?: DeleteContainersRequest | undefined
   containerLog?: ContainerLogRequest | undefined
+  containerInspect?: ContainerInspectRequest | undefined
   replaceToken?: ReplaceTokenRequest | undefined
 }
 
@@ -368,6 +370,11 @@ export interface ContainerLogRequest {
   tail: number
 }
 
+/** Container inspect */
+export interface ContainerInspectRequest {
+  container: ContainerIdentifier | undefined
+}
+
 export interface CloseConnectionRequest {
   reason: CloseReason
 }
@@ -421,6 +428,9 @@ export const AgentCommand = {
         ? DeleteContainersRequest.fromJSON(object.deleteContainers)
         : undefined,
       containerLog: isSet(object.containerLog) ? ContainerLogRequest.fromJSON(object.containerLog) : undefined,
+      containerInspect: isSet(object.containerInspect)
+        ? ContainerInspectRequest.fromJSON(object.containerInspect)
+        : undefined,
       replaceToken: isSet(object.replaceToken) ? ReplaceTokenRequest.fromJSON(object.replaceToken) : undefined,
     }
   },
@@ -453,6 +463,10 @@ export const AgentCommand = {
         : undefined)
     message.containerLog !== undefined &&
       (obj.containerLog = message.containerLog ? ContainerLogRequest.toJSON(message.containerLog) : undefined)
+    message.containerInspect !== undefined &&
+      (obj.containerInspect = message.containerInspect
+        ? ContainerInspectRequest.toJSON(message.containerInspect)
+        : undefined)
     message.replaceToken !== undefined &&
       (obj.replaceToken = message.replaceToken ? ReplaceTokenRequest.toJSON(message.replaceToken) : undefined)
     return obj
@@ -1441,6 +1455,23 @@ export const ContainerLogRequest = {
   },
 }
 
+function createBaseContainerInspectRequest(): ContainerInspectRequest {
+  return { container: undefined }
+}
+
+export const ContainerInspectRequest = {
+  fromJSON(object: any): ContainerInspectRequest {
+    return { container: isSet(object.container) ? ContainerIdentifier.fromJSON(object.container) : undefined }
+  },
+
+  toJSON(message: ContainerInspectRequest): unknown {
+    const obj: any = {}
+    message.container !== undefined &&
+      (obj.container = message.container ? ContainerIdentifier.toJSON(message.container) : undefined)
+    return obj
+  },
+}
+
 function createBaseCloseConnectionRequest(): CloseConnectionRequest {
   return { reason: 0 }
 }
@@ -1481,6 +1512,8 @@ export interface AgentClient {
   deleteContainers(request: DeleteContainersRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
   containerLog(request: Observable<ContainerLogMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  containerInspect(request: ContainerInspectMessage, metadata: Metadata, ...rest: any): Observable<Empty>
 
   tokenReplaced(request: Empty, metadata: Metadata, ...rest: any): Observable<Empty>
 }
@@ -1526,12 +1559,25 @@ export interface AgentController {
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
 
+  containerInspect(
+    request: ContainerInspectMessage,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<Empty> | Observable<Empty> | Empty
+
   tokenReplaced(request: Empty, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 }
 
 export function AgentControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['connect', 'secretList', 'abortUpdate', 'deleteContainers', 'tokenReplaced']
+    const grpcMethods: string[] = [
+      'connect',
+      'secretList',
+      'abortUpdate',
+      'deleteContainers',
+      'containerInspect',
+      'tokenReplaced',
+    ]
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('Agent', method)(constructor.prototype[method], method, descriptor)

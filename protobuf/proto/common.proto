@@ -77,6 +77,10 @@ message ContainerLogMessage {
   string log = 100;
 }
 
+message ContainerInspectMessage {
+  string inspection = 100;
+}
+
 enum NetworkMode {
   NETWORK_MODE_UNSPECIFIED = 0;
   BRIDGE = 1;

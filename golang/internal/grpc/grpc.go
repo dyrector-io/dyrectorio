@@ -91,6 +91,7 @@ type (
 	ContainerCommandFunc     func(context.Context, *common.ContainerCommandRequest) error
 	DeleteContainersFunc     func(context.Context, *common.DeleteContainersRequest) error
 	ContainerLogFunc         func(context.Context, *agent.ContainerLogRequest) (*ContainerLogContext, error)
+	ContainerInspectFunc     func(context.Context, *agent.ContainerInspectRequest) (string, error)
 	ReplaceTokenFunc         func(context.Context, *agent.ReplaceTokenRequest) error
 )
 
@@ -105,6 +106,7 @@ type WorkerFunctions struct {
 	ContainerCommand     ContainerCommandFunc
 	DeleteContainers     DeleteContainersFunc
 	ContainerLog         ContainerLogFunc
+	ContainerInspect     ContainerInspectFunc
 }
 
 type contextKey int
@@ -271,6 +273,8 @@ func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 		go executeDeleteMultipleContainers(cl.Ctx, command.GetDeleteContainers(), cl.WorkerFuncs.DeleteContainers)
 	case command.GetContainerLog() != nil:
 		go executeContainerLog(cl.Ctx, command.GetContainerLog(), cl.WorkerFuncs.ContainerLog)
+	case command.GetContainerInspect() != nil:
+		go executeContainerInspect(cl.Ctx, command.GetContainerInspect(), cl.WorkerFuncs.ContainerInspect)
 	case command.GetReplaceToken() != nil:
 		// NOTE(@m8vago): should be sync?
 		err := cl.executeReplaceToken(command.GetReplaceToken())
@@ -835,6 +839,33 @@ func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest
 	<-streamCtx.Done()
 
 	log.Trace().Str("prefix", prefix).Str("name", name).Msg("Container log exited")
+}
+
+func executeContainerInspect(ctx context.Context, command *agent.ContainerInspectRequest, inspectFunc ContainerInspectFunc) {
+	if inspectFunc == nil {
+		log.Error().Msg("Container inspect function not implemented")
+		return
+	}
+
+	prefix := command.Container.Prefix
+	name := command.Container.Name
+
+	log.Info().Str("prefix", prefix).Str("name", name).Msg("Getting container inspection")
+
+	inspection, err := inspectFunc(ctx, command)
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("Failed to inspect container")
+	}
+
+	resp := &common.ContainerInspectMessage{
+		Inspection: inspection,
+	}
+
+	_, err = grpcConn.Client.ContainerInspect(ctx, resp)
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("Container inspection response error")
+		return
+	}
 }
 
 func (cl *ClientLoop) executeReplaceToken(command *agent.ReplaceTokenRequest) error {

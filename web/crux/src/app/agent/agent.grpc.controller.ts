@@ -10,6 +10,7 @@ import {
   AgentController as GrpcAgentController,
 } from 'src/grpc/protobuf/proto/agent'
 import {
+  ContainerInspectMessage,
   ContainerLogMessage,
   ContainerStateListMessage,
   DeleteContainersRequest,
@@ -56,6 +57,11 @@ export default class AgentController implements GrpcAgentController {
 
   containerLog(request: Observable<ContainerLogMessage>, _: Metadata, call: NodeGrpcCall): Observable<Empty> {
     return this.service.handleContainerLog(call.connection, request)
+  }
+
+  // TODO(@amorfevo): Empty or Promise<Empty> or Observable<Empty>
+  containerInspect(request: ContainerInspectMessage, _: Metadata, call: NodeGrpcCall): Observable<Empty> {
+    return this.service.handleContainerInspect(call.connection, request)
   }
 
   async tokenReplaced(_: Empty, __: Metadata, call: NodeGrpcCall): Promise<Empty> {

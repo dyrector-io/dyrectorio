@@ -1,38 +1,38 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable,Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { Prisma } from '@prisma/client'
-import { EmptyError, Observable, filter, firstValueFrom, map, mergeAll, mergeWith, of, timeout } from 'rxjs'
-import { Agent, AgentConnectionMessage } from 'src/domain/agent'
+import { EmptyError,Observable,filter,firstValueFrom,map,mergeAll,mergeWith,of,timeout } from 'rxjs'
+import { Agent,AgentConnectionMessage } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
 import {
-  ContainerCommandRequest,
-  ContainerIdentifier,
-  ContainerOperation,
-  ContainerStateListMessage,
-  DeleteContainersRequest,
-  containerOperationToJSON,
+ContainerCommandRequest,
+ContainerIdentifier,
+ContainerOperation,
+ContainerStateListMessage,
+DeleteContainersRequest,
+containerOperationToJSON,
 } from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
 import {
-  ContainerDto,
-  CreateNodeDto,
-  NodeAuditLogListDto,
-  NodeAuditLogQueryDto,
-  NodeDetailsDto,
-  NodeDto,
-  NodeGenerateScriptDto,
-  NodeInstallDto,
-  UpdateNodeDto,
+ContainerDto,
+CreateNodeDto,
+NodeAuditLogListDto,
+NodeAuditLogQueryDto,
+NodeDetailsDto,
+NodeDto,
+NodeGenerateScriptDto,
+NodeInstallDto,
+UpdateNodeDto,
 } from './node.dto'
 import NodeMapper from './node.mapper'
 import {
-  ContainerLogMessage,
-  ContainersStateListMessage,
-  WatchContainerLogMessage,
-  WatchContainersStateMessage,
+ContainerLogMessage,
+ContainersStateListMessage,
+WatchContainerLogMessage,
+WatchContainersStateMessage,
 } from './node.message'
 
 @Injectable()
@@ -406,6 +406,27 @@ export default class NodeService {
       })),
       total,
     }
+  }
+
+  // watchContainerLog(nodeId: string, message: WatchContainerLogMessage): Observable<ContainerLogMessage> {
+  //   const { container } = message
+
+  //   this.logger.debug(
+  //     `Opening container log stream for container: ${nodeId} - ${Agent.containerPrefixNameOf(container)}}`,
+  //   )
+
+  //   const agent = this.agentService.getByIdOrThrow(nodeId)
+
+  //   const stream = agent.upsertContainerLogStream(container)
+
+  //   return stream.watch()
+  // }
+
+  // async updateAgent(id: string, identity: Identity): Promise<void> {
+  //   await this.agentService.updateAgent(id, identity)
+  // }
+  async inspectContainer(container: ContainerIdentifier): Promise<string> {
+    return await this.agentService.inspectContainer(container)
   }
 
   private static snakeCaseToCamelCase(snake: string): string {
