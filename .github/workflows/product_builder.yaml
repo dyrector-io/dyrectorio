@@ -228,7 +228,6 @@ jobs:
       - go_lint
       - go_test
       - go_integration
-      - gather_changes
     steps:
       - name: Download integration test results from artifacts
         uses: actions/download-artifact@v3
