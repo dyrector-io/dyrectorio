@@ -356,7 +356,7 @@ export default class AgentService {
 
   handleContainerInspect(connection: GrpcNodeConnection, request: ContainerInspectMessage): Observable<Empty> {
     const agent = this.getByIdOrThrow(connection.nodeId)
-    
+
     agent.onContainerInspect(request)
 
     return of(Empty)

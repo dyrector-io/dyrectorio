@@ -387,8 +387,8 @@ export class Agent {
         containerInspect: {
           container: {
             prefix,
-            name
-          }
+            name,
+          },
         },
       } as AgentCommand)
     }

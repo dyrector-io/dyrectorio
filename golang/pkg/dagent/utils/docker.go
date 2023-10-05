@@ -796,12 +796,12 @@ func ContainerInspect(ctx context.Context, request *agent.ContainerInspectReques
 	prefix := request.Container.Prefix
 	name := request.Container.Name
 
-	container, err := GetContainerByPrefixAndName(ctx, cli, prefix, name)
+	cont, err := GetContainerByPrefixAndName(ctx, cli, prefix, name)
 	if err != nil {
 		return "", err
 	}
 
-	containerInfo, err := cli.ContainerInspect(ctx, container.ID)
+	containerInfo, err := cli.ContainerInspect(ctx, cont.ID)
 	if err != nil {
 		return "", err
 	}

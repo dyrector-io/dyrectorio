@@ -1,30 +1,30 @@
-import { Controller,Delete,Get,HttpCode,HttpStatus,Post,UseGuards } from '@nestjs/common'
+import { Controller, Delete, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common'
 import {
-ApiBadRequestResponse,
-ApiForbiddenResponse,
-ApiNoContentResponse,
-ApiNotFoundResponse,
-ApiOkResponse,
-ApiOperation,
-ApiTags,
+  ApiBadRequestResponse,
+  ApiForbiddenResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
 } from '@nestjs/swagger'
-import { Observable,from,mergeAll } from 'rxjs'
+import { Observable, from, mergeAll } from 'rxjs'
 import UuidParams from 'src/decorators/api-params.decorator'
 import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
 import {
-Name,
-NodeId,
-PARAM_NODE_ID,
-Prefix,
-ROUTE_CONTAINERS,
-ROUTE_NAME,
-ROUTE_NODES,
-ROUTE_NODE_ID,
-ROUTE_PREFIX,
-ROUTE_TEAM_SLUG,
+  Name,
+  NodeId,
+  PARAM_NODE_ID,
+  Prefix,
+  ROUTE_CONTAINERS,
+  ROUTE_NAME,
+  ROUTE_NODES,
+  ROUTE_NODE_ID,
+  ROUTE_PREFIX,
+  ROUTE_TEAM_SLUG,
 } from './node.const'
-import NodeService from './node.service'
 import { ContainerInspectionDto } from './node.dto'
+import NodeService from './node.service'
 
 @Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_PREFIX}/${ROUTE_CONTAINERS}`)
 @ApiTags(ROUTE_NODES)
@@ -112,7 +112,11 @@ export default class NodePrefixContainerHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for container inspection.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for container inspection.' })
   @UuidParams(PARAM_NODE_ID)
-  async inspectContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Promise<ContainerInspectionDto> {
+  async inspectContainer(
+    @NodeId() nodeId: string,
+    @Prefix() prefix: string,
+    @Name() name: string,
+  ): Promise<ContainerInspectionDto> {
     return await this.service.inspectContainer(nodeId, prefix, name)
   }
 }
