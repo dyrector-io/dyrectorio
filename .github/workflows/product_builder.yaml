@@ -182,10 +182,11 @@ jobs:
       - name: Load go mod
         run: go mod tidy
       - name: Init k3d
-        run: make k3d-init-ext
+        run: make k3d-init
       - name: Run integration tests
         run: |
-          export KUBECONFIG='$(PWD)/k3d-auth.yaml'
+          make k3d-config && \
+          export KUBECONFIG="$(pwd)/k3d-auth.yaml" && \
           make test-integration
       - name: Upload integration test results
         uses: actions/upload-artifact@v3

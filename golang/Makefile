@@ -274,6 +274,10 @@ test-internal:
 test-dagent:
 	go test -tags=integration -race -coverpkg=./... -coverprofile=./dagent.cov -covermode=atomic ./pkg/dagent/...
 
+.PHONY: test-cli
+test-cli:
+	go test -tags=integration -race -coverpkg=./... -coverprofile=./cli.cov -covermode=atomic ./pkg/cli/...
+
 .PHONY: coverage
 coverage:
 	go tool cover -func ./merged.cov
