@@ -230,6 +230,10 @@ jobs:
       - go_test
       - go_integration
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+      - name: Install coverage merger
+        run: go install go.shabbyrobe.org/gocovmerge/cmd/gocovmerge@latest
       - name: Download integration test results from artifacts
         uses: actions/download-artifact@v3
         with:
@@ -238,13 +242,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: golang-unit-coverage
+      - name: Merge coverage
+        run: gocovmerge ./builder.cov ./cli.cov ./crane.cov ./dagent.cov ./internal.cov ./unit.cov  > ./merged.cov
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3
         with:
-          files: "*.cov"
+          files: ./merged.cov
           name: golang-coverage
-          fail_ci_if_error: true
-          verbose: true
   go_build:
     runs-on: ubuntu-22.04
     needs:
