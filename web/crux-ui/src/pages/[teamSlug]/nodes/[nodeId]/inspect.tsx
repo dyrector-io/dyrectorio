@@ -19,43 +19,39 @@ interface ContainerInspectPageProps {
   name: string
 }
 
-// TODO(@amorfevo): move
-type ContainerInspection = {
-  inspectionData: string
-}
-
-// async function fetchContainerInspection(nodeId: string, prefix: string, name: string): Promise<string> {
-//   // TODO(@amorfevo): path to api
-//   const response = await fetch(`/path-to-api/${nodeId}/${prefix}/${name}/inspect`)
-//   if (!response.ok) {
-//     throw new Error('Failed to fetch container inspection')
-//   }
-//   return await response.text()
-// }
-
 const NodeContainerInspectPage = (props: ContainerInspectPageProps) => {
   const { node, prefix, name } = props
 
   const { t } = useTranslation('common')
   const routes = useTeamRoutes()
 
-  const [inspection, setInspection] = useState<ContainerInspection[]>([])
+  async function fetchContainerInspection(nodeId: string, prefix: string, name: string): Promise<string> {
+    const teamSlug = routes?.teamSlug
+    const apiUrl = prefix 
+    ? `/${teamSlug}/nodes/${nodeId}/${prefix}/containers/${name}/inspect` 
+    : `/${teamSlug}/nodes/${nodeId}/containers/${name}/inspect`
+
+    const response = await fetch(apiUrl)
+    if (!response.ok) {
+      throw new Error('Failed to fetch container inspection')
+    }
+    
+    const data = await response.json()
+    return data.inspection
+  }
+
+  const [inspection, setInspection] = useState<string[]>([])
   // const [inspection, setInspection] = useState<ContainerInspection | null>(null)
 
-  // TODO(@amorfevo): use real data instead of dummy
   const fetchInspection = async () => {
-    const dummyInspection: ContainerInspection = {
-      inspectionData: 'Container ID: 12 Image: my-container-image:latest Status: Running // ... other details ...',
+    try {
+      // TODO(@amorfevo): remove dummy inspectionData
+      // const inspectionData = 'Container ID: 12 Image: my-container-image:latest Status: Running // ... other details ...'
+      const inspectionData = await fetchContainerInspection(node.id, prefix, name)
+      setInspection([ inspectionData])
+    } catch (error) {
+      console.error('Failed to fetch inspection data:', error)
     }
-
-    setInspection([dummyInspection])
-
-    // try {
-    //   const inspectionData = await fetchContainerInspection(node.id, prefix, name)
-    //   setInspection([{ inspectionData }])
-    // } catch (error) {
-    //   console.error('Failed to fetch inspection data:', error)
-    // }
   }
 
   useEffect(() => {
@@ -90,7 +86,7 @@ const NodeContainerInspectPage = (props: ContainerInspectPageProps) => {
         </div>
 
         {/* TODO(@amorfevo): DyoCards or json-editor component or own inspection component */}
-        <EventsTerminal events={inspection} formatEvent={it => [it.inspectionData]} />
+        <EventsTerminal events={inspection} formatEvent={it => [it]} />
       </DyoCard>
     </Layout>
   )
