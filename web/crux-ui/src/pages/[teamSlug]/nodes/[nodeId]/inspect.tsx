@@ -19,26 +19,30 @@ interface ContainerInspectPageProps {
   name: string
 }
 
+async function fetchContainerInspection(
+  teamSlug: string,
+  nodeId: string,
+  prefix: string,
+  name: string,
+): Promise<string> {
+  const apiUrl = prefix
+    ? `/${teamSlug}/nodes/${nodeId}/${prefix}/containers/${name}/inspect`
+    : `/${teamSlug}/nodes/${nodeId}/containers/${name}/inspect`
+
+  const response = await fetch(apiUrl)
+  if (!response.ok) {
+    throw new Error('Failed to fetch container inspection')
+  }
+
+  const data = await response.json()
+  return data.inspection
+}
+
 const NodeContainerInspectPage = (props: ContainerInspectPageProps) => {
   const { node, prefix, name } = props
 
   const { t } = useTranslation('common')
   const routes = useTeamRoutes()
-
-  async function fetchContainerInspection(nodeId: string, prefix: string, name: string): Promise<string> {
-    const teamSlug = routes?.teamSlug
-    const apiUrl = prefix 
-    ? `/${teamSlug}/nodes/${nodeId}/${prefix}/containers/${name}/inspect` 
-    : `/${teamSlug}/nodes/${nodeId}/containers/${name}/inspect`
-
-    const response = await fetch(apiUrl)
-    if (!response.ok) {
-      throw new Error('Failed to fetch container inspection')
-    }
-    
-    const data = await response.json()
-    return data.inspection
-  }
 
   const [inspection, setInspection] = useState<string[]>([])
   // const [inspection, setInspection] = useState<ContainerInspection | null>(null)
@@ -47,8 +51,9 @@ const NodeContainerInspectPage = (props: ContainerInspectPageProps) => {
     try {
       // TODO(@amorfevo): remove dummy inspectionData
       // const inspectionData = 'Container ID: 12 Image: my-container-image:latest Status: Running // ... other details ...'
-      const inspectionData = await fetchContainerInspection(node.id, prefix, name)
-      setInspection([ inspectionData])
+      const teamSlug = routes?.teamSlug
+      const inspectionData = await fetchContainerInspection(teamSlug, node.id, prefix, name)
+      setInspection([inspectionData])
     } catch (error) {
       console.error('Failed to fetch inspection data:', error)
     }
