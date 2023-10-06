@@ -234,17 +234,17 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: golang-integration-coverage
-          path: cov-files
       - name: Download unit test results from artifacts
         uses: actions/download-artifact@v3
         with:
           name: golang-unit-coverage
-          path: cov-files
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3
         with:
-          files: cov-files/**.cov
+          files: "*.cov"
           name: golang-coverage
+          fail_ci_if_error: true
+          verbose: true
   go_build:
     runs-on: ubuntu-22.04
     needs:
