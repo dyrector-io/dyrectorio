@@ -20,11 +20,11 @@
     <a href="https://twitter.com/dyrectorio" target="_blank"><img src="https://img.shields.io/twitter/follow/dyrectorio?style=social" alt="Twitter Follow"/></a>
 </p>
 
-dyrector.io helps engineer & DevOps teams and individual developers to shift their focus from maintaining and setting up their containerized applications to developing their software. The platform achieves this by offering continuous delivery and version management capabilities to your OCI containers.
+[dyrector.io](https://dyrector.io/) helps engineer & DevOps teams and individual developers to shift their focus from maintaining and setting up their containerized applications to developing their software. The platform achieves this by offering continuous delivery and version management capabilities to your OCI containers.
 
 Join our Discord and connect with other members to share and learn together. If you like the project, give us a Star.
 
-dyrector.io is also available as a fully managed <a href="https://app.dyrectorio.com" target="_blank">SaaS dyrector.io Platform</a> ⛅ including a free tier.
+[dyrector.io](https://dyrector.io/) is also available as a fully managed <a href="https://app.dyrectorio.com" target="_blank">SaaS dyrector.io Platform</a> ⛅ including a free tier.
 
 <p align="center">
 <strong><a href="./GETTING_STARTED.md">Getting Started</a> • <a href="#use-cases">Use Cases</a> • <a href="#community">Community</a> • <a href="./CONTRIBUTING.md">Contributing</a> • <a href="#feedback">Feedback</a>
@@ -87,7 +87,7 @@ Besides the self-hosted instance, you can check out the platform's alpha at [app
 
 ## How it works
 
-dyrector.io consists of an agent (GoLang) and a platform (UI developed in React.js, Next.js. Backend developed in Node.js, Nest.js). There are two types of agents communicating with the platform: one for Docker and another for Kubernetes. Communication takes place in gRPC with TLS encryption. The data is managed in a PostgreSQL database which we use with Prisma ORM.
+[dyrector.io](https://dyrector.io/) consists of an agent (GoLang) and a platform (UI developed in React.js, Next.js. Backend developed in Node.js, Nest.js). There are two types of agents communicating with the platform: one for Docker and another for Kubernetes. Communication takes place in gRPC with TLS encryption. The data is managed in a PostgreSQL database which we use with Prisma ORM.
 
 <p align="center">
     <picture>
@@ -105,7 +105,7 @@ If you have any questions, check out [FAQ](https://docs.dyrector.io/learn-more/f
 
 Also, follow us on GitHub Discussions, our [Blog](https://blog.dyrector.io), and on [Twitter](https://twitter.com/dyrectorio). You can chat with the team and other members on [Discord](https://discord.gg/pZWbd4fxga).
 
-dyrector.io is Open Source - This repository, and most of our other open source projects, are licensed under the Apache 2.0.
+[dyrector.io](https://dyrector.io/) is Open Source - This repository, and most of our other open source projects, are licensed under the Apache 2.0.
 
 Join our Discord and connect with other members to share and learn together.
 Send a pull request to any of our open source repositories on Github. Check our contribution guide and our developers guide for more details about how to contribute. We're looking forward to your contribution!
@@ -138,6 +138,6 @@ We’d love to hear your thoughts on this project. Feel free to drop us a note!
 
 ## License
 
-dyrector.io is open source software under the [Apache License 2.0](LICENSE). Complete license and copyright information can be found in the source code.
+[dyrector.io](https://dyrector.io/) is open source software under the [Apache License 2.0](LICENSE). Complete license and copyright information can be found in the source code.
 
 > Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
