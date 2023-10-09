@@ -22,7 +22,7 @@ import {
   ROUTE_NODE_ID,
   ROUTE_TEAM_SLUG,
 } from './node.const'
-import { ContainerDto } from './node.dto'
+import { ContainerDto, ContainerInspectionDto } from './node.dto'
 import NodeService from './node.service'
 
 @Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_CONTAINERS}`)
@@ -98,5 +98,22 @@ export default class NodeGlobalContainerHttpController {
   @UuidParams(PARAM_NODE_ID)
   deleteContainer(@NodeId() nodeId: string, @Name() name: string): Observable<void> {
     return from(this.service.deleteContainer(nodeId, GLOBAL_PREFIX, name)).pipe(mergeAll())
+  }
+
+  @Get(`${ROUTE_NAME}/inspect`)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    description: 'Request must include `nodeId`, and the `name` of the container.',
+    summary: 'Inspect a specific container on a node.',
+  })
+  @ApiOkResponse({ type: ContainerInspectionDto, description: 'Container inspection.' })
+  @ApiBadRequestResponse({ description: 'Bad request for container inspection.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for container inspection.' })
+  @UuidParams(PARAM_NODE_ID)
+  async inspectContainer(
+    @NodeId() nodeId: string,
+    @Name() name: string,
+  ): Promise<ContainerInspectionDto> {
+    return await this.service.inspectContainer(nodeId, GLOBAL_PREFIX, name)
   }
 }
