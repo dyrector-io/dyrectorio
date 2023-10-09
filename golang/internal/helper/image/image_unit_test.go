@@ -10,38 +10,57 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
+	"github.com/dyrector-io/dyrectorio/golang/internal/pointer"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
-func TestRegistryUrl(t *testing.T) {
-	auth := &imageHelper.RegistryAuth{
-		URL: "test",
+type RegistryTestCase struct {
+	Name        string
+	Registry    *string
+	RegistryUrl *string
+	ExpectedUrl string
+}
+
+func TestRegistryWithTable(t *testing.T) {
+	testCases := []RegistryTestCase{
+		{
+			Name:        "Test registry url",
+			Registry:    pointer.NewPTR[string](""),
+			RegistryUrl: pointer.NewPTR[string]("test"),
+			ExpectedUrl: "test",
+		},
+		{
+			Name:        "Test registry url priority",
+			Registry:    pointer.NewPTR[string]("other"),
+			RegistryUrl: pointer.NewPTR[string]("test"),
+			ExpectedUrl: "test",
+		},
+		{
+			Name:        "Test registry url empty",
+			Registry:    nil,
+			RegistryUrl: nil,
+			ExpectedUrl: "",
+		},
+		{
+			Name:        "Test registry url registry",
+			Registry:    pointer.NewPTR[string]("other"),
+			RegistryUrl: nil,
+			ExpectedUrl: "other",
+		},
 	}
 
-	url := imageHelper.GetRegistryURL(nil, auth)
-	assert.Equal(t, url, "test")
-}
-
-func TestRegistryUrlPriority(t *testing.T) {
-	registry := "other"
-	auth := &imageHelper.RegistryAuth{
-		URL: "test",
+	for _, tC := range testCases {
+		t.Run(tC.Name, func(t *testing.T) {
+			if tC.RegistryUrl == nil {
+				url := imageHelper.GetRegistryURL(tC.Registry, nil)
+				assert.Equal(t, url, tC.ExpectedUrl)
+			} else {
+				auth := &imageHelper.RegistryAuth{URL: *tC.RegistryUrl}
+				url := imageHelper.GetRegistryURL(tC.Registry, auth)
+				assert.Equal(t, url, tC.ExpectedUrl)
+			}
+		})
 	}
-
-	url := imageHelper.GetRegistryURL(&registry, auth)
-	assert.Equal(t, url, "test")
-}
-
-func TestRegistryUrlRegistry(t *testing.T) {
-	registry := "other"
-
-	url := imageHelper.GetRegistryURL(&registry, nil)
-	assert.Equal(t, url, "other")
-}
-
-func TestRegistryUrlEmpty(t *testing.T) {
-	url := imageHelper.GetRegistryURL(nil, nil)
-	assert.Equal(t, url, "")
 }
 
 func TestProtoRegistryUrl(t *testing.T) {
