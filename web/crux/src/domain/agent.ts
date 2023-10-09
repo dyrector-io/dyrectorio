@@ -17,7 +17,7 @@ import {
   Empty,
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
-import { CONTAINER_DELETE_TIMEOUT, DEFAULT_CONTAINER_LOG_TAIL } from 'src/shared/const'
+import { CONTAINER_DELETE_TIMEOUT, DEFAULT_CONTAINER_LOG_TAIL, GET_CONTAINER_SECRETS_TIMEOUT } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { AgentToken } from './agent-token'
 import AgentUpdate, { AgentUpdateOptions, AgentUpdateResult } from './agent-update'
@@ -40,8 +40,6 @@ export type AgentTokenReplacement = {
 }
 
 export class Agent {
-  public static SECRET_TIMEOUT = 5000
-
   private readonly commandChannel = new BufferedSubject<AgentCommand>()
 
   private deployments: Map<string, Deployment> = new Map()
@@ -341,7 +339,7 @@ export class Agent {
         this.secretsWatchers.delete(key)
       }),
       timeout({
-        each: Agent.SECRET_TIMEOUT,
+        each: GET_CONTAINER_SECRETS_TIMEOUT,
         with: () => {
           this.secretsWatchers.delete(key)
 
@@ -398,7 +396,7 @@ export class Agent {
         this.inspectionWatchers.delete(key)
       }),
       timeout({
-        each: Agent.SECRET_TIMEOUT,
+        each: GET_CONTAINER_SECRETS_TIMEOUT,
         with: () => {
           this.inspectionWatchers.delete(key)
 
