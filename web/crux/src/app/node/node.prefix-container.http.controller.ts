@@ -35,7 +35,7 @@ export default class NodePrefixContainerHttpController {
   @Post(`${ROUTE_NAME}/start`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Request must include `nodeId`, `prefix`, and `name`.',
+    description: 'Request must include `nodeId`, `prefix`, and the `name` of the container.',
     summary: 'Start a container deployed with dyrector.io on a node.',
   })
   @ApiNoContentResponse({ description: 'Container started.' })
@@ -49,7 +49,7 @@ export default class NodePrefixContainerHttpController {
   @Post(`${ROUTE_NAME}/stop`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Request must include `nodeId`, `prefix`, and `name`.',
+    description: 'Request must include `nodeId`, `prefix`, and the `name` of the container.',
     summary: 'Stop a container deployed with dyrector.io on a node.',
   })
   @ApiNoContentResponse({ description: 'Container stopped.' })
@@ -63,7 +63,7 @@ export default class NodePrefixContainerHttpController {
   @Post(`${ROUTE_NAME}/restart`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Request must include `nodeId`, `prefix`, and `name`.',
+    description: 'Request must include `nodeId`, `prefix`, and the `name` of the container.',
     summary: 'Restart a container deployed with dyrector.io on a node.',
   })
   @ApiNoContentResponse({ description: 'Container restarted.' })
@@ -91,7 +91,7 @@ export default class NodePrefixContainerHttpController {
   @Delete(`${ROUTE_NAME}`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Request must include `nodeId`, `prefix`, and `name`.',
+    description: 'Request must include `nodeId`, `prefix`, and the `name` of the container.',
     summary: 'Delete a container deployed with dyrector.io, with the specified prefix and name on a node.',
   })
   @ApiNoContentResponse({ description: 'Container deleted.' })
@@ -105,8 +105,8 @@ export default class NodePrefixContainerHttpController {
   @Get(`${ROUTE_NAME}/inspect`)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    description: 'Request must include `nodeId`, `prefix`, and `name`.',
-    summary: 'Inspect a container.',
+    description: 'Request must include `nodeId`, `prefix`, and the `name` of the container.',
+    summary: 'Inspect a container with the specified prefix and name on a node.',
   })
   @ApiOkResponse({ type: ContainerInspectionDto, description: 'Container inspection.' })
   @ApiBadRequestResponse({ description: 'Bad request for container inspection.' })
