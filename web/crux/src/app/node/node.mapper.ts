@@ -143,10 +143,6 @@ export default class NodeMapper {
 
   containerInspectionMessageToDto(it: ContainerInspectMessage): ContainerInspectionDto {
     return {
-      container: {
-        prefix: it.prefix,
-        name: it.name,
-      },
       inspection: it.inspection,
     }
   }

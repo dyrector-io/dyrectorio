@@ -240,9 +240,6 @@ export class NodeAuditLogListDto extends PaginatedList<NodeAuditLogDto> {
 }
 
 export class ContainerInspectionDto {
-  @ValidateNested()
-  container: ContainerIdentifierDto
-
   @IsString()
   inspection: string
 }
