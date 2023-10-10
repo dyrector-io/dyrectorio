@@ -110,10 +110,7 @@ export default class NodeGlobalContainerHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for container inspection.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for container inspection.' })
   @UuidParams(PARAM_NODE_ID)
-  async inspectContainer(
-    @NodeId() nodeId: string,
-    @Name() name: string,
-  ): Promise<ContainerInspectionDto> {
+  async inspectContainer(@NodeId() nodeId: string, @Name() name: string): Promise<ContainerInspectionDto> {
     return await this.service.inspectContainer(nodeId, GLOBAL_PREFIX, name)
   }
 }
