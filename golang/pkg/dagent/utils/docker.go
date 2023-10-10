@@ -797,6 +797,9 @@ func ContainerInspect(ctx context.Context, request *agent.ContainerInspectReques
 	name := request.Container.Name
 
 	cont, err := GetContainerByPrefixAndName(ctx, cli, prefix, name)
+	if cont == nil {
+		return "", &UnknownContainerError{}
+	}
 	if err != nil {
 		return "", err
 	}
@@ -811,8 +814,6 @@ func ContainerInspect(ctx context.Context, request *agent.ContainerInspectReques
 		return "", err
 	}
 	inspection := string(inspectionJSON)
-	// TODO(@amorfevo): maybe this works too
-	// inspection := fmt.Sprintf("%+v", containerInfo)
 
 	return inspection, nil
 }
