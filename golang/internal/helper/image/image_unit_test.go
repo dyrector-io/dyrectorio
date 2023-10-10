@@ -95,42 +95,117 @@ func TestProtoRegistryUrlEmpty(t *testing.T) {
 }
 
 func TestExpandImageName(t *testing.T) {
-	name, err := imageHelper.ExpandImageName("nginx")
-	assert.NoError(t, err)
-	assert.Equal(t, "docker.io/library/nginx:latest", name, "plain image is expanded to latest tag and it prefixing")
-
-	name, err = imageHelper.ExpandImageName("nginx:tag")
-	assert.NoError(t, err)
-	assert.Equal(t, "docker.io/library/nginx:tag", name, "plain image name with tag keeps tag")
-
-	name, err = imageHelper.ExpandImageName("my-reg.com/library/nginx")
-	assert.NoError(t, err)
-	assert.Equal(t, "my-reg.com/library/nginx:latest", name)
-
-	name, err = imageHelper.ExpandImageName("my-reg.com/library/nginx:my-tag")
-	assert.NoError(t, err)
-	assert.Equal(t, "my-reg.com/library/nginx:my-tag", name)
+	testCases := []struct {
+		name     string
+		desc     string
+		image    string
+		expImage string
+		expErr   error
+	}{
+		{
+			name:     "defaultExpand",
+			desc:     "plain image is expanded to latest tag and it prefixing",
+			image:    "nginx",
+			expImage: "docker.io/library/nginx:latest",
+		},
+		{
+			name:     "expandWithTag",
+			desc:     "plain image name with tag keeps tag",
+			image:    "nginx:tag",
+			expImage: "docker.io/library/nginx:tag",
+		},
+		{
+			name:     "expandWithRegistry",
+			desc:     "image is expanded to latest tag and it has its registry when provided",
+			image:    "my-reg.com/library/nginx",
+			expImage: "my-reg.com/library/nginx:latest",
+		},
+		{
+			name:     "remainsOriginalIfFullyQuialified",
+			desc:     "plain image is not really expanded, keeps its original form",
+			image:    "my-reg.com/library/nginx:my-tag",
+			expImage: "my-reg.com/library/nginx:my-tag",
+		},
+		{
+			name:     "ifNotLowerCaseThatisFine",
+			desc:     "image is expanded regardless not just lowercase characters were provided",
+			image:    "ghcr.io/Test-Org/image:latest",
+			expImage: "ghcr.io/test-org/image:latest",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.name, func(t *testing.T) {
+			res, err := imageHelper.ExpandImageName(tC.image)
+			if tC.expErr != nil {
+				assert.ErrorIs(t, err, tC.expErr)
+			}
+			assert.Equal(t, tC.expImage, res, tC.desc)
+		})
+	}
 }
 
 func TestExpandImageNameWithTag(t *testing.T) {
-	name, err := imageHelper.ExpandImageNameWithTag("nginx", "tag-1")
-	assert.NoError(t, err)
-	assert.Equal(t, "docker.io/library/nginx:tag-1", name)
-
-	name, err = imageHelper.ExpandImageNameWithTag("nginx:tag", "tag-2")
-	assert.NoError(t, err)
-	assert.Equal(t, "docker.io/library/nginx:tag-2", name)
-
-	name, err = imageHelper.ExpandImageNameWithTag("my-reg.com/library/nginx", "tag-3")
-	assert.NoError(t, err)
-	assert.Equal(t, "my-reg.com/library/nginx:tag-3", name)
-
-	name, err = imageHelper.ExpandImageNameWithTag("my-reg.com/library/nginx:my-tag", "tag-4")
-	assert.NoError(t, err)
-	assert.Equal(t, "my-reg.com/library/nginx:tag-4", name)
-
-	name, err = imageHelper.ExpandImageNameWithTag("my-reg.com/library/nginx", "-12@3%44-")
-	assert.ErrorIs(t, err, imageHelper.ErrInvalidTag)
+	testCases := []struct {
+		name     string
+		desc     string
+		image    string
+		tag      string
+		expImage string
+		expErr   error
+	}{
+		{
+			name:     "expandWithoutTag",
+			desc:     "expand with image with tag in param, without any tag provided in the image",
+			image:    "nginx",
+			tag:      "tag-1",
+			expImage: "docker.io/library/nginx:tag-1",
+		},
+		{
+			name:     "expandWithTag",
+			desc:     "expand with image with tag in param, with tag provided in the image",
+			image:    "nginx:mytag",
+			tag:      "tag-2",
+			expImage: "docker.io/library/nginx:tag-2",
+		},
+		{
+			name:     "customRegCustomTagExpandNoTag",
+			desc:     "expand with custom image provided tag, without any tag provided in the image",
+			image:    "my-reg.com/library/nginx",
+			tag:      "tag-3",
+			expImage: "my-reg.com/library/nginx:tag-3",
+		},
+		{
+			name:     "customRegCustomTagExpandWithTag",
+			desc:     "expand with custom provided tag, with a tag present already in the image",
+			image:    "my-reg.com/library/nginx:my-tag",
+			tag:      "tag-4",
+			expImage: "my-reg.com/library/nginx:tag-4",
+		},
+		{
+			name:     "invalidTagChars",
+			desc:     "if invalid characters are in the tag it throws error",
+			image:    "my-reg.com/library/nginx",
+			tag:      "-12@3%44-",
+			expImage: "",
+			expErr:   imageHelper.ErrInvalidTag,
+		},
+		{
+			name:     "capitalsHandled",
+			desc:     "with capitals in the image parsing works smoothly",
+			image:    "my-reg.com/Library/nginx:my-tag",
+			tag:      "tag-4",
+			expImage: "my-reg.com/library/nginx:tag-4",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.name, func(t *testing.T) {
+			res, err := imageHelper.ExpandImageNameWithTag(tC.image, tC.tag)
+			if tC.expErr != nil {
+				assert.ErrorIs(t, err, tC.expErr)
+			}
+			assert.Equal(t, tC.expImage, res, tC.desc)
+		})
+	}
 }
 
 func TestSplitImageName(t *testing.T) {
