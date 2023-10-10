@@ -37,6 +37,7 @@ type CommonConfiguration struct {
 	ImportContainerImage     string        `yaml:"importContainerImage"     env:"IMPORT_CONTAINER_IMAGE"      env-default:"rclone/rclone:1.57.0"` //nolint:lll
 	RootDomain               string        `yaml:"rootDomain"               env:"ROOT_DOMAIN"                 env-default:""`
 	ReadHeaderTimeout        time.Duration `yaml:"readHeaderTimeout"        env:"READ_HEADER_TIMEOUT"         env-default:"15s"`
+	HostAddress              string        `yaml:"hostAddress"              env:"HOST_ADDRESS"                env-default:""`
 	// DefaultRegistry container registry used for container name expansion
 	DefaultRegistry string `yaml:"registry"             env:"DEFAULT_REGISTRY"                 env-default:"index.docker.io"`
 	// gRPC token is set separately, because nested structures are not yet suppported in cleanenv

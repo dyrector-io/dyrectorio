@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -198,19 +199,36 @@ func Init(grpcContext context.Context,
 	loop.Ctx = metadata.AppendToOutgoingContext(loop.Ctx, contextMetadataKeyToken, connParams.token)
 
 	if grpcConn.Conn == nil {
-		var creds credentials.TransportCredentials
+		address := appConfig.HostAddress
+		if len(address) == 0 {
+			address = connParams.address
+		}
 
-		httpAddr := fmt.Sprintf("https://%s", connParams.address)
-		certPool, err := fetchCertificatesFromURL(loop.Ctx, httpAddr)
+		if !strings.HasPrefix(address, "http") {
+			address = fmt.Sprintf("https://%s", address)
+		}
+
+		parsedUrl, err := url.Parse(address)
 		if err != nil {
-			if appConfig.Debug {
-				log.Warn().Err(err).Msg("Secure mode is disabled in demo/dev environment, falling back to plain-text gRPC")
-				creds = insecure.NewCredentials()
+			log.Panic().Err(err).Str("address", address).Msg("Failed to parse url")
+		}
+
+		var creds credentials.TransportCredentials
+		if strings.HasPrefix(address, "https") {
+			certPool, err := fetchCertificatesFromURL(loop.Ctx, address)
+			if err != nil {
+				if appConfig.Debug {
+					log.Warn().Err(err).Msg("Secure mode is disabled in demo/dev environment, falling back to plain-text gRPC")
+					creds = insecure.NewCredentials()
+				} else {
+					log.Panic().Err(err).Msg("Could not fetch valid certificate")
+				}
 			} else {
-				log.Panic().Err(err).Msg("Could not fetch valid certificate")
+				creds = credentials.NewClientTLSFromCert(certPool, "")
 			}
 		} else {
-			creds = credentials.NewClientTLSFromCert(certPool, "")
+			log.Warn().Msg("Using insecure connection")
+			creds = insecure.NewCredentials()
 		}
 
 		opts := []grpc.DialOption{
@@ -224,8 +242,9 @@ func Init(grpcContext context.Context,
 				}),
 		}
 
-		log.Info().Str("address", connParams.address).Msg("Dialing to address.")
-		conn, err := grpc.Dial(connParams.address, opts...)
+		grpcAddress := fmt.Sprintf("%s%s", parsedUrl.Host, parsedUrl.Path)
+		log.Info().Str("address", grpcAddress).Msg("Dialing to address.")
+		conn, err := grpc.Dial(grpcAddress, opts...)
 		if err != nil {
 			log.Panic().Stack().Err(err).Msg("Failed to dial gRPC")
 		}
