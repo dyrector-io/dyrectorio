@@ -13,6 +13,8 @@ interface KeyValueTableProps {
   translateKeys?: boolean
 }
 
+const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11'
+
 const KeyValueTable = (props: KeyValueTableProps) => {
   const { data, translateKeys } = props
 
@@ -20,11 +22,10 @@ const KeyValueTable = (props: KeyValueTableProps) => {
 
   const headers = ['common:key', 'common:value']
 
-  const defaultHeaderClass = 'uppercase text-lens-text-0 text-sm font-semibold bg-lens-surface-5 px-2 py-3 h-11'
   const headerClasses = [clsx('rounded-tl-lg pl-4', defaultHeaderClass), clsx('rounded-tr-lg pr-4', defaultHeaderClass)]
 
   const columnWidths = ['w-1/2', 'w-1/2']
-  const defaultItemClass = 'h-12 min-h-min text-lens-text-1 p-2 line-clamp-1 text-ellipsis'
+  const defaultItemClass = 'h-12 min-h-min text-light-eased p-2 line-clamp-1 text-ellipsis'
   const itemClasses = [clsx('pl-4', defaultItemClass), clsx('pr-4', defaultItemClass)]
 
   const itemBuilder = (item: KeyValue) => {
@@ -37,7 +38,7 @@ const KeyValueTable = (props: KeyValueTableProps) => {
 
   return (
     <DyoList
-      className="bg-lens-surface-6"
+      className="bg-dark-eased"
       headers={headers.map(it => t(it))}
       headerClassName={headerClasses}
       columnWidths={columnWidths}
@@ -66,7 +67,6 @@ const MountsTable = (props: MountsTableProps) => {
     'mountsInfo.propagation',
   ]
 
-  const defaultHeaderClass = 'uppercase text-lens-text-0 text-sm font-semibold bg-lens-surface-5 px-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-4', defaultHeaderClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultHeaderClass),
@@ -74,7 +74,7 @@ const MountsTable = (props: MountsTableProps) => {
   ]
 
   const columnWidths = ['w-3/12', 'w-3/12', 'w-3/12', 'w-1/12', 'w-1/12', 'w-1/12']
-  const defaultItemClass = 'h-12 min-h-min text-lens-text-1 p-2 line-clamp-1 text-ellipsis'
+  const defaultItemClass = 'h-12 min-h-min text-light-eased p-2 line-clamp-1 text-ellipsis'
   const itemClasses = [
     clsx('pl-4', defaultItemClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultItemClass),
@@ -96,7 +96,7 @@ const MountsTable = (props: MountsTableProps) => {
 
   return (
     <DyoList
-      className="bg-lens-surface-6"
+      className="bg-dark-eased"
       headers={headers.map(it => t(it))}
       headerClassName={headerClasses}
       columnWidths={columnWidths}
@@ -190,28 +190,30 @@ const InspectTableView = (props: InspectTableViewProps) => {
     }
   })
 
+  const tableGroupHeaderClass = 'uppercase text-lg'
+
   return (
     <>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 my-4">
         <div className="flex flex-col">
-          <DyoLabel className="text-lg">{t('general')}</DyoLabel>
+          <DyoLabel className={tableGroupHeaderClass}>{t('general')}</DyoLabel>
           <KeyValueTable data={general} translateKeys />
         </div>
         <div className="flex flex-col">
-          <DyoLabel className="text-lg">{t('environment')}</DyoLabel>
+          <DyoLabel className={tableGroupHeaderClass}>{t('environment')}</DyoLabel>
           <KeyValueTable data={envTableData} />
         </div>
         <div className="flex flex-col">
-          <DyoLabel className="text-lg">{t('labels')}</DyoLabel>
+          <DyoLabel className={tableGroupHeaderClass}>{t('labels')}</DyoLabel>
           <KeyValueTable data={labelsTableData} />
         </div>
         <div className="flex flex-col">
-          <DyoLabel className="text-lg">{t('networks')}</DyoLabel>
+          <DyoLabel className={tableGroupHeaderClass}>{t('networks')}</DyoLabel>
           <KeyValueTable data={networkTableData} />
         </div>
       </div>
       <div className="flex flex-col">
-        <DyoLabel className="text-lg">{t('mounts')}</DyoLabel>
+        <DyoLabel className={tableGroupHeaderClass}>{t('mounts')}</DyoLabel>
         <MountsTable data={mounts ?? []} />
       </div>
     </>

@@ -47,7 +47,9 @@ const NodeContainerInspectPage = ({ node, prefix, name, inspection }: ContainerI
   return (
     <Layout title={t('image')}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        {inspection && <InspectViewModeToggle viewMode={viewMode} onViewModeChanged={setViewMode} />}
+        <div className="flex flex-row mt-4 justify-end">
+          {inspection && <InspectViewModeToggle viewMode={viewMode} onViewModeChanged={setViewMode} />}
+        </div>
       </PageHeading>
 
       <DyoCard className="p-4">
