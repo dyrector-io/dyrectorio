@@ -1,9 +1,12 @@
 import { Layout } from '@app/components/layout'
+import InspectTableView from '@app/components/nodes/inspect-table-view'
+import InspectViewModeToggle, { InspectViewMode } from '@app/components/nodes/inspect-view-mode-toggle'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import LoadingIndicator from '@app/elements/loading-indicator'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { NodeContainerInspection, NodeDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
@@ -11,6 +14,7 @@ import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
+import { useState } from 'react'
 
 interface ContainerInspectPageProps {
   node: NodeDetails
@@ -22,6 +26,7 @@ interface ContainerInspectPageProps {
 const NodeContainerInspectPage = ({ node, prefix, name, inspection }: ContainerInspectPageProps) => {
   const { t } = useTranslation('common')
   const routes = useTeamRoutes()
+  const [viewMode, setViewMode] = useState<InspectViewMode>('table')
 
   const pageLink: BreadcrumbLink = {
     name: t('nodes'),
@@ -41,7 +46,9 @@ const NodeContainerInspectPage = ({ node, prefix, name, inspection }: ContainerI
 
   return (
     <Layout title={t('image')}>
-      <PageHeading pageLink={pageLink} sublinks={sublinks} />
+      <PageHeading pageLink={pageLink} sublinks={sublinks}>
+        {inspection && <InspectViewModeToggle viewMode={viewMode} onViewModeChanged={setViewMode} />}
+      </PageHeading>
 
       <DyoCard className="p-4">
         <div className="flex mb-4 justify-between items-start">
@@ -50,8 +57,15 @@ const NodeContainerInspectPage = ({ node, prefix, name, inspection }: ContainerI
           </DyoHeading>
         </div>
 
-        {/* TODO(@amorfevo): DyoCards or own inspection component instead of the json-editor */}
-        <JsonEditor value={inspection} disabled />
+        {inspection ? (
+          viewMode === 'table' ? (
+            <InspectTableView inspect={inspection} />
+          ) : (
+            <JsonEditor value={inspection} disabled />
+          )
+        ) : (
+          <LoadingIndicator />
+        )}
       </DyoCard>
     </Layout>
   )

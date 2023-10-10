@@ -17,7 +17,12 @@ import {
   Empty,
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
-import { CONTAINER_DELETE_TIMEOUT_MILLIS, DEFAULT_CONTAINER_LOG_TAIL, GET_CONTAINER_INSPECTION_TIMEOUT_MILLIS, GET_CONTAINER_SECRETS_TIMEOUT_MILLIS } from 'src/shared/const'
+import {
+  CONTAINER_DELETE_TIMEOUT_MILLIS,
+  DEFAULT_CONTAINER_LOG_TAIL,
+  GET_CONTAINER_INSPECTION_TIMEOUT_MILLIS,
+  GET_CONTAINER_SECRETS_TIMEOUT_MILLIS,
+} from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { AgentToken } from './agent-token'
 import AgentUpdate, { AgentUpdateOptions, AgentUpdateResult } from './agent-update'

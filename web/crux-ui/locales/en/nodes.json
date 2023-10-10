@@ -74,5 +74,42 @@
     "installed": "Installed",
     "updateCompleted": "Update completed",
     "tokenReplaced": "Token replaced"
+  },
+
+  "json": "Json",
+  "table": "Table",
+
+  "general": "General",
+  "environment": "Environment",
+  "labels": "Labels",
+  "networks": "Networks",
+  "mounts": "Mounts",
+
+  "networkInfo": "IP: {{ip}}, Gateway: {{gateway}}",
+
+  "inspectGeneral": {
+    "id": "Id",
+    "name": "Name",
+    "image": "Image",
+    "imageHash": "Image hash",
+    "exitCode": "Exit code",
+    "status": "Status",
+    "restartCount": "Restart count",
+    "hostName": "Host name",
+    "ip": "IP"
+  },
+
+  "mountsInfo": {
+    "type": "Type",
+    "source": "Source",
+    "dest": "Destination",
+    "mode": "Mode",
+    "rw": "RW",
+    "propagation": "Propagation"
+  },
+
+  "viewMode": {
+    "table": "Table",
+    "json": "JSON"
   }
 }
