@@ -96,6 +96,10 @@ export type NodeAuditLogList = {
   total: number
 }
 
+export type NodeContainerInspection = {
+  inspection: string
+}
+
 // ws
 
 export const WS_TYPE_NODE_EVENT = 'event'
