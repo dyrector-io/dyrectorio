@@ -11,12 +11,18 @@ import { AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/ag
 import {
   ContainerCommandRequest,
   ContainerIdentifier,
+  ContainerInspectMessage,
   DeleteContainersRequest,
   DeploymentStatusMessage,
   Empty,
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
-import { CONTAINER_DELETE_TIMEOUT, DEFAULT_CONTAINER_LOG_TAIL } from 'src/shared/const'
+import {
+  CONTAINER_DELETE_TIMEOUT_MILLIS,
+  DEFAULT_CONTAINER_LOG_TAIL,
+  GET_CONTAINER_INSPECTION_TIMEOUT_MILLIS,
+  GET_CONTAINER_SECRETS_TIMEOUT_MILLIS,
+} from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { AgentToken } from './agent-token'
 import AgentUpdate, { AgentUpdateOptions, AgentUpdateResult } from './agent-update'
@@ -39,8 +45,6 @@ export type AgentTokenReplacement = {
 }
 
 export class Agent {
-  public static SECRET_TIMEOUT = 5000
-
   private readonly commandChannel = new BufferedSubject<AgentCommand>()
 
   private deployments: Map<string, Deployment> = new Map()
@@ -48,6 +52,8 @@ export class Agent {
   private statusWatchers: Map<string, ContainerStatusWatcher> = new Map()
 
   private secretsWatchers: Map<string, Subject<ListSecretsResponse>> = new Map()
+
+  private inspectionWatchers: Map<string, Subject<ContainerInspectMessage>> = new Map()
 
   private deleteContainersRequests: Map<string, Subject<Empty>> = new Map()
 
@@ -222,7 +228,7 @@ export class Agent {
     } as AgentCommand)
 
     return result.pipe(
-      timeout(CONTAINER_DELETE_TIMEOUT),
+      timeout(CONTAINER_DELETE_TIMEOUT_MILLIS),
       catchError(err => {
         if (err instanceof TimeoutError) {
           result.complete()
@@ -253,6 +259,7 @@ export class Agent {
     this.deployments.forEach(it => it.onDisconnected())
     this.statusWatchers.forEach(it => it.stop())
     this.secretsWatchers.forEach(it => it.complete())
+    this.inspectionWatchers.forEach(it => it.complete())
     this.logStreams.forEach(it => it.stop())
     this.commandChannel.complete()
 
@@ -337,7 +344,7 @@ export class Agent {
         this.secretsWatchers.delete(key)
       }),
       timeout({
-        each: Agent.SECRET_TIMEOUT,
+        each: GET_CONTAINER_SECRETS_TIMEOUT_MILLIS,
         with: () => {
           this.secretsWatchers.delete(key)
 
@@ -364,6 +371,63 @@ export class Agent {
     watcher.complete()
 
     this.secretsWatchers.delete(key)
+  }
+
+  getContainerInspection(prefix: string, name: string): Observable<ContainerInspectMessage> {
+    this.throwIfCommandsAreDisabled()
+
+    const key = Agent.containerPrefixNameOf({
+      prefix,
+      name,
+    })
+
+    let watcher = this.inspectionWatchers.get(key)
+    if (!watcher) {
+      watcher = new Subject<ContainerInspectMessage>()
+      this.inspectionWatchers.set(key, watcher)
+
+      this.commandChannel.next({
+        containerInspect: {
+          container: {
+            prefix,
+            name,
+          },
+        },
+      } as AgentCommand)
+    }
+
+    return watcher.pipe(
+      finalize(() => {
+        this.inspectionWatchers.delete(key)
+      }),
+      timeout({
+        each: GET_CONTAINER_INSPECTION_TIMEOUT_MILLIS,
+        with: () => {
+          this.inspectionWatchers.delete(key)
+
+          return throwError(
+            () =>
+              new CruxInternalServerErrorException({
+                message: 'Agent container inspection timed out.',
+              }),
+          )
+        },
+      }),
+    )
+  }
+
+  onContainerInspect(res: ContainerInspectMessage) {
+    const key = Agent.containerPrefixNameOf(res)
+
+    const watcher = this.inspectionWatchers.get(key)
+    if (!watcher) {
+      return
+    }
+
+    watcher.next(res)
+    watcher.complete()
+
+    this.inspectionWatchers.delete(key)
   }
 
   startUpdate(tag: string, options: AgentUpdateOptions) {

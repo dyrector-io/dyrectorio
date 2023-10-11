@@ -28,6 +28,7 @@ import { CruxNotFoundException } from 'src/exception/crux-exception'
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerIdentifier,
+  ContainerInspectMessage,
   ContainerLogMessage,
   ContainerStateListMessage,
   DeleteContainersRequest,
@@ -351,6 +352,14 @@ export default class AgentService {
       }),
       takeUntil(completer),
     )
+  }
+
+  handleContainerInspect(connection: GrpcNodeConnection, request: ContainerInspectMessage): Observable<Empty> {
+    const agent = this.getByIdOrThrow(connection.nodeId)
+
+    agent.onContainerInspect(request)
+
+    return of(Empty)
   }
 
   async tokenReplaced(connection: GrpcNodeConnection): Promise<Empty> {

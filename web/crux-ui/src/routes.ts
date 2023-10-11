@@ -253,6 +253,12 @@ class NodeRoutes {
       ...params,
       anchor: null,
     })
+
+  containerInspect = (id: string, params: ContainerLogParams) =>
+    appendUrlParams(`${this.details(id)}/inspect`, {
+      ...params,
+      anchor: null,
+    })
 }
 
 class RegistryApi {

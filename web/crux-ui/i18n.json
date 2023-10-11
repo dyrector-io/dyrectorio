@@ -24,6 +24,7 @@
     "/[teamSlug]/nodes": ["nodes", "tokens"],
     "/[teamSlug]/nodes/[nodeId]": ["nodes", "images", "tokens", "deployments"],
     "/[teamSlug]/nodes/[nodeId]/log": [],
+    "/[teamSlug]/nodes/[nodeId]/inspect": ["nodes"],
     "/[teamSlug]/registries": ["registries"],
     "/[teamSlug]/registries/[registryId]": ["registries"],
     "/teams": ["teams"],
