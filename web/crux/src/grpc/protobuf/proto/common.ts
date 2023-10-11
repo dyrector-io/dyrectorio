@@ -564,6 +564,12 @@ export interface ContainerLogMessage {
   log: string
 }
 
+export interface ContainerInspectMessage {
+  prefix: string
+  name: string
+  inspection: string
+}
+
 export interface Routing {
   domain?: string | undefined
   path?: string | undefined
@@ -831,6 +837,28 @@ export const ContainerLogMessage = {
   toJSON(message: ContainerLogMessage): unknown {
     const obj: any = {}
     message.log !== undefined && (obj.log = message.log)
+    return obj
+  },
+}
+
+function createBaseContainerInspectMessage(): ContainerInspectMessage {
+  return { prefix: '', name: '', inspection: '' }
+}
+
+export const ContainerInspectMessage = {
+  fromJSON(object: any): ContainerInspectMessage {
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      inspection: isSet(object.inspection) ? String(object.inspection) : '',
+    }
+  },
+
+  toJSON(message: ContainerInspectMessage): unknown {
+    const obj: any = {}
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.name !== undefined && (obj.name = message.name)
+    message.inspection !== undefined && (obj.inspection = message.inspection)
     return obj
   },
 }

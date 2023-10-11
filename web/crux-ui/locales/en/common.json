@@ -211,7 +211,8 @@
   "method": "Method",
   "event": "Event",
   "data": "Data",
-  "log": "Log",
+  "logOf": "Log of {{name}}",
+  "inspectOf": "Inspection of {{name}}",
 
   "storages": "Storages",
   "configBundles": "Config bundles",
