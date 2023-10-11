@@ -51,6 +51,8 @@ type DockerVersion struct {
 	ClientVersion string
 }
 
+var ErrUnknownContainer = errors.New("unknown container")
+
 func GetContainerLogs(name string, skip, take uint) []string {
 	ctx := context.Background()
 
@@ -798,7 +800,7 @@ func ContainerInspect(ctx context.Context, request *agent.ContainerInspectReques
 
 	cont, err := GetContainerByPrefixAndName(ctx, cli, prefix, name)
 	if cont == nil {
-		return "", &UnknownContainerError{}
+		return "", ErrUnknownContainer
 	}
 	if err != nil {
 		return "", err

@@ -6,7 +6,6 @@ import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import LoadingIndicator from '@app/elements/loading-indicator'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { NodeContainerInspection, NodeDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
@@ -59,15 +58,12 @@ const NodeContainerInspectPage = ({ node, prefix, name, inspection }: ContainerI
           </DyoHeading>
         </div>
 
-        {inspection ? (
-          viewMode === 'table' ? (
+        {inspection &&
+          (viewMode === 'table' ? (
             <InspectTableView inspect={inspection} />
           ) : (
             <JsonEditor value={inspection} disabled />
-          )
-        ) : (
-          <LoadingIndicator />
-        )}
+          ))}
       </DyoCard>
     </Layout>
   )
