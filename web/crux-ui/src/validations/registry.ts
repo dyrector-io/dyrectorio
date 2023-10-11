@@ -14,6 +14,14 @@ import { Schema } from 'yup'
 
 const shouldResetMetaData = { reset: true }
 
+/**
+ * Creates a Yup schema for a registry credential role based on the provided label.
+ * The schema defines validation rules for whether a field is required or not
+ * based on the 'type' and 'private' properties in the input data.
+ *
+ * @param label - The label to be used for the schema.
+ * @returns A Yup schema instance.
+ */
 const createRegistryCredentialRole = (label: string) =>
   yup
     .mixed()
