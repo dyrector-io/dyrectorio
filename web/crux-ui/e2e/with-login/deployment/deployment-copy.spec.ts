@@ -10,7 +10,7 @@ import {
   createVersion,
   fillDeploymentPrefix,
 } from '../../utils/projects'
-import { test } from '../../utils/test.fixture'
+import { hookTestPageEvents, test } from '../../utils/test.fixture'
 import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
 
 const addSecretToImage = async (
@@ -62,9 +62,13 @@ test.describe('Deployment Copy', () => {
   const newSecretKey = 'new-secret'
   const newSecretKeyList = [...secretKeys, newSecretKey]
 
-  test.beforeAll(async ({ browser }) => {
+  // NOTE(@robot9706): beforeAll runs on each worker, so if tests are running in parallel beforeAll executes multiple times
+  test.describe.configure({ mode: 'serial' })
+
+  test.beforeAll(async ({ browser }, testInfo) => {
     const ctx = await browser.newContext()
     const page = await ctx.newPage()
+    hookTestPageEvents(page, testInfo)
 
     const projectId = await createProject(page, projectName, 'versioned')
     await createNode(page, newNodeName)

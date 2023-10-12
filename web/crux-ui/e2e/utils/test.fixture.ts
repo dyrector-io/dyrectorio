@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { test as base } from '@playwright/test'
+import { Page, TestInfo, test as base } from '@playwright/test'
 import type { ChromiumBrowserContext } from 'playwright-core'
 
 const CPU_THROTTLE = process.env.CPUTHROTTLE
@@ -11,7 +11,7 @@ const LOG_LEVELS = DEBUG ? ['error', 'warning', 'info', 'debug', 'trace'] : ['er
 // eslint-disable-next-line import/prefer-default-export
 export const test = base.extend({})
 
-test.beforeEach(async ({ page }, testInfo) => {
+export const hookTestPageEvents = (page: Page, testInfo: TestInfo) => {
   page.on('console', it => {
     const type = it.type()
 
@@ -60,6 +60,10 @@ test.beforeEach(async ({ page }, testInfo) => {
 
     console.info(`[${testInfo.title}] Response to ${it.url()}`)
   })
+}
+
+test.beforeEach(async ({ page }, testInfo) => {
+  hookTestPageEvents(page, testInfo)
 
   if (CPU_THROTTLE) {
     const client = await (page.context() as ChromiumBrowserContext).newCDPSession(page)

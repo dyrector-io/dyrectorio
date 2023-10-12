@@ -6,6 +6,9 @@ import { test } from '../utils/test.fixture'
 const LOGIN_TEST_USER = 'test-login@example.com'
 const LOGIN_TEST_PASSWORD = 'TestPw23234'
 
+// NOTE(@robot9706): beforeAll runs on each worker, so if tests are running in parallel beforeAll executes multiple times
+test.describe.configure({ mode: 'serial' })
+
 test.beforeAll(async ({ baseURL }) => {
   const kratos = kratosFromConfig(baseURL)
 

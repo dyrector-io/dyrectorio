@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
 import { TEAM_ROUTES } from 'e2e/utils/common'
 import { createProject, deleteProject } from 'e2e/utils/projects'
-import { test } from '../utils/test.fixture'
+import { hookTestPageEvents, test } from '../utils/test.fixture'
 
 test.describe.configure({ mode: 'parallel' })
 
@@ -93,9 +93,13 @@ test.describe('Project', () => {
     const FILTER_VERSIONED = 'filter-versioned'
     const FILTER_VERSIONLESS = 'filter-versionless'
 
-    test.beforeAll(async ({ browser }) => {
+    // NOTE(@robot9706): beforeAll runs on each worker, so if tests are running in parallel beforeAll executes multiple times
+    test.describe.configure({ mode: 'serial' })
+
+    test.beforeAll(async ({ browser }, testInfo) => {
       const ctx = await browser.newContext()
       const page = await ctx.newPage()
+      hookTestPageEvents(page, testInfo)
 
       await createProject(page, FILTER_VERSIONED, 'versioned')
       await createProject(page, FILTER_VERSIONLESS, 'versionless')
