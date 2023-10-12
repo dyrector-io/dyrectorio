@@ -1,9 +1,10 @@
-import { Controller, Delete, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common'
+import { Controller, Delete, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common'
 import {
   ApiBadRequestResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger'
@@ -22,6 +23,7 @@ import {
   ROUTE_PREFIX,
   ROUTE_TEAM_SLUG,
 } from './node.const'
+import { ContainerInspectionDto } from './node.dto'
 import NodeService from './node.service'
 
 @Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_PREFIX}/${ROUTE_CONTAINERS}`)
@@ -33,7 +35,7 @@ export default class NodePrefixContainerHttpController {
   @Post(`${ROUTE_NAME}/start`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Request must include `nodeId`, `prefix`, and `name`.',
+    description: 'Request must include `nodeId`, `prefix`, and the `name` of the container.',
     summary: 'Start a container deployed with dyrector.io on a node.',
   })
   @ApiNoContentResponse({ description: 'Container started.' })
@@ -47,7 +49,7 @@ export default class NodePrefixContainerHttpController {
   @Post(`${ROUTE_NAME}/stop`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Request must include `nodeId`, `prefix`, and `name`.',
+    description: 'Request must include `nodeId`, `prefix`, and the `name` of the container.',
     summary: 'Stop a container deployed with dyrector.io on a node.',
   })
   @ApiNoContentResponse({ description: 'Container stopped.' })
@@ -61,7 +63,7 @@ export default class NodePrefixContainerHttpController {
   @Post(`${ROUTE_NAME}/restart`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Request must include `nodeId`, `prefix`, and `name`.',
+    description: 'Request must include `nodeId`, `prefix`, and the `name` of the container.',
     summary: 'Restart a container deployed with dyrector.io on a node.',
   })
   @ApiNoContentResponse({ description: 'Container restarted.' })
@@ -89,7 +91,7 @@ export default class NodePrefixContainerHttpController {
   @Delete(`${ROUTE_NAME}`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Request must include `nodeId`, `prefix`, and `name`.',
+    description: 'Request must include `nodeId`, `prefix`, and the `name` of the container.',
     summary: 'Delete a container deployed with dyrector.io, with the specified prefix and name on a node.',
   })
   @ApiNoContentResponse({ description: 'Container deleted.' })
@@ -98,5 +100,23 @@ export default class NodePrefixContainerHttpController {
   @UuidParams(PARAM_NODE_ID)
   deleteContainer(@NodeId() nodeId: string, @Prefix() prefix: string, @Name() name: string): Observable<void> {
     return from(this.service.deleteContainer(nodeId, prefix, name)).pipe(mergeAll())
+  }
+
+  @Get(`${ROUTE_NAME}/inspect`)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    description: 'Request must include `nodeId`, `prefix`, and the `name` of the container.',
+    summary: 'Inspect a container with the specified prefix and name on a node.',
+  })
+  @ApiOkResponse({ type: ContainerInspectionDto, description: 'Container inspection.' })
+  @ApiBadRequestResponse({ description: 'Bad request for container inspection.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for container inspection.' })
+  @UuidParams(PARAM_NODE_ID)
+  async inspectContainer(
+    @NodeId() nodeId: string,
+    @Prefix() prefix: string,
+    @Name() name: string,
+  ): Promise<ContainerInspectionDto> {
+    return await this.service.inspectContainer(nodeId, prefix, name)
   }
 }

@@ -247,3 +247,8 @@ export class NodeAuditLogListDto extends PaginatedList<NodeAuditLogDto> {
 
   total: number
 }
+
+export class ContainerInspectionDto {
+  @IsString()
+  inspection: string
+}

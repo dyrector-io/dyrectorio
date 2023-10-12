@@ -36,6 +36,7 @@ type AgentClient interface {
 	AbortUpdate(ctx context.Context, in *AgentAbortUpdate, opts ...grpc.CallOption) (*common.Empty, error)
 	DeleteContainers(ctx context.Context, in *common.DeleteContainersRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	ContainerLog(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerLogClient, error)
+	ContainerInspect(ctx context.Context, in *common.ContainerInspectMessage, opts ...grpc.CallOption) (*common.Empty, error)
 	TokenReplaced(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
@@ -208,6 +209,15 @@ func (x *agentContainerLogClient) CloseAndRecv() (*common.Empty, error) {
 	return m, nil
 }
 
+func (c *agentClient) ContainerInspect(ctx context.Context, in *common.ContainerInspectMessage, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/agent.Agent/ContainerInspect", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *agentClient) TokenReplaced(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*common.Empty, error) {
 	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/TokenReplaced", in, out, opts...)
@@ -234,6 +244,7 @@ type AgentServer interface {
 	AbortUpdate(context.Context, *AgentAbortUpdate) (*common.Empty, error)
 	DeleteContainers(context.Context, *common.DeleteContainersRequest) (*common.Empty, error)
 	ContainerLog(Agent_ContainerLogServer) error
+	ContainerInspect(context.Context, *common.ContainerInspectMessage) (*common.Empty, error)
 	TokenReplaced(context.Context, *common.Empty) (*common.Empty, error)
 	mustEmbedUnimplementedAgentServer()
 }
@@ -262,6 +273,9 @@ func (UnimplementedAgentServer) DeleteContainers(context.Context, *common.Delete
 }
 func (UnimplementedAgentServer) ContainerLog(Agent_ContainerLogServer) error {
 	return status.Errorf(codes.Unimplemented, "method ContainerLog not implemented")
+}
+func (UnimplementedAgentServer) ContainerInspect(context.Context, *common.ContainerInspectMessage) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ContainerInspect not implemented")
 }
 func (UnimplementedAgentServer) TokenReplaced(context.Context, *common.Empty) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TokenReplaced not implemented")
@@ -432,6 +446,24 @@ func (x *agentContainerLogServer) Recv() (*common.ContainerLogMessage, error) {
 	return m, nil
 }
 
+func _Agent_ContainerInspect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(common.ContainerInspectMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).ContainerInspect(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/agent.Agent/ContainerInspect",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).ContainerInspect(ctx, req.(*common.ContainerInspectMessage))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Agent_TokenReplaced_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(common.Empty)
 	if err := dec(in); err != nil {
@@ -468,6 +500,10 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteContainers",
 			Handler:    _Agent_DeleteContainers_Handler,
+		},
+		{
+			MethodName: "ContainerInspect",
+			Handler:    _Agent_ContainerInspect_Handler,
 		},
 		{
 			MethodName: "TokenReplaced",
