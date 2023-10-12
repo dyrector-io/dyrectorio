@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -49,6 +50,8 @@ type DockerVersion struct {
 	ServerVersion string
 	ClientVersion string
 }
+
+var ErrUnknownContainer = errors.New("unknown container")
 
 func GetContainerLogs(name string, skip, take uint) []string {
 	ctx := context.Background()
@@ -784,4 +787,35 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 	}
 
 	return logContext, nil
+}
+
+func ContainerInspect(ctx context.Context, request *agent.ContainerInspectRequest) (string, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return "", err
+	}
+
+	prefix := request.Container.Prefix
+	name := request.Container.Name
+
+	cont, err := GetContainerByPrefixAndName(ctx, cli, prefix, name)
+	if cont == nil {
+		return "", ErrUnknownContainer
+	}
+	if err != nil {
+		return "", err
+	}
+
+	containerInfo, err := cli.ContainerInspect(ctx, cont.ID)
+	if err != nil {
+		return "", err
+	}
+
+	inspectionJSON, err := json.Marshal(containerInfo)
+	if err != nil {
+		return "", err
+	}
+	inspection := string(inspectionJSON)
+
+	return inspection, nil
 }

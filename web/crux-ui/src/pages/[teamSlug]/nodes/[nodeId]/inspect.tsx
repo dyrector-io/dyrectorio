@@ -1,18 +1,13 @@
 import { Layout } from '@app/components/layout'
+import InspectTableView from '@app/components/nodes/inspect-table-view'
+import InspectViewModeToggle, { InspectViewMode } from '@app/components/nodes/inspect-view-mode-toggle'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
-import EventsTerminal from '@app/components/shared/events-terminal'
+import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import useWebSocket from '@app/hooks/use-websocket'
-import {
-  ContainerLogMessage,
-  NodeDetails,
-  WatchContainerLogMessage,
-  WS_TYPE_CONTAINER_LOG,
-  WS_TYPE_WATCH_CONTAINER_LOG,
-} from '@app/models'
+import { NodeContainerInspection, NodeDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
@@ -20,36 +15,17 @@ import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
-interface InstanceLogPageProps {
+interface ContainerInspectPageProps {
   node: NodeDetails
   prefix: string
   name: string
+  inspection: object
 }
 
-const NodeContainerLogPage = (props: InstanceLogPageProps) => {
-  const { node, prefix, name } = props
-
+const NodeContainerInspectPage = ({ node, prefix, name, inspection }: ContainerInspectPageProps) => {
   const { t } = useTranslation('common')
   const routes = useTeamRoutes()
-
-  const [log, setLog] = useState<ContainerLogMessage[]>([])
-
-  const sock = useWebSocket(routes.node.detailsSocket(node.id), {
-    onOpen: () => {
-      const request: WatchContainerLogMessage = {
-        container: {
-          prefix,
-          name,
-        },
-      }
-
-      sock.send(WS_TYPE_WATCH_CONTAINER_LOG, request)
-    },
-  })
-
-  sock.on(WS_TYPE_CONTAINER_LOG, (message: ContainerLogMessage) => {
-    setLog(prevLog => [...prevLog, message])
-  })
+  const [viewMode, setViewMode] = useState<InspectViewMode>('table')
 
   const pageLink: BreadcrumbLink = {
     name: t('nodes'),
@@ -62,29 +38,38 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
       url: `${routes.node.details(node.id)}`,
     },
     {
-      name: t('log'),
-      url: `${routes.node.containerLog(node.id, { prefix, name })}`,
+      name: t('inspect'),
+      url: `${routes.node.containerInspect(node.id, { prefix, name })}`,
     },
   ]
 
   return (
     <Layout title={t('image')}>
-      <PageHeading pageLink={pageLink} sublinks={sublinks} />
+      <PageHeading pageLink={pageLink} sublinks={sublinks}>
+        <div className="flex flex-row mt-4 justify-end">
+          {inspection && <InspectViewModeToggle viewMode={viewMode} onViewModeChanged={setViewMode} />}
+        </div>
+      </PageHeading>
 
       <DyoCard className="p-4">
         <div className="flex mb-4 justify-between items-start">
           <DyoHeading element="h4" className="text-xl text-bright">
-            {t('logOf', { name: prefix ? `${prefix}-${name}` : name })}
+            {t('inspectOf', { name: prefix ? `${prefix}-${name}` : name })}
           </DyoHeading>
         </div>
 
-        <EventsTerminal events={log} formatEvent={it => [it.log]} />
+        {inspection &&
+          (viewMode === 'table' ? (
+            <InspectTableView inspect={inspection} />
+          ) : (
+            <JsonEditor value={inspection} disabled />
+          ))}
       </DyoCard>
     </Layout>
   )
 }
 
-export default NodeContainerLogPage
+export default NodeContainerInspectPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const routes = TeamRoutes.fromContext(context)
@@ -94,12 +79,16 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   const name = context.query.name as string
 
   const node = await getCruxFromContext<NodeDetails>(context, routes.node.api.details(nodeId))
+  const inspectApiUrl = `${routes.node.api.details(nodeId)}/${prefix ? `${prefix}/` : ''}containers/${name}/inspect`
+  const res = await getCruxFromContext<NodeContainerInspection>(context, inspectApiUrl)
+  const inspection = JSON.parse(res.inspection)
 
   return {
     props: {
       node,
       prefix: prefix ?? null,
       name: name ?? null,
+      inspection,
     },
   }
 }
