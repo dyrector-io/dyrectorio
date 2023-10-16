@@ -20,7 +20,7 @@
     <a href="https://twitter.com/dyrectorio" target="_blank"><img src="https://img.shields.io/twitter/follow/dyrectorio?style=social" alt="Twitter Follow"/></a>
 </p>
 
-[dyrector.io](https://dyrector.io/) helps engineer & DevOps teams and individual developers to shift their focus from maintaining and setting up their containerized applications to developing their software. The platform achieves this by offering continuous delivery and version management capabilities to your OCI containers.
+[dyrector.io](https://dyrector.io/) helps engineers & DevOps teams and individual developers to shift their focus from maintaining and setting up their containerized applications to developing their software. The platform achieves this by offering continuous delivery and version management capabilities to your OCI containers.
 
 Join our Discord and connect with other members to share and learn together. If you like the project, give us a Star.
 
@@ -52,7 +52,7 @@ QA no longer needs help to test your services. Enable them to autonomously confi
 
 #### ⛵️ Container management across environments
 
-Whether you're a developer or an indie hacker, bring your own infrastructure and manage all of your containers and applications from one place while our software is running either as a SaaS or on your infrastructure.
+Whether you're a developer or an indie hacker, bring your own infrastructure and manage all your containers and applications from one place while our software is running either as a SaaS or on your infrastructure.
 
 #### 🛳️ CD & Version Management
 
@@ -68,7 +68,7 @@ https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a
 
 ## Key features
 
--   Kubernetes, Docker and Podman support
+-   Kubernetes, Docker, and Podman support
 -   Multi-instance deployment
 -   Instant test environments from any branches
 -   Environment management
@@ -83,7 +83,7 @@ https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a
 
 ## Hosted version (SaaS)
 
-Besides the self-hosted instance, you can check out the platform's alpha at [app.dyrectorio.com](https://app.dyrectorio.com). The platform is still in the works, we might reset the database, so it's not recommended for production yet. In case you are interested about using dyrector.io in production, reach out to us via [email](hello@dyrector.io) and we'll set up a stable instance for you.
+Besides the self-hosted instance, you can check out the platform's alpha at [app.dyrectorio.com](https://app.dyrectorio.com). The platform is still in the works, we might reset the database, so it's not recommended for production yet. If you are interested in using dyrector.io in production, reach out to us via [email](hello@dyrector.io) and we'll set up a stable instance for you.
 
 ## How it works
 
@@ -105,22 +105,22 @@ If you have any questions, check out [FAQ](https://docs.dyrector.io/learn-more/f
 
 Also, follow us on GitHub Discussions, our [Blog](https://blog.dyrector.io), and on [Twitter](https://twitter.com/dyrectorio). You can chat with the team and other members on [Discord](https://discord.gg/pZWbd4fxga).
 
-[dyrector.io](https://dyrector.io/) is Open Source - This repository, and most of our other open source projects, are licensed under the Apache 2.0.
+[dyrector.io](https://dyrector.io/) is Open Source - This repository, and most of our other open-source projects, are licensed under Apache 2.0.
 
 Join our Discord and connect with other members to share and learn together.
-Send a pull request to any of our open source repositories on Github. Check our contribution guide and our developers guide for more details about how to contribute. We're looking forward to your contribution!
+Send a pull request to any of our open-source repositories on Github. Check our contribution guide and our developer's guide for more details about how to contribute. We're looking forward to your contribution!
 
 [![dyrectorio Discord server Banner](https://discordapp.com/api/guilds/797082431902449694/widget.png?style=banner2)](https://discord.gg/pZWbd4fxga)
 
 ## Contributing
 
-The project can only accept contributions which are licensed under the [Apache License 2.0](LICENSE). For further information please see our [Contribution Guidelines](CONTRIBUTING.md).
+The project can only accept contributions that are licensed under the [Apache License 2.0](LICENSE). For further information please see our [Contribution Guidelines](CONTRIBUTING.md).
 
 ## Releases
 
-We use [semantic versioning](https://semver.org/), but shifted to the right, we don't bump major versions yet, until we reach beta phase.
+We use [semantic versioning](https://semver.org/), but shifted to the right, we don't bump major versions until we reach the beta phase.
 
-Minor version is raised if:
+The minor version is raised if:
 
 -   introduction of a braking API change (proto or HTTP)
 -   new feature set is completed
