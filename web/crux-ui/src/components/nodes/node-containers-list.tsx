@@ -80,7 +80,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
       !container.ports ? null : (
         <span className="block overflow-hidden truncate">{containerPortsToString(container.ports)}</span>
       ),
-      <div className="flex flex-wrap gap-1 justify-end items-center">
+      <div className="flex gap-1 justify-end items-center">
         {targetState ? (
           <LoadingIndicator />
         ) : (
@@ -111,9 +111,14 @@ const NodeContainersList = (props: NodeContainersListProps) => {
             />
 
             {container.state && (
-              <Link href={routes.node.containerLog(state.node.id, container.id)} passHref>
-                <DyoIcon className="align-bottom" src="/note.svg" alt={t('logs')} size="md" />
-              </Link>
+              <>
+                <Link href={routes.node.containerLog(state.node.id, container.id)} passHref>
+                  <DyoIcon className="align-bottom" src="/note.svg" alt={t('logs')} size="md" />
+                </Link>
+                <Link href={routes.node.containerInspect(state.node.id, container.id)} passHref>
+                  <DyoIcon className="align-bottom" src="/book.svg" alt={t('inspect')} size="md" />
+                </Link>
+              </>
             )}
 
             <DyoImgButton

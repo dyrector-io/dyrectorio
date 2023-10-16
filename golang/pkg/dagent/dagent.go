@@ -46,6 +46,7 @@ func Serve(cfg *config.Configuration) {
 		ContainerCommand:     utils.ContainerCommand,
 		DeleteContainers:     utils.DeleteContainers,
 		ContainerLog:         utils.ContainerLog,
+		ContainerInspect:     utils.ContainerInspect,
 	}, cfg)
 }
 

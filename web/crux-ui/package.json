@@ -34,7 +34,7 @@
     "@ory/kratos-client": "^0.13.1",
     "clsx": "^2.0.0",
     "formik": "^2.4.3",
-    "next": "^13.4.12",
+    "next": "^13.5.4",
     "next-translate": "2.5.2",
     "openpgp": "^5.10.1",
     "prismjs": "^1.29.0",
