@@ -75,9 +75,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
     },
     validationSchema: nodeGenerateScriptSchema,
     t,
-    onSubmit: async (values, { setSubmitting }) => {
-      setSubmitting(true)
-
+    onSubmit: async values => {
       if (remaining > 0) {
         cancelCountdown()
       }
@@ -85,7 +83,6 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
       const res = await sendForm('POST', routes.node.api.script(node.id), values)
 
       if (!res.ok) {
-        setSubmitting(false)
         await handleApiError(res)
         return
       }
@@ -95,17 +92,15 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
       startCountdown(expiresIn(new Date(install.expireAt)))
 
       onNodeInstallChanged(install)
-
-      setSubmitting(false)
     },
   })
 
   const onTraefikChanged = it => formik.setFieldValue('dagentTraefik', it ? {} : null)
 
-  const onTypeChanged = it => {
+  const onTypeChanged = async it => {
     if (it === 'k8s') {
       // If kubernetes is selected make sure to set the script type back to shell
-      formik.setFieldValue('scriptType', 'shell', false)
+      await formik.setFieldValue('scriptType', 'shell', false)
     }
     onNodeTypeChanged(it)
   }
@@ -136,9 +131,9 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
               choices={NODE_TYPE_VALUES}
               selection={formik.values.type}
               converter={(it: NodeType) => t(`technologies.${it}`)}
-              onSelectionChange={it => {
-                formik.setFieldValue('type', it, true)
-                onTypeChanged(it)
+              onSelectionChange={async it => {
+                await formik.setFieldValue('type', it, true)
+                await onTypeChanged(it)
               }}
             />
 

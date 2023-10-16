@@ -1,15 +1,16 @@
 import { yupErrorTranslate } from '@app/validations'
 import { FormikConfig, FormikValues, useFormik } from 'formik'
 import { Translate } from 'next-translate'
-import { MutableRefObject, useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
+import { SubmitHook } from './use-submit'
 
 export type DyoFormikOptions<Values> = FormikConfig<Values> & {
-  submitRef?: MutableRefObject<() => Promise<any>>
+  submit?: SubmitHook
   t?: Translate
 }
 
 const useDyoFormik = <Values extends FormikValues>(options: DyoFormikOptions<Values>) => {
-  const { submitRef, t, ...formikOptions } = options
+  const { submit, t, ...formikOptions } = options
 
   const formik = useFormik({
     validateOnBlur: false,
@@ -34,15 +35,20 @@ const useDyoFormik = <Values extends FormikValues>(options: DyoFormikOptions<Val
           },
         })
       : null,
+    onSubmit: options.onSubmit,
   })
 
-  useEffect(() => {
-    if (!submitRef) {
-      return
-    }
+  const submitSet = submit?.set
+  const formikSubmitForm = formik.submitForm
 
-    submitRef.current = formik.submitForm
-  }, [submitRef, formik.submitForm])
+  const submitForm = useCallback(() => formikSubmitForm(), [formikSubmitForm])
+
+  useEffect(() => {
+    if (submitSet) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      submitSet(submitForm, formik.isSubmitting)
+    }
+  }, [submitSet, submitForm, formik.isSubmitting])
 
   return formik
 }

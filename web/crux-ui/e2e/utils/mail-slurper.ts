@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 import { MAILSLURPER_TIMEOUT } from './common'
 
 // further info: https://github.com/mailslurper/mailslurper/wiki/Email-Endpoints
@@ -43,6 +44,7 @@ class MailSlurper {
       }
 
       if (body.totalRecords < 1) {
+        // eslint-disable-next-line no-continue
         continue
       }
 
@@ -69,6 +71,8 @@ class MailSlurper {
         return emails[0]
       }
     }
+
+    return null
   }
 }
 

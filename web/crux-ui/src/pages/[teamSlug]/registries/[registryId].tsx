@@ -11,6 +11,7 @@ import DyoTable, { DyoColumn, sortString } from '@app/elements/dyo-table'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -30,7 +31,7 @@ import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface RegistryDetailsPageProps {
   registry: RegistryDetails
@@ -46,7 +47,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
 
   const [registry, setRegistry] = useState(propsRegistry)
   const [editing, setEditing] = useState(false)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const [loading, setLoading] = useState(false)
 
@@ -56,6 +57,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   })
 
   const sock = useWebSocket(routes.registry.socket())
+
   sock.on(WS_TYPE_FIND_IMAGE_RESULT, (message: FindImageResultMessage) => {
     if (message.registryId === registry?.id) {
       setLoading(false)
@@ -76,8 +78,9 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       registryId: registry.id,
       filter: '',
     } as FindImageMessage)
+
     setLoading(true)
-  }, [])
+  }, [registry.type, registry.id, sock])
 
   const onRegistryEdited = reg => {
     setEditing(false)
@@ -90,9 +93,9 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(routes.registry.list())
+      await router.replace(routes.registry.list())
     } else {
-      handleApiError(res)
+      await handleApiError(res)
     }
   }
 
@@ -116,7 +119,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
           onDelete={onDelete}
           editing={editing}
           setEditing={setEditing}
-          submitRef={submitRef}
+          submit={submit}
           deleteModalTitle={t('common:areYouSureDeleteName', { name: registry.name })}
           deleteModalDescription={t('common:proceedYouLoseAllDataToName', {
             name: registry.name,
@@ -127,12 +130,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       {!editing ? (
         <RegistryCard registry={registryDetailsToRegistry(registry)} />
       ) : (
-        <EditRegistryCard
-          className="p-8"
-          registry={registry}
-          onRegistryEdited={onRegistryEdited}
-          submitRef={submitRef}
-        />
+        <EditRegistryCard className="p-8" registry={registry} onRegistryEdited={onRegistryEdited} submit={submit} />
       )}
 
       {registry.type === 'unchecked' ? null : loading ? (

@@ -138,7 +138,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
     const res = await fetch(routes.deployment.api.details(deployment.id), { method: 'DELETE' })
     if (!res.ok) {
-      handleApiError(res)
+      await handleApiError(res)
       return
     }
 

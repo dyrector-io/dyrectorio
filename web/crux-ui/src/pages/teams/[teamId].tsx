@@ -14,18 +14,19 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useTimer from '@app/hooks/use-timer'
 import {
-  roleToText,
   Team,
   TeamDetails,
-  User,
   USER_ROLE_VALUES,
   USER_STATUS_VALUES,
+  User,
+  UserRole,
+  roleToText,
   userIsAdmin,
   userIsOwner,
-  UserRole,
   userStatusReinvitable,
 } from '@app/models'
 import { appendTeamSlug } from '@app/providers/team-routes'
@@ -49,7 +50,7 @@ import { sessionOfContext } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { useSWRConfig } from 'swr'
 
@@ -80,11 +81,11 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const canEdit = userIsAdmin(actor)
   const canDelete = userIsOwner(actor)
 
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const sendDeleteUserRequest = async (user: User) => {
+  const sendDeleteUserRequest = async (user: User): Promise<void> => {
     const res = await fetch(teamUserApiUrl(team.id, user.id), {
       method: 'DELETE',
     })
@@ -95,17 +96,17 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
         users: team.users.filter(it => it.id !== user.id),
       })
     } else {
-      handleApiError(res)
+      await handleApiError(res)
     }
   }
 
-  const sendLeaveUserRequest = async () => {
+  const sendLeaveUserRequest = async (): Promise<void> => {
     const res = await fetch(teamUserLeaveApiUrl(team.id), {
       method: 'DELETE',
     })
 
     if (!res.ok) {
-      handleApiError(res)
+      await handleApiError(res)
       return
     }
 
@@ -116,11 +117,11 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     await router.replace(ROUTE_INDEX)
   }
 
-  const onTeamEdited = (newTeam: Team) => {
+  const onTeamEdited = async (newTeam: Team): Promise<void> => {
     setDetailsState('none')
 
     if (activeTeam) {
-      router.replace(selectTeamUrl(newTeam.slug))
+      await router.replace(selectTeamUrl(newTeam.slug))
       return
     }
 
@@ -129,16 +130,16 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
       ...newTeam,
     })
 
-    mutate(API_USERS_ME)
+    await mutate(API_USERS_ME)
   }
 
-  const onDeleteTeam = async () => {
+  const onDeleteTeam = async (): Promise<void> => {
     const res = await fetch(teamApiUrl(team.id), {
       method: 'DELETE',
     })
 
     if (!res.ok) {
-      handleApiError(res)
+      await handleApiError(res)
       return
     }
 
@@ -152,7 +153,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
 
   const onInviteUser = () => setDetailsState('inviting')
 
-  const onReinviteUser = async (user: User) => {
+  const onReinviteUser = async (user: User): Promise<void> => {
     startCountdown(AUTH_RESEND_DELAY)
 
     const res = await fetch(teamUserReinviteUrl(team.id, user.id), {
@@ -174,7 +175,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     } else if (res.status === 412) {
       toast.error(t('invitationNotExpired'))
     } else {
-      handleApiError(res)
+      await handleApiError(res)
     }
   }
 
@@ -186,7 +187,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     })
   }
 
-  const onDeleteUser = async (user: User) => {
+  const onDeleteUser = async (user: User): Promise<void> => {
     const confirmed = await confirmDelete({
       title: t('common:areYouSureDeleteName', { name: user.name }),
       confirmText: t('common:delete'),
@@ -200,7 +201,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     await sendDeleteUserRequest(user)
   }
 
-  const onUserRoleUpdated = (userId: string, role: UserRole) => {
+  const onUserRoleUpdated = (userId: string, role: UserRole): Promise<void> => {
     const index = team.users.findIndex(it => it.id === userId)
     if (index < 0) {
       return
@@ -214,7 +215,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     })
   }
 
-  const onLeaveTeam = async () => {
+  const onLeaveTeam = async (): Promise<void> => {
     const confirmed = await confirmDelete({
       title: t('leaveTeam'),
       description: t('areYouSureWantToLeave', { name: team.name }),
@@ -259,20 +260,20 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
             setEditing={it => setDetailsState(it ? 'editing' : 'none')}
             deleteModalTitle={t('common:areYouSureDeleteName', { name: team.name })}
             onDelete={canDelete ? onDeleteTeam : null}
-            submitRef={submitRef}
+            submit={submit}
             onAdd={canEdit ? onInviteUser : null}
           />
         )}
       </PageHeading>
 
       {detailsState === 'editing' ? (
-        <EditTeamCard className="mb-8 px-8 py-6" team={team} submitRef={submitRef} onTeamEdited={onTeamEdited} />
+        <EditTeamCard className="mb-8 px-8 py-6" team={team} submit={submit} onTeamEdited={onTeamEdited} />
       ) : detailsState === 'inviting' ? (
         <InviteUserCard
           className="mb-8 px-8 py-6"
           team={team}
           recaptchaSiteKey={recaptchaSiteKey}
-          submitRef={submitRef}
+          submit={submit}
           onUserInvited={onUserInvited}
         />
       ) : null}

@@ -49,13 +49,13 @@ const DyoIconPicker = (props: DyoIconPickerProps) => {
 
   const [selected, setSelected] = useState(value ?? null)
 
-  const onSelectIcon = icon => {
+  const onSelectIcon = async (icon): Promise<void> => {
     if (selected === icon) {
       icon = null
     }
 
     setSelected(icon)
-    setFieldValue(name, icon)
+    await setFieldValue(name, icon)
   }
 
   return (

@@ -9,23 +9,23 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateNode, NodeDetails, UpdateNode } from '@app/models'
 import { sendForm } from '@app/utils'
 import { nodeSchema } from '@app/validations'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject } from 'react'
 
 type EditNodeCardProps = {
   className?: string
   node: NodeDetails
   onNodeEdited: (node: NodeDetails, shouldClose?: boolean) => void
-  submitRef?: MutableRefObject<() => Promise<any>>
+  submit?: SubmitHook
 }
 
 const EditNodeCard = (props: EditNodeCardProps) => {
-  const { className, node, onNodeEdited, submitRef } = props
+  const { className, node, onNodeEdited, submit } = props
 
   const { t } = useTranslation('nodes')
   const routes = useTeamRoutes()
@@ -35,13 +35,11 @@ const EditNodeCard = (props: EditNodeCardProps) => {
   const editing = !!node.id
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: node,
     validationSchema: nodeSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const body: CreateNode | UpdateNode = {
         ...values,
       }
@@ -67,11 +65,9 @@ const EditNodeCard = (props: EditNodeCardProps) => {
           } as NodeDetails
         }
 
-        setSubmitting(false)
         onNodeEdited(result, editing)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })

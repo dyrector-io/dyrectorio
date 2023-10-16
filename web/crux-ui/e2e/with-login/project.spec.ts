@@ -1,7 +1,7 @@
-import { expect, Page } from '@playwright/test'
-import { test } from '../utils/test.fixture'
+import { expect } from '@playwright/test'
 import { TEAM_ROUTES } from 'e2e/utils/common'
 import { createProject, deleteProject } from 'e2e/utils/projects'
+import { hookTestPageEvents, test } from '../utils/test.fixture'
 
 test.describe.configure({ mode: 'parallel' })
 
@@ -89,52 +89,77 @@ test.describe('Project', () => {
     await expect(page.getByAltText('Picture of ', { exact: false })).toHaveCount(1)
   })
 
-  const createEmptyProjects = async (page: Page, prefix: string) => {
-    await createProject(page, prefix.concat('-vrsd'), 'versioned')
-    await createProject(page, prefix.concat('-vrsl'), 'versionless')
-  }
-
-  const projectFilterType = async (page: Page, projName: string, versioned: boolean, tileView: boolean) => {
-    await createEmptyProjects(page, projName)
-    await createProject(page, projName, versioned ? 'versioned' : 'versionless')
-
-    await page.goto(TEAM_ROUTES.project.list())
-    await page.waitForSelector('h2:text-is("Projects")')
-
-    tileView
-      ? await page.locator('img[src="/view_tile.svg"]').click()
-      : await page.locator('img[src="/view_table.svg"]').click()
-
-    const projNum: number = tileView
-      ? await page.locator('div.card.w-full').count()
-      : await page.locator('table.w-full >> tbody >> tr').count()
-    versioned
-      ? await page.locator('button:has-text("Versioned")').click()
-      : await page.locator('button:has-text("Versionless")').click()
-
-    expect(
-      tileView
-        ? await page.locator('div.card.w-full').count()
-        : await page.locator('table.w-full >> tbody >> tr').count(),
-    ).toBeLessThan(projNum)
-  }
-
   test.describe('Project versioned filter should work', () => {
-    test('in tile view', async ({ page }) => {
-      await projectFilterType(page, 'filter-by-versioned-tile-project', true, true)
+    const FILTER_VERSIONED = 'filter-versioned'
+    const FILTER_VERSIONLESS = 'filter-versionless'
+
+    // NOTE(@robot9706): beforeAll runs on each worker, so if tests are running in parallel beforeAll executes multiple times
+    test.describe.configure({ mode: 'serial' })
+
+    test.beforeAll(async ({ browser }, testInfo) => {
+      const ctx = await browser.newContext()
+      const page = await ctx.newPage()
+      hookTestPageEvents(page, testInfo)
+
+      await createProject(page, FILTER_VERSIONED, 'versioned')
+      await createProject(page, FILTER_VERSIONLESS, 'versionless')
+
+      await page.close()
+      await ctx.close()
     })
+
+    test('in tile view', async ({ page }) => {
+      await page.goto(TEAM_ROUTES.project.list())
+      await page.waitForSelector('h2:text-is("Projects")')
+
+      await page.locator('img[src="/view_tile.svg"]').click()
+
+      const projNum: number = await page.locator('div.card.w-full').count()
+
+      await page.locator('button:has-text("Versioned")').click()
+
+      expect(await page.locator('div.card.w-full').count()).toBeLessThan(projNum)
+    })
+
     test('in list view', async ({ page }) => {
-      await projectFilterType(page, 'filter-by-versioned-list-project', true, false)
+      await page.goto(TEAM_ROUTES.project.list())
+      await page.waitForSelector('h2:text-is("Projects")')
+
+      await page.locator('img[src="/view_table.svg"]').click()
+
+      const projNum: number = await page.locator('table.w-full >> tbody >> tr').count()
+
+      await page.locator('button:has-text("Versioned")').click()
+
+      expect(await page.locator('table.w-full >> tbody >> tr').count()).toBeLessThan(projNum)
     })
   })
 
   test.describe('Project versionless filter should work', () => {
     test('in tile view', async ({ page }) => {
-      await projectFilterType(page, 'filter-by-versionless-tile-project', false, true)
+      await page.goto(TEAM_ROUTES.project.list())
+      await page.waitForSelector('h2:text-is("Projects")')
+
+      await page.locator('img[src="/view_tile.svg"]').click()
+
+      const projNum: number = await page.locator('div.card.w-full').count()
+
+      await page.locator('button:has-text("Versionless")').click()
+
+      expect(await page.locator('div.card.w-full').count()).toBeLessThan(projNum)
     })
 
     test('in list view', async ({ page }) => {
-      await projectFilterType(page, 'filter-by-versionless-list-project', false, false)
+      await page.goto(TEAM_ROUTES.project.list())
+      await page.waitForSelector('h2:text-is("Projects")')
+
+      await page.locator('img[src="/view_table.svg"]').click()
+
+      const projNum: number = await page.locator('table.w-full >> tbody >> tr').count()
+
+      await page.locator('button:has-text("Versionless")').click()
+
+      expect(await page.locator('table.w-full >> tbody >> tr').count()).toBeLessThan(projNum)
     })
   })
 })

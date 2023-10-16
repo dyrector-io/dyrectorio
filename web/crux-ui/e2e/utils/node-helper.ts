@@ -1,9 +1,8 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { expect, Page } from '@playwright/test'
 import { ExecOptions } from 'child_process'
-import { DAGENT_NODE, execAsync, getExecOptions, logCmdOutput, screenshotPath, TEAM_ROUTES } from './common'
+import { DAGENT_NODE, execAsync, getExecOptions, screenshotPath, TEAM_ROUTES } from './common'
 import { fillDeploymentPrefix } from './projects'
-import { Readable } from 'stream'
 
 export const installDagent = async (page: Page) => {
   await page.goto(TEAM_ROUTES.node.list())
@@ -114,11 +113,11 @@ export const deploy = async (
     await page.waitForSelector('h2:text-is("Deployments")')
   }
 
-  const deploy = page.getByText('Deploy', {
+  const deployButton = page.getByText('Deploy', {
     exact: true,
   })
 
-  await deploy.click()
+  await deployButton.click()
   await page.waitForURL(TEAM_ROUTES.deployment.deploy(deploymentId))
   await page.waitForLoadState('networkidle')
 

@@ -94,7 +94,7 @@ const config: PlaywrightTestConfig = {
     createProject('template', 'with-login/template.spec.ts'),
     createProject('project', 'with-login/project.spec.ts'),
     createProject('version', 'with-login/version.spec.ts'),
-    createProject('image-config', /with-login\/image\-config\/(.*)/, ['registry', 'template', 'version']),
+    createProject('image-config', /with-login\/image-config\/(.*)/, ['registry', 'template', 'version']),
     createProject('deployment', /with-login\/deployment(.*)\.spec\.ts/, ['image-config', 'nodes']),
     createProject('dagent-deploy', 'with-login/nodes-deploy.spec.ts', ['deployment']),
     createProject('resource-copy', 'with-login/resource-copy.spec.ts', ['template', 'version', 'deployment', 'nodes']),
