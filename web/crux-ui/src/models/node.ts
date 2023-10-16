@@ -11,13 +11,14 @@ export const NODE_STATUS_VALUES = ['unreachable', 'connected', 'outdated', 'upda
 export type NodeStatus = (typeof NODE_STATUS_VALUES)[number]
 
 export const NODE_EVENT_TYPE_VALUES = [
+  'installed',
   'connected',
   'kicked',
   'left',
   'update',
   'containerCommand',
-  'installed',
   'updateCompleted',
+  'tokenReplaced',
 ] as const
 export type NodeEventType = (typeof NODE_EVENT_TYPE_VALUES)[number]
 
