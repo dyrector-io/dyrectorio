@@ -4,13 +4,11 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
-import { DyoList } from '@app/elements/dyo-list'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { useDeploy } from '@app/hooks/use-deploy'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { dateSort, enumSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -36,6 +34,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import DeploymentStatusTag from './deployments/deployment-status-tag'
 import { VersionActions } from './use-version-state'
+import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 
 interface VersionDeploymentsSectionProps {
   version: VersionDetails
@@ -43,14 +42,15 @@ interface VersionDeploymentsSectionProps {
 }
 
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
-type DeploymentSorting = 'node' | 'prefix' | 'updatedAt' | 'status'
 
-const nodeSort = (a: DyoNode, b: DyoNode) => {
+const sortNode = (statuses: Record<string, NodeStatus>) => (a: DyoNode, b: DyoNode) => {
   if (a && b) {
-    if (a.status !== b.status) {
-      return enumSort(NODE_STATUS_VALUES)(a.status, b.status)
+    const aStatus = statuses[a.id]
+    const bStatus = statuses[b.id]
+    if (aStatus !== bStatus) {
+      return sortEnum(NODE_STATUS_VALUES)(aStatus, bStatus)
     }
-    return stringSort(a.name, b.name)
+    return sortString(a.name, b.name)
   }
   if (a) {
     return 1
@@ -75,6 +75,31 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const [confirmModalConfig, confirm] = useConfirmation()
 
   const deploy = useDeploy({ router, teamRoutes: routes, t, confirm })
+
+  const filters = useFilters<DeploymentByVersion, DeploymentFilter>({
+    filters: [
+      textFilterFor<DeploymentByVersion>(it => [it.node.name, it.prefix, it.updatedAt]),
+      enumFilterFor<DeploymentByVersion, DeploymentStatus>(it => [it.status]),
+    ],
+    initialData: version.deployments,
+  })
+
+  const [nodeStatuses, setNodeStatuses] = useState<Record<string, NodeStatus>>(() =>
+    version.deployments.reduce((prev, it) => ({ ...prev, [it.node.id]: it.node.status }), {}),
+  )
+
+  const nodeSock = useWebSocket(routes.node.socket())
+
+  nodeSock.on(WS_TYPE_NODE_EVENT, (message: NodeEventMessage) => {
+    const statuses = {
+      ...nodeStatuses,
+    }
+
+    statuses[message.id] = message.status
+    setNodeStatuses(statuses)
+  })
+
+  useEffect(() => filters.setItems(version.deployments), [filters, version.deployments, nodeStatuses])
 
   const onDeploy = async (deployment: DeploymentByVersion) => {
     const confirmed = await confirm({
@@ -120,146 +145,11 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     actions.onDeploymentDeleted(deployment.id)
   }
 
-  const filters = useFilters<DeploymentByVersion, DeploymentFilter>({
-    filters: [
-      textFilterFor<DeploymentByVersion>(it => [it.node.name, it.prefix, it.updatedAt]),
-      enumFilterFor<DeploymentByVersion, DeploymentStatus>(it => [it.status]),
-    ],
-    initialData: version.deployments,
-  })
-
-  const sorting = useSorting<DeploymentByVersion, DeploymentSorting>(filters.filtered, {
-    initialField: 'updatedAt',
-    initialDirection: 'asc',
-    sortFunctions: {
-      node: nodeSort,
-      prefix: stringSort,
-      status: enumSort(DEPLOYMENT_STATUS_VALUES),
-      updatedAt: dateSort,
-    },
-    fieldGetters: {
-      node: it => it.node,
-    },
-  })
-
-  useEffect(() => filters.setItems(version.deployments), [filters, version.deployments])
-
-  const [nodeStatuses, setNodeStatuses] = useState<Record<string, NodeStatus>>({})
-
-  const nodeSock = useWebSocket(routes.node.socket())
-
-  nodeSock.on(WS_TYPE_NODE_EVENT, (message: NodeEventMessage) => {
-    const statuses = {
-      ...nodeStatuses,
-    }
-
-    statuses[message.id] = message.status
-
-    setNodeStatuses(statuses)
-  })
-
-  const headers = ['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions']
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased px-2 py-3 font-semibold'
-  const headerClasses = [
-    clsx('rounded-tl-lg pl-6', defaultHeaderClass),
-    defaultHeaderClass,
-    clsx('text-center', defaultHeaderClass),
-    defaultHeaderClass,
-    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
-  ]
-
-  const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
-  const itemClasses = [
-    clsx('pl-6', defaultItemClass),
-    ...Array.from({ length: 1 }).map(() => defaultItemClass),
-    clsx('text-center', defaultItemClass),
-    ...Array.from({ length: headerClasses.length - 4 }).map(() => defaultItemClass),
-    clsx('pr-6 text-center', defaultItemClass),
-  ]
-
-  const onCellClick = async (data: DeploymentByVersion, row: number, col: number) => {
-    if (col >= headers.length - 1) {
-      return
-    }
-
-    await router.push(routes.deployment.details(data.id))
-  }
-
-  const itemTemplate = (item: DeploymentByVersion) => {
-    const deployable = deploymentIsDeployable(item.status, version.type)
-
-    /* eslint-disable react/jsx-key */
-    return [
-      <Link className="flex place-items-center cursor-pointer" href={routes.deployment.details(item.id)} passHref>
-        <NodeStatusIndicator className="mr-2" status={item.node.status} />
-        {item.node.name}
-      </Link>,
-      item.prefix,
-      <DeploymentStatusTag className="w-fit m-auto" status={item.status} />,
-      <span suppressHydrationWarning>{utcDateToLocale(item.updatedAt)}</span>,
-      <div className="flex justify-center">
-        <Link className="mr-2 inline-block cursor-pointer" href={routes.deployment.details(item.id)} passHref>
-          <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
-        </Link>
-        {deployable && (
-          <div
-            className={clsx(
-              'mr-2 inline-block',
-              item.node.status === 'connected' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30',
-            )}
-          >
-            <Image
-              src="/deploy.svg"
-              alt={t('common:deploy')}
-              className={item.node.status === 'connected' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-              width={24}
-              height={24}
-              onClick={() => item.node.status === 'connected' && onDeploy(item)}
-            />
-          </div>
-        )}
-
-        <div className="mr-2 inline-block">
-          <Image
-            src="/note.svg"
-            alt={t('common:note')}
-            width={24}
-            height={24}
-            className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-            onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
-          />
-        </div>
-
-        {deploymentIsCopiable(item.status) ? (
-          <DyoIcon
-            className={clsx(
-              deploymentIsCopiable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30',
-              'aspect-square mr-2',
-            )}
-            src="/copy.svg"
-            alt={t('common:copy')}
-            size="md"
-            onClick={() => actions.copyDeployment(item.id)}
-          />
-        ) : null}
-
-        {deploymentIsDeletable(item.status) ? (
-          <DyoIcon
-            className="aspect-square cursor-pointer"
-            src="/trash-can.svg"
-            alt={t('common:delete')}
-            size="md"
-            onClick={() => onDeleteDeployment(item)}
-          />
-        ) : null}
-      </div>,
-    ]
-    /* eslint-enable react/jsx-key */
-  }
+  const onRowClick = async (data: DeploymentByVersion) => await router.push(routes.deployment.details(data.id))
 
   return (
     <>
-      {sorting.items.length ? (
+      {filters.filtered.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
@@ -276,25 +166,113 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           </Filters>
 
           <DyoCard className="mt-4">
-            <DyoList
-              headerClassName={headerClasses}
-              headers={headers}
-              itemClassName={itemClasses}
-              noSeparator
-              data={sorting.items}
-              itemBuilder={itemTemplate}
-              headerBuilder={sortHeaderBuilder<DeploymentByVersion, DeploymentSorting>(
-                sorting,
-                {
-                  'common:node': 'node',
-                  'common:prefix': 'prefix',
-                  'common:status': 'status',
-                  'common:date': 'updatedAt',
-                },
-                text => t(text),
-              )}
-              cellClick={onCellClick}
-            />
+            <DyoTable
+              data={filters.filtered}
+              dataKey="id"
+              onRowClick={onRowClick}
+              initialSortColumn={2}
+              initialSortDirection="asc"
+            >
+              <DyoColumn
+                header={t('common:node')}
+                className="w-2/12"
+                sortable
+                sortField="node"
+                sort={sortNode(nodeStatuses)}
+                body={(it: DeploymentByVersion) => (
+                  <Link
+                    className="flex place-items-center cursor-pointer"
+                    href={routes.deployment.details(it.id)}
+                    passHref
+                  >
+                    <NodeStatusIndicator className="mr-2" status={nodeStatuses[it.node.id] ?? it.node.status} />
+                    {it.node.name}
+                  </Link>
+                )}
+              />
+              <DyoColumn header={t('common:prefix')} field="prefix" className="w-2/12" sortable sort={sortString} />
+              <DyoColumn
+                header={t('common:status')}
+                className="w-2/12 text-center"
+                sortable
+                sortField="status"
+                sort={sortEnum(DEPLOYMENT_STATUS_VALUES)}
+                body={(it: DeploymentByVersion) => <DeploymentStatusTag className="w-fit m-auto" status={it.status} />}
+              />
+              <DyoColumn
+                header={t('common:date')}
+                sortable
+                sortField="updatedAt"
+                sort={sortDate}
+                suppressHydrationWarning
+                body={(it: DeploymentByVersion) => utcDateToLocale(it.updatedAt)}
+              />
+              <DyoColumn
+                header={t('common:actions')}
+                className="w-48 text-center"
+                preventClickThrough
+                body={(it: DeploymentByVersion) => (
+                  <>
+                    <Link className="mr-2 inline-block cursor-pointer" href={routes.deployment.details(it.id)} passHref>
+                      <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
+                    </Link>
+                    {deploymentIsDeployable(it.status, version.type) && (
+                      <div
+                        className={clsx(
+                          'mr-2 inline-block',
+                          it.node.status === 'connected' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30',
+                        )}
+                      >
+                        <Image
+                          src="/deploy.svg"
+                          alt={t('common:deploy')}
+                          className={
+                            it.node.status === 'connected' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'
+                          }
+                          width={24}
+                          height={24}
+                          onClick={() => it.node.status === 'connected' && onDeploy(it)}
+                        />
+                      </div>
+                    )}
+
+                    <div className="mr-2 inline-block">
+                      <Image
+                        src="/note.svg"
+                        alt={t('common:note')}
+                        width={24}
+                        height={24}
+                        className={!!it.note && it.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+                        onClick={() => !!it.note && it.note.length > 0 && setShowInfo(it)}
+                      />
+                    </div>
+
+                    {deploymentIsCopiable(it.status) ? (
+                      <DyoIcon
+                        className={clsx(
+                          deploymentIsCopiable(it.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30',
+                          'aspect-square mr-2',
+                        )}
+                        src="/copy.svg"
+                        alt={t('common:copy')}
+                        size="md"
+                        onClick={() => actions.copyDeployment(it.id)}
+                      />
+                    ) : null}
+
+                    {deploymentIsDeletable(it.status) ? (
+                      <DyoIcon
+                        className="aspect-square cursor-pointer"
+                        src="/trash-can.svg"
+                        alt={t('common:delete')}
+                        size="md"
+                        onClick={() => onDeleteDeployment(it)}
+                      />
+                    ) : null}
+                  </>
+                )}
+              />
+            </DyoTable>
           </DyoCard>
         </>
       ) : (

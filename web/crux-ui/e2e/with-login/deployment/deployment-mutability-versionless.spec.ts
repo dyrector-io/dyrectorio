@@ -14,9 +14,7 @@ test.describe('Versionless Project', () => {
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
-    const configButton = await page
-      .locator(`[src="/instance_config_icon.svg"]:right-of(div:has-text("${image}"))`)
-      .first()
+    const configButton = await page.locator(`[src="/instance_config_icon.svg"]:right-of(:has-text("${image}"))`).first()
     await configButton.click()
 
     await page.waitForSelector('input[id="common.containerName"]')
@@ -38,9 +36,7 @@ test.describe('Versionless Project', () => {
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
-    const configButton = await page
-      .locator(`[src="/instance_config_icon.svg"]:right-of(div:has-text("${image}"))`)
-      .first()
+    const configButton = await page.locator(`[src="/instance_config_icon.svg"]:right-of(:has-text("${image}"))`).first()
     await configButton.click()
 
     await page.waitForSelector('input[id="common.containerName"]')
