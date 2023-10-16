@@ -16,22 +16,11 @@ type SortState = {
 
 export const sortString = (a: string, b: string) => (a ?? '').localeCompare(b)
 
-export const sortNumber = (a: number, b: number) => {
-  if (a && b) {
-    return Math.sign(b - a)
-  }
-  if (a) {
-    return 1
-  }
-  if (b) {
-    return -1
-  }
-  return 0
-}
+export const sortNumber = (a: number, b: number) => b - a
 
 export const sortDate = (a: string, b: string): number => {
   if (a && b) {
-    return new Date(b).getTime() - new Date(a).getTime()
+    return sortNumber(new Date(b).getTime(), new Date(a).getTime())
   }
   if (a) {
     return 1
@@ -45,7 +34,7 @@ export const sortDate = (a: string, b: string): number => {
 export const sortEnum =
   (values: readonly any[]) =>
   (a: string, b: string): number =>
-    values.indexOf(a) - values.indexOf(b)
+    sortNumber(values.indexOf(a), values.indexOf(b))
 
 export interface DyoColumnProps {
   /** Defines the header text */

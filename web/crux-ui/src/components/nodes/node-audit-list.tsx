@@ -66,7 +66,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
 
     if (res.ok) {
       const list = (await res.json()) as NodeAuditLogList
-      setData([...list.items, ...list.items])
+      setData(list.items)
       setTotal(list.total)
     } else {
       setData([])
