@@ -4,8 +4,8 @@ type SubmitFunc = () => Promise<any>
 
 export type SubmitHook = {
   disabled: boolean
-  trigger: VoidFunction
-  set: (target: SubmitFunc, submit: boolean) => void
+  trigger: SubmitFunc
+  set: (target: SubmitFunc, submit: boolean) => Promise<void>
 }
 
 type State = {
@@ -21,34 +21,24 @@ const useSubmit = (): SubmitHook => {
 
   const [disabled, setDisabled] = useState(false)
 
-  const trigger = useCallback(() => {
+  const trigger = useCallback(async () => {
     if (stateRef.current.submit) {
       stateRef.current.submitWhenSet = false
-      console.info('TRIGGER - SUBMIT')
-      stateRef.current
-        .submit()
-        .then(() => console.info('submitted'))
-        .catch(err => console.error(err))
+      await stateRef.current.submit()
     } else {
       stateRef.current.submitWhenSet = true
-      console.info('TRIGGER - UNABLE')
     }
   }, [])
 
-  const set = useCallback((target: SubmitFunc, submitting: boolean) => {
-    console.info('SET - overwrite:', !!stateRef.current.submit, 'disabled?', submitting)
-
-    console.info()
+  const set = useCallback(async (target: SubmitFunc, submitting: boolean) => {
     setDisabled(submitting)
 
     stateRef.current.submit = target
     if (stateRef.current.submitWhenSet) {
-      console.info('SET - TRIGGER')
       stateRef.current.submitWhenSet = false
-      target
-        ?.call(null)
-        .then(() => console.info('submitted 2'))
-        .catch(err => console.error(err))
+      if (target) {
+        await target()
+      }
     }
   }, [])
 

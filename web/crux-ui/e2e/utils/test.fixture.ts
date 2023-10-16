@@ -1,6 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { Page, TestInfo, test as base } from '@playwright/test'
-import type { ChromiumBrowserContext } from 'playwright-core'
+import { ChromiumBrowserContext, Page, TestInfo, test as base } from '@playwright/test'
 
 const CPU_THROTTLE = process.env.CPUTHROTTLE
 const REQUEST_THROTTLE = process.env.REQUESTTHROTTLE

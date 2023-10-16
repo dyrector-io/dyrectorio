@@ -35,17 +35,7 @@ const useDyoFormik = <Values extends FormikValues>(options: DyoFormikOptions<Val
           },
         })
       : null,
-    onSubmit: async (values: Values, helpers: FormikHelpers<Values>) => {
-      console.info('FORMIK - SUBMIT')
-      if (options.onSubmit) {
-        const result = options.onSubmit(values, helpers)
-        if (typeof result === 'object') {
-          await result
-        }
-      } else {
-        console.error('FORMIK - NO SUBMIT')
-      }
-    },
+    onSubmit: options.onSubmit,
   })
 
   const submitSet = submit?.set
@@ -55,6 +45,7 @@ const useDyoFormik = <Values extends FormikValues>(options: DyoFormikOptions<Val
 
   useEffect(() => {
     if (submitSet) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       submitSet(submitForm, formik.isSubmitting)
     }
   }, [submitSet, submitForm, formik.isSubmitting])

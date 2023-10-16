@@ -56,17 +56,11 @@ const EditVersionCard = (props: EditVersionCardProps) => {
     validationSchema: !editing ? createVersionSchema : updateVersionSchema,
     t,
     onSubmit: async (values, { setFieldError }) => {
-      console.info('Saving version')
-
       const body: CreateVersion | UpdateVersion = values
 
-      const promise = !editing
-        ? sendForm('POST', routes.project.versions(project.id).api.list(), body as CreateVersion)
-        : sendForm('PUT', routes.project.versions(project.id).api.details(version.id), body as UpdateVersion)
-      console.info('awaiting promise')
-      const res = await promise
-
-      console.info('got res')
+      const res = !editing
+        ? await sendForm('POST', routes.project.versions(project.id).api.list(), body as CreateVersion)
+        : await sendForm('PUT', routes.project.versions(project.id).api.details(version.id), body as UpdateVersion)
 
       if (res.ok) {
         let result: EditableVersion
