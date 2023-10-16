@@ -41,8 +41,7 @@ test("New version should get the default version's images and deployments", asyn
   await page.goto(TEAM_ROUTES.project.versions(projectId).details(childVersionId, { section: 'images' }))
   await page.waitForSelector('h2:text-is("Versions")')
 
-  const imagesTableBody = await page.locator('.table-row-group')
-  const imagesRows = await imagesTableBody.locator('.table-row')
+  const imagesRows = await page.locator('table.w-full >> tbody >> tr')
 
   await expect(imagesRows).toHaveCount(1)
 
@@ -74,12 +73,11 @@ test('Change default version should work', async ({ page }) => {
   await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionThreeId, { section: 'images' }))
   await page.waitForSelector('h2:text-is("Versions")')
 
-  const imagesTableBody = await page.locator('.table-row-group')
-  const imagesRows = await imagesTableBody.locator('.table-row')
+  const imagesRows = await page.locator('table.w-full >> tbody >> tr')
 
   await expect(imagesRows).toHaveCount(1)
-  await expect(await page.locator('.table-cell:has-text("redis")').first()).toBeVisible()
-  await expect(await page.locator('.table-cell:has-text("nginx")')).toHaveCount(0)
+  await expect(await page.locator('td:has-text("redis")').first()).toBeVisible()
+  await expect(await page.locator('td:has-text("nginx")')).toHaveCount(0)
 })
 
 test('Increase version should work', async ({ page }) => {
@@ -100,14 +98,12 @@ test('Increase version should work', async ({ page }) => {
   await page.waitForURL(`${TEAM_ROUTES.project.details(projectId)}/versions/**`)
   await page.waitForSelector('h2:text-is("Versions")')
 
-  const imagesTableBody = await page.locator('.table-row-group')
-  const imagesRows = await imagesTableBody.locator('.table-row')
+  const imagesRows = await page.locator('table.w-full >> tbody >> tr')
 
   await expect(imagesRows).toHaveCount(1)
-  await expect(await page.locator('div.table-cell:has-text("nginx")').first()).toBeVisible()
+  await expect(await page.locator('td:has-text("nginx")').first()).toBeVisible()
 
-  const deploymentsTableBody = await page.locator('.table-row-group')
-  const deploymentsRow = await deploymentsTableBody.locator('.table-row')
+  const deploymentsRow = await page.locator('table.w-full >> tbody >> tr')
 
   await expect(deploymentsRow).toHaveCount(1)
 })

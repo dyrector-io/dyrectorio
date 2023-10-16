@@ -94,7 +94,7 @@ const SettingsPage = (props: SettingsFlow) => {
   return (
     <Layout title={t('editProfile')}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        <SaveDiscardPageMenu saveRef={submit} onDiscard={onDiscard} />
+        <SaveDiscardPageMenu submit={submit} onDiscard={onDiscard} />
       </PageHeading>
       <DyoCard>
         <DyoForm

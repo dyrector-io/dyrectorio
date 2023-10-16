@@ -7,29 +7,25 @@ import PageHeading from '@app/components/shared/page-heading'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoList } from '@app/elements/dyo-list'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import DyoTable, { DyoColumn, sortDate, sortString } from '@app/elements/dyo-table'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { dateSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 import useSubmit from '@app/hooks/use-submit'
 import { GeneratedToken, Token } from '@app/models'
 import { appendTeamSlug } from '@app/providers/team-routes'
 import { API_TOKENS, ROUTE_INDEX, ROUTE_SETTINGS, ROUTE_SETTINGS_EDIT_PROFILE, tokensApiUrl } from '@app/routes'
 import { redirectTo, teamSlugOrFirstTeam, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 
 interface TokensPageProps {
   tokens: Token[]
 }
-
-type TokenSorting = 'name' | 'createdAt' | 'expiresAt'
 
 const TokensPage = (props: TokensPageProps) => {
   const { tokens } = props
@@ -49,57 +45,13 @@ const TokensPage = (props: TokensPageProps) => {
     ],
   })
 
-  const sorting = useSorting<Token, TokenSorting>(filters.filtered, {
-    initialField: 'createdAt',
-    initialDirection: 'asc',
-    sortFunctions: {
-      name: stringSort,
-      createdAt: dateSort,
-      expiresAt: dateSort,
-    },
-  })
-
   const onCreated = (token: GeneratedToken) => {
     setCreating(false)
     setShowToken(token)
     filters.setItems([...filters.items, token])
   }
 
-  const onDelete = async (token: GeneratedToken) => {
-    const res = await fetch(tokensApiUrl(token.id), {
-      method: 'DELETE',
-    })
-
-    if (res.ok) {
-      if (showToken?.id === token.id) {
-        setShowToken(null)
-      }
-
-      const index = filters.items.indexOf(token)
-      const filterItems = filters.items
-      filterItems.splice(index, 1)
-      filters.setItems([...filterItems])
-    } else {
-      toast(t('errors:oops'))
-    }
-  }
-
-  const columnWidths = ['w-7/12', 'w-2/12', 'w-2/12', 'w-1/12']
-  const headers = ['common:name', 'common:createdAt', 'tokens:expiresAt', 'common:actions']
-  const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11'
-  const headerClasses = [
-    clsx('rounded-tl-lg pl-6', defaultHeaderClass),
-    ...Array.from({ length: headers.length - 2 }).map(() => defaultHeaderClass),
-    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
-  ]
-  const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
-  const itemClasses = [
-    clsx('pl-6', defaultItemClass),
-    ...Array.from({ length: headers.length - 2 }).map(() => defaultItemClass),
-    clsx('pr-6 text-center', defaultItemClass),
-  ]
-
-  const onItemDelete = async (item: GeneratedToken) => {
+  const onItemDelete = async (item: Token) => {
     const confirmed = await confirmDelete({
       title: t('common:areYouSureDeleteName', { name: item.name }),
       description: t('common:proceedYouLoseAllDataToName', {
@@ -113,24 +65,23 @@ const TokensPage = (props: TokensPageProps) => {
       return
     }
 
-    await onDelete(item)
-  }
+    const res = await fetch(tokensApiUrl(item.id), {
+      method: 'DELETE',
+    })
 
-  const itemTemplate = (item: GeneratedToken) => [
-    <a>{item.name}</a>,
-    <a>{utcDateToLocale(item.createdAt)}</a>,
-    <a>{item.expiresAt ? utcDateToLocale(item.expiresAt) : t('common:never')}</a>,
-    <div className="flex flex-row justify-center">
-      <Image
-        className="cursor-pointer"
-        src="/trash-can.svg"
-        alt={t('common:view')}
-        width={24}
-        height={24}
-        onClick={() => onItemDelete(item)}
-      />
-    </div>,
-  ]
+    if (res.ok) {
+      if (showToken?.id === item.id) {
+        setShowToken(null)
+      }
+
+      const index = filters.items.indexOf(item)
+      const filterItems = filters.items
+      filterItems.splice(index, 1)
+      filters.setItems([...filterItems])
+    } else {
+      toast(t('errors:oops'))
+    }
+  }
 
   const pageLink: BreadcrumbLink = {
     name: t('common:tokens'),
@@ -176,24 +127,40 @@ const TokensPage = (props: TokensPageProps) => {
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })} />
           <DyoCard className="relative mt-4">
-            <DyoList
-              headers={[...headers, '']}
-              headerClassName={headerClasses}
-              columnWidths={columnWidths}
-              itemClassName={itemClasses}
-              data={sorting.items}
-              noSeparator
-              headerBuilder={sortHeaderBuilder<Token, TokenSorting>(
-                sorting,
-                {
-                  'common:name': 'name',
-                  'common:createdAt': 'createdAt',
-                  'tokens:expiresAt': 'expiresAt',
-                },
-                text => t(text),
-              )}
-              itemBuilder={itemTemplate}
-            />
+            <DyoTable data={filters.filtered} dataKey="id" initialSortColumn={1} initialSortDirection="asc">
+              <DyoColumn header={t('common:name')} field="name" className="w-7/12" sortable sort={sortString} />
+              <DyoColumn
+                header={t('common:createdAt')}
+                className="w-2/12"
+                body={(it: Token) => utcDateToLocale(it.createdAt)}
+                suppressHydrationWarning
+                sortable
+                sortField="createdAt"
+                sort={sortDate}
+              />
+              <DyoColumn
+                header={t('tokens:expiresAt')}
+                className="w-2/12"
+                body={(it: Token) => (it.expiresAt ? utcDateToLocale(it.expiresAt) : t('common:never'))}
+                suppressHydrationWarning
+                sortable
+                sortField="expiresAt"
+                sort={sortDate}
+              />
+              <DyoColumn
+                header={t('common:actions')}
+                className="w-40 text-center"
+                body={(it: Token) => (
+                  <DyoIcon
+                    className="aspect-square cursor-pointer"
+                    src="/trash-can.svg"
+                    alt={t('common:delete')}
+                    size="md"
+                    onClick={() => onItemDelete(it)}
+                  />
+                )}
+              />
+            </DyoTable>
           </DyoCard>
         </>
       ) : (

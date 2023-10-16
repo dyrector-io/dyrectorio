@@ -137,19 +137,17 @@ export const DetailsPageMenu = (props: React.PropsWithChildren<DetailsPageMenuPr
 
 interface SaveDiscardPageMenuProps {
   className?: string
-  saveRef: SubmitHook
-  onSave?: VoidFunction
+  submit: SubmitHook
   onDiscard: VoidFunction
 }
 
 export const SaveDiscardPageMenu = (props: SaveDiscardPageMenuProps) => {
-  const { className, saveRef, onSave, onDiscard } = props
+  const { className, submit: saveRef, onDiscard } = props
 
   const { t } = useTranslation('common')
 
-  const onSaveSaveClick = () => {
-    saveRef.trigger()
-    onSave?.call(null)
+  const onSaveSaveClick = async () => {
+    await saveRef.trigger()
   }
 
   return (

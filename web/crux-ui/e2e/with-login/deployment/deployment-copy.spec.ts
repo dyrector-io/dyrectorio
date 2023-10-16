@@ -39,11 +39,10 @@ const addSecretToImage = async (
 }
 
 const openContainerConfigByDeploymentTable = async (page: Page, containerName: string): Promise<void> => {
-  const instancesTabelBody = await page.locator('.table-row-group')
-  const instanceRows = await instancesTabelBody.locator('.table-row')
+  const instanceRows = await page.locator('table.w-full >> tbody >> tr')
   await expect(instanceRows).toHaveCount(1)
 
-  await expect(page.locator(`div.table-cell:has-text("${containerName}")`).first()).toBeVisible()
+  await expect(page.locator(`td:has-text("${containerName}")`).first()).toBeVisible()
   const containerSettingsButton = await page.waitForSelector(
     `[src="/instance_config_icon.svg"]:right-of(:text("${containerName}"))`,
   )

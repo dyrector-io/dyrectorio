@@ -183,10 +183,8 @@ test('Logs should show agent events', async ({ page }) => {
 
   await page.locator('button:has-text("Logs")').click()
 
-  const tableBody = await page.locator('.table-row-group')
-
-  const nodeContainerRow = await tableBody.locator('.table-row')
+  const nodeContainerRow = await page.locator('table.w-full >> tbody >> tr')
   await nodeContainerRow.nth(0).waitFor()
 
-  await expect(await nodeContainerRow.locator('div:has-text("Connected")')).toBeVisible()
+  await expect(await nodeContainerRow.locator('td:has-text("Connected")').nth(0)).toBeVisible()
 })

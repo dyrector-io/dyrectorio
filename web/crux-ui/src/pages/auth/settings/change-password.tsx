@@ -101,7 +101,7 @@ const SettingsPage = (props: SettingsFlow) => {
   return (
     <Layout title={t('changePass')}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        <SaveDiscardPageMenu saveRef={submit} onDiscard={onDiscard} />
+        <SaveDiscardPageMenu submit={submit} onDiscard={onDiscard} />
       </PageHeading>
 
       <DyoCard className="text-bright p-8">

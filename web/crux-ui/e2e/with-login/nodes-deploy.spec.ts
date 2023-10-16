@@ -47,8 +47,9 @@ test('Second successful deployment should make the first deployment obsolete', a
   await page.waitForSelector('h2:text-is("Versions")')
   await page.screenshot({ path: screenshotPath('deployment-should-be-obsolete'), fullPage: true })
 
-  const deploymentsTableBody = await page.locator('.table-row-group')
-  const deploymentsRows = await deploymentsTableBody.locator('.table-row')
+  await page.pause()
+
+  const deploymentsRows = await page.locator('table.w-full >> tbody >> tr')
 
   await expect(deploymentsRows).toHaveCount(2)
 
@@ -131,7 +132,7 @@ test('Container log should appear on a node container', async ({ page }) => {
   await page.waitForSelector('button:text-is("Containers")')
   await page.locator('input[placeholder="Search"]').type(`pw-${prefix}-${imageName}`)
 
-  const nodeContainerRow = await page.locator(`span:text-is("pw-${prefix}-${imageName}") >> xpath=../..`)
+  const nodeContainerRow = await page.locator(`td:text-is("pw-${prefix}-${imageName}") >> xpath=../..`)
   await expect(nodeContainerRow).toHaveCount(1)
 
   const logButton = await nodeContainerRow.locator('img[src*="/note.svg"]')
@@ -161,9 +162,7 @@ test('Container list should show containers on the node screen', async ({ page }
   const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
   await nodeButton.click()
 
-  const tableBody = await page.locator('.table-row-group')
-
-  const nodeContainerRow = await tableBody.locator('.table-row')
+  const nodeContainerRow = await page.locator('table.w-full >> tbody >> tr')
   await nodeContainerRow.nth(0).waitFor()
 
   const containerRows = await nodeContainerRow.count()

@@ -127,11 +127,11 @@ test.describe('Project', () => {
 
       await page.locator('img[src="/view_table.svg"]').click()
 
-      const projNum: number = await page.locator('div.table-row-group div.table-row').count()
+      const projNum: number = await page.locator('table.w-full >> tbody >> tr').count()
 
       await page.locator('button:has-text("Versioned")').click()
 
-      expect(await page.locator('div.table-row-group div.table-row').count()).toBeLessThan(projNum)
+      expect(await page.locator('table.w-full >> tbody >> tr').count()).toBeLessThan(projNum)
     })
   })
 
@@ -155,11 +155,11 @@ test.describe('Project', () => {
 
       await page.locator('img[src="/view_table.svg"]').click()
 
-      const projNum: number = await page.locator('div.table-row-group div.table-row').count()
+      const projNum: number = await page.locator('table.w-full >> tbody >> tr').count()
 
       await page.locator('button:has-text("Versionless")').click()
 
-      expect(await page.locator('div.table-row-group div.table-row').count()).toBeLessThan(projNum)
+      expect(await page.locator('table.w-full >> tbody >> tr').count()).toBeLessThan(projNum)
     })
   })
 })

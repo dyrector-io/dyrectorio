@@ -81,7 +81,7 @@ test('Deleting a deployment should refresh deployment list', async ({ page }) =>
   await createVersion(page, projId, '1.0.1', 'Incremental')
 
   const deleteRefreshDeployment = async () => {
-    await page.locator(`img[src="/trash-can.svg"]:right-of(div.p-2:has-text('pw-${projectName}'))`).first().click()
+    await page.locator(`img[src="/trash-can.svg"]:right-of(.p-2:has-text('pw-${projectName}'))`).first().click()
     await page.locator('h4:has-text("Are you sure?")')
     await page.locator('button:has-text("Delete")').click()
   }
@@ -90,7 +90,7 @@ test('Deleting a deployment should refresh deployment list', async ({ page }) =>
   await page.waitForSelector('h2:text-is("Deployments")')
 
   await deleteRefreshDeployment()
-  await expect(page.locator(`div.p-2:has-text('pw-${projectName}')`)).toHaveCount(1)
+  await expect(page.locator(`.p-2:has-text('pw-${projectName}')`)).toHaveCount(1)
   await deleteRefreshDeployment()
-  await expect(page.locator(`div.p-2:has-text('pw-${projectName}')`)).toHaveCount(0)
+  await expect(page.locator(`.p-2:has-text('pw-${projectName}')`)).toHaveCount(0)
 })
