@@ -52,7 +52,7 @@ QA no longer needs help to test your services. Enable them to autonomously confi
 
 #### ⛵️ Container management across environments
 
-Whether you're a developer or an indie hacker, please bring your own infrastructure and manage all your containers and applications from one place while our software is running either as a SaaS or on your infrastructure.
+Whether you're a developer or an indie hacker, bring your own infrastructure and manage all your containers and applications from one place while our software is running either as a SaaS or on your infrastructure.
 
 #### 🛳️ CD & Version Management
 
