@@ -399,7 +399,7 @@ test.describe('Image common config from JSON', () => {
     json.configContainer = { image: img, volume, path, keepFiles: true }
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchConfigContainer(img, volume, path, true))
-    jsonEditor.fill(JSON.stringify(json))
+    await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
     await page.reload()
@@ -451,7 +451,7 @@ test.describe('Image common config from JSON', () => {
       WS_TYPE_PATCH_IMAGE,
       wsPatchMatchInitContainer(name, image, volName, volPath, arg, cmd, envKey, envVal),
     )
-    jsonEditor.fill(JSON.stringify(json))
+    await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
     await page.reload()

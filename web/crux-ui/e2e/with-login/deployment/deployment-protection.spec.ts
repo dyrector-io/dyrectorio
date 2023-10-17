@@ -30,8 +30,7 @@ test('Protecting a deployment should fail while an incremental protected deploym
   await createVersion(page, projectId, '2.0.0', 'Incremental')
   await page.click('button:text-is("Deployments")')
 
-  const deploymentsTableBody = await page.locator('.table-row-group')
-  const deploymentsRows = await deploymentsTableBody.locator('.table-row')
+  const deploymentsRows = await page.locator('table.w-full >> tbody >> tr')
   await expect(deploymentsRows).toHaveCount(1)
 
   await deploymentsRows.first().click()

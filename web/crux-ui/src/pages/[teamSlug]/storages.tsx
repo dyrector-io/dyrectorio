@@ -8,6 +8,7 @@ import StorageCard from '@app/components/storages/storage-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Storage } from '@app/models'
 import { TeamRoutes } from '@app/routes'
@@ -16,7 +17,7 @@ import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 interface StoragesPageProps {
   storages: Storage[]
@@ -34,7 +35,7 @@ const StoragesPage = (props: StoragesPageProps) => {
   })
 
   const [creating, setCreating] = useState(false)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const onCreated = (storage: Storage) => {
     setCreating(false)
@@ -49,12 +50,10 @@ const StoragesPage = (props: StoragesPageProps) => {
   return (
     <Layout title={t('common:storages')}>
       <PageHeading pageLink={selfLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
+        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
       </PageHeading>
 
-      {!creating ? null : (
-        <EditStorageCard className="mb-8 px-8 py-6" submitRef={submitRef} onStorageEdited={onCreated} />
-      )}
+      {!creating ? null : <EditStorageCard className="mb-8 px-8 py-6" submit={submit} onStorageEdited={onCreated} />}
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })} />

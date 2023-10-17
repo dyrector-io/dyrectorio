@@ -8,22 +8,23 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import { CreateTeam, DEFAULT_TEAM_STATISTICS, Team, teamSlugFromName, UpdateTeam } from '@app/models'
 import { API_TEAMS, teamApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createTeamSchema, updateTeamSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { useState } from 'react'
 
 interface EditTeamCardProps {
   className?: string
   team?: Team
   onTeamEdited: (team: Team) => void
-  submitRef?: MutableRefObject<() => Promise<any>>
+  submit?: SubmitHook
 }
 
 const EditTeamCard = (props: EditTeamCardProps) => {
-  const { className, team: propsTeam, onTeamEdited, submitRef } = props
+  const { className, team: propsTeam, onTeamEdited, submit } = props
 
   const { t } = useTranslation('teams')
 
@@ -43,14 +44,14 @@ const EditTeamCard = (props: EditTeamCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       name: team.name,
       slug: team.slug,
     },
     validationSchema: !editing ? createTeamSchema : updateTeamSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+    onSubmit: async (values, { setFieldError }) => {
       const body: CreateTeam | UpdateTeam = {
         ...values,
       }
@@ -65,8 +66,6 @@ const EditTeamCard = (props: EditTeamCardProps) => {
           return
         }
       }
-
-      setSubmitting(true)
 
       const res = await (!editing
         ? sendForm('POST', API_TEAMS, body as CreateTeam)
@@ -86,11 +85,9 @@ const EditTeamCard = (props: EditTeamCardProps) => {
         }
 
         setTeam(result)
-        setSubmitting(false)
         onTeamEdited(result)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })
@@ -111,11 +108,11 @@ const EditTeamCard = (props: EditTeamCardProps) => {
           type="text"
           required
           label={t('common:name')}
-          onChange={e => {
-            const { value } = e.target
+          onChange={async ev => {
+            formik.handleChange(ev)
 
-            formik.setFieldValue('slug', teamSlugFromName(value), false)
-            formik.handleChange(e)
+            const { value } = ev.target
+            await formik.setFieldValue('slug', teamSlugFromName(value), false)
           }}
           value={formik.values.name}
           message={formik.errors.name}

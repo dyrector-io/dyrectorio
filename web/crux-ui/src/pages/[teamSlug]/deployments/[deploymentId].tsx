@@ -17,6 +17,7 @@ import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { useDeploy } from '@app/hooks/use-deploy'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
 import { DeploymentDetails, DeploymentRoot, NodeDetails, ProjectDetails, VersionDetails } from '@app/models'
@@ -26,7 +27,6 @@ import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useRef } from 'react'
 import toast from 'react-hot-toast'
 
 interface DeploymentDetailsPageProps {
@@ -40,7 +40,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const routes = useTeamRoutes()
 
   const router = useRouter()
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -111,7 +111,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(routes.project.details(project.id, { section: 'deployments' }))
+      await router.replace(routes.project.details(project.id, { section: 'deployments' }))
     } else {
       toast(t('errors:oops'))
     }
@@ -145,7 +145,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
             editing={editing}
             setEditing={it => actions.setEditState(it ? 'edit' : 'details')}
             disableEditing={!state.mutable}
-            submitRef={submitRef}
+            submit={submit}
             deleteModalTitle={t('common:areYouSureDeleteName', {
               name: t('common:deployment'),
             })}
@@ -188,20 +188,20 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       {editing ? (
         <EditDeploymentCard
           deployment={state.deployment}
-          submitRef={submitRef}
+          submit={submit}
           onDeploymentEdited={actions.onDeploymentEdited}
         />
       ) : state.editState === 'copy' ? (
         <CopyDeploymentCard
           deployment={state.deployment}
-          submitRef={submitRef}
+          submit={submit}
           onDeplyomentCopied={onDeploymentCopied}
           onDiscard={onDiscard}
         />
       ) : state.editState === 'create-token' ? (
         <CreateDeploymentTokenCard
           deployment={state.deployment}
-          submitRef={submitRef}
+          submit={submit}
           onTokenCreated={actions.onDeploymentTokenCreated}
           onDiscard={onDiscard}
         />

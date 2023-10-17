@@ -183,7 +183,7 @@ test.describe('Image kubernetes config from JSON', () => {
       WS_TYPE_PATCH_IMAGE,
       wsPatchMatchHealthCheck(port, liveness, readiness, startup),
     )
-    jsonEditor.fill(JSON.stringify(json))
+    await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
     await page.reload()

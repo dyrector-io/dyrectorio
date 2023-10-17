@@ -7,6 +7,7 @@ import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import { WEBOOK_TEST_DELAY } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { defaultApiErrorHandler } from '@app/errors'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import { NotificationDetails } from '@app/models'
@@ -16,7 +17,7 @@ import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import toast from 'react-hot-toast'
 
 interface NotificationDetailsPageProps {
@@ -32,7 +33,7 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
 
   const [notification, setNotification] = useState<NotificationDetails>(propsNotification)
   const [editing, setEditing] = useState(false)
-  const submitRef = useRef<() => Promise<void>>()
+  const submit = useSubmit()
   const handleApiError = defaultApiErrorHandler(t)
 
   const throttle = useThrottling(WEBOOK_TEST_DELAY)
@@ -43,11 +44,11 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
     })
 
     if (!res.ok) {
-      handleApiError(res)
+      await handleApiError(res)
       return
     }
 
-    router.replace(routes.notification.list())
+    await router.replace(routes.notification.list())
   }
 
   const pageLink: BreadcrumbLink = {
@@ -88,7 +89,7 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
           onDelete={onDelete}
           editing={editing}
           setEditing={setEditing}
-          submitRef={submitRef}
+          submit={submit}
           deleteModalTitle={t('common:areYouSureDeleteName', { name: notification.name })}
           deleteModalDescription={t('common:proceedYouLoseAllDataToName', {
             name: notification.name,
@@ -103,7 +104,7 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
           className="p-8"
           notification={notification}
           onNotificationEdited={onSubmitted}
-          submitRef={submitRef}
+          submit={submit}
         />
       )}
     </Layout>

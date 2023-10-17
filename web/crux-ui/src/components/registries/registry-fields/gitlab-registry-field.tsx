@@ -76,13 +76,13 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
         name="selfManaged"
         label={t('selfManaged')}
         checked={formik.values.selfManaged}
-        setFieldValue={(field, value, shouldValidate) => {
+        setFieldValue={async (field, value, shouldValidate): Promise<void> => {
           if (!value) {
-            formik.setFieldValue('url', '', false)
-            formik.setFieldValue('apiUrl', '', false)
+            await formik.setFieldValue('url', '', false)
+            await formik.setFieldValue('apiUrl', '', false)
           }
 
-          return formik.setFieldValue(field, value, shouldValidate)
+          await formik.setFieldValue(field, value, shouldValidate)
         }}
       />
 

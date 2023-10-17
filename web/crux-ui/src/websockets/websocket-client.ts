@@ -207,6 +207,7 @@ class WebSocketClient {
     }
 
     this.logger.debug('Reconnecting...')
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.connect()
   }
 

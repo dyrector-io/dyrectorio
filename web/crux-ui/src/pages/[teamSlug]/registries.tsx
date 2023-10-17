@@ -9,6 +9,7 @@ import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Registry, RegistryType, REGISTRY_TYPE_VALUES } from '@app/models'
 import { TeamRoutes } from '@app/routes'
@@ -17,7 +18,7 @@ import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 interface RegistriesPageProps {
   registries: Registry[]
@@ -40,7 +41,7 @@ const RegistriesPage = (props: RegistriesPageProps) => {
   })
 
   const [creating, setCreating] = useState(false)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const onCreated = (registry: Registry) => {
     setCreating(false)
@@ -55,12 +56,10 @@ const RegistriesPage = (props: RegistriesPageProps) => {
   return (
     <Layout title={t('common:registries')}>
       <PageHeading pageLink={selfLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
+        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
       </PageHeading>
 
-      {!creating ? null : (
-        <EditRegistryCard className="mb-8 px-8 py-6" submitRef={submitRef} onRegistryEdited={onCreated} />
-      )}
+      {!creating ? null : <EditRegistryCard className="mb-8 px-8 py-6" submit={submit} onRegistryEdited={onCreated} />}
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
