@@ -76,14 +76,14 @@ export const appendUrlParams = <T extends AnchorUrlParams>(url: string, params: 
   if (paramMap.size > 0) {
     const entries = Array.from(paramMap.entries())
     const [firstKey, firstValue] = entries[0]
-    result = `${result}?${firstKey}=${firstValue}`
+    result = `${result}?${firstKey}=${encodeURIComponent(firstValue)}`
 
     if (entries.length > 1) {
       const rest = entries.slice(1)
 
       result = rest.reduce((prev, current) => {
         const [key, value] = current
-        return `${prev}&${key}=${value}`
+        return `${prev}&${key}=${encodeURIComponent(value)}`
       }, result)
     }
   }
@@ -100,7 +100,7 @@ const urlQuery = (url: string, query: object) => {
         return null
       }
 
-      return `${key}=${value}`
+      return `${key}=${encodeURIComponent(value)}`
     })
     .filter(it => it !== null)
 
