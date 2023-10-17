@@ -64,15 +64,27 @@ export default class AuditService {
     }
 
     const user = await this.kratos.getIdentityByEmail(filter)
+    if (user) {
+      return {
+        OR: [
+          {
+            userId: user.id,
+          },
+          {
+            event: {
+              contains: filter,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      }
+    }
 
     return {
       OR: [
         {
-          userId: user.id,
-        },
-        {
           event: {
-            contains: `%${filter}%`,
+            contains: filter,
             mode: 'insensitive',
           },
         },
