@@ -71,9 +71,12 @@ export default class KratosService {
 
         const url = new URL(nextLink)
 
+        const page = Number.parseInt(url.searchParams.get('page'), 10)
+        const perPage = Number.parseInt(url.searchParams.get('per_page'), 10)
         // eslint-disable-next-line no-await-in-loop
-        identities = await this.identity.listIdentities(undefined, {
-          params: Object.entries(url.searchParams),
+        identities = await this.identity.listIdentities({
+          page,
+          perPage,
         })
       }
 
