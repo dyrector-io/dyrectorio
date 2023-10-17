@@ -245,6 +245,7 @@ k3d-test: k3d-test
 	export KUBECONFIG='$(PWD)/k3d-auth.yaml'
 	go test -tags=integration -race ./pkg/crane/...
 
+.PHONY: k3d-rm
 k3d-rm:
 	k3d cluster delete crane-test
 
