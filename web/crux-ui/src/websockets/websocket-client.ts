@@ -1,12 +1,14 @@
 import { WS_CONNECT_DELAY_PER_TRY, WS_MAX_CONNECT_TRY } from '@app/const'
 import { Logger } from '@app/logger'
-import { WsErrorMessage, WS_TYPE_ERROR } from '@app/models'
-import { SubscriptionMessage, WsErrorHandler, WsMessage, WS_TYPE_SUBBED, WS_TYPE_UNSUBBED } from './common'
+import { WS_TYPE_ERROR, WsErrorMessage } from '@app/models'
+import { SubscriptionMessage, WS_TYPE_SUBBED, WS_TYPE_UNSUBBED, WsErrorHandler, WsMessage } from './common'
 import WebSocketClientEndpoint from './websocket-client-endpoint'
 import WebSocketClientRoute from './websocket-client-route'
 
 class WebSocketClient {
   // NOTE(@robot9706): According to the WebSocket spec the 4000-4999 code range is available to applications
+  public static ERROR_GOING_AWAY = 1001
+
   public static ERROR_UNAUTHORIZE = 4401
 
   private logger = new Logger('WebSocketClient') // need to be explicit string because of production build uglification
@@ -99,7 +101,7 @@ class WebSocketClient {
     this.routes.delete(path)
 
     if (this.routes.size < 1) {
-      this.logger.debug('There is no routes open. Closing connection.')
+      this.logger.debug('There are no routes open. Closing connection.')
       this.close()
     }
   }
@@ -235,17 +237,19 @@ class WebSocketClient {
         }
 
         this.logger.info('Disconnected')
-
-        this.errorHandler({
-          status: it.code,
-          message: it.reason,
-        })
-
         this.routes.forEach(route => route.onSocketClose())
 
         if (it.code === WebSocketClient.ERROR_UNAUTHORIZE) {
           this.kicked = true
-        } else {
+        } else if (it.code !== WebSocketClient.ERROR_GOING_AWAY) {
+          // nor navigating and neither a server failure
+          // https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
+
+          this.errorHandler({
+            status: it.code,
+            message: it.reason,
+          })
+
           this.reconnect()
         }
       }
