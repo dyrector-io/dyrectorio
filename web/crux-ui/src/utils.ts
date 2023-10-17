@@ -244,7 +244,6 @@ export const sendForm = async <Dto>(
   body?: Dto,
 ): Promise<Response> => {
   try {
-    console.info(`sending form to ${method} '${url}'`)
     const data = await fetch(url, {
       method,
       headers: body
@@ -255,7 +254,6 @@ export const sendForm = async <Dto>(
       body: body ? JSON.stringify(body) : null,
     })
 
-    console.info(`got result ${data.status}`)
     return data
   } catch (err) {
     console.error('sendFormError', err)
