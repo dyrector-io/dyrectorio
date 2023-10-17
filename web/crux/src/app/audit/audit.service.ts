@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import { Prisma } from '@prisma/client'
+import { IdentityTraits, nameOfIdentity } from 'src/domain/identity'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { AuditLogListDto, AuditLogQueryDto } from './audit.dto'
-import AuditMapper from './audit.mapper'
+import AuditMapper, { AuditLogWithDeploymentToken } from './audit.mapper'
 
 @Injectable()
 export default class AuditService {
@@ -14,18 +16,15 @@ export default class AuditService {
   ) {}
 
   async getAuditLog(teamSlug: string, query: AuditLogQueryDto): Promise<AuditLogListDto> {
-    const { skip, take, from, to } = query
+    const { skip, take, from, to, filter } = query
 
     const where: Prisma.AuditLogWhereInput = {
       team: {
         slug: teamSlug,
       },
-      AND: {
-        createdAt: {
-          gte: from,
-          lte: to,
-        },
-        ...(await this.stringFilter(query)),
+      createdAt: {
+        gte: from,
+        lte: to,
       },
     }
 
@@ -50,45 +49,40 @@ export default class AuditService {
 
     const identities = await this.kratos.getIdentitiesByIds(new Set(auditLog.map(it => it.userId)))
 
+    if (filter) {
+      const filtered = this.filterAuditLog(auditLog, filter, identities)
+      return {
+        items: filtered.map(it => this.mapper.toDetailsDto(it, identities)),
+        total: filtered.length,
+      }
+    }
+
     return {
       items: auditLog.map(it => this.mapper.toDetailsDto(it, identities)),
       total,
     }
   }
 
-  private async stringFilter(query: AuditLogQueryDto): Promise<Prisma.AuditLogWhereInput> {
-    const { filter } = query
-
-    if (!filter) {
-      return {}
-    }
-
-    const user = await this.kratos.getIdentityByEmail(filter)
-    if (user) {
-      return {
-        OR: [
-          {
-            userId: user.id,
-          },
-          {
-            event: {
-              contains: filter,
-              mode: 'insensitive',
-            },
-          },
-        ],
+  private filterAuditLog(
+    items: AuditLogWithDeploymentToken[],
+    filter: string,
+    identities: Map<string, Identity>,
+  ): AuditLogWithDeploymentToken[] {
+    const filterLowercase = filter.toLowerCase()
+    return items.filter(it => {
+      if (it.event.toLowerCase().includes(filterLowercase)) {
+        return true
       }
-    }
 
-    return {
-      OR: [
-        {
-          event: {
-            contains: filter,
-            mode: 'insensitive',
-          },
-        },
-      ],
-    }
+      const identity = identities.get(it.userId)
+      if (identity) {
+        const name = nameOfIdentity(identity).toLowerCase()
+        const traits = identity.traits as IdentityTraits
+
+        return name.includes(filterLowercase) || traits.email.toLowerCase().includes(filterLowercase)
+      }
+
+      return false
+    })
   }
 }
