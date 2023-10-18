@@ -9,6 +9,7 @@ import { Identity } from '@ory/kratos-client'
 import { Observable, Subject } from 'rxjs'
 import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
+  DeploymentMessageLevel,
   DeploymentStatusMessage,
   ContainerState as ProtoContainerState,
   DeploymentStatus as ProtoDeploymentStatus,
@@ -16,6 +17,13 @@ import {
   deploymentStatusToJSON,
 } from 'src/grpc/protobuf/proto/common'
 import { ContainerState, MergedContainerConfigData, UniqueKeyValue } from './container'
+
+export type DeploymentLogLevel = 'info' | 'warn' | 'error'
+
+export type DeploymentLogEvent = {
+  log: string[]
+  level: DeploymentLogLevel
+}
 
 export type DeploymentProgressContainerEvent = {
   instanceId: string
@@ -25,7 +33,7 @@ export type DeploymentProgressContainerEvent = {
 
 export type DeploymentProgressEvent = {
   type: DeploymentEventTypeEnum
-  value: string[] | DeploymentStatusEnum | DeploymentProgressContainerEvent
+  value: DeploymentLogEvent | DeploymentStatusEnum | DeploymentProgressContainerEvent
 }
 
 export const deploymentStatusToDb = (status: ProtoDeploymentStatus): DeploymentStatusEnum => {
@@ -34,6 +42,19 @@ export const deploymentStatusToDb = (status: ProtoDeploymentStatus): DeploymentS
       return DeploymentStatusEnum.inProgress
     default:
       return deploymentStatusToJSON(status).toLowerCase() as DeploymentStatusEnum
+  }
+}
+
+export const deploymentLogLevelToDb = (level: DeploymentMessageLevel): DeploymentLogLevel => {
+  switch (level) {
+    case DeploymentMessageLevel.INFO:
+      return 'info'
+    case DeploymentMessageLevel.WARNING:
+      return 'warn'
+    case DeploymentMessageLevel.ERROR:
+      return 'error'
+    default:
+      return 'info'
   }
 }
 
@@ -171,12 +192,19 @@ export default class Deployment {
       })
     }
 
+    if (progress.containerProgress) {
+      console.info(`${progress.containerProgress.instanceId} - ${progress.containerProgress.progress}`)
+    }
+
     const length = progress.log?.length ?? 0
 
     if (length > 0) {
       events.push({
         type: DeploymentEventTypeEnum.log,
-        value: progress.log,
+        value: {
+          log: progress.log,
+          level: deploymentLogLevelToDb(progress.logLevel),
+        },
       })
     }
 

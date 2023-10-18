@@ -91,6 +91,7 @@ export interface DyoTableProps<T> {
   data: T[]
   dataKey?: string
   className?: string
+  headless?: boolean
 
   initialSortColumn?: number
   initialSortDirection?: SortDirection
@@ -113,6 +114,7 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
     initialSortDirection,
     pagination: propPagination,
     paginationTotal,
+    headless,
     children,
     onRowClick,
     onServerPagination,
@@ -224,49 +226,51 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
 
   return (
     <table className={clsx('table-fixed', className ?? 'w-full')}>
-      <thead>
-        <tr>
-          {columns.map((it, index) => {
-            const roundPaddingClass =
-              columns.length === 1
-                ? 'rounded-t-lg px-6'
-                : index === 0
-                ? 'rounded-tl-lg pl-6'
-                : index === columns.length - 1
-                ? 'rounded-tr-lg pr-6'
-                : null
-            const cursorClass = it.sortable ? 'cursor-pointer' : null
+      {headless ? null : (
+        <thead>
+          <tr>
+            {columns.map((it, index) => {
+              const roundPaddingClass =
+                columns.length === 1
+                  ? 'rounded-t-lg px-6'
+                  : index === 0
+                  ? 'rounded-tl-lg pl-6'
+                  : index === columns.length - 1
+                  ? 'rounded-tr-lg pr-6'
+                  : null
+              const cursorClass = it.sortable ? 'cursor-pointer' : null
 
-            return (
-              <th
-                key={index}
-                className={clsx(
-                  'text-left align-middle uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11',
-                  roundPaddingClass,
-                  cursorClass,
-                  it.className,
-                  it.headerClassName,
-                )}
-                suppressHydrationWarning={it.suppressHydrationWarning}
-                onClick={() => toggleSorting(index)}
-              >
-                <div className="inline-flex">
-                  {typeof it.header === 'function' ? it.header() : it.header}
-                  {sort?.column === index && (
-                    <Image
-                      className="cursor-pointer ml-1 select-none"
-                      src={sort.direction === 'asc' ? '/sort_asc.svg' : '/sort_desc.svg'}
-                      alt="order"
-                      width={16}
-                      height={16}
-                    />
+              return (
+                <th
+                  key={index}
+                  className={clsx(
+                    'text-left align-middle uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11',
+                    roundPaddingClass,
+                    cursorClass,
+                    it.className,
+                    it.headerClassName,
                   )}
-                </div>
-              </th>
-            )
-          })}
-        </tr>
-      </thead>
+                  suppressHydrationWarning={it.suppressHydrationWarning}
+                  onClick={() => toggleSorting(index)}
+                >
+                  <div className="inline-flex">
+                    {typeof it.header === 'function' ? it.header() : it.header}
+                    {sort?.column === index && (
+                      <Image
+                        className="cursor-pointer ml-1 select-none"
+                        src={sort.direction === 'asc' ? '/sort_asc.svg' : '/sort_desc.svg'}
+                        alt="order"
+                        width={16}
+                        height={16}
+                      />
+                    )}
+                  </div>
+                </th>
+              )
+            })}
+          </tr>
+        </thead>
+      )}
       <tbody>
         {pageItems.map((it, rowIndex) => {
           const click = onRowClick ? () => onRowClick(it) : null
@@ -274,7 +278,7 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
           const key = dataKey ? getField(it, dataKey) : rowIndex
 
           return (
-            <tr key={key} className="hover:bg-medium-muted">
+            <tr key={key} className={headless ? null : 'hover:bg-medium-muted'}>
               {columns.map((col, index) => {
                 const cellData = col.field ? getField(it, col.field) : col.body ? col.body(it) : null
                 const paddingClass = index === 0 ? 'pl-6' : index === columns.length - 1 ? 'pr-6' : null

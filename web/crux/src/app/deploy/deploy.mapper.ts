@@ -16,7 +16,7 @@ import {
   UniqueKey,
   UniqueKeyValue,
 } from 'src/domain/container'
-import { deploymentStatusToDb } from 'src/domain/deployment'
+import { deploymentLogLevelToDb, deploymentStatusToDb } from 'src/domain/deployment'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import {
   InitContainer as AgentInitContainer,
@@ -47,7 +47,9 @@ import {
   DeploymentDetailsDto,
   DeploymentDto,
   DeploymentEventDto,
+  DeploymentEventLogDto,
   DeploymentEventTypeDto,
+  DeploymentLogLevelDto,
   DeploymentStatusDto,
   DeploymentWithBasicNodeDto,
   DeploymentWithNode,
@@ -224,7 +226,15 @@ export default class DeployMapper {
 
     switch (event.type) {
       case DeploymentEventTypeEnum.log: {
-        result.log = event.value as string[]
+        if (Array.isArray(event.value)) {
+          result.log = {
+            log: event.value as string[],
+            level: 'info',
+          }
+        } else {
+          const value = event.value as { log: string[]; level: DeploymentLogLevelDto }
+          result.log = value as DeploymentEventLogDto
+        }
         break
       }
       case DeploymentEventTypeEnum.deploymentStatus: {
@@ -251,7 +261,10 @@ export default class DeployMapper {
       events.push({
         type: 'log',
         createdAt: new Date(),
-        log: message.log,
+        log: {
+          log: message.log,
+          level: deploymentLogLevelToDb(message.logLevel),
+        },
       })
     }
 
@@ -270,6 +283,19 @@ export default class DeployMapper {
         containerState: {
           instanceId: message.instance.instanceId,
           state: this.containerStateToDto(message.instance.state),
+        },
+      })
+    }
+
+    if (message.containerProgress) {
+      const progress = Math.max(0, Math.min(1, message.containerProgress.progress ?? 0))
+      events.push({
+        type: 'container-progress',
+        createdAt: new Date(),
+        containerProgress: {
+          instanceId: message.containerProgress.instanceId,
+          status: message.containerProgress.status,
+          progress,
         },
       })
     }

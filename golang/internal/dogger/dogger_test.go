@@ -68,9 +68,9 @@ func TestDoggerSingleStatusMessage(t *testing.T) {
 	ts := &AgentTestStream{
 		testing: t,
 	}
-	dogger := dogger.NewDeploymentLogger(context.Background(), &deploymentId, ts, cfg)
+	dog := dogger.NewDeploymentLogger(context.Background(), &deploymentId, ts, cfg)
 
-	dogger.Write("hello")
+	dog.Write(dogger.INFO, "hello")
 
 	assertDoggerMessage(t, ts, []string{"hello"})
 }
@@ -82,9 +82,9 @@ func TestDoggerMulipleStatusMessages(t *testing.T) {
 	ts := &AgentTestStream{
 		testing: t,
 	}
-	dogger := dogger.NewDeploymentLogger(context.Background(), &deploymentId, ts, cfg)
+	dog := dogger.NewDeploymentLogger(context.Background(), &deploymentId, ts, cfg)
 
-	dogger.Write("hello", "abcd")
+	dog.Write(dogger.INFO, "hello", "abcd")
 
 	assertDoggerMessage(t, ts, []string{"hello", "abcd"})
 }
@@ -110,9 +110,9 @@ func TestDoggerContainerStatus(t *testing.T) {
 	ts := &AgentTestStream{
 		testing: t,
 	}
-	dogger := dogger.NewDeploymentLogger(context.Background(), &deploymentId, ts, cfg)
+	dog := dogger.NewDeploymentLogger(context.Background(), &deploymentId, ts, cfg)
 
-	dogger.WriteContainerState(common.ContainerState_RUNNING, "reason", "hello")
+	dog.WriteContainerState(common.ContainerState_RUNNING, "reason", dogger.INFO, "hello")
 
 	assertDoggerMessage(t, ts, []string{"hello"})
 }

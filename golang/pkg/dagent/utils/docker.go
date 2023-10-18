@@ -159,23 +159,23 @@ func logDeployInfo(
 	}
 
 	if deployImageRequest.Registry == nil || *deployImageRequest.Registry == "" {
-		dog.Write(
-			fmt.Sprintf("Starting container: %s", containerName),
+		dog.Write(dogger.INFO,
+			fmt.Sprintf("Deploying container: %s", containerName),
 			fmt.Sprintf("Using image: %s:%s", deployImageRequest.ImageName, deployImageRequest.Tag),
 		)
 	} else {
-		dog.Write(
-			fmt.Sprintf("Starting container: %s", containerName),
+		dog.Write(dogger.INFO,
+			fmt.Sprintf("Deploying container: %s", containerName),
 			fmt.Sprintf("Using image: %s", expandedImageName),
 		)
 	}
 
 	if deployImageRequest.ContainerConfig.RestartPolicy != "" {
-		dog.Write(fmt.Sprintf("Using restart policy: %v", deployImageRequest.ContainerConfig.RestartPolicy))
+		dog.Write(dogger.INFO, fmt.Sprintf("Using restart policy: %v", deployImageRequest.ContainerConfig.RestartPolicy))
 	}
 
 	if deployImageRequest.ContainerConfig.User != nil {
-		dog.Write(fmt.Sprintf("User: %v", *deployImageRequest.ContainerConfig.User))
+		dog.Write(dogger.INFO, fmt.Sprintf("Using user: %v", *deployImageRequest.ContainerConfig.User))
 	}
 }
 
@@ -197,7 +197,7 @@ func buildMountList(cfg *config.Configuration, dog *dogger.DeploymentLogger, dep
 			cfg,
 		)
 		if err != nil {
-			dog.Write("could not create config file\n", err.Error())
+			dog.Write(dogger.ERROR, "could not create config file\n", err.Error())
 		}
 	}
 
@@ -205,7 +205,7 @@ func buildMountList(cfg *config.Configuration, dog *dogger.DeploymentLogger, dep
 }
 
 func writeDoggerError(dog *dogger.DeploymentLogger, msg string, err error) {
-	dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED, err.Error(), msg)
+	dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED, err.Error(), dogger.ERROR, msg)
 }
 
 func getImageNameFromRequest(deployImageRequest *v1.DeployImageRequest) (string, error) {
@@ -254,7 +254,7 @@ func DeployImage(ctx context.Context,
 	}
 
 	if matchedContainer != nil {
-		dog.WriteContainerState(mapper.MapDockerStateToCruxContainerState(matchedContainer.State), matchedContainer.State)
+		dog.WriteContainerState(mapper.MapDockerStateToCruxContainerState(matchedContainer.State), matchedContainer.State, dogger.INFO)
 
 		err = dockerHelper.DeleteContainerByID(ctx, dog, matchedContainer.ID)
 		if err != nil {
@@ -310,7 +310,7 @@ func DeployImage(ctx context.Context,
 	}
 
 	dog.WriteContainerState(mapper.MapDockerStateToCruxContainerState(matchedContainer.State),
-		matchedContainer.State, "Started container: "+containerName)
+		matchedContainer.State, dogger.INFO, "Started container: "+containerName)
 
 	if versionData != nil {
 		DraftRelease(deployImageRequest.InstanceConfig.ContainerPreName, *versionData, v1.DeployVersionResponse{}, cfg)

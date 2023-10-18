@@ -53,19 +53,39 @@ export type DeploymentRoot = Omit<DeploymentDetails, 'project' | 'version' | 'no
   node: DyoNode
 }
 
-export const DEPLOYMENT_EVENT_TYPE_VALUES = ['log', 'deployment-status', 'container-state'] as const
+export const DEPLOYMENT_EVENT_TYPE_VALUES = [
+  'log',
+  'deployment-status',
+  'container-state',
+  'container-progress',
+] as const
 export type DeploymentEventType = (typeof DEPLOYMENT_EVENT_TYPE_VALUES)[number]
+
+export const DEPLOYMENT_LOG_LEVEL_VALUES = ['info', 'warn', 'error'] as const
+export type DeploymentLogLevelDto = (typeof DEPLOYMENT_LOG_LEVEL_VALUES)[number]
+
+export type DeploymentEventLog = {
+  log: string[]
+  level: DeploymentLogLevelDto
+}
 
 export type DeploymentEventContainerState = {
   instanceId: string
   state: ContainerState
 }
 
+export type DeploymentEventContainerProgress = {
+  instanceId: string
+  status: string
+  progress: number
+}
+
 export type DeploymentEvent = {
   type: DeploymentEventType
-  log?: string[]
+  log?: DeploymentEventLog
   deploymentStatus?: DeploymentStatus
   containerState?: DeploymentEventContainerState
+  containerProgress?: DeploymentEventContainerProgress
   createdAt: string
 }
 

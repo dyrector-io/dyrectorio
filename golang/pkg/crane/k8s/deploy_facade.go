@@ -266,9 +266,9 @@ func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest 
 	_ *v1.VersionData,
 ) error {
 	cfg := grpc.GetConfigFromContext(c).(*config.Configuration)
-	dog.Write(deployImageRequest.Strings(&cfg.CommonConfiguration)...)
-	dog.Write(deployImageRequest.InstanceConfig.Strings()...)
-	dog.Write(deployImageRequest.ContainerConfig.Strings(&cfg.CommonConfiguration)...)
+	dog.Write(dogger.INFO, deployImageRequest.Strings(&cfg.CommonConfiguration)...)
+	dog.Write(dogger.INFO, deployImageRequest.InstanceConfig.Strings()...)
+	dog.Write(dogger.INFO, deployImageRequest.ContainerConfig.Strings(&cfg.CommonConfiguration)...)
 
 	imageName := util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)
 	if deployImageRequest.Registry != nil {

@@ -138,6 +138,58 @@ func (DeploymentStatus) EnumDescriptor() ([]byte, []int) {
 	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{1}
 }
 
+type DeploymentMessageLevel int32
+
+const (
+	DeploymentMessageLevel_DEPLOYMENT_MESSAGE_UNSPECIFIED DeploymentMessageLevel = 0
+	DeploymentMessageLevel_INFO                           DeploymentMessageLevel = 1
+	DeploymentMessageLevel_WARNING                        DeploymentMessageLevel = 2
+	DeploymentMessageLevel_ERROR                          DeploymentMessageLevel = 3
+)
+
+// Enum value maps for DeploymentMessageLevel.
+var (
+	DeploymentMessageLevel_name = map[int32]string{
+		0: "DEPLOYMENT_MESSAGE_UNSPECIFIED",
+		1: "INFO",
+		2: "WARNING",
+		3: "ERROR",
+	}
+	DeploymentMessageLevel_value = map[string]int32{
+		"DEPLOYMENT_MESSAGE_UNSPECIFIED": 0,
+		"INFO":                           1,
+		"WARNING":                        2,
+		"ERROR":                          3,
+	}
+)
+
+func (x DeploymentMessageLevel) Enum() *DeploymentMessageLevel {
+	p := new(DeploymentMessageLevel)
+	*p = x
+	return p
+}
+
+func (x DeploymentMessageLevel) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeploymentMessageLevel) Descriptor() protoreflect.EnumDescriptor {
+	return file_protobuf_proto_common_proto_enumTypes[2].Descriptor()
+}
+
+func (DeploymentMessageLevel) Type() protoreflect.EnumType {
+	return &file_protobuf_proto_common_proto_enumTypes[2]
+}
+
+func (x DeploymentMessageLevel) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeploymentMessageLevel.Descriptor instead.
+func (DeploymentMessageLevel) EnumDescriptor() ([]byte, []int) {
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{2}
+}
+
 type NetworkMode int32
 
 const (
@@ -174,11 +226,11 @@ func (x NetworkMode) String() string {
 }
 
 func (NetworkMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_protobuf_proto_common_proto_enumTypes[2].Descriptor()
+	return file_protobuf_proto_common_proto_enumTypes[3].Descriptor()
 }
 
 func (NetworkMode) Type() protoreflect.EnumType {
-	return &file_protobuf_proto_common_proto_enumTypes[2]
+	return &file_protobuf_proto_common_proto_enumTypes[3]
 }
 
 func (x NetworkMode) Number() protoreflect.EnumNumber {
@@ -187,7 +239,7 @@ func (x NetworkMode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use NetworkMode.Descriptor instead.
 func (NetworkMode) EnumDescriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{2}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{3}
 }
 
 type RestartPolicy int32
@@ -232,11 +284,11 @@ func (x RestartPolicy) String() string {
 }
 
 func (RestartPolicy) Descriptor() protoreflect.EnumDescriptor {
-	return file_protobuf_proto_common_proto_enumTypes[3].Descriptor()
+	return file_protobuf_proto_common_proto_enumTypes[4].Descriptor()
 }
 
 func (RestartPolicy) Type() protoreflect.EnumType {
-	return &file_protobuf_proto_common_proto_enumTypes[3]
+	return &file_protobuf_proto_common_proto_enumTypes[4]
 }
 
 func (x RestartPolicy) Number() protoreflect.EnumNumber {
@@ -245,7 +297,7 @@ func (x RestartPolicy) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use RestartPolicy.Descriptor instead.
 func (RestartPolicy) EnumDescriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{3}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{4}
 }
 
 type DeploymentStrategy int32
@@ -281,11 +333,11 @@ func (x DeploymentStrategy) String() string {
 }
 
 func (DeploymentStrategy) Descriptor() protoreflect.EnumDescriptor {
-	return file_protobuf_proto_common_proto_enumTypes[4].Descriptor()
+	return file_protobuf_proto_common_proto_enumTypes[5].Descriptor()
 }
 
 func (DeploymentStrategy) Type() protoreflect.EnumType {
-	return &file_protobuf_proto_common_proto_enumTypes[4]
+	return &file_protobuf_proto_common_proto_enumTypes[5]
 }
 
 func (x DeploymentStrategy) Number() protoreflect.EnumNumber {
@@ -294,7 +346,7 @@ func (x DeploymentStrategy) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use DeploymentStrategy.Descriptor instead.
 func (DeploymentStrategy) EnumDescriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{4}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{5}
 }
 
 type VolumeType int32
@@ -339,11 +391,11 @@ func (x VolumeType) String() string {
 }
 
 func (VolumeType) Descriptor() protoreflect.EnumDescriptor {
-	return file_protobuf_proto_common_proto_enumTypes[5].Descriptor()
+	return file_protobuf_proto_common_proto_enumTypes[6].Descriptor()
 }
 
 func (VolumeType) Type() protoreflect.EnumType {
-	return &file_protobuf_proto_common_proto_enumTypes[5]
+	return &file_protobuf_proto_common_proto_enumTypes[6]
 }
 
 func (x VolumeType) Number() protoreflect.EnumNumber {
@@ -352,7 +404,7 @@ func (x VolumeType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use VolumeType.Descriptor instead.
 func (VolumeType) EnumDescriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{5}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{6}
 }
 
 type DriverType int32
@@ -421,11 +473,11 @@ func (x DriverType) String() string {
 }
 
 func (DriverType) Descriptor() protoreflect.EnumDescriptor {
-	return file_protobuf_proto_common_proto_enumTypes[6].Descriptor()
+	return file_protobuf_proto_common_proto_enumTypes[7].Descriptor()
 }
 
 func (DriverType) Type() protoreflect.EnumType {
-	return &file_protobuf_proto_common_proto_enumTypes[6]
+	return &file_protobuf_proto_common_proto_enumTypes[7]
 }
 
 func (x DriverType) Number() protoreflect.EnumNumber {
@@ -434,7 +486,7 @@ func (x DriverType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use DriverType.Descriptor instead.
 func (DriverType) EnumDescriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{6}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{7}
 }
 
 type ExposeStrategy int32
@@ -473,11 +525,11 @@ func (x ExposeStrategy) String() string {
 }
 
 func (ExposeStrategy) Descriptor() protoreflect.EnumDescriptor {
-	return file_protobuf_proto_common_proto_enumTypes[7].Descriptor()
+	return file_protobuf_proto_common_proto_enumTypes[8].Descriptor()
 }
 
 func (ExposeStrategy) Type() protoreflect.EnumType {
-	return &file_protobuf_proto_common_proto_enumTypes[7]
+	return &file_protobuf_proto_common_proto_enumTypes[8]
 }
 
 func (x ExposeStrategy) Number() protoreflect.EnumNumber {
@@ -486,7 +538,7 @@ func (x ExposeStrategy) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ExposeStrategy.Descriptor instead.
 func (ExposeStrategy) EnumDescriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{7}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{8}
 }
 
 type ContainerOperation int32
@@ -525,11 +577,11 @@ func (x ContainerOperation) String() string {
 }
 
 func (ContainerOperation) Descriptor() protoreflect.EnumDescriptor {
-	return file_protobuf_proto_common_proto_enumTypes[8].Descriptor()
+	return file_protobuf_proto_common_proto_enumTypes[9].Descriptor()
 }
 
 func (ContainerOperation) Type() protoreflect.EnumType {
-	return &file_protobuf_proto_common_proto_enumTypes[8]
+	return &file_protobuf_proto_common_proto_enumTypes[9]
 }
 
 func (x ContainerOperation) Number() protoreflect.EnumNumber {
@@ -538,7 +590,7 @@ func (x ContainerOperation) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ContainerOperation.Descriptor instead.
 func (ContainerOperation) EnumDescriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{8}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{9}
 }
 
 type Empty struct {
@@ -642,6 +694,69 @@ func (x *InstanceDeploymentItem) GetReason() string {
 	return ""
 }
 
+type DeployContainerProgress struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	InstanceId string  `protobuf:"bytes,100,opt,name=instanceId,proto3" json:"instanceId,omitempty"`
+	Status     string  `protobuf:"bytes,101,opt,name=status,proto3" json:"status,omitempty"`
+	Progress   float32 `protobuf:"fixed32,102,opt,name=progress,proto3" json:"progress,omitempty"`
+}
+
+func (x *DeployContainerProgress) Reset() {
+	*x = DeployContainerProgress{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protobuf_proto_common_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeployContainerProgress) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeployContainerProgress) ProtoMessage() {}
+
+func (x *DeployContainerProgress) ProtoReflect() protoreflect.Message {
+	mi := &file_protobuf_proto_common_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeployContainerProgress.ProtoReflect.Descriptor instead.
+func (*DeployContainerProgress) Descriptor() ([]byte, []int) {
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *DeployContainerProgress) GetInstanceId() string {
+	if x != nil {
+		return x.InstanceId
+	}
+	return ""
+}
+
+func (x *DeployContainerProgress) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *DeployContainerProgress) GetProgress() float32 {
+	if x != nil {
+		return x.Progress
+	}
+	return 0
+}
+
 type DeploymentStatusMessage struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -651,14 +766,16 @@ type DeploymentStatusMessage struct {
 	//
 	//	*DeploymentStatusMessage_Instance
 	//	*DeploymentStatusMessage_DeploymentStatus
-	Data isDeploymentStatusMessage_Data `protobuf_oneof:"data"`
-	Log  []string                       `protobuf:"bytes,1000,rep,name=log,proto3" json:"log,omitempty"`
+	//	*DeploymentStatusMessage_ContainerProgress
+	Data     isDeploymentStatusMessage_Data `protobuf_oneof:"data"`
+	Log      []string                       `protobuf:"bytes,1000,rep,name=log,proto3" json:"log,omitempty"`
+	LogLevel *DeploymentMessageLevel        `protobuf:"varint,1001,opt,name=logLevel,proto3,enum=common.DeploymentMessageLevel,oneof" json:"logLevel,omitempty"`
 }
 
 func (x *DeploymentStatusMessage) Reset() {
 	*x = DeploymentStatusMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[2]
+		mi := &file_protobuf_proto_common_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -671,7 +788,7 @@ func (x *DeploymentStatusMessage) String() string {
 func (*DeploymentStatusMessage) ProtoMessage() {}
 
 func (x *DeploymentStatusMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[2]
+	mi := &file_protobuf_proto_common_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -684,7 +801,7 @@ func (x *DeploymentStatusMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeploymentStatusMessage.ProtoReflect.Descriptor instead.
 func (*DeploymentStatusMessage) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{2}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{3}
 }
 
 func (m *DeploymentStatusMessage) GetData() isDeploymentStatusMessage_Data {
@@ -708,11 +825,25 @@ func (x *DeploymentStatusMessage) GetDeploymentStatus() DeploymentStatus {
 	return DeploymentStatus_DEPLOYMENT_STATUS_UNSPECIFIED
 }
 
+func (x *DeploymentStatusMessage) GetContainerProgress() *DeployContainerProgress {
+	if x, ok := x.GetData().(*DeploymentStatusMessage_ContainerProgress); ok {
+		return x.ContainerProgress
+	}
+	return nil
+}
+
 func (x *DeploymentStatusMessage) GetLog() []string {
 	if x != nil {
 		return x.Log
 	}
 	return nil
+}
+
+func (x *DeploymentStatusMessage) GetLogLevel() DeploymentMessageLevel {
+	if x != nil && x.LogLevel != nil {
+		return *x.LogLevel
+	}
+	return DeploymentMessageLevel_DEPLOYMENT_MESSAGE_UNSPECIFIED
 }
 
 type isDeploymentStatusMessage_Data interface {
@@ -727,9 +858,15 @@ type DeploymentStatusMessage_DeploymentStatus struct {
 	DeploymentStatus DeploymentStatus `protobuf:"varint,201,opt,name=deploymentStatus,proto3,enum=common.DeploymentStatus,oneof"`
 }
 
+type DeploymentStatusMessage_ContainerProgress struct {
+	ContainerProgress *DeployContainerProgress `protobuf:"bytes,202,opt,name=containerProgress,proto3,oneof"`
+}
+
 func (*DeploymentStatusMessage_Instance) isDeploymentStatusMessage_Data() {}
 
 func (*DeploymentStatusMessage_DeploymentStatus) isDeploymentStatusMessage_Data() {}
+
+func (*DeploymentStatusMessage_ContainerProgress) isDeploymentStatusMessage_Data() {}
 
 type ContainerStateItemPort struct {
 	state         protoimpl.MessageState
@@ -743,7 +880,7 @@ type ContainerStateItemPort struct {
 func (x *ContainerStateItemPort) Reset() {
 	*x = ContainerStateItemPort{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[3]
+		mi := &file_protobuf_proto_common_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -756,7 +893,7 @@ func (x *ContainerStateItemPort) String() string {
 func (*ContainerStateItemPort) ProtoMessage() {}
 
 func (x *ContainerStateItemPort) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[3]
+	mi := &file_protobuf_proto_common_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -769,7 +906,7 @@ func (x *ContainerStateItemPort) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContainerStateItemPort.ProtoReflect.Descriptor instead.
 func (*ContainerStateItemPort) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{3}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ContainerStateItemPort) GetInternal() int32 {
@@ -798,7 +935,7 @@ type ContainerStateListMessage struct {
 func (x *ContainerStateListMessage) Reset() {
 	*x = ContainerStateListMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[4]
+		mi := &file_protobuf_proto_common_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -811,7 +948,7 @@ func (x *ContainerStateListMessage) String() string {
 func (*ContainerStateListMessage) ProtoMessage() {}
 
 func (x *ContainerStateListMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[4]
+	mi := &file_protobuf_proto_common_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -824,7 +961,7 @@ func (x *ContainerStateListMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContainerStateListMessage.ProtoReflect.Descriptor instead.
 func (*ContainerStateListMessage) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{4}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ContainerStateListMessage) GetPrefix() string {
@@ -866,7 +1003,7 @@ type ContainerStateItem struct {
 func (x *ContainerStateItem) Reset() {
 	*x = ContainerStateItem{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[5]
+		mi := &file_protobuf_proto_common_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -879,7 +1016,7 @@ func (x *ContainerStateItem) String() string {
 func (*ContainerStateItem) ProtoMessage() {}
 
 func (x *ContainerStateItem) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[5]
+	mi := &file_protobuf_proto_common_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -892,7 +1029,7 @@ func (x *ContainerStateItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContainerStateItem.ProtoReflect.Descriptor instead.
 func (*ContainerStateItem) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{5}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ContainerStateItem) GetId() *ContainerIdentifier {
@@ -976,7 +1113,7 @@ type ContainerLogMessage struct {
 func (x *ContainerLogMessage) Reset() {
 	*x = ContainerLogMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[6]
+		mi := &file_protobuf_proto_common_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -989,7 +1126,7 @@ func (x *ContainerLogMessage) String() string {
 func (*ContainerLogMessage) ProtoMessage() {}
 
 func (x *ContainerLogMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[6]
+	mi := &file_protobuf_proto_common_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1002,7 +1139,7 @@ func (x *ContainerLogMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContainerLogMessage.ProtoReflect.Descriptor instead.
 func (*ContainerLogMessage) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{6}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ContainerLogMessage) GetLog() string {
@@ -1025,7 +1162,7 @@ type ContainerInspectMessage struct {
 func (x *ContainerInspectMessage) Reset() {
 	*x = ContainerInspectMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[7]
+		mi := &file_protobuf_proto_common_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1038,7 +1175,7 @@ func (x *ContainerInspectMessage) String() string {
 func (*ContainerInspectMessage) ProtoMessage() {}
 
 func (x *ContainerInspectMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[7]
+	mi := &file_protobuf_proto_common_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1051,7 +1188,7 @@ func (x *ContainerInspectMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContainerInspectMessage.ProtoReflect.Descriptor instead.
 func (*ContainerInspectMessage) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{7}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ContainerInspectMessage) GetPrefix() string {
@@ -1090,7 +1227,7 @@ type Routing struct {
 func (x *Routing) Reset() {
 	*x = Routing{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[8]
+		mi := &file_protobuf_proto_common_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1103,7 +1240,7 @@ func (x *Routing) String() string {
 func (*Routing) ProtoMessage() {}
 
 func (x *Routing) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[8]
+	mi := &file_protobuf_proto_common_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1116,7 +1253,7 @@ func (x *Routing) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Routing.ProtoReflect.Descriptor instead.
 func (*Routing) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{8}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *Routing) GetDomain() string {
@@ -1168,7 +1305,7 @@ type ConfigContainer struct {
 func (x *ConfigContainer) Reset() {
 	*x = ConfigContainer{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[9]
+		mi := &file_protobuf_proto_common_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1181,7 +1318,7 @@ func (x *ConfigContainer) String() string {
 func (*ConfigContainer) ProtoMessage() {}
 
 func (x *ConfigContainer) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[9]
+	mi := &file_protobuf_proto_common_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1194,7 +1331,7 @@ func (x *ConfigContainer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConfigContainer.ProtoReflect.Descriptor instead.
 func (*ConfigContainer) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{9}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ConfigContainer) GetImage() string {
@@ -1239,7 +1376,7 @@ type HealthCheckConfig struct {
 func (x *HealthCheckConfig) Reset() {
 	*x = HealthCheckConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[10]
+		mi := &file_protobuf_proto_common_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1252,7 +1389,7 @@ func (x *HealthCheckConfig) String() string {
 func (*HealthCheckConfig) ProtoMessage() {}
 
 func (x *HealthCheckConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[10]
+	mi := &file_protobuf_proto_common_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1265,7 +1402,7 @@ func (x *HealthCheckConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthCheckConfig.ProtoReflect.Descriptor instead.
 func (*HealthCheckConfig) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{10}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *HealthCheckConfig) GetPort() int32 {
@@ -1308,7 +1445,7 @@ type Resource struct {
 func (x *Resource) Reset() {
 	*x = Resource{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[11]
+		mi := &file_protobuf_proto_common_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1321,7 +1458,7 @@ func (x *Resource) String() string {
 func (*Resource) ProtoMessage() {}
 
 func (x *Resource) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[11]
+	mi := &file_protobuf_proto_common_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1334,7 +1471,7 @@ func (x *Resource) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Resource.ProtoReflect.Descriptor instead.
 func (*Resource) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{11}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *Resource) GetCpu() string {
@@ -1363,7 +1500,7 @@ type ResourceConfig struct {
 func (x *ResourceConfig) Reset() {
 	*x = ResourceConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[12]
+		mi := &file_protobuf_proto_common_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1376,7 +1513,7 @@ func (x *ResourceConfig) String() string {
 func (*ResourceConfig) ProtoMessage() {}
 
 func (x *ResourceConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[12]
+	mi := &file_protobuf_proto_common_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1389,7 +1526,7 @@ func (x *ResourceConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceConfig.ProtoReflect.Descriptor instead.
 func (*ResourceConfig) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{12}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ResourceConfig) GetLimits() *Resource {
@@ -1418,7 +1555,7 @@ type KeyValue struct {
 func (x *KeyValue) Reset() {
 	*x = KeyValue{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[13]
+		mi := &file_protobuf_proto_common_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1431,7 +1568,7 @@ func (x *KeyValue) String() string {
 func (*KeyValue) ProtoMessage() {}
 
 func (x *KeyValue) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[13]
+	mi := &file_protobuf_proto_common_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1444,7 +1581,7 @@ func (x *KeyValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KeyValue.ProtoReflect.Descriptor instead.
 func (*KeyValue) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{13}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *KeyValue) GetKey() string {
@@ -1476,7 +1613,7 @@ type ListSecretsResponse struct {
 func (x *ListSecretsResponse) Reset() {
 	*x = ListSecretsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[14]
+		mi := &file_protobuf_proto_common_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1489,7 +1626,7 @@ func (x *ListSecretsResponse) String() string {
 func (*ListSecretsResponse) ProtoMessage() {}
 
 func (x *ListSecretsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[14]
+	mi := &file_protobuf_proto_common_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1502,7 +1639,7 @@ func (x *ListSecretsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSecretsResponse.ProtoReflect.Descriptor instead.
 func (*ListSecretsResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{14}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ListSecretsResponse) GetPrefix() string {
@@ -1552,7 +1689,7 @@ type UniqueKey struct {
 func (x *UniqueKey) Reset() {
 	*x = UniqueKey{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[15]
+		mi := &file_protobuf_proto_common_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1565,7 +1702,7 @@ func (x *UniqueKey) String() string {
 func (*UniqueKey) ProtoMessage() {}
 
 func (x *UniqueKey) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[15]
+	mi := &file_protobuf_proto_common_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1578,7 +1715,7 @@ func (x *UniqueKey) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UniqueKey.ProtoReflect.Descriptor instead.
 func (*UniqueKey) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{15}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *UniqueKey) GetId() string {
@@ -1607,7 +1744,7 @@ type ContainerIdentifier struct {
 func (x *ContainerIdentifier) Reset() {
 	*x = ContainerIdentifier{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[16]
+		mi := &file_protobuf_proto_common_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1620,7 +1757,7 @@ func (x *ContainerIdentifier) String() string {
 func (*ContainerIdentifier) ProtoMessage() {}
 
 func (x *ContainerIdentifier) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[16]
+	mi := &file_protobuf_proto_common_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1633,7 +1770,7 @@ func (x *ContainerIdentifier) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContainerIdentifier.ProtoReflect.Descriptor instead.
 func (*ContainerIdentifier) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{16}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ContainerIdentifier) GetPrefix() string {
@@ -1662,7 +1799,7 @@ type ContainerCommandRequest struct {
 func (x *ContainerCommandRequest) Reset() {
 	*x = ContainerCommandRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[17]
+		mi := &file_protobuf_proto_common_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1675,7 +1812,7 @@ func (x *ContainerCommandRequest) String() string {
 func (*ContainerCommandRequest) ProtoMessage() {}
 
 func (x *ContainerCommandRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[17]
+	mi := &file_protobuf_proto_common_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1688,7 +1825,7 @@ func (x *ContainerCommandRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContainerCommandRequest.ProtoReflect.Descriptor instead.
 func (*ContainerCommandRequest) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{17}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ContainerCommandRequest) GetContainer() *ContainerIdentifier {
@@ -1720,7 +1857,7 @@ type DeleteContainersRequest struct {
 func (x *DeleteContainersRequest) Reset() {
 	*x = DeleteContainersRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[18]
+		mi := &file_protobuf_proto_common_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1733,7 +1870,7 @@ func (x *DeleteContainersRequest) String() string {
 func (*DeleteContainersRequest) ProtoMessage() {}
 
 func (x *DeleteContainersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[18]
+	mi := &file_protobuf_proto_common_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1746,7 +1883,7 @@ func (x *DeleteContainersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteContainersRequest.ProtoReflect.Descriptor instead.
 func (*DeleteContainersRequest) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{18}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{19}
 }
 
 func (m *DeleteContainersRequest) GetTarget() isDeleteContainersRequest_Target {
@@ -1802,18 +1939,35 @@ var file_protobuf_proto_common_proto_rawDesc = []byte{
 	0x6e, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65,
 	0x52, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f,
 	0x6e, 0x18, 0x66, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x22,
-	0xbc, 0x01, 0x0a, 0x17, 0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x74,
-	0x61, 0x74, 0x75, 0x73, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x3d, 0x0a, 0x08, 0x69,
-	0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x18, 0xc8, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e,
-	0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65,
-	0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x48, 0x00,
-	0x52, 0x08, 0x69, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x47, 0x0a, 0x10, 0x64, 0x65,
-	0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0xc9,
-	0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x18, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x44,
-	0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x48,
-	0x00, 0x52, 0x10, 0x64, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61,
-	0x74, 0x75, 0x73, 0x12, 0x11, 0x0a, 0x03, 0x6c, 0x6f, 0x67, 0x18, 0xe8, 0x07, 0x20, 0x03, 0x28,
-	0x09, 0x52, 0x03, 0x6c, 0x6f, 0x67, 0x42, 0x06, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0x50,
+	0x6d, 0x0a, 0x17, 0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e,
+	0x65, 0x72, 0x50, 0x72, 0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x12, 0x1e, 0x0a, 0x0a, 0x69, 0x6e,
+	0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x49, 0x64, 0x18, 0x64, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a,
+	0x69, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x74,
+	0x61, 0x74, 0x75, 0x73, 0x18, 0x65, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74,
+	0x75, 0x73, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x72, 0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x18, 0x66,
+	0x20, 0x01, 0x28, 0x02, 0x52, 0x08, 0x70, 0x72, 0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x22, 0xdd,
+	0x02, 0x0a, 0x17, 0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61,
+	0x74, 0x75, 0x73, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x3d, 0x0a, 0x08, 0x69, 0x6e,
+	0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x18, 0xc8, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e,
+	0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x44,
+	0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x48, 0x00, 0x52,
+	0x08, 0x69, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x47, 0x0a, 0x10, 0x64, 0x65, 0x70,
+	0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0xc9, 0x01,
+	0x20, 0x01, 0x28, 0x0e, 0x32, 0x18, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x44, 0x65,
+	0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x48, 0x00,
+	0x52, 0x10, 0x64, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x74,
+	0x75, 0x73, 0x12, 0x50, 0x0a, 0x11, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x50,
+	0x72, 0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x18, 0xca, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f,
+	0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x43, 0x6f,
+	0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x50, 0x72, 0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x48,
+	0x00, 0x52, 0x11, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x50, 0x72, 0x6f, 0x67,
+	0x72, 0x65, 0x73, 0x73, 0x12, 0x11, 0x0a, 0x03, 0x6c, 0x6f, 0x67, 0x18, 0xe8, 0x07, 0x20, 0x03,
+	0x28, 0x09, 0x52, 0x03, 0x6c, 0x6f, 0x67, 0x12, 0x40, 0x0a, 0x08, 0x6c, 0x6f, 0x67, 0x4c, 0x65,
+	0x76, 0x65, 0x6c, 0x18, 0xe9, 0x07, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x1e, 0x2e, 0x63, 0x6f, 0x6d,
+	0x6d, 0x6f, 0x6e, 0x2e, 0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x4d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x4c, 0x65, 0x76, 0x65, 0x6c, 0x48, 0x01, 0x52, 0x08, 0x6c, 0x6f,
+	0x67, 0x4c, 0x65, 0x76, 0x65, 0x6c, 0x88, 0x01, 0x01, 0x42, 0x06, 0x0a, 0x04, 0x64, 0x61, 0x74,
+	0x61, 0x42, 0x0b, 0x0a, 0x09, 0x5f, 0x6c, 0x6f, 0x67, 0x4c, 0x65, 0x76, 0x65, 0x6c, 0x22, 0x50,
 	0x0a, 0x16, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65,
 	0x49, 0x74, 0x65, 0x6d, 0x50, 0x6f, 0x72, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x69, 0x6e, 0x74, 0x65,
 	0x72, 0x6e, 0x61, 0x6c, 0x18, 0x64, 0x20, 0x01, 0x28, 0x05, 0x52, 0x08, 0x69, 0x6e, 0x74, 0x65,
@@ -1967,7 +2121,13 @@ var file_protobuf_proto_common_proto_rawDesc = []byte{
 	0x0a, 0x0a, 0x53, 0x55, 0x43, 0x43, 0x45, 0x53, 0x53, 0x46, 0x55, 0x4c, 0x10, 0x03, 0x12, 0x0a,
 	0x0a, 0x06, 0x46, 0x41, 0x49, 0x4c, 0x45, 0x44, 0x10, 0x04, 0x12, 0x0c, 0x0a, 0x08, 0x4f, 0x42,
 	0x53, 0x4f, 0x4c, 0x45, 0x54, 0x45, 0x10, 0x05, 0x12, 0x0e, 0x0a, 0x0a, 0x44, 0x4f, 0x57, 0x4e,
-	0x47, 0x52, 0x41, 0x44, 0x45, 0x44, 0x10, 0x06, 0x2a, 0x4b, 0x0a, 0x0b, 0x4e, 0x65, 0x74, 0x77,
+	0x47, 0x52, 0x41, 0x44, 0x45, 0x44, 0x10, 0x06, 0x2a, 0x5e, 0x0a, 0x16, 0x44, 0x65, 0x70, 0x6c,
+	0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x4c, 0x65, 0x76,
+	0x65, 0x6c, 0x12, 0x22, 0x0a, 0x1e, 0x44, 0x45, 0x50, 0x4c, 0x4f, 0x59, 0x4d, 0x45, 0x4e, 0x54,
+	0x5f, 0x4d, 0x45, 0x53, 0x53, 0x41, 0x47, 0x45, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49,
+	0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x49, 0x4e, 0x46, 0x4f, 0x10, 0x01,
+	0x12, 0x0b, 0x0a, 0x07, 0x57, 0x41, 0x52, 0x4e, 0x49, 0x4e, 0x47, 0x10, 0x02, 0x12, 0x09, 0x0a,
+	0x05, 0x45, 0x52, 0x52, 0x4f, 0x52, 0x10, 0x03, 0x2a, 0x4b, 0x0a, 0x0b, 0x4e, 0x65, 0x74, 0x77,
 	0x6f, 0x72, 0x6b, 0x4d, 0x6f, 0x64, 0x65, 0x12, 0x1c, 0x0a, 0x18, 0x4e, 0x45, 0x54, 0x57, 0x4f,
 	0x52, 0x4b, 0x5f, 0x4d, 0x4f, 0x44, 0x45, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46,
 	0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x42, 0x52, 0x49, 0x44, 0x47, 0x45, 0x10,
@@ -2037,60 +2197,64 @@ func file_protobuf_proto_common_proto_rawDescGZIP() []byte {
 	return file_protobuf_proto_common_proto_rawDescData
 }
 
-var file_protobuf_proto_common_proto_enumTypes = make([]protoimpl.EnumInfo, 9)
-var file_protobuf_proto_common_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_protobuf_proto_common_proto_enumTypes = make([]protoimpl.EnumInfo, 10)
+var file_protobuf_proto_common_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_protobuf_proto_common_proto_goTypes = []interface{}{
 	(ContainerState)(0),               // 0: common.ContainerState
 	(DeploymentStatus)(0),             // 1: common.DeploymentStatus
-	(NetworkMode)(0),                  // 2: common.NetworkMode
-	(RestartPolicy)(0),                // 3: common.RestartPolicy
-	(DeploymentStrategy)(0),           // 4: common.DeploymentStrategy
-	(VolumeType)(0),                   // 5: common.VolumeType
-	(DriverType)(0),                   // 6: common.DriverType
-	(ExposeStrategy)(0),               // 7: common.ExposeStrategy
-	(ContainerOperation)(0),           // 8: common.ContainerOperation
-	(*Empty)(nil),                     // 9: common.Empty
-	(*InstanceDeploymentItem)(nil),    // 10: common.InstanceDeploymentItem
-	(*DeploymentStatusMessage)(nil),   // 11: common.DeploymentStatusMessage
-	(*ContainerStateItemPort)(nil),    // 12: common.ContainerStateItemPort
-	(*ContainerStateListMessage)(nil), // 13: common.ContainerStateListMessage
-	(*ContainerStateItem)(nil),        // 14: common.ContainerStateItem
-	(*ContainerLogMessage)(nil),       // 15: common.ContainerLogMessage
-	(*ContainerInspectMessage)(nil),   // 16: common.ContainerInspectMessage
-	(*Routing)(nil),                   // 17: common.Routing
-	(*ConfigContainer)(nil),           // 18: common.ConfigContainer
-	(*HealthCheckConfig)(nil),         // 19: common.HealthCheckConfig
-	(*Resource)(nil),                  // 20: common.Resource
-	(*ResourceConfig)(nil),            // 21: common.ResourceConfig
-	(*KeyValue)(nil),                  // 22: common.KeyValue
-	(*ListSecretsResponse)(nil),       // 23: common.ListSecretsResponse
-	(*UniqueKey)(nil),                 // 24: common.UniqueKey
-	(*ContainerIdentifier)(nil),       // 25: common.ContainerIdentifier
-	(*ContainerCommandRequest)(nil),   // 26: common.ContainerCommandRequest
-	(*DeleteContainersRequest)(nil),   // 27: common.DeleteContainersRequest
-	nil,                               // 28: common.ContainerStateItem.LabelsEntry
-	(*timestamppb.Timestamp)(nil),     // 29: google.protobuf.Timestamp
+	(DeploymentMessageLevel)(0),       // 2: common.DeploymentMessageLevel
+	(NetworkMode)(0),                  // 3: common.NetworkMode
+	(RestartPolicy)(0),                // 4: common.RestartPolicy
+	(DeploymentStrategy)(0),           // 5: common.DeploymentStrategy
+	(VolumeType)(0),                   // 6: common.VolumeType
+	(DriverType)(0),                   // 7: common.DriverType
+	(ExposeStrategy)(0),               // 8: common.ExposeStrategy
+	(ContainerOperation)(0),           // 9: common.ContainerOperation
+	(*Empty)(nil),                     // 10: common.Empty
+	(*InstanceDeploymentItem)(nil),    // 11: common.InstanceDeploymentItem
+	(*DeployContainerProgress)(nil),   // 12: common.DeployContainerProgress
+	(*DeploymentStatusMessage)(nil),   // 13: common.DeploymentStatusMessage
+	(*ContainerStateItemPort)(nil),    // 14: common.ContainerStateItemPort
+	(*ContainerStateListMessage)(nil), // 15: common.ContainerStateListMessage
+	(*ContainerStateItem)(nil),        // 16: common.ContainerStateItem
+	(*ContainerLogMessage)(nil),       // 17: common.ContainerLogMessage
+	(*ContainerInspectMessage)(nil),   // 18: common.ContainerInspectMessage
+	(*Routing)(nil),                   // 19: common.Routing
+	(*ConfigContainer)(nil),           // 20: common.ConfigContainer
+	(*HealthCheckConfig)(nil),         // 21: common.HealthCheckConfig
+	(*Resource)(nil),                  // 22: common.Resource
+	(*ResourceConfig)(nil),            // 23: common.ResourceConfig
+	(*KeyValue)(nil),                  // 24: common.KeyValue
+	(*ListSecretsResponse)(nil),       // 25: common.ListSecretsResponse
+	(*UniqueKey)(nil),                 // 26: common.UniqueKey
+	(*ContainerIdentifier)(nil),       // 27: common.ContainerIdentifier
+	(*ContainerCommandRequest)(nil),   // 28: common.ContainerCommandRequest
+	(*DeleteContainersRequest)(nil),   // 29: common.DeleteContainersRequest
+	nil,                               // 30: common.ContainerStateItem.LabelsEntry
+	(*timestamppb.Timestamp)(nil),     // 31: google.protobuf.Timestamp
 }
 var file_protobuf_proto_common_proto_depIdxs = []int32{
 	0,  // 0: common.InstanceDeploymentItem.state:type_name -> common.ContainerState
-	10, // 1: common.DeploymentStatusMessage.instance:type_name -> common.InstanceDeploymentItem
+	11, // 1: common.DeploymentStatusMessage.instance:type_name -> common.InstanceDeploymentItem
 	1,  // 2: common.DeploymentStatusMessage.deploymentStatus:type_name -> common.DeploymentStatus
-	14, // 3: common.ContainerStateListMessage.data:type_name -> common.ContainerStateItem
-	25, // 4: common.ContainerStateItem.id:type_name -> common.ContainerIdentifier
-	29, // 5: common.ContainerStateItem.createdAt:type_name -> google.protobuf.Timestamp
-	0,  // 6: common.ContainerStateItem.state:type_name -> common.ContainerState
-	12, // 7: common.ContainerStateItem.ports:type_name -> common.ContainerStateItemPort
-	28, // 8: common.ContainerStateItem.labels:type_name -> common.ContainerStateItem.LabelsEntry
-	20, // 9: common.ResourceConfig.limits:type_name -> common.Resource
-	20, // 10: common.ResourceConfig.requests:type_name -> common.Resource
-	25, // 11: common.ContainerCommandRequest.container:type_name -> common.ContainerIdentifier
-	8,  // 12: common.ContainerCommandRequest.operation:type_name -> common.ContainerOperation
-	25, // 13: common.DeleteContainersRequest.container:type_name -> common.ContainerIdentifier
-	14, // [14:14] is the sub-list for method output_type
-	14, // [14:14] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	12, // 3: common.DeploymentStatusMessage.containerProgress:type_name -> common.DeployContainerProgress
+	2,  // 4: common.DeploymentStatusMessage.logLevel:type_name -> common.DeploymentMessageLevel
+	16, // 5: common.ContainerStateListMessage.data:type_name -> common.ContainerStateItem
+	27, // 6: common.ContainerStateItem.id:type_name -> common.ContainerIdentifier
+	31, // 7: common.ContainerStateItem.createdAt:type_name -> google.protobuf.Timestamp
+	0,  // 8: common.ContainerStateItem.state:type_name -> common.ContainerState
+	14, // 9: common.ContainerStateItem.ports:type_name -> common.ContainerStateItemPort
+	30, // 10: common.ContainerStateItem.labels:type_name -> common.ContainerStateItem.LabelsEntry
+	22, // 11: common.ResourceConfig.limits:type_name -> common.Resource
+	22, // 12: common.ResourceConfig.requests:type_name -> common.Resource
+	27, // 13: common.ContainerCommandRequest.container:type_name -> common.ContainerIdentifier
+	9,  // 14: common.ContainerCommandRequest.operation:type_name -> common.ContainerOperation
+	27, // 15: common.DeleteContainersRequest.container:type_name -> common.ContainerIdentifier
+	16, // [16:16] is the sub-list for method output_type
+	16, // [16:16] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_protobuf_proto_common_proto_init() }
@@ -2124,7 +2288,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentStatusMessage); i {
+			switch v := v.(*DeployContainerProgress); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2136,7 +2300,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ContainerStateItemPort); i {
+			switch v := v.(*DeploymentStatusMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2148,7 +2312,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ContainerStateListMessage); i {
+			switch v := v.(*ContainerStateItemPort); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2160,7 +2324,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ContainerStateItem); i {
+			switch v := v.(*ContainerStateListMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2172,7 +2336,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ContainerLogMessage); i {
+			switch v := v.(*ContainerStateItem); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2184,7 +2348,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ContainerInspectMessage); i {
+			switch v := v.(*ContainerLogMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2196,7 +2360,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Routing); i {
+			switch v := v.(*ContainerInspectMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2208,7 +2372,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ConfigContainer); i {
+			switch v := v.(*Routing); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2220,7 +2384,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*HealthCheckConfig); i {
+			switch v := v.(*ConfigContainer); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2232,7 +2396,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Resource); i {
+			switch v := v.(*HealthCheckConfig); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2244,7 +2408,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ResourceConfig); i {
+			switch v := v.(*Resource); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2256,7 +2420,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*KeyValue); i {
+			switch v := v.(*ResourceConfig); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2268,7 +2432,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListSecretsResponse); i {
+			switch v := v.(*KeyValue); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2280,7 +2444,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UniqueKey); i {
+			switch v := v.(*ListSecretsResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2292,7 +2456,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ContainerIdentifier); i {
+			switch v := v.(*UniqueKey); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2304,7 +2468,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ContainerCommandRequest); i {
+			switch v := v.(*ContainerIdentifier); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2316,6 +2480,18 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ContainerCommandRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protobuf_proto_common_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteContainersRequest); i {
 			case 0:
 				return &v.state
@@ -2328,16 +2504,17 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 	}
-	file_protobuf_proto_common_proto_msgTypes[2].OneofWrappers = []interface{}{
+	file_protobuf_proto_common_proto_msgTypes[3].OneofWrappers = []interface{}{
 		(*DeploymentStatusMessage_Instance)(nil),
 		(*DeploymentStatusMessage_DeploymentStatus)(nil),
+		(*DeploymentStatusMessage_ContainerProgress)(nil),
 	}
-	file_protobuf_proto_common_proto_msgTypes[4].OneofWrappers = []interface{}{}
-	file_protobuf_proto_common_proto_msgTypes[8].OneofWrappers = []interface{}{}
-	file_protobuf_proto_common_proto_msgTypes[10].OneofWrappers = []interface{}{}
+	file_protobuf_proto_common_proto_msgTypes[5].OneofWrappers = []interface{}{}
+	file_protobuf_proto_common_proto_msgTypes[9].OneofWrappers = []interface{}{}
 	file_protobuf_proto_common_proto_msgTypes[11].OneofWrappers = []interface{}{}
 	file_protobuf_proto_common_proto_msgTypes[12].OneofWrappers = []interface{}{}
-	file_protobuf_proto_common_proto_msgTypes[18].OneofWrappers = []interface{}{
+	file_protobuf_proto_common_proto_msgTypes[13].OneofWrappers = []interface{}{}
+	file_protobuf_proto_common_proto_msgTypes[19].OneofWrappers = []interface{}{
 		(*DeleteContainersRequest_Container)(nil),
 		(*DeleteContainersRequest_Prefix)(nil),
 	}
@@ -2346,8 +2523,8 @@ func file_protobuf_proto_common_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_protobuf_proto_common_proto_rawDesc,
-			NumEnums:      9,
-			NumMessages:   20,
+			NumEnums:      10,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -19,19 +19,21 @@ const DeploymentDetailsCard = (props: DeploymentDetailsCardProps) => {
   const { t } = useTranslation('deployments')
 
   return (
-    <DyoCard className={clsx('flex flex-col', className ?? 'p-6')}>
-      <div className="flex flex-row justify-between">
-        <DyoLabel>{t('prefixName', { name: deployment.prefix })}</DyoLabel>
+    <div className={clsx('flex flex-col', 'card rounded-lg bg-medium shadow-lg')}>
+      <div className="flex flex-row rounded-t-lg bg-medium-eased px-4 py-3">
+        <DyoLabel className="flex-1">
+          <b className="mr-1">{t('prefix')}</b>
+          {deployment.prefix}
+        </DyoLabel>
 
-        <DeploymentStatusTag className="my-auto" status={deployment.status} />
-
-        <DyoLabel textColor="text-bright" suppressHydrationWarning>
+        <DyoLabel textColor="text-bright mr-2" suppressHydrationWarning>
           {auditToLocaleDate(deployment.audit)}
         </DyoLabel>
-      </div>
 
-      {children}
-    </DyoCard>
+        <DeploymentStatusTag status={deployment.status} />
+      </div>
+      <div className={clsx('flex flex-col', className)}>{children}</div>
+    </div>
   )
 }
 

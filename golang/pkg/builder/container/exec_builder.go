@@ -5,10 +5,11 @@ package container
 import (
 	"context"
 	"fmt"
-	"io"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+
+	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 )
 
 // An ExecBuilder handles the process of creating and starting exec,
@@ -21,7 +22,7 @@ type ExecBuilder interface {
 	WithClient(client *client.Client) *DockerExecBuilder
 	WithCmd(cmd []string) *DockerExecBuilder
 	WithDetach() *DockerExecBuilder
-	WithLogWriter(logger io.StringWriter) *DockerExecBuilder
+	WithLogWriter(logger dogger.LogWriter) *DockerExecBuilder
 	WithPrivileged() *DockerExecBuilder
 	WithTTY() *DockerExecBuilder
 	WithUser(user *int64) *DockerExecBuilder
@@ -36,7 +37,7 @@ type DockerExecBuilder struct {
 	user         *int64
 	workingDir   string
 	cmd          []string
-	logger       *io.StringWriter
+	logger       *dogger.LogWriter
 	tty          bool
 	detach       bool
 	attachStdin  bool
@@ -49,7 +50,7 @@ type DockerExecBuilder struct {
 // Creates a default Docker client which can be overwritten using 'WithClient'.
 // Creates a default logger which logs using the 'fmt' package.
 func NewExecBuilder(ctx context.Context, containerID *string) *DockerExecBuilder {
-	var logger io.StringWriter = &defaultLogger{}
+	var logger dogger.LogWriter = &defaultLogger{}
 	if containerID == nil {
 		panic("Cannot run exec on nil containerID")
 	}
@@ -105,7 +106,7 @@ func (de *DockerExecBuilder) WithDetach() *DockerExecBuilder {
 }
 
 // Sets the logger which logs messages releated to the builder (and not the container).
-func (de *DockerExecBuilder) WithLogWriter(logger io.StringWriter) *DockerExecBuilder {
+func (de *DockerExecBuilder) WithLogWriter(logger dogger.LogWriter) *DockerExecBuilder {
 	de.logger = &logger
 	return de
 }
@@ -155,7 +156,7 @@ func (de *DockerExecBuilder) Create() (Exec, error) {
 
 	response, err := de.client.ContainerExecCreate(de.ctx, *de.containerID, execConfig)
 	if err != nil {
-		if _, logErr := (*de.logger).WriteString(fmt.Sprintln("Exec create failed: ", err)); logErr != nil {
+		if _, logErr := (*de.logger).WriteError(fmt.Sprintln("Exec create failed: ", err)); logErr != nil {
 			//nolint
 			fmt.Printf("Failed to write log: %s", logErr.Error())
 		}

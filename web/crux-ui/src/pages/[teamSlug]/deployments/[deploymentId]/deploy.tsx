@@ -1,5 +1,7 @@
 import { Layout } from '@app/components/layout'
-import DeploymentContainerStatusList from '@app/components/projects/versions/deployments/deployment-container-status-list'
+import DeploymentContainerStatusList, {
+  ContainerProgress,
+} from '@app/components/projects/versions/deployments/deployment-container-status-list'
 import DeploymentDetailsCard from '@app/components/projects/versions/deployments/deployment-details-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import EventsTerminal from '@app/components/shared/events-terminal'
@@ -36,6 +38,7 @@ const DeployPage = (props: DeployPageProps) => {
 
   const [events, setEvents] = useState<DeploymentEvent[]>([])
   const [status, setStatus] = useState<DeploymentStatus>(propsDeployment.status)
+  const [progress, setProgress] = useState<Record<string, ContainerProgress>>({})
 
   const deployment = {
     ...propsDeployment,
@@ -55,9 +58,23 @@ const DeployPage = (props: DeployPageProps) => {
     setEvents(newEvents)
 
     const deploymentStatuses = newEvents.filter(it => it.type === 'deployment-status')
-
     if (deploymentStatuses.length > 0) {
       setStatus(deploymentStatuses[deploymentStatuses.length - 1].deploymentStatus)
+    }
+
+    const containerProgresses = newEvents.filter(it => it.type === 'container-progress')
+    if (containerProgresses.length > 0) {
+      const newProgress = containerProgresses.reduce(
+        (prev, it) => ({
+          ...prev,
+          [it.containerProgress.instanceId]: {
+            status: it.containerProgress.status,
+            progress: it.containerProgress.progress,
+          },
+        }),
+        progress,
+      )
+      setProgress(newProgress)
     }
   })
   sock.on(WS_TYPE_DEPLOYMENT_EVENT, (message: DeploymentEventMessage) => {
@@ -66,6 +83,16 @@ const DeployPage = (props: DeployPageProps) => {
 
     if (message.type === 'deployment-status') {
       setStatus(message.deploymentStatus)
+    }
+
+    if (message.type === 'container-progress') {
+      setProgress({
+        ...progress,
+        [message.containerProgress.instanceId]: {
+          status: message.containerProgress.status,
+          progress: message.containerProgress.progress,
+        },
+      })
     }
   })
 
@@ -95,14 +122,20 @@ const DeployPage = (props: DeployPageProps) => {
 
   const onBack = () => router.replace(routes.deployment.details(deployment.id))
 
-  const formatEvent = (event: DeploymentEvent): string[] => {
+  const formatEvent = (event: DeploymentEvent) => {
     if (event.type !== 'log') {
       return []
     }
 
     const date = new Date(event.createdAt)
-    const value = event.log as string[]
-    return value?.map(it => `${terminalDateFormat(date)}\xa0\xa0\xa0\xa0${it}`) ?? []
+    const { log, level } = event.log
+    const className = level === 'warn' ? 'text-dyo-orange' : level === 'error' ? 'text-error-red' : null
+    return (
+      log.map(it => ({
+        content: `${terminalDateFormat(date)}\xa0\xa0\xa0\xa0${it}`,
+        className,
+      })) ?? []
+    )
   }
 
   return (
@@ -124,7 +157,7 @@ const DeployPage = (props: DeployPageProps) => {
       </PageHeading>
 
       <DeploymentDetailsCard className="flex flex-grow p-6" deployment={deployment}>
-        <DeploymentContainerStatusList deployment={propsDeployment} />
+        <DeploymentContainerStatusList className="mb-4" deployment={propsDeployment} progress={progress} />
         <EventsTerminal events={events} formatEvent={formatEvent} />
       </DeploymentDetailsCard>
     </Layout>
