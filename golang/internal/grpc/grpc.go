@@ -596,7 +596,7 @@ func executeVersionDeployLegacyRequest(
 		dog.Write(dogger.INFO, "Deployment succeeded.")
 	} else {
 		deployStatus = common.DeploymentStatus_FAILED
-		dog.Write(dogger.ERROR, "Deployment failed " + err.Error())
+		dog.Write(dogger.ERROR, "Deployment failed "+err.Error())
 	}
 
 	dog.WriteDeploymentStatus(deployStatus)

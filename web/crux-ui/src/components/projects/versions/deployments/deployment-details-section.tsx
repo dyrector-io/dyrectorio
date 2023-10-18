@@ -1,7 +1,6 @@
 import useItemEditorState from '@app/components/editor/use-item-editor-state'
 import KeyValueInput from '@app/components/shared/key-value-input'
 import useTranslation from 'next-translate/useTranslation'
-import DeploymentDetailsCard from './deployment-details-card'
 import { DeploymentActions, DeploymentState } from './use-deployment-state'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useSWR from 'swr'

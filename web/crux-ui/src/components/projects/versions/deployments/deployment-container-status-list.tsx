@@ -2,7 +2,6 @@ import ContainerStatusIndicator from '@app/components/nodes/container-status-ind
 import ContainerStatusTag from '@app/components/nodes/container-status-tag'
 import { SECOND_IN_MILLIS } from '@app/const'
 import DyoIcon from '@app/elements/dyo-icon'
-import { DyoList } from '@app/elements/dyo-list'
 import DyoTable, { DyoColumn } from '@app/elements/dyo-table'
 import DyoTooltip from '@app/elements/dyo-tooltip'
 import useInterval from '@app/hooks/use-interval'
@@ -128,7 +127,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
               <div
                 className="z-40 absolute left-0 right-0 top-0 bottom-0 bg-dyo-orange py-1 text-sm font-medium text-white text-center p-0.5"
                 style={{ width: `${Math.ceil(progress[it.instanceId].progress * 100)}%` }}
-              ></div>
+              />
               <div className="relative z-50 py-1 text-sm font-medium text-white text-center p-0.5 leading-none">
                 {`${it.imageName}:${it.imageTag}`} - {Math.floor(progress[it.instanceId].progress * 1000) / 10}%
               </div>

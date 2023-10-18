@@ -17,13 +17,15 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
-type DoggerLevel int32
+type Level int32
 
 const (
-	INFO    DoggerLevel = 1
-	WARNING DoggerLevel = 2
-	ERROR   DoggerLevel = 3
+	INFO    Level = 1
+	WARNING Level = 2
+	ERROR   Level = 3
 )
+
+const ProgressReportThrottle = 500
 
 type status struct {
 	Current int64
@@ -65,7 +67,7 @@ func (dog *DeploymentLogger) SetRequestID(requestID string) {
 }
 
 // Writes to all available streams: std.out and gRPC streams
-func (dog *DeploymentLogger) Write(level DoggerLevel, messages ...string) {
+func (dog *DeploymentLogger) Write(level Level, messages ...string) {
 	for i := range messages {
 		log.Info().Str("deployment", dog.deploymentID).Msg(messages[i])
 		dog.logs = append(dog.logs, messages...)
@@ -107,7 +109,12 @@ func (dog *DeploymentLogger) WriteDeploymentStatus(status common.DeploymentStatu
 	}
 }
 
-func (dog *DeploymentLogger) WriteContainerState(containerState common.ContainerState, reason string, level DoggerLevel, messages ...string) {
+func (dog *DeploymentLogger) WriteContainerState(
+	containerState common.ContainerState,
+	reason string,
+	level Level,
+	messages ...string,
+) {
 	prefix := fmt.Sprintf("%s - %s", dog.requestID, containerState)
 
 	for i := range messages {
@@ -127,9 +134,9 @@ func (dog *DeploymentLogger) WriteContainerState(containerState common.Container
 		logLevel := common.DeploymentMessageLevel(level)
 
 		err := dog.stream.Send(&common.DeploymentStatusMessage{
-			Log:  messages,
+			Log:      messages,
 			LogLevel: &logLevel,
-			Data: instance,
+			Data:     instance,
 		})
 		if err != nil {
 			log.Error().
@@ -182,6 +189,19 @@ func (dog *DeploymentLogger) WriteError(s string) (int, error) {
 	return len(s), nil
 }
 
+func reportDockerPullProgress(dog *DeploymentLogger, stat map[string]*status) {
+	total := float32(len(stat))
+	sum := float32(0)
+	for _, status := range stat {
+		if status.Total == 0 {
+			continue
+		}
+		sum += (float32(status.Current) / float32(status.Total))
+	}
+
+	dog.WriteContainerProgress("Pulling", sum/total)
+}
+
 func (dog *DeploymentLogger) WriteDockerPull(header string, respIn io.ReadCloser) error {
 	if respIn == nil {
 		dog.Write(INFO, fmt.Sprintf("%s ✓ up-to-date", header))
@@ -230,20 +250,11 @@ func (dog *DeploymentLogger) WriteDockerPull(header string, respIn io.ReadCloser
 			dog.Write(INFO, fmt.Sprintf("%v layers: %d/%d, %s %s", header, pulled, len(stat), jm.ID, jm.Status))
 		}
 
-		time := time.Now().UnixMilli()
-		if time-lastReportTime >= 500 {
-			lastReportTime = time
+		currentTime := time.Now().UnixMilli()
+		if currentTime-lastReportTime >= ProgressReportThrottle {
+			lastReportTime = currentTime
 
-			total := float32(len(stat))
-			sum := float32(0)
-			for _, status := range stat {
-				if status.Total == 0 {
-					continue
-				}
-				sum = sum + (float32(status.Current) / float32(status.Total))
-			}
-
-			dog.WriteContainerProgress("Pulling", sum/total)
+			reportDockerPullProgress(dog, stat)
 		}
 	}
 }

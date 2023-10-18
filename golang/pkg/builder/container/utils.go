@@ -8,6 +8,7 @@ import (
 	"io"
 
 	"github.com/docker/docker/api/types"
+
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 
 	"github.com/rs/zerolog/log"
@@ -34,7 +35,12 @@ type defaultLogger struct {
 	dogger.LogWriter
 }
 
-func (logger defaultLogger) WriteString(s string) (int, error) {
+func (logger defaultLogger) WriteInfo(s string) (int, error) {
+	fmt.Println(s) //nolint
+	return len(s), nil
+}
+
+func (logger defaultLogger) WriteError(s string) (int, error) {
 	fmt.Println(s) //nolint
 	return len(s), nil
 }

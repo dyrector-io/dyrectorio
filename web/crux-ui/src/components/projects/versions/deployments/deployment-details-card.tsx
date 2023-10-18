@@ -1,4 +1,3 @@
-import { DyoCard } from '@app/elements/dyo-card'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DeploymentDetails } from '@app/models'
 import { auditToLocaleDate } from '@app/utils'
