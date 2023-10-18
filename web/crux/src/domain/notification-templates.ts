@@ -4,7 +4,7 @@ import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
 const title = 'dyrector.io'
 
-export type NotificationMessageType = 'node' | 'version' | 'invite' | 'failed-deploy' | 'successful-deploy'
+export type NotificationMessageType = 'node' | 'version' | 'invite' | 'failedDeploy' | 'successfulDeploy'
 
 export type BaseMessage = {
   owner: Identity | string
@@ -102,6 +102,18 @@ const getTeamsTemplate = (message: string): any => ({
   ],
 })
 
+const getRocketTemplate = (message: string) : any => (
+  {
+    attachments: [
+      {
+        title: title,
+        color: '1555130',
+        text: message,
+        title_link: "https://dyrector.io",
+      }
+    ]
+})
+
 export const getTemplate = (notificationType: NotificationTypeEnum, message: string): any | null => {
   switch (notificationType) {
     case 'discord':
@@ -110,6 +122,8 @@ export const getTemplate = (notificationType: NotificationTypeEnum, message: str
       return getSlackTemplate(message)
     case 'teams':
       return getTeamsTemplate(message)
+    case 'rocket':
+      return getRocketTemplate(message)
     default:
       throw new CruxInternalServerErrorException({
         message: 'Unsupported notification type',
