@@ -5,6 +5,7 @@ import { Layout } from '@app/components/layout'
 import useInstanceState from '@app/components/projects/versions/deployments/instances/use-instance-state'
 import useDeploymentState from '@app/components/projects/versions/deployments/use-deployment-state'
 import CommonConfigSection from '@app/components/projects/versions/images/config/common-config-section'
+import configToFilters from '@app/components/projects/versions/images/config/config-to-filters'
 import CraneConfigSection from '@app/components/projects/versions/images/config/crane-config-section'
 import DagentConfigSection from '@app/components/projects/versions/images/config/dagent-config-section'
 import EditImageJson from '@app/components/projects/versions/images/edit-image-json'
@@ -34,13 +35,12 @@ import {
 } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { jsonErrorOf, getMergedContainerConfigFieldErrors, ContainerConfigValidationErrors } from '@app/validations'
+import { ContainerConfigValidationErrors, getMergedContainerConfigFieldErrors, jsonErrorOf } from '@app/validations'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import configToFilters from '@app/components/projects/versions/images/config/config-to-filters'
 
 interface InstanceDetailsPageProps {
   deployment: DeploymentRoot
@@ -103,28 +103,21 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     setFilters(current => configToFilters(current, state.config))
   }, [state.config])
 
-  const onChange = (newConfig: Partial<InstanceContainerConfigData>) => {
-    const applied: InstanceContainerConfigData = {
-      ...state.config,
-      ...newConfig,
-    }
+  const setErrorsForConfig = useCallback(
+    (imageConfig, instanceConfig) => {
+      const merged = mergeConfigs(imageConfig, instanceConfig)
+      const errors = getMergedContainerConfigFieldErrors(merged, t)
+      setFieldErrors(errors)
+      setJsonError(jsonErrorOf(errors))
+    },
+    [t],
+  )
 
-    const merged = mergeConfigs(instance.image.config, applied)
-    const errors = getMergedContainerConfigFieldErrors(merged, t)
-    setFieldErrors(errors)
-    setJsonError(jsonErrorOf(errors))
+  useEffect(() => {
+    setErrorsForConfig(instance.image.config, instance.config)
+  }, [instance.image.config, instance.config, setErrorsForConfig])
 
-    actions.onPatch(instance.id, newConfig)
-  }
-
-  const onResetSection = (section: ImageConfigProperty) => {
-    const newConfig = actions.resetSection(section)
-
-    const merged = mergeConfigs(instance.image.config, newConfig)
-    const errors = getMergedContainerConfigFieldErrors(merged, t)
-    setFieldErrors(errors)
-    setJsonError(jsonErrorOf(errors))
-  }
+  const onChange = (newConfig: Partial<InstanceContainerConfigData>) => actions.onPatch(instance.id, newConfig)
 
   const pageLink: BreadcrumbLink = {
     name: t('common:container'),
@@ -206,7 +199,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             config={state.config}
             resetableConfig={state.resetableConfig}
             onChange={onChange}
-            onResetSection={onResetSection}
+            onResetSection={actions.resetSection}
             editorOptions={editorState}
             fieldErrors={fieldErrors}
             configType="instance"
@@ -221,7 +214,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             config={state.config}
             resetableConfig={state.resetableConfig}
             onChange={onChange}
-            onResetSection={onResetSection}
+            onResetSection={actions.resetSection}
             editorOptions={editorState}
             fieldErrors={fieldErrors}
             configType="instance"
@@ -234,7 +227,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             config={state.config}
             resetableConfig={state.resetableConfig}
             onChange={onChange}
-            onResetSection={onResetSection}
+            onResetSection={actions.resetSection}
             editorOptions={editorState}
             fieldErrors={fieldErrors}
             configType="instance"

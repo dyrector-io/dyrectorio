@@ -29,7 +29,7 @@ export type InstanceState = {
 }
 
 export type InstanceActions = {
-  resetSection: (section: ImageConfigProperty) => InstanceContainerConfigData
+  resetSection: (section: ImageConfigProperty) => void
   onPatch: (newConfig: Partial<ContainerConfigData>) => void
   onParseError: (error: Error) => void
 }
