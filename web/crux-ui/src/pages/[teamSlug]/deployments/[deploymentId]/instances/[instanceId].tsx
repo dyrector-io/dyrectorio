@@ -9,7 +9,10 @@ import configToFilters from '@app/components/projects/versions/images/config/con
 import CraneConfigSection from '@app/components/projects/versions/images/config/crane-config-section'
 import DagentConfigSection from '@app/components/projects/versions/images/config/dagent-config-section'
 import EditImageJson from '@app/components/projects/versions/images/edit-image-json'
-import ImageConfigFilters, { dockerFilterSet, k8sFilterSet } from '@app/components/projects/versions/images/image-config-filters'
+import ImageConfigFilters, {
+  dockerFilterSet,
+  k8sFilterSet,
+} from '@app/components/projects/versions/images/image-config-filters'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import DyoButton from '@app/elements/dyo-button'
@@ -23,15 +26,15 @@ import {
   DeploymentDetails,
   DeploymentRoot,
   ImageConfigProperty,
-  instanceConfigToJsonInstanceConfig,
   InstanceContainerConfigData,
   InstanceJsonContainerConfig,
-  mergeConfigs,
-  mergeJsonConfigToInstanceContainerConfig,
   NodeDetails,
   ProjectDetails,
   VersionDetails,
   ViewState,
+  instanceConfigToJsonInstanceConfig,
+  mergeConfigs,
+  mergeJsonConfigToInstanceContainerConfig,
 } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
