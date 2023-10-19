@@ -44,7 +44,7 @@ func deleteContainerByIDAndState(ctx context.Context, dog *dogger.DeploymentLogg
 	switch state {
 	case "running", "paused", "restarting":
 		if dog != nil {
-			dog.WriteInfo("Stopping container: "+helper.FirstN(id, VisibleIDLimit))
+			dog.WriteInfo("Stopping container: " + helper.FirstN(id, VisibleIDLimit))
 		}
 
 		if err = cli.ContainerStop(ctx, id, container.StopOptions{}); err != nil {

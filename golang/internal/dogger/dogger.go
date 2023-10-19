@@ -246,7 +246,6 @@ func (dog *DeploymentLogger) WriteDockerPull(header string, respIn io.ReadCloser
 		}
 
 		if time.Since(lastReportTime).Milliseconds() >= ProgressReportThrottleMillis {
-			fmt.Println("REPORT")
 			lastReportTime = time.Now()
 
 			reportDockerPullProgress(dog, stat)
