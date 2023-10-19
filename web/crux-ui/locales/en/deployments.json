@@ -19,6 +19,7 @@
   "noVersions": "You haven't added a version to this project yet.",
   "alreadyHaveDeployment": "You already have a deployment with the same prefix for that node",
   "canNotCopyInProgress": "You can not copy an ",
+  "prefix": "Prefix:",
   "prefixName": "Prefix: {{name}}",
   "showLogs": "Show logs",
   "proceedYouDeletePrefix": "If you proceed, you will delete containers with prefix {{prefix}} on node {{node}}. This action is not revocable.",

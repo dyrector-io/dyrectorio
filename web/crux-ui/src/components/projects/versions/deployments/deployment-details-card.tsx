@@ -1,4 +1,3 @@
-import { DyoCard } from '@app/elements/dyo-card'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DeploymentDetails } from '@app/models'
 import { auditToLocaleDate } from '@app/utils'
@@ -19,19 +18,23 @@ const DeploymentDetailsCard = (props: DeploymentDetailsCardProps) => {
   const { t } = useTranslation('deployments')
 
   return (
-    <DyoCard className={clsx('flex flex-col', className ?? 'p-6')}>
-      <div className="flex flex-row justify-between">
-        <DyoLabel>{t('prefixName', { name: deployment.prefix })}</DyoLabel>
+    <div className={clsx('flex flex-col', 'card rounded-lg bg-medium shadow-lg')}>
+      <div className="flex flex-row rounded-t-lg bg-medium-eased px-4 py-3">
+        <DyoLabel className="mr-2">
+          <span className="mr-1 text-bold">{t('prefix')}</span>
+          {deployment.prefix}
+        </DyoLabel>
 
-        <DeploymentStatusTag className="my-auto" status={deployment.status} />
+        <div className="flex-1">
+          <DeploymentStatusTag status={deployment.status} />
+        </div>
 
-        <DyoLabel textColor="text-bright" suppressHydrationWarning>
+        <DyoLabel textColor="text-bright mr-2" suppressHydrationWarning>
           {auditToLocaleDate(deployment.audit)}
         </DyoLabel>
       </div>
-
-      {children}
-    </DyoCard>
+      <div className={clsx('flex flex-col', className)}>{children}</div>
+    </div>
   )
 }
 
