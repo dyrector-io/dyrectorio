@@ -171,6 +171,8 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     </div>
   )
 
+  const kubeNode = deployment.node.type === 'k8s'
+
   return (
     <Layout title={t('instancesName', state.config ?? instance.image)} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
@@ -208,31 +210,33 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             publicKey={deployment.publicKey}
           />
 
-          <CraneConfigSection
-            disabled={!deploymentState.mutable}
-            selectedFilters={filters}
-            config={state.config}
-            resetableConfig={state.resetableConfig}
-            onChange={onChange}
-            onResetSection={actions.resetSection}
-            editorOptions={editorState}
-            fieldErrors={fieldErrors}
-            configType="instance"
-            imageConfig={instance.image.config}
-          />
-
-          <DagentConfigSection
-            disabled={!deploymentState.mutable}
-            selectedFilters={filters}
-            config={state.config}
-            resetableConfig={state.resetableConfig}
-            onChange={onChange}
-            onResetSection={actions.resetSection}
-            editorOptions={editorState}
-            fieldErrors={fieldErrors}
-            configType="instance"
-            imageConfig={instance.image.config}
-          />
+          {kubeNode ? (
+            <CraneConfigSection
+              disabled={!deploymentState.mutable}
+              selectedFilters={filters}
+              config={state.config}
+              resetableConfig={state.resetableConfig}
+              onChange={onChange}
+              onResetSection={actions.resetSection}
+              editorOptions={editorState}
+              fieldErrors={fieldErrors}
+              configType="instance"
+              imageConfig={instance.image.config}
+            />
+          ) : (
+            <DagentConfigSection
+              disabled={!deploymentState.mutable}
+              selectedFilters={filters}
+              config={state.config}
+              resetableConfig={state.resetableConfig}
+              onChange={onChange}
+              onResetSection={actions.resetSection}
+              editorOptions={editorState}
+              fieldErrors={fieldErrors}
+              configType="instance"
+              imageConfig={instance.image.config}
+            />
+          )}
         </DyoCard>
       )}
 
