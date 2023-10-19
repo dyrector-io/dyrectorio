@@ -64,16 +64,14 @@ const DeployPage = (props: DeployPageProps) => {
 
     const containerProgresses = newEvents.filter(it => it.type === 'container-progress')
     if (containerProgresses.length > 0) {
-      const newProgress = containerProgresses.reduce(
-        (prev, it) => ({
-          ...prev,
-          [it.containerProgress.instanceId]: {
-            status: it.containerProgress.status,
-            progress: it.containerProgress.progress,
-          },
-        }),
-        progress,
-      )
+      const newProgress = containerProgresses.reduce((prev, it) => {
+        prev[it.containerProgress.instanceId] = {
+          status: it.containerProgress.status,
+          progress: it.containerProgress.progress,
+        }
+
+        return prev
+      }, progress)
       setProgress(newProgress)
     }
   })

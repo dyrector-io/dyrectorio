@@ -21,7 +21,7 @@ const DeploymentDetailsCard = (props: DeploymentDetailsCardProps) => {
     <div className={clsx('flex flex-col', 'card rounded-lg bg-medium shadow-lg')}>
       <div className="flex flex-row rounded-t-lg bg-medium-eased px-4 py-3">
         <DyoLabel className="mr-2">
-          <b className="mr-1">{t('prefix')}</b>
+          <span className="mr-1 text-bold">{t('prefix')}</span>
           {deployment.prefix}
         </DyoLabel>
 

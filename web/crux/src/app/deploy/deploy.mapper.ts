@@ -226,15 +226,8 @@ export default class DeployMapper {
 
     switch (event.type) {
       case DeploymentEventTypeEnum.log: {
-        if (Array.isArray(event.value)) {
-          result.log = {
-            log: event.value as string[],
-            level: 'info',
-          }
-        } else {
-          const value = event.value as { log: string[]; level: DeploymentLogLevelDto }
-          result.log = value as DeploymentEventLogDto
-        }
+        const value = event.value as { log: string[]; level: DeploymentLogLevelDto }
+        result.log = value as DeploymentEventLogDto
         break
       }
       case DeploymentEventTypeEnum.deploymentStatus: {

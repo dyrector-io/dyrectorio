@@ -35,14 +35,12 @@ type defaultLogger struct {
 	dogger.LogWriter
 }
 
-func (logger defaultLogger) WriteInfo(s string) (int, error) {
-	fmt.Println(s) //nolint
-	return len(s), nil
+func (logger defaultLogger) WriteInfo(messages ...string) {
+	fmt.Println(messages) //nolint
 }
 
-func (logger defaultLogger) WriteError(s string) (int, error) {
-	fmt.Println(s) //nolint
-	return len(s), nil
+func (logger defaultLogger) WriteError(messages ...string) {
+	fmt.Println(messages) //nolint
 }
 
 func ReadDockerLogsFromReadCloser(logs io.ReadCloser, skip, take int) []string {

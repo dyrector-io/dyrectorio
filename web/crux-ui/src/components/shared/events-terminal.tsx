@@ -5,12 +5,10 @@ import { useEffect, useRef, useState } from 'react'
 
 const SCROLL_LOCK_MARGIN = 10
 
-export type TerminalEvent =
-  | string
-  | {
-      content: string
-      className?: string
-    }
+export type TerminalEvent = {
+  content: string
+  className?: string
+}
 
 interface EventsTerminalProps<T> {
   events: T[]
@@ -64,11 +62,8 @@ const EventsTerminal = <T,>(props: EventsTerminalProps<T>) => {
         className="flex flex-col h-full overflow-y-auto bg-gray-900 rounded-md ring-2 ring-light-grey border-dark px-2 py-1 h-128 font-roboto"
       >
         {eventStrings.map((it, index) => (
-          <span
-            className={clsx('text-bright tracking-widest py-2 text-sm', typeof it === 'string' ? null : it.className)}
-            key={`event-${index}`}
-          >
-            {typeof it === 'string' ? it : it.content}
+          <span className={clsx('text-bright tracking-widest py-2 text-sm', it.className)} key={`event-${index}`}>
+            {it.content}
           </span>
         ))}
       </div>

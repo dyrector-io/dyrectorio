@@ -70,7 +70,7 @@ func TestDoggerSingleStatusMessage(t *testing.T) {
 	}
 	dog := dogger.NewDeploymentLogger(context.Background(), &deploymentId, ts, cfg)
 
-	dog.Write(dogger.INFO, "hello")
+	dog.WriteInfo("hello")
 
 	assertDoggerMessage(t, ts, []string{"hello"})
 }
@@ -84,7 +84,7 @@ func TestDoggerMulipleStatusMessages(t *testing.T) {
 	}
 	dog := dogger.NewDeploymentLogger(context.Background(), &deploymentId, ts, cfg)
 
-	dog.Write(dogger.INFO, "hello", "abcd")
+	dog.WriteInfo("hello", "abcd")
 
 	assertDoggerMessage(t, ts, []string{"hello", "abcd"})
 }
@@ -112,7 +112,7 @@ func TestDoggerContainerStatus(t *testing.T) {
 	}
 	dog := dogger.NewDeploymentLogger(context.Background(), &deploymentId, ts, cfg)
 
-	dog.WriteContainerState(common.ContainerState_RUNNING, "reason", dogger.INFO, "hello")
+	dog.WriteContainerState(common.ContainerState_RUNNING, "reason", dogger.Info, "hello")
 
 	assertDoggerMessage(t, ts, []string{"hello"})
 }

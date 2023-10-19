@@ -414,7 +414,7 @@ func executeVersionDeployRequest(
 
 		if err = deploy(ctx, dog, imageReq, versionData); err != nil {
 			failed = true
-			dog.Write(dogger.ERROR, err.Error())
+			dog.WriteError(err.Error())
 		}
 	}
 
@@ -592,11 +592,11 @@ func executeVersionDeployLegacyRequest(
 
 	deployStatus := common.DeploymentStatus_SUCCESSFUL
 	if err = deploy(ctx, dog, &deployImageRequest, nil); err == nil {
-		dog.Write(dogger.INFO, fmt.Sprintf("Deployment took: %.2f seconds", time.Since(t1).Seconds()))
-		dog.Write(dogger.INFO, "Deployment succeeded.")
+		dog.WriteInfo(fmt.Sprintf("Deployment took: %.2f seconds", time.Since(t1).Seconds()))
+		dog.WriteInfo("Deployment succeeded.")
 	} else {
 		deployStatus = common.DeploymentStatus_FAILED
-		dog.Write(dogger.ERROR, "Deployment failed "+err.Error())
+		dog.WriteError(fmt.Sprintf("Deployment failed %s", err.Error()))
 	}
 
 	dog.WriteDeploymentStatus(deployStatus)

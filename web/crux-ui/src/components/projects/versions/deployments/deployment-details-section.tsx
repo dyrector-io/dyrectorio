@@ -42,14 +42,18 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
     <DyoCard className={clsx('flex flex-col', className ?? 'p-6')}>
       <div className="flex flex-row justify-between mb-4">
         <DyoLabel>{t('prefixName', { name: deployment.prefix })}</DyoLabel>
+
         <DeploymentStatusTag className="my-auto" status={deployment.status} />
+
         <DyoLabel textColor="text-bright" suppressHydrationWarning>
           {auditToLocaleDate(deployment.audit)}
         </DyoLabel>
       </div>
+
       <DyoLabel className="whitespace-nowrap font-semibold tracking-wide text-bright mb-2">
         {t('configBundle').toUpperCase()}
       </DyoLabel>
+
       <div className="max-w-lg mb-3 flex flex-row mb-4">
         <DyoMultiSelect
           className="ml-2"

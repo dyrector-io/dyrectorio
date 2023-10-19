@@ -20,12 +20,12 @@ import (
 type Level int32
 
 const (
-	INFO    Level = 1
-	WARNING Level = 2
-	ERROR   Level = 3
+	Info    Level = 1
+	Warning Level = 2
+	Error   Level = 3
 )
 
-const ProgressReportThrottle = 500
+const ProgressReportThrottleMillis = 500
 
 type status struct {
 	Current int64
@@ -177,20 +177,15 @@ func (dog *DeploymentLogger) GetLogs() []string {
 	return dog.logs
 }
 
-func (dog *DeploymentLogger) WriteInfo(s string) (int, error) {
-	dog.Write(INFO, s)
-
-	return len(s), nil
+func (dog *DeploymentLogger) WriteInfo(messages ...string) {
+	dog.Write(Info, messages...)
 }
 
-func (dog *DeploymentLogger) WriteError(s string) (int, error) {
-	dog.Write(ERROR, s)
-
-	return len(s), nil
+func (dog *DeploymentLogger) WriteError(messages ...string) {
+	dog.Write(Error, messages...)
 }
 
 func reportDockerPullProgress(dog *DeploymentLogger, stat map[string]*status) {
-	var total float32
 	var sum float32
 	for _, status := range stat {
 		if status.Total == 0 {
@@ -199,12 +194,12 @@ func reportDockerPullProgress(dog *DeploymentLogger, stat map[string]*status) {
 		sum += (float32(status.Current) / float32(status.Total))
 	}
 
-	dog.WriteContainerProgress("Pulling", sum/total)
+	dog.WriteContainerProgress("Pulling", sum/float32(len(stat)))
 }
 
 func (dog *DeploymentLogger) WriteDockerPull(header string, respIn io.ReadCloser) error {
 	if respIn == nil {
-		dog.Write(INFO, fmt.Sprintf("%s ✓ up-to-date", header))
+		dog.WriteInfo(fmt.Sprintf("%s ✓ up-to-date", header))
 		return nil
 	}
 
@@ -213,14 +208,14 @@ func (dog *DeploymentLogger) WriteDockerPull(header string, respIn io.ReadCloser
 
 	dog.WriteContainerProgress("Pulling", 0)
 
-	lastReportTime := time.Now().UnixMilli()
+	lastReportTime := time.Now()
 
 	var pulled, pulling, waiting int
 	for i := 0; ; i++ {
 		var jm jsonmessage.JSONMessage
 		if err := dec.Decode(&jm); err != nil {
 			if err == io.EOF {
-				dog.Write(INFO, fmt.Sprintf("%s ✓ pull complete ", header))
+				dog.WriteInfo(fmt.Sprintf("%s ✓ pull complete ", header))
 				dog.WriteContainerProgress("Pull complete", 1)
 				return nil
 			}
@@ -232,13 +227,13 @@ func (dog *DeploymentLogger) WriteDockerPull(header string, respIn io.ReadCloser
 		}
 		switch {
 		case phase == imageHelper.LayerProgressStatusMatching:
-			dog.Write(INFO, fmt.Sprintf("%s ✓ up-to-date", header))
+			dog.WriteInfo(fmt.Sprintf("%s ✓ up-to-date", header))
 			return nil
 		case phase == imageHelper.LayerProgressStatusStarting ||
 			phase == imageHelper.LayerProgressStatusWaiting:
 			stat[jm.ID].Total = jm.Progress.Total
 			waiting++
-			dog.Write(INFO, fmt.Sprintf("%v layers: %d/%d, %s %s", header, pulled, len(stat), jm.ID, jm.Status))
+			dog.WriteInfo(fmt.Sprintf("%v layers: %d/%d, %s %s", header, pulled, len(stat), jm.ID, jm.Status))
 		case phase == imageHelper.LayerProgressStatusDownloading:
 			stat[jm.ID].Current = jm.Progress.Current
 			if stat[jm.ID].Total == 0 {
@@ -247,12 +242,12 @@ func (dog *DeploymentLogger) WriteDockerPull(header string, respIn io.ReadCloser
 			pulling++
 		case phase == imageHelper.LayerProgressStatusComplete || phase == imageHelper.LayerProgressStatusExists:
 			pulled++
-			dog.Write(INFO, fmt.Sprintf("%v layers: %d/%d, %s %s", header, pulled, len(stat), jm.ID, jm.Status))
+			dog.WriteInfo(fmt.Sprintf("%v layers: %d/%d, %s %s", header, pulled, len(stat), jm.ID, jm.Status))
 		}
 
-		currentTime := time.Now().UnixMilli()
-		if currentTime-lastReportTime >= ProgressReportThrottle {
-			lastReportTime = currentTime
+		if time.Since(lastReportTime).Milliseconds() >= ProgressReportThrottleMillis {
+			fmt.Println("REPORT")
+			lastReportTime = time.Now()
 
 			reportDockerPullProgress(dog, stat)
 		}
