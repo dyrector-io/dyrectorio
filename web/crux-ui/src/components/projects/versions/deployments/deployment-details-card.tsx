@@ -20,16 +20,18 @@ const DeploymentDetailsCard = (props: DeploymentDetailsCardProps) => {
   return (
     <div className={clsx('flex flex-col', 'card rounded-lg bg-medium shadow-lg')}>
       <div className="flex flex-row rounded-t-lg bg-medium-eased px-4 py-3">
-        <DyoLabel className="flex-1">
+        <DyoLabel className="mr-2">
           <b className="mr-1">{t('prefix')}</b>
           {deployment.prefix}
         </DyoLabel>
 
+        <div className="flex-1">
+          <DeploymentStatusTag status={deployment.status} />
+        </div>
+
         <DyoLabel textColor="text-bright mr-2" suppressHydrationWarning>
           {auditToLocaleDate(deployment.audit)}
         </DyoLabel>
-
-        <DeploymentStatusTag status={deployment.status} />
       </div>
       <div className={clsx('flex flex-col', className)}>{children}</div>
     </div>
