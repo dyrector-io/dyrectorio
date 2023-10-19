@@ -1,6 +1,6 @@
 import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
-import EventsTerminal from '@app/components/shared/events-terminal'
+import EventsTerminal, { TerminalEvent } from '@app/components/shared/events-terminal'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
@@ -67,6 +67,12 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
     },
   ]
 
+  const formatEvent = (it: ContainerLogMessage): TerminalEvent[] => [
+    {
+      content: it.log,
+    },
+  ]
+
   return (
     <Layout title={t('image')}>
       <PageHeading pageLink={pageLink} sublinks={sublinks} />
@@ -78,7 +84,7 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
           </DyoHeading>
         </div>
 
-        <EventsTerminal events={log} formatEvent={it => [it.log]} />
+        <EventsTerminal events={log} formatEvent={formatEvent} />
       </DyoCard>
     </Layout>
   )

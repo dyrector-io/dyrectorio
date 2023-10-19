@@ -128,7 +128,7 @@ func GetOwnContainer(ctx context.Context, cli client.APIClient) (*types.Containe
 
 	ownContainer, err := dockerHelper.GetContainerByName(ctx, cli, hostname)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w %w", err, &UnknownContainerError{})
 	}
 	if ownContainer != nil {
 		return ownContainer, nil
@@ -136,7 +136,7 @@ func GetOwnContainer(ctx context.Context, cli client.APIClient) (*types.Containe
 
 	ownContainer, err = dockerHelper.GetContainerByID(ctx, hostname)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w %w", err, &UnknownContainerError{})
 	}
 	if ownContainer != nil {
 		return ownContainer, nil
@@ -144,14 +144,14 @@ func GetOwnContainer(ctx context.Context, cli client.APIClient) (*types.Containe
 
 	cgroup, err := ParseCGroupFile()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w %w", err, &UnknownContainerError{})
 	}
 
 	log.Info().Str("cgroup", cgroup).Msg("Getting self by CGroup")
 
 	ownContainer, err = dockerHelper.GetContainerByID(ctx, cgroup)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w %w", err, &UnknownContainerError{})
 	}
 	if ownContainer != nil {
 		return ownContainer, nil

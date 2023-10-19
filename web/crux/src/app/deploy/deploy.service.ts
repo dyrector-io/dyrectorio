@@ -149,10 +149,11 @@ export default class DeployService {
     return this.mapper.toDetailsDto(deployment, publicKey, configBundleEnvironment)
   }
 
-  async getDeploymentEvents(deploymentId: string): Promise<DeploymentEventDto[]> {
+  async getDeploymentEvents(deploymentId: string, tryCount?: number): Promise<DeploymentEventDto[]> {
     const events = await this.prisma.deploymentEvent.findMany({
       where: {
         deploymentId,
+        tryCount,
       },
       orderBy: {
         createdAt: 'asc',

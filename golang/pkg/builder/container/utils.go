@@ -9,6 +9,8 @@ import (
 
 	"github.com/docker/docker/api/types"
 
+	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
+
 	"github.com/rs/zerolog/log"
 )
 
@@ -30,12 +32,15 @@ func registryAuthBase64(user, password string) string {
 }
 
 type defaultLogger struct {
-	io.StringWriter
+	dogger.LogWriter
 }
 
-func (logger defaultLogger) WriteString(s string) (int, error) {
-	fmt.Println(s) //nolint
-	return len(s), nil
+func (logger defaultLogger) WriteInfo(messages ...string) {
+	fmt.Println(messages) //nolint
+}
+
+func (logger defaultLogger) WriteError(messages ...string) {
+	fmt.Println(messages) //nolint
 }
 
 func ReadDockerLogsFromReadCloser(logs io.ReadCloser, skip, take int) []string {

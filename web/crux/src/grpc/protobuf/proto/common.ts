@@ -118,6 +118,51 @@ export function deploymentStatusToJSON(object: DeploymentStatus): string {
   }
 }
 
+export enum DeploymentMessageLevel {
+  DEPLOYMENT_MESSAGE_UNSPECIFIED = 0,
+  INFO = 1,
+  WARNING = 2,
+  ERROR = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function deploymentMessageLevelFromJSON(object: any): DeploymentMessageLevel {
+  switch (object) {
+    case 0:
+    case 'DEPLOYMENT_MESSAGE_UNSPECIFIED':
+      return DeploymentMessageLevel.DEPLOYMENT_MESSAGE_UNSPECIFIED
+    case 1:
+    case 'INFO':
+      return DeploymentMessageLevel.INFO
+    case 2:
+    case 'WARNING':
+      return DeploymentMessageLevel.WARNING
+    case 3:
+    case 'ERROR':
+      return DeploymentMessageLevel.ERROR
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return DeploymentMessageLevel.UNRECOGNIZED
+  }
+}
+
+export function deploymentMessageLevelToJSON(object: DeploymentMessageLevel): string {
+  switch (object) {
+    case DeploymentMessageLevel.DEPLOYMENT_MESSAGE_UNSPECIFIED:
+      return 'DEPLOYMENT_MESSAGE_UNSPECIFIED'
+    case DeploymentMessageLevel.INFO:
+      return 'INFO'
+    case DeploymentMessageLevel.WARNING:
+      return 'WARNING'
+    case DeploymentMessageLevel.ERROR:
+      return 'ERROR'
+    case DeploymentMessageLevel.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED'
+  }
+}
+
 export enum NetworkMode {
   NETWORK_MODE_UNSPECIFIED = 0,
   BRIDGE = 1,
@@ -519,10 +564,18 @@ export interface InstanceDeploymentItem {
   reason: string
 }
 
+export interface DeployContainerProgress {
+  instanceId: string
+  status: string
+  progress: number
+}
+
 export interface DeploymentStatusMessage {
   instance?: InstanceDeploymentItem | undefined
   deploymentStatus?: DeploymentStatus | undefined
+  containerProgress?: DeployContainerProgress | undefined
   log: string[]
+  logLevel?: DeploymentMessageLevel | undefined
 }
 
 export interface ContainerStateItemPort {
@@ -674,6 +727,28 @@ export const InstanceDeploymentItem = {
   },
 }
 
+function createBaseDeployContainerProgress(): DeployContainerProgress {
+  return { instanceId: '', status: '', progress: 0 }
+}
+
+export const DeployContainerProgress = {
+  fromJSON(object: any): DeployContainerProgress {
+    return {
+      instanceId: isSet(object.instanceId) ? String(object.instanceId) : '',
+      status: isSet(object.status) ? String(object.status) : '',
+      progress: isSet(object.progress) ? Number(object.progress) : 0,
+    }
+  },
+
+  toJSON(message: DeployContainerProgress): unknown {
+    const obj: any = {}
+    message.instanceId !== undefined && (obj.instanceId = message.instanceId)
+    message.status !== undefined && (obj.status = message.status)
+    message.progress !== undefined && (obj.progress = message.progress)
+    return obj
+  },
+}
+
 function createBaseDeploymentStatusMessage(): DeploymentStatusMessage {
   return { log: [] }
 }
@@ -683,7 +758,11 @@ export const DeploymentStatusMessage = {
     return {
       instance: isSet(object.instance) ? InstanceDeploymentItem.fromJSON(object.instance) : undefined,
       deploymentStatus: isSet(object.deploymentStatus) ? deploymentStatusFromJSON(object.deploymentStatus) : undefined,
+      containerProgress: isSet(object.containerProgress)
+        ? DeployContainerProgress.fromJSON(object.containerProgress)
+        : undefined,
       log: Array.isArray(object?.log) ? object.log.map((e: any) => String(e)) : [],
+      logLevel: isSet(object.logLevel) ? deploymentMessageLevelFromJSON(object.logLevel) : undefined,
     }
   },
 
@@ -694,11 +773,17 @@ export const DeploymentStatusMessage = {
     message.deploymentStatus !== undefined &&
       (obj.deploymentStatus =
         message.deploymentStatus !== undefined ? deploymentStatusToJSON(message.deploymentStatus) : undefined)
+    message.containerProgress !== undefined &&
+      (obj.containerProgress = message.containerProgress
+        ? DeployContainerProgress.toJSON(message.containerProgress)
+        : undefined)
     if (message.log) {
       obj.log = message.log.map(e => e)
     } else {
       obj.log = []
     }
+    message.logLevel !== undefined &&
+      (obj.logLevel = message.logLevel !== undefined ? deploymentMessageLevelToJSON(message.logLevel) : undefined)
     return obj
   },
 }
