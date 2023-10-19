@@ -1,14 +1,14 @@
 # Contributing
 
-We would ❤️ you to contribute to [Dyrector.io](https://Dyrector.io/) and help make it better! We want contributing to Dyrector to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including issues, and new docs, as well as updates and tweaks, blog posts, workshops, and more.
+We would love you to contribute to [dyrector.io](https://dyrector.io/) and help make it better! We want contributing to Dyrector to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including issues, and new docs, as well as updates and tweaks, blog posts, workshops, and more.
 
 ## Code of Conduct
 
-Help us keep Dyrector.io open and inclusive. Please read and follow our [Code of Conduct](/CODE_OF_CONDUCT.md).
+Help us keep dyrector.io open and inclusive. Please read and follow our [Code of Conduct](/CODE_OF_CONDUCT.md).
 
 ## How to Start?
 
-If you're worried or don’t know where to start, check out our next section explaining what kind of help we could use and where you can become involved. You can reach us out with questions to [@dyrectorio](https://twitter.com/dyrectorio) on Twitter or to anyone from the [Dyrector.io team on Discord](https://discord.gg/hMyT9cbYFD) .
+If you're worried or don’t know where to start, check out our next section explaining what kind of help we could use and where you can become involved. You can reach out with questions to [@dyrectorio](https://twitter.com/dyrectorio) on Twitter or to anyone from the [dyrector.io team on Discord](https://discord.gg/hMyT9cbYFD) .
 
 ## Development
 
@@ -43,7 +43,7 @@ If you're worried or don’t know where to start, check out our next section exp
 16. Open your e-mail message and using the link inside you can activate your account
 17. Fruitful contributing! 🎬
 
-Read more about the CLI in the [documentation](https://docs.Dyrector.io/get-started/cli).
+Read more about the CLI in the [documentation](https://docs.dyrector.io/get-started/cli).
 
 ## Testing
 
@@ -129,7 +129,7 @@ When `TYPE` can be:
 
 All PRs must include a commit message with the changes described.
 
-Dyrector.io is following Conventional Commits, the commit messages should be structured as follows:
+dyrector.io is following Conventional Commits, the commit messages should be structured as follows:
 
 ```
 <type>[optional scope]: <description>
@@ -139,7 +139,7 @@ Dyrector.io is following Conventional Commits, the commit messages should be str
 [optional footer(s)]
 ```
 
-The commit contains the following structural elements, to communicate intent to the consumers of Dyrector.io library:
+The commit contains the following structural elements, to communicate intent to the consumers of dyrector.io library:
 
 1. **fix:** a commit of the _type_ `fix` patches a bug in your codebase (this correlates with [`PATCH`](http://semver.org/#summary) in Semantic Versioning).
 1. **feat:** a commit of the _type_ `feat` introduces a new feature to the codebase (this correlates with [`MINOR`](http://semver.org/#summary) in Semantic Versioning).
@@ -154,25 +154,25 @@ More info: [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/
 
 ## Security & Privacy
 
-Security and privacy are extremely important to Dyrector.io's core team, developers, and users alike. Make sure to follow the best industry standards and practices.
+Security and privacy are extremely important to dyrector.io's core team, developers, and users alike. Make sure to follow the best industry standards and practices.
 
 ## Dependencies
 
-Please avoid introducing new dependencies to Dyrector.io without consulting the team. New dependencies can be very helpful but also introduce new security and privacy issues, complexity, and impact total docker image size.
+Please avoid introducing new dependencies to dyrector.io without consulting the team. New dependencies can be very helpful but also introduce new security and privacy issues, complexity, and impact total docker image size.
 
 Adding a new dependency should provide meaningful value to the product with minimum possible risk.
 
 ## Other Ways to Help
 
-Pull requests are great, but there are many other ways you can help Dyrector.io.
+Pull requests are great, but there are many other ways you can help dyrector.io.
 
 ### Sending Feedbacks & Reporting Bugs
 
-Sending feedback is a great way for us to understand your different use cases of Dyrector.io better. If you had any issues, bugs, or want to share about your experience, feel free to do so on our GitHub issues page or at our [Discord channel](https://discord.gg/hMyT9cbYFD).
+Sending feedback is a great way for us to understand your different use cases of dyrector.io better. If you had any issues, bugs, or want to share about your experience, feel free to do so on our GitHub issues page or at our [Discord channel](https://discord.gg/hMyT9cbYFD).
 
 ### Submitting New Ideas
 
-If you think Dyrector.io could use a new feature, please open an issue on our GitHub repository, stating as much information as you can think of your new idea and it's implications. We'd also use this issue to gather more information, get more feedback from the community, and have a proper discussion about the new feature.
+If you think dyrector.io could use a new feature, please open an issue on our GitHub repository, stating as much information as you can think of your new idea and it's implications. We'd also use this issue to gather more information, get more feedback from the community, and have a proper discussion about the new feature.
 
 ### Improving Documentation
 
