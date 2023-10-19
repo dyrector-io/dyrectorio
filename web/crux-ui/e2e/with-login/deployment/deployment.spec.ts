@@ -181,7 +181,7 @@ test('Incremental versions should keep config bundle environment after a success
   const wsRoute = TEAM_ROUTES.deployment.detailsSocket(deploymentId)
   const wsPatchReceived = waitSocketReceived(ws, wsRoute, WS_TYPE_PATCH_RECEIVED)
 
-  await page.click('label:text-is("None"):right-of(label:text-is("Config bundle"))')
+  await page.click('label:text-is("None"):below(label:text-is("CONFIG BUNDLE"))')
   await page.click(`label:text-is("${bundleName}"):below(label:text-is("None"))`)
 
   await wsPatchReceived
@@ -190,7 +190,7 @@ test('Incremental versions should keep config bundle environment after a success
 
   await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
-  await expect(page.locator('label:text-is("None"):right-of(label:text-is("Config bundle"))')).toHaveCount(1)
+  await expect(page.locator('label:text-is("None"):below(label:text-is("CONFIG BUNDLE"))')).toHaveCount(1)
 
   await expect(page.locator('input[placeholder="Key"]').first()).toHaveValue(BUNDLE_ENV)
   await expect(page.locator('input[placeholder="Value"]').first()).toHaveValue(BUNDLE_VALUE)

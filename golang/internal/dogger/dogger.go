@@ -190,8 +190,8 @@ func (dog *DeploymentLogger) WriteError(s string) (int, error) {
 }
 
 func reportDockerPullProgress(dog *DeploymentLogger, stat map[string]*status) {
-	total := float32(len(stat))
-	sum := float32(0)
+	var total float32
+	var sum float32
 	for _, status := range stat {
 		if status.Total == 0 {
 			continue
