@@ -96,4 +96,4 @@ export const matchNoWhitespace = (schema: yup.StringSchema<string, yup.AnyObject
   schema.matches(/^\S+$/g, { message: REGEX_ERROR_NO_WHITESPACES }) // all characters are non-whitespaces
 
 export const matchNoTrailingWhitespace = (schema: yup.StringSchema<string, yup.AnyObject, undefined>) =>
-  schema.matches(/^\S.*\S$/g, { message: REGEX_ERROR_NO_WHITESPACES }) // any characters but no trailing whitespaces
+  schema.matches(/^[^\s]+(\s+[^\s]+)*$/g, { message: REGEX_ERROR_NO_WHITESPACES }) // any characters but no trailing whitespaces

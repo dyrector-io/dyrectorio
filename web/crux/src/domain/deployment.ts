@@ -192,10 +192,6 @@ export default class Deployment {
       })
     }
 
-    if (progress.containerProgress) {
-      console.info(`${progress.containerProgress.instanceId} - ${progress.containerProgress.progress}`)
-    }
-
     const length = progress.log?.length ?? 0
 
     if (length > 0) {
