@@ -9,7 +9,7 @@ import configToFilters from '@app/components/projects/versions/images/config/con
 import CraneConfigSection from '@app/components/projects/versions/images/config/crane-config-section'
 import DagentConfigSection from '@app/components/projects/versions/images/config/dagent-config-section'
 import EditImageJson from '@app/components/projects/versions/images/edit-image-json'
-import ImageConfigFilters from '@app/components/projects/versions/images/image-config-filters'
+import ImageConfigFilters, { dockerFilterSet, k8sFilterSet } from '@app/components/projects/versions/images/image-config-filters'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import DyoButton from '@app/elements/dyo-button'
@@ -190,7 +190,14 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
           {getViewStateButtons()}
         </div>
-        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} filters={filters} />}
+
+        {viewState === 'editor' && (
+          <ImageConfigFilters
+            onChange={setFilters}
+            filters={filters}
+            filterSet={kubeNode ? k8sFilterSet : dockerFilterSet}
+          />
+        )}
       </DyoCard>
 
       {viewState === 'editor' && (
