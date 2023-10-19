@@ -1,6 +1,6 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
-import { Observable, Subject, map, of, takeUntil } from 'rxjs'
+import { Observable, Subject, map, of, startWith, takeUntil } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { WsAuthorize, WsClient, WsMessage, WsSubscribe, WsSubscription, WsUnsubscribe } from 'src/websockets/common'
 import SocketClient from 'src/websockets/decorators/ws.client.decorator'
@@ -158,18 +158,21 @@ export default class DeployWebSocketGateway {
     @DeploymentId() deploymentId: string,
   ): Promise<Observable<WsMessage<DeploymentEventListMessage> | WsMessage<DeploymentEventMessage>>> {
     const deployment = await this.service.getDeploymentDetails(deploymentId)
-    const deploymentEvents = await this.service.getDeploymentEvents(deploymentId)
 
     if (deployment.status !== 'in-progress') {
+      const deploymentEvents = await this.service.getDeploymentEvents(deploymentId)
+
       return of({
         type: WS_TYPE_DEPLOYMENT_EVENT_LIST,
         data: deploymentEvents,
       } as WsMessage<DeploymentEventListMessage>)
     }
 
+    const currentEvents = await this.service.getDeploymentEvents(deploymentId, deployment.lastTry)
     const observable = await this.service.subscribeToDeploymentEvents(deploymentId)
 
     return observable.pipe(
+      startWith(currentEvents),
       map(it => {
         const msg: WsMessage<DeploymentEventListMessage> = {
           type: WS_TYPE_DEPLOYMENT_EVENT_LIST,

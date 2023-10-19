@@ -79,7 +79,7 @@ test('Container log should appear after a successful deployment', async ({ page 
   await page.waitForURL(TEAM_ROUTES.deployment.deploy(deploymentId))
   await page.waitForSelector('h2:text-is("Deployments")')
 
-  const containerRow = page.locator(`span:text-is("${imageName}") >> xpath=../..`)
+  const containerRow = page.locator(`div:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
 
   const runningTag = containerRow.locator(':text-is("Running")')
@@ -114,7 +114,7 @@ test('Container log should appear on a node container', async ({ page }) => {
   await page.waitForURL(TEAM_ROUTES.deployment.deploy(deploymentId))
   await page.waitForSelector('h2:text-is("Deployments")')
 
-  const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
+  const containerRow = await page.locator(`div:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
 
   const runningTag = await containerRow.locator(':text-is("Running")')
