@@ -13,12 +13,12 @@ type TestLogger struct {
 	dogger.LogWriter
 }
 
-func (testLogger *TestLogger) WriteInfo(s string) {
+func (testLogger *TestLogger) WriteInfo(s ...string) {
 	testLogger.test.Log(s)
 	testLogger.gotMessage = true
 }
 
-func (testLogger *TestLogger) WriteError(s string) {
+func (testLogger *TestLogger) WriteError(s ...string) {
 	testLogger.test.Log(s)
 	testLogger.gotMessage = true
 }
