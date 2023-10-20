@@ -9,7 +9,10 @@ import configToFilters from '@app/components/projects/versions/images/config/con
 import CraneConfigSection from '@app/components/projects/versions/images/config/crane-config-section'
 import DagentConfigSection from '@app/components/projects/versions/images/config/dagent-config-section'
 import EditImageJson from '@app/components/projects/versions/images/edit-image-json'
-import ImageConfigFilters from '@app/components/projects/versions/images/image-config-filters'
+import ImageConfigFilters, {
+  dockerFilterSet,
+  k8sFilterSet,
+} from '@app/components/projects/versions/images/image-config-filters'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import DyoButton from '@app/elements/dyo-button'
@@ -23,15 +26,15 @@ import {
   DeploymentDetails,
   DeploymentRoot,
   ImageConfigProperty,
-  instanceConfigToJsonInstanceConfig,
   InstanceContainerConfigData,
   InstanceJsonContainerConfig,
-  mergeConfigs,
-  mergeJsonConfigToInstanceContainerConfig,
   NodeDetails,
   ProjectDetails,
   VersionDetails,
   ViewState,
+  instanceConfigToJsonInstanceConfig,
+  mergeConfigs,
+  mergeJsonConfigToInstanceContainerConfig,
 } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
@@ -171,6 +174,8 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     </div>
   )
 
+  const kubeNode = deployment.node.type === 'k8s'
+
   return (
     <Layout title={t('instancesName', state.config ?? instance.image)} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
@@ -188,7 +193,14 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
           {getViewStateButtons()}
         </div>
-        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} filters={filters} />}
+
+        {viewState === 'editor' && (
+          <ImageConfigFilters
+            onChange={setFilters}
+            filters={filters}
+            filterSet={kubeNode ? k8sFilterSet : dockerFilterSet}
+          />
+        )}
       </DyoCard>
 
       {viewState === 'editor' && (
@@ -208,31 +220,33 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             publicKey={deployment.publicKey}
           />
 
-          <CraneConfigSection
-            disabled={!deploymentState.mutable}
-            selectedFilters={filters}
-            config={state.config}
-            resetableConfig={state.resetableConfig}
-            onChange={onChange}
-            onResetSection={actions.resetSection}
-            editorOptions={editorState}
-            fieldErrors={fieldErrors}
-            configType="instance"
-            imageConfig={instance.image.config}
-          />
-
-          <DagentConfigSection
-            disabled={!deploymentState.mutable}
-            selectedFilters={filters}
-            config={state.config}
-            resetableConfig={state.resetableConfig}
-            onChange={onChange}
-            onResetSection={actions.resetSection}
-            editorOptions={editorState}
-            fieldErrors={fieldErrors}
-            configType="instance"
-            imageConfig={instance.image.config}
-          />
+          {kubeNode ? (
+            <CraneConfigSection
+              disabled={!deploymentState.mutable}
+              selectedFilters={filters}
+              config={state.config}
+              resetableConfig={state.resetableConfig}
+              onChange={onChange}
+              onResetSection={actions.resetSection}
+              editorOptions={editorState}
+              fieldErrors={fieldErrors}
+              configType="instance"
+              imageConfig={instance.image.config}
+            />
+          ) : (
+            <DagentConfigSection
+              disabled={!deploymentState.mutable}
+              selectedFilters={filters}
+              config={state.config}
+              resetableConfig={state.resetableConfig}
+              onChange={onChange}
+              onResetSection={actions.resetSection}
+              editorOptions={editorState}
+              fieldErrors={fieldErrors}
+              configType="instance"
+              imageConfig={instance.image.config}
+            />
+          )}
         </DyoCard>
       )}
 
