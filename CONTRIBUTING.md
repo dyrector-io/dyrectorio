@@ -1,10 +1,10 @@
 # Contributing
 
-We would love you to contribute to [dyrector.io](https://dyrector.io/) and help make it better. We want contributing to dyrector.io to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including issues, and new docs, as well as updates and tweaks, blog posts, workshops, and more.
+We would love you to contribute to [dyrector.io](https://dyrector.io/) and help make it better! We want contributing to Dyrector to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including issues, and new docs, as well as updates and tweaks, blog posts, workshops, and more.
 
 ## Code of Conduct
 
-Help us keep [dyrector.io](https://dyrector.io/) open and inclusive. Please read and follow our [Code of Conduct](/CODE_OF_CONDUCT.md).
+Help us keep dyrector.io open and inclusive. Please read and follow our [Code of Conduct](/CODE_OF_CONDUCT.md).
 
 ## How to Start?
 
