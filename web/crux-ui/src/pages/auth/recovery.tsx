@@ -113,6 +113,10 @@ const RecoveryPage = (props: RecoveryPageProps) => {
     await formik.submitForm()
   }
 
+  const recaptchaChange = () => {
+    recaptcha.current?.reset()
+  }
+
   const submitDisabled = countdown > 0
 
   const uiMessage = findUiMessage(ui, 'error')
@@ -180,7 +184,9 @@ const RecoveryPage = (props: RecoveryPageProps) => {
           messageType="error"
         />
 
-        {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
+        {recaptchaSiteKey ? (
+          <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} onChange={recaptchaChange} />
+        ) : null}
       </DyoCard>
     </SingleFormLayout>
   )
