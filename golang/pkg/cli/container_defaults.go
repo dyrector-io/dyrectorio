@@ -72,6 +72,7 @@ func GetCrux(state *State, args *ArgsFlags) containerbuilder.Builder {
 			"com.docker.compose.project":                          args.Prefix,
 			"com.docker.compose.service":                          state.Containers.Crux.Name,
 			label.DyrectorioOrg + label.ContainerPrefix:           args.Prefix,
+			label.DyrectorioOrg + label.ServiceCategory:           label.GetHiddenServiceCategory("internal"),
 		}).
 		WithPreStartHooks(getCruxInitContainer(state, args))
 
@@ -117,6 +118,7 @@ func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.Lifecy
 				"com.docker.compose.project":                args.Prefix,
 				"com.docker.compose.service":                state.Containers.CruxMigrate.Name,
 				label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
+				label.DyrectorioOrg + label.ServiceCategory: label.GetHiddenServiceCategory("internal"),
 			})
 
 		cont, res, err := cruxMigrate.CreateAndStartWaitUntilExit()
@@ -213,6 +215,7 @@ func GetCruxUI(state *State, args *ArgsFlags) containerbuilder.Builder {
 			"com.docker.compose.project":                             args.Prefix,
 			"com.docker.compose.service":                             state.Containers.CruxUI.Name,
 			label.DyrectorioOrg + label.ContainerPrefix:              args.Prefix,
+			label.DyrectorioOrg + label.ServiceCategory:              label.GetHiddenServiceCategory("internal"),
 		})
 
 	if !args.FullyContainerized {
@@ -247,7 +250,8 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 	}
 
 	commands := []string{
-		"--log.level=INFO",
+		"--log.level=DEBUG",
+		"--accesslog=true",
 		"--api.insecure=true",
 		"--providers.docker=true",
 		"--providers.docker.exposedbydefault=false",
@@ -279,6 +283,7 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 			"com.docker.compose.project":                args.Prefix,
 			"com.docker.compose.service":                state.Containers.Traefik.Name,
 			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
+			label.DyrectorioOrg + label.ServiceCategory: label.GetHiddenServiceCategory("internal"),
 		}).
 		WithPostStartHooks(func(ctx context.Context, client client.APIClient,
 			cont containerbuilder.ParentContainer,
@@ -328,6 +333,7 @@ func GetKratos(state *State, args *ArgsFlags) containerbuilder.Builder {
 			"com.docker.compose.project":                                 args.Prefix,
 			"com.docker.compose.service":                                 state.Containers.Kratos.Name,
 			label.DyrectorioOrg + label.ContainerPrefix:                  args.Prefix,
+			label.DyrectorioOrg + label.ServiceCategory:                  label.GetHiddenServiceCategory("internal"),
 		}).
 		WithPreStartHooks(getKratosInitContainer(state, args))
 
@@ -371,6 +377,7 @@ func getKratosInitContainer(state *State, args *ArgsFlags) containerbuilder.Life
 				"com.docker.compose.project":                args.Prefix,
 				"com.docker.compose.service":                state.Containers.KratosMigrate.Name,
 				label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
+				label.DyrectorioOrg + label.ServiceCategory: label.GetHiddenServiceCategory("internal"),
 			})
 
 		cont, res, err := kratosMigrate.CreateAndStartWaitUntilExit()
@@ -432,6 +439,7 @@ func GetMailSlurper(state *State, args *ArgsFlags) containerbuilder.Builder {
 			"com.docker.compose.project":                args.Prefix,
 			"com.docker.compose.service":                state.Containers.MailSlurper.Name,
 			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
+			label.DyrectorioOrg + label.ServiceCategory: label.GetHiddenServiceCategory("internal"),
 		})
 
 	if !args.FullyContainerized {
@@ -470,6 +478,7 @@ func GetCruxPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 			"com.docker.compose.project":                args.Prefix,
 			"com.docker.compose.service":                state.Containers.CruxPostgres.Name,
 			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
+			label.DyrectorioOrg + label.ServiceCategory: label.GetHiddenServiceCategory("internal"),
 		})
 
 	if !args.FullyContainerized {
@@ -506,6 +515,7 @@ func GetKratosPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 			"com.docker.compose.project":                args.Prefix,
 			"com.docker.compose.service":                state.Containers.KratosPostgres.Name,
 			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
+			label.DyrectorioOrg + label.ServiceCategory: label.GetHiddenServiceCategory("internal"),
 		})
 
 	if !args.FullyContainerized {

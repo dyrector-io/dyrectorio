@@ -1,5 +1,6 @@
 import { ROUTE_LOGIN, ROUTE_REGISTER, verificationUrl } from '@app/routes'
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../utils/test.fixture'
 import { deleteUserByEmail, kratosFromBaseURL, screenshotPath, USER_EMAIL, USER_PASSWORD } from '../utils/common'
 
 const REGISTERED_USER_EMAIL = `r.${USER_EMAIL}`
@@ -36,5 +37,5 @@ test('should register with eligible credentials', async ({ page }) => {
 
 test.afterAll(async ({ baseURL }) => {
   const kratos = kratosFromBaseURL(baseURL)
-  deleteUserByEmail(kratos, REGISTERED_USER_EMAIL)
+  await deleteUserByEmail(kratos, REGISTERED_USER_EMAIL)
 })

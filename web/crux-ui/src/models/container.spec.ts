@@ -33,8 +33,7 @@ describe('container model tests', () => {
   it('given undefined ports when calling portToString()', () => {
     const data: ContainerPort = { internal: undefined, external: undefined }
 
-    expect(() => {
-      portToString(data)
-    }).toThrow('Missing Port Information, provide either an internal or external port number.')
+    const actual = portToString(data)
+    expect(actual).toBe('?')
   })
 })

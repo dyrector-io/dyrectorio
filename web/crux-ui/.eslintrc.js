@@ -43,12 +43,30 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/no-throw-literal': 'off',
     '@typescript-eslint/return-await': 'off',
+    '@typescript-eslint/no-floating-promises': 'error',
     'no-await-in-loop': 'off',
     'no-nested-ternary': 'off',
     'no-param-reassign': 'off',
     'no-plusplus': 'off',
     'max-classes-per-file': 'off',
     'import/order': 'off',
+    'no-restricted-imports': [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["@app/validations/*"],
+            "message": "Importing sub-paths from @app/validations results in yup localizations not working. Please import @app/validations instead."
+          },
+        ],
+      },
+    ],
+    'react/no-unstable-nested-components': [
+      'error',
+      {
+        'allowAsProps': true,
+      },
+    ],
   },
   overrides: [
     {

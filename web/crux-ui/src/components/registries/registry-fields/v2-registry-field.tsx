@@ -30,13 +30,13 @@ const V2RegistryFields = (props: EditRegistryTypeProps<V2RegistryDetails>) => {
         name="private"
         label={t('private')}
         checked={formik.values.private}
-        setFieldValue={(field, value, shouldValidate) => {
+        setFieldValue={async (field, value, shouldValidate) => {
           if (!value) {
-            formik.setFieldValue('user', '', false)
-            formik.setFieldValue('token', '', false)
+            await formik.setFieldValue('user', '', false)
+            await formik.setFieldValue('token', '', false)
           }
 
-          return formik.setFieldValue(field, value, shouldValidate)
+          await formik.setFieldValue(field, value, shouldValidate)
         }}
       />
 

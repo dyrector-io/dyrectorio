@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../../utils/test.fixture'
 import { DAGENT_NODE, screenshotPath, TEAM_ROUTES } from '../../utils/common'
 import { deployWithDagent } from '../../utils/node-helper'
 import { addDeploymentToVersionlessProject, addImageToVersionlessProject, createProject } from '../../utils/projects'
@@ -13,9 +14,7 @@ test.describe('Versionless Project', () => {
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
-    const configButton = await page
-      .locator(`[src="/instance_config_icon.svg"]:right-of(div:has-text("${image}"))`)
-      .first()
+    const configButton = await page.locator(`[src="/instance_config_icon.svg"]:right-of(:has-text("${image}"))`).first()
     await configButton.click()
 
     await page.waitForSelector('input[id="common.containerName"]')
@@ -31,14 +30,13 @@ test.describe('Versionless Project', () => {
     const deploymentId = await deployWithDagent(page, prefix, projectId, '', false, testInfo.title)
 
     await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+    await page.waitForSelector('h2:text-is("Deployments")')
 
     await page.screenshot({ path: screenshotPath('versionless-prod-successful-deployment'), fullPage: true })
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
-    const configButton = await page
-      .locator(`[src="/instance_config_icon.svg"]:right-of(div:has-text("${image}"))`)
-      .first()
+    const configButton = await page.locator(`[src="/instance_config_icon.svg"]:right-of(:has-text("${image}"))`).first()
     await configButton.click()
 
     await page.waitForSelector('input[id="common.containerName"]')

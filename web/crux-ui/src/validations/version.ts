@@ -1,5 +1,5 @@
-import { VersionType, VERSION_TYPE_VALUES } from '@app/models/version'
-import * as yup from 'yup'
+import { VersionType, VERSION_TYPE_VALUES } from '@app/models'
+import yup from './yup'
 import { descriptionRule, nameRule } from './common'
 
 // Ref: https://ihateregex.io/expr/semver/
@@ -15,6 +15,9 @@ export const updateVersionSchema = increaseVersionSchema
 
 export const createVersionSchema = updateVersionSchema.concat(
   yup.object().shape({
-    type: yup.mixed<VersionType>().oneOf([...VERSION_TYPE_VALUES]),
+    type: yup
+      .mixed<VersionType>()
+      .oneOf([...VERSION_TYPE_VALUES])
+      .label('versions:type'),
   }),
 )

@@ -1,4 +1,4 @@
-FROM docker.io/library/golang:1.20-alpine3.17
+FROM docker.io/library/golang:1.20-alpine3.18
 
 ENV GOLANGCI_LINT_CACHE $GOPATH/cache
 ENV GOCACHE $GOPATH/cache

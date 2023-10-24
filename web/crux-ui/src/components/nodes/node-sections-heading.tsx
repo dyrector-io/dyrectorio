@@ -30,10 +30,21 @@ const NodeSectionsHeading = (props: NodeSectionsHeadingProps) => {
         thin
         underlined={section === 'logs'}
         textColor="text-bright"
-        className="ml-6"
+        className="mx-6"
         onClick={() => setSection('logs')}
       >
         {t('logs')}
+      </DyoButton>
+
+      <DyoButton
+        text
+        thin
+        underlined={section === 'deployments'}
+        textColor="text-bright"
+        className="ml-6"
+        onClick={() => setSection('deployments')}
+      >
+        {t('common:deployments')}
       </DyoButton>
     </div>
   )

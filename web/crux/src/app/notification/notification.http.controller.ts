@@ -129,7 +129,7 @@ export default class NotificationHttpController {
   @ApiNotFoundResponse({ description: 'Notification not found.' })
   @UuidParams(PARAM_NOTIFICATION_ID)
   async deleteNotification(@TeamSlug() _: string, @NotificationId() notificationId: string): Promise<void> {
-    this.service.deleteNotification(notificationId)
+    await this.service.deleteNotification(notificationId)
   }
 
   @Post(`${ROUTE_NOTIFICATION_ID}/test`)

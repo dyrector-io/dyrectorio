@@ -9,10 +9,9 @@ import (
 
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	containerRuntime "github.com/dyrector-io/dyrectorio/golang/internal/runtime/container"
-	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 )
 
-func PreflightChecks(cfg *config.Configuration) {
+func PreflightChecks() {
 	ctx := context.Background()
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())

@@ -1,11 +1,12 @@
 import { UserMeta } from '@app/models'
+import { WebSocketContext } from '@app/providers/websocket'
 import { API_USERS_ME, ROUTE_LOGIN } from '@app/routes'
 import { configuredFetcher } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import Head from 'next/head'
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 import useSWR from 'swr'
 import Footer from './main/footer'
 import { Sidebar } from './main/sidebar'
@@ -41,6 +42,7 @@ export interface LayoutProps {
 export const Layout = (props: LayoutProps) => {
   const { title, children, topBarContent } = props
 
+  const webSocketContext = useContext(WebSocketContext)
   const { data: meta, error } = useSWR<UserMeta>(
     API_USERS_ME,
     configuredFetcher({
@@ -48,10 +50,20 @@ export const Layout = (props: LayoutProps) => {
     }),
   )
 
+  useEffect(() => {
+    if (meta) {
+      webSocketContext.client?.reset()
+    }
+  }, [meta, webSocketContext.client])
+
   const router = useRouter()
-  if (error) {
-    router.replace(ROUTE_LOGIN)
-  }
+
+  useEffect(() => {
+    if (error) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      router.replace(ROUTE_LOGIN)
+    }
+  }, [error, router])
 
   return (
     <>

@@ -6,4 +6,4 @@ tmp/
 k3s.yml
 k3s.yaml
 k3d-auth.yaml
-coverage.cov
+*.cov

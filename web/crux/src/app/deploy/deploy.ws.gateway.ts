@@ -1,6 +1,6 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
-import { Observable, Subject, map, of, takeUntil } from 'rxjs'
+import { Observable, Subject, map, of, startWith, takeUntil } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { WsAuthorize, WsClient, WsMessage, WsSubscribe, WsSubscription, WsUnsubscribe } from 'src/websockets/common'
 import SocketClient from 'src/websockets/decorators/ws.client.decorator'
@@ -30,6 +30,7 @@ import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import { ImageDeletedMessage, WS_TYPE_IMAGE_DELETED } from '../version/version.message'
 import { PatchDeploymentDto, PatchInstanceDto } from './deploy.dto'
 import {
+  DeploymentEnvUpdatedMessage,
   DeploymentEventListMessage,
   DeploymentEventMessage,
   GetInstanceMessage,
@@ -157,18 +158,21 @@ export default class DeployWebSocketGateway {
     @DeploymentId() deploymentId: string,
   ): Promise<Observable<WsMessage<DeploymentEventListMessage> | WsMessage<DeploymentEventMessage>>> {
     const deployment = await this.service.getDeploymentDetails(deploymentId)
-    const deploymentEvents = await this.service.getDeploymentEvents(deploymentId)
 
     if (deployment.status !== 'in-progress') {
+      const deploymentEvents = await this.service.getDeploymentEvents(deploymentId)
+
       return of({
         type: WS_TYPE_DEPLOYMENT_EVENT_LIST,
         data: deploymentEvents,
       } as WsMessage<DeploymentEventListMessage>)
     }
 
+    const currentEvents = await this.service.getDeploymentEvents(deploymentId, deployment.lastTry)
     const observable = await this.service.subscribeToDeploymentEvents(deploymentId)
 
     return observable.pipe(
+      startWith(currentEvents),
       map(it => {
         const msg: WsMessage<DeploymentEventListMessage> = {
           type: WS_TYPE_DEPLOYMENT_EVENT_LIST,
@@ -220,20 +224,34 @@ export default class DeployWebSocketGateway {
   async patchDeploymentEnvironment(
     @DeploymentId() deploymentId: string,
     @SocketMessage() message: PatchDeploymentEnvMessage,
-    @IdentityFromSocket() identity: Identity,
     @SocketClient() client: WsClient,
     @SocketSubscription() subscription: WsSubscription,
+    @IdentityFromSocket() identity: Identity,
   ): Promise<WsMessage<null>> {
     const cruxReq: PatchDeploymentDto = {
-      environment: message,
+      environment: message.environment,
+      configBundleIds: message.configBundleIds,
     }
 
     await this.service.patchDeployment(deploymentId, cruxReq, identity)
 
-    subscription.sendToAllExcept(client, {
+    const configBundleEnvironment = await this.service.getConfigBundleEnvironmentById(deploymentId)
+
+    const response: WsMessage<DeploymentEnvUpdatedMessage> = {
       type: WS_TYPE_DEPLOYMENT_ENV_UPDATED,
-      data: message,
-    } as WsMessage<any>)
+      data: {
+        ...message,
+        configBundleEnvironment,
+      },
+    } as WsMessage<DeploymentEnvUpdatedMessage>
+
+    if (message.configBundleIds) {
+      // If config bundles change send the response to every client
+      // so the configBundleEnvironment will update
+      subscription.sendToAll(response)
+    } else {
+      subscription.sendToAllExcept(client, response)
+    }
 
     return {
       type: WS_TYPE_PATCH_RECEIVED,

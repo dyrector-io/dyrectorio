@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import { Node, NodeTypeEnum } from '@prisma/client'
 import { AgentConnectionMessage } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { ContainerState } from 'src/domain/container'
+import { NodeWithToken } from 'src/domain/node'
 import { fromTimestamp } from 'src/domain/utils'
 import {
+  ContainerInspectMessage,
   ContainerOperation,
   ContainerStateItem,
   ContainerStateListMessage,
@@ -17,6 +19,7 @@ import {
   BasicNodeDto,
   BasicNodeWithStatus,
   ContainerDto,
+  ContainerInspectionDto,
   ContainerOperationDto,
   NodeConnectionStatus,
   NodeDetailsDto,
@@ -28,7 +31,7 @@ import { ContainersStateListMessage } from './node.message'
 
 @Injectable()
 export default class NodeMapper {
-  constructor(private agentService: AgentService) {}
+  constructor(@Inject(forwardRef(() => AgentService)) private agentService: AgentService) {}
 
   toDto(node: Node): NodeDto {
     return {
@@ -64,21 +67,23 @@ export default class NodeMapper {
     return {
       id: node.id,
       address: agent?.address,
-      status: agent?.outdated ? 'outdated' : agent?.getConnectionStatus() ?? 'unreachable',
+      status: agent?.getConnectionStatus() ?? 'unreachable',
       connectedAt: node.connectedAt ?? null,
       version: agent?.version,
-      updating: agent?.updating,
     }
   }
 
-  detailsToDto(node: Node, hasDeployment: boolean): NodeDetailsDto {
+  detailsToDto(node: NodeDetails): NodeDetailsDto {
     const installer = this.agentService.getInstallerByNodeId(node.id)
+
+    const agent = this.agentService.getById(node.id)
 
     return {
       ...this.toDto(node),
       hasToken: !!node.token,
       install: installer ? this.installerToDto(installer) : null,
-      inUse: hasDeployment,
+      updatable: agent && (agent.outdated || !this.agentService.agentVersionIsUpToDate(agent.version)),
+      inUse: node._count.deployments > 0,
     }
   }
 
@@ -97,17 +102,7 @@ export default class NodeMapper {
   containerStateMessageToContainerMessage(list: ContainerStateListMessage): ContainersStateListMessage {
     return {
       prefix: list.prefix ?? '',
-      containers:
-        list.data?.map(it => ({
-          id: it.id,
-          imageName: it.imageName,
-          imageTag: it.imageTag,
-          command: it.command,
-          ports: it.ports,
-          state: this.containerStateToDto(it.state),
-          reason: it.reason,
-          createdAt: fromTimestamp(it.createdAt),
-        })) ?? [],
+      containers: list.data?.map(it => this.containerStateItemToDto(it)) ?? [],
     }
   }
 
@@ -125,6 +120,7 @@ export default class NodeMapper {
           internal: port.internal,
           external: port.external,
         })) ?? [],
+      labels: it.labels ?? {},
     }
   }
 
@@ -143,5 +139,17 @@ export default class NodeMapper {
       default:
         return ContainerOperation.UNRECOGNIZED
     }
+  }
+
+  containerInspectionMessageToDto(it: ContainerInspectMessage): ContainerInspectionDto {
+    return {
+      inspection: it.inspection,
+    }
+  }
+}
+
+type NodeDetails = NodeWithToken & {
+  _count: {
+    deployments: number
   }
 }

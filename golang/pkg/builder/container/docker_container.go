@@ -40,6 +40,7 @@ func NewDockerContainer(cont *types.Container, preStartHooks,
 		preStartHooks:  preStartHooks,
 		postStartHooks: postStartHooks,
 		mountList:      mountList,
+		envList:        envList,
 	}
 }
 
@@ -72,10 +73,8 @@ func (d DockerContainer) Start(ctx context.Context, cli client.APIClient) error 
 	if err != nil {
 		return err
 	}
-	if hookError := execStartHooks(ctx, cli, d.GetName(), d.container, d.mountList, d.envList, d.postStartHooks); hookError != nil {
-		return hookError
-	}
-	return nil
+
+	return execStartHooks(ctx, cli, d.GetName(), d.container, d.mountList, d.envList, d.postStartHooks)
 }
 
 func (d DockerContainer) StartWaitUntilExit(ctx context.Context, cli client.APIClient) (*WaitResult, error) {

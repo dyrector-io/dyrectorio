@@ -31,17 +31,17 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const sendInvitationRequest = async (method: 'POST' | 'DELETE') => {
+  const sendInvitationRequest = async (method: 'POST' | 'DELETE'): Promise<void> => {
     const res = await fetch(userInvitationApiUrl(team.id), {
       method,
     })
 
     if (res.ok) {
-      router.replace(ROUTE_INDEX)
+      await router.replace(ROUTE_INDEX)
     } else if (res.status === 412) {
       setExpired(true)
     } else {
-      handleApiError(res)
+      await handleApiError(res)
     }
   }
 

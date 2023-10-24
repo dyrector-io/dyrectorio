@@ -7,9 +7,19 @@ export type NodeType = (typeof NODE_TYPE_VALUES)[number]
 export const NODE_INSTALL_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
 export type NodeInstallScriptType = (typeof NODE_INSTALL_SCRIPT_TYPE_VALUES)[number]
 
-export type NodeStatus = 'unreachable' | 'connected' | 'outdated'
+export const NODE_STATUS_VALUES = ['unreachable', 'connected', 'outdated', 'updating'] as const
+export type NodeStatus = (typeof NODE_STATUS_VALUES)[number]
 
-export const NODE_EVENT_TYPE_VALUES = ['connected', 'kicked', 'left', 'update', 'containerCommand'] as const
+export const NODE_EVENT_TYPE_VALUES = [
+  'installed',
+  'connected',
+  'kicked',
+  'left',
+  'update',
+  'containerCommand',
+  'updateCompleted',
+  'tokenReplaced',
+] as const
 export type NodeEventType = (typeof NODE_EVENT_TYPE_VALUES)[number]
 
 export type NodeConnection = {
@@ -25,7 +35,6 @@ export type DyoNode = NodeConnection & {
   description?: string
   icon?: string
   type: NodeType
-  updating: boolean
 }
 
 export type NodeInstall = {
@@ -38,6 +47,7 @@ export type NodeDetails = DyoNode & {
   hasToken: boolean
   install?: NodeInstall
   lastConnectionAt?: string
+  updatable: boolean
   inUse: boolean
 }
 
@@ -87,6 +97,10 @@ export type NodeAuditLogList = {
   total: number
 }
 
+export type NodeContainerInspection = {
+  inspection: string
+}
+
 // ws
 
 export const WS_TYPE_NODE_EVENT = 'event'
@@ -97,7 +111,6 @@ export type NodeEventMessage = {
   version?: string
   connectedAt?: string
   error?: string
-  updating?: boolean
 }
 
 export const WS_TYPE_WATCH_CONTAINERS_STATE = 'watch-containers-state'
@@ -133,6 +146,3 @@ export type UpdateNodeAgentMessage = {
 
 export const WS_TYPE_CONTAINER_COMMAND = 'container-command'
 export type ContainerCommandMessage = ContainerCommand
-
-export const nodeIsUpdateable = (node: NodeDetails) =>
-  (node.status === 'connected' || node.status === 'outdated') && !node.updating

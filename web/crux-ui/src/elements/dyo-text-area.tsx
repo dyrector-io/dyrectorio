@@ -8,10 +8,13 @@ export interface DyoTextAreaProps extends Omit<React.TextareaHTMLAttributes<HTML
   label?: string
   message?: string
   messageType?: 'error' | 'info'
+  invalid?: boolean
 }
 
 const DyoTextArea = (props: DyoTextAreaProps) => {
-  const { label, message, messageType, grow, name, className, children, id, ...forwardedProps } = props
+  const { label, message, messageType, grow, name, className, children, id, invalid, ...forwardedProps } = props
+
+  const error = (message && messageType === 'error') || invalid
 
   return (
     <>
@@ -27,8 +30,9 @@ const DyoTextArea = (props: DyoTextAreaProps) => {
         id={id ?? name}
         className={clsx(
           className,
-          'bg-medium p-4 ring-2 rounded-md text-bright ring-light-grey focus:outline-none focus:dark',
+          'bg-medium p-4 ring-2 rounded-md focus:outline-none focus:dark',
           grow ? null : 'w-80',
+          error ? 'text-bright ring-error-red' : 'text-bright ring-light-grey',
         )}
       >
         {children}
@@ -40,3 +44,12 @@ const DyoTextArea = (props: DyoTextAreaProps) => {
 }
 
 export default DyoTextArea
+
+DyoTextArea.displayName = 'DyoTextArea'
+DyoTextArea.defaultProps = {
+  grow: false,
+  label: null,
+  message: null,
+  messageType: 'error',
+  invalid: false,
+}

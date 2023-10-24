@@ -132,7 +132,7 @@ const Paginator = (props: PaginatorProps) => {
           </DyoButton>
         )}
         <DyoInput
-          className="w-10 h-10 bg-dyo-turquoise rounded-full text-center !text-white font-semibold p-0"
+          className="w-4 h-10 bg-dyo-turquoise rounded-full text-center !text-white font-semibold p-0"
           value={pagination.pageNumber + 1}
           onChange={e => onPageChanged({ type: 'exact', page: Number(e.target.value) - 1 })}
           grow

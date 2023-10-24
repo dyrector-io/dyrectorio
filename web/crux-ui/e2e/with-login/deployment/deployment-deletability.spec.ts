@@ -1,8 +1,10 @@
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../../utils/test.fixture'
 import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import { deployWithDagent } from '../../utils/node-helper'
 import { addImageToVersion, createImage, createProject, createVersion } from '../../utils/projects'
-import { waitSocket, wsPatchSent } from '../../utils/websocket'
+import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
+import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 
 test('In progress deployment should be not deletable', async ({ page }) => {
   const projectName = 'project-delete-test-1'
@@ -11,8 +13,9 @@ test('In progress deployment should be not deletable', async ({ page }) => {
   const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
   const imageId = await createImage(page, projectId, versionId, 'nginx')
 
-  const sock = waitSocket(page)
+  const sock = waitSocketRef(page)
   await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+  await page.waitForSelector('h2:text-is("Image")')
   const ws = await sock
   const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -29,19 +32,17 @@ test('In progress deployment should be not deletable', async ({ page }) => {
       args: [],
       name: 'sleep',
       image: 'alpine:3.14',
-      command: ['sleep', '2'],
+      command: ['sleep', '20'],
       volumes: [],
       environment: {},
       useParentConfig: false,
     },
   ]
-  const wsSent = wsPatchSent(ws, wsRoute)
+  const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE)
   await jsonContainer.fill(JSON.stringify(configObject))
   await wsSent
 
-  const deploymentId = await deployWithDagent(page, 'versioned-deletability', projectId, versionId, true)
-
-  await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+  await deployWithDagent(page, 'versioned-deletability', projectId, versionId, true)
 
   await expect(await page.getByText('In progress')).toHaveCount(1)
   await expect(await page.locator('button:has-text("Delete")')).toHaveCount(0)
@@ -57,6 +58,7 @@ test('Delete deployment should work', async ({ page }, testInfo) => {
   const deploymentId = await deployWithDagent(page, 'versioned-delete', projectId, versionId, false, testInfo.title)
 
   await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+  await page.waitForSelector('h2:text-is("Deployments")')
 
   await expect(await page.locator('button:has-text("Delete")')).toHaveCount(1)
 
@@ -66,6 +68,7 @@ test('Delete deployment should work', async ({ page }, testInfo) => {
 
   await page.locator('button:has-text("Delete")').nth(1).click()
   await page.waitForURL(`${TEAM_ROUTES.project.details(projectId)}**`)
+  await page.waitForSelector('h2:text-is("Projects")')
 })
 
 test('Deleting a deployment should refresh deployment list', async ({ page }) => {
@@ -78,14 +81,16 @@ test('Deleting a deployment should refresh deployment list', async ({ page }) =>
   await createVersion(page, projId, '1.0.1', 'Incremental')
 
   const deleteRefreshDeployment = async () => {
-    await page.locator(`img[src="/trash-can.svg"]:right-of(div.p-2:has-text('pw-${projectName}'))`).first().click()
+    await page.locator(`img[src="/trash-can.svg"]:right-of(.p-2:has-text('pw-${projectName}'))`).first().click()
     await page.locator('h4:has-text("Are you sure?")')
     await page.locator('button:has-text("Delete")').click()
   }
 
   await page.goto(TEAM_ROUTES.deployment.list())
-  deleteRefreshDeployment()
-  await expect(page.locator(`div.p-2:has-text('pw-${projectName}')`)).toHaveCount(1)
-  deleteRefreshDeployment()
-  await expect(page.locator(`div.p-2:has-text('pw-${projectName}')`)).toHaveCount(0)
+  await page.waitForSelector('h2:text-is("Deployments")')
+
+  await deleteRefreshDeployment()
+  await expect(page.locator(`.p-2:has-text('pw-${projectName}')`)).toHaveCount(1)
+  await deleteRefreshDeployment()
+  await expect(page.locator(`.p-2:has-text('pw-${projectName}')`)).toHaveCount(0)
 })

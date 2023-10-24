@@ -16,10 +16,10 @@ LDFLAGS := -ldflags "-X '${PACKAGE}/internal/version.BuildTimestamp=${BUILD_TIME
 # default tag is latest for building
 image_version ?= latest
 
-GOAIR=v1.42.0
-GOSEC=v2.15.0
-GOLANGCI=v1.51.2
-GOFUMPT=v0.4.0
+GOAIR=v1.45.0
+GOSEC=v2.17.0
+GOLANGCI=v1.54.2
+GOFUMPT=v0.5.0
 YAMLFMT=v0.9.0
 
 # support for: linux darwin windows
@@ -138,32 +138,32 @@ lint:
 .PHONY: build-cli
 build-cli:
 	cd build && \
-	docker buildx build  --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64 --load -t ${ORG_REGISTRY}/cli/dyo:$(image_version) -t ${DOCKER_REGISTRY}/dyo:$(image_version) -f cli/Dockerfile .
+	docker buildx build  --build-arg REVISION=${ORG_GOLANG_HASH} --platform=linux/amd64 --load -t ${ORG_REGISTRY}/cli/dyo:$(image_version) -t ${DOCKER_REGISTRY}/dyo:$(image_version) -f cli/Dockerfile .
 
 .PHONY: build-cli-push
 build-cli-push:
 	cd build && \
-	docker buildx build  --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64,linux/arm64 --push -t ${ORG_REGISTRY}/cli/dyo:$(image_version) -t ${DOCKER_REGISTRY}/dyo:$(image_version) -f cli/Dockerfile .
+	docker buildx build  --build-arg REVISION=${ORG_GOLANG_HASH} --platform=linux/amd64,linux/arm64 --push -t ${ORG_REGISTRY}/cli/dyo:$(image_version) -t ${DOCKER_REGISTRY}/dyo:$(image_version) -f cli/Dockerfile .
 
 .PHONY: build-dagent
 build-dagent: compile-dagent
 	cd build && \
-	docker buildx build --build-arg AGENT_BINARY=dagent --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64 --load -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${DOCKER_REGISTRY}/dagent:$(image_version) .
+	docker buildx build --build-arg AGENT_BINARY=dagent --build-arg REVISION=${ORG_GOLANG_HASH} --platform=linux/amd64 --load -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${DOCKER_REGISTRY}/dagent:$(image_version) .
 
 .PHONY: build-crane
 build-crane: compile-crane
 	cd build && \
-	docker buildx build  --build-arg AGENT_BINARY=crane --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64 --load -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
+	docker buildx build  --build-arg AGENT_BINARY=crane --build-arg REVISION=${ORG_GOLANG_HASH} --platform=linux/amd64 --load -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
 
 PHONY: build-dagent-multi-push
 build-dagent-multi-push: compile-dagent
 	cd build && \
-	docker buildx build --build-arg AGENT_BINARY=dagent --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64,linux/arm64 --push -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${DOCKER_REGISTRY}/dagent:$(image_version) .
+	docker buildx build --build-arg AGENT_BINARY=dagent --build-arg REVISION=${ORG_GOLANG_HASH} --platform=linux/amd64,linux/arm64 --push -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${DOCKER_REGISTRY}/dagent:$(image_version) .
 
 .PHONY: build-crane-multi-push
 build-crane-multi-push: compile-crane
 	cd build && \
-	docker buildx build  --build-arg AGENT_BINARY=crane --build-arg REVISION=$$(git rev-parse --short HEAD) --platform=linux/amd64,linux/arm64 --push -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
+	docker buildx build  --build-arg AGENT_BINARY=crane --build-arg REVISION=${ORG_GOLANG_HASH} --platform=linux/amd64,linux/arm64 --push -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
 
 .PHONY: cli-compile-build-push
 cbpcli:	compile-cli build-cli push-cli
@@ -241,10 +241,11 @@ k3d-stop:
 
 # make sure to have k3s set and configured
 .PHONY: k3d-test
-k3d-test: k3d-config
+k3d-test: k3d-test
 	export KUBECONFIG='$(PWD)/k3d-auth.yaml'
 	go test -tags=integration -race ./pkg/crane/...
 
+.PHONY: k3d-rm
 k3d-rm:
 	k3d cluster delete crane-test
 
@@ -256,24 +257,28 @@ test-unit:
 # dependency: valid & working k8s configuration
 .PHONY: test-unit-with-coverage
 test-unit-with-coverage:
-	go test -tags=unit -race -coverpkg=./... -coverprofile=./coverage.cov -covermode=atomic ./...
+	go test -tags=unit -race -coverpkg=./... -coverprofile=./unit.cov -covermode=atomic ./...
 
 .PHONY: test-integration
 test-integration: test-dagent test-crane test-cli test-internal
 
 .PHONY: test-crane
 test-crane:
-	go test -tags=integration -race ./pkg/crane/...
+	go test -tags=integration -race -coverpkg=./... -coverprofile=./crane.cov -covermode=atomic ./pkg/crane/...
 
 .PHONY: test-internal
 test-internal:
-	go test -tags=integration -race ./internal/...
-	go test -tags=integration -race ./pkg/builder/...
+	go test -tags=integration -race -coverpkg=./... -coverprofile=./internal.cov -covermode=atomic ./internal/...
+	go test -tags=integration -race -coverpkg=./... -coverprofile=./builder.cov -covermode=atomic ./pkg/builder/...
 
 .PHONY: test-dagent
 test-dagent:
-	go test -tags=integration -race ./pkg/dagent/...
+	go test -tags=integration -race -coverpkg=./... -coverprofile=./dagent.cov -covermode=atomic ./pkg/dagent/...
+
+.PHONY: test-cli
+test-cli:
+	go test -tags=integration -race -coverpkg=./... -coverprofile=./cli.cov -covermode=atomic ./pkg/cli/...
 
 .PHONY: coverage
 coverage:
-	go tool cover -func ./coverage.cov
+	go tool cover -func ./merged.cov

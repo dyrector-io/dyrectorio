@@ -1,5 +1,6 @@
 import { DeploymentStatusEnum } from '@prisma/client'
 import { Subject, firstValueFrom, skip } from 'rxjs'
+import { NodeConnectionStatus } from 'src/app/node/node.dto'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
@@ -10,8 +11,10 @@ import {
   DeploymentStatusMessage,
   Empty,
 } from 'src/grpc/protobuf/proto/common'
-import { DEFAULT_CONTAINER_LOG_TAIL } from 'src/shared/const'
+import { DEFAULT_CONTAINER_LOG_TAIL, GET_CONTAINER_SECRETS_TIMEOUT_MILLIS } from 'src/shared/const'
 import { Agent, AgentConnectionMessage } from './agent'
+import { generateAgentToken } from './agent-token'
+import AgentUpdate from './agent-update'
 
 const AGENT_ID = 'agent-id'
 const AGENT_ADDRESS = '127.0.0.1:1234'
@@ -22,6 +25,7 @@ const GrpcNodeConnectionMock = jest.fn().mockImplementation(() => ({
   nodeId: AGENT_ID,
   address: AGENT_ADDRESS,
   connectedAt: new Date(),
+  status: jest.fn().mockReturnValue(new Subject<NodeConnectionStatus>()),
 }))
 
 it('containerPrefixNameOf should return the combined prefix name', () => {
@@ -50,56 +54,58 @@ describe('agent', () => {
 
     agentConnection = new GrpcNodeConnectionMock()
 
-    agent = new Agent(
-      agentConnection,
-      {
+    agent = new Agent({
+      connection: agentConnection,
+      eventChannel,
+      info: {
         id: AGENT_ID,
         version: AGENT_VERSION,
         publicKey: AGENT_PUBLIC_KEY,
       },
-      eventChannel,
-      false,
-    )
+      outdated: false,
+    })
   })
 
   describe('connection status', () => {
     it('onConnected should send connection status', async () => {
       const eventPromise = firstValueFrom(eventChannel)
 
-      agent.onConnected()
+      agent.onConnected(jest.fn())
 
       const actual = await eventPromise
-      expect(actual).toEqual({
+      const expected: AgentConnectionMessage = {
         id: AGENT_ID,
         address: AGENT_ADDRESS,
         status: 'connected',
         version: AGENT_VERSION,
         connectedAt: agentConnection.connectedAt,
-        updating: false,
-      })
+      }
+      expect(actual).toEqual(expected)
     })
 
     it('onDisconnected should send unreachable status', async () => {
       const eventPromise = firstValueFrom(eventChannel.pipe(skip(1)))
 
-      agent.onConnected()
+      agent.onConnected(jest.fn())
 
       agent.onDisconnected()
 
       const actual = await eventPromise
-      expect(actual).toEqual({
+
+      const expected: AgentConnectionMessage = {
         id: AGENT_ID,
         address: null,
         status: 'unreachable',
         version: null,
         connectedAt: null,
-      })
+      }
+      expect(actual).toEqual(expected)
     })
   })
 
   describe('commands', () => {
     it('close should send command to agent', async () => {
-      const commandChannel = firstValueFrom(agent.onConnected())
+      const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
       agent.close(CloseReason.SELF_DESTRUCT)
 
@@ -112,7 +118,7 @@ describe('agent', () => {
     })
 
     it('deploy should send command and return inProgress status', () => {
-      agent.onConnected()
+      agent.onConnected(jest.fn())
 
       const deploymentStartMock = jest.fn()
       const DeploymentMock = jest.fn().mockImplementation(() => ({
@@ -129,7 +135,7 @@ describe('agent', () => {
     })
 
     it('deployment should report states', async () => {
-      agent.onConnected()
+      agent.onConnected(jest.fn())
 
       const deploymentEventSubject = new Subject<DeploymentStatusMessage>()
 
@@ -162,7 +168,7 @@ describe('agent', () => {
     })
 
     it('container command should send agent command', async () => {
-      const commandChannel = firstValueFrom(agent.onConnected())
+      const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
       const command: ContainerCommandRequest = {
         container: {
@@ -181,7 +187,7 @@ describe('agent', () => {
     })
 
     it('delete container command should send command', async () => {
-      const commandChannel = firstValueFrom(agent.onConnected())
+      const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
       const deleteRequest: DeleteContainersRequest = {
         prefix: 'prefix',
@@ -200,7 +206,7 @@ describe('agent', () => {
     })
 
     it('delete container command should timeout if without response', async () => {
-      const commandChannel = firstValueFrom(agent.onConnected())
+      const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
       const deleteRequest: DeleteContainersRequest = {
         prefix: 'prefix',
@@ -219,12 +225,21 @@ describe('agent', () => {
   })
 
   describe('update', () => {
+    const NEW_TOKEN = 'new-token'
+
+    const UPDATE_OPTIONS = {
+      signedToken: NEW_TOKEN,
+      startedAt: new Date(),
+      startedBy: 'user-id',
+      token: generateAgentToken(AGENT_ID, 'connection'),
+    }
+
     it('should send update command', async () => {
-      const commandChannel = firstValueFrom(agent.onConnected())
+      const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
       await expect(agent.updating).toEqual(false)
 
-      agent.update('update-tag')
+      agent.startUpdate('update-tag', UPDATE_OPTIONS)
 
       await expect(agent.updating).toEqual(true)
 
@@ -232,41 +247,42 @@ describe('agent', () => {
       expect(commandChannelActual).toEqual({
         update: {
           tag: 'update-tag',
-          timeoutSeconds: Agent.AGENT_UPDATE_TIMEOUT,
+          timeoutSeconds: AgentUpdate.TIMEOUT_SECONDS,
+          token: NEW_TOKEN,
         },
       })
     })
 
     it('should throw exception while updating', () => {
-      agent.update('update-tag')
+      agent.startUpdate('update-tag', UPDATE_OPTIONS)
 
-      expect(() => agent.update('update-tag')).toThrow(CruxPreconditionFailedException)
+      expect(() => agent.startUpdate('update-tag', UPDATE_OPTIONS)).toThrow(CruxPreconditionFailedException)
     })
 
     it('abort update should return agent to connected state', async () => {
       const eventChannelPromise = firstValueFrom(eventChannel.pipe(skip(1)))
 
-      agent.onConnected()
+      agent.onConnected(jest.fn())
 
-      agent.update('update-tag')
+      agent.startUpdate('update-tag', UPDATE_OPTIONS)
 
       agent.onUpdateAborted('test')
 
       await expect(agent.updating).toEqual(false)
 
       const eventChannelActual = await eventChannelPromise
-      expect(eventChannelActual).toEqual({
+      const expected: AgentConnectionMessage = {
         id: AGENT_ID,
         status: 'connected',
         error: 'test',
-        updating: false,
-      })
+      }
+      expect(eventChannelActual).toEqual(expected)
     })
   })
 
   describe('secrets', () => {
     it('getting container secrets should send command to agent and resolve with secrets', async () => {
-      const commandChannel = firstValueFrom(agent.onConnected())
+      const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
       const secrets = firstValueFrom(agent.getContainerSecrets('prefix', 'name'))
 
@@ -295,7 +311,7 @@ describe('agent', () => {
     it(
       'getting container secrets should send command to agent and timeout without a response',
       async () => {
-        const commandChannel = firstValueFrom(agent.onConnected())
+        const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
         const secrets = firstValueFrom(agent.getContainerSecrets('prefix', 'name'))
 
@@ -309,14 +325,14 @@ describe('agent', () => {
 
         await expect(secrets).rejects.toThrow()
       },
-      Agent.SECRET_TIMEOUT * 2,
+      GET_CONTAINER_SECRETS_TIMEOUT_MILLIS * 2,
     )
     // Default timeout is 5sec, but getContainerSecrets also uses a 5sec timeout
     // so we need to increase the default timeout to test the secret timeout
   })
 
   it('getting container logs should stream events', async () => {
-    const commandChannel = agent.onConnected()
+    const commandChannel = agent.onConnected(jest.fn())
     const streamStartEvent = firstValueFrom(commandChannel)
 
     const container = {
@@ -361,7 +377,7 @@ describe('agent', () => {
   })
 
   it('getting container status should stream events', async () => {
-    const commandChannel = agent.onConnected()
+    const commandChannel = agent.onConnected(jest.fn())
     const streamStartEvent = firstValueFrom(commandChannel)
 
     const PREFIX = 'prefix'

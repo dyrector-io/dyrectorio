@@ -18,8 +18,6 @@ export class NodeEventMessage {
   connectedAt?: Date
 
   error?: string
-
-  updating?: boolean
 }
 
 export type UpdateNodeMessage = {

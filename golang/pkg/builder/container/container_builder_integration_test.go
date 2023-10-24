@@ -49,7 +49,7 @@ func assertPortBinding(t *testing.T, portMap nat.PortMap, internal, external str
 	}
 
 	list := portMap[lookup]
-	assert.Contains(t, list, nat.PortBinding{HostIP: "0.0.0.0", HostPort: external})
+	assert.Contains(t, list, nat.PortBinding{HostIP: "", HostPort: external})
 }
 
 func hookCallback(callback func()) containerbuilder.LifecycleFunc {
