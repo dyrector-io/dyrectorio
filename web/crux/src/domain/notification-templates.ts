@@ -4,7 +4,7 @@ import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
 const title = 'dyrector.io'
 
-export type NotificationMessageType = 'node' | 'version' | 'invite' | 'failedDeploy' | 'successfulDeploy'
+export type NotificationMessageType = 'node' | 'version' | 'invite' | 'failed-deploy' | 'successful-deploy'
 
 export type BaseMessage = {
   owner: Identity | string

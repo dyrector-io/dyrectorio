@@ -215,7 +215,7 @@ export default class AgentService {
         this.onDeploymentFinished(agent.id, deployment, status)
 
         const messageType: NotificationMessageType =
-          deployment.getStatus() === 'successful' ? 'successfulDeploy' : 'failedDeploy'
+          deployment.getStatus() === 'successful' ? 'successful-deploy' : 'failed-deploy'
         await this.notificationService.sendNotification({
           teamId: deployment.notification.teamId,
           messageType,

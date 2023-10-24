@@ -76,9 +76,9 @@ export default class DomainNotificationService {
         return NotificationEventTypeEnum.versionCreated
       case 'invite':
         return NotificationEventTypeEnum.userInvited
-      case 'failedDeploy':
+      case 'failed-deploy':
         return NotificationEventTypeEnum.deploymentCreated
-      case 'successfulDeploy':
+      case 'successful-deploy':
         return NotificationEventTypeEnum.deploymentCreated
       default:
         throw new CruxInternalServerErrorException({

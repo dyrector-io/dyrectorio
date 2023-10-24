@@ -31,7 +31,7 @@ export const notificationSchema = yup.object().shape({
             /^https:\/\/[a-zA-Z]+.webhook.office.com\/webhookb2\/[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?\S+\/IncomingWebhook\//
           errorMsg = 'https://subdomain.webhook.office.com/webhookb2/GUID/IncomingWebhook/'
           break
-        case 'teams':
+        case 'rocket':
           pattern =
             /^https:\/\/[^\/]+\.rocket\.chat\/hooks\/[a-f0-9]{24}\/[a-zA-Z0-9]{32}\.?[a-zA-Z0-9]*$/
           errorMsg = 'https://subdomain.rocket.chat/hooks/TOKEN/ID'
