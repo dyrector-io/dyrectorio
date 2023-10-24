@@ -99,7 +99,7 @@ export default class ConfigBundlesHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for config bundle details.' })
   @ApiNotFoundResponse({ description: 'Config bundle not found.' })
   @UuidParams(PARAM_CONFIG_BUNDLE_ID)
-  async getConfigBundleDetails(@ConfigBundleId() id: string): Promise<ConfigBundleDetailsDto> {
+  async getConfigBundleDetails(@TeamSlug() _: string, @ConfigBundleId() id: string): Promise<ConfigBundleDetailsDto> {
     return this.service.getConfigBundleDetails(id)
   }
 
@@ -141,6 +141,7 @@ export default class ConfigBundlesHttpController {
   @ApiConflictResponse({ description: 'Config bundle name taken.' })
   @UuidParams(PARAM_CONFIG_BUNDLE_ID)
   async updateConfigBundle(
+    @TeamSlug() _: string,
     @ConfigBundleId() id: string,
     @Body() request: PatchConfigBundleDto,
     @IdentityFromRequest() identity: Identity,
@@ -159,7 +160,7 @@ export default class ConfigBundlesHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for config bundle delete.' })
   @ApiNotFoundResponse({ description: 'Config bundle not found.' })
   @UuidParams(PARAM_CONFIG_BUNDLE_ID)
-  async deleteConfigBundle(@ConfigBundleId() id: string): Promise<void> {
+  async deleteConfigBundle(@TeamSlug() _: string, @ConfigBundleId() id: string): Promise<void> {
     return this.service.deleteConfigBundle(id)
   }
 }

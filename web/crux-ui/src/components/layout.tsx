@@ -1,4 +1,5 @@
 import { UserMeta } from '@app/models'
+import { WebSocketContext } from '@app/providers/websocket'
 import { API_USERS_ME, ROUTE_LOGIN } from '@app/routes'
 import { configuredFetcher } from '@app/utils'
 import clsx from 'clsx'
@@ -10,7 +11,6 @@ import useSWR from 'swr'
 import Footer from './main/footer'
 import { Sidebar } from './main/sidebar'
 import Topbar from './main/top-bar'
-import { WebSocketContext } from '@app/providers/websocket'
 
 const sidebarWidth = 'w-[17rem]'
 const mainWidth = 'w-[calc(100vw-17rem)]' // ViewWidth - sidebar
@@ -57,9 +57,13 @@ export const Layout = (props: LayoutProps) => {
   }, [meta, webSocketContext.client])
 
   const router = useRouter()
-  if (error) {
-    router.replace(ROUTE_LOGIN)
-  }
+
+  useEffect(() => {
+    if (error) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      router.replace(ROUTE_LOGIN)
+    }
+  }, [error, router])
 
   return (
     <>

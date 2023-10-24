@@ -39,9 +39,7 @@ const testVersionlessTemplate = async (
   const projectId = await createProjectFromTemplate(page, templateName, projectName, 'versionless')
 
   await expect(page).toHaveURL(TEAM_ROUTES.project.details(projectId))
-
-  const imageTableBody = await page.locator('.table-row-group')
-  const imageRows = await imageTableBody.locator('.table-row')
+  const imageRows = await page.locator('table.w-full >> tbody >> tr')
   await expect(imageRows).toHaveCount(expectedImages)
 
   return projectId
@@ -61,8 +59,7 @@ const testVersionedTemplate = async (
   await page.waitForURL(`${TEAM_ROUTES.project.details(projectId)}/versions/**`)
   await page.waitForSelector('h2:text-is("Versions")')
 
-  const imageTableBody = await page.locator('.table-row-group')
-  const imageRows = await imageTableBody.locator('.table-row')
+  const imageRows = await page.locator('table.w-full >> tbody >> tr')
   await expect(imageRows).toHaveCount(expectedImages)
 
   return projectId

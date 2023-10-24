@@ -1,7 +1,30 @@
-import { ROUTE_LOGIN } from '@app/routes'
+import { ROUTE_LOGIN, ROUTE_TEAMS_CREATE } from '@app/routes'
 import { expect } from '@playwright/test'
+import { createUser, deleteUserByEmail, kratosFromConfig, screenshotPath } from '../utils/common'
 import { test } from '../utils/test.fixture'
-import { screenshotPath, TEAM_ROUTES, USER_EMAIL, USER_PASSWORD } from '../utils/common'
+
+const LOGIN_TEST_USER = 'test-login@example.com'
+const LOGIN_TEST_PASSWORD = 'TestPw23234'
+
+// NOTE(@robot9706): beforeAll runs on each worker, so if tests are running in parallel beforeAll executes multiple times
+test.describe.configure({ mode: 'serial' })
+
+test.beforeAll(async ({ baseURL }) => {
+  const kratos = kratosFromConfig(baseURL)
+
+  try {
+    await deleteUserByEmail(kratos, LOGIN_TEST_USER)
+  } catch {
+    /* empty */
+  }
+
+  await createUser(kratos, LOGIN_TEST_USER, LOGIN_TEST_PASSWORD, { verified: true })
+})
+
+test.afterAll(async ({ baseURL }) => {
+  const kratos = kratosFromConfig(baseURL)
+  await deleteUserByEmail(kratos, LOGIN_TEST_USER)
+})
 
 test('without cookie should redirect to the login page', async ({ page }) => {
   await page.goto('/')
@@ -34,12 +57,12 @@ test('forgot password navigates to the recovery page', async ({ page }) => {
 test('should log in with valid credentials', async ({ page }) => {
   await page.goto(ROUTE_LOGIN)
 
-  await page.locator('input[name=email]').fill(USER_EMAIL)
-  await page.locator('input[name=password]').fill(USER_PASSWORD)
+  await page.locator('input[name=email]').fill(LOGIN_TEST_USER)
+  await page.locator('input[name=password]').fill(LOGIN_TEST_PASSWORD)
 
   await page.locator('button[type=submit]').click()
 
   await page.screenshot({ path: screenshotPath('login-successful'), fullPage: true })
 
-  await expect(page).toHaveURL(`${TEAM_ROUTES.dashboard.index()}`)
+  await expect(page).toHaveURL(ROUTE_TEAMS_CREATE)
 })

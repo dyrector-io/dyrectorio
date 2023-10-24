@@ -17,7 +17,7 @@ import {
   VolumeType,
 } from '@app/models'
 import * as yup from 'yup'
-import { matchNoTrailingWhitespace, matchNoWhitespace } from './common'
+import { matchNoLeadingOrTrailingWhitespaces, matchNoWhitespace } from './common'
 
 const ERROR_NO_SENSITIVE = 'container:validation.noSensitive'
 const ERROR_INVALID_KUBERNETES_QUANTITY = 'container:validation.kubernetesQuantity'
@@ -65,7 +65,7 @@ export const unsafeUniqueKeyValuesSchema = yup
 export const shellCommandSchema = yup
   .array(
     yup.object().shape({
-      key: matchNoTrailingWhitespace(yup.string().required().ensure().label('container:common.key')),
+      key: matchNoLeadingOrTrailingWhitespaces(yup.string().required().ensure().label('container:common.key')),
       value: yup.string().ensure().label('container:common.value'),
     }),
   )

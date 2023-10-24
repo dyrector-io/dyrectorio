@@ -30,6 +30,8 @@ module.exports = {
         light: '#7783a3',
         'medium-eased': '#343d55',
         medium: '#283046',
+        'medium-muted': '#222A3D',
+        'dark-eased': '#192034',
         dark: '#161d31',
         'error-red': '#ea5455',
         'warning-orange': '#ff9f43',

@@ -1,4 +1,4 @@
-import { UniqueSecretKeyValue, WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_INSTANCE } from '@app/models'
+import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_INSTANCE } from '@app/models'
 import { Page, expect } from '@playwright/test'
 import { wsPatchMatchEverySecret, wsPatchMatchNonNullSecretValues } from 'e2e/utils/websocket-match'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, waitForURLExcept } from '../../utils/common'
@@ -10,7 +10,7 @@ import {
   createVersion,
   fillDeploymentPrefix,
 } from '../../utils/projects'
-import { test } from '../../utils/test.fixture'
+import { hookTestPageEvents, test } from '../../utils/test.fixture'
 import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
 
 const addSecretToImage = async (
@@ -39,11 +39,10 @@ const addSecretToImage = async (
 }
 
 const openContainerConfigByDeploymentTable = async (page: Page, containerName: string): Promise<void> => {
-  const instancesTabelBody = await page.locator('.table-row-group')
-  const instanceRows = await instancesTabelBody.locator('.table-row')
+  const instanceRows = await page.locator('table.w-full >> tbody >> tr')
   await expect(instanceRows).toHaveCount(1)
 
-  await expect(page.locator(`div.table-cell:has-text("${containerName}")`).first()).toBeVisible()
+  await expect(page.locator(`td:has-text("${containerName}")`).first()).toBeVisible()
   const containerSettingsButton = await page.waitForSelector(
     `[src="/instance_config_icon.svg"]:right-of(:text("${containerName}"))`,
   )
@@ -62,9 +61,13 @@ test.describe('Deployment Copy', () => {
   const newSecretKey = 'new-secret'
   const newSecretKeyList = [...secretKeys, newSecretKey]
 
-  test.beforeAll(async ({ browser }) => {
+  // NOTE(@robot9706): beforeAll runs on each worker, so if tests are running in parallel beforeAll executes multiple times
+  test.describe.configure({ mode: 'serial' })
+
+  test.beforeAll(async ({ browser }, testInfo) => {
     const ctx = await browser.newContext()
     const page = await ctx.newPage()
+    hookTestPageEvents(page, testInfo)
 
     const projectId = await createProject(page, projectName, 'versioned')
     await createNode(page, newNodeName)

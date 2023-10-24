@@ -31,7 +31,7 @@ export const shellCommandSchema = yup
         .string()
         .required()
         .ensure()
-        .matches(/^\S.*\S$/g), // any characters but no trailing whitespaces
+        .matches(/^[^\s]+(\s+[^\s]+)*$/g), // any characters but no trailing whitespaces
       value: yup.string().ensure(),
     }),
   )

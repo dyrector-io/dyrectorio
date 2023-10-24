@@ -256,7 +256,7 @@ k3d-stop:
 
 # make sure to have k3s set and configured
 .PHONY: k3d-test
-k3d-test: k3d-config
+k3d-test: k3d-test
 	export KUBECONFIG='$(PWD)/k3d-auth.yaml'
 	go test -tags=integration -race ./pkg/crane/...
 
@@ -272,24 +272,28 @@ test-unit:
 # dependency: valid & working k8s configuration
 .PHONY: test-unit-with-coverage
 test-unit-with-coverage:
-	go test -tags=unit -race -coverpkg=./... -coverprofile=./coverage.cov -covermode=atomic ./...
+	go test -tags=unit -race -coverpkg=./... -coverprofile=./unit.cov -covermode=atomic ./...
 
 .PHONY: test-integration
 test-integration: test-dagent test-crane test-cli test-internal
 
 .PHONY: test-crane
 test-crane:
-	go test -tags=integration -race ./pkg/crane/...
+	go test -tags=integration -race -coverpkg=./... -coverprofile=./crane.cov -covermode=atomic ./pkg/crane/...
 
 .PHONY: test-internal
 test-internal:
-	go test -tags=integration -race ./internal/...
-	go test -tags=integration -race ./pkg/builder/...
+	go test -tags=integration -race -coverpkg=./... -coverprofile=./internal.cov -covermode=atomic ./internal/...
+	go test -tags=integration -race -coverpkg=./... -coverprofile=./builder.cov -covermode=atomic ./pkg/builder/...
 
 .PHONY: test-dagent
 test-dagent:
-	go test -tags=integration -race ./pkg/dagent/...
+	go test -tags=integration -race -coverpkg=./... -coverprofile=./dagent.cov -covermode=atomic ./pkg/dagent/...
+
+.PHONY: test-cli
+test-cli:
+	go test -tags=integration -race -coverpkg=./... -coverprofile=./cli.cov -covermode=atomic ./pkg/cli/...
 
 .PHONY: coverage
 coverage:
-	go tool cover -func ./coverage.cov
+	go tool cover -func ./merged.cov

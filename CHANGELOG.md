@@ -1,8 +1,42 @@
 # CHANGELOG
 
 
+<a name="0.9.0"></a>
+## [0.9.0](https://github.com/dyrector-io/dyrectorio/compare/0.8.2...0.9.0) (2023-10-20)
+
+### Doc
+
+* Update README.mds [#827](https://github.com/dyrector-io/dyrectorio/issues/827) ([#855](https://github.com/dyrector-io/dyrectorio/issues/855))
+* improve-readme-and-contributing-files ([#845](https://github.com/dyrector-io/dyrectorio/issues/845))
+* update development.md, maintainers.md and security.md ([#844](https://github.com/dyrector-io/dyrectorio/issues/844))
+* add ADOPTERS.md to the project ([#835](https://github.com/dyrector-io/dyrectorio/issues/835))
+* updates the contributing.md file ([#805](https://github.com/dyrector-io/dyrectorio/issues/805))
+
+### Feat
+
+* node type based container config fields ([#862](https://github.com/dyrector-io/dyrectorio/issues/862))
+* agent image pull progress, early log fix, agent log level ([#861](https://github.com/dyrector-io/dyrectorio/issues/861))
+* **(ci):** optimize github workflow for non-code changes ([#833](https://github.com/dyrector-io/dyrectorio/issues/833))
+* **(crux-ui):** DyoTable component ([#830](https://github.com/dyrector-io/dyrectorio/issues/830))
+* **(crux-ui):** add unit test for registry yup validation ([#850](https://github.com/dyrector-io/dyrectorio/issues/850))
+* inspect container ([#841](https://github.com/dyrector-io/dyrectorio/issues/841))
+
+### Fix
+
+* unique key value input error message updates ([#860](https://github.com/dyrector-io/dyrectorio/issues/860))
+* **(crux):** audit event filter ([#856](https://github.com/dyrector-io/dyrectorio/issues/856))
+* unnecessary websocket error toasts ([#858](https://github.com/dyrector-io/dyrectorio/issues/858))
+* identity listing ([#857](https://github.com/dyrector-io/dyrectorio/issues/857))
+* **(crux-ui):** submit hook ([#816](https://github.com/dyrector-io/dyrectorio/issues/816))
+* **(agent):** add capital image name handling ([#848](https://github.com/dyrector-io/dyrectorio/issues/848))
+
+### Refactor
+
+* internal/helper/image_unit_test : use table driven tests ([#838](https://github.com/dyrector-io/dyrectorio/issues/838))
+
+
 <a name="0.8.2"></a>
-## [0.8.2](https://github.com/dyrector-io/dyrectorio/compare/0.8.1...0.8.2) (2023-09-21)
+## [0.8.2](https://github.com/dyrector-io/dyrectorio/compare/0.8.1...0.8.2) (2023-09-25)
 
 ### Doc
 

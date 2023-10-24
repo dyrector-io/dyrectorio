@@ -8,6 +8,7 @@ import { ListPageMenu } from '@app/components/shared/page-menu'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { ConfigBundle } from '@app/models'
 import { TeamRoutes } from '@app/routes'
@@ -17,7 +18,7 @@ import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 interface ConfigBundlesPageProps {
   bundles: ConfigBundle[]
@@ -36,7 +37,7 @@ const ConfigBundles = (props: ConfigBundlesPageProps) => {
   })
 
   const [creating, setCreating] = useState(false)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const onCreated = async (bundle: ConfigBundle) => {
     setCreating(false)
@@ -53,12 +54,10 @@ const ConfigBundles = (props: ConfigBundlesPageProps) => {
   return (
     <Layout title={t('common:configBundles')}>
       <PageHeading pageLink={selfLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
+        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
       </PageHeading>
 
-      {!creating ? null : (
-        <AddConfigBundleCard className="mb-8 px-8 py-6" submitRef={submitRef} onCreated={onCreated} />
-      )}
+      {!creating ? null : <AddConfigBundleCard className="mb-8 px-8 py-6" submit={submit} onCreated={onCreated} />}
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })} />

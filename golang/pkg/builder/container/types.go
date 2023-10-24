@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 
 	"github.com/AlekSi/pointer"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
+
+	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 )
 
 // The PortBinding struct defines port bindings of a container.
@@ -105,7 +106,7 @@ type ParentContainer struct {
 	Name        string
 	MountList   []mount.Mount
 	Environment []string
-	Logger      *io.StringWriter
+	Logger      *dogger.LogWriter
 	*types.Container
 }
 

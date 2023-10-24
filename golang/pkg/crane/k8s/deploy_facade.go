@@ -193,7 +193,7 @@ func (d *DeployFacade) Deploy() error {
 		}
 	}
 
-	if err := d.deployment.DeployDeployment(&deploymentParams{
+	if err := d.deployment.DeployDeployment(&DeploymentParams{
 		image:           d.params.Image,
 		namespace:       d.params.InstanceConfig.ContainerPreName,
 		containerConfig: &d.params.ContainerConfig,
@@ -266,13 +266,15 @@ func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest 
 	_ *v1.VersionData,
 ) error {
 	cfg := grpc.GetConfigFromContext(c).(*config.Configuration)
-	dog.Write(deployImageRequest.Strings(&cfg.CommonConfiguration)...)
-	dog.Write(deployImageRequest.InstanceConfig.Strings()...)
-	dog.Write(deployImageRequest.ContainerConfig.Strings(&cfg.CommonConfiguration)...)
+	dog.WriteInfo(deployImageRequest.Strings(&cfg.CommonConfiguration)...)
+	dog.WriteInfo(deployImageRequest.InstanceConfig.Strings()...)
+	dog.WriteInfo(deployImageRequest.ContainerConfig.Strings(&cfg.CommonConfiguration)...)
 
-	imageName := util.JoinV("/",
-		*deployImageRequest.Registry,
-		util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag))
+	imageName := util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)
+	if deployImageRequest.Registry != nil {
+		imageName = util.JoinV("/",
+			*deployImageRequest.Registry, imageName)
+	}
 
 	expandedImageName, err := imageHelper.ExpandImageName(imageName)
 	if err != nil {

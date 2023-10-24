@@ -80,10 +80,10 @@ export const wsErrorHandler = (translator: Translator) => (message: WsErrorMessa
   toaster(translation.toast)
 }
 
-export const defaultWsErrorHandler = (t: Translate, router: NextRouter) => (msg: WsErrorMessage) => {
+export const defaultWsErrorHandler = (t: Translate, router: NextRouter) => async (msg: WsErrorMessage) => {
   const defaultErrorHandler = wsErrorHandler(defaultTranslator(t))
   if (msg.status === WebSocketClient.ERROR_UNAUTHORIZE) {
-    router.push(ROUTE_LOGIN)
+    await router.push(ROUTE_LOGIN)
     return
   }
   defaultErrorHandler(msg)

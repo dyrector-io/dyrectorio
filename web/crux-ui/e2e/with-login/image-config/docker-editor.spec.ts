@@ -36,7 +36,7 @@ test.describe('Image docker config from editor', () => {
 
     const mode = 'host'
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchNetworkMode(mode))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchNetworkMode(mode))
     await page.locator(`div.grid:has(label:has-text("NETWORK MODE")) button:has-text("${mode}")`).click()
     await wsSent
 
@@ -62,7 +62,7 @@ test.describe('Image docker config from editor', () => {
 
     await page.locator('button:has-text("Docker labels")').click()
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDockerLabel(key, value))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDockerLabel(key, value))
     await keyInput.fill(key)
     await valueInput.fill(value)
     await wsSent
@@ -81,8 +81,8 @@ test.describe('Image docker config from editor', () => {
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchRestartPolicy('always'))
-    page.locator('div.grid:has(label:has-text("RESTART POLICY")) button:has-text("Always")').click()
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchRestartPolicy('always'))
+    await page.locator('div.grid:has(label:has-text("RESTART POLICY")) button:has-text("Always")').click()
     await wsSent
 
     await page.reload()
@@ -108,7 +108,7 @@ test.describe('Image docker config from editor', () => {
 
     const loggerConf = page.locator('div.grid:has(label:has-text("LOG CONFIG"))')
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchLogConfig(type, key, value))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchLogConfig(type, key, value))
     await loggerConf.locator('input[placeholder="Key"]').first().fill(key)
     await loggerConf.locator('input[placeholder="Value"]').first().fill(value)
     await loggerConf.locator(`button:has-text("${type}")`).click()
@@ -133,8 +133,8 @@ test.describe('Image docker config from editor', () => {
 
     const network = '10.16.128.196'
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchNetwork(network))
-    page.locator('div.grid:has(label:has-text("NETWORKS")) input[placeholder="Network"]').first().fill(network)
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchNetwork(network))
+    await page.locator('div.grid:has(label:has-text("NETWORKS")) input[placeholder="Network"]').first().fill(network)
     await wsSent
 
     await page.reload()

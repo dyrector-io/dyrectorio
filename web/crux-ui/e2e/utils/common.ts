@@ -11,10 +11,10 @@ import {
   UpdateLoginFlowWithPasswordMethod,
 } from '@ory/kratos-client'
 import { Locator, Page } from '@playwright/test'
+import { ChildProcess, ExecException, ExecOptions, exec } from 'child_process'
 import path from 'path'
 import { v4 as uuid } from 'uuid'
 import MailSlurper from './mail-slurper'
-import { ChildProcess, ExecException, ExecOptions, exec } from 'child_process'
 
 export const MAILSLURPER_TIMEOUT = 30000 // millis
 export const USER_EMAIL = 'john.doe@example.com'
@@ -47,9 +47,7 @@ export const mailslurperFromBaseURL = (baseURL: string): MailSlurper => {
   return new MailSlurper(url)
 }
 
-export const cruxUrlFromEnv = (baseURL: string) => {
-  return process.env.CRUX_URL ?? baseURL
-}
+export const cruxUrlFromEnv = (baseURL: string) => process.env.CRUX_URL ?? baseURL
 
 export const extractKratosLinkFromMail = (body: string): string => {
   const start = body.indexOf('http')
@@ -199,11 +197,10 @@ export const execAsync = (
   command: string,
   options: ExecOptions,
   callback?: (error: ExecException | null, stdout: string, stderr: string) => void,
-) => {
-  return new Promise<ChildProcess>(resolve => {
+) =>
+  new Promise<ChildProcess>(resolve => {
     const childProcess = exec(command, options, (error: ExecException | null, stdout: string, stderr: string) => {
       callback?.call(null, error, stdout, stderr)
       resolve(childProcess)
     })
   })
-}
