@@ -106,7 +106,6 @@ jobs:
     container:
       # yamlfmt resides here because alpine doesn't provide yamlfmt package
       image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
-      options: "--label yaml_lint-${{ github.run_id }}-${{ github.run_attempt }}"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -567,6 +566,7 @@ jobs:
     container:
       image: ghcr.io/dyrector-io/dyrectorio/playwright:latest
       volumes: ['/var/run/docker.sock:/var/run/docker']
+      options: "--label e2e-${{ github.run_id }}-${{ github.run_attempt }}"
     if: |
       always() &&
       (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
