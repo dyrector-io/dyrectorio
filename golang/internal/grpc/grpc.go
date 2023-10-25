@@ -111,7 +111,7 @@ const (
 	contextMetadataKeyToken            = "dyo-node-token" // #nosec G101
 )
 
-var ErrorConnectionRefused = errors.New("server refused connection")
+var ErrConnectionRefused = errors.New("server refused connection")
 
 func (g *Connection) SetClient(client agent.AgentClient) {
 	g.Client = client
@@ -245,7 +245,7 @@ func (cl *ClientLoop) grpcLoop(token *config.ValidJWT) error {
 			s := status.Convert(err)
 			if s != nil && (s.Code() == codes.Unauthenticated || s.Code() == codes.PermissionDenied || s.Code() == codes.NotFound) {
 				cl.handleGrpcTokenError(err, token)
-				return ErrorConnectionRefused
+				return ErrConnectionRefused
 			}
 
 			grpcConn.Client = nil
@@ -360,7 +360,7 @@ func Init(grpcContext context.Context,
 		return
 	}
 
-	if !errors.Is(err, ErrorConnectionRefused) {
+	if !errors.Is(err, ErrConnectionRefused) {
 		log.Panic().Err(err).Msg("Connection refused")
 	}
 
