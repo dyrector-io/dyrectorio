@@ -36,9 +36,8 @@ func Serve(cfg *config.Configuration, secretStore commonConfig.SecretStore) {
 	// TODO(robot9706): Implement updater
 	log.Debug().Msg("No update was set up")
 
-	grpcParams := grpc.TokenToConnectionParams(cfg.JwtToken)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
-	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, &grpc.WorkerFunctions{
+	grpc.Init(grpcContext, &cfg.CommonConfiguration, secretStore, &grpc.WorkerFunctions{
 		Deploy:           k8s.Deploy,
 		Watch:            crux.WatchDeploymentsByPrefix,
 		Delete:           k8s.Delete,
@@ -47,7 +46,7 @@ func Serve(cfg *config.Configuration, secretStore commonConfig.SecretStore) {
 		SecretList:       crux.GetSecretsList,
 		ContainerLog:     k8s.PodLog,
 		Close:            grpcClose,
-	}, secretStore)
+	})
 }
 
 func grpcClose(ctx context.Context, reason agent.CloseReason, _ grpc.UpdateOptions) error {

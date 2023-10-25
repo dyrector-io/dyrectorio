@@ -38,12 +38,6 @@ type Connection struct {
 	Client agent.AgentClient
 }
 
-type ConnectionParams struct {
-	nodeID  string
-	address string
-	token   string
-}
-
 type ContainerLogEvent struct {
 	Message string
 	Error   error
@@ -78,6 +72,7 @@ type ClientLoop struct {
 	Secrets     config.SecretStore
 	cancel      context.CancelFunc
 	AppConfig   *config.CommonConfiguration
+	NodeID      string
 }
 
 type (
@@ -116,13 +111,7 @@ const (
 	contextMetadataKeyToken            = "dyo-node-token" // #nosec G101
 )
 
-func TokenToConnectionParams(grpcToken *config.ValidJWT) *ConnectionParams {
-	return &ConnectionParams{
-		nodeID:  grpcToken.Subject,
-		address: grpcToken.Issuer,
-		token:   grpcToken.StringifiedToken,
-	}
-}
+var ErrorConnectionRefused = errors.New("server refused connection")
 
 func (g *Connection) SetClient(client agent.AgentClient) {
 	g.Client = client
@@ -172,85 +161,6 @@ func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool,
 	return pool, nil
 }
 
-func Init(grpcContext context.Context,
-	connParams *ConnectionParams,
-	appConfig *config.CommonConfiguration,
-	workerFuncs *WorkerFunctions,
-	secrets config.SecretStore,
-) {
-	log.Info().Msg("Spinning up gRPC Agent client...")
-	if grpcConn == nil {
-		grpcConn = &Connection{}
-	}
-
-	ctx, cancel := context.WithCancel(grpcContext)
-	loop := ClientLoop{
-		cancel:      cancel,
-		AppConfig:   appConfig,
-		Ctx:         ctx,
-		WorkerFuncs: *workerFuncs,
-		Secrets:     secrets,
-	}
-
-	err := health.Serve(loop.Ctx)
-	if err != nil {
-		log.Warn().Err(err).Msg("Failed to start serving health")
-	}
-
-	loop.Ctx = metadata.AppendToOutgoingContext(loop.Ctx, contextMetadataKeyToken, connParams.token)
-
-	if grpcConn.Conn == nil {
-		var creds credentials.TransportCredentials
-
-		httpAddr := fmt.Sprintf("https://%s", connParams.address)
-		certPool, err := fetchCertificatesFromURL(loop.Ctx, httpAddr)
-		if err != nil {
-			if appConfig.Debug {
-				log.Warn().Err(err).Msg("Secure mode is disabled in demo/dev environment, falling back to plain-text gRPC")
-				creds = insecure.NewCredentials()
-			} else {
-				log.Panic().Err(err).Msg("Could not fetch valid certificate")
-			}
-		} else {
-			creds = credentials.NewClientTLSFromCert(certPool, "")
-		}
-
-		opts := []grpc.DialOption{
-			grpc.WithTransportCredentials(creds),
-			grpc.WithBlock(),
-			grpc.WithKeepaliveParams(
-				keepalive.ClientParameters{
-					Time:                appConfig.GrpcKeepalive,
-					Timeout:             appConfig.DefaultTimeout,
-					PermitWithoutStream: true,
-				}),
-		}
-
-		log.Info().Str("address", connParams.address).Msg("Dialing to address.")
-		conn, err := grpc.Dial(connParams.address, opts...)
-		if err != nil {
-			log.Panic().Stack().Err(err).Msg("Failed to dial gRPC")
-		}
-
-		for {
-			state := conn.GetState()
-			if state != connectivity.Ready {
-				log.Debug().Msgf("Waiting for state to change: %d", state)
-				conn.WaitForStateChange(loop.Ctx, state)
-				log.Debug().Msgf("State Changed to: %d", conn.GetState())
-			} else {
-				break
-			}
-		}
-		if err != nil {
-			log.Error().Stack().Err(err).Msg("gRPC connection error")
-		}
-		grpcConn.Conn = conn
-	}
-
-	loop.grpcLoop(connParams)
-}
-
 func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 	switch {
 	case command.GetDeploy() != nil:
@@ -286,11 +196,16 @@ func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 	}
 }
 
-func (cl *ClientLoop) grpcLoop(connParams *ConnectionParams) {
+func (cl *ClientLoop) grpcLoop(token *config.ValidJWT) error {
 	var stream agent.Agent_ConnectClient
 	var err error
 	defer cl.cancel()
-	defer grpcConn.Conn.Close()
+	defer func() {
+		grpcConn.Conn.Close()
+		grpcConn.Conn = nil
+
+		grpcConn.Client = nil
+	}()
 	for {
 		if grpcConn.Client == nil {
 			client := agent.NewAgentClient(grpcConn.Conn)
@@ -311,7 +226,7 @@ func (cl *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 			}
 
 			stream, err = grpcConn.Client.Connect(
-				cl.Ctx, &agent.AgentInfo{Id: connParams.nodeID, Version: version.BuildVersion(), PublicKey: publicKey, ContainerName: &containerName},
+				cl.Ctx, &agent.AgentInfo{Id: cl.NodeID, Version: version.BuildVersion(), PublicKey: publicKey, ContainerName: &containerName},
 				grpc.WaitForReady(true),
 			)
 			if err != nil {
@@ -329,8 +244,8 @@ func (cl *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 		if err != nil {
 			s := status.Convert(err)
 			if s != nil && (s.Code() == codes.Unauthenticated || s.Code() == codes.PermissionDenied || s.Code() == codes.NotFound) {
-				cl.handleGrpcTokenError(err)
-				break
+				cl.handleGrpcTokenError(err, token)
+				return ErrorConnectionRefused
 			}
 
 			grpcConn.Client = nil
@@ -351,8 +266,118 @@ func (cl *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 	}
 }
 
-func (cl *ClientLoop) handleGrpcTokenError(err error) {
-	if cl.AppConfig.JwtToken.Type == config.Connection {
+func initWithToken(
+	grpcContext context.Context,
+	appConfig *config.CommonConfiguration,
+	workerFuncs *WorkerFunctions,
+	secrets config.SecretStore,
+	token *config.ValidJWT,
+) error {
+	address := token.Issuer
+
+	ctx, cancel := context.WithCancel(grpcContext)
+	loop := ClientLoop{
+		cancel:      cancel,
+		AppConfig:   appConfig,
+		Ctx:         ctx,
+		WorkerFuncs: *workerFuncs,
+		Secrets:     secrets,
+		NodeID:      token.Subject,
+	}
+
+	loop.Ctx = metadata.AppendToOutgoingContext(loop.Ctx, contextMetadataKeyToken, token.StringifiedToken)
+
+	var creds credentials.TransportCredentials
+
+	httpAddr := fmt.Sprintf("https://%s", address)
+	certPool, err := fetchCertificatesFromURL(loop.Ctx, httpAddr)
+	if err != nil {
+		if appConfig.Debug {
+			log.Warn().Err(err).Msg("Secure mode is disabled in demo/dev environment, falling back to plain-text gRPC")
+			creds = insecure.NewCredentials()
+		} else {
+			log.Panic().Err(err).Msg("Could not fetch valid certificate")
+		}
+	} else {
+		creds = credentials.NewClientTLSFromCert(certPool, "")
+	}
+
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(creds),
+		grpc.WithBlock(),
+		grpc.WithKeepaliveParams(
+			keepalive.ClientParameters{
+				Time:                appConfig.GrpcKeepalive,
+				Timeout:             appConfig.DefaultTimeout,
+				PermitWithoutStream: true,
+			}),
+	}
+
+	log.Info().Str("address", address).Msg("Dialing to address.")
+	conn, err := grpc.Dial(address, opts...)
+	if err != nil {
+		log.Panic().Stack().Err(err).Msg("Failed to dial gRPC")
+	}
+
+	for {
+		state := conn.GetState()
+		if state != connectivity.Ready {
+			log.Debug().Msgf("Waiting for state to change: %d", state)
+			conn.WaitForStateChange(loop.Ctx, state)
+			log.Debug().Msgf("State Changed to: %d", conn.GetState())
+		} else {
+			break
+		}
+	}
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("gRPC connection error")
+	}
+	grpcConn.Conn = conn
+
+	return loop.grpcLoop(token)
+}
+
+func Init(grpcContext context.Context,
+	appConfig *config.CommonConfiguration,
+	secrets config.SecretStore,
+	workerFuncs *WorkerFunctions,
+) {
+	log.Info().Msg("Spinning up gRPC Agent client...")
+	if grpcConn == nil {
+		grpcConn = &Connection{}
+	}
+
+	healthContext, cancel := context.WithCancel(grpcContext)
+	defer cancel()
+
+	err := health.Serve(healthContext)
+	if err != nil {
+		log.Warn().Err(err).Msg("Failed to start serving health")
+	}
+
+	err = initWithToken(grpcContext, appConfig, workerFuncs, secrets, appConfig.JwtToken)
+	if err == nil {
+		return
+	}
+
+	if !errors.Is(err, ErrorConnectionRefused) {
+		log.Panic().Err(err).Msg("Connection refused")
+	}
+
+	if appConfig.FallbackJwtToken == nil {
+		return
+	}
+
+	log.Warn().Msg("Connection failed, trying fallback token")
+
+	err = initWithToken(grpcContext, appConfig, workerFuncs, secrets, appConfig.FallbackJwtToken)
+	if err != nil {
+		log.Panic().Err(err).Msg("Connection refused with fallback token")
+	}
+}
+
+func (cl *ClientLoop) handleGrpcTokenError(err error, token *config.ValidJWT) {
+	if token.Type == config.Connection {
 		log.Error().Err(err).Msg("Invalid connection token. Removing")
 
 		// overwrite JWT token
@@ -363,7 +388,7 @@ func (cl *ClientLoop) handleGrpcTokenError(err error) {
 	} else {
 		log.Error().Err(err).Msg("Invalid install token. Blacklisting nonce")
 
-		err = cl.Secrets.BlacklistNonce(cl.AppConfig.JwtToken.Nonce)
+		err = cl.Secrets.BlacklistNonce(token.Nonce)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to blacklist the install token")
 		}
