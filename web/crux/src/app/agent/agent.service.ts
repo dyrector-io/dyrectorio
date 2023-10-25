@@ -21,10 +21,11 @@ import { SemVer, coerce } from 'semver'
 import { Agent, AgentConnectionMessage, AgentTokenReplacement } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { generateAgentToken } from 'src/domain/agent-token'
+import { AgentUpdateResult } from 'src/domain/agent-update'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
 import { BasicNode } from 'src/domain/node'
 import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
-import { CruxNotFoundException } from 'src/exception/crux-exception'
+import { CruxInternalServerErrorException, CruxNotFoundException } from 'src/exception/crux-exception'
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerIdentifier,
@@ -386,6 +387,20 @@ export default class AgentService {
     await this.createAgentAudit(agent.id, 'tokenReplaced')
 
     return Empty
+  }
+
+  agentUpdateCompleted(connection: GrpcNodeConnection): AgentUpdateResult {
+    const { nodeId } = connection
+
+    const agent = this.agents.get(nodeId)
+    if (!agent) {
+      throw new CruxInternalServerErrorException({
+        message: 'fos',
+      })
+    }
+
+    this.agents.delete(nodeId)
+    return agent.onUpdateCompleted(connection)
   }
 
   agentVersionSupported(version: string): boolean {
