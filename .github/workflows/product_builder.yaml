@@ -106,7 +106,7 @@ jobs:
     container:
       # yamlfmt resides here because alpine doesn't provide yamlfmt package
       image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
-      options: "--label yaml_lint-${{ github.run_id }}-${GITHUB_RUN_ATTEMPT}"
+      options: "--label yaml_lint-${{ github.run_id }}-${{ env.GITHUB_RUN_ATTEMPT }}"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
