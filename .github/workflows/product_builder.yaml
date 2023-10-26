@@ -566,7 +566,7 @@ jobs:
     container:
       image: ghcr.io/dyrector-io/dyrectorio/playwright:latest
       volumes: ['/var/run/docker.sock:/var/run/docker']
-      options: "--label e2e-${{ github.run_id }}-${{ github.run_attempt }}"
+      options: '--label e2e-${{ github.run_id }}-${{ github.run_attempt }}'
     if: |
       always() &&
       (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
