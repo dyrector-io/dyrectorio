@@ -201,9 +201,12 @@ func (cl *ClientLoop) grpcLoop(token *config.ValidJWT) error {
 	var err error
 	defer cl.cancel()
 	defer func() {
-		grpcConn.Conn.Close()
-		grpcConn.Conn = nil
+		err = grpcConn.Conn.Close()
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to close gRPC connection")
+		}
 
+		grpcConn.Conn = nil
 		grpcConn.Client = nil
 	}()
 	for {
