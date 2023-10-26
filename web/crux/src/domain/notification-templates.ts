@@ -102,16 +102,15 @@ const getTeamsTemplate = (message: string): any => ({
   ],
 })
 
-const getRocketTemplate = (message: string) : any => (
-  {
-    attachments: [
-      {
-        title: title,
-        color: '1555130',
-        text: message,
-        title_link: "https://dyrector.io",
-      }
-    ]
+const getRocketTemplate = (message: string): any => ({
+  attachments: [
+    {
+      title,
+      color: '1555130',
+      text: message,
+      title_link: 'https://dyrector.io',
+    },
+  ],
 })
 
 export const getTemplate = (notificationType: NotificationTypeEnum, message: string): any | null => {
