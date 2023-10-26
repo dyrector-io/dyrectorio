@@ -642,8 +642,10 @@ jobs:
         id: get_e2e_network
         run: |
           E2E_CONTAINER_ID=$(docker ps -q -f label=e2e-${{ github.run_id }}-${{ github.run_attempt }})
+          echo "E2E_CONTAINER_ID: $E2E_CONTAINER_ID"
           E2E_NETWORK_NAME=$(docker inspect $E2E_CONTAINER_ID -f '{{range $key, $value := .NetworkSettings.Networks}}{{$key}}{{end}}')
-          echo "e2e_network_name=$E2E_NETWORK_NAME" >> $GITHUB_ENV
+          echo "E2E_NETWORK_NAME: $E2E_NETWORK_NAME"
+          echo "e2e_network_name=$E2E_NETWORK_NAME" >> $GITHUB_OUTPUT
       - name: Setup using cli
         run: |
           docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network ${{ steps.get_e2e_network.outputs.e2e_network_name }} --prefer-local-images --expect-container-env --debug -p dyo-e2e up
