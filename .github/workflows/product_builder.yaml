@@ -660,11 +660,11 @@ jobs:
           # DEBUG: pw:api
           HUB_PROXY_URL: ${{ secrets.HUB_PROXY_URL }}
           HUB_PROXY_TOKEN: ${{ secrets.HUB_PROXY_TOKEN }}
-          E2E_BASE_URL: 'http://dyo-e2e_traefik:8000'
-          MAILSLURPER_URL: 'http://dyo-e2e_mailslurper:4437'
-          CRUX_UI_URL: 'http://dyo-e2e_traefik:8000'
-          KRATOS_URL: 'http://dyo-e2e_kratos:4433'
-          KRATOS_ADMIN_URL: 'http://dyo-e2e_kratos:4434'
+          E2E_BASE_URL: 'http://${{ steps.get_e2e_network.outputs.e2e_network_name }}_traefik:8000'
+          MAILSLURPER_URL: 'http://${{ steps.get_e2e_network.outputs.e2e_network_name }}_mailslurper:4437'
+          CRUX_UI_URL: 'http://${{ steps.get_e2e_network.outputs.e2e_network_name }}_traefik:8000'
+          KRATOS_URL: 'http://${{ steps.get_e2e_network.outputs.e2e_network_name }}_kratos:4433'
+          KRATOS_ADMIN_URL: 'http://${{ steps.get_e2e_network.outputs.e2e_network_name }}_kratos:4434'
           CI: true
         run: |
           npm ci --include=dev --arch=x64 --cache .npm --prefer-offline --no-fund
@@ -698,6 +698,7 @@ jobs:
       - name: Teardown using cli
         if: always()
         run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network ${{ steps.get_e2e_network.outputs.e2e_network_name }} --prefer-local-images --expect-container-env --debug -p dyo-e2e down
+
       - name: Save NPM caches
         uses: actions/cache/save@v3
         with:
