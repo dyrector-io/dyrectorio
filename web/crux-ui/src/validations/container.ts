@@ -306,8 +306,8 @@ const initContainerRule = yup
     yup.object().shape({
       name: matchNoWhitespace(yup.string().required().label('container:common.name')),
       image: yup.string().required().label('container:common.image'),
-      command: uniqueKeysOnlySchema.default([]).nullable().label('container:common.images'),
-      args: uniqueKeysOnlySchema.default([]).nullable().label('container:common.arguments'),
+      command: shellCommandSchema.default([]).nullable().label('container:common.images'),
+      args: shellCommandSchema.default([]).nullable().label('container:common.arguments'),
       environment: uniqueKeyValuesSchema.default([]).nullable().label('container:common.environment'),
       useParentConfig: yup.boolean().default(false).required().label('container:common.useParent'),
       volumes: initContainerVolumeLinkRule.default([]).nullable().label('container:common.volumes'),
