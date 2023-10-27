@@ -25,7 +25,7 @@ import { AgentUpdateResult } from 'src/domain/agent-update'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
 import { BasicNode } from 'src/domain/node'
 import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
-import { CruxInternalServerErrorException, CruxNotFoundException } from 'src/exception/crux-exception'
+import { CruxNotFoundException } from 'src/exception/crux-exception'
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerIdentifier,
@@ -394,8 +394,10 @@ export default class AgentService {
 
     const agent = this.agents.get(nodeId)
     if (!agent) {
-      throw new CruxInternalServerErrorException({
-        message: 'fos',
+      throw new CruxNotFoundException({
+        message: 'Agent not found',
+        property: 'id',
+        value: nodeId,
       })
     }
 
