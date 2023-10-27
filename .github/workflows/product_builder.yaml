@@ -698,7 +698,6 @@ jobs:
       - name: Teardown using cli
         if: always()
         run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network ${{ steps.get_e2e_network.outputs.e2e_network_name }} --prefer-local-images --expect-container-env --debug -p dyo-e2e down
-
       - name: Save NPM caches
         uses: actions/cache/save@v3
         with:
