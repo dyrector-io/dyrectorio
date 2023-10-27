@@ -74,7 +74,8 @@ jobs:
         id: determine_runner
         run: |
           if [[ "${{ needs.check_pr_author_membership.outputs.member }}" == "true" ]]; then
-            echo "runner=4375vb34b5" >> $GITHUB_OUTPUT
+            # echo "runner=4375vb34b5" >> $GITHUB_OUTPUT
+            echo "runner=ubuntu-22.04" >> $GITHUB_OUTPUT
           else
             echo "runner=ubuntu-22.04" >> $GITHUB_OUTPUT
           fi
@@ -670,6 +671,8 @@ jobs:
           KRATOS_ADMIN_URL: 'http://${{ steps.get_e2e_network.outputs.e2e_network_gateway }}:4434'
           CI: true
         run: |
+          echo "Testing $E2E_BASE_URL..."
+          curl -v $E2E_BASE_URL
           npm ci --include=dev --arch=x64 --cache .npm --prefer-offline --no-fund
           npx playwright install chromium
           npm run test:e2e
