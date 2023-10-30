@@ -249,13 +249,18 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 		state.SettingsFile.TraefikDockerSocket = socket.Path
 	}
 
+	traefikHost := "0.0.0.0" // default host
+	if args.TraefikHost != "" {
+		traefikHost = args.TraefikHost
+	}
+
 	commands := []string{
 		"--log.level=DEBUG",
 		"--accesslog=true",
 		"--api.insecure=true",
 		"--providers.docker=true",
 		"--providers.docker.exposedbydefault=false",
-		fmt.Sprintf("--entrypoints.web.address=:%d", defaultTraefikWebPort),
+		fmt.Sprintf("--entrypoints.web.address=%s:%d", traefikHost, defaultTraefikWebPort),
 	}
 
 	if args.CruxUIDisabled {

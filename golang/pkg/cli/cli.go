@@ -25,6 +25,7 @@ const (
 	FlagExpectContainerEnv = "expect-container-env"
 	FlagNetwork            = "network"
 	FlagEnvFile            = "env-file"
+	FlagTraefikHost        = "traefik-host"
 )
 
 // InitCLI returns the configuration flags of the program
@@ -153,6 +154,12 @@ func InitCLI() *ucli.App {
 				Value:   "",
 				Usage:   "loads the environment variables into all containers from the specified .env file",
 			},
+			&ucli.StringFlag{
+				Name:     FlagTraefikHost,
+				Value:    "",
+				Usage:    "traefik host",
+				Required: false,
+			},
 		},
 	}
 }
@@ -178,6 +185,7 @@ func run(cCtx *ucli.Context) error {
 		LocalAgent:         cCtx.Bool(FlagLocalAgent),
 		Command:            cCtx.Command.Name,
 		EnvFile:            cCtx.String(FlagEnvFile),
+		TraefikHost:        cCtx.String(FlagTraefikHost),
 	}
 
 	initialState := State{

@@ -49,6 +49,7 @@ type ArgsFlags struct {
 	FullyContainerized bool
 	Network            string
 	Silent             bool
+	TraefikHost        string
 }
 
 // Containers contain container/service specific settings

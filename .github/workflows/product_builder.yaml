@@ -654,7 +654,13 @@ jobs:
           echo "e2e_network_gateway=$E2E_NETWORK_GATEWAY" >> $GITHUB_OUTPUT
       - name: Setup using cli
         run: |
-          docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network ${{ steps.get_e2e_network.outputs.e2e_network_name }} --prefer-local-images --expect-container-env --debug -p dyo-e2e up
+          docker run -v /var/run/docker.sock:/var/run/docker.sock \
+          ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} \
+          --image-tag ${{ needs.gather_changes.outputs.tag }} \
+          --network ${{ steps.get_e2e_network.outputs.e2e_network_name }} \
+          --prefer-local-images --expect-container-env --debug \
+          --traefik-host ${{ steps.get_e2e_network.outputs.e2e_network_gateway }} \
+          -p dyo-e2e up
       - name: Setup NPM caches
         uses: actions/cache/restore@v3
         with:
@@ -705,7 +711,14 @@ jobs:
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e_results
       - name: Teardown using cli
         if: always()
-        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network ${{ steps.get_e2e_network.outputs.e2e_network_name }} --prefer-local-images --expect-container-env --debug -p dyo-e2e down
+        run: |
+          docker run -v /var/run/docker.sock:/var/run/docker.sock \
+          ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} \
+          --image-tag ${{ needs.gather_changes.outputs.tag }} \
+          --network ${{ steps.get_e2e_network.outputs.e2e_network_name }} \
+          --prefer-local-images --expect-container-env --debug \
+          --traefik-host ${{ steps.get_e2e_network.outputs.e2e_network_gateway }} \
+          -p dyo-e2e down
       - name: Save NPM caches
         uses: actions/cache/save@v3
         with:
