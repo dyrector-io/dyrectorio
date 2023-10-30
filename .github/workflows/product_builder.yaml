@@ -654,7 +654,7 @@ jobs:
           echo "e2e_network_gateway=$E2E_NETWORK_GATEWAY" >> $GITHUB_OUTPUT
       - name: Setup using cli
         run: |
-          docker run -v /var/run/docker.sock:/var/run/docker.sock \
+          docker run -v /var/run/docker.sock:/var/run/docker.sock --rm \
           ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} \
           --image-tag ${{ needs.gather_changes.outputs.tag }} \
           --network ${{ steps.get_e2e_network.outputs.e2e_network_name }} \
@@ -679,6 +679,8 @@ jobs:
           KRATOS_ADMIN_URL: 'http://${{ steps.get_e2e_network.outputs.e2e_network_gateway }}:4434'
           CI: true
         run: |
+          TRAEFIK_INSPECTION=$(docker inspect dyo-e2e_traefik)
+          echo "TRAEFIK_INSPECTION: $TRAEFIK_INSPECTION"
           echo "Testing $E2E_BASE_URL..."
           curl -v $E2E_BASE_URL
           npm ci --include=dev --arch=x64 --cache .npm --prefer-offline --no-fund
@@ -712,7 +714,7 @@ jobs:
       - name: Teardown using cli
         if: always()
         run: |
-          docker run -v /var/run/docker.sock:/var/run/docker.sock \
+          docker run -v /var/run/docker.sock:/var/run/docker.sock --rm \
           ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} \
           --image-tag ${{ needs.gather_changes.outputs.tag }} \
           --network ${{ steps.get_e2e_network.outputs.e2e_network_name }} \
