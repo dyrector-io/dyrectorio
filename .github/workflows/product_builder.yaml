@@ -679,8 +679,12 @@ jobs:
           KRATOS_ADMIN_URL: 'http://${{ steps.get_e2e_network.outputs.e2e_network_gateway }}:4434'
           CI: true
         run: |
+          docker network disconnect bridge dyo-e2e_traefik
+          docker restart dyo-e2e_traefik
           TRAEFIK_INSPECTION=$(docker inspect dyo-e2e_traefik)
           echo "TRAEFIK_INSPECTION: $TRAEFIK_INSPECTION"
+          NETWORK_INSPECTION_AFTER_SETUP=$(docker network inspect $E2E_NETWORK_NAME)
+          echo "NETWORK_INSPECTION_AFTER_SETUP: $NETWORK_INSPECTION_AFTER_SETUP"
           echo "Testing $E2E_BASE_URL..."
           curl -v $E2E_BASE_URL
           npm ci --include=dev --arch=x64 --cache .npm --prefer-offline --no-fund
