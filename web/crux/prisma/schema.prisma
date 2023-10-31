@@ -501,6 +501,7 @@ enum NotificationTypeEnum {
   discord
   slack
   teams
+  rocket
 }
 
 enum NotificationEventTypeEnum {
