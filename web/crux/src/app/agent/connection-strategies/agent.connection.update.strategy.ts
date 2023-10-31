@@ -37,7 +37,7 @@ export default class AgentConnectionUpdateStrategy extends AgentConnectionStrate
     })
 
     // this will disconnect the old agent
-    const { startedBy } = updatedAgent.onUpdateCompleted(connection)
+    const { startedBy } = this.service.agentUpdateCompleted(connection)
 
     await this.service.createAgentAudit(newAgent.id, 'updateCompleted', {
       startedBy,
