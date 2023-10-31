@@ -62,7 +62,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
   )
 
   useInterval(() => {
-    setContainers([...containers])
+    setContainers(it => [...it])
   }, SECOND_IN_MILLIS)
 
   const sock = useWebSocket(routes.node.detailsSocket(deployment.node.id), {
@@ -94,7 +94,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
   }
 
   sock.on(WS_TYPE_CONTAINERS_STATE_LIST, (message: ContainersStateListMessage) =>
-    setContainers(merge(containers, message.containers)),
+    setContainers(it => merge(it, message.containers)),
   )
 
   const formatContainerTime = (container: Container) => {

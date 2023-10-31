@@ -655,6 +655,8 @@ func MapDockerContainerEventToContainerState(event string) common.ContainerState
 		return common.ContainerState_EXITED
 	case "die":
 		return common.ContainerState_EXITED
+	case "kill":
+		return common.ContainerState_WAITING
 	default:
 		return common.ContainerState_CONTAINER_STATE_UNSPECIFIED
 	}
