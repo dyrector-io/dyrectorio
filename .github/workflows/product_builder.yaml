@@ -681,7 +681,7 @@ jobs:
         run: |
           TRAEFIK_INSPECTION=$(docker inspect dyo-e2e_traefik)
           echo "TRAEFIK_INSPECTION: $TRAEFIK_INSPECTION"
-          NETWORK_INSPECTION_AFTER_SETUP=$(docker network inspect $E2E_NETWORK_NAME)
+          NETWORK_INSPECTION_AFTER_SETUP=$(docker network inspect ${{ steps.get_e2e_network.outputs.e2e_network_name }})
           echo "NETWORK_INSPECTION_AFTER_SETUP: $NETWORK_INSPECTION_AFTER_SETUP"
           echo "Testing $E2E_BASE_URL..."
           curl -v $E2E_BASE_URL
