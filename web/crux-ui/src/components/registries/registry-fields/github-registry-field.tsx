@@ -1,4 +1,4 @@
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { GithubRegistryDetails, GITHUB_NAMESPACE_VALUES, RegistryNamespace } from '@app/models'
@@ -52,10 +52,12 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
         <DyoLabel className="mr-2 my-auto">{t('namespaceType')}</DyoLabel>
 
         <DyoChips
+          name="githubNamespaceType"
           choices={GITHUB_NAMESPACE_VALUES}
           selection={formik.values.namespace}
           converter={(it: RegistryNamespace) => t(`namespace.${it}`)}
           onSelectionChange={it => formik.setFieldValue('namespace', it, true)}
+          qaLabel={chipsQALabelFromValue}
         />
       </div>
 

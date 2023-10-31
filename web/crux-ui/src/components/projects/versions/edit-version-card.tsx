@@ -1,7 +1,7 @@
 import useVersionHint from '@app/components/projects/versions/use-version-hint'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -122,12 +122,14 @@ const EditVersionCard = (props: EditVersionCardProps) => {
 
             <DyoChips
               className="text-bright"
+              name="versionType"
               choices={VERSION_TYPE_VALUES}
               selection={formik.values.type}
               converter={it => t(it)}
               onSelectionChange={async (type): Promise<void> => {
                 await formik.setFieldValue('type', type, false)
               }}
+              qaLabel={chipsQALabelFromValue}
             />
           </>
         )}

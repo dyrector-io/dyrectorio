@@ -8,6 +8,7 @@ import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
@@ -32,6 +33,7 @@ import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { QA_DIALOG_LABEL_DELETE_DEPLOYMENT, QA_MODAL_LABEL_DEPLOYMENT_NOTE } from 'quality-assurance'
 import { useEffect, useState } from 'react'
 
 interface DeploymentsPageProps {
@@ -76,6 +78,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
 
   const onDeleteDeployment = async (deployment: Deployment) => {
     const confirmed = await confirm({
+      qaLabel: QA_DIALOG_LABEL_DELETE_DEPLOYMENT,
       title: t('common:areYouSure'),
       description:
         deployment.status === 'successful'
@@ -137,6 +140,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
               className="pl-6"
+              name="deploymentStatusFilter"
               choices={DEPLOYMENT_STATUS_VALUES}
               converter={it => t(`common:deploymentStatuses.${it}`)}
               selection={filters.filter?.enum}
@@ -145,8 +149,10 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
                   enum: type,
                 })
               }}
+              qaLabel={chipsQALabelFromValue}
             />
           </Filters>
+
           <DyoCard className="relative mt-4">
             <DyoTable
               data={filters.filtered}
@@ -249,6 +255,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           title={t('common:note')}
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
+          qaLabel={QA_MODAL_LABEL_DEPLOYMENT_NOTE}
         >
           <p className="text-bright mt-8 break-all overflow-y-auto">{showInfo.note}</p>
         </DyoModal>

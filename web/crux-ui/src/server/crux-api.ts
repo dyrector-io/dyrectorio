@@ -45,9 +45,10 @@ export const getCrux = async <Res>(req: http.IncomingMessage, url: string): Prom
   return body
 }
 
-export const getCruxFromContext = <Res>(context: NextPageContext, url: string) => getCrux<Res>(context.req, url)
+export const getCruxFromContext = <Res>(context: Pick<NextPageContext, 'req'>, url: string): Promise<Res> =>
+  getCrux<Res>(context.req, url)
 
-export const postCruxFromContext = async <Res>(context: NextPageContext, url: string): Promise<Res> => {
+export const postCruxFromContext = async <Res>(context: Pick<NextPageContext, 'req'>, url: string): Promise<Res> => {
   const res = await fetchCrux(context.req, url, {
     method: 'POST',
   })

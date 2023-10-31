@@ -1,25 +1,26 @@
 import { PaginationSettings } from '@app/components/shared/paginator'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoDatePicker from '@app/elements/dyo-date-picker'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import DyoModal from '@app/elements/dyo-modal'
+import DyoTable, { DyoColumn, sortDate, sortString } from '@app/elements/dyo-table'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import {
   DyoNode,
+  NODE_EVENT_TYPE_VALUES,
   NodeAuditLog,
   NodeAuditLogList,
   NodeAuditLogQuery,
   NodeEventType,
-  NODE_EVENT_TYPE_VALUES,
 } from '@app/models'
 import { getEndOfToday, utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
+import { QA_MODAL_LABEL_NODE_AUDIT_DETAILS } from 'quality-assurance'
 import { useEffect, useState } from 'react'
 import JsonEditor from '../shared/json-editor'
-import DyoTable, { DyoColumn, sortDate, sortString } from '@app/elements/dyo-table'
 
 type NodeAuditFilter = {
   from: Date
@@ -97,10 +98,12 @@ const NodeAuditList = (props: NodeAuditListProps) => {
         <div className="flex flex-row items-center mt-4">
           <DyoChips
             className="mr-4"
+            name="nodeEventType"
             choices={['none', ...NODE_EVENT_TYPE_VALUES]}
             converter={it => t(`auditEvents.${it}`)}
             selection={filter.eventType ?? 'none'}
             onSelectionChange={it => setFilter({ ...filter, eventType: it === 'none' ? null : (it as NodeEventType) })}
+            qaLabel={chipsQALabelFromValue}
           />
 
           <DyoDatePicker
@@ -174,6 +177,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
           title={`${t(`auditEvents.${showInfo.event}`)} | ${utcDateToLocale(showInfo.createdAt)}`}
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
+          qaLabel={QA_MODAL_LABEL_NODE_AUDIT_DETAILS}
         >
           <JsonEditor className="overflow-y-auto p-4 h-full" disabled value={showInfo.data} />
         </DyoModal>

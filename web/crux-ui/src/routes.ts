@@ -38,6 +38,7 @@ export const API_SETTINGS_OIDC = '/api/auth/settings/oidc'
 export const API_RECOVERY = '/api/auth/recovery'
 export const API_VERIFICATION = '/api/auth/verify'
 export const API_CREATE_ACCOUNT = '/api/auth/create-account'
+export const API_QUALITY_ASSURANCE = '/api/quality-assurance'
 
 export const API_STATUS = '/api/status'
 

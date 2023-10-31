@@ -395,7 +395,6 @@ export default class AgentService {
     }
 
     const packageVersion = coerce(getPackageVersion(this.configService))
-
     return (
       agentVersion.compare(AGENT_SUPPORTED_MINIMUM_VERSION) >= 0 && // agent version is newer (bigger) or the same
       agentVersion.compare(packageVersion) <= 0

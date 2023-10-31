@@ -20,6 +20,7 @@ import { redirectTo, teamSlugOrFirstTeam, utcDateToLocale, withContextAuthorizat
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
+import { QA_DIALOG_LABEL_DELETE_USER_TOKEN } from 'quality-assurance'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 
@@ -53,6 +54,7 @@ const TokensPage = (props: TokensPageProps) => {
 
   const onItemDelete = async (item: Token) => {
     const confirmed = await confirmDelete({
+      qaLabel: QA_DIALOG_LABEL_DELETE_USER_TOKEN,
       title: t('common:areYouSureDeleteName', { name: item.name }),
       description: t('common:proceedYouLoseAllDataToName', {
         name: item.name,

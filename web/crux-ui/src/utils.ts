@@ -17,6 +17,7 @@ import {
 } from 'next'
 import { Translate } from 'next-translate'
 import { NextRouter } from 'next/router'
+import { appendQASettings, fetchQualityAssuranceSettings } from 'quality-assurance'
 import toast, { ToastOptions } from 'react-hot-toast'
 import { COOKIE_TEAM_SLUG } from './const'
 import { MessageType } from './elements/dyo-input'
@@ -344,12 +345,32 @@ export const setupContextSession = async (
   return null
 }
 
+const KEY_PROPS = 'props'
+const appendToServerSideProps = async <T>(
+  serverSideProps: GetServerSidePropsResult<T>,
+  append: (props: any) => any,
+): Promise<GetServerSidePropsResult<T>> => {
+  const innerProps: any = serverSideProps[KEY_PROPS]
+  if (!innerProps) {
+    return serverSideProps
+  }
+
+  const innerPropsValue = await Promise.resolve(innerProps)
+
+  return {
+    ...serverSideProps,
+    props: append(innerPropsValue),
+  }
+}
+
 export const withContextErrorHandling =
   <T>(getServerSideProps: CruxGetServerSideProps<T>): GetServerSideProps<T> =>
   async (context: GetServerSidePropsContext) => {
     try {
       const props = await getServerSideProps(context as any as NextPageContext)
-      return props
+      const qaSettings = await fetchQualityAssuranceSettings(context)
+
+      return await appendToServerSideProps(props, it => appendQASettings(it, qaSettings))
     } catch (err) {
       if (isDyoApiError(err)) {
         console.error(`[ERROR]: ${err.status} - prop: ${err.property}: ${err.value} - ${err.description}`)
@@ -407,7 +428,7 @@ export const writeToClipboard = async (t: Translate, content: string) => {
   }
 }
 
-export const snakeToCamel = str =>
+export const snakeToCamel = (str: string): string =>
   str.toLowerCase().replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', ''))
 
 export const toastWarning = (message: string, opts?: ToastOptions) => {
@@ -461,8 +482,3 @@ export const getEndOfToday = () => {
   endOfToday.setHours(23, 59, 59, 999)
   return endOfToday
 }
-
-export const delay = (ms: number): Promise<boolean> =>
-  new Promise(resolve => {
-    setTimeout(() => resolve(null), ms)
-  })

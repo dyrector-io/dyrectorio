@@ -128,6 +128,7 @@ const AddDeploymentToVersionCard = (props: AddDeploymentToVersionCardProps) => {
           <DyoLabel className="mt-8 mb-2.5">{t('common:nodes')}</DyoLabel>
 
           <DyoChips
+            name="nodes"
             choices={nodes ?? []}
             converter={(it: DyoNode) => it.name}
             selection={nodes.find(it => it.id === formik.values.nodeId)}

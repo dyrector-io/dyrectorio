@@ -56,6 +56,7 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
 
       <div className="max-w-lg mb-3 flex flex-row mb-4">
         <DyoMultiSelect
+          name="configBundles"
           className="ml-2"
           disabled={!mutable}
           choices={configBundleOptions ?? []}

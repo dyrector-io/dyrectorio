@@ -1,16 +1,17 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import DyoTable, { DyoColumn, sortDate, sortString } from '@app/elements/dyo-table'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { DeleteImageMessage, VersionImage, WS_TYPE_DELETE_IMAGE } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
+import { QA_DIALOG_LABEL_DELETE_IMAGE, QA_MODAL_LABEL_IMAGE_TAGS } from 'quality-assurance'
 import { useState } from 'react'
 import EditImageTags from './images/edit-image-tags'
-import { selectTagsOfImage, VerionState, VersionActions } from './use-version-state'
-import DyoTable, { DyoColumn, sortDate, sortString } from '@app/elements/dyo-table'
+import { VerionState, VersionActions, selectTagsOfImage } from './use-version-state'
 
 interface VersionViewListProps {
   state: VerionState
@@ -28,6 +29,7 @@ const VersionViewList = (props: VersionViewListProps) => {
 
   const onDelete = async (item: VersionImage) => {
     const confirmed = await confirmDelete({
+      qaLabel: QA_DIALOG_LABEL_DELETE_IMAGE,
       title: t('common:areYouSureDeleteName', { name: item.config.name }),
       description: t('common:proceedYouLoseAllDataToName', { name: item.config.name }),
       confirmText: t('common:delete'),
@@ -123,6 +125,7 @@ const VersionViewList = (props: VersionViewListProps) => {
           title={t('imageTagsFor', { name: tagsModalTarget?.config.name })}
           open
           onClose={() => setTagsModalTarget(null)}
+          qaLabel={QA_MODAL_LABEL_IMAGE_TAGS}
         >
           <EditImageTags
             selected={tagsModalTarget?.tag ?? ''}

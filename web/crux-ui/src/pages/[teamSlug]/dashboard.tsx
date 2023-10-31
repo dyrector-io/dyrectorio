@@ -16,6 +16,7 @@ import { identityOnboardingDisabled, obtainSessionFromRequest } from '@server/kr
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
+import { QA_DIALOG_LABEL_HIDE_ONBOARDING } from 'quality-assurance'
 import { useState } from 'react'
 import useSWR from 'swr'
 
@@ -42,6 +43,7 @@ const DashboardPage = (props: DashboardPageProps) => {
 
   const hideOnboarding = async () => {
     const confirmed = await confirmHideOnboarding({
+      qaLabel: QA_DIALOG_LABEL_HIDE_ONBOARDING,
       title: t('common:areYouSure'),
       description: t('areYouSureHideOnboarding'),
       confirmText: t('hide'),

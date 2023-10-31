@@ -5,6 +5,7 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
+import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
@@ -108,6 +109,7 @@ const NodesPage = (props: NodesPageProps) => {
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
               className="pl-6"
+              name="nodeStatusFilter"
               choices={NODE_STATUS_VALUES}
               converter={it => t(`common:nodeStatuses.${it}`)}
               selection={filters.filter?.enum}
@@ -116,6 +118,7 @@ const NodesPage = (props: NodesPageProps) => {
                   enum: type,
                 })
               }}
+              qaLabel={chipsQALabelFromValue}
             />
           </Filters>
 

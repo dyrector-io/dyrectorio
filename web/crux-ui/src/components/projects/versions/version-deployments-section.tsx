@@ -1,29 +1,31 @@
 import NodeStatusIndicator from '@app/components/nodes/node-status-indicator'
 import Filters from '@app/components/shared/filters'
 import { DyoCard } from '@app/elements/dyo-card'
+import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { useDeploy } from '@app/hooks/use-deploy'
-import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import { EnumFilter, TextFilter, enumFilterFor, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
-  DeploymentByVersion,
-  deploymentIsCopiable,
-  deploymentIsDeletable,
-  deploymentIsDeployable,
-  DeploymentStatus,
   DEPLOYMENT_STATUS_VALUES,
+  DeploymentByVersion,
+  DeploymentStatus,
+  DyoNode,
+  NODE_STATUS_VALUES,
   NodeEventMessage,
   NodeStatus,
   VersionDetails,
   WS_TYPE_NODE_EVENT,
-  DyoNode,
-  NODE_STATUS_VALUES,
+  deploymentIsCopiable,
+  deploymentIsDeletable,
+  deploymentIsDeployable,
 } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
@@ -34,7 +36,11 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import DeploymentStatusTag from './deployments/deployment-status-tag'
 import { VersionActions } from './use-version-state'
-import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
+import {
+  QA_DIALOG_LABEL_DELETE_DEPLOYMENT,
+  QA_DIALOG_LABEL_DEPLOY,
+  QA_MODAL_LABEL_DEPLOYMENT_NOTE,
+} from 'quality-assurance'
 
 interface VersionDeploymentsSectionProps {
   version: VersionDetails
@@ -103,6 +109,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const onDeploy = async (deployment: DeploymentByVersion) => {
     const confirmed = await confirm({
+      qaLabel: QA_DIALOG_LABEL_DEPLOY,
       title: t('common:areYouSure'),
       description: t('deployments:areYouSureDeployNodePrefix', {
         node: deployment.node.name,
@@ -120,6 +127,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const onDeleteDeployment = async (deployment: DeploymentByVersion) => {
     const confirmed = await confirm({
+      qaLabel: QA_DIALOG_LABEL_DELETE_DEPLOYMENT,
       title: t('common:areYouSure'),
       description:
         deployment.status === 'successful'
@@ -154,6 +162,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
               className="pl-6"
+              name="deploymentStatusFilter"
               selection={filters.filter?.enum}
               choices={DEPLOYMENT_STATUS_VALUES}
               converter={it => t(`common:deploymentStatuses.${it}`)}
@@ -162,6 +171,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
                   enum: type,
                 })
               }}
+              qaLabel={chipsQALabelFromValue}
             />
           </Filters>
 
@@ -287,6 +297,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           title={t('common:note')}
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
+          qaLabel={QA_MODAL_LABEL_DEPLOYMENT_NOTE}
         >
           <p className="text-bright mt-8 break-all overflow-y-auto">{showInfo.note}</p>
         </DyoModal>

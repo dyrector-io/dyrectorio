@@ -1,5 +1,6 @@
 import clsx from 'clsx'
 import Link from 'next/link'
+import { sendQAClickEvent } from 'quality-assurance'
 import React from 'react'
 
 export interface DyoButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'ref'> {
@@ -31,8 +32,24 @@ const DyoButton = (props: DyoButtonProps) => {
     children,
     type,
     danger,
+    onClick: propsOnClick,
     ...forwaredProps
   } = props
+
+  const sendQAEvent = () =>
+    sendQAClickEvent({
+      elementType: 'button',
+      label: children?.toString(),
+    })
+
+  const onClick = href
+    ? null
+    : !propsOnClick
+    ? sendQAEvent
+    : ev => {
+        propsOnClick(ev)
+        sendQAEvent()
+      }
 
   const defaultColor = danger
     ? outlined
@@ -76,13 +93,14 @@ const DyoButton = (props: DyoButtonProps) => {
         cursor,
         heightClassName ?? 'h-10',
       )}
+      onClick={onClick}
     >
       {children}
     </button>
   )
 
   return href ? (
-    <Link className="inline-block" href={href}>
+    <Link className="inline-block" href={href} onClick={() => sendQAEvent()}>
       {button}
     </Link>
   ) : (

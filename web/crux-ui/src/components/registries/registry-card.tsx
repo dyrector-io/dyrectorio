@@ -43,6 +43,7 @@ const RegistryCard = (props: RegistryCardProps) => {
       </div>
 
       <DyoExpandableText
+        name="description"
         text={registry.description}
         lineClamp={2}
         className="text-md text-light mt-2 max-h-44"

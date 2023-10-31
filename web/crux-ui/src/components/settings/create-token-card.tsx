@@ -1,6 +1,6 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -72,6 +72,7 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
 
         <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('tokens:expirationIn')}</DyoLabel>
         <DyoChips
+          name="expiration"
           className="text-bright"
           choices={EXPIRATION_VALUES}
           selection={formik.values.expirationInDays}
@@ -79,6 +80,7 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
           onSelectionChange={async it => {
             await formik.setFieldValue('expirationInDays', it, false)
           }}
+          qaLabel={chipsQALabelFromValue}
         />
 
         <DyoButton className="hidden" type="submit" />

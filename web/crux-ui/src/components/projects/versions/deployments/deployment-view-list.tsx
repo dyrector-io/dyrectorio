@@ -28,6 +28,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
           selected: deployInstances,
           onAllChange: actions.onAllInstancesToggled,
           onChange: actions.onInstanceSelected,
+          qaLabel: `instance`,
         })}
         <DyoColumn
           header={t('containerName')}

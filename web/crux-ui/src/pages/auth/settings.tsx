@@ -41,6 +41,7 @@ import kratos, { identityWasRecovered, sessionOfContext } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
+import { QA_DIALOG_LABEL_REMOVE_OIDC_ACCOUNT } from 'quality-assurance'
 import { useState } from 'react'
 
 type SettingsPageProps = {
@@ -86,6 +87,7 @@ const SettingsPage = (props: SettingsPageProps) => {
   const onModifyOidcConnection = async (provider: OidcProvider, action: OidcConnectorAction) => {
     if (action === 'unlink') {
       const confirmed = await confirm({
+        qaLabel: QA_DIALOG_LABEL_REMOVE_OIDC_ACCOUNT,
         title: t('common:areYouSure'),
         description: t('areYouSureWantToRemoveAccount', {
           account: provider,

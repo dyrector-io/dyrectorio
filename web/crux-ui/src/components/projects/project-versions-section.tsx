@@ -6,6 +6,7 @@ import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Version } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 import VersionCard from './versions/version-card'
+import { QA_DIALOG_LABEL_SET_AS_DEFAULT } from 'quality-assurance'
 
 interface ProjectVersionsSectionProps {
   projectId: string
@@ -25,6 +26,7 @@ const ProjectVersionsSection = (props: ProjectVersionsSectionProps) => {
 
   const onSetAsDefaultClick = async (version: Version) => {
     const confirmed = await confirmSetAsDefault({
+      qaLabel: QA_DIALOG_LABEL_SET_AS_DEFAULT,
       title: t('common:areYouSure'),
       description: t('setNameAsDefault', version),
     })

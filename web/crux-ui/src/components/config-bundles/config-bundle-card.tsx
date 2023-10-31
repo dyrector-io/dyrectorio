@@ -32,6 +32,7 @@ const ConfigBundleCard = (props: ConfigBundleCardProps) => {
       {titleHref ? <Link href={titleHref}>{title}</Link> : title}
 
       <DyoExpandableText
+        name="name"
         text={configBundle.description}
         lineClamp={2}
         className="text-md text-light mt-2 max-h-44"
