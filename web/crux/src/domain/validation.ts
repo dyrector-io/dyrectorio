@@ -18,7 +18,10 @@ import {
   ContainerVolumeType,
   Metrics,
   PORT_MAX,
+  UniqueKeyValue,
 } from './container'
+import { ImageValidation } from 'src/app/image/image.dto'
+import { Instance } from '@prisma/client'
 
 export const nameRuleOptional = yup.string().trim().min(3).max(70)
 export const nameRule = yup.string().required().trim().min(3).max(70)
@@ -432,11 +435,68 @@ export const instanceContainerConfigSchema = yup.object().shape({
   metrics: metricsRule,
 })
 
-export const startDeploymentSchema = yup.object({
+const testEnvironment = (validation: ImageValidation, arr: UniqueKeyValue[]) => {
+  if (!validation) {
+    return null
+  }
+
+  const requiredKeys = Object.entries(validation.environmentRules)
+    .filter(([_, rule]) => rule.required)
+    .map(([key, _]) => key)
+  const foundKeys = arr.map(it => it.key)
+
+  const missingKey = requiredKeys.find(it => !foundKeys.includes(it))
+  if (missingKey) {
+    const err = new yup.ValidationError('errors:yup.mixed.required', missingKey, 'environment')
+    err.params = {
+      path: missingKey,
+    }
+    return err
+  }
+
+  const fieldErrors = arr.map((it, index) => {
+    const { key, value } = it
+    const rule = validation.environmentRules[key]
+    if (!rule) {
+      return null
+    }
+
+    try {
+      switch (rule.type) {
+        case 'boolean':
+          yup.boolean().validateSync(value)
+          break
+        case 'int':
+          yup.number().validateSync(value)
+          break
+        case 'string':
+          yup.string().validateSync(value)
+          break
+      }
+    } catch (fieldError) {
+      const err = new yup.ValidationError(fieldError.message, key, `environment[${index}]`)
+      err.params = {
+        ...fieldError.params,
+        path: key,
+      }
+      return err
+    }
+  }).filter(it => !!it)
+
+  if (fieldErrors.length > 0) {
+    const err = new yup.ValidationError(fieldErrors, missingKey, 'environment')
+    return err
+  }
+
+  return null
+}
+
+export const createStartDeploymentSchema = (instanceValidation: Record<string, ImageValidation>) => yup.object({
   environment: uniqueKeyValuesSchema,
   instances: yup
     .array(
       yup.object({
+        id: yup.string(),
         config: instanceContainerConfigSchema.nullable(),
       }),
     )
@@ -444,6 +504,26 @@ export const startDeploymentSchema = yup.object({
       'containerNameAreUnique',
       'Container names must be unique',
       instances => new Set(instances.map(it => it.config.name)).size === instances.length,
+    )
+    .test(
+      'instanceEnvironments',
+      'Instance environments must match their image label rules.',
+      instances => {
+        const errors = instances.map(it => {
+          const validation = instanceValidation[it.id]
+          if (!validation) {
+            return null
+          }
+
+          return testEnvironment(validation, it.config.environment as UniqueKeyValue[])
+        }).filter(it => !!it)
+
+        if (errors.length > 0) {
+          return new yup.ValidationError(errors, null, "environment")
+        }
+
+        return true
+      },
     ),
 })
 

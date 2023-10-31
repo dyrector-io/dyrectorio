@@ -11,6 +11,7 @@ import ImageEventService from './image.event.service'
 import ImageHttpController from './image.http.controller'
 import ImageMapper from './image.mapper'
 import ImageService from './image.service'
+import RegistryClientProvider from '../registry/registry-client.provider'
 
 @Module({
   imports: [RegistryModule, EditorModule, ContainerModule, AuditLoggerModule],
@@ -23,6 +24,7 @@ import ImageService from './image.service'
     RegistryMapper,
     KratosService,
     ImageEventService,
+    RegistryClientProvider,
   ],
   controllers: [ImageHttpController],
 })

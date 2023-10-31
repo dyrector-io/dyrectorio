@@ -123,12 +123,13 @@ export default class VersionWebSocketGateway {
 
   @SubscribeMessage('add-images')
   async addImages(
+    @TeamSlug() teamSlug: string,
     @VersionId() versionId: string,
     @SocketMessage() message: AddImagesMessage,
     @IdentityFromSocket() identity: Identity,
     @SocketSubscription() subscription: WsSubscription,
   ): Promise<void> {
-    const images = await this.imageService.addImagesToVersion(versionId, message.registryImages, identity)
+    const images = await this.imageService.addImagesToVersion(teamSlug, versionId, message.registryImages, identity)
 
     const res: WsMessage<ImagesAddedMessage> = {
       type: WS_TYPE_IMAGES_ADDED,

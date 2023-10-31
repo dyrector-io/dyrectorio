@@ -120,3 +120,8 @@ export class BufferedSubject<T> extends Subject<T> {
     return sub
   }
 }
+
+export const stripProtocol = (url: string) => {
+  const parsed = new URL(url)
+  return `${parsed.host}${parsed.pathname !== "/" ? parsed.pathname : ''}`
+}

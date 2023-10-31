@@ -13,7 +13,9 @@ import {
   ContainerNetworkMode,
   ContainerPort,
   ContainerRestartPolicyType,
+  ImageValidation,
   Metrics,
+  UniqueKeyValue,
   VolumeType,
 } from '@app/models'
 import * as yup from 'yup'
@@ -398,47 +400,110 @@ const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
     .label('container:crane.metrics')
 })
 
-const containerConfigBaseSchema = yup.object().shape({
-  name: matchNoWhitespace(yup.string().required().label('container:common.containerName')),
-  environment: unsafeUniqueKeyValuesSchema.default([]).nullable().label('container:common.environment'),
-  routing: routingRule,
-  expose: exposeRule,
-  user: yup.number().default(null).min(-1).max(UID_MAX).nullable().label('container:common.user'),
-  tty: yup.boolean().default(false).required().label('container:common.tty'),
-  configContainer: configContainerRule,
-  ports: portConfigRule,
-  portRanges: portRangeConfigRule,
-  volumes: volumeConfigRule,
-  commands: shellCommandSchema.default([]).nullable(),
-  args: shellCommandSchema.default([]).nullable(),
-  initContainers: initContainerRule,
-  capabilities: uniqueKeyValuesSchema.default([]).nullable().label('container:common.capabilities'),
-  storage: storageRule,
+const testEnvironment = (validation: ImageValidation) => (arr: UniqueKeyValue[]) => {
+  if (!validation) {
+    return true
+  }
 
-  // dagent:
-  logConfig: logConfigRule,
-  restartPolicy: restartPolicyRule,
-  networkMode: networkModeRule,
-  networks: uniqueKeysOnlySchema.default([]).nullable().label('container:dagent.networks'),
-  dockerLabels: uniqueKeyValuesSchema.default([]).nullable().label('container:dagent.dockerLabels'),
+  const requiredKeys = Object.entries(validation.environmentRules)
+    .filter(([_, rule]) => rule.required)
+    .map(([key, _]) => key)
+  const foundKeys = arr.map(it => it.key)
 
-  // crane
-  deploymentStrategy: deploymentStrategyRule,
-  customHeaders: uniqueKeysOnlySchema.default([]).nullable().label('container:crane.customHeaders'),
-  proxyHeaders: yup.boolean().default(false).required().label('container:crane.proxyHeaders'),
-  useLoadBalancer: yup.boolean().default(false).required().label('container:crane.useLoadBalancer'),
-  extraLBAnnotations: uniqueKeyValuesSchema.default([]).nullable().label('container:crane.extraLBAnnotations'),
-  healthCheckConfig: healthCheckConfigRule,
-  resourceConfig: resourceConfigRule,
-  labels: markerRule.label('container:crane.labels'),
-  annotations: markerRule.label('container:crane.annotations'),
-  metrics: metricsRule,
-})
+  const missingKey = requiredKeys.find(it => !foundKeys.includes(it))
+  if (missingKey) {
+    const err = new yup.ValidationError('errors:yup.mixed.required', missingKey, 'environment')
+    err.params = {
+      path: missingKey,
+    }
+    return err
+  }
 
-export const containerConfigSchema = containerConfigBaseSchema.shape({
-  secrets: uniqueKeySchema.default([]).nullable().label('container:common.secrets'),
-})
+  const fieldErrors = arr.map((it, index) => {
+    const { key, value } = it
+    const rule = validation.environmentRules[key]
+    if (!rule) {
+      return null
+    }
 
-export const mergedContainerConfigSchema = containerConfigBaseSchema.shape({
-  secrets: uniqueKeyValuesSchema.default([]).nullable().label('container:common.secrets'),
-})
+    try {
+      switch (rule.type) {
+        case 'boolean':
+          yup.boolean().validateSync(value)
+          break
+        case 'int':
+          yup.number().validateSync(value)
+          break
+        case 'string':
+          yup.string().validateSync(value)
+          break
+      }
+    } catch (fieldError) {
+      const err = new yup.ValidationError(fieldError.message, key, `environment[${index}]`)
+      err.params = {
+        ...fieldError.params,
+        path: key,
+      }
+      return err
+    }
+  }).filter(it => !!it)
+
+  if (fieldErrors.length > 0) {
+    const err = new yup.ValidationError(fieldErrors, missingKey, 'environment')
+    return err
+  }
+
+  return true
+}
+
+const createContainerConfigBaseSchema = (validation: ImageValidation) =>
+  yup.object().shape({
+    name: matchNoWhitespace(yup.string().required().label('container:common.containerName')),
+    environment: unsafeUniqueKeyValuesSchema
+      .default([])
+      .nullable()
+      .label('container:common.environment')
+      .test('ruleValidation', 'errors:yup.mixed.required', testEnvironment(validation)),
+    routing: routingRule,
+    expose: exposeRule,
+    user: yup.number().default(null).min(-1).max(UID_MAX).nullable().label('container:common.user'),
+    tty: yup.boolean().default(false).required().label('container:common.tty'),
+    configContainer: configContainerRule,
+    ports: portConfigRule,
+    portRanges: portRangeConfigRule,
+    volumes: volumeConfigRule,
+    commands: shellCommandSchema.default([]).nullable(),
+    args: shellCommandSchema.default([]).nullable(),
+    initContainers: initContainerRule,
+    capabilities: uniqueKeyValuesSchema.default([]).nullable().label('container:common.capabilities'),
+    storage: storageRule,
+
+    // dagent:
+    logConfig: logConfigRule,
+    restartPolicy: restartPolicyRule,
+    networkMode: networkModeRule,
+    networks: uniqueKeysOnlySchema.default([]).nullable().label('container:dagent.networks'),
+    dockerLabels: uniqueKeyValuesSchema.default([]).nullable().label('container:dagent.dockerLabels'),
+
+    // crane
+    deploymentStrategy: deploymentStrategyRule,
+    customHeaders: uniqueKeysOnlySchema.default([]).nullable().label('container:crane.customHeaders'),
+    proxyHeaders: yup.boolean().default(false).required().label('container:crane.proxyHeaders'),
+    useLoadBalancer: yup.boolean().default(false).required().label('container:crane.useLoadBalancer'),
+    extraLBAnnotations: uniqueKeyValuesSchema.default([]).nullable().label('container:crane.extraLBAnnotations'),
+    healthCheckConfig: healthCheckConfigRule,
+    resourceConfig: resourceConfigRule,
+    labels: markerRule.label('container:crane.labels'),
+    annotations: markerRule.label('container:crane.annotations'),
+    metrics: metricsRule,
+  })
+
+export const createContainerConfigSchema = (rules: ImageValidation) =>
+  createContainerConfigBaseSchema(rules).shape({
+    secrets: uniqueKeySchema.default([]).nullable().label('container:common.secrets'),
+  })
+
+export const createMergedContainerConfigSchema = (rules: ImageValidation) =>
+  createContainerConfigBaseSchema(rules).shape({
+    secrets: uniqueKeyValuesSchema.default([]).nullable().label('container:common.secrets'),
+  })

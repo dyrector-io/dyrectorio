@@ -15,9 +15,12 @@ import {
   GoogleRegistryDetailsDto,
   HubRegistryDetailsDto,
   RegistryType,
+  UncheckedRegistryDetailsDto,
   V2RegistryDetailsDto,
 } from './registry.dto'
 import RegistryService from './registry.service'
+import V2Labels from './registry-clients/v2-labels'
+import UncheckedApiClient from './registry-clients/unchecked-api-client'
 
 export type RegistryClientEntry = {
   client: RegistryApiClient
@@ -57,10 +60,6 @@ export default class RegistryClientProvider {
     }
 
     const registry = await this.service.getRegistryDetails(registryId)
-
-    if (registry.type === 'unchecked') {
-      throw new CruxBadRequestException({ message: 'Unchecked registries have no API' })
-    }
 
     const createV2 = (details: V2RegistryDetailsDto) =>
       new RegistryV2ApiClient(
@@ -118,6 +117,9 @@ export default class RegistryClientProvider {
           : null,
       )
 
+    const createUnchecked = (details: UncheckedRegistryDetailsDto) =>
+      new UncheckedApiClient(details.url)
+
     client = {
       type: registry.type,
       client:
@@ -129,7 +131,9 @@ export default class RegistryClientProvider {
           ? createGithub(registry.details as GithubRegistryDetailsDto)
           : registry.type === 'gitlab'
           ? createGitlab(registry.details as GitlabRegistryDetailsDto)
-          : createGoogle(registry.details as GoogleRegistryDetailsDto),
+          : registry.type === 'google'
+          ? createGoogle(registry.details as GoogleRegistryDetailsDto)
+          : createUnchecked(registry.details as UncheckedRegistryDetailsDto)
     }
 
     this.clients.set(registry.id, client)

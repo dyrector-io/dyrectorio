@@ -1,0 +1,155 @@
+import { CruxInternalServerErrorException } from "src/exception/crux-exception"
+
+type V2Error = {
+  code: string
+  message: string
+  detail: string[]
+}
+
+type BaseResponse = {
+  errors?: V2Error[]
+}
+
+type ManifestResponse = BaseResponse & {
+  schemaVersion: number
+  config: {
+    digest: string,
+  },
+}
+
+type BlobResponse = BaseResponse & {
+  config: {
+    Labels: Record<string, string>,
+  },
+}
+
+type TokenResponse = {
+  token: string
+}
+
+const ERROR_UNAUTHORIZED = "UNAUTHORIZED"
+
+const HEADER_WWW_AUTHENTICATE = "www-authenticate"
+
+export default class V2Labels {
+  private token?: string
+
+  private manifestMimeType: string
+
+  constructor(private baseUrl: string, private requestInit?: RequestInit, manifestMime?: string) {
+    this.token = null
+
+    this.manifestMimeType = manifestMime ?? "application/vnd.docker.distribution.manifest.v2+json"
+  }
+
+  private getHeaders(): RequestInit {
+    if (!this.token) {
+      return this.requestInit
+    }
+
+    return {
+      ...this.requestInit,
+      headers: {
+        ...this.requestInit?.headers,
+        Authorization: `Bearer ${this.token}`,
+      },
+    }
+  }
+
+  private async fetchToken(failedRequest: Response) {
+    const auth = failedRequest.headers.get(HEADER_WWW_AUTHENTICATE)
+
+    const typeAndParams: string[] = auth.split(' ')
+    const tokenType = typeAndParams[0]
+    if (tokenType.toLowerCase() === "basic") {
+      throw new CruxInternalServerErrorException({
+        message: "Registry requires basic authentication!",
+        property: "url",
+        value: this.baseUrl,
+      })
+    }
+
+    const params = typeAndParams[1].split(',').reduce((prev, it) => {
+      const parts = it.split('=')
+
+      let value = parts[1]
+      if (value.startsWith("\"") && value.endsWith("\"")) {
+        value = value.substring(1, value.length - 1)
+      }
+
+      prev[parts[0]] = value
+
+      return prev
+    }, {})
+
+    const tokenServer = params["realm"]
+    const tokenService = params["service"]
+    const tokenScope = params["scope"]
+
+    const tokenResponse = await fetch(`${tokenServer}?service=${encodeURIComponent(tokenService)}&scope=${encodeURIComponent(tokenScope)}`)
+    if (tokenResponse.status !== 200) {
+      throw new CruxInternalServerErrorException({
+        message: "Failed to fetch V2 token",
+      })
+    }
+
+    const tokenData = await tokenResponse.json() as TokenResponse
+
+    this.token = tokenData.token
+  }
+
+  private async fetchV2<T extends BaseResponse>(endpoint: string, init?: RequestInit): Promise<T> {
+    const doFetch = async <T extends BaseResponse>(): Promise<[Response, T]> => {
+      const fullUrl = `${this.baseUrl.startsWith("http") ? this.baseUrl : `https://${this.baseUrl}`}/v2/${endpoint}`
+
+      const baseHeaders = this.getHeaders()
+
+      try {
+        const res = await fetch(fullUrl, {
+          ...baseHeaders,
+          ...init,
+          headers: {
+            ...baseHeaders?.headers,
+            ...init?.headers,
+          },
+        })
+        const data = await res.json() as T
+
+        return [res, data]
+      }
+      catch (error) {
+        throw error
+      }
+    }
+
+    let [res, data] = await doFetch<T>()
+
+    if (data.errors?.some(it => it.code === ERROR_UNAUTHORIZED)) {
+      await this.fetchToken(res)
+
+      const [_, dataWithToken] = await doFetch<T>()
+
+      if (!!dataWithToken.errors) {
+        throw new CruxInternalServerErrorException({
+          message: "Failed to fetch v2 registry API!"
+        })
+      }
+
+      return dataWithToken
+    }
+
+    return data
+  }
+
+  async fetchLabels(image: string, tag: string): Promise<Record<string, string>> {
+    const manifest = await this.fetchV2<ManifestResponse>(`${image}/manifests/${tag ?? 'latest'}`, {
+      headers: {
+        Accept: this.manifestMimeType,
+      },
+    })
+
+    const configManifest = await this.fetchV2<BlobResponse>(`${image}/blobs/${manifest.config.digest}`)
+
+    return configManifest.config.Labels
+  }
+}

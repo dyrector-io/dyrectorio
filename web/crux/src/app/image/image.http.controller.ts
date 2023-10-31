@@ -118,7 +118,7 @@ export default class ImageHttpController {
     @Body() request: AddImagesDto[],
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreatedResponse<ImageDto[]>> {
-    const images = await this.service.addImagesToVersion(versionId, request, identity)
+    const images = await this.service.addImagesToVersion(teamSlug, versionId, request, identity)
 
     return {
       url: `${teamSlug}/projects/${projectId}/versions/${versionId}/images`,

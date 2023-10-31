@@ -1,4 +1,5 @@
 import { NetworkMode } from '@prisma/client'
+import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
 export const PORT_MIN = 0
 export const PORT_MAX = 65535

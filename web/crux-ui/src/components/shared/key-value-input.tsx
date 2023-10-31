@@ -74,10 +74,12 @@ interface KeyValueInputProps {
   items: UniqueKeyValue[]
   keyPlaceholder?: string
   valuePlaceholder?: string
-  onChange: (items: UniqueKeyValue[]) => void
-  onResetSection?: VoidFunction
   type?: HTMLInputTypeAttribute | undefined
   editorOptions: ItemEditorState
+  message?: string
+  messageType?: MessageType
+  onChange: (items: UniqueKeyValue[]) => void
+  onResetSection?: VoidFunction
   hint?: (key: string) => string | undefined
   findErrorMessage?: (index: number) => ErrorWithPath
 }
@@ -90,13 +92,15 @@ const KeyValueInput = (props: KeyValueInputProps) => {
     className,
     items,
     valueDisabled,
-    hint,
     editorOptions,
-    onChange: propsOnChange,
-    onResetSection: propsOnResetSection,
     keyPlaceholder,
     valuePlaceholder,
     type,
+    message,
+    messageType,
+    onChange: propsOnChange,
+    onResetSection: propsOnResetSection,
+    hint,
     findErrorMessage,
   } = props
 
@@ -209,6 +213,8 @@ const KeyValueInput = (props: KeyValueInputProps) => {
       )}
 
       {elements.map((it, index) => renderItem(it, index))}
+
+      {message && <DyoMessage message={message} messageType={messageType} marginClassName="ml-2" />}
     </div>
   )
 }

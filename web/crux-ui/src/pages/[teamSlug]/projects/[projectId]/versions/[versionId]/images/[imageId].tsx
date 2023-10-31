@@ -65,7 +65,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const [config, setConfig] = useState<ContainerConfigData>(image.config)
   const [viewState, setViewState] = useState<ViewState>('editor')
   const [fieldErrors, setFieldErrors] = useState<ContainerConfigValidationErrors>(() =>
-    getContainerConfigFieldErrors(image.config, t),
+    getContainerConfigFieldErrors(image.config, image.validation, t),
   )
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
@@ -108,7 +108,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
 
   const setErrorsForConfig = useCallback(
     newConfig => {
-      const errors = getContainerConfigFieldErrors(newConfig, t)
+      const errors = getContainerConfigFieldErrors(newConfig, image.validation, t)
       setFieldErrors(errors)
       setJsonError(jsonErrorOf(errors))
     },

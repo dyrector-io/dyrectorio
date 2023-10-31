@@ -4,6 +4,7 @@ import { GithubNamespace } from '../registry.dto'
 import { RegistryImageTags } from '../registry.message'
 import { RegistryApiClient } from './registry-api-client'
 import RegistryV2ApiClient, { RegistryV2ApiClientOptions, registryCredentialsToBasicAuth } from './v2-api-client'
+import V2Labels from './v2-labels'
 
 class GithubRegistryClient implements RegistryApiClient {
   private basicAuthHeaders: HeadersInit
@@ -69,6 +70,14 @@ class GithubRegistryClient implements RegistryApiClient {
       name: image,
       tags: json.flatMap(it => it.tags),
     }
+  }
+
+  async labels(image: string, tag: string): Promise<Record<string, string>> {
+    // NOTE(@robot9706): ghcr.io expects the accept manifest to be "v1" but it responds with v2 manifests
+    const labelClient = new V2Labels("ghcr.io", {
+      headers: this.basicAuthHeaders,
+    }, "application/vnd.docker.distribution.manifest.v1+json")
+    return labelClient.fetchLabels(image, tag)
   }
 }
 

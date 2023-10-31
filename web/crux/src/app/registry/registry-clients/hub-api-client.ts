@@ -2,6 +2,7 @@ import { getRegistryApiException } from 'src/exception/registry-exception'
 import { RegistryImageTags } from '../registry.message'
 import HubApiCache from './caches/hub-api-cache'
 import { RegistryApiClient } from './registry-api-client'
+import V2Labels from './v2-labels'
 
 type HubApiPaginatedResponse = {
   count: number
@@ -112,6 +113,11 @@ class HubApiClient implements RegistryApiClient {
     } while (next)
 
     return result
+  }
+
+  async labels(image: string, tag: string): Promise<Record<string, string>> {
+    const labelClient = new V2Labels("index.docker.io")
+    return labelClient.fetchLabels(this.prefix ? `${this.prefix}/${image}` : image, tag)
   }
 }
 
