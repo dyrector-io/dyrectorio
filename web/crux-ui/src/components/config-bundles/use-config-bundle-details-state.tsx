@@ -82,10 +82,10 @@ export const useConfigBundleDetailsState = (
   const editorState = useItemEditorState(editor, sock, configBundle.id)
 
   sock.on(WS_TYPE_CONFIG_BUNDLE_UPDATED, (message: ConfigBundleUpdatedMessage) => {
-    setConfigBundle({
-      ...configBundle,
+    setConfigBundle(it => ({
+      ...it,
       ...message,
-    })
+    }))
   })
 
   const onDelete = async (): Promise<void> => {
