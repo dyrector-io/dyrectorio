@@ -428,6 +428,10 @@ export default class NodeService {
     return this.mapper.containerInspectionMessageToDto(inspectionMessage)
   }
 
+  async kickNode(id: string, identity: Identity): Promise<void> {
+    await this.agentService.kick(id, 'user-kick', identity.id)
+  }
+
   private static snakeCaseToCamelCase(snake: string): string {
     return snake.toLocaleLowerCase().replace(/([-_][a-z])/g, it => it.replace('_', '').toLocaleUpperCase())
   }

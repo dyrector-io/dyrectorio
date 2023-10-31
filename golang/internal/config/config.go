@@ -40,7 +40,8 @@ type CommonConfiguration struct {
 	// DefaultRegistry container registry used for container name expansion
 	DefaultRegistry string `yaml:"registry"             env:"DEFAULT_REGISTRY"                 env-default:"index.docker.io"`
 	// gRPC token is set separately, because nested structures are not yet suppported in cleanenv
-	JwtToken *ValidJWT
+	JwtToken         *ValidJWT
+	FallbackJwtToken *ValidJWT
 	// injected from crane/dagent
 	SecretPrivateKey string
 }
