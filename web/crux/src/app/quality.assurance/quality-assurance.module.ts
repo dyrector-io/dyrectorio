@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
-import QualityAssuranceController from './quality-assurance.http.controller'
 import PrismaService from 'src/services/prisma.service'
+import QualityAssuranceController from './quality-assurance.http.controller'
 import QualityAssuranceService from './quality-assurance.service'
 
 @Module({

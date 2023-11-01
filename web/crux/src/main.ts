@@ -9,6 +9,7 @@ import { join } from 'path'
 import AppModule from './app.module'
 import AuditLoggerInterceptor from './app/audit.logger/audit.logger.interceptor'
 import metricsServerBootstrap from './app/metrics/metrics.server'
+import QualityAssuranceService from './app/quality.assurance/quality-assurance.service'
 import JwtAuthGuard from './app/token/jwt-auth.guard'
 import createSwaggerConfig from './config/swagger.config'
 import HttpExceptionFilter from './filters/http.exception-filter'
@@ -20,7 +21,6 @@ import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import prismaBootstrap from './services/prisma.bootstrap'
 import { productionEnvironment } from './shared/config'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
-import QualityAssuranceService from './app/quality.assurance/quality-assurance.service'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
