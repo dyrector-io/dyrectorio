@@ -24,7 +24,7 @@ import EditNodeCard from './edit-node-card'
 import NodeConnectionCard from './node-connection-card'
 import useNodeState from './use-node-state'
 import { SubmitHook } from '@app/hooks/use-submit'
-import { QA_DIALOG_LABEL_REVOKE_NODE_TOKEN } from 'quality-assurance'
+import { QA_DIALOG_LABEL_KICK_AGENT, QA_DIALOG_LABEL_REVOKE_NODE_TOKEN } from 'quality-assurance'
 
 interface EditNodeSectionProps {
   className?: string
@@ -128,6 +128,7 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
 
   const onKickAgent = async () => {
     const confirmed = await confirmTokenRevoke({
+      qaLabel: QA_DIALOG_LABEL_KICK_AGENT,
       title: t('areYouSureKickAgent'),
       description: t('kickingAnAgentWillStopIt'),
       confirmText: t('kick'),

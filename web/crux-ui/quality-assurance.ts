@@ -92,6 +92,7 @@ export const sendQADialogEvent = (label: string, eventType: DialogEventType) => 
 
 export const QA_DIALOG_LABEL_DELETE_CONFIG_BUNDLE = 'deleteConfigBundle'
 export const QA_DIALOG_LABEL_REVOKE_NODE_TOKEN = 'revokeNodeToken'
+export const QA_DIALOG_LABEL_KICK_AGENT = 'kickAgent'
 export const QA_DIALOG_LABEL_DELETE_CONTAINER = 'deleteContainer'
 export const QA_DIALOG_LABEL_SET_AS_DEFAULT = 'setAsDefault'
 export const QA_DIALOG_LABEL_DEPLOY = 'deploy'
