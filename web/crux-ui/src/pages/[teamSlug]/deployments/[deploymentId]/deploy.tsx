@@ -46,6 +46,9 @@ const DeployPage = (props: DeployPageProps) => {
   }
   const { project, version } = deployment
 
+  const sortEvents = (one: DeploymentEventMessage, other: DeploymentEventMessage) =>
+    new Date(one.createdAt).getTime() - new Date(other.createdAt).getTime()
+
   const sock = useWebSocket(routes.deployment.detailsSocket(deployment.id), {
     onOpen: () => {
       sock.send(WS_TYPE_FETCH_DEPLOYMENT_EVENTS, {})
@@ -53,44 +56,42 @@ const DeployPage = (props: DeployPageProps) => {
   })
 
   sock.on(WS_TYPE_DEPLOYMENT_EVENT_LIST, (message: DeploymentEventMessage[]) => {
-    let newEvents = [...message, ...events]
-    newEvents = newEvents.sort((one, other) => new Date(one.createdAt).getTime() - new Date(other.createdAt).getTime())
-    setEvents(newEvents)
+    setEvents(it => [...message, ...it].sort(sortEvents))
 
-    const deploymentStatuses = newEvents.filter(it => it.type === 'deployment-status')
+    const deploymentStatuses = message.filter(it => it.type === 'deployment-status')
     if (deploymentStatuses.length > 0) {
       setStatus(deploymentStatuses[deploymentStatuses.length - 1].deploymentStatus)
     }
 
-    const containerProgresses = newEvents.filter(it => it.type === 'container-progress')
+    const containerProgresses = message.filter(it => it.type === 'container-progress')
     if (containerProgresses.length > 0) {
-      const newProgress = containerProgresses.reduce((prev, it) => {
-        prev[it.containerProgress.instanceId] = {
-          status: it.containerProgress.status,
-          progress: it.containerProgress.progress,
-        }
+      setProgress(it =>
+        containerProgresses.reduce((prev, event) => {
+          prev[event.containerProgress.instanceId] = {
+            status: event.containerProgress.status,
+            progress: event.containerProgress.progress,
+          }
 
-        return prev
-      }, progress)
-      setProgress(newProgress)
+          return prev
+        }, it),
+      )
     }
   })
   sock.on(WS_TYPE_DEPLOYMENT_EVENT, (message: DeploymentEventMessage) => {
-    const newEvents = [...events, message]
-    setEvents(newEvents)
+    setEvents(it => [...it, message])
 
     if (message.type === 'deployment-status') {
       setStatus(message.deploymentStatus)
     }
 
     if (message.type === 'container-progress') {
-      setProgress({
-        ...progress,
+      setProgress(it => ({
+        ...it,
         [message.containerProgress.instanceId]: {
           status: message.containerProgress.status,
           progress: message.containerProgress.progress,
         },
-      })
+      }))
     }
   })
 

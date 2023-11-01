@@ -153,6 +153,7 @@ func (c *CommonConfiguration) InjectGrpcToken(secrets SecretStore) error {
 	}
 
 	// we are using the connection token when the issuers are matching
+	c.FallbackJwtToken = c.JwtToken
 	c.JwtToken = connectionToken
 	return nil
 }

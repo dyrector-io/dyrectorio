@@ -273,4 +273,17 @@ export default class NodeHttpController {
   async getDeployments(@TeamSlug() teamSlug: string, @NodeId() nodeId: string): Promise<DeploymentDto[]> {
     return await this.deployService.getDeployments(teamSlug, nodeId)
   }
+
+  @Post(`${ROUTE_NODE_ID}/kick`)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    description: 'Request must include the `teamSlug` in URL.',
+    summary: 'Kick the agent.',
+  })
+  @ApiBadRequestResponse({ description: 'Bad request for node kick.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for node kick.' })
+  @UuidParams(PARAM_NODE_ID)
+  async kickNodeAgent(@TeamSlug() _: string, @NodeId() nodeId: string, @IdentityFromRequest() identity: Identity) {
+    await this.service.kickNode(nodeId, identity)
+  }
 }

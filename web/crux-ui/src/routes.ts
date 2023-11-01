@@ -204,6 +204,8 @@ class NodeApi {
 
   deployments = (id: string) => `${this.details(id)}/deployments`
 
+  kick = (id: string) => `${this.details(id)}/kick`
+
   // node-global-container
   globalContainerList = (id: string) => `${this.details(id)}/containers`
 

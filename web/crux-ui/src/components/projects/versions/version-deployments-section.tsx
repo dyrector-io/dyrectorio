@@ -97,12 +97,10 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const nodeSock = useWebSocket(routes.node.socket())
 
   nodeSock.on(WS_TYPE_NODE_EVENT, (message: NodeEventMessage) => {
-    const statuses = {
-      ...nodeStatuses,
-    }
-
-    statuses[message.id] = message.status
-    setNodeStatuses(statuses)
+    setNodeStatuses(it => ({
+      ...it,
+      [message.id]: message.status,
+    }))
   })
 
   useEffect(() => filters.setItems(version.deployments), [filters, version.deployments, nodeStatuses])

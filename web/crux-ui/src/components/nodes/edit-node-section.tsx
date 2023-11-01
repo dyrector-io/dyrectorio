@@ -126,6 +126,37 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
     onNodeEdited(newNode)
   }
 
+  const onKickAgent = async () => {
+    const confirmed = await confirmTokenRevoke({
+      title: t('areYouSureKickAgent'),
+      description: t('kickingAnAgentWillStopIt'),
+      confirmText: t('kick'),
+      confirmColor: 'bg-error-red',
+    })
+
+    if (!confirmed) {
+      return
+    }
+
+    const res = await fetch(routes.node.api.kick(node.id), {
+      method: 'POST',
+    })
+
+    if (!res.ok) {
+      await handleApiError(res)
+      return
+    }
+
+    const newNode = {
+      ...node,
+      status: 'unreachable',
+      version: null,
+    } as NodeDetails
+
+    setNode(newNode)
+    onNodeEdited(newNode)
+  }
+
   const onNodeTypeChanged = (type: NodeType): void => {
     setNode({
       ...node,
@@ -182,6 +213,15 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
                     {t('update')}
                     {node.status === 'updating' && <LoadingIndicator className="inline-block ml-2" />}
                   </span>
+                </DyoButton>
+
+                <DyoButton
+                  className="px-6"
+                  color="bg-error-red"
+                  onClick={onKickAgent}
+                  disabled={node.status === 'unreachable'}
+                >
+                  {t('kick')}
                 </DyoButton>
               </div>
             </DyoCard>

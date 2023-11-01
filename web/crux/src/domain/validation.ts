@@ -278,8 +278,8 @@ const initContainerRule = yup
     yup.object().shape({
       name: yup.string().required().matches(/^\S+$/g),
       image: yup.string().required(),
-      command: uniqueKeysOnlySchema.default([]).nullable(),
-      args: uniqueKeysOnlySchema.default([]).nullable(),
+      command: shellCommandSchema.default([]).nullable(),
+      args: shellCommandSchema.default([]).nullable(),
       environment: uniqueKeyValuesSchema.default([]).nullable(),
       useParentConfig: yup.boolean().default(false).required(),
       volumes: initContainerVolumeLinkRule.default([]).nullable(),
