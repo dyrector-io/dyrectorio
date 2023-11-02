@@ -14,6 +14,7 @@
     "discord": "Discord",
     "slack": "Slack",
     "teams": "Microsoft Teams",
+    "rocket": "Rocket.Chat",
     "mattermost": "Mattermost"
   },
 

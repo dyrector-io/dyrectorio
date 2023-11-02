@@ -114,6 +114,18 @@ const getMattermostTemplate = (message: string): any => ({
 })
 
 
+const getRocketTemplate = (message: string) : any => (
+  {
+    attachments: [
+      {
+        title: title,
+        color: '1555130',
+        text: message,
+        title_link: "https://dyrector.io",
+      }
+    ]
+})
+
 export const getTemplate = (notificationType: NotificationTypeEnum, message: string): any | null => {
   switch (notificationType) {
     case 'discord':
@@ -122,6 +134,8 @@ export const getTemplate = (notificationType: NotificationTypeEnum, message: str
       return getSlackTemplate(message)
     case 'teams':
       return getTeamsTemplate(message)
+    case 'rocket':
+      return getRocketTemplate(message)
     case 'mattermost':
       return getMattermostTemplate(message)
     default:
