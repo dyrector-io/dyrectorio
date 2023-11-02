@@ -47,7 +47,7 @@ import { captchaDisabled } from '@server/captcha'
 import { getCookie } from '@server/cookie'
 import { getCruxFromContext } from '@server/crux-api'
 import { sessionOfContext } from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 import { QA_DIALOG_LABEL_DELETE_USER, QA_DIALOG_LABEL_LEAVE_TEAM } from 'quality-assurance'
@@ -370,7 +370,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
 
 export default TeamDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const teamId = context.query.teamId as string
 
   const team = await getCruxFromContext<TeamDetails>(context, teamApiUrl(teamId))

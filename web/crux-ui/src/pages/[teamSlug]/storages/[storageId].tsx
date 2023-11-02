@@ -11,7 +11,7 @@ import { StorageDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { toastWarning, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useState } from 'react'
@@ -91,7 +91,7 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
 
 export default StorageDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const storageId = context.query.storageId as string

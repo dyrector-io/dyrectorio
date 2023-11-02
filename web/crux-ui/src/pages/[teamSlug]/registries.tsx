@@ -17,7 +17,7 @@ import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
@@ -106,7 +106,7 @@ const RegistriesPage = (props: RegistriesPageProps) => {
 
 export default RegistriesPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const registries = await getCruxFromContext<Registry[]>(context, routes.registry.api.list())

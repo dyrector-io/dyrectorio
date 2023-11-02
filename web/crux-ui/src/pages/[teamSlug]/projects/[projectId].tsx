@@ -29,7 +29,7 @@ import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { QA_DIALOG_LABEL_CONVERT_PROJECT_TO_VERSIONED } from 'quality-assurance'
@@ -247,7 +247,7 @@ const ProjectDetailsPage = (props: ProjectDetailsPageProps) => {
 
 export default ProjectDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const projectId = context.query.projectId as string

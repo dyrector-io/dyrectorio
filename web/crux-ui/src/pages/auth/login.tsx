@@ -34,7 +34,7 @@ import { LoginFlow, UiContainer } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import { cookieOf, forwardCookie } from '@server/cookie'
 import kratos, { obtainSessionFromRequest, userVerified } from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import Link from 'next/link'
@@ -239,7 +239,7 @@ const LoginPage = (props: LoginPageProps) => {
 
 export default LoginPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const flowId = context.query.flow as string
 
   const { refresh } = context.query

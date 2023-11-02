@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import { AuditLogQuery, ContainerIdentifier, ContainerOperation, VersionSectionsState } from './models'
 
 // Routes:
@@ -679,7 +679,7 @@ export class TeamRoutes {
     return this._configBundles
   }
 
-  static fromContext(context: NextPageContext): TeamRoutes | null {
+  static fromContext(context: GetServerSidePropsContext): TeamRoutes | null {
     const teamSlug = context.query.teamSlug as string
     if (!teamSlug) {
       return null

@@ -1,6 +1,6 @@
 import { fromApiError } from '@app/error-responses'
 import http from 'http'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 
 export const fetchCrux = async (
   requestOrCookie: http.IncomingMessage | string | null,
@@ -45,10 +45,13 @@ export const getCrux = async <Res>(req: http.IncomingMessage, url: string): Prom
   return body
 }
 
-export const getCruxFromContext = <Res>(context: Pick<NextPageContext, 'req'>, url: string): Promise<Res> =>
+export const getCruxFromContext = <Res>(context: Pick<GetServerSidePropsContext, 'req'>, url: string): Promise<Res> =>
   getCrux<Res>(context.req, url)
 
-export const postCruxFromContext = async <Res>(context: Pick<NextPageContext, 'req'>, url: string): Promise<Res> => {
+export const postCruxFromContext = async <Res>(
+  context: Pick<GetServerSidePropsContext, 'req'>,
+  url: string,
+): Promise<Res> => {
   const res = await fetchCrux(context.req, url, {
     method: 'POST',
   })

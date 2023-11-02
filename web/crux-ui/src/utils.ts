@@ -8,16 +8,10 @@ import {
   verifiableEmailOfIdentity,
 } from '@server/kratos'
 import { FormikErrors, FormikHandlers, FormikState } from 'formik'
-import {
-  GetServerSideProps,
-  GetServerSidePropsContext,
-  GetServerSidePropsResult,
-  NextApiRequest,
-  NextPageContext,
-} from 'next'
+import { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult, NextApiRequest } from 'next'
 import { Translate } from 'next-translate'
 import { NextRouter } from 'next/router'
-import { appendQASettings, fetchQualityAssuranceSettings } from 'quality-assurance'
+import { QASettings, QA_SETTINGS_PROP, fetchQualityAssuranceSettings } from 'quality-assurance'
 import toast, { ToastOptions } from 'react-hot-toast'
 import { COOKIE_TEAM_SLUG } from './const'
 import { MessageType } from './elements/dyo-input'
@@ -273,7 +267,7 @@ export const anchorLinkOf = (router: NextRouter): string => {
   return `#${parts[1]}`
 }
 
-export const searchParamsOf = (context: NextPageContext): string => {
+export const searchParamsOf = (context: GetServerSidePropsContext): string => {
   const url = context.req?.url ?? ''
   const parts = url.split('?')
   if (parts.length < 2) {
@@ -291,7 +285,7 @@ export const redirectTo = (destination: string, permanent = false): GetServerSid
   },
 })
 
-export type CruxGetServerSideProps<T> = (context: NextPageContext) => Promise<GetServerSidePropsResult<T>>
+export type CruxGetServerSideProps<T> = (context: GetServerSidePropsContext) => Promise<GetServerSidePropsResult<T>>
 
 const dyoApiErrorStatusToRedirectUrl = (status: number): string => {
   switch (status) {
@@ -306,7 +300,7 @@ const dyoApiErrorStatusToRedirectUrl = (status: number): string => {
   }
 }
 
-export const teamSlugOrFirstTeam = async (context: NextPageContext): Promise<string> => {
+export const teamSlugOrFirstTeam = async (context: GetServerSidePropsContext): Promise<string> => {
   let teamSlug = getCookie(context, COOKIE_TEAM_SLUG)
   if (!teamSlug) {
     const meta = await postCruxFromContext<UserMeta>(context, API_USERS_ME)
@@ -321,7 +315,7 @@ export const teamSlugOrFirstTeam = async (context: NextPageContext): Promise<str
 }
 
 export const setupContextSession = async (
-  context: GetServerSidePropsContext | NextPageContext,
+  context: GetServerSidePropsContext,
   session: Session,
 ): Promise<GetServerSidePropsResult<any>> => {
   const req = context.req as IncomingMessageWithSession
@@ -345,32 +339,11 @@ export const setupContextSession = async (
   return null
 }
 
-const KEY_PROPS = 'props'
-const appendToServerSideProps = async <T>(
-  serverSideProps: GetServerSidePropsResult<T>,
-  append: (props: any) => any,
-): Promise<GetServerSidePropsResult<T>> => {
-  const innerProps: any = serverSideProps[KEY_PROPS]
-  if (!innerProps) {
-    return serverSideProps
-  }
-
-  const innerPropsValue = await Promise.resolve(innerProps)
-
-  return {
-    ...serverSideProps,
-    props: append(innerPropsValue),
-  }
-}
-
 export const withContextErrorHandling =
   <T>(getServerSideProps: CruxGetServerSideProps<T>): GetServerSideProps<T> =>
   async (context: GetServerSidePropsContext) => {
     try {
-      const props = await getServerSideProps(context as any as NextPageContext)
-      const qaSettings = await fetchQualityAssuranceSettings(context)
-
-      return await appendToServerSideProps(props, it => appendQASettings(it, qaSettings))
+      return await getServerSideProps(context)
     } catch (err) {
       if (isDyoApiError(err)) {
         console.error(`[ERROR]: ${err.status} - prop: ${err.property}: ${err.value} - ${err.description}`)
@@ -393,6 +366,43 @@ export const withContextErrorHandling =
     }
   }
 
+const KEY_PROPS = 'props'
+const appendToServerSideProps = async <T>(
+  serverSideProps: GetServerSidePropsResult<T>,
+  name: string,
+  value: any,
+): Promise<GetServerSidePropsResult<T>> => {
+  const innerProps: any = serverSideProps[KEY_PROPS]
+  if (!innerProps) {
+    return serverSideProps
+  }
+
+  innerProps[name] = value
+
+  return {
+    ...serverSideProps,
+    props: innerProps,
+  }
+}
+
+const withQualityAssurance =
+  <T>(getServerSideProps: CruxGetServerSideProps<T>): GetServerSideProps<T> =>
+  async (context: GetServerSidePropsContext) => {
+    let qaSettings: QASettings = null
+
+    try {
+      qaSettings = await fetchQualityAssuranceSettings(context)
+    } catch (err) {
+      if (err.status !== 403) {
+        console.error('[ERROR]: Failed to fetch QA settings')
+        console.error(err)
+      }
+    }
+
+    const props = await getServerSideProps(context)
+    return await appendToServerSideProps(props, QA_SETTINGS_PROP, qaSettings)
+  }
+
 export const withContextAuthorization =
   <T>(getServerSideProps: CruxGetServerSideProps<T>): GetServerSideProps<T> =>
   async (context: GetServerSidePropsContext) => {
@@ -407,7 +417,8 @@ export const withContextAuthorization =
       setCookie(context, COOKIE_TEAM_SLUG, teamSlug)
     }
 
-    return await withContextErrorHandling(getServerSideProps)(context)
+    const ssr = withContextErrorHandling(withQualityAssurance(getServerSideProps))
+    return await ssr(context)
   }
 
 export const parseStringUnionType = <T>(value: string, fallback: T, validValues: ReadonlyArray<T>): T => {

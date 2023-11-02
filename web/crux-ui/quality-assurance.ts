@@ -146,8 +146,3 @@ export const fetchQualityAssuranceSettings = async (context: GetServerSidePropsC
     groupName: name,
   }
 }
-
-export const appendQASettings = (props: any, settings: QASettings) => {
-  props[QA_SETTINGS_PROP] = settings
-  return props
-}

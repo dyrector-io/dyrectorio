@@ -14,7 +14,7 @@ import { EditableVersion, ProjectDetails, VersionDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { anchorLinkOf, redirectTo, searchParamsOf, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import React, { useState } from 'react'
@@ -133,7 +133,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
 
 export default VersionDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const projectId = context.query.projectId as string

@@ -38,7 +38,7 @@ import {
 import { Identity, SettingsFlow, UiContainer } from '@ory/kratos-client'
 import { cookieOf } from '@server/cookie'
 import kratos, { identityWasRecovered, sessionOfContext } from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 import { QA_DIALOG_LABEL_REMOVE_OIDC_ACCOUNT } from 'quality-assurance'
@@ -233,7 +233,7 @@ const SettingsPage = (props: SettingsPageProps) => {
 
 export default SettingsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const flowId = context.query.flow as string
 
   const session = sessionOfContext(context)
