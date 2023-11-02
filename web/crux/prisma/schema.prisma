@@ -487,6 +487,7 @@ enum NotificationTypeEnum {
   discord
   slack
   teams
+  mattermost
 }
 
 enum NotificationEventTypeEnum {

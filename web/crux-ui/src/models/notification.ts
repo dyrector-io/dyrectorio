@@ -1,4 +1,4 @@
-export const NOTIFICATION_TYPE_VALUES = ['discord', 'slack', 'teams'] as const
+export const NOTIFICATION_TYPE_VALUES = ['discord', 'slack', 'teams', 'mattermost'] as const
 export type NotificationType = (typeof NOTIFICATION_TYPE_VALUES)[number]
 
 export const NOTIFICATION_EVENT_VALUES = [
