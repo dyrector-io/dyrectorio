@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { AuditLog, AuditLogActorTypeEnum, DeploymentToken } from '@prisma/client'
 import { emailOfIdentity, nameOfIdentity } from 'src/domain/identity'
-import { AuditDto, AuditLogActorTypeDto, AuditLogDto } from './audit.dto'
+import { AuditDto, AuditLogActorTypeDto, AuditLogDto, AuditLogUserDto } from './audit.dto'
 
 @Injectable()
 export default class AuditMapper {
@@ -36,6 +36,14 @@ export default class AuditMapper {
 
     if (it.actorType === 'user') {
       const identity = identities.get(it.userId)
+      if (!identity) {
+        return {
+          ...base,
+          name: AuditMapper.UNKNOWN_USER_NAME,
+          user: AuditMapper.UNKNOWN_USER,
+        }
+      }
+
       return {
         ...base,
         name: nameOfIdentity(identity),
@@ -51,6 +59,13 @@ export default class AuditMapper {
       name: it.deploymentToken.name,
     }
   }
+
+  private static readonly UNKNOWN_USER_NAME = 'Unknown User'
+
+  private static readonly UNKNOWN_USER: AuditLogUserDto = {
+    email: '',
+    id: '',
+  }
 }
 
 type Audit = {
@@ -60,6 +75,6 @@ type Audit = {
   updatedBy: string
 }
 
-type AuditLogWithDeploymentToken = AuditLog & {
+export type AuditLogWithDeploymentToken = AuditLog & {
   deploymentToken: Pick<DeploymentToken, 'name'>
 }

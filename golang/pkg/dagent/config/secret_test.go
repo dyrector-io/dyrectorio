@@ -45,7 +45,7 @@ YsQ7QRba70vUgmA6fgY1draGxJM9uVQOjm9c9I0J
 -----END PGP PUBLIC KEY BLOCK-----`
 )
 
-func TestConfigFromFileSetValue(t *testing.T) {
+func TestCheckOrGenerateKeys(t *testing.T) {
 	// setup
 	f, err := tmpTestFile()
 	assert.NoError(t, err)
@@ -55,28 +55,28 @@ func TestConfigFromFileSetValue(t *testing.T) {
 		err = os.Remove(f.Name())
 		assert.NoError(t, err)
 	}()
-	cfg := config.KeyFromFile("")
+	cfg := config.Configuration{}
 
 	// empty path
-	err = cfg.SetValue("")
+	privateKey, err := cfg.CheckOrGenerateKeys("")
 	assert.Error(t, err)
 	assert.Equal(t, "env private key file value can't be empty", err.Error())
-	assert.Equal(t, config.KeyFromFile(""), cfg)
+	assert.Equal(t, "", privateKey)
 
 	// empty file
-	err = cfg.SetValue(f.Name())
+	privateKey, err = cfg.CheckOrGenerateKeys(f.Name())
 	assert.Error(t, err)
 	assert.Equal(t, "gopenpgp: error in reading key ring: openpgp: invalid argument: no armored data found", err.Error())
-	assert.Equal(t, config.KeyFromFile(""), cfg)
+	assert.Equal(t, "", privateKey)
 
 	// with a dir
-	err = cfg.SetValue("./")
+	privateKey, err = cfg.CheckOrGenerateKeys("./")
 	assert.Error(t, err)
 	assert.Equal(t, "key path is a directory: read ./: is a directory", err.Error())
-	assert.Equal(t, config.KeyFromFile(""), cfg)
+	assert.Equal(t, "", privateKey)
 
 	// non existing file: key is generated
-	err = cfg.SetValue(missingKeyFile)
+	privateKey, err = cfg.CheckOrGenerateKeys(missingKeyFile)
 	defer func() {
 		err = os.Remove(missingKeyFile)
 		assert.NoError(t, err)
@@ -86,15 +86,15 @@ func TestConfigFromFileSetValue(t *testing.T) {
 	// read newly generated key file and compare
 	key, err := os.ReadFile(missingKeyFile)
 	assert.NoError(t, err)
-	assert.Equal(t, config.KeyFromFile(key), cfg)
+	assert.Equal(t, string(key), privateKey)
 
 	// valid key
 	_, err = f.WriteString(testPrivateKey)
 	assert.NoError(t, err)
 
-	err = cfg.SetValue(f.Name())
+	privateKey, err = cfg.CheckOrGenerateKeys(f.Name())
 	assert.NoError(t, err)
-	assert.Equal(t, config.KeyFromFile(testPrivateKey), cfg)
+	assert.Equal(t, testPrivateKey, privateKey)
 }
 
 func tmpTestFile() (*os.File, error) {

@@ -44,7 +44,6 @@ export default class ImageService {
         registry: true,
       },
     })
-
     return this.mapper.toDto(image)
   }
 

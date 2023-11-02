@@ -1,7 +1,9 @@
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
+import { test } from '../utils/test.fixture'
 import { screenshotPath, TEAM_ROUTES } from '../utils/common'
 import { createImage, createProject, createVersion } from '../utils/projects'
-import { waitSocket, wsPatchSent } from '../utils/websocket'
+import { waitSocketRef, wsPatchSent } from '../utils/websocket'
+import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 
 const setup = async (
   page: Page,
@@ -25,9 +27,9 @@ test.describe('View state', () => {
     const { projectId, versionId, imageId } = await setup(page, 'editor-state-conf', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const editorButton = await page.waitForSelector('button:has-text("Editor")')
-
     await editorButton.click()
 
     const selector = await page.locator('label:has-text("Filters")').first()
@@ -41,9 +43,9 @@ test.describe('View state', () => {
     const { projectId, versionId, imageId } = await setup(page, 'editor-state-json', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
-
     await jsonEditorButton.click()
 
     await page.screenshot({ path: screenshotPath('image-config-json'), fullPage: true })
@@ -58,6 +60,7 @@ test.describe('Filters', () => {
     const { projectId, versionId, imageId } = await setup(page, 'filter-all', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const allButton = await page.locator('button:has-text("All")')
 
@@ -69,6 +72,7 @@ test.describe('Filters', () => {
     const { projectId, versionId, imageId } = await setup(page, 'filter-select', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     await page.locator(`button:has-text("Common")`).first().click()
 
@@ -81,9 +85,9 @@ test.describe('Filters', () => {
     const { projectId, versionId, imageId } = await setup(page, 'sub-filter', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const subFilter = await page.locator(`button:has-text("Network mode")`)
-
     await subFilter.click()
 
     const mainFilter = await page.locator(`button:has-text("Docker")`).first()
@@ -95,9 +99,9 @@ test.describe('Filters', () => {
     const { projectId, versionId, imageId } = await setup(page, 'sub-deselect', '1.0.0', 'redis')
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
 
     const subFilter = await page.locator(`button:has-text("Deployment strategy")`)
-
     await subFilter.click()
 
     const configField = await page.locator(`label:has-text("Kubernetes")`)
@@ -117,14 +121,15 @@ test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the config field', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'port-editor', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     await page.locator('button:has-text("Ports")').click()
 
-    let wsSent = wsPatchSent(ws, wsRoute)
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE)
     const addPortsButton = await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
     await addPortsButton.click()
     await wsSent
@@ -135,7 +140,7 @@ test.describe('Image configurations', () => {
     const internalInput = page.locator('input[placeholder="Internal"]')
     const externalInput = page.locator('input[placeholder="External"]')
 
-    wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchPorts(internal, external))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchPorts(internal, external))
     await internalInput.type(internal)
     await externalInput.type(external)
     await wsSent
@@ -149,8 +154,9 @@ test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the json editor', async ({ page }) => {
     const { projectId, versionId, imageId } = await setup(page, 'port-json', '1.0.0', 'redis')
 
-    const sock = waitSocket(page)
+    const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
@@ -166,7 +172,7 @@ test.describe('Image configurations', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.ports = [{ internal: internalAsNumber, external: externalAsNumber }]
 
-    const wsSent = wsPatchSent(ws, wsRoute, wsPatchMatchPorts(internal, external))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchPorts(internal, external))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 

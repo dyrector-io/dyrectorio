@@ -26,7 +26,7 @@ import { useEffect } from 'react'
 import toast from 'react-hot-toast'
 import useSWR from 'swr'
 
-interface AddDeploymentCardProps {
+interface AddDeploymentToVersionCardProps {
   className?: string
   projectName: string
   versionId: string
@@ -34,7 +34,7 @@ interface AddDeploymentCardProps {
   onDiscard: VoidFunction
 }
 
-const AddDeploymentCard = (props: AddDeploymentCardProps) => {
+const AddDeploymentToVersionCard = (props: AddDeploymentToVersionCardProps) => {
   const { projectName, versionId, className, onAdd, onDiscard } = props
 
   const { t } = useTranslation('deployments')
@@ -66,9 +66,8 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       protected: false,
     },
     validationSchema: createDeploymentSchema,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    t,
+    onSubmit: async (values, { setFieldError }) => {
       const transformedValues = createDeploymentSchema.cast(values) as any
 
       const body: CreateDeployment = {
@@ -83,12 +82,10 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         onAdd(result.id)
       } else if (res.status === 409) {
         // Handle preparing deployment exists or rolling version has deployment errors
-        handleApiError(res.clone())
+        await handleApiError(res.clone())
       } else {
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 
@@ -97,9 +94,10 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       toast.error(t('nodeRequired'))
     }
     if (nodes?.length === 1 && !formik.values.nodeId) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       formik.setFieldValue('nodeId', nodes[0].id)
     }
-  }, [nodes, t])
+  }, [nodes, t, formik])
 
   return (
     <DyoCard className={className}>
@@ -170,4 +168,4 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   )
 }
 
-export default AddDeploymentCard
+export default AddDeploymentToVersionCard

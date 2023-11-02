@@ -14,7 +14,7 @@ import (
 )
 
 func Serve(cfg *config.Configuration) {
-	utils.PreflightChecks(cfg)
+	utils.PreflightChecks()
 	log.Info().Msg("Starting dyrector.io DAgent service")
 
 	if cfg.TraefikEnabled {
@@ -33,25 +33,26 @@ func Serve(cfg *config.Configuration) {
 		}
 	}
 
-	grpcParams := grpc.TokenToConnectionParams(cfg.GrpcToken)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
-	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
-		Deploy:           utils.DeployImage,
-		Watch:            utils.WatchContainers,
-		Delete:           utils.DeleteContainerByPrefixAndName,
-		SecretList:       utils.SecretList,
-		SelfUpdate:       update.SelfUpdate,
-		Close:            grpcClose,
-		ContainerCommand: utils.ContainerCommand,
-		DeleteContainers: utils.DeleteContainers,
-		ContainerLog:     utils.ContainerLog,
+	grpc.Init(grpcContext, &cfg.CommonConfiguration, cfg, &grpc.WorkerFunctions{
+		Deploy:               utils.DeployImage,
+		Watch:                utils.WatchContainers,
+		Delete:               utils.DeleteContainerByPrefixAndName,
+		SecretList:           utils.SecretList,
+		SelfUpdate:           update.SelfUpdate,
+		GetSelfContainerName: update.GetSelfContainerName,
+		Close:                grpcClose,
+		ContainerCommand:     utils.ContainerCommand,
+		DeleteContainers:     utils.DeleteContainers,
+		ContainerLog:         utils.ContainerLog,
+		ContainerInspect:     utils.ContainerInspect,
 	})
 }
 
-func grpcClose(ctx context.Context, reason agent.CloseReason) error {
+func grpcClose(ctx context.Context, reason agent.CloseReason, options grpc.UpdateOptions) error {
 	if reason == agent.CloseReason_SELF_DESTRUCT {
-		return update.RemoveSelf(ctx)
-	} else if reason == agent.CloseReason_SHUTDOWN {
+		return update.RemoveSelf(ctx, options)
+	} else if reason == agent.CloseReason_SHUTDOWN || reason == agent.CloseReason_REVOKE_TOKEN {
 		log.Info().Msg("Remote shutdown requested")
 		os.Exit(0)
 	}

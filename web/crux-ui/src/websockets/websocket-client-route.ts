@@ -121,12 +121,6 @@ class WebSocketClientRoute {
   }
 
   onMessage(message: WsMessage) {
-    const messageRoutePath = WebSocketClientRoute.routePathOf(message)
-    if (this.path !== messageRoutePath) {
-      // TODO(@m8vago): create a map in the websocket-client for the route prefixes and use that for routing
-      return
-    }
-
     // strip the basepath
     message.type = message.type.substring(this.path.length + 1)
 
@@ -166,7 +160,7 @@ class WebSocketClientRoute {
     }
   }
 
-  private static routePathOf(message: WsMessage): string | null {
+  static routePathOf(message: WsMessage): string | null {
     const index = message.type.lastIndexOf('/')
     if (index < 0) {
       return null

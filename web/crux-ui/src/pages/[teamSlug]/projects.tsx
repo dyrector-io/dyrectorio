@@ -11,6 +11,7 @@ import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import usePersistedViewMode from '@app/hooks/use-persisted-view-mode'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Project, ProjectType, PROJECT_TYPE_VALUES } from '@app/models'
 import { TeamRoutes } from '@app/routes'
@@ -19,7 +20,7 @@ import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 type ProjectFilter = TextFilter & {
   type?: ProjectType | 'all'
@@ -52,7 +53,7 @@ const ProjectsPage = (props: ProjectsPageProps) => {
   })
 
   const [creating, setCreating] = useState(false)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const [viewMode, setViewMode] = usePersistedViewMode({ initialViewMode: 'tile', pageName: 'projects' })
 
@@ -72,11 +73,9 @@ const ProjectsPage = (props: ProjectsPageProps) => {
   return (
     <Layout title={t('common:projects')}>
       <PageHeading pageLink={pageLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
+        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
       </PageHeading>
-      {!creating ? null : (
-        <EditProjectCard className="mb-8 px-8 py-6" submitRef={submitRef} onProjectEdited={onCreated} />
-      )}
+      {!creating ? null : <EditProjectCard className="mb-8 px-8 py-6" submit={submit} onProjectEdited={onCreated} />}
 
       {filters.items.length ? (
         <>

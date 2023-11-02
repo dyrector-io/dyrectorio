@@ -7,15 +7,21 @@ interface DyoCheckboxProps {
   name?: string
   checked?: boolean
   setFieldValue?: FormikSetFieldValue
-  onCheckedChange?: (checked: boolean) => void
+  onCheckedChange?: (
+    checked: boolean,
+    event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.ChangeEvent<HTMLInputElement>,
+  ) => void
 }
 
 const DyoCheckbox = (props: DyoCheckboxProps) => {
   const { className, name, checked, setFieldValue, onCheckedChange } = props
 
-  const handleCheckedChange = (isChecked: boolean) => {
+  const handleCheckedChange = (
+    isChecked: boolean,
+    event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.ChangeEvent<HTMLInputElement>,
+  ) => {
     setFieldValue?.call(this, name, isChecked, false)
-    onCheckedChange?.call(this, isChecked)
+    onCheckedChange?.call(this, isChecked, event)
   }
 
   return (
@@ -25,11 +31,11 @@ const DyoCheckbox = (props: DyoCheckboxProps) => {
         checked ? 'bg-dyo-turquoise' : 'border-2 border-light-grey',
         'flex w-5 h-5 rounded-sm cursor-pointer select-none',
       )}
-      onClick={() => handleCheckedChange(!checked)}
+      onClick={e => handleCheckedChange(!checked, e)}
     >
       {!checked ? null : <Image className="aspect-square" src="/check-white.svg" alt="check" width={20} height={20} />}
 
-      <input type="checkbox" checked={checked} onChange={() => handleCheckedChange(!checked)} className="hidden" />
+      <input type="checkbox" checked={checked} onChange={e => handleCheckedChange(!checked, e)} className="hidden" />
     </div>
   )
 }

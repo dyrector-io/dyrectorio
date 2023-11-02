@@ -26,19 +26,34 @@ enum DeploymentStatus {
   DOWNGRADED = 6;
 }
 
+enum DeploymentMessageLevel {
+  DEPLOYMENT_MESSAGE_UNSPECIFIED = 0;
+  INFO = 1;
+  WARNING = 2;
+  ERROR = 3;
+}
+
 message InstanceDeploymentItem {
   string instanceId = 100;
   ContainerState state = 101;
   string reason = 102;
 }
 
+message DeployContainerProgress {
+  string instanceId = 100;
+  string status = 101;
+  float progress = 102;
+}
+
 message DeploymentStatusMessage {
   oneof data {
     InstanceDeploymentItem instance = 200;
     DeploymentStatus deploymentStatus = 201;
+    DeployContainerProgress containerProgress = 202;
   }
 
   repeated string log = 1000;
+  optional DeploymentMessageLevel logLevel = 1001;
 }
 
 message ContainerStateItemPort {
@@ -70,10 +85,17 @@ message ContainerStateItem {
   string imageTag = 106;
 
   repeated ContainerStateItemPort ports = 1000;
+  map<string, string> labels = 1001;
 }
 
 message ContainerLogMessage {
   string log = 100;
+}
+
+message ContainerInspectMessage {
+  string prefix = 1;
+  string name = 2;
+  string inspection = 3;
 }
 
 enum NetworkMode {
@@ -95,7 +117,7 @@ enum RestartPolicy {
 enum DeploymentStrategy {
   DEPLOYMENT_STRATEGY_UNSPECIFIED = 0;
   RECREATE = 1;
-  ROLLING = 2;
+  ROLLING_UPDATE = 2;
 }
 
 enum VolumeType {
@@ -136,6 +158,7 @@ message Routing {
   optional string path = 101;
   optional bool stripPath = 102;
   optional string uploadLimit = 103;
+  optional uint32 port = 104;
 }
 
 message ConfigContainer {

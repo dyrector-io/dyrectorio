@@ -8,12 +8,16 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/domain"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
+	"github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 )
 
 const TraefikTrue = "true"
 
-var ErrInsufficientRoutingRules = errors.New("no enough configuration was provided for the container to be routable")
+var (
+	ErrInsufficientRoutingRules = errors.New("no enough configuration was provided for the container to be routable")
+	ErrExposedPortNotFound      = errors.New("selected port was provided as exposed port")
+)
 
 // generating container labels for traefik
 // if Expose is provided we bind 80 and the given (domainName or (containerName + prefix)) + RootDomain
@@ -39,6 +43,16 @@ func GetTraefikLabels(
 	if containerConfig.IngressStripPath && containerConfig.IngressPath != "" {
 		labels["traefik.http.middlewares."+serviceName+"-stripper.stripprefix.prefixes"] = containerConfig.IngressPath
 		labels["traefik.http.routers."+serviceName+".middlewares"] = serviceName + "-stripper"
+	}
+
+	if containerConfig.IngressPort != 0 {
+		if !util.ContainsMatcher(containerConfig.Ports,
+			container.PortBinding{ExposedPort: containerConfig.IngressPort}, func(i1, i2 container.PortBinding) bool {
+				return i1.ExposedPort == i2.ExposedPort
+			}) {
+			return nil, ErrExposedPortNotFound
+		}
+		labels["traefik.http.services."+serviceName+".loadbalancer.server.port"] = fmt.Sprint(containerConfig.IngressPort)
 	}
 
 	if containerConfig.ExposeTLS {

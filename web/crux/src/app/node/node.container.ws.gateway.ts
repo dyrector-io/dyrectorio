@@ -45,14 +45,14 @@ export default class NodeContainerWebSocketGateway {
   }
 
   @SubscribeMessage('container-command')
-  containerCommand(@NodeId() nodeId: string, @SocketMessage() message: ContainerCommandMessage): void {
+  async containerCommand(@NodeId() nodeId: string, @SocketMessage() message: ContainerCommandMessage): Promise<void> {
     const { container, operation } = message
     if (operation === 'start') {
-      this.service.startContainer(nodeId, container.prefix, container.name)
+      await this.service.startContainer(nodeId, container.prefix, container.name)
     } else if (operation === 'stop') {
-      this.service.stopContainer(nodeId, container.prefix, container.name)
+      await this.service.stopContainer(nodeId, container.prefix, container.name)
     } else if (operation === 'restart') {
-      this.service.restartContainer(nodeId, container.prefix, container.name)
+      await this.service.restartContainer(nodeId, container.prefix, container.name)
     }
   }
 
@@ -93,9 +93,9 @@ export default class NodeContainerWebSocketGateway {
   }
 
   @SubscribeMessage('delete-container')
-  deleteContainer(@NodeId() nodeId: string, @SocketMessage() message: DeleteContainerMessage): void {
+  async deleteContainer(@NodeId() nodeId: string, @SocketMessage() message: DeleteContainerMessage): Promise<void> {
     const { container } = message
 
-    this.service.deleteContainer(nodeId, container.prefix, container.name)
+    await this.service.deleteContainer(nodeId, container.prefix, container.name)
   }
 }

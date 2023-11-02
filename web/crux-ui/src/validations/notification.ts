@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
-import { NotificationType, NOTIFICATION_TYPE_VALUES } from '@app/models/notification'
-import * as yup from 'yup'
+import { NotificationType, NOTIFICATION_TYPE_VALUES } from '@app/models'
+import yup from './yup'
 import { nameRule } from './common'
 
 export const notificationSchema = yup.object().shape({
@@ -8,7 +8,8 @@ export const notificationSchema = yup.object().shape({
   type: yup
     .mixed<NotificationType>()
     .oneOf([...NOTIFICATION_TYPE_VALUES])
-    .required(),
+    .required()
+    .label('notifications:notificationType'),
   url: yup
     .string()
     .url()
@@ -49,5 +50,6 @@ export const notificationSchema = yup.object().shape({
 
       return schema.matches(pattern, errorMsg)
     })
-    .required(),
+    .required()
+    .label('notifications:url'),
 })

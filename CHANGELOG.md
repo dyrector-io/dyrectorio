@@ -1,8 +1,127 @@
 # CHANGELOG
 
 
+<a name="0.9.0"></a>
+## [0.9.0](https://github.com/dyrector-io/dyrectorio/compare/0.8.2...0.9.0) (2023-10-20)
+
+### Doc
+
+* Update README.mds [#827](https://github.com/dyrector-io/dyrectorio/issues/827) ([#855](https://github.com/dyrector-io/dyrectorio/issues/855))
+* improve-readme-and-contributing-files ([#845](https://github.com/dyrector-io/dyrectorio/issues/845))
+* update development.md, maintainers.md and security.md ([#844](https://github.com/dyrector-io/dyrectorio/issues/844))
+* add ADOPTERS.md to the project ([#835](https://github.com/dyrector-io/dyrectorio/issues/835))
+* updates the contributing.md file ([#805](https://github.com/dyrector-io/dyrectorio/issues/805))
+
+### Feat
+
+* node type based container config fields ([#862](https://github.com/dyrector-io/dyrectorio/issues/862))
+* agent image pull progress, early log fix, agent log level ([#861](https://github.com/dyrector-io/dyrectorio/issues/861))
+* **(ci):** optimize github workflow for non-code changes ([#833](https://github.com/dyrector-io/dyrectorio/issues/833))
+* **(crux-ui):** DyoTable component ([#830](https://github.com/dyrector-io/dyrectorio/issues/830))
+* **(crux-ui):** add unit test for registry yup validation ([#850](https://github.com/dyrector-io/dyrectorio/issues/850))
+* inspect container ([#841](https://github.com/dyrector-io/dyrectorio/issues/841))
+
+### Fix
+
+* unique key value input error message updates ([#860](https://github.com/dyrector-io/dyrectorio/issues/860))
+* **(crux):** audit event filter ([#856](https://github.com/dyrector-io/dyrectorio/issues/856))
+* unnecessary websocket error toasts ([#858](https://github.com/dyrector-io/dyrectorio/issues/858))
+* identity listing ([#857](https://github.com/dyrector-io/dyrectorio/issues/857))
+* **(crux-ui):** submit hook ([#816](https://github.com/dyrector-io/dyrectorio/issues/816))
+* **(agent):** add capital image name handling ([#848](https://github.com/dyrector-io/dyrectorio/issues/848))
+
+### Refactor
+
+* internal/helper/image_unit_test : use table driven tests ([#838](https://github.com/dyrector-io/dyrectorio/issues/838))
+
+
+<a name="0.8.2"></a>
+## [0.8.2](https://github.com/dyrector-io/dyrectorio/compare/0.8.1...0.8.2) (2023-09-25)
+
+### Doc
+
+* update development.md ([#821](https://github.com/dyrector-io/dyrectorio/issues/821))
+
+### Feat
+
+* **(web):** node deployment list ([#826](https://github.com/dyrector-io/dyrectorio/issues/826))
+* **(web):** agent update button availability ([#822](https://github.com/dyrector-io/dyrectorio/issues/822))
+* **(crux-ui):** yup localization ([#813](https://github.com/dyrector-io/dyrectorio/issues/813))
+
+### Fix
+
+* **(crux):** WS session expire cleanup ([#823](https://github.com/dyrector-io/dyrectorio/issues/823))
+* copying a deployment now does not copies the secret values to a different node ([#828](https://github.com/dyrector-io/dyrectorio/issues/828))
+* shorthash mismatch ([#825](https://github.com/dyrector-io/dyrectorio/issues/825))
+* **(crux-ui):** versionless type tag not showing & update deployment uptime counters ([#824](https://github.com/dyrector-io/dyrectorio/issues/824))
+* update env.examples ([#817](https://github.com/dyrector-io/dyrectorio/issues/817))
+* kratos user list pagination ([#820](https://github.com/dyrector-io/dyrectorio/issues/820))
+* **(crux):** legacy agent update ([#819](https://github.com/dyrector-io/dyrectorio/issues/819))
+* **(agent):** crashing on install and connection token mismatch ([#815](https://github.com/dyrector-io/dyrectorio/issues/815))
+
+
+<a name="0.8.1"></a>
+## [0.8.1](https://github.com/dyrector-io/dyrectorio/compare/0.8.0...0.8.1) (2023-09-07)
+
+### Doc
+
+* update readme ([#802](https://github.com/dyrector-io/dyrectorio/issues/802))
+
+### Feat
+
+* add explicit port routing & go tools bump ([#808](https://github.com/dyrector-io/dyrectorio/issues/808))
+* **(crux-ui):** useEffect submitRef update ([#806](https://github.com/dyrector-io/dyrectorio/issues/806))
+* service category label for platform containers & hide containers based on category ([#807](https://github.com/dyrector-io/dyrectorio/issues/807))
+* oneshot agent install tokens ([#796](https://github.com/dyrector-io/dyrectorio/issues/796))
+
+### Fix
+
+* **(crux):** floating promises ([#814](https://github.com/dyrector-io/dyrectorio/issues/814))
+* missing translations in lists ([#811](https://github.com/dyrector-io/dyrectorio/issues/811))
+* **(web):** validate container name duplication ([#812](https://github.com/dyrector-io/dyrectorio/issues/812))
+* port range exposing and various bugfixes ([#809](https://github.com/dyrector-io/dyrectorio/issues/809))
+* **(ci):** fix the trailing whitespace error ([#804](https://github.com/dyrector-io/dyrectorio/issues/804))
+
+### Refactor
+
+* **(web):** optimize ws client routing ([#810](https://github.com/dyrector-io/dyrectorio/issues/810))
+
+
+<a name="0.8.0"></a>
+## [0.8.0](https://github.com/dyrector-io/dyrectorio/compare/0.7.0...0.8.0) (2023-08-31)
+
+### Chore
+
+* readme styling ([#794](https://github.com/dyrector-io/dyrectorio/issues/794))
+* **(crux):** fix vm2 critical vuln using npm audit fix ([#793](https://github.com/dyrector-io/dyrectorio/issues/793))
+
+### Doc
+
+* update readme ([#787](https://github.com/dyrector-io/dyrectorio/issues/787))
+
+### Feat
+
+* **(web):** crane metrics config ([#797](https://github.com/dyrector-io/dyrectorio/issues/797))
+* **(web):** config bundles ([#788](https://github.com/dyrector-io/dyrectorio/issues/788))
+* **(crux-ui):** add sorting to tables ([#798](https://github.com/dyrector-io/dyrectorio/issues/798))
+* **(crux-ui):** image list on registry page ([#791](https://github.com/dyrector-io/dyrectorio/issues/791))
+* **(crux):** add mlops template ([#792](https://github.com/dyrector-io/dyrectorio/issues/792))
+* **(web):** protected deployment ([#781](https://github.com/dyrector-io/dyrectorio/issues/781))
+* **(crux-ui):** separate image and instance config buttons ([#790](https://github.com/dyrector-io/dyrectorio/issues/790))
+* **(crux-ui):** deployment page create card ([#782](https://github.com/dyrector-io/dyrectorio/issues/782))
+* **(crux):** moved metric endpoint to other port ([#780](https://github.com/dyrector-io/dyrectorio/issues/780))
+
+### Fix
+
+* **(crux-ui):** register and team card validation ([#784](https://github.com/dyrector-io/dyrectorio/issues/784))
+* **(crux-ui):** image config error text ([#789](https://github.com/dyrector-io/dyrectorio/issues/789))
+* **(crux):** teamslug param for docs ([#783](https://github.com/dyrector-io/dyrectorio/issues/783))
+* **(crux):** notification webhook test ([#774](https://github.com/dyrector-io/dyrectorio/issues/774))
+* container builder image priority ([#779](https://github.com/dyrector-io/dyrectorio/issues/779))
+
+
 <a name="0.7.0"></a>
-## [0.7.0](https://github.com/dyrector-io/dyrectorio/compare/0.6.1...0.7.0) (2023-08-07)
+## [0.7.0](https://github.com/dyrector-io/dyrectorio/compare/0.6.1...0.7.0) (2023-08-08)
 
 ### Chore
 

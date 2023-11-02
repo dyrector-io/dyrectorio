@@ -69,10 +69,8 @@ func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1
 				Str("newPath", backupFilePath).
 				Msg("Existing release file backup failed, overwriting existing release file")
 		}
-	} else if errors.Is(err, os.ErrNotExist) {
+	} else if !errors.Is(err, os.ErrNotExist) {
 		// nothing on path -> creating release file
-		// no-op
-	} else {
 		// file may or may not exist - Schrodinger -> something is really-really not gud
 		log.Panic().Stack().Err(err).Send()
 	}
@@ -102,21 +100,20 @@ func GetVersions(instance string, cfg *config.Configuration) ([]ReleaseDoc, erro
 	for i := range files {
 		if !strings.HasSuffix(files[i].Name(), ".yml") || files[i].IsDir() {
 			continue
-		} else {
-			content, err := os.ReadFile(filepath.Clean(path.Join(releaseDirPath, files[i].Name())))
-			if err != nil {
-				log.Error().Stack().Err(err).Str("instance", instance).Str("path", files[i].Name()).Msg("Release read error")
-				continue
-			}
-
-			release := ReleaseDoc{}
-
-			err = yaml.Unmarshal(content, &release)
-			if err != nil {
-				log.Error().Stack().Err(err).Send()
-			}
-			releases = append(releases, release)
 		}
+		content, err := os.ReadFile(filepath.Clean(path.Join(releaseDirPath, files[i].Name())))
+		if err != nil {
+			log.Error().Stack().Err(err).Str("instance", instance).Str("path", files[i].Name()).Msg("Release read error")
+			continue
+		}
+
+		release := ReleaseDoc{}
+
+		err = yaml.Unmarshal(content, &release)
+		if err != nil {
+			log.Error().Stack().Err(err).Send()
+		}
+		releases = append(releases, release)
 	}
 
 	return releases, nil

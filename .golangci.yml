@@ -4,17 +4,15 @@ run:
     - internal/cache
 linters-settings:
   depguard:
-    list-type: blacklist
-    packages:
-      # logging is allowed zerolog only
-      # is allowed to use only package
-      - log
-    packages-with-error-message:
-      - log: "logging is allowed only by github.com/rs/zerolog"
+    rules:
+      logblock:
+        deny:
+          - pkg: "log"
+            desc: "logging is allowed only by github.com/rs/zerolog"
   dupl:
     threshold: 100
   forbidigo:
-    exclude_godoc_examples: false
+    exclude-godoc-examples: false
     forbid:
       - ^print.*$
       - 'fmt\.Print.*'

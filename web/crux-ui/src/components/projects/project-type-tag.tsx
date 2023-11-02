@@ -12,7 +12,7 @@ const ProjectTypeTag = (props: ProjectTypeTagProps) => {
 
   const { t } = useTranslation('projects')
 
-  return type === 'versionless' ? null : (
+  return (
     <DyoTag className={className} color="bg-dyo-blue" textColor="text-dyo-blue">
       {t(type).toUpperCase()}
     </DyoTag>

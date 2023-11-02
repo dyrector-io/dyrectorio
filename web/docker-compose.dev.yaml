@@ -15,6 +15,8 @@ services:
     restart: unless-stopped
     networks:
       - crux-intranet
+    labels:
+      - org.dyrectorio.service-category=_internal
   kratos-postgres:
     container_name: crux-kratos-postgres
     image: postgres:13.3-alpine3.14
@@ -27,6 +29,8 @@ services:
       - kratos-db:/var/lib/postgresql/data
     networks:
       - crux-intranet
+    labels:
+      - org.dyrectorio.service-category=_internal
   kratos-migrate:
     container_name: crux-kratos-migrate
     image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
@@ -38,6 +42,8 @@ services:
     command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
     networks:
       - crux-intranet
+    labels:
+      - org.dyrectorio.service-category=_internal
   kratos:
     container_name: crux-kratos
     image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
@@ -73,6 +79,7 @@ services:
       - traefik.http.services.kratos.loadbalancer.server.port=4433
       - traefik.http.middlewares.kratos-strip.stripprefix.prefixes=/kratos
       - traefik.http.routers.kratos.middlewares=kratos-strip
+      - org.dyrectorio.service-category=_internal
     networks:
       - crux-intranet
   mailslurper:
@@ -85,6 +92,8 @@ services:
       - 4437:4437
     networks:
       - crux-intranet
+    labels:
+      - org.dyrectorio.service-category=_internal
   crux-traefik:
     container_name: crux-traefik
     image: traefik:v2.8
@@ -109,6 +118,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - crux-intranet
+    labels:
+      - org.dyrectorio.service-category=_internal
 volumes:
   kratos-db:
 networks:

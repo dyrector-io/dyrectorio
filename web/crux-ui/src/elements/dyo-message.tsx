@@ -12,6 +12,7 @@ const DyoMessage = (props: DyoMessageProps) => {
 
   return !message ? null : (
     <p
+      suppressHydrationWarning
       className={clsx(
         className ?? 'text-xs italic w-80',
         !messageType ? 'text-error-red' : messageType === 'error' ? 'text-error-red' : 'text-warning-orange',

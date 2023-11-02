@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       # yamlfmt resides here because alpine doesn't provide yamlfmt package
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -139,7 +139,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -163,7 +163,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -184,12 +184,20 @@ jobs:
       - name: Init k3d
         run: make k3d-init
       - name: Run integration tests
-        run: make k3d-test
+        run: |
+          make k3d-config && \
+          export KUBECONFIG="$(pwd)/k3d-auth.yaml" && \
+          make test-integration
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: golang-integration-coverage
+          path: ${{ env.GOLANG_WORKING_DIRECTORY }}/**.cov
   go_test:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -209,8 +217,38 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Run unit tests with coverage
         run: make test-unit-with-coverage
+      - name: Upload unit test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: golang-unit-coverage
+          path: ${{ env.GOLANG_WORKING_DIRECTORY }}/**.cov
+  go_coverage_upload:
+    runs-on: ubuntu-22.04
+    needs:
+      - go_security
+      - go_lint
+      - go_test
+      - go_integration
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+      - name: Install coverage merger
+        run: go install go.shabbyrobe.org/gocovmerge/cmd/gocovmerge@latest
+      - name: Download integration test results from artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: golang-integration-coverage
+      - name: Download unit test results from artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: golang-unit-coverage
+      - name: Merge coverage
+        run: gocovmerge ./builder.cov ./cli.cov ./crane.cov ./dagent.cov ./internal.cov ./unit.cov  > ./merged.cov
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3
+        with:
+          files: ./merged.cov
+          name: golang-coverage
   go_build:
     runs-on: ubuntu-22.04
     needs:
@@ -220,7 +258,7 @@ jobs:
       - go_integration
       - gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -583,9 +621,11 @@ jobs:
         if: always()
         run: |
           mkdir logs
-          docker logs dyo-e2e_crux-ui > logs/e2e-crux-ui.log
-          docker logs dyo-e2e_crux > logs/e2e-crux.log
-          docker logs dyo-e2e_kratos > logs/e2e-kratos.log
+          docker logs dyo-e2e_crux-ui > logs/e2e-crux-ui.log 2>&1
+          docker logs dyo-e2e_crux > logs/e2e-crux.log 2>&1
+          docker logs dyo-e2e_kratos > logs/e2e-kratos.log 2>&1
+          docker logs dyo-e2e_traefik > logs/e2e-traefik.log 2>&1
+          docker logs dagent > logs/e2e-dagent.log 2>&1
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
@@ -614,7 +654,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:1
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}

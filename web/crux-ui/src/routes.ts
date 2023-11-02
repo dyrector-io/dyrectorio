@@ -76,14 +76,14 @@ export const appendUrlParams = <T extends AnchorUrlParams>(url: string, params: 
   if (paramMap.size > 0) {
     const entries = Array.from(paramMap.entries())
     const [firstKey, firstValue] = entries[0]
-    result = `${result}?${firstKey}=${firstValue}`
+    result = `${result}?${firstKey}=${encodeURIComponent(firstValue)}`
 
     if (entries.length > 1) {
       const rest = entries.slice(1)
 
       result = rest.reduce((prev, current) => {
         const [key, value] = current
-        return `${prev}&${key}=${value}`
+        return `${prev}&${key}=${encodeURIComponent(value)}`
       }, result)
     }
   }
@@ -100,7 +100,7 @@ const urlQuery = (url: string, query: object) => {
         return null
       }
 
-      return `${key}=${value}`
+      return `${key}=${encodeURIComponent(value)}`
     })
     .filter(it => it !== null)
 
@@ -201,6 +201,10 @@ class NodeApi {
 
   audit = (id: string, query: AuditLogQuery) => urlQuery(`${this.details(id)}/audit`, query)
 
+  deployments = (id: string) => `${this.details(id)}/deployments`
+
+  kick = (id: string) => `${this.details(id)}/kick`
+
   // node-global-container
   globalContainerList = (id: string) => `${this.details(id)}/containers`
 
@@ -248,6 +252,12 @@ class NodeRoutes {
 
   containerLog = (id: string, params: ContainerLogParams) =>
     appendUrlParams(`${this.details(id)}/log`, {
+      ...params,
+      anchor: null,
+    })
+
+  containerInspect = (id: string, params: ContainerLogParams) =>
+    appendUrlParams(`${this.details(id)}/inspect`, {
       ...params,
       anchor: null,
     })
@@ -531,6 +541,46 @@ class StorageRoutes {
   details = (id: string) => `${this.root}/${id}`
 }
 
+// config bundle
+
+class ConfigBundleApi {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `/api${root}`
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+
+  options = () => `${this.root}/options`
+}
+
+class ConfigBundleRoutes {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `${root}/config-bundles`
+  }
+
+  private _api: ConfigBundleApi
+
+  get api() {
+    if (!this._api) {
+      this._api = new ConfigBundleApi(this.root)
+    }
+
+    return this._api
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+
+  detailsSocket = (id: string) => this.details(id)
+}
+
 export class TeamRoutes {
   readonly root: string
 
@@ -553,6 +603,8 @@ export class TeamRoutes {
   private _notification: NotificationRoutes
 
   private _storage: StorageRoutes
+
+  private _configBundles: ConfigBundleRoutes
 
   get audit() {
     if (!this._audit) {
@@ -616,6 +668,14 @@ export class TeamRoutes {
     }
 
     return this._storage
+  }
+
+  get configBundles() {
+    if (!this._configBundles) {
+      this._configBundles = new ConfigBundleRoutes(this.root)
+    }
+
+    return this._configBundles
   }
 
   static fromContext(context: NextPageContext): TeamRoutes | null {

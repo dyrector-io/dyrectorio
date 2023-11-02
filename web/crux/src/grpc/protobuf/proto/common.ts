@@ -118,6 +118,51 @@ export function deploymentStatusToJSON(object: DeploymentStatus): string {
   }
 }
 
+export enum DeploymentMessageLevel {
+  DEPLOYMENT_MESSAGE_UNSPECIFIED = 0,
+  INFO = 1,
+  WARNING = 2,
+  ERROR = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function deploymentMessageLevelFromJSON(object: any): DeploymentMessageLevel {
+  switch (object) {
+    case 0:
+    case 'DEPLOYMENT_MESSAGE_UNSPECIFIED':
+      return DeploymentMessageLevel.DEPLOYMENT_MESSAGE_UNSPECIFIED
+    case 1:
+    case 'INFO':
+      return DeploymentMessageLevel.INFO
+    case 2:
+    case 'WARNING':
+      return DeploymentMessageLevel.WARNING
+    case 3:
+    case 'ERROR':
+      return DeploymentMessageLevel.ERROR
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return DeploymentMessageLevel.UNRECOGNIZED
+  }
+}
+
+export function deploymentMessageLevelToJSON(object: DeploymentMessageLevel): string {
+  switch (object) {
+    case DeploymentMessageLevel.DEPLOYMENT_MESSAGE_UNSPECIFIED:
+      return 'DEPLOYMENT_MESSAGE_UNSPECIFIED'
+    case DeploymentMessageLevel.INFO:
+      return 'INFO'
+    case DeploymentMessageLevel.WARNING:
+      return 'WARNING'
+    case DeploymentMessageLevel.ERROR:
+      return 'ERROR'
+    case DeploymentMessageLevel.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED'
+  }
+}
+
 export enum NetworkMode {
   NETWORK_MODE_UNSPECIFIED = 0,
   BRIDGE = 1,
@@ -223,7 +268,7 @@ export function restartPolicyToJSON(object: RestartPolicy): string {
 export enum DeploymentStrategy {
   DEPLOYMENT_STRATEGY_UNSPECIFIED = 0,
   RECREATE = 1,
-  ROLLING = 2,
+  ROLLING_UPDATE = 2,
   UNRECOGNIZED = -1,
 }
 
@@ -236,8 +281,8 @@ export function deploymentStrategyFromJSON(object: any): DeploymentStrategy {
     case 'RECREATE':
       return DeploymentStrategy.RECREATE
     case 2:
-    case 'ROLLING':
-      return DeploymentStrategy.ROLLING
+    case 'ROLLING_UPDATE':
+      return DeploymentStrategy.ROLLING_UPDATE
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -251,8 +296,8 @@ export function deploymentStrategyToJSON(object: DeploymentStrategy): string {
       return 'DEPLOYMENT_STRATEGY_UNSPECIFIED'
     case DeploymentStrategy.RECREATE:
       return 'RECREATE'
-    case DeploymentStrategy.ROLLING:
-      return 'ROLLING'
+    case DeploymentStrategy.ROLLING_UPDATE:
+      return 'ROLLING_UPDATE'
     case DeploymentStrategy.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
@@ -519,10 +564,18 @@ export interface InstanceDeploymentItem {
   reason: string
 }
 
+export interface DeployContainerProgress {
+  instanceId: string
+  status: string
+  progress: number
+}
+
 export interface DeploymentStatusMessage {
   instance?: InstanceDeploymentItem | undefined
   deploymentStatus?: DeploymentStatus | undefined
+  containerProgress?: DeployContainerProgress | undefined
   log: string[]
+  logLevel?: DeploymentMessageLevel | undefined
 }
 
 export interface ContainerStateItemPort {
@@ -552,10 +605,22 @@ export interface ContainerStateItem {
   imageName: string
   imageTag: string
   ports: ContainerStateItemPort[]
+  labels: { [key: string]: string }
+}
+
+export interface ContainerStateItem_LabelsEntry {
+  key: string
+  value: string
 }
 
 export interface ContainerLogMessage {
   log: string
+}
+
+export interface ContainerInspectMessage {
+  prefix: string
+  name: string
+  inspection: string
 }
 
 export interface Routing {
@@ -563,6 +628,7 @@ export interface Routing {
   path?: string | undefined
   stripPath?: boolean | undefined
   uploadLimit?: string | undefined
+  port?: number | undefined
 }
 
 export interface ConfigContainer {
@@ -661,6 +727,28 @@ export const InstanceDeploymentItem = {
   },
 }
 
+function createBaseDeployContainerProgress(): DeployContainerProgress {
+  return { instanceId: '', status: '', progress: 0 }
+}
+
+export const DeployContainerProgress = {
+  fromJSON(object: any): DeployContainerProgress {
+    return {
+      instanceId: isSet(object.instanceId) ? String(object.instanceId) : '',
+      status: isSet(object.status) ? String(object.status) : '',
+      progress: isSet(object.progress) ? Number(object.progress) : 0,
+    }
+  },
+
+  toJSON(message: DeployContainerProgress): unknown {
+    const obj: any = {}
+    message.instanceId !== undefined && (obj.instanceId = message.instanceId)
+    message.status !== undefined && (obj.status = message.status)
+    message.progress !== undefined && (obj.progress = message.progress)
+    return obj
+  },
+}
+
 function createBaseDeploymentStatusMessage(): DeploymentStatusMessage {
   return { log: [] }
 }
@@ -670,7 +758,11 @@ export const DeploymentStatusMessage = {
     return {
       instance: isSet(object.instance) ? InstanceDeploymentItem.fromJSON(object.instance) : undefined,
       deploymentStatus: isSet(object.deploymentStatus) ? deploymentStatusFromJSON(object.deploymentStatus) : undefined,
+      containerProgress: isSet(object.containerProgress)
+        ? DeployContainerProgress.fromJSON(object.containerProgress)
+        : undefined,
       log: Array.isArray(object?.log) ? object.log.map((e: any) => String(e)) : [],
+      logLevel: isSet(object.logLevel) ? deploymentMessageLevelFromJSON(object.logLevel) : undefined,
     }
   },
 
@@ -681,11 +773,17 @@ export const DeploymentStatusMessage = {
     message.deploymentStatus !== undefined &&
       (obj.deploymentStatus =
         message.deploymentStatus !== undefined ? deploymentStatusToJSON(message.deploymentStatus) : undefined)
+    message.containerProgress !== undefined &&
+      (obj.containerProgress = message.containerProgress
+        ? DeployContainerProgress.toJSON(message.containerProgress)
+        : undefined)
     if (message.log) {
       obj.log = message.log.map(e => e)
     } else {
       obj.log = []
     }
+    message.logLevel !== undefined &&
+      (obj.logLevel = message.logLevel !== undefined ? deploymentMessageLevelToJSON(message.logLevel) : undefined)
     return obj
   },
 }
@@ -745,6 +843,7 @@ function createBaseContainerStateItem(): ContainerStateItem {
     imageName: '',
     imageTag: '',
     ports: [],
+    labels: {},
   }
 }
 
@@ -760,6 +859,12 @@ export const ContainerStateItem = {
       imageName: isSet(object.imageName) ? String(object.imageName) : '',
       imageTag: isSet(object.imageTag) ? String(object.imageTag) : '',
       ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => ContainerStateItemPort.fromJSON(e)) : [],
+      labels: isObject(object.labels)
+        ? Object.entries(object.labels).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
     }
   },
 
@@ -778,6 +883,29 @@ export const ContainerStateItem = {
     } else {
       obj.ports = []
     }
+    obj.labels = {}
+    if (message.labels) {
+      Object.entries(message.labels).forEach(([k, v]) => {
+        obj.labels[k] = v
+      })
+    }
+    return obj
+  },
+}
+
+function createBaseContainerStateItem_LabelsEntry(): ContainerStateItem_LabelsEntry {
+  return { key: '', value: '' }
+}
+
+export const ContainerStateItem_LabelsEntry = {
+  fromJSON(object: any): ContainerStateItem_LabelsEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: ContainerStateItem_LabelsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
     return obj
   },
 }
@@ -798,6 +926,28 @@ export const ContainerLogMessage = {
   },
 }
 
+function createBaseContainerInspectMessage(): ContainerInspectMessage {
+  return { prefix: '', name: '', inspection: '' }
+}
+
+export const ContainerInspectMessage = {
+  fromJSON(object: any): ContainerInspectMessage {
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      inspection: isSet(object.inspection) ? String(object.inspection) : '',
+    }
+  },
+
+  toJSON(message: ContainerInspectMessage): unknown {
+    const obj: any = {}
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.name !== undefined && (obj.name = message.name)
+    message.inspection !== undefined && (obj.inspection = message.inspection)
+    return obj
+  },
+}
+
 function createBaseRouting(): Routing {
   return {}
 }
@@ -809,6 +959,7 @@ export const Routing = {
       path: isSet(object.path) ? String(object.path) : undefined,
       stripPath: isSet(object.stripPath) ? Boolean(object.stripPath) : undefined,
       uploadLimit: isSet(object.uploadLimit) ? String(object.uploadLimit) : undefined,
+      port: isSet(object.port) ? Number(object.port) : undefined,
     }
   },
 
@@ -818,6 +969,7 @@ export const Routing = {
     message.path !== undefined && (obj.path = message.path)
     message.stripPath !== undefined && (obj.stripPath = message.stripPath)
     message.uploadLimit !== undefined && (obj.uploadLimit = message.uploadLimit)
+    message.port !== undefined && (obj.port = Math.round(message.port))
     return obj
   },
 }
@@ -1056,6 +1208,10 @@ function fromJsonTimestamp(o: any): Timestamp {
   } else {
     return Timestamp.fromJSON(o)
   }
+}
+
+function isObject(value: any): boolean {
+  return typeof value === 'object' && value !== null
 }
 
 function isSet(value: any): boolean {

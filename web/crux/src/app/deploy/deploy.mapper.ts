@@ -16,7 +16,7 @@ import {
   UniqueKey,
   UniqueKeyValue,
 } from 'src/domain/container'
-import { deploymentStatusToDb } from 'src/domain/deployment'
+import { deploymentLogLevelToDb, deploymentStatusToDb } from 'src/domain/deployment'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import {
   InitContainer as AgentInitContainer,
@@ -47,11 +47,14 @@ import {
   DeploymentDetailsDto,
   DeploymentDto,
   DeploymentEventDto,
+  DeploymentEventLogDto,
   DeploymentEventTypeDto,
+  DeploymentLogLevelDto,
   DeploymentStatusDto,
   DeploymentWithBasicNodeDto,
   DeploymentWithNode,
   DeploymentWithNodeVersion,
+  EnvironmentToConfigBundleNameMap,
   InstanceContainerConfigDto,
   InstanceDetails,
   InstanceDto,
@@ -70,6 +73,7 @@ export default class DeployMapper {
     private auditMapper: AuditMapper,
     @Inject(forwardRef(() => VersionMapper))
     private versionMapper: VersionMapper,
+    @Inject(forwardRef(() => NodeMapper))
     private nodeMapper: NodeMapper,
   ) {}
 
@@ -107,14 +111,20 @@ export default class DeployMapper {
     }
   }
 
-  toDetailsDto(deployment: DeploymentDetails, publicKey?: string): DeploymentDetailsDto {
+  toDetailsDto(
+    deployment: DeploymentDetails,
+    publicKey?: string,
+    configBundleEnvironment?: EnvironmentToConfigBundleNameMap,
+  ): DeploymentDetailsDto {
     return {
       ...this.toDto(deployment),
       token: deployment.tokens.length > 0 ? deployment.tokens[0] : null,
       lastTry: deployment.tries,
       publicKey,
+      configBundleIds: deployment.configBundles.map(it => it.configBundle.id),
       environment: deployment.environment as UniqueKeyValue[],
       instances: deployment.instances.map(it => this.instanceToDto(it)),
+      configBundleEnvironment: configBundleEnvironment ?? {},
     }
   }
 
@@ -216,7 +226,8 @@ export default class DeployMapper {
 
     switch (event.type) {
       case DeploymentEventTypeEnum.log: {
-        result.log = event.value as string[]
+        const value = event.value as { log: string[]; level: DeploymentLogLevelDto }
+        result.log = value as DeploymentEventLogDto
         break
       }
       case DeploymentEventTypeEnum.deploymentStatus: {
@@ -243,7 +254,10 @@ export default class DeployMapper {
       events.push({
         type: 'log',
         createdAt: new Date(),
-        log: message.log,
+        log: {
+          log: message.log,
+          level: deploymentLogLevelToDb(message.logLevel),
+        },
       })
     }
 
@@ -266,13 +280,28 @@ export default class DeployMapper {
       })
     }
 
+    if (message.containerProgress) {
+      const progress = Math.max(0, Math.min(1, message.containerProgress.progress ?? 0))
+      events.push({
+        type: 'container-progress',
+        createdAt: new Date(),
+        containerProgress: {
+          instanceId: message.containerProgress.instanceId,
+          status: message.containerProgress.status,
+          progress,
+        },
+      })
+    }
+
     return events
   }
 
-  deploymentToAgentInstanceConfig(deployment: Deployment): InstanceConfig {
+  deploymentToAgentInstanceConfig(deployment: Deployment, mergedEnvironment: UniqueKeyValue[]): InstanceConfig {
+    const environmentMap = this.mapKeyValueToMap(mergedEnvironment)
+
     return {
       prefix: deployment.prefix,
-      environment: this.mapKeyValueToMap((deployment.environment as UniqueKeyValue[]) ?? []),
+      environment: environmentMap,
     }
   }
 
@@ -322,8 +351,8 @@ export default class DeployMapper {
     return {
       customHeaders: this.mapUniqueKeyToStringArray(config.customHeaders),
       extraLBAnnotations: this.mapKeyValueToMap(config.extraLBAnnotations),
-      deploymentStatregy:
-        this.imageMapper.deploymentStrategyToProto(config.deploymentStrategy) ?? ProtoDeploymentStrategy.ROLLING,
+      deploymentStrategy:
+        this.imageMapper.deploymentStrategyToProto(config.deploymentStrategy) ?? ProtoDeploymentStrategy.ROLLING_UPDATE,
       healthCheckConfig: config.healthCheckConfig,
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
@@ -343,6 +372,12 @@ export default class DeployMapper {
             deployment: this.mapKeyValueToMap(config.annotations?.deployment),
             ingress: this.mapKeyValueToMap(config.annotations?.ingress),
             service: this.mapKeyValueToMap(config.annotations?.service),
+          }
+        : null,
+      metrics: config.metrics?.enabled
+        ? {
+            path: config.metrics.path ?? null,
+            port: config.metrics.port?.toString() ?? null,
           }
         : null,
     }

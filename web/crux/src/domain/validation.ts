@@ -1,4 +1,5 @@
 import { ContainerConfigPortRangeDto } from 'src/app/container/container.dto'
+import { ContainerPort } from 'src/app/node/node.dto'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 import { UID_MAX } from 'src/shared/const'
 import * as yup from 'yup'
@@ -15,6 +16,7 @@ import {
   ContainerNetworkMode,
   ContainerRestartPolicyType,
   ContainerVolumeType,
+  Metrics,
   PORT_MAX,
 } from './container'
 
@@ -29,7 +31,7 @@ export const shellCommandSchema = yup
         .string()
         .required()
         .ensure()
-        .matches(/^\S.*\S$/g), // any characters but no trailing whitespaces
+        .matches(/^[^\s]+(\s+[^\s]+)*$/g), // any characters but no trailing whitespaces
       value: yup.string().ensure(),
     }),
   )
@@ -276,9 +278,9 @@ const initContainerRule = yup
     yup.object().shape({
       name: yup.string().required().matches(/^\S+$/g),
       image: yup.string().required(),
-      command: uniqueKeysOnlySchema.default([]).nullable(),
-      args: uniqueKeysOnlySchema.default([]).nullable(),
-      environments: uniqueKeyValuesSchema.default([]).nullable(),
+      command: shellCommandSchema.default([]).nullable(),
+      args: shellCommandSchema.default([]).nullable(),
+      environment: uniqueKeyValuesSchema.default([]).nullable(),
       useParentConfig: yup.boolean().default(false).required(),
       volumes: initContainerVolumeLinkRule.default([]).nullable(),
     }),
@@ -322,9 +324,39 @@ const uniqueSecretKeyValuesSchema = yup
   .ensure()
   .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
 
+const createMetricsPortRule = (ports: ContainerPort[]) => {
+  if (!ports?.length) {
+    return portNumberOptionalRule.nullable().optional()
+  }
+
+  // eslint-disable-next-line no-template-curly-in-string
+  return portNumberOptionalRule.test('metric-port', '${path} is missing the internal port definition', value =>
+    value && ports.length > 0 ? ports.some(it => it.internal === value) : true,
+  )
+}
+
+const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
+  const portRule = createMetricsPortRule(ports)
+
+  return yup
+    .object()
+    .when({
+      is: (it: Metrics) => it?.enabled,
+      then: schema =>
+        schema.shape({
+          enabled: yup.boolean(),
+          path: yup.string().nullable(),
+          port: portRule,
+        }),
+    })
+    .nullable()
+    .optional()
+    .default(null)
+})
+
 export const containerConfigSchema = yup.object().shape({
   name: yup.string().required().matches(/^\S+$/g),
-  environments: uniqueKeyValuesSchema.default([]).nullable(),
+  environment: uniqueKeyValuesSchema.default([]).nullable(),
   secrets: uniqueSecretKeyValuesSchema.default([]).nullable(),
   routing: routingRule,
   expose: exposeRule,
@@ -358,11 +390,12 @@ export const containerConfigSchema = yup.object().shape({
   resourceConfig: resourceConfigRule,
   annotations: markerRule,
   labels: markerRule,
+  metrics: metricsRule,
 })
 
 export const instanceContainerConfigSchema = yup.object().shape({
   name: yup.string().nullable(),
-  environments: uniqueKeyValuesSchema.default([]).nullable(),
+  environment: uniqueKeyValuesSchema.default([]).nullable(),
   secrets: uniqueKeyValuesSchema.default([]).nullable(),
   routing: routingRule.nullable(),
   expose: instanceExposeRule,
@@ -396,18 +429,22 @@ export const instanceContainerConfigSchema = yup.object().shape({
   resourceConfig: resourceConfigRule.nullable(),
   annotations: markerRule.nullable(),
   labels: markerRule.nullable(),
+  metrics: metricsRule,
 })
 
-export const deploymentSchema = yup.object({
+export const startDeploymentSchema = yup.object({
   environment: uniqueKeyValuesSchema,
-  instances: yup.array(
-    yup.object({
-      image: yup.object({
-        config: containerConfigSchema,
+  instances: yup
+    .array(
+      yup.object({
+        config: instanceContainerConfigSchema.nullable(),
       }),
-      config: instanceContainerConfigSchema.nullable(),
-    }),
-  ),
+    )
+    .test(
+      'containerNameAreUnique',
+      'Container names must be unique',
+      instances => new Set(instances.map(it => it.config.name)).size === instances.length,
+    ),
 })
 
 const templateRegistrySchema = yup.object().shape({
@@ -497,6 +534,7 @@ export const yupValidate = (schema: yup.AnySchema, candidate: any) => {
       message: 'Validation failed',
       property: validationError.path,
       value: validationError.errors,
+      error: validationError.type,
     })
   }
 }

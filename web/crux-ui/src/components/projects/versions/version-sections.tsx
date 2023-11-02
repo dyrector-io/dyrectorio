@@ -4,7 +4,7 @@ import { ProjectDetails, VERSION_SECTIONS_STATE_VALUES } from '@app/models'
 import { parseStringUnionType } from '@app/utils'
 import { useRouter } from 'next/dist/client/router'
 import React, { useEffect, useRef } from 'react'
-import AddDeploymentCard from './deployments/add-deployment-card'
+import AddDeploymentToVersionCard from './deployments/add-deployment-to-version-card'
 import CopyDeploymentCard from './deployments/copy-deployment-card'
 import AddImagesCard from './images/add-images-card'
 import { VerionState, VersionActions, VersionSection } from './use-version-state'
@@ -59,7 +59,7 @@ const VersionSections = (props: VersionSectionsProps) => {
       ) : state.addSection === 'image' ? (
         <AddImagesCard onImagesSelected={actions.addImages} onDiscard={actions.discardAddSection} />
       ) : state.addSection === 'deployment' ? (
-        <AddDeploymentCard
+        <AddDeploymentToVersionCard
           className="mb-4 p-8"
           projectName={project.name}
           versionId={state.version.id}

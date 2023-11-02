@@ -18,13 +18,22 @@ import { ContainerIdentifierDto } from '../container/container.dto'
 export const NODE_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
 export type NodeScriptTypeDto = (typeof NODE_SCRIPT_TYPE_VALUES)[number]
 
-export const NODE_CONNECTION_STATUS_VALUES = ['unreachable', 'connected', 'outdated'] as const
+export const NODE_CONNECTION_STATUS_VALUES = ['unreachable', 'connected', 'outdated', 'updating'] as const
 export type NodeConnectionStatus = (typeof NODE_CONNECTION_STATUS_VALUES)[number]
 
 export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
 export type NodeType = (typeof NODE_TYPE_VALUES)[number]
 
-export const NODE_EVENT_TYPE_VALUES = ['connected', 'kicked', 'left', 'update', 'containerCommand'] as const
+export const NODE_EVENT_TYPE_VALUES = [
+  'installed',
+  'connected',
+  'kicked',
+  'left',
+  'update',
+  'containerCommand',
+  'updateCompleted',
+  'tokenReplaced',
+] as const
 export type NodeEventType = (typeof NODE_EVENT_TYPE_VALUES)[number]
 
 export class BasicNodeDto {
@@ -78,10 +87,6 @@ export class NodeDto extends BasicNodeDto {
   @IsString()
   @IsOptional()
   version?: string
-
-  @IsBoolean()
-  @IsOptional()
-  updating?: boolean
 }
 
 export class NodeInstallDto {
@@ -103,6 +108,10 @@ export class NodeDetailsDto extends NodeDto {
   @IsOptional()
   @ValidateNested()
   install?: NodeInstallDto
+
+  @IsBoolean()
+  @IsOptional()
+  updatable?: boolean
 
   @IsBoolean()
   inUse: boolean
@@ -201,6 +210,8 @@ export class ContainerDto {
   imageTag: string
 
   ports: ContainerPort[]
+
+  labels: Record<string, string>
 }
 
 export class NodeAuditLogQueryDto extends PaginationQuery {
@@ -235,4 +246,9 @@ export class NodeAuditLogListDto extends PaginatedList<NodeAuditLogDto> {
   items: NodeAuditLogDto[]
 
   total: number
+}
+
+export class ContainerInspectionDto {
+  @IsString()
+  inspection: string
 }

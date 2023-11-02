@@ -38,7 +38,7 @@ const EditImageCard = (props: EditImageCardProps) => {
   })
 
   const editorState = useItemEditorState(editor, versionSock, image.id)
-  const errorMessage = state.parseError ?? getValidationError(containerConfigSchema, image.config)?.message
+  const errorMessage = state.parseError ?? getValidationError(containerConfigSchema, image.config, null, t)?.message
 
   return (
     <>

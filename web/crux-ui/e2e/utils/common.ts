@@ -11,6 +11,7 @@ import {
   UpdateLoginFlowWithPasswordMethod,
 } from '@ory/kratos-client'
 import { Locator, Page } from '@playwright/test'
+import { ChildProcess, ExecException, ExecOptions, exec } from 'child_process'
 import path from 'path'
 import { v4 as uuid } from 'uuid'
 import MailSlurper from './mail-slurper'
@@ -46,9 +47,7 @@ export const mailslurperFromBaseURL = (baseURL: string): MailSlurper => {
   return new MailSlurper(url)
 }
 
-export const cruxUrlFromEnv = (baseURL: string) => {
-  return process.env.CRUX_URL ?? baseURL
-}
+export const cruxUrlFromEnv = (baseURL: string) => process.env.CRUX_URL ?? baseURL
 
 export const extractKratosLinkFromMail = (body: string): string => {
   const start = body.indexOf('http')
@@ -170,5 +169,38 @@ export const clearInput = async (input: Locator) => {
   await input.press('Backspace')
 }
 
-export const waitForURLExcept = (page: Page, options: { startsWith: string; except: string }) =>
-  page.waitForURL(it => it.toString() !== options.except && it.pathname.startsWith(options.startsWith))
+export const waitForURLExcept = async (page: Page, options: { startsWith: string; except: string }) =>
+  await page.waitForURL(it => it.toString() !== options.except && it.pathname.startsWith(options.startsWith))
+
+export const getExecOptions = (): ExecOptions =>
+  process.platform === 'win32'
+    ? {
+        shell: 'C:\\Program Files\\git\\bin\\bash.exe',
+      }
+    : null
+
+export const logCmdOutput = (logStdOut: boolean) => (err: Error, stdOut: string, stdErr: string) => {
+  if (logStdOut) {
+    console.info(stdOut)
+  }
+
+  if (err) {
+    console.error(err)
+  }
+
+  if (stdErr) {
+    console.error(stdErr)
+  }
+}
+
+export const execAsync = (
+  command: string,
+  options: ExecOptions,
+  callback?: (error: ExecException | null, stdout: string, stderr: string) => void,
+) =>
+  new Promise<ChildProcess>(resolve => {
+    const childProcess = exec(command, options, (error: ExecException | null, stdout: string, stderr: string) => {
+      callback?.call(null, error, stdout, stderr)
+      resolve(childProcess)
+    })
+  })

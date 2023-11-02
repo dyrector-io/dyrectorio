@@ -19,12 +19,12 @@ const UncheckedRegistryFields = (props: EditRegistryTypeProps<UncheckedRegistryD
         name="local"
         label={t('useLocalImages')}
         checked={formik.values.local ?? false}
-        setFieldValue={(field, value, shouldValidate) => {
+        setFieldValue={async (field, value, shouldValidate): Promise<void> => {
           if (!value) {
-            formik.setFieldValue('url', '', false)
+            await formik.setFieldValue('url', '', false)
           }
 
-          return formik.setFieldValue(field, value, shouldValidate)
+          await formik.setFieldValue(field, value, shouldValidate)
         }}
       />
 

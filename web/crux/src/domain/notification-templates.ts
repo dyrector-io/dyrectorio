@@ -102,8 +102,9 @@ const getTeamsTemplate = (message: string): any => ({
   ],
 })
 
+
 const getMattermostTemplate = (message: string): any => ({
-  attachments: [
+   attachments: [
     {
       title,
       color: '1555130',
@@ -113,9 +114,7 @@ const getMattermostTemplate = (message: string): any => ({
   ],
 })
 
-
-const getRocketTemplate = (message: string) : any => (
-  {
+const getRocketTemplate = (message: string) : any => ({
     attachments: [
       {
         title: title,

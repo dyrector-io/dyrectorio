@@ -1,32 +1,29 @@
-import { NodeInstallScriptType, NodeType, NODE_INSTALL_SCRIPT_TYPE_VALUES, NODE_TYPE_VALUES } from '@app/models/node'
-import * as yup from 'yup'
+import { NodeInstallScriptType, NodeType, NODE_INSTALL_SCRIPT_TYPE_VALUES, NODE_TYPE_VALUES } from '@app/models'
+import yup from './yup'
 import { descriptionRule, iconRule, nameRule } from './common'
 
 export const nodeSchema = yup.object().shape({
   name: nameRule,
   description: descriptionRule,
   icon: iconRule,
-  type: yup.mixed<NodeType>().oneOf([...NODE_TYPE_VALUES]),
-})
-
-export const nodeType = yup.object().shape({
-  type: yup.mixed<NodeType>().oneOf([...NODE_TYPE_VALUES]),
 })
 
 export const nodeGenerateScriptSchema = yup.object().shape({
   type: yup
     .mixed<NodeType>()
     .oneOf([...NODE_TYPE_VALUES])
-    .required(),
-  rootPath: yup.string(),
+    .required()
+    .label('nodes:technology'),
+  rootPath: yup.string().label('nodes:persistentDataPath'),
   scriptType: yup
     .mixed<NodeInstallScriptType>()
     .oneOf([...NODE_INSTALL_SCRIPT_TYPE_VALUES])
-    .required(),
+    .required()
+    .label('nodes:type'),
   dagentTraefik: yup
     .object()
     .shape({
-      acmeEmail: yup.string().email().required().label('ACME email'),
+      acmeEmail: yup.string().email().required().label('nodes:traefikAcmeEmail'),
     })
     .nullable()
     .default(null),

@@ -4,57 +4,62 @@ import { readFileSync } from 'fs'
 import Handlebars from 'handlebars'
 import { join } from 'path'
 import { cwd } from 'process'
-import { Subject } from 'rxjs'
-import { DagentTraefikOptionsDto, NodeScriptTypeDto } from 'src/app/node/node.dto'
 import {
   CruxBadRequestException,
   CruxInternalServerErrorException,
   CruxPreconditionFailedException,
+  CruxUnauthorizedException,
 } from 'src/exception/crux-exception'
-import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
-import { PRODUCTION } from 'src/shared/const'
-import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import { JWT_EXPIRATION_MILLIS, PRODUCTION } from 'src/shared/const'
 import { getAgentVersionFromPackage } from 'src/shared/package'
-import { Agent, AgentConnectionMessage } from './agent'
+import { Agent, AgentOptions } from './agent'
+import { AgentToken } from './agent-token'
+import { BasicNode, NodeScriptType } from './node'
+
+export type AgentInstallerOptions = {
+  token: AgentToken
+  signedToken: string
+  startedBy: string
+  scriptType: NodeScriptType
+  rootPath?: string | null
+  dagentTraefikAcmeEmail?: string | null
+}
 
 export default class AgentInstaller {
-  scriptCompiler: ScriptCompiler
+  private scriptCompiler: ScriptCompiler
+
+  private readonly expirationDate: Date
 
   constructor(
-    readonly configService: ConfigService,
+    private readonly configService: ConfigService,
     readonly teamSlug: string,
-    readonly nodeId: string,
-    readonly nodeName: string,
-    readonly token: string,
-    readonly expireAt: Date,
-    readonly nodeType: NodeTypeEnum,
-    readonly rootPath: string | null,
-    readonly scriptType: NodeScriptTypeDto,
-    readonly dagentTraefik: DagentTraefikOptionsDto | null,
+    readonly node: BasicNode,
+    private readonly options: AgentInstallerOptions,
   ) {
-    this.loadScriptAndCompiler(nodeType, scriptType)
+    this.scriptCompiler = this.loadScriptAndCompiler(node.type, this.options.scriptType)
+
+    this.expirationDate = new Date(options.token.iat * 1000 + JWT_EXPIRATION_MILLIS)
+  }
+
+  get expireAt(): Date {
+    return this.expirationDate
   }
 
   get expired(): boolean {
     const now = new Date()
-    return now > this.expireAt
+    return now.getTime() - this.expirationDate.getTime() > JWT_EXPIRATION_MILLIS
   }
 
-  verify() {
-    if (this.expired) {
-      throw new CruxPreconditionFailedException({
-        message: 'Install script expired',
-        property: 'expireAt',
-      })
-    }
+  get startedBy(): string {
+    return this.options.startedBy
   }
 
   getCommand(): string {
     const scriptUrl = `${this.configService.get<string>('CRUX_UI_URL')}/api/${this.teamSlug}/nodes/${
-      this.nodeId
+      this.node.id
     }/script`
 
-    switch (this.scriptType) {
+    switch (this.options.scriptType) {
       case 'shell':
         return `curl -sL ${scriptUrl} | sh -`
       case 'powershell':
@@ -63,14 +68,12 @@ export default class AgentInstaller {
         throw new CruxInternalServerErrorException({
           message: 'Unknown script type',
           property: 'scriptType',
-          value: this.scriptType,
+          value: this.options.scriptType,
         })
     }
   }
 
   getScript(): string {
-    this.verify()
-
     const configLocalDeployment = this.configService.get<string>('LOCAL_DEPLOYMENT')
     const configLocalDeploymentNetwork = this.configService.get<string>('LOCAL_DEPLOYMENT_NETWORK')
     const disableForcePull = this.configService.get<boolean>('AGENT_INSTALL_SCRIPT_DISABLE_PULL', false)
@@ -81,15 +84,15 @@ export default class AgentInstaller {
     const debugMode = process.env.NODE_ENV !== PRODUCTION
 
     const installScriptParams: InstallScriptConfig = {
-      name: this.nodeName.toLowerCase().replace(/\s/g, ''),
-      token: this.token,
+      name: this.node.name.toLowerCase().replace(/\s/g, ''),
+      token: this.options.signedToken,
       network: configLocalDeployment,
       networkName: configLocalDeploymentNetwork,
       debugMode,
-      rootPath: this.rootPath,
-      traefik: this.dagentTraefik
+      rootPath: this.options.rootPath,
+      traefik: this.options.dagentTraefikAcmeEmail
         ? {
-            acmeEmail: this.dagentTraefik.acmeEmail,
+            acmeEmail: this.options.dagentTraefikAcmeEmail,
           }
         : undefined,
       disableForcePull,
@@ -99,22 +102,46 @@ export default class AgentInstaller {
     return this.scriptCompiler.compile(installScriptParams)
   }
 
-  complete(connection: GrpcNodeConnection, info: AgentInfo, eventChannel: Subject<AgentConnectionMessage>): Agent {
-    this.verify()
-    return new Agent(connection, info, eventChannel, false)
+  complete(agentOptions: Omit<AgentOptions, 'outdated'>) {
+    this.throwIfExpired()
+
+    const { connection } = agentOptions
+
+    if (this.options.signedToken !== connection.jwt) {
+      throw new CruxUnauthorizedException({
+        message: 'Invalid token.',
+      })
+    }
+
+    const agent = new Agent({
+      ...agentOptions,
+      outdated: false,
+    })
+
+    return agent
   }
 
-  loadScriptAndCompiler(nodeType: NodeTypeEnum, scriptType: NodeScriptTypeDto): void {
+  private loadScriptAndCompiler(nodeType: NodeTypeEnum, scriptType: NodeScriptType): ScriptCompiler {
     const extension = this.getInstallScriptExtension(nodeType, scriptType)
     const agentFilename = `install-${nodeType}${extension}.hbr`
     const scriptFile = readFileSync(join(cwd(), 'assets', 'install-script', agentFilename), 'utf8')
-    this.scriptCompiler = {
+
+    return {
       compile: Handlebars.compile(scriptFile),
       file: scriptFile,
     }
   }
 
-  private getInstallScriptExtension(nodeType: NodeTypeEnum, scriptType: NodeScriptTypeDto): string {
+  private throwIfExpired() {
+    if (this.expired) {
+      throw new CruxPreconditionFailedException({
+        message: 'Install script expired',
+        property: 'expireAt',
+      })
+    }
+  }
+
+  private getInstallScriptExtension(nodeType: NodeTypeEnum, scriptType: NodeScriptType): string {
     if (nodeType === 'k8s') {
       return '.sh'
     }

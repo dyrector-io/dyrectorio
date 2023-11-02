@@ -152,14 +152,10 @@ func (d *DeployFacade) PreDeploy() error {
 		return err
 	}
 
-	if err := d.secret.applySecrets(
+	return d.secret.applySecrets(
 		d.namespace.name,
 		d.params.ContainerConfig.Container,
-		d.params.ContainerConfig.Secrets); err != nil {
-		return err
-	}
-
-	return nil
+		d.params.ContainerConfig.Secrets)
 }
 
 func (d *DeployFacade) Deploy() error {
@@ -197,7 +193,7 @@ func (d *DeployFacade) Deploy() error {
 		}
 	}
 
-	if err := d.deployment.DeployDeployment(&deploymentParams{
+	if err := d.deployment.DeployDeployment(&DeploymentParams{
 		image:           d.params.Image,
 		namespace:       d.params.InstanceConfig.ContainerPreName,
 		containerConfig: &d.params.ContainerConfig,
@@ -226,7 +222,9 @@ func (d *DeployFacade) Deploy() error {
 				ingressPath:   d.params.ContainerConfig.IngressPath,
 				stripPrefix:   d.params.ContainerConfig.IngressStripPath,
 				uploadLimit:   d.params.ContainerConfig.IngressUploadLimit,
-				ports:         d.service.portsBound,
+				customHeaders: d.params.ContainerConfig.CustomHeaders,
+				port:          d.params.ContainerConfig.IngressPort,
+				portList:      d.service.portsBound,
 				tls:           d.params.ContainerConfig.ExposeTLS,
 				proxyHeaders:  d.params.ContainerConfig.ProxyHeaders,
 				annotations:   d.params.ContainerConfig.Annotations.Ingress,
@@ -265,16 +263,18 @@ func (d *DeployFacade) Clear() error {
 }
 
 func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest,
-	versionData *v1.VersionData,
+	_ *v1.VersionData,
 ) error {
 	cfg := grpc.GetConfigFromContext(c).(*config.Configuration)
-	dog.Write(deployImageRequest.Strings(&cfg.CommonConfiguration)...)
-	dog.Write(deployImageRequest.InstanceConfig.Strings()...)
-	dog.Write(deployImageRequest.ContainerConfig.Strings(&cfg.CommonConfiguration)...)
+	dog.WriteInfo(deployImageRequest.Strings(&cfg.CommonConfiguration)...)
+	dog.WriteInfo(deployImageRequest.InstanceConfig.Strings()...)
+	dog.WriteInfo(deployImageRequest.ContainerConfig.Strings(&cfg.CommonConfiguration)...)
 
-	imageName := util.JoinV("/",
-		*deployImageRequest.Registry,
-		util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag))
+	imageName := util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)
+	if deployImageRequest.Registry != nil {
+		imageName = util.JoinV("/",
+			*deployImageRequest.Registry, imageName)
+	}
 
 	expandedImageName, err := imageHelper.ExpandImageName(imageName)
 	if err != nil {
@@ -307,8 +307,5 @@ func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest 
 		return err
 	}
 
-	if err := deployFacade.PostDeploy(); err != nil {
-		return err
-	}
-	return nil
+	return deployFacade.PostDeploy()
 }

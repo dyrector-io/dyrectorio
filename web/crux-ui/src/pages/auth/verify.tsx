@@ -59,13 +59,14 @@ const VerifyPage = (props: VerifyProps) => {
 
   useEffect(() => {
     if (passedChallenge) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       router.push(ROUTE_INDEX)
     }
   }, [passedChallenge, router])
 
   const ui = flow?.ui
 
-  const submitFlow = async (flowEmail: string, flowCode: string) => {
+  const submitFlow = async (flowEmail: string, flowCode: string): Promise<void> => {
     const captcha = await recaptcha.current?.executeAsync()
 
     const data: VerifyEmail = {
@@ -107,14 +108,15 @@ const VerifyPage = (props: VerifyProps) => {
       code: flowEmailSent ? findAttributes(ui, 'code')?.value ?? '' : null,
     },
     validationSchema: !flowEmailSent ? verifyEmailSchema : verifyCodeSchema,
-    onSubmit: async values =>
-      submitFlow(!flowEmailSent ? values.email : null, flowEmailSent ? values.code.trim() : null),
+    t,
+    onSubmit: async (values): Promise<void> =>
+      await submitFlow(!flowEmailSent ? values.email : null, flowEmailSent ? values.code.trim() : null),
   })
 
-  const resendEmail = async () => {
+  const resendEmail = async (): Promise<void> => {
     startCountdown(AUTH_RESEND_DELAY)
 
-    submitFlow(formik.values.email ?? email, null)
+    await submitFlow(formik.values.email ?? email, null)
   }
 
   const restartVerification = () => {
@@ -157,7 +159,7 @@ const VerifyPage = (props: VerifyProps) => {
                       name="email"
                       type="email"
                       onChange={formik.handleChange}
-                      value={formik.values.email}
+                      value={formik.values.email ?? ''}
                       message={findMessage(ui, 'email')}
                     />
                   )}
@@ -175,7 +177,7 @@ const VerifyPage = (props: VerifyProps) => {
                         name="code"
                         type="text"
                         onChange={formik.handleChange}
-                        value={formik.values.code}
+                        value={formik.values.code ?? ''}
                         message={findMessage(ui, 'code')}
                       />
 
