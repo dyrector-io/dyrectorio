@@ -144,6 +144,7 @@ export default class ContainerMapper {
       environment: instance.environment ?? image.environment,
       secrets: this.mergeSecrets(instance.secrets, image.secrets),
       user: instance.user ?? image.user,
+      workingDirectory: instance.workingDirectory ?? image.workingDirectory,
       tty: instance.tty ?? image.tty,
       portRanges: instance.portRanges ?? image.portRanges,
       args: instance.args ?? image.args,

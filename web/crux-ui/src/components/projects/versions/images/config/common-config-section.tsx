@@ -212,7 +212,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             <div className="grid break-inside-avoid mb-8">
               <div className="flex flex-row gap-4 items-start">
                 <ConfigSectionLabel
-                  disabled={disabledOnImage || config.name === imageConfig?.name}
+                  disabled={disabledOnImage || config.workingDirectory === imageConfig?.workingDirectory}
                   onResetSection={() => onResetSection('workingDirectory')}
                 >
                   {t('common.workingDirectory').toUpperCase()}
@@ -223,7 +223,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   containerClassName="max-w-lg mb-3"
                   labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
                   grow
-                  value={config.user === -1 ? '' : config.user}
+                  value={config.workingDirectory ?? ''}
                   placeholder={t('common.placeholders.containerDefault')}
                   onPatch={it => onChange({ workingDirectory: it })}
                   editorOptions={editorOptions}

@@ -387,6 +387,7 @@ export const mergeConfigs = (
     secrets: mergeSecrets(image.secrets, instance.secrets),
     ports: instance.ports ?? image.ports,
     user: instance.user ?? image.user,
+    workingDirectory: instance.workingDirectory ?? image.workingDirectory,
     tty: instance.tty ?? image.tty,
     portRanges: instance.portRanges ?? image.portRanges,
     args: instance.args ?? image.args,
