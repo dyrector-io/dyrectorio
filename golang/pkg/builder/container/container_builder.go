@@ -52,6 +52,7 @@ type Builder interface {
 	WithoutConflict() Builder
 	WithPullDisplayFunc(imageHelper.PullDisplayFn) Builder
 	WithExtraHosts(hosts []string) Builder
+	WithWorkingDirectory(workingDirectory string) Builder
 	WithPreCreateHooks(hooks ...LifecycleFunc) Builder
 	WithPostCreateHooks(hooks ...LifecycleFunc) Builder
 	WithPreStartHooks(hooks ...LifecycleFunc) Builder
@@ -62,38 +63,39 @@ type Builder interface {
 }
 
 type DockerContainerBuilder struct {
-	ctx             context.Context
-	client          client.APIClient
-	containerID     *string
-	networkMap      map[string]string
-	networkAliases  []string
-	containerName   string
-	imageWithTag    string
-	envList         []string
-	labels          map[string]string
-	logConfig       *container.LogConfig
-	portList        []PortBinding
-	portRanges      []PortRangeBinding
-	mountList       []mount.Mount
-	networkMode     string
-	networks        []string
-	registryAuth    string
-	remove          bool
-	withoutConflict bool
-	restartPolicy   RestartPolicyName
-	entrypoint      []string
-	cmd             []string
-	shell           []string
-	tty             bool
-	user            *int64
-	imagePriority   imageHelper.PullPriority
-	pullDisplayFn   imageHelper.PullDisplayFn
-	logger          dogger.LogWriter
-	extraHosts      []string
-	hooksPreCreate  []LifecycleFunc
-	hooksPostCreate []LifecycleFunc
-	hooksPreStart   []LifecycleFunc
-	hooksPostStart  []LifecycleFunc
+	ctx              context.Context
+	client           client.APIClient
+	containerID      *string
+	networkMap       map[string]string
+	networkAliases   []string
+	containerName    string
+	imageWithTag     string
+	envList          []string
+	labels           map[string]string
+	logConfig        *container.LogConfig
+	portList         []PortBinding
+	portRanges       []PortRangeBinding
+	mountList        []mount.Mount
+	networkMode      string
+	networks         []string
+	registryAuth     string
+	remove           bool
+	withoutConflict  bool
+	restartPolicy    RestartPolicyName
+	entrypoint       []string
+	cmd              []string
+	shell            []string
+	tty              bool
+	user             *int64
+	imagePriority    imageHelper.PullPriority
+	pullDisplayFn    imageHelper.PullDisplayFn
+	logger           dogger.LogWriter
+	workingDirectory string
+	extraHosts       []string
+	hooksPreCreate   []LifecycleFunc
+	hooksPostCreate  []LifecycleFunc
+	hooksPreStart    []LifecycleFunc
+	hooksPostStart   []LifecycleFunc
 }
 
 // A shorthand function for creating a new DockerContainerBuilder and calling WithClient.
@@ -273,6 +275,12 @@ func (dc *DockerContainerBuilder) WithExtraHosts(hosts []string) Builder {
 	return dc
 }
 
+// Sets the working directory of the builder to use when creating the container.
+func (dc *DockerContainerBuilder) WithWorkingDirectory(workingDirectory string) Builder {
+	dc.workingDirectory = workingDirectory
+	return dc
+}
+
 // Sets an array of hooks which runs before the container is created. ContainerID is nil in these hooks.
 func (dc *DockerContainerBuilder) WithPreCreateHooks(hooks ...LifecycleFunc) Builder {
 	dc.hooksPreCreate = hooks
@@ -322,6 +330,7 @@ func builderToDockerConfig(dc *DockerContainerBuilder) (hostConfig *container.Ho
 		Entrypoint:   dc.entrypoint,
 		Cmd:          dc.cmd,
 		Shell:        dc.shell,
+		WorkingDir:   dc.workingDirectory,
 	}
 
 	if dc.user != nil {

@@ -295,6 +295,7 @@ export interface CommonContainerConfig {
   importContainer?: ImportContainer | undefined
   user?: number | undefined
   TTY?: boolean | undefined
+  workingDirectory?: string | undefined
   ports: Port[]
   portRanges: PortRangeBinding[]
   volumes: Volume[]
@@ -1159,6 +1160,7 @@ export const CommonContainerConfig = {
       importContainer: isSet(object.importContainer) ? ImportContainer.fromJSON(object.importContainer) : undefined,
       user: isSet(object.user) ? Number(object.user) : undefined,
       TTY: isSet(object.TTY) ? Boolean(object.TTY) : undefined,
+      workingDirectory: isSet(object.workingDirectory) ? String(object.workingDirectory) : undefined,
       ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
       portRanges: Array.isArray(object?.portRanges)
         ? object.portRanges.map((e: any) => PortRangeBinding.fromJSON(e))
@@ -1196,6 +1198,7 @@ export const CommonContainerConfig = {
       (obj.importContainer = message.importContainer ? ImportContainer.toJSON(message.importContainer) : undefined)
     message.user !== undefined && (obj.user = Math.round(message.user))
     message.TTY !== undefined && (obj.TTY = message.TTY)
+    message.workingDirectory !== undefined && (obj.workingDirectory = message.workingDirectory)
     if (message.ports) {
       obj.ports = message.ports.map(e => (e ? Port.toJSON(e) : undefined))
     } else {
