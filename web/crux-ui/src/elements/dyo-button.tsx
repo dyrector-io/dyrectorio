@@ -100,7 +100,7 @@ const DyoButton = (props: DyoButtonProps) => {
   )
 
   return href ? (
-    <Link className="inline-block" href={href} onClick={() => sendQAEvent()}>
+    <Link className="inline-block" href={href} onClick={sendQAEvent}>
       {button}
     </Link>
   ) : (

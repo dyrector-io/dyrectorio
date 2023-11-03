@@ -1,12 +1,12 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
+import DyoTable, { DyoColumn, dyoCheckboxColumn, sortDate, sortString } from '@app/elements/dyo-table'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Instance } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import { DeploymentActions, DeploymentState } from './use-deployment-state'
-import DyoTable, { DyoColumn, dyoCheckboxColumn, sortDate, sortString } from '@app/elements/dyo-table'
 
 export interface DeploymentViewListProps {
   state: DeploymentState
@@ -28,7 +28,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
           selected: deployInstances,
           onAllChange: actions.onAllInstancesToggled,
           onChange: actions.onInstanceSelected,
-          qaLabel: `instance`,
+          qaLabel: 'instance',
         })}
         <DyoColumn
           header={t('containerName')}
