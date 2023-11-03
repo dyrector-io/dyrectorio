@@ -1,8 +1,18 @@
 import { Type } from 'class-transformer'
-import { IsBoolean, IsDate, IsIn, IsNumber, IsObject, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator'
+import {
+  IsBoolean,
+  IsDate,
+  IsIn,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from 'class-validator'
+import { ENVIRONMENT_VALUE_TYPES, EnvironmentValueType } from 'src/domain/image'
 import { ContainerConfigDto, PartialContainerConfigDto } from '../container/container.dto'
 import { BasicRegistryDto } from '../registry/registry.dto'
-import { ENVIRONMENT_VALUE_TYPES, EnvironmentValueType } from 'src/domain/image'
 
 export class EnvironmentRule {
   @IsIn(ENVIRONMENT_VALUE_TYPES)

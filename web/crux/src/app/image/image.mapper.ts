@@ -10,6 +10,7 @@ import {
   RestartPolicy,
 } from '@prisma/client'
 import { ContainerConfigData, ContainerLogDriverType, ContainerVolumeType, Volume } from 'src/domain/container'
+import { parseDyrectorioEnvRules } from 'src/domain/image'
 import { toPrismaJson } from 'src/domain/utils'
 import { Volume as ProtoVolume } from 'src/grpc/protobuf/proto/agent'
 import {
@@ -27,7 +28,6 @@ import {
 import ContainerMapper from '../container/container.mapper'
 import RegistryMapper from '../registry/registry.mapper'
 import { ImageDto } from './image.dto'
-import { parseDyrectorioEnvRules } from 'src/domain/image'
 
 @Injectable()
 export default class ImageMapper {

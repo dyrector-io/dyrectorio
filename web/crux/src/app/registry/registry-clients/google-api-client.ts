@@ -103,8 +103,8 @@ export class GoogleRegistryClient implements RegistryApiClient {
 
     const labelClient = new V2Labels(this.url, {
       headers: {
-        Authorization: this.headers["Authorization"],
-      }
+        Authorization: (this.headers as Record<string, string>).Authorization,
+      },
     })
     return labelClient.fetchLabels(image, tag)
   }

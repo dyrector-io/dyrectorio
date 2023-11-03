@@ -3,16 +3,16 @@ import { Identity } from '@ory/kratos-client'
 import { ContainerConfig } from '@prisma/client'
 import { ContainerConfigData } from 'src/domain/container'
 import { containerNameFromImageName } from 'src/domain/deployment'
+import { parseDyrectorioEnvRules } from 'src/domain/image'
 import PrismaService from 'src/services/prisma.service'
+import { v4 } from 'uuid'
 import ContainerMapper from '../container/container.mapper'
 import EditorServiceProvider from '../editor/editor.service.provider'
+import RegistryClientProvider from '../registry/registry-client.provider'
+import TeamRepository from '../team/team.repository'
 import { AddImagesDto, ImageDto, PatchImageDto } from './image.dto'
 import ImageEventService from './image.event.service'
 import ImageMapper from './image.mapper'
-import RegistryClientProvider from '../registry/registry-client.provider'
-import TeamRepository from '../team/team.repository'
-import { v4 } from 'uuid'
-import { filterDyoLabels, parseDyrectorioEnvRules } from 'src/domain/image'
 
 @Injectable()
 export default class ImageService {
@@ -53,7 +53,12 @@ export default class ImageService {
     return this.mapper.toDto(image)
   }
 
-  async addImagesToVersion(teamSlug: string, versionId: string, request: AddImagesDto[], identity: Identity): Promise<ImageDto[]> {
+  async addImagesToVersion(
+    teamSlug: string,
+    versionId: string,
+    request: AddImagesDto[],
+    identity: Identity,
+  ): Promise<ImageDto[]> {
     const images = await this.prisma.$transaction(async prisma => {
       const lastImageOrder = await this.prisma.image.findFirst({
         select: {
@@ -111,36 +116,37 @@ export default class ImageService {
 
     await this.prisma.$transaction(async prisma => {
       const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
-      return await Promise.all(images.map(async it => {
-        const api = await this.registryClients.getByRegistryId(teamId, it.registryId)
+      return await Promise.all(
+        images.map(async it => {
+          const api = await this.registryClients.getByRegistryId(teamId, it.registryId)
 
-        const labels = await api.client.labels(it.name, it.tag)
+          const labels = await api.client.labels(it.name, it.tag)
 
-        const dyoLabels = filterDyoLabels(labels)
-        const envRules = parseDyrectorioEnvRules(dyoLabels)
+          const envRules = parseDyrectorioEnvRules(labels)
 
-        const defaultEnvs = Object.entries(envRules).filter(([_, rule]) => rule.required || !!rule.default).map(([env, rule]) => {
-          return {
-            id: v4(),
-            key: env,
-            value: rule.default ?? "",
-          }
-        })
+          const defaultEnvs = Object.entries(envRules)
+            .filter(([_, rule]) => rule.required || !!rule.default)
+            .map(([key, rule]) => ({
+              id: v4(),
+              key,
+              value: rule.default ?? '',
+            }))
 
-        return prisma.image.update({
-          where: {
-            id: it.id,
-          },
-          data: {
-            labels: dyoLabels,
-            config: {
-              update: {
-                environment: defaultEnvs,
+          return prisma.image.update({
+            where: {
+              id: it.id,
+            },
+            data: {
+              labels,
+              config: {
+                update: {
+                  environment: defaultEnvs,
+                },
               },
             },
-          },
-        })
-      }))
+          })
+        }),
+      )
     })
 
     const dtos = images.map(it => this.mapper.toDto(it))
@@ -225,4 +231,3 @@ export default class ImageService {
     return [imageName, imageTag]
   }
 }
-

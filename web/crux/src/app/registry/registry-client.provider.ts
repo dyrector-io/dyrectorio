@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { CruxBadRequestException, CruxForbiddenException } from 'src/exception/crux-exception'
+import { CruxForbiddenException } from 'src/exception/crux-exception'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
 import HubApiCache from './registry-clients/caches/hub-api-cache'
 import GithubRegistryClient from './registry-clients/github-api-client'
@@ -7,6 +7,7 @@ import { GitlabRegistryClient } from './registry-clients/gitlab-api-client'
 import { GoogleRegistryClient } from './registry-clients/google-api-client'
 import HubApiClient from './registry-clients/hub-api-client'
 import { RegistryApiClient } from './registry-clients/registry-api-client'
+import UncheckedApiClient from './registry-clients/unchecked-api-client'
 import RegistryV2ApiClient from './registry-clients/v2-api-client'
 import { REGISTRY_HUB_CACHE_EXPIRATION } from './registry.const'
 import {
@@ -19,8 +20,6 @@ import {
   V2RegistryDetailsDto,
 } from './registry.dto'
 import RegistryService from './registry.service'
-import V2Labels from './registry-clients/v2-labels'
-import UncheckedApiClient from './registry-clients/unchecked-api-client'
 
 export type RegistryClientEntry = {
   client: RegistryApiClient
@@ -117,8 +116,7 @@ export default class RegistryClientProvider {
           : null,
       )
 
-    const createUnchecked = (details: UncheckedRegistryDetailsDto) =>
-      new UncheckedApiClient(details.url)
+    const createUnchecked = (details: UncheckedRegistryDetailsDto) => new UncheckedApiClient(details.url)
 
     client = {
       type: registry.type,
@@ -133,7 +131,7 @@ export default class RegistryClientProvider {
           ? createGitlab(registry.details as GitlabRegistryDetailsDto)
           : registry.type === 'google'
           ? createGoogle(registry.details as GoogleRegistryDetailsDto)
-          : createUnchecked(registry.details as UncheckedRegistryDetailsDto)
+          : createUnchecked(registry.details as UncheckedRegistryDetailsDto),
     }
 
     this.clients.set(registry.id, client)

@@ -116,7 +116,7 @@ class HubApiClient implements RegistryApiClient {
   }
 
   async labels(image: string, tag: string): Promise<Record<string, string>> {
-    const labelClient = new V2Labels("index.docker.io")
+    const labelClient = new V2Labels('index.docker.io')
     return labelClient.fetchLabels(this.prefix ? `${this.prefix}/${image}` : image, tag)
   }
 }

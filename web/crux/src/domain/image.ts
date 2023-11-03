@@ -9,14 +9,6 @@ export type EnvironmentRule = {
   default?: string
 }
 
-export const filterDyoLabels = (labels: Record<string, string>): Record<string, string> =>
-  Object.entries(labels)
-    .filter(([key, _]) => key.startsWith('org.dyectorio.'))
-    .reduce((prev, [key, value]) => {
-      prev[key] = value
-      return prev
-    }, {})
-
 export const parseDyrectorioEnvRules = (labels: Record<string, string>): Record<string, EnvironmentRule> => {
   if (!labels) {
     return {}
@@ -52,7 +44,7 @@ export const parseDyrectorioEnvRules = (labels: Record<string, string>): Record<
       throw new CruxInternalServerErrorException({
         message: `Label rule must define environment type.`,
         property: 'rule',
-        value: value,
+        value,
       })
     }
 

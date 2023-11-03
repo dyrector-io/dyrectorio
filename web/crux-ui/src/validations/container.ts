@@ -419,34 +419,40 @@ const testEnvironment = (validation: ImageValidation) => (arr: UniqueKeyValue[])
     return err
   }
 
-  const fieldErrors = arr.map((it, index) => {
-    const { key, value } = it
-    const rule = validation.environmentRules[key]
-    if (!rule) {
-      return null
-    }
+  const fieldErrors = arr
+    .map((it, index) => {
+      const { key, value } = it
+      const rule = validation.environmentRules[key]
+      if (!rule) {
+        return null
+      }
 
-    try {
-      switch (rule.type) {
-        case 'boolean':
-          yup.boolean().validateSync(value)
-          break
-        case 'int':
-          yup.number().validateSync(value)
-          break
-        case 'string':
-          yup.string().validateSync(value)
-          break
+      try {
+        switch (rule.type) {
+          case 'boolean':
+            yup.boolean().validateSync(value)
+            break
+          case 'int':
+            yup.number().validateSync(value)
+            break
+          case 'string':
+            yup.string().validateSync(value)
+            break
+          default:
+            return new yup.ValidationError('errors:yup.mixed.default', rule.type, `environment[${index}]`)
+        }
+      } catch (fieldError) {
+        const err = new yup.ValidationError(fieldError.message, key, `environment[${index}]`)
+        err.params = {
+          ...fieldError.params,
+          path: key,
+        }
+        return err
       }
-    } catch (fieldError) {
-      const err = new yup.ValidationError(fieldError.message, key, `environment[${index}]`)
-      err.params = {
-        ...fieldError.params,
-        path: key,
-      }
-      return err
-    }
-  }).filter(it => !!it)
+
+      return null
+    })
+    .filter(it => !!it)
 
   if (fieldErrors.length > 0) {
     const err = new yup.ValidationError(fieldErrors, missingKey, 'environment')

@@ -8,4 +8,5 @@ export const getMergedContainerConfigFieldErrors = (
   newConfig: MergedContainerConfigData,
   validation: ImageValidation,
   t: Translate,
-): ContainerConfigValidationErrors => getConfigFieldErrorsForSchema(createMergedContainerConfigSchema(validation), newConfig, t)
+): ContainerConfigValidationErrors =>
+  getConfigFieldErrorsForSchema(createMergedContainerConfigSchema(validation), newConfig, t)

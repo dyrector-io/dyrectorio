@@ -1,4 +1,4 @@
-import { CruxInternalServerErrorException } from "src/exception/crux-exception"
+import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
 type V2Error = {
   code: string
@@ -13,33 +13,37 @@ type BaseResponse = {
 type ManifestResponse = BaseResponse & {
   schemaVersion: number
   config: {
-    digest: string,
-  },
+    digest: string
+  }
 }
 
 type BlobResponse = BaseResponse & {
   config: {
-    Labels: Record<string, string>,
-  },
+    Labels: Record<string, string>
+  }
 }
 
 type TokenResponse = {
   token: string
 }
 
-const ERROR_UNAUTHORIZED = "UNAUTHORIZED"
+const ERROR_UNAUTHORIZED = 'UNAUTHORIZED'
 
-const HEADER_WWW_AUTHENTICATE = "www-authenticate"
+const HEADER_WWW_AUTHENTICATE = 'www-authenticate'
 
 export default class V2Labels {
   private token?: string
 
   private manifestMimeType: string
 
-  constructor(private baseUrl: string, private requestInit?: RequestInit, manifestMime?: string) {
+  constructor(
+    private baseUrl: string,
+    private requestInit?: RequestInit,
+    manifestMime?: string,
+  ) {
     this.token = null
 
-    this.manifestMimeType = manifestMime ?? "application/vnd.docker.distribution.manifest.v2+json"
+    this.manifestMimeType = manifestMime ?? 'application/vnd.docker.distribution.manifest.v2+json'
   }
 
   private getHeaders(): RequestInit {
@@ -61,19 +65,19 @@ export default class V2Labels {
 
     const typeAndParams: string[] = auth.split(' ')
     const tokenType = typeAndParams[0]
-    if (tokenType.toLowerCase() === "basic") {
+    if (tokenType.toLowerCase() === 'basic') {
       throw new CruxInternalServerErrorException({
-        message: "Registry requires basic authentication!",
-        property: "url",
+        message: 'Registry requires basic authentication!',
+        property: 'url',
         value: this.baseUrl,
       })
     }
 
-    const params = typeAndParams[1].split(',').reduce((prev, it) => {
+    const params: Record<string, string> = typeAndParams[1].split(',').reduce((prev, it) => {
       const parts = it.split('=')
 
       let value = parts[1]
-      if (value.startsWith("\"") && value.endsWith("\"")) {
+      if (value.startsWith('"') && value.endsWith('"')) {
         value = value.substring(1, value.length - 1)
       }
 
@@ -82,56 +86,53 @@ export default class V2Labels {
       return prev
     }, {})
 
-    const tokenServer = params["realm"]
-    const tokenService = params["service"]
-    const tokenScope = params["scope"]
+    const tokenServer = params.realm
+    const tokenService = params.service
+    const tokenScope = params.scope
 
-    const tokenResponse = await fetch(`${tokenServer}?service=${encodeURIComponent(tokenService)}&scope=${encodeURIComponent(tokenScope)}`)
+    const tokenResponse = await fetch(
+      `${tokenServer}?service=${encodeURIComponent(tokenService)}&scope=${encodeURIComponent(tokenScope)}`,
+    )
     if (tokenResponse.status !== 200) {
       throw new CruxInternalServerErrorException({
-        message: "Failed to fetch V2 token",
+        message: 'Failed to fetch V2 token',
       })
     }
 
-    const tokenData = await tokenResponse.json() as TokenResponse
+    const tokenData = (await tokenResponse.json()) as TokenResponse
 
     this.token = tokenData.token
   }
 
   private async fetchV2<T extends BaseResponse>(endpoint: string, init?: RequestInit): Promise<T> {
-    const doFetch = async <T extends BaseResponse>(): Promise<[Response, T]> => {
-      const fullUrl = `${this.baseUrl.startsWith("http") ? this.baseUrl : `https://${this.baseUrl}`}/v2/${endpoint}`
+    const doFetch = async (): Promise<[Response, T]> => {
+      const fullUrl = `${this.baseUrl.startsWith('http') ? this.baseUrl : `https://${this.baseUrl}`}/v2/${endpoint}`
 
       const baseHeaders = this.getHeaders()
 
-      try {
-        const res = await fetch(fullUrl, {
-          ...baseHeaders,
-          ...init,
-          headers: {
-            ...baseHeaders?.headers,
-            ...init?.headers,
-          },
-        })
-        const data = await res.json() as T
+      const res = await fetch(fullUrl, {
+        ...baseHeaders,
+        ...init,
+        headers: {
+          ...baseHeaders?.headers,
+          ...init?.headers,
+        },
+      })
+      const data = (await res.json()) as T
 
-        return [res, data]
-      }
-      catch (error) {
-        throw error
-      }
+      return [res, data]
     }
 
-    let [res, data] = await doFetch<T>()
+    const [res, data] = await doFetch()
 
     if (data.errors?.some(it => it.code === ERROR_UNAUTHORIZED)) {
       await this.fetchToken(res)
 
-      const [_, dataWithToken] = await doFetch<T>()
+      const [_, dataWithToken] = await doFetch()
 
-      if (!!dataWithToken.errors) {
+      if (dataWithToken.errors) {
         throw new CruxInternalServerErrorException({
-          message: "Failed to fetch v2 registry API!"
+          message: 'Failed to fetch v2 registry API!',
         })
       }
 

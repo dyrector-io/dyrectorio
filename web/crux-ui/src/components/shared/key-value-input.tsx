@@ -153,7 +153,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
   const elements = stateToElements(state)
 
   const renderItem = (entry: KeyValueElement, index: number) => {
-    const { key, value, message, messageType } = entry
+    const { key, value, message: itemMessage, messageType: itemMessageType } = entry
 
     const keyId = `${entry.id}-key`
     const valueId = `${entry.id}-value`
@@ -173,7 +173,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
               value={key ?? ''}
               type={type}
               onPatch={it => onChange(index, it, value)}
-              invalid={!!message}
+              invalid={!!itemMessage}
             />
           </div>
 
@@ -189,11 +189,11 @@ const KeyValueInput = (props: KeyValueInputProps) => {
               value={value ?? ''}
               type={type}
               onPatch={it => onChange(index, key, it)}
-              invalid={!!message}
+              invalid={!!itemMessage}
             />
           </div>
         </div>
-        {message && <DyoMessage message={message} messageType={messageType} marginClassName="ml-2" />}
+        {itemMessage && <DyoMessage message={itemMessage} messageType={itemMessageType} marginClassName="ml-2" />}
       </Fragment>
     )
   }

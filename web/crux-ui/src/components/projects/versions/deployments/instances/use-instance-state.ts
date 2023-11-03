@@ -53,7 +53,9 @@ const useInstanceState = (options: InstanceStateOptions) => {
 
   const mergedConfig = mergeConfigs(instance.image.config, instance.config)
 
-  const errorMessage = parseError ?? getValidationError(createContainerConfigSchema(instance.image.validation), mergedConfig, null, t)?.message
+  const errorMessage =
+    parseError ??
+    getValidationError(createContainerConfigSchema(instance.image.validation), mergedConfig, null, t)?.message
 
   const resetSection = (section: ImageConfigProperty): InstanceContainerConfigData => {
     const newConfig = { ...instance.config } as any

@@ -1,7 +1,7 @@
 import { ContainerConfigData } from './container'
 import { BasicRegistry, RegistryImages } from './registry'
 
-export const ENVIRONMENT_VALUE_TYPES = [ 'string', 'boolean', 'int' ] as const
+export const ENVIRONMENT_VALUE_TYPES = ['string', 'boolean', 'int'] as const
 export type EnvironmentValueType = (typeof ENVIRONMENT_VALUE_TYPES)[number]
 
 export type EnvironmentRule = {

@@ -80,7 +80,11 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   })
 
   const [fieldErrors, setFieldErrors] = useState<ContainerConfigValidationErrors>(() =>
-    getMergedContainerConfigFieldErrors(mergeConfigs(instance.image.config, state.config), instance.image.validation, t),
+    getMergedContainerConfigFieldErrors(
+      mergeConfigs(instance.image.config, state.config),
+      instance.image.validation,
+      t,
+    ),
   )
   const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], state.config, fieldErrors))
   const [viewState, setViewState] = useState<ViewState>('editor')

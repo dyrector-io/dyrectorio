@@ -1,10 +1,10 @@
+import { CruxBadRequestException } from 'src/exception/crux-exception'
 import { RegistryImageTags } from '../registry.message'
 import { RegistryApiClient } from './registry-api-client'
 import V2Labels from './v2-labels'
-import { CruxBadRequestException } from 'src/exception/crux-exception'
 
 class UncheckedApiClient implements RegistryApiClient {
-  constructor(private url: string) { }
+  constructor(private url: string) {}
 
   catalog(_: string): Promise<string[]> {
     throw new CruxBadRequestException({ message: 'Unchecked registries have no catalog API' })
@@ -15,7 +15,7 @@ class UncheckedApiClient implements RegistryApiClient {
   }
 
   async labels(image: string, tag: string): Promise<Record<string, string>> {
-    if (this.url === "") {
+    if (this.url === '') {
       return {}
     }
 
