@@ -1,6 +1,6 @@
+import DyoLink from '@app/elements/dyo-link'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 
 const Footer = (props: React.HTMLProps<HTMLDivElement>) => {
   const { className, ...forwardProps } = props
@@ -15,9 +15,14 @@ const Footer = (props: React.HTMLProps<HTMLDivElement>) => {
 
       <div className="flex items-stretch text-sm">
         <span className="text-light pr-2">
-          <Link href="https://github.com/dyrector-io/dyrectorio" passHref target="_blank">
+          <DyoLink
+            href="https://github.com/dyrector-io/dyrectorio"
+            passHref
+            target="_blank"
+            qaLabel="footer-dyrector-io"
+          >
             <span className="text-dyo-turquoise font-bold">dyrector.io</span>
-          </Link>{' '}
+          </DyoLink>{' '}
           {t('openSource')}
         </span>
       </div>

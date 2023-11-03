@@ -2,6 +2,7 @@ import ContainerStatusIndicator from '@app/components/nodes/container-status-ind
 import ContainerStatusTag from '@app/components/nodes/container-status-tag'
 import { SECOND_IN_MILLIS } from '@app/const'
 import DyoIcon from '@app/elements/dyo-icon'
+import DyoLink from '@app/elements/dyo-link'
 import DyoProgress from '@app/elements/dyo-progress'
 import DyoTable, { DyoColumn } from '@app/elements/dyo-table'
 import useInterval from '@app/hooks/use-interval'
@@ -18,7 +19,6 @@ import {
 } from '@app/models'
 import { timeAgo, utcNow } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 import { useState } from 'react'
 
 export type ContainerProgress = {
@@ -140,14 +140,21 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
           <>
             {it.state && (
               <div className="inline-block mr-2">
-                <Link href={routes.node.containerLog(deployment.node.id, it.id)} passHref>
+                <DyoLink
+                  href={routes.node.containerLog(deployment.node.id, it.id)}
+                  qaLabel="container-status-list-logs-icon"
+                >
                   <DyoIcon src="/note.svg" alt={t('showLogs')} size="md" />
-                </Link>
+                </DyoLink>
               </div>
             )}
-            <Link href={routes.deployment.instanceDetails(deployment.id, it.instanceId)} passHref>
+
+            <DyoLink
+              href={routes.deployment.instanceDetails(deployment.id, it.instanceId)}
+              qaLabel="container-status-instance-config-icon"
+            >
               <DyoIcon src="/instance_config_icon.svg" alt={t('common:instanceConfig')} size="md" />
-            </Link>
+            </DyoLink>
           </>
         )}
       />

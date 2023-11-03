@@ -5,6 +5,7 @@ import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
+import DyoLink from '@app/elements/dyo-link'
 import DyoModal from '@app/elements/dyo-modal'
 import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
@@ -118,9 +119,9 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
                 body={(it: Deployment) => (
                   <>
                     <div className="inline-block mr-2">
-                      <Link href={routes.deployment.details(it.id)} passHref>
+                      <DyoLink href={routes.deployment.details(it.id)} qaLabel="deployment-list-view-icon">
                         <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
-                      </Link>
+                      </DyoLink>
                     </div>
 
                     <DyoIcon

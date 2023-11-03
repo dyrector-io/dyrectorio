@@ -1,6 +1,7 @@
 import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoLink from '@app/elements/dyo-link'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { GitlabRegistryDetails, GITLAB_NAMESPACE_VALUES, RegistryNamespace } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
@@ -17,13 +18,14 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
       <DyoLabel className="mt-2">
         {t('tips.gitlab')}
         <span className="ml-1">{t('tips.learnMorePat')}</span>
-        <Link
+        <DyoLink
           className="ml-1 text-blue-300"
           href="https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html"
           target="_blank"
+          qaLabel="gitlab-token-reason-learn-more"
         >
           {t('here')}
-        </Link>
+        </DyoLink>
         .
       </DyoLabel>
 

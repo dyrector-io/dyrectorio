@@ -2,17 +2,17 @@ import DyoBadge from '@app/elements/dyo-badge'
 import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoIcon from '@app/elements/dyo-icon'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoLink from '@app/elements/dyo-link'
 import { Registry } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 import RegistryTypeTag from './registry-type-tag'
-import DyoIcon from '@app/elements/dyo-icon'
 
 interface RegistryCardProps extends Omit<DyoCardProps, 'children'> {
   registry: Registry
-  titleHref?: string
+  titleHref: string
 }
 
 const RegistryCard = (props: RegistryCardProps) => {
@@ -36,7 +36,13 @@ const RegistryCard = (props: RegistryCardProps) => {
 
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
-      {titleHref ? <Link href={titleHref}>{title}</Link> : title}
+      {titleHref ? (
+        <DyoLink href={titleHref} qaLabel="registry-card-title">
+          {title}
+        </DyoLink>
+      ) : (
+        title
+      )}
 
       <div className="my-4 text-ellipsis overflow-hidden whitespace-nowrap text-light-eased">
         <DyoLabel className="mr-auto">{registry.url}</DyoLabel>

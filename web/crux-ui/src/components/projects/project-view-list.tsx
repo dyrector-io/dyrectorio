@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import ProjectTypeTag from './project-type-tag'
 import DyoTable, { DyoColumn, sortDate, sortEnum, sortNumber, sortString } from '@app/elements/dyo-table'
+import DyoLink from '@app/elements/dyo-link'
 
 export interface ProjectViewListProps {
   projects: Project[]
@@ -55,9 +56,9 @@ const ProjectViewList = (props: ProjectViewListProps) => {
           className="w-40 text-center"
           preventClickThrough
           body={(it: Project) => (
-            <Link href={routes.project.details(it.id)} passHref>
+            <DyoLink href={routes.project.details(it.id)} qaLabel="project-list-view-icon">
               <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
-            </Link>
+            </DyoLink>
           )}
         />
       </DyoTable>

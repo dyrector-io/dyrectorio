@@ -1,6 +1,7 @@
 import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoLink from '@app/elements/dyo-link'
 import { GithubRegistryDetails, GITHUB_NAMESPACE_VALUES, RegistryNamespace } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
@@ -16,13 +17,14 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
       <DyoLabel className="text-light mt-2">
         {t('tips.githubTokenReason')}
         <span className="ml-1">{t('tips.learnMorePat')}</span>
-        <Link
+        <DyoLink
           className="text-blue-300 ml-1"
           href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"
           target="_blank"
+          qaLabel="github-token-reason-learn-more"
         >
           {t('here')}
-        </Link>
+        </DyoLink>
         .
       </DyoLabel>
 

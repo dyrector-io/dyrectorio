@@ -8,6 +8,7 @@ import { ListPageMenu } from '@app/components/shared/page-menu'
 import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoLink from '@app/elements/dyo-link'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useSubmit from '@app/hooks/use-submit'
@@ -20,7 +21,6 @@ import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { useSWRConfig } from 'swr'
@@ -142,9 +142,14 @@ const NodesPage = (props: NodesPageProps) => {
         <DyoHeading element="h3" className="text-md text-center text-light-eased w-8/12 m-auto">
           <p className="pb-8">{t('noItems')}</p>
 
-          <Link className="pt-32" href={`${ROUTE_DOCS}/tutorials/register-your-node`} target="_blank">
+          <DyoLink
+            className="pt-32"
+            href={`${ROUTE_DOCS}/tutorials/register-your-node`}
+            target="_blank"
+            qaLabel="docs-register-your-node"
+          >
             {t('description')}
-          </Link>
+          </DyoLink>
         </DyoHeading>
       )}
     </Layout>

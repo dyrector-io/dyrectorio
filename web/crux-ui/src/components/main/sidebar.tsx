@@ -14,6 +14,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import NavButton from './nav-button'
 import { MenuOption, NavSection } from './nav-section'
+import DyoLink from '@app/elements/dyo-link'
 
 export type MenuSection = {
   title: string
@@ -120,7 +121,7 @@ export const Sidebar = (props: SidebarProps) => {
   return (
     <div className={className}>
       <div className="mx-12">
-        <Link href={ROUTE_INDEX} passHref>
+        <DyoLink href={ROUTE_INDEX} passHref qaLabel="sidebar-dyo-logo">
           <Image
             className="cursor-pointer mt-4"
             src="/dyrector_io_logo_white.svg"
@@ -128,7 +129,7 @@ export const Sidebar = (props: SidebarProps) => {
             width={160}
             height={27}
           />
-        </Link>
+        </DyoLink>
       </div>
 
       {sidebarSections && (

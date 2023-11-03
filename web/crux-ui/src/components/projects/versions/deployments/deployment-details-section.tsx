@@ -1,18 +1,18 @@
 import useItemEditorState from '@app/components/editor/use-item-editor-state'
 import KeyValueInput from '@app/components/shared/key-value-input'
-import useTranslation from 'next-translate/useTranslation'
-import { DeploymentActions, DeploymentState } from './use-deployment-state'
-import useTeamRoutes from '@app/hooks/use-team-routes'
-import useSWR from 'swr'
-import { auditToLocaleDate, fetcher } from '@app/utils'
-import { DyoLabel } from '@app/elements/dyo-label'
-import { ConfigBundleOption } from '@app/models'
-import DyoMultiSelect from '@app/elements/dyo-multi-select'
-import DyoIcon from '@app/elements/dyo-icon'
-import Link from 'next/link'
 import { DyoCard } from '@app/elements/dyo-card'
-import DeploymentStatusTag from './deployment-status-tag'
+import DyoIcon from '@app/elements/dyo-icon'
+import { DyoLabel } from '@app/elements/dyo-label'
+import DyoLink from '@app/elements/dyo-link'
+import DyoMultiSelect from '@app/elements/dyo-multi-select'
+import useTeamRoutes from '@app/hooks/use-team-routes'
+import { ConfigBundleOption } from '@app/models'
+import { auditToLocaleDate, fetcher } from '@app/utils'
 import clsx from 'clsx'
+import useTranslation from 'next-translate/useTranslation'
+import useSWR from 'swr'
+import DeploymentStatusTag from './deployment-status-tag'
+import { DeploymentActions, DeploymentState } from './use-deployment-state'
 
 interface DeploymentDetailsSectionProps {
   className?: string
@@ -33,7 +33,7 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
 
   const { data: configBundleOptions } = useSWR<ConfigBundleOption[]>(teamRoutes.configBundles.api.options(), fetcher)
 
-  const configBundlesHres =
+  const configBundlesHref =
     deployment.configBundleIds?.length === 1
       ? teamRoutes.configBundles.details(deployment.configBundleIds[0])
       : teamRoutes.configBundles.list()
@@ -66,9 +66,9 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
           onSelectionChange={it => actions.onConfigBundlesSelected(it)}
         />
 
-        <Link className="ml-2 my-auto" href={configBundlesHres} passHref>
+        <DyoLink className="ml-2 my-auto" href={configBundlesHref} qaLabel="config-bundle-view-icon">
           <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
-        </Link>
+        </DyoLink>
       </div>
 
       <KeyValueInput

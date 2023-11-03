@@ -5,6 +5,7 @@ import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
+import DyoLink from '@app/elements/dyo-link'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 import { defaultApiErrorHandler } from '@app/errors'
@@ -32,15 +33,14 @@ import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import Image from 'next/image'
-import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import DeploymentStatusTag from './deployments/deployment-status-tag'
-import { VersionActions } from './use-version-state'
 import {
   QA_DIALOG_LABEL_DELETE_DEPLOYMENT,
   QA_DIALOG_LABEL_DEPLOY,
   QA_MODAL_LABEL_DEPLOYMENT_NOTE,
 } from 'quality-assurance'
+import { useEffect, useState } from 'react'
+import DeploymentStatusTag from './deployments/deployment-status-tag'
+import { VersionActions } from './use-version-state'
 
 interface VersionDeploymentsSectionProps {
   version: VersionDetails
@@ -188,14 +188,14 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
                 sortField="node"
                 sort={sortNode(nodeStatuses)}
                 body={(it: DeploymentByVersion) => (
-                  <Link
+                  <DyoLink
                     className="flex place-items-center cursor-pointer"
                     href={routes.deployment.details(it.id)}
-                    passHref
+                    qaLabel="deployment-list-node-name"
                   >
                     <NodeStatusIndicator className="mr-2" status={nodeStatuses[it.node.id] ?? it.node.status} />
                     {it.node.name}
-                  </Link>
+                  </DyoLink>
                 )}
               />
               <DyoColumn header={t('common:prefix')} field="prefix" className="w-2/12" sortable sort={sortString} />
@@ -221,9 +221,13 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
                 preventClickThrough
                 body={(it: DeploymentByVersion) => (
                   <>
-                    <Link className="mr-2 inline-block cursor-pointer" href={routes.deployment.details(it.id)} passHref>
+                    <DyoLink
+                      className="mr-2 inline-block cursor-pointer"
+                      href={routes.deployment.details(it.id)}
+                      qaLabel="deployment-list-view-icon"
+                    >
                       <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
-                    </Link>
+                    </DyoLink>
                     {deploymentIsDeployable(it.status, version.type) && (
                       <div
                         className={clsx(

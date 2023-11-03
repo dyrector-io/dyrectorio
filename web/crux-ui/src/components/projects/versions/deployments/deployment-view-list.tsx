@@ -1,11 +1,11 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
+import DyoLink from '@app/elements/dyo-link'
 import DyoTable, { DyoColumn, dyoCheckboxColumn, sortDate, sortString } from '@app/elements/dyo-table'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Instance } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 import { DeploymentActions, DeploymentState } from './use-deployment-state'
 
 export interface DeploymentViewListProps {
@@ -69,13 +69,20 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
           body={(it: Instance) => (
             <>
               <div className="inline-block mr-2">
-                <Link href={routes.project.versions(project.id).imageDetails(version.id, it.image.id)} passHref>
+                <DyoLink
+                  href={routes.project.versions(project.id).imageDetails(version.id, it.image.id)}
+                  qaLabel="deployment-list-image-config-icon"
+                >
                   <DyoIcon src="/image_config_icon.svg" alt={t('common:imageConfig')} size="md" />
-                </Link>
+                </DyoLink>
               </div>
-              <Link href={routes.deployment.instanceDetails(deployment.id, it.id)} passHref>
+
+              <DyoLink
+                href={routes.deployment.instanceDetails(deployment.id, it.id)}
+                qaLabel="deployment-list-instance-config-icon"
+              >
                 <DyoIcon src="/instance_config_icon.svg" alt={t('common:instanceConfig')} size="md" />
-              </Link>
+              </DyoLink>
             </>
           )}
         />
