@@ -30,10 +30,10 @@ export const TEAM_ROUTES = new TeamRoutes(USER_TEAM_SLUG)
 export const DAGENT_NODE = 'dagent-deployable'
 export const SCREENSHOTS_FOLDER = 'screenshots'
 
-export const GHCR_MIRROR = 'ghcr.io/dyrector-io/mirror'
+export const GHCR_MIRROR = 'ghcr.io'
+export const GHCR_PREFIX = 'dyrector-io/mirror'
 export const NGINX_IMAGE_NAME = 'nginx'
 export const NGINX_TEST_IMAGE_WITH_TAG = `${NGINX_IMAGE_NAME}:mainline-alpine`
-export const EXPANDED_IMAGE_NAME = `${GHCR_MIRROR}/${NGINX_TEST_IMAGE_WITH_TAG}`
 export const REGISTRY_NAME = 'ghcr for testing'
 
 const replacePort = (address: string, port: string): string => {

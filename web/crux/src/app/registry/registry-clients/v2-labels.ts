@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
 type V2Error = {
@@ -32,6 +33,8 @@ const ERROR_UNAUTHORIZED = 'UNAUTHORIZED'
 const HEADER_WWW_AUTHENTICATE = 'www-authenticate'
 
 export default class V2Labels {
+  private readonly logger = new Logger(V2Labels.name)
+
   private token?: string
 
   private manifestMimeType: string
@@ -90,9 +93,16 @@ export default class V2Labels {
     const tokenService = params.service
     const tokenScope = params.scope
 
-    const tokenResponse = await fetch(
-      `${tokenServer}?service=${encodeURIComponent(tokenService)}&scope=${encodeURIComponent(tokenScope)}`,
-    )
+    const tokenUrl = `${tokenServer}?service=${encodeURIComponent(tokenService)}&scope=${encodeURIComponent(
+      tokenScope,
+    )}`
+
+    this.logger.debug(`Fetching token from '${tokenUrl}'`)
+
+    const tokenResponse = await fetch(tokenUrl)
+
+    this.logger.debug(`Got token response for '${tokenUrl}' - ${tokenResponse.status}`)
+
     if (tokenResponse.status !== 200) {
       throw new CruxInternalServerErrorException({
         message: 'Failed to fetch V2 token',
@@ -108,6 +118,8 @@ export default class V2Labels {
     const doFetch = async (): Promise<[Response, T]> => {
       const fullUrl = `${this.baseUrl.startsWith('http') ? this.baseUrl : `https://${this.baseUrl}`}/v2/${endpoint}`
 
+      this.logger.debug(`Fetching '${fullUrl}'`)
+
       const baseHeaders = this.getHeaders()
 
       const res = await fetch(fullUrl, {
@@ -119,6 +131,8 @@ export default class V2Labels {
         },
       })
       const data = (await res.json()) as T
+
+      this.logger.debug(`Got response '${fullUrl}' - ${res.status}`)
 
       return [res, data]
     }
