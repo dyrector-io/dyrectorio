@@ -363,6 +363,7 @@ export const containerConfigSchema = yup.object().shape({
   routing: routingRule,
   expose: exposeRule,
   user: yup.number().default(null).min(-1).max(UID_MAX).nullable(),
+  workingDirectory: yup.string().nullable().optional().matches(/^\S+$/g),
   tty: yup.boolean().default(false).required(),
   configContainer: configContainerRule,
   ports: portConfigRule,

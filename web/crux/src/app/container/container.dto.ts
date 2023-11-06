@@ -314,6 +314,10 @@ export class ContainerConfigDto {
   @Max(UID_MAX)
   user?: number
 
+  @IsOptional()
+  @IsString()
+  workingDirectory?: string
+
   @IsBoolean()
   tty: boolean
 

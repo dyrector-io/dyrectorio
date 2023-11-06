@@ -473,6 +473,7 @@ const createContainerConfigBaseSchema = (validation: ImageValidation) =>
     routing: routingRule,
     expose: exposeRule,
     user: yup.number().default(null).min(-1).max(UID_MAX).nullable().label('container:common.user'),
+    workingDirectory: yup.string().default(null).nullable().optional().label('container:common.workingDirectory'),
     tty: yup.boolean().default(false).required().label('container:common.tty'),
     configContainer: configContainerRule,
     ports: portConfigRule,

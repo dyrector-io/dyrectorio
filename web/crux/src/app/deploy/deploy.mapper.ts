@@ -317,6 +317,9 @@ export default class DeployMapper {
       commands: this.mapUniqueKeyToStringArray(config.commands),
       expose: this.imageMapper.exposeStrategyToProto(config.expose) ?? ProtoExposeStrategy.NONE_ES,
       args: this.mapUniqueKeyToStringArray(config.args),
+      // Set user to the given value, if not null or use 0 if specifically 0, otherwise set null
+      user: config.user === -1 ? null : config.user,
+      workingDirectory: config.workingDirectory,
       TTY: config.tty,
       configContainer: config.configContainer,
       importContainer: config.storageId ? this.storageToImportContainer(config, storage) : null,
@@ -324,8 +327,6 @@ export default class DeployMapper {
       initContainers: this.mapInitContainerToAgent(config.initContainers),
       portRanges: config.portRanges,
       ports: config.ports,
-      // Set user to the given value, if not null or use 0 if specifically 0, otherwise set null
-      user: config.user === -1 ? null : config.user,
       volumes: this.imageMapper.volumesToProto(config.volumes ?? []),
     }
   }

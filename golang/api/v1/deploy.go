@@ -196,6 +196,8 @@ type ContainerConfig struct {
 	Args []string `json:"args"`
 	// if we need to spawn a pseudo-terminal
 	TTY bool `json:"tty"`
+	// working directory of the container or pod
+	WorkingDirectory string `json:"workingDirectory"`
 
 	// dagent only
 	// docker log config https://docs.docker.com/config/containers/logging/configure/

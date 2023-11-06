@@ -12,33 +12,33 @@ import DyoToggle from '@app/elements/dyo-toggle'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   COMMON_CONFIG_PROPERTIES,
-  CommonConfigProperty,
-  ImageConfigProperty,
-  StorageOption,
-  filterContains,
-  filterEmpty,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   CommonConfigDetails,
+  CommonConfigProperty,
   ContainerConfigData,
   ContainerConfigExposeStrategy,
   ContainerConfigPort,
   ContainerConfigVolume,
   CraneConfigDetails,
+  ImageConfigProperty,
   InitContainerVolumeLink,
   InstanceCommonConfigDetails,
   InstanceCraneConfigDetails,
+  StorageOption,
   VolumeType,
+  filterContains,
+  filterEmpty,
   mergeConfigs,
 } from '@app/models'
 import { fetcher, toNumber } from '@app/utils'
+import { ContainerConfigValidationErrors, findErrorFor, findErrorStartsWith, matchError } from '@app/validations'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import useSWR from 'swr'
 import { v4 as uuid } from 'uuid'
 import ConfigSectionLabel from './config-section-label'
 import ExtendableItemList from './extendable-item-list'
-import { ContainerConfigValidationErrors, findErrorFor, findErrorStartsWith, matchError } from '@app/validations'
 
 type CommonConfigSectionBaseProps<T> = {
   disabled?: boolean
@@ -201,6 +201,33 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   }}
                   editorOptions={editorOptions}
                   message={findErrorFor(fieldErrors, 'user')}
+                  disabled={disabled}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* working directory */}
+          {filterContains('workingDirectory', selectedFilters) && (
+            <div className="grid break-inside-avoid mb-8">
+              <div className="flex flex-row gap-4 items-start">
+                <ConfigSectionLabel
+                  disabled={disabledOnImage || config.workingDirectory === imageConfig?.workingDirectory}
+                  onResetSection={() => onResetSection('workingDirectory')}
+                >
+                  {t('common.workingDirectory').toUpperCase()}
+                </ConfigSectionLabel>
+
+                <MultiInput
+                  id="common.workingDirectory"
+                  containerClassName="max-w-lg mb-3"
+                  labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
+                  grow
+                  value={config.workingDirectory ?? ''}
+                  placeholder={t('common.placeholders.containerDefault')}
+                  onPatch={it => onChange({ workingDirectory: it })}
+                  editorOptions={editorOptions}
+                  message={findErrorFor(fieldErrors, 'workingDirectory')}
                   disabled={disabled}
                 />
               </div>

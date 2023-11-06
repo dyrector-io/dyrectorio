@@ -85,6 +85,7 @@ export const COMMON_CONFIG_PROPERTIES = [
   'expose',
   'user',
   'tty',
+  'workingDirectory',
   'configContainer',
   'ports',
   'portRanges',
