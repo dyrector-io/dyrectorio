@@ -125,7 +125,7 @@ export default class ImageService {
           const envRules = parseDyrectorioEnvRules(labels)
 
           const defaultEnvs = Object.entries(envRules)
-            .filter(([_, rule]) => rule.required || !!rule.default)
+            .filter(([, rule]) => rule.required || !!rule.default)
             .map(([key, rule]) => ({
               id: v4(),
               key,

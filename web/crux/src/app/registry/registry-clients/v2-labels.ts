@@ -128,7 +128,7 @@ export default class V2Labels {
     if (data.errors?.some(it => it.code === ERROR_UNAUTHORIZED)) {
       await this.fetchToken(res)
 
-      const [_, dataWithToken] = await doFetch()
+      const [, dataWithToken] = await doFetch()
 
       if (dataWithToken.errors) {
         throw new CruxInternalServerErrorException({

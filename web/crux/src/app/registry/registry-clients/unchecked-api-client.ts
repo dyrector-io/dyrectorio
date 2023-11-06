@@ -6,11 +6,11 @@ import V2Labels from './v2-labels'
 class UncheckedApiClient implements RegistryApiClient {
   constructor(private url: string) {}
 
-  catalog(_: string): Promise<string[]> {
+  catalog(): Promise<string[]> {
     throw new CruxBadRequestException({ message: 'Unchecked registries have no catalog API' })
   }
 
-  tags(_: string): Promise<RegistryImageTags> {
+  tags(): Promise<RegistryImageTags> {
     throw new CruxBadRequestException({ message: 'Unchecked registries have no tags API' })
   }
 

@@ -440,8 +440,8 @@ const testEnvironment = (validation: ImageValidation, arr: UniqueKeyValue[]) => 
   }
 
   const requiredKeys = Object.entries(validation.environmentRules)
-    .filter(([_, rule]) => rule.required)
-    .map(([key, _]) => key)
+    .filter(([, rule]) => rule.required)
+    .map(([key]) => key)
   const foundKeys = arr.map(it => it.key)
 
   const missingKey = requiredKeys.find(it => !foundKeys.includes(it))
@@ -473,7 +473,7 @@ const testEnvironment = (validation: ImageValidation, arr: UniqueKeyValue[]) => 
             yup.string().validateSync(value)
             break
           default:
-            return new yup.ValidationError("errors:yup.mixed.default", rule.type, `environment[${index}]`)
+            return new yup.ValidationError('errors:yup.mixed.default', rule.type, `environment[${index}]`)
         }
       } catch (fieldError) {
         const err = new yup.ValidationError(fieldError.message, key, `environment[${index}]`)
