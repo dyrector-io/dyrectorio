@@ -1,6 +1,5 @@
 import DyoLink from '@app/elements/dyo-link'
 import clsx from 'clsx'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 
 interface NavButtonProps {

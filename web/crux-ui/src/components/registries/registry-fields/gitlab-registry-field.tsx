@@ -3,10 +3,9 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoLink from '@app/elements/dyo-link'
 import DyoToggle from '@app/elements/dyo-toggle'
-import { GitlabRegistryDetails, GITLAB_NAMESPACE_VALUES, RegistryNamespace } from '@app/models'
+import { GITLAB_NAMESPACE_VALUES, GitlabRegistryDetails, RegistryNamespace } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 
 const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails>) => {
   const { formik } = props

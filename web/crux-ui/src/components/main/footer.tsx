@@ -19,7 +19,7 @@ const Footer = (props: React.HTMLProps<HTMLDivElement>) => {
             href="https://github.com/dyrector-io/dyrectorio"
             passHref
             target="_blank"
-            qaLabel="footer-dyrector-io"
+            qaLabel="footer-dyrector-io-github"
           >
             <span className="text-dyo-turquoise font-bold">dyrector.io</span>
           </DyoLink>{' '}

@@ -12,7 +12,7 @@ import RegistryTypeTag from './registry-type-tag'
 
 interface RegistryCardProps extends Omit<DyoCardProps, 'children'> {
   registry: Registry
-  titleHref: string
+  titleHref?: string
 }
 
 const RegistryCard = (props: RegistryCardProps) => {

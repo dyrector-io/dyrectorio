@@ -11,7 +11,7 @@ import NodeStatusIndicator from './node-status-indicator'
 
 interface DyoNodeCardProps extends Omit<DyoCardProps, 'children'> {
   node: DyoNode
-  titleHref: string
+  titleHref?: string
   hideConnectionInfo?: boolean
 }
 

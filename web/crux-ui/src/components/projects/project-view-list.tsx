@@ -1,14 +1,13 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
+import DyoLink from '@app/elements/dyo-link'
+import DyoTable, { DyoColumn, sortDate, sortEnum, sortNumber, sortString } from '@app/elements/dyo-table'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { PROJECT_TYPE_VALUES, Project } from '@app/models'
 import { auditToLocaleDate } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import ProjectTypeTag from './project-type-tag'
-import DyoTable, { DyoColumn, sortDate, sortEnum, sortNumber, sortString } from '@app/elements/dyo-table'
-import DyoLink from '@app/elements/dyo-link'
 
 export interface ProjectViewListProps {
   projects: Project[]

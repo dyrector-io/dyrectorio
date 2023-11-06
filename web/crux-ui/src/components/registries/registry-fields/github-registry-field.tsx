@@ -2,10 +2,9 @@ import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoLink from '@app/elements/dyo-link'
-import { GithubRegistryDetails, GITHUB_NAMESPACE_VALUES, RegistryNamespace } from '@app/models'
+import { GITHUB_NAMESPACE_VALUES, GithubRegistryDetails, RegistryNamespace } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 
 const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails>) => {
   const { formik } = props

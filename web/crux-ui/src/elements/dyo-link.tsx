@@ -9,7 +9,7 @@ type DyoLinkProps = Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof Li
   } & React.RefAttributes<HTMLAnchorElement>
 
 const DyoLink = (props: DyoLinkProps) => {
-  const { qaLabel, onClick: propsOnClick } = props
+  const { qaLabel, onClick: propsOnClick, ...forwardedProps } = props
 
   const sendQAEvent = useCallback(() => {
     sendQAClickEvent({
@@ -25,7 +25,7 @@ const DyoLink = (props: DyoLinkProps) => {
       }
     : sendQAEvent
 
-  return <Link {...props} onClick={onClick} />
+  return <Link {...forwardedProps} onClick={onClick} />
 }
 
 export default DyoLink

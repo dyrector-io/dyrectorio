@@ -11,7 +11,7 @@ import useTranslation from 'next-translate/useTranslation'
 
 interface StorageCardProps extends Omit<DyoCardProps, 'children'> {
   storage: Storage
-  titleHref: string
+  titleHref?: string
 }
 
 const StorageCard = (props: StorageCardProps) => {

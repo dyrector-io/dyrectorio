@@ -11,7 +11,7 @@ import NotificationTypeTag from './notification-type-tag'
 
 interface NotificationCardProps extends Omit<DyoCardProps, 'children'> {
   notification: Notification
-  titleHref: string
+  titleHref?: string
 }
 
 const NotificationCard = (props: NotificationCardProps) => {

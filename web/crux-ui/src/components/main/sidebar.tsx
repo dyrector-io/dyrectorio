@@ -1,4 +1,5 @@
 import DyoIcon from '@app/elements/dyo-icon'
+import DyoLink from '@app/elements/dyo-link'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   ROUTE_DOCS,
@@ -11,10 +12,8 @@ import {
 } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import Link from 'next/link'
 import NavButton from './nav-button'
 import { MenuOption, NavSection } from './nav-section'
-import DyoLink from '@app/elements/dyo-link'
 
 export type MenuSection = {
   title: string
