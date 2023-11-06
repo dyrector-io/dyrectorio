@@ -58,6 +58,7 @@ export default class ImageMapper {
       configContainer: toPrismaJson(config.configContainer),
       // Set user to the given value, if not null or use 0 if specifically 0, otherwise set to default -1
       user: config.user ?? (config.user === 0 ? 0 : -1),
+      workingDirectory: config.workingDirectory,
       tty: config.tty ?? false,
       ports: toPrismaJson(config.ports),
       portRanges: toPrismaJson(config.portRanges),

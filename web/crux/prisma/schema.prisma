@@ -216,24 +216,25 @@ model ContainerConfig {
   id String @id @default(uuid()) @db.Uuid
 
   //Common
-  name            String
-  environment     Json?
-  secrets         Json?
-  capabilities    Json?
-  expose          ExposeStrategy
-  routing         Json?
-  configContainer Json?
-  user            Int            @default(-1)
-  tty             Boolean
-  ports           Json?
-  portRanges      Json?
-  volumes         Json?
-  commands        Json?
-  args            Json?
-  initContainers  Json?
-  storageSet      Boolean?
-  storageId       String?        @db.Uuid
-  storageConfig   Json?
+  name             String
+  environment      Json?
+  secrets          Json?
+  capabilities     Json?
+  expose           ExposeStrategy
+  routing          Json?
+  configContainer  Json?
+  user             Int            @default(-1)
+  workingDirectory String?
+  tty              Boolean
+  ports            Json?
+  portRanges       Json?
+  volumes          Json?
+  commands         Json?
+  args             Json?
+  initContainers   Json?
+  storageSet       Boolean?
+  storageId        String?        @db.Uuid
+  storageConfig    Json?
 
   //Dagent
   logConfig     Json?
@@ -324,6 +325,7 @@ model InstanceContainerConfig {
   routing         Json?
   configContainer Json?
   user            Int?
+  workingDirectory String?
   tty             Boolean?
   ports           Json?
   portRanges      Json?

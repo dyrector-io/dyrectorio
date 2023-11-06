@@ -201,6 +201,7 @@ message CommonContainerConfig {
   optional ImportContainer importContainer = 105;
   optional int64 user = 106;
   optional bool TTY = 107;
+  optional string workingDirectory = 108;
 
   repeated Port ports = 1000;
   repeated PortRangeBinding portRanges = 1001;

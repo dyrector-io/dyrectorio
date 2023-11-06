@@ -101,6 +101,10 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		containerConfig.TTY = *cc.TTY
 	}
 
+	if cc.WorkingDirectory != nil {
+		containerConfig.WorkingDirectory = *cc.WorkingDirectory
+	}
+
 	if cc.Args != nil {
 		containerConfig.Args = cc.Args
 	}

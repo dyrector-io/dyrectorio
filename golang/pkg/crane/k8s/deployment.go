@@ -325,7 +325,8 @@ func buildContainer(p *DeploymentParams,
 		WithReadinessProbe(readinessProbe).
 		WithStartupProbe(startupProbe).
 		WithResources(resources).
-		WithTTY(p.containerConfig.TTY)
+		WithTTY(p.containerConfig.TTY).
+		WithWorkingDir(p.containerConfig.WorkingDirectory)
 
 	if p.containerConfig.User != nil {
 		container.WithSecurityContext(

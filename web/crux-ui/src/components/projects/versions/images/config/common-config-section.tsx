@@ -207,6 +207,33 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             </div>
           )}
 
+          {/* working directory */}
+          {filterContains('workingDirectory', selectedFilters) && (
+            <div className="grid break-inside-avoid mb-8">
+              <div className="flex flex-row gap-4 items-start">
+                <ConfigSectionLabel
+                  disabled={disabledOnImage || config.workingDirectory === imageConfig?.workingDirectory}
+                  onResetSection={() => onResetSection('workingDirectory')}
+                >
+                  {t('common.workingDirectory').toUpperCase()}
+                </ConfigSectionLabel>
+
+                <MultiInput
+                  id="common.workingDirectory"
+                  containerClassName="max-w-lg mb-3"
+                  labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
+                  grow
+                  value={config.workingDirectory ?? ''}
+                  placeholder={t('common.placeholders.containerDefault')}
+                  onPatch={it => onChange({ workingDirectory: it })}
+                  editorOptions={editorOptions}
+                  message={findErrorFor(fieldErrors, 'workingDirectory')}
+                  disabled={disabled}
+                />
+              </div>
+            </div>
+          )}
+
           {/* expose */}
           {filterContains('expose', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
