@@ -12,6 +12,7 @@
 
   "common": {
     "user": "User",
+    "workingDirectory": "Working directory",
     "containerName": "Container name",
     "port": "Port",
     "exposePort": "Expose port",
