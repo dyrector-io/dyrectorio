@@ -34,6 +34,8 @@ export const GHCR_MIRROR = 'ghcr.io'
 export const GHCR_PREFIX = 'dyrector-io/mirror'
 export const NGINX_IMAGE_NAME = 'nginx'
 export const NGINX_TEST_IMAGE_WITH_TAG = `${NGINX_IMAGE_NAME}:mainline-alpine`
+export const REDIS_IMAGE_NAME = 'redis'
+export const REDIS_TEST_IMAGE_WITH_TAG = `${REDIS_IMAGE_NAME}:latest`
 export const REGISTRY_NAME = 'ghcr for testing'
 
 const replacePort = (address: string, port: string): string => {
