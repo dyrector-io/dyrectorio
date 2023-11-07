@@ -69,8 +69,9 @@ export const Layout = (props: LayoutProps) => {
     <>
       <PageHead title={title} />
 
-      <main className="flex flex-row h-full bg-dark w-full">
-        <Sidebar className={clsx('flex flex-col bg-medium h-screen sticky top-0', sidebarWidth)} />
+      <main className="flex flex-row h-full min-h-screen w-full">
+        <div className={clsx('fixed top-0 bottom-0 left-0 bg-medium', sidebarWidth)} />
+        <Sidebar className={clsx('flex flex-col min-h-screen h-full z-10', sidebarWidth)} />
 
         <div className={clsx('flex flex-col px-7 pt-4', mainWidth)}>
           <Topbar className="flex flex-row mb-4" meta={meta}>
