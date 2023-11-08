@@ -113,7 +113,7 @@ func getCruxPostgres(client *dagger.Client, cruxEnv map[string]string) *dagger.C
 	}
 	postgresUsername := parsedURL.User.Username()
 	postgresPassword, _ := parsedURL.User.Password()
-	postgresDb := strings.TrimPrefix(parsedURL.Path, "/")
+	postgresDB := strings.TrimPrefix(parsedURL.Path, "/")
 
 	dataCache := client.CacheVolume("data")
 
@@ -121,11 +121,11 @@ func getCruxPostgres(client *dagger.Client, cruxEnv map[string]string) *dagger.C
 		WithMountedCache("/data", dataCache).
 		WithEnvVariable("POSTGRES_USER", postgresUsername).
 		WithEnvVariable("POSTGRES_PASSWORD", postgresPassword).
-		WithEnvVariable("POSTGRES_DB", postgresDb).
+		WithEnvVariable("POSTGRES_DB", postgresDB).
 		WithEnvVariable("PGDATA", "/data/postgres").
 		WithExposedPort(5432)
-		//.WithExec(nil)
-		//.WithFocus()
+		// .WithExec(nil)
+		// .WithFocus()
 
 	return cruxPostgres
 }
@@ -149,16 +149,19 @@ func runCruxProd(ctx context.Context, client *dagger.Client, cruxPostgres *dagge
 		// WithExposedPort(6666) // just to keep alive as service
 
 	// log.Info().Msg("test crux before")
-	crux.Stdout(ctx)
+	_, err := crux.Stdout(ctx)
+	if err != nil {
+		panic(err)
+	}
 	// log.Info().Msg("test crux after")
 
 	return crux
 }
 
-func runCruxUiProd(ctx context.Context, client *dagger.Client, crux *dagger.Container) *dagger.Container {
-	cruxUi := client.Pipeline("crux-ui").Container().From("node:20-alpine") //.WithServiceBinding("crux", crux)
+func runCruxUIProd(ctx context.Context, client *dagger.Client, crux *dagger.Container) *dagger.Container {
+	cruxUI := client.Pipeline("crux-ui").Container().From("node:20-alpine") // .WithServiceBinding("crux", crux)
 
-	cruxUi = cruxUi.
+	cruxUI = cruxUI.
 		WithDirectory("/src", client.Host().Directory("web/crux-ui/"), dagger.ContainerWithDirectoryOpts{
 			Exclude: []string{"node_modules", ".next"},
 		}).
@@ -172,16 +175,16 @@ func runCruxUiProd(ctx context.Context, client *dagger.Client, crux *dagger.Cont
 		WithExposedPort(6666)
 
 	log.Info().Msg("test crux-ui log")
-	_, err := cruxUi.Stdout(ctx)
+	_, err := cruxUI.Stdout(ctx)
 	if err != nil {
 		panic(err)
 	}
 	log.Info().Msg("test crux-ui log 2")
 
-	return cruxUi
+	return cruxUI
 }
 
-func runPlaywright(ctx context.Context, client *dagger.Client, cruxUi *dagger.Container) *dagger.Container {
+func runPlaywright(ctx context.Context, client *dagger.Client, cruxUI *dagger.Container) *dagger.Container {
 	e2e := client.Pipeline("e2e").Container().From("node:20-alpine")
 
 	e2e = e2e.
@@ -189,7 +192,7 @@ func runPlaywright(ctx context.Context, client *dagger.Client, cruxUi *dagger.Co
 			Exclude: []string{"node_modules", ".next"},
 		}).
 		WithWorkdir("/src").
-		WithServiceBinding("localhost", cruxUi).
+		WithServiceBinding("localhost", cruxUI).
 		// WithEnvVariable("NOCACHE", time.Now().String()).
 		WithExec([]string{"npm", "ci"}).
 		WithExec([]string{"npm", "run", "build"}).
@@ -209,14 +212,14 @@ func runPlaywright(ctx context.Context, client *dagger.Client, cruxUi *dagger.Co
 // 	cruxEnv := getEnv("web/crux/.env")
 // 	cruxPostgres := getCruxPostgres(client, cruxEnv)
 // 	crux := runCruxProd(ctx, client, cruxPostgres)
-// 	cruxUi := runCruxUiProd(ctx, client, crux)
+// 	cruxUI := runCruxUIProd(ctx, client, crux)
 
-// 	// playwright := runPlaywright(ctx, client, cruxUi)
+// 	// playwright := runPlaywright(ctx, client, cruxUI)
 
 // 	cruxHostname, _ := crux.Hostname(ctx)
 // 	log.Info().Msg("crux hostname: " + cruxHostname)
-// 	cruxUiHostname, _ := cruxUi.Hostname(ctx)
-// 	log.Info().Msg("crux-ui hostname: " + cruxUiHostname)
+// 	cruxUIHostname, _ := cruxUI.Hostname(ctx)
+// 	log.Info().Msg("crux-ui hostname: " + cruxUIHostname)
 // 	// playwrightHostname, _ := playwright.Hostname(ctx)
 // 	// log.Info().Msg("playwright hostname: " + playwrightHostname)
 
@@ -232,7 +235,7 @@ func runE2eTestPipeline(ctx context.Context, client *dagger.Client) {
 	mailslurper /*, err*/ := client.Container().From("oryd/mailslurper:smtps-latest").
 		// WithExposedPort(1025). // port 1025 is used internally for smtp, you do not have to expose that
 		WithExposedPort(4436).
-		WithExposedPort(4437) //.Sync(ctx)
+		WithExposedPort(4437) // .Sync(ctx)
 	// mailslurper.Sync(ctx) // remove
 
 	traefik /*, err*/ := client.Container().From("traefik:2.9").
@@ -271,7 +274,9 @@ func runE2eTestPipeline(ctx context.Context, client *dagger.Client) {
 	// cruxPostgres.Sync(ctx) // remove
 
 	cruxImage := fmt.Sprintf("ghcr.io/dyrector-io/dyrectorio/web/crux:%s", env["DYO_VERSION"])
-	cruxMigrateDatabaseUrl := fmt.Sprintf("postgresql://crux:%s@crux-postgres:5432/crux?schema=public&connect_timeout=5", env["CRUX_POSTGRES_PASSWORD"])
+	cruxMigrateDatabaseUrl := fmt.Sprintf(
+		"postgresql://crux:%s@crux-postgres:5432/crux?schema=public&connect_timeout=5",
+		env["CRUX_POSTGRES_PASSWORD"])
 	cruxMigrate := client.Pipeline("crux").Container().From(cruxImage).
 		WithEnvVariable("TZ", env["TIMEZONE"]).
 		WithEnvVariable("DATABASE_URL", cruxMigrateDatabaseUrl).
