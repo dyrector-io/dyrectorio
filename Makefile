@@ -32,6 +32,11 @@ cli:
 	cd golang/cmd/dyo && \
 	go run .
 
+# Shortcut for local testing
+.PHONY: test
+test:
+	go run golang/cmd/dagger/main.go
+
 # Create dyrector.io offline installer bundle
 .PHONY: export-minimal
 export-minimal:
