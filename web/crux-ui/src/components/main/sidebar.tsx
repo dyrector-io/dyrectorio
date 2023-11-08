@@ -68,6 +68,11 @@ export const sidebarSectionsOf = (routes: TeamRoutes): MenuSection[] => [
         text: 'storages',
         link: routes.storage.list(),
       },
+      {
+        icon: '/config_bundle.svg',
+        text: 'configBundles',
+        link: routes.configBundles.list(),
+      },
     ],
   },
   {
@@ -127,8 +132,8 @@ export const Sidebar = (props: SidebarProps) => {
       </div>
 
       {sidebarSections && (
-        <div className="flex flex-col flex-grow pb-4">
-          <div className="mt-6 flex text-bright">
+        <div className="flex flex-col grow">
+          <div className="flex text-bright my-6">
             <NavButton href={routes.dashboard.index()} icon={<DyoIcon src="/dashboard.svg" alt={t('dashboard')} />}>
               {t('dashboard')}
             </NavButton>
@@ -137,7 +142,7 @@ export const Sidebar = (props: SidebarProps) => {
           {sidebarSections.map((it, index) => (
             <NavSection
               key={index}
-              className={index < sidebarSections.length - 1 ? 'mt-6' : 'mt-auto mt-6'}
+              className={index < sidebarSections.length - 1 ? 'mb-6' : 'mt-auto mb-3'}
               title={t(it.title)}
               options={it.items}
             />

@@ -12,6 +12,7 @@ export interface DyoInputProps extends React.InputHTMLAttributes<HTMLInputElemen
   containerClassName?: string
   message?: string
   messageType?: MessageType
+  invalid?: boolean
   inline?: boolean
 }
 
@@ -29,14 +30,19 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
     inline,
     hidden,
     id,
+    invalid,
     ...forwardedProps
   } = props
+
 
   const [ isVisible, setVisible ] = useState(false)
   
   const changePasswordVisibility = () => {
     setVisible((prevData) => !prevData)
   }
+
+  const error = (message && messageType === 'error') || invalid
+
 
   return (
     <>
@@ -82,7 +88,11 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
             className,
             'bg-medium h-11 p-4 ring-2 rounded-md focus:outline-none focus:dark',
             grow ? 'w-full' : 'w-80',
-            disabled ? 'text-bright-muted ring-light-grey-muted cursor-not-allowed' : 'text-bright ring-light-grey',
+            disabled
+              ? 'text-bright-muted ring-light-grey-muted cursor-not-allowed'
+              : error
+              ? 'text-bright ring-error-red'
+              : 'text-bright ring-light-grey',
           )}
         />}
       </div>
@@ -104,5 +114,6 @@ DyoInput.defaultProps = {
   containerClassName: null,
   message: null,
   messageType: 'error',
+  invalid: false,
   inline: false,
 }

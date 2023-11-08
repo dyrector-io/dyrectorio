@@ -51,8 +51,8 @@ describe('NodeService', () => {
       nodeService = module.get<NodeService>(NodeService)
     })
 
-    it('startContainer should create an audit event', () => {
-      nodeService.startContainer('test-node-id', 'test-prefix', 'test-name')
+    it('startContainer should create an audit event', async () => {
+      await nodeService.startContainer('test-node-id', 'test-prefix', 'test-name')
 
       expect(createAgentEventMock).toHaveBeenCalledWith('test-node-id', 'containerCommand', {
         container: {
@@ -63,8 +63,8 @@ describe('NodeService', () => {
       })
     })
 
-    it('stopContainer should create an audit event', () => {
-      nodeService.stopContainer('test-node-id', 'test-prefix', 'test-name')
+    it('stopContainer should create an audit event', async () => {
+      await nodeService.stopContainer('test-node-id', 'test-prefix', 'test-name')
 
       expect(createAgentEventMock).toHaveBeenCalledWith('test-node-id', 'containerCommand', {
         container: {
@@ -75,8 +75,8 @@ describe('NodeService', () => {
       })
     })
 
-    it('restartContainer should create an audit event', () => {
-      nodeService.restartContainer('test-node-id', 'test-prefix', 'test-name')
+    it('restartContainer should create an audit event', async () => {
+      await nodeService.restartContainer('test-node-id', 'test-prefix', 'test-name')
 
       expect(createAgentEventMock).toHaveBeenCalledWith('test-node-id', 'containerCommand', {
         container: {
@@ -87,8 +87,8 @@ describe('NodeService', () => {
       })
     })
 
-    it('deleteContainer should create an audit event', () => {
-      nodeService.deleteContainer('test-node-id', 'test-prefix', 'test-name')
+    it('deleteContainer should create an audit event', async () => {
+      await nodeService.deleteContainer('test-node-id', 'test-prefix', 'test-name')
 
       expect(createAgentEventMock).toHaveBeenCalledWith('test-node-id', 'containerCommand', {
         container: {
@@ -99,8 +99,8 @@ describe('NodeService', () => {
       })
     })
 
-    it('deleteAllContainers should create an audit event', () => {
-      nodeService.deleteAllContainers('test-node-id', 'test-prefix')
+    it('deleteAllContainers should create an audit event', async () => {
+      await nodeService.deleteAllContainers('test-node-id', 'test-prefix')
 
       expect(createAgentEventMock).toHaveBeenCalledWith('test-node-id', 'containerCommand', {
         prefix: 'test-prefix',

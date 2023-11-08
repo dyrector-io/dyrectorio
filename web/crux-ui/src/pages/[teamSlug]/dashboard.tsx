@@ -53,7 +53,7 @@ const DashboardPage = (props: DashboardPageProps) => {
 
     const res = await fetch(API_USERS_ME_PREFERENCES_ONBOARDING, { method: onboardingDisabled ? 'PUT' : 'DELETE' })
     if (!res.ok) {
-      handleApiError(res)
+      await handleApiError(res)
       return
     }
 

@@ -3,6 +3,7 @@
 
   "containers": "Containers",
   "logs": "Logs",
+  "inspect": "Inspect",
 
   "add": "Add node",
   "new": "New node",
@@ -12,7 +13,7 @@
 
   "nodeAlreadyInUse": "This node is already in use in some deployments.",
 
-  "setup": "Install the agent",
+  "agentInstall": "Agent installation",
   "generateScript": "Generate script",
   "scriptExpiresIn": "The script expires in:",
   "address": "Address",
@@ -21,6 +22,7 @@
   "whatScriptDoesHeader": "What does this script do?",
   "scriptExplanation": "The following 'Generate script' button will create a one-liner and script that will install our agent to the target host with the selected technology.",
   "requirements": "Requirements",
+  "agentSettings": "Agent settings",
   "installReq": {
     "k8s": ["A kubernetes cluster", "kubectl authenticated, active context selected", "Ability to run these commands"],
     "docker": ["A linux host/VPS", "Docker or podman installed on host", "Ability to execute the script on host"]
@@ -43,15 +45,16 @@
     "shell": "Shell",
     "powershell": "PowerShell"
   },
-  "statusFilters": {
-    "connected": "Connected",
-    "unreachable": "Unreachable"
-  },
   "persistentDataPath": "Persistent data path",
   "persistentDataExplanation": "Stores basic operational data and serves as a base path for containers using relative volume names. Environment variables are resolved, but it is suggested to use absolute paths and avoid special characters.",
   "optionalLeaveEmptyForDefaults": "Optional, leave empty for default paths",
   "update": "Update",
+  "updateAvailable": "There is an update available for your node. You can update it with the update button below.",
+  "updateRequired": "This agent is incompatible with the current version of dyrector.io. You can update it with the update button below.",
   "updateError": "Failed to update agent: {{error}}",
+  "kick": "Kick",
+  "areYouSureKickAgent": "Are you sure want to kick this agent?",
+  "kickingAnAgentWillStopIt": "Kicking an agent will stop it, but it won't be removed.",
   "ports": "Ports (External -> Internal)",
   "traefik": "Install Traefik reverse proxy",
   "installTraefik": "Install Traefik",
@@ -70,6 +73,46 @@
     "left": "Left",
     "kicked": "Kicked",
     "update": "Update",
-    "containerCommand": "Container command"
+    "containerCommand": "Container command",
+    "installed": "Installed",
+    "updateCompleted": "Update completed",
+    "tokenReplaced": "Token replaced"
+  },
+
+  "json": "Json",
+  "table": "Table",
+
+  "general": "General",
+  "environment": "Environment",
+  "labels": "Labels",
+  "networks": "Networks",
+  "mounts": "Mounts",
+
+  "networkInfo": "IP: {{ip}}, Gateway: {{gateway}}",
+
+  "inspectGeneral": {
+    "id": "Id",
+    "name": "Name",
+    "image": "Image",
+    "imageHash": "Image hash",
+    "exitCode": "Exit code",
+    "status": "Status",
+    "restartCount": "Restart count",
+    "hostName": "Host name",
+    "ip": "IP"
+  },
+
+  "mountsInfo": {
+    "type": "Type",
+    "source": "Source",
+    "dest": "Destination",
+    "mode": "Mode",
+    "rw": "RW",
+    "propagation": "Propagation"
+  },
+
+  "viewMode": {
+    "table": "Table",
+    "json": "JSON"
   }
 }

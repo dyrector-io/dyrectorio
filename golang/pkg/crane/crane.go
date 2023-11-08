@@ -13,6 +13,8 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
+
+	commonConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
 )
 
 // checks before start
@@ -27,16 +29,15 @@ func preflightChecks(cfg *config.Configuration) {
 	}
 }
 
-func Serve(cfg *config.Configuration) {
+func Serve(cfg *config.Configuration, secretStore commonConfig.SecretStore) {
 	preflightChecks(cfg)
 	log.Info().Msg("Starting dyrector.io crane service.")
 
 	// TODO(robot9706): Implement updater
 	log.Debug().Msg("No update was set up")
 
-	grpcParams := grpc.TokenToConnectionParams(cfg.GrpcToken)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
-	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
+	grpc.Init(grpcContext, &cfg.CommonConfiguration, secretStore, &grpc.WorkerFunctions{
 		Deploy:           k8s.Deploy,
 		Watch:            crux.WatchDeploymentsByPrefix,
 		Delete:           k8s.Delete,
@@ -48,7 +49,7 @@ func Serve(cfg *config.Configuration) {
 	})
 }
 
-func grpcClose(ctx context.Context, reason agent.CloseReason) error {
+func grpcClose(ctx context.Context, reason agent.CloseReason, _ grpc.UpdateOptions) error {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 	if reason == agent.CloseReason_SHUTDOWN {
 		log.Info().Msg("Remote shutdown requested")
@@ -67,9 +68,8 @@ func grpcClose(ctx context.Context, reason agent.CloseReason) error {
 			}
 		}
 		os.Exit(0)
-	} else {
-		log.Error().Int32("reason", int32(reason)).Msg("Close reason not implemented")
 	}
+	log.Error().Int32("reason", int32(reason)).Msg("Close reason not implemented")
 
 	return nil
 }

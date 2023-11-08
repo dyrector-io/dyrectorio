@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Execute dedicated Sunilium instance webhook
         run: |
-          if curl -s -X POST --fail --head' Authorization: Bearer ${{secrets.SUN_DYO_WEBHOOK_TOKEN}}' ${{secrets.SUN_DYO_WEBHOOK_API_URL}}; then
+          if curl -s -X POST --fail --head 'Authorization: Bearer ${{secrets.SUN_DYO_WEBHOOK_TOKEN}}' ${{secrets.SUN_DYO_WEBHOOK_API_URL}}; then
             echo "Deployment successful."
           else
             exit 1

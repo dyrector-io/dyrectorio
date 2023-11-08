@@ -116,7 +116,7 @@ const LoginPage = (props: LoginPageProps) => {
       const res = await sendForm('POST', API_AUTH_LOGIN, data)
 
       if (res.ok) {
-        router.replace(invitation ? teamInvitationUrl(invitation) : ROUTE_INDEX)
+        await router.replace(invitation ? teamInvitationUrl(invitation) : ROUTE_INDEX)
       } else if (res.status === 410) {
         await router.reload()
       } else if (res.status === 409) {

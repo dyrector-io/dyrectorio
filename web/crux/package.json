@@ -1,6 +1,6 @@
 {
   "name": "crux",
-  "version": "0.7.0",
+  "version": "0.9.0",
   "description": "Open-source delivery platform that helps developers to deliver applications efficiently by simplifying software releases and operations in any environment.",
   "author": "dyrector.io",
   "private": true,

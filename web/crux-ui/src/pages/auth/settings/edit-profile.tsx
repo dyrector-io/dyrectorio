@@ -10,6 +10,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import useSubmit from '@app/hooks/use-submit'
 import { EditProfile } from '@app/models'
 import { appendTeamSlug } from '@app/providers/team-routes'
 import {
@@ -33,7 +34,7 @@ import kratos from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 const SettingsPage = (props: SettingsFlow) => {
   const { ui: propsUi, id, identity } = props
@@ -42,17 +43,19 @@ const SettingsPage = (props: SettingsFlow) => {
   const router = useRouter()
 
   const [ui, setUi] = useState(propsUi)
-  const saveRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const onDiscard = () => router.replace(ROUTE_SETTINGS)
 
   const formik = useDyoFormik({
+    submit,
     initialValues: {
       email: findAttributes(ui, 'traits.email').value,
       firstName: findAttributes(ui, 'traits.name.first').value ?? '',
       lastName: findAttributes(ui, 'traits.name.last').value ?? '',
     },
     validationSchema: userProfileSchema,
+    t,
     onSubmit: async values => {
       const data: EditProfile = {
         flow: id,
@@ -64,19 +67,17 @@ const SettingsPage = (props: SettingsFlow) => {
       const res = await sendForm('POST', API_SETTINGS_EDIT_PROFILE, data)
 
       if (res.ok) {
-        router.replace(ROUTE_SETTINGS)
+        await router.replace(ROUTE_SETTINGS)
       } else if (res.status === 410) {
         await router.reload()
       } else if (res.status === 403) {
-        router.replace(`${ROUTE_LOGIN}?refresh=${encodeURIComponent(identity.traits.email)}`)
+        await router.replace(`${ROUTE_LOGIN}?refresh=${encodeURIComponent(identity.traits.email)}`)
       } else {
         const result = await res.json()
         setUi(result.ui)
       }
     },
   })
-
-  saveRef.current = formik.submitForm
 
   const pageLink: BreadcrumbLink = {
     name: t('common:profile'),
@@ -93,7 +94,7 @@ const SettingsPage = (props: SettingsFlow) => {
   return (
     <Layout title={t('editProfile')}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        <SaveDiscardPageMenu saveRef={saveRef} onDiscard={onDiscard} />
+        <SaveDiscardPageMenu submit={submit} onDiscard={onDiscard} />
       </PageHeading>
       <DyoCard>
         <DyoForm

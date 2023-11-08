@@ -16,10 +16,10 @@ const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails
   const uploadHandler = keyFile => {
     const fileReader = new FileReader()
     fileReader.readAsText(keyFile, 'UTF-8')
-    fileReader.onload = event => {
+    fileReader.onload = async (event): Promise<void> => {
       const json = JSON.parse(event.target.result.toString())
-      formik.setFieldValue('user', json.client_email ? json.client_email : '')
-      formik.setFieldValue('token', json.private_key ? json.private_key : '')
+      await formik.setFieldValue('user', json.client_email ? json.client_email : '')
+      await formik.setFieldValue('token', json.private_key ? json.private_key : '')
     }
   }
 
@@ -60,13 +60,13 @@ const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails
         name="private"
         label={t('private')}
         checked={formik.values.private}
-        setFieldValue={(field, value, shouldValidate) => {
+        setFieldValue={async (field, value, shouldValidate): Promise<void> => {
           if (!value) {
-            formik.setFieldValue('user', '', false)
-            formik.setFieldValue('token', '', false)
+            await formik.setFieldValue('user', '', false)
+            await formik.setFieldValue('token', '', false)
           }
 
-          return formik.setFieldValue(field, value, shouldValidate)
+          await formik.setFieldValue(field, value, shouldValidate)
         }}
       />
 

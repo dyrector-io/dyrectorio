@@ -64,6 +64,7 @@ export type Routing = {
   path?: string
   stripPrefix?: boolean
   uploadLimit?: string
+  port?: number
 }
 
 export type Volume = {
@@ -149,6 +150,12 @@ export type Storage = {
   bucket?: string
 }
 
+export type Metrics = {
+  enabled: boolean
+  path?: string
+  port?: number
+}
+
 export type ContainerConfigData = {
   // common
   name: string
@@ -157,6 +164,7 @@ export type ContainerConfigData = {
   routing?: Routing
   expose: ContainerExposeStrategy
   user?: number
+  workingDirectory?: string
   tty: boolean
   configContainer?: Container
   ports?: Port[]
@@ -187,6 +195,7 @@ export type ContainerConfigData = {
   resourceConfig?: ResourceConfig
   annotations?: Marker
   labels?: Marker
+  metrics?: Metrics
 }
 
 type DagentSpecificConfig = 'logConfig' | 'restartPolicy' | 'networkMode' | 'networks' | 'dockerLabels'
@@ -200,6 +209,7 @@ type CraneSpecificConfig =
   | 'resourceConfig'
   | 'labels'
   | 'annotations'
+  | 'metrics'
 
 export type DagentConfigDetails = Pick<ContainerConfigData, DagentSpecificConfig>
 export type CraneConfigDetails = Pick<ContainerConfigData, CraneSpecificConfig>

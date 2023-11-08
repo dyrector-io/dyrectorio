@@ -68,9 +68,9 @@ Calculate coverage
 
 ## Deployment
 
-Configuration will prioritize Environmental Variables, .env file, and defaults in this order with Environmental variables taking the highest priority.
+The configuration will prioritize Environmental Variables, .env file, and defaults in this order with Environmental variables taking the highest priority.
 
-Configuration will take place before starting up the application, and store the configuration options in a global variable, which can be accessed during runtime. Both crane and DAgent have their own configuration package to add their own defaults and/or add their own custom variables. When the variables are used to achieve similar functions, can be found in both projects, and have the same defaults; then it can be found in a "common" config package. Please see the common README.md for more.
+Configuration will take place before starting up the application, and store the configuration options in a global variable, which can be accessed during runtime. Both Crane and DAgent have their own configuration package to add their own defaults and/or add their own custom variables. When the variables are used to achieve similar functions, can be found in both projects, and have the same defaults; then it can be found in a "common" config package. Please see the common README.md for more.
 
 | Environment variable      | Description                                     | Default               |
 | ------------------------- | ----------------------------------------------- | --------------------- |
@@ -85,7 +85,7 @@ Configuration will take place before starting up the application, and store the 
 
 ### In-cluster
 
-uses the current namespace's default serviceaccount
+uses the current namespace's default service account
 
 Deploy crane into a cluster:
 

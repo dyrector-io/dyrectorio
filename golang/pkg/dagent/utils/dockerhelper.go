@@ -42,6 +42,20 @@ func getContainerIdentifierFromEvent(event *events.Message) *common.ContainerIde
 	return &containerID
 }
 
+func createRemovedState(containerID *common.ContainerIdentifier) *common.ContainerStateItem {
+	return &common.ContainerStateItem{
+		Id:        containerID,
+		Command:   "",
+		CreatedAt: nil,
+		State:     common.ContainerState_REMOVED,
+		Reason:    "",
+		Status:    "",
+		Ports:     []*common.ContainerStateItemPort{},
+		ImageName: "",
+		ImageTag:  "",
+	}
+}
+
 func messageToStateItem(ctx context.Context, prefix string, event *events.Message) (*common.ContainerStateItem, error) {
 	// Only check container events, ignored events include image, volume, network, daemons, etc.
 	if event.Type != "container" {
@@ -58,17 +72,7 @@ func messageToStateItem(ctx context.Context, prefix string, event *events.Messag
 	}
 
 	if event.Action == "destroy" {
-		return &common.ContainerStateItem{
-			Id:        containerID,
-			Command:   "",
-			CreatedAt: nil,
-			State:     common.ContainerState_REMOVED,
-			Reason:    "",
-			Status:    "",
-			Ports:     []*common.ContainerStateItemPort{},
-			ImageName: "",
-			ImageTag:  "",
-		}, nil
+		return createRemovedState(containerID), nil
 	}
 
 	containerState := mapper.MapDockerContainerEventToContainerState(event.Action)
@@ -80,6 +84,10 @@ func messageToStateItem(ctx context.Context, prefix string, event *events.Messag
 	container, err := dockerHelper.GetContainerByID(ctx, event.Actor.ID)
 	if err != nil {
 		return nil, err
+	}
+
+	if container == nil {
+		return createRemovedState(containerID), nil
 	}
 
 	newState := mapper.MapContainerState(container, prefix)

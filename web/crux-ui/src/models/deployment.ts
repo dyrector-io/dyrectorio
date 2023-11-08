@@ -7,6 +7,8 @@ import { DyoNode } from './node'
 import { BasicProject, ProjectDetails } from './project'
 import { BasicVersion, VersionDetails, VersionType } from './version'
 
+export type EnvironmentToConfigBundleNameMap = Record<string, string>
+
 export type Deployment = {
   id: string
   audit: Audit
@@ -38,7 +40,9 @@ export type DeploymentTokenCreated = DeploymentToken & {
 
 export type DeploymentDetails = Deployment & {
   environment: UniqueKeyValue[]
+  configBundleEnvironment: EnvironmentToConfigBundleNameMap
   publicKey?: string
+  configBundleIds?: string[]
   token: DeploymentToken
   instances: Instance[]
 }
@@ -49,19 +53,39 @@ export type DeploymentRoot = Omit<DeploymentDetails, 'project' | 'version' | 'no
   node: DyoNode
 }
 
-export const DEPLOYMENT_EVENT_TYPE_VALUES = ['log', 'deployment-status', 'container-state'] as const
+export const DEPLOYMENT_EVENT_TYPE_VALUES = [
+  'log',
+  'deployment-status',
+  'container-state',
+  'container-progress',
+] as const
 export type DeploymentEventType = (typeof DEPLOYMENT_EVENT_TYPE_VALUES)[number]
+
+export const DEPLOYMENT_LOG_LEVEL_VALUES = ['info', 'warn', 'error'] as const
+export type DeploymentLogLevelDto = (typeof DEPLOYMENT_LOG_LEVEL_VALUES)[number]
+
+export type DeploymentEventLog = {
+  log: string[]
+  level: DeploymentLogLevelDto
+}
 
 export type DeploymentEventContainerState = {
   instanceId: string
   state: ContainerState
 }
 
+export type DeploymentEventContainerProgress = {
+  instanceId: string
+  status: string
+  progress: number
+}
+
 export type DeploymentEvent = {
   type: DeploymentEventType
-  log?: string[]
+  log?: DeploymentEventLog
   deploymentStatus?: DeploymentStatus
   containerState?: DeploymentEventContainerState
+  containerProgress?: DeploymentEventContainerProgress
   createdAt: string
 }
 
@@ -107,10 +131,17 @@ export type StartDeployment = {
 // ws
 
 export const WS_TYPE_PATCH_DEPLOYMENT_ENV = 'patch-deployment-env'
-export type PatchDeploymentEnvMessage = UniqueKeyValue[]
+export type PatchDeploymentEnvMessage = {
+  environment?: UniqueKeyValue[]
+  configBundleIds?: string[]
+}
 
 export const WS_TYPE_DEPLOYMENT_ENV_UPDATED = 'deployment-env-updated'
-export type DeploymentEnvUpdatedMessage = UniqueKeyValue[]
+export type DeploymentEnvUpdatedMessage = {
+  environment?: UniqueKeyValue[]
+  configBundleIds?: string[]
+  configBundleEnvironment: EnvironmentToConfigBundleNameMap
+}
 
 export const WS_TYPE_PATCH_INSTANCE = 'patch-instance'
 export type PatchInstanceMessage = {

@@ -61,6 +61,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
       code: '',
     },
     validationSchema: recoverySchema,
+    t,
     onSubmit: async values => {
       const captcha = await recaptcha.current?.executeAsync()
 
@@ -101,7 +102,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
     },
   })
 
-  const resendEmail = () => {
+  const resendEmail = async () => {
     setFlow({
       ...flow,
       state: null,
@@ -109,7 +110,11 @@ const RecoveryPage = (props: RecoveryPageProps) => {
 
     startCountdown(AUTH_RESEND_DELAY)
 
-    formik.submitForm()
+    await formik.submitForm()
+  }
+
+  const recaptchaChange = () => {
+    recaptcha.current?.reset()
   }
 
   const submitDisabled = countdown > 0
@@ -179,7 +184,9 @@ const RecoveryPage = (props: RecoveryPageProps) => {
           messageType="error"
         />
 
-        {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
+        {recaptchaSiteKey ? (
+          <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} onChange={recaptchaChange} />
+        ) : null}
       </DyoCard>
     </SingleFormLayout>
   )

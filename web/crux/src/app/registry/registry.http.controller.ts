@@ -15,6 +15,7 @@ import {
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
@@ -86,6 +87,7 @@ export default class RegistryHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for registry creation.' })
   @ApiConflictResponse({ description: 'Registry name taken.' })
   @UseGuards(RegistryAccessValidationGuard)
+  @AuditLogLevel('no-data')
   async createRegistry(
     @TeamSlug() teamSlug: string,
     @Body() request: CreateRegistryDto,
@@ -114,6 +116,7 @@ export default class RegistryHttpController {
   @ApiNotFoundResponse({ description: 'Registry not found.' })
   @ApiConflictResponse({ description: 'Registry name taken.' })
   @UuidParams(PARAM_REGISTRY_ID)
+  @AuditLogLevel('no-data')
   async updateRegistry(
     @TeamSlug() _: string,
     @RegistryId() id: string,

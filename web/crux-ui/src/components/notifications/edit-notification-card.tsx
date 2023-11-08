@@ -20,18 +20,19 @@ import {
 import { sendForm } from '@app/utils'
 import { notificationSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { useState } from 'react'
 import { NotificationEventList } from './notification-event-list'
+import { SubmitHook } from '@app/hooks/use-submit'
 
 interface EditNotificationCardProps {
   notification?: NotificationDetails
-  submitRef: MutableRefObject<() => Promise<any>>
+  submit: SubmitHook
   onNotificationEdited: (notifcation: NotificationDetails) => void
   className?: string
 }
 
 const EditNotificationCard = (props: EditNotificationCardProps) => {
-  const { notification: propsNotification, submitRef, onNotificationEdited, className } = props
+  const { notification: propsNotification, submit, onNotificationEdited, className } = props
 
   const { t } = useTranslation('notifications')
   const routes = useTeamRoutes()
@@ -53,13 +54,13 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
+    submit,
     initialValues: {
       ...notification,
     },
     validationSchema: notificationSchema,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    t,
+    onSubmit: async (values, { setFieldError }) => {
       const request: CreateNotification | UpdateNotification = {
         ...values,
       }
@@ -79,18 +80,12 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
         }
 
         setNotification(result)
-        setSubmitting(false)
         onNotificationEdited(result as NotificationDetails)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })
-
-  if (submitRef) {
-    submitRef.current = formik.submitForm
-  }
 
   return (
     <DyoCard className={className}>
@@ -132,7 +127,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
               converter={(it: NotificationType) => t(`type.${it}`)}
               onSelectionChange={async it => {
                 await formik.setFieldValue('type', it)
-                formik.validateField('url')
+                await formik.validateField('url')
               }}
             />
           </div>

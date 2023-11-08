@@ -12,14 +12,44 @@ type Configuration struct {
 	InternalMountPath  string `yaml:"internalMountPath"      env:"INTERNAL_MOUNT_PATH"   env-default:"/srv/dagent"`
 	LogDefaultSkip     uint64 `yaml:"logDefaultSkip"         env:"LOG_DEFAULT_SKIP"      env-default:"0"`
 	LogDefaultTake     uint64 `yaml:"logDefaultTake"         env:"LOG_DEFAULT_TAKE"      env-default:"100"`
-	TraefikAcmeMail    string `yaml:"traefikAcmeMail"      env:"TRAEFIK_ACME_MAIL"      env-default:""`
-	TraefikEnabled     bool   `yaml:"traefikEnabled"       env:"TRAEFIK_ENABLED"        env-default:"false"`
+	TraefikAcmeMail    string `yaml:"traefikAcmeMail"        env:"TRAEFIK_ACME_MAIL"      env-default:""`
+	TraefikEnabled     bool   `yaml:"traefikEnabled"         env:"TRAEFIK_ENABLED"        env-default:"false"`
 	// set to "DEBUG" to access the Traefik dashboard
 	TraefikLogLevel string `yaml:"traefikLogLevel"      env:"TRAEFIK_LOG_LEVEL"      env-default:"INFO"`
 	TraefikTLS      bool   `yaml:"traefikTLS"           env:"TRAEFIK_TLS"            env-default:"false"`
 	TraefikPort     uint16 `yaml:"traefikPort"          env:"TRAEFIK_PORT"           env-default:"80"`
 	TraefikTLSPort  uint16 `yaml:"traefikTLSPort"       env:"TRAEFIK_TLS_PORT"       env-default:"443"`
 	WebhookToken    string `yaml:"webhookToken"         env:"WEBHOOK_TOKEN"          env-default:""`
-	// for injecting SecretPrivateKey,
-	SecretPrivateKeyFile KeyFromFile `yaml:"secretPrivateKeyFile" env:"SECRET_PRIVATE_KEY_FILE"  env-default:"/srv/dagent/private.key"`
+}
+
+const filePermReadWriteOnlyByOwner = 0o600
+
+func (c *Configuration) CheckPermissions() error {
+	path := c.appendInternalMountPath(config.ConnectionTokenFileName)
+	return checkFilePermissions(path)
+}
+
+func (c *Configuration) GetConnectionToken() (string, error) {
+	path := c.appendInternalMountPath(config.ConnectionTokenFileName)
+	return readStringFromFile(path)
+}
+
+func (c *Configuration) SaveConnectionToken(token string) error {
+	path := c.appendInternalMountPath(config.ConnectionTokenFileName)
+	return writeStringToFile(path, token)
+}
+
+func (c *Configuration) GetBlacklistedNonce() (string, error) {
+	path := c.appendInternalMountPath(config.NonceBlacklistFileName)
+	return readStringFromFile(path)
+}
+
+func (c *Configuration) BlacklistNonce(value string) error {
+	path := c.appendInternalMountPath(config.NonceBlacklistFileName)
+	return writeStringToFile(path, value)
+}
+
+func (c *Configuration) LoadPrivateKey() (string, error) {
+	path := c.appendInternalMountPath(config.PrivateKeyFileName)
+	return c.CheckOrGenerateKeys(path)
 }

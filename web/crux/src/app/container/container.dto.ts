@@ -1,5 +1,16 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger'
-import { IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, Max, Min, ValidateNested } from 'class-validator'
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  Min,
+  ValidateNested,
+} from 'class-validator'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
@@ -64,6 +75,12 @@ export class ContainerConfigRoutingDto {
   @IsString()
   @IsOptional()
   uploadLimit?: string
+
+  @IsInt()
+  @IsOptional()
+  @Min(PORT_MIN)
+  @Max(PORT_MAX)
+  port?: number
 }
 
 export class ConfigContainerDto {
@@ -257,6 +274,19 @@ export class MarkerDto {
   ingress?: UniqueKeyValueDto[]
 }
 
+export class MetricsDto {
+  @IsBoolean()
+  enabled: boolean
+
+  @IsOptional()
+  @IsString()
+  path?: string
+
+  @IsOptional()
+  @IsNumber()
+  port?: number
+}
+
 export class ContainerConfigDto {
   // common
   @IsString()
@@ -283,6 +313,10 @@ export class ContainerConfigDto {
   @Min(-1)
   @Max(UID_MAX)
   user?: number
+
+  @IsOptional()
+  @IsString()
+  workingDirectory?: string
 
   @IsBoolean()
   tty: boolean
@@ -378,6 +412,10 @@ export class ContainerConfigDto {
   @IsOptional()
   @ValidateNested()
   labels?: MarkerDto
+
+  @IsOptional()
+  @ValidateNested()
+  metrics?: MetricsDto
 }
 
 export class PartialContainerConfigDto extends PartialType(ContainerConfigDto) {}

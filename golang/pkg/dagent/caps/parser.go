@@ -23,26 +23,25 @@ func ParseLabelsIntoContainerConfig(labels map[string]string, config *v1.Contain
 	for key, value := range labels {
 		if key != "io.dyrector.cap.network.v1" {
 			continue
-		} else {
-			network := NetworkLabel{}
-
-			err := json.Unmarshal([]byte(value), &network)
-			if err != nil {
-				log.Error().Stack().Err(err).Send()
-			}
-
-			ports := []builder.PortBinding{}
-			if config.Ports != nil && len(config.Ports) > 0 {
-				ports = config.Ports
-			}
-			for i := range network.Ports {
-				ports = append(ports, builder.PortBinding{
-					ExposedPort: uint16(network.Ports[i].Listening),
-					PortBinding: pointer.ToUint16(0),
-				})
-			}
-
-			config.Ports = ports
 		}
+		network := NetworkLabel{}
+
+		err := json.Unmarshal([]byte(value), &network)
+		if err != nil {
+			log.Error().Stack().Err(err).Send()
+		}
+
+		ports := []builder.PortBinding{}
+		if config.Ports != nil && len(config.Ports) > 0 {
+			ports = config.Ports
+		}
+		for i := range network.Ports {
+			ports = append(ports, builder.PortBinding{
+				ExposedPort: uint16(network.Ports[i].Listening),
+				PortBinding: pointer.ToUint16(0),
+			})
+		}
+
+		config.Ports = ports
 	}
 }

@@ -3,7 +3,7 @@ import { HandlerType, ServerSurfaceCall } from '@grpc/grpc-js/build/src/server-c
 import { JwtService } from '@nestjs/jwt'
 import { Observable, Subject } from 'rxjs'
 import { NodeConnectionStatus } from 'src/app/node/node.dto'
-import { AgentToken } from 'src/domain/agent'
+import { AgentToken } from 'src/domain/agent-token'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 
 const nestjsClientStreamEndCallWorkaround = () => {}
@@ -22,7 +22,11 @@ export default class GrpcNodeConnection {
 
   private token: AgentToken
 
-  readonly jwt: string
+  private signedToken: string
+
+  get jwt(): string {
+    return this.signedToken
+  }
 
   readonly address: string
 
@@ -44,7 +48,7 @@ export default class GrpcNodeConnection {
       call.end = nestjsClientStreamEndCallWorkaround
     }
 
-    this.jwt = this.getStringMetadataOrThrow(GrpcNodeConnection.META_NODE_TOKEN)
+    this.signedToken = this.getStringMetadataOrThrow(GrpcNodeConnection.META_NODE_TOKEN)
 
     const xRealIp = this.getFirstItemOfStringArrayMetadata('x-real-ip')
     const xForwarderFor = this.getFirstItemOfStringArrayMetadata('x-forwarded-for')
@@ -95,6 +99,11 @@ export default class GrpcNodeConnection {
     }
 
     return value
+  }
+
+  onTokenReplaced(token: AgentToken, signedToken: string) {
+    this.token = token
+    this.signedToken = signedToken
   }
 
   private onClose() {

@@ -100,6 +100,7 @@ class HubApiClient implements RegistryApiClient {
         next = () =>
           new Promise<Response>(resolve => {
             setTimeout(async () => {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               fetchNext().then(resolve)
             }, retryAfter * 1000)
           })

@@ -9,13 +9,21 @@ import { Identity } from '@ory/kratos-client'
 import { Observable, Subject } from 'rxjs'
 import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
+  DeploymentMessageLevel,
   DeploymentStatusMessage,
   ContainerState as ProtoContainerState,
   DeploymentStatus as ProtoDeploymentStatus,
   containerStateToJSON,
   deploymentStatusToJSON,
 } from 'src/grpc/protobuf/proto/common'
-import { ContainerState, MergedContainerConfigData } from './container'
+import { ContainerState, MergedContainerConfigData, UniqueKeyValue } from './container'
+
+export type DeploymentLogLevel = 'info' | 'warn' | 'error'
+
+export type DeploymentLogEvent = {
+  log: string[]
+  level: DeploymentLogLevel
+}
 
 export type DeploymentProgressContainerEvent = {
   instanceId: string
@@ -25,7 +33,7 @@ export type DeploymentProgressContainerEvent = {
 
 export type DeploymentProgressEvent = {
   type: DeploymentEventTypeEnum
-  value: string[] | DeploymentStatusEnum | DeploymentProgressContainerEvent
+  value: DeploymentLogEvent | DeploymentStatusEnum | DeploymentProgressContainerEvent
 }
 
 export const deploymentStatusToDb = (status: ProtoDeploymentStatus): DeploymentStatusEnum => {
@@ -34,6 +42,19 @@ export const deploymentStatusToDb = (status: ProtoDeploymentStatus): DeploymentS
       return DeploymentStatusEnum.inProgress
     default:
       return deploymentStatusToJSON(status).toLowerCase() as DeploymentStatusEnum
+  }
+}
+
+export const deploymentLogLevelToDb = (level: DeploymentMessageLevel): DeploymentLogLevel => {
+  switch (level) {
+    case DeploymentMessageLevel.INFO:
+      return 'info'
+    case DeploymentMessageLevel.WARNING:
+      return 'warn'
+    case DeploymentMessageLevel.ERROR:
+      return 'error'
+    default:
+      return 'info'
   }
 }
 
@@ -124,6 +145,7 @@ export default class Deployment {
     private readonly request: VersionDeployRequest,
     public notification: DeploymentNotification,
     public mergedConfigs: Map<string, MergedContainerConfigData>,
+    public sharedEnvironment: UniqueKeyValue[],
     public readonly tries: number,
   ) {
     this.id = request.id
@@ -175,7 +197,10 @@ export default class Deployment {
     if (length > 0) {
       events.push({
         type: DeploymentEventTypeEnum.log,
-        value: progress.log,
+        value: {
+          log: progress.log,
+          level: deploymentLogLevelToDb(progress.logLevel),
+        },
       })
     }
 
@@ -193,6 +218,6 @@ export default class Deployment {
   }
 
   debugInfo(logger: Logger): void {
-    logger.debug(`> ${this.id}, open: ${!this.statusChannel.closed}`)
+    logger.verbose(`> ${this.id}, open: ${!this.statusChannel.closed}`)
   }
 }

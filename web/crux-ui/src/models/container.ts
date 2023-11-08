@@ -1,6 +1,15 @@
 import { v4 as uuid } from 'uuid'
 
-export type ContainerState = 'created' | 'restarting' | 'running' | 'removing' | 'paused' | 'exited' | 'dead'
+export const CONTAINER_STATE_VALUES = [
+  'created',
+  'restarting',
+  'running',
+  'removing',
+  'paused',
+  'exited',
+  'dead',
+] as const
+export type ContainerState = (typeof CONTAINER_STATE_VALUES)[number]
 
 export type ContainerPort = {
   internal: number
@@ -20,6 +29,7 @@ export type Container = {
   state: ContainerState
   reason: string // kubernetes reason (like crashloop backoff) or docker state
   ports: ContainerPort[]
+  labels: Record<string, string>
 }
 
 export type ContainerOperation = 'start' | 'stop' | 'restart'
@@ -94,6 +104,7 @@ export type ContainerConfigRouting = {
   path?: string
   stripPath?: boolean
   uploadLimit?: string
+  port?: number
 }
 
 export type ContainerConfigVolume = {
@@ -180,6 +191,12 @@ export type ContainerStorage = {
   bucket?: string
 }
 
+export type Metrics = {
+  enabled: boolean
+  path?: string
+  port?: number
+}
+
 export type ContainerConfigData = {
   // common
   name: string
@@ -188,6 +205,7 @@ export type ContainerConfigData = {
   routing?: ContainerConfigRouting
   expose: ContainerConfigExposeStrategy
   user?: number
+  workingDirectory?: string
   tty: boolean
   configContainer?: ContainerConfigContainer
   ports?: ContainerConfigPort[]
@@ -216,6 +234,7 @@ export type ContainerConfigData = {
   resourceConfig?: ContainerConfigResourceConfig
   annotations?: Marker
   labels?: Marker
+  metrics?: Metrics
 }
 
 type DagentSpecificConfig = 'logConfig' | 'restartPolicy' | 'networkMode' | 'networks' | 'dockerLabels'
@@ -229,6 +248,7 @@ type CraneSpecificConfig =
   | 'resourceConfig'
   | 'labels'
   | 'annotations'
+  | 'metrics'
 
 export type DagentConfigDetails = Pick<ContainerConfigData, DagentSpecificConfig>
 export type CraneConfigDetails = Pick<ContainerConfigData, CraneSpecificConfig>
@@ -347,6 +367,14 @@ const mergeMarker = (image: Marker, instance: Marker): Marker => {
   }
 }
 
+const mergeMetrics = (image: Metrics, instance: Metrics): Metrics => {
+  if (!instance) {
+    return image?.enabled ? image : null
+  }
+
+  return instance
+}
+
 export const mergeConfigs = (
   image: ContainerConfigData,
   instance: InstanceContainerConfigData,
@@ -359,6 +387,7 @@ export const mergeConfigs = (
     secrets: mergeSecrets(image.secrets, instance.secrets),
     ports: instance.ports ?? image.ports,
     user: instance.user ?? image.user,
+    workingDirectory: instance.workingDirectory ?? image.workingDirectory,
     tty: instance.tty ?? image.tty,
     portRanges: instance.portRanges ?? image.portRanges,
     args: instance.args ?? image.args,
@@ -381,6 +410,7 @@ export const mergeConfigs = (
     deploymentStrategy: instance.deploymentStrategy ?? instance.deploymentStrategy ?? 'recreate',
     labels: mergeMarker(image.labels, instance.labels),
     annotations: mergeMarker(image.annotations, instance.annotations),
+    metrics: mergeMetrics(image.metrics, instance.metrics),
 
     // dagent
     logConfig: instance.logConfig ?? image.logConfig,
@@ -717,7 +747,7 @@ export const portToString = (port: ContainerPort): string => {
     return `${external}->None`
   }
 
-  throw new Error('Missing Port Information, provide either an internal or external port number.')
+  return '?'
 }
 
 export const containerPortsToString = (ports: ContainerPort[], truncateAfter: number = 2): string => {
@@ -762,3 +792,12 @@ export const containerPrefixNameOf = (id: ContainerIdentifier): string =>
 export const containerIsStartable = (state: ContainerState) => state !== 'running' && state !== 'removing'
 export const containerIsStopable = (state: ContainerState) => state === 'running' || state === 'paused'
 export const containerIsRestartable = (state: ContainerState) => state === 'running'
+
+export const serviceCategoryIsHidden = (it: string | null) => it && it.startsWith('_')
+export const kubeNamespaceIsSystem = (it: string | null) => it && it === 'kube-system'
+export const containerIsHidden = (it: Container) => {
+  const serviceCategory = it.labels['org.dyrectorio.service-category']
+  const kubeNamespace = it.labels['io.kubernetes.pod.namespace']
+
+  return serviceCategoryIsHidden(serviceCategory) || kubeNamespaceIsSystem(kubeNamespace)
+}

@@ -4,6 +4,7 @@ import {
   ContainerConfigData,
   InstanceContainerConfigData,
   MergedContainerConfigData,
+  Metrics,
   UniqueKeyValue,
   UniqueSecretKey,
   UniqueSecretKeyValue,
@@ -74,6 +75,7 @@ export default class ContainerMapper {
       configContainer: toPrismaJson(config.configContainer),
       // Set user to the given value, if not null or use 0 if specifically 0, otherwise set to default -1
       user: config.user ?? (config.user === 0 ? 0 : -1),
+      workingDirectory: config.workingDirectory,
       tty: config.tty !== null ? config.tty : false,
       ports: toPrismaJson(config.ports),
       portRanges: toPrismaJson(config.portRanges),
@@ -105,6 +107,7 @@ export default class ContainerMapper {
       capabilities: toPrismaJson(config.capabilities),
       annotations: toPrismaJson(config.annotations),
       labels: toPrismaJson(config.labels),
+      metrics: toPrismaJson(config.metrics),
     }
   }
 
@@ -126,6 +129,14 @@ export default class ContainerMapper {
     return [...missing, ...instanceSecrets]
   }
 
+  mergeMetrics(instance: Metrics, image: Metrics): Metrics {
+    if (!instance) {
+      return image?.enabled ? image : null
+    }
+
+    return instance
+  }
+
   mergeConfigs(image: ContainerConfigData, instance: InstanceContainerConfigData): MergedContainerConfigData {
     return {
       // common
@@ -133,6 +144,7 @@ export default class ContainerMapper {
       environment: instance.environment ?? image.environment,
       secrets: this.mergeSecrets(instance.secrets, image.secrets),
       user: instance.user ?? image.user,
+      workingDirectory: instance.workingDirectory ?? image.workingDirectory,
       tty: instance.tty ?? image.tty,
       portRanges: instance.portRanges ?? image.portRanges,
       args: instance.args ?? image.args,
@@ -172,6 +184,7 @@ export default class ContainerMapper {
               ingress: instance.annotations?.ingress ?? image.annotations?.ingress ?? [],
             }
           : null,
+      metrics: this.mergeMetrics(instance.metrics, image.metrics),
 
       // dagent
       logConfig: instance.logConfig ?? image.logConfig,

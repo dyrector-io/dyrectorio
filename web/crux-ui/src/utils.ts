@@ -2,8 +2,8 @@ import { Session, UiContainer, UiNodeInputAttributes } from '@ory/kratos-client'
 import { getCookie, setCookie } from '@server/cookie'
 import { postCruxFromContext } from '@server/crux-api'
 import {
-  identityWasRecovered,
   IncomingMessageWithSession,
+  identityWasRecovered,
   obtainSessionFromRequest,
   verifiableEmailOfIdentity,
 } from '@server/kratos'
@@ -111,17 +111,6 @@ export const getUserDateFormat = (fallback: string) => {
   }
   return dateFormat?.indexOf('yyyy') > -1 ? dateFormat : fallback // if the format is invalid, use fallback
 }
-
-// array
-export const fold = <T, R>(items: T[], initialValue: R, combine: (previous: R, current: T) => R): R => {
-  let value = initialValue
-  for (let i = 0; i < items.length; i++) {
-    value = combine(value, items[i])
-  }
-  return value
-}
-
-export const distinct = <T>(items: T[]): T[] => Array.from(new Set(items))
 
 // auth related
 export const findAttributes = (ui: UiContainer, name: string): UiNodeInputAttributes => {
@@ -253,16 +242,24 @@ export const sendForm = async <Dto>(
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   url: string,
   body?: Dto,
-): Promise<Response> =>
-  await fetch(url, {
-    method,
-    headers: body
-      ? {
-          'Content-Type': 'application/json',
-        }
-      : undefined,
-    body: body ? JSON.stringify(body) : null,
-  })
+): Promise<Response> => {
+  try {
+    const data = await fetch(url, {
+      method,
+      headers: body
+        ? {
+            'Content-Type': 'application/json',
+          }
+        : undefined,
+      body: body ? JSON.stringify(body) : null,
+    })
+
+    return data
+  } catch (err) {
+    console.error('sendFormError', err)
+    throw err
+  }
+}
 
 // routing
 export const anchorLinkOf = (router: NextRouter): string => {

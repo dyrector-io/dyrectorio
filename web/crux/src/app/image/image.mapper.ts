@@ -58,6 +58,7 @@ export default class ImageMapper {
       configContainer: toPrismaJson(config.configContainer),
       // Set user to the given value, if not null or use 0 if specifically 0, otherwise set to default -1
       user: config.user ?? (config.user === 0 ? 0 : -1),
+      workingDirectory: config.workingDirectory,
       tty: config.tty ?? false,
       ports: toPrismaJson(config.ports),
       portRanges: toPrismaJson(config.portRanges),
@@ -89,6 +90,7 @@ export default class ImageMapper {
       capabilities: toPrismaJson(config.capabilities),
       annotations: toPrismaJson(config.annotations),
       labels: toPrismaJson(config.labels),
+      metrics: toPrismaJson(config.metrics),
     }
   }
 
@@ -101,7 +103,7 @@ export default class ImageMapper {
       case DeploymentStrategy.recreate:
         return ProtoDeploymentStrategy.RECREATE
       case DeploymentStrategy.rolling:
-        return ProtoDeploymentStrategy.ROLLING
+        return ProtoDeploymentStrategy.ROLLING_UPDATE
       default:
         return ProtoDeploymentStrategy.DEPLOYMENT_STRATEGY_UNSPECIFIED
     }
@@ -115,7 +117,7 @@ export default class ImageMapper {
     switch (type) {
       case ProtoDeploymentStrategy.RECREATE:
         return DeploymentStrategy.recreate
-      case ProtoDeploymentStrategy.ROLLING:
+      case ProtoDeploymentStrategy.ROLLING_UPDATE:
         return DeploymentStrategy.rolling
       default:
         return DeploymentStrategy.recreate

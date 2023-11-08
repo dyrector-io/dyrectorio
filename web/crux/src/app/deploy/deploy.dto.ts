@@ -7,6 +7,8 @@ import {
   IsIn,
   IsInt,
   IsJWT,
+  IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   IsUUID,
@@ -33,6 +35,8 @@ import { BasicVersionDto } from '../version/version.dto'
 
 const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete'] as const
 export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]
+
+export type EnvironmentToConfigBundleNameMap = Record<string, string>
 
 export class BasicDeploymentDto {
   @IsUUID()
@@ -142,6 +146,9 @@ export class DeploymentDetailsDto extends DeploymentDto {
   @ValidateNested({ each: true })
   environment: UniqueKeyValueDto[]
 
+  @IsObject()
+  configBundleEnvironment: EnvironmentToConfigBundleNameMap
+
   @IsString()
   @IsOptional()
   publicKey?: string | null
@@ -155,6 +162,10 @@ export class DeploymentDetailsDto extends DeploymentDto {
 
   @ValidateNested()
   token: DeploymentTokenDto
+
+  @IsString({ each: true })
+  @IsOptional()
+  configBundleIds: string[]
 }
 
 export class CreateDeploymentDto {
@@ -191,6 +202,10 @@ export class PatchDeploymentDto {
   @IsOptional()
   @ValidateNested({ each: true })
   environment?: UniqueKeyValueDto[] | null
+
+  @IsString({ each: true })
+  @IsOptional()
+  configBundleIds?: string[]
 }
 
 export class PatchInstanceDto {
@@ -210,8 +225,24 @@ export class CopyDeploymentDto {
   note?: string | null
 }
 
-export const DEPLOYMENT_EVENT_TYPE_VALUES = ['log', 'deployment-status', 'container-state'] as const
+export const DEPLOYMENT_EVENT_TYPE_VALUES = [
+  'log',
+  'deployment-status',
+  'container-state',
+  'container-progress',
+] as const
 export type DeploymentEventTypeDto = (typeof DEPLOYMENT_EVENT_TYPE_VALUES)[number]
+
+export const DEPLOYMENT_LOG_LEVEL_VALUES = ['info', 'warn', 'error'] as const
+export type DeploymentLogLevelDto = (typeof DEPLOYMENT_LOG_LEVEL_VALUES)[number]
+
+export class DeploymentEventLogDto {
+  @IsString({ each: true })
+  log: string[]
+
+  @IsIn(DEPLOYMENT_LOG_LEVEL_VALUES)
+  level: DeploymentLogLevelDto
+}
 
 export class DeploymentEventContainerStateDto {
   @IsUUID()
@@ -221,6 +252,17 @@ export class DeploymentEventContainerStateDto {
   @IsIn(CONTAINER_STATE_VALUES)
   @IsOptional()
   state?: ContainerState
+}
+
+export class DeploymentEventContainerProgressDto {
+  @IsUUID()
+  instanceId: string
+
+  @IsString()
+  status: string
+
+  @IsNumber()
+  progress: number
 }
 
 export class DeploymentEventDto {
@@ -234,7 +276,7 @@ export class DeploymentEventDto {
 
   @IsString({ each: true })
   @IsOptional()
-  log?: string[] | null
+  log?: DeploymentEventLogDto | null
 
   @ApiProperty({ enum: DEPLOYMENT_STATUS_VALUES })
   @IsIn(DEPLOYMENT_STATUS_VALUES)
@@ -243,6 +285,9 @@ export class DeploymentEventDto {
 
   @IsOptional()
   containerState?: DeploymentEventContainerStateDto | null
+
+  @IsOptional()
+  containerProgress?: DeploymentEventContainerProgressDto | null
 }
 
 export class InstanceSecretsDto {
@@ -302,4 +347,9 @@ export type InstanceDetails = Instance & {
 export type DeploymentDetails = DeploymentWithNodeVersion & {
   tokens: Pick<DeploymentToken, 'id' | 'name' | 'createdAt' | 'expiresAt'>[]
   instances: InstanceDetails[]
+  configBundles: {
+    configBundle: {
+      id: string
+    }
+  }[]
 }
