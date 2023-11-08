@@ -103,6 +103,7 @@ const getTeamsTemplate = (message: string): any => ({
 })
 
 
+
 const getMattermostTemplate = (message: string): any => ({
    attachments: [
     {
