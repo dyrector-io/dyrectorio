@@ -164,6 +164,7 @@ export type ContainerConfigData = {
   routing?: Routing
   expose: ContainerExposeStrategy
   user?: number
+  workingDirectory?: string
   tty: boolean
   configContainer?: Container
   ports?: Port[]

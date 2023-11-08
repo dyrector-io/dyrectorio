@@ -287,6 +287,7 @@ func DeployImage(ctx context.Context,
 		WithUser(deployImageRequest.ContainerConfig.User).
 		WithEntrypoint(deployImageRequest.ContainerConfig.Command).
 		WithCmd(deployImageRequest.ContainerConfig.Args).
+		WithWorkingDirectory(deployImageRequest.ContainerConfig.WorkingDirectory).
 		WithoutConflict().
 		WithLogWriter(dog).
 		WithPullDisplayFunc(dog.WriteDockerPull)
