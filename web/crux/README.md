@@ -7,12 +7,12 @@ information or check our official [documentation](https://docs.dyrector.io/) sit
 
 - `assets/` - TBD
 - `prisma/`
-  - `/migrations` - Your migration history is the story of the changes to your data model, and is represented by a this
+  - `/migrations` - Your migration history is the story of the changes to your data model and is represented by this
     folder with a sub-folder and migration.sql file for each migration.
 - `/proto` - gRPC proto files for communicate against the `agent`
 - `/src`
 
-  - `/app` - NestJS core application, each model has it's own folder with service, controller and repository serivces.
+  - `/app` - NestJS core application, each model has its own folder with service, controller, and repository services.
   - `builders/` -
   - `decorators/` -
   - `domain/` - Internal logic of the application

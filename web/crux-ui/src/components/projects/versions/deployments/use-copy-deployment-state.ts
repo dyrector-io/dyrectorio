@@ -23,7 +23,7 @@ const useCopyDeploymentState = (
 
     const res = await fetch(routes.deployment.api.details(deploymentId))
     if (!res.ok) {
-      handleApiError(res)
+      await handleApiError(res)
       return
     }
 

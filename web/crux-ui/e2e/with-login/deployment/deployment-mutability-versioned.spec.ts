@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../../utils/test.fixture'
 import { DAGENT_NODE, TEAM_ROUTES } from '../../utils/common'
 import { deployWithDagent } from '../../utils/node-helper'
 import { addDeploymentToVersion, createImage, createProject, createVersion } from '../../utils/projects'
@@ -14,12 +15,11 @@ test.describe('Versioned Project incremental version', () => {
     const { id } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE)
 
     await page.goto(TEAM_ROUTES.deployment.details(id))
+    await page.waitForSelector('h2:text-is("Deployments")')
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
-    const configButton = await page
-      .locator(`[src="/instance_config_icon.svg"]:right-of(div:has-text("${image}"))`)
-      .first()
+    const configButton = await page.locator(`[src="/instance_config_icon.svg"]:right-of(:has-text("${image}"))`).first()
     await configButton.click()
 
     await page.waitForSelector('input[id="common.containerName"]')
@@ -41,12 +41,11 @@ test.describe('Versioned Project incremental version', () => {
     )
 
     await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+    await page.waitForSelector('h2:text-is("Deployments")')
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(0)
 
-    const configButton = await page
-      .locator(`[src="/instance_config_icon.svg"]:right-of(div:has-text("${image}"))`)
-      .first()
+    const configButton = await page.locator(`[src="/instance_config_icon.svg"]:right-of(:has-text("${image}"))`).first()
     await configButton.click()
 
     await page.waitForSelector('input[id="common.containerName"]')
@@ -70,12 +69,11 @@ test.describe('Versioned Project incremental version', () => {
     await deployWithDagent(page, 'versioned-mutability-obsolete', projectId, versionId, false, `${testInfo.title}2`)
 
     await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
+    await page.waitForSelector('h2:text-is("Deployments")')
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(0)
 
-    const configButton = await page
-      .locator(`[src="/instance_config_icon.svg"]:right-of(div:has-text("${image}"))`)
-      .first()
+    const configButton = await page.locator(`[src="/instance_config_icon.svg"]:right-of(:has-text("${image}"))`).first()
     await configButton.click()
 
     await page.waitForSelector('input[id="common.containerName"]')

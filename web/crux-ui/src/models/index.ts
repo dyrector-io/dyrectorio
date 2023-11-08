@@ -1,6 +1,7 @@
 export * from './audit'
 export * from './auth'
 export * from './common'
+export * from './config-bundle'
 export * from './container'
 export * from './dashboard'
 export * from './deployment'

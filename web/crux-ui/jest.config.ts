@@ -10,7 +10,7 @@ const createJestConfig = nextJest({
 const customJestConfig: jest.Config = {
   // setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   preset: 'ts-jest',
-  moduleFileExtensions: ['js', 'json', 'ts'],
+  moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
   modulePaths: ['.'],
   moduleNameMapper: {
     '^@pages/(.*)$': '<rootDir>/src/pages/$1',

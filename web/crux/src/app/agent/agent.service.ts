@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
-import { AgentEventTypeEnum, DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
+import { Identity } from '@ory/kratos-client'
+import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeEventTypeEnum } from '@prisma/client'
 import {
   EMPTY,
   Observable,
@@ -16,16 +17,19 @@ import {
   startWith,
   takeUntil,
 } from 'rxjs'
-import { coerce, major, minor } from 'semver'
-import { Agent, AgentConnectionMessage, AgentToken } from 'src/domain/agent'
+import { SemVer, coerce } from 'semver'
+import { Agent, AgentConnectionMessage, AgentTokenReplacement } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
-import Deployment, { DeploymentProgressEvent } from 'src/domain/deployment'
+import { generateAgentToken } from 'src/domain/agent-token'
+import { AgentUpdateResult } from 'src/domain/agent-update'
+import { DeploymentProgressEvent } from 'src/domain/deployment'
+import { BasicNode } from 'src/domain/node'
 import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
-import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
-import { CruxConflictException, CruxNotFoundException, CruxUnauthorizedException } from 'src/exception/crux-exception'
+import { CruxNotFoundException } from 'src/exception/crux-exception'
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerIdentifier,
+  ContainerInspectMessage,
   ContainerLogMessage,
   ContainerStateListMessage,
   DeleteContainersRequest,
@@ -38,10 +42,12 @@ import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import AgentMetrics from 'src/shared/metrics/agent.metrics'
 import { getAgentVersionFromPackage, getPackageVersion } from 'src/shared/package'
-import { JWT_EXPIRATION, PRODUCTION } from '../../shared/const'
-import ContainerMapper from '../container/container.mapper'
+import { AGENT_SUPPORTED_MINIMUM_VERSION } from '../../shared/const'
+import DeployService from '../deploy/deploy.service'
 import { DagentTraefikOptionsDto, NodeConnectionStatus, NodeScriptTypeDto } from '../node/node.dto'
+import AgentConnectionStrategyProvider from './agent.connection-strategy.provider'
 import { AgentKickReason } from './agent.dto'
+import AgentConnectionLegacyStrategy from './connection-strategies/agent.connection.legacy.strategy'
 
 @Injectable()
 export default class AgentService {
@@ -54,11 +60,14 @@ export default class AgentService {
   private eventChannelByTeamId: Map<string, Subject<AgentConnectionMessage>> = new Map()
 
   constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService,
-    private configService: ConfigService,
-    private notificationService: DomainNotificationService,
-    private containerMapper: ContainerMapper,
+    @Inject(forwardRef(() => AgentConnectionStrategyProvider))
+    private readonly connectionStrategies: AgentConnectionStrategyProvider,
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly notificationService: DomainNotificationService,
+    @Inject(forwardRef(() => DeployService))
+    private readonly deployService: DeployService,
   ) {}
 
   getById(id: string): Agent {
@@ -83,6 +92,7 @@ export default class AgentService {
 
     if (installer?.expired) {
       this.installers.delete(nodeId)
+      this.logger.debug(`Installer for node ${nodeId} is expired.`)
       return null
     }
 
@@ -108,51 +118,38 @@ export default class AgentService {
     return channel
   }
 
-  async sendNodeEventToTeam(teamId: string, event: AgentConnectionMessage) {
-    const channel = await this.getNodeEventsByTeam(teamId)
-    channel.next(event)
-  }
-
-  async install(
+  async startInstallation(
     teamSlug: string,
-    nodeId: string,
-    nodeName: string,
-    nodeType: NodeTypeEnum,
+    node: BasicNode,
     rootPath: string | null,
     scriptType: NodeScriptTypeDto,
     traefik: DagentTraefikOptionsDto | null,
+    identity: Identity,
   ): Promise<AgentInstaller> {
-    let installer = this.getInstallerByNodeId(nodeId)
-    if (!installer || installer.nodeType !== nodeType) {
-      const now = new Date().getTime()
+    let installer = this.getInstallerByNodeId(node.id)
+    if (installer) {
+      if (!installer.expired && installer.node.type === node.type) {
+        // the installer is valid and still the same node type
 
-      const token: AgentToken = {
-        iat: Math.floor(now / 1000),
-        iss: undefined, // this gets filled by JwtService by the sign() call
-        sub: nodeId,
+        return installer
       }
 
-      installer = new AgentInstaller(
-        this.configService,
-        teamSlug,
-        nodeId,
-        nodeName,
-        this.jwtService.sign(token),
-        new Date(now + JWT_EXPIRATION),
-        nodeType,
-        rootPath,
-        scriptType,
-        traefik,
-      )
-      this.installers.set(nodeId, installer)
+      this.installers.delete(node.id)
     }
 
-    try {
-      installer.verify()
-    } catch (err) {
-      this.installers.delete(nodeId)
-      throw err
-    }
+    // generate new installer
+    const token = generateAgentToken(node.id, 'install')
+
+    installer = new AgentInstaller(this.configService, teamSlug, node, {
+      token,
+      signedToken: this.jwtService.sign(token),
+      startedBy: identity.id,
+      rootPath,
+      scriptType,
+      dagentTraefikAcmeEmail: traefik?.acmeEmail,
+    })
+
+    this.installers.set(node.id, installer)
 
     return installer
   }
@@ -171,11 +168,16 @@ export default class AgentService {
     return Empty
   }
 
-  kick(nodeId: string, reason: AgentKickReason, user?: string) {
-    const agent = this.getById(nodeId)
-    agent?.close(CloseReason.SHUTDOWN)
+  async completeInstaller(installer: AgentInstaller) {
+    this.installers.delete(installer.node.id)
+    await this.createAgentAudit(installer.node.id, 'installed')
+  }
 
-    this.createAgentAudit(nodeId, 'kicked', {
+  async kick(nodeId: string, reason: AgentKickReason, user?: string): Promise<void> {
+    const agent = this.getById(nodeId)
+    agent?.close(reason === 'revoke-token' ? CloseReason.REVOKE_TOKEN : CloseReason.SHUTDOWN)
+
+    await this.createAgentAudit(nodeId, 'kicked', {
       reason,
       user,
     })
@@ -212,7 +214,7 @@ export default class AgentService {
       }),
       finalize(async () => {
         const status = agent.onDeploymentFinished(deployment)
-        this.onDeploymentFinished(agent.id, deployment, status)
+        await this.deployService.finishDeployment(agent.id, deployment, status)
 
         const messageType: NotificationMessageType =
           deployment.getStatus() === 'successful' ? 'successful-deploy' : 'failed-deploy'
@@ -275,13 +277,22 @@ export default class AgentService {
     return of(Empty)
   }
 
-  updateAgent(id: string) {
+  async updateAgent(id: string, identity: Identity): Promise<void> {
     const agent = this.getByIdOrThrow(id)
     const tag = this.getAgentImageTag()
 
-    agent.update(tag)
+    const token = generateAgentToken(id, 'connection')
 
-    this.createAgentAudit(id, 'update', {
+    const signedToken = this.jwtService.sign(token)
+
+    agent.startUpdate(tag, {
+      token,
+      signedToken,
+      startedAt: new Date(),
+      startedBy: identity.id,
+    })
+
+    await this.createAgentAudit(id, 'update', {
       fromVersion: agent.version,
       tag,
     })
@@ -344,29 +355,147 @@ export default class AgentService {
     )
   }
 
+  handleContainerInspect(connection: GrpcNodeConnection, request: ContainerInspectMessage): Observable<Empty> {
+    const agent = this.getByIdOrThrow(connection.nodeId)
+
+    agent.onContainerInspect(request)
+
+    return of(Empty)
+  }
+
+  async tokenReplaced(connection: GrpcNodeConnection): Promise<Empty> {
+    const agent = this.getByIdOrThrow(connection.nodeId)
+
+    const replacement = agent.onTokenReplaced()
+    const { token, startedBy } = replacement
+
+    await this.prisma.nodeToken.upsert({
+      where: {
+        nodeId: agent.id,
+      },
+      create: {
+        nodeId: agent.id,
+        nonce: token.nonce,
+        createdBy: startedBy,
+      },
+      update: {
+        nonce: token.nonce,
+        createdBy: startedBy,
+      },
+    })
+
+    await this.createAgentAudit(agent.id, 'tokenReplaced')
+
+    return Empty
+  }
+
+  agentUpdateCompleted(connection: GrpcNodeConnection): AgentUpdateResult {
+    const { nodeId } = connection
+
+    const agent = this.agents.get(nodeId)
+    if (!agent) {
+      throw new CruxNotFoundException({
+        message: 'Agent not found',
+        property: 'id',
+        value: nodeId,
+      })
+    }
+
+    this.agents.delete(nodeId)
+    return agent.onUpdateCompleted(connection)
+  }
+
+  agentVersionSupported(version: string): boolean {
+    const agentVersion = this.getAgentSemVer(version)
+    if (!agentVersion) {
+      return false
+    }
+
+    const packageVersion = coerce(getPackageVersion(this.configService))
+
+    return (
+      agentVersion.compare(AGENT_SUPPORTED_MINIMUM_VERSION) >= 0 && // agent version is newer (bigger) or the same
+      agentVersion.compare(packageVersion) <= 0
+    )
+  }
+
+  agentVersionIsUpToDate(version: string): boolean {
+    const agentVersion = this.getAgentSemVer(version)
+    if (!agentVersion) {
+      return false
+    }
+
+    const packageVersion = coerce(getPackageVersion(this.configService))
+
+    return agentVersion.compare(packageVersion) === 0
+  }
+
+  generateConnectionTokenFor(nodeId: string, startedBy: string): AgentTokenReplacement {
+    const token = generateAgentToken(nodeId, 'connection')
+    const signedToken = this.jwtService.sign(token)
+
+    return {
+      signedToken,
+      token,
+      startedBy,
+    }
+  }
+
+  private getAgentSemVer(version: string): SemVer | null {
+    if (!version.includes('-')) {
+      return null
+    }
+
+    const semver = coerce(version)
+    if (!semver) {
+      return null
+    }
+
+    return semver
+  }
+
   private async onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === 'unreachable') {
-      const agentEventPromise = this.createAgentAudit(agent.id, 'left')
+      const storedAgent = this.agents.get(agent.id)
 
-      this.logger.log(`Left: ${agent.id}`)
+      // there should be no awaits between this and the agents.delete() call
+      // so we can be sure it happens in the same microtask
+      if (agent === storedAgent) {
+        this.logger.log(`Left: ${agent.id}, version: ${agent.version}`)
+        this.agents.delete(agent.id)
+        AgentMetrics.connectedCount().dec()
+
+        await this.createAgentAudit(agent.id, 'left')
+
+        await this.prisma.deployment.updateMany({
+          where: {
+            nodeId: agent.id,
+            status: DeploymentStatusEnum.inProgress,
+          },
+          data: {
+            status: DeploymentStatusEnum.failed,
+          },
+        })
+      }
+
       agent.onDisconnected()
-      this.agents.delete(agent.id)
-      AgentMetrics.connectedCount().dec()
+    } else if (status === 'connected' || status === 'outdated') {
+      if (this.agents.has(agent.id)) {
+        this.logger.warn(
+          `Agent connection divergence: ${agent.id} was emitting a ${status} status, while there was an agent with the same ID already connected. Sending shutdown.`,
+        )
 
-      await this.prisma.deployment.updateMany({
-        where: {
-          nodeId: agent.id,
-          status: DeploymentStatusEnum.inProgress,
-        },
-        data: {
-          status: DeploymentStatusEnum.failed,
-        },
-      })
+        agent.close(CloseReason.SHUTDOWN)
+        return
+      }
 
-      await agentEventPromise
-    } else if (status === 'connected') {
+      this.agents.set(agent.id, agent)
+
+      this.logger.log(`Agent joined with id: ${agent.id}, version: ${agent.version} key: ${!!agent.publicKey}`)
       AgentMetrics.connectedCount().inc()
-      agent.onConnected()
+      this.logServiceInfo()
+
+      await this.createAgentAudit(agent.id, 'connected', agent.info)
     } else {
       this.logger.warn(`Unknown NodeConnectionStatus ${status}`)
     }
@@ -376,89 +505,22 @@ export default class AgentService {
     connection: GrpcNodeConnection,
     request: AgentInfo,
   ): Promise<Observable<AgentCommand>> {
-    const updatedAgent = this.agents.get(request.id)
-    if (updatedAgent) {
-      if (!updatedAgent.updating) {
-        throw new CruxConflictException({
-          message: 'Agent is already connected.',
-          property: 'id',
-        })
-      }
+    const strategy = this.connectionStrategies.select(connection)
+    const agent = await strategy.execute(connection, request)
+    this.logger.verbose('Connection strategy completed')
 
-      this.logger.verbose(`Updated agent connected for '${request.id}'`)
+    if (agent.id === AgentConnectionLegacyStrategy.LEGACY_NONCE) {
+      // self destruct message is already in the queue
+      // we just have to return the command channel
 
-      updatedAgent.close(CloseReason.SELF_DESTRUCT)
-      this.agents.delete(updatedAgent.id)
+      // command channel is already completed so no need for onDisconnected() call
+      this.logger.verbose('Crashing legacy agent intercepted.')
+      return agent.onConnected(AgentConnectionLegacyStrategy.CONNECTION_STATUS_LISTENER)
     }
 
-    const outdated = !this.agentVersionSupported(request.version)
-    if (outdated) {
-      this.logger.warn(
-        `Agent ('${request.id}') connected with unsupported version '${
-          request.version
-        }', package is '${getPackageVersion(this.configService)}'`,
-      )
-    }
+    await this.onAgentConnectionStatusChange(agent, agent.outdated ? 'outdated' : 'connected')
 
-    let agent: Agent
-    await this.prisma.$transaction(async prisma => {
-      const node = await prisma.node.findUniqueOrThrow({
-        where: {
-          id: connection.nodeId,
-        },
-      })
-
-      const { connectedAt } = connection
-      const eventChannel = await this.getNodeEventsByTeam(node.teamId)
-      const installer = this.installers.get(node.id)
-      if (installer) {
-        if (installer.token !== connection.jwt) {
-          throw new CruxUnauthorizedException({
-            message: 'Invalid token',
-          })
-        }
-
-        agent = installer.complete(connection, request, eventChannel)
-        this.installers.delete(node.id)
-
-        await prisma.node.update({
-          where: { id: node.id },
-          data: {
-            token: installer.token,
-            address: connection.address,
-            connectedAt,
-          },
-        })
-      } else {
-        if (!node.token || node.token !== connection.jwt) {
-          throw new CruxUnauthorizedException({
-            message: 'Invalid token',
-          })
-        }
-        agent = new Agent(connection, request, eventChannel, outdated)
-
-        await prisma.node.update({
-          where: { id: node.id },
-          data: {
-            address: connection.address,
-            connectedAt,
-          },
-        })
-      }
-    })
-
-    this.logger.debug(`Agent key: ${request.publicKey}`)
-
-    this.agents.set(agent.id, agent)
-    connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))
-
-    this.logger.log(`Agent joined with id: ${request.id}, key: ${!!agent.publicKey}`)
-    AgentMetrics.connectedCount().inc()
-    this.logServiceInfo()
-
-    this.createAgentAudit(agent.id, 'connected', request)
-
-    return agent.onConnected()
+    return agent.onConnected(it => this.onAgentConnectionStatusChange(agent, it))
   }
 
   private async createDeploymentEvents(id: string, tryCount: number, events: DeploymentProgressEvent[]) {
@@ -484,131 +546,9 @@ export default class AgentService {
     })
   }
 
-  private async onDeploymentFinished(nodeId: string, finishedDeployment: Deployment, status: DeploymentStatusEnum) {
-    const deployment = await this.prisma.deployment.findUniqueOrThrow({
-      select: {
-        status: true,
-        prefix: true,
-        version: {
-          select: {
-            id: true,
-            type: true,
-            deployments: {
-              select: {
-                id: true,
-              },
-              where: {
-                nodeId,
-              },
-            },
-          },
-        },
-      },
-      where: {
-        id: finishedDeployment.id,
-      },
-    })
-
-    const finalStatus = status === 'successful' ? 'successful' : 'failed'
-
-    if (deployment.status !== finalStatus) {
-      // update status for sure
-
-      await this.prisma.deployment.update({
-        where: {
-          id: finishedDeployment.id,
-        },
-        data: {
-          status: finalStatus,
-        },
-      })
-
-      deployment.status = finalStatus
-    }
-
-    if (finalStatus !== 'successful') {
-      return
-    }
-
-    await this.prisma.$transaction(async prisma => {
-      await prisma.deployment.updateMany({
-        data: {
-          status: DeploymentStatusEnum.obsolete,
-        },
-        where: {
-          id: {
-            not: finishedDeployment.id,
-          },
-          versionId: deployment.version.id,
-          nodeId,
-          prefix: deployment.prefix,
-          status: {
-            not: DeploymentStatusEnum.preparing,
-          },
-        },
-      })
-
-      const parentVersionIds = await collectParentVersionIds(prisma, deployment.version.id)
-      await prisma.deployment.updateMany({
-        data: {
-          status: DeploymentStatusEnum.obsolete,
-        },
-        where: {
-          versionId: {
-            in: parentVersionIds,
-          },
-          nodeId,
-          prefix: deployment.prefix,
-          status: {
-            not: DeploymentStatusEnum.preparing,
-          },
-        },
-      })
-
-      const childVersionIds = await collectChildVersionIds(prisma, deployment.version.id)
-      await prisma.deployment.updateMany({
-        data: {
-          status: DeploymentStatusEnum.downgraded,
-        },
-        where: {
-          versionId: {
-            in: childVersionIds,
-          },
-          nodeId,
-          prefix: deployment.prefix,
-        },
-      })
-
-      if (deployment.version.type === 'rolling') {
-        return
-      }
-
-      const configUpserts = Array.from(finishedDeployment.mergedConfigs).map(it => {
-        const [key, config] = it
-        const dbConfig = this.containerMapper.configDataToDb(config)
-
-        return prisma.instanceContainerConfig.upsert({
-          where: {
-            instanceId: key,
-          },
-          update: {
-            ...dbConfig,
-          },
-          create: {
-            ...dbConfig,
-            id: undefined,
-            instanceId: key,
-          },
-        })
-      })
-
-      await Promise.all(configUpserts)
-    })
-  }
-
-  public async createAgentAudit(nodeId: string, event: AgentEventTypeEnum, data?: any) {
+  public async createAgentAudit(nodeId: string, event: NodeEventTypeEnum, data?: any) {
     try {
-      await this.prisma.agentEvent.create({
+      await this.prisma.nodeEvent.create({
         data: {
           nodeId,
           event,
@@ -624,31 +564,12 @@ export default class AgentService {
     }
   }
 
-  private logServiceInfo(): void {
-    this.logger.debug(`Agents: ${this.agents.size}`)
-    this.agents.forEach(it => it.debugInfo(this.logger))
-  }
-
-  private agentVersionSupported(version: string): boolean {
-    if (this.configService.get<string>('NODE_ENV') !== PRODUCTION) {
-      return true
-    }
-
-    if (!version.includes('-')) {
-      return false
-    }
-
-    const agentVersion = coerce(version)
-    if (!agentVersion) {
-      return false
-    }
-
-    const majorMinor = `${major(agentVersion)}.${minor(agentVersion)}`
-
-    return getAgentVersionFromPackage(this.configService) === majorMinor
-  }
-
   private getAgentImageTag() {
     return this.configService.get<string>('CRUX_AGENT_IMAGE') ?? getAgentVersionFromPackage(this.configService)
+  }
+
+  private logServiceInfo(): void {
+    this.logger.verbose(`Agents: ${this.agents.size}`)
+    this.agents.forEach(it => it.debugInfo(this.logger))
   }
 }

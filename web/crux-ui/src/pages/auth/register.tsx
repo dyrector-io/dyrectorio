@@ -96,6 +96,7 @@ const RegisterPage = (props: RegisterPageProps) => {
       method: 'password',
     },
     validationSchema: registerWithPasswordSchema,
+    t,
     onSubmit: async values => {
       if (values.password !== values.confirmPassword) {
         setErrors(upsertError(errors, 'confirmPassword', 'confirmPassMismatch'))
@@ -126,7 +127,7 @@ const RegisterPage = (props: RegisterPageProps) => {
       })
 
       if (res.ok) {
-        router.replace(verificationUrl({ email: values.email }))
+        await router.replace(verificationUrl({ email: values.email }))
       } else if (res.status === 410) {
         await router.reload()
       } else {

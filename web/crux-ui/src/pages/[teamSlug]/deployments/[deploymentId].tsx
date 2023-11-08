@@ -17,26 +17,17 @@ import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { useDeploy } from '@app/hooks/use-deploy'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
-import {
-  DeploymentDetails,
-  DeploymentRoot,
-  mergeConfigs,
-  NodeDetails,
-  ProjectDetails,
-  VersionDetails,
-} from '@app/models'
+import { DeploymentDetails, DeploymentRoot, NodeDetails, ProjectDetails, VersionDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { containerConfigSchema, getValidationError } from '@app/validations'
 import { getCruxFromContext } from '@server/crux-api'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useRef } from 'react'
 import toast from 'react-hot-toast'
-import { ValidationError } from 'yup'
 
 interface DeploymentDetailsPageProps {
   deployment: DeploymentRoot
@@ -49,12 +40,9 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const routes = useTeamRoutes()
 
   const router = useRouter()
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const handleApiError = defaultApiErrorHandler(t)
-
-  const [confirmModalConfig, confirm] = useConfirmation()
-  const deploy = useDeploy({ router, teamRoutes: routes, t, confirm })
 
   const onWsError = (error: Error) => {
     // eslint-disable-next-line
@@ -70,8 +58,11 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   const { project, version, deployment, node } = state
 
-  const onDeploymentCopied = async (deploymentId: string) => {
-    await router.push(routes.deployment.details(deploymentId))
+  const [confirmModalConfig, confirm] = useConfirmation()
+  const deploy = useDeploy({ router, teamRoutes: routes, t, confirm })
+
+  const onDeploymentCopied = async (newDeploymentId: string) => {
+    await router.push(routes.deployment.details(newDeploymentId))
     router.reload()
   }
 
@@ -86,24 +77,10 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    let error: ValidationError
-
-    let i = 0
-
-    while (!error && i < deployment.instances.length) {
-      const instance = deployment.instances[i]
-      const mergedConfig = mergeConfigs(instance.image.config, instance.config)
-      error = getValidationError(containerConfigSchema, mergedConfig)
-      i++
-    }
-
-    if (error) {
-      console.error(error)
-      toast.error(t('errors:invalid'))
-      return
-    }
-
-    await deploy(deployment.id, state.deployInstances)
+    await deploy({
+      deployment,
+      deployInstances: state.deployInstances,
+    })
   }
 
   useWebsocketTranslate(t)
@@ -134,7 +111,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(routes.project.details(project.id, { section: 'deployments' }))
+      await router.replace(routes.project.details(project.id, { section: 'deployments' }))
     } else {
       toast(t('errors:oops'))
     }
@@ -168,7 +145,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
             editing={editing}
             setEditing={it => actions.setEditState(it ? 'edit' : 'details')}
             disableEditing={!state.mutable}
-            submitRef={submitRef}
+            submit={submit}
             deleteModalTitle={t('common:areYouSureDeleteName', {
               name: t('common:deployment'),
             })}
@@ -211,20 +188,20 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       {editing ? (
         <EditDeploymentCard
           deployment={state.deployment}
-          submitRef={submitRef}
+          submit={submit}
           onDeploymentEdited={actions.onDeploymentEdited}
         />
       ) : state.editState === 'copy' ? (
         <CopyDeploymentCard
           deployment={state.deployment}
-          submitRef={submitRef}
+          submit={submit}
           onDeplyomentCopied={onDeploymentCopied}
           onDiscard={onDiscard}
         />
       ) : state.editState === 'create-token' ? (
         <CreateDeploymentTokenCard
           deployment={state.deployment}
-          submitRef={submitRef}
+          submit={submit}
           onTokenCreated={actions.onDeploymentTokenCreated}
           onDiscard={onDiscard}
         />

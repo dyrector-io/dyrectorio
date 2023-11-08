@@ -71,6 +71,7 @@ export const COMMON_CONFIG_PROPERTIES = [
   'expose',
   'user',
   'tty',
+  'workingDirectory',
   'configContainer',
   'ports',
   'portRanges',
@@ -91,6 +92,7 @@ export const CRANE_CONFIG_PROPERTIES = [
   'resourceConfig',
   'labels',
   'annotations',
+  'metrics',
 ] as const
 
 export const DAGENT_CONFIG_PROPERTIES = [
@@ -123,36 +125,6 @@ export const filterContains = (
 
 export const filterEmpty = (filterValues: string[], filters: ImageConfigProperty[]): boolean =>
   filterValues.filter(x => filters.includes(x as ImageConfigProperty)).length > 0
-
-export const configToFilters = <T extends ContainerConfigData>(
-  current: ImageConfigProperty[],
-  configData: T,
-): ImageConfigProperty[] => {
-  const newFilters = ALL_CONFIG_PROPERTIES.filter(it => {
-    const value = configData[it]
-
-    if (typeof value === 'number') {
-      return value !== null && value !== undefined
-    }
-
-    if (!value) {
-      return false
-    }
-
-    if (Array.isArray(value) && value.length < 1) {
-      return false
-    }
-
-    if (typeof value === 'object') {
-      return Object.keys(value).length > 0
-    }
-
-    return true
-  })
-
-  const missing = newFilters.filter(it => !current.includes(it))
-  return missing.length < 1 ? current : current.concat(missing)
-}
 
 export const imageName = (name: string, tag?: string): string => {
   if (!tag) {

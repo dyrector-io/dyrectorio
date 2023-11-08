@@ -1,11 +1,18 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Configuration, FrontendApi, Identity, IdentityApi, Session } from '@ory/kratos-client'
+import { AxiosResponse } from 'axios'
 import { randomUUID } from 'crypto'
 import { setDefaultResultOrder } from 'dns'
 import http from 'http'
 import { IdentityTraits, KRATOS_IDENTITY_SCHEMA, KratosInvitation } from 'src/domain/identity'
-import { PRODUCTION } from 'src/shared/const'
+import { KRATOS_LIST_PAGE_SIZE, PRODUCTION } from 'src/shared/const'
+
+type KratosListHeaders = {
+  link?: string
+}
+
+const KRATOS_LIST_REL_NEXT = '; rel="next"'
 
 @Injectable()
 export default class KratosService {
@@ -26,17 +33,63 @@ export default class KratosService {
   }
 
   async getIdentityByEmail(email: string): Promise<Identity> {
-    const identities = await this.identity.listIdentities()
+    const identities = await this.identity.listIdentities({
+      credentialsIdentifier: email,
+    })
+
     return identities.data.find(user => {
       const traits = user.traits as IdentityTraits
       return traits.email === email
     })
   }
 
-  async getIdentitiesByIds(ids: Set<string>): Promise<Map<string, Identity>> {
-    const identities = await this.identity.listIdentities()
+  async getIdentitiesByIds(identityIds: Set<string>): Promise<Map<string, Identity>> {
+    const result: Map<string, Identity> = new Map()
 
-    return new Map(identities.data.filter(it => ids.has(it.id)).map(it => [it.id, it]))
+    let identities: Pick<AxiosResponse<Identity[]>, 'data' | 'headers'> = null
+    do {
+      if (!identities) {
+        // eslint-disable-next-line no-await-in-loop
+        identities = await this.identity.listIdentities({
+          perPage: KRATOS_LIST_PAGE_SIZE,
+        })
+      } else {
+        const headers = identities.headers as KratosListHeaders
+
+        const nextRel = headers.link
+          ?.split(',')
+          ?.find(it => it.endsWith(KRATOS_LIST_REL_NEXT))
+          ?.trim()
+        if (!nextRel) {
+          break
+        }
+
+        const nextLink = nextRel.substring(1, nextRel.length - KRATOS_LIST_REL_NEXT.length - 1)
+        if (!nextLink) {
+          break
+        }
+
+        const url = new URL(nextLink)
+
+        const page = Number.parseInt(url.searchParams.get('page'), 10)
+        const perPage = Number.parseInt(url.searchParams.get('per_page'), 10)
+        // eslint-disable-next-line no-await-in-loop
+        identities = await this.identity.listIdentities({
+          page,
+          perPage,
+        })
+      }
+
+      identities.data.forEach(it => {
+        const { id } = it
+        if (identityIds.has(id)) {
+          result.set(id, it)
+          identityIds.delete(id)
+        }
+      })
+    } while (identityIds.size > 0)
+
+    return result
   }
 
   async getSessionsById(id: string, activeOnly?: boolean): Promise<Session[]> {
@@ -54,6 +107,7 @@ export default class KratosService {
         return [it, sessions]
       }),
     )
+
     return new Map(data)
   }
 
@@ -99,17 +153,6 @@ export default class KratosService {
     })
 
     return res.data
-  }
-
-  async getIdentityIdsByEmail(email: string): Promise<string[]> {
-    const identitites = await this.identity.listIdentities()
-
-    return identitites.data
-      .filter(it => {
-        const traits = it.traits as IdentityTraits
-        return traits.email.includes(email)
-      })
-      .map(it => it.id)
   }
 
   async getSessionByCookie(cookie: string): Promise<Session> {

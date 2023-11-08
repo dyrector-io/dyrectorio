@@ -47,7 +47,7 @@ func NewDeployment(ctx context.Context, cfg *config.Configuration) *Deployment {
 	return &Deployment{status: "", ctx: ctx, appConfig: cfg}
 }
 
-type deploymentParams struct {
+type DeploymentParams struct {
 	namespace       string
 	image           string
 	containerConfig *v1.ContainerConfig
@@ -63,7 +63,7 @@ type deploymentParams struct {
 	issuer          string
 }
 
-func (d *Deployment) DeployDeployment(p *deploymentParams) error {
+func (d *Deployment) DeployDeployment(p *DeploymentParams) error {
 	client := getDeploymentsClient(p.namespace, d.appConfig)
 
 	containerConfig, err := buildContainer(p, d.appConfig)
@@ -98,6 +98,7 @@ func (d *Deployment) DeployDeployment(p *deploymentParams) error {
 		WithSpec(
 			appsv1.DeploymentSpec().
 				WithReplicas(1).
+				WithStrategy(appsv1.DeploymentStrategy().WithType(kappsv1.DeploymentStrategyType(p.containerConfig.DeploymentStrategy))).
 				WithSelector(metav1.LabelSelector().WithMatchLabels(map[string]string{
 					"app": name,
 				})).
@@ -276,7 +277,7 @@ func (d *Deployment) GetPodDeployment(namespace, name string) (*kappsv1.Deployme
 }
 
 // builds the container using the builder interface, with healthchecks, volumes, configs, ports...
-func buildContainer(p *deploymentParams,
+func buildContainer(p *DeploymentParams,
 	cfg *config.Configuration,
 ) (*corev1.ContainerApplyConfiguration, error) {
 	healthCheckConfig := p.containerConfig.HealthCheckConfig
@@ -324,7 +325,8 @@ func buildContainer(p *deploymentParams,
 		WithReadinessProbe(readinessProbe).
 		WithStartupProbe(startupProbe).
 		WithResources(resources).
-		WithTTY(p.containerConfig.TTY)
+		WithTTY(p.containerConfig.TTY).
+		WithWorkingDir(p.containerConfig.WorkingDirectory)
 
 	if p.containerConfig.User != nil {
 		container.WithSecurityContext(
@@ -418,7 +420,7 @@ func getResourceManagement(resourceConfig v1.ResourceConfig,
 }
 
 // getInitContainers returns every init container specific(import/config) or custom ones
-func getInitContainers(params *deploymentParams, cfg *config.Configuration) []*corev1.ContainerApplyConfiguration {
+func getInitContainers(params *DeploymentParams, cfg *config.Configuration) []*corev1.ContainerApplyConfiguration {
 	// this is only the config container / could be general / wait for it / other init purposes
 	initContainers := []*corev1.ContainerApplyConfiguration{}
 
@@ -484,7 +486,7 @@ func addImportContainer(initContainers []*corev1.ContainerApplyConfiguration,
 }
 
 func addInitContainers(initContainers []*corev1.ContainerApplyConfiguration,
-	params *deploymentParams,
+	params *DeploymentParams,
 ) []*corev1.ContainerApplyConfiguration {
 	for _, iCont := range params.containerConfig.InitContainers {
 		container := corev1.Container().

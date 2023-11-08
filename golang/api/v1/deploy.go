@@ -173,6 +173,8 @@ type ContainerConfig struct {
 	IngressPath string `json:"ingressPath"`
 	// ingress path for path based routing
 	IngressStripPath bool `json:"ingressPathStrip"`
+	// ingress port to target
+	IngressPort uint16 `json:"ingressPort"`
 	// for docker hosts, this is needs to be bytes: 1000000 ~1m
 	IngressUploadLimit string `json:"ingressUploadLimit"`
 	// if put together with another instances consume their shared configs eg. -common config map, generated from here
@@ -194,6 +196,8 @@ type ContainerConfig struct {
 	Args []string `json:"args"`
 	// if we need to spawn a pseudo-terminal
 	TTY bool `json:"tty"`
+	// working directory of the container or pod
+	WorkingDirectory string `json:"workingDirectory"`
 
 	// dagent only
 	// docker log config https://docs.docker.com/config/containers/logging/configure/
@@ -208,7 +212,7 @@ type ContainerConfig struct {
 
 	// k8s-only-section
 	// Deployments strategy, on deployment how to restart underlying pods
-	// Values: Recreate (all-at-once), Rolling(one-by-one only if succeeds)
+	// Values: Recreate (all-at-once), RollingUpdate(one-by-one only if succeeds)
 	DeploymentStrategy string `json:"deploymentStrategy"`
 	// health check configuration
 	HealthCheckConfig HealthCheckConfig `json:"healthCheck"`

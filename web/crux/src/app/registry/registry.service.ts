@@ -15,9 +15,7 @@ export default class RegistryService {
     private teamRepository: TeamRepository,
     private prisma: PrismaService,
     private mapper: RegistryMapper,
-  ) {
-    this.initMetrics()
-  }
+  ) {}
 
   async checkRegistryIsInTeam(teamId: string, registryId: string): Promise<boolean> {
     const registries = await this.prisma.registry.count({
@@ -116,17 +114,5 @@ export default class RegistryService {
 
   watchRegistryEvents(): Observable<string> {
     return this.registryChangedEvent.asObservable()
-  }
-
-  private async initMetrics() {
-    const counts = await this.prisma.registry.groupBy({
-      by: ['type'],
-      _count: {
-        _all: true,
-      },
-    })
-
-    // eslint-disable-next-line no-underscore-dangle
-    counts.forEach(it => RegistryMetrics.count(it.type).set(it._count._all))
   }
 }

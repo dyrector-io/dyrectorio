@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { Request as ExpressRequest } from 'express'
-import { Observable, concatMap, of, tap } from 'rxjs'
+import { Observable, tap } from 'rxjs'
 import AuditLoggerService from 'src/app/audit.logger/audit.logger.service'
 import {
   AUDIT_LOGGER_LEVEL,
@@ -10,6 +10,7 @@ import {
   teamSlugFromWsContext,
   teamSlugProviderOfContext,
 } from 'src/decorators/audit-logger.decorator'
+import { tapOnce } from 'src/domain/utils'
 import { WS_TYPE_SUBSCRIBE, WS_TYPE_UNSUBSCRIBE, WsMessage } from 'src/websockets/common'
 
 /**
@@ -76,16 +77,9 @@ export default class AuditLoggerInterceptor implements NestInterceptor {
     const teamSlugProvider = teamSlugProviderOfContext(context, this.reflector) ?? teamSlugFromWsContext
 
     return next.handle().pipe(
-      // log only the first
-      concatMap((it, index) =>
-        index === 0
-          ? of(it).pipe(
-              tap(async () => {
-                await this.service.createWsAudit(teamSlugProvider, level, context)
-              }),
-            )
-          : of(it),
-      ),
+      tapOnce(async () => {
+        await this.service.createWsAudit(teamSlugProvider, level, context)
+      }),
     )
   }
 }

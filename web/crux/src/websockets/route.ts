@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { MessageMappingProperties } from '@nestjs/websockets'
-import { EMPTY, Observable, firstValueFrom, of } from 'rxjs'
+import { EMPTY, Observable, combineLatest, firstValueFrom, map, of, switchMap } from 'rxjs'
 import WsMetrics from 'src/shared/metrics/ws.metrics'
 import {
   SubscriptionMessage,
@@ -126,16 +126,16 @@ export default class WsRoute {
   ): Observable<WsMessage<SubscriptionMessage>> {
     const { path } = match
 
-    const res = this.removeClientFromNamespace(client, path, message)
-
-    return res ? of(res) : EMPTY
+    return this.removeClientFromNamespace(client, path, message).pipe(switchMap(it => of(it) ?? EMPTY))
   }
 
   onClientBind(client: WsClient, handlers: MessageMappingProperties[], transform: WsTransform) {
     const { token } = client
     if (this.callbacks.has(token)) {
       this.logger.error(`Client already connected ${token}`)
-      // TODO(@m8vago): check when this error could occour
+
+      // NOTE (@m8vago): This normally never happens, unless we unintentionally
+      // overwrite the clients' token to the same uuid
       throw new Error('Duplicated client')
     }
 
@@ -167,12 +167,18 @@ export default class WsRoute {
     })
   }
 
-  onClientDisconnect(client: WsClient) {
+  onClientDisconnect(client: WsClient): Observable<void> {
     const subscriptionPaths = Array.from(client.subscriptions.keys())
 
-    Array.from(subscriptionPaths).forEach(it => this.removeClientFromNamespace(client, it, null))
+    const unsubscribes = Array.from(subscriptionPaths).map(it => this.removeClientFromNamespace(client, it, null))
 
-    this.callbacks.delete(client.token)
+    return unsubscribes.length
+      ? combineLatest(unsubscribes).pipe(
+          map(() => {
+            this.callbacks.delete(client.token)
+          }),
+        )
+      : EMPTY
   }
 
   private upsertNamespace(match: WsRouteMatch): WsNamespace {
@@ -195,21 +201,24 @@ export default class WsRoute {
     client: WsClient,
     namespacePath: string,
     message: WsMessage<SubscriptionMessage> | null,
-  ): WsMessage<SubscriptionMessage> {
+  ): Observable<WsMessage<SubscriptionMessage>> {
     const ns = this.namespaces.get(namespacePath)
     if (!ns) {
-      return null
+      return EMPTY
     }
 
-    const { res, shouldRemove } = ns.onUnsubscribe(client, message)
-    if (shouldRemove) {
-      this.namespaces.delete(namespacePath)
-      this.logger.verbose(`Namespace deleted ${namespacePath}`)
+    return ns.onUnsubscribe(client, message).pipe(
+      map(({ res, shouldRemove }) => {
+        if (shouldRemove) {
+          this.namespaces.delete(namespacePath)
+          this.logger.verbose(`Namespace deleted ${namespacePath}`)
 
-      WsMetrics.routeNamespaces(this.path).set(this.countNamespaces())
-    }
+          WsMetrics.routeNamespaces(this.path).set(this.countNamespaces())
+        }
 
-    return res
+        return res
+      }),
+    )
   }
 
   private pathFromParts(parts: string[], from?: number, to?: number): string {

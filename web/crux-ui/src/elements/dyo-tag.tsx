@@ -6,10 +6,11 @@ interface DyoTagProps {
   color?: string
   solid?: boolean
   children: React.ReactNode
+  title?: string
 }
 
 const DyoTag = (props: DyoTagProps) => {
-  const { className, textColor: propsTextColor, color: propsColor, solid, children } = props
+  const { className, textColor: propsTextColor, color: propsColor, solid, title, children } = props
 
   const color = propsColor ?? 'bg-dyo-turquoise'
   const textColor = propsTextColor ?? 'text-dyo-turquoise'
@@ -23,6 +24,7 @@ const DyoTag = (props: DyoTagProps) => {
         !solid && 'bg-opacity-10',
         'rounded-full bg-opacity-10 text-xs font-semibold h-fit px-8 py-0.5',
       )}
+      title={title}
     >
       {children}
     </span>

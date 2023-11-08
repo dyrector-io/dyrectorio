@@ -39,7 +39,7 @@ const updateMetadata = async (session: Session, metadata: Partial<IdentityPublic
     })
   ).data
 
-  identities.updateIdentity({
+  await identities.updateIdentity({
     id: identity.id,
     updateIdentityBody: {
       schema_id: identity.schema_id,

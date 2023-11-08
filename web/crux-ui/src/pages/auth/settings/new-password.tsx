@@ -38,6 +38,7 @@ const NewPasswordPage = (props: NewPasswordPageProps) => {
       confirmPassword: '',
     },
     validationSchema: passwordSchema,
+    t,
     onSubmit: async values => {
       if (values.password !== values.confirmPassword) {
         setConfirmError(t('errors:confirmPassMismatch'))
@@ -55,7 +56,7 @@ const NewPasswordPage = (props: NewPasswordPageProps) => {
       const res = await sendForm('POST', API_SETTINGS_CHANGE_PASSWORD, data)
 
       if (res.ok) {
-        router.replace(ROUTE_INDEX)
+        await router.replace(ROUTE_INDEX)
       } else if (res.status === 410) {
         await router.reload()
       } else if (res.status === 403) {

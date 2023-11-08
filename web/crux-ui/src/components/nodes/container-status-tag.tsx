@@ -5,10 +5,11 @@ import useTranslation from 'next-translate/useTranslation'
 interface ContainerStatusTagProps {
   className?: string
   state: ContainerState
+  title?: string
 }
 
 const ContainerStatusTag = (props: ContainerStatusTagProps) => {
-  const { state, className } = props
+  const { state, className, title } = props
 
   const { t } = useTranslation('common')
 
@@ -48,6 +49,7 @@ const ContainerStatusTag = (props: ContainerStatusTagProps) => {
       textColor={state ? statusToTextColor() : 'text-bright'}
       className={className}
       solid={state === 'removing'}
+      title={title}
     >
       {state ? t(`containerStatuses.${state}`) : t('errors:notFound')}
     </DyoTag>

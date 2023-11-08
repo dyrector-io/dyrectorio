@@ -1,6 +1,6 @@
 import { Layout } from '@app/components/layout'
 import DyoNodeCard from '@app/components/nodes/dyo-node-card'
-import EditNodeCard from '@app/components/nodes/edit-node-card'
+import EditNodeSection from '@app/components/nodes/edit-node-section'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
@@ -9,9 +9,10 @@ import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
-import { DyoNode, NodeEventMessage, NodeStatus, WS_TYPE_NODE_EVENT } from '@app/models'
+import { DyoNode, NODE_STATUS_VALUES, NodeEventMessage, NodeStatus, WS_TYPE_NODE_EVENT } from '@app/models'
 import { ROUTE_DOCS, TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
@@ -19,15 +20,13 @@ import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { useSWRConfig } from 'swr'
 
 interface NodesPageProps {
   nodes: DyoNode[]
 }
-
-const nodeStatusFilters = ['connected', 'unreachable'] as const
 
 type NodeFilter = TextFilter & EnumFilter<NodeStatus>
 
@@ -48,7 +47,7 @@ const NodesPage = (props: NodesPageProps) => {
   })
 
   const [creating, setCreating] = useState(false)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const socket = useWebSocket(routes.node.socket(), {
     onError: _ => {
@@ -100,17 +99,17 @@ const NodesPage = (props: NodesPageProps) => {
   return (
     <Layout title={t('common:nodes')}>
       <PageHeading pageLink={pageLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
+        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
       </PageHeading>
 
-      {!creating ? null : <EditNodeCard className="mb-4" submitRef={submitRef} onNodeEdited={onNodeEdited} />}
+      {!creating ? null : <EditNodeSection className="mb-4" submit={submit} onNodeEdited={onNodeEdited} />}
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
               className="pl-6"
-              choices={nodeStatusFilters}
-              converter={it => t(`statusFilters.${it}`)}
+              choices={NODE_STATUS_VALUES}
+              converter={it => t(`common:nodeStatuses.${it}`)}
               selection={filters.filter?.enum}
               onSelectionChange={type => {
                 filters.setFilter({

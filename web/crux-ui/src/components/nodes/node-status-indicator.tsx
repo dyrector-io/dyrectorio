@@ -9,7 +9,7 @@ const statusToColor = (status: NodeStatus) => {
     case 'connected':
       return 'bg-dyo-green'
     case 'outdated':
-      return 'bg-dyo-purple'
+      return 'bg-dyo-violet'
     default:
       return 'bg-warning-orange'
   }

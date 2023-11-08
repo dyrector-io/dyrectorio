@@ -21,6 +21,7 @@ module.exports = {
   rules: {
     'eol-last': ['error', 'always'],
     '@typescript-eslint/semi': ['error', 'never'],
+    '@typescript-eslint/no-floating-promises': 'error',
 
     // disabled
     '@typescript-eslint/interface-name-prefix': 'off',
