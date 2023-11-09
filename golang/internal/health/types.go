@@ -3,6 +3,7 @@ package health
 import (
 	"os"
 	"path"
+	"sync"
 )
 
 const (
@@ -12,6 +13,7 @@ const (
 
 type Status struct {
 	Connected bool `json:"connected" binding:"required"`
+	rw        sync.RWMutex
 }
 
 func getSocketDir() string {

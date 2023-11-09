@@ -18,7 +18,7 @@ export default class DeleteRegistryValidationPipe implements PipeTransform {
       throw new CruxPreconditionFailedException({
         property: 'id',
         value: id,
-        message: 'Registry is already in use.',
+        message: 'Registry is in use.',
       })
     }
 

@@ -10,7 +10,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func sendHealthData(conn net.Conn, healthData *Status) error {
+type Health struct {
+	data *Status
+	ctx  context.Context
+}
+
+func (h *Health) sendHealthData(conn net.Conn, healthData *Status) error {
 	data, err := json.Marshal(healthData)
 	if err != nil {
 		return err
@@ -20,18 +25,25 @@ func sendHealthData(conn net.Conn, healthData *Status) error {
 	return err
 }
 
-func acceptLoop(socket net.Listener) {
+func (h *Health) acceptLoop(socket net.Listener) {
 	for {
 		conn, err := socket.Accept()
 		if err != nil {
-			log.Error().Err(err).Msg("Health accept error")
+			if !errors.Is(err, net.ErrClosed) {
+				log.Error().Err(err).Msg("Health accept error")
+			}
 			break
 		}
 
-		// err = sendHealthData(conn, &health)
+		h.data.rw.RLock()
+		data := h.data
+		h.data.rw.RUnlock()
+
+		err = h.sendHealthData(conn, data)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to write health socket")
 		}
+		log.Debug().Bool("connected", data.Connected).Msg("Healthcheck")
 
 		err = conn.Close()
 		if err != nil {
@@ -40,11 +52,17 @@ func acceptLoop(socket net.Listener) {
 	}
 }
 
-func SetHealthGRPCStatus(connected bool) {
-	// health.Connected = connected
+func (h *Health) SetHealthGRPCStatus(connected bool) {
+	h.data.rw.Lock()
+	h.data.Connected = connected
+	h.data.rw.Unlock()
 }
 
-func Serve(ctx context.Context) error {
+func InitHealth(ctx context.Context) (*Health, error) {
+	h := Health{
+		data: &Status{},
+		ctx:  ctx,
+	}
 	socketPath := getSocketPath()
 
 	_, err := os.Stat(socketPath)
@@ -59,13 +77,15 @@ func Serve(ctx context.Context) error {
 
 	err = os.MkdirAll(getSocketDir(), dirPerm)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	socket, err := net.Listen(socketType, socketPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	go h.acceptLoop(socket)
 
 	go func() {
 		<-ctx.Done()
@@ -76,12 +96,10 @@ func Serve(ctx context.Context) error {
 		}
 
 		err = os.Remove(socketPath)
-		if err != nil {
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
 			log.Error().Err(err).Msg("Health serve close error")
 		}
 	}()
 
-	go acceptLoop(socket)
-
-	return nil
+	return &h, nil
 }

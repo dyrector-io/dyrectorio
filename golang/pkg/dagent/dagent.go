@@ -14,7 +14,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
-func Serve(cfg *config.Configuration) error {
+func Serve(ctx context.Context, cfg *config.Configuration) error {
 	utils.PreflightChecks()
 	log.Info().Msg("Starting dyrector.io DAgent service")
 
@@ -40,8 +40,8 @@ func Serve(cfg *config.Configuration) error {
 	}
 
 	grpcParams := grpc.GetConnectionParams(cfg.JwtToken, publicKey)
-	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
-	return grpc.StartGrpcClient(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
+	grpcContext := grpc.WithGRPCConfig(ctx, cfg)
+	return grpc.StartGrpcClient(grpcContext, grpcParams, &cfg.CommonConfiguration, &grpc.WorkerFunctions{
 		Deploy:           utils.DeployImage,
 		Watch:            utils.WatchContainers,
 		Delete:           utils.DeleteContainerByPrefixAndName,

@@ -41,7 +41,7 @@ func Serve(cfg *config.Configuration, secretStore commonConfig.SecretStore) erro
 		return keyErr
 	}
 	grpcParams := grpc.GetConnectionParams(cfg.JwtToken, publicKey)
-	return grpc.StartGrpcClient(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
+	return grpc.StartGrpcClient(grpcContext, grpcParams, &cfg.CommonConfiguration, &grpc.WorkerFunctions{
 		Deploy:           k8s.Deploy,
 		Watch:            crux.WatchDeploymentsByPrefix,
 		Delete:           k8s.Delete,

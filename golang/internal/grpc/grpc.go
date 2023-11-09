@@ -26,22 +26,24 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
-const ParallelProcessing = 16
+const ParallelProcessing = 1024
 
-type InfiniteLoop interface {
+type Loopable interface {
 	Loop(*ClientLoop) error
 }
 
 type ClientLoop struct {
 	Ctx         context.Context
-	WorkerFuncs WorkerFunctions
+	WorkerFuncs *WorkerFunctions
 	Conn        *Connection
 	Secrets     config.SecretStore
 	AppConfig   *config.CommonConfiguration
@@ -53,6 +55,7 @@ type Connection struct {
 	GrpcConn   *grpc.ClientConn
 	GrpcClient agent.AgentClient
 	Cancel     context.CancelCauseFunc
+	health     *health.Health
 	*ConnectionParams
 }
 
@@ -187,10 +190,10 @@ func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool,
 func StartGrpcClient(grpcContext context.Context,
 	params *ConnectionParams,
 	appConfig *config.CommonConfiguration,
-	workerFuncs WorkerFunctions,
+	workerFuncs *WorkerFunctions,
 	secrets config.SecretStore,
 ) error {
-	conn, err := InitGrpcConnection(grpcContext, params, appConfig, workerFuncs)
+	conn, err := InitGrpcConnection(grpcContext, params, appConfig)
 	if err != nil {
 		return err
 	}
@@ -202,8 +205,11 @@ func StartGrpcClient(grpcContext context.Context,
 		}
 	}()
 
-	err = health.Serve(conn.Ctx)
-	loopParams := ClientLoop{
+	h, err := health.InitHealth(conn.Ctx)
+	if err != nil {
+		log.Error().Err(err)
+	}
+	loop := ClientLoop{
 		Ctx:         conn.Ctx,
 		Conn:        conn,
 		WorkerFuncs: workerFuncs,
@@ -212,20 +218,20 @@ func StartGrpcClient(grpcContext context.Context,
 		WorkChan:    make(chan *agent.AgentCommand, ParallelProcessing),
 	}
 
-	cmdStream, err := GetCommandStream(conn, &loopParams)
+	cmdStream, err := GetCommandStream(conn, &loop)
 	if err != nil {
 		return err
 	}
 	// client command stream is up
-	health.SetHealthGRPCStatus(true)
+	log.Info().Msg("Stream connection is up")
+	h.SetHealthGRPCStatus(true)
+	conn.health = h
 	errs, _ := errgroup.WithContext(grpcContext)
 	errs.Go(func() error {
-		return ReceiveLoop(cmdStream, loopParams.WorkChan)
+		return loop.ReceiveLoop(cmdStream)
 	})
 
-	errs.Go(func() error {
-		return ProcessLoop(&loopParams)
-	})
+	errs.Go(loop.ProcessLoop)
 
 	return errs.Wait()
 }
@@ -233,14 +239,9 @@ func StartGrpcClient(grpcContext context.Context,
 func InitGrpcConnection(grpcContext context.Context,
 	params *ConnectionParams,
 	appConfig *config.CommonConfiguration,
-	workerFuncs WorkerFunctions,
 ) (*Connection, error) {
 	log.Info().Msg("Spinning up gRPC Agent client...")
 	ctx, cancel := context.WithCancelCause(grpcContext)
-	err := health.Serve(ctx)
-	if err != nil {
-		log.Warn().Err(err).Msg("Failed to start serving health")
-	}
 
 	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-node-token", params.token)
 
@@ -281,8 +282,8 @@ func InitGrpcConnection(grpcContext context.Context,
 	}
 
 	log.Info().Str("address", conn.address).Msg("Dialing to address.")
-	// todo: check this cancel function
-	dialContext, _ := context.WithTimeout(ctx, appConfig.DefaultTimeout)
+	// TODO(@nandor-magyar): check this cancel function
+	dialContext, _ := context.WithTimeout(ctx, appConfig.DefaultTimeout) //nolint
 	conn.GrpcConn, err = grpc.DialContext(dialContext, conn.address, opts...)
 	if err != nil {
 		return nil, err
@@ -299,6 +300,7 @@ func InitGrpcConnection(grpcContext context.Context,
 		}
 	}
 
+	log.Info()
 	return conn, nil
 }
 
@@ -312,15 +314,20 @@ func GetCommandStream(conn *Connection, l *ClientLoop) (agent.Agent_ConnectClien
 	)
 }
 
-func ReceiveLoop(stream agent.Agent_ConnectClient, workChan chan *agent.AgentCommand) error {
+func (cl *ClientLoop) ReceiveLoop(stream agent.Agent_ConnectClient) error {
 	if stream == nil {
 		return ErrNilStreamForLoop
 	}
-	log.Debug().Msg("Starting gRPC loop...")
+	log.Debug().Msg("Starting command receive loop...")
 	for {
 		command, err := stream.Recv()
 		if err != nil {
-			health.SetHealthGRPCStatus(false)
+			s := status.Convert(err)
+			if s != nil && (s.Code() == codes.Unauthenticated || s.Code() == codes.PermissionDenied || s.Code() == codes.NotFound) {
+				cl.handleGrpcTokenError(err)
+			}
+
+			cl.Conn.health.SetHealthGRPCStatus(false)
 
 			if err == io.EOF {
 				log.Info().Msg("End of stream")
@@ -330,21 +337,21 @@ func ReceiveLoop(stream agent.Agent_ConnectClient, workChan chan *agent.AgentCom
 			}
 			time.Sleep(minimumRPCJitterMillis * time.Millisecond)
 		}
-		health.SetHealthGRPCStatus(true)
+		cl.Conn.health.SetHealthGRPCStatus(true)
 		if command != nil {
-			workChan <- command
+			cl.WorkChan <- command
 		}
 	}
 }
 
-func ProcessLoop(l *ClientLoop) error {
+func (cl *ClientLoop) ProcessLoop() error {
 	for {
-		ctx := l.Ctx
-		conn := l.Conn
-		workerFuncs := l.WorkerFuncs
-		appConfig := l.AppConfig
-		command := <-l.WorkChan
-		log.Debug().Msgf("processing agent command: %v", command.String())
+		ctx := cl.Ctx
+		conn := cl.Conn
+		workerFuncs := cl.WorkerFuncs
+		appConfig := cl.AppConfig
+		command := <-cl.WorkChan
+		log.Trace().Msgf("processing agent command: %v", command.String())
 		switch {
 		case command.GetDeploy() != nil:
 			executeVersionDeployRequest(ctx, conn, command.GetDeploy(), workerFuncs.Deploy, appConfig)
@@ -357,9 +364,9 @@ func ProcessLoop(l *ClientLoop) error {
 		case command.GetListSecrets() != nil:
 			executeSecretList(ctx, conn, command.GetListSecrets(), workerFuncs.SecretList, appConfig)
 		case command.GetUpdate() != nil:
-			executeUpdate(l, command.GetUpdate())
+			executeUpdate(cl, command.GetUpdate())
 		case command.GetClose() != nil:
-			l.executeClose(command.GetClose())
+			cl.executeClose(command.GetClose())
 			return ErrServerRequestedClose
 		case command.GetContainerCommand() != nil:
 			executeContainerCommand(ctx, command.GetContainerCommand(), workerFuncs.ContainerCommand)
@@ -368,7 +375,7 @@ func ProcessLoop(l *ClientLoop) error {
 		case command.GetContainerLog() != nil:
 			executeContainerLog(ctx, conn, command.GetContainerLog(), workerFuncs.ContainerLog)
 		case command.GetReplaceToken() != nil:
-			err := l.executeReplaceToken(command.GetReplaceToken())
+			err := cl.executeReplaceToken(command.GetReplaceToken())
 			if err != nil {
 				log.Error().Err(err).Msg("Token replacement failed")
 			}
@@ -395,7 +402,6 @@ func (cl *ClientLoop) handleGrpcTokenError(err error) {
 			log.Error().Err(err).Msg("Failed to blacklist the install token")
 		}
 	}
-	return
 }
 
 func executeVersionDeployRequest(

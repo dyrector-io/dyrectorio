@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"os/signal"
+	"runtime/pprof"
+	"syscall"
 
 	"github.com/rs/zerolog/log"
 
@@ -14,7 +18,7 @@ import (
 	cli "github.com/urfave/cli/v2"
 )
 
-func serve(_ *cli.Context) error {
+func serve(cCtx *cli.Context) error {
 	cfg := config.Configuration{}
 
 	err := util.ReadConfig(&cfg)
@@ -34,7 +38,44 @@ func serve(_ *cli.Context) error {
 
 	log.Info().Msg("Configuration loaded.")
 
-	return dagent.Serve(&cfg)
+	ctx, stop := signal.NotifyContext(cCtx.Context, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	if cfg.Profiling {
+		log.Info().Msg("Profiling is enabled, starting CPU profiling...")
+		cf, profErr := os.Create("cpu.profile")
+		if profErr != nil {
+			return fmt.Errorf("could not create file for CPU profiling: %w", profErr)
+		}
+		profErr = pprof.StartCPUProfile(cf)
+		if profErr != nil {
+			return profErr
+		}
+		defer pprof.StopCPUProfile()
+
+		mf, profErr := os.Create("mem.profile")
+		if profErr != nil {
+			return fmt.Errorf("could not create file for memory profiling: %w", profErr)
+		}
+		log.Info().Msg("kill signal USR will print Heap Profile to file: mem.profile")
+		sigc := make(chan os.Signal, 1)
+		signal.Notify(sigc,
+			syscall.SIGUSR1)
+		go func() {
+			<-sigc
+			profErr = pprof.WriteHeapProfile(mf)
+			if profErr != nil {
+				log.Error().Err(profErr).Msg("could not write memprofile file")
+			}
+		}()
+	}
+	go func() {
+		err = dagent.Serve(ctx, &cfg)
+		log.Error().Err(err).Msg("agent stopped with error")
+	}()
+	<-ctx.Done()
+	log.Info().Msg("Graceful termination")
+	return err
 }
 
 func getHealth(_ *cli.Context) error {

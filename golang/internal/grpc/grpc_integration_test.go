@@ -86,7 +86,7 @@ func TestGrpcInitNegative(t *testing.T) {
 				Debug:            false,
 				SecretPrivateKey: privateKey,
 			},
-			g.WorkerFunctions{}, nil)
+			&g.WorkerFunctions{}, nil)
 
 		assert.ErrorIs(t, err, g.ErrInvalidRemoteCertificate, "certificate error is expected")
 	})
@@ -101,7 +101,7 @@ func TestGrpcInitNegative(t *testing.T) {
 				SecretPrivateKey: privateKey,
 				DefaultTimeout:   2 * time.Second,
 			},
-			g.WorkerFunctions{}, nil)
+			&g.WorkerFunctions{}, nil)
 
 		assert.ErrorIs(t, err, context.DeadlineExceeded, "deadline exceeded if could not connect to server")
 	})
@@ -119,7 +119,7 @@ func TestClient(t *testing.T) {
 				SecretPrivateKey: privateKey,
 				DefaultTimeout:   5 * time.Second,
 			},
-			g.WorkerFunctions{
+			&g.WorkerFunctions{
 				Deploy: func(ctx context.Context, dl *dogger.DeploymentLogger, dir *v1.DeployImageRequest, vd *v1.VersionData) error {
 					fnList = append(fnList, "deploy")
 					return nil
