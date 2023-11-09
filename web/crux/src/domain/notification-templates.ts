@@ -112,13 +112,13 @@ const getMattermostTemplate = (message: string): any => ({
       text: message,
       title_link: 'https://dyrector.io',
     },
-  ],
+   ]
 })
 
 const getRocketTemplate = (message: string) : any => ({
     attachments: [
       {
-        title: title,
+        title,
         color: '1555130',
         text: message,
         title_link: "https://dyrector.io",
