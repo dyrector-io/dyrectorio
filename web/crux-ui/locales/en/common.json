@@ -83,6 +83,9 @@
   "profile": "Profile",
   "tokens": "Tokens",
   "templates": "Templates",
+  "pipelines": "Pipelines",
+  "storages": "Storages",
+  "configBundles": "Config bundles",
 
   "role": {
     "owner": "Owner",
@@ -98,6 +101,10 @@
   "deployment": "Deployment",
   "project": "Project",
   "version": "Version",
+  "pipeline": "Pipeline",
+  "token": "Token",
+
+  "changeToken": "Change token",
 
   "prefix": "Prefix",
 
@@ -124,6 +131,9 @@
     "shark": "Shark icon"
   },
 
+  "successful": "Successful",
+  "failed": "Failed",
+
   "nodeStatuses": {
     "connected": "Connected",
     "unreachable": "Unreachable",
@@ -131,9 +141,11 @@
     "updating": "Updating"
   },
 
+  "pipelineStatuses": {
+    "running": "Running"
+  },
+
   "deploymentStatuses": {
-    "successful": "Successful",
-    "failed": "Failed",
     "obsolete": "Obsolete",
     "unknown": "Unknown",
     "preparing": "Preparing",
@@ -214,9 +226,6 @@
   "logOf": "Log of {{name}}",
   "inspectOf": "Inspection of {{name}}",
 
-  "storages": "Storages",
-  "configBundles": "Config bundles",
-
   "none": "None",
 
   "deployProtection": {
@@ -224,6 +233,6 @@
     "description": "There is a protected deployment with the same node and prefix. Continuing the deployment could result in unexpected behaviour. Are you sure want to continue?"
   },
 
-  "imageConfig":"Image config",
-  "instanceConfig":"Container config"
+  "imageConfig": "Image config",
+  "instanceConfig": "Container config"
 }

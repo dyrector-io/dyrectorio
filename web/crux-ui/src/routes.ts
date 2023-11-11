@@ -541,6 +541,51 @@ class StorageRoutes {
   details = (id: string) => `${this.root}/${id}`
 }
 
+// pipeline
+
+class PipelineApi {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `/api${root}`
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+
+  trigger = (id: string) => `${this.details(id)}/trigger`
+}
+
+type PipelineDetailsRouteOptions = {
+  trigger?: boolean
+}
+
+export const ANCHOR_TRIGGER = '#trigger'
+
+class PipelineRoutes {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `${root}/pipelines`
+  }
+
+  private _api: PipelineApi
+
+  get api() {
+    if (!this._api) {
+      this._api = new PipelineApi(this.root)
+    }
+
+    return this._api
+  }
+
+  list = () => this.root
+
+  details = (id: string, options?: PipelineDetailsRouteOptions) =>
+    `${this.root}/${id}${options?.trigger ? ANCHOR_TRIGGER : ''}`
+}
+
 // config bundle
 
 class ConfigBundleApi {
@@ -603,6 +648,8 @@ export class TeamRoutes {
   private _notification: NotificationRoutes
 
   private _storage: StorageRoutes
+
+  private _pipeline: PipelineRoutes
 
   private _configBundles: ConfigBundleRoutes
 
@@ -668,6 +715,14 @@ export class TeamRoutes {
     }
 
     return this._storage
+  }
+
+  get pipeline() {
+    if (!this._pipeline) {
+      this._pipeline = new PipelineRoutes(this.root)
+    }
+
+    return this._pipeline
   }
 
   get configBundles() {

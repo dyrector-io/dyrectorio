@@ -1,0 +1,20 @@
+{
+  "new": "New pipeline",
+  "pipelinesName": "Pipelines - {{name}}",
+  "tips": "Pipelines are CI/CD jobs for your git repository.",
+  "noItems": "You haven't added a pipeline yet.",
+  "repository": "Repository",
+  "repoBranchingIcon": "Code repository branching icon",
+  "trigger": "Trigger",
+  "organization": "Organization",
+  "defaultInputs": "Default inputs",
+  "inputs": "Inputs",
+  "pipelineName": "Pipeline name",
+  "areYouSureTriggerName": "Are you sure you want to trigger pipeline {{name}}?",
+
+  "type": {
+    "gitlab": "Gitlab",
+    "github": "GitHub",
+    "azure": "Azure DevOps"
+  }
+}

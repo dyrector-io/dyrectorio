@@ -54,6 +54,21 @@ export const sidebarSectionsOf = (routes: TeamRoutes): MenuSection[] => [
         link: routes.registry.list(),
       },
       {
+        icon: '/config_bundle.svg',
+        text: 'configBundles',
+        link: routes.configBundles.list(),
+      },
+      {
+        icon: '/storage.svg',
+        text: 'storages',
+        link: routes.storage.list(),
+      },
+      {
+        icon: '/robotic-arm.svg',
+        text: 'pipelines',
+        link: routes.pipeline.list(),
+      },
+      {
         icon: '/notification.svg',
         text: 'notifications',
         link: routes.notification.list(),
@@ -62,16 +77,6 @@ export const sidebarSectionsOf = (routes: TeamRoutes): MenuSection[] => [
         icon: '/template.svg',
         text: 'templates',
         link: ROUTE_TEMPLATES,
-      },
-      {
-        icon: '/storage.svg',
-        text: 'storages',
-        link: routes.storage.list(),
-      },
-      {
-        icon: '/config_bundle.svg',
-        text: 'configBundles',
-        link: routes.configBundles.list(),
       },
     ],
   },
