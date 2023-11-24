@@ -11,10 +11,13 @@
   "inputs": "Inputs",
   "pipelineName": "Pipeline name",
   "areYouSureTriggerName": "Are you sure you want to trigger pipeline {{name}}?",
+  "triggerPipeline": "Trigger pipeline",
 
   "type": {
     "gitlab": "Gitlab",
     "github": "GitHub",
     "azure": "Azure DevOps"
-  }
+  },
+
+  "finishedAt": "Finished at"
 }

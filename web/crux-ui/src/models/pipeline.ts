@@ -5,7 +5,7 @@ export const PIPELINE_TYPE_VALUES = ['gitlab', 'github', 'azure'] as const
 
 export type PipelineType = (typeof PIPELINE_TYPE_VALUES)[number]
 
-export type PipelineStatus = 'ready' | 'running' | 'successful' | 'failed'
+export type PipelineRunStatus = 'unknown' | 'queued' | 'running' | 'successful' | 'failed'
 
 export type AzureRepository = {
   organization: string
@@ -20,9 +20,10 @@ export type PipelineTrigger = {
 }
 
 export type PipelineRun = {
+  id: string
   startedAt: string
   finishedAt: string
-  status: PipelineStatus
+  status: PipelineRunStatus
 }
 
 export type Pipeline = {
@@ -31,18 +32,18 @@ export type Pipeline = {
   description: string
   icon?: string
   type: PipelineType
-  status: PipelineStatus
-  repository: AzureRepository
-  trigger: PipelineTrigger
-}
-
-export type PipelineDetails = Pipeline & {
-  audit: Audit
-  inputs: UniqueKeyValue[]
   lastRun?: PipelineRun
+  repository: AzureRepository
+  trigger: string
 }
 
-export type UpdatePipeline = Omit<Pipeline, 'id' | 'status'> & {
+export type PipelineDetails = Omit<Pipeline, 'lastRun' | 'trigger'> & {
+  audit: Audit
+  trigger: PipelineTrigger
+  runs: PipelineRun[]
+}
+
+export type UpdatePipeline = Omit<PipelineDetails, 'id' | 'lastRun'> & {
   token?: string
 }
 
@@ -54,7 +55,21 @@ export type TriggerPipeline = {
   inputs?: Record<string, string>
 }
 
-export const repositoryNameOf = (pipeline: Pipeline): string => {
+export const WS_TYPE_PIPELINE_STATUS = 'pipeline-status'
+export type PipelineStatusMessage = {
+  pipelineId: string
+  runId: string
+  status: PipelineRunStatus
+  finishedAt?: string
+}
+
+export const pipelineDetailsToPipeline = (it: PipelineDetails): Pipeline => ({
+  ...it,
+  trigger: it.trigger.name,
+  lastRun: it.runs.find(Boolean) ?? null,
+})
+
+export const repositoryNameOf = (pipeline: Pipeline | PipelineDetails): string => {
   switch (pipeline.type) {
     case 'azure': {
       const repo = pipeline.repository

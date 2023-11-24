@@ -2,21 +2,41 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Pipeline, repositoryNameOf } from '@app/models'
+import { Pipeline, PipelineDetails, PipelineRun, PipelineRunStatus, repositoryNameOf } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import PipelineHeading from './pipeline-heading'
+import PipelineStatusIndicator from './pipeline-status-indicator'
 import PipelineTypeTag from './pipeline-type-tag'
 
 type PipelineCardProps = Omit<DyoCardProps, 'children'> & {
-  pipeline: Pipeline
+  pipeline: Pipeline | PipelineDetails
   titleHref?: string
+  hideTrigger?: boolean
+  onTrigger?: VoidFunction
+}
+
+const statusOf = (
+  pipeline: (Pipeline | PipelineDetails) & {
+    lastRun?: PipelineRun
+    runs?: PipelineRun[]
+  },
+): PipelineRunStatus => {
+  if (pipeline.lastRun) {
+    return pipeline.lastRun.status
+  }
+
+  if (pipeline.runs && pipeline.runs.length > 0) {
+    return pipeline.runs[0].status
+  }
+
+  return 'unknown'
 }
 
 const PipelineCard = (props: PipelineCardProps) => {
-  const { pipeline, titleHref, className } = props
+  const { className, pipeline, titleHref, hideTrigger, onTrigger: propsOnTrigger } = props
 
   const { t } = useTranslation('pipelines')
   const routes = useTeamRoutes()
@@ -30,7 +50,11 @@ const PipelineCard = (props: PipelineCardProps) => {
     )
   }
 
-  const title = <PipelineHeading pipeline={pipeline} />
+  const title = (
+    <PipelineHeading pipeline={pipeline}>
+      <PipelineStatusIndicator status={statusOf(pipeline)} />
+    </PipelineHeading>
+  )
 
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
@@ -52,9 +76,11 @@ const PipelineCard = (props: PipelineCardProps) => {
         modalTitle={pipeline.name}
       />
 
-      <DyoButton className="px-6 ml-auto" onClick={onTrigger}>
-        {t('trigger')}
-      </DyoButton>
+      {!hideTrigger && (
+        <DyoButton className="px-6 ml-auto" onClick={propsOnTrigger ?? onTrigger}>
+          {t('trigger')}
+        </DyoButton>
+      )}
     </DyoCard>
   )
 }

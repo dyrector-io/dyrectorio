@@ -554,7 +554,7 @@ class PipelineApi {
 
   details = (id: string) => `${this.root}/${id}`
 
-  trigger = (id: string) => `${this.details(id)}/trigger`
+  runs = (id: string) => `${this.details(id)}/runs`
 }
 
 type PipelineDetailsRouteOptions = {
@@ -584,6 +584,8 @@ class PipelineRoutes {
 
   details = (id: string, options?: PipelineDetailsRouteOptions) =>
     `${this.root}/${id}${options?.trigger ? ANCHOR_TRIGGER : ''}`
+
+  socket = () => this.root
 }
 
 // config bundle

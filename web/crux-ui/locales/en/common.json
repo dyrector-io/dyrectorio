@@ -142,6 +142,7 @@
   },
 
   "pipelineStatuses": {
+    "queued": "Queued",
     "running": "Running"
   },
 

@@ -38,9 +38,9 @@ const statusToTextColor = (status: DeploymentStatus) => {
 
 const deploymentStatusTranslation = (status: DeploymentStatus): string => {
   switch (status) {
-    case 'common:successful':
-    case 'common:failed':
-      return status
+    case 'successful':
+    case 'failed':
+      return `common:${status}`
     default:
       return `common:deploymentStatuses.${status}`
   }
@@ -63,7 +63,7 @@ const DeploymentStatusTag = (props: DeploymentStatusTagProps) => {
       className={className}
       solid={status === 'obsolete'}
     >
-      {t()}
+      {t(deploymentStatusTranslation(status))}
     </DyoTag>
   )
 }

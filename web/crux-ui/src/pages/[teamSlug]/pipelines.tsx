@@ -10,9 +10,17 @@ import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Pipeline } from '@app/models'
+import useWebSocket from '@app/hooks/use-websocket'
+import {
+  Pipeline,
+  PipelineDetails,
+  PipelineStatusMessage,
+  WS_TYPE_PIPELINE_STATUS,
+  pipelineDetailsToPipeline,
+} from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
+import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -36,9 +44,27 @@ const PipelinesPage = (props: PipelinesPageProps) => {
   const [creating, setCreating] = useState(false)
   const submit = useSubmit()
 
-  const onCreated = (storage: Pipeline) => {
+  const socket = useWebSocket(routes.pipeline.socket())
+  socket.on(WS_TYPE_PIPELINE_STATUS, (message: PipelineStatusMessage) => {
+    filters.setItems(items => {
+      const newItems = [...items]
+      const pipeline = newItems.find(it => it.id === message.pipelineId)
+      pipeline.lastRun = {
+        id: message.runId,
+        finishedAt: message.finishedAt,
+        startedAt: pipeline.lastRun?.startedAt ?? new Date().toUTCString(),
+        status: message.status,
+      }
+
+      return newItems
+    })
+  })
+
+  const onCreated = (pipeline: PipelineDetails) => {
+    const newPipeline = pipelineDetailsToPipeline(pipeline)
+
     setCreating(false)
-    filters.setItems([...filters.items, storage])
+    filters.setItems([...filters.items, newPipeline])
   }
 
   const selfLink: BreadcrumbLink = {
@@ -83,25 +109,7 @@ export default PipelinesPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const routes = TeamRoutes.fromContext(context)
 
-  //   const pipelines = await getCruxFromContext<PipelinesPage[]>(context, routes.pipeline.api.list())
-
-  const pipelines: Pipeline[] = [
-    {
-      id: 'test-id',
-      name: 'dyo prod deploy',
-      description: 'dyrector.io deployment pipeline',
-      icon: 'buffalo',
-      type: 'azure',
-      repository: {
-        organization: 'dyrectorio',
-        project: 'dyrectorio-pipelines',
-      },
-      trigger: {
-        name: 'deploy',
-        inputs: [],
-      },
-    },
-  ]
+  const pipelines = await getCruxFromContext<Pipeline[]>(context, routes.pipeline.api.list())
 
   return {
     props: {

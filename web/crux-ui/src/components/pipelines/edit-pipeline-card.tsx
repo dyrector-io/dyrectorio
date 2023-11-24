@@ -24,6 +24,25 @@ type EditablePipeline = PipelineDetails & {
   token?: string
 }
 
+const DEFAULT_EDITABLE_PIPELINE: EditablePipeline = {
+  id: null,
+  name: '',
+  description: '',
+  icon: null,
+  type: 'azure',
+  repository: {
+    organization: '',
+    project: '',
+  },
+  trigger: {
+    name: '',
+    inputs: [],
+  },
+  token: '',
+  audit: null,
+  runs: [],
+}
+
 type EditPipelineCardProps = Omit<DyoCardProps, 'children'> & {
   pipeline?: PipelineDetails
   submit: SubmitHook
@@ -42,23 +61,7 @@ const EditPipelineCard = (props: EditPipelineCardProps) => {
           ...propsPipeline,
           token: null,
         }
-      : {
-          id: null,
-          name: '',
-          description: '',
-          icon: null,
-          type: 'azure',
-          repository: {
-            organization: '',
-            project: '',
-          },
-          trigger: {
-            name: '',
-            inputs: [],
-          },
-          token: '',
-          audit: null,
-        },
+      : DEFAULT_EDITABLE_PIPELINE,
   )
 
   const editing = !!pipeline.id

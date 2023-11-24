@@ -1,11 +1,12 @@
 import DyoIndicator from '@app/elements/dyo-indicator'
-import { PipelineStatus } from '@app/models'
+import { PipelineRunStatus } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
+import { pipelineStatusTranslation } from './pipeline-status-tag'
 
-const statusToColor = (status: PipelineStatus) => {
+const statusToColor = (status: PipelineRunStatus) => {
   switch (status) {
-    case 'ready':
-      return 'bg-dyo-torquoise'
+    case 'queued':
+      return 'bg-dyo-turquoise'
     case 'running':
       return 'bg-warning-orange'
     case 'successful':
@@ -13,13 +14,13 @@ const statusToColor = (status: PipelineStatus) => {
     case 'failed':
       return 'bg-error-red'
     default:
-      return 'bg-dyo-turquoise'
+      return ''
   }
 }
 
 type PipelineStatusIndicatorProps = {
   className?: string
-  status: PipelineStatus
+  status: PipelineRunStatus
 }
 
 const PipelineStatusIndicator = (props: PipelineStatusIndicatorProps) => {
@@ -27,7 +28,9 @@ const PipelineStatusIndicator = (props: PipelineStatusIndicatorProps) => {
 
   const { t } = useTranslation('common')
 
-  return <DyoIndicator className={className} color={statusToColor(status)} title={t(`nodeStatuses.${status}`)} />
+  return (
+    <DyoIndicator className={className} color={statusToColor(status)} title={t(pipelineStatusTranslation(status))} />
+  )
 }
 
 export default PipelineStatusIndicator

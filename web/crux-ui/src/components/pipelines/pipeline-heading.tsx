@@ -25,7 +25,7 @@ const typeToIconAlt = (type: PipelineType) => {
     case 'github':
       return 'type.github'
     case 'azure':
-      return 'type.azure-devops'
+      return 'type.azure'
     default:
       return 'repoBranchingIcon'
   }
@@ -34,10 +34,11 @@ const typeToIconAlt = (type: PipelineType) => {
 type PipelineHeadingProps = {
   className?: string
   pipeline: Pick<Pipeline, 'type' | 'icon' | 'name'>
+  children?: React.ReactNode
 }
 
 const PipelineHeading = (props: PipelineHeadingProps) => {
-  const { className, pipeline } = props
+  const { className, pipeline, children } = props
 
   const { t } = useTranslation('pipelines')
 
@@ -52,6 +53,8 @@ const PipelineHeading = (props: PipelineHeadingProps) => {
       <DyoHeading className="text-xl text-bright font-semibold ml-2 my-auto mr-auto" element="h3">
         {pipeline.name}
       </DyoHeading>
+
+      {children}
     </div>
   )
 }

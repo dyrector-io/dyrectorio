@@ -24,6 +24,7 @@ import UuidValidationGuard from './guards/uuid-params.validation.guard'
 import EmailModule from './mailer/email.module'
 import ShutdownService from './services/application.shutdown.service'
 import PrismaService from './services/prisma.service'
+import PipelineModule from './app/pipeline/pipeline.module'
 
 const imports = [
   ProjectModule,
@@ -40,6 +41,7 @@ const imports = [
   TemplateModule,
   DashboardModule,
   StorageModule,
+  PipelineModule,
   ConfigBundleModule,
   ConfigModule.forRoot(appConfig),
   EmailModule,
