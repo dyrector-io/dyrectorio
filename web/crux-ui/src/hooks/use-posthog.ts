@@ -71,7 +71,10 @@ const usePosthog = (pageProps: any) => {
       name: settings.groupName,
     }
 
-    posthog.opt_in_capturing()
+    posthog.opt_in_capturing({
+      clear_persistence: true,
+    })
+
     posthog.group(QA_GROUP_TYPE, settings.groupId, groupProps)
   }, [settings, pathname])
 
