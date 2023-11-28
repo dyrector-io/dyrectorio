@@ -12,7 +12,7 @@ type HubApiPaginatedResponse = {
 
 const MAX_RATE_RETRY = 3
 
-class HubApiClient implements RegistryApiClient {
+export default class CachedPublicHubApiClient implements RegistryApiClient {
   private url: string
 
   private proxyToken?: string
@@ -114,5 +114,3 @@ class HubApiClient implements RegistryApiClient {
     return result
   }
 }
-
-export default HubApiClient
