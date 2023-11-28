@@ -15,7 +15,7 @@ const DyoPassword = (props: PasswordIconProps) => {
     <DyoIcon
       src={isVisible ? `/eye_close.svg` : '/eye.svg'}
       alt={isVisible ? t(`hidePassword`) : t('showPassword')}
-      size={'md'}
+      size="md"
       onClick={onClick}
     />
   )
