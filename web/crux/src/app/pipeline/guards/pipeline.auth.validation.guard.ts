@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common'
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { AzureDevOpsCredentials } from 'src/domain/pipeline'
 import AzureDevOpsService from 'src/services/azure-devops.service'
 import PrismaService from 'src/services/prisma.service'
