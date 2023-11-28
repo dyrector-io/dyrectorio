@@ -37,6 +37,7 @@
     "next": "^13.5.4",
     "next-translate": "2.5.2",
     "openpgp": "^5.10.1",
+    "posthog-js": "^1.85.2",
     "prismjs": "^1.29.0",
     "react": "^18.2.0",
     "react-datepicker": "^4.16.0",

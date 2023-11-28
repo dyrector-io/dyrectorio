@@ -15,6 +15,7 @@ import { useThrottling } from '@app/hooks/use-throttleing'
 import { AuditLog, AuditLogList, AuditLogQuery, auditToMethod } from '@app/models'
 import { getEndOfToday, utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
+import { QA_MODAL_LABEL_AUDIT_LOG_DETAILS } from 'quality-assurance'
 import { useEffect, useState } from 'react'
 
 type AuditFilter = {
@@ -177,6 +178,7 @@ const AuditLogPage = () => {
           title={`${showInfo.name} | ${utcDateToLocale(showInfo.createdAt)}`}
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
+          qaLabel={QA_MODAL_LABEL_AUDIT_LOG_DETAILS}
         >
           <span className="text-bright font-semibold pl-4">{auditToMethod(showInfo)}</span>
           <span className="text-bright font-semibold pl-4">{showInfo.event}</span>

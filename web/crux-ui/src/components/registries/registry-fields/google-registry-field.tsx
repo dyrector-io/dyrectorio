@@ -1,12 +1,12 @@
 import { DyoFileUploadInput } from '@app/elements/dyo-file-upload'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoLink from '@app/elements/dyo-link'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { GoogleRegistryDetails } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 
 const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails>) => {
   const { formik } = props
@@ -28,9 +28,14 @@ const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails
       <DyoLabel className="mt-2">
         {t('tips.google')}
         <span className="ml-1">{t('tips.learnMoreRegistry')}</span>
-        <Link className="ml-1 text-blue-300" href="https://cloud.google.com/artifact-registry/docs" target="_blank">
+        <DyoLink
+          className="ml-1 text-blue-300"
+          href="https://cloud.google.com/artifact-registry/docs"
+          target="_blank"
+          qaLabel="google-artifact-registry-docs"
+        >
           {t('here')}
-        </Link>
+        </DyoLink>
         .
       </DyoLabel>
       <DyoInput

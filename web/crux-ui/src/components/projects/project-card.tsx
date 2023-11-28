@@ -1,17 +1,17 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoLink from '@app/elements/dyo-link'
 import { Project } from '@app/models'
 import { auditToLocaleDate } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import Link from 'next/link'
 import ProjectTypeTag from './project-type-tag'
 
 interface ProjectCardProps {
   className?: string
   project: Project
-  titleHref?: string
+  titleHref: string
 }
 
 const ProjectCard = (props: ProjectCardProps) => {
@@ -23,16 +23,32 @@ const ProjectCard = (props: ProjectCardProps) => {
     <Image src="/project_default.svg" alt={t('altPicture', { name: project.name })} width={100} height={100} />
   )
 
+  const title = (
+    <DyoHeading element="h5" className="text-lg text-bright ml-4">
+      {project.name}
+    </DyoHeading>
+  )
+
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col flex-grow w-full')}>
       <div className="flex flex-col w-full">
         <div className="flex flex-row">
-          {titleHref ? <Link href={titleHref}>{image}</Link> : image}
+          {titleHref ? (
+            <DyoLink href={titleHref} qaLabel="project-card-picture">
+              {image}
+            </DyoLink>
+          ) : (
+            image
+          )}
 
           <div className="flex flex-col flex-grow">
-            <DyoHeading element="h5" className="text-lg text-bright ml-4" href={titleHref}>
-              {project.name}
-            </DyoHeading>
+            {titleHref ? (
+              <DyoLink href={titleHref} qaLabel="project-card-title">
+                {title}
+              </DyoLink>
+            ) : (
+              title
+            )}
 
             <div className="flex flex-row justify-start">
               <span className="text-bright font-bold ml-4">{`${t('common:updatedAt')}:`}</span>

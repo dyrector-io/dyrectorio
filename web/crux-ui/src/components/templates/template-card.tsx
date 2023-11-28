@@ -34,13 +34,16 @@ const TemplateCard = (props: TemplateCardProps) => {
             {t('common:add')}
           </DyoButton>
         </div>
+
         <DyoExpandableText
+          name="description"
           text={description}
           lineClamp={2}
           className="text-md text-bright mt-4 line-clamp-2 max-h-44"
           buttonClassName="ml-auto"
           modalTitle={name}
         />
+
         <div className="w-2/12 flex">
           {technologies.map((it, key) => (
             <DyoTag className="text-center mx-auto mr-4" key={key}>

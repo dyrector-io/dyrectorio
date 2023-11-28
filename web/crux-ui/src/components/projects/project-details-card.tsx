@@ -50,6 +50,7 @@ const ProjectDetailsCard = (props: ProjectDetailsCardProps) => {
 
           <div className="overflow-hidden mt-2">
             <DyoExpandableText
+              name="description"
               text={project.description}
               lineClamp={2}
               className="text-md text-light"
@@ -66,6 +67,7 @@ const ProjectDetailsCard = (props: ProjectDetailsCardProps) => {
           </div>
 
           <DyoExpandableText
+            name="changelog"
             text={version.changelog}
             lineClamp={6}
             className="text-md text-bright mt-2 max-h-44"

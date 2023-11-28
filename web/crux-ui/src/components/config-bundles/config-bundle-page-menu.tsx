@@ -2,7 +2,7 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useTranslation from 'next-translate/useTranslation'
-import React from 'react'
+import { QA_DIALOG_LABEL_DELETE_CONFIG_BUNDLE } from 'quality-assurance'
 
 export type DetailsPageTexts = {
   edit?: string
@@ -29,6 +29,7 @@ export const ConfigBundlePageMenu = (props: ConfigBundlePageMenuProps) => {
 
   const deleteClick = async () => {
     const confirmed = await confirmDelete({
+      qaLabel: QA_DIALOG_LABEL_DELETE_CONFIG_BUNDLE,
       title: deleteModalTitle,
       description: deleteModalDescription,
       confirmText: t('delete'),

@@ -4,7 +4,7 @@ import { ROUTE_INDEX } from '@app/routes'
 import { redirectTo, withContextErrorHandling } from '@app/utils'
 import { FlowError } from '@ory/kratos-client'
 import kratos from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 
@@ -41,7 +41,7 @@ const ErrorPage = (props: FlowError) => {
 
 export default ErrorPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const id = context.query.id as string
   if (!id) {
     return redirectTo(ROUTE_INDEX)

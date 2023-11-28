@@ -24,7 +24,7 @@ import { DeploymentDetails, DeploymentRoot, NodeDetails, ProjectDetails, Version
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import toast from 'react-hot-toast'
@@ -236,7 +236,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
 export default DeploymentDetailsPage
 
-export const getDeploymentRoot = async (context: NextPageContext) => {
+export const getDeploymentRoot = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const deploymentId = context.query.deploymentId as string
@@ -257,7 +257,7 @@ export const getDeploymentRoot = async (context: NextPageContext) => {
   } as DeploymentRoot
 }
 
-const getPageServerSideProps = async (context: NextPageContext) => ({
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => ({
   props: {
     deployment: await getDeploymentRoot(context),
   },

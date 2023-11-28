@@ -1,7 +1,7 @@
 import { HEADER_SET_COOKIE } from '@app/const'
 import { missingParameter } from '@app/error-responses'
 import http from 'http'
-import { GetServerSidePropsContext, NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 
 export const cookieOf = (request: http.IncomingMessage): string => {
   const { cookie } = request.headers
@@ -21,7 +21,7 @@ export const forwardCookieToResponse = (res: http.OutgoingMessage, from: { heade
   }
 }
 
-export const forwardCookie = (context: NextPageContext, from: { headers: any }) =>
+export const forwardCookie = (context: GetServerSidePropsContext, from: { headers: any }) =>
   forwardCookieToResponse(context.res, from)
 
 export const setCookie = (context: GetServerSidePropsContext, name: string, value: string) => {
@@ -29,7 +29,7 @@ export const setCookie = (context: GetServerSidePropsContext, name: string, valu
   res.setHeader(HEADER_SET_COOKIE, `${name}=${value}; path=/; samesite=lax;`)
 }
 
-export const getCookie = (context: NextPageContext, name: string): string => {
+export const getCookie = (context: GetServerSidePropsContext, name: string): string => {
   const ssrContext = context as any as GetServerSidePropsContext
   return ssrContext.req.cookies[name]
 }
