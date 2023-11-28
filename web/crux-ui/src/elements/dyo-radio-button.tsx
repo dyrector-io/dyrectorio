@@ -1,16 +1,18 @@
 import clsx from 'clsx'
+import { sendQASelectRadioButtonEvent } from 'quality-assurance'
 import { DyoLabel } from './dyo-label'
 
-interface DyoCheckboxProps {
+type DyoRadioButtonProps = {
   disabled?: boolean
   className?: string
   label?: string
   checked?: boolean
   onSelect?: VoidFunction
+  qaLabel: string
 }
 
-const DyoRadioButton = (props: DyoCheckboxProps) => {
-  const { className, disabled, label, checked, onSelect } = props
+const DyoRadioButton = (props: DyoRadioButtonProps) => {
+  const { className, disabled, label, checked, onSelect, qaLabel } = props
 
   const handleCheckedChange = () => {
     if (disabled) {
@@ -18,6 +20,7 @@ const DyoRadioButton = (props: DyoCheckboxProps) => {
     }
 
     onSelect?.call(this)
+    sendQASelectRadioButtonEvent(qaLabel)
   }
 
   return (

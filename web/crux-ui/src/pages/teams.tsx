@@ -13,7 +13,7 @@ import { API_TEAMS, API_USERS_ME, ROUTE_INDEX, ROUTE_TEAMS } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { getCookie } from '@server/cookie'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 import { useSWRConfig } from 'swr'
@@ -63,7 +63,7 @@ const TeamsPage = (props: TeamsPageProps) => {
 
 export default TeamsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const teams = await getCruxFromContext<Team[]>(context, API_TEAMS)
 
   if (teams.length < 1) {

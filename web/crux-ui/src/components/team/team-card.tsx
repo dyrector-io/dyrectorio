@@ -1,11 +1,11 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoLink from '@app/elements/dyo-link'
 import { Team } from '@app/models'
 import { teamUrl } from '@app/routes'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import Link from 'next/link'
 
 type TeamStatItemProps = {
   icon: string
@@ -43,11 +43,11 @@ const TeamCard = (props: TeamCardProps) => {
 
   return (
     <DyoCard className={clsx('p-8', highlighted ? 'border border-dyo-turquoise' : null, className)}>
-      <Link href={teamUrl(team.id)} passHref>
+      <DyoLink href={teamUrl(team.id)} qaLabel="team-card-team-name">
         <DyoHeading element="h4" className="text-xl text-bright mb-4">
           {team.name}
         </DyoHeading>
-      </Link>
+      </DyoLink>
 
       <div className="flex flex-row">
         {Object.entries(team.statistics).map(([key, value]) => (

@@ -1,10 +1,10 @@
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { GithubRegistryDetails, GITHUB_NAMESPACE_VALUES, RegistryNamespace } from '@app/models'
+import DyoLink from '@app/elements/dyo-link'
+import { GITHUB_NAMESPACE_VALUES, GithubRegistryDetails, RegistryNamespace } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 
 const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails>) => {
   const { formik } = props
@@ -16,13 +16,14 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
       <DyoLabel className="text-light mt-2">
         {t('tips.githubTokenReason')}
         <span className="ml-1">{t('tips.learnMorePat')}</span>
-        <Link
+        <DyoLink
           className="text-blue-300 ml-1"
           href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"
           target="_blank"
+          qaLabel="github-token-reason-learn-more"
         >
           {t('here')}
-        </Link>
+        </DyoLink>
         .
       </DyoLabel>
 
@@ -52,10 +53,12 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
         <DyoLabel className="mr-2 my-auto">{t('namespaceType')}</DyoLabel>
 
         <DyoChips
+          name="githubNamespaceType"
           choices={GITHUB_NAMESPACE_VALUES}
           selection={formik.values.namespace}
           converter={(it: RegistryNamespace) => t(`namespace.${it}`)}
           onSelectionChange={it => formik.setFieldValue('namespace', it, true)}
+          qaLabel={chipsQALabelFromValue}
         />
       </div>
 

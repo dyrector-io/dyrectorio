@@ -1,13 +1,13 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
+import DyoLink from '@app/elements/dyo-link'
+import DyoTable, { DyoColumn, sortDate, sortEnum, sortNumber, sortString } from '@app/elements/dyo-table'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { PROJECT_TYPE_VALUES, Project } from '@app/models'
 import { auditToLocaleDate } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import ProjectTypeTag from './project-type-tag'
-import DyoTable, { DyoColumn, sortDate, sortEnum, sortNumber, sortString } from '@app/elements/dyo-table'
 
 export interface ProjectViewListProps {
   projects: Project[]
@@ -55,9 +55,9 @@ const ProjectViewList = (props: ProjectViewListProps) => {
           className="w-40 text-center"
           preventClickThrough
           body={(it: Project) => (
-            <Link href={routes.project.details(it.id)} passHref>
+            <DyoLink href={routes.project.details(it.id)} qaLabel="project-list-view-icon">
               <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
-            </Link>
+            </DyoLink>
           )}
         />
       </DyoTable>

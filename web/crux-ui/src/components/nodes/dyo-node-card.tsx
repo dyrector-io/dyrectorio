@@ -3,10 +3,10 @@ import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoLink from '@app/elements/dyo-link'
 import { DyoNode } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 import NodeStatusIndicator from './node-status-indicator'
 
 interface DyoNodeCardProps extends Omit<DyoCardProps, 'children'> {
@@ -37,7 +37,13 @@ const DyoNodeCard = (props: DyoNodeCardProps) => {
 
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
-      {titleHref ? <Link href={titleHref}>{title}</Link> : title}
+      {titleHref ? (
+        <DyoLink href={titleHref} qaLabel="node-card-title">
+          {title}
+        </DyoLink>
+      ) : (
+        title
+      )}
 
       {!hideConnectionInfo && node.address && (
         <DyoLabel className="mr-auto mt-6">
@@ -46,6 +52,7 @@ const DyoNodeCard = (props: DyoNodeCardProps) => {
       )}
 
       <DyoExpandableText
+        name="description"
         text={node.description}
         lineClamp={node.address ? 4 : 6}
         className="text-md text-light mt-2 max-h-44"

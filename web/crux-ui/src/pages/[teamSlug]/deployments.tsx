@@ -8,30 +8,32 @@ import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
+import DyoLink from '@app/elements/dyo-link'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
-import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import { EnumFilter, TextFilter, enumFilterFor, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
+  DEPLOYMENT_STATUS_VALUES,
   Deployment,
+  DeploymentStatus,
   deploymentIsCopiable,
   deploymentIsDeletable,
-  DeploymentStatus,
-  DEPLOYMENT_STATUS_VALUES,
 } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { auditToLocaleDate, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { QA_DIALOG_LABEL_DELETE_DEPLOYMENT, QA_MODAL_LABEL_DEPLOYMENT_NOTE } from 'quality-assurance'
 import { useEffect, useState } from 'react'
 
 interface DeploymentsPageProps {
@@ -76,6 +78,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
 
   const onDeleteDeployment = async (deployment: Deployment) => {
     const confirmed = await confirm({
+      qaLabel: QA_DIALOG_LABEL_DELETE_DEPLOYMENT,
       title: t('common:areYouSure'),
       description:
         deployment.status === 'successful'
@@ -137,6 +140,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
               className="pl-6"
+              name="deploymentStatusFilter"
               choices={DEPLOYMENT_STATUS_VALUES}
               converter={it => t(`common:deploymentStatuses.${it}`)}
               selection={filters.filter?.enum}
@@ -145,8 +149,10 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
                   enum: type,
                 })
               }}
+              qaLabel={chipsQALabelFromValue}
             />
           </Filters>
+
           <DyoCard className="relative mt-4">
             <DyoTable
               data={filters.filtered}
@@ -194,11 +200,13 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
                 preventClickThrough
                 body={(it: Deployment) => (
                   <>
-                    <div className="inline-block mr-2">
-                      <Link href={routes.deployment.details(it.id)} passHref>
-                        <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
-                      </Link>
-                    </div>
+                    <DyoLink
+                      className="inline-block mr-2"
+                      href={routes.deployment.details(it.id)}
+                      qaLabel="deployment-list-view-icon"
+                    >
+                      <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
+                    </DyoLink>
 
                     <DyoIcon
                       src="/note.svg"
@@ -249,6 +257,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           title={t('common:note')}
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
+          qaLabel={QA_MODAL_LABEL_DEPLOYMENT_NOTE}
         >
           <p className="text-bright mt-8 break-all overflow-y-auto">{showInfo.note}</p>
         </DyoModal>
@@ -261,7 +270,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
 
 export default DeploymentsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const deployments = await getCruxFromContext<Deployment[]>(context, routes.deployment.api.list())

@@ -45,9 +45,10 @@ import { withContextAuthorization } from '@app/utils'
 import { ContainerConfigValidationErrors, getContainerConfigFieldErrors, jsonErrorOf } from '@app/validations'
 import { WsMessage } from '@app/websockets/common'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
+import { QA_DIALOG_LABEL_DELETE_IMAGE } from 'quality-assurance'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface ImageDetailsPageProps {
@@ -167,6 +168,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
 
   const onDelete = async () => {
     const confirmed = await confirmDelete({
+      qaLabel: QA_DIALOG_LABEL_DELETE_IMAGE,
       title: t('common:areYouSureDeleteName', { name: image.name }),
       description: t('common:proceedYouLoseAllDataToName', { name: image.name }),
       confirmText: t('common:delete'),
@@ -319,7 +321,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
 
 export default ImageDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const projectId = context.query.projectId as string

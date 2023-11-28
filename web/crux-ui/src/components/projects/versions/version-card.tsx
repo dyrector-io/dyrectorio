@@ -3,6 +3,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoImgButton from '@app/elements/dyo-img-button'
+import DyoLink from '@app/elements/dyo-link'
 import DyoTag from '@app/elements/dyo-tag'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Version } from '@app/models'
@@ -18,29 +19,34 @@ interface VersionCardProps {
   projectId: string
   version: Version
   onClick?: VoidFunction
-  href?: string
+  titleHref: string
   onIncreaseClick?: VoidFunction
   onSetAsDefaultClick?: VoidFunction
 }
 
 const VersionCard = (props: VersionCardProps) => {
-  const { className, projectId, version, onClick, href, disabled, onIncreaseClick, onSetAsDefaultClick } = props
+  const { className, projectId, version, onClick, titleHref, disabled, onIncreaseClick, onSetAsDefaultClick } = props
 
   const { t } = useTranslation('versions')
   const routes = useTeamRoutes()
+
+  const title = (
+    <DyoHeading element="h5" className="text-xl text-bright" onClick={onClick}>
+      {version.name}
+    </DyoHeading>
+  )
 
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col flex-grow w-full')}>
       <div className="flex flex-col">
         <div className="flex flex-row flex-grow">
-          <DyoHeading
-            element="h5"
-            className={clsx('text-xl text-bright', onClick ? 'cursor-pointer' : null)}
-            onClick={onClick}
-            href={href}
-          >
-            {version.name}
-          </DyoHeading>
+          {titleHref ? (
+            <DyoLink href={titleHref} qaLabel="version-card-title">
+              {title}
+            </DyoLink>
+          ) : (
+            title
+          )}
 
           <div className="flex flex-row ml-auto">
             {!version.default ? null : (
@@ -93,6 +99,7 @@ const VersionCard = (props: VersionCardProps) => {
       <span className="text-bright font-semibold">{t('common:changelog')}</span>
 
       <DyoExpandableText
+        name="changelog"
         text={version.changelog ? version.changelog : t('common:emptyChangelog')}
         lineClamp={6}
         className="text-md text-bright mt-2 max-h-44"

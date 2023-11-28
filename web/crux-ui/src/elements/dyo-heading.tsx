@@ -1,5 +1,4 @@
 import clsx from 'clsx'
-import Link from 'next/link'
 import React from 'react'
 
 export interface DyoHeadingProps {
@@ -7,11 +6,10 @@ export interface DyoHeadingProps {
   className?: string
   children: React.ReactNode
   onClick?: () => void
-  href?: string
 }
 
 export const DyoHeading = (props: DyoHeadingProps) => {
-  const { element, className, children, onClick, href } = props
+  const { element, className, children, onClick } = props
 
   return React.createElement(
     element ?? 'h1',
@@ -19,6 +17,6 @@ export const DyoHeading = (props: DyoHeadingProps) => {
       className: clsx(className ?? 'text-bright font-extrabold text-4xl', onClick ? 'cursor-pointer' : null),
       onClick,
     },
-    href ? <Link href={href}>{children}</Link> : children,
+    children,
   )
 }

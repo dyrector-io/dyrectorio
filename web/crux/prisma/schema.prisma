@@ -573,3 +573,8 @@ model ConfigBundleOnDeployments {
 
   @@id([deploymentId, configBundleId])
 }
+
+model QualityAssuranceConfig {
+  id String  @id @default(uuid()) @db.Uuid
+  name    String?
+}
