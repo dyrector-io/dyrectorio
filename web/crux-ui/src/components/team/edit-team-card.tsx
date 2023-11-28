@@ -14,6 +14,7 @@ import { API_TEAMS, teamApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createTeamSchema, updateTeamSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
+import { QA_DIALOG_LABEL_CHANGE_TEAM_SLUG } from 'quality-assurance'
 import { useState } from 'react'
 
 interface EditTeamCardProps {
@@ -58,6 +59,7 @@ const EditTeamCard = (props: EditTeamCardProps) => {
 
       if (editing && propsTeam.slug !== body.slug) {
         const confirmed = await confirm({
+          qaLabel: QA_DIALOG_LABEL_CHANGE_TEAM_SLUG,
           title: t('areYouSureChangeSlug', propsTeam),
           description: t('changingSlugHaveToAdjust'),
         })

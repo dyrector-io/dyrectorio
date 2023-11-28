@@ -13,7 +13,7 @@ import { findUiMessage, isDyoError, redirectTo, sendForm, upsertDyoError, withCo
 import { RecoveryFlow } from '@ory/kratos-client'
 import { forwardCookie } from '@server/cookie'
 import kratos from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
@@ -93,7 +93,7 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
 
 export default AcceptInvitationPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const flowId = context.query.flow as string
   const code = context.query.code as string
   const team = context.query.team as string

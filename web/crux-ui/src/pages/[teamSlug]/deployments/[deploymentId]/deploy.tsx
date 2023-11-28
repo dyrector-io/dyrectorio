@@ -19,7 +19,7 @@ import {
   WS_TYPE_FETCH_DEPLOYMENT_EVENTS,
 } from '@app/models'
 import { terminalDateFormat, withContextAuthorization } from '@app/utils'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useState } from 'react'
@@ -165,7 +165,7 @@ const DeployPage = (props: DeployPageProps) => {
 
 export default DeployPage
 
-const getPageServerSideProps = async (context: NextPageContext) => ({
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => ({
   props: {
     deployment: await getDeploymentRoot(context),
   },

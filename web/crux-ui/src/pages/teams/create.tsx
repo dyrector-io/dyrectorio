@@ -4,7 +4,7 @@ import { Team, UserMeta } from '@app/models'
 import { API_USERS_ME, ROUTE_INDEX } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { postCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 
@@ -24,7 +24,7 @@ const CreateTeamPage = () => {
 
 export default CreateTeamPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const user = await postCruxFromContext<UserMeta>(context, API_USERS_ME)
 
   if (user.teams.length > 0) {

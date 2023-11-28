@@ -16,7 +16,7 @@ import { ConfigBundleDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import toast from 'react-hot-toast'
 
@@ -137,7 +137,7 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
 
 export default ConfigBundleDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const configBundleId = context.query.configBundleId as string

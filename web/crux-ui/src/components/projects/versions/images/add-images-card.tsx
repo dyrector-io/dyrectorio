@@ -162,14 +162,19 @@ const AddImagesCard = (props: AddImagesCardProps) => {
     ...images.filter(selectable => !selected.find(it => it.image.name === selectable.image.name)),
   ]
 
-  const itemTemplate = (selectable: SelectableImage) => {
+  const itemTemplate = (selectable: SelectableImage, index: number) => {
     const checked = !!selected.find(it => it.image.name === selectable.image.name)
     const onCheckedChange = isChecked => onImageCheckedChange(selectable, isChecked)
 
     /* eslint-disable react/jsx-key */
     return [
       <div className="flex flex-row p-auto">
-        <DyoCheckbox className="my-auto mr-2" checked={!!checked} onCheckedChange={onCheckedChange} />
+        <DyoCheckbox
+          className="my-auto mr-2"
+          checked={!!checked}
+          onCheckedChange={onCheckedChange}
+          qaLabel={`image-${index}`}
+        />
         <DyoLabel onClick={() => onCheckedChange(!checked)}>{selectable.image.name}</DyoLabel>
       </div>,
     ]
@@ -208,6 +213,7 @@ const AddImagesCard = (props: AddImagesCardProps) => {
             <DyoLabel className="ml-8 mr-2 my-auto">{t('common:registry')}</DyoLabel>
 
             <DyoChips
+              name="registries"
               choices={registries}
               selection={registry}
               converter={(it: Registry) => it.name}
