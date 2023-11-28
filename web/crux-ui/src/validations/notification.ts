@@ -35,7 +35,7 @@ export const notificationSchema = yup.object().shape({
         case 'rocket':
           pattern = /^https:\/\/[^/]+\.rocket\.chat\/hooks\/[a-f0-9]{24}\/[a-zA-Z0-9]{32}\.?[a-zA-Z0-9]*$/
           errorMsg = 'https://subdomain.rocket.chat/hooks/TOKEN/ID'
-          break 
+          break
         case 'mattermost':
           pattern = /^https:\/\/([a-zA-Z0-9.-]+)\.([a-zA-Z0-9.-]+)\.com\/hooks\/([a-zA-Z0-9]+)$/
           errorMsg = 'https://your.subdomain.com/hooks/ID'
