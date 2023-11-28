@@ -2,10 +2,10 @@ import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoLink from '@app/elements/dyo-link'
 import { Notification } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 import NotificationStatusTag from './notification-status-tag'
 import NotificationTypeTag from './notification-type-tag'
 
@@ -35,7 +35,13 @@ const NotificationCard = (props: NotificationCardProps) => {
 
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
-      {titleHref ? <Link href={titleHref}>{title}</Link> : title}
+      {titleHref ? (
+        <DyoLink href={titleHref} qaLabel="notification-card-title">
+          {title}
+        </DyoLink>
+      ) : (
+        title
+      )}
 
       <div className="flex wrap my-2">
         <p className="text-light break-all truncate">{notification.url}</p>

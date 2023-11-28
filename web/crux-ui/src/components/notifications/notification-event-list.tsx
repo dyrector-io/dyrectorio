@@ -39,7 +39,9 @@ export const NotificationEventList = (props: NotificationEventListProps) => {
               className="my-auto mr-2"
               checked={checked}
               onCheckedChange={check => onCheckChanged(check, it)}
+              qaLabel={textKey}
             />
+
             <DyoLabel className="cursor-pointer" onClick={() => onCheckChanged(!checked, it)}>
               {t(`eventType.${textKey}`)}
             </DyoLabel>

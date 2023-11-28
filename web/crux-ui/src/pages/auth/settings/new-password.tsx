@@ -15,7 +15,7 @@ import { passwordSchema } from '@app/validations'
 import { SettingsFlow } from '@ory/kratos-client'
 import { forwardCookie } from '@server/cookie'
 import kratos, { identityWasRecovered, obtainSessionFromRequest } from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useState } from 'react'
@@ -122,7 +122,7 @@ const NewPasswordPage = (props: NewPasswordPageProps) => {
 
 export default NewPasswordPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const { cookie } = context.req.headers
 
   const session = await obtainSessionFromRequest(context.req)

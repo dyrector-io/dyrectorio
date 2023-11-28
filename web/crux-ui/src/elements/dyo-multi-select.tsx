@@ -1,12 +1,13 @@
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import React, { useEffect, useState } from 'react'
+import DyoCheckbox from './dyo-checkbox'
 import DyoIcon from './dyo-icon'
 import DyoMessage from './dyo-message'
-import DyoCheckbox from './dyo-checkbox'
 
-export interface DyoMultiSelectProps<T> {
+export type DyoMultiSelectProps<T> = {
   className?: string
+  name: string
   disabled?: boolean
   grow?: boolean
   message?: string
@@ -30,19 +31,20 @@ const DyoMultiSelect = <T,>(props: DyoMultiSelectProps<T>) => {
     idConverter,
     labelConverter,
     onSelectionChange,
+    name,
   } = props
 
   const { t } = useTranslation('common')
 
   const [selectorVisible, setSelectorVisible] = useState<boolean>(false)
 
-  const toggleSelection = (e: any, id: string) => {
+  const toggleSelection = (ev: React.MouseEvent | React.ChangeEvent, id: string) => {
     if (disabled) {
       return
     }
 
-    e.preventDefault()
-    e.stopPropagation()
+    ev.preventDefault()
+    ev.stopPropagation()
 
     if (selection.includes(id)) {
       const newSelection = [...selection]
@@ -56,13 +58,13 @@ const DyoMultiSelect = <T,>(props: DyoMultiSelectProps<T>) => {
     }
   }
 
-  const toggleDropdown = e => {
+  const toggleDropdown = ev => {
     if (disabled) {
       return
     }
 
-    e.preventDefault()
-    e.stopPropagation()
+    ev.preventDefault()
+    ev.stopPropagation()
     setSelectorVisible(!selectorVisible)
   }
 
@@ -115,7 +117,7 @@ const DyoMultiSelect = <T,>(props: DyoMultiSelectProps<T>) => {
 
         {selectorVisible && (
           <div className="absolute w-full z-50 mt-0.5 bg-medium ring-2 rounded-b-md ring-light-grey max-h-60 overflow-y-auto overflow-x-hidden">
-            {choices.map(it => {
+            {choices.map((it, index) => {
               const itemId = idConverter(it)
               return (
                 <div
@@ -126,7 +128,8 @@ const DyoMultiSelect = <T,>(props: DyoMultiSelectProps<T>) => {
                   <DyoCheckbox
                     className="flex-none mr-2"
                     checked={selection.includes(itemId)}
-                    onCheckedChange={(_, e) => toggleSelection(e, itemId)}
+                    onCheckedChange={(_, ev) => toggleSelection(ev, itemId)}
+                    qaLabel={`${name}-${index}`}
                   />
                   <label className="text-light-eased cursor-pointer line-clamp-1">{labelConverter(it)}</label>
                 </div>

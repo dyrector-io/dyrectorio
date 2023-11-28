@@ -2,7 +2,7 @@ import MultiInput from '@app/components/editor/multi-input'
 import { ItemEditorState } from '@app/components/editor/use-item-editor-state'
 import KeyOnlyInput from '@app/components/shared/key-only-input'
 import KeyValueInput from '@app/components/shared/key-value-input'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoToggle from '@app/elements/dyo-toggle'
@@ -107,11 +107,13 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
 
             <DyoChips
               className="ml-2"
+              name="deploymentStrategy"
               choices={CONTAINER_DEPLOYMENT_STRATEGY_VALUES}
               selection={config.deploymentStrategy}
               converter={(it: ContainerDeploymentStrategyType) => t(`crane.deploymentStrategies.${it}`)}
               onSelectionChange={it => onChange({ deploymentStrategy: it })}
               disabled={disabled}
+              qaLabel={chipsQALabelFromValue}
             />
           </div>
         )}
@@ -550,6 +552,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
 
                     <DyoChips
                       className="w-full ml-2"
+                      name="metricsPort"
                       choices={ports.map(it => it.internal)}
                       selection={config.metrics?.port ?? null}
                       converter={(it: number | null) =>
