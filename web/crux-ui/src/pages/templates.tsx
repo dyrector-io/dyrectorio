@@ -12,7 +12,7 @@ import { appendTeamSlug } from '@app/providers/team-routes'
 import { API_TEMPLATES, ROUTE_INDEX, ROUTE_TEMPLATES } from '@app/routes'
 import { redirectTo, teamSlugOrFirstTeam, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
@@ -75,7 +75,7 @@ const TemplatesPage = (props: TemplatesPageProps) => {
 }
 export default TemplatesPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const templates = await getCruxFromContext<Template[]>(context, API_TEMPLATES)
 
   const teamSlug = await teamSlugOrFirstTeam(context)

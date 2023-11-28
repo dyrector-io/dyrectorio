@@ -1,18 +1,20 @@
 import DeploymentStatusTag from '@app/components/projects/versions/deployments/deployment-status-tag'
 import Filters from '@app/components/shared/filters'
 import { DyoCard } from '@app/elements/dyo-card'
+import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
+import DyoLink from '@app/elements/dyo-link'
 import DyoModal from '@app/elements/dyo-modal'
 import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
-import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import { EnumFilter, TextFilter, enumFilterFor, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Deployment, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
+import { DEPLOYMENT_STATUS_VALUES, Deployment, DeploymentStatus } from '@app/models'
 import { auditToLocaleDate } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { QA_MODAL_LABEL_DEPLOYMENT_NOTE } from 'quality-assurance'
 import { useState } from 'react'
 
 interface NodeDeploymentListProps {
@@ -47,6 +49,7 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
               className="pl-6"
+              name="deploymentStatusFilter"
               choices={DEPLOYMENT_STATUS_VALUES}
               converter={it => t(`common:deploymentStatuses.${it}`)}
               selection={filters.filter?.enum}
@@ -55,8 +58,10 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
                   enum: type,
                 })
               }}
+              qaLabel={chipsQALabelFromValue}
             />
           </Filters>
+
           <DyoCard className="relative mt-4">
             <DyoTable
               data={filters.filtered}
@@ -113,9 +118,9 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
                 body={(it: Deployment) => (
                   <>
                     <div className="inline-block mr-2">
-                      <Link href={routes.deployment.details(it.id)} passHref>
+                      <DyoLink href={routes.deployment.details(it.id)} qaLabel="deployment-list-view-icon">
                         <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
-                      </Link>
+                      </DyoLink>
                     </div>
 
                     <DyoIcon
@@ -143,6 +148,7 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
           title={t('common:note')}
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
+          qaLabel={QA_MODAL_LABEL_DEPLOYMENT_NOTE}
         >
           <p className="text-bright mt-8 break-all overflow-y-auto">{showInfo.note}</p>
         </DyoModal>

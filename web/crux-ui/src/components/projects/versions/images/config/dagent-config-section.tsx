@@ -1,7 +1,7 @@
 import { ItemEditorState } from '@app/components/editor/use-item-editor-state'
 import KeyOnlyInput from '@app/components/shared/key-only-input'
 import KeyValueInput from '@app/components/shared/key-value-input'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import {
@@ -88,11 +88,13 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
 
             <DyoChips
               className="ml-2"
+              name="networkMode"
               choices={CONTAINER_NETWORK_MODE_VALUES}
               selection={config.networkMode}
               converter={(it: ContainerNetworkMode) => t(`dagent.networkModes.${it}`)}
               onSelectionChange={it => onChange({ networkMode: it })}
               disabled={disabled}
+              qaLabel={chipsQALabelFromValue}
             />
           </div>
         )}
@@ -144,11 +146,13 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
 
             <DyoChips
               className="ml-2"
+              name="restartPolicyType"
               choices={CONTAINER_RESTART_POLICY_TYPE_VALUES}
               selection={config.restartPolicy}
               converter={(it: ContainerRestartPolicyType) => t(`dagent.restartPolicies.${it}`)}
               onSelectionChange={it => onChange({ restartPolicy: it })}
               disabled={disabled}
+              qaLabel={chipsQALabelFromValue}
             />
           </div>
         )}
@@ -168,11 +172,13 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
 
               <DyoChips
                 className="mb-2 ml-2"
+                name="logDriver"
                 choices={CONTAINER_LOG_DRIVER_VALUES}
                 selection={config.logConfig?.driver ?? 'nodeDefault'}
                 converter={(it: ContainerLogDriverType) => t(`dagent.logDrivers.${it}`)}
                 onSelectionChange={it => onChange({ logConfig: { ...config.logConfig, driver: it } })}
                 disabled={disabled}
+                qaLabel={chipsQALabelFromValue}
               />
 
               <KeyValueInput

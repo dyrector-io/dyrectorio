@@ -3,6 +3,7 @@ import { NodeDetailsActions, NodeDetailsState } from '@app/components/nodes/use-
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
 import DyoImgButton from '@app/elements/dyo-img-button'
+import DyoLink from '@app/elements/dyo-link'
 import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import useTeamRoutes from '@app/hooks/use-team-routes'
@@ -19,7 +20,6 @@ import {
 } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 
 interface NodeContainersListProps {
   state: NodeDetailsState
@@ -119,9 +119,9 @@ const NodeContainersList = (props: NodeContainersListProps) => {
                 />
 
                 {it.state && (
-                  <Link href={routes.node.containerLog(state.node.id, it.id)} passHref>
+                  <DyoLink href={routes.node.containerLog(state.node.id, it.id)} qaLabel="container-list-logs-icon">
                     <DyoIcon className="align-bottom" src="/note.svg" alt={t('logs')} size="md" />
-                  </Link>
+                  </DyoLink>
                 )}
 
                 <DyoImgButton

@@ -1,14 +1,14 @@
 import { ROUTE_LOGIN } from '@app/routes'
 import { redirectTo } from '@app/utils'
 import kratos, { obtainSessionFromRequest } from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 
 // eslint-disable-next-line react/jsx-no-useless-fragment
 const LogoutPage = () => <></>
 
 export default LogoutPage
 
-export const getPageServerSideProps = async (context: NextPageContext) => {
+export const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const { cookie } = context.req.headers
 
   const session = await obtainSessionFromRequest(context.req)

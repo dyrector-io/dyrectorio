@@ -6,6 +6,7 @@ import DyoButton from './dyo-button'
 import DyoModal from './dyo-modal'
 
 interface DyoExpandableTextProps {
+  name: string
   text: string
   className?: string
   buttonClassName?: string
@@ -19,6 +20,7 @@ const lineClamp = ['line-clamp-1', 'line-clamp-2', 'line-clamp-3', 'line-clamp-4
 
 const DyoExpandableText = (props: DyoExpandableTextProps) => {
   const {
+    name,
     text,
     className,
     buttonClassName,
@@ -46,17 +48,20 @@ const DyoExpandableText = (props: DyoExpandableTextProps) => {
       >
         {text}
       </p>
+
       {!overflow ? null : (
         <DyoButton className={buttonClassName ?? ''} text onClick={() => setShow(true)}>
           {t('showAll')}
         </DyoButton>
       )}
-      {!show ? null : (
+
+      {show && (
         <DyoModal
           className={modalClassName ?? 'w-1/2 h-1/2 overflow-auto'}
           title={modalTitle}
           open={show}
           onClose={() => setShow(false)}
+          qaLabel={`${name}-expand`}
         >
           <p className="text-bright mt-8 break-words whitespace-pre-line overflow-y-auto">{text}</p>
         </DyoModal>

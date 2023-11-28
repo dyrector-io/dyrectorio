@@ -1,6 +1,7 @@
 import DyoButton from '@app/elements/dyo-button'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import { sendQADialogEvent, sendQAKeyEvent } from 'quality-assurance'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { DyoCard } from './dyo-card'
 import { DyoHeading } from './dyo-heading'
@@ -15,6 +16,7 @@ export interface DyoModalProps {
   children?: React.ReactNode
   open: boolean
   onClose: VoidFunction
+  qaLabel: string
 }
 
 const DyoModal = (props: DyoModalProps) => {
@@ -27,10 +29,16 @@ const DyoModal = (props: DyoModalProps) => {
     buttons: propsButtons,
     children,
     open,
-    onClose,
+    onClose: propsOnClose,
+    qaLabel,
   } = props
 
   const { t } = useTranslation('common')
+
+  const onClose = () => {
+    propsOnClose()
+    sendQADialogEvent(qaLabel, 'close')
+  }
 
   const buttons = propsButtons ?? <DyoButton onClick={onClose}>{t('close')}</DyoButton>
 
@@ -39,18 +47,24 @@ const DyoModal = (props: DyoModalProps) => {
   const onKeyDown = useCallback((ev: KeyboardEvent) => {
     if (ev.key === 'Escape') {
       onCloseRef.current()
+      sendQAKeyEvent({
+        label: 'closeDialogWithEscape',
+        key: ev.key,
+      })
     }
   }, [])
 
   useEffect(() => {
     if (open) {
       document.addEventListener('keydown', onKeyDown)
+
+      sendQADialogEvent(qaLabel, 'open')
     } else {
       document.removeEventListener('keydown', onKeyDown)
     }
 
     return () => document.removeEventListener('keydown', onKeyDown)
-  }, [open, onKeyDown])
+  }, [open, qaLabel, onKeyDown])
 
   return (
     open && (
@@ -75,6 +89,7 @@ export default DyoModal
 
 export type DyoConfirmationModalConfig = {
   onClose: (confirmed: boolean) => void
+  qaLabel: string
   title?: string
   description?: string
   confirmText?: string
@@ -83,7 +98,10 @@ export type DyoConfirmationModalConfig = {
   cancelColor?: string
 }
 
-export type DyoConfirmationModalProps = Omit<DyoModalProps, 'buttons' | 'children' | 'onClose' | 'open' | 'title'> & {
+export type DyoConfirmationModalProps = Omit<
+  DyoModalProps,
+  'buttons' | 'children' | 'onClose' | 'open' | 'title' | 'qaLabel'
+> & {
   config: DyoConfirmationModalConfig
 }
 
@@ -107,6 +125,7 @@ export const DyoConfirmationModal = (props: DyoConfirmationModalProps) => {
       title={config?.title}
       open
       onClose={() => onClose(false)}
+      qaLabel={config?.qaLabel}
       buttons={
         <>
           <DyoButton autoFocus color={config.confirmColor} onClick={() => onClose(true)}>

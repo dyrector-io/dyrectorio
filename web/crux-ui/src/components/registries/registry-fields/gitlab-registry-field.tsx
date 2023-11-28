@@ -1,11 +1,11 @@
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoLink from '@app/elements/dyo-link'
 import DyoToggle from '@app/elements/dyo-toggle'
-import { GitlabRegistryDetails, GITLAB_NAMESPACE_VALUES, RegistryNamespace } from '@app/models'
+import { GITLAB_NAMESPACE_VALUES, GitlabRegistryDetails, RegistryNamespace } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 
 const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails>) => {
   const { formik } = props
@@ -17,13 +17,14 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
       <DyoLabel className="mt-2">
         {t('tips.gitlab')}
         <span className="ml-1">{t('tips.learnMorePat')}</span>
-        <Link
+        <DyoLink
           className="ml-1 text-blue-300"
           href="https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html"
           target="_blank"
+          qaLabel="gitlab-token-reason-learn-more"
         >
           {t('here')}
-        </Link>
+        </DyoLink>
         .
       </DyoLabel>
 
@@ -53,10 +54,12 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
         <DyoLabel className="mr-2 my-auto">{t('namespaceType')}</DyoLabel>
 
         <DyoChips
+          name="gitlabNamespaceType"
           choices={GITLAB_NAMESPACE_VALUES}
           selection={formik.values.namespace}
           converter={(it: RegistryNamespace) => t(`namespace.${it}`)}
           onSelectionChange={it => formik.setFieldValue('namespace', it, true)}
+          qaLabel={chipsQALabelFromValue}
         />
       </div>
 

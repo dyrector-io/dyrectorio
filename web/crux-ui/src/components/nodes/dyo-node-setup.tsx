@@ -1,6 +1,6 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
@@ -127,6 +127,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
             </DyoHeading>
 
             <DyoChips
+              name="nodeType"
               className="mb-2 ml-2"
               choices={NODE_TYPE_VALUES}
               selection={formik.values.type}
@@ -135,6 +136,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                 await formik.setFieldValue('type', it, true)
                 await onTypeChanged(it)
               }}
+              qaLabel={chipsQALabelFromValue}
             />
 
             {node.type === 'docker' && (
@@ -182,11 +184,13 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                 </DyoHeading>
 
                 <DyoChips
+                  name="scriptType"
                   className="mb-2 ml-2"
                   choices={NODE_INSTALL_SCRIPT_TYPE_VALUES}
                   selection={formik.values.scriptType}
                   converter={(it: NodeInstallScriptType) => t(`installScript.${it}`)}
                   onSelectionChange={it => formik.setFieldValue('scriptType', it, true)}
+                  qaLabel={chipsQALabelFromValue}
                 />
 
                 <DyoLabel className="text-lg mb-2.5" textColor="text-bright">
