@@ -5,10 +5,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/AlekSi/pointer"
 	"github.com/docker/docker/api/types/mount"
@@ -39,6 +41,8 @@ const (
 	defaultMailSlurperUIPort   = 4436
 	defaultMailSlurperAPIPort  = 4437
 	defaultPostgresPort        = 5432
+	healhProbeTimeout          = 2 * time.Minute
+	healhProbeInterval         = time.Second
 )
 
 func baseContainer(ctx context.Context, args *ArgsFlags) containerbuilder.Builder {
@@ -269,6 +273,11 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 		mountType = mount.TypeNamedPipe
 	}
 
+	traefikHost := localhost
+	if args.FullyContainerized {
+		traefikHost = state.Containers.Traefik.Name
+	}
+
 	traefik := baseContainer(state.Ctx, args).
 		WithImage("docker.io/library/traefik:v2.9").
 		WithName(state.Containers.Traefik.Name).
@@ -299,7 +308,15 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 			)
 		})
 
-	if !args.FullyContainerized {
+	if args.FullyContainerized {
+		traefik.
+			WithPostStartHooks(func(ctx context.Context, client client.APIClient,
+				cont containerbuilder.ParentContainer,
+			) error {
+				addr := fmt.Sprintf("http://%s:%d/api/status", traefikHost, state.SettingsFile.TraefikWebPort)
+				return healhProbe(ctx, addr)
+			})
+	} else {
 		traefik = traefik.
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
@@ -595,4 +612,45 @@ func CopyTraefikConfiguration(ctx context.Context, name, internalHostDomain stri
 	)
 
 	return err
+}
+
+func healhProbe(ctx context.Context, address string) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, address, http.NoBody)
+	if err != nil {
+		return fmt.Errorf("failed to create the http request: %s", err.Error())
+	}
+
+	log.Info().Str("address", address).Msg("Health probing")
+
+	startedAt := time.Now()
+	timeOut := false
+	statusCode := -1
+	for !timeOut {
+		//nolint:bodyclose //closed already
+		resp, reqErr := http.DefaultClient.Do(req)
+
+		if time.Since(startedAt) >= healhProbeTimeout {
+			timeOut = true
+		}
+
+		if reqErr != nil {
+			err = reqErr
+			time.Sleep(healhProbeInterval)
+			continue
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			statusCode = resp.StatusCode
+			time.Sleep(healhProbeInterval)
+			continue
+		}
+
+		return nil
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to execute request for %s health probe: %s", address, err.Error())
+	}
+
+	return fmt.Errorf("health probe timeout for %s, last status code: %d", address, statusCode)
 }

@@ -78,16 +78,12 @@ jobs:
           filters: |
             agents:
               - '${{ env.GOLANG_WORKING_DIRECTORY }}/**'
-              - '.github/workflows/product_builder.yaml'
             crux:
               - '${{ env.CRUX_WORKING_DIRECTORY }}/**'
-              - '.github/workflows/product_builder.yaml'
             cruxui:
               - '${{ env.CRUX_UI_WORKING_DIRECTORY }}/**'
-              - '.github/workflows/product_builder.yaml'
             kratos:
               - '${{ env.KRATOS_WORKING_DIRECTORY }}/**'
-              - '.github/workflows/product_builder.yaml'
       - name: Setting a buildtag
         id: settag
         working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
@@ -594,7 +590,8 @@ jobs:
           password: ${{ github.token }}
       - name: Setup using cli
         run: |
-          docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --prefer-local-images --expect-container-env --debug -p dyo-e2e up
+          export GITHUB_NETWORK=$(docker network ls -f name=github_network --format {{.Name}})
+          docker run -v /var/run/docker.sock:/var/run/docker.sock --network $GITHUB_NETWORK ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network $GITHUB_NETWORK --prefer-local-images --expect-container-env --debug -p dyo-e2e up
       - name: Setup NPM caches
         uses: actions/cache/restore@v3
         with:
