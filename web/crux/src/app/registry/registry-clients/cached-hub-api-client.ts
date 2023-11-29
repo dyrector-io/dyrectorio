@@ -1,28 +1,17 @@
-import { getRegistryApiException } from 'src/exception/registry-exception'
 import { RegistryImageTags } from '../registry.message'
 import HubApiCache from './caches/hub-api-cache'
+import HubApiClient from './hub-api-client'
 import { RegistryApiClient } from './registry-api-client'
 
-type HubApiPaginatedResponse = {
-  count: number
-  next?: string
-  previous?: string
-  results: any[]
-}
-
-const MAX_RATE_RETRY = 3
-
-export default class CachedPublicHubApiClient implements RegistryApiClient {
-  private url: string
-
+export default class CachedPublicHubApiClient extends HubApiClient implements RegistryApiClient {
   private proxyToken?: string
 
   constructor(
     private cache: HubApiCache,
     url: string,
-    private prefix: string,
+    prefix: string,
   ) {
-    this.url = process.env.HUB_PROXY_URL ?? `https://${url}`
+    super(process.env.HUB_PROXY_URL ?? `https://${url}`, prefix)
     this.proxyToken = process.env.HUB_PROXY_TOKEN
   }
 
@@ -31,9 +20,7 @@ export default class CachedPublicHubApiClient implements RegistryApiClient {
 
     let repositories: string[] = this.cache.get(endpoint)
     if (!repositories) {
-      const result = await this.fetchPaginatedEndpoint(endpoint)
-
-      repositories = result.map(it => it.name)
+      repositories = await super.fetchCatalog()
       this.cache.upsert(endpoint, repositories)
     }
 
@@ -41,14 +28,11 @@ export default class CachedPublicHubApiClient implements RegistryApiClient {
   }
 
   async tags(image: string): Promise<RegistryImageTags> {
-    const endpoint = `${image}/tags?page_size=100`
-
-    let tags: string[] = this.cache.get(endpoint)
+    let tags: string[] = this.cache.get(image)
     if (!tags) {
-      const result = await this.fetchPaginatedEndpoint(endpoint)
+      tags = await this.fetchTags(image)
 
-      tags = result.map(it => it.name)
-      this.cache.upsert(endpoint, tags)
+      this.cache.upsert(image, tags)
     }
 
     return {
@@ -57,9 +41,8 @@ export default class CachedPublicHubApiClient implements RegistryApiClient {
     }
   }
 
-  private async fetch(endpoint: string, init?: RequestInit) {
+  protected override async fetch(endpoint: string, init?: RequestInit): Promise<Response> {
     const initializer = init ?? {}
-    const fullUrl = `${this.url}/v2/repositories/${this.prefix}/${endpoint}`
 
     const initHeaders = initializer.headers ?? {}
     const headers = !this.proxyToken
@@ -69,48 +52,9 @@ export default class CachedPublicHubApiClient implements RegistryApiClient {
           authorization: this.proxyToken,
         }
 
-    return await fetch(fullUrl, {
+    return await super.fetch(endpoint, {
       ...initializer,
       headers,
     })
-  }
-
-  private async fetchPaginatedEndpoint(endpoint: string) {
-    const result = []
-
-    let next = () => this.fetch(`${endpoint}`)
-    let rateTry = 0
-
-    do {
-      // eslint-disable-next-line no-await-in-loop
-      const res = await next()
-      if (res.ok) {
-        rateTry = 0
-
-        // eslint-disable-next-line no-await-in-loop
-        const dto: HubApiPaginatedResponse = await res.json()
-        result.push(...dto.results)
-
-        next = dto.next ? () => fetch(dto.next) : null
-      } else if ((res.headers.has('x-retry-after') || res.headers.has('retry-after')) && rateTry < MAX_RATE_RETRY) {
-        const retryAfterHeader = res.headers.get('x-retry-after') ?? res.headers.get('retry-after')
-        const retryAfter = Number(retryAfterHeader) - new Date().getTime() / 1000
-
-        const fetchNext = next
-        next = () =>
-          new Promise<Response>(resolve => {
-            setTimeout(async () => {
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
-              fetchNext().then(resolve)
-            }, retryAfter * 1000)
-          })
-
-        rateTry += 1
-      } else {
-        throw getRegistryApiException(res, endpoint)
-      }
-    } while (next)
-
-    return result
   }
 }
