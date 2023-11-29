@@ -620,6 +620,7 @@ jobs:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
         if: always()
         run: |
+          docker ps
           mkdir logs
           docker logs dyo-e2e_crux-ui > logs/e2e-crux-ui.log 2>&1
           docker logs dyo-e2e_crux > logs/e2e-crux.log 2>&1
