@@ -1,15 +1,15 @@
 import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoLink from '@app/elements/dyo-link'
 import { ConfigBundle } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import Link from 'next/link'
 
 interface ConfigBundleCardProps extends Omit<DyoCardProps, 'children'> {
   configBundle: ConfigBundle
-  titleHref?: string
+  titleHref: string
 }
 
 const ConfigBundleCard = (props: ConfigBundleCardProps) => {
@@ -29,9 +29,16 @@ const ConfigBundleCard = (props: ConfigBundleCardProps) => {
 
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
-      {titleHref ? <Link href={titleHref}>{title}</Link> : title}
+      {titleHref ? (
+        <DyoLink href={titleHref} qaLabel="config-bundle-card-title">
+          {title}
+        </DyoLink>
+      ) : (
+        title
+      )}
 
       <DyoExpandableText
+        name="name"
         text={configBundle.description}
         lineClamp={2}
         className="text-md text-light mt-2 max-h-44"

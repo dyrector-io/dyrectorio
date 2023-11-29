@@ -136,6 +136,24 @@ test.describe('Project', () => {
   })
 
   test.describe('Project versionless filter should work', () => {
+    const FILTER_VERSIONED = 'filter-versioned-2'
+    const FILTER_VERSIONLESS = 'filter-versionless-2'
+
+    // NOTE(@robot9706): beforeAll runs on each worker, so if tests are running in parallel beforeAll executes multiple times
+    test.describe.configure({ mode: 'serial' })
+
+    test.beforeAll(async ({ browser }, testInfo) => {
+      const ctx = await browser.newContext()
+      const page = await ctx.newPage()
+      hookTestPageEvents(page, testInfo)
+
+      await createProject(page, FILTER_VERSIONED, 'versioned')
+      await createProject(page, FILTER_VERSIONLESS, 'versionless')
+
+      await page.close()
+      await ctx.close()
+    })
+
     test('in tile view', async ({ page }) => {
       await page.goto(TEAM_ROUTES.project.list())
       await page.waitForSelector('h2:text-is("Projects")')

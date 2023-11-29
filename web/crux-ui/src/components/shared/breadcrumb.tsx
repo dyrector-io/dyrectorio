@@ -1,10 +1,10 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoLink from '@app/elements/dyo-link'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { ROUTE_INDEX } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 import { sidebarSectionsOf } from '../main/sidebar'
 
 export type BreadcrumbLink = {
@@ -38,14 +38,14 @@ const Breadcrumb = (props: BreadcrumbProps) => {
 
       <div className="bg-bright w-px h-8 mx-6" />
 
-      <Link href={homeMenu?.link ?? ROUTE_INDEX} passHref>
+      <DyoLink href={homeMenu?.link ?? ROUTE_INDEX} qaLabel="breadcrumb-home">
         <DyoIcon
           className="cursor-pointer"
           src={homeMenu?.icon ?? '/breadcrumb_home.svg'}
           alt={t(homeMenu?.text ?? 'home')}
           size="sm"
         />
-      </Link>
+      </DyoLink>
 
       {links?.map((it, index) => {
         const last = index >= links.length - 1
@@ -59,11 +59,11 @@ const Breadcrumb = (props: BreadcrumbProps) => {
             {last ? (
               <DyoLabel className="my-auto truncate">{it.name}</DyoLabel>
             ) : (
-              <Link key={`breadcrumb-link-${index}-link`} href={it.url} passHref>
+              <DyoLink key={`breadcrumb-link-${index}-link`} href={it.url} qaLabel={`breadcrumb-link-${index}`}>
                 <DyoLabel className="cursor-pointer my-auto" textColor="text-dyo-turquoise">
                   {it.name}
                 </DyoLabel>
-              </Link>
+              </DyoLink>
             )}
           </div>
         )

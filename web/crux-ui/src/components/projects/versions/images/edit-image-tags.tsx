@@ -52,7 +52,7 @@ const ImageTagSelectList = (props: ImageTagSelectListProps) => {
       {selected ? null : <DyoMessage messageType="info" message={t('selectTag')} />}
 
       <div className="flex flex-col max-h-96 overflow-y-auto">
-        {filters.filtered.map(it => (
+        {filters.filtered.map((it, index) => (
           <DyoRadioButton
             key={`tag-${it}`}
             disabled={disabled}
@@ -62,6 +62,7 @@ const ImageTagSelectList = (props: ImageTagSelectListProps) => {
               setSelected(it)
               onTagSelected(it)
             }}
+            qaLabel={`imageTag-${index}`}
           />
         ))}
       </div>

@@ -1,7 +1,7 @@
 import ShEditor from '@app/components/shared/sh-editor'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
@@ -110,6 +110,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
           <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('tokens:expirationIn')}</DyoLabel>
 
           <DyoChips
+            name="expiration"
             className="text-bright"
             choices={EXPIRATION_VALUES}
             selection={formik.values.expirationInDays}
@@ -117,6 +118,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
             onSelectionChange={async (it): Promise<void> => {
               await formik.setFieldValue('expirationInDays', it, false)
             }}
+            qaLabel={(name, choice) => chipsQALabelFromValue(name, choice.toString())}
           />
 
           <DyoButton className="hidden" type="submit" />

@@ -1,6 +1,7 @@
 import { FormikSetFieldValue } from '@app/utils'
 import clsx from 'clsx'
 import Image from 'next/image'
+import { sendQACheckEvent } from 'quality-assurance'
 
 interface DyoCheckboxProps {
   className?: string
@@ -11,10 +12,11 @@ interface DyoCheckboxProps {
     checked: boolean,
     event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.ChangeEvent<HTMLInputElement>,
   ) => void
+  qaLabel: string
 }
 
 const DyoCheckbox = (props: DyoCheckboxProps) => {
-  const { className, name, checked, setFieldValue, onCheckedChange } = props
+  const { className, name, checked, setFieldValue, onCheckedChange, qaLabel } = props
 
   const handleCheckedChange = (
     isChecked: boolean,
@@ -22,6 +24,13 @@ const DyoCheckbox = (props: DyoCheckboxProps) => {
   ) => {
     setFieldValue?.call(this, name, isChecked, false)
     onCheckedChange?.call(this, isChecked, event)
+    sendQACheckEvent(
+      {
+        elementType: 'div',
+        label: qaLabel,
+      },
+      isChecked,
+    )
   }
 
   return (
@@ -35,7 +44,7 @@ const DyoCheckbox = (props: DyoCheckboxProps) => {
     >
       {!checked ? null : <Image className="aspect-square" src="/check-white.svg" alt="check" width={20} height={20} />}
 
-      <input type="checkbox" checked={checked} onChange={e => handleCheckedChange(!checked, e)} className="hidden" />
+      <input type="checkbox" checked={checked} onChange={ev => handleCheckedChange(!checked, ev)} className="hidden" />
     </div>
   )
 }

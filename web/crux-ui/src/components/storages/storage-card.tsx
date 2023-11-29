@@ -4,10 +4,10 @@ import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoLink from '@app/elements/dyo-link'
 import { Storage } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 
 interface StorageCardProps extends Omit<DyoCardProps, 'children'> {
   storage: Storage
@@ -35,13 +35,20 @@ const StorageCard = (props: StorageCardProps) => {
 
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
-      {titleHref ? <Link href={titleHref}>{title}</Link> : title}
+      {titleHref ? (
+        <DyoLink href={titleHref} qaLabel="storage-card-title">
+          {title}
+        </DyoLink>
+      ) : (
+        title
+      )}
 
       <div className="my-4 text-ellipsis overflow-hidden whitespace-nowrap text-light-eased">
         <DyoLabel className="mr-auto">{storage.url}</DyoLabel>
       </div>
 
       <DyoExpandableText
+        name="description"
         text={storage.description}
         lineClamp={2}
         className="text-md text-light mt-2 max-h-44"

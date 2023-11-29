@@ -9,6 +9,7 @@ import { join } from 'path'
 import AppModule from './app.module'
 import AuditLoggerInterceptor from './app/audit.logger/audit.logger.interceptor'
 import metricsServerBootstrap from './app/metrics/metrics.server'
+import QualityAssuranceService from './app/quality.assurance/quality-assurance.service'
 import JwtAuthGuard from './app/token/jwt-auth.guard'
 import createSwaggerConfig from './config/swagger.config'
 import HttpExceptionFilter from './filters/http.exception-filter'
@@ -18,7 +19,7 @@ import CreatedWithLocationInterceptor from './interceptors/created-with-location
 import HttpLoggerInterceptor from './interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import prismaBootstrap from './services/prisma.bootstrap'
-import { PRODUCTION } from './shared/const'
+import { productionEnvironment } from './shared/config'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
@@ -51,7 +52,7 @@ const bootstrap = async () => {
 
   // If it's in production, we inject the PinoLogger Logger Service instead of the default one
   // because we need to log in JSON format to stdout
-  if (configService.get<string>('NODE_ENV') === PRODUCTION) {
+  if (productionEnvironment(configService)) {
     app.useLogger(app.get(PinoLogger))
   }
 
@@ -94,8 +95,12 @@ const bootstrap = async () => {
     await metricsServerBootstrap(app, metricOptions)
   }
 
+  const qaService = app.get(QualityAssuranceService)
+  await qaService.bootstrap()
+
   await app.startAllMicroservices()
   await app.listen(httpOptions)
+  qaService.logState()
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

@@ -46,6 +46,7 @@ import {
 } from '@app/models'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
+import { QA_DIALOG_LABEL_REVOKE_DEPLOY_TOKEN } from 'quality-assurance'
 import { useRef, useState } from 'react'
 
 export type DeploymentEditState = 'details' | 'edit' | 'copy' | 'create-token'
@@ -322,6 +323,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
 
   const onRevokeDeploymentToken = async () => {
     const confirmed = await confirm({
+      qaLabel: QA_DIALOG_LABEL_REVOKE_DEPLOY_TOKEN,
       title: t('common:areYouSure'),
       description: t('tokens:areYouSureRevoke'),
       confirmText: t('tokens:revoke'),

@@ -14,6 +14,7 @@ import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import { Translate } from 'next-translate'
 import { useRef, useState } from 'react'
 import { selectTagsOfImage, VerionState, VersionActions } from '../use-version-state'
+import { QA_DIALOG_LABEL_DELETE_IMAGE } from 'quality-assurance'
 
 export type ImageEditorState = {
   image: VersionImage
@@ -73,6 +74,7 @@ const useImageEditorState = (options: ImageEditorStateOptions): [ImageEditorStat
 
   const deleteImage = async () => {
     const confirmed = await confirmDelete({
+      qaLabel: QA_DIALOG_LABEL_DELETE_IMAGE,
       title: t('common:areYouSureDeleteName', { name: image.name }),
       description: t('common:proceedYouLoseAllDataToName', { name: image.name }),
       confirmText: t('common:delete'),

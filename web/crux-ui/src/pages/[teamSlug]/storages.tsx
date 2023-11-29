@@ -15,7 +15,7 @@ import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
@@ -85,7 +85,7 @@ const StoragesPage = (props: StoragesPageProps) => {
 
 export default StoragesPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const storages = await getCruxFromContext<Storage[]>(context, routes.storage.api.list())

@@ -1,5 +1,6 @@
 import clsx from 'clsx'
 import Image from 'next/image'
+import { sendQAClickEvent } from 'quality-assurance'
 
 interface DyoImgButtonProps {
   className?: string
@@ -16,14 +17,33 @@ interface DyoImgButtonProps {
 }
 
 const DyoImgButton = (props: DyoImgButtonProps) => {
-  const { outlined, secondary, disabled, colorClassName, imageClassName, className, onClick, alt, width, height, src } =
-    props
+  const {
+    outlined,
+    secondary,
+    disabled,
+    colorClassName,
+    imageClassName,
+    className,
+    onClick: propsOnClick,
+    alt,
+    width,
+    height,
+    src,
+  } = props
 
   const defaultColor = outlined ? (secondary ? 'ring-warning-orange' : 'ring-dyo-turquoise') : null
   const disabledColor = outlined ? 'ring-light-grey' : null
   const color = disabled ? disabledColor : colorClassName ?? defaultColor
 
   const ring = outlined ? 'ring-2' : null
+
+  const onClick = () => {
+    propsOnClick()
+    sendQAClickEvent({
+      elementType: 'img',
+      label: alt,
+    })
+  }
 
   return (
     /* eslint-disable-next-line react/button-has-type */

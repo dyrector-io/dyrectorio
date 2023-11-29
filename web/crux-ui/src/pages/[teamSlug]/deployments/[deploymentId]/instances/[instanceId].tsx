@@ -40,7 +40,7 @@ import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { ContainerConfigValidationErrors, getMergedContainerConfigFieldErrors, jsonErrorOf } from '@app/validations'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
@@ -277,7 +277,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
 export default InstanceDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const deploymentId = context.query.deploymentId as string

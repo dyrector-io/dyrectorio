@@ -7,6 +7,7 @@ import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
 import ViewModeToggle from '@app/components/shared/view-mode-toggle'
+import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
@@ -17,7 +18,7 @@ import { Project, ProjectType, PROJECT_TYPE_VALUES } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { auditToLocaleDate, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
@@ -82,6 +83,7 @@ const ProjectsPage = (props: ProjectsPageProps) => {
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
               className="pl-6"
+              name="projectTypeFilter"
               choices={PROJECT_TYPE_VALUES}
               converter={it => t(it)}
               selection={filters.filter?.type}
@@ -90,6 +92,7 @@ const ProjectsPage = (props: ProjectsPageProps) => {
                   type,
                 })
               }}
+              qaLabel={chipsQALabelFromValue}
             />
           </Filters>
           <div className="flex flex-row mt-4 justify-end">
@@ -112,7 +115,7 @@ const ProjectsPage = (props: ProjectsPageProps) => {
 }
 export default ProjectsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const projects = await getCruxFromContext<Project[]>(context, routes.project.api.list())

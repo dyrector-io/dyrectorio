@@ -5,18 +5,19 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
+import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Registry, RegistryType, REGISTRY_TYPE_VALUES } from '@app/models'
+import { Registry, REGISTRY_TYPE_VALUES, RegistryType } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
@@ -65,6 +66,7 @@ const RegistriesPage = (props: RegistriesPageProps) => {
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
               className="pl-6"
+              name="registryTypeFilter"
               choices={REGISTRY_TYPE_VALUES}
               converter={it => t(`type.${it}`)}
               selection={filters.filter?.enum}
@@ -73,6 +75,7 @@ const RegistriesPage = (props: RegistriesPageProps) => {
                   enum: type,
                 })
               }}
+              qaLabel={chipsQALabelFromValue}
             />
           </Filters>
 
@@ -103,7 +106,7 @@ const RegistriesPage = (props: RegistriesPageProps) => {
 
 export default RegistriesPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const registries = await getCruxFromContext<Registry[]>(context, routes.registry.api.list())
