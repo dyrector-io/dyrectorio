@@ -8,9 +8,9 @@ import {
   RegistryNamespace,
   RegistryType,
 } from '@app/models'
-import yup from './yup'
-import { descriptionRule, iconRule, nameRule } from './common'
 import { Schema } from 'yup'
+import { descriptionRule, iconRule, nameRule } from './common'
+import yup from './yup'
 
 const shouldResetMetaData = { reset: true }
 
@@ -27,8 +27,8 @@ const createRegistryCredentialRole = (label: string) =>
     .mixed()
     .meta(shouldResetMetaData)
     .when(['type', 'private'], {
-      is: (type, _private) =>
-        type === 'gitlab' || type === 'github' || ((type === 'v2' || type === 'google') && _private),
+      is: (type: RegistryType, _private: boolean) =>
+        type === 'gitlab' || type === 'github' || (_private && (type === 'v2' || type === 'google' || type === 'hub')),
       then: () => yup.string().required().label(label),
       otherwise: () => yup.mixed().label(label),
     })
@@ -123,6 +123,7 @@ export const registrySchema = yup.object().shape({
     github: 'pat',
     v2: 'token',
     google: 'privateKey',
+    hub: 'token',
   }),
 })
 

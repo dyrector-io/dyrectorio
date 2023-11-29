@@ -7,6 +7,7 @@ import { Observable, catchError, from, map, mergeMap, of, switchMap } from 'rxjs
 import { CruxBadRequestException, CruxNotFoundException, CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
 import { parsers } from 'www-authenticate'
+import PrivateHubApiClient from '../registry-clients/private-hub-api-client'
 import {
   CreateRegistryDto,
   GithubRegistryDetailsDto,
@@ -59,24 +60,34 @@ export default class RegistryAccessValidationGuard implements CanActivate {
       return of(false)
     }
 
-    return this.httpService.get(`https://${REGISTRY_HUB_URL}/v2/orgs/${req.imageNamePrefix}`).pipe(
-      map(res => res.status === HttpStatus.OK),
-      catchError((error: AxiosError) => {
-        this.logger.warn(error)
+    if (!req.token) {
+      return this.httpService.get(`https://${REGISTRY_HUB_URL}/v2/orgs/${req.imageNamePrefix}`).pipe(
+        map(res => res.status === HttpStatus.OK),
+        catchError((error: AxiosError) => {
+          this.logger.warn(error)
 
-        if (!error.response || error.response.status !== HttpStatus.NOT_FOUND) {
-          throw new CruxBadRequestException({
-            message: 'Failed to fetch hub prefix',
+          if (!error.response || error.response.status !== HttpStatus.NOT_FOUND) {
+            throw new CruxBadRequestException({
+              message: 'Failed to fetch hub prefix',
+              property: 'imageNamePrefix',
+              value: req.imageNamePrefix,
+            })
+          }
+
+          throw new CruxNotFoundException({
+            message: 'Hub organization with prefix not found',
             property: 'imageNamePrefix',
             value: req.imageNamePrefix,
           })
-        }
+        }),
+      )
+    }
 
-        throw new CruxNotFoundException({
-          message: 'Hub organization with prefix not found',
-          property: 'imageNamePrefix',
-          value: req.imageNamePrefix,
-        })
+    const hubClient = new PrivateHubApiClient(REGISTRY_HUB_URL, req.imageNamePrefix)
+    return from(hubClient.login(req.user, req.token)).pipe(
+      map(() => true),
+      catchError(err => {
+        throw err
       }),
     )
   }
