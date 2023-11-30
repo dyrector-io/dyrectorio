@@ -27,7 +27,7 @@ Join our Discord and connect with other members to share and learn together. If 
 [dyrector.io](https://dyrector.io/) is also available as a fully managed <a href="https://app.dyrectorio.com" target="_blank">SaaS dyrector.io Platform</a> ⛅ including a free tier.
 
 <p align="center">
-<strong><a href="./GETTING_STARTED.md">Getting Started</a> • <a href="#use-cases">Use Cases</a> • <a href="#community">Community</a> • <a href="./CONTRIBUTING.md">Contributing</a> • <a href="#feedback">Feedback</a>
+<strong><a href="./GETTING_STARTED.md">Getting Started</a> • <a href="https://docs.dyrectorio.com/">Docs</a> • <a href="#use-cases">Use Cases</a> • <a href="#community">Community</a> • <a href="./CONTRIBUTING.md">Contributing</a> • <a href="#feedback">Feedback</a>
 
 </strong>
 </p>
