@@ -1,7 +1,8 @@
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { RegistryImageTags } from '../registry.message'
-import HubApiClient from './hub-api-client'
+import HubApiClient, { DOCKER_HUB_REGISTRY_URL } from './hub-api-client'
 import { RegistryApiClient } from './registry-api-client'
+import V2Labels from './v2-labels'
 
 export default class PrivateHubApiClient extends HubApiClient implements RegistryApiClient {
   private jwt: string = null
@@ -71,5 +72,14 @@ export default class PrivateHubApiClient extends HubApiClient implements Registr
       ...initializer,
       headers,
     })
+  }
+
+  async labels(image: string, tag: string): Promise<Record<string, string>> {
+    const labelClient = new V2Labels(DOCKER_HUB_REGISTRY_URL, {
+      headers: {
+        Authorization: `Bearer ${this.jwt}`,
+      },
+    })
+    return labelClient.fetchLabels(this.prefix ? `${this.prefix}/${image}` : image, tag)
   }
 }

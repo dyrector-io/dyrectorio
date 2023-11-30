@@ -10,6 +10,8 @@ type HubApiPaginatedResponse = {
 
 const MAX_RATE_RETRY = 3
 
+export const DOCKER_HUB_REGISTRY_URL = 'index.docker.io'
+
 export default abstract class HubApiClient {
   constructor(
     protected readonly url: string,
@@ -78,7 +80,7 @@ export default abstract class HubApiClient {
   }
 
   async labels(image: string, tag: string): Promise<Record<string, string>> {
-    const labelClient = new V2Labels('index.docker.io')
+    const labelClient = new V2Labels(DOCKER_HUB_REGISTRY_URL)
     return labelClient.fetchLabels(this.prefix ? `${this.prefix}/${image}` : image, tag)
   }
 }
