@@ -594,7 +594,8 @@ jobs:
           password: ${{ github.token }}
       - name: Setup using cli
         run: |
-          docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --prefer-local-images --expect-container-env --debug -p dyo-e2e up
+          export GITHUB_NETWORK=$(docker network ls -f name=github_network --format {{.Name}})
+          docker run -v /var/run/docker.sock:/var/run/docker.sock --network $GITHUB_NETWORK ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network $GITHUB_NETWORK --prefer-local-images --expect-container-env --debug -p dyo-e2e up
       - name: Setup NPM caches
         uses: actions/cache/restore@v3
         with:
@@ -620,6 +621,7 @@ jobs:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
         if: always()
         run: |
+          docker ps
           mkdir logs
           docker logs dyo-e2e_crux-ui > logs/e2e-crux-ui.log 2>&1
           docker logs dyo-e2e_crux > logs/e2e-crux.log 2>&1

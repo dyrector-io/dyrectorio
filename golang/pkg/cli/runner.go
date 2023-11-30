@@ -32,7 +32,7 @@ const (
 )
 
 var startOrder = []stackItemID{
-	traefik, cruxPostgres, kratosPostgres, kratos, crux, mailSlurper, cruxUI,
+	cruxPostgres, kratosPostgres, kratos, crux, mailSlurper, cruxUI, traefik,
 }
 
 type dyrectorioStack struct {
@@ -116,6 +116,7 @@ func StartContainers(stack *dyrectorioStack) {
 				log.Error().Str("container", string(stackItem)).Msg("Failed to start dyrector.io stack")
 				log.Fatal().Err(err).Stack().Send()
 			}
+
 			log.Info().Str("container", cont.GetName()).Msg("Started")
 		}
 	}
