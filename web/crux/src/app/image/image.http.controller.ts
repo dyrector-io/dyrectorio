@@ -140,14 +140,14 @@ export default class ImageHttpController {
   @ApiNotFoundResponse({ description: 'Image not found.' })
   @UuidParams(PARAM_PROJECT_ID, PARAM_VERSION_ID, PARAM_IMAGE_ID)
   async patchImage(
-    @TeamSlug() _: string,
+    @TeamSlug() teamSlug: string,
     @ProjectId() _projectId: string,
     @VersionId() _versionId: string,
     @ImageId() imageId: string,
     @Body() request: PatchImageDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<void> {
-    return await this.service.patchImage(imageId, request, identity)
+    return await this.service.patchImage(teamSlug, imageId, request, identity)
   }
 
   @Delete(ROUTE_IMAGE_ID)

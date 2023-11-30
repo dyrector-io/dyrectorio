@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { ContainerConfig } from '@prisma/client'
-import { ContainerConfigData } from 'src/domain/container'
+import { ContainerConfigData, UniqueKeyValue } from 'src/domain/container'
 import { containerNameFromImageName } from 'src/domain/deployment'
-import { parseDyrectorioEnvRules } from 'src/domain/image'
+import { EnvironmentRule, parseDyrectorioEnvRules } from 'src/domain/image'
 import PrismaService from 'src/services/prisma.service'
 import { v4 } from 'uuid'
 import ContainerMapper from '../container/container.mapper'
@@ -156,22 +156,39 @@ export default class ImageService {
     return dtos
   }
 
-  async patchImage(imageId: string, request: PatchImageDto, identity: Identity): Promise<void> {
-    let config: Omit<ContainerConfig, 'id' | 'imageId'>
+  async patchImage(teamSlug: string, imageId: string, request: PatchImageDto, identity: Identity): Promise<void> {
+    const currentConfig = await this.prisma.containerConfig.findUniqueOrThrow({
+      where: {
+        imageId,
+      },
+    })
 
-    if (request.config) {
-      const currentConfig = await this.prisma.containerConfig.findUniqueOrThrow({
+    const configData = this.containerMapper.configDtoToConfigData(
+      currentConfig as any as ContainerConfigData,
+      request.config ?? {},
+    )
+
+    if (request.tag) {
+      const image = await this.prisma.image.findFirst({
         where: {
-          imageId,
+          id: imageId,
+        },
+        select: {
+          name: true,
+          registryId: true,
         },
       })
 
-      const configData = this.containerMapper.configDtoToConfigData(
-        currentConfig as any as ContainerConfigData,
-        request.config,
-      )
-      config = this.containerMapper.configDataToDb(configData)
+      const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
+      const api = await this.registryClients.getByRegistryId(teamId, image.registryId)
+
+      const newLabels = await api.client.labels(image.name, request.tag)
+      const newRules = parseDyrectorioEnvRules(newLabels)
+
+      configData.environment = ImageService.mergeEnvironmentsRules(configData.environment, newRules)
     }
+
+    const config: Omit<ContainerConfig, 'id' | 'imageId'> = this.containerMapper.configDataToDb(configData)
 
     const image = await this.prisma.image.update({
       where: {
@@ -229,5 +246,29 @@ export default class ImageService {
   private splitImageAndTag(nameTag: string): [string, string | undefined] {
     const [imageName, imageTag = undefined] = nameTag.split(':')
     return [imageName, imageTag]
+  }
+
+  private static mergeEnvironmentsRules(
+    environment: UniqueKeyValue[],
+    rules: Record<string, EnvironmentRule>,
+  ): UniqueKeyValue[] {
+    const currentEnv = environment.reduce((map, it) => {
+      map[it.key] = it
+      return map
+    }, {})
+
+    const mergedEnv = Object.entries(rules).reduce((map, it) => {
+      const [key, rule] = it
+
+      map[key] = {
+        id: currentEnv[key]?.id ?? v4(),
+        key,
+        value: currentEnv[key]?.value ?? rule.default ?? '',
+      }
+
+      return map
+    }, currentEnv)
+
+    return Object.values(mergedEnv)
   }
 }

@@ -158,6 +158,7 @@ export default class VersionWebSocketGateway {
 
   @SubscribeMessage('patch-image')
   async patchImage(
+    @TeamSlug() teamSlug,
     @SocketClient() client: WsClient,
     @SocketMessage() message: PatchImageMessage,
     @IdentityFromSocket() identity: Identity,
@@ -172,7 +173,7 @@ export default class VersionWebSocketGateway {
       cruxReq = message
     }
 
-    await this.imageService.patchImage(message.id, cruxReq, identity)
+    await this.imageService.patchImage(teamSlug, message.id, cruxReq, identity)
 
     const res: WsMessage<PatchImageMessage> = {
       type: WS_TYPE_IMAGE_UPDATED,

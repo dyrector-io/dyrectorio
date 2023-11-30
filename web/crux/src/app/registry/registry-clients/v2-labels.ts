@@ -28,7 +28,13 @@ type TokenResponse = {
   token: string
 }
 
+type FetchResponse<T> = {
+  res: Response
+  data: T
+}
+
 const ERROR_UNAUTHORIZED = 'UNAUTHORIZED'
+const ERROR_MANIFEST_UNKNOWN = 'MANIFEST_UNKNOWN'
 
 const HEADER_WWW_AUTHENTICATE = 'www-authenticate'
 
@@ -43,6 +49,7 @@ export default class V2Labels {
     private baseUrl: string,
     private requestInit?: RequestInit,
     manifestMime?: string,
+    private tokenAuth?: string,
   ) {
     this.token = null
 
@@ -59,6 +66,18 @@ export default class V2Labels {
       headers: {
         ...this.requestInit?.headers,
         Authorization: `Bearer ${this.token}`,
+      },
+    }
+  }
+
+  private getTokenHeaders(): RequestInit {
+    if (!this.tokenAuth) {
+      return {}
+    }
+
+    return {
+      headers: {
+        Authorization: this.tokenAuth,
       },
     }
   }
@@ -99,7 +118,7 @@ export default class V2Labels {
 
     this.logger.debug(`Fetching token from '${tokenUrl}'`)
 
-    const tokenResponse = await fetch(tokenUrl)
+    const tokenResponse = await fetch(tokenUrl, this.getTokenHeaders())
 
     this.logger.debug(`Got token response for '${tokenUrl}' - ${tokenResponse.status}`)
 
@@ -115,7 +134,7 @@ export default class V2Labels {
   }
 
   private async fetchV2<T extends BaseResponse>(endpoint: string, init?: RequestInit): Promise<T> {
-    const doFetch = async (): Promise<[Response, T]> => {
+    const doFetch = async (): Promise<FetchResponse<T>> => {
       const fullUrl = `${this.baseUrl.startsWith('http') ? this.baseUrl : `https://${this.baseUrl}`}/v2/${endpoint}`
 
       this.logger.debug(`Fetching '${fullUrl}'`)
@@ -134,26 +153,41 @@ export default class V2Labels {
 
       this.logger.debug(`Got response '${fullUrl}' - ${res.status}`)
 
-      return [res, data]
+      return {
+        res,
+        data,
+      }
     }
 
-    const [res, data] = await doFetch()
+    let result = await doFetch()
 
-    if (data.errors?.some(it => it.code === ERROR_UNAUTHORIZED)) {
-      await this.fetchToken(res)
+    if (result.data.errors?.some(it => it.code === ERROR_UNAUTHORIZED)) {
+      await this.fetchToken(result.res)
 
-      const [, dataWithToken] = await doFetch()
+      result = await doFetch()
+    }
 
-      if (dataWithToken.errors) {
+    const {
+      data: { errors },
+    } = result
+
+    if (errors) {
+      if (result.data.errors?.some(it => it.code === ERROR_UNAUTHORIZED)) {
         throw new CruxInternalServerErrorException({
-          message: 'Failed to fetch v2 registry API!',
+          message: 'Unauthorized v2 registry API!',
         })
       }
 
-      return dataWithToken
+      if (result.data.errors?.some(it => it.code === ERROR_MANIFEST_UNKNOWN)) {
+        return null
+      }
+
+      throw new CruxInternalServerErrorException({
+        message: 'Failed to fetch v2 API!',
+      })
     }
 
-    return data
+    return result.data
   }
 
   async fetchLabels(image: string, tag: string): Promise<Record<string, string>> {
@@ -162,6 +196,9 @@ export default class V2Labels {
         Accept: this.manifestMimeType,
       },
     })
+    if (!manifest) {
+      return {}
+    }
 
     const configManifest = await this.fetchV2<BlobResponse>(`${image}/blobs/${manifest.config.digest}`)
 
