@@ -1,5 +1,5 @@
 import { ContainerConfigPortRangeDto } from 'src/app/container/container.dto'
-import { ImageValidation } from 'src/app/image/image.dto'
+import { EnvironmentRule, ImageValidation } from 'src/app/image/image.dto'
 import { ContainerPort } from 'src/app/node/node.dto'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 import { UID_MAX } from 'src/shared/const'
@@ -435,6 +435,33 @@ export const instanceContainerConfigSchema = yup.object().shape({
   metrics: metricsRule,
 })
 
+const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: UniqueKeyValue) => {
+  const { key, value } = env
+
+  try {
+    switch (rule.type) {
+      case 'boolean':
+        yup.boolean().validateSync(value)
+        break
+      case 'int':
+        yup.number().validateSync(value)
+        break
+      case 'string':
+        yup.string().validateSync(value)
+        break
+      default:
+        return new yup.ValidationError('errors:yup.mixed.default', rule.type, `environment[${index}]`)
+    }
+  } catch (fieldError) {
+    const err = new yup.ValidationError(fieldError.message, key, `environment[${index}]`)
+    err.params = {
+      ...fieldError.params,
+      path: key,
+    }
+    return err
+  }
+}
+
 const testEnvironment = (validation: ImageValidation, arr: UniqueKeyValue[]) => {
   if (!validation) {
     return null
@@ -456,36 +483,13 @@ const testEnvironment = (validation: ImageValidation, arr: UniqueKeyValue[]) => 
 
   const fieldErrors = arr
     .map((it, index) => {
-      const { key, value } = it
+      const { key } = it
       const rule = validation.environmentRules[key]
       if (!rule) {
         return null
       }
 
-      try {
-        switch (rule.type) {
-          case 'boolean':
-            yup.boolean().validateSync(value)
-            break
-          case 'int':
-            yup.number().validateSync(value)
-            break
-          case 'string':
-            yup.string().validateSync(value)
-            break
-          default:
-            return new yup.ValidationError('errors:yup.mixed.default', rule.type, `environment[${index}]`)
-        }
-      } catch (fieldError) {
-        const err = new yup.ValidationError(fieldError.message, key, `environment[${index}]`)
-        err.params = {
-          ...fieldError.params,
-          path: key,
-        }
-        return err
-      }
-
-      return null
+      return validateEnvironmentRule(rule, index, it)
     })
     .filter(it => !!it)
 

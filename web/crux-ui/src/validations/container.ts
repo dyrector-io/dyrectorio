@@ -13,6 +13,7 @@ import {
   ContainerNetworkMode,
   ContainerPort,
   ContainerRestartPolicyType,
+  EnvironmentRule,
   ImageValidation,
   Metrics,
   UniqueKeyValue,
@@ -400,14 +401,41 @@ const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
     .label('container:crane.metrics')
 })
 
+const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: UniqueKeyValue) => {
+  const { key, value } = env
+
+  try {
+    switch (rule.type) {
+      case 'boolean':
+        yup.boolean().validateSync(value)
+        break
+      case 'int':
+        yup.number().validateSync(value)
+        break
+      case 'string':
+        yup.string().validateSync(value)
+        break
+      default:
+        return new yup.ValidationError('errors:yup.mixed.default', rule.type, `environment[${index}]`)
+    }
+  } catch (fieldError) {
+    const err = new yup.ValidationError(fieldError.message, key, `environment[${index}]`)
+    err.params = {
+      ...fieldError.params,
+      path: key,
+    }
+    return err
+  }
+}
+
 const testEnvironment = (validation: ImageValidation) => (arr: UniqueKeyValue[]) => {
   if (!validation) {
     return true
   }
 
   const requiredKeys = Object.entries(validation.environmentRules)
-    .filter(([_, rule]) => rule.required)
-    .map(([key, _]) => key)
+    .filter(([, rule]) => rule.required)
+    .map(([key]) => key)
   const foundKeys = arr.map(it => it.key)
 
   const missingKey = requiredKeys.find(it => !foundKeys.includes(it))
@@ -421,36 +449,13 @@ const testEnvironment = (validation: ImageValidation) => (arr: UniqueKeyValue[])
 
   const fieldErrors = arr
     .map((it, index) => {
-      const { key, value } = it
+      const { key } = it
       const rule = validation.environmentRules[key]
       if (!rule) {
         return null
       }
 
-      try {
-        switch (rule.type) {
-          case 'boolean':
-            yup.boolean().validateSync(value)
-            break
-          case 'int':
-            yup.number().validateSync(value)
-            break
-          case 'string':
-            yup.string().validateSync(value)
-            break
-          default:
-            return new yup.ValidationError('errors:yup.mixed.default', rule.type, `environment[${index}]`)
-        }
-      } catch (fieldError) {
-        const err = new yup.ValidationError(fieldError.message, key, `environment[${index}]`)
-        err.params = {
-          ...fieldError.params,
-          path: key,
-        }
-        return err
-      }
-
-      return null
+      return validateEnvironmentRule(rule, index, it)
     })
     .filter(it => !!it)
 
@@ -505,12 +510,12 @@ const createContainerConfigBaseSchema = (validation: ImageValidation) =>
     metrics: metricsRule,
   })
 
-export const createContainerConfigSchema = (rules: ImageValidation) =>
-  createContainerConfigBaseSchema(rules).shape({
+export const createContainerConfigSchema = (validation: ImageValidation) =>
+  createContainerConfigBaseSchema(validation).shape({
     secrets: uniqueKeySchema.default([]).nullable().label('container:common.secrets'),
   })
 
-export const createMergedContainerConfigSchema = (rules: ImageValidation) =>
-  createContainerConfigBaseSchema(rules).shape({
+export const createMergedContainerConfigSchema = (validation: ImageValidation) =>
+  createContainerConfigBaseSchema(validation).shape({
     secrets: uniqueKeyValuesSchema.default([]).nullable().label('container:common.secrets'),
   })

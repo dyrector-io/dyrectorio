@@ -40,7 +40,7 @@ export const startDeploymentSchema = yup.object({
   instances: yup
     .array(
       yup.object().shape({
-        config: createMergedContainerConfigSchema(null), // TODO
+        config: createMergedContainerConfigSchema(null),
       }),
     )
     .ensure()
