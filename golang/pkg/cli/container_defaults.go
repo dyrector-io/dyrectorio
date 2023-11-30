@@ -20,6 +20,7 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
+	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	dagentutils "github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
 )
@@ -273,11 +274,6 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 		mountType = mount.TypeNamedPipe
 	}
 
-	traefikHost := localhost
-	if args.FullyContainerized {
-		traefikHost = state.Containers.Traefik.Name
-	}
-
 	traefik := baseContainer(state.Ctx, args).
 		WithImage("docker.io/library/traefik:v2.9").
 		WithName(state.Containers.Traefik.Name).
@@ -309,6 +305,7 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 		})
 
 	if args.FullyContainerized {
+		traefikHost := state.Containers.Traefik.Name
 		traefik.
 			WithPostStartHooks(func(ctx context.Context, client client.APIClient,
 				cont containerbuilder.ParentContainer,
@@ -615,42 +612,42 @@ func CopyTraefikConfiguration(ctx context.Context, name, internalHostDomain stri
 }
 
 func healhProbe(ctx context.Context, address string) error {
+	ctx, cancel := context.WithTimeout(ctx, healhProbeTimeout)
+	defer cancel()
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, address, http.NoBody)
 	if err != nil {
-		return fmt.Errorf("failed to create the http request: %s", err.Error())
+		return fmt.Errorf("failed to create the http request for healh probe: %s", err.Error())
 	}
 
 	log.Info().Str("address", address).Msg("Health probing")
 
-	startedAt := time.Now()
-	timeOut := false
-	statusCode := -1
-	for !timeOut {
-		//nolint:bodyclose //closed already
-		resp, reqErr := http.DefaultClient.Do(req)
+	ticker := time.NewTicker(healhProbeInterval)
+	lastStatusCode := -1
 
-		if time.Since(startedAt) >= healhProbeTimeout {
-			timeOut = true
-		}
-
-		if reqErr != nil {
+	for {
+		select {
+		case <-ticker.C:
+			//nolint:bodyclose //closed already
+			resp, reqErr := http.DefaultClient.Do(req)
 			err = reqErr
-			time.Sleep(healhProbeInterval)
-			continue
+			if reqErr != nil {
+				continue
+			}
+
+			logdefer.LogDeferredErr(resp.Body.Close, log.Debug(), "failed to close the response body while health probing")
+
+			if resp.StatusCode == http.StatusOK {
+				return nil
+			}
+
+			lastStatusCode = resp.StatusCode
+		case <-ctx.Done():
+			if err != nil {
+				return fmt.Errorf("failed to execute request for %s health probe: %s", address, err.Error())
+			}
+
+			return fmt.Errorf("health probe timeout for %s, last status code: %d", address, lastStatusCode)
 		}
-
-		if resp.StatusCode != http.StatusOK {
-			statusCode = resp.StatusCode
-			time.Sleep(healhProbeInterval)
-			continue
-		}
-
-		return nil
 	}
-
-	if err != nil {
-		return fmt.Errorf("failed to execute request for %s health probe: %s", address, err.Error())
-	}
-
-	return fmt.Errorf("health probe timeout for %s, last status code: %d", address, statusCode)
 }
