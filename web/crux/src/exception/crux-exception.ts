@@ -21,7 +21,7 @@ export class CruxBadRequestException extends CruxException {
 
 export class CruxUnauthorizedException extends CruxException {
   constructor(options?: Pick<CruxExceptionOptions, 'message' | 'property'>) {
-    super(HttpStatus.UNAUTHORIZED, { message: options?.message ?? 'Unauthorized.' })
+    super(HttpStatus.UNAUTHORIZED, { message: options?.message ?? 'Unauthorized.', property: options?.property })
   }
 }
 

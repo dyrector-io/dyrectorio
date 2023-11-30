@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { CruxBadRequestException, CruxForbiddenException } from 'src/exception/crux-exception'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
+import CachedPublicHubApiClient from './registry-clients/cached-hub-api-client'
 import HubApiCache from './registry-clients/caches/hub-api-cache'
 import GithubRegistryClient from './registry-clients/github-api-client'
 import { GitlabRegistryClient } from './registry-clients/gitlab-api-client'
 import { GoogleRegistryClient } from './registry-clients/google-api-client'
-import HubApiClient from './registry-clients/hub-api-client'
+import PrivateHubApiClient from './registry-clients/private-hub-api-client'
 import { RegistryApiClient } from './registry-clients/registry-api-client'
 import RegistryV2ApiClient from './registry-clients/v2-api-client'
 import { REGISTRY_HUB_CACHE_EXPIRATION } from './registry.const'
@@ -73,12 +74,20 @@ export default class RegistryClientProvider {
           : null,
       )
 
-    const createHub = (details: HubRegistryDetailsDto) =>
-      new HubApiClient(
-        this.getHubCacheForImageNamePrefix(registry.id, details.imageNamePrefix),
-        REGISTRY_HUB_URL,
-        details.imageNamePrefix,
-      )
+    const createHub = async (details: HubRegistryDetailsDto) => {
+      if (!details.token) {
+        return new CachedPublicHubApiClient(
+          this.getHubCacheForImageNamePrefix(registry.id, details.imageNamePrefix),
+          REGISTRY_HUB_URL,
+          details.imageNamePrefix,
+        )
+      }
+
+      const hubClient = new PrivateHubApiClient(REGISTRY_HUB_URL, details.imageNamePrefix)
+      await hubClient.login(details.user, details.token)
+
+      return hubClient
+    }
 
     const createGithub = (details: GithubRegistryDetailsDto) =>
       new GithubRegistryClient(
@@ -124,7 +133,7 @@ export default class RegistryClientProvider {
         registry.type === 'v2'
           ? createV2(registry.details as V2RegistryDetailsDto)
           : registry.type === 'hub'
-          ? createHub(registry.details as HubRegistryDetailsDto)
+          ? await createHub(registry.details as HubRegistryDetailsDto)
           : registry.type === 'github'
           ? createGithub(registry.details as GithubRegistryDetailsDto)
           : registry.type === 'gitlab'
