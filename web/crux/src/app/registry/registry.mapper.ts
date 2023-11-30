@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Registry, RegistryTypeEnum } from '@prisma/client'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
-import { REGISTRY_HUB_URL } from 'src/shared/const'
+import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
 import { BasicProperties } from '../../shared/dtos/shared.dto'
 import {
   BasicRegistryDto,
@@ -45,6 +45,8 @@ export default class RegistryMapper {
       registry.type === RegistryTypeEnum.hub
         ? {
             imageNamePrefix: registry.imageNamePrefix,
+            user: registry.user,
+            token: registry.token,
           }
         : registry.type === RegistryTypeEnum.v2
         ? {
@@ -96,80 +98,86 @@ export default class RegistryMapper {
   }
 
   detailsToDb(request: CreateRegistryDto | UpdateRegistryDto): RegistryTypeUnion {
-    const emptyOrDefault = (value: string | null | undefined, def: string | null = null) => value || def
+    switch (request.type) {
+      case 'hub': {
+        const details = request.details as HubRegistryDetailsDto
 
-    if (request.type === 'hub') {
-      return {
-        type: RegistryTypeEnum.hub,
-        ...(request.details as HubRegistryDetailsDto),
-        url: REGISTRY_HUB_URL,
-        apiUrl: null,
-        token: null,
-        user: null,
-        namespace: null,
+        return {
+          type: RegistryTypeEnum.hub,
+          ...details,
+          url: REGISTRY_HUB_URL,
+          apiUrl: null,
+          user: this.emptyOrDefault(details.user),
+          token: this.emptyOrDefault(details.token),
+          namespace: null,
+        }
       }
-    }
-    if (request.type === 'v2') {
-      const v2Details = request.details as V2RegistryDetailsDto
-      return {
-        type: RegistryTypeEnum.v2,
-        ...v2Details,
-        user: emptyOrDefault(v2Details.user),
-        token: emptyOrDefault(v2Details.token),
-        imageNamePrefix: null,
-        apiUrl: null,
-        namespace: null,
-      }
-    }
-    if (request.type === 'gitlab') {
-      const gitlabDetails = request.details as GitlabRegistryDetailsDto
-      return {
-        type: RegistryTypeEnum.gitlab,
-        ...gitlabDetails,
-        url: gitlabDetails.apiUrl ? gitlabDetails.url : 'registry.gitlab.com',
-        apiUrl: gitlabDetails.apiUrl ?? null,
-        namespace: gitlabDetails.namespace,
-      }
-    }
-    if (request.type === 'github') {
-      const githubDetails = request.details as GithubRegistryDetailsDto
-      return {
-        type: RegistryTypeEnum.github,
-        ...githubDetails,
-        url: 'ghcr.io',
-        apiUrl: null,
-        namespace: githubDetails.namespace,
-      }
-    }
-    if (request.type === 'google') {
-      const googleDetails = request.details as GoogleRegistryDetailsDto
-      return {
-        type: RegistryTypeEnum.google,
-        ...googleDetails,
-        user: emptyOrDefault(googleDetails.user),
-        token: emptyOrDefault(googleDetails.token),
-        imageNamePrefix: googleDetails.imageNamePrefix,
-        apiUrl: null,
-        namespace: null,
-      }
-    }
-    if (request.type === 'unchecked') {
-      return {
-        type: RegistryTypeEnum.unchecked,
-        ...(request.details as UncheckedRegistryDetailsDto),
-        user: null,
-        apiUrl: null,
-        token: null,
-        imageNamePrefix: null,
-        namespace: null,
-      }
-    }
 
-    throw new CruxBadRequestException({
-      message: 'Unknown registry type',
-      property: 'type',
-      value: request.type,
-    })
+      case 'v2': {
+        const details = request.details as V2RegistryDetailsDto
+        return {
+          type: RegistryTypeEnum.v2,
+          ...details,
+          user: this.emptyOrDefault(details.user),
+          token: this.emptyOrDefault(details.token),
+          imageNamePrefix: null,
+          apiUrl: null,
+          namespace: null,
+        }
+      }
+      case 'gitlab': {
+        const details = request.details as GitlabRegistryDetailsDto
+        return {
+          type: RegistryTypeEnum.gitlab,
+          ...details,
+          url: details.apiUrl ? details.url : REGISTRY_GITLAB_URLS.registryUrl,
+          apiUrl: details.apiUrl ?? null,
+          namespace: details.namespace,
+        }
+      }
+      case 'github': {
+        const details = request.details as GithubRegistryDetailsDto
+        return {
+          type: RegistryTypeEnum.github,
+          ...details,
+          url: 'ghcr.io',
+          apiUrl: null,
+          namespace: details.namespace,
+        }
+      }
+      case 'google': {
+        const details = request.details as GoogleRegistryDetailsDto
+        return {
+          type: RegistryTypeEnum.google,
+          ...details,
+          user: this.emptyOrDefault(details.user),
+          token: this.emptyOrDefault(details.token),
+          imageNamePrefix: details.imageNamePrefix,
+          apiUrl: null,
+          namespace: null,
+        }
+      }
+      case 'unchecked':
+        return {
+          type: RegistryTypeEnum.unchecked,
+          ...(request.details as UncheckedRegistryDetailsDto),
+          user: null,
+          apiUrl: null,
+          token: null,
+          imageNamePrefix: null,
+          namespace: null,
+        }
+      default:
+        throw new CruxBadRequestException({
+          message: 'Unknown registry type',
+          property: 'type',
+          value: request.type,
+        })
+    }
+  }
+
+  private emptyOrDefault(value: string | null | undefined, def: string | null = null) {
+    return value ?? def
   }
 }
 

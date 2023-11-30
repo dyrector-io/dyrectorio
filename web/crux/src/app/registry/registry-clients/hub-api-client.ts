@@ -1,7 +1,4 @@
 import { getRegistryApiException } from 'src/exception/registry-exception'
-import { RegistryImageTags } from '../registry.message'
-import HubApiCache from './caches/hub-api-cache'
-import { RegistryApiClient } from './registry-api-client'
 import V2Labels from './v2-labels'
 
 type HubApiPaginatedResponse = {
@@ -13,70 +10,35 @@ type HubApiPaginatedResponse = {
 
 const MAX_RATE_RETRY = 3
 
-class HubApiClient implements RegistryApiClient {
-  private url: string
-
-  private proxyToken?: string
-
+export default abstract class HubApiClient {
   constructor(
-    private cache: HubApiCache,
-    url: string,
-    private prefix: string,
-  ) {
-    this.url = process.env.HUB_PROXY_URL ?? `https://${url}`
-    this.proxyToken = process.env.HUB_PROXY_TOKEN
-  }
+    protected readonly url: string,
+    protected readonly prefix: string,
+  ) {}
 
-  async catalog(text: string): Promise<string[]> {
+  protected async fetchCatalog(): Promise<string[]> {
     const endpoint = ''
 
-    let repositories: string[] = this.cache.get(endpoint)
-    if (!repositories) {
-      const result = await this.fetchPaginatedEndpoint(endpoint)
+    const result = await this.fetchPaginatedEndpoint(endpoint)
 
-      repositories = result.map(it => it.name)
-      this.cache.upsert(endpoint, repositories)
-    }
-
-    return repositories.filter(it => it.includes(text))
+    return result.map(it => it.name)
   }
 
-  async tags(image: string): Promise<RegistryImageTags> {
+  protected async fetchTags(image: string): Promise<string[]> {
     const endpoint = `${image}/tags?page_size=100`
 
-    let tags: string[] = this.cache.get(endpoint)
-    if (!tags) {
-      const result = await this.fetchPaginatedEndpoint(endpoint)
+    const result = await this.fetchPaginatedEndpoint(endpoint)
 
-      tags = result.map(it => it.name)
-      this.cache.upsert(endpoint, tags)
-    }
-
-    return {
-      tags,
-      name: image,
-    }
+    return result.map(it => it.name)
   }
 
-  private async fetch(endpoint: string, init?: RequestInit) {
-    const initializer = init ?? {}
+  protected async fetch(endpoint: string, init?: RequestInit): Promise<Response> {
     const fullUrl = `${this.url}/v2/repositories/${this.prefix}/${endpoint}`
 
-    const initHeaders = initializer.headers ?? {}
-    const headers = !this.proxyToken
-      ? initHeaders
-      : {
-          ...initHeaders,
-          authorization: this.proxyToken,
-        }
-
-    return await fetch(fullUrl, {
-      ...initializer,
-      headers,
-    })
+    return await fetch(fullUrl, init)
   }
 
-  private async fetchPaginatedEndpoint(endpoint: string) {
+  private async fetchPaginatedEndpoint(endpoint: string): Promise<any[]> {
     const result = []
 
     let next = () => this.fetch(`${endpoint}`)
@@ -120,5 +82,3 @@ class HubApiClient implements RegistryApiClient {
     return labelClient.fetchLabels(this.prefix ? `${this.prefix}/${image}` : image, tag)
   }
 }
-
-export default HubApiClient

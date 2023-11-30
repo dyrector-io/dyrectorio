@@ -25,19 +25,24 @@ export type RegistryDetailsBase = {
   inUse: boolean
 }
 
-type HubRegistryDetailsDto = {
+export type HubRegistryDetailsDto = {
   type: 'hub'
   imageNamePrefix: string
+  private?: boolean
+  user?: string
+  token?: string
 }
+
 export type HubRegistryDetails = RegistryDetailsBase & HubRegistryDetailsDto
 
-type V2RegistryDetailsDto = {
+export type V2RegistryDetailsDto = {
   type: 'v2'
   url: string
   private?: boolean
   user?: string
   token?: string
 }
+
 export type V2RegistryDetails = RegistryDetailsBase & V2RegistryDetailsDto
 
 type GitlabRegistryDetailsDto = {
@@ -233,6 +238,7 @@ export const registryDetailsDtoToUI = (dto: RegistryDetailsDto): RegistryDetails
     return {
       ...registry,
       ...hubDetails,
+      private: !!hubDetails.token,
     }
   }
   if (dto.type === 'v2') {
@@ -290,6 +296,8 @@ export const registryCreateToDto = (ui: CreateRegistry): CreateRegistryDto => ({
       ? {
           type: 'hub',
           imageNamePrefix: ui.imageNamePrefix,
+          user: ui.user,
+          token: ui.token,
         }
       : ui.type === 'v2'
       ? {

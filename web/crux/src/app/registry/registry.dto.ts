@@ -52,6 +52,14 @@ export class HubRegistryDetailsDto {
   @IsString()
   @ApiProperty()
   imageNamePrefix: string
+
+  @IsString()
+  @IsOptional()
+  user?: string | null
+
+  @IsString()
+  @IsOptional()
+  token?: string | null
 }
 
 export class V2RegistryDetailsDto {
