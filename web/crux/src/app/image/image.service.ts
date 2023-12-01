@@ -168,6 +168,8 @@ export default class ImageService {
       request.config ?? {},
     )
 
+    let labels: Record<string, string> = null
+
     if (request.tag) {
       const image = await this.prisma.image.findFirst({
         where: {
@@ -182,10 +184,10 @@ export default class ImageService {
       const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
       const api = await this.registryClients.getByRegistryId(teamId, image.registryId)
 
-      const newLabels = await api.client.labels(image.name, request.tag)
-      const newRules = parseDyrectorioEnvRules(newLabels)
+      labels = await api.client.labels(image.name, request.tag)
+      const rules = parseDyrectorioEnvRules(labels)
 
-      configData.environment = ImageService.mergeEnvironmentsRules(configData.environment, newRules)
+      configData.environment = ImageService.mergeEnvironmentsRules(configData.environment, rules)
     }
 
     const config: Omit<ContainerConfig, 'id' | 'imageId'> = this.containerMapper.configDataToDb(configData)
@@ -199,6 +201,7 @@ export default class ImageService {
         registry: true,
       },
       data: {
+        labels: labels ?? undefined,
         tag: request.tag ?? undefined,
         config: {
           update: config,
