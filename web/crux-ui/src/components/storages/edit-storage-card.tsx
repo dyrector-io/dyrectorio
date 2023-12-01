@@ -6,6 +6,7 @@ import DyoIconPicker from '@app/elements/dyo-icon-picker'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
+import DyoPassword from '@app/elements/dyo-password'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
@@ -145,11 +146,10 @@ const EditStorageCard = (props: EditStorageCardProps) => {
             message={formik.errors.accessKey}
           />
 
-          <DyoInput
+          <DyoPassword
             className="max-w-lg"
             grow
             name="secretKey"
-            type="password"
             label={t('secretKey')}
             onChange={formik.handleChange}
             value={formik.values.secretKey}

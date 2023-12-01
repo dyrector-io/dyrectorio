@@ -2,6 +2,7 @@ import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoLink from '@app/elements/dyo-link'
+import DyoPassword from '@app/elements/dyo-password'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { GITLAB_NAMESPACE_VALUES, GitlabRegistryDetails, RegistryNamespace } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
@@ -39,11 +40,10 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
         message={formik.errors.user}
       />
 
-      <DyoInput
+      <DyoPassword
         className="max-w-lg"
         grow
         name="token"
-        type="password"
         label={t('token')}
         onChange={formik.handleChange}
         value={formik.values.token}

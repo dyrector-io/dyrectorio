@@ -6,6 +6,7 @@ import DyoForm from '@app/elements/dyo-form'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoMessage from '@app/elements/dyo-message'
+import DyoPassword from '@app/elements/dyo-password'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
@@ -186,18 +187,16 @@ const RegisterPage = (props: RegisterPageProps) => {
               message={formik.errors.email ?? findMessage(ui, 'traits.email')}
             />
 
-            <DyoInput
+            <DyoPassword
               label={t('common:password')}
               name="password"
-              type="password"
               onChange={formik.handleChange}
               value={formik.values.password}
             />
 
-            <DyoInput
+            <DyoPassword
               label={t('common:confirmPass')}
               name="confirmPassword"
-              type="password"
               onChange={formik.handleChange}
               value={formik.values.confirmPassword}
             />

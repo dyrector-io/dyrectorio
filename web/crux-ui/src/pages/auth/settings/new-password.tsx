@@ -3,9 +3,9 @@ import { ATTRIB_CSRF } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoForm from '@app/elements/dyo-form'
-import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
+import DyoPassword from '@app/elements/dyo-password'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { ChangePassword } from '@app/models'
@@ -80,20 +80,18 @@ const NewPasswordPage = (props: NewPasswordPageProps) => {
             <>
               <DyoLabel textColor="text-bright-muted mx-auto max-w-lg mt-8">{t('needToSetPassword')}</DyoLabel>
 
-              <DyoInput
+              <DyoPassword
                 label={t('common:password')}
                 name="password"
-                type="password"
                 onChange={formik.handleChange}
                 value={formik.values.password}
                 message={findMessage(ui, 'password') ?? formik.errors.password}
                 grow
               />
 
-              <DyoInput
+              <DyoPassword
                 label={t('common:confirmPass')}
                 name="confirmPassword"
-                type="password"
                 onChange={formik.handleChange}
                 value={formik.values.confirmPassword ?? formik.errors.confirmPassword}
                 message={confirmError}
