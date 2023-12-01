@@ -460,6 +460,8 @@ const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: Uniq
     }
     return err
   }
+
+  return null
 }
 
 const testEnvironment = (validation: ImageValidation, arr: UniqueKeyValue[]) => {
