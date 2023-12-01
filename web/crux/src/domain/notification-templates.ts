@@ -102,6 +102,17 @@ const getTeamsTemplate = (message: string): any => ({
   ],
 })
 
+const getMattermostTemplate = (message: string): any => ({
+  attachments: [
+    {
+      title,
+      color: '1555130',
+      text: message,
+      title_link: 'https://dyrector.io',
+    },
+  ],
+})
+
 const getRocketTemplate = (message: string): any => ({
   attachments: [
     {
@@ -123,6 +134,8 @@ export const getTemplate = (notificationType: NotificationTypeEnum, message: str
       return getTeamsTemplate(message)
     case 'rocket':
       return getRocketTemplate(message)
+    case 'mattermost':
+      return getMattermostTemplate(message)
     default:
       throw new CruxInternalServerErrorException({
         message: 'Unsupported notification type',
