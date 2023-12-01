@@ -89,7 +89,6 @@ const RegistriesPage = (props: RegistriesPageProps) => {
                   className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
                   key={`registry-${index}`}
                   registry={it}
-                  titleHref={routes.registry.details(it.id)}
                 />
               )
             })}

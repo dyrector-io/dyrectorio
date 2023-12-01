@@ -102,7 +102,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
       ) : (
         <>
           <div className="flex flex-row gap-4 mb-4">
-            <DyoNodeCard className="w-2/3 p-6" node={node} hideConnectionInfo />
+            <DyoNodeCard className="w-2/3 p-6" node={node} disableTitleHref hideConnectionInfo />
 
             <NodeConnectionCard className="w-1/3 px-6 py-4" node={node} />
           </div>

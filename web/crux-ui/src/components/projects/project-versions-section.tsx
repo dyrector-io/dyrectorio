@@ -49,7 +49,6 @@ const ProjectVersionsSection = (props: ProjectVersionsSectionProps) => {
             disabled={disabled}
             onIncreaseClick={onIncrease ? () => onIncrease(it) : null}
             onSetAsDefaultClick={onSetAsDefault ? () => onSetAsDefaultClick(it) : null}
-            titleHref={routes.project.versions(projectId).details(it.id)}
           />
         ))}
       </DyoWrap>

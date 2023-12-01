@@ -19,16 +19,16 @@ interface VersionCardProps {
   projectId: string
   version: Version
   onClick?: VoidFunction
-  titleHref: string
   onIncreaseClick?: VoidFunction
   onSetAsDefaultClick?: VoidFunction
 }
 
 const VersionCard = (props: VersionCardProps) => {
-  const { className, projectId, version, onClick, titleHref, disabled, onIncreaseClick, onSetAsDefaultClick } = props
+  const { className, projectId, version, onClick, disabled, onIncreaseClick, onSetAsDefaultClick } = props
 
   const { t } = useTranslation('versions')
   const routes = useTeamRoutes()
+  const titleHref = routes.project.versions(projectId).details(version.id)
 
   const title = (
     <DyoHeading element="h5" className="text-xl text-bright" onClick={onClick}>
@@ -40,13 +40,9 @@ const VersionCard = (props: VersionCardProps) => {
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col flex-grow w-full')}>
       <div className="flex flex-col">
         <div className="flex flex-row flex-grow">
-          {titleHref ? (
-            <DyoLink href={titleHref} qaLabel="version-card-title">
-              {title}
-            </DyoLink>
-          ) : (
-            title
-          )}
+          <DyoLink href={titleHref} qaLabel="version-card-title">
+            {title}
+          </DyoLink>
 
           <div className="flex flex-row ml-auto">
             {!version.default ? null : (

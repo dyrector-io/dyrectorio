@@ -98,7 +98,7 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
       </PageHeading>
 
       {!editing ? (
-        <NotificationCard notification={notification} />
+        <NotificationCard notification={notification} disableTitleHref />
       ) : (
         <EditNotificationCard
           className="p-8"

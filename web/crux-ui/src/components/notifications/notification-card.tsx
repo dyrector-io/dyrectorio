@@ -3,6 +3,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoLink from '@app/elements/dyo-link'
+import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Notification } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -11,37 +12,31 @@ import NotificationTypeTag from './notification-type-tag'
 
 interface NotificationCardProps extends Omit<DyoCardProps, 'children'> {
   notification: Notification
-  titleHref?: string
+  disableTitleHref?: boolean
 }
 
 const NotificationCard = (props: NotificationCardProps) => {
-  const { notification, titleHref, className } = props
+  const { notification, disableTitleHref, className } = props
 
   const { t } = useTranslation('notifications')
-
-  const getDefaultImage = (
-    <DyoIcon className="aspect-square" src="/notification.svg" size="md" alt={t('altNotificationPicture')} />
-  )
-
-  const title = (
-    <div className="flex flex-row">
-      <div className="flex items-center mb-2">{getDefaultImage}</div>
-
-      <DyoHeading className="text-xl text-bright ml-2 my-auto mr-auto truncate" element="h3">
-        {notification.name}
-      </DyoHeading>
-    </div>
-  )
+  const teams = useTeamRoutes()
+  const titleHref = teams.notification.details(notification.id)
 
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
-      {titleHref ? (
-        <DyoLink href={titleHref} qaLabel="notification-card-title">
-          {title}
-        </DyoLink>
-      ) : (
-        title
-      )}
+      <DyoLink
+        className={clsx('flex flex-row', disableTitleHref ? 'pointer-events-none' : null)}
+        href={titleHref}
+        qaLabel="notification-card-title"
+      >
+        <div className="flex items-center mb-2">
+          <DyoIcon className="aspect-square" src="/notification.svg" size="md" alt={t('altNotificationPicture')} />
+        </div>
+
+        <DyoHeading className="text-xl text-bright ml-2 my-auto mr-auto truncate" element="h3">
+          {notification.name}
+        </DyoHeading>
+      </DyoLink>
 
       <div className="flex wrap my-2">
         <p className="text-light break-all truncate">{notification.url}</p>
