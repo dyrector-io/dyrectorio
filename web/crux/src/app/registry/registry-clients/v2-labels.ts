@@ -34,6 +34,7 @@ type FetchResponse<T> = {
 }
 
 const ERROR_UNAUTHORIZED = 'UNAUTHORIZED'
+const ERROR_DENIED = 'DENINED'
 const ERROR_MANIFEST_UNKNOWN = 'MANIFEST_UNKNOWN'
 
 const HEADER_WWW_AUTHENTICATE = 'www-authenticate'
@@ -175,6 +176,12 @@ export default class V2Labels {
       if (result.data.errors?.some(it => it.code === ERROR_UNAUTHORIZED)) {
         throw new CruxInternalServerErrorException({
           message: 'Unauthorized v2 registry API!',
+        })
+      }
+
+      if (result.data.errors?.some(it => it.code === ERROR_DENIED)) {
+        throw new CruxInternalServerErrorException({
+          message: 'Access denied to v2 registry!',
         })
       }
 
