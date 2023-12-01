@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsBoolean, IsIn, IsString, IsUrl } from 'class-validator'
 
-export const NOTIFICATION_TYPE_VALUES = ['discord', 'slack', 'teams', 'rocket'] as const
+export const NOTIFICATION_TYPE_VALUES = ['discord', 'slack', 'teams', 'rocket', 'mattermost'] as const
 export type NotificationTypeDto = (typeof NOTIFICATION_TYPE_VALUES)[number]
 
 export const NOTIFICATION_EVENT_TYPE_VALUES = [

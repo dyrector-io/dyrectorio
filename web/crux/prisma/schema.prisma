@@ -505,6 +505,7 @@ enum NotificationTypeEnum {
   slack
   teams
   rocket
+  mattermost
 }
 
 enum NotificationEventTypeEnum {
