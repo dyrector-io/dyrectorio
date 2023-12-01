@@ -99,6 +99,9 @@
   "project": "Project",
   "version": "Version",
 
+  "showPassword": "Show Password",
+  "hidePassword": "Hide Password",
+
   "prefix": "Prefix",
 
   "days": "{{days}} days",

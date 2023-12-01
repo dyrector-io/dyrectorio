@@ -158,6 +158,7 @@ const RegisterPage = (props: RegisterPageProps) => {
             <DyoInput
               label={t('common:firstName')}
               name="firstName"
+              type="text"
               onChange={formik.handleChange}
               value={formik.values.firstName}
               message={formik.errors.firstName}
@@ -167,6 +168,7 @@ const RegisterPage = (props: RegisterPageProps) => {
             <DyoInput
               label={t('common:lastName')}
               name="lastName"
+              type="text"
               onChange={formik.handleChange}
               value={formik.values.lastName}
               message={formik.errors.lastName}
