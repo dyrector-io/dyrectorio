@@ -57,6 +57,7 @@ type Builder interface {
 	WithPostCreateHooks(hooks ...LifecycleFunc) Builder
 	WithPreStartHooks(hooks ...LifecycleFunc) Builder
 	WithPostStartHooks(hooks ...LifecycleFunc) Builder
+	WithLimitsConfig(config *LimitsConfig) Builder
 	Create() (Container, error)
 	CreateAndStart() (Container, error)
 	CreateAndStartWaitUntilExit() (Container, *WaitResult, error)
@@ -73,6 +74,7 @@ type DockerContainerBuilder struct {
 	envList          []string
 	labels           map[string]string
 	logConfig        *container.LogConfig
+	LimitsConfig     *LimitsConfig
 	portList         []PortBinding
 	portRanges       []PortRangeBinding
 	mountList        []mount.Mount
@@ -165,6 +167,14 @@ func (dc *DockerContainerBuilder) WithLabels(labels map[string]string) Builder {
 func (dc *DockerContainerBuilder) WithLogConfig(logConfig *container.LogConfig) Builder {
 	if logConfig != nil {
 		dc.logConfig = logConfig
+	}
+	return dc
+}
+
+// Sets the limits config of the container.
+func (dc *DockerContainerBuilder) WithLimitsConfig(limitsConfig *LimitsConfig) Builder {
+	if limitsConfig != nil {
+		dc.LimitsConfig = limitsConfig
 	}
 	return dc
 }
@@ -339,6 +349,11 @@ func builderToDockerConfig(dc *DockerContainerBuilder) (hostConfig *container.Ho
 
 	if dc.logConfig != nil {
 		hostConfig.LogConfig = *dc.logConfig
+	}
+
+	if dc.LimitsConfig != nil {
+		hostConfig.Resources.CPUShares = dc.LimitsConfig.Cpu
+		hostConfig.Resources.Memory = dc.LimitsConfig.Memory
 	}
 
 	policy := container.RestartPolicy{}

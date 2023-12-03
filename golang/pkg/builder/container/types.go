@@ -119,3 +119,9 @@ type WaitResult struct {
 	StatusCode int64
 	Logs       []string
 }
+
+// defines container resource limits
+type LimitsConfig struct {
+	Cpu    int64
+	Memory int64
+}

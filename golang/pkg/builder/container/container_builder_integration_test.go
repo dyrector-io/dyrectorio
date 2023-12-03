@@ -18,6 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
+	"github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 )
 
@@ -252,4 +253,24 @@ func TestConflict(t *testing.T) {
 
 	assert.True(t, ok)
 	assert.Equal(t, "NEW_CONTAINER", labelValue)
+}
+
+func TestResourceLimits(t *testing.T) {
+	cont, err := containerbuilder.NewDockerBuilder(context.Background()).
+		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-alpine").
+		WithLimitsConfig(&container.LimitsConfig{Cpu: 10, Memory: 54000000}).
+		CreateAndStart()
+
+	defer containerCleanup(cont)
+	assert.NoError(t, err)
+
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		t.Fatal(err)
+	}
+	container, err := cli.ContainerInspect(context.Background(), *cont.GetContainerID())
+
+	assert.Nil(t, err)
+	assert.Equal(t, int64(54000000), container.HostConfig.Resources.Memory)
+	assert.Equal(t, int64(10), container.HostConfig.Resources.CPUShares)
 }
