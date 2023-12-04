@@ -128,7 +128,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       </PageHeading>
 
       {!editing ? (
-        <RegistryCard registry={registryDetailsToRegistry(registry)} />
+        <RegistryCard registry={registryDetailsToRegistry(registry)} disableTitleHref />
       ) : (
         <EditRegistryCard className="p-8" registry={registry} onRegistryEdited={onRegistryEdited} submit={submit} />
       )}

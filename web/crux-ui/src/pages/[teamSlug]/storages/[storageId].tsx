@@ -81,7 +81,7 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
       </PageHeading>
 
       {!editing ? (
-        <StorageCard storage={storage} />
+        <StorageCard storage={storage} disableTitleHref />
       ) : (
         <EditStorageCard className="p-8" storage={storage} onStorageEdited={onStorageEdited} submit={submit} />
       )}
