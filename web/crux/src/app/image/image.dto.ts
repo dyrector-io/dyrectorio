@@ -57,7 +57,7 @@ export class ImageDto {
   registry: BasicRegistryDto
 
   @ValidateNested()
-  validation: ImageValidation
+  labels: Record<string, string>
 }
 
 export class AddImagesDto {

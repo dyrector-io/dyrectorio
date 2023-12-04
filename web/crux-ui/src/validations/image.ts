@@ -1,4 +1,4 @@
-import { ContainerConfigData, ImageValidation } from '@app/models'
+import { ContainerConfigData, ENVIRONMENT_VALUE_TYPES, EnvironmentRule, EnvironmentValueType } from '@app/models'
 import yup from './yup'
 import { ErrorWithPath, getValidationError } from './common'
 import { createContainerConfigSchema } from './container'
@@ -20,10 +20,10 @@ export const getConfigFieldErrorsForSchema = (
 
 export const getContainerConfigFieldErrors = (
   newConfig: ContainerConfigData,
-  validation: ImageValidation,
+  imageLabels: Record<string, string>,
   t: Translate,
 ): ContainerConfigValidationErrors =>
-  getConfigFieldErrorsForSchema(createContainerConfigSchema(validation), newConfig, t)
+  getConfigFieldErrorsForSchema(createContainerConfigSchema(imageLabels), newConfig, t)
 
 export const jsonErrorOf = (fieldErrors: ContainerConfigValidationErrors) => {
   const entries = Object.entries(fieldErrors)
@@ -55,3 +55,41 @@ export const findErrorStartsWith = (
 
 export const matchError = (error: ErrorWithPath, pathEndsWith: string): boolean =>
   error?.path.endsWith(pathEndsWith) ?? false
+
+export const parseDyrectorioEnvRules = (labels: Record<string, string>): Record<string, EnvironmentRule> => {
+  if (!labels) {
+    return {}
+  }
+
+  return Object.entries(labels).reduce((prev, [key, value]) => {
+    if (!key.startsWith('org.dyectorio.env')) {
+      return prev
+    }
+
+    const env = key.substring('org.dyectorio.env.'.length)
+    const params = value.split(',')
+
+    const rule: EnvironmentRule = {} as any
+    params.forEach(it => {
+      if (it === 'required') {
+        rule.required = true
+      } else if (ENVIRONMENT_VALUE_TYPES.includes(it as EnvironmentValueType)) {
+        rule.type = it as EnvironmentValueType
+      } else if (it.includes(':')) {
+        const [prop, propValue] = it.split(':')
+        rule[prop] = propValue
+      } else {
+        throw new Error(`Invalid label rule value: ${it}`)
+      }
+    })
+
+    if (!rule.type) {
+      throw new Error(`Label rule must define environment type: ${value}`)
+    }
+
+    return {
+      ...prev,
+      [env]: rule,
+    }
+  }, {})
+}

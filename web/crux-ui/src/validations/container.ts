@@ -14,13 +14,13 @@ import {
   ContainerPort,
   ContainerRestartPolicyType,
   EnvironmentRule,
-  ImageValidation,
   Metrics,
   UniqueKeyValue,
   VolumeType,
 } from '@app/models'
 import * as yup from 'yup'
 import { matchNoLeadingOrTrailingWhitespaces, matchNoWhitespace } from './common'
+import { parseDyrectorioEnvRules } from './image'
 
 const ERROR_NO_SENSITIVE = 'container:validation.noSensitive'
 const ERROR_INVALID_KUBERNETES_QUANTITY = 'container:validation.kubernetesQuantity'
@@ -430,12 +430,14 @@ const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: Uniq
   return null
 }
 
-const testEnvironment = (validation: ImageValidation) => (arr: UniqueKeyValue[]) => {
-  if (!validation) {
+const testEnvironment = (imageLabels: Record<string, string>) => (arr: UniqueKeyValue[]) => {
+  if (!imageLabels) {
     return true
   }
 
-  const requiredKeys = Object.entries(validation.environmentRules)
+  const rules = parseDyrectorioEnvRules(imageLabels)
+
+  const requiredKeys = Object.entries(rules)
     .filter(([, rule]) => rule.required)
     .map(([key]) => key)
   const foundKeys = arr.map(it => it.key)
@@ -452,7 +454,7 @@ const testEnvironment = (validation: ImageValidation) => (arr: UniqueKeyValue[])
   const fieldErrors = arr
     .map((it, index) => {
       const { key } = it
-      const rule = validation.environmentRules[key]
+      const rule = rules[key]
       if (!rule) {
         return null
       }
@@ -469,14 +471,14 @@ const testEnvironment = (validation: ImageValidation) => (arr: UniqueKeyValue[])
   return true
 }
 
-const createContainerConfigBaseSchema = (validation: ImageValidation) =>
+const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
   yup.object().shape({
     name: matchNoWhitespace(yup.string().required().label('container:common.containerName')),
     environment: unsafeUniqueKeyValuesSchema
       .default([])
       .nullable()
       .label('container:common.environment')
-      .test('ruleValidation', 'errors:yup.mixed.required', testEnvironment(validation)),
+      .test('ruleValidation', 'errors:yup.mixed.required', testEnvironment(imageLabels)),
     routing: routingRule,
     expose: exposeRule,
     user: yup.number().default(null).min(-1).max(UID_MAX).nullable().label('container:common.user'),
@@ -512,12 +514,12 @@ const createContainerConfigBaseSchema = (validation: ImageValidation) =>
     metrics: metricsRule,
   })
 
-export const createContainerConfigSchema = (validation: ImageValidation) =>
-  createContainerConfigBaseSchema(validation).shape({
+export const createContainerConfigSchema = (imageLabels: Record<string, string>) =>
+  createContainerConfigBaseSchema(imageLabels).shape({
     secrets: uniqueKeySchema.default([]).nullable().label('container:common.secrets'),
   })
 
-export const createMergedContainerConfigSchema = (validation: ImageValidation) =>
-  createContainerConfigBaseSchema(validation).shape({
+export const createMergedContainerConfigSchema = (imageLabels: Record<string, string>) =>
+  createContainerConfigBaseSchema(imageLabels).shape({
     secrets: uniqueKeyValuesSchema.default([]).nullable().label('container:common.secrets'),
   })

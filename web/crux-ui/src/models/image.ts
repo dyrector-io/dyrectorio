@@ -10,10 +10,6 @@ export type EnvironmentRule = {
   default?: string
 }
 
-export type ImageValidation = {
-  environmentRules: Record<string, EnvironmentRule>
-}
-
 export type VersionImage = {
   id: string
   name: string
@@ -22,7 +18,7 @@ export type VersionImage = {
   config: ContainerConfigData
   createdAt: string
   registry: BasicRegistry
-  validation: ImageValidation
+  labels: Record<string, string>
 }
 
 export type PatchVersionImage = {

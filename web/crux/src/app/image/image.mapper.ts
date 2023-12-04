@@ -10,7 +10,6 @@ import {
   RestartPolicy,
 } from '@prisma/client'
 import { ContainerConfigData, ContainerLogDriverType, ContainerVolumeType, Volume } from 'src/domain/container'
-import { parseDyrectorioEnvRules } from 'src/domain/image'
 import { toPrismaJson } from 'src/domain/utils'
 import { Volume as ProtoVolume } from 'src/grpc/protobuf/proto/agent'
 import {
@@ -37,8 +36,6 @@ export default class ImageMapper {
   ) {}
 
   toDto(it: ImageDetails): ImageDto {
-    const environmentRules = parseDyrectorioEnvRules(it.labels as Record<string, string>)
-
     return {
       id: it.id,
       name: it.name,
@@ -47,9 +44,7 @@ export default class ImageMapper {
       registry: this.registryMapper.toDto(it.registry),
       config: this.containerMapper.configDataToDto(it.config as any as ContainerConfigData),
       createdAt: it.createdAt,
-      validation: {
-        environmentRules,
-      },
+      labels: it.labels as Record<string, string>,
     }
   }
 

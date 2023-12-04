@@ -9,6 +9,19 @@ export type EnvironmentRule = {
   default?: string
 }
 
+/**
+ * Parse dyrector.io specific image labels which contain environment validation rules.
+ *
+ * Format: org.dyectorio.env.ENV=rule1,rule2:value,...
+ * Where
+ *  - ENV is the name of the environment variable.
+ *  - Rules are separated by a single comma.
+ *  - Rules and their values are separated by colons.
+ * Possible rules:
+ *  - Type (required): "string", "boolean" or "int".
+ *  - Required: "required" marks the environment as required.
+ *  - Default value: "default:value".
+ */
 export const parseDyrectorioEnvRules = (labels: Record<string, string>): Record<string, EnvironmentRule> => {
   if (!labels) {
     return {}
@@ -33,7 +46,7 @@ export const parseDyrectorioEnvRules = (labels: Record<string, string>): Record<
         rule[prop] = propValue
       } else {
         throw new CruxInternalServerErrorException({
-          message: `Invalid label rule value`,
+          message: 'Invalid label rule value',
           property: 'value',
           value: it,
         })
@@ -42,7 +55,7 @@ export const parseDyrectorioEnvRules = (labels: Record<string, string>): Record<
 
     if (!rule.type) {
       throw new CruxInternalServerErrorException({
-        message: `Label rule must define environment type.`,
+        message: 'Label rule must define environment type.',
         property: 'rule',
         value,
       })
