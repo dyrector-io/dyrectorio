@@ -125,7 +125,7 @@ export default class RegistryClientProvider {
           : null,
       )
 
-    const createUnchecked = (details: UncheckedRegistryDetailsDto) => new UncheckedApiClient(details.url)
+    const createUnchecked = (_: UncheckedRegistryDetailsDto) => new UncheckedApiClient()
 
     client = {
       type: registry.type,
