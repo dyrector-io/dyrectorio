@@ -17,7 +17,6 @@ import {
   GoogleRegistryDetailsDto,
   HubRegistryDetailsDto,
   RegistryType,
-  UncheckedRegistryDetailsDto,
   V2RegistryDetailsDto,
 } from './registry.dto'
 import RegistryService from './registry.service'
@@ -125,7 +124,7 @@ export default class RegistryClientProvider {
           : null,
       )
 
-    const createUnchecked = (_: UncheckedRegistryDetailsDto) => new UncheckedApiClient()
+    const createUnchecked = () => new UncheckedApiClient()
 
     client = {
       type: registry.type,
@@ -140,7 +139,7 @@ export default class RegistryClientProvider {
           ? createGitlab(registry.details as GitlabRegistryDetailsDto)
           : registry.type === 'google'
           ? createGoogle(registry.details as GoogleRegistryDetailsDto)
-          : createUnchecked(registry.details as UncheckedRegistryDetailsDto),
+          : createUnchecked(),
     }
 
     this.clients.set(registry.id, client)

@@ -20,7 +20,7 @@ import {
 } from '@app/models'
 import * as yup from 'yup'
 import { matchNoLeadingOrTrailingWhitespaces, matchNoWhitespace } from './common'
-import { parseDyrectorioEnvRules } from './image'
+import { parseDyrectorioEnvRules } from './labels'
 
 const ERROR_NO_SENSITIVE = 'container:validation.noSensitive'
 const ERROR_INVALID_KUBERNETES_QUANTITY = 'container:validation.kubernetesQuantity'
