@@ -61,6 +61,7 @@ import {
   InstanceSecretsDto,
 } from './deploy.dto'
 import { DeploymentEventMessage } from './deploy.message'
+import EncryptionService from 'src/services/encryption.service'
 
 @Injectable()
 export default class DeployMapper {
@@ -75,6 +76,7 @@ export default class DeployMapper {
     private versionMapper: VersionMapper,
     @Inject(forwardRef(() => NodeMapper))
     private nodeMapper: NodeMapper,
+    private encryptionService: EncryptionService,
   ) {}
 
   statusToDto(it: DeploymentStatusEnum): DeploymentStatusDto {
@@ -431,8 +433,8 @@ export default class DeployMapper {
     if (storage.accessKey && storage.secretKey) {
       environment = {
         ...environment,
-        RCLONE_CONFIG_S3_ACCESS_KEY_ID: storage.accessKey,
-        RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: storage.secretKey,
+        RCLONE_CONFIG_S3_ACCESS_KEY_ID: this.encryptionService.decrypt(storage.accessKey),
+        RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: this.encryptionService.decrypt(storage.secretKey),
       }
     }
 

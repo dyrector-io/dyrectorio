@@ -4,14 +4,17 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoLink from '@app/elements/dyo-link'
 import DyoPassword from '@app/elements/dyo-password'
 import DyoToggle from '@app/elements/dyo-toggle'
-import { GITLAB_NAMESPACE_VALUES, GitlabRegistryDetails, RegistryNamespace } from '@app/models'
-import { EditRegistryTypeProps } from '@app/utils'
+import { EditableGitlabRegistryDetails, GITLAB_NAMESPACE_VALUES, RegistryNamespace } from '@app/models'
+import { EditRegistryTypeProps, formikSetFieldValueOrIgnore } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 
-const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails>) => {
+const GitlabRegistryFields = (props: EditRegistryTypeProps<EditableGitlabRegistryDetails>) => {
   const { formik } = props
+  const { values, errors, handleChange, setFieldValue } = formik
 
   const { t } = useTranslation('registries')
+
+  const editing = !!values.id
 
   return (
     <>
@@ -29,36 +32,15 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
         .
       </DyoLabel>
 
-      <DyoInput
-        className="max-w-lg"
-        grow
-        name="user"
-        type="text"
-        label={t('user')}
-        onChange={formik.handleChange}
-        value={formik.values.user}
-        message={formik.errors.user}
-      />
-
-      <DyoPassword
-        className="max-w-lg"
-        grow
-        name="token"
-        label={t('token')}
-        onChange={formik.handleChange}
-        value={formik.values.token}
-        message={formik.errors.token}
-      />
-
       <div className="flex flex-wrap mt-8">
         <DyoLabel className="mr-2 my-auto">{t('namespaceType')}</DyoLabel>
 
         <DyoChips
           name="gitlabNamespaceType"
           choices={GITLAB_NAMESPACE_VALUES}
-          selection={formik.values.namespace}
+          selection={values.namespace}
           converter={(it: RegistryNamespace) => t(`namespace.${it}`)}
-          onSelectionChange={it => formik.setFieldValue('namespace', it, true)}
+          onSelectionChange={it => setFieldValue('namespace', it, true)}
           qaLabel={chipsQALabelFromValue}
         />
       </div>
@@ -68,28 +50,28 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
         grow
         name="imageNamePrefix"
         type="text"
-        label={formik.values.namespace === 'group' ? t('group') : t('project')}
-        onChange={formik.handleChange}
-        value={formik.values.imageNamePrefix}
-        message={formik.errors.imageNamePrefix}
+        label={values.namespace === 'group' ? t('group') : t('project')}
+        onChange={handleChange}
+        value={values.imageNamePrefix}
+        message={errors.imageNamePrefix}
       />
 
       <DyoToggle
         className="mt-8"
         name="selfManaged"
         label={t('selfManaged')}
-        checked={formik.values.selfManaged}
+        checked={values.selfManaged}
         setFieldValue={async (field, value, shouldValidate): Promise<void> => {
           if (!value) {
-            await formik.setFieldValue('url', '', false)
-            await formik.setFieldValue('apiUrl', '', false)
+            await setFieldValue('url', '', false)
+            await setFieldValue('apiUrl', '', false)
           }
 
-          await formik.setFieldValue(field, value, shouldValidate)
+          await setFieldValue(field, value, shouldValidate)
         }}
       />
 
-      {!formik.values.selfManaged ? null : (
+      {!values.selfManaged ? null : (
         <>
           <DyoInput
             className="max-w-lg"
@@ -97,9 +79,9 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
             name="url"
             type="text"
             label={t('url')}
-            onChange={formik.handleChange}
-            value={formik.values.url}
-            message={formik.errors.url}
+            onChange={handleChange}
+            value={values.url}
+            message={errors.url}
           />
 
           <DyoInput
@@ -108,9 +90,42 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
             name="apiUrl"
             type="text"
             label={t('apiUrl')}
-            onChange={formik.handleChange}
-            value={formik.values.apiUrl}
-            message={formik.errors.apiUrl}
+            onChange={handleChange}
+            value={values.apiUrl}
+            message={errors.apiUrl}
+          />
+        </>
+      )}
+
+      <DyoToggle
+        className="mt-8"
+        name="changeCredentials"
+        label={t('common:changeCredentials')}
+        checked={values.changeCredentials}
+        setFieldValue={formikSetFieldValueOrIgnore(formik, !editing)}
+      />
+
+      {values.changeCredentials && (
+        <>
+          <DyoInput
+            className="max-w-lg"
+            grow
+            name="user"
+            type="text"
+            label={t('user')}
+            onChange={handleChange}
+            value={values.user}
+            message={errors.user}
+          />
+
+          <DyoPassword
+            className="max-w-lg"
+            grow
+            name="token"
+            label={t('token')}
+            onChange={handleChange}
+            value={values.token}
+            message={errors.token}
           />
         </>
       )}

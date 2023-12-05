@@ -18,6 +18,7 @@ import { DeployJwtStrategy } from './deploy.jwt.strategy'
 import DeployMapper from './deploy.mapper'
 import DeployService from './deploy.service'
 import DeployWebSocketGateway from './deploy.ws.gateway'
+import EncryptionService from 'src/services/encryption.service'
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import DeployWebSocketGateway from './deploy.ws.gateway'
     DeployMapper,
     TeamRepository,
     KratosService,
+    EncryptionService,
     DeployWebSocketGateway,
     VersionMapper,
     ProjectMapper,

@@ -48,7 +48,7 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
           </DyoLabel>
         )}
 
-        <span className="relative">
+        <span className={clsx('relative', className, grow ? 'w-full' : 'w-80')}>
           <input
             {...forwardedProps}
             name={name}

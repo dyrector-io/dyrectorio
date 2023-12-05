@@ -17,7 +17,7 @@ const shouldResetMetaData = { reset: true }
 /**
  * Creates a Yup schema for a registry credential role based on the provided label.
  * The schema defines validation rules for whether a field is required or not
- * based on the 'type' and 'private' properties in the input data.
+ * based on the 'type', 'public' and `changeCredentials` properties in the input data.
  *
  * @param label - The label to be used for the schema.
  * @returns A Yup schema instance.
@@ -26,9 +26,16 @@ const createRegistryCredentialRole = (label: string) =>
   yup
     .mixed()
     .meta(shouldResetMetaData)
-    .when(['type', 'private'], {
-      is: (type: RegistryType, _private: boolean) =>
-        type === 'gitlab' || type === 'github' || (_private && (type === 'v2' || type === 'google' || type === 'hub')),
+    .when(['type', 'public', 'changeCredentials'], {
+      is: (type: RegistryType, _public: boolean, changeCredentials: boolean) => {
+        if (!changeCredentials) {
+          return false
+        }
+
+        return (
+          type === 'gitlab' || type === 'github' || (!_public && (type === 'v2' || type === 'google' || type === 'hub'))
+        )
+      },
       then: () => yup.string().required().label(label),
       otherwise: () => yup.mixed().label(label),
     })
@@ -86,6 +93,7 @@ export const registrySchema = yup.object().shape({
       is: (type, selfManaged, local) =>
         type === 'v2' || type === 'google' || (type === 'gitlab' && selfManaged) || (type === 'unchecked' && !local),
       then: s => s.required(),
+      otherwise: s => s.nullable(),
     })
     .when(['type'], { is: type => type === 'google', then: s => s.oneOf([...googleRegistryUrls]) }),
   apiUrl: yup
@@ -95,9 +103,10 @@ export const registrySchema = yup.object().shape({
     .when(['type', 'selfManaged'], {
       is: (type, selfManaged) => type === 'gitlab' && selfManaged,
       then: s => s.required(),
+      otherwise: s => s.nullable(),
     }),
   selfManaged: yup.mixed().meta(shouldResetMetaData).label('registries:selfManaged'),
-  private: yup.mixed().meta(shouldResetMetaData).label('registries:private'),
+  public: yup.mixed().meta(shouldResetMetaData).label('registries:public'),
   namespace: yup
     .mixed<RegistryNamespace>()
     .label('registries:namespaceType')

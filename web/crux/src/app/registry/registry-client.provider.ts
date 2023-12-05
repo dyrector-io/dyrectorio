@@ -10,14 +10,7 @@ import PrivateHubApiClient from './registry-clients/private-hub-api-client'
 import { RegistryApiClient } from './registry-clients/registry-api-client'
 import RegistryV2ApiClient from './registry-clients/v2-api-client'
 import { REGISTRY_HUB_CACHE_EXPIRATION } from './registry.const'
-import {
-  GithubRegistryDetailsDto,
-  GitlabRegistryDetailsDto,
-  GoogleRegistryDetailsDto,
-  HubRegistryDetailsDto,
-  RegistryType,
-  V2RegistryDetailsDto,
-} from './registry.dto'
+import { GithubNamespace, GitlabNamespace, RegistryType } from './registry.dto'
 import RegistryService from './registry.service'
 
 export type RegistryClientEntry = {
@@ -57,91 +50,91 @@ export default class RegistryClientProvider {
       return client
     }
 
-    const registry = await this.service.getRegistryDetails(registryId)
+    const connInfo = await this.service.getRegistryConnectionInfoById(registryId)
 
-    if (registry.type === 'unchecked') {
+    if (connInfo.type === 'unchecked') {
       throw new CruxBadRequestException({ message: 'Unchecked registries have no API' })
     }
 
-    const createV2 = (details: V2RegistryDetailsDto) =>
+    const createV2 = () =>
       new RegistryV2ApiClient(
-        details.url,
-        details.user
+        connInfo.url,
+        !connInfo.public
           ? {
-              username: details.user,
-              password: details.token,
+              username: connInfo.user,
+              password: connInfo.token,
             }
           : null,
       )
 
-    const createHub = async (details: HubRegistryDetailsDto) => {
-      if (!details.token) {
+    const createHub = async () => {
+      if (connInfo.public) {
         return new CachedPublicHubApiClient(
-          this.getHubCacheForImageNamePrefix(registry.id, details.imageNamePrefix),
+          this.getHubCacheForImageNamePrefix(registryId, connInfo.imageNamePrefix),
           REGISTRY_HUB_URL,
-          details.imageNamePrefix,
+          connInfo.imageNamePrefix,
         )
       }
 
-      const hubClient = new PrivateHubApiClient(REGISTRY_HUB_URL, details.imageNamePrefix)
-      await hubClient.login(details.user, details.token)
+      const hubClient = new PrivateHubApiClient(REGISTRY_HUB_URL, connInfo.imageNamePrefix)
+      await hubClient.login(connInfo.user, connInfo.token)
 
       return hubClient
     }
 
-    const createGithub = (details: GithubRegistryDetailsDto) =>
+    const createGithub = () =>
       new GithubRegistryClient(
-        details.imageNamePrefix,
+        connInfo.imageNamePrefix,
         {
-          username: details.user,
-          password: details.token,
+          username: connInfo.user,
+          password: connInfo.token,
         },
-        details.namespace,
+        connInfo.namespace as GithubNamespace,
       )
 
-    const createGitlab = (details: GitlabRegistryDetailsDto) =>
+    const createGitlab = () =>
       new GitlabRegistryClient(
-        details.imageNamePrefix,
+        connInfo.imageNamePrefix,
         {
-          username: details.user,
-          password: details.token,
+          username: connInfo.user,
+          password: connInfo.token,
         },
-        details.apiUrl
+        connInfo.apiUrl
           ? {
-              apiUrl: details.apiUrl,
-              registryUrl: details.url,
+              apiUrl: connInfo.apiUrl,
+              registryUrl: connInfo.url,
             }
           : REGISTRY_GITLAB_URLS,
-        details.namespace,
+        connInfo.namespace as GitlabNamespace,
       )
 
-    const createGoogle = (details: GoogleRegistryDetailsDto) =>
+    const createGoogle = () =>
       new GoogleRegistryClient(
-        details.url,
-        details.imageNamePrefix,
-        details.user
+        connInfo.url,
+        connInfo.imageNamePrefix,
+        !connInfo.public
           ? {
-              username: details.user,
-              password: details.token,
+              username: connInfo.user,
+              password: connInfo.token,
             }
           : null,
       )
 
     client = {
-      type: registry.type,
+      type: connInfo.type,
       client:
-        registry.type === 'v2'
-          ? createV2(registry.details as V2RegistryDetailsDto)
-          : registry.type === 'hub'
-          ? await createHub(registry.details as HubRegistryDetailsDto)
-          : registry.type === 'github'
-          ? createGithub(registry.details as GithubRegistryDetailsDto)
-          : registry.type === 'gitlab'
-          ? createGitlab(registry.details as GitlabRegistryDetailsDto)
-          : createGoogle(registry.details as GoogleRegistryDetailsDto),
+        connInfo.type === 'v2'
+          ? createV2()
+          : connInfo.type === 'hub'
+          ? await createHub()
+          : connInfo.type === 'github'
+          ? createGithub()
+          : connInfo.type === 'gitlab'
+          ? createGitlab()
+          : createGoogle(),
     }
 
-    this.clients.set(registry.id, client)
+    this.clients.set(connInfo.id, client)
 
     const teamRegistries = this.registriesByTeam.get(teamId) ?? []
 

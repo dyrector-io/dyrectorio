@@ -12,7 +12,7 @@ import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Registry, REGISTRY_TYPE_VALUES, RegistryType } from '@app/models'
+import { Registry, REGISTRY_TYPE_VALUES, RegistryDetails, registryDetailsToRegistry, RegistryType } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
@@ -44,9 +44,11 @@ const RegistriesPage = (props: RegistriesPageProps) => {
   const [creating, setCreating] = useState(false)
   const submit = useSubmit()
 
-  const onCreated = (registry: Registry) => {
+  const onCreated = (newRegistry: RegistryDetails) => {
+    const reg = registryDetailsToRegistry(newRegistry)
+
     setCreating(false)
-    filters.setItems([...filters.items, registry])
+    filters.setItems([...filters.items, reg])
   }
 
   const selfLink: BreadcrumbLink = {

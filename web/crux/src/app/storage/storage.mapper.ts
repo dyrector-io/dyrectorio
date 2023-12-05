@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common'
 import { Storage } from '@prisma/client'
-import { StorageDetailsDto, StorageDto } from './storage.dto'
+import EncryptionService from 'src/services/encryption.service'
+import { CreateStorageDto, StorageDetailsDto, StorageDto, UpdateStorageDto } from './storage.dto'
+
+type StorageDetails = Pick<Storage, 'name' | 'description' | 'icon' | 'url' | 'accessKey' | 'secretKey'>
 
 @Injectable()
 export default class StorageMapper {
+  constructor(private readonly encryptionService: EncryptionService) {}
+
   listItemToDto(storage: Storage): StorageDto {
     return {
       id: storage.id,
@@ -17,9 +22,26 @@ export default class StorageMapper {
   detailsToDto(storage: StorageWithCount): StorageDetailsDto {
     return {
       ...this.listItemToDto(storage),
-      accessKey: storage.accessKey,
-      secretKey: storage.secretKey,
+      public: !storage.accessKey,
       inUse: storage._count.containerConfigs > 0 || storage._count.instanceConfigs > 0,
+    }
+  }
+
+  detailsToDb(
+    it: CreateStorageDto | UpdateStorageDto,
+  ): StorageDetails {
+    const { public: pub } = it
+    delete it.public
+
+    const hasCreds = !!it.accessKey
+
+    return {
+      name: it.name,
+      description: it.description,
+      icon: it.icon ?? null,
+      url: it.url,
+      accessKey: pub ? null : hasCreds ? this.encryptionService.encrypt(it.accessKey) : undefined,
+      secretKey: pub ? null : hasCreds ? this.encryptionService.encrypt(it.secretKey) : undefined,
     }
   }
 }

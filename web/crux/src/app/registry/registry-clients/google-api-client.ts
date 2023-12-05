@@ -24,7 +24,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
       if (!options.password) {
         throw new CruxUnauthorizedException({
           message: `Invalid authentication parameters for: ${url}`,
-          property: 'registryUnauthorized',
+          error: 'registryUnauthorized',
         })
       }
 
@@ -43,7 +43,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
     } catch (err) {
       throw new CruxUnauthorizedException({
         message: `Google auth request failed`,
-        property: 'registryUnauthorized',
+        error: 'registryUnauthorized',
       })
     }
 

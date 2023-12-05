@@ -10,6 +10,7 @@ import RegistryHttpController from './registry.http.controller'
 import RegistryMapper from './registry.mapper'
 import RegistryService from './registry.service'
 import RegistryWebSocketGateway from './registry.ws.gateway'
+import EncryptionService from 'src/services/encryption.service'
 
 @Module({
   imports: [HttpModule, TeamModule, AuditLoggerModule],
@@ -21,6 +22,7 @@ import RegistryWebSocketGateway from './registry.ws.gateway'
     RegistryMapper,
     TeamRepository,
     KratosService,
+    EncryptionService,
     RegistryWebSocketGateway,
     RegistryClientProvider,
   ],

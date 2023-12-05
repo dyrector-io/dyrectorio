@@ -1,3 +1,4 @@
+import { OmitType } from '@nestjs/swagger'
 import { IsBoolean, IsOptional, IsString, IsUrl, IsUUID } from 'class-validator'
 
 export class BasicStorageDto {
@@ -22,13 +23,8 @@ export class StorageDto extends BasicStorageDto {
 }
 
 export class StorageDetailsDto extends StorageDto {
-  @IsString()
-  @IsOptional()
-  accessKey?: string
-
-  @IsString()
-  @IsOptional()
-  secretKey?: string
+  @IsBoolean()
+  public: boolean
 
   @IsBoolean()
   inUse: boolean
@@ -42,21 +38,7 @@ export class StorageOptionDto {
   name: string
 }
 
-export class CreateStorageDto {
-  @IsString()
-  name: string
-
-  @IsString()
-  @IsOptional()
-  description?: string
-
-  @IsString()
-  @IsOptional()
-  icon?: string
-
-  @IsUrl()
-  url: string
-
+export class CreateStorageDto extends OmitType(StorageDetailsDto, ['id', 'inUse']){
   @IsString()
   @IsOptional()
   accessKey?: string

@@ -5,7 +5,7 @@ case $1 in
         exec npm run start:prod
     ;;
     "migrate")
-        exec npx prisma migrate deploy
+        exec npm run encrypt:migrate
     ;;
     *)
         echo "Invalid argument: $1"

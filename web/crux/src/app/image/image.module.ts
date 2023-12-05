@@ -11,6 +11,7 @@ import ImageEventService from './image.event.service'
 import ImageHttpController from './image.http.controller'
 import ImageMapper from './image.mapper'
 import ImageService from './image.service'
+import EncryptionService from 'src/services/encryption.service'
 
 @Module({
   imports: [RegistryModule, EditorModule, ContainerModule, AuditLoggerModule],
@@ -22,6 +23,7 @@ import ImageService from './image.service'
     TeamRepository,
     RegistryMapper,
     KratosService,
+    EncryptionService,
     ImageEventService,
   ],
   controllers: [ImageHttpController],
