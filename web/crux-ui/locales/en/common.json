@@ -99,6 +99,9 @@
   "project": "Project",
   "version": "Version",
 
+  "show": "Show",
+  "hide": "Hide",
+
   "prefix": "Prefix",
 
   "days": "{{days}} days",
@@ -224,6 +227,6 @@
     "description": "There is a protected deployment with the same node and prefix. Continuing the deployment could result in unexpected behaviour. Are you sure want to continue?"
   },
 
-  "imageConfig":"Image config",
-  "instanceConfig":"Container config"
+  "imageConfig": "Image config",
+  "instanceConfig": "Container config"
 }

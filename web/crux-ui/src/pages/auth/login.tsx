@@ -6,6 +6,7 @@ import DyoForm from '@app/elements/dyo-form'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoMessage from '@app/elements/dyo-message'
+import DyoPassword from '@app/elements/dyo-password'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
@@ -151,6 +152,7 @@ const LoginPage = (props: LoginPageProps) => {
           <DyoSingleFormHeading>{t('common:logIn')}</DyoSingleFormHeading>
 
           {!refresh ? null : <p className="w-80 mx-auto mt-8">{t('refresh')}</p>}
+
           {!invitation ? null : <p className="w-80 mx-auto mt-8">{t('loginToAcceptInv')}</p>}
 
           <DyoInput
@@ -162,10 +164,9 @@ const LoginPage = (props: LoginPageProps) => {
             message={findMessage(ui, 'identifier')}
           />
 
-          <DyoInput
+          <DyoPassword
             label={t('common:password')}
             name="password"
-            type="password"
             onChange={formik.handleChange}
             value={formik.values.password}
             message={findMessage(ui, 'password')}

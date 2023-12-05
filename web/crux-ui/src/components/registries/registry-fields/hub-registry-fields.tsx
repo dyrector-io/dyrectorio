@@ -1,5 +1,6 @@
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoPassword from '@app/elements/dyo-password'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { HubRegistryDetails } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
@@ -55,11 +56,10 @@ const HubRegistryFields = (props: EditRegistryTypeProps<HubRegistryDetails>) => 
             message={formik.errors.user}
           />
 
-          <DyoInput
+          <DyoPassword
             className="max-w-lg"
             grow
             name="token"
-            type="password"
             label={t('token')}
             onChange={formik.handleChange}
             value={formik.values.token}

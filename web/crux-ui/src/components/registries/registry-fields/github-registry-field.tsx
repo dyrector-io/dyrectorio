@@ -2,6 +2,7 @@ import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoLink from '@app/elements/dyo-link'
+import DyoPassword from '@app/elements/dyo-password'
 import { GITHUB_NAMESPACE_VALUES, GithubRegistryDetails, RegistryNamespace } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
@@ -38,11 +39,10 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
         message={formik.errors.user}
       />
 
-      <DyoInput
+      <DyoPassword
         className="max-w-lg"
         grow
         name="token"
-        type="password"
         label={t('pat')}
         onChange={formik.handleChange}
         value={formik.values.token}

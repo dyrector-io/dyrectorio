@@ -68,7 +68,6 @@ const StoragesPage = (props: StoragesPageProps) => {
                   className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
                   key={`registry-${index}`}
                   storage={it}
-                  titleHref={routes.storage.details(it.id)}
                 />
               )
             })}

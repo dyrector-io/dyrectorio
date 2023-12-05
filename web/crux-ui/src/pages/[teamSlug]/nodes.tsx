@@ -132,7 +132,6 @@ const NodesPage = (props: NodesPageProps) => {
                   className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
                   key={`node-${index}`}
                   node={it}
-                  titleHref={routes.node.details(it.id)}
                 />
               )
             })}

@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 import { test } from '../utils/test.fixture'
-import { clearInput, screenshotPath, TEAM_ROUTES } from '../utils/common'
+import { clearInput, NGINX_TEST_IMAGE_WITH_TAG, screenshotPath, TEAM_ROUTES } from '../utils/common'
 import { createProject } from '../utils/projects'
 
 test('adding a new registry should work', async ({ page }) => {
@@ -48,7 +48,6 @@ test('minimum name length requirement should work', async ({ page }) => {
 
 test("Unchecked registry shouldn't search images", async ({ page }) => {
   const registryName = 'REGISTRY_UNCHECKED'
-  const imageName = 'library/nginx:latest'
 
   await page.goto(TEAM_ROUTES.registry.list())
   await page.waitForSelector('h2:text-is("Registries")')
@@ -74,27 +73,27 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   await expect(page.locator('label[for=imageName]')).toContainText('Image name and tag')
 
   await clearInput(page.locator('input[name=imageName]'))
-  await page.locator('input[name=imageName]').type(`${imageName}:mainline-alpine`)
-  await expect(page.locator('input[name=imageName] >> xpath=../p')).toContainText(
+  await page.locator('input[name=imageName]').type(`${NGINX_TEST_IMAGE_WITH_TAG}:mainline-alpine`)
+  await expect(page.locator('input[name=imageName] >> xpath=../../p')).toContainText(
     "Invalid format, please use 'NAME[:TAG]'",
   )
   await expect(page.locator('button:text-is("Add")')).not.toBeVisible()
 
   await clearInput(page.locator('input[name=imageName]'))
   await page.locator('input[name=imageName]').type('')
-  await expect(page.locator('input[name=imageName] >> xpath=../p')).toContainText(
+  await expect(page.locator('input[name=imageName] >> xpath=../../p')).toContainText(
     "Invalid format, please use 'NAME[:TAG]'",
   )
   await expect(page.locator('button:text-is("Add")')).not.toBeVisible()
 
   await clearInput(page.locator('input[name=imageName]'))
   await page.locator('input[name=imageName]').type('nginx')
-  await expect(page.locator('input[name=imageName] >> xpath=../p')).not.toBeVisible()
+  await expect(page.locator('input[name=imageName] >> xpath=../../p')).not.toBeVisible()
   await expect(page.locator('button:text-is("Add")')).toBeVisible()
 
   await clearInput(page.locator('input[name=imageName]'))
-  await page.locator('input[name=imageName]').type(imageName)
-  await expect(page.locator('input[name=imageName] >> xpath=../p')).not.toBeVisible()
+  await page.locator('input[name=imageName]').type(NGINX_TEST_IMAGE_WITH_TAG)
+  await expect(page.locator('input[name=imageName] >> xpath=../../p')).not.toBeVisible()
   await expect(page.locator('button:text-is("Add")')).toBeVisible()
 
   await page.locator('button:text-is("Add")').click()

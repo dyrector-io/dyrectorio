@@ -62,7 +62,6 @@ const NotificationsPage = (props: NotificationsPageProps) => {
                 className={clsx('max-h-64 w-full p-6')}
                 key={`notification-${index}`}
                 notification={it}
-                titleHref={routes.notification.details(it.id)}
               />
             ))}
           </DyoWrap>

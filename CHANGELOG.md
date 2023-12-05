@@ -1,6 +1,37 @@
 # CHANGELOG
 
 
+<a name="0.10.0"></a>
+## [0.10.0](https://github.com/dyrector-io/dyrectorio/compare/0.9.0...0.10.0) (2023-12-04)
+
+### Chore
+
+* remove deprecated development environment files ([#875](https://github.com/dyrector-io/dyrectorio/issues/875))
+
+### Feat
+
+* **(crux-ui):** password show icon ([#882](https://github.com/dyrector-io/dyrectorio/issues/882))
+* **(web):** integrates the mattermost webhook to notifications ([#877](https://github.com/dyrector-io/dyrectorio/issues/877))
+* add docs link to the top page of readme ([#883](https://github.com/dyrector-io/dyrectorio/issues/883))
+* **(web):** add private docker hub registry support ([#884](https://github.com/dyrector-io/dyrectorio/issues/884))
+* **(web):** quality assurance ([#874](https://github.com/dyrector-io/dyrectorio/issues/874))
+* add working directory to container config ([#879](https://github.com/dyrector-io/dyrectorio/issues/879))
+* **(web):** integrate rocket.chat ([#867](https://github.com/dyrector-io/dyrectorio/issues/867))
+* node kick & updated agent connection kick fix & fallback token ([#870](https://github.com/dyrector-io/dyrectorio/issues/870))
+
+### Fix
+
+* **(crux-ui):** sidebar vertical grow ([#880](https://github.com/dyrector-io/dyrectorio/issues/880))
+* deploy event race ([#872](https://github.com/dyrector-io/dyrectorio/issues/872))
+* **(web):** change command and arg validation ([#871](https://github.com/dyrector-io/dyrectorio/issues/871))
+* **(crux-ui):** recovery captcha ([#868](https://github.com/dyrector-io/dyrectorio/issues/868))
+
+### Refactor
+
+* **(crux-ui):** title hrefs ([#888](https://github.com/dyrector-io/dyrectorio/issues/888))
+* **(crux-ui):** password component
+
+
 <a name="0.9.0"></a>
 ## [0.9.0](https://github.com/dyrector-io/dyrectorio/compare/0.8.2...0.9.0) (2023-10-20)
 
