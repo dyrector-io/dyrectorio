@@ -53,9 +53,10 @@ export const registrySchema = yup.object().shape({
     .meta(shouldResetMetaData)
     .label('registries:url')
     .when(['type', 'selfManaged', 'local'], {
-      is: (type, selfManaged, local) =>
+      is: (type: RegistryType, selfManaged?: boolean, local?: boolean) =>
         type === 'v2' || type === 'google' || (type === 'gitlab' && selfManaged) || (type === 'unchecked' && !local),
       then: s => s.required(),
+      otherwise: s => s.nullable().optional(),
     })
     .whenType('google', s => s.oneOf([...googleRegistryUrls])),
   apiUrl: yup
@@ -63,8 +64,9 @@ export const registrySchema = yup.object().shape({
     .label('registries:apiUrl')
     .meta(shouldResetMetaData)
     .when(['type', 'selfManaged'], {
-      is: (type, selfManaged) => type === 'gitlab' && selfManaged,
+      is: (type: RegistryType, selfManaged?: boolean) => type === 'gitlab' && selfManaged,
       then: s => s.required(),
+      otherwise: s => s.nullable().optional(),
     }),
   selfManaged: yup.mixed().meta(shouldResetMetaData).label('registries:selfManaged'),
   private: yup.mixed().meta(shouldResetMetaData).label('registries:private'),
