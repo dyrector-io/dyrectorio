@@ -8,7 +8,7 @@ import V2Labels from './v2-labels'
 export default class PrivateHubApiClient extends HubApiClient implements RegistryApiClient {
   private jwt: string = null
 
-  private basicAuth: string = null
+  private labelsAuth: RequestInit = null
 
   constructor(url: string, prefix: string) {
     super(`https://${url}`, prefix)
@@ -19,10 +19,14 @@ export default class PrivateHubApiClient extends HubApiClient implements Registr
       return
     }
 
-    this.basicAuth = registryCredentialsToBasicAuth({
-      username: user,
-      password: token,
-    })
+    this.labelsAuth = {
+      headers: {
+        Authorization: registryCredentialsToBasicAuth({
+          username: user,
+          password: token,
+        }),
+      },
+    }
 
     const res = await fetch(`${this.url}/v2/users/login`, {
       method: 'POST',
@@ -83,7 +87,7 @@ export default class PrivateHubApiClient extends HubApiClient implements Registr
   }
 
   async labels(image: string, tag: string): Promise<Record<string, string>> {
-    const labelClient = new V2Labels(DOCKER_HUB_REGISTRY_URL, null, null, this.basicAuth)
+    const labelClient = new V2Labels(DOCKER_HUB_REGISTRY_URL, null, null, this.labelsAuth)
     return labelClient.fetchLabels(this.prefix ? `${this.prefix}/${image}` : image, tag)
   }
 }

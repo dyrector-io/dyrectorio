@@ -50,7 +50,7 @@ export default class V2Labels {
     private baseUrl: string,
     private requestInit?: RequestInit,
     manifestMime?: string,
-    private tokenAuth?: string,
+    private tokenInit?: RequestInit,
   ) {
     this.token = null
 
@@ -67,18 +67,6 @@ export default class V2Labels {
       headers: {
         ...this.requestInit?.headers,
         Authorization: `Bearer ${this.token}`,
-      },
-    }
-  }
-
-  private getTokenHeaders(): RequestInit {
-    if (!this.tokenAuth) {
-      return {}
-    }
-
-    return {
-      headers: {
-        Authorization: this.tokenAuth,
       },
     }
   }
@@ -119,7 +107,7 @@ export default class V2Labels {
 
     this.logger.debug(`Fetching token from '${tokenUrl}'`)
 
-    const tokenResponse = await fetch(tokenUrl, this.getTokenHeaders())
+    const tokenResponse = await fetch(tokenUrl, this.tokenInit)
 
     this.logger.debug(`Got token response for '${tokenUrl}' - ${tokenResponse.status}`)
 
