@@ -153,6 +153,14 @@ enum ExposeStrategy {
   EXPOSE_WITH_TLS = 3;
 }
 
+enum ExpectedContainerState {
+  CONTAINER_EXPECTED_STATE_UNSPECIFIED = 0;
+  EXPECT_RUNNING = 1;
+  EXPECT_EXITED = 2;
+  EXPECT_READY = 3;
+  EXPECT_LIVE = 4;
+}
+
 message Routing {
   optional string domain = 100;
   optional string path = 101;

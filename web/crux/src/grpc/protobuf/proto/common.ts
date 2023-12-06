@@ -511,6 +511,57 @@ export function exposeStrategyToJSON(object: ExposeStrategy): string {
   }
 }
 
+export enum ExpectedContainerState {
+  CONTAINER_EXPECTED_STATE_UNSPECIFIED = 0,
+  EXPECT_RUNNING = 1,
+  EXPECT_EXITED = 2,
+  EXPECT_READY = 3,
+  EXPECT_LIVE = 4,
+  UNRECOGNIZED = -1,
+}
+
+export function expectedContainerStateFromJSON(object: any): ExpectedContainerState {
+  switch (object) {
+    case 0:
+    case 'CONTAINER_EXPECTED_STATE_UNSPECIFIED':
+      return ExpectedContainerState.CONTAINER_EXPECTED_STATE_UNSPECIFIED
+    case 1:
+    case 'EXPECT_RUNNING':
+      return ExpectedContainerState.EXPECT_RUNNING
+    case 2:
+    case 'EXPECT_EXITED':
+      return ExpectedContainerState.EXPECT_EXITED
+    case 3:
+    case 'EXPECT_READY':
+      return ExpectedContainerState.EXPECT_READY
+    case 4:
+    case 'EXPECT_LIVE':
+      return ExpectedContainerState.EXPECT_LIVE
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return ExpectedContainerState.UNRECOGNIZED
+  }
+}
+
+export function expectedContainerStateToJSON(object: ExpectedContainerState): string {
+  switch (object) {
+    case ExpectedContainerState.CONTAINER_EXPECTED_STATE_UNSPECIFIED:
+      return 'CONTAINER_EXPECTED_STATE_UNSPECIFIED'
+    case ExpectedContainerState.EXPECT_RUNNING:
+      return 'EXPECT_RUNNING'
+    case ExpectedContainerState.EXPECT_EXITED:
+      return 'EXPECT_EXITED'
+    case ExpectedContainerState.EXPECT_READY:
+      return 'EXPECT_READY'
+    case ExpectedContainerState.EXPECT_LIVE:
+      return 'EXPECT_LIVE'
+    case ExpectedContainerState.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED'
+  }
+}
+
 export enum ContainerOperation {
   CONTAINER_OPERATION_UNSPECIFIED = 0,
   START_CONTAINER = 1,

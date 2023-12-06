@@ -12,6 +12,7 @@ import DyoToggle from '@app/elements/dyo-toggle'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   COMMON_CONFIG_PROPERTIES,
+  CONTAINER_EXPECTED_STATE_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   CommonConfigDetails,
@@ -20,6 +21,7 @@ import {
   ContainerConfigExposeStrategy,
   ContainerConfigPort,
   ContainerConfigVolume,
+  ContainerExpectedState,
   CraneConfigDetails,
   ImageConfigProperty,
   InitContainerVolumeLink,
@@ -964,6 +966,29 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               </div>
             )}
           />
+        )}
+
+        {/* expectedState */}
+        {filterContains('expectedState', selectedFilters) && (
+          <div className="grid break-inside-avoid mb-8">
+            <ConfigSectionLabel
+              disabled={disabledOnImage || !resetableConfig?.expectedState}
+              onResetSection={() => onResetSection('expectedState')}
+            >
+              {t('common.expectedState').toUpperCase()}
+            </ConfigSectionLabel>
+
+            <DyoChips
+              className="ml-2"
+              name="expectedState"
+              choices={[null, ...CONTAINER_EXPECTED_STATE_VALUES]}
+              selection={config.expectedState ?? null}
+              converter={(it: ContainerExpectedState) => (it ? t(`common.expectedStates.${it}`) : t('common:none'))}
+              onSelectionChange={it => onChange({ expectedState: it })}
+              disabled={disabled}
+              qaLabel={chipsQALabelFromValue}
+            />
+          </div>
         )}
       </div>
     </div>

@@ -99,6 +99,9 @@ export type ContainerConfigExposeStrategy = (typeof CONTAINER_EXPOSE_STRATEGY_VA
 export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rwo', 'rwx', 'mem', 'tmp'] as const
 export type VolumeType = (typeof CONTAINER_VOLUME_TYPE_VALUES)[number]
 
+export const CONTAINER_EXPECTED_STATE_VALUES = ['running', 'exited', 'ready', 'live'] as const
+export type ContainerExpectedState = (typeof CONTAINER_EXPECTED_STATE_VALUES)[number]
+
 export type ContainerConfigRouting = {
   domain?: string
   path?: string
@@ -216,6 +219,7 @@ export type ContainerConfigData = {
   initContainers?: InitContainer[]
   capabilities: UniqueKeyValue[]
   storage?: ContainerStorage
+  expectedState?: ContainerExpectedState
 
   // dagent
   logConfig?: ContainerConfigLog
@@ -308,6 +312,7 @@ export type JsonContainerConfig = {
   initContainers?: JsonInitContainer[]
   capabilities?: JsonKeyValue
   storage?: ContainerStorage
+  expectedState?: ContainerExpectedState
 
   // dagent
   logConfig?: JsonContainerConfigLog
@@ -399,6 +404,7 @@ export const mergeConfigs = (
     initContainers: instance.initContainers ?? image.initContainers,
     capabilities: null,
     storage: instance.storage ?? image.storage,
+    expectedState: instance.expectedState ?? image.expectedState,
 
     // crane
     customHeaders: instance.customHeaders ?? image.customHeaders,

@@ -51,6 +51,8 @@ type DockerVersion struct {
 	ClientVersion string
 }
 
+type healthCheckFunc func(health *types.Health, rounds *int) bool
+
 var ErrUnknownContainer = errors.New("unknown container")
 
 func GetContainerLogs(name string, skip, take uint) []string {
@@ -217,6 +219,124 @@ func getImageNameFromRequest(deployImageRequest *v1.DeployImageRequest) (string,
 	return imageHelper.ExpandImageName(imageName)
 }
 
+func waitContainerHealth(ctx context.Context, cli *client.Client, containerId string, check healthCheckFunc) chan error {
+	channel := make(chan error)
+
+	ticker := time.NewTicker(time.Second)
+
+	timeoutCtx, cancelFunc := context.WithTimeout(context.Background(), time.Second*120)
+
+	go func() {
+		defer cancelFunc()
+
+		rounds := 0
+
+		for {
+			select {
+			case <-timeoutCtx.Done():
+				channel <- fmt.Errorf("timeout")
+				return
+			case <-ticker.C:
+				inspect, err := cli.ContainerInspect(timeoutCtx, containerId)
+				if err != nil {
+					channel <- err
+					return
+				}
+
+				if inspect.State.Health == nil {
+					channel <- fmt.Errorf("container has no health")
+					return
+				}
+
+				if check(inspect.State.Health, &rounds) {
+					channel <- nil
+					return
+				}
+			}
+		}
+	}()
+
+	return channel
+}
+
+func checkHealthReady(health *types.Health, rounds *int) bool {
+	return health.Status == "healthy"
+}
+
+func checkHealthLive(health *types.Health, rounds *int) bool {
+	if health.Status != "healthy" {
+		*rounds = 0
+
+		return false
+	}
+
+	return *rounds >= 3
+}
+
+func waitForContainer(ctx context.Context, cli *client.Client, dog *dogger.DeploymentLogger, containerId string, state *v1.ExpectedContainerState) error {
+	inspect, err := cli.ContainerInspect(ctx, containerId)
+	if err != nil {
+		return err
+	}
+
+	containerState := inspect.State
+
+	if state == nil || *state == v1.ExpectedRunning {
+		if containerState.Running {
+			return nil
+		}
+
+		return fmt.Errorf("expected state running, actual: %s", containerState.Status)
+	}
+
+	if *state == v1.ExpectedExited {
+		if containerState.Status == "exited" {
+			if containerState.ExitCode == 0 {
+				return nil
+			}
+
+			return fmt.Errorf("container exited with non zero code: %d", containerState.ExitCode)
+		}
+
+		dog.WriteInfo("Waiting for container to exit gracefully")
+
+		waitChannel, errorChannel := cli.ContainerWait(ctx, containerId, dockerContainer.WaitConditionNextExit)
+		select {
+		case result := <-waitChannel:
+			if result.StatusCode != 0 {
+				return fmt.Errorf("container exited with non zero code: %d", containerState.ExitCode)
+			}
+			return nil
+		case err = <-errorChannel:
+			return fmt.Errorf("error container waiting: %w", err)
+		}
+	}
+
+	if *state == v1.ExpectedReady {
+		if containerState.Health == nil {
+			return fmt.Errorf("error waiting for container readyness: healthcheck not supported")
+		}
+
+		dog.WriteInfo("Waiting for container to become healthy")
+
+		healthEvents := waitContainerHealth(ctx, cli, containerId, checkHealthReady)
+		return <-healthEvents
+	}
+
+	if *state == v1.ExpectedLive {
+		if containerState.Health == nil {
+			return fmt.Errorf("error waiting for container liveliness: healthcheck not supported")
+		}
+
+		dog.WriteInfo("Waiting for container to become lively")
+
+		healthEvents := waitContainerHealth(ctx, cli, containerId, checkHealthLive)
+		return <-healthEvents
+	}
+
+	return nil
+}
+
 func DeployImage(ctx context.Context,
 	dog *dogger.DeploymentLogger,
 	deployImageRequest *v1.DeployImageRequest,
@@ -312,6 +432,11 @@ func DeployImage(ctx context.Context,
 
 	dog.WriteContainerState(mapper.MapDockerStateToCruxContainerState(matchedContainer.State),
 		matchedContainer.State, dogger.Info, "Started container: "+containerName)
+
+	err = waitForContainer(ctx, cli, dog, matchedContainer.ID, deployImageRequest.ContainerConfig.ExpectedState)
+	if err != nil {
+		return fmt.Errorf("expected container state failed: %w", err)
+	}
 
 	if versionData != nil {
 		DraftRelease(deployImageRequest.InstanceConfig.ContainerPreName, *versionData, v1.DeployVersionResponse{}, cfg)

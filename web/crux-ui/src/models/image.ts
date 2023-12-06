@@ -80,6 +80,7 @@ export const COMMON_CONFIG_PROPERTIES = [
   'args',
   'initContainers',
   'storage',
+  'expectedState',
 ] as const
 
 export const CRANE_CONFIG_PROPERTIES = [

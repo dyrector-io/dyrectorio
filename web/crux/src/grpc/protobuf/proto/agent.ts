@@ -14,6 +14,7 @@ import {
   DeploymentStrategy,
   DriverType,
   Empty,
+  ExpectedContainerState,
   ExposeStrategy,
   HealthCheckConfig,
   ListSecretsResponse,
@@ -26,6 +27,8 @@ import {
   deploymentStrategyToJSON,
   driverTypeFromJSON,
   driverTypeToJSON,
+  expectedContainerStateFromJSON,
+  expectedContainerStateToJSON,
   exposeStrategyFromJSON,
   exposeStrategyToJSON,
   networkModeFromJSON,
@@ -296,6 +299,7 @@ export interface CommonContainerConfig {
   user?: number | undefined
   TTY?: boolean | undefined
   workingDirectory?: string | undefined
+  expectedState?: ExpectedContainerState | undefined
   ports: Port[]
   portRanges: PortRangeBinding[]
   volumes: Volume[]
@@ -1161,6 +1165,7 @@ export const CommonContainerConfig = {
       user: isSet(object.user) ? Number(object.user) : undefined,
       TTY: isSet(object.TTY) ? Boolean(object.TTY) : undefined,
       workingDirectory: isSet(object.workingDirectory) ? String(object.workingDirectory) : undefined,
+      expectedState: isSet(object.expectedState) ? expectedContainerStateFromJSON(object.expectedState) : undefined,
       ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
       portRanges: Array.isArray(object?.portRanges)
         ? object.portRanges.map((e: any) => PortRangeBinding.fromJSON(e))
@@ -1199,6 +1204,9 @@ export const CommonContainerConfig = {
     message.user !== undefined && (obj.user = Math.round(message.user))
     message.TTY !== undefined && (obj.TTY = message.TTY)
     message.workingDirectory !== undefined && (obj.workingDirectory = message.workingDirectory)
+    message.expectedState !== undefined &&
+      (obj.expectedState =
+        message.expectedState !== undefined ? expectedContainerStateToJSON(message.expectedState) : undefined)
     if (message.ports) {
       obj.ports = message.ports.map(e => (e ? Port.toJSON(e) : undefined))
     } else {

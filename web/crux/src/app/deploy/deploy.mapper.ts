@@ -328,6 +328,7 @@ export default class DeployMapper {
       portRanges: config.portRanges,
       ports: config.ports,
       volumes: this.imageMapper.volumesToProto(config.volumes ?? []),
+      expectedState: this.imageMapper.expectedStateToProto(config.expectedState),
     }
   }
 

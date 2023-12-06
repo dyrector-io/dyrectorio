@@ -89,6 +89,7 @@ export default class ContainerMapper {
       storageSet: config.storageSet,
       storageId: config.storageId,
       storageConfig: toPrismaJson(config.storageConfig),
+      expectedState: config.expectedState,
 
       // dagent
       restartPolicy: config.restartPolicy,
@@ -159,6 +160,7 @@ export default class ContainerMapper {
       storageSet: instance.storageSet || image.storageSet,
       storageId: instance.storageSet ? instance.storageId : image.storageId,
       storageConfig: instance.storageSet ? instance.storageConfig : image.storageConfig,
+      expectedState: instance.expectedState ?? image.expectedState,
 
       // crane
       customHeaders: instance.customHeaders ?? image.customHeaders,

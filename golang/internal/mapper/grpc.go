@@ -118,6 +118,11 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		containerConfig.ExposeTLS = *cc.Expose > 2
 	}
 
+	if cc.ExpectedState != nil {
+		expect := mapExpectedState(*cc.ExpectedState)
+		containerConfig.ExpectedState = &expect
+	}
+
 	if cc.Routing != nil {
 		if domain := pointer.GetString(cc.Routing.Domain); domain != "" {
 			if splitDomain := strings.Split(domain, "."); len(splitDomain) > 1 {
@@ -225,6 +230,21 @@ func mapRestartPolicy(policy string) builder.RestartPolicyName {
 	lower := strings.ToLower(policy)
 
 	return builder.RestartPolicyName(strings.Replace(lower, "_", "-", -1))
+}
+
+func mapExpectedState(state common.ExpectedContainerState) v1.ExpectedContainerState {
+	switch state {
+	case common.ExpectedContainerState_EXPECT_RUNNING:
+		return v1.ExpectedRunning
+	case common.ExpectedContainerState_EXPECT_EXITED:
+		return v1.ExpectedExited
+	case common.ExpectedContainerState_EXPECT_READY:
+		return v1.ExpectedReady
+	case common.ExpectedContainerState_EXPECT_LIVE:
+		return v1.ExpectedLive
+	default:
+		return v1.ExpectedRunning
+	}
 }
 
 func mapResourceConfig(resourceConfig *common.ResourceConfig) v1.ResourceConfig {

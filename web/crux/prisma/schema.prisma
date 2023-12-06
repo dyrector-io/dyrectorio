@@ -212,6 +212,13 @@ enum ExposeStrategy {
   exposeWithTls
 }
 
+enum ExpectedState {
+  running
+  exited
+  ready
+  live
+}
+
 model ContainerConfig {
   id String @id @default(uuid()) @db.Uuid
 
@@ -235,6 +242,7 @@ model ContainerConfig {
   storageSet       Boolean?
   storageId        String?        @db.Uuid
   storageConfig    Json?
+  expectedState    ExpectedState?
 
   //Dagent
   logConfig     Json?
@@ -336,6 +344,7 @@ model InstanceContainerConfig {
   storageSet      Boolean?
   storageId       String?         @unique @db.Uuid
   storageConfig   Json?
+  expectedState   ExpectedState?
 
   //Dagent
   logConfig     Json?

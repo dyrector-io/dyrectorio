@@ -130,6 +130,15 @@ type Markers struct {
 	Ingress map[string]string `json:"ingress"`
 }
 
+type ExpectedContainerState int32
+
+const (
+	ExpectedRunning ExpectedContainerState = 0
+	ExpectedExited  ExpectedContainerState = 1
+	ExpectedReady   ExpectedContainerState = 2
+	ExpectedLive    ExpectedContainerState = 3
+)
+
 type ContainerConfig struct {
 	// ContainerPreName identifies namespace to be used
 	ContainerPreName string `json:"containerPreName"`
@@ -236,6 +245,8 @@ type ContainerConfig struct {
 	Labels Markers `json:"labels"`
 	// Metrics
 	Metrics *Metrics `json:"metrics,omitempty"`
+	// Expected state
+	ExpectedState *ExpectedContainerState `json:"expectedState,omitempty"`
 }
 
 type Metrics struct {
