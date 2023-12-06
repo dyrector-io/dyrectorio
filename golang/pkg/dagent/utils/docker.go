@@ -24,6 +24,7 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/crypt"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/golang/internal/domain"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
@@ -224,6 +225,15 @@ func DeployImage(ctx context.Context,
 	versionData *v1.VersionData,
 ) error {
 	containerName := getContainerName(deployImageRequest)
+	prefix := getContainerPrefix(deployImageRequest)
+	err := domain.IsCompliantDNS(prefix)
+	if err != nil {
+		return fmt.Errorf("deployment failed, invalid prefix: %w", err)
+	}
+	err = domain.IsCompliantDNS(containerName)
+	if err != nil {
+		return fmt.Errorf("deployment failed, invalid container name: %w", err)
+	}
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -242,7 +252,7 @@ func DeployImage(ctx context.Context,
 	if len(deployImageRequest.InstanceConfig.SharedEnvironment) > 0 {
 		err = WriteSharedEnvironmentVariables(
 			cfg.InternalMountPath,
-			getContainerPrefix(deployImageRequest),
+			prefix,
 			deployImageRequest.InstanceConfig.SharedEnvironment)
 		if err != nil {
 			dog.WriteError("could not write shared environment variables, aborting...", err.Error())
@@ -254,7 +264,7 @@ func DeployImage(ctx context.Context,
 
 	if deployImageRequest.InstanceConfig.UseSharedEnvs {
 		envMap, err = ReadSharedEnvironmentVariables(cfg.InternalMountPath,
-			getContainerPrefix(deployImageRequest))
+			prefix)
 		if err != nil {
 			dog.WriteError("could not load shared environment variables, while useSharedEnvs is on, aborting...", err.Error())
 			return err

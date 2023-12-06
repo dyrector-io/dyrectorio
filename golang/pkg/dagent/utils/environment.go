@@ -76,7 +76,7 @@ func ReadSharedEnvironmentVariables(dataRoot, prefix string) (map[string]string,
 	}
 	sharedEnvPath := getSharedEnvPath(dataRoot, prefix)
 
-	sharedEnvsFile, err := os.ReadFile(sharedEnvPath)
+	sharedEnvsFile, err := os.ReadFile(sharedEnvPath) // #nosec G304 -- shared-envs are generated from prefix+name and those are RFC1039
 	if err != nil {
 		return nil, err
 	}
