@@ -80,7 +80,7 @@ func TestGetTraefikLabelsEnv(t *testing.T) {
 		"traefik.http.routers.pre-name-secure.entrypoints":             "websecure",
 		"traefik.http.routers.pre-name-secure.tls":                     "true",
 		"traefik.http.routers.pre-name-secure.tls.certresolver":        "le",
-		"traefik.http.middlewares.limit.buffering.maxRequestBodyBytes": "16k",
+		"traefik.http.middlewares.limit.buffering.maxRequestBodyBytes": "16384",
 	}
 
 	labels, err := GetTraefikLabels(instanceConfig, containerConfig, cfg)
@@ -115,7 +115,7 @@ func TestGetTraefikLabelsEnvWithDomain(t *testing.T) {
 		"traefik.http.routers.pre-name-secure.entrypoints":             "websecure",
 		"traefik.http.routers.pre-name-secure.tls":                     "true",
 		"traefik.http.routers.pre-name-secure.tls.certresolver":        "le",
-		"traefik.http.middlewares.limit.buffering.maxRequestBodyBytes": "16k",
+		"traefik.http.middlewares.limit.buffering.maxRequestBodyBytes": "16384",
 	}
 
 	labels, err := GetTraefikLabels(instanceConfig, containerConfig, cfg)
@@ -180,7 +180,7 @@ func TestTraefikStripping(t *testing.T) {
 		"traefik.http.routers.pre-name-secure.entrypoints":                "websecure",
 		"traefik.http.routers.pre-name-secure.tls":                        "true",
 		"traefik.http.routers.pre-name-secure.tls.certresolver":           "le",
-		"traefik.http.middlewares.limit.buffering.maxRequestBodyBytes":    "16k",
+		"traefik.http.middlewares.limit.buffering.maxRequestBodyBytes":    "16384",
 	}
 
 	labels, err := GetTraefikLabels(instanceConfig, containerConfig, cfg)
