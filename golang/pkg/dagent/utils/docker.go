@@ -52,7 +52,11 @@ type DockerVersion struct {
 	ClientVersion string
 }
 
-type healthCheckFunc func(health *types.Health, rounds *int) bool
+const (
+	ContainerHealthyStatus    = "healthy"
+	ContainerHealthyTimeout   = 120
+	ContainerLivelinessRounds = 10
+)
 
 var ErrUnknownContainer = errors.New("unknown container")
 
@@ -220,62 +224,114 @@ func getImageNameFromRequest(deployImageRequest *v1.DeployImageRequest) (string,
 	return imageHelper.ExpandImageName(imageName)
 }
 
-func waitContainerHealth(ctx context.Context, cli *client.Client, containerId string, check healthCheckFunc) chan error {
-	channel := make(chan error)
+func waitContainerHealth(
+	ctx context.Context,
+	cli *client.Client,
+	containerID string,
+) (healthChannel chan *types.Health, errorChannel chan error) {
+	channelHealth := make(chan *types.Health)
+	channelError := make(chan error)
 
 	ticker := time.NewTicker(time.Second)
 
-	timeoutCtx, cancelFunc := context.WithTimeout(context.Background(), time.Second*120)
+	timeoutCtx, cancelFunc := context.WithTimeout(ctx, time.Second*ContainerHealthyTimeout)
 
 	go func() {
 		defer cancelFunc()
 
-		rounds := 0
-
 		for {
 			select {
 			case <-timeoutCtx.Done():
-				channel <- fmt.Errorf("timeout")
+				channelError <- fmt.Errorf("timeout")
 				return
 			case <-ticker.C:
-				inspect, err := cli.ContainerInspect(timeoutCtx, containerId)
+				inspect, err := cli.ContainerInspect(timeoutCtx, containerID)
 				if err != nil {
-					channel <- err
+					channelError <- err
 					return
 				}
 
 				if inspect.State.Health == nil {
-					channel <- fmt.Errorf("container has no health")
+					channelError <- fmt.Errorf("container has no health")
 					return
 				}
 
-				if check(inspect.State.Health, &rounds) {
-					channel <- nil
+				channelHealth <- inspect.State.Health
+			}
+		}
+	}()
+
+	return channelHealth, channelError
+}
+
+func waitContainerReady(ctx context.Context,
+	cli *client.Client,
+	containerID string,
+) error {
+	healthContext, cancel := context.WithCancel(ctx)
+	healthChannel, errorChannel := waitContainerHealth(healthContext, cli, containerID)
+	healthEvent := make(chan error)
+	go func() {
+		defer cancel()
+
+		for {
+			select {
+			case err := <-errorChannel:
+				healthEvent <- err
+				return
+			case health := <-healthChannel:
+				if health.Status == ContainerHealthyStatus {
+					healthEvent <- nil
 					return
 				}
 			}
 		}
 	}()
-
-	return channel
+	return <-healthEvent
 }
 
-func checkHealthReady(health *types.Health, rounds *int) bool {
-	return health.Status == "healthy"
+func waitContainerLively(ctx context.Context,
+	cli *client.Client,
+	containerID string,
+) error {
+	healthContext, cancel := context.WithCancel(ctx)
+	healthChannel, errorChannel := waitContainerHealth(healthContext, cli, containerID)
+	healthEvent := make(chan error)
+	go func() {
+		defer cancel()
+
+		rounds := 0
+
+		for {
+			select {
+			case err := <-errorChannel:
+				healthEvent <- err
+				return
+			case health := <-healthChannel:
+				if health.Status == ContainerHealthyStatus {
+					rounds++
+				} else {
+					rounds = 0
+				}
+
+				if rounds >= ContainerLivelinessRounds {
+					healthEvent <- nil
+					return
+				}
+			}
+		}
+	}()
+	return <-healthEvent
 }
 
-func checkHealthLive(health *types.Health, rounds *int) bool {
-	if health.Status != "healthy" {
-		*rounds = 0
-
-		return false
-	}
-
-	return *rounds >= 3
-}
-
-func waitForContainer(ctx context.Context, cli *client.Client, dog *dogger.DeploymentLogger, containerId string, state *v1.ExpectedContainerState) error {
-	inspect, err := cli.ContainerInspect(ctx, containerId)
+func waitForContainer(
+	ctx context.Context,
+	cli *client.Client,
+	dog *dogger.DeploymentLogger,
+	containerID string,
+	state *v1.ExpectedContainerState,
+) error {
+	inspect, err := cli.ContainerInspect(ctx, containerID)
 	if err != nil {
 		return err
 	}
@@ -301,7 +357,7 @@ func waitForContainer(ctx context.Context, cli *client.Client, dog *dogger.Deplo
 
 		dog.WriteInfo("Waiting for container to exit gracefully")
 
-		waitChannel, errorChannel := cli.ContainerWait(ctx, containerId, dockerContainer.WaitConditionNextExit)
+		waitChannel, errorChannel := cli.ContainerWait(ctx, containerID, dockerContainer.WaitConditionNextExit)
 		select {
 		case result := <-waitChannel:
 			if result.StatusCode != 0 {
@@ -320,8 +376,7 @@ func waitForContainer(ctx context.Context, cli *client.Client, dog *dogger.Deplo
 
 		dog.WriteInfo("Waiting for container to become healthy")
 
-		healthEvents := waitContainerHealth(ctx, cli, containerId, checkHealthReady)
-		return <-healthEvents
+		return waitContainerReady(ctx, cli, containerID)
 	}
 
 	if *state == v1.ExpectedLive {
@@ -331,8 +386,7 @@ func waitForContainer(ctx context.Context, cli *client.Client, dog *dogger.Deplo
 
 		dog.WriteInfo("Waiting for container to become lively")
 
-		healthEvents := waitContainerHealth(ctx, cli, containerId, checkHealthLive)
-		return <-healthEvents
+		return waitContainerLively(ctx, cli, containerID)
 	}
 
 	return nil
@@ -477,6 +531,8 @@ func DeployImage(ctx context.Context,
 	if versionData != nil {
 		DraftRelease(deployImageRequest.InstanceConfig.ContainerPreName, *versionData, v1.DeployVersionResponse{}, cfg)
 	}
+
+	dog.WriteInfo(fmt.Sprintf("Container deployed: %s", containerName))
 
 	return err
 }

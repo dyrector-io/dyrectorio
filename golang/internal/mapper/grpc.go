@@ -234,6 +234,8 @@ func mapRestartPolicy(policy string) builder.RestartPolicyName {
 
 func mapExpectedState(state common.ExpectedContainerState) v1.ExpectedContainerState {
 	switch state {
+	case common.ExpectedContainerState_CONTAINER_EXPECTED_STATE_UNSPECIFIED:
+		return v1.ExpectedRunning
 	case common.ExpectedContainerState_EXPECT_RUNNING:
 		return v1.ExpectedRunning
 	case common.ExpectedContainerState_EXPECT_EXITED:
