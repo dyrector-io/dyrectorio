@@ -4,12 +4,15 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/domain"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
+
+	"github.com/c2h5oh/datasize"
 )
 
 const TraefikTrue = "true"
@@ -17,6 +20,7 @@ const TraefikTrue = "true"
 var (
 	ErrInsufficientRoutingRules = errors.New("no enough configuration was provided for the container to be routable")
 	ErrExposedPortNotFound      = errors.New("selected port was provided as exposed port")
+	ErrInvalidUploadLimit       = errors.New("invalid value provided for uploadLimit")
 )
 
 // generating container labels for traefik
@@ -65,11 +69,29 @@ func GetTraefikLabels(
 		labels["traefik.http.routers."+serviceName+"-secure.tls.certresolver"] = "le"
 	}
 
+	limit, err := getUploadLimit(containerConfig.IngressUploadLimit)
+	if err != nil {
+		return nil, ErrInvalidUploadLimit
+	}
+
 	if containerConfig.IngressUploadLimit != "" {
-		labels["traefik.http.middlewares.limit.buffering.maxRequestBodyBytes"] = containerConfig.IngressUploadLimit
+		labels["traefik.http.middlewares.limit.buffering.maxRequestBodyBytes"] = limit
 	}
 
 	return labels, nil
+}
+
+func getUploadLimit(str string) (string, error) {
+	num, err := strconv.ParseInt(str, 10, 64)
+	if err == nil {
+		return fmt.Sprint(num), nil
+	}
+
+	qty, err := datasize.ParseString(str)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprint(qty.Bytes()), nil
 }
 
 // serviceName container-name.container-pre-name.ingress.host is default

@@ -24,6 +24,7 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/crypt"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/golang/internal/domain"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
@@ -337,12 +338,22 @@ func waitForContainer(ctx context.Context, cli *client.Client, dog *dogger.Deplo
 	return nil
 }
 
+//nolint:funlen,gocyclo // TODO(@nandor-magyar): refactor this function into smaller parts
 func DeployImage(ctx context.Context,
 	dog *dogger.DeploymentLogger,
 	deployImageRequest *v1.DeployImageRequest,
 	versionData *v1.VersionData,
 ) error {
 	containerName := getContainerName(deployImageRequest)
+	prefix := getContainerPrefix(deployImageRequest)
+	err := domain.IsCompliantDNS(prefix)
+	if err != nil {
+		return fmt.Errorf("deployment failed, invalid prefix: %w", err)
+	}
+	err = domain.IsCompliantDNS(containerName)
+	if err != nil {
+		return fmt.Errorf("deployment failed, invalid container name: %w", err)
+	}
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -358,7 +369,32 @@ func DeployImage(ctx context.Context,
 	log.Debug().Str("name", deployImageRequest.ImageName).Str("full", expandedImageName).Msg("Image name parsed")
 	logDeployInfo(dog, deployImageRequest, expandedImageName, containerName)
 
-	envMap := MergeStringMapUnique(deployImageRequest.InstanceConfig.Environment, deployImageRequest.ContainerConfig.Environment)
+	if len(deployImageRequest.InstanceConfig.SharedEnvironment) > 0 {
+		err = WriteSharedEnvironmentVariables(
+			cfg.InternalMountPath,
+			prefix,
+			deployImageRequest.InstanceConfig.SharedEnvironment)
+		if err != nil {
+			dog.WriteError("could not write shared environment variables, aborting...", err.Error())
+			return err
+		}
+	}
+
+	var envMap map[string]string
+
+	if deployImageRequest.InstanceConfig.UseSharedEnvs {
+		envMap, err = ReadSharedEnvironmentVariables(cfg.InternalMountPath,
+			prefix)
+		if err != nil {
+			dog.WriteError("could not load shared environment variables, while useSharedEnvs is on, aborting...", err.Error())
+			return err
+		}
+	} else {
+		envMap = MergeStringMapUnique(deployImageRequest.InstanceConfig.SharedEnvironment,
+			deployImageRequest.InstanceConfig.Environment)
+	}
+	envMap = MergeStringMapUnique(envMap, deployImageRequest.ContainerConfig.Environment)
+
 	secret, err := crypt.DecryptSecrets(deployImageRequest.ContainerConfig.Secrets, &cfg.CommonConfiguration)
 	if err != nil {
 		return fmt.Errorf("deployment failed, secret error: %w", err)
@@ -517,18 +553,20 @@ func volumeToMount(vol *v1.Volume) string {
 }
 
 func getContainerName(deployImageRequest *v1.DeployImageRequest) string {
-	containerName := ""
+	return util.JoinV("-", getContainerPrefix(deployImageRequest), deployImageRequest.ContainerConfig.Container)
+}
+
+func getContainerPrefix(deployImageRequest *v1.DeployImageRequest) string {
+	containerPrefix := ""
 
 	if deployImageRequest.ContainerConfig.Container != "" {
 		if deployImageRequest.InstanceConfig.MountPath != "" {
-			containerName = util.JoinV("-", deployImageRequest.InstanceConfig.MountPath, deployImageRequest.ContainerConfig.Container)
+			containerPrefix = deployImageRequest.InstanceConfig.MountPath
 		} else if deployImageRequest.InstanceConfig.ContainerPreName != "" {
-			containerName = util.JoinV("-", deployImageRequest.InstanceConfig.ContainerPreName, deployImageRequest.ContainerConfig.Container)
-		} else {
-			containerName = deployImageRequest.ContainerConfig.Container
+			containerPrefix = deployImageRequest.InstanceConfig.ContainerPreName
 		}
 	}
-	return containerName
+	return containerPrefix
 }
 
 func containsConfig(mounts []mount.Mount) bool {
