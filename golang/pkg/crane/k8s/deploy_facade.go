@@ -2,7 +2,9 @@ package k8s
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
@@ -14,8 +16,12 @@ import (
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+const PodStateTimeoutSeconds = 120
 
 type DeployFacade struct {
 	ctx            context.Context
@@ -258,6 +264,124 @@ func (d *DeployFacade) PostDeploy() error {
 	return nil
 }
 
+func checkPodCondition(status *corev1.PodStatus, conditionType corev1.PodConditionType) bool {
+	for _, condition := range status.Conditions {
+		if condition.Type == conditionType {
+			return condition.Status == "True"
+		}
+	}
+
+	return false
+}
+
+func (d *DeployFacade) WaitForState() error {
+	expected := d.params.ContainerConfig.ExpectedState
+	if *expected == v1.ExpectedExited {
+		return fmt.Errorf("use initcontainers instead of expected exited")
+	}
+
+	client, err := d.client.GetClientSet()
+	if err != nil {
+		return err
+	}
+
+	namespace := d.params.InstanceConfig.ContainerPreName
+	name := d.params.ContainerConfig.Container
+
+	pods, err := client.CoreV1().Pods(namespace).List(d.ctx, metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("app=%s", name),
+	})
+	if err != nil {
+		return err
+	}
+
+	resultChannel := make(chan error)
+
+	timeoutCtx, cancel := context.WithTimeout(d.ctx, time.Second*PodStateTimeoutSeconds)
+	defer cancel()
+
+	go func() {
+		watchOptions := metav1.ListOptions{
+			LabelSelector:   fmt.Sprintf("app=%s", name),
+			Watch:           true,
+			ResourceVersion: pods.ResourceVersion,
+		}
+		watcher, err := client.CoreV1().Pods(namespace).Watch(d.ctx, watchOptions)
+		if err != nil {
+			resultChannel <- err
+			return
+		}
+
+		podChanged := false
+
+		for {
+			select {
+			case <-timeoutCtx.Done():
+				resultChannel <- fmt.Errorf("waiting for expected container state timed out after %ds", PodStateTimeoutSeconds)
+				return
+			case event, ok := <-watcher.ResultChan():
+				if !ok {
+					watcher, err = client.CoreV1().Pods(namespace).Watch(d.ctx, watchOptions)
+					if err != nil {
+						resultChannel <- err
+						return
+					}
+					continue
+				}
+
+				if event.Type != "" {
+					fmt.Println(event.Type)
+
+					pod, _ := event.Object.(*corev1.Pod)
+					podStatus := pod.Status
+
+					data, _ := json.Marshal(podStatus)
+					fmt.Println(string(data))
+
+					if podStatus.Phase == corev1.PodPending {
+						podChanged = true
+					}
+
+					if expected == nil || *expected == v1.ExpectedRunning {
+						if podStatus.Phase == corev1.PodPending && checkPodCondition(&podStatus, corev1.PodScheduled) {
+							resultChannel <- nil
+							return
+						}
+
+						continue
+					}
+
+					if *expected == v1.ExpectedReady {
+						if podChanged && podStatus.Phase == corev1.PodRunning && checkPodCondition(&podStatus, corev1.PodReady) {
+							resultChannel <- nil
+							return
+						}
+
+						continue
+					}
+
+					if *expected == v1.ExpectedLive {
+						if podChanged && podStatus.Phase == corev1.PodRunning {
+							for _, container := range podStatus.ContainerStatuses {
+								if container.RestartCount > 0 {
+									resultChannel <- fmt.Errorf("container restarted while waiting for liveness probe")
+									return
+								}
+							}
+							continue
+						}
+
+						continue
+					}
+				}
+				break
+			}
+		}
+	}()
+
+	return <-resultChannel
+}
+
 func (d *DeployFacade) Clear() error {
 	return nil
 }
@@ -307,5 +431,21 @@ func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest 
 		return err
 	}
 
-	return deployFacade.PostDeploy()
+	if err := deployFacade.PostDeploy(); err != nil {
+		return err
+	}
+
+	if deployImageRequest.ContainerConfig.ExpectedState == nil {
+		dog.WriteInfo(fmt.Sprintf("Waiting for expected state: running"))
+	} else {
+		dog.WriteInfo(fmt.Sprintf("Waiting for expected state: %s", *deployImageRequest.ContainerConfig.ExpectedState))
+	}
+
+	if err := deployFacade.WaitForState(); err != nil {
+		return err
+	}
+
+	dog.WriteInfo("Deployed.")
+
+	return nil
 }

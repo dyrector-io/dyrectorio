@@ -981,8 +981,8 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             <DyoChips
               className="ml-2"
               name="expectedState"
-              choices={[null, ...CONTAINER_EXPECTED_STATE_VALUES]}
-              selection={config.expectedState ?? null}
+              choices={CONTAINER_EXPECTED_STATE_VALUES}
+              selection={config.expectedState ?? "running"}
               converter={(it: ContainerExpectedState) => (it ? t(`common.expectedStates.${it}`) : t('common:none'))}
               onSelectionChange={it => onChange({ expectedState: it })}
               disabled={disabled}

@@ -384,9 +384,7 @@ func waitForContainer(
 			return fmt.Errorf("error waiting for container liveliness: healthcheck not supported")
 		}
 
-		dog.WriteInfo("Waiting for container to become lively")
-
-		return waitContainerLively(ctx, cli, containerID)
+		return errors.New("dagent does not support container liveliness")
 	}
 
 	return nil

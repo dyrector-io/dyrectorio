@@ -130,13 +130,13 @@ type Markers struct {
 	Ingress map[string]string `json:"ingress"`
 }
 
-type ExpectedContainerState int32
+type ExpectedContainerState string
 
 const (
-	ExpectedRunning ExpectedContainerState = 0
-	ExpectedExited  ExpectedContainerState = 1
-	ExpectedReady   ExpectedContainerState = 2
-	ExpectedLive    ExpectedContainerState = 3
+	ExpectedRunning ExpectedContainerState = "running"
+	ExpectedExited  ExpectedContainerState = "exited"
+	ExpectedReady   ExpectedContainerState = "ready"
+	ExpectedLive    ExpectedContainerState = "live"
 )
 
 type ContainerConfig struct {
