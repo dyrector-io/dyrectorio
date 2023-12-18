@@ -1,6 +1,15 @@
 import { ContainerConfigData } from './container'
 import { BasicRegistry, RegistryImages } from './registry'
 
+export const ENVIRONMENT_VALUE_TYPES = ['string', 'boolean', 'int'] as const
+export type EnvironmentValueType = (typeof ENVIRONMENT_VALUE_TYPES)[number]
+
+export type EnvironmentRule = {
+  type: EnvironmentValueType
+  required?: boolean
+  default?: string
+}
+
 export type VersionImage = {
   id: string
   name: string
@@ -9,6 +18,7 @@ export type VersionImage = {
   config: ContainerConfigData
   createdAt: string
   registry: BasicRegistry
+  labels: Record<string, string>
 }
 
 export type PatchVersionImage = {

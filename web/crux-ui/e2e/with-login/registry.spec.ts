@@ -58,7 +58,7 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   await page.locator('input[name=name]').fill(registryName)
   await page.locator('form >> text=Unchecked').click()
   await expect(await page.locator('label[for=url]')).toContainText('URL')
-  await page.locator('input[name=url]').fill('docker.io/library')
+  await page.locator('input[name=url]').fill('index.docker.io')
 
   await page.locator('text=Save').click()
   await page.waitForSelector(`h3:text-is("${registryName}")`)

@@ -183,6 +183,7 @@ model Image {
   createdBy  String           @db.Uuid
   updatedAt  DateTime         @updatedAt @db.Timestamptz(6)
   updatedBy  String?          @db.Uuid
+  labels     Json?
 
   registry Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
   version  Version  @relation(fields: [versionId], references: [id], onDelete: Cascade)
