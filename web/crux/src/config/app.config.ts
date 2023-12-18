@@ -2,7 +2,7 @@ import { ConfigModuleOptions } from '@nestjs/config'
 import * as yup from 'yup'
 
 const portRule = yup.number().positive().min(1).max(65565)
-const encryptionKeyRule = yup.string().length(64)
+const encryptionKeyRule = yup.string().length(43)
 
 const configSchema = yup.object({
   NODE_ENV: yup.string().oneOf(['production', 'development']).default('development').required(),

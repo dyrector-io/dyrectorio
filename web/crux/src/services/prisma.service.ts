@@ -20,6 +20,12 @@ export default class PrismaService extends PrismaClient<Prisma.PrismaClientOptio
   }
 
   async findLastMigration(): Promise<string> {
+    const migrationTables: number[] = await this
+      .$queryRaw`SELECT 1 FROM information_schema.tables WHERE table_name = '_prisma_migrations'`
+    if (migrationTables.length < 1) {
+      return null
+    }
+
     const migrations: { migration_name: string }[] = await this
       .$queryRaw`SELECT migration_name from _prisma_migrations WHERE rolled_back_at IS NULL ORDER BY finished_at DESC LIMIT 1`
 

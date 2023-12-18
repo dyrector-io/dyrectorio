@@ -191,7 +191,17 @@ const argsToEncryptionCommand = (args: string[]): EncryptionCommand | null => {
   return args.length < 4 ? null : (process.argv[3] as EncryptionCommand)
 }
 
-const encrypt = async (args: string[]) => {
+const executeAsyncCommand = (command: Promise<void>) => {
+  command
+    .then(() => exit(0))
+    .catch(err => {
+      console.error('An error occured')
+      console.error(err)
+      exit(-1)
+    })
+}
+
+const encrypt = (args: string[]) => {
   const command = argsToEncryptionCommand(args)
 
   switch (command) {
@@ -199,10 +209,10 @@ const encrypt = async (args: string[]) => {
       generateKey()
       break
     case 'migrate':
-      await migrate()
+      executeAsyncCommand(migrate())
       break
     case 'rotate':
-      await rotateKeys()
+      executeAsyncCommand(rotateKeys())
       break
     default: {
       console.info('Encryption Commands:')

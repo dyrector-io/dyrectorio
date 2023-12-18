@@ -88,7 +88,7 @@ type Options struct {
 	CruxHTTPPort                   uint   `yaml:"crux-http-port" env-default:"1848"`
 	CruxUIPort                     uint   `yaml:"crux-ui-port" env-default:"3000"`
 	CruxSecret                     string `yaml:"crux-secret"`
-	CruxEncrpytionKey              string `yaml:"crux-encryption-key"`
+	CruxEncryptionKey              string `yaml:"crux-encryption-key"`
 	CruxPostgresPort               uint   `yaml:"cruxPostgresPort" env-default:"5432"`
 	CruxPostgresDB                 string `yaml:"cruxPostgresDB" env-default:"crux"`
 	CruxPostgresUser               string `yaml:"cruxPostgresUser" env-default:"crux"`
@@ -288,7 +288,7 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 
 	// Load defaults
 	state.SettingsFile.CruxSecret = util.Fallback(state.SettingsFile.CruxSecret, randomChars())
-	state.SettingsFile.CruxEncrpytionKey = util.Fallback(state.SettingsFile.CruxEncrpytionKey, generateCruxEncryptionKey())
+	state.SettingsFile.CruxEncryptionKey = util.Fallback(state.SettingsFile.CruxEncryptionKey, generateCruxEncryptionKey())
 	state.SettingsFile.CruxPostgresPassword = util.Fallback(state.SettingsFile.CruxPostgresPassword, randomChars())
 	state.SettingsFile.KratosPostgresPassword = util.Fallback(state.SettingsFile.KratosPostgresPassword, randomChars())
 	state.SettingsFile.KratosSecret = util.Fallback(state.SettingsFile.KratosSecret, randomChars())
@@ -346,7 +346,7 @@ func generateCruxEncryptionKey() string {
 		panic(err)
 	}
 
-	return base64.URLEncoding.EncodeToString(buffer)
+	return base64.RawURLEncoding.EncodeToString(buffer)
 }
 
 // randomChars creates random char string used for password creation
