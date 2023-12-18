@@ -38,7 +38,7 @@ export class StorageOptionDto {
   name: string
 }
 
-export class CreateStorageDto extends OmitType(StorageDetailsDto, ['id', 'inUse']){
+export class CreateStorageDto extends OmitType(StorageDetailsDto, ['id', 'inUse']) {
   @IsString()
   @IsOptional()
   accessKey?: string

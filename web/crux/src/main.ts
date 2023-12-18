@@ -47,10 +47,10 @@ const parseCruxCommand = (args: string[]): CruxCommand | null => {
 }
 
 const loadGrpcOptions = (port: number): GrpcOptions => ({
-    // tls termination occurs at the reverse proxy
-    credentials: ServerCredentials.createInsecure(),
-    url: `0.0.0.0:${port}`,
-  })
+  // tls termination occurs at the reverse proxy
+  credentials: ServerCredentials.createInsecure(),
+  url: `0.0.0.0:${port}`,
+})
 
 const serve = async () => {
   const app = await NestFactory.create(AppModule, {

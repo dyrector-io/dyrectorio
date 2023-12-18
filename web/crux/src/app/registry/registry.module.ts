@@ -1,5 +1,6 @@
 import { HttpModule } from '@nestjs/axios'
 import { Module } from '@nestjs/common'
+import EncryptionService from 'src/services/encryption.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import AuditLoggerModule from '../audit.logger/audit.logger.module'
@@ -10,7 +11,6 @@ import RegistryHttpController from './registry.http.controller'
 import RegistryMapper from './registry.mapper'
 import RegistryService from './registry.service'
 import RegistryWebSocketGateway from './registry.ws.gateway'
-import EncryptionService from 'src/services/encryption.service'
 
 @Module({
   imports: [HttpModule, TeamModule, AuditLoggerModule],

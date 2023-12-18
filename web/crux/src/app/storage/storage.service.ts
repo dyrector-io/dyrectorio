@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
+import EncryptionService from 'src/services/encryption.service'
 import PrismaService from 'src/services/prisma.service'
 import TeamRepository from '../team/team.repository'
 import { CreateStorageDto, StorageDetailsDto, StorageDto, StorageOptionDto, UpdateStorageDto } from './storage.dto'
 import StorageMapper from './storage.mapper'
-import EncryptionService from 'src/services/encryption.service'
 
 @Injectable()
 export default class StorageService {

@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { ContainerConfigData, InstanceContainerConfigData, MergedContainerConfigData } from 'src/domain/container'
 import { CommonContainerConfig, DagentContainerConfig, ImportContainer } from 'src/grpc/protobuf/proto/agent'
 import { DriverType, NetworkMode, RestartPolicy } from 'src/grpc/protobuf/proto/common'
+import EncryptionService from 'src/services/encryption.service'
 import AgentService from '../agent/agent.service'
 import AuditMapper from '../audit/audit.mapper'
 import ContainerMapper from '../container/container.mapper'
@@ -13,7 +14,6 @@ import RegistryMapper from '../registry/registry.mapper'
 import VersionMapper from '../version/version.mapper'
 import { DeploymentDto, DeploymentWithNodeVersion, PatchInstanceDto } from './deploy.dto'
 import DeployMapper from './deploy.mapper'
-import EncryptionService from 'src/services/encryption.service'
 
 describe('DeployMapper', () => {
   let containerMapper: ContainerMapper = null
@@ -34,7 +34,7 @@ describe('DeployMapper', () => {
         DeployMapper,
         {
           provide: EncryptionService,
-          useValue: jest.mocked(EncryptionService)
+          useValue: jest.mocked(EncryptionService),
         },
         {
           provide: AgentService,

@@ -16,6 +16,7 @@ import { DeploymentTokenPayload, DeploymentTokenScriptGenerator } from 'src/doma
 import { collectChildVersionIds, collectParentVersionIds, toPrismaJson } from 'src/domain/utils'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
+import EncryptionService from 'src/services/encryption.service'
 import PrismaService from 'src/services/prisma.service'
 import { v4 as uuid } from 'uuid'
 import AgentService from '../agent/agent.service'
@@ -43,7 +44,6 @@ import {
 } from './deploy.dto'
 import DeployMapper from './deploy.mapper'
 import { DeploymentEventListMessage } from './deploy.message'
-import EncryptionService from 'src/services/encryption.service'
 
 @Injectable()
 export default class DeployService {

@@ -35,6 +35,7 @@ import {
   ExposeStrategy as ProtoExposeStrategy,
   containerStateToJSON,
 } from 'src/grpc/protobuf/proto/common'
+import EncryptionService from 'src/services/encryption.service'
 import AuditMapper from '../audit/audit.mapper'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
@@ -61,7 +62,6 @@ import {
   InstanceSecretsDto,
 } from './deploy.dto'
 import { DeploymentEventMessage } from './deploy.message'
-import EncryptionService from 'src/services/encryption.service'
 
 @Injectable()
 export default class DeployMapper {

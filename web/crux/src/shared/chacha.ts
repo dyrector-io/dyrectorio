@@ -16,10 +16,11 @@ const sliceEncryptedBuffer = (data: Buffer): EncryptedData => {
   const encryptedDataStart = AUTH_TAG_LENGTH + INIT_VECTOR_LENGTH
 
   return {
-  authTag: data.subarray(0, AUTH_TAG_LENGTH),
-  nonce: data.subarray(AUTH_TAG_LENGTH, encryptedDataStart),
-  encrypted: data.subarray(encryptedDataStart),
-}}
+    authTag: data.subarray(0, AUTH_TAG_LENGTH),
+    nonce: data.subarray(AUTH_TAG_LENGTH, encryptedDataStart),
+    encrypted: data.subarray(encryptedDataStart),
+  }
+}
 
 export const encryptChaCha20 = (key: string, data: string): Buffer => {
   const cipherKey = Buffer.from(key, 'hex')

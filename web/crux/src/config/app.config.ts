@@ -17,8 +17,9 @@ const configSchema = yup.object({
   METRICS_API_PORT: portRule.nullable().default(null).optional(),
 
   JWT_SECRET: yup.string().min(16).required(),
-  ENCRYPTION_SECRET_KEY: encryptionKeyRule
-    .required('Invalid ENCRYPTION_SECRET_KEY; You can generate a one with `npm run encrypt:generate`'),
+  ENCRYPTION_SECRET_KEY: encryptionKeyRule.required(
+    'Invalid ENCRYPTION_SECRET_KEY; You can generate a one with `npm run encrypt:generate`',
+  ),
   ENCRYPTION_DEPRECATED_KEY: encryptionKeyRule.optional(),
 
   CRUX_AGENT_ADDRESS: yup.string().required(),

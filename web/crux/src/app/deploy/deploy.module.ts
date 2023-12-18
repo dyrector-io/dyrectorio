@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { CruxJwtModuleImports } from 'src/config/jwt.config'
+import EncryptionService from 'src/services/encryption.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import AgentModule from '../agent/agent.module'
@@ -18,7 +19,6 @@ import { DeployJwtStrategy } from './deploy.jwt.strategy'
 import DeployMapper from './deploy.mapper'
 import DeployService from './deploy.service'
 import DeployWebSocketGateway from './deploy.ws.gateway'
-import EncryptionService from 'src/services/encryption.service'
 
 @Module({
   imports: [

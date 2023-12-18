@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
 import { execSync } from 'child_process'
 import { exit } from 'process'
+import { PrismaTransactionClient } from './domain/utils'
 import PrismaService from './services/prisma.service'
 import { decryptChaCha20, encryptChaCha20, generateChacha20Key } from './shared/chacha'
-import { PrismaTransactionClient } from './domain/utils'
 
 const AVAILABLE_COMMANDS = ['generate', 'migrate', 'rotate'] as const
 export type EncryptionCommand = (typeof AVAILABLE_COMMANDS)[number]

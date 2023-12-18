@@ -27,9 +27,7 @@ export default class StorageMapper {
     }
   }
 
-  detailsToDb(
-    it: CreateStorageDto | UpdateStorageDto,
-  ): StorageDetails {
+  detailsToDb(it: CreateStorageDto | UpdateStorageDto): StorageDetails {
     const { public: pub } = it
     delete it.public
 
