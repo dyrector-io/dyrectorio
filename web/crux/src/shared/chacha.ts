@@ -23,7 +23,7 @@ const sliceEncryptedBuffer = (data: Buffer): EncryptedData => {
 }
 
 export const encryptChaCha20 = (key: string, data: string): Buffer => {
-  const cipherKey = Buffer.from(key, 'hex')
+  const cipherKey = Buffer.from(key, 'base64url')
   const nonce = crypto.randomBytes(INIT_VECTOR_LENGTH)
 
   const binaryData = Buffer.from(data)
@@ -44,7 +44,7 @@ export const encryptChaCha20 = (key: string, data: string): Buffer => {
 export const decryptChaCha20 = (key: string, binary: Buffer): string => {
   const data = sliceEncryptedBuffer(binary)
 
-  const cipherKey = Buffer.from(key, 'hex')
+  const cipherKey = Buffer.from(key, 'base64url')
 
   const decipher = crypto.createDecipheriv('chacha20-poly1305', cipherKey, data.nonce, {
     authTagLength: AUTH_TAG_LENGTH,
@@ -55,4 +55,4 @@ export const decryptChaCha20 = (key: string, binary: Buffer): string => {
   return Buffer.concat([decrypted, decipher.final()]).toString()
 }
 
-export const generateChacha20Key = (): string => crypto.randomBytes(KEY_LENGTH).toString('hex')
+export const generateChacha20Key = (): string => crypto.randomBytes(KEY_LENGTH).toString('base64url')

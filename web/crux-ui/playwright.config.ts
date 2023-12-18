@@ -36,7 +36,7 @@ const config: PlaywrightTestConfig = {
     timeout: 60 * 1000, // 1 min
     reuseExistingServer: true,
   },
-  workers: CI ? 4 : undefined,
+  workers: CI ? 4 : 32,
   // Terminate tests if any one of them fails
   maxFailures: 1,
   retries: 0,

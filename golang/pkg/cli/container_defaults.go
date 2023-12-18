@@ -180,6 +180,7 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 		fmt.Sprintf("FROM_EMAIL=%s", state.SettingsFile.MailFromEmail),
 		fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", state.Containers.MailSlurper.Name),
 		fmt.Sprintf("AGENT_INSTALL_SCRIPT_DISABLE_PULL=%t", true),
+		fmt.Sprintf("ENCRYPTION_SECRET_KEY=%s", state.SettingsFile.CruxEncrpytionKey),
 		"DISABLE_RECAPTCHA=true",
 		"QA_OPT_OUT=true",
 	)

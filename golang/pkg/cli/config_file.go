@@ -88,6 +88,7 @@ type Options struct {
 	CruxHTTPPort                   uint   `yaml:"crux-http-port" env-default:"1848"`
 	CruxUIPort                     uint   `yaml:"crux-ui-port" env-default:"3000"`
 	CruxSecret                     string `yaml:"crux-secret"`
+	CruxEncrpytionKey              string `yaml:"crux-encryption-key"`
 	CruxPostgresPort               uint   `yaml:"cruxPostgresPort" env-default:"5432"`
 	CruxPostgresDB                 string `yaml:"cruxPostgresDB" env-default:"crux"`
 	CruxPostgresUser               string `yaml:"cruxPostgresUser" env-default:"crux"`
@@ -118,11 +119,12 @@ const (
 )
 
 const (
-	filePerms        = 0o600
-	dirPerms         = 0o750
-	secretLength     = 32
-	bufferMultiplier = 2
-	localhost        = "localhost"
+	filePerms               = 0o600
+	dirPerms                = 0o750
+	secretLength            = 32
+	cruxEncryptionKeyLength = 32
+	bufferMultiplier        = 2
+	localhost               = "localhost"
 )
 
 // SettingsExists is a check if the settings file is exists
@@ -286,6 +288,7 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 
 	// Load defaults
 	state.SettingsFile.CruxSecret = util.Fallback(state.SettingsFile.CruxSecret, randomChars())
+	state.SettingsFile.CruxEncrpytionKey = util.Fallback(state.SettingsFile.CruxEncrpytionKey, generateCruxEncryptionKey())
 	state.SettingsFile.CruxPostgresPassword = util.Fallback(state.SettingsFile.CruxPostgresPassword, randomChars())
 	state.SettingsFile.KratosPostgresPassword = util.Fallback(state.SettingsFile.KratosPostgresPassword, randomChars())
 	state.SettingsFile.KratosSecret = util.Fallback(state.SettingsFile.KratosSecret, randomChars())
@@ -334,6 +337,16 @@ func CheckSettings(state *State, args *ArgsFlags) {
 	if args.SettingsWrite {
 		SaveSettings(state, args)
 	}
+}
+
+func generateCruxEncryptionKey() string {
+	buffer := make([]byte, cruxEncryptionKeyLength)
+	_, err := rand.Read(buffer)
+	if err != nil {
+		panic(err)
+	}
+
+	return base64.URLEncoding.EncodeToString(buffer)
 }
 
 // randomChars creates random char string used for password creation
