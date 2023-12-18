@@ -13,6 +13,7 @@ import RegistryMapper from '../registry/registry.mapper'
 import VersionMapper from '../version/version.mapper'
 import { DeploymentDto, DeploymentWithNodeVersion, PatchInstanceDto } from './deploy.dto'
 import DeployMapper from './deploy.mapper'
+import EncryptionService from 'src/services/encryption.service'
 
 describe('DeployMapper', () => {
   let containerMapper: ContainerMapper = null
@@ -31,6 +32,10 @@ describe('DeployMapper', () => {
         NodeMapper,
         ImageMapper,
         DeployMapper,
+        {
+          provide: EncryptionService,
+          useValue: jest.mocked(EncryptionService)
+        },
         {
           provide: AgentService,
           useValue: jest.mocked(AgentService),
