@@ -2,7 +2,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { ProjectType } from '@app/models'
 import { expect, Page } from '@playwright/test'
-import { REGISTRY_NAME, TEAM_ROUTES } from './common'
+import { GHCR_PREFIX, REGISTRY_NAME, TEAM_ROUTES } from './common'
 
 export const createProject = async (page: Page, name: string, type: ProjectType) => {
   await page.goto(TEAM_ROUTES.project.list())
@@ -62,7 +62,7 @@ export const createImage = async (page: Page, projectId: string, versionId: stri
   const registry = await page.waitForSelector(`button:has-text("${REGISTRY_NAME}")`)
   await registry.click()
 
-  await page.locator('input[name=imageName] >> visible=true').fill(image)
+  await page.locator('input[name=imageName] >> visible=true').fill(`${GHCR_PREFIX}/${image}`)
 
   const addButton = await page.waitForSelector('button:has-text("Add")')
   await addButton.click()
@@ -87,7 +87,7 @@ export const addImageToVersion = async (page: Page, projectId: string, versionId
   const registry = await page.waitForSelector(`button:has-text("${REGISTRY_NAME}")`)
   await registry.click()
 
-  await page.locator('input[name=imageName] >> visible=true').fill(image)
+  await page.locator('input[name=imageName] >> visible=true').fill(`${GHCR_PREFIX}/${image}`)
   await page.locator('button:has-text("Add")').click()
   await page.waitForSelector(`div:has-text("${image}")`)
 }
@@ -102,7 +102,7 @@ export const addImageToVersionlessProject = async (page: Page, projectId: string
   const registry = await page.waitForSelector(`button:has-text("${REGISTRY_NAME}")`)
   await registry.click()
 
-  await page.locator('input[name=imageName] >> visible=true').fill(image)
+  await page.locator('input[name=imageName] >> visible=true').fill(`${GHCR_PREFIX}/${image}`)
   await page.locator('button:has-text("Add")').click()
   await page.waitForSelector(`div:has-text("${image}")`)
 }

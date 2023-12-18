@@ -44,6 +44,7 @@ export default class ImageMapper {
       registry: this.registryMapper.toDto(it.registry),
       config: this.containerMapper.configDataToDto(it.config as any as ContainerConfigData),
       createdAt: it.createdAt,
+      labels: it.labels as Record<string, string>,
     }
   }
 

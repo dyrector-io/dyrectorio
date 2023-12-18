@@ -9,7 +9,7 @@ import {
   mergeJsonConfigToImageContainerConfig,
   VersionImage,
 } from '@app/models'
-import { containerConfigSchema, getValidationError } from '@app/validations'
+import { createContainerConfigSchema, getValidationError } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { VerionState, VersionActions } from '../use-version-state'
 import EditImageHeading from './edit-image-heading'
@@ -38,7 +38,8 @@ const EditImageCard = (props: EditImageCardProps) => {
   })
 
   const editorState = useItemEditorState(editor, versionSock, image.id)
-  const errorMessage = state.parseError ?? getValidationError(containerConfigSchema, image.config, null, t)?.message
+  const errorMessage =
+    state.parseError ?? getValidationError(createContainerConfigSchema(image.labels), image.config, null, t)?.message
 
   return (
     <>

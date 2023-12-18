@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test'
 import { test } from '../utils/test.fixture'
-import { screenshotPath, TEAM_ROUTES } from '../utils/common'
+import { NGINX_TEST_IMAGE_WITH_TAG, screenshotPath, TEAM_ROUTES } from '../utils/common'
 import { createImage, createProject, createVersion } from '../utils/projects'
 import { waitSocketRef, wsPatchSent } from '../utils/websocket'
 import { WS_TYPE_PATCH_IMAGE } from '@app/models'
@@ -24,7 +24,7 @@ const setup = async (
 
 test.describe('View state', () => {
   test('Editor state should show the configuration fields', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'editor-state-conf', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'editor-state-conf', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
@@ -40,7 +40,7 @@ test.describe('View state', () => {
   })
 
   test('JSON state should show the json editor', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'editor-state-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'editor-state-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
@@ -57,7 +57,7 @@ test.describe('View state', () => {
 
 test.describe('Filters', () => {
   test('None should be selected by default', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'filter-all', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'filter-all', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
@@ -69,7 +69,7 @@ test.describe('Filters', () => {
   })
 
   test('All should not be selected if one of the main filters are not selected', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'filter-select', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'filter-select', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
@@ -82,7 +82,7 @@ test.describe('Filters', () => {
   })
 
   test('Main filter should not be selected if one of its sub filters are not selected', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'sub-filter', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'sub-filter', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
@@ -96,7 +96,7 @@ test.describe('Filters', () => {
   })
 
   test('Config field should be invisible if its sub filter is not selected', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'sub-deselect', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'sub-deselect', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
@@ -119,7 +119,7 @@ const wsPatchMatchPorts = (internalPort: string, externalPort?: string) => (payl
 
 test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the config field', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'port-editor', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'port-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
@@ -152,7 +152,7 @@ test.describe('Image configurations', () => {
   })
 
   test('Port should be saved after adding it from the json editor', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'port-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'port-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))

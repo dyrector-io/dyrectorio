@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { CruxBadRequestException, CruxForbiddenException } from 'src/exception/crux-exception'
+import { CruxForbiddenException } from 'src/exception/crux-exception'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
 import CachedPublicHubApiClient from './registry-clients/cached-hub-api-client'
 import HubApiCache from './registry-clients/caches/hub-api-cache'
@@ -8,6 +8,7 @@ import { GitlabRegistryClient } from './registry-clients/gitlab-api-client'
 import { GoogleRegistryClient } from './registry-clients/google-api-client'
 import PrivateHubApiClient from './registry-clients/private-hub-api-client'
 import { RegistryApiClient } from './registry-clients/registry-api-client'
+import UncheckedApiClient from './registry-clients/unchecked-api-client'
 import RegistryV2ApiClient from './registry-clients/v2-api-client'
 import { REGISTRY_HUB_CACHE_EXPIRATION } from './registry.const'
 import {
@@ -58,10 +59,6 @@ export default class RegistryClientProvider {
     }
 
     const registry = await this.service.getRegistryDetails(registryId)
-
-    if (registry.type === 'unchecked') {
-      throw new CruxBadRequestException({ message: 'Unchecked registries have no API' })
-    }
 
     const createV2 = (details: V2RegistryDetailsDto) =>
       new RegistryV2ApiClient(
@@ -127,6 +124,8 @@ export default class RegistryClientProvider {
           : null,
       )
 
+    const createUnchecked = () => new UncheckedApiClient()
+
     client = {
       type: registry.type,
       client:
@@ -138,7 +137,9 @@ export default class RegistryClientProvider {
           ? createGithub(registry.details as GithubRegistryDetailsDto)
           : registry.type === 'gitlab'
           ? createGitlab(registry.details as GitlabRegistryDetailsDto)
-          : createGoogle(registry.details as GoogleRegistryDetailsDto),
+          : registry.type === 'google'
+          ? createGoogle(registry.details as GoogleRegistryDetailsDto)
+          : createUnchecked(),
     }
 
     this.clients.set(registry.id, client)

@@ -4,6 +4,7 @@ import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { getRegistryApiException } from 'src/exception/registry-exception'
 import { RegistryImageTags } from '../registry.message'
 import { RegistryApiClient } from './registry-api-client'
+import V2Labels from './v2-labels'
 
 export type GoogleClientOptions = {
   username?: string
@@ -93,5 +94,18 @@ export class GoogleRegistryClient implements RegistryApiClient {
       name: image,
       tags: json.tags,
     }
+  }
+
+  async labels(image: string, tag: string): Promise<Record<string, string>> {
+    if (this.client) {
+      await this.registryCredentialsToBearerAuth()
+    }
+
+    const labelClient = new V2Labels(this.url, {
+      headers: {
+        Authorization: (this.headers as Record<string, string>).Authorization,
+      },
+    })
+    return labelClient.fetchLabels(image, tag)
   }
 }

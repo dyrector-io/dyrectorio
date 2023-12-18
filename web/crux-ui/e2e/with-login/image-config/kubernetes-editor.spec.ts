@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test'
 import { test } from '../../utils/test.fixture'
-import { TEAM_ROUTES } from 'e2e/utils/common'
+import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import {
   wsPatchMatchCustomHeader,
   wsPatchMatchDeploymentAnnotations,
@@ -35,7 +35,12 @@ const setup = async (
 
 test.describe('Image kubernetes config from editor', () => {
   test('Deployment strategy should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'deployment-strategy-editor', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(
+      page,
+      'deployment-strategy-editor',
+      '1.0.0',
+      NGINX_TEST_IMAGE_WITH_TAG,
+    )
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
@@ -55,7 +60,12 @@ test.describe('Image kubernetes config from editor', () => {
   })
 
   test('Custom headers should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'custom-headers-editor', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(
+      page,
+      'custom-headers-editor',
+      '1.0.0',
+      NGINX_TEST_IMAGE_WITH_TAG,
+    )
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
@@ -80,7 +90,12 @@ test.describe('Image kubernetes config from editor', () => {
   })
 
   test('Proxy headers should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'proxy-headers-editor', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(
+      page,
+      'proxy-headers-editor',
+      '1.0.0',
+      NGINX_TEST_IMAGE_WITH_TAG,
+    )
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
@@ -100,7 +115,12 @@ test.describe('Image kubernetes config from editor', () => {
   })
 
   test('Load balancer should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'load-balancer-editor', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(
+      page,
+      'load-balancer-editor',
+      '1.0.0',
+      NGINX_TEST_IMAGE_WITH_TAG,
+    )
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
@@ -139,7 +159,12 @@ test.describe('Image kubernetes config from editor', () => {
   })
 
   test('Health check config should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'health-check-editor', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(
+      page,
+      'health-check-editor',
+      '1.0.0',
+      NGINX_TEST_IMAGE_WITH_TAG,
+    )
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
@@ -177,7 +202,12 @@ test.describe('Image kubernetes config from editor', () => {
   })
 
   test('Resource config should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'resource-config-editor', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(
+      page,
+      'resource-config-editor',
+      '1.0.0',
+      NGINX_TEST_IMAGE_WITH_TAG,
+    )
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
@@ -217,7 +247,7 @@ test.describe('Image kubernetes config from editor', () => {
     page.locator(`div.max-h-128 > div:nth-child(2):near(label:has-text("${category}"))`)
 
   test('Labels should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'labels-editor', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'labels-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
@@ -258,7 +288,12 @@ test.describe('Image kubernetes config from editor', () => {
   })
 
   test('Annotations should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'annotations-editor', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(
+      page,
+      'annotations-editor',
+      '1.0.0',
+      NGINX_TEST_IMAGE_WITH_TAG,
+    )
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))

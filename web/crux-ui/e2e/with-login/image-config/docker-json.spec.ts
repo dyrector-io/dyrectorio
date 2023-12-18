@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test'
 import { test } from '../../utils/test.fixture'
-import { TEAM_ROUTES } from 'e2e/utils/common'
+import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import { waitSocketRef, wsPatchSent } from 'e2e/utils/websocket'
 import {
   wsPatchMatchDockerLabel,
@@ -29,7 +29,7 @@ test.describe.configure({ mode: 'parallel' })
 
 test.describe('Image docker config from JSON', () => {
   test('Network mode should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'networkmode-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'networkmode-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
@@ -57,7 +57,7 @@ test.describe('Image docker config from JSON', () => {
   })
 
   test('Docker labels should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'dockerlabel-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'dockerlabel-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
@@ -89,7 +89,12 @@ test.describe('Image docker config from JSON', () => {
   })
 
   test('Restart policy should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'restartpolicy-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(
+      page,
+      'restartpolicy-json',
+      '1.0.0',
+      NGINX_TEST_IMAGE_WITH_TAG,
+    )
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
@@ -115,7 +120,7 @@ test.describe('Image docker config from JSON', () => {
   })
 
   test('Log config should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'logconfig-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'logconfig-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
@@ -146,7 +151,7 @@ test.describe('Image docker config from JSON', () => {
   })
 
   test('Networks should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'networks-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'networks-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')

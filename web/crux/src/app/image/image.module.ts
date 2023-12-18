@@ -4,6 +4,7 @@ import PrismaService from 'src/services/prisma.service'
 import AuditLoggerModule from '../audit.logger/audit.logger.module'
 import ContainerModule from '../container/container.module'
 import EditorModule from '../editor/editor.module'
+import RegistryClientProvider from '../registry/registry-client.provider'
 import RegistryMapper from '../registry/registry.mapper'
 import RegistryModule from '../registry/registry.module'
 import TeamRepository from '../team/team.repository'
@@ -23,6 +24,7 @@ import ImageService from './image.service'
     RegistryMapper,
     KratosService,
     ImageEventService,
+    RegistryClientProvider,
   ],
   controllers: [ImageHttpController],
 })

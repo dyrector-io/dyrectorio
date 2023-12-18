@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test'
 import { test } from '../../utils/test.fixture'
-import { screenshotPath, TEAM_ROUTES } from '../../utils/common'
+import { NGINX_TEST_IMAGE_WITH_TAG, screenshotPath, TEAM_ROUTES } from '../../utils/common'
 import { createImage, createProject, createVersion } from '../../utils/projects'
 
 const setup = async (
@@ -22,7 +22,7 @@ const setup = async (
 
 test.describe('View state', () => {
   test('Editor state should show the configuration fields', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'editor-state-conf', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'editor-state-conf', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
@@ -39,7 +39,7 @@ test.describe('View state', () => {
   })
 
   test('JSON state should show the json editor', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'editor-state-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'editor-state-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')

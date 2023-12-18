@@ -13,7 +13,7 @@ import {
 } from 'src/domain/container'
 import Deployment from 'src/domain/deployment'
 import { DeploymentTokenPayload, DeploymentTokenScriptGenerator } from 'src/domain/deployment-token'
-import { collectChildVersionIds, collectParentVersionIds, toPrismaJson } from 'src/domain/utils'
+import { collectChildVersionIds, collectParentVersionIds, stripProtocol, toPrismaJson } from 'src/domain/utils'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import PrismaService from 'src/services/prisma.service'
@@ -598,10 +598,12 @@ export default class DeployService {
             const registryUrl =
               registry.type === 'google' || registry.type === 'github'
                 ? `${registry.url}/${registry.imageNamePrefix}`
-                : registry.type === 'v2' || registry.type === 'gitlab' || registry.type === 'unchecked'
+                : registry.type === 'v2' || registry.type === 'gitlab'
                 ? registry.url
                 : registry.type === 'hub'
                 ? registry.imageNamePrefix
+                : registry.type === 'unchecked'
+                ? stripProtocol(registry.url)
                 : ''
 
             const mergedConfig = mergedConfigs.get(it.id)
