@@ -15,7 +15,6 @@ import {
   CreateV2RegistryDetailsDto,
   RegistryDetailsDto,
   RegistryDto,
-  UncheckedRegistryDetailsDto,
   UpdateGithubRegistryDetailsDto,
   UpdateGitlabRegistryDetailsDto,
   UpdateGoogleRegistryDetailsDto,

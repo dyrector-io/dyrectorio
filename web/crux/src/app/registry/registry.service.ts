@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { Observable, Subject } from 'rxjs'
+import { RegistryConnectionInfo } from 'src/domain/registry'
+import EncryptionService from 'src/services/encryption.service'
 import PrismaService from 'src/services/prisma.service'
 import RegistryMetrics from 'src/shared/metrics/registry.metrics'
 import TeamRepository from '../team/team.repository'
 import { CreateRegistryDto, RegistryDetailsDto, RegistryDto, UpdateRegistryDto } from './registry.dto'
 import RegistryMapper from './registry.mapper'
-import EncryptionService from 'src/services/encryption.service'
-import { Registry } from '@prisma/client'
-import { RegistryConnectionInfo } from 'src/domain/registry'
 
 @Injectable()
 export default class RegistryService {
