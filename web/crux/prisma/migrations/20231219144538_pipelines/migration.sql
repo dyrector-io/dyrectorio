@@ -1,8 +1,21 @@
+/*
+  Warnings:
+
+  - You are about to drop the `_prisma_migrations_Registry` table. If the table is not empty, all the data it contains will be lost.
+  - You are about to drop the `_prisma_migrations_Storage` table. If the table is not empty, all the data it contains will be lost.
+
+*/
 -- CreateEnum
 CREATE TYPE "PipelineTypeEnum" AS ENUM ('github', 'gitlab', 'azure');
 
 -- CreateEnum
 CREATE TYPE "PipelineStatusEnum" AS ENUM ('unknown', 'queued', 'running', 'successful', 'failed');
+
+-- DropTable
+DROP TABLE "_prisma_migrations_Registry";
+
+-- DropTable
+DROP TABLE "_prisma_migrations_Storage";
 
 -- CreateTable
 CREATE TABLE "Pipeline" (
@@ -15,7 +28,7 @@ CREATE TABLE "Pipeline" (
     "type" "PipelineTypeEnum" NOT NULL,
     "description" TEXT,
     "icon" TEXT,
-    "token" TEXT NOT NULL,
+    "token" BYTEA NOT NULL,
     "repository" JSONB NOT NULL,
     "trigger" JSONB NOT NULL,
     "hooks" JSONB NOT NULL,

@@ -27,6 +27,7 @@ import {
   UpdatePipelineDto,
 } from './pipeline.dto'
 import PipelineMapper from './pipeline.mapper'
+import EncryptionService from 'src/services/encryption.service'
 
 @Injectable()
 export default class PipelineService {
@@ -40,6 +41,7 @@ export default class PipelineService {
     private readonly mapper: PipelineMapper,
     private readonly azureService: AzureDevOpsService,
     private readonly jwtService: JwtService,
+    private readonly encryptionService: EncryptionService,
   ) {}
 
   async checkRegistryIsInTeam(teamId: string, registryId: string): Promise<boolean> {
@@ -110,7 +112,7 @@ export default class PipelineService {
           ...this.mapper.detailsToDb(req, project.id),
           createdBy: identity.id,
           teamId,
-          token: req.token,
+          token: this.encryptionService.encrypt(req.token),
           hooks: [],
         },
       })
@@ -142,7 +144,7 @@ export default class PipelineService {
       },
     })
 
-    const token = req.token ?? oldPipeline.token
+    const token = req.token ?? this.encryptionService.decrypt(oldPipeline.token)
     const repo = oldPipeline.repository as AzureRepository
     const trigger = oldPipeline.trigger as AzureTrigger
     let hooks = oldPipeline.hooks as AzureHook[]
@@ -189,7 +191,7 @@ export default class PipelineService {
       data: {
         ...this.mapper.detailsToDb(req, repo.projectId),
         hooks,
-        token: req.token ?? undefined,
+        token: !req.token ? undefined : this.encryptionService.encrypt(req.token),
         updatedAt: new Date(),
         updatedBy: identity.id,
       },
@@ -210,10 +212,7 @@ export default class PipelineService {
     })
 
     try {
-      const creds: AzureDevOpsCredentials = {
-        repo: deleted.repository as AzureRepository,
-        token: deleted.token,
-      }
+      const creds = this.mapper.toAzureCredentials(deleted)
 
       const hooks = deleted.hooks as AzureDevOpsHook[]
       const deletes = hooks.map(it => this.azureService.deleteHook(creds, it))
@@ -230,10 +229,7 @@ export default class PipelineService {
       },
     })
 
-    const creds: AzureDevOpsCredentials = {
-      repo: pipeline.repository as AzureRepository,
-      token: pipeline.token,
-    }
+    const creds = this.mapper.toAzureCredentials(pipeline)
 
     const trigger = pipeline.trigger as AzureTrigger
     if (req.inputs) {

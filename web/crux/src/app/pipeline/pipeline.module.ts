@@ -12,6 +12,7 @@ import PipelineMapper from './pipeline.mapper'
 import PipelineRunStateService from './pipeline.run-state.service'
 import PipelineService from './pipeline.service'
 import PipelineWebSocketGateway from './pipeline.ws.gateway'
+import EncryptionService from 'src/services/encryption.service'
 
 @Module({
   imports: [AuditModule, TeamModule, AuditLoggerModule, ...CruxJwtModuleImports],
@@ -26,6 +27,7 @@ import PipelineWebSocketGateway from './pipeline.ws.gateway'
     TeamRepository,
     AzureDevOpsService,
     PipelineJwtStrategy,
+    EncryptionService,
   ],
 })
 export default class PipelineModule {}

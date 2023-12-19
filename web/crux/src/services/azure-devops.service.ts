@@ -152,6 +152,19 @@ export default class AzureDevOpsService {
     })
 
     if (!res.ok) {
+      if (res.status === 401 || res.status === 403) {
+        throw new CruxForbiddenException({
+          message: 'Failed to create Azure DevOps hook',
+          property: 'hook',
+        })
+      } else if (res.status === 404) {
+        throw new CruxNotFoundException({
+          message: "Azure DevOps project not found"
+        })
+      }
+
+      this.logger.error(`status: ${res.status}`)
+      this.logger.error(await res.json())
       throw new CruxInternalServerErrorException({
         message: 'Failed to create Azure DevOps hook',
         property: 'hook',

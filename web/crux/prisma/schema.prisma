@@ -573,7 +573,7 @@ model Pipeline {
   type        PipelineTypeEnum
   description String?
   icon        String?
-  token       String
+  token       Bytes
   repository  Json
   trigger     Json
   hooks       Json

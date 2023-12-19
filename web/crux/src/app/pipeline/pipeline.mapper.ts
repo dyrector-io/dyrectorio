@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Pipeline, PipelineRun, PipelineStatusEnum, Prisma } from '@prisma/client'
 import { JsonValue } from '@prisma/client/runtime/library'
 import {
+  AzureDevOpsCredentials,
   AzureDevOpsRunResult,
   AzureDevOpsRunState,
   AzureRepository,
@@ -19,10 +20,12 @@ import {
   PipelineRunDto,
   UpdatePipelineDto,
 } from './pipeline.dto'
+import EncryptionService from 'src/services/encryption.service'
+import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
 @Injectable()
 export default class PipelineMapper {
-  constructor(private readonly auditMapper: AuditMapper) {}
+  constructor(private readonly auditMapper: AuditMapper, private readonly encryptionService: EncryptionService) {}
 
   toBasicDto(it: Pick<Pipeline, BasicProperties>): BasicPipelineDto {
     return {
@@ -103,6 +106,19 @@ export default class PipelineMapper {
     }
   }
 
+  toAzureCredentials(it: PipelineCredentials): AzureDevOpsCredentials {
+    if (it.type !== 'azure') {
+      throw new CruxInternalServerErrorException({
+        message: `Invalid pipeline type. Cannot map a ${it.type} pipeline to AzureDevOpsCredentials`,
+      })
+    }
+
+    return {
+      repo: it.repository as AzureRepository,
+      token: this.encryptionService.decrypt(it.token)
+    }
+  }
+
   azureRepositoryToDb(it: AzureDevOpsRepositoryDto, projectId: string): AzureRepository {
     return {
       organization: it.organization,
@@ -124,6 +140,8 @@ export default class PipelineMapper {
     }
   }
 }
+
+type PipelineCredentials = Pick<Pipeline, 'type' | 'repository' | 'token'>
 
 type PipelineWithRuns = Pipeline & {
   runs: PipelineRun[]
