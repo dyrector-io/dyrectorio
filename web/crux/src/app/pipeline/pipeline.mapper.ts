@@ -22,6 +22,8 @@ import {
   PipelineRunDto,
   UpdatePipelineDto,
 } from './pipeline.dto'
+import EncryptionService from 'src/services/encryption.service'
+import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
 @Injectable()
 export default class PipelineMapper {
