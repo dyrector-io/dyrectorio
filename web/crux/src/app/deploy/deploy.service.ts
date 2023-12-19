@@ -16,6 +16,7 @@ import { DeploymentTokenPayload, DeploymentTokenScriptGenerator } from 'src/doma
 import { collectChildVersionIds, collectParentVersionIds, stripProtocol, toPrismaJson } from 'src/domain/utils'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
+import EncryptionService from 'src/services/encryption.service'
 import PrismaService from 'src/services/prisma.service'
 import { v4 as uuid } from 'uuid'
 import AgentService from '../agent/agent.service'
@@ -59,6 +60,7 @@ export default class DeployService {
     private readonly containerMapper: ContainerMapper,
     private readonly editorServices: EditorServiceProvider,
     private readonly configService: ConfigService,
+    private readonly encryptionService: EncryptionService,
   ) {
     imageEventService
       .watchEvents()
@@ -625,13 +627,13 @@ export default class DeployService {
               tag: it.image.tag,
               instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment, mergedEnvironment),
               registry: registryUrl,
-              registryAuth: !registry.token
+              registryAuth: !registry.user
                 ? undefined
                 : {
                     name: registry.name,
                     url: registryUrl,
                     user: registry.user,
-                    password: registry.token,
+                    password: this.encryptionService.decrypt(registry.token),
                   },
             } as DeployRequest
           }),

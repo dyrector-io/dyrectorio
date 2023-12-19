@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import EncryptionService from 'src/services/encryption.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import AuditLoggerModule from '../audit.logger/audit.logger.module'
@@ -23,6 +24,7 @@ import ImageService from './image.service'
     TeamRepository,
     RegistryMapper,
     KratosService,
+    EncryptionService,
     ImageEventService,
     RegistryClientProvider,
   ],

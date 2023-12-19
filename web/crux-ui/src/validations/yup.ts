@@ -1,9 +1,6 @@
 import { RegistryType } from '@app/models'
 import * as yup from 'yup'
 
-const checkType = (type: RegistryType, types: RegistryType | RegistryType[]) =>
-  Array.isArray(types) ? types.includes(type) : type === types
-
 yup.addMethod(
   yup.string,
   'requiredWhenTypeIs',
@@ -12,15 +9,17 @@ yup.addMethod(
       return this.when(['type'], {
         is: (it: RegistryType) => options.includes(it),
         then: it => it.required(),
+        otherwise: it => it.nullable().optional(),
       })
     }
 
     const { public: publicTypes, private: privateTypes } = options
 
-    return this.when(['type', 'private'], {
-      is: (it: RegistryType, _private: boolean) =>
-        checkType(it, publicTypes) || (_private && checkType(it, privateTypes)),
+    return this.when(['type', 'public', 'changeCredentials'], {
+      is: (it: RegistryType, _public: boolean, changeCredentials: boolean) =>
+        (_public && publicTypes.includes(it)) || (changeCredentials && privateTypes.includes(privateTypes)),
       then: it => it.required(),
+      otherwise: it => it.nullable().optional(),
     })
   },
 )
@@ -52,13 +51,9 @@ yup.addMethod(
   },
 )
 
-function whenType<TSchema extends yup.Schema>(
-  this: TSchema,
-  type: RegistryType | RegistryType[],
-  then: (s: TSchema) => TSchema,
-) {
+function whenType<TSchema extends yup.Schema>(this: TSchema, type: RegistryType, then: (s: TSchema) => TSchema) {
   return this.when('type', {
-    is: it => checkType(it, type),
+    is: it => it === type,
     then,
   })
 }

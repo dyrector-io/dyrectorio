@@ -16,7 +16,7 @@ const shouldResetMetaData = { reset: true }
 /**
  * Creates a Yup schema for a registry credential role based on the provided label.
  * The schema defines validation rules for whether a field is required or not
- * based on the 'type' and 'private' properties in the input data.
+ * based on the 'type', 'public' and `changeCredentials` properties in the input data.
  *
  * @param label - The label to be used for the schema.
  * @returns A Yup schema instance.
@@ -69,7 +69,7 @@ export const registrySchema = yup.object().shape({
       otherwise: s => s.nullable().optional(),
     }),
   selfManaged: yup.mixed().meta(shouldResetMetaData).label('registries:selfManaged'),
-  private: yup.mixed().meta(shouldResetMetaData).label('registries:private'),
+  public: yup.mixed().meta(shouldResetMetaData).label('registries:public'),
   namespace: yup
     .mixed<RegistryNamespace>()
     .label('registries:namespaceType')

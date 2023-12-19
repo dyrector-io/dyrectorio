@@ -2,8 +2,8 @@ import { MixedSchema, StringSchema } from 'yup'
 
 declare module 'yup' {
   declare interface RequiredWhenTypeOptions {
-    public: RegistryType | RegistryType[]
-    private: RegistryType | RegistryType[]
+    public: RegistryType[]
+    private: RegistryType[]
   }
 
   interface MixedSchema {

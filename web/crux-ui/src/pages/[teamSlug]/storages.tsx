@@ -10,7 +10,7 @@ import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Storage } from '@app/models'
+import { Storage, StorageDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
@@ -37,7 +37,7 @@ const StoragesPage = (props: StoragesPageProps) => {
   const [creating, setCreating] = useState(false)
   const submit = useSubmit()
 
-  const onCreated = (storage: Storage) => {
+  const onCreated = (storage: StorageDetails) => {
     setCreating(false)
     filters.setItems([...filters.items, storage])
   }

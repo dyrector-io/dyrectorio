@@ -8,12 +8,13 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoPassword from '@app/elements/dyo-password'
 import DyoTextArea from '@app/elements/dyo-text-area'
+import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { CreateStorage, Storage, StorageDetails, UpdateStorage } from '@app/models'
-import { sendForm } from '@app/utils'
+import { CreateStorage, EditableStorage, StorageDetails, UpdateStorage, editableStorageToDto } from '@app/models'
+import { formikSetFieldValueOrIgnore, sendForm } from '@app/utils'
 import { storageSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
@@ -21,7 +22,7 @@ import { useState } from 'react'
 interface EditStorageCardProps {
   className?: string
   storage?: StorageDetails
-  onStorageEdited: (registry: Storage) => void
+  onStorageEdited: (registry: StorageDetails) => void
   submit: SubmitHook
 }
 
@@ -38,8 +39,7 @@ const EditStorageCard = (props: EditStorageCardProps) => {
       description: '',
       icon: null,
       url: '',
-      accessKey: '',
-      secretKey: '',
+      public: false,
       inUse: false,
     },
   )
@@ -48,29 +48,36 @@ const EditStorageCard = (props: EditStorageCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik({
+  const formik = useDyoFormik<EditableStorage>({
     submit,
     initialValues: {
       ...storage,
+      changeCredentials: !editing,
+      accessKey: '',
+      secretKey: '',
     },
     validationSchema: storageSchema,
     t,
     onSubmit: async (values, { setFieldError }) => {
-      const body: CreateStorage | UpdateStorage = {
-        ...values,
-      }
+      const body: CreateStorage | UpdateStorage = editableStorageToDto(values)
 
       const res = await (!editing
         ? sendForm('POST', routes.storage.api.list(), body as CreateStorage)
         : sendForm('PUT', routes.storage.api.details(storage.id), body as UpdateStorage))
 
       if (res.ok) {
-        let result: StorageDetails
+        let result: EditableStorage = {
+          ...values,
+          changeCredentials: false,
+          accessKey: '',
+          secretKey: '',
+        }
+
         if (res.status !== 204) {
-          result = (await res.json()) as StorageDetails
-        } else {
+          const json = (await res.json()) as StorageDetails
           result = {
-            ...values,
+            ...result,
+            ...json,
           }
         }
 
@@ -82,14 +89,14 @@ const EditStorageCard = (props: EditStorageCardProps) => {
     },
   })
 
+  const { values, errors, handleChange, setFieldValue } = formik
+
   return (
     <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
         {editing ? t('common:editName', { name: storage.name }) : t('new')}
       </DyoHeading>
-      {formik.values.inUse && (
-        <DyoMessage className="text-xs italic" message={t('storageAlreadyInUse')} messageType="info" />
-      )}
+      {values.inUse && <DyoMessage className="text-xs italic" message={t('storageAlreadyInUse')} messageType="info" />}
 
       <DyoForm className="grid grid-cols-2 gap-8" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
         <div className="flex flex-col">
@@ -100,16 +107,16 @@ const EditStorageCard = (props: EditStorageCardProps) => {
               name="name"
               type="name"
               label={t('common:name')}
-              onChange={formik.handleChange}
-              value={formik.values.name}
-              message={formik.errors.name}
+              onChange={handleChange}
+              value={values.name}
+              message={errors.name}
             />
           </div>
 
           <div className="w-full mt-2">
             <DyoLabel>{t('common:icon')}</DyoLabel>
 
-            <DyoIconPicker name="icon" value={formik.values.icon} setFieldValue={formik.setFieldValue} />
+            <DyoIconPicker name="icon" value={values.icon} setFieldValue={setFieldValue} />
           </div>
 
           <DyoTextArea
@@ -117,8 +124,8 @@ const EditStorageCard = (props: EditStorageCardProps) => {
             grow
             name="description"
             label={t('common:description')}
-            onChange={formik.handleChange}
-            value={formik.values.description}
+            onChange={handleChange}
+            value={values.description}
           />
         </div>
 
@@ -130,31 +137,62 @@ const EditStorageCard = (props: EditStorageCardProps) => {
             type="text"
             placeholder="https://example.com"
             label={t('url')}
-            onChange={formik.handleChange}
-            value={formik.values.url}
-            message={formik.errors.url}
+            onChange={handleChange}
+            value={values.url}
+            message={errors.url}
           />
 
-          <DyoInput
-            className="max-w-lg"
-            grow
-            name="accessKey"
-            type="text"
-            label={t('accessKey')}
-            onChange={formik.handleChange}
-            value={formik.values.accessKey}
-            message={formik.errors.accessKey}
+          <DyoToggle
+            className="mt-8"
+            name="public"
+            label={t('common:public')}
+            checked={values.public}
+            setFieldValue={async (field, value, shouldValidate) => {
+              if (!value) {
+                await setFieldValue('user', '', false)
+                await setFieldValue('token', '', false)
+              }
+
+              await setFieldValue(field, value, shouldValidate)
+            }}
           />
 
-          <DyoPassword
-            className="max-w-lg"
-            grow
-            name="secretKey"
-            label={t('secretKey')}
-            onChange={formik.handleChange}
-            value={formik.values.secretKey}
-            message={formik.errors.secretKey}
-          />
+          {!values.public && (
+            <>
+              <DyoToggle
+                className="mt-8"
+                name="changeCredentials"
+                label={t('common:changeCredentials')}
+                checked={values.changeCredentials}
+                setFieldValue={formikSetFieldValueOrIgnore(formik, !editing)}
+              />
+
+              {values.changeCredentials && (
+                <>
+                  <DyoInput
+                    className="max-w-lg"
+                    grow
+                    name="accessKey"
+                    type="text"
+                    label={t('accessKey')}
+                    onChange={handleChange}
+                    value={values.accessKey}
+                    message={errors.accessKey}
+                  />
+
+                  <DyoPassword
+                    className="max-w-lg"
+                    grow
+                    name="secretKey"
+                    label={t('secretKey')}
+                    onChange={handleChange}
+                    value={values.secretKey}
+                    message={errors.secretKey}
+                  />
+                </>
+              )}
+            </>
+          )}
         </div>
 
         <DyoButton className="hidden" type="submit" />

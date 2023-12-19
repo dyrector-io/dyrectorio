@@ -233,6 +233,16 @@ export const formikFieldValueConverter =
   (field, value, shouldValidate) =>
     formik.setFieldValue(field, converter(value), shouldValidate)
 
+export const formikSetFieldValueOrIgnore =
+  (formik: { setFieldValue: FormikSetFieldValue }, ignore: boolean): FormikSetFieldValue =>
+  (field, value, shouldValidate) => {
+    if (ignore) {
+      return undefined
+    }
+
+    return formik.setFieldValue(field, value, shouldValidate)
+  }
+
 export const sendForm = async <Dto>(
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   url: string,

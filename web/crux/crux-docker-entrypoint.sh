@@ -11,6 +11,6 @@ case $1 in
         echo "Invalid argument: $1"
         echo "Usage:"
         echo "migrate   Run migrations"
-        echo "serve     Start GRPC services"
+        echo "serve     Start Crux services"
         exit 1
 esac
