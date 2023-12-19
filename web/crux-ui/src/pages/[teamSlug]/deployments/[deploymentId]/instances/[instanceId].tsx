@@ -40,7 +40,7 @@ import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { ContainerConfigValidationErrors, getMergedContainerConfigFieldErrors, jsonErrorOf } from '@app/validations'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
@@ -80,7 +80,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   })
 
   const [fieldErrors, setFieldErrors] = useState<ContainerConfigValidationErrors>(() =>
-    getMergedContainerConfigFieldErrors(mergeConfigs(instance.image.config, state.config), t),
+    getMergedContainerConfigFieldErrors(mergeConfigs(instance.image.config, state.config), instance.image.labels, t),
   )
   const [filters, setFilters] = useState<ImageConfigProperty[]>(configToFilters([], state.config, fieldErrors))
   const [viewState, setViewState] = useState<ViewState>('editor')
@@ -109,7 +109,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   const setErrorsForConfig = useCallback(
     (imageConfig, instanceConfig) => {
       const merged = mergeConfigs(imageConfig, instanceConfig)
-      const errors = getMergedContainerConfigFieldErrors(merged, t)
+      const errors = getMergedContainerConfigFieldErrors(merged, instance.image.labels, t)
       setFieldErrors(errors)
       setJsonError(jsonErrorOf(errors))
     },
@@ -273,7 +273,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
 export default InstanceDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const deploymentId = context.query.deploymentId as string

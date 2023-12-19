@@ -12,6 +12,7 @@ import ImageModule from './app/image/image.module'
 import NodeModule from './app/node/node.module'
 import NotificationModule from './app/notification/notification.module'
 import ProjectModule from './app/project/project.module'
+import QualityAssuranceModule from './app/quality.assurance/quality-assurance.module'
 import RegistryModule from './app/registry/registry.module'
 import StorageModule from './app/storage/storage.module'
 import TeamModule from './app/team/team.module'
@@ -45,6 +46,7 @@ const imports = [
   ConfigBundleModule,
   ConfigModule.forRoot(appConfig),
   EmailModule,
+  QualityAssuranceModule,
   {
     ...PrometheusModule.register(),
     controllers: [], // Found no other way to unset the default controller
@@ -58,6 +60,6 @@ if (process.env.NODE_ENV === 'production') {
 @Module({
   imports,
   controllers: [],
-  providers: [PrismaService, ShutdownService, UuidValidationGuard, TeamAccessGuard],
+  providers: [PrismaService, ShutdownService, UuidValidationGuard, TeamAccessGuard, QualityAssuranceModule],
 })
 export default class AppModule {}

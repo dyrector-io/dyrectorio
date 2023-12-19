@@ -153,6 +153,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         ) : (
           <>
             <DyoChips
+              name="nodes"
               choices={nodes ?? []}
               converter={(it: DyoNode) => it.name}
               selection={nodes.find(it => it.id === formik.values.nodeId)}
@@ -178,6 +179,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         ) : (
           <>
             <DyoChips
+              name="projects"
               choices={projects ?? []}
               converter={(it: Project) => it.name}
               selection={currentProject}
@@ -207,6 +209,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
               currentProject.type === 'versioned' && (
                 <>
                   <DyoChips
+                    name="versions"
                     choices={versions ?? []}
                     converter={(it: Version) => it.name}
                     selection={versions?.find(it => it.id === formik.values.versionId)}

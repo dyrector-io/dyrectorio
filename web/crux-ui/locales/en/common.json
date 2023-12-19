@@ -14,6 +14,8 @@
   "resend": "Resend",
   "clear": "Clear",
   "documentation": "Documentation",
+  "public": "Public",
+  "changeCredentials": "Change credentials",
 
   "goBack": "Go back",
   "back": "Back",
@@ -105,6 +107,9 @@
   "token": "Token",
 
   "changeToken": "Change token",
+
+  "show": "Show",
+  "hide": "Hide",
 
   "prefix": "Prefix",
 

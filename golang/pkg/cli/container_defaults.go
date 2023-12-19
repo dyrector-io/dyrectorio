@@ -5,10 +5,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/AlekSi/pointer"
 	"github.com/docker/docker/api/types/mount"
@@ -18,6 +20,7 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
+	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	dagentutils "github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
 )
@@ -39,6 +42,8 @@ const (
 	defaultMailSlurperUIPort   = 4436
 	defaultMailSlurperAPIPort  = 4437
 	defaultPostgresPort        = 5432
+	healhProbeTimeout          = 2 * time.Minute
+	healhProbeInterval         = time.Second
 )
 
 func baseContainer(ctx context.Context, args *ArgsFlags) containerbuilder.Builder {
@@ -102,6 +107,7 @@ func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.Lifecy
 			state.Containers.CruxPostgres.Name,
 			defaultPostgresPort,
 			state.SettingsFile.CruxPostgresDB),
+		fmt.Sprintf("ENCRYPTION_SECRET_KEY=%s", state.SettingsFile.CruxEncryptionKey),
 	}, state.EnvFile...)
 
 	return func(ctx context.Context, client client.APIClient,
@@ -175,7 +181,10 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 		fmt.Sprintf("FROM_EMAIL=%s", state.SettingsFile.MailFromEmail),
 		fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", state.Containers.MailSlurper.Name),
 		fmt.Sprintf("AGENT_INSTALL_SCRIPT_DISABLE_PULL=%t", true),
-		"DISABLE_RECAPTCHA=true")
+		fmt.Sprintf("ENCRYPTION_SECRET_KEY=%s", state.SettingsFile.CruxEncryptionKey),
+		"DISABLE_RECAPTCHA=true",
+		"QA_OPT_OUT=true",
+	)
 	return append(envs, state.EnvFile...)
 }
 
@@ -297,7 +306,16 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 			)
 		})
 
-	if !args.FullyContainerized {
+	if args.FullyContainerized {
+		traefikHost := state.Containers.Traefik.Name
+		traefik.
+			WithPostStartHooks(func(ctx context.Context, client client.APIClient,
+				cont containerbuilder.ParentContainer,
+			) error {
+				addr := fmt.Sprintf("http://%s:%d/api/status", traefikHost, state.SettingsFile.TraefikWebPort)
+				return healhProbe(ctx, addr)
+			})
+	} else {
 		traefik = traefik.
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
@@ -593,4 +611,45 @@ func CopyTraefikConfiguration(ctx context.Context, name, internalHostDomain stri
 	)
 
 	return err
+}
+
+func healhProbe(ctx context.Context, address string) error {
+	ctx, cancel := context.WithTimeout(ctx, healhProbeTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, address, http.NoBody)
+	if err != nil {
+		return fmt.Errorf("failed to create the http request for healh probe: %s", err.Error())
+	}
+
+	log.Info().Str("address", address).Msg("Health probing")
+
+	ticker := time.NewTicker(healhProbeInterval)
+	lastStatusCode := -1
+
+	for {
+		select {
+		case <-ticker.C:
+			//nolint:bodyclose //closed already
+			resp, reqErr := http.DefaultClient.Do(req)
+			err = reqErr
+			if reqErr != nil {
+				continue
+			}
+
+			logdefer.LogDeferredErr(resp.Body.Close, log.Debug(), "failed to close the response body while health probing")
+
+			if resp.StatusCode == http.StatusOK {
+				return nil
+			}
+
+			lastStatusCode = resp.StatusCode
+		case <-ctx.Done():
+			if err != nil {
+				return fmt.Errorf("failed to execute request for %s health probe: %s", address, err.Error())
+			}
+
+			return fmt.Errorf("health probe timeout for %s, last status code: %d", address, lastStatusCode)
+		}
+	}
 }

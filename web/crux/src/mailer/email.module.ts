@@ -30,9 +30,6 @@ const smtpUriToTransport = (uri: string): TransportType => {
             name: configService.get('FROM_NAME'),
           },
         },
-        // TODO (@m8vago): templates
-        // https://github.com/yanarp/nestjs-mailer
-        // template:
       }),
     }),
   ],

@@ -1,5 +1,6 @@
 import clsx from 'clsx'
 import Image from 'next/image'
+import { sendQAClickEvent } from 'quality-assurance'
 
 interface DyoIconProps {
   className?: string
@@ -11,9 +12,19 @@ interface DyoIconProps {
 }
 
 const DyoIcon = (props: DyoIconProps) => {
-  const { className, imageClassName, src, alt, size: propsSize = 'sm', onClick } = props
+  const { className, imageClassName, src, alt, size: propsSize = 'sm', onClick: propsOnClick } = props
 
   const size = propsSize === 'sm' ? 16 : propsSize === 'md' ? 24 : propsSize === 'lg' ? 32 : 36
+
+  const onClick = !propsOnClick
+    ? null
+    : () => {
+        propsOnClick()
+        sendQAClickEvent({
+          elementType: 'img',
+          label: alt,
+        })
+      }
 
   return (
     <span

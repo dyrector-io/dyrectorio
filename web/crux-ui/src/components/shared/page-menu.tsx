@@ -4,6 +4,7 @@ import useConfirmation from '@app/hooks/use-confirmation'
 import { SubmitHook } from '@app/hooks/use-submit'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import { QA_DIALOG_LABEL_DELETE_FROM_PAGE_MENU } from 'quality-assurance'
 import React from 'react'
 
 export type ListPageMenuTexts = {
@@ -85,6 +86,7 @@ export const DetailsPageMenu = (props: React.PropsWithChildren<DetailsPageMenuPr
 
   const deleteClick = async () => {
     const confirmed = await confirmDelete({
+      qaLabel: QA_DIALOG_LABEL_DELETE_FROM_PAGE_MENU,
       title: deleteModalTitle,
       description: deleteModalDescription,
       confirmText: texts.delete ?? t('delete'),

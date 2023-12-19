@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 import { test } from '../utils/test.fixture'
-import { DAGENT_NODE, TEAM_ROUTES } from '../utils/common'
+import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, REDIS_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from '../utils/common'
 import { addDeploymentToVersion, createImage, createProject, createVersion } from '../utils/projects'
 
 test('Add incremental version should work', async ({ page }) => {
@@ -55,8 +55,8 @@ test('Change default version should work', async ({ page }) => {
   const projectId = await createProject(page, 'change-default', 'versioned')
   const versionOne = await createVersion(page, projectId, '1.0.0', 'Incremental')
   const versionTwo = await createVersion(page, projectId, '2.0.0', 'Incremental')
-  await createImage(page, projectId, versionOne, 'nginx')
-  await createImage(page, projectId, versionTwo, 'redis')
+  await createImage(page, projectId, versionOne, NGINX_TEST_IMAGE_WITH_TAG)
+  await createImage(page, projectId, versionTwo, REDIS_TEST_IMAGE_WITH_TAG)
 
   await page.goto(TEAM_ROUTES.project.details(projectId))
   await page.waitForSelector('h2:text-is("Projects")')

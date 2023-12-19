@@ -129,13 +129,13 @@ test('Select specific instances to deploy', async ({ page }) => {
   const projectId = await createProject(page, projectName, 'versionless')
 
   await addImageToVersionlessProject(page, projectId, 'nginx')
-  await addImageToVersionlessProject(page, projectId, 'busybox')
+  await addImageToVersionlessProject(page, projectId, 'redis')
 
   const { id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, { prefix })
 
   const instanceRow = await page.locator('table.w-full >> tbody >> tr')
 
-  await instanceRow.locator('img[alt="check"]:left-of(td:text-is("busybox"))').click()
+  await instanceRow.locator('img[alt="check"]:left-of(td:text-is("redis"))').click()
 
   await deploy(page, deploymentId, false, false)
 

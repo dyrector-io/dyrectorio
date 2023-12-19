@@ -30,6 +30,7 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
     hidden,
     id,
     invalid,
+    children,
     ...forwardedProps
   } = props
 
@@ -47,29 +48,34 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
           </DyoLabel>
         )}
 
-        <input
-          {...forwardedProps}
-          name={name}
-          ref={ref}
-          disabled={disabled}
-          hidden={hidden}
-          id={id ?? name}
-          className={clsx(
-            className,
-            'bg-medium h-11 p-4 ring-2 rounded-md focus:outline-none focus:dark',
-            grow ? 'w-full' : 'w-80',
-            disabled
-              ? 'text-bright-muted ring-light-grey-muted cursor-not-allowed'
-              : error
-              ? 'text-bright ring-error-red'
-              : 'text-bright ring-light-grey',
-          )}
-        />
+        <span className={clsx('relative', className, grow ? 'w-full' : 'w-80')}>
+          <input
+            {...forwardedProps}
+            name={name}
+            ref={ref}
+            disabled={disabled}
+            hidden={hidden}
+            id={id ?? name}
+            className={clsx(
+              className,
+              'bg-medium h-11 p-4 ring-2 rounded-md focus:outline-none focus:dark',
+              grow ? 'w-full' : 'w-80',
+              disabled
+                ? 'text-bright-muted ring-light-grey-muted cursor-not-allowed'
+                : error
+                ? 'text-bright ring-error-red'
+                : 'text-bright ring-light-grey',
+            )}
+          />
+
+          {children}
+        </span>
 
         {!hidden && message && !inline ? (
           <DyoMessage message={message} messageType={messageType} className="text-xs italic" />
         ) : null}
       </div>
+
       {!hidden && message && inline ? (
         <DyoMessage message={message} messageType={messageType} marginClassName="my-2" className="text-xs italic" />
       ) : null}

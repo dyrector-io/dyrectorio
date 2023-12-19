@@ -14,7 +14,7 @@ import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
@@ -62,7 +62,6 @@ const NotificationsPage = (props: NotificationsPageProps) => {
                 className={clsx('max-h-64 w-full p-6')}
                 key={`notification-${index}`}
                 notification={it}
-                titleHref={routes.notification.details(it.id)}
               />
             ))}
           </DyoWrap>
@@ -76,7 +75,7 @@ const NotificationsPage = (props: NotificationsPageProps) => {
   )
 }
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const notifications = await getCruxFromContext<Notification[]>(context, routes.notification.api.list())

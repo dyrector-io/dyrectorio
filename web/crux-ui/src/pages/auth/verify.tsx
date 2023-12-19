@@ -27,7 +27,7 @@ import { VerificationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import { forwardCookie } from '@server/cookie'
 import kratos, { obtainSessionFromRequest, verifiableEmailOfIdentity } from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -233,7 +233,7 @@ const VerifyPage = (props: VerifyProps) => {
 
 export default VerifyPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const flow = context.query.flow as string
   const restart = context.query.restart === 'true'
 

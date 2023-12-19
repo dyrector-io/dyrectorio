@@ -7,9 +7,9 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
+import DyoPassword from '@app/elements/dyo-password'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useSubmit from '@app/hooks/use-submit'
 import { ChangePassword } from '@app/models'
@@ -32,7 +32,7 @@ import {
 import { passwordSchema } from '@app/validations'
 import { SettingsFlow } from '@ory/kratos-client'
 import kratos from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useState } from 'react'
@@ -111,20 +111,19 @@ const SettingsPage = (props: SettingsFlow) => {
           </DyoHeading>
 
           <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
-          <DyoInput
+
+          <DyoPassword
             label={t('common:password')}
             name="password"
-            type="password"
             onChange={formik.handleChange}
             value={formik.values.password}
             message={findMessage(ui, 'password') ?? formik.errors.password}
             grow
           />
 
-          <DyoInput
+          <DyoPassword
             label={t('common:confirmPass')}
             name="confirmPassword"
-            type="password"
             onChange={formik.handleChange}
             value={formik.values.confirmPassword}
             message={confirmError ?? formik.errors.confirmPassword}
@@ -143,7 +142,7 @@ const SettingsPage = (props: SettingsFlow) => {
 
 export default SettingsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const { cookie } = context.req.headers
 
   const flow = await kratos.createBrowserSettingsFlow({

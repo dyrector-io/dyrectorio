@@ -1,6 +1,6 @@
 {
   "name": "crux",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Open-source delivery platform that helps developers to deliver applications efficiently by simplifying software releases and operations in any environment.",
   "author": "dyrector.io",
   "private": true,
@@ -21,6 +21,8 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
+    "encrypt:generate": "node dist/main encrypt generate",
+    "encrypt:rotate": "node dist/main encrypt rotate",
     "grpc:debug": "GRPC_VERBOSITY=DEBUG GRPC_TRACE=all npm start",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" && prettier --check \"src/**/*.ts\"",
     "test": "jest",

@@ -6,10 +6,11 @@ import DyoForm from '@app/elements/dyo-form'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoMessage from '@app/elements/dyo-message'
+import DyoPassword from '@app/elements/dyo-password'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
-import { DyoErrorDto, Login, oidcEnabled, OidcProvider } from '@app/models'
+import { DyoErrorDto, Login, OidcProvider, oidcEnabled } from '@app/models'
 import {
   API_AUTH_LOGIN,
   ROUTE_DOCS,
@@ -34,7 +35,7 @@ import { LoginFlow, UiContainer } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import { cookieOf, forwardCookie } from '@server/cookie'
 import kratos, { obtainSessionFromRequest, userVerified } from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import Link from 'next/link'
@@ -151,6 +152,7 @@ const LoginPage = (props: LoginPageProps) => {
           <DyoSingleFormHeading>{t('common:logIn')}</DyoSingleFormHeading>
 
           {!refresh ? null : <p className="w-80 mx-auto mt-8">{t('refresh')}</p>}
+
           {!invitation ? null : <p className="w-80 mx-auto mt-8">{t('loginToAcceptInv')}</p>}
 
           <DyoInput
@@ -162,10 +164,9 @@ const LoginPage = (props: LoginPageProps) => {
             message={findMessage(ui, 'identifier')}
           />
 
-          <DyoInput
+          <DyoPassword
             label={t('common:password')}
             name="password"
-            type="password"
             onChange={formik.handleChange}
             value={formik.values.password}
             message={findMessage(ui, 'password')}
@@ -239,7 +240,7 @@ const LoginPage = (props: LoginPageProps) => {
 
 export default LoginPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const flowId = context.query.flow as string
 
   const { refresh } = context.query

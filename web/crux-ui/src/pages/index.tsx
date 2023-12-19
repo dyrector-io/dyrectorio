@@ -4,14 +4,14 @@ import { API_USERS_ME, ROUTE_TEAMS_CREATE, selectTeamUrl, teamInvitationUrl } fr
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { getCookie } from '@server/cookie'
 import { postCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 
 // eslint-disable-next-line react/jsx-no-useless-fragment
 const IndexPage = () => <></>
 
 export default IndexPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const user = await postCruxFromContext<UserMeta>(context, API_USERS_ME)
   if (user.teams.length < 1) {
     const inv = user.invitations.length > 0 ? user.invitations[0] : null

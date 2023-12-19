@@ -19,7 +19,7 @@ import { Deployment, NodeDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useSWRConfig } from 'swr'
@@ -102,7 +102,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
       ) : (
         <>
           <div className="flex flex-row gap-4 mb-4">
-            <DyoNodeCard className="w-2/3 p-6" node={node} hideConnectionInfo />
+            <DyoNodeCard className="w-2/3 p-6" node={node} disableTitleHref hideConnectionInfo />
 
             <NodeConnectionCard className="w-1/3 px-6 py-4" node={node} />
           </div>
@@ -130,7 +130,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
 
 export default NodeDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const nodeId = context.query.nodeId as string

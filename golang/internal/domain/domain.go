@@ -1,7 +1,11 @@
 package domain
 
 import (
+	"fmt"
+
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
+
+	"k8s.io/apimachinery/pkg/api/validation"
 )
 
 type HostRouting struct {
@@ -39,4 +43,12 @@ func GetHostRuleStrict(h *HostRouting) string {
 	}
 
 	return GetHostRule(h)
+}
+
+func IsCompliantDNS(str string) error {
+	errs := validation.NameIsDNSLabel(str, false)
+	if len(errs) > 0 {
+		return fmt.Errorf("invalid value: %v", errs)
+	}
+	return nil
 }

@@ -1,5 +1,6 @@
 import { FormikSetFieldValue } from '@app/utils'
 import clsx from 'clsx'
+import { sendQAToggleEvent } from 'quality-assurance'
 import React from 'react'
 
 type DyoToggleLabelOptions = {
@@ -24,6 +25,7 @@ const DyoToggle = (props: DyoToggleProps) => {
   const onToggle = () => {
     setFieldValue?.call(null, name, !checked, false)
     onCheckedChange?.call(null, !checked)
+    sendQAToggleEvent(name)
   }
 
   return (

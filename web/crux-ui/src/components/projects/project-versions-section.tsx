@@ -2,9 +2,9 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoWrap from '@app/elements/dyo-wrap'
 import useConfirmation from '@app/hooks/use-confirmation'
-import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Version } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
+import { QA_DIALOG_LABEL_SET_AS_DEFAULT } from 'quality-assurance'
 import VersionCard from './versions/version-card'
 
 interface ProjectVersionsSectionProps {
@@ -19,12 +19,12 @@ const ProjectVersionsSection = (props: ProjectVersionsSectionProps) => {
   const { projectId, versions, onIncrease, onSetAsDefault, disabled } = props
 
   const { t } = useTranslation('projects')
-  const routes = useTeamRoutes()
 
   const [modalConfig, confirmSetAsDefault] = useConfirmation()
 
   const onSetAsDefaultClick = async (version: Version) => {
     const confirmed = await confirmSetAsDefault({
+      qaLabel: QA_DIALOG_LABEL_SET_AS_DEFAULT,
       title: t('common:areYouSure'),
       description: t('setNameAsDefault', version),
     })
@@ -47,7 +47,6 @@ const ProjectVersionsSection = (props: ProjectVersionsSectionProps) => {
             disabled={disabled}
             onIncreaseClick={onIncrease ? () => onIncrease(it) : null}
             onSetAsDefaultClick={onSetAsDefault ? () => onSetAsDefaultClick(it) : null}
-            href={routes.project.versions(projectId).details(it.id)}
           />
         ))}
       </DyoWrap>

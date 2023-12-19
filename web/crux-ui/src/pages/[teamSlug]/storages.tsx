@@ -10,12 +10,12 @@ import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Storage } from '@app/models'
+import { Storage, StorageDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
@@ -37,7 +37,7 @@ const StoragesPage = (props: StoragesPageProps) => {
   const [creating, setCreating] = useState(false)
   const submit = useSubmit()
 
-  const onCreated = (storage: Storage) => {
+  const onCreated = (storage: StorageDetails) => {
     setCreating(false)
     filters.setItems([...filters.items, storage])
   }
@@ -68,7 +68,6 @@ const StoragesPage = (props: StoragesPageProps) => {
                   className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
                   key={`storage-${index}`}
                   storage={it}
-                  titleHref={routes.storage.details(it.id)}
                 />
               )
             })}
@@ -85,7 +84,7 @@ const StoragesPage = (props: StoragesPageProps) => {
 
 export default StoragesPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const storages = await getCruxFromContext<Storage[]>(context, routes.storage.api.list())

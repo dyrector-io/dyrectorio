@@ -22,6 +22,7 @@ import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
 import useNodeState from './use-node-state'
+import { QA_DIALOG_LABEL_DELETE_CONTAINER } from 'quality-assurance'
 
 export type NodeDetailsSection = 'editing' | 'containers' | 'logs' | 'deployments'
 
@@ -152,6 +153,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
 
   const onDeleteContainer = async (container: Container) => {
     const confirmed = await confirm({
+      qaLabel: QA_DIALOG_LABEL_DELETE_CONTAINER,
       title: t('areYouSure'),
       description: t('areYouSureDeleteName', { name: containerPrefixNameOf(container.id) }),
       confirmText: t('delete'),

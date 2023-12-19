@@ -28,7 +28,7 @@ import {
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useEffect, useState } from 'react'
@@ -128,7 +128,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       </PageHeading>
 
       {!editing ? (
-        <RegistryCard registry={registryDetailsToRegistry(registry)} />
+        <RegistryCard registry={registryDetailsToRegistry(registry)} disableTitleHref />
       ) : (
         <EditRegistryCard className="p-8" registry={registry} onRegistryEdited={onRegistryEdited} submit={submit} />
       )}
@@ -166,7 +166,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
 
 export default RegistryDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const registryId = context.query.registryId as string

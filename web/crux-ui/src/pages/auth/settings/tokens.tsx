@@ -18,8 +18,9 @@ import { appendTeamSlug } from '@app/providers/team-routes'
 import { API_TOKENS, ROUTE_INDEX, ROUTE_SETTINGS, ROUTE_SETTINGS_EDIT_PROFILE, tokensApiUrl } from '@app/routes'
 import { redirectTo, teamSlugOrFirstTeam, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
+import { QA_DIALOG_LABEL_DELETE_USER_TOKEN } from 'quality-assurance'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 
@@ -53,6 +54,7 @@ const TokensPage = (props: TokensPageProps) => {
 
   const onItemDelete = async (item: Token) => {
     const confirmed = await confirmDelete({
+      qaLabel: QA_DIALOG_LABEL_DELETE_USER_TOKEN,
       title: t('common:areYouSureDeleteName', { name: item.name }),
       description: t('common:proceedYouLoseAllDataToName', {
         name: item.name,
@@ -176,7 +178,7 @@ const TokensPage = (props: TokensPageProps) => {
 
 export default TokensPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const tokens = await getCruxFromContext<Token[]>(context, API_TOKENS)
 
   const teamSlug = await teamSlugOrFirstTeam(context)

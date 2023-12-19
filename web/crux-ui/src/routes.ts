@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import { AuditLogQuery, ContainerIdentifier, ContainerOperation, VersionSectionsState } from './models'
 
 // Routes:
@@ -38,6 +38,7 @@ export const API_SETTINGS_OIDC = '/api/auth/settings/oidc'
 export const API_RECOVERY = '/api/auth/recovery'
 export const API_VERIFICATION = '/api/auth/verify'
 export const API_CREATE_ACCOUNT = '/api/auth/create-account'
+export const API_QUALITY_ASSURANCE = '/api/quality-assurance'
 
 export const API_STATUS = '/api/status'
 
@@ -735,7 +736,7 @@ export class TeamRoutes {
     return this._configBundles
   }
 
-  static fromContext(context: NextPageContext): TeamRoutes | null {
+  static fromContext(context: GetServerSidePropsContext): TeamRoutes | null {
     const teamSlug = context.query.teamSlug as string
     if (!teamSlug) {
       return null

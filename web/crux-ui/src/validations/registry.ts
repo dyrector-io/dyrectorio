@@ -8,121 +8,90 @@ import {
   RegistryNamespace,
   RegistryType,
 } from '@app/models'
-import yup from './yup'
 import { descriptionRule, iconRule, nameRule } from './common'
-import { Schema } from 'yup'
+import yup from './yup'
 
 const shouldResetMetaData = { reset: true }
 
 /**
  * Creates a Yup schema for a registry credential role based on the provided label.
  * The schema defines validation rules for whether a field is required or not
- * based on the 'type' and 'private' properties in the input data.
+ * based on the 'type', 'public' and `changeCredentials` properties in the input data.
  *
  * @param label - The label to be used for the schema.
  * @returns A Yup schema instance.
  */
 const createRegistryCredentialRole = (label: string) =>
   yup
-    .mixed()
+    .string()
     .meta(shouldResetMetaData)
-    .when(['type', 'private'], {
-      is: (type, _private) =>
-        type === 'gitlab' || type === 'github' || ((type === 'v2' || type === 'google') && _private),
-      then: () => yup.string().required().label(label),
-      otherwise: () => yup.mixed().label(label),
+    .requiredWhenTypeIs({
+      public: ['gitlab', 'github'],
+      private: ['v2', 'google', 'hub'],
     })
+    .label(label)
 
 const googleRegistryUrls = ['gcr.io', 'us.gcr.io', 'eu.gcr.io', 'asia.gcr.io'] as const
-
-const typeLabel = (
-  schema: Schema<any, any, any>,
-  labels: Record<string, string | ((s: Schema<any, any, any>) => Schema<any, any, any>)>,
-) =>
-  Object.entries(labels).reduce(
-    (it, [labelType, label]) =>
-      it.when('type', {
-        is: type => type === labelType,
-        then: s => (typeof label === 'string' ? s.label(label) : label(s)),
-      }),
-    schema,
-  )
 
 export const registrySchema = yup.object().shape({
   name: nameRule,
   description: descriptionRule,
   type: yup.mixed<RegistryType>().oneOf([...REGISTRY_TYPE_VALUES]),
   icon: iconRule,
-  imageNamePrefix: typeLabel(
-    yup
-      .string()
-      .meta(shouldResetMetaData)
-      .when('type', {
-        is: type => ['hub', 'gitlab', 'github', 'google'].includes(type),
-        then: s => s.required(),
-      }),
-    {
+  imageNamePrefix: yup
+    .string()
+    .meta(shouldResetMetaData)
+    .requiredWhenTypeIs(['hub', 'gitlab', 'github', 'google'])
+    .labelType({
       hub: 'orgOrUser',
-      gitlab: it =>
-        it.when('namespace', {
-          is: namespace => namespace === 'group',
-          then: s => s.label('registries:group'),
-          otherwise: s => s.label('registries:project'),
-        }),
-      github: it =>
-        it.when('namespace', {
-          is: namespace => namespace === 'organization',
-          then: s => s.label('registries:organization'),
-          otherwise: s => s.label('registries:userName'),
-        }),
       google: 'organization',
-    },
-  ),
+      gitlab: it => it.labelNamespace('group', 'registries:group', 'registries:project'),
+      github: it => it.labelNamespace('organization', 'registries:organization', 'registries:userName'),
+    }),
   url: yup
     .string()
     .meta(shouldResetMetaData)
     .label('registries:url')
     .when(['type', 'selfManaged', 'local'], {
-      is: (type, selfManaged, local) =>
+      is: (type: RegistryType, selfManaged?: boolean, local?: boolean) =>
         type === 'v2' || type === 'google' || (type === 'gitlab' && selfManaged) || (type === 'unchecked' && !local),
       then: s => s.required(),
+      otherwise: s => s.nullable().optional(),
     })
-    .when(['type'], { is: type => type === 'google', then: s => s.oneOf([...googleRegistryUrls]) }),
+    .whenType('google', s => s.oneOf([...googleRegistryUrls])),
   apiUrl: yup
     .string()
     .label('registries:apiUrl')
     .meta(shouldResetMetaData)
     .when(['type', 'selfManaged'], {
-      is: (type, selfManaged) => type === 'gitlab' && selfManaged,
+      is: (type: RegistryType, selfManaged?: boolean) => type === 'gitlab' && selfManaged,
       then: s => s.required(),
+      otherwise: s => s.nullable().optional(),
     }),
   selfManaged: yup.mixed().meta(shouldResetMetaData).label('registries:selfManaged'),
-  private: yup.mixed().meta(shouldResetMetaData).label('registries:private'),
+  public: yup.mixed().meta(shouldResetMetaData).label('registries:public'),
   namespace: yup
     .mixed<RegistryNamespace>()
     .label('registries:namespaceType')
-    .when(['type'], {
-      is: type => type === 'gitlab',
-      then: () =>
-        yup
-          .mixed<GitlabNamespace>()
-          .oneOf([...GITLAB_NAMESPACE_VALUES])
-          .required(),
-    })
-    .when(['type'], {
-      is: type => type === 'github',
-      then: () =>
-        yup
-          .mixed<GithubNamespace>()
-          .oneOf([...GITHUB_NAMESPACE_VALUES])
-          .required(),
-    }),
+    .whenType('gitlab', () =>
+      yup
+        .mixed<GitlabNamespace>()
+        .oneOf([...GITLAB_NAMESPACE_VALUES])
+        .required(),
+    )
+    .whenType('github', () =>
+      yup
+        .mixed<GithubNamespace>()
+        .oneOf([...GITHUB_NAMESPACE_VALUES])
+        .required(),
+    ),
   user: createRegistryCredentialRole('user'),
-  token: typeLabel(createRegistryCredentialRole('pat'), {
+  token: createRegistryCredentialRole('pat').labelType({
     gitlab: 'token',
     github: 'pat',
     v2: 'token',
     google: 'privateKey',
+    hub: 'token',
   }),
 })
 

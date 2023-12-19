@@ -110,7 +110,7 @@ model Registry {
   icon            String?
   url             String
   user            String?
-  token           String?
+  token           Bytes?
   type            RegistryTypeEnum
   namespace       RegistryNamespaceEnum?
   imageNamePrefix String?
@@ -184,6 +184,7 @@ model Image {
   createdBy  String           @db.Uuid
   updatedAt  DateTime         @updatedAt @db.Timestamptz(6)
   updatedBy  String?          @db.Uuid
+  labels     Json?
 
   registry Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
   version  Version  @relation(fields: [versionId], references: [id], onDelete: Cascade)
@@ -505,6 +506,7 @@ enum NotificationTypeEnum {
   slack
   teams
   rocket
+  mattermost
 }
 
 enum NotificationEventTypeEnum {
@@ -526,17 +528,17 @@ enum NodeEventTypeEnum {
 }
 
 model Storage {
-  id          String   @id @default(uuid()) @db.Uuid
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  createdBy   String   @db.Uuid
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
-  updatedBy   String?  @db.Uuid
-  name        String   @db.VarChar(70)
-  description String?
-  icon        String?
-  url         String
-  accessKey   String?
-  secretKey   String?
+  id           String   @id @default(uuid()) @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  createdBy    String   @db.Uuid
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  updatedBy    String?  @db.Uuid
+  name         String   @db.VarChar(70)
+  description  String?
+  icon         String?
+  url          String
+  accessKey    Bytes?
+  secretKey    Bytes?
 
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String @db.Uuid
@@ -624,4 +626,9 @@ model ConfigBundleOnDeployments {
   configBundleId String       @db.Uuid
 
   @@id([deploymentId, configBundleId])
+}
+
+model QualityAssuranceConfig {
+  id   String  @id @default(uuid()) @db.Uuid
+  name String?
 }

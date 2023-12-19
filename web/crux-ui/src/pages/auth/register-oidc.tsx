@@ -16,7 +16,7 @@ import { RegistrationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import { cookieOf, forwardCookie } from '@server/cookie'
 import kratos, { obtainSessionFromRequest } from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import Link from 'next/link'
@@ -171,7 +171,7 @@ const RegisterOidcPage = (props: RegisterPageProps) => {
 
 export default RegisterOidcPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const flowId = context.query.flow as string
 
   const session = await obtainSessionFromRequest(context.req)

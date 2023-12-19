@@ -1,7 +1,7 @@
-import clsx from 'clsx'
-import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import Paginator, { PaginationSettings } from '@app/components/shared/paginator'
+import clsx from 'clsx'
+import Image from 'next/image'
+import { useEffect, useState } from 'react'
 import DyoCheckbox from './dyo-checkbox'
 
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
@@ -42,7 +42,7 @@ export interface DyoColumnProps {
 
   /** Defines which field to use in the body */
   field?: string
-  body?: (it: any) => React.ReactNode
+  body?: (it: any, index: number) => React.ReactNode
 
   className?: string
   headerClassName?: string
@@ -71,17 +71,25 @@ export interface DyoCheckboxColumnProps {
   selected: string[]
   onAllChange: (it: boolean) => void
   onChange: (id: string, check: boolean) => void
+  qaLabel: string
 }
 
 export const dyoCheckboxColumn = (props: DyoCheckboxColumnProps & DyoColumnProps) => {
-  const { allSelected, selected, onAllChange, onChange, ...rest } = props
+  const { allSelected, selected, onAllChange, onChange, qaLabel, ...rest } = props
 
   return (
     <DyoColumn
       className="w-12"
-      header={() => <DyoCheckbox {...rest} checked={allSelected} onCheckedChange={onAllChange} />}
-      body={(it: any) => (
-        <DyoCheckbox {...rest} checked={selected.includes(it.id)} onCheckedChange={check => onChange(it.id, check)} />
+      header={() => (
+        <DyoCheckbox {...rest} checked={allSelected} onCheckedChange={onAllChange} qaLabel={`${qaLabel}-all`} />
+      )}
+      body={(it: any, index: number) => (
+        <DyoCheckbox
+          {...rest}
+          checked={selected.includes(it.id)}
+          onCheckedChange={check => onChange(it.id, check)}
+          qaLabel={`${qaLabel}-${index}`}
+        />
       )}
     />
   )
@@ -280,7 +288,7 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
           return (
             <tr key={key} className={headless ? null : 'hover:bg-medium-muted'}>
               {columns.map((col, index) => {
-                const cellData = col.field ? getField(it, col.field) : col.body ? col.body(it) : null
+                const cellData = col.field ? getField(it, col.field) : col.body ? col.body(it, index) : null
                 const paddingClass = index === 0 ? 'pl-6' : index === columns.length - 1 ? 'pr-6' : null
                 const cursorClass = click && !col.preventClickThrough ? 'cursor-pointer' : null
 

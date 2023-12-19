@@ -12,52 +12,79 @@ export const test = base.extend({})
 
 export const hookTestPageEvents = (page: Page, testInfo: TestInfo) => {
   page.on('console', it => {
-    const type = it.type()
+    try {
+      const type = it.type()
 
-    if (!LOG_LEVELS.includes(type)) {
-      return
+      if (!LOG_LEVELS.includes(type)) {
+        return
+      }
+
+      const text = it.text()
+      if (text.includes('Insecure WebSocket connection in production environment!')) {
+        return
+      }
+
+      console.info(`[${testInfo.title}] ${type.toUpperCase()} ${it.text()}`)
+    } catch (err) {
+      console.error(`[${testInfo.title}] Error while writing the console:`, err)
     }
-
-    const text = it.text()
-    if (text.includes('Insecure WebSocket connection in production environment!')) {
-      return
-    }
-
-    console.info(`[${testInfo.title}] ${type.toUpperCase()} ${it.text()}`)
   })
 
   page.on('request', it => {
-    if (!it.url().includes('/api/')) {
-      return
-    }
+    try {
+      if (!it.url().includes('/api/')) {
+        return
+      }
 
-    console.info(`[${testInfo.title}] Request started ${it.method()} ${it.url()}`)
+      console.info(`[${testInfo.title}] Request started ${it.method()} ${it.url()}`)
+    } catch (err) {
+      console.error(`[${testInfo.title}] Error while the request started:`, err)
+    }
   })
 
   page.on('close', it => {
-    console.info(`[${testInfo.title}] Page close ${it.url()}`)
+    try {
+      console.info(`[${testInfo.title}] Page close ${it.url()}`)
+    } catch (err) {
+      console.error(`[${testInfo.title}] Error while page close:`, err)
+    }
   })
+
   page.on('requestfailed', it => {
-    if (!it.url().includes('/api/')) {
-      return
-    }
+    try {
+      if (!it.url().includes('/api/')) {
+        return
+      }
 
-    console.info(`[${testInfo.title}] Request failed ${it.method()} ${it.url()}`)
+      console.info(`[${testInfo.title}] Request failed ${it.method()} ${it.url()}`)
+    } catch (err) {
+      console.error(`[${testInfo.title}] Error while request failed:`, err)
+    }
   })
+
   page.on('requestfinished', async it => {
-    if (!it.url().includes('/api/')) {
-      return
-    }
+    try {
+      if (!it.url().includes('/api/')) {
+        return
+      }
 
-    const res = await it.response()
-    console.info(`[${testInfo.title}] Request finished ${res.status()} ${it.method()} ${it.url()}`)
+      const res = await it.response()
+      console.info(`[${testInfo.title}] Request finished ${res.status()} ${it.method()} ${it.url()}`)
+    } catch (err) {
+      console.error(`[${testInfo.title}] Error while request finished:`, err)
+    }
   })
-  page.on('response', it => {
-    if (!it.url().includes('/api/')) {
-      return
-    }
 
-    console.info(`[${testInfo.title}] Response to ${it.url()}`)
+  page.on('response', it => {
+    try {
+      if (!it.url().includes('/api/')) {
+        return
+      }
+
+      console.info(`[${testInfo.title}] Response to ${it.url()}`)
+    } catch (err) {
+      console.error(`[${testInfo.title}] Error while getting response:`, err)
+    }
   })
 }
 

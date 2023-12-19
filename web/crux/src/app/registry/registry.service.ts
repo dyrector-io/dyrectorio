@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { Observable, Subject } from 'rxjs'
+import { RegistryConnectionInfo } from 'src/domain/registry'
+import EncryptionService from 'src/services/encryption.service'
 import PrismaService from 'src/services/prisma.service'
 import RegistryMetrics from 'src/shared/metrics/registry.metrics'
 import TeamRepository from '../team/team.repository'
@@ -12,9 +14,10 @@ export default class RegistryService {
   private readonly registryChangedEvent = new Subject<string>()
 
   constructor(
-    private teamRepository: TeamRepository,
-    private prisma: PrismaService,
-    private mapper: RegistryMapper,
+    private readonly teamRepository: TeamRepository,
+    private readonly encryptionService: EncryptionService,
+    private readonly prisma: PrismaService,
+    private readonly mapper: RegistryMapper,
   ) {}
 
   async checkRegistryIsInTeam(teamId: string, registryId: string): Promise<boolean> {
@@ -114,5 +117,22 @@ export default class RegistryService {
 
   watchRegistryEvents(): Observable<string> {
     return this.registryChangedEvent.asObservable()
+  }
+
+  async getRegistryConnectionInfoById(id: string): Promise<RegistryConnectionInfo> {
+    const registry = await this.prisma.registry.findUnique({
+      where: {
+        id,
+      },
+    })
+
+    // eslint-disable-next-line no-underscore-dangle, @typescript-eslint/naming-convention
+    const _public = !registry.user
+
+    return {
+      ...registry,
+      public: _public,
+      token: _public ? null : this.encryptionService.decrypt(registry.token),
+    }
   }
 }
