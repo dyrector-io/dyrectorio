@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import { execSync } from 'child_process'
 import { exit } from 'process'
 import { PrismaTransactionClient } from './domain/utils'
 import PrismaService from './services/prisma.service'
@@ -7,8 +6,6 @@ import { decryptChaCha20, encryptChaCha20, generateChacha20Key } from './shared/
 
 const AVAILABLE_COMMANDS = ['generate', 'migrate', 'rotate'] as const
 export type EncryptionCommand = (typeof AVAILABLE_COMMANDS)[number]
-
-const MIGRATION_BEFORE_ENCRYPTION = '20231103155210_working_directory'
 
 type MigratedRegistryToken = {
   id: string
@@ -32,28 +29,20 @@ type EncryptedStorageCredential = {
   secretKey?: Buffer
 }
 
-const saveExistingSecrets = async (prisma: PrismaService) => {
-  await prisma.$executeRaw`SELECT "id", "token" INTO "_prisma_migrations_Registry" FROM "Registry" WHERE "token" IS NOT NULL`
-  console.info('Registry tokens have been saved into a temp table')
-
-  await prisma.$executeRaw`SELECT "id", "accessKey", "secretKey" INTO "_prisma_migrations_Storage" FROM "Storage" WHERE "accessKey" IS NOT NULL OR "secretKey" IS NOT NULL`
-  console.info('Storage credentials have been saved into a temp table')
-}
-
-const executeUpdates = async (
-  prisma: PrismaTransactionClient,
-  registries: EncryptedRegistryToken[],
-  storages: EncryptedStorageCredential[],
-) => {
+const updateRegistries = async (prisma: PrismaTransactionClient, registries: EncryptedRegistryToken[]) => {
   console.info('Updating registries')
+
   await Promise.all(
     registries.map(
       async it =>
         await prisma.$executeRawUnsafe('UPDATE "Registry" SET "token" = $1 WHERE "id" = $2::uuid', it.token, it.id),
     ),
   )
+}
 
+const updateStorages = async (prisma: PrismaTransactionClient, storages: EncryptedStorageCredential[]) => {
   console.info('Updating storages')
+
   await Promise.all(
     storages.map(
       async it =>
@@ -78,53 +67,58 @@ const getSecretKeyEnv = (): string => {
   return secretKey
 }
 
-const executePrismaMigrations = () => execSync('npx prisma migrate deploy')
+const PRISMA_MIGRATIONS_REGISTRY = '_prisma_migrations_Registry'
+const PRISMA_MIGRATIONS_STORAGE = '_prisma_migrations_Storage'
+export const encryptMigratedSecrets = async (prismaService: PrismaService) => {
+  const encryptionKey = getSecretKeyEnv()
 
-// commands
-const migrate = async () => {
-  const prismaService = new PrismaService()
-  const lastMigration = await prismaService.findLastMigration()
+  // registries
+  if (await prismaService.tableExists(PRISMA_MIGRATIONS_REGISTRY)) {
+    console.info('Migrating registries')
 
-  let encryptionKey: string | null = null
+    await prismaService.$transaction(async prisma => {
+      const registries: MigratedRegistryToken[] = await prisma.$queryRawUnsafe(
+        `SELECT "id", "token" FROM "${PRISMA_MIGRATIONS_REGISTRY}"`,
+      )
 
-  if (lastMigration !== MIGRATION_BEFORE_ENCRYPTION) {
-    executePrismaMigrations()
-    return
+      const encryptedRegistries: EncryptedRegistryToken[] = registries.map(it => ({
+        ...it,
+        token: encryptChaCha20(encryptionKey, it.token),
+      }))
+
+      await updateRegistries(prisma, encryptedRegistries)
+
+      console.info('Dropping temp table')
+      await prisma.$executeRawUnsafe(`DROP TABLE "${PRISMA_MIGRATIONS_REGISTRY}"`)
+    })
   }
 
-  encryptionKey = getSecretKeyEnv()
+  // storages
+  if (await prismaService.tableExists(PRISMA_MIGRATIONS_STORAGE)) {
+    console.info('Migrating storages')
 
-  console.info('Migrating secrets.')
+    await prismaService.$transaction(async prisma => {
+      const storages: MigratedStorageCredential[] = await prisma.$queryRawUnsafe(
+        `SELECT "id", "accessKey", "secretKey" FROM "${PRISMA_MIGRATIONS_STORAGE}"`,
+      )
 
-  await saveExistingSecrets(prismaService)
+      const encryptedStorages: EncryptedStorageCredential[] = storages.map(it => ({
+        ...it,
+        accessKey: it.accessKey ? encryptChaCha20(encryptionKey, it.accessKey) : null,
+        secretKey: it.accessKey ? encryptChaCha20(encryptionKey, it.secretKey) : null,
+      }))
 
-  const registries: MigratedRegistryToken[] =
-    await prismaService.$queryRaw`SELECT "id", "token" FROM "_prisma_migrations_Registry"`
-  const storages: MigratedStorageCredential[] =
-    await prismaService.$queryRaw`SELECT "id", "accessKey", "secretKey" FROM "_prisma_migrations_Storage"`
+      await updateStorages(prisma, encryptedStorages)
 
-  const encryptedRegistries: EncryptedRegistryToken[] = registries.map(it => ({
-    ...it,
-    token: encryptChaCha20(encryptionKey, it.token),
-  }))
-
-  const encryptedStorages: EncryptedStorageCredential[] = storages.map(it => ({
-    ...it,
-    accessKey: it.accessKey ? encryptChaCha20(encryptionKey, it.accessKey) : null,
-    secretKey: it.accessKey ? encryptChaCha20(encryptionKey, it.secretKey) : null,
-  }))
-
-  executePrismaMigrations()
-
-  await prismaService.$transaction(async prisma => {
-    await executeUpdates(prisma, encryptedRegistries, encryptedStorages)
-
-    console.info('Dropping temp tables')
-    await prisma.$executeRaw`DROP TABLE "_prisma_migrations_Registry"`
-    await prisma.$executeRaw`DROP TABLE "_prisma_migrations_Storage"`
-  })
+      console.info('Dropping temp table')
+      await prisma.$executeRawUnsafe(`DROP TABLE "${PRISMA_MIGRATIONS_STORAGE}"`)
+    })
+  }
 }
 
+// commands
+const KEY_ROATATIONS_REGISTRY = '_crux_key_rotations_Registry'
+const KEY_ROATATIONS_STORAGE = '_crux_key_rotations_Storage'
 const rotateKeys = async () => {
   const newKey = getSecretKeyEnv()
 
@@ -139,22 +133,30 @@ const rotateKeys = async () => {
 
   const prismaService = new PrismaService()
   await prismaService.$transaction(async prisma => {
-    await prisma.$executeRaw`SELECT "id", "token" INTO "_crux_key_rotations_Registry" FROM "Registry" WHERE "token" IS NOT NULL`
+    await prisma.$executeRawUnsafe(
+      `SELECT "id", "token" INTO "${KEY_ROATATIONS_REGISTRY}" FROM "Registry" WHERE "token" IS NOT NULL`,
+    )
     console.info('Registry tokens have been saved into a temp table')
 
-    await prisma.$executeRaw`SELECT "id", "accessKey", "secretKey" INTO "_crux_key_rotations_Storage" FROM "Storage" WHERE "accessKey" IS NOT NULL OR "secretKey" IS NOT NULL`
+    await prisma.$executeRawUnsafe(
+      `SELECT "id", "accessKey", "secretKey" INTO "${KEY_ROATATIONS_STORAGE}" FROM "Storage" WHERE "accessKey" IS NOT NULL OR "secretKey" IS NOT NULL`,
+    )
     console.info('Storage credentials have been saved into a temp table')
 
-    const registries: EncryptedRegistryToken[] =
-      await prisma.$queryRaw`SELECT "id", "token" FROM "_crux_key_rotations_Registry"`
-    const storages: EncryptedStorageCredential[] =
-      await prisma.$queryRaw`SELECT "id", "accessKey", "secretKey" FROM "_crux_key_rotations_Storage"`
+    const registries: EncryptedRegistryToken[] = await prisma.$queryRawUnsafe(
+      `SELECT "id", "token" FROM "${KEY_ROATATIONS_REGISTRY}"`,
+    )
+    const storages: EncryptedStorageCredential[] = await prisma.$queryRawUnsafe(
+      `SELECT "id", "accessKey", "secretKey" FROM "${KEY_ROATATIONS_STORAGE}"`,
+    )
 
     console.info(`Rotating keys on ${registries.length} registries`)
     registries.forEach(it => {
       const decrypted = decryptChaCha20(oldKey, it.token)
       it.token = encryptChaCha20(newKey, decrypted)
     })
+
+    await updateRegistries(prisma, registries)
 
     console.info(`Rotating keys on ${storages.length} storages`)
     storages.forEach(it => {
@@ -165,13 +167,13 @@ const rotateKeys = async () => {
       it.secretKey = encryptChaCha20(newKey, decryptedSecKey)
     })
 
-    await executeUpdates(prisma, registries, storages)
+    await updateStorages(prisma, storages)
 
     console.info('Success. You can now remove the ENCRYPTION_DEPRECATED_KEY env variable.')
 
     console.info('Dropping temp tables')
-    await prisma.$executeRaw`DROP TABLE "_crux_key_rotations_Registry"`
-    await prisma.$executeRaw`DROP TABLE "_crux_key_rotations_Storage"`
+    await prisma.$executeRawUnsafe(`DROP TABLE "${KEY_ROATATIONS_REGISTRY}"`)
+    await prisma.$executeRawUnsafe(`DROP TABLE "${KEY_ROATATIONS_STORAGE}"`)
   })
 }
 
@@ -208,16 +210,12 @@ const encrypt = (args: string[]) => {
     case 'generate':
       generateKey()
       break
-    case 'migrate':
-      executeAsyncCommand(migrate())
-      break
     case 'rotate':
       executeAsyncCommand(rotateKeys())
       break
     default: {
       console.info('Encryption Commands:')
       console.info('generate - Generate encryption key')
-      console.info('migrate - Migrate existing data')
       console.info('rotate - Rotate keys')
     }
   }

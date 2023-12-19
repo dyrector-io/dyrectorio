@@ -22,7 +22,6 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "encrypt:generate": "node dist/main encrypt generate",
-    "encrypt:migrate": "node dist/main encrypt migrate",
     "encrypt:rotate": "node dist/main encrypt rotate",
     "grpc:debug": "GRPC_VERBOSITY=DEBUG GRPC_TRACE=all npm start",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" && prettier --check \"src/**/*.ts\"",

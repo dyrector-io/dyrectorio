@@ -1,9 +1,9 @@
 import { decryptChaCha20, encryptChaCha20, generateChacha20Key } from './chacha'
 
 describe('chachaEncryption', () => {
-  const validKey = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+  const validKey = 'pdFwmrUV8SV6Diw0UKJvRcdUg8D9sZv7ZKC4UNReq8s'
   const testData = 'test'
-  const encryptedData = Buffer.from('78387294182d7586ab7bdafd0a92946dc7ac5d4918fac34989e3198c32d228aa', 'hex')
+  const encryptedData = Buffer.from('89a77ceee666dfb2f142ad5d7f94df5c3a96c932fc3320b3f404ce543ca71f3e', 'hex')
 
   describe('generateChacha20Key', () => {
     it('should generate key', () => {

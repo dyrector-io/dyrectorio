@@ -1,10 +1,13 @@
 import { INestApplication } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
+import { encryptMigratedSecrets } from 'src/encrypt'
 import RegistryMetrics from 'src/shared/metrics/registry.metrics'
 import PrismaService from './prisma.service'
 
 const prismaBootstrap = async (app: INestApplication) => {
   const prisma = await app.get(PrismaService)
+
+  await encryptMigratedSecrets(prisma)
 
   // Crux is starting so inProgress deployments should not exist
   // Find inProgress deployments and mark them as failed

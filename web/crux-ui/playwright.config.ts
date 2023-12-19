@@ -25,7 +25,7 @@ const createProject = (name: string, testMatch: string | RegExp | (string | RegE
 
 // Reference: https://playwright.dev/docs/test-configuration
 const config: PlaywrightTestConfig = {
-  timeout: 2 * 60 * 1000, // 2 min
+  timeout: 2 * 60 * 1000, // 2 mins
   expect: { timeout: 10 * 1000 }, // We double the default(5s), since some test runners are not THAT fast :)
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: path.join(__dirname, 'e2e_results/'),
@@ -36,9 +36,8 @@ const config: PlaywrightTestConfig = {
     timeout: 60 * 1000, // 1 min
     reuseExistingServer: true,
   },
-  workers: CI ? 4 : 32,
-  // Terminate tests if any one of them fails
-  maxFailures: 1,
+  workers: CI ? 4 : 32, // 4 threads during the pipeline run, 32 by default
+  maxFailures: 1, // Terminate tests if any one of them fails
   retries: 0,
   reporter: CI ? 'github' : 'list',
   use: {
@@ -62,8 +61,8 @@ const config: PlaywrightTestConfig = {
 
     // Advanced low level timeouts for faster test failure
     // https://playwright.dev/docs/test-timeouts#advanced-low-level-timeouts
-    actionTimeout: 30 * 1000,
-    navigationTimeout: 30 * 1000,
+    actionTimeout: 30 * 1000, // 30 seconds
+    navigationTimeout: 30 * 1000, // 30 seconds
   },
   projects: [
     {
