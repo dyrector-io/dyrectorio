@@ -28,11 +28,11 @@ export const parseDyrectorioEnvRules = (labels: Record<string, string>): Record<
   }
 
   return Object.entries(labels).reduce((prev, [key, value]) => {
-    if (!key.startsWith('org.dyectorio.env')) {
+    if (!key.startsWith('org.dyrectorio.env')) {
       return prev
     }
 
-    const env = key.substring('org.dyectorio.env.'.length)
+    const env = key.substring('org.dyrectorio.env.'.length)
     const params = value.split(',')
 
     const rule: EnvironmentRule = {} as any
