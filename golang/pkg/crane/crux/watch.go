@@ -308,9 +308,9 @@ func watchPods(
 			}
 
 			// Event type is empty when something goes wrong, in this case the watcher will be restarted
-				if event.Type != "" {
-					pushEvent(ctx, event, watchContext, deploymentHandler, svcHandler, cfg)
-				}
+			if event.Type != "" {
+				pushEvent(ctx, event, watchContext, deploymentHandler, svcHandler, cfg)
+			}
 			break
 		}
 	}

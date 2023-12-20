@@ -54,8 +54,8 @@ type DockerVersion struct {
 
 const (
 	ContainerHealthyStatus    = "healthy"
-	ContainerHealthyTimeout   = 120
-	ContainerLivelinessRounds = 10
+	ContainerStateWaitSeconds = 120
+	TypeContainer             = "container"
 )
 
 var ErrUnknownContainer = errors.New("unknown container")
@@ -224,170 +224,107 @@ func getImageNameFromRequest(deployImageRequest *v1.DeployImageRequest) (string,
 	return imageHelper.ExpandImageName(imageName)
 }
 
-func waitContainerHealth(
-	ctx context.Context,
-	cli *client.Client,
-	containerID string,
-) (healthChannel chan *types.Health, errorChannel chan error) {
-	channelHealth := make(chan *types.Health)
-	channelError := make(chan error)
+func expectedStateToProto(state *v1.ExpectedState) common.ContainerState {
+	if state == nil {
+		return common.ContainerState_RUNNING
+	}
 
-	ticker := time.NewTicker(time.Second)
-
-	timeoutCtx, cancelFunc := context.WithTimeout(ctx, time.Second*ContainerHealthyTimeout)
-
-	go func() {
-		defer cancelFunc()
-
-		for {
-			select {
-			case <-timeoutCtx.Done():
-				channelError <- fmt.Errorf("timeout")
-				return
-			case <-ticker.C:
-				inspect, err := cli.ContainerInspect(timeoutCtx, containerID)
-				if err != nil {
-					channelError <- err
-					return
-				}
-
-				if inspect.State.Health == nil {
-					channelError <- fmt.Errorf("container has no health")
-					return
-				}
-
-				channelHealth <- inspect.State.Health
-			}
-		}
-	}()
-
-	return channelHealth, channelError
+	switch state.State {
+	case v1.Running:
+		return common.ContainerState_RUNNING
+	case v1.Waiting:
+		return common.ContainerState_WAITING
+	case v1.Exited:
+		return common.ContainerState_EXITED
+	case v1.Removed:
+		return common.ContainerState_REMOVED
+	default:
+		return common.ContainerState_RUNNING
+	}
 }
 
-func waitContainerReady(ctx context.Context,
-	cli *client.Client,
-	containerID string,
-) error {
-	healthContext, cancel := context.WithCancel(ctx)
-	healthChannel, errorChannel := waitContainerHealth(healthContext, cli, containerID)
-	healthEvent := make(chan error)
-	go func() {
-		defer cancel()
+func checkContainerState(ctx context.Context, cli *client.Client, expected *v1.ExpectedState, containerID string) (bool, error) {
+	matchedContainer, err := dockerHelper.GetContainerByID(ctx, containerID)
+	if err != nil {
+		return false, err
+	}
 
-		for {
-			select {
-			case err := <-errorChannel:
-				healthEvent <- err
-				return
-			case health := <-healthChannel:
-				if health.Status == ContainerHealthyStatus {
-					healthEvent <- nil
-					return
-				}
-			}
+	currentState := mapper.MapDockerStateToCruxContainerState(matchedContainer.State)
+	expectedState := expectedStateToProto(expected)
+
+	if expectedState == common.ContainerState_EXITED {
+		if currentState != common.ContainerState_EXITED {
+			return false, nil
 		}
-	}()
-	return <-healthEvent
-}
 
-func waitContainerLively(ctx context.Context,
-	cli *client.Client,
-	containerID string,
-) error {
-	healthContext, cancel := context.WithCancel(ctx)
-	healthChannel, errorChannel := waitContainerHealth(healthContext, cli, containerID)
-	healthEvent := make(chan error)
-	go func() {
-		defer cancel()
-
-		rounds := 0
-
-		for {
-			select {
-			case err := <-errorChannel:
-				healthEvent <- err
-				return
-			case health := <-healthChannel:
-				if health.Status == ContainerHealthyStatus {
-					rounds++
-				} else {
-					rounds = 0
-				}
-
-				if rounds >= ContainerLivelinessRounds {
-					healthEvent <- nil
-					return
-				}
-			}
+		inspect, err := cli.ContainerInspect(ctx, containerID)
+		if err != nil {
+			return false, err
 		}
-	}()
-	return <-healthEvent
+
+		expectedCode := 0
+		if expected.ExitCode != nil {
+			expectedCode = int(*expected.ExitCode)
+		}
+
+		if inspect.State.ExitCode != expectedCode {
+			return false, fmt.Errorf("unexpected exit code, actual: %d, expected: %d", inspect.State.ExitCode, expectedCode)
+		}
+
+		return true, nil
+	}
+
+	return currentState == expectedState, nil
 }
 
 func waitForContainer(
 	ctx context.Context,
 	cli *client.Client,
-	dog *dogger.DeploymentLogger,
 	containerID string,
-	state *v1.ExpectedContainerState,
+	expected *v1.ExpectedState,
 ) error {
-	inspect, err := cli.ContainerInspect(ctx, containerID)
-	if err != nil {
+	finished, err := checkContainerState(ctx, cli, expected, containerID)
+	if err != nil || finished {
 		return err
 	}
 
-	containerState := inspect.State
+	errorChannel := make(chan error)
 
-	if state == nil || *state == v1.ExpectedRunning {
-		if containerState.Running {
-			return nil
-		}
+	go func() {
+		timeoutCtx, cancel := context.WithTimeout(ctx, time.Second*ContainerStateWaitSeconds)
+		defer cancel()
 
-		return fmt.Errorf("expected state running, actual: %s", containerState.Status)
-	}
+		chanMessages, chanErrors := cli.Events(timeoutCtx, types.EventsOptions{
+			Filters: filters.NewArgs(
+				filters.KeyValuePair{
+					Key:   TypeContainer,
+					Value: containerID,
+				}),
+		})
 
-	if *state == v1.ExpectedExited {
-		if containerState.Status == "exited" {
-			if containerState.ExitCode == 0 {
-				return nil
+		for {
+			select {
+			case <-timeoutCtx.Done():
+				errorChannel <- fmt.Errorf("timeout while waiting for expected container state")
+				return
+			case eventError := <-chanErrors:
+				errorChannel <- eventError
+				return
+			case eventMessage := <-chanMessages:
+				if eventMessage.Type != TypeContainer {
+					continue
+				}
+
+				finished, err := checkContainerState(timeoutCtx, cli, expected, containerID)
+				if err != nil || finished {
+					errorChannel <- err
+					return
+				}
 			}
-
-			return fmt.Errorf("container exited with non zero code: %d", containerState.ExitCode)
 		}
+	}()
 
-		dog.WriteInfo("Waiting for container to exit gracefully")
-
-		waitChannel, errorChannel := cli.ContainerWait(ctx, containerID, dockerContainer.WaitConditionNextExit)
-		select {
-		case result := <-waitChannel:
-			if result.StatusCode != 0 {
-				return fmt.Errorf("container exited with non zero code: %d", containerState.ExitCode)
-			}
-			return nil
-		case err = <-errorChannel:
-			return fmt.Errorf("error container waiting: %w", err)
-		}
-	}
-
-	if *state == v1.ExpectedReady {
-		if containerState.Health == nil {
-			return fmt.Errorf("error waiting for container readyness: healthcheck not supported")
-		}
-
-		dog.WriteInfo("Waiting for container to become healthy")
-
-		return waitContainerReady(ctx, cli, containerID)
-	}
-
-	if *state == v1.ExpectedLive {
-		if containerState.Health == nil {
-			return fmt.Errorf("error waiting for container liveliness: healthcheck not supported")
-		}
-
-		return errors.New("dagent does not support container liveliness")
-	}
-
-	return nil
+	return <-errorChannel
 }
 
 //nolint:funlen,gocyclo // TODO(@nandor-magyar): refactor this function into smaller parts
@@ -521,7 +458,7 @@ func DeployImage(ctx context.Context,
 	dog.WriteContainerState(mapper.MapDockerStateToCruxContainerState(matchedContainer.State),
 		matchedContainer.State, dogger.Info, "Started container: "+containerName)
 
-	err = waitForContainer(ctx, cli, dog, matchedContainer.ID, deployImageRequest.ContainerConfig.ExpectedState)
+	err = waitForContainer(ctx, cli, matchedContainer.ID, deployImageRequest.ContainerConfig.ExpectedState)
 	if err != nil {
 		return fmt.Errorf("expected container state failed: %w", err)
 	}

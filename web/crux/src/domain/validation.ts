@@ -10,6 +10,7 @@ import {
   CONTAINER_LOG_DRIVER_VALUES,
   CONTAINER_NETWORK_MODE_VALUES,
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
+  CONTAINER_STATE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   ContainerDeploymentStrategyType,
   ContainerExposeStrategy,
@@ -382,6 +383,8 @@ export const containerConfigSchema = yup.object().shape({
   networkMode: networkModeRule,
   networks: uniqueKeysOnlySchema.default([]).nullable(),
   dockerLabels: uniqueKeyValuesSchema.default([]).nullable(),
+  expectedState: yup.string().default(null).nullable().oneOf(CONTAINER_STATE_VALUES),
+  expectedExitCode: yup.number().default(0).nullable().min(-127).max(128),
 
   // crane
   deploymentStrategy: deploymentStrategyRule,
@@ -421,6 +424,8 @@ export const instanceContainerConfigSchema = yup.object().shape({
   networkMode: instanceNetworkModeRule,
   networks: uniqueKeysOnlySchema.default([]).nullable(),
   dockerLabels: uniqueKeyValuesSchema.default([]).nullable(),
+  expectedState: yup.string().default(null).nullable().oneOf(CONTAINER_STATE_VALUES),
+  expectedExitCode: yup.number().default(0).nullable().min(-127).max(128),
 
   // crane
   deploymentStrategy: instanceDeploymentStrategyRule,

@@ -61,6 +61,7 @@
     "key": "Key",
     "value": "Value",
     "expectedState": "Expected state",
+    "expectedExitCode": "Exit code",
     "expectedStates": {
       "running": "Running",
       "exited": "Exited",
@@ -70,7 +71,8 @@
     "placeholders": {
       "port": "Port",
       "path": "Path",
-      "containerDefault": "Container default"
+      "containerDefault": "Container default",
+      "expectedExitCode": "Expected exit code"
     }
   },
 

@@ -1,14 +1,6 @@
 import { v4 as uuid } from 'uuid'
 
-export const CONTAINER_STATE_VALUES = [
-  'created',
-  'restarting',
-  'running',
-  'removing',
-  'paused',
-  'exited',
-  'dead',
-] as const
+export const CONTAINER_STATE_VALUES = ['running', 'waiting', 'exited', 'removed'] as const
 export type ContainerState = (typeof CONTAINER_STATE_VALUES)[number]
 
 export type ContainerPort = {
@@ -98,9 +90,6 @@ export type ContainerConfigExposeStrategy = (typeof CONTAINER_EXPOSE_STRATEGY_VA
 
 export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rwo', 'rwx', 'mem', 'tmp'] as const
 export type VolumeType = (typeof CONTAINER_VOLUME_TYPE_VALUES)[number]
-
-export const CONTAINER_EXPECTED_STATE_VALUES = ['running', 'exited', 'ready', 'live'] as const
-export type ContainerExpectedState = (typeof CONTAINER_EXPECTED_STATE_VALUES)[number]
 
 export type ContainerConfigRouting = {
   domain?: string
@@ -219,7 +208,6 @@ export type ContainerConfigData = {
   initContainers?: InitContainer[]
   capabilities: UniqueKeyValue[]
   storage?: ContainerStorage
-  expectedState?: ContainerExpectedState
 
   // dagent
   logConfig?: ContainerConfigLog
@@ -227,6 +215,8 @@ export type ContainerConfigData = {
   networkMode: ContainerNetworkMode
   networks?: UniqueKey[]
   dockerLabels?: UniqueKeyValue[]
+  expectedState?: ContainerState
+  expectedExitCode?: number
 
   // crane
   deploymentStrategy: ContainerDeploymentStrategyType
@@ -312,7 +302,8 @@ export type JsonContainerConfig = {
   initContainers?: JsonInitContainer[]
   capabilities?: JsonKeyValue
   storage?: ContainerStorage
-  expectedState?: ContainerExpectedState
+  expectedState?: ContainerState
+  expectedExitCode?: number
 
   // dagent
   logConfig?: JsonContainerConfigLog
@@ -404,7 +395,6 @@ export const mergeConfigs = (
     initContainers: instance.initContainers ?? image.initContainers,
     capabilities: null,
     storage: instance.storage ?? image.storage,
-    expectedState: instance.expectedState ?? image.expectedState,
 
     // crane
     customHeaders: instance.customHeaders ?? image.customHeaders,
@@ -424,6 +414,8 @@ export const mergeConfigs = (
     restartPolicy: instance.restartPolicy ?? image.restartPolicy ?? 'unlessStopped',
     networks: instance.networks ?? image.networks,
     dockerLabels: instance.dockerLabels ?? image.dockerLabels,
+    expectedState: instance.expectedState ?? image.expectedState,
+    expectedExitCode: instance.expectedExitCode ?? image.expectedExitCode,
   }
 }
 
@@ -795,8 +787,8 @@ export const containerPortsToString = (ports: ContainerPort[], truncateAfter: nu
 export const containerPrefixNameOf = (id: ContainerIdentifier): string =>
   !id.prefix ? id.name : `${id.prefix}-${id.name}`
 
-export const containerIsStartable = (state: ContainerState) => state !== 'running' && state !== 'removing'
-export const containerIsStopable = (state: ContainerState) => state === 'running' || state === 'paused'
+export const containerIsStartable = (state: ContainerState) => state === 'exited'
+export const containerIsStopable = (state: ContainerState) => state === 'running'
 export const containerIsRestartable = (state: ContainerState) => state === 'running'
 
 export const serviceCategoryIsHidden = (it: string | null) => it && it.startsWith('_')

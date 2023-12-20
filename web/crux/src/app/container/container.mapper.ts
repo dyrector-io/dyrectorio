@@ -89,13 +89,14 @@ export default class ContainerMapper {
       storageSet: config.storageSet,
       storageId: config.storageId,
       storageConfig: toPrismaJson(config.storageConfig),
-      expectedState: config.expectedState,
 
       // dagent
       restartPolicy: config.restartPolicy,
       networkMode: config.networkMode,
       networks: toPrismaJson(config.networks),
       dockerLabels: toPrismaJson(config.dockerLabels),
+      expectedState: config.expectedState,
+      expectedExitCode: config.expectedExitCode,
 
       // crane
       deploymentStrategy: config.deploymentStrategy,
@@ -160,7 +161,6 @@ export default class ContainerMapper {
       storageSet: instance.storageSet || image.storageSet,
       storageId: instance.storageSet ? instance.storageId : image.storageId,
       storageConfig: instance.storageSet ? instance.storageConfig : image.storageConfig,
-      expectedState: instance.expectedState ?? image.expectedState,
 
       // crane
       customHeaders: instance.customHeaders ?? image.customHeaders,
@@ -194,6 +194,8 @@ export default class ContainerMapper {
       restartPolicy: instance.restartPolicy ?? image.restartPolicy,
       networks: instance.networks ?? image.networks,
       dockerLabels: instance.dockerLabels ?? image.dockerLabels,
+      expectedState: instance.expectedState ?? image.expectedState,
+      expectedExitCode: instance.expectedExitCode ?? image.expectedExitCode,
     }
   }
 }

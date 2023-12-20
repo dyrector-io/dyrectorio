@@ -12,8 +12,8 @@ import DyoToggle from '@app/elements/dyo-toggle'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   COMMON_CONFIG_PROPERTIES,
-  CONTAINER_EXPECTED_STATE_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
+  CONTAINER_STATE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   CommonConfigDetails,
   CommonConfigProperty,
@@ -21,7 +21,7 @@ import {
   ContainerConfigExposeStrategy,
   ContainerConfigPort,
   ContainerConfigVolume,
-  ContainerExpectedState,
+  ContainerState,
   CraneConfigDetails,
   ImageConfigProperty,
   InitContainerVolumeLink,
@@ -979,16 +979,37 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               {t('common.expectedState').toUpperCase()}
             </ConfigSectionLabel>
 
-            <DyoChips
-              className="ml-2"
-              name="expectedState"
-              choices={CONTAINER_EXPECTED_STATE_VALUES}
-              selection={config.expectedState ?? "running"}
-              converter={(it: ContainerExpectedState) => (it ? t(`common.expectedStates.${it}`) : t('common:none'))}
-              onSelectionChange={it => onChange({ expectedState: it })}
-              disabled={disabled}
-              qaLabel={chipsQALabelFromValue}
-            />
+            <div className="ml-2">
+              <DyoChips
+                className="ml-2 mb-2"
+                name="expectedState"
+                choices={CONTAINER_STATE_VALUES}
+                selection={config.expectedState ?? 'running'}
+                converter={(it: ContainerState) => t(`common:containerStatuses.${it}`)}
+                onSelectionChange={it => onChange({ expectedState: it })}
+                disabled={disabled}
+                qaLabel={chipsQALabelFromValue}
+              />
+
+              {config.expectedState === 'exited' && (
+                <MultiInput
+                  id="expectedExitCode"
+                  containerClassName="ml-2 max-w-lg"
+                  label={t('common.expectedExitCode')}
+                  labelClassName="text-bright tracking-wide mb-2 my-auto mr-4"
+                  inline
+                  value={config.expectedExitCode ?? 0}
+                  placeholder={t('common.placeholders.expectedExitCode')}
+                  onPatch={it => {
+                    const val = toNumber(it)
+                    onChange({ expectedExitCode: val })
+                  }}
+                  editorOptions={editorOptions}
+                  message={findErrorFor(fieldErrors, 'expectedExitCode')}
+                  disabled={disabled}
+                />
+              )}
+            </div>
           </div>
         )}
       </div>

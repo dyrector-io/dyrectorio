@@ -8,13 +8,13 @@ import {
   ContainerIdentifier,
   ContainerInspectMessage,
   ContainerLogMessage,
+  ContainerState,
   ContainerStateListMessage,
   DeleteContainersRequest,
   DeploymentStatusMessage,
   DeploymentStrategy,
   DriverType,
   Empty,
-  ExpectedContainerState,
   ExposeStrategy,
   HealthCheckConfig,
   ListSecretsResponse,
@@ -23,12 +23,12 @@ import {
   RestartPolicy,
   Routing,
   VolumeType,
+  containerStateFromJSON,
+  containerStateToJSON,
   deploymentStrategyFromJSON,
   deploymentStrategyToJSON,
   driverTypeFromJSON,
   driverTypeToJSON,
-  expectedContainerStateFromJSON,
-  expectedContainerStateToJSON,
   exposeStrategyFromJSON,
   exposeStrategyToJSON,
   networkModeFromJSON,
@@ -254,10 +254,21 @@ export interface Marker_IngressEntry {
   value: string
 }
 
+export interface Metrics {
+  port: string
+  path: string
+}
+
+export interface ExpectedState {
+  state: ContainerState
+  exitCode?: number | undefined
+}
+
 export interface DagentContainerConfig {
   logConfig?: LogConfig | undefined
   restartPolicy?: RestartPolicy | undefined
   networkMode?: NetworkMode | undefined
+  expectedState?: ExpectedState | undefined
   networks: string[]
   labels: { [key: string]: string }
 }
@@ -265,11 +276,6 @@ export interface DagentContainerConfig {
 export interface DagentContainerConfig_LabelsEntry {
   key: string
   value: string
-}
-
-export interface Metrics {
-  port: string
-  path: string
 }
 
 export interface CraneContainerConfig {
@@ -299,7 +305,6 @@ export interface CommonContainerConfig {
   user?: number | undefined
   TTY?: boolean | undefined
   workingDirectory?: string | undefined
-  expectedState?: ExpectedContainerState | undefined
   ports: Port[]
   portRanges: PortRangeBinding[]
   volumes: Volume[]
@@ -985,6 +990,43 @@ export const Marker_IngressEntry = {
   },
 }
 
+function createBaseMetrics(): Metrics {
+  return { port: '', path: '' }
+}
+
+export const Metrics = {
+  fromJSON(object: any): Metrics {
+    return { port: isSet(object.port) ? String(object.port) : '', path: isSet(object.path) ? String(object.path) : '' }
+  },
+
+  toJSON(message: Metrics): unknown {
+    const obj: any = {}
+    message.port !== undefined && (obj.port = message.port)
+    message.path !== undefined && (obj.path = message.path)
+    return obj
+  },
+}
+
+function createBaseExpectedState(): ExpectedState {
+  return { state: 0 }
+}
+
+export const ExpectedState = {
+  fromJSON(object: any): ExpectedState {
+    return {
+      state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
+      exitCode: isSet(object.exitCode) ? Number(object.exitCode) : undefined,
+    }
+  },
+
+  toJSON(message: ExpectedState): unknown {
+    const obj: any = {}
+    message.state !== undefined && (obj.state = containerStateToJSON(message.state))
+    message.exitCode !== undefined && (obj.exitCode = Math.round(message.exitCode))
+    return obj
+  },
+}
+
 function createBaseDagentContainerConfig(): DagentContainerConfig {
   return { networks: [], labels: {} }
 }
@@ -995,6 +1037,7 @@ export const DagentContainerConfig = {
       logConfig: isSet(object.logConfig) ? LogConfig.fromJSON(object.logConfig) : undefined,
       restartPolicy: isSet(object.restartPolicy) ? restartPolicyFromJSON(object.restartPolicy) : undefined,
       networkMode: isSet(object.networkMode) ? networkModeFromJSON(object.networkMode) : undefined,
+      expectedState: isSet(object.expectedState) ? ExpectedState.fromJSON(object.expectedState) : undefined,
       networks: Array.isArray(object?.networks) ? object.networks.map((e: any) => String(e)) : [],
       labels: isObject(object.labels)
         ? Object.entries(object.labels).reduce<{ [key: string]: string }>((acc, [key, value]) => {
@@ -1013,6 +1056,8 @@ export const DagentContainerConfig = {
       (obj.restartPolicy = message.restartPolicy !== undefined ? restartPolicyToJSON(message.restartPolicy) : undefined)
     message.networkMode !== undefined &&
       (obj.networkMode = message.networkMode !== undefined ? networkModeToJSON(message.networkMode) : undefined)
+    message.expectedState !== undefined &&
+      (obj.expectedState = message.expectedState ? ExpectedState.toJSON(message.expectedState) : undefined)
     if (message.networks) {
       obj.networks = message.networks.map(e => e)
     } else {
@@ -1041,23 +1086,6 @@ export const DagentContainerConfig_LabelsEntry = {
     const obj: any = {}
     message.key !== undefined && (obj.key = message.key)
     message.value !== undefined && (obj.value = message.value)
-    return obj
-  },
-}
-
-function createBaseMetrics(): Metrics {
-  return { port: '', path: '' }
-}
-
-export const Metrics = {
-  fromJSON(object: any): Metrics {
-    return { port: isSet(object.port) ? String(object.port) : '', path: isSet(object.path) ? String(object.path) : '' }
-  },
-
-  toJSON(message: Metrics): unknown {
-    const obj: any = {}
-    message.port !== undefined && (obj.port = message.port)
-    message.path !== undefined && (obj.path = message.path)
     return obj
   },
 }
@@ -1165,7 +1193,6 @@ export const CommonContainerConfig = {
       user: isSet(object.user) ? Number(object.user) : undefined,
       TTY: isSet(object.TTY) ? Boolean(object.TTY) : undefined,
       workingDirectory: isSet(object.workingDirectory) ? String(object.workingDirectory) : undefined,
-      expectedState: isSet(object.expectedState) ? expectedContainerStateFromJSON(object.expectedState) : undefined,
       ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
       portRanges: Array.isArray(object?.portRanges)
         ? object.portRanges.map((e: any) => PortRangeBinding.fromJSON(e))
@@ -1204,9 +1231,6 @@ export const CommonContainerConfig = {
     message.user !== undefined && (obj.user = Math.round(message.user))
     message.TTY !== undefined && (obj.TTY = message.TTY)
     message.workingDirectory !== undefined && (obj.workingDirectory = message.workingDirectory)
-    message.expectedState !== undefined &&
-      (obj.expectedState =
-        message.expectedState !== undefined ? expectedContainerStateToJSON(message.expectedState) : undefined)
     if (message.ports) {
       obj.ports = message.ports.map(e => (e ? Port.toJSON(e) : undefined))
     } else {

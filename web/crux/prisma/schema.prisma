@@ -215,9 +215,8 @@ enum ExposeStrategy {
 
 enum ExpectedState {
   running
+  waiting
   exited
-  ready
-  live
 }
 
 model ContainerConfig {
@@ -244,6 +243,7 @@ model ContainerConfig {
   storageId        String?        @db.Uuid
   storageConfig    Json?
   expectedState    ExpectedState?
+  expectedExitCode Int?
 
   //Dagent
   logConfig     Json?
@@ -346,6 +346,7 @@ model InstanceContainerConfig {
   storageId        String?         @unique @db.Uuid
   storageConfig    Json?
   expectedState    ExpectedState?
+  expectedExitCode Int?
 
   //Dagent
   logConfig     Json?

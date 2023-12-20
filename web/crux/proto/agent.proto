@@ -165,18 +165,24 @@ message Marker {
   map<string, string> ingress = 1002;
 }
 
+message Metrics {
+  string port = 1;
+  string path = 2;
+}
+
+message ExpectedState {
+  common.ContainerState state = 100;
+  optional int32 exitCode = 101;
+}
+
 message DagentContainerConfig {
   optional LogConfig logConfig = 100;
   optional common.RestartPolicy restartPolicy = 101;
   optional common.NetworkMode networkMode = 102;
+  optional ExpectedState expectedState = 103;
 
   repeated string networks = 1000;
   map<string, string> labels = 1001;
-}
-
-message Metrics {
-  string port = 1;
-  string path = 2;
 }
 
 message CraneContainerConfig {
@@ -202,7 +208,6 @@ message CommonContainerConfig {
   optional int64 user = 106;
   optional bool TTY = 107;
   optional string workingDirectory = 108;
-  optional common.ExpectedContainerState expectedState = 109;
 
   repeated Port ports = 1000;
   repeated PortRangeBinding portRanges = 1001;

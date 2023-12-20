@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 
+	"k8s.io/client-go/dynamic"
+
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
-	"k8s.io/client-go/dynamic"
 )
 
 func WatchDeploymentsByPrefix(ctx context.Context, namespace string) (*grpc.ContainerWatchContext, error) {

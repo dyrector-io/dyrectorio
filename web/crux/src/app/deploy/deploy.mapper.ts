@@ -330,7 +330,6 @@ export default class DeployMapper {
       portRanges: config.portRanges,
       ports: config.ports,
       volumes: this.imageMapper.volumesToProto(config.volumes ?? []),
-      expectedState: this.imageMapper.expectedStateToProto(config.expectedState),
     }
   }
 
@@ -348,6 +347,12 @@ export default class DeployMapper {
       networkMode: this.imageMapper.networkModeToProto(config.networkMode),
       restartPolicy: this.imageMapper.restartPolicyToProto(config.restartPolicy),
       labels: this.mapKeyValueToMap(config.dockerLabels),
+      expectedState: !config.expectedState
+        ? null
+        : {
+            state: this.imageMapper.stateToProto(config.expectedState),
+            exitCode: config.expectedExitCode,
+          },
     }
   }
 

@@ -118,11 +118,6 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		containerConfig.ExposeTLS = *cc.Expose > 2
 	}
 
-	if cc.ExpectedState != nil {
-		expect := mapExpectedState(*cc.ExpectedState)
-		containerConfig.ExpectedState = &expect
-	}
-
 	if cc.Routing != nil {
 		if domain := pointer.GetString(cc.Routing.Domain); domain != "" {
 			if splitDomain := strings.Split(domain, "."); len(splitDomain) > 1 {
@@ -176,6 +171,13 @@ func mapDagentConfig(dagent *agent.DagentContainerConfig, containerConfig *v1.Co
 
 	if dagent.Labels != nil {
 		containerConfig.DockerLabels = dagent.Labels
+	}
+
+	if dagent.ExpectedState != nil {
+		containerConfig.ExpectedState = &v1.ExpectedState{
+			State:    mapContainerState(dagent.ExpectedState.State),
+			ExitCode: dagent.ExpectedState.ExitCode,
+		}
 	}
 }
 
@@ -232,20 +234,20 @@ func mapRestartPolicy(policy string) builder.RestartPolicyName {
 	return builder.RestartPolicyName(strings.Replace(lower, "_", "-", -1))
 }
 
-func mapExpectedState(state common.ExpectedContainerState) v1.ExpectedContainerState {
+func mapContainerState(state common.ContainerState) v1.ContainerState {
 	switch state {
-	case common.ExpectedContainerState_CONTAINER_EXPECTED_STATE_UNSPECIFIED:
-		return v1.ExpectedRunning
-	case common.ExpectedContainerState_EXPECT_RUNNING:
-		return v1.ExpectedRunning
-	case common.ExpectedContainerState_EXPECT_EXITED:
-		return v1.ExpectedExited
-	case common.ExpectedContainerState_EXPECT_READY:
-		return v1.ExpectedReady
-	case common.ExpectedContainerState_EXPECT_LIVE:
-		return v1.ExpectedLive
+	case common.ContainerState_CONTAINER_STATE_UNSPECIFIED:
+		return v1.Running
+	case common.ContainerState_RUNNING:
+		return v1.Running
+	case common.ContainerState_EXITED:
+		return v1.Exited
+	case common.ContainerState_WAITING:
+		return v1.Waiting
+	case common.ContainerState_REMOVED:
+		return v1.Removed
 	default:
-		return v1.ExpectedRunning
+		return v1.Running
 	}
 }
 

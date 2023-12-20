@@ -5,6 +5,7 @@ import {
   CONTAINER_LOG_DRIVER_VALUES,
   CONTAINER_NETWORK_MODE_VALUES,
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
+  CONTAINER_STATE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   ContainerConfigExposeStrategy,
   ContainerConfigPortRange,
@@ -500,6 +501,13 @@ const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
     networkMode: networkModeRule,
     networks: uniqueKeysOnlySchema.default([]).nullable().label('container:dagent.networks'),
     dockerLabels: uniqueKeyValuesSchema.default([]).nullable().label('container:dagent.dockerLabels'),
+    expectedState: yup
+      .string()
+      .default(null)
+      .nullable()
+      .oneOf(CONTAINER_STATE_VALUES)
+      .label('container:common.expectedState'),
+    expectedExitCode: yup.number().default(0).nullable().min(-127).max(128).label('container:common.expectedExitCode'),
 
     // crane
     deploymentStrategy: deploymentStrategyRule,

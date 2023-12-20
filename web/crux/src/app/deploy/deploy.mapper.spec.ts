@@ -848,6 +848,7 @@ describe('DeployMapper', () => {
         networkMode: NetworkMode.HOST,
         restartPolicy: RestartPolicy.ALWAYS,
         labels: {},
+        expectedState: null,
       }
       expect(config).toEqual(expected)
     })
@@ -868,6 +869,7 @@ describe('DeployMapper', () => {
         networkMode: NetworkMode.HOST,
         restartPolicy: RestartPolicy.ALWAYS,
         labels: {},
+        expectedState: null,
       }
       expect(config).toEqual(expected)
     })
@@ -891,6 +893,7 @@ describe('DeployMapper', () => {
         networkMode: NetworkMode.HOST,
         restartPolicy: RestartPolicy.ALWAYS,
         labels: {},
+        expectedState: null,
       }
       expect(config).toEqual(expected)
     })

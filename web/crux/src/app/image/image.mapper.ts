@@ -11,8 +11,8 @@ import {
 } from '@prisma/client'
 import {
   ContainerConfigData,
-  ContainerExpectedState,
   ContainerLogDriverType,
+  ContainerState,
   ContainerVolumeType,
   Volume,
 } from 'src/domain/container'
@@ -20,8 +20,8 @@ import { toPrismaJson } from 'src/domain/utils'
 import { Volume as ProtoVolume } from 'src/grpc/protobuf/proto/agent'
 import {
   DriverType,
+  ContainerState as ProtoContainerState,
   DeploymentStrategy as ProtoDeploymentStrategy,
-  ExpectedContainerState as ProtoExpectedContainerState,
   ExposeStrategy as ProtoExposeStrategy,
   NetworkMode as ProtoNetworkMode,
   RestartPolicy as ProtoRestartPolicy,
@@ -80,13 +80,14 @@ export default class ImageMapper {
       storageSet: config.storageSet,
       storageId: config.storageId,
       storageConfig: toPrismaJson(config.storageConfig),
-      expectedState: config.expectedState,
 
       // dagent
       restartPolicy: config.restartPolicy,
       networkMode: config.networkMode,
       networks: toPrismaJson(config.networks),
       dockerLabels: toPrismaJson(config.dockerLabels),
+      expectedState: config.expectedState,
+      expectedExitCode: config.expectedExitCode,
 
       // crane
       deploymentStrategy: config.deploymentStrategy,
@@ -250,22 +251,20 @@ export default class ImageMapper {
     return volumeTypeFromJSON(it.toUpperCase())
   }
 
-  expectedStateToProto(state: ContainerExpectedState): ProtoExpectedContainerState {
+  stateToProto(state: ContainerState): ProtoContainerState {
     if (!state) {
       return null
     }
 
     switch (state) {
       case 'running':
-        return ProtoExpectedContainerState.EXPECT_RUNNING
+        return ProtoContainerState.RUNNING
+      case 'waiting':
+        return ProtoContainerState.WAITING
       case 'exited':
-        return ProtoExpectedContainerState.EXPECT_EXITED
-      case 'ready':
-        return ProtoExpectedContainerState.EXPECT_READY
-      case 'live':
-        return ProtoExpectedContainerState.EXPECT_LIVE
+        return ProtoContainerState.EXITED
       default:
-        return ProtoExpectedContainerState.CONTAINER_EXPECTED_STATE_UNSPECIFIED
+        return ProtoContainerState.CONTAINER_STATE_UNSPECIFIED
     }
   }
 }

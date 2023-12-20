@@ -541,61 +541,6 @@ func (ExposeStrategy) EnumDescriptor() ([]byte, []int) {
 	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{8}
 }
 
-type ExpectedContainerState int32
-
-const (
-	ExpectedContainerState_CONTAINER_EXPECTED_STATE_UNSPECIFIED ExpectedContainerState = 0
-	ExpectedContainerState_EXPECT_RUNNING                       ExpectedContainerState = 1
-	ExpectedContainerState_EXPECT_EXITED                        ExpectedContainerState = 2
-	ExpectedContainerState_EXPECT_READY                         ExpectedContainerState = 3
-	ExpectedContainerState_EXPECT_LIVE                          ExpectedContainerState = 4
-)
-
-// Enum value maps for ExpectedContainerState.
-var (
-	ExpectedContainerState_name = map[int32]string{
-		0: "CONTAINER_EXPECTED_STATE_UNSPECIFIED",
-		1: "EXPECT_RUNNING",
-		2: "EXPECT_EXITED",
-		3: "EXPECT_READY",
-		4: "EXPECT_LIVE",
-	}
-	ExpectedContainerState_value = map[string]int32{
-		"CONTAINER_EXPECTED_STATE_UNSPECIFIED": 0,
-		"EXPECT_RUNNING":                       1,
-		"EXPECT_EXITED":                        2,
-		"EXPECT_READY":                         3,
-		"EXPECT_LIVE":                          4,
-	}
-)
-
-func (x ExpectedContainerState) Enum() *ExpectedContainerState {
-	p := new(ExpectedContainerState)
-	*p = x
-	return p
-}
-
-func (x ExpectedContainerState) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (ExpectedContainerState) Descriptor() protoreflect.EnumDescriptor {
-	return file_protobuf_proto_common_proto_enumTypes[9].Descriptor()
-}
-
-func (ExpectedContainerState) Type() protoreflect.EnumType {
-	return &file_protobuf_proto_common_proto_enumTypes[9]
-}
-
-func (x ExpectedContainerState) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use ExpectedContainerState.Descriptor instead.
-func (ExpectedContainerState) EnumDescriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{9}
-}
-
 type ContainerOperation int32
 
 const (
@@ -632,11 +577,11 @@ func (x ContainerOperation) String() string {
 }
 
 func (ContainerOperation) Descriptor() protoreflect.EnumDescriptor {
-	return file_protobuf_proto_common_proto_enumTypes[10].Descriptor()
+	return file_protobuf_proto_common_proto_enumTypes[9].Descriptor()
 }
 
 func (ContainerOperation) Type() protoreflect.EnumType {
-	return &file_protobuf_proto_common_proto_enumTypes[10]
+	return &file_protobuf_proto_common_proto_enumTypes[9]
 }
 
 func (x ContainerOperation) Number() protoreflect.EnumNumber {
@@ -645,7 +590,7 @@ func (x ContainerOperation) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ContainerOperation.Descriptor instead.
 func (ContainerOperation) EnumDescriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{10}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{9}
 }
 
 type Empty struct {
@@ -2225,28 +2170,19 @@ var file_protobuf_proto_common_proto_rawDesc = []byte{
 	0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x0b,
 	0x0a, 0x07, 0x4e, 0x4f, 0x4e, 0x45, 0x5f, 0x45, 0x53, 0x10, 0x01, 0x12, 0x0a, 0x0a, 0x06, 0x45,
 	0x58, 0x50, 0x4f, 0x53, 0x45, 0x10, 0x02, 0x12, 0x13, 0x0a, 0x0f, 0x45, 0x58, 0x50, 0x4f, 0x53,
-	0x45, 0x5f, 0x57, 0x49, 0x54, 0x48, 0x5f, 0x54, 0x4c, 0x53, 0x10, 0x03, 0x2a, 0x8c, 0x01, 0x0a,
-	0x16, 0x45, 0x78, 0x70, 0x65, 0x63, 0x74, 0x65, 0x64, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e,
-	0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x28, 0x0a, 0x24, 0x43, 0x4f, 0x4e, 0x54, 0x41,
-	0x49, 0x4e, 0x45, 0x52, 0x5f, 0x45, 0x58, 0x50, 0x45, 0x43, 0x54, 0x45, 0x44, 0x5f, 0x53, 0x54,
-	0x41, 0x54, 0x45, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10,
-	0x00, 0x12, 0x12, 0x0a, 0x0e, 0x45, 0x58, 0x50, 0x45, 0x43, 0x54, 0x5f, 0x52, 0x55, 0x4e, 0x4e,
-	0x49, 0x4e, 0x47, 0x10, 0x01, 0x12, 0x11, 0x0a, 0x0d, 0x45, 0x58, 0x50, 0x45, 0x43, 0x54, 0x5f,
-	0x45, 0x58, 0x49, 0x54, 0x45, 0x44, 0x10, 0x02, 0x12, 0x10, 0x0a, 0x0c, 0x45, 0x58, 0x50, 0x45,
-	0x43, 0x54, 0x5f, 0x52, 0x45, 0x41, 0x44, 0x59, 0x10, 0x03, 0x12, 0x0f, 0x0a, 0x0b, 0x45, 0x58,
-	0x50, 0x45, 0x43, 0x54, 0x5f, 0x4c, 0x49, 0x56, 0x45, 0x10, 0x04, 0x2a, 0x79, 0x0a, 0x12, 0x43,
-	0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x4f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x12, 0x23, 0x0a, 0x1f, 0x43, 0x4f, 0x4e, 0x54, 0x41, 0x49, 0x4e, 0x45, 0x52, 0x5f, 0x4f,
-	0x50, 0x45, 0x52, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49,
-	0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x13, 0x0a, 0x0f, 0x53, 0x54, 0x41, 0x52, 0x54, 0x5f,
-	0x43, 0x4f, 0x4e, 0x54, 0x41, 0x49, 0x4e, 0x45, 0x52, 0x10, 0x01, 0x12, 0x12, 0x0a, 0x0e, 0x53,
-	0x54, 0x4f, 0x50, 0x5f, 0x43, 0x4f, 0x4e, 0x54, 0x41, 0x49, 0x4e, 0x45, 0x52, 0x10, 0x02, 0x12,
-	0x15, 0x0a, 0x11, 0x52, 0x45, 0x53, 0x54, 0x41, 0x52, 0x54, 0x5f, 0x43, 0x4f, 0x4e, 0x54, 0x41,
-	0x49, 0x4e, 0x45, 0x52, 0x10, 0x03, 0x42, 0x36, 0x5a, 0x34, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x79, 0x72, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x2d, 0x69, 0x6f,
-	0x2f, 0x64, 0x79, 0x72, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x69, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x62, 0x75, 0x66, 0x2f, 0x67, 0x6f, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x45, 0x5f, 0x57, 0x49, 0x54, 0x48, 0x5f, 0x54, 0x4c, 0x53, 0x10, 0x03, 0x2a, 0x79, 0x0a, 0x12,
+	0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x4f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x12, 0x23, 0x0a, 0x1f, 0x43, 0x4f, 0x4e, 0x54, 0x41, 0x49, 0x4e, 0x45, 0x52, 0x5f,
+	0x4f, 0x50, 0x45, 0x52, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43,
+	0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x13, 0x0a, 0x0f, 0x53, 0x54, 0x41, 0x52, 0x54,
+	0x5f, 0x43, 0x4f, 0x4e, 0x54, 0x41, 0x49, 0x4e, 0x45, 0x52, 0x10, 0x01, 0x12, 0x12, 0x0a, 0x0e,
+	0x53, 0x54, 0x4f, 0x50, 0x5f, 0x43, 0x4f, 0x4e, 0x54, 0x41, 0x49, 0x4e, 0x45, 0x52, 0x10, 0x02,
+	0x12, 0x15, 0x0a, 0x11, 0x52, 0x45, 0x53, 0x54, 0x41, 0x52, 0x54, 0x5f, 0x43, 0x4f, 0x4e, 0x54,
+	0x41, 0x49, 0x4e, 0x45, 0x52, 0x10, 0x03, 0x42, 0x36, 0x5a, 0x34, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x79, 0x72, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x2d, 0x69,
+	0x6f, 0x2f, 0x64, 0x79, 0x72, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x69, 0x6f, 0x2f, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x67, 0x6f, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2261,7 +2197,7 @@ func file_protobuf_proto_common_proto_rawDescGZIP() []byte {
 	return file_protobuf_proto_common_proto_rawDescData
 }
 
-var file_protobuf_proto_common_proto_enumTypes = make([]protoimpl.EnumInfo, 11)
+var file_protobuf_proto_common_proto_enumTypes = make([]protoimpl.EnumInfo, 10)
 var file_protobuf_proto_common_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_protobuf_proto_common_proto_goTypes = []interface{}{
 	(ContainerState)(0),               // 0: common.ContainerState
@@ -2273,48 +2209,47 @@ var file_protobuf_proto_common_proto_goTypes = []interface{}{
 	(VolumeType)(0),                   // 6: common.VolumeType
 	(DriverType)(0),                   // 7: common.DriverType
 	(ExposeStrategy)(0),               // 8: common.ExposeStrategy
-	(ExpectedContainerState)(0),       // 9: common.ExpectedContainerState
-	(ContainerOperation)(0),           // 10: common.ContainerOperation
-	(*Empty)(nil),                     // 11: common.Empty
-	(*InstanceDeploymentItem)(nil),    // 12: common.InstanceDeploymentItem
-	(*DeployContainerProgress)(nil),   // 13: common.DeployContainerProgress
-	(*DeploymentStatusMessage)(nil),   // 14: common.DeploymentStatusMessage
-	(*ContainerStateItemPort)(nil),    // 15: common.ContainerStateItemPort
-	(*ContainerStateListMessage)(nil), // 16: common.ContainerStateListMessage
-	(*ContainerStateItem)(nil),        // 17: common.ContainerStateItem
-	(*ContainerLogMessage)(nil),       // 18: common.ContainerLogMessage
-	(*ContainerInspectMessage)(nil),   // 19: common.ContainerInspectMessage
-	(*Routing)(nil),                   // 20: common.Routing
-	(*ConfigContainer)(nil),           // 21: common.ConfigContainer
-	(*HealthCheckConfig)(nil),         // 22: common.HealthCheckConfig
-	(*Resource)(nil),                  // 23: common.Resource
-	(*ResourceConfig)(nil),            // 24: common.ResourceConfig
-	(*KeyValue)(nil),                  // 25: common.KeyValue
-	(*ListSecretsResponse)(nil),       // 26: common.ListSecretsResponse
-	(*UniqueKey)(nil),                 // 27: common.UniqueKey
-	(*ContainerIdentifier)(nil),       // 28: common.ContainerIdentifier
-	(*ContainerCommandRequest)(nil),   // 29: common.ContainerCommandRequest
-	(*DeleteContainersRequest)(nil),   // 30: common.DeleteContainersRequest
-	nil,                               // 31: common.ContainerStateItem.LabelsEntry
-	(*timestamppb.Timestamp)(nil),     // 32: google.protobuf.Timestamp
+	(ContainerOperation)(0),           // 9: common.ContainerOperation
+	(*Empty)(nil),                     // 10: common.Empty
+	(*InstanceDeploymentItem)(nil),    // 11: common.InstanceDeploymentItem
+	(*DeployContainerProgress)(nil),   // 12: common.DeployContainerProgress
+	(*DeploymentStatusMessage)(nil),   // 13: common.DeploymentStatusMessage
+	(*ContainerStateItemPort)(nil),    // 14: common.ContainerStateItemPort
+	(*ContainerStateListMessage)(nil), // 15: common.ContainerStateListMessage
+	(*ContainerStateItem)(nil),        // 16: common.ContainerStateItem
+	(*ContainerLogMessage)(nil),       // 17: common.ContainerLogMessage
+	(*ContainerInspectMessage)(nil),   // 18: common.ContainerInspectMessage
+	(*Routing)(nil),                   // 19: common.Routing
+	(*ConfigContainer)(nil),           // 20: common.ConfigContainer
+	(*HealthCheckConfig)(nil),         // 21: common.HealthCheckConfig
+	(*Resource)(nil),                  // 22: common.Resource
+	(*ResourceConfig)(nil),            // 23: common.ResourceConfig
+	(*KeyValue)(nil),                  // 24: common.KeyValue
+	(*ListSecretsResponse)(nil),       // 25: common.ListSecretsResponse
+	(*UniqueKey)(nil),                 // 26: common.UniqueKey
+	(*ContainerIdentifier)(nil),       // 27: common.ContainerIdentifier
+	(*ContainerCommandRequest)(nil),   // 28: common.ContainerCommandRequest
+	(*DeleteContainersRequest)(nil),   // 29: common.DeleteContainersRequest
+	nil,                               // 30: common.ContainerStateItem.LabelsEntry
+	(*timestamppb.Timestamp)(nil),     // 31: google.protobuf.Timestamp
 }
 var file_protobuf_proto_common_proto_depIdxs = []int32{
 	0,  // 0: common.InstanceDeploymentItem.state:type_name -> common.ContainerState
-	12, // 1: common.DeploymentStatusMessage.instance:type_name -> common.InstanceDeploymentItem
+	11, // 1: common.DeploymentStatusMessage.instance:type_name -> common.InstanceDeploymentItem
 	1,  // 2: common.DeploymentStatusMessage.deploymentStatus:type_name -> common.DeploymentStatus
-	13, // 3: common.DeploymentStatusMessage.containerProgress:type_name -> common.DeployContainerProgress
+	12, // 3: common.DeploymentStatusMessage.containerProgress:type_name -> common.DeployContainerProgress
 	2,  // 4: common.DeploymentStatusMessage.logLevel:type_name -> common.DeploymentMessageLevel
-	17, // 5: common.ContainerStateListMessage.data:type_name -> common.ContainerStateItem
-	28, // 6: common.ContainerStateItem.id:type_name -> common.ContainerIdentifier
-	32, // 7: common.ContainerStateItem.createdAt:type_name -> google.protobuf.Timestamp
+	16, // 5: common.ContainerStateListMessage.data:type_name -> common.ContainerStateItem
+	27, // 6: common.ContainerStateItem.id:type_name -> common.ContainerIdentifier
+	31, // 7: common.ContainerStateItem.createdAt:type_name -> google.protobuf.Timestamp
 	0,  // 8: common.ContainerStateItem.state:type_name -> common.ContainerState
-	15, // 9: common.ContainerStateItem.ports:type_name -> common.ContainerStateItemPort
-	31, // 10: common.ContainerStateItem.labels:type_name -> common.ContainerStateItem.LabelsEntry
-	23, // 11: common.ResourceConfig.limits:type_name -> common.Resource
-	23, // 12: common.ResourceConfig.requests:type_name -> common.Resource
-	28, // 13: common.ContainerCommandRequest.container:type_name -> common.ContainerIdentifier
-	10, // 14: common.ContainerCommandRequest.operation:type_name -> common.ContainerOperation
-	28, // 15: common.DeleteContainersRequest.container:type_name -> common.ContainerIdentifier
+	14, // 9: common.ContainerStateItem.ports:type_name -> common.ContainerStateItemPort
+	30, // 10: common.ContainerStateItem.labels:type_name -> common.ContainerStateItem.LabelsEntry
+	22, // 11: common.ResourceConfig.limits:type_name -> common.Resource
+	22, // 12: common.ResourceConfig.requests:type_name -> common.Resource
+	27, // 13: common.ContainerCommandRequest.container:type_name -> common.ContainerIdentifier
+	9,  // 14: common.ContainerCommandRequest.operation:type_name -> common.ContainerOperation
+	27, // 15: common.DeleteContainersRequest.container:type_name -> common.ContainerIdentifier
 	16, // [16:16] is the sub-list for method output_type
 	16, // [16:16] is the sub-list for method input_type
 	16, // [16:16] is the sub-list for extension type_name
@@ -2588,7 +2523,7 @@ func file_protobuf_proto_common_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_protobuf_proto_common_proto_rawDesc,
-			NumEnums:      11,
+			NumEnums:      10,
 			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   0,

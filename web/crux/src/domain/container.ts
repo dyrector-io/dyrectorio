@@ -93,9 +93,6 @@ export const CONTAINER_LOG_DRIVER_VALUES = [
 ] as const
 export type ContainerLogDriverType = (typeof CONTAINER_LOG_DRIVER_VALUES)[number]
 
-export const CONTAINER_EXPECTED_STATE_VALUES = ['running', 'exited', 'ready', 'live'] as const
-export type ContainerExpectedState = (typeof CONTAINER_EXPECTED_STATE_VALUES)[number]
-
 export type Log = {
   driver: ContainerLogDriverType
   options: UniqueKeyValue[]
@@ -180,7 +177,8 @@ export type ContainerConfigData = {
   storageSet?: boolean
   storageId?: string
   storageConfig?: Storage
-  expectedState?: ContainerExpectedState
+  expectedState?: ContainerState
+  expectedExitCode?: number
 
   // dagent
   logConfig?: Log
