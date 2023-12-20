@@ -35,6 +35,7 @@ import {
   ExposeStrategy as ProtoExposeStrategy,
   containerStateToJSON,
 } from 'src/grpc/protobuf/proto/common'
+import EncryptionService from 'src/services/encryption.service'
 import AuditMapper from '../audit/audit.mapper'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
@@ -75,6 +76,7 @@ export default class DeployMapper {
     private versionMapper: VersionMapper,
     @Inject(forwardRef(() => NodeMapper))
     private nodeMapper: NodeMapper,
+    private encryptionService: EncryptionService,
   ) {}
 
   statusToDto(it: DeploymentStatusEnum): DeploymentStatusDto {
@@ -432,8 +434,8 @@ export default class DeployMapper {
     if (storage.accessKey && storage.secretKey) {
       environment = {
         ...environment,
-        RCLONE_CONFIG_S3_ACCESS_KEY_ID: storage.accessKey,
-        RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: storage.secretKey,
+        RCLONE_CONFIG_S3_ACCESS_KEY_ID: this.encryptionService.decrypt(storage.accessKey),
+        RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: this.encryptionService.decrypt(storage.secretKey),
       }
     }
 

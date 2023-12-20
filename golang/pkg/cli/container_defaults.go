@@ -107,6 +107,7 @@ func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.Lifecy
 			state.Containers.CruxPostgres.Name,
 			defaultPostgresPort,
 			state.SettingsFile.CruxPostgresDB),
+		fmt.Sprintf("ENCRYPTION_SECRET_KEY=%s", state.SettingsFile.CruxEncryptionKey),
 	}, state.EnvFile...)
 
 	return func(ctx context.Context, client client.APIClient,
@@ -180,6 +181,7 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 		fmt.Sprintf("FROM_EMAIL=%s", state.SettingsFile.MailFromEmail),
 		fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", state.Containers.MailSlurper.Name),
 		fmt.Sprintf("AGENT_INSTALL_SCRIPT_DISABLE_PULL=%t", true),
+		fmt.Sprintf("ENCRYPTION_SECRET_KEY=%s", state.SettingsFile.CruxEncryptionKey),
 		"DISABLE_RECAPTCHA=true",
 		"QA_OPT_OUT=true",
 	)

@@ -109,7 +109,7 @@ model Registry {
   icon            String?
   url             String
   user            String?
-  token           String?
+  token           Bytes?
   type            RegistryTypeEnum
   namespace       RegistryNamespaceEnum?
   imageNamePrefix String?
@@ -183,6 +183,7 @@ model Image {
   createdBy  String           @db.Uuid
   updatedAt  DateTime         @updatedAt @db.Timestamptz(6)
   updatedBy  String?          @db.Uuid
+  labels     Json?
 
   registry Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
   version  Version  @relation(fields: [versionId], references: [id], onDelete: Cascade)
@@ -325,26 +326,26 @@ model InstanceContainerConfig {
   instanceId String @unique @db.Uuid
 
   //Common
-  name            String?
-  environment     Json?
-  secrets         Json?
-  capabilities    Json?
-  expose          ExposeStrategy?
-  routing         Json?
-  configContainer Json?
-  user            Int?
+  name             String?
+  environment      Json?
+  secrets          Json?
+  capabilities     Json?
+  expose           ExposeStrategy?
+  routing          Json?
+  configContainer  Json?
+  user             Int?
   workingDirectory String?
-  tty             Boolean?
-  ports           Json?
-  portRanges      Json?
-  volumes         Json?
-  commands        Json?
-  args            Json?
-  initContainers  Json?
-  storageSet      Boolean?
-  storageId       String?         @unique @db.Uuid
-  storageConfig   Json?
-  expectedState   ExpectedState?
+  tty              Boolean?
+  ports            Json?
+  portRanges       Json?
+  volumes          Json?
+  commands         Json?
+  args             Json?
+  initContainers   Json?
+  storageSet       Boolean?
+  storageId        String?         @unique @db.Uuid
+  storageConfig    Json?
+  expectedState    ExpectedState?
 
   //Dagent
   logConfig     Json?
@@ -535,17 +536,17 @@ enum NodeEventTypeEnum {
 }
 
 model Storage {
-  id          String   @id @default(uuid()) @db.Uuid
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  createdBy   String   @db.Uuid
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
-  updatedBy   String?  @db.Uuid
-  name        String   @db.VarChar(70)
-  description String?
-  icon        String?
-  url         String
-  accessKey   String?
-  secretKey   String?
+  id           String   @id @default(uuid()) @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  createdBy    String   @db.Uuid
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  updatedBy    String?  @db.Uuid
+  name         String   @db.VarChar(70)
+  description  String?
+  icon         String?
+  url          String
+  accessKey    Bytes?
+  secretKey    Bytes?
 
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String @db.Uuid
@@ -585,6 +586,6 @@ model ConfigBundleOnDeployments {
 }
 
 model QualityAssuranceConfig {
-  id String  @id @default(uuid()) @db.Uuid
-  name    String?
+  id   String  @id @default(uuid()) @db.Uuid
+  name String?
 }

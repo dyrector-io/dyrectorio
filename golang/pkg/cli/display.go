@@ -33,6 +33,7 @@ func PrintInfo(state *State, args *ArgsFlags) {
 			state.SettingsFile.CruxPostgresPassword,
 			state.SettingsFile.CruxPostgresPort,
 			state.SettingsFile.CruxPostgresDB)
+		log.Info().Msgf("ENCRYPTION_SECRET_KEY=%s", state.SettingsFile.CruxEncryptionKey)
 	}
 
 	log.Info().Msgf("Stack is ready. The UI should be available at http://localhost:%d location.",

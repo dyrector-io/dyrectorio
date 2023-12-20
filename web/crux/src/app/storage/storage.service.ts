@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
+import EncryptionService from 'src/services/encryption.service'
 import PrismaService from 'src/services/prisma.service'
 import TeamRepository from '../team/team.repository'
 import { CreateStorageDto, StorageDetailsDto, StorageDto, StorageOptionDto, UpdateStorageDto } from './storage.dto'
@@ -8,9 +9,10 @@ import StorageMapper from './storage.mapper'
 @Injectable()
 export default class StorageService {
   constructor(
-    private teamRepository: TeamRepository,
-    private prisma: PrismaService,
-    private mapper: StorageMapper,
+    private readonly encryptionService: EncryptionService,
+    private readonly teamRepository: TeamRepository,
+    private readonly prisma: PrismaService,
+    private readonly mapper: StorageMapper,
   ) {}
 
   async getStorages(teamSlug: string): Promise<StorageDto[]> {
@@ -48,12 +50,7 @@ export default class StorageService {
 
     const storage = await this.prisma.storage.create({
       data: {
-        name: req.name,
-        description: req.description,
-        icon: req.icon ?? null,
-        url: req.url,
-        accessKey: req.accessKey,
-        secretKey: req.secretKey,
+        ...this.mapper.detailsToDb(req),
         teamId,
         createdBy: identity.id,
       },
@@ -74,12 +71,7 @@ export default class StorageService {
         id,
       },
       data: {
-        name: req.name,
-        description: req.description,
-        icon: req.icon ?? null,
-        url: req.url,
-        accessKey: req.accessKey,
-        secretKey: req.secretKey,
+        ...this.mapper.detailsToDb(req),
         updatedBy: identity.id,
       },
     })

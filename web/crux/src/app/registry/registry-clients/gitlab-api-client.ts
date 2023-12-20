@@ -3,6 +3,7 @@ import { GitlabNamespace } from '../registry.dto'
 import { RegistryImageTags } from '../registry.message'
 import { RegistryApiClient } from './registry-api-client'
 import RegistryV2ApiClient, { RegistryV2ApiClientOptions } from './v2-api-client'
+import V2Labels from './v2-labels'
 
 export type GitlabRegistryClientUrls = {
   apiUrl: string
@@ -80,5 +81,12 @@ export class GitlabRegistryClient implements RegistryApiClient {
       name: image,
       tags: json.flatMap(it => it.tags),
     }
+  }
+
+  async labels(image: string, tag: string): Promise<Record<string, string>> {
+    const labelClient = new V2Labels(this.urls.registryUrl, null, null, {
+      headers: this.basicAuthHeaders,
+    })
+    return labelClient.fetchLabels(image, tag)
   }
 }

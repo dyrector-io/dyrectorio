@@ -13,8 +13,6 @@
   "orgOrUser": "Organization name or username",
   "organization": "Organization name",
   "group": "Group ID",
-  "public": "Public",
-  "private": "Private",
   "selfManaged": "Self-managed GitLab",
   "saas": "SaaS",
   "apiUrl": "GitLab API URL",
@@ -25,6 +23,7 @@
   "project": "Project ID",
   "userName": "User name",
   "useLocalImages": "Use local images",
+  "here": "here",
 
   "tips": {
     "common": "Registries contain the images you can select to use in your Projects and Versions.",
@@ -36,8 +35,7 @@
     "unchecked": "Add a registry without authentication. This type does not provide image nor tag browsing.",
     "learnMorePat": "Learn more about personal access token",
     "learnMoreRegistry": "Learn more about the registry",
-    "githubTokenReason": "Github allows downloads, while access to the complete listing of all tags requires authentication, which we extensively utilize.",
-    "here": "here"
+    "githubTokenReason": "Github allows downloads, while access to the complete listing of all tags requires authentication, which we extensively utilize."
   },
 
   "type": {
@@ -54,6 +52,12 @@
     "user": "User",
     "project": "Project",
     "group": "Group"
+  },
+
+  "placeholders": {
+    "google": {
+      "organization": "Your GCP project ID"
+    }
   },
 
   "altDefaultRegistryPicture": "Picture of registry",

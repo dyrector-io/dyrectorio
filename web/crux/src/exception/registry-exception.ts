@@ -6,7 +6,7 @@ export const getRegistryApiException = (res: Response, endpoint: string) => {
     case 401:
       return new CruxUnauthorizedException({
         message: `${endpoint} unauthorized: ${res.status} ${res.statusText}`,
-        property: 'registryUnauthorized',
+        error: 'registryUnauthorized',
       })
     case 429:
       return new CruxBadRequestException({

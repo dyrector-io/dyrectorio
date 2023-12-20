@@ -19,6 +19,11 @@ export default class PrismaService extends PrismaClient<Prisma.PrismaClientOptio
     })
   }
 
+  async tableExists(name: string): Promise<boolean> {
+    const tables: number[] = await this.$queryRaw`SELECT 1 FROM information_schema.tables WHERE table_name = ${name}`
+    return tables.length > 0
+  }
+
   async findLastMigration(): Promise<string> {
     const migrations: { migration_name: string }[] = await this
       .$queryRaw`SELECT migration_name from _prisma_migrations WHERE rolled_back_at IS NULL ORDER BY finished_at DESC LIMIT 1`

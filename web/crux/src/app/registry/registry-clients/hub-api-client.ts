@@ -1,4 +1,5 @@
 import { getRegistryApiException } from 'src/exception/registry-exception'
+import V2Labels from './v2-labels'
 
 type HubApiPaginatedResponse = {
   count: number
@@ -8,6 +9,8 @@ type HubApiPaginatedResponse = {
 }
 
 const MAX_RATE_RETRY = 3
+
+export const DOCKER_HUB_REGISTRY_URL = 'index.docker.io'
 
 export default abstract class HubApiClient {
   constructor(
@@ -74,5 +77,10 @@ export default abstract class HubApiClient {
     } while (next)
 
     return result
+  }
+
+  async labels(image: string, tag: string): Promise<Record<string, string>> {
+    const labelClient = new V2Labels(DOCKER_HUB_REGISTRY_URL)
+    return labelClient.fetchLabels(this.prefix ? `${this.prefix}/${image}` : image, tag)
   }
 }

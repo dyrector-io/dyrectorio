@@ -455,6 +455,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
                 findErrorMessage={index => findErrorStartsWith(fieldErrors, `environment[${index}]`)}
+                message={findErrorFor(fieldErrors, `environment`)}
               />
             </div>
           )}

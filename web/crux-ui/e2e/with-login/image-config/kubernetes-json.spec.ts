@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test'
 import { test } from '../../utils/test.fixture'
-import { TEAM_ROUTES } from 'e2e/utils/common'
+import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import {
   wsPatchMatchCustomHeader,
   wsPatchMatchDeploymentAnnotations,
@@ -35,7 +35,12 @@ const setup = async (
 
 test.describe('Image kubernetes config from JSON', () => {
   test('Deployment strategy should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'deployment-strategy-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(
+      page,
+      'deployment-strategy-json',
+      '1.0.0',
+      NGINX_TEST_IMAGE_WITH_TAG,
+    )
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
@@ -62,7 +67,12 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Custom headers should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'custom-headers-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(
+      page,
+      'custom-headers-json',
+      '1.0.0',
+      NGINX_TEST_IMAGE_WITH_TAG,
+    )
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
@@ -92,7 +102,12 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Proxy headers should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'proxy-headers-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(
+      page,
+      'proxy-headers-json',
+      '1.0.0',
+      NGINX_TEST_IMAGE_WITH_TAG,
+    )
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
@@ -117,7 +132,12 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Load balancer should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'load-balancer-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(
+      page,
+      'load-balancer-json',
+      '1.0.0',
+      NGINX_TEST_IMAGE_WITH_TAG,
+    )
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
@@ -157,7 +177,7 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Health check config should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'health-check-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'health-check-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
@@ -196,7 +216,12 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Resource config should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'resource-config-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(
+      page,
+      'resource-config-json',
+      '1.0.0',
+      NGINX_TEST_IMAGE_WITH_TAG,
+    )
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
@@ -241,7 +266,7 @@ test.describe('Image kubernetes config from JSON', () => {
     page.locator(`div.max-h-128 > div:nth-child(2):near(label:has-text("${category}"))`)
 
   test('Labels should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'labels-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'labels-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
@@ -285,7 +310,7 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Annotations should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'annotations-json', '1.0.0', 'redis')
+    const { projectId, versionId, imageId } = await setup(page, 'annotations-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
