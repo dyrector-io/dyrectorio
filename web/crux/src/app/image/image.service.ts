@@ -254,11 +254,12 @@ export default class ImageService {
   private static mergeEnvironmentsRules(
     environment: UniqueKeyValue[],
     rules: Record<string, EnvironmentRule>,
-  ): UniqueKeyValue[] {
-    const currentEnv = environment.reduce((map, it) => {
-      map[it.key] = it
-      return map
-    }, {})
+  ): UniqueKeyValue[] | null {
+    const currentEnv =
+      environment?.reduce((map, it) => {
+        map[it.key] = it
+        return map
+      }, {}) ?? {}
 
     const mergedEnv = Object.entries(rules).reduce((map, it) => {
       const [key, rule] = it

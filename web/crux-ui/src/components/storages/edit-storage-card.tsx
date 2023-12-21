@@ -159,13 +159,16 @@ const EditStorageCard = (props: EditStorageCardProps) => {
 
           {!values.public && (
             <>
-              <DyoToggle
-                className="mt-8"
-                name="changeCredentials"
-                label={t('common:changeCredentials')}
-                checked={values.changeCredentials}
-                setFieldValue={formikSetFieldValueOrIgnore(formik, !editing)}
-              />
+              {editing && (
+                <DyoToggle
+                  className="mt-8"
+                  disabled={!editing}
+                  name="changeCredentials"
+                  label={t('common:changeCredentials')}
+                  checked={values.changeCredentials}
+                  setFieldValue={formikSetFieldValueOrIgnore(formik, !editing)}
+                />
+              )}
 
               {values.changeCredentials && (
                 <>
