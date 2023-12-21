@@ -221,32 +221,33 @@ export default class V2Labels {
       const manifestPromises = index.manifests
         .filter(it => it.mediaType === MEDIA_TYPE_MANIFEST)
         .map(async it => {
-          const manifest = await this.fetchV2<ManifestBaseResponse>(`${image}/manifests/${it.digest}`, {
+          const subManifest = await this.fetchV2<ManifestBaseResponse>(`${image}/manifests/${it.digest}`, {
             headers: {
               Accept: it.mediaType,
             },
           })
-          if (!manifest) {
+          if (!subManifest) {
             return {}
           }
 
-          if (manifest.mediaType == MEDIA_TYPE_INDEX) {
+          if (subManifest.mediaType === MEDIA_TYPE_INDEX) {
             return {}
           }
 
-          const singleManifest = manifest as ManifestResponse
+          const singleManifest = subManifest as ManifestResponse
 
           return await this.fetchLabelsByDigest(image, singleManifest.config.digest)
         })
 
       const platformLabels = await Promise.all(manifestPromises)
 
-      return platformLabels.reduce((map, it) => {
-        return {
+      return platformLabels.reduce(
+        (map, it) => ({
           ...map,
           ...it,
-        }
-      }, {})
+        }),
+        {},
+      )
     }
 
     const singleManifest = manifest as ManifestResponse
