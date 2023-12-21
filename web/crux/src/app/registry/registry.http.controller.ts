@@ -18,11 +18,18 @@ import UuidParams from 'src/decorators/api-params.decorator'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
-import { IdentityFromRequest } from '../token/jwt-auth.guard'
+import { AuthStrategy, IdentityFromRequest } from '../token/jwt-auth.guard'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
+import RegistryJwtAuthGuard from './guards/registry.jwt-auth.guard'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
 import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
-import { CreateRegistryDto, RegistryDetailsDto, RegistryDto, UpdateRegistryDto } from './registry.dto'
+import {
+  CreateRegistryDto,
+  RegistryDetailsDto,
+  RegistryDto,
+  RegistryV2HookEnvelopeDto,
+  UpdateRegistryDto,
+} from './registry.dto'
 import RegistryService from './registry.service'
 
 const PARAM_TEAM_SLUG = 'teamSlug'
@@ -36,7 +43,7 @@ const ROUTE_REGISTRY_ID = ':registryId'
 
 @Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_REGISTRIES}`)
 @ApiTags(ROUTE_REGISTRIES)
-@UseGuards(RegistryTeamAccessGuard)
+@UseGuards(RegistryJwtAuthGuard, RegistryTeamAccessGuard)
 export default class RegistryHttpController {
   constructor(private service: RegistryService) {}
 
@@ -138,5 +145,20 @@ export default class RegistryHttpController {
   @UuidParams(PARAM_REGISTRY_ID)
   async deleteRegistry(@TeamSlug() _: string, @RegistryId(DeleteRegistryValidationPipe) id: string): Promise<void> {
     await this.service.deleteRegistry(id)
+  }
+
+  @Post(`${ROUTE_REGISTRY_ID}/hooks/v2`)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    description: 'Registry events for v2 compatible registries',
+  })
+  @ApiNoContentResponse({ description: 'Event processed.' })
+  @ApiBadRequestResponse({ description: 'Invalid event format.' })
+  @ApiNotFoundResponse({ description: 'Registry not found.' })
+  @UuidParams(PARAM_REGISTRY_ID)
+  @AuthStrategy('registry-hook')
+  @AuditLogLevel('disabled')
+  async postV2Hook(@RegistryId() id: string, @Body() req: RegistryV2HookEnvelopeDto): Promise<void> {
+    await this.service.registryV2Event(id, req)
   }
 }

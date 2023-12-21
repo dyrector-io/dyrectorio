@@ -8,7 +8,7 @@ import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import KratosService, { hasKratosSession } from 'src/services/kratos.service'
 import { WS_TYPE_UNSUBSCRIBE, WsClient } from 'src/websockets/common'
 
-export type AuthStrategyType = 'user-token' | 'deploy-token' | 'disabled'
+export type AuthStrategyType = 'user-token' | 'deploy-token' | 'registry-hook' | 'disabled'
 export const AUTH_STRATEGY = 'auth-strategy'
 export const AuthStrategy = (strategy: AuthStrategyType) => SetMetadata(AUTH_STRATEGY, strategy)
 export const DisableAuth = () => AuthStrategy('disabled')
@@ -75,7 +75,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
     if (!activated) {
       this.logger.verbose('Failed to authorize with jwt.')
       // let the DeployJwtAuthGuard decide if the jwt is valid
-      return strategy === 'deploy-token'
+      return strategy === 'deploy-token' || strategy === 'registry-hook'
     }
 
     const jwt = req.user

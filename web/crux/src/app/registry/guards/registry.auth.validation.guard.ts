@@ -134,7 +134,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
     const auth = await this.getCredentialsForRegistry(registryId, req)
 
     return this.httpService
-      .get(`https://${req.url}/v2/`, {
+      .get(`http://${req.url}/v2/`, {
         withCredentials,
         auth,
       })

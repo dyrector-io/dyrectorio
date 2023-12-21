@@ -116,10 +116,25 @@ model Registry {
   apiUrl          String?
 
   images Image[]
+  tokens RegistryToken[]
   team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String  @db.Uuid
 
   @@unique([name, teamId])
+}
+
+model RegistryToken {
+  id           String    @id @default(uuid()) @db.Uuid
+  registryId   String    @db.Uuid
+  createdBy    String    @db.Uuid
+  createdAt    DateTime  @default(now()) @db.Timestamptz(6)
+  expiresAt    DateTime? @db.Timestamptz(6)
+  nonce        String    @db.Uuid
+
+  registry Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
+
+  @@unique([registryId])
+  @@unique([registryId, nonce])
 }
 
 model Project {
@@ -509,10 +524,12 @@ enum NotificationTypeEnum {
 }
 
 enum NotificationEventTypeEnum {
-  deploymentCreated
+  deploymentStatus
   versionCreated
   nodeAdded
   userInvited
+  imagePushed
+  imagePulled
 }
 
 enum NodeEventTypeEnum {

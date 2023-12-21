@@ -6,8 +6,10 @@ import EncryptionService from 'src/services/encryption.service'
 import PrismaService from 'src/services/prisma.service'
 import RegistryMetrics from 'src/shared/metrics/registry.metrics'
 import TeamRepository from '../team/team.repository'
-import { CreateRegistryDto, RegistryDetailsDto, RegistryDto, UpdateRegistryDto } from './registry.dto'
+import { CreateRegistryDto, RegistryDetailsDto, RegistryDto, RegistryV2HookEnvelopeDto, UpdateRegistryDto } from './registry.dto'
 import RegistryMapper from './registry.mapper'
+import DomainNotificationService from 'src/services/domain.notification.service'
+import { RegistryImageMessage, VersionMessage } from 'src/domain/notification-templates'
 
 @Injectable()
 export default class RegistryService {
@@ -16,6 +18,7 @@ export default class RegistryService {
   constructor(
     private readonly teamRepository: TeamRepository,
     private readonly encryptionService: EncryptionService,
+    private readonly notificationService: DomainNotificationService,
     private readonly prisma: PrismaService,
     private readonly mapper: RegistryMapper,
   ) {}
@@ -113,6 +116,33 @@ export default class RegistryService {
     this.registryChangedEvent.next(id)
 
     RegistryMetrics.count(deleted.type).dec()
+  }
+
+  async registryV2Event(id: string, req: RegistryV2HookEnvelopeDto): Promise<void> {
+    const registry = await this.prisma.registry.findUniqueOrThrow({
+      where: {
+        id,
+      },
+      select: {
+        name: true,
+        teamId: true,
+      },
+    })
+
+    const notis = req.events.map(async ev => {
+      const { target } = ev
+
+      await this.notificationService.sendNotification({
+        teamId: registry.teamId,
+        messageType: this.mapper.v2HookActionTypeToNotificationMessageType(ev.action),
+        message: {
+          registry: registry.name,
+          image: `${target.repository}:${target.tag}`
+        } as RegistryImageMessage,
+      })
+    })
+
+    await Promise.all(notis)
   }
 
   watchRegistryEvents(): Observable<string> {

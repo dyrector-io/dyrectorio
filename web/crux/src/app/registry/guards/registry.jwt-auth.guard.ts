@@ -1,12 +1,12 @@
 import { ExecutionContext, Injectable, Logger } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
-import { DEPLOY_TOKEN_STRATEGY } from '../deploy.jwt.strategy'
 import CustomJwtAuthGuard from 'src/guards/custom.jwt-auth.guard'
+import { REGISTRY_HOOK_STRATEGY } from '../registry.jwt.strategy'
 
 @Injectable()
-export default class DeployJwtAuthGuard extends AuthGuard(DEPLOY_TOKEN_STRATEGY) {
+export default class RegistryJwtAuthGuard extends AuthGuard(REGISTRY_HOOK_STRATEGY) {
   private readonly guard = new CustomJwtAuthGuard(
-    new Logger(DeployJwtAuthGuard.name),
+    new Logger(RegistryJwtAuthGuard.name),
     ctx => super.canActivate(ctx) as Promise<boolean>,
   )
 

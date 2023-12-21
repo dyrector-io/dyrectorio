@@ -228,3 +228,5 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
 }
 
 export default EditRegistryCard
+
+// TODO (@m8vago): add registry hook token option to v2 fields

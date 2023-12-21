@@ -43,7 +43,7 @@ export default class NotificationHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      'Response should include `teamSlug` in the URL, `type`, `id`, `name`, `url`, `active`, and `creatorName` in the body.',
+      'Response should include `teamSlug` in the URL, `type`, `id`, `name`, `url`, `active` in the body.',
     summary: 'Retrieve notifications that belong to a team.',
   })
   @ApiOkResponse({ type: NotificationDto, isArray: true, description: 'Notifications listed.' })
@@ -56,7 +56,7 @@ export default class NotificationHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      'Request must include `teamSlug` and `notificationId` parameters in URL. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
+      'Request must include `teamSlug` and `notificationId` parameters in URL. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`.',
     summary: 'Fetch details of a notification.',
   })
   @ApiOkResponse({ type: NotificationDetailsDto, description: 'Details of notification listed.' })
@@ -74,7 +74,7 @@ export default class NotificationHttpController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
-      'Request must include `teamSlug` in the URL, `type`, `enabledEvents`, `id`, `name`, `url`, and `active` in the body. Response should list `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
+      'Request must include `teamSlug` in the URL, `type`, `enabledEvents`, `id`, `name`, `url`, and `active` in the body. Response should list `type`, `enabledEvents`, `id`, `name`, `url`, `active`.',
     summary: 'Create a new notification.',
   })
   @CreatedWithLocation()
@@ -100,7 +100,7 @@ export default class NotificationHttpController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description:
-      'Request must include `teamSlug` in the URL, `type`, `enabledEvents`, `id`, `name`, `url`, and `active` in the body. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`, and `creatorName`.',
+      'Request must include `teamSlug` in the URL, `type`, `enabledEvents`, `id`, `name`, `url`, and `active` in the body. Response should include `type`, `enabledEvents`, `id`, `name`, `url`, `active`.',
     summary: 'Modify a notification.',
   })
   @ApiOkResponse({ type: NotificationDetailsDto, description: 'Notification modified.' })

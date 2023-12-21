@@ -4,7 +4,6 @@ import { Identity } from '@ory/kratos-client'
 import { catchError, lastValueFrom, map, of } from 'rxjs'
 import TeamRepository from 'src/app/team/team.repository'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
-import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import {
   CreateNotificationDto,
@@ -22,7 +21,6 @@ export default class NotificationService {
     private mapper: NotificationMapper,
     private prisma: PrismaService,
     private teamRepository: TeamRepository,
-    private kratos: KratosService,
     private httpService: HttpService,
   ) {}
 
@@ -38,10 +36,7 @@ export default class NotificationService {
       },
     })
 
-    const userIds = notifications.map(r => r.createdBy)
-    const identities = await this.kratos.getIdentitiesByIds(new Set(userIds))
-
-    return notifications.map(it => this.mapper.toDto(it, identities.get(it.createdBy)))
+    return notifications.map(it => this.mapper.toDto(it))
   }
 
   async getNotificationDetails(id: string): Promise<NotificationDetailsDto> {
@@ -54,9 +49,7 @@ export default class NotificationService {
       },
     })
 
-    const identity = await this.kratos.getIdentityById(notification.createdBy)
-
-    return this.mapper.detailsToDto(notification, identity)
+    return this.mapper.detailsToDto(notification)
   }
 
   async createNotification(
@@ -84,7 +77,7 @@ export default class NotificationService {
       },
     })
 
-    return this.mapper.toDto(notification, identity)
+    return this.mapper.toDto(notification)
   }
 
   async updateNotification(id: string, request: UpdateNotificationDto, identity: Identity): Promise<NotificationDto> {
@@ -123,7 +116,7 @@ export default class NotificationService {
       },
     })
 
-    return this.mapper.toDto(notification, identity)
+    return this.mapper.toDto(notification)
   }
 
   async deleteNotification(id: string): Promise<void> {
@@ -143,7 +136,7 @@ export default class NotificationService {
 
     const success = await lastValueFrom(
       this.httpService.post(notification.url, { content: TEST_MESSAGE, text: TEST_MESSAGE }).pipe(
-        map(it => it.status === 200),
+        map(it => it.status === 200 || it.status === 204),
         catchError(() => of(false)),
       ),
     )

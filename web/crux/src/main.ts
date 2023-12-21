@@ -22,6 +22,7 @@ import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import prismaBootstrap from './services/prisma.bootstrap'
 import { productionEnvironment } from './shared/config'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
+import { NestExpressApplication } from '@nestjs/platform-express'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -53,7 +54,7 @@ const loadGrpcOptions = (port: number): GrpcOptions => ({
 })
 
 const serve = async () => {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
     // Using Nestjs Logger Service for default logging
     logger: new Logger(),
@@ -88,6 +89,8 @@ const serve = async () => {
     app.get(AuditLoggerInterceptor),
   )
   app.useGlobalPipes(new ValidationPipe({ transform: true }))
+
+  app.useBodyParser('json', { type: ['application/json', 'application/vnd.docker.distribution.events.v1+json']  })
 
   app.useWebSocketAdapter(new DyoWsAdapter(app, authGuard))
 
