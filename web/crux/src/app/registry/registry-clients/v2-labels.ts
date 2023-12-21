@@ -11,11 +11,22 @@ type BaseResponse = {
   errors?: V2Error[]
 }
 
-type ManifestResponse = BaseResponse & {
+type ManifestBaseResponse = BaseResponse & {
   schemaVersion: number
+  mediaType: string
+}
+
+type ManifestResponse = ManifestBaseResponse & {
   config: {
     digest: string
   }
+}
+
+type ManifestIndexResponse = ManifestBaseResponse & {
+  manifests: {
+    mediaType: string
+    digest: string
+  }[]
 }
 
 type BlobResponse = BaseResponse & {
@@ -38,6 +49,9 @@ const ERROR_DENIED = 'DENINED'
 const ERROR_MANIFEST_UNKNOWN = 'MANIFEST_UNKNOWN'
 
 const HEADER_WWW_AUTHENTICATE = 'www-authenticate'
+
+const MEDIA_TYPE_INDEX = 'application/vnd.oci.image.index.v1+json'
+const MEDIA_TYPE_MANIFEST = 'application/vnd.oci.image.manifest.v1+json'
 
 export default class V2Labels {
   private readonly logger = new Logger(V2Labels.name)
@@ -185,8 +199,14 @@ export default class V2Labels {
     return result.data
   }
 
+  async fetchLabelsByDigest(image: string, digest: string): Promise<Record<string, string>> {
+    const configManifest = await this.fetchV2<BlobResponse>(`${image}/blobs/${digest}`)
+
+    return configManifest.config.Labels
+  }
+
   async fetchLabels(image: string, tag: string): Promise<Record<string, string>> {
-    const manifest = await this.fetchV2<ManifestResponse>(`${image}/manifests/${tag ?? 'latest'}`, {
+    const manifest = await this.fetchV2<ManifestBaseResponse>(`${image}/manifests/${tag ?? 'latest'}`, {
       headers: {
         Accept: this.manifestMimeType,
       },
@@ -195,8 +215,42 @@ export default class V2Labels {
       return {}
     }
 
-    const configManifest = await this.fetchV2<BlobResponse>(`${image}/blobs/${manifest.config.digest}`)
+    if (manifest.mediaType === MEDIA_TYPE_INDEX) {
+      const index = manifest as ManifestIndexResponse
 
-    return configManifest.config.Labels
+      const manifestPromises = index.manifests
+        .filter(it => it.mediaType === MEDIA_TYPE_MANIFEST)
+        .map(async it => {
+          const manifest = await this.fetchV2<ManifestBaseResponse>(`${image}/manifests/${it.digest}`, {
+            headers: {
+              Accept: it.mediaType,
+            },
+          })
+          if (!manifest) {
+            return {}
+          }
+
+          if (manifest.mediaType == MEDIA_TYPE_INDEX) {
+            return {}
+          }
+
+          const singleManifest = manifest as ManifestResponse
+
+          return await this.fetchLabelsByDigest(image, singleManifest.config.digest)
+        })
+
+      const platformLabels = await Promise.all(manifestPromises)
+
+      return platformLabels.reduce((map, it) => {
+        return {
+          ...map,
+          ...it,
+        }
+      }, {})
+    }
+
+    const singleManifest = manifest as ManifestResponse
+
+    return await this.fetchLabelsByDigest(image, singleManifest.config.digest)
   }
 }
