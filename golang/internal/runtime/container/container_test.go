@@ -131,7 +131,7 @@ func TestVersionCheck(t *testing.T) {
 			ErrExpected:       errExternal,
 		},
 		{
-			Info:              getDockerInfoDocker(),
+			Info:              getDockerInfoPodman(),
 			MockClientVersion: "a.b.c",
 			ErrExpected:       errExternal,
 		},
@@ -146,6 +146,68 @@ func TestVersionCheck(t *testing.T) {
 			assert.ErrorIs(t, err, tC.ErrExpected)
 		}
 	}
+}
+
+func FuzzVersionCheck(f *testing.F) {
+	testCases := []VersionTestCase{
+		// no errors
+		{
+			Info:              getDockerInfoDocker(),
+			MockClientVersion: "23.0.0",
+		},
+		{
+			Info:              getDockerInfoPodman(),
+			MockClientVersion: "4.4.0",
+		},
+		// server outdated errors
+		{
+			Info:              getDockerInfoDocker(),
+			MockClientVersion: "20.10.0",
+		},
+		{
+			Info:              getDockerInfoPodman(),
+			MockClientVersion: "4.0.0",
+		},
+		{
+			Info:              getDockerInfoDocker(),
+			MockClientVersion: "19.03.0",
+		},
+		{
+			Info:              getDockerInfoPodman(),
+			MockClientVersion: "3.4.0",
+		},
+		{
+			Info:              getDockerInfoInvalid(),
+			MockClientVersion: "23.0.0",
+		},
+		{
+			Info:              getDockerInfoInvalid(),
+			MockClientVersion: "4.4.0",
+		},
+		// We don't check the specific error there, since it is not covered by the package but by an external dependency.
+		{
+			Info:              getDockerInfoDocker(),
+			MockClientVersion: "a.b.c",
+		},
+		{
+			Info:              getDockerInfoPodman(),
+			MockClientVersion: "a.b.c",
+		},
+	}
+
+	// seed corpus
+	for _, tC := range testCases {
+		f.Add(tC.MockClientVersion, tC.Info.InitBinary)
+	}
+
+	f.Fuzz(func(t *testing.T, mockClientVersion, dockerInitBinary string) {
+		// mock docker info
+		dockerInfo := &types.Info{
+			InitBinary: dockerInitBinary,
+		}
+
+		containerRuntime.VersionCheck(context.TODO(), newMockClient(mockClientVersion, dockerInfo))
+	})
 }
 
 func TestErrors(t *testing.T) {
