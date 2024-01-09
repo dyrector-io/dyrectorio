@@ -53,6 +53,8 @@ const HEADER_WWW_AUTHENTICATE = 'www-authenticate'
 const MEDIA_TYPE_INDEX = 'application/vnd.oci.image.index.v1+json'
 const MEDIA_TYPE_MANIFEST = 'application/vnd.oci.image.manifest.v1+json'
 
+const MANIFEST_MAX_DEPTH = 20
+
 export default class V2Labels {
   private readonly logger = new Logger(V2Labels.name)
 
@@ -215,43 +217,42 @@ export default class V2Labels {
       return {}
     }
 
-    if (manifest.mediaType === MEDIA_TYPE_INDEX) {
-      const index = manifest as ManifestIndexResponse
+    const manifests: ManifestBaseResponse[] = [manifest]
+    let currentLabels = {}
 
-      const manifestPromises = index.manifests
-        .filter(it => it.mediaType === MEDIA_TYPE_MANIFEST)
-        .map(async it => {
-          const subManifest = await this.fetchV2<ManifestBaseResponse>(`${image}/manifests/${it.digest}`, {
+    let depth = MANIFEST_MAX_DEPTH
+    while (manifests.length > 0 && depth > 0) {
+      const current = manifests.shift()
+      depth -= 1
+
+      if (current.mediaType === MEDIA_TYPE_MANIFEST) {
+        const labelManifest = current as ManifestResponse
+
+        const labels = await this.fetchLabelsByDigest(image, labelManifest.config.digest)
+
+        currentLabels = {
+          ...currentLabels,
+          ...labels,
+        }
+      } else if (current.mediaType === MEDIA_TYPE_INDEX) {
+        const indexManifest = current as ManifestIndexResponse
+
+        const subManifestPromises = indexManifest.manifests.map(it =>
+          this.fetchV2<ManifestBaseResponse>(`${image}/manifests/${it.digest}`, {
             headers: {
               Accept: it.mediaType,
             },
-          })
-          if (!subManifest) {
-            return {}
-          }
+          }),
+        )
 
-          if (subManifest.mediaType === MEDIA_TYPE_INDEX) {
-            return {}
-          }
+        const subManifests = await Promise.all(subManifestPromises)
 
-          const singleManifest = subManifest as ManifestResponse
-
-          return await this.fetchLabelsByDigest(image, singleManifest.config.digest)
-        })
-
-      const platformLabels = await Promise.all(manifestPromises)
-
-      return platformLabels.reduce(
-        (map, it) => ({
-          ...map,
-          ...it,
-        }),
-        {},
-      )
+        subManifests.forEach(it => manifests.push(it))
+      } else {
+        throw new Error(`Unknown manifest type: ${current.mediaType}`)
+      }
     }
 
-    const singleManifest = manifest as ManifestResponse
-
-    return await this.fetchLabelsByDigest(image, singleManifest.config.digest)
+    return currentLabels
   }
 }
