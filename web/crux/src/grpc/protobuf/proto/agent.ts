@@ -261,6 +261,7 @@ export interface Metrics {
 
 export interface ExpectedState {
   state: ContainerState
+  timeout?: number | undefined
   exitCode?: number | undefined
 }
 
@@ -1015,6 +1016,7 @@ export const ExpectedState = {
   fromJSON(object: any): ExpectedState {
     return {
       state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
+      timeout: isSet(object.timeout) ? Number(object.timeout) : undefined,
       exitCode: isSet(object.exitCode) ? Number(object.exitCode) : undefined,
     }
   },
@@ -1022,6 +1024,7 @@ export const ExpectedState = {
   toJSON(message: ExpectedState): unknown {
     const obj: any = {}
     message.state !== undefined && (obj.state = containerStateToJSON(message.state))
+    message.timeout !== undefined && (obj.timeout = Math.round(message.timeout))
     message.exitCode !== undefined && (obj.exitCode = Math.round(message.exitCode))
     return obj
   },

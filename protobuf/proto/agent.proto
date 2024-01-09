@@ -172,7 +172,8 @@ message Metrics {
 
 message ExpectedState {
   common.ContainerState state = 100;
-  optional int32 exitCode = 101;
+  optional int32 timeout = 101;
+  optional int32 exitCode = 102;
 }
 
 message DagentContainerConfig {

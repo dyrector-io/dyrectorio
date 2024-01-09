@@ -86,8 +86,7 @@ export default class ImageMapper {
       networkMode: config.networkMode,
       networks: toPrismaJson(config.networks),
       dockerLabels: toPrismaJson(config.dockerLabels),
-      expectedState: config.expectedState,
-      expectedExitCode: config.expectedExitCode,
+      expectedState: toPrismaJson(config.expectedState),
 
       // crane
       deploymentStrategy: config.deploymentStrategy,

@@ -290,8 +290,13 @@ func waitForContainer(
 
 	errorChannel := make(chan error)
 
+	timeoutSeconds := ContainerStateWaitSeconds
+	if expected.Timeout != nil {
+		timeoutSeconds = int(*expected.Timeout)
+	}
+
 	go func() {
-		timeoutCtx, cancel := context.WithTimeout(ctx, time.Second*ContainerStateWaitSeconds)
+		timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSeconds)*time.Second)
 		defer cancel()
 
 		chanMessages, chanErrors := cli.Events(timeoutCtx, types.EventsOptions{

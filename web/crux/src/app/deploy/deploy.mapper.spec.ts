@@ -265,6 +265,7 @@ describe('DeployMapper', () => {
       },
     ],
     metrics: null,
+    expectedState: null,
   }
 
   const fullInstance: InstanceContainerConfigData = {
@@ -488,6 +489,7 @@ describe('DeployMapper', () => {
       },
     ],
     metrics: null,
+    expectedState: null,
   }
 
   const generateUndefinedInstance = (): InstanceContainerConfigData => {

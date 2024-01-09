@@ -189,6 +189,12 @@ export type Metrics = {
   port?: number
 }
 
+export type ExpectedContainerState = {
+  state: ContainerState
+  timeout?: number
+  exitCode?: number
+}
+
 export type ContainerConfigData = {
   // common
   name: string
@@ -215,8 +221,7 @@ export type ContainerConfigData = {
   networkMode: ContainerNetworkMode
   networks?: UniqueKey[]
   dockerLabels?: UniqueKeyValue[]
-  expectedState?: ContainerState
-  expectedExitCode?: number
+  expectedState?: ExpectedContainerState
 
   // crane
   deploymentStrategy: ContainerDeploymentStrategyType
@@ -231,7 +236,13 @@ export type ContainerConfigData = {
   metrics?: Metrics
 }
 
-type DagentSpecificConfig = 'logConfig' | 'restartPolicy' | 'networkMode' | 'networks' | 'dockerLabels'
+type DagentSpecificConfig =
+  | 'logConfig'
+  | 'restartPolicy'
+  | 'networkMode'
+  | 'networks'
+  | 'dockerLabels'
+  | 'expectedState'
 type CraneSpecificConfig =
   | 'deploymentStrategy'
   | 'customHeaders'
@@ -302,8 +313,7 @@ export type JsonContainerConfig = {
   initContainers?: JsonInitContainer[]
   capabilities?: JsonKeyValue
   storage?: ContainerStorage
-  expectedState?: ContainerState
-  expectedExitCode?: number
+  expectedState?: ExpectedContainerState
 
   // dagent
   logConfig?: JsonContainerConfigLog
@@ -414,8 +424,13 @@ export const mergeConfigs = (
     restartPolicy: instance.restartPolicy ?? image.restartPolicy ?? 'unlessStopped',
     networks: instance.networks ?? image.networks,
     dockerLabels: instance.dockerLabels ?? image.dockerLabels,
-    expectedState: instance.expectedState ?? image.expectedState,
-    expectedExitCode: instance.expectedExitCode ?? image.expectedExitCode,
+    expectedState:
+      !!image.expectedState || !!instance.expectedState
+        ? {
+            ...image.expectedState,
+            ...instance.expectedState,
+          }
+        : null,
   }
 }
 

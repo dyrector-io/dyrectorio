@@ -350,8 +350,9 @@ export default class DeployMapper {
       expectedState: !config.expectedState
         ? null
         : {
-            state: this.imageMapper.stateToProto(config.expectedState),
-            exitCode: config.expectedExitCode,
+            state: this.imageMapper.stateToProto(config.expectedState.state),
+            timeout: config.expectedState.timeout,
+            exitCode: config.expectedState.exitCode,
           },
     }
   }

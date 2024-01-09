@@ -156,6 +156,12 @@ export type Metrics = {
   port?: number
 }
 
+export type ExpectedContainerState = {
+  state: ContainerState
+  timeout?: number
+  exitCode?: number
+}
+
 export type ContainerConfigData = {
   // common
   name: string
@@ -177,8 +183,6 @@ export type ContainerConfigData = {
   storageSet?: boolean
   storageId?: string
   storageConfig?: Storage
-  expectedState?: ContainerState
-  expectedExitCode?: number
 
   // dagent
   logConfig?: Log
@@ -186,6 +190,7 @@ export type ContainerConfigData = {
   networkMode: NetworkMode
   networks?: UniqueKey[]
   dockerLabels?: UniqueKeyValue[]
+  expectedState?: ExpectedContainerState
 
   // crane
   deploymentStrategy: ContainerDeploymentStrategyType

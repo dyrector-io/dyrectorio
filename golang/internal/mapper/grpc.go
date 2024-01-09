@@ -176,6 +176,7 @@ func mapDagentConfig(dagent *agent.DagentContainerConfig, containerConfig *v1.Co
 	if dagent.ExpectedState != nil {
 		containerConfig.ExpectedState = &v1.ExpectedState{
 			State:    mapContainerState(dagent.ExpectedState.State),
+			Timeout:  dagent.ExpectedState.Timeout,
 			ExitCode: dagent.ExpectedState.ExitCode,
 		}
 	}

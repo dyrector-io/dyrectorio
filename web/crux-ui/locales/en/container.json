@@ -60,19 +60,10 @@
     "buketPathTips": "You can also use any subfolder of a bucket by specifying its path (\"bucket/folder/sub-folder\").",
     "key": "Key",
     "value": "Value",
-    "expectedState": "Expected state",
-    "expectedExitCode": "Exit code",
-    "expectedStates": {
-      "running": "Running",
-      "exited": "Exited",
-      "ready": "Ready",
-      "live": "Live"
-    },
     "placeholders": {
       "port": "Port",
       "path": "Path",
-      "containerDefault": "Container default",
-      "expectedExitCode": "Expected exit code"
+      "containerDefault": "Container default"
     }
   },
 
@@ -110,10 +101,14 @@
     "logConfig": "Log config",
     "options": "Options",
     "networks": "Networks",
+    "dockerLabels": "Docker labels",
+    "expectedState": "Expected state",
+    "expectedStateTimeout": "Timeout (s)",
+    "expectedExitCode": "Exit code",
     "placeholders": {
-      "network": "Network"
-    },
-    "dockerLabels": "Docker labels"
+      "network": "Network",
+      "expectedExitCode": "Expected exit code"
+    }
   },
 
   "crane": {

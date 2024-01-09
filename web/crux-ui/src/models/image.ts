@@ -90,7 +90,6 @@ export const COMMON_CONFIG_PROPERTIES = [
   'args',
   'initContainers',
   'storage',
-  'expectedState',
 ] as const
 
 export const CRANE_CONFIG_PROPERTIES = [
@@ -112,6 +111,7 @@ export const DAGENT_CONFIG_PROPERTIES = [
   'networkMode',
   'networks',
   'dockerLabels',
+  'expectedState',
 ] as const
 
 export const ALL_CONFIG_PROPERTIES = [

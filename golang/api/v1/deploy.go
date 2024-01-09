@@ -141,6 +141,7 @@ const (
 
 type ExpectedState struct {
 	State    ContainerState `json:"state"`
+	Timeout  *int32         `json:"timeout"`
 	ExitCode *int32         `json:"exitCode"`
 }
 
