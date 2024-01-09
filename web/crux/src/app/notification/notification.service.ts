@@ -13,7 +13,7 @@ import {
 } from './notification.dto'
 import NotificationMapper from './notification.mapper'
 
-const TEST_MESSAGE = 'Its a test!'
+const TEST_MESSAGE = "It's a test!"
 
 @Injectable()
 export default class NotificationService {

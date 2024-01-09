@@ -24,7 +24,7 @@
 
   "hook": {
     "textWebhook": "Test Webhook",
-    "message": "Its a test!",
+    "message": "It's a test!",
     "success": "Your hook is working!",
     "error": "Something is wrong with your hook!"
   },
