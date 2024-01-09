@@ -26,6 +26,22 @@ export type Registry = BasicRegistry & {
 export type RegistryDetailsBase = Omit<Registry, 'url'> & {
   updatedAt: string
   inUse: boolean
+  token?: RegistryToken | null
+}
+
+export type RegistryToken = {
+  id: string
+  createdAt: string
+  expiresAt?: string | null
+}
+
+export type CreateRegistryToken = {
+  expirationInDays?: number
+}
+
+export type RegistryTokenCreated = RegistryToken & {
+  token: string
+  config: string
 }
 
 type EditableRegistryCredentials = {
@@ -128,7 +144,10 @@ export type RegistryDetailsDto = RegistryDetails & {
   >
 }
 
-type UpsertRegistryDtoBase = Omit<RegistryDetails, 'id' | 'updatedAt' | 'createdAt' | 'inUse' | 'changeCredentials'>
+type UpsertRegistryDtoBase = Omit<
+  RegistryDetails,
+  'id' | 'updatedAt' | 'createdAt' | 'inUse' | 'token' | 'changeCredentials'
+>
 export type CreateRegistryDto = UpsertRegistryDtoBase & {
   details: Omit<
     | ((
@@ -215,6 +234,7 @@ export const registryDetailsDtoToUI = (dto: RegistryDetailsDto): RegistryDetails
     icon: dto.icon ?? null,
     updatedAt: dto.updatedAt ?? dto.createdAt,
     type: dto.type,
+    token: dto.token,
     changeCredentials: false,
   }
 

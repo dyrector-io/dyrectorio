@@ -35,7 +35,7 @@ export default class TeamAccessGuard implements CanActivate {
 
     const identity = identityOfRequest(context)
 
-    if (!identity && strategy === 'deploy-token') {
+    if (!identity && (strategy === 'deploy-token' || strategy === 'registry-hook')) {
       return true
     }
 

@@ -3,6 +3,7 @@ import { Logger, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { MicroserviceOptions, Transport } from '@nestjs/microservices'
+import { NestExpressApplication } from '@nestjs/platform-express'
 import { SwaggerModule } from '@nestjs/swagger'
 import { Logger as PinoLogger } from 'nestjs-pino'
 import { join } from 'path'
@@ -22,7 +23,6 @@ import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import prismaBootstrap from './services/prisma.bootstrap'
 import { productionEnvironment } from './shared/config'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
-import { NestExpressApplication } from '@nestjs/platform-express'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -90,7 +90,7 @@ const serve = async () => {
   )
   app.useGlobalPipes(new ValidationPipe({ transform: true }))
 
-  app.useBodyParser('json', { type: ['application/json', 'application/vnd.docker.distribution.events.v1+json']  })
+  app.useBodyParser('json', { type: ['application/json', 'application/vnd.docker.distribution.events.v1+json'] })
 
   app.useWebSocketAdapter(new DyoWsAdapter(app, authGuard))
 

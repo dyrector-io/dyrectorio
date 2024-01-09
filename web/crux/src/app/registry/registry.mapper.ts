@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { Registry, RegistryTypeEnum } from '@prisma/client'
+import { Registry, RegistryToken, RegistryTypeEnum } from '@prisma/client'
 import { NotificationMessageType } from 'src/domain/notification-templates'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 import EncryptionService from 'src/services/encryption.service'
@@ -23,7 +23,7 @@ import {
   UpdateHubRegistryDetailsDto,
   UpdateRegistryDto,
   UpdateUncheckedRegistryDetailsDto,
-  UpdateV2RegistryDetailsDto
+  UpdateV2RegistryDetailsDto,
 } from './registry.dto'
 
 type RegistryTypeUnion = Pick<Registry, 'url' | 'type' | 'apiUrl' | 'user' | 'token' | 'imageNamePrefix' | 'namespace'>
@@ -94,8 +94,17 @@ export default class RegistryMapper {
       })
     }
 
+    const regToken = registry.registryToken
+
     return {
       ...registry,
+      token: !regToken
+        ? null
+        : {
+            id: regToken.id,
+            createdAt: regToken.createdAt,
+            expiresAt: regToken.expiresAt,
+          },
       inUse: registry._count?.images > 0,
       icon: registry.icon ?? null,
       details,
@@ -231,6 +240,7 @@ type CredentialsDto = {
 }
 
 type RegistryWithCount = Registry & {
+  registryToken: RegistryToken
   _count?: {
     images: number
   }

@@ -25,8 +25,10 @@ import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
 import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
 import {
   CreateRegistryDto,
+  CreateRegistryTokenDto,
   RegistryDetailsDto,
   RegistryDto,
+  RegistryTokenCreatedDto,
   RegistryV2HookEnvelopeDto,
   UpdateRegistryDto,
 } from './registry.dto'
@@ -40,6 +42,7 @@ const TeamSlug = () => Param(PARAM_TEAM_SLUG)
 const ROUTE_TEAM_SLUG = ':teamSlug'
 const ROUTE_REGISTRIES = 'registries'
 const ROUTE_REGISTRY_ID = ':registryId'
+const ROUTE_TOKEN = 'token'
 
 @Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_REGISTRIES}`)
 @ApiTags(ROUTE_REGISTRIES)
@@ -147,10 +150,54 @@ export default class RegistryHttpController {
     await this.service.deleteRegistry(id)
   }
 
+  @Put(`${ROUTE_REGISTRY_ID}/${ROUTE_TOKEN}`)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    description:
+      'Request must include `teamSlug` and `registryId` in the URL. In the body optionally the expiration date as `expirationInDays`.',
+    summary: 'Create registry token.',
+  })
+  @CreatedWithLocation()
+  @ApiOkResponse({
+    type: RegistryTokenCreatedDto,
+    description: 'Registry token with jwt and the suggested v2 registry config.',
+  })
+  @ApiBadRequestResponse({ description: 'Bad request for a registry token.' })
+  @ApiConflictResponse({ description: 'Token already exists.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a registry token.' })
+  @UuidParams(PARAM_REGISTRY_ID)
+  async createRegistryToken(
+    @TeamSlug() teamSlug: string,
+    @RegistryId() registryId: string,
+    @Body() request: CreateRegistryTokenDto,
+    @IdentityFromRequest() identity: Identity,
+  ): Promise<CreatedResponse<RegistryTokenCreatedDto>> {
+    const token = await this.service.createRegistryToken(teamSlug, registryId, request, identity)
+
+    return {
+      url: `${RegistryHttpController.locationOf(registryId)}/${ROUTE_TOKEN}`,
+      body: token,
+    }
+  }
+
+  @Delete(`${ROUTE_REGISTRY_ID}/${ROUTE_TOKEN}`)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    description: 'Request must include `teamSlug` and `registryId` in the URL.',
+    summary: 'Delete registry token.',
+  })
+  @ApiNoContentResponse({ description: 'Registry token deleted.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for a registry token.' })
+  @ApiNotFoundResponse({ description: 'Registry token not found.' })
+  @UuidParams(PARAM_REGISTRY_ID)
+  async deleteRegistryToken(@TeamSlug() _: string, @RegistryId() registryId: string): Promise<void> {
+    await this.service.deleteRegistryToken(registryId)
+  }
+
   @Post(`${ROUTE_REGISTRY_ID}/hooks/v2`)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Registry events for v2 compatible registries',
+    description: 'Registry events for v2 compatible registries.',
   })
   @ApiNoContentResponse({ description: 'Event processed.' })
   @ApiBadRequestResponse({ description: 'Invalid event format.' })
@@ -160,5 +207,9 @@ export default class RegistryHttpController {
   @AuditLogLevel('disabled')
   async postV2Hook(@RegistryId() id: string, @Body() req: RegistryV2HookEnvelopeDto): Promise<void> {
     await this.service.registryV2Event(id, req)
+  }
+
+  private static locationOf(registryId: string) {
+    return `${ROUTE_TEAM_SLUG}/${ROUTE_REGISTRIES}/${registryId}`
   }
 }

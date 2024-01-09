@@ -74,7 +74,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
 
     if (!activated) {
       this.logger.verbose('Failed to authorize with jwt.')
-      // let the DeployJwtAuthGuard decide if the jwt is valid
+      // let the DeployJwtAuthGuard or the RegistryJwtAuthGuard to decide if the jwt is valid
       return strategy === 'deploy-token' || strategy === 'registry-hook'
     }
 

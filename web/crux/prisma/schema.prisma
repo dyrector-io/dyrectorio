@@ -116,7 +116,7 @@ model Registry {
   apiUrl          String?
 
   images Image[]
-  tokens RegistryToken[]
+  registryToken RegistryToken?
   team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String  @db.Uuid
 

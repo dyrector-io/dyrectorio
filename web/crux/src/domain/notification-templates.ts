@@ -32,8 +32,8 @@ export type DeployMessage = BaseMessage & {
 }
 
 export type RegistryImageMessage = BaseMessage & {
-  image: string,
-  registry: string,
+  image: string
+  registry: string
 }
 
 export type Message = BaseMessage | VersionMessage | InviteMessage | DeployMessage

@@ -274,6 +274,8 @@ class RegistryApi {
   list = () => this.root
 
   details = (id: string) => `${this.root}/${id}`
+
+  token = (id: string) => `${this.details(id)}/token`
 }
 
 class RegistryRoutes {

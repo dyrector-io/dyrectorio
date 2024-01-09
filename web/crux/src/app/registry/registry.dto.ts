@@ -6,6 +6,7 @@ import {
   IsIn,
   IsNotEmptyObject,
   IsOptional,
+  IsPositive,
   IsString,
   IsUUID,
   IsUrl,
@@ -78,6 +79,34 @@ export class RegistryDto {
   @IsString()
   @IsIn(REGISTRY_TYPE_VALUES)
   type: RegistryType
+}
+
+export class RegistryTokenDto {
+  @IsUUID()
+  id: string
+
+  @Type(() => Date)
+  @IsDate()
+  createdAt: Date
+
+  @Type(() => Date)
+  @IsDate()
+  @IsOptional()
+  expiresAt?: Date | null
+}
+
+export class CreateRegistryTokenDto {
+  @IsPositive()
+  @IsOptional()
+  expirationInDays?: number
+}
+
+export class RegistryTokenCreatedDto extends RegistryTokenDto {
+  @IsString()
+  token: string
+
+  @IsString()
+  config: string
 }
 
 export class HubRegistryDetailsDto {
@@ -288,6 +317,10 @@ export class RegistryDetailsDto {
     enum: GITLAB_NAMESPACE_VALUES,
   })
   type: RegistryType
+
+  @ValidateNested()
+  @IsOptional()
+  token: RegistryTokenDto | null
 
   @RegistryDetailsOneOf()
   @IsNotEmptyObject()

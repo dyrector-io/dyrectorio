@@ -1,0 +1,18 @@
+notifications:
+  events:
+    includereferences: true
+  endpoints:
+    - name: dyrectorio
+      disabled: false
+      url: {{cruxUiUrl}}/api/{{teamSlug}}/registries/{{registryId}}/hooks/v2
+      headers:
+        Authorization:
+          - Bearer {{token}}
+      timeout: 500ms
+      threshold: 5
+      backoff: 1s
+      ignoredmediatypes:
+        - application/octet-stream
+      ignore:
+        mediatypes:
+           - application/octet-stream
