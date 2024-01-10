@@ -151,9 +151,9 @@ export default class ImageService {
       return await Promise.all(imgs)
     })
 
-    await this.prisma.$transaction(async prisma => {
-      return await Promise.all(
-        images.map(async it => {
+    await this.prisma.$transaction(prisma =>
+      Promise.all(
+        images.map(it => {
           const labelKey = it.tag != null ? `${it.name}:${it.tag}` : it.name
           const labels = labelLookup[it.registryId][labelKey]
           const envRules = parseDyrectorioEnvRules(labels)
@@ -180,8 +180,8 @@ export default class ImageService {
             },
           })
         }),
-      )
-    })
+      ),
+    )
 
     const dtos = images.map(it => this.mapper.toDto(it))
 

@@ -53,7 +53,7 @@ const HEADER_WWW_AUTHENTICATE = 'www-authenticate'
 const MEDIA_TYPE_INDEX = 'application/vnd.oci.image.index.v1+json'
 const MEDIA_TYPE_MANIFEST = 'application/vnd.oci.image.manifest.v1+json'
 
-const MANIFEST_MAX_DEPTH = 20
+const MANIFEST_MAX_DEPTH = 5
 
 export default class V2Labels {
   private readonly logger = new Logger(V2Labels.name)
@@ -201,10 +201,48 @@ export default class V2Labels {
     return result.data
   }
 
-  async fetchLabelsByDigest(image: string, digest: string): Promise<Record<string, string>> {
-    const configManifest = await this.fetchV2<BlobResponse>(`${image}/blobs/${digest}`)
+  async fetchLabelsByManifest(
+    image: string,
+    manifest: ManifestBaseResponse,
+    depth: number,
+  ): Promise<Record<string, string>> {
+    if (manifest.mediaType === MEDIA_TYPE_MANIFEST) {
+      const labelManifest = manifest as ManifestResponse
 
-    return configManifest.config.Labels
+      const configManifest = await this.fetchV2<BlobResponse>(`${image}/blobs/${labelManifest.config.digest}`)
+
+      return configManifest.config.Labels
+    }
+
+    if (manifest.mediaType === MEDIA_TYPE_INDEX) {
+      if (depth > MANIFEST_MAX_DEPTH) {
+        return {}
+      }
+
+      const indexManifest = manifest as ManifestIndexResponse
+
+      const subManifestPromises = indexManifest.manifests.map(async it => {
+        const subManifest = await this.fetchV2<ManifestBaseResponse>(`${image}/manifests/${it.digest}`, {
+          headers: {
+            Accept: it.mediaType,
+          },
+        })
+
+        return this.fetchLabelsByManifest(image, subManifest, depth + 1)
+      })
+
+      const subManifestLabels = await Promise.all(subManifestPromises)
+
+      return subManifestLabels.reduce(
+        (map, it) => ({
+          ...map,
+          ...it,
+        }),
+        {},
+      )
+    }
+
+    throw new Error(`Unknown manifest type: ${manifest.mediaType}`)
   }
 
   async fetchLabels(image: string, tag: string): Promise<Record<string, string>> {
@@ -217,42 +255,6 @@ export default class V2Labels {
       return {}
     }
 
-    const manifests: ManifestBaseResponse[] = [manifest]
-    let currentLabels = {}
-
-    let depth = MANIFEST_MAX_DEPTH
-    while (manifests.length > 0 && depth > 0) {
-      const current = manifests.shift()
-      depth -= 1
-
-      if (current.mediaType === MEDIA_TYPE_MANIFEST) {
-        const labelManifest = current as ManifestResponse
-
-        const labels = await this.fetchLabelsByDigest(image, labelManifest.config.digest)
-
-        currentLabels = {
-          ...currentLabels,
-          ...labels,
-        }
-      } else if (current.mediaType === MEDIA_TYPE_INDEX) {
-        const indexManifest = current as ManifestIndexResponse
-
-        const subManifestPromises = indexManifest.manifests.map(it =>
-          this.fetchV2<ManifestBaseResponse>(`${image}/manifests/${it.digest}`, {
-            headers: {
-              Accept: it.mediaType,
-            },
-          }),
-        )
-
-        const subManifests = await Promise.all(subManifestPromises)
-
-        subManifests.forEach(it => manifests.push(it))
-      } else {
-        throw new Error(`Unknown manifest type: ${current.mediaType}`)
-      }
-    }
-
-    return currentLabels
+    return this.fetchLabelsByManifest(image, manifest, 0)
   }
 }
