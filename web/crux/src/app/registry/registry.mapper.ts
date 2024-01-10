@@ -98,7 +98,7 @@ export default class RegistryMapper {
 
     return {
       ...registry,
-      token: !regToken
+      registryToken: !regToken
         ? null
         : {
             id: regToken.id,

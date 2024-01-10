@@ -26,7 +26,7 @@ export type Registry = BasicRegistry & {
 export type RegistryDetailsBase = Omit<Registry, 'url'> & {
   updatedAt: string
   inUse: boolean
-  token?: RegistryToken | null
+  registryToken?: RegistryToken | null
 }
 
 export type RegistryToken = {
@@ -234,7 +234,7 @@ export const registryDetailsDtoToUI = (dto: RegistryDetailsDto): RegistryDetails
     icon: dto.icon ?? null,
     updatedAt: dto.updatedAt ?? dto.createdAt,
     type: dto.type,
-    token: dto.token,
+    registryToken: dto.registryToken,
     changeCredentials: false,
   }
 

@@ -320,7 +320,7 @@ export class RegistryDetailsDto {
 
   @ValidateNested()
   @IsOptional()
-  token: RegistryTokenDto | null
+  registryToken: RegistryTokenDto | null
 
   @RegistryDetailsOneOf()
   @IsNotEmptyObject()

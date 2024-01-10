@@ -131,14 +131,14 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
 
     onRegistryEdited({
       ...registry,
-      token: null,
+      registryToken: null,
     })
   }
 
-  const onRegistryTokenCreated = (token: RegistryToken) =>
+  const onRegistryTokenCreated = (registryToken: RegistryToken) =>
     onRegistryEdited({
       ...registry,
-      token,
+      registryToken,
     })
 
   const pageLink: BreadcrumbLink = {
@@ -185,7 +185,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
           {registry.type === 'v2' && (
             <RegistryTokenCard
               className="p-6"
-              token={registry.token}
+              token={registry.registryToken}
               onCreate={onCreateRegistryToken}
               onRevoke={onRevokeRegistryToken}
             />
