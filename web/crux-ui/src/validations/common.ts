@@ -27,7 +27,7 @@ export const yupErrorTranslate = (error: yup.ValidationError, t: Translate): yup
     return t(messageKey, params)
   }
 
-  if (error.inner.length < 1) {
+  if (!error.inner || error.inner.length < 1) {
     return {
       ...error,
       message: tMessage(error.message, error),
