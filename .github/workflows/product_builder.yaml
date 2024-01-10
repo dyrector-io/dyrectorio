@@ -366,13 +366,18 @@ jobs:
       - name: Generate prisma
         run: |
           npx prisma generate
-      - name: Running unit tests
-        run: npm run test
+      - name: Running unit tests with coverage
+        run: npm run test:cov
       - name: Save NPM caches
         uses: actions/cache/save@v3
         with:
           path: ${{ env.CRUX_WORKING_DIRECTORY }}/.npm/**
           key: ${{ runner.os }}-crux-${{ hashFiles('web/crux/package-lock.json') }}
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ${{ env.CRUX_WORKING_DIRECTORY }}/coverage/cobertura-coverage.xml
+          name: crux-coverage
   crux_build:
     runs-on: ubuntu-22.04
     needs: [crux_test, crux_lint, gather_changes]
