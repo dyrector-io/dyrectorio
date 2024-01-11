@@ -14,6 +14,10 @@ import { AddImagesDto, ImageDto, PatchImageDto } from './image.dto'
 import ImageEventService from './image.event.service'
 import ImageMapper from './image.mapper'
 
+type LabelMap = Record<string, string>
+type ImageLabelMap = Record<string, LabelMap>
+type RegistryLabelMap = Record<string, ImageLabelMap>
+
 @Injectable()
 export default class ImageService {
   constructor(
@@ -59,6 +63,39 @@ export default class ImageService {
     request: AddImagesDto[],
     identity: Identity,
   ): Promise<ImageDto[]> {
+    const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
+
+    const labelLookupPromises = request.map(async it => {
+      const api = await this.registryClients.getByRegistryId(teamId, it.registryId)
+
+      const imagePromises = it.images.map(async image => {
+        const [imageName, imageTag] = this.splitImageAndTag(image)
+
+        const labels = await api.client.labels(imageName, imageTag)
+
+        return {
+          name: image,
+          labels,
+        }
+      })
+
+      const imageLabels = await Promise.all(imagePromises)
+
+      return {
+        registryId: it.registryId,
+        labels: imageLabels,
+      }
+    })
+
+    const registryLabels = await Promise.all(labelLookupPromises)
+    const labelLookup: RegistryLabelMap = registryLabels.reduce((map, it) => {
+      map[it.registryId] = it.labels.reduce((imageMap, image) => {
+        imageMap[image.name] = image.labels
+        return imageMap
+      }, {} as ImageLabelMap)
+      return map
+    }, {} as RegistryLabelMap)
+
     const images = await this.prisma.$transaction(async prisma => {
       const lastImageOrder = await this.prisma.image.findFirst({
         select: {
@@ -114,14 +151,11 @@ export default class ImageService {
       return await Promise.all(imgs)
     })
 
-    await this.prisma.$transaction(async prisma => {
-      const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
-      return await Promise.all(
-        images.map(async it => {
-          const api = await this.registryClients.getByRegistryId(teamId, it.registryId)
-
-          const labels = await api.client.labels(it.name, it.tag)
-
+    await this.prisma.$transaction(prisma =>
+      Promise.all(
+        images.map(it => {
+          const labelKey = it.tag != null ? `${it.name}:${it.tag}` : it.name
+          const labels = labelLookup[it.registryId][labelKey]
           const envRules = parseDyrectorioEnvRules(labels)
 
           const defaultEnvs = Object.entries(envRules)
@@ -146,8 +180,8 @@ export default class ImageService {
             },
           })
         }),
-      )
-    })
+      ),
+    )
 
     const dtos = images.map(it => this.mapper.toDto(it))
 
@@ -254,11 +288,12 @@ export default class ImageService {
   private static mergeEnvironmentsRules(
     environment: UniqueKeyValue[],
     rules: Record<string, EnvironmentRule>,
-  ): UniqueKeyValue[] {
-    const currentEnv = environment.reduce((map, it) => {
-      map[it.key] = it
-      return map
-    }, {})
+  ): UniqueKeyValue[] | null {
+    const currentEnv =
+      environment?.reduce((map, it) => {
+        map[it.key] = it
+        return map
+      }, {}) ?? {}
 
     const mergedEnv = Object.entries(rules).reduce((map, it) => {
       const [key, rule] = it
