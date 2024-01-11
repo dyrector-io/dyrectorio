@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 
 	containerRuntime "github.com/dyrector-io/dyrectorio/golang/internal/runtime/container"
@@ -201,12 +202,22 @@ func FuzzVersionCheck(f *testing.F) {
 	}
 
 	f.Fuzz(func(t *testing.T, mockClientVersion, dockerInitBinary string) {
+		// check for valid input
+		re, err := regexp.Compile(`(\d+)\.(\d+)\.(\d+)`)
+		if err != nil {
+			t.Error("Error compiling regular expression")
+			return
+		}
+		if !re.MatchString(mockClientVersion) {
+			t.Skip()
+		}
+
 		// mock docker info
 		dockerInfo := &types.Info{
 			InitBinary: dockerInitBinary,
 		}
 
-		containerRuntime.VersionCheck(context.TODO(), newMockClient(mockClientVersion, dockerInfo))
+		_, _ = containerRuntime.VersionCheck(context.TODO(), newMockClient(mockClientVersion, dockerInfo))
 	})
 }
 
