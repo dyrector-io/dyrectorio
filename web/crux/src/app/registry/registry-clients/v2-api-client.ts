@@ -76,7 +76,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
 
   private async fetch(endpoint: string, init?: RequestInit): Promise<Response> {
     const initializer = init ?? {}
-    const fullUrl = `http://${this.url}/v2${endpoint}`
+    const fullUrl = `https://${this.url}/v2${endpoint}`
 
     return await fetch(fullUrl, {
       ...initializer,

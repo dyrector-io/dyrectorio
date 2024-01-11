@@ -69,8 +69,8 @@
   "registryAlreadyInUse": "This registry is already in use. Modifying the url or the credentials may break existing deployments.",
 
   "registryHook": "Registry hook",
-  "toRecivieNotifications": "To receive notifications of image push and pulls, you need to create a registry token.",
-  "tokenIsReady": "The registry token is ready. Make sure to copy the token itself or the enivironments below now. You won't be able to see them again!",
+  "toRecivieNotifications": "To receive notifications for image pushes and pulls, you need to create a registry token.",
+  "tokenIsReady": "The registry token is ready. Make sure to copy either the token itself or the config below now. You won't be able to see them again!",
   "toUseTheTokenInV2": "To use your token in a v2 compatible registry, you have to copy settings into your registry's config file.",
   "readMoreAboutV2": "You can read more about v2 registries in the distribution project's documentation."
 }
