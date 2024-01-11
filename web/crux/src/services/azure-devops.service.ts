@@ -10,7 +10,11 @@ import {
   AzureDevOpsRun,
   AzureDevOpsVariable,
 } from 'src/domain/pipeline'
-import { CruxForbiddenException, CruxInternalServerErrorException, CruxNotFoundException } from 'src/exception/crux-exception'
+import {
+  CruxForbiddenException,
+  CruxInternalServerErrorException,
+  CruxNotFoundException,
+} from 'src/exception/crux-exception'
 
 type AzureDevOpsUrlOptions = {
   includeProject: boolean
@@ -39,7 +43,8 @@ export default class AzureDevOpsService {
         property: 'name',
         value: name,
       })
-    } else if (res.status === 203) { // azure's forbidden / not found
+    } else if (res.status === 203) {
+      // azure's forbidden / not found
       throw new CruxForbiddenException({
         message: 'Invalid credentials',
         property: 'token',
@@ -159,7 +164,7 @@ export default class AzureDevOpsService {
         })
       } else if (res.status === 404) {
         throw new CruxNotFoundException({
-          message: "Azure DevOps project not found"
+          message: 'Azure DevOps project not found',
         })
       }
 

@@ -3,8 +3,8 @@ import { Observable, Subject, finalize } from 'rxjs'
 import { PipelineRunStatusEvent } from 'src/domain/pipeline'
 import TeamRepository from '../team/team.repository'
 import { PipelineStatusMessage } from './pipeline.message'
-import PipelineService from './pipeline.service'
 import PipelineMetrics from './pipeline.metrics'
+import PipelineService from './pipeline.service'
 
 @Injectable()
 export default class PipelineRunStateService {

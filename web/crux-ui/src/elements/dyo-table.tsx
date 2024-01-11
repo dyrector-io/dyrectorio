@@ -283,7 +283,7 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
         {pageItems.map((it, rowIndex) => {
           const click = onRowClick ? () => onRowClick(it) : null
 
-          const key = dataKey ? getField(it, dataKey) : rowIndex
+          const key = dataKey ? getField(it, dataKey as string) : rowIndex
 
           return (
             <tr key={key} className={headless ? null : 'hover:bg-medium-muted'}>

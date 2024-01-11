@@ -7,12 +7,12 @@ import {
   UseGlobalWsGuards,
   UseGlobalWsInterceptors,
 } from 'src/websockets/decorators/ws.gateway.decorators'
+import WsParam from 'src/websockets/decorators/ws.param.decorator'
 import TeamRepository from '../team/team.repository'
 import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import { PipelineStatusMessage, WS_TYPE_PIPELINE_STATUS } from './pipeline.message'
 import PipelineRunStateService from './pipeline.run-state.service'
 import PipelineService from './pipeline.service'
-import WsParam from 'src/websockets/decorators/ws.param.decorator'
 
 const TeamSlug = () => WsParam('teamSlug')
 

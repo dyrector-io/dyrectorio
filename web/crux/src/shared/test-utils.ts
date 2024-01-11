@@ -1,1 +1,0 @@
-// const mockOf = <T>() => new (<new () => T>T)() as jest.Mocked<T>

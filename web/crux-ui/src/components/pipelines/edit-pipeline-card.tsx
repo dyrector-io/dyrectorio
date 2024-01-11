@@ -1,6 +1,6 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIconPicker from '@app/elements/dyo-icon-picker'
@@ -167,10 +167,12 @@ const EditPipelineCard = (props: EditPipelineCardProps) => {
             <DyoLabel className="mr-2 my-auto">{t('common:type')}</DyoLabel>
 
             <DyoChips
+              name="type"
               choices={['azure']}
               selection={formik.values.type}
               converter={(it: PipelineType) => t(`type.${it}`)}
               onSelectionChange={it => onTypeChanged(it as PipelineType)}
+              qaLabel={chipsQALabelFromValue}
             />
           </div>
 

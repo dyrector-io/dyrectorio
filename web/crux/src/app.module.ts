@@ -11,6 +11,7 @@ import HealthModule from './app/health/health.module'
 import ImageModule from './app/image/image.module'
 import NodeModule from './app/node/node.module'
 import NotificationModule from './app/notification/notification.module'
+import PipelineModule from './app/pipeline/pipeline.module'
 import ProjectModule from './app/project/project.module'
 import QualityAssuranceModule from './app/quality.assurance/quality-assurance.module'
 import RegistryModule from './app/registry/registry.module'
@@ -25,7 +26,6 @@ import UuidValidationGuard from './guards/uuid-params.validation.guard'
 import EmailModule from './mailer/email.module'
 import ShutdownService from './services/application.shutdown.service'
 import PrismaService from './services/prisma.service'
-import PipelineModule from './app/pipeline/pipeline.module'
 
 const imports = [
   ProjectModule,

@@ -9,6 +9,8 @@ import {
   AzureTrigger,
   PipelineRunStatusEvent,
 } from 'src/domain/pipeline'
+import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
+import EncryptionService from 'src/services/encryption.service'
 import { BasicProperties } from 'src/shared/dtos/shared.dto'
 import AuditMapper from '../audit/audit.mapper'
 import {
@@ -20,12 +22,13 @@ import {
   PipelineRunDto,
   UpdatePipelineDto,
 } from './pipeline.dto'
-import EncryptionService from 'src/services/encryption.service'
-import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
 @Injectable()
 export default class PipelineMapper {
-  constructor(private readonly auditMapper: AuditMapper, private readonly encryptionService: EncryptionService) {}
+  constructor(
+    private readonly auditMapper: AuditMapper,
+    private readonly encryptionService: EncryptionService,
+  ) {}
 
   toBasicDto(it: Pick<Pipeline, BasicProperties>): BasicPipelineDto {
     return {
@@ -115,7 +118,7 @@ export default class PipelineMapper {
 
     return {
       repo: it.repository as AzureRepository,
-      token: this.encryptionService.decrypt(it.token)
+      token: this.encryptionService.decrypt(it.token),
     }
   }
 

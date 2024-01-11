@@ -13,6 +13,7 @@ import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 import { OFFLINE_EDITOR_STATE } from '../editor/use-item-editor-state'
 import KeyValueInput from '../shared/key-value-input'
+import { QA_DIALOG_LABEL_TRIGGER_PIPELINE } from 'quality-assurance'
 
 type TriggerPipelineCardProps = Omit<DyoCardProps, 'children'> & {
   pipeline: PipelineDetails
@@ -37,6 +38,7 @@ const TriggerPipelineCard = (props: TriggerPipelineCardProps) => {
       title: t('common:areYouSure'),
       description: t('areYouSureTriggerName', pipeline),
       confirmText: t('trigger'),
+      qaLabel: QA_DIALOG_LABEL_TRIGGER_PIPELINE,
     })
 
     if (!confirmed) {

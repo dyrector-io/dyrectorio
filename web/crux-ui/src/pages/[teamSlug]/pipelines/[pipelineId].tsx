@@ -16,7 +16,7 @@ import { PipelineDetails, PipelineRun, PipelineStatusMessage, WS_TYPE_PIPELINE_S
 import { ANCHOR_TRIGGER, TeamRoutes } from '@app/routes'
 import { anchorLinkOf, toastWarning, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useEffect, useState } from 'react'
@@ -180,7 +180,7 @@ const PipelineDetailsPage = (props: PipelineDetailsPageProps) => {
 
 export default PipelineDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const pipelineId = context.query.pipelineId as string

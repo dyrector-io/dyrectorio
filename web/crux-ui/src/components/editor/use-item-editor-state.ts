@@ -7,6 +7,7 @@ import { MultiInputEditorOptions, MultiInputSocket } from './use-multi-input-sta
 
 export type ItemEditorState = EditorState & MultiInputEditorOptions
 
+// TODO (@m8vago): tech dept - We will have to separate the key-value input element from the ws editing logic
 const WS_CLIENT_ENDPOINT_STUB: MultiInputSocket = {
   on: () => {},
   send: () => {},

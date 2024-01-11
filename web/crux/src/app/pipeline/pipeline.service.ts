@@ -15,6 +15,7 @@ import { PipelineTokenPayload } from 'src/domain/pipeline-token'
 import { generateNonce } from 'src/domain/utils'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 import AzureDevOpsService from 'src/services/azure-devops.service'
+import EncryptionService from 'src/services/encryption.service'
 import PrismaService from 'src/services/prisma.service'
 import TeamRepository from '../team/team.repository'
 import {
@@ -27,7 +28,6 @@ import {
   UpdatePipelineDto,
 } from './pipeline.dto'
 import PipelineMapper from './pipeline.mapper'
-import EncryptionService from 'src/services/encryption.service'
 
 @Injectable()
 export default class PipelineService {
@@ -43,19 +43,6 @@ export default class PipelineService {
     private readonly jwtService: JwtService,
     private readonly encryptionService: EncryptionService,
   ) {}
-
-  async checkRegistryIsInTeam(teamId: string, registryId: string): Promise<boolean> {
-    const registries = await this.prisma.registry.count({
-      where: {
-        id: registryId,
-        team: {
-          id: teamId,
-        },
-      },
-    })
-
-    return registries > 0
-  }
 
   async getPipelines(teamSlug: string): Promise<PipelineDto[]> {
     const pipelines = await this.prisma.pipeline.findMany({

@@ -109,6 +109,7 @@ export const QA_DIALOG_LABEL_CONVERT_PROJECT_TO_VERSIONED = ''
 export const QA_DIALOG_LABEL_REMOVE_OIDC_ACCOUNT = 'removeOIDCAccount'
 export const QA_DIALOG_LABEL_DELETE_USER_TOKEN = 'deleteUserToken'
 export const QA_DIALOG_LABEL_DELETE_USER = 'deleteUser'
+export const QA_DIALOG_LABEL_TRIGGER_PIPELINE = 'triggerPipeline'
 
 export const QA_MODAL_LABEL_NODE_AUDIT_DETAILS = 'nodeAuditDetails'
 export const QA_MODAL_LABEL_DEPLOYMENT_NOTE = 'deploymentNote'

@@ -69,6 +69,7 @@ const PipelineCard = (props: PipelineCardProps) => {
       </div>
 
       <DyoExpandableText
+        name="description"
         text={pipeline.description}
         lineClamp={2}
         className="text-md text-light mt-2 max-h-44"
