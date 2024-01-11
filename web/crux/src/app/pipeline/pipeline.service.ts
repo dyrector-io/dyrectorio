@@ -29,7 +29,6 @@ import {
   UpdatePipelineDto,
 } from './pipeline.dto'
 import PipelineMapper from './pipeline.mapper'
-import EncryptionService from 'src/services/encryption.service'
 
 @Injectable()
 export default class PipelineService {
