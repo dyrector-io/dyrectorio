@@ -6,10 +6,12 @@ import {
   IsIn,
   IsNotEmptyObject,
   IsOptional,
+  IsPositive,
   IsString,
   IsUUID,
   IsUrl,
   ValidateIf,
+  ValidateNested,
 } from 'class-validator'
 
 export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github', 'google', 'unchecked'] as const
@@ -77,6 +79,34 @@ export class RegistryDto {
   @IsString()
   @IsIn(REGISTRY_TYPE_VALUES)
   type: RegistryType
+}
+
+export class RegistryTokenDto {
+  @IsUUID()
+  id: string
+
+  @Type(() => Date)
+  @IsDate()
+  createdAt: Date
+
+  @Type(() => Date)
+  @IsDate()
+  @IsOptional()
+  expiresAt?: Date | null
+}
+
+export class CreateRegistryTokenDto {
+  @IsPositive()
+  @IsOptional()
+  expirationInDays?: number
+}
+
+export class RegistryTokenCreatedDto extends RegistryTokenDto {
+  @IsString()
+  token: string
+
+  @IsString()
+  config: string
 }
 
 export class HubRegistryDetailsDto {
@@ -288,6 +318,10 @@ export class RegistryDetailsDto {
   })
   type: RegistryType
 
+  @ValidateNested()
+  @IsOptional()
+  registryToken: RegistryTokenDto | null
+
   @RegistryDetailsOneOf()
   @IsNotEmptyObject()
   details:
@@ -402,4 +436,38 @@ export class UpdateRegistryDto {
     | UpdateGithubRegistryDetailsDto
     | UpdateGoogleRegistryDetailsDto
     | UncheckedRegistryDetailsDto
+}
+
+export const REGISTRY_V2_HOOK_ACTION_TYPE = ['push', 'pull'] as const
+export type RegistryV2HookActionTypeDto = (typeof REGISTRY_V2_HOOK_ACTION_TYPE)[number]
+
+export class RegistryV2HookTargetDto {
+  @IsString()
+  repository: string // image name
+
+  @IsString()
+  tag: string
+
+  @IsUrl()
+  url: string
+}
+
+export class RegistryV2HookEventDto {
+  @IsUUID()
+  id: string
+
+  @IsString()
+  @IsIn(REGISTRY_V2_HOOK_ACTION_TYPE)
+  @ApiProperty({
+    enum: REGISTRY_V2_HOOK_ACTION_TYPE,
+  })
+  action: RegistryV2HookActionTypeDto
+
+  @ValidateNested()
+  target: RegistryV2HookTargetDto
+}
+
+export class RegistryV2HookEnvelopeDto {
+  @ValidateNested({ each: true })
+  events: RegistryV2HookEventDto[]
 }

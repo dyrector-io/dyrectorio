@@ -12,8 +12,6 @@ export default class DeployTeamAccessGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const strategy = authStrategyOfContext(context, this.reflector)
-
     const req = context.switchToHttp().getRequest() as AuthorizedHttpRequest
     const teamSlug = req.params.teamSlug as string
     const deploymentId = req.params.deploymentId as string
@@ -23,11 +21,12 @@ export default class DeployTeamAccessGuard implements CanActivate {
       return true
     }
 
+    const strategy = authStrategyOfContext(context, this.reflector)
     const identity = identityOfRequest(context)
 
     if (!identity && strategy === 'deploy-token') {
       const token = req.user.data as DeploymentTokenPayload
-      return await this.checkAccessWithDeployToken(token, deploymentId, instanceId)
+      return await this.checkAccessWithDeployToken(token, teamSlug, deploymentId, instanceId)
     }
 
     return await this.checkAccess(teamSlug, deploymentId, instanceId)
@@ -59,6 +58,7 @@ export default class DeployTeamAccessGuard implements CanActivate {
 
   async checkAccessWithDeployToken(
     token: DeploymentTokenPayload,
+    teamSlug: string,
     deploymentId: string,
     instanceId: string,
   ): Promise<boolean> {
@@ -66,19 +66,6 @@ export default class DeployTeamAccessGuard implements CanActivate {
       return false
     }
 
-    const deployments = await this.prisma.deployment.count({
-      where: {
-        id: deploymentId,
-        instances: !instanceId
-          ? undefined
-          : {
-              some: {
-                id: instanceId,
-              },
-            },
-      },
-    })
-
-    return deployments > 0
+    return await this.checkAccess(teamSlug, deploymentId, instanceId)
   }
 }

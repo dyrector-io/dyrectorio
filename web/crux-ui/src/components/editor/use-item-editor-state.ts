@@ -3,9 +3,23 @@ import { InputFocusMessage, WS_TYPE_BLUR_INPUT, WS_TYPE_FOCUS_INPUT } from '@app
 import { WsMessage } from '@app/websockets/common'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import { EditorState, selectInputEditorsForItem } from './use-editor-state'
-import { MultiInputEditorOptions } from './use-multi-input-state'
+import { MultiInputEditorOptions, MultiInputSocket } from './use-multi-input-state'
 
 export type ItemEditorState = EditorState & MultiInputEditorOptions
+
+// TODO (@m8vago): tech dept - We will have to separate the key-value input element from the ws editing logic
+const WS_CLIENT_ENDPOINT_STUB: MultiInputSocket = {
+  on: () => {},
+  send: () => {},
+}
+
+export const OFFLINE_EDITOR_STATE: ItemEditorState = {
+  editors: [],
+  inputEditors: {},
+  itemId: null,
+  me: null,
+  sock: WS_CLIENT_ENDPOINT_STUB,
+}
 
 const transformInputFocusMessage = (message: WsMessage<any>, itemId: string) => {
   const { type } = message
