@@ -27,6 +27,7 @@ model Team {
   notifications Notification[]
   storages      Storage[]
   configBundles ConfigBundle[]
+  Pipeline      Pipeline[]
 }
 
 model Token {
@@ -563,6 +564,57 @@ model Storage {
   instanceConfigs  InstanceContainerConfig[]
 
   @@unique([name, teamId])
+}
+
+enum PipelineTypeEnum {
+  github
+  gitlab
+  azure
+}
+
+enum PipelineStatusEnum {
+  unknown
+  queued
+  running
+  successful
+  failed
+}
+
+model Pipeline {
+  id          String           @id @default(uuid()) @db.Uuid
+  createdAt   DateTime         @default(now()) @db.Timestamptz(6)
+  createdBy   String           @db.Uuid
+  updatedAt   DateTime         @updatedAt @db.Timestamptz(6)
+  updatedBy   String?          @db.Uuid
+  name        String           @db.VarChar(70)
+  type        PipelineTypeEnum
+  description String?
+  icon        String?
+  token       Bytes
+  repository  Json
+  trigger     Json
+  hooks       Json
+
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String @db.Uuid
+
+  runs PipelineRun[]
+
+  @@unique([name, teamId])
+}
+
+model PipelineRun {
+  id         String             @id @default(uuid()) @db.Uuid
+  externalId Int
+  status     PipelineStatusEnum
+  createdAt  DateTime           @default(now()) @db.Timestamptz(6)
+  createdBy  String             @db.Uuid
+  finishedAt DateTime?
+
+  pipeline   Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  pipelineId String   @db.Uuid
+
+  @@unique([pipelineId, externalId])
 }
 
 model ConfigBundle {

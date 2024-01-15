@@ -26,8 +26,8 @@ export class CruxUnauthorizedException extends CruxException {
 }
 
 export class CruxForbiddenException extends CruxException {
-  constructor(options?: Pick<CruxExceptionOptions, 'message'>) {
-    super(HttpStatus.FORBIDDEN, { message: options?.message ?? 'Forbidden.' })
+  constructor(options?: Pick<CruxExceptionOptions, 'message' | 'property'>) {
+    super(HttpStatus.FORBIDDEN, { message: options?.message ?? 'Forbidden.', property: options?.property })
   }
 }
 

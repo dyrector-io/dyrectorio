@@ -30,7 +30,7 @@ const StorageCard = (props: StorageCardProps) => {
         qaLabel="storage-card-title"
       >
         {!storage.icon ? (
-          <DyoIcon src="/storage.svg" size="md" alt={t('altDefaultStoragePicture')} />
+          <DyoIcon src="/storage.svg" size="md" alt={t('cogwheelsIcon')} />
         ) : (
           <DyoBadge large icon={storage.icon} />
         )}

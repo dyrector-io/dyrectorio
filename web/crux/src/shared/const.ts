@@ -36,3 +36,5 @@ export const API_CREATED_LOCATION_HEADERS = {
 export const UID_MAX = 2147483647
 
 export const KRATOS_LIST_PAGE_SIZE = 128
+
+export const PIPELINE_RUNS_TAKE = 50

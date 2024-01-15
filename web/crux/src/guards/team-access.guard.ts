@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, Logger, SetMetadata } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { authStrategyOfContext, identityOfRequest } from 'src/app/token/jwt-auth.guard'
+import { authStrategyOfContext, identityOfRequest, shouldUseCustomAuthStrategy } from 'src/app/token/jwt-auth.guard'
 import PrismaService from 'src/services/prisma.service'
 
 export const TEAM_ACCESS_GUARD_DISABLED = 'team-access-guard-disabled'
@@ -35,7 +35,7 @@ export default class TeamAccessGuard implements CanActivate {
 
     const identity = identityOfRequest(context)
 
-    if (!identity && (strategy === 'deploy-token' || strategy === 'registry-hook')) {
+    if (!identity && shouldUseCustomAuthStrategy(strategy)) {
       return true
     }
 

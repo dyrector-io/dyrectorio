@@ -87,6 +87,9 @@
   "profile": "Profile",
   "tokens": "Tokens",
   "templates": "Templates",
+  "pipelines": "Pipelines",
+  "storages": "Storages",
+  "configBundles": "Config bundles",
 
   "role": {
     "owner": "Owner",
@@ -102,6 +105,10 @@
   "deployment": "Deployment",
   "project": "Project",
   "version": "Version",
+  "pipeline": "Pipeline",
+  "token": "Token",
+
+  "changeToken": "Change token",
 
   "show": "Show",
   "hide": "Hide",
@@ -131,6 +138,9 @@
     "shark": "Shark icon"
   },
 
+  "successful": "Successful",
+  "failed": "Failed",
+
   "nodeStatuses": {
     "connected": "Connected",
     "unreachable": "Unreachable",
@@ -138,9 +148,12 @@
     "updating": "Updating"
   },
 
+  "pipelineStatuses": {
+    "queued": "Queued",
+    "running": "Running"
+  },
+
   "deploymentStatuses": {
-    "successful": "Successful",
-    "failed": "Failed",
     "obsolete": "Obsolete",
     "unknown": "Unknown",
     "preparing": "Preparing",
@@ -220,9 +233,6 @@
   "data": "Data",
   "logOf": "Log of {{name}}",
   "inspectOf": "Inspection of {{name}}",
-
-  "storages": "Storages",
-  "configBundles": "Config bundles",
 
   "none": "None",
 
