@@ -10,7 +10,8 @@ import { WS_TYPE_UNSUBSCRIBE, WsClient } from 'src/websockets/common'
 
 export type AuthStrategyType = 'user-token' | 'deploy-token' | 'registry-hook' | 'pipeline-token' | 'disabled'
 const CUSTOM_AUTH_STRATEGIES: AuthStrategyType[] = ['deploy-token', 'registry-hook', 'pipeline-token']
-export const shouldUseCustomAuthStrategy = (strategy: AuthStrategyType):boolean => CUSTOM_AUTH_STRATEGIES.includes(strategy)
+export const shouldUseCustomAuthStrategy = (strategy: AuthStrategyType): boolean =>
+  CUSTOM_AUTH_STRATEGIES.includes(strategy)
 
 export const AUTH_STRATEGY = 'auth-strategy'
 export const AuthStrategy = (strategy: AuthStrategyType) => SetMetadata(AUTH_STRATEGY, strategy)
