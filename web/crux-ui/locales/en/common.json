@@ -16,7 +16,9 @@
   "documentation": "Documentation",
   "public": "Public",
   "changeCredentials": "Change credentials",
+  "clickHereForMoreInfo": "Click here for more information.",
 
+  "created": "Created",
   "goBack": "Go back",
   "back": "Back",
   "copy": "Copy",

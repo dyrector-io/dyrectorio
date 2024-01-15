@@ -1,7 +1,6 @@
 import DyoCheckbox from '@app/elements/dyo-checkbox'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { NotificationEventType, NOTIFICATION_EVENT_VALUES } from '@app/models'
-import { snakeToCamel } from '@app/utils'
+import { NOTIFICATION_EVENT_VALUES, NotificationEventType, notificationEventTypeToLabel } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 
 export interface NotificationEventListProps {
@@ -30,7 +29,7 @@ export const NotificationEventList = (props: NotificationEventListProps) => {
   return (
     <>
       {NOTIFICATION_EVENT_VALUES.map(it => {
-        const textKey = snakeToCamel(it)
+        const label = notificationEventTypeToLabel(it)
         const checked = value.includes(it)
 
         return (
@@ -39,11 +38,11 @@ export const NotificationEventList = (props: NotificationEventListProps) => {
               className="my-auto mr-2"
               checked={checked}
               onCheckedChange={check => onCheckChanged(check, it)}
-              qaLabel={textKey}
+              qaLabel={label}
             />
 
             <DyoLabel className="cursor-pointer" onClick={() => onCheckChanged(!checked, it)}>
-              {t(`eventType.${textKey}`)}
+              {t(`eventType.${label}`)}
             </DyoLabel>
           </div>
         )

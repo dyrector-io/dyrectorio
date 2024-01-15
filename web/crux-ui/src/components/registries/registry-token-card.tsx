@@ -1,32 +1,32 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { DeploymentToken } from '@app/models'
+import { RegistryToken } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 
-type DeploymentTokenCardProps = {
+type RegistryTokenCardProps = {
   className?: string
-  token: DeploymentToken
+  token: RegistryToken
   onCreate: VoidFunction
   onRevoke: VoidFunction
 }
 
-const DeploymentTokenCard = (props: DeploymentTokenCardProps) => {
+const RegistryTokenCard = (props: RegistryTokenCardProps) => {
   const { className, token, onCreate, onRevoke } = props
 
-  const { t } = useTranslation('deployments')
+  const { t } = useTranslation('registries')
 
   return (
-    <DyoCard className={clsx('flex flex-col gap-2', className)}>
-      <DyoHeading className="text-xl text-bright font-semibold truncate my-auto mr-auto" element="h3">
-        {t('deploymentToken')}
+    <DyoCard className={clsx('flex flex-col gap-2 p-6', className)}>
+      <DyoHeading className="text-xl text-bright font-semibold truncate mr-auto" element="h3">
+        {t('registryHook')}
       </DyoHeading>
 
       {!token ? (
         <>
-          <p className="text-bright-muted">{t('createDeployTokenFor')}</p>
+          <p className="text-bright-muted">{t('toRecivieNotifications')}</p>
 
           <DyoButton className="px-6 ml-auto mt-2" outlined onClick={onCreate}>
             {t('common:create')}
@@ -34,10 +34,6 @@ const DeploymentTokenCard = (props: DeploymentTokenCardProps) => {
         </>
       ) : (
         <div className="grid grid-cols-2 text-bright gap-1">
-          <span>{t('common:name')}</span>
-
-          <span>{token.name}</span>
-
           <span>{t('common:created')}</span>
 
           <span suppressHydrationWarning>{utcDateToLocale(token.createdAt)}</span>
@@ -55,4 +51,4 @@ const DeploymentTokenCard = (props: DeploymentTokenCardProps) => {
   )
 }
 
-export default DeploymentTokenCard
+export default RegistryTokenCard

@@ -8,7 +8,10 @@ import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import KratosService, { hasKratosSession } from 'src/services/kratos.service'
 import { WS_TYPE_UNSUBSCRIBE, WsClient } from 'src/websockets/common'
 
-export type AuthStrategyType = 'user-token' | 'deploy-token' | 'pipeline-token' | 'disabled'
+export type AuthStrategyType = 'user-token' | 'deploy-token' | 'registry-hook' | 'pipeline-token' | 'disabled'
+const CUSTOM_AUTH_STRATEGIES: AuthStrategyType[] = ['deploy-token', 'registry-hook', 'pipeline-token']
+export const shouldUseCustomAuthStrategy = (strategy: AuthStrategyType):boolean => CUSTOM_AUTH_STRATEGIES.includes(strategy)
+
 export const AUTH_STRATEGY = 'auth-strategy'
 export const AuthStrategy = (strategy: AuthStrategyType) => SetMetadata(AUTH_STRATEGY, strategy)
 export const DisableAuth = () => AuthStrategy('disabled')
@@ -74,8 +77,8 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
 
     if (!activated) {
       this.logger.verbose('Failed to authorize with jwt.')
-      // let the DeployJwtAuthGuard or the PipelineJwtAuthGuard to decide if the jwt is valid
-      return strategy === 'deploy-token' || strategy === 'pipeline-token'
+      // let a CustomJwtAuthGuard to decide if the jwt is valid
+      return shouldUseCustomAuthStrategy(strategy)
     }
 
     const jwt = req.user
