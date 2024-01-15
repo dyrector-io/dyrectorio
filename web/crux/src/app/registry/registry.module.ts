@@ -1,5 +1,8 @@
 import { HttpModule } from '@nestjs/axios'
 import { Module } from '@nestjs/common'
+import NotificationTemplateBuilder from 'src/builders/notification.template.builder'
+import { CruxJwtModuleImports } from 'src/config/jwt.config'
+import DomainNotificationService from 'src/services/domain.notification.service'
 import EncryptionService from 'src/services/encryption.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
@@ -8,12 +11,13 @@ import TeamModule from '../team/team.module'
 import TeamRepository from '../team/team.repository'
 import RegistryClientProvider from './registry-client.provider'
 import RegistryHttpController from './registry.http.controller'
+import { RegistryJwtStrategy } from './registry.jwt.strategy'
 import RegistryMapper from './registry.mapper'
 import RegistryService from './registry.service'
 import RegistryWebSocketGateway from './registry.ws.gateway'
 
 @Module({
-  imports: [HttpModule, TeamModule, AuditLoggerModule],
+  imports: [HttpModule, TeamModule, AuditLoggerModule, ...CruxJwtModuleImports],
   exports: [RegistryMapper, RegistryService],
   controllers: [RegistryHttpController],
   providers: [
@@ -23,8 +27,11 @@ import RegistryWebSocketGateway from './registry.ws.gateway'
     TeamRepository,
     KratosService,
     EncryptionService,
+    NotificationTemplateBuilder,
+    DomainNotificationService,
     RegistryWebSocketGateway,
     RegistryClientProvider,
+    RegistryJwtStrategy,
   ],
 })
 export default class RegistryModule {}

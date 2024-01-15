@@ -449,9 +449,6 @@ export const writeToClipboard = async (t: Translate, content: string) => {
   }
 }
 
-export const snakeToCamel = (str: string): string =>
-  str.toLowerCase().replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', ''))
-
 export const toastWarning = (message: string, opts?: ToastOptions) => {
   toast(message, {
     ...opts,
