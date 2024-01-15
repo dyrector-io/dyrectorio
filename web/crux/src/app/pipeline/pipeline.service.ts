@@ -17,6 +17,7 @@ import { CruxBadRequestException } from 'src/exception/crux-exception'
 import AzureDevOpsService from 'src/services/azure-devops.service'
 import EncryptionService from 'src/services/encryption.service'
 import PrismaService from 'src/services/prisma.service'
+import { PIPELINE_RUNS_TAKE } from 'src/shared/const'
 import TeamRepository from '../team/team.repository'
 import {
   AzurePipelineStateDto,
@@ -71,7 +72,7 @@ export default class PipelineService {
           orderBy: {
             createdAt: 'desc',
           },
-          take: 10,
+          take: PIPELINE_RUNS_TAKE,
         },
       },
       where: {
@@ -199,7 +200,7 @@ export default class PipelineService {
     })
 
     try {
-      const creds = this.mapper.toAzureCredentials(deleted)
+      const creds = this.mapper.toAzureDevOpsCredentials(deleted)
 
       const hooks = deleted.hooks as AzureDevOpsHook[]
       const deletes = hooks.map(it => this.azureService.deleteHook(creds, it))
@@ -216,7 +217,7 @@ export default class PipelineService {
       },
     })
 
-    const creds = this.mapper.toAzureCredentials(pipeline)
+    const creds = this.mapper.toAzureDevOpsCredentials(pipeline)
 
     const trigger = pipeline.trigger as AzureTrigger
     if (req.inputs) {
@@ -242,10 +243,10 @@ export default class PipelineService {
       },
     })
 
-    this.runStatusEvent.next(this.mapper.runToRunStatusEvent(run))
+    this.runStatusEvent.next(this.mapper.toPipelineRunStatusEvent(run))
 
     this.logger.verbose(`Pipeline triggered: ${pipeline.id}`)
-    return this.mapper.runToDto(run)
+    return this.mapper.toPipelineRunDto(run)
   }
 
   async onAzurePipelineStateChanged(pipelineId: string, req: AzurePipelineStateDto): Promise<void> {
@@ -279,7 +280,7 @@ export default class PipelineService {
       },
     })
 
-    this.runStatusEvent.next(this.mapper.runToRunStatusEvent(run))
+    this.runStatusEvent.next(this.mapper.toPipelineRunStatusEvent(run))
   }
 
   private async createAzureHook(

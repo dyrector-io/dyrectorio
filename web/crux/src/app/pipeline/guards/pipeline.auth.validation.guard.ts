@@ -16,7 +16,7 @@ export default class PipelineAccessValidationGuard implements CanActivate {
   ) {}
 
   /**
-   * Guard that the pipeline exists and the pat is valid
+   * Guard that ensures wether the pipeline exists and the PAT is valid
    *
    * @param context
    * @returns boolean
@@ -50,7 +50,7 @@ export default class PipelineAccessValidationGuard implements CanActivate {
       token,
     }
 
-    const azPipeline = await this.azureService.getPipeline(creds, body.trigger.name)
-    return !!azPipeline
+    const azurePipeline = await this.azureService.getPipeline(creds, body.trigger.name)
+    return !!azurePipeline
   }
 }

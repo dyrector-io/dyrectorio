@@ -47,7 +47,7 @@ export default class PipelineMapper {
       description: it.description,
       icon: it.icon,
       repository: it.repository as any as AzureDevOpsRepositoryDto,
-      lastRun: this.runToDto(it.runs.find(Boolean)),
+      lastRun: this.toPipelineRunDto(it.runs.find(Boolean)),
     }
   }
 
@@ -64,11 +64,11 @@ export default class PipelineMapper {
       },
       audit: this.auditMapper.toDto(pipeline),
       trigger: pipeline.trigger as AzureTrigger,
-      runs: pipeline.runs.map(it => this.runToDto(it)),
+      runs: pipeline.runs.map(it => this.toPipelineRunDto(it)),
     }
   }
 
-  runToDto(it: PipelineRun): PipelineRunDto {
+  toPipelineRunDto(it: PipelineRun): PipelineRunDto {
     if (!it) {
       return null
     }
@@ -99,7 +99,7 @@ export default class PipelineMapper {
     }
   }
 
-  runToRunStatusEvent(it: PipelineRunWithPipline): PipelineRunStatusEvent {
+  toPipelineRunStatusEvent(it: PipelineRunWithPipline): PipelineRunStatusEvent {
     return {
       teamId: it.pipeline.teamId,
       pipelineId: it.pipeline.id,
@@ -109,7 +109,7 @@ export default class PipelineMapper {
     }
   }
 
-  toAzureCredentials(it: PipelineCredentials): AzureDevOpsCredentials {
+  toAzureDevOpsCredentials(it: PipelineCredentials): AzureDevOpsCredentials {
     if (it.type !== 'azure') {
       throw new CruxInternalServerErrorException({
         message: `Invalid pipeline type. Cannot map a ${it.type} pipeline to AzureDevOpsCredentials`,
