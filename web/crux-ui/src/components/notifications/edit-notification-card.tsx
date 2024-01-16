@@ -44,7 +44,6 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       name: '',
       type: 'discord',
       url: '',
-      creatorName: '',
       enabledEvents: [...NOTIFICATION_EVENT_VALUES],
     },
   )

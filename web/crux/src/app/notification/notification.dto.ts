@@ -5,10 +5,12 @@ export const NOTIFICATION_TYPE_VALUES = ['discord', 'slack', 'teams', 'rocket', 
 export type NotificationTypeDto = (typeof NOTIFICATION_TYPE_VALUES)[number]
 
 export const NOTIFICATION_EVENT_TYPE_VALUES = [
-  'deployment-created',
+  'deployment-status',
   'version-created',
   'node-added',
   'user-invited',
+  'image-pushed',
+  'image-pulled',
 ] as const
 export type NotificationEventTypeDto = (typeof NOTIFICATION_EVENT_TYPE_VALUES)[number]
 
@@ -24,8 +26,6 @@ export class NotificationDto {
   type: NotificationTypeDto
 
   active: boolean
-
-  creatorName: string
 }
 
 export class NotificationDetailsDto extends NotificationDto {

@@ -31,6 +31,7 @@ export const defaultTranslator: (t: Translate) => Translator = t => (stringId, s
       fallback: `errors:${stringId}`,
       default: dto.description,
     })
+
     return {
       input: translation,
       toast: translation,

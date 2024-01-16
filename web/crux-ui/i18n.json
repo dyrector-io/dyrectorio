@@ -26,7 +26,7 @@
     "/[teamSlug]/nodes/[nodeId]/log": [],
     "/[teamSlug]/nodes/[nodeId]/inspect": ["nodes"],
     "/[teamSlug]/registries": ["registries"],
-    "/[teamSlug]/registries/[registryId]": ["registries"],
+    "/[teamSlug]/registries/[registryId]": ["registries", "tokens"],
     "/teams": ["teams"],
     "/teams/[teamId]": ["teams"],
     "/teams/create": ["teams"],
@@ -45,6 +45,8 @@
     "/[teamSlug]/storages": ["storages"],
     "/[teamSlug]/storages/[storageId]": ["storages"],
     "/[teamSlug]/config-bundles": ["config-bundles"],
-    "/[teamSlug]/config-bundles/[configBundleId]": ["config-bundles"]
+    "/[teamSlug]/config-bundles/[configBundleId]": ["config-bundles"],
+    "/[teamSlug]/pipelines": ["pipelines"],
+    "/[teamSlug]/pipelines/[pipelineId]": ["pipelines"]
   }
 }

@@ -1,0 +1,6 @@
+{
+    "message":
+    {
+        "text": "Image {{image}} was pushed to {{registry}}."
+    }
+}

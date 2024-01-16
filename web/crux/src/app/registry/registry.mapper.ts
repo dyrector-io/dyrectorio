@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { Registry, RegistryTypeEnum } from '@prisma/client'
+import { Registry, RegistryToken, RegistryTypeEnum } from '@prisma/client'
+import { NotificationMessageType } from 'src/domain/notification-templates'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 import EncryptionService from 'src/services/encryption.service'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
@@ -15,6 +16,7 @@ import {
   CreateV2RegistryDetailsDto,
   RegistryDetailsDto,
   RegistryDto,
+  RegistryV2HookActionTypeDto,
   UpdateGithubRegistryDetailsDto,
   UpdateGitlabRegistryDetailsDto,
   UpdateGoogleRegistryDetailsDto,
@@ -92,8 +94,17 @@ export default class RegistryMapper {
       })
     }
 
+    const regToken = registry.registryToken
+
     return {
       ...registry,
+      registryToken: !regToken
+        ? null
+        : {
+            id: regToken.id,
+            createdAt: regToken.createdAt,
+            expiresAt: regToken.expiresAt,
+          },
       inUse: registry._count?.images > 0,
       icon: registry.icon ?? null,
       details,
@@ -206,6 +217,20 @@ export default class RegistryMapper {
       token: undefined,
     }
   }
+
+  v2HookActionTypeToNotificationMessageType(action: RegistryV2HookActionTypeDto): NotificationMessageType {
+    switch (action) {
+      case 'push':
+        return 'image-pushed'
+      case 'pull':
+        return 'image-pulled'
+      default:
+        throw new CruxBadRequestException({
+          message: `Invalid action type : ${action}`,
+          property: 'action',
+        })
+    }
+  }
 }
 
 type CredentialsDto = {
@@ -215,6 +240,7 @@ type CredentialsDto = {
 }
 
 type RegistryWithCount = Registry & {
+  registryToken: RegistryToken
   _count?: {
     images: number
   }

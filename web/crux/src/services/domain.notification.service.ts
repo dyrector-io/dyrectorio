@@ -6,7 +6,6 @@ import NotificationTemplateBuilder from 'src/builders/notification.template.buil
 import { nameOrEmailOfIdentity } from 'src/domain/identity'
 import { NotificationMessageType, NotificationTemplate, getTemplate } from 'src/domain/notification-templates'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
-import KratosService from './kratos.service'
 import PrismaService from './prisma.service'
 
 @Injectable()
@@ -16,7 +15,6 @@ export default class DomainNotificationService {
   constructor(
     private prisma: PrismaService,
     private httpService: HttpService,
-    private kratos: KratosService,
     private templateBuilder: NotificationTemplateBuilder,
   ) {}
 
@@ -76,10 +74,13 @@ export default class DomainNotificationService {
         return NotificationEventTypeEnum.versionCreated
       case 'invite':
         return NotificationEventTypeEnum.userInvited
-      case 'failed-deploy':
-        return NotificationEventTypeEnum.deploymentCreated
-      case 'successful-deploy':
-        return NotificationEventTypeEnum.deploymentCreated
+      case 'image-pulled':
+        return NotificationEventTypeEnum.imagePulled
+      case 'image-pushed':
+        return NotificationEventTypeEnum.imagePushed
+      case 'deploy-failed':
+      case 'deploy-successful':
+        return NotificationEventTypeEnum.deploymentStatus
       default:
         throw new CruxInternalServerErrorException({
           property: 'messageType',

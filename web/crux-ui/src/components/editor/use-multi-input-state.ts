@@ -27,12 +27,14 @@ export type MultiInputActions<T> = {
   onChange: (local: T) => void
 }
 
+export type MultiInputSocket = Pick<WebSocketClientEndpoint, 'on' | 'send'>
+
 export type MultiInputEditorOptions = {
   itemId: string
   me: Editor
   editors: Editor[]
   inputEditors: InputEditorsMap
-  sock: WebSocketClientEndpoint
+  sock: MultiInputSocket
 }
 
 export type MultiInputStateOptions<T> = {
