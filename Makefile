@@ -188,3 +188,21 @@ gource:
 		-o - | \
 		ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i - -vcodec libx264 \
 		-preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 git-history-visualization.mp4
+
+.PHONY: check-golang-dependencies
+check-golang-dependencies:
+	@echo "Checking Golang dependencies..."
+	@go list -f '{{if not .Indirect}}{{.}}{{end}}' ./... | xargs go list -f '{{if not .Standard}}{{.ImportPath}}{{end}}' | xargs go get -u
+
+.PHONY: check-nodejs-dependencies
+check-nodejs-dependencies:
+	@echo "Checking Node.js dependencies..."
+	@npm install
+
+.PHONY: check-dependencies
+check-dependencies: check-golang-dependencies check-nodejs-dependencies
+	@echo "All dependencies are up to date."
+
+# Compile the all gRPC files
+.PHONY: protogen
+protogen:| proto-agent proto-crux
