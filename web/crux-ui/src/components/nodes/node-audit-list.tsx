@@ -1,27 +1,26 @@
-import Paginator, { PaginationSettings } from '@app/components/shared/paginator'
+import { PaginationSettings } from '@app/components/shared/paginator'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoDatePicker from '@app/elements/dyo-date-picker'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
-import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
+import DyoTable, { DyoColumn, sortDate, sortString } from '@app/elements/dyo-table'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import {
   DyoNode,
+  NODE_EVENT_TYPE_VALUES,
   NodeAuditLog,
   NodeAuditLogList,
   NodeAuditLogQuery,
   NodeEventType,
-  NODE_EVENT_TYPE_VALUES,
 } from '@app/models'
 import { getEndOfToday, utcDateToLocale } from '@app/utils'
-import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import { QA_MODAL_LABEL_NODE_AUDIT_DETAILS } from 'quality-assurance'
 import { useEffect, useState } from 'react'
 import JsonEditor from '../shared/json-editor'
-import { dateSort, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
 
 type NodeAuditFilter = {
   from: Date
@@ -33,13 +32,7 @@ interface NodeAuditListProps {
   node: DyoNode
 }
 
-type NodeAuditLogSorting = 'createdAt' | 'event'
-
-const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased px-2 py-3 h-11'
-const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
-const columnWidths = ['w-2/12', 'w-48', '', 'w-24']
 const sixDays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
-const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
 
 const NodeAuditList = (props: NodeAuditListProps) => {
   const { node } = props
@@ -50,25 +43,25 @@ const NodeAuditList = (props: NodeAuditListProps) => {
 
   const endOfToday = getEndOfToday()
 
-  const [total, setTotal] = useState(0)
+  const [pagination, setPagination] = useState<PaginationSettings>({ pageSize: 10, pageNumber: 0 })
+  const [total, setTotal] = useState<number>(0)
   const [data, setData] = useState<NodeAuditLog[]>([])
   const [filter, setFilter] = useState<NodeAuditFilter>({
     from: new Date(endOfToday.getTime() - sixDays),
     to: new Date(endOfToday),
     eventType: null,
   })
-  const [pagination, setPagination] = useState<PaginationSettings>(defaultPagination)
   const [showInfo, setShowInfo] = useState<NodeAuditLog>(null)
 
   const fetchData = async () => {
-    const { from, to } = filter
+    const { from, to, eventType } = filter
 
     const query: NodeAuditLogQuery = {
       skip: pagination.pageNumber * pagination.pageSize,
       take: pagination.pageSize,
       from: (from ?? new Date(endOfToday.getTime() - sixDays)).toISOString(),
       to: (to ?? endOfToday).toISOString(),
-      filterEventType: filter.eventType,
+      filterEventType: eventType,
     }
     const res = await fetch(routes.node.api.audit(node.id, query))
 
@@ -80,16 +73,6 @@ const NodeAuditList = (props: NodeAuditListProps) => {
       setData([])
     }
   }
-
-  const sorting = useSorting<NodeAuditLog, NodeAuditLogSorting>(data, {
-    initialField: 'createdAt',
-    initialDirection: 'asc',
-    initialDataSorted: true,
-    sortFunctions: {
-      createdAt: dateSort,
-      event: stringSort,
-    },
-  })
 
   useEffect(() => {
     throttle(fetchData, true)
@@ -105,39 +88,6 @@ const NodeAuditList = (props: NodeAuditListProps) => {
     setFilter({ ...filter, from: start, to: end })
   }
 
-  const listHeaders = ['common:date', 'common:event', 'common:data', 'common:actions']
-  const headerClasses = [
-    clsx('rounded-tl-lg pl-6', defaultHeaderClass),
-    ...Array.from({ length: listHeaders.length - 2 }).map(() => defaultHeaderClass),
-    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
-  ]
-
-  const itemClasses = [
-    clsx('pl-6', defaultItemClass),
-    ...Array.from({ length: listHeaders.length - 2 }).map(() => defaultItemClass),
-    clsx('pr-6 text-center', defaultItemClass),
-  ]
-
-  const itemTemplate = (log: NodeAuditLog) => /* eslint-disable react/jsx-key */ [
-    <div className="min-w-max">{utcDateToLocale(log.createdAt)}</div>,
-    t(`auditEvents.${log.event}`),
-    <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
-      {log.data && JSON.stringify(log.data)}
-    </div>,
-    <div className="text-center">
-      {log.data && (
-        <DyoIcon
-          className="aspect-square cursor-pointer ml-auto mr-auto"
-          src="/eye.svg"
-          alt={t('common:view')}
-          size="md"
-          onClick={() => onShowInfoClick(log)}
-        />
-      )}
-    </div>,
-  ]
-  /* eslint-enable react/jsx-key */
-
   return (
     <>
       <DyoCard className="flex flex-col p-8">
@@ -148,10 +98,12 @@ const NodeAuditList = (props: NodeAuditListProps) => {
         <div className="flex flex-row items-center mt-4">
           <DyoChips
             className="mr-4"
+            name="nodeEventType"
             choices={['none', ...NODE_EVENT_TYPE_VALUES]}
             converter={it => t(`auditEvents.${it}`)}
             selection={filter.eventType ?? 'none'}
             onSelectionChange={it => setFilter({ ...filter, eventType: it === 'none' ? null : (it as NodeEventType) })}
+            qaLabel={chipsQALabelFromValue}
           />
 
           <DyoDatePicker
@@ -168,24 +120,55 @@ const NodeAuditList = (props: NodeAuditListProps) => {
       </DyoCard>
 
       <DyoCard className="relative mt-4 overflow-auto">
-        <DyoList
-          noSeparator
-          headerClassName={headerClasses}
-          itemClassName={itemClasses}
-          columnWidths={columnWidths}
-          data={sorting.items}
-          headers={listHeaders}
-          footer={<Paginator onChanged={setPagination} length={total} defaultPagination={defaultPagination} />}
-          itemBuilder={itemTemplate}
-          headerBuilder={sortHeaderBuilder<NodeAuditLog, NodeAuditLogSorting>(
-            sorting,
-            {
-              'common:date': 'createdAt',
-              'common:event': 'event',
-            },
-            text => t(text),
-          )}
-        />
+        <DyoTable
+          data={data}
+          initialSortColumn={0}
+          initialSortDirection="asc"
+          pagination="server"
+          paginationTotal={total}
+          onServerPagination={setPagination}
+        >
+          <DyoColumn
+            header={t('common:date')}
+            className="w-2/12"
+            suppressHydrationWarning
+            body={(it: NodeAuditLog) => utcDateToLocale(it.createdAt)}
+            sortable
+            sortField="createdAt"
+            sort={sortDate}
+          />
+          <DyoColumn
+            header={t('common:event')}
+            className="w-48"
+            body={(it: NodeAuditLog) => t(`auditEvents.${it.event}`)}
+            sortable
+            sortField="event"
+            sort={sortString}
+          />
+          <DyoColumn
+            header={t('common:data')}
+            body={(it: NodeAuditLog) => (
+              <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(it)}>
+                {it.data && JSON.stringify(it.data)}
+              </div>
+            )}
+          />
+          <DyoColumn
+            header={t('common:actions')}
+            className="w-24 text-center"
+            body={(it: NodeAuditLog) =>
+              it.data ? (
+                <DyoIcon
+                  className="aspect-square cursor-pointer ml-auto mr-auto"
+                  src="/eye.svg"
+                  alt={t('common:view')}
+                  size="md"
+                  onClick={() => onShowInfoClick(it)}
+                />
+              ) : null
+            }
+          />
+        </DyoTable>
       </DyoCard>
       {!showInfo ? null : (
         <DyoModal
@@ -194,6 +177,7 @@ const NodeAuditList = (props: NodeAuditListProps) => {
           title={`${t(`auditEvents.${showInfo.event}`)} | ${utcDateToLocale(showInfo.createdAt)}`}
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
+          qaLabel={QA_MODAL_LABEL_NODE_AUDIT_DETAILS}
         >
           <JsonEditor className="overflow-y-auto p-4 h-full" disabled value={showInfo.data} />
         </DyoModal>

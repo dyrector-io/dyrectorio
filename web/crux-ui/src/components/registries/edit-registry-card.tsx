@@ -1,6 +1,6 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIconPicker from '@app/elements/dyo-icon-picker'
@@ -10,27 +10,28 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   CreateRegistryDto,
-  GithubRegistryDetails,
-  GitlabRegistryDetails,
-  GoogleRegistryDetails,
-  HubRegistryDetails,
-  Registry,
-  registryCreateToDto,
-  RegistryDetails,
-  registryDetailsToRegistry,
-  RegistryType,
+  EditableGithubRegistryDetails,
+  EditableGitlabRegistryDetails,
+  EditableGoogleRegistryDetails,
+  EditableHubRegistryDetails,
+  EditableRegistry,
+  EditableV2RegistryDetails,
+  PUBLIC_REGISTRY_TYPES,
   REGISTRY_TYPE_VALUES,
+  RegistryDetails,
+  RegistryType,
   UncheckedRegistryDetails,
   UpdateRegistryDto,
-  V2RegistryDetails,
+  editableRegistryToDto,
 } from '@app/models'
 import { FormikProps, sendForm } from '@app/utils'
 import { registrySchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { useState } from 'react'
 import GithubRegistryFields from './registry-fields/github-registry-field'
 import GitlabRegistryFields from './registry-fields/gitlab-registry-field'
 import GoogleRegistryFields from './registry-fields/google-registry-field'
@@ -41,12 +42,12 @@ import V2RegistryFields from './registry-fields/v2-registry-field'
 interface EditRegistryCardProps {
   className?: string
   registry?: RegistryDetails
-  onRegistryEdited: (registry: Registry) => void
-  submitRef: MutableRefObject<() => Promise<any>>
+  onRegistryEdited: (registry: RegistryDetails) => void
+  submit: SubmitHook
 }
 
 const EditRegistryCard = (props: EditRegistryCardProps) => {
-  const { className, registry: propsRegistry, onRegistryEdited, submitRef } = props
+  const { className, registry: propsRegistry, onRegistryEdited, submit } = props
 
   const { t } = useTranslation('registries')
   const routes = useTeamRoutes()
@@ -59,10 +60,8 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
       icon: null,
       url: '',
       type: 'v2',
+      public: true,
       updatedAt: null,
-      private: false,
-      token: '',
-      user: '',
       inUse: false,
     },
   )
@@ -71,20 +70,21 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useDyoFormik({
-    submitRef,
+  const formik = useDyoFormik<EditableRegistry>({
+    submit,
     initialValues: {
       ...registry,
+      changeCredentials: !editing,
+      user: '',
+      token: '',
     },
     validationSchema: registrySchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const transformedValues = registrySchema.cast(values) as any
 
       const body = {
-        ...registryCreateToDto({
+        ...editableRegistryToDto({
           ...transformedValues,
         }),
       }
@@ -94,51 +94,56 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
         : sendForm('PUT', routes.registry.api.details(registry.id), body as UpdateRegistryDto))
 
       if (res.ok) {
-        let result: RegistryDetails
+        let result: EditableRegistry = {
+          ...values,
+          changeCredentials: false,
+          user: '',
+          token: '',
+        }
+
         if (res.status !== 204) {
-          const json = await res.json()
-          result = json as RegistryDetails
-        } else {
+          const json: RegistryDetails = (await res.json()) as RegistryDetails
           result = {
-            ...values,
+            ...result,
+            ...json,
           }
         }
 
         setRegistry(result)
-        setSubmitting(false)
-        onRegistryEdited(registryDetailsToRegistry(result))
+        onRegistryEdited(result)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })
 
   const registryType = formik.values.type
 
-  const onRegistryTypeChange = (changedRegistry: RegistryType) => {
-    if (registryType !== changedRegistry) {
+  const onRegistryTypeChange = async (newType: RegistryType): Promise<void> => {
+    if (registryType !== newType) {
       const meta = registrySchema.describe()
       const registrySchemaFieldDescription = Object.entries(meta.fields)
 
-      registrySchemaFieldDescription.map(it => {
-        const [field, value]: [string, any] = it
-        if (value.meta?.reset) {
-          formik.setFieldValue(field, '', false)
-          formik.setFieldError(field, '')
-        }
-
-        return it
-      })
+      await Promise.all(
+        registrySchemaFieldDescription.map(async (it): Promise<void> => {
+          const [field, value]: [string, any] = it
+          if (value.meta?.reset) {
+            await formik.setFieldValue(field, '', false)
+            await formik.setFieldError(field, '')
+          }
+        }),
+      )
     }
 
-    if (changedRegistry === 'github') {
-      formik.setFieldValue('namespace', 'organization', false)
-    } else if (changedRegistry === 'gitlab') {
-      formik.setFieldValue('namespace', 'group', false)
+    if (newType === 'github') {
+      await formik.setFieldValue('namespace', 'organization', false)
+    } else if (newType === 'gitlab') {
+      await formik.setFieldValue('namespace', 'group', false)
+    } else if (PUBLIC_REGISTRY_TYPES.includes(newType)) {
+      await formik.setFieldValue('public', true)
     }
 
-    formik.setFieldValue('type', changedRegistry, false)
+    await formik.setFieldValue('type', newType, false)
   }
 
   return (
@@ -190,23 +195,25 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
             <DyoLabel className="mr-2 my-auto">{t('common:type')}</DyoLabel>
 
             <DyoChips
+              name="registryType"
               choices={REGISTRY_TYPE_VALUES}
               selection={formik.values.type}
               converter={(it: RegistryType) => t(`type.${it}`)}
               onSelectionChange={it => onRegistryTypeChange(it)}
+              qaLabel={chipsQALabelFromValue}
             />
           </div>
 
           {registryType === 'hub' ? (
-            <HubRegistryFields formik={formik as FormikProps<HubRegistryDetails>} />
+            <HubRegistryFields formik={formik as FormikProps<EditableHubRegistryDetails>} />
           ) : registryType === 'v2' ? (
-            <V2RegistryFields formik={formik as FormikProps<V2RegistryDetails>} />
+            <V2RegistryFields formik={formik as FormikProps<EditableV2RegistryDetails>} />
           ) : registryType === 'gitlab' ? (
-            <GitlabRegistryFields formik={formik as FormikProps<GitlabRegistryDetails>} />
+            <GitlabRegistryFields formik={formik as FormikProps<EditableGitlabRegistryDetails>} />
           ) : registryType === 'github' ? (
-            <GithubRegistryFields formik={formik as FormikProps<GithubRegistryDetails>} />
+            <GithubRegistryFields formik={formik as FormikProps<EditableGithubRegistryDetails>} />
           ) : registryType === 'google' ? (
-            <GoogleRegistryFields formik={formik as FormikProps<GoogleRegistryDetails>} />
+            <GoogleRegistryFields formik={formik as FormikProps<EditableGoogleRegistryDetails>} />
           ) : registryType === 'unchecked' ? (
             <UncheckedRegistryFields formik={formik as FormikProps<UncheckedRegistryDetails>} />
           ) : (

@@ -3,6 +3,7 @@
 
   "containers": "Containers",
   "logs": "Logs",
+  "inspect": "Inspect",
 
   "add": "Add node",
   "new": "New node",
@@ -51,6 +52,9 @@
   "updateAvailable": "There is an update available for your node. You can update it with the update button below.",
   "updateRequired": "This agent is incompatible with the current version of dyrector.io. You can update it with the update button below.",
   "updateError": "Failed to update agent: {{error}}",
+  "kick": "Kick",
+  "areYouSureKickAgent": "Are you sure want to kick this agent?",
+  "kickingAnAgentWillStopIt": "Kicking an agent will stop it, but it won't be removed.",
   "ports": "Ports (External -> Internal)",
   "traefik": "Install Traefik reverse proxy",
   "installTraefik": "Install Traefik",
@@ -73,5 +77,42 @@
     "installed": "Installed",
     "updateCompleted": "Update completed",
     "tokenReplaced": "Token replaced"
+  },
+
+  "json": "Json",
+  "table": "Table",
+
+  "general": "General",
+  "environment": "Environment",
+  "labels": "Labels",
+  "networks": "Networks",
+  "mounts": "Mounts",
+
+  "networkInfo": "IP: {{ip}}, Gateway: {{gateway}}",
+
+  "inspectGeneral": {
+    "id": "Id",
+    "name": "Name",
+    "image": "Image",
+    "imageHash": "Image hash",
+    "exitCode": "Exit code",
+    "status": "Status",
+    "restartCount": "Restart count",
+    "hostName": "Host name",
+    "ip": "IP"
+  },
+
+  "mountsInfo": {
+    "type": "Type",
+    "source": "Source",
+    "dest": "Destination",
+    "mode": "Mode",
+    "rw": "RW",
+    "propagation": "Propagation"
+  },
+
+  "viewMode": {
+    "table": "Table",
+    "json": "JSON"
   }
 }

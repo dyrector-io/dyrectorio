@@ -58,7 +58,7 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   await page.locator('input[name=name]').fill(registryName)
   await page.locator('form >> text=Unchecked').click()
   await expect(await page.locator('label[for=url]')).toContainText('URL')
-  await page.locator('input[name=url]').fill('docker.io/library')
+  await page.locator('input[name=url]').fill('index.docker.io')
 
   await page.locator('text=Save').click()
   await page.waitForSelector(`h3:text-is("${registryName}")`)
@@ -74,33 +74,31 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
 
   await clearInput(page.locator('input[name=imageName]'))
   await page.locator('input[name=imageName]').type(`${NGINX_TEST_IMAGE_WITH_TAG}:mainline-alpine`)
-  await expect(page.locator('input[name=imageName] >> xpath=../p')).toContainText(
+  await expect(page.locator('input[name=imageName] >> xpath=../../p')).toContainText(
     "Invalid format, please use 'NAME[:TAG]'",
   )
   await expect(page.locator('button:text-is("Add")')).not.toBeVisible()
 
   await clearInput(page.locator('input[name=imageName]'))
   await page.locator('input[name=imageName]').type('')
-  await expect(page.locator('input[name=imageName] >> xpath=../p')).toContainText(
+  await expect(page.locator('input[name=imageName] >> xpath=../../p')).toContainText(
     "Invalid format, please use 'NAME[:TAG]'",
   )
   await expect(page.locator('button:text-is("Add")')).not.toBeVisible()
 
   await clearInput(page.locator('input[name=imageName]'))
   await page.locator('input[name=imageName]').type('nginx')
-  await expect(page.locator('input[name=imageName] >> xpath=../p')).not.toBeVisible()
+  await expect(page.locator('input[name=imageName] >> xpath=../../p')).not.toBeVisible()
   await expect(page.locator('button:text-is("Add")')).toBeVisible()
 
   await clearInput(page.locator('input[name=imageName]'))
   await page.locator('input[name=imageName]').type(NGINX_TEST_IMAGE_WITH_TAG)
-  await expect(page.locator('input[name=imageName] >> xpath=../p')).not.toBeVisible()
+  await expect(page.locator('input[name=imageName] >> xpath=../../p')).not.toBeVisible()
   await expect(page.locator('button:text-is("Add")')).toBeVisible()
 
   await page.locator('button:text-is("Add")').click()
 
-  const imagesTableBody = await page.locator('.table-row-group')
-  const imagesRows = await imagesTableBody.locator('.table-row')
-
+  const imagesRows = await page.locator('table.w-full >> tbody >> tr')
   await expect(imagesRows).toHaveCount(1)
 })
 

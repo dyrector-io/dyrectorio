@@ -8,6 +8,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CopyDeployment, Deployment, DeploymentDetails, DyoNode } from '@app/models'
 import { fetcher, sendForm } from '@app/utils'
@@ -19,7 +20,7 @@ import useSWR from 'swr'
 
 interface CopyDeploymentCardProps {
   className?: string
-  submitRef?: React.MutableRefObject<() => Promise<any>>
+  submit?: SubmitHook
   deployment: DeploymentDetails
   onDeplyomentCopied: (string) => void
   onDiscard: VoidFunction
@@ -29,7 +30,7 @@ const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
   const { t } = useTranslation('deployments')
   const routes = useTeamRoutes()
 
-  const { className, submitRef, deployment, onDeplyomentCopied, onDiscard } = props
+  const { className, submit, deployment, onDeplyomentCopied, onDiscard } = props
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -42,7 +43,7 @@ const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
   }, [nodes, t])
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       nodeId: deployment.node.id,
       prefix: deployment.version.type === 'incremental' ? deployment.prefix : `${deployment.prefix}-copy`,
@@ -50,12 +51,8 @@ const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
     } as CopyDeployment,
     validationSchema: copyDeploymentSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const res = await sendForm('POST', routes.deployment.api.copy(deployment.id), values)
-
-      setSubmitting(false)
 
       if (res.ok) {
         const copiedDeployment = (await res.json()) as Deployment
@@ -64,7 +61,7 @@ const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
         // There is already a deployment for the selected node with the same prefix
         toast.error(t('alreadyHaveDeployment'))
       } else {
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })
@@ -98,6 +95,7 @@ const CopyDeploymentCard = (props: CopyDeploymentCardProps) => {
           <DyoLabel className="mt-8 mb-2.5">{t('common:nodes')}</DyoLabel>
 
           <DyoChips
+            name="nodes"
             choices={nodes ?? []}
             converter={(it: DyoNode) => it.name}
             selection={nodes.find(it => it.id === formik.values.nodeId)}

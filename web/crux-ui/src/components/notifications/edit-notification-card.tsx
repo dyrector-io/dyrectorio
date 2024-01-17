@@ -1,6 +1,6 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -20,18 +20,19 @@ import {
 import { sendForm } from '@app/utils'
 import { notificationSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { useState } from 'react'
 import { NotificationEventList } from './notification-event-list'
+import { SubmitHook } from '@app/hooks/use-submit'
 
 interface EditNotificationCardProps {
   notification?: NotificationDetails
-  submitRef: MutableRefObject<() => Promise<any>>
+  submit: SubmitHook
   onNotificationEdited: (notifcation: NotificationDetails) => void
   className?: string
 }
 
 const EditNotificationCard = (props: EditNotificationCardProps) => {
-  const { notification: propsNotification, submitRef, onNotificationEdited, className } = props
+  const { notification: propsNotification, submit, onNotificationEdited, className } = props
 
   const { t } = useTranslation('notifications')
   const routes = useTeamRoutes()
@@ -43,7 +44,6 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       name: '',
       type: 'discord',
       url: '',
-      creatorName: '',
       enabledEvents: [...NOTIFICATION_EVENT_VALUES],
     },
   )
@@ -53,15 +53,13 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       ...notification,
     },
     validationSchema: notificationSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const request: CreateNotification | UpdateNotification = {
         ...values,
       }
@@ -81,11 +79,9 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
         }
 
         setNotification(result)
-        setSubmitting(false)
         onNotificationEdited(result as NotificationDetails)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })
@@ -125,13 +121,15 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
             <DyoLabel className="mt-8 mb-2.5">{t('notificationType')}</DyoLabel>
 
             <DyoChips
+              name="notificationType"
               choices={NOTIFICATION_TYPE_VALUES}
               selection={formik.values.type}
               converter={(it: NotificationType) => t(`type.${it}`)}
               onSelectionChange={async it => {
                 await formik.setFieldValue('type', it)
-                formik.validateField('url')
+                await formik.validateField('url')
               }}
+              qaLabel={chipsQALabelFromValue}
             />
           </div>
 

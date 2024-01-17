@@ -1,8 +1,10 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
+import { SubmitHook } from '@app/hooks/use-submit'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import { QA_DIALOG_LABEL_DELETE_FROM_PAGE_MENU } from 'quality-assurance'
 import React from 'react'
 
 export type ListPageMenuTexts = {
@@ -15,11 +17,11 @@ export interface ListPageMenuProps {
   texts?: ListPageMenuTexts
   creating: boolean
   setCreating: (editing: boolean) => void
-  submitRef: React.MutableRefObject<() => Promise<any>>
+  submit: SubmitHook
 }
 
 export const ListPageMenu = (props: ListPageMenuProps) => {
-  const { texts: propsTexts, creating, setCreating, submitRef } = props
+  const { texts: propsTexts, creating, setCreating, submit } = props
 
   const { t } = useTranslation('common')
 
@@ -35,7 +37,7 @@ export const ListPageMenu = (props: ListPageMenuProps) => {
         {texts.discard ?? t('discard')}
       </DyoButton>
 
-      <DyoButton className="px-4 ml-4" onClick={() => submitRef.current()}>
+      <DyoButton disabled={submit.disabled} className="px-4 ml-4" onClick={() => submit.trigger()}>
         {texts.save ?? t('save')}
       </DyoButton>
     </>
@@ -57,7 +59,7 @@ export interface DetailsPageMenuProps {
   disableEditing?: boolean
   editing: boolean
   setEditing: (editing: boolean) => void
-  submitRef: React.MutableRefObject<() => Promise<any>>
+  submit: SubmitHook
   deleteModalTitle: string
   deleteModalDescription?: string
 }
@@ -68,7 +70,7 @@ export const DetailsPageMenu = (props: React.PropsWithChildren<DetailsPageMenuPr
     disableEditing,
     editing,
     setEditing,
-    submitRef,
+    submit,
     onDelete,
     onAdd,
     deleteModalTitle,
@@ -84,6 +86,7 @@ export const DetailsPageMenu = (props: React.PropsWithChildren<DetailsPageMenuPr
 
   const deleteClick = async () => {
     const confirmed = await confirmDelete({
+      qaLabel: QA_DIALOG_LABEL_DELETE_FROM_PAGE_MENU,
       title: deleteModalTitle,
       description: deleteModalDescription,
       confirmText: texts.delete ?? t('delete'),
@@ -127,7 +130,7 @@ export const DetailsPageMenu = (props: React.PropsWithChildren<DetailsPageMenuPr
 
       {children}
 
-      <DyoButton className="px-6 ml-2" onClick={() => submitRef.current()}>
+      <DyoButton disabled={submit.disabled} className="px-6 ml-2" onClick={() => submit.trigger()}>
         {texts.save ?? t('save')}
       </DyoButton>
     </>
@@ -136,19 +139,17 @@ export const DetailsPageMenu = (props: React.PropsWithChildren<DetailsPageMenuPr
 
 interface SaveDiscardPageMenuProps {
   className?: string
-  saveRef: React.MutableRefObject<() => Promise<any>>
-  onSave?: VoidFunction
+  submit: SubmitHook
   onDiscard: VoidFunction
 }
 
 export const SaveDiscardPageMenu = (props: SaveDiscardPageMenuProps) => {
-  const { className, saveRef, onSave, onDiscard } = props
+  const { className, submit: saveRef, onDiscard } = props
 
   const { t } = useTranslation('common')
 
-  const onSaveSaveClick = () => {
-    saveRef.current()
-    onSave?.call(null)
+  const onSaveSaveClick = async () => {
+    await saveRef.trigger()
   }
 
   return (

@@ -38,13 +38,13 @@ const DeploymentTokenCard = (props: DeploymentTokenCardProps) => {
 
           <span>{token.name}</span>
 
-          <span>{t('created')}</span>
+          <span>{t('common:created')}</span>
 
-          <span>{utcDateToLocale(token.createdAt)}</span>
+          <span suppressHydrationWarning>{utcDateToLocale(token.createdAt)}</span>
 
           <span>{t('tokens:expiresAt')}</span>
 
-          <span>{token.expiresAt ? utcDateToLocale(token.expiresAt) : t('common:never')}</span>
+          <span suppressHydrationWarning>{token.expiresAt ? utcDateToLocale(token.expiresAt) : t('common:never')}</span>
 
           <DyoButton className="col-span-2 px-6 ml-auto mt-2" secondary onClick={onRevoke}>
             {t('tokens:revoke')}

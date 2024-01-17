@@ -4,7 +4,7 @@ import KeyOnlyInput from '@app/components/shared/key-only-input'
 import KeyValueInput from '@app/components/shared/key-value-input'
 import SecretKeyInput from '@app/components/shared/secret-key-input'
 import SecretKeyValueInput from '@app/components/shared/secret-key-value-input'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
@@ -12,33 +12,33 @@ import DyoToggle from '@app/elements/dyo-toggle'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   COMMON_CONFIG_PROPERTIES,
-  CommonConfigProperty,
-  ImageConfigProperty,
-  StorageOption,
-  filterContains,
-  filterEmpty,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   CommonConfigDetails,
+  CommonConfigProperty,
   ContainerConfigData,
   ContainerConfigExposeStrategy,
   ContainerConfigPort,
   ContainerConfigVolume,
   CraneConfigDetails,
+  ImageConfigProperty,
   InitContainerVolumeLink,
   InstanceCommonConfigDetails,
   InstanceCraneConfigDetails,
+  StorageOption,
   VolumeType,
+  filterContains,
+  filterEmpty,
   mergeConfigs,
 } from '@app/models'
 import { fetcher, toNumber } from '@app/utils'
+import { ContainerConfigValidationErrors, findErrorFor, findErrorStartsWith, matchError } from '@app/validations'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import useSWR from 'swr'
 import { v4 as uuid } from 'uuid'
 import ConfigSectionLabel from './config-section-label'
 import ExtendableItemList from './extendable-item-list'
-import { ContainerConfigValidationErrors, findErrorFor, findErrorStartsWith, matchError } from '@app/validations'
 
 type CommonConfigSectionBaseProps<T> = {
   disabled?: boolean
@@ -207,6 +207,33 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             </div>
           )}
 
+          {/* working directory */}
+          {filterContains('workingDirectory', selectedFilters) && (
+            <div className="grid break-inside-avoid mb-8">
+              <div className="flex flex-row gap-4 items-start">
+                <ConfigSectionLabel
+                  disabled={disabledOnImage || config.workingDirectory === imageConfig?.workingDirectory}
+                  onResetSection={() => onResetSection('workingDirectory')}
+                >
+                  {t('common.workingDirectory').toUpperCase()}
+                </ConfigSectionLabel>
+
+                <MultiInput
+                  id="common.workingDirectory"
+                  containerClassName="max-w-lg mb-3"
+                  labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
+                  grow
+                  value={config.workingDirectory ?? ''}
+                  placeholder={t('common.placeholders.containerDefault')}
+                  onPatch={it => onChange({ workingDirectory: it })}
+                  editorOptions={editorOptions}
+                  message={findErrorFor(fieldErrors, 'workingDirectory')}
+                  disabled={disabled}
+                />
+              </div>
+            </div>
+          )}
+
           {/* expose */}
           {filterContains('expose', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
@@ -219,11 +246,13 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
 
               <DyoChips
                 className="ml-2"
+                name="exposeStrategy"
                 choices={CONTAINER_EXPOSE_STRATEGY_VALUES}
                 selection={config.expose}
                 converter={(it: ContainerConfigExposeStrategy) => t(`common.exposeStrategies.${it}`)}
                 onSelectionChange={it => onChange({ expose: it })}
                 disabled={disabled}
+                qaLabel={chipsQALabelFromValue}
               />
             </div>
           )}
@@ -385,6 +414,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   {exposedPorts.length > 0 ? (
                     <DyoChips
                       className="w-full ml-2"
+                      name="exposedPorts"
                       choices={[null, ...exposedPorts.map(it => it.internal)]}
                       selection={config.routing?.port ?? null}
                       converter={(it: number | null) => it?.toString() ?? t('common.default')}
@@ -423,6 +453,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
                 findErrorMessage={index => findErrorStartsWith(fieldErrors, `environment[${index}]`)}
+                message={findErrorFor(fieldErrors, `environment`)}
               />
             </div>
           )}
@@ -513,6 +544,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
 
                 <DyoChips
                   className="w-full ml-2"
+                  name="storages"
                   choices={storages ? [null, ...storages.map(it => it.id)] : [null]}
                   selection={config.storage?.storageId ?? null}
                   converter={(it: string) => storages?.find(storage => storage.id === it)?.name ?? t('common:none')}
@@ -546,6 +578,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
 
                 <DyoChips
                   className={clsx('w-full ml-2', disabled || !config.storage?.storageId ? 'opacity-50' : null)}
+                  name="volumes"
                   choices={config.volumes ? [null, ...config.volumes.filter(it => it.name).map(it => it.name)] : [null]}
                   selection={config.storage?.path ?? null}
                   converter={(it: string) =>
@@ -797,11 +830,13 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
 
                     <div className="flex flex-row">
                       <DyoChips
+                        name="volumeType"
                         choices={CONTAINER_VOLUME_TYPE_VALUES}
                         selection={item.type}
                         converter={(it: VolumeType) => t(`common.volumeTypes.${it}`)}
                         onSelectionChange={it => onPatch({ type: it })}
                         disabled={disabled}
+                        qaLabel={chipsQALabelFromValue}
                       />
 
                       {removeButton('self-center ml-auto')}

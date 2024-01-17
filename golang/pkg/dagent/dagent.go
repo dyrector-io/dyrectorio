@@ -33,9 +33,8 @@ func Serve(cfg *config.Configuration) {
 		}
 	}
 
-	grpcParams := grpc.TokenToConnectionParams(cfg.JwtToken)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
-	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, &grpc.WorkerFunctions{
+	grpc.Init(grpcContext, &cfg.CommonConfiguration, cfg, &grpc.WorkerFunctions{
 		Deploy:               utils.DeployImage,
 		Watch:                utils.WatchContainers,
 		Delete:               utils.DeleteContainerByPrefixAndName,
@@ -46,7 +45,8 @@ func Serve(cfg *config.Configuration) {
 		ContainerCommand:     utils.ContainerCommand,
 		DeleteContainers:     utils.DeleteContainers,
 		ContainerLog:         utils.ContainerLog,
-	}, cfg)
+		ContainerInspect:     utils.ContainerInspect,
+	})
 }
 
 func grpcClose(ctx context.Context, reason agent.CloseReason, options grpc.UpdateOptions) error {

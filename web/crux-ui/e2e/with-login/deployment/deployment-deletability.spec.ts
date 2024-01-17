@@ -42,7 +42,7 @@ test('In progress deployment should be not deletable', async ({ page }) => {
   await jsonContainer.fill(JSON.stringify(configObject))
   await wsSent
 
-  const deploymentId = await deployWithDagent(page, 'versioned-deletability', projectId, versionId, true)
+  await deployWithDagent(page, 'versioned-deletability', projectId, versionId, true)
 
   await expect(await page.getByText('In progress')).toHaveCount(1)
   await expect(await page.locator('button:has-text("Delete")')).toHaveCount(0)
@@ -81,7 +81,7 @@ test('Deleting a deployment should refresh deployment list', async ({ page }) =>
   await createVersion(page, projId, '1.0.1', 'Incremental')
 
   const deleteRefreshDeployment = async () => {
-    await page.locator(`img[src="/trash-can.svg"]:right-of(div.p-2:has-text('pw-${projectName}'))`).first().click()
+    await page.locator(`img[src="/trash-can.svg"]:right-of(.p-2:has-text('pw-${projectName}'))`).first().click()
     await page.locator('h4:has-text("Are you sure?")')
     await page.locator('button:has-text("Delete")').click()
   }
@@ -89,8 +89,8 @@ test('Deleting a deployment should refresh deployment list', async ({ page }) =>
   await page.goto(TEAM_ROUTES.deployment.list())
   await page.waitForSelector('h2:text-is("Deployments")')
 
-  deleteRefreshDeployment()
-  await expect(page.locator(`div.p-2:has-text('pw-${projectName}')`)).toHaveCount(1)
-  deleteRefreshDeployment()
-  await expect(page.locator(`div.p-2:has-text('pw-${projectName}')`)).toHaveCount(0)
+  await deleteRefreshDeployment()
+  await expect(page.locator(`.p-2:has-text('pw-${projectName}')`)).toHaveCount(1)
+  await deleteRefreshDeployment()
+  await expect(page.locator(`.p-2:has-text('pw-${projectName}')`)).toHaveCount(0)
 })

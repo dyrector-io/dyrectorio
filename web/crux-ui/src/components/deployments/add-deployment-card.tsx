@@ -69,9 +69,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
     },
     validationSchema: createFullDeploymentSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const body: CreateDeployment = {
         ...values,
       }
@@ -83,12 +81,10 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         onAdd(result.id)
       } else if (res.status === 409) {
         // Handle preparing deployment exists or rolling version has deployment errors
-        handleApiError(res.clone())
+        await handleApiError(res.clone())
       } else {
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 
@@ -101,25 +97,30 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
   useEffect(() => {
     if (nodes?.length === 1 && !formik.values.nodeId) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       formik.setFieldValue('nodeId', nodes[0].id)
     }
-  }, [nodes])
+  }, [nodes, formik])
 
   useEffect(() => {
     if (projects?.length === 1) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       formik.setFieldValue('projectId', projects[0].id)
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       formik.setFieldValue('prefix', projectNameToDeploymentPrefix(projects[0].name))
     }
-  }, [projects])
+  }, [projects, formik])
 
   useEffect(() => {
     if (versions?.length === 1) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       formik.setFieldValue('versionId', versions[0].id)
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       formik.setFieldValue('versionId', null)
     }
     formik.setFieldError('versionId', null)
-  }, [versions])
+  }, [versions, formik])
 
   return (
     <DyoCard className={className}>
@@ -152,6 +153,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         ) : (
           <>
             <DyoChips
+              name="nodes"
               choices={nodes ?? []}
               converter={(it: DyoNode) => it.name}
               selection={nodes.find(it => it.id === formik.values.nodeId)}
@@ -177,12 +179,13 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         ) : (
           <>
             <DyoChips
+              name="projects"
               choices={projects ?? []}
               converter={(it: Project) => it.name}
               selection={currentProject}
-              onSelectionChange={it => {
-                formik.setFieldValue('projectId', it.id)
-                formik.setFieldValue('prefix', projectNameToDeploymentPrefix(it.name))
+              onSelectionChange={async it => {
+                await formik.setFieldValue('projectId', it.id)
+                await formik.setFieldValue('prefix', projectNameToDeploymentPrefix(it.name))
               }}
             />
             {formik.errors.projectId && <DyoMessage message={formik.errors.projectId} messageType="error" />}
@@ -206,11 +209,12 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
               currentProject.type === 'versioned' && (
                 <>
                   <DyoChips
+                    name="versions"
                     choices={versions ?? []}
                     converter={(it: Version) => it.name}
                     selection={versions?.find(it => it.id === formik.values.versionId)}
-                    onSelectionChange={it => {
-                      formik.setFieldValue('versionId', it.id)
+                    onSelectionChange={async it => {
+                      await formik.setFieldValue('versionId', it.id)
                     }}
                   />
                   {formik.errors.versionId && !formik.values.versionId && (

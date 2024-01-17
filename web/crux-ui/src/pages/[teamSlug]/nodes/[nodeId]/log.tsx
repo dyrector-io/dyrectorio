@@ -1,6 +1,6 @@
 import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
-import EventsTerminal from '@app/components/shared/events-terminal'
+import EventsTerminal, { TerminalEvent } from '@app/components/shared/events-terminal'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
@@ -16,7 +16,7 @@ import {
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
@@ -67,6 +67,12 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
     },
   ]
 
+  const formatEvent = (it: ContainerLogMessage): TerminalEvent[] => [
+    {
+      content: it.log,
+    },
+  ]
+
   return (
     <Layout title={t('image')}>
       <PageHeading pageLink={pageLink} sublinks={sublinks} />
@@ -74,11 +80,11 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
       <DyoCard className="p-4">
         <div className="flex mb-4 justify-between items-start">
           <DyoHeading element="h4" className="text-xl text-bright">
-            {t('log')}
+            {t('logOf', { name: prefix ? `${prefix}-${name}` : name })}
           </DyoHeading>
         </div>
 
-        <EventsTerminal events={log} formatEvent={it => [it.log]} />
+        <EventsTerminal events={log} formatEvent={formatEvent} />
       </DyoCard>
     </Layout>
   )
@@ -86,7 +92,7 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
 
 export default NodeContainerLogPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const nodeId = context.query.nodeId as string

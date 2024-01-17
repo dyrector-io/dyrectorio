@@ -18,15 +18,16 @@ model Team {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
   updatedBy String?  @db.Uuid
 
-  registries                Registry[]
-  projects                  Project[]
-  nodes                     Node[]
-  users                     UsersOnTeams[]
-  invitations               UserInvitation[]
-  auditLog                  AuditLog[]
-  notifications             Notification[]
-  storages                  Storage[]
-  configBundles             ConfigBundle[]
+  registries    Registry[]
+  projects      Project[]
+  nodes         Node[]
+  users         UsersOnTeams[]
+  invitations   UserInvitation[]
+  auditLog      AuditLog[]
+  notifications Notification[]
+  storages      Storage[]
+  configBundles ConfigBundle[]
+  Pipeline      Pipeline[]
 }
 
 model Token {
@@ -109,17 +110,32 @@ model Registry {
   icon            String?
   url             String
   user            String?
-  token           String?
+  token           Bytes?
   type            RegistryTypeEnum
   namespace       RegistryNamespaceEnum?
   imageNamePrefix String?
   apiUrl          String?
 
   images Image[]
+  registryToken RegistryToken?
   team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String  @db.Uuid
 
   @@unique([name, teamId])
+}
+
+model RegistryToken {
+  id           String    @id @default(uuid()) @db.Uuid
+  registryId   String    @db.Uuid
+  createdBy    String    @db.Uuid
+  createdAt    DateTime  @default(now()) @db.Timestamptz(6)
+  expiresAt    DateTime? @db.Timestamptz(6)
+  nonce        String    @db.Uuid
+
+  registry Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
+
+  @@unique([registryId])
+  @@unique([registryId, nonce])
 }
 
 model Project {
@@ -183,6 +199,7 @@ model Image {
   createdBy  String           @db.Uuid
   updatedAt  DateTime         @updatedAt @db.Timestamptz(6)
   updatedBy  String?          @db.Uuid
+  labels     Json?
 
   registry Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
   version  Version  @relation(fields: [versionId], references: [id], onDelete: Cascade)
@@ -216,24 +233,25 @@ model ContainerConfig {
   id String @id @default(uuid()) @db.Uuid
 
   //Common
-  name            String
-  environment     Json?
-  secrets         Json?
-  capabilities    Json?
-  expose          ExposeStrategy
-  routing         Json?
-  configContainer Json?
-  user            Int            @default(-1)
-  tty             Boolean
-  ports           Json?
-  portRanges      Json?
-  volumes         Json?
-  commands        Json?
-  args            Json?
-  initContainers  Json?
-  storageSet      Boolean?
-  storageId       String?        @db.Uuid
-  storageConfig   Json?
+  name             String
+  environment      Json?
+  secrets          Json?
+  capabilities     Json?
+  expose           ExposeStrategy
+  routing          Json?
+  configContainer  Json?
+  user             Int            @default(-1)
+  workingDirectory String?
+  tty              Boolean
+  ports            Json?
+  portRanges       Json?
+  volumes          Json?
+  commands         Json?
+  args             Json?
+  initContainers   Json?
+  storageSet       Boolean?
+  storageId        String?        @db.Uuid
+  storageConfig    Json?
 
   //Dagent
   logConfig     Json?
@@ -316,24 +334,25 @@ model InstanceContainerConfig {
   instanceId String @unique @db.Uuid
 
   //Common
-  name            String?
-  environment     Json?
-  secrets         Json?
-  capabilities    Json?
-  expose          ExposeStrategy?
-  routing         Json?
-  configContainer Json?
-  user            Int?
-  tty             Boolean?
-  ports           Json?
-  portRanges      Json?
-  volumes         Json?
-  commands        Json?
-  args            Json?
-  initContainers  Json?
-  storageSet      Boolean?
-  storageId       String?         @unique @db.Uuid
-  storageConfig   Json?
+  name             String?
+  environment      Json?
+  secrets          Json?
+  capabilities     Json?
+  expose           ExposeStrategy?
+  routing          Json?
+  configContainer  Json?
+  user             Int?
+  workingDirectory String?
+  tty              Boolean?
+  ports            Json?
+  portRanges       Json?
+  volumes          Json?
+  commands         Json?
+  args             Json?
+  initContainers   Json?
+  storageSet       Boolean?
+  storageId        String?         @unique @db.Uuid
+  storageConfig    Json?
 
   //Dagent
   logConfig     Json?
@@ -501,13 +520,17 @@ enum NotificationTypeEnum {
   discord
   slack
   teams
+  rocket
+  mattermost
 }
 
 enum NotificationEventTypeEnum {
-  deploymentCreated
+  deploymentStatus
   versionCreated
   nodeAdded
   userInvited
+  imagePushed
+  imagePulled
 }
 
 enum NodeEventTypeEnum {
@@ -522,17 +545,17 @@ enum NodeEventTypeEnum {
 }
 
 model Storage {
-  id          String   @id @default(uuid()) @db.Uuid
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  createdBy   String   @db.Uuid
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
-  updatedBy   String?  @db.Uuid
-  name        String   @db.VarChar(70)
-  description String?
-  icon        String?
-  url         String
-  accessKey   String?
-  secretKey   String?
+  id           String   @id @default(uuid()) @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  createdBy    String   @db.Uuid
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  updatedBy    String?  @db.Uuid
+  name         String   @db.VarChar(70)
+  description  String?
+  icon         String?
+  url          String
+  accessKey    Bytes?
+  secretKey    Bytes?
 
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String @db.Uuid
@@ -541,6 +564,57 @@ model Storage {
   instanceConfigs  InstanceContainerConfig[]
 
   @@unique([name, teamId])
+}
+
+enum PipelineTypeEnum {
+  github
+  gitlab
+  azure
+}
+
+enum PipelineStatusEnum {
+  unknown
+  queued
+  running
+  successful
+  failed
+}
+
+model Pipeline {
+  id          String           @id @default(uuid()) @db.Uuid
+  createdAt   DateTime         @default(now()) @db.Timestamptz(6)
+  createdBy   String           @db.Uuid
+  updatedAt   DateTime         @updatedAt @db.Timestamptz(6)
+  updatedBy   String?          @db.Uuid
+  name        String           @db.VarChar(70)
+  type        PipelineTypeEnum
+  description String?
+  icon        String?
+  token       Bytes
+  repository  Json
+  trigger     Json
+  hooks       Json
+
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String @db.Uuid
+
+  runs PipelineRun[]
+
+  @@unique([name, teamId])
+}
+
+model PipelineRun {
+  id         String             @id @default(uuid()) @db.Uuid
+  externalId Int
+  status     PipelineStatusEnum
+  createdAt  DateTime           @default(now()) @db.Timestamptz(6)
+  createdBy  String             @db.Uuid
+  finishedAt DateTime?
+
+  pipeline   Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  pipelineId String   @db.Uuid
+
+  @@unique([pipelineId, externalId])
 }
 
 model ConfigBundle {
@@ -569,4 +643,9 @@ model ConfigBundleOnDeployments {
   configBundleId String       @db.Uuid
 
   @@id([deploymentId, configBundleId])
+}
+
+model QualityAssuranceConfig {
+  id   String  @id @default(uuid()) @db.Uuid
+  name String?
 }

@@ -1,18 +1,21 @@
 import { Layout } from '@app/components/layout'
+import CreateRegistryTokenCard from '@app/components/registries/create-registry-token-card'
 import EditRegistryCard from '@app/components/registries/edit-registry-card'
 import RegistryCard from '@app/components/registries/registry-card'
+import RegistryTokenCard from '@app/components/registries/registry-token-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
-import Paginator, { PaginationSettings } from '@app/components/shared/paginator'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { DyoList } from '@app/elements/dyo-list'
+import { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import DyoTable, { DyoColumn, sortString } from '@app/elements/dyo-table'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
+import useConfirmation from '@app/hooks/use-confirmation'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { SortHeaderBuilderMapping, sortHeaderBuilder, stringSort, useSorting } from '@app/hooks/use-sorting'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -21,6 +24,7 @@ import {
   FindImageResultMessage,
   RegistryDetails,
   RegistryDetailsDto,
+  RegistryToken,
   WS_TYPE_FIND_IMAGE,
   WS_TYPE_FIND_IMAGE_RESULT,
   registryDetailsDtoToUI,
@@ -29,21 +33,16 @@ import {
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import clsx from 'clsx'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useEffect, useRef, useState } from 'react'
+import { QA_DIALOG_LABEL_REVOKE_REGISTRY_TOKEN } from 'quality-assurance'
+import { useEffect, useState } from 'react'
+
+type RegistryEditState = 'details' | 'edit' | 'create-token'
 
 interface RegistryDetailsPageProps {
   registry: RegistryDetails
-}
-
-const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
-
-type FindImageResultSorting = 'name'
-const sortHeaders: SortHeaderBuilderMapping<FindImageResultSorting> = {
-  'common:images': 'name',
 }
 
 const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
@@ -55,37 +54,27 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const [registry, setRegistry] = useState(propsRegistry)
-  const [editing, setEditing] = useState(false)
-  const submitRef = useRef<() => Promise<any>>()
+  const [editState, setEditState] = useState<RegistryEditState>('details')
+  const submit = useSubmit()
 
   const [loading, setLoading] = useState(false)
-  const [pagination, setPagination] = useState<PaginationSettings>()
-  const [total, setTotal] = useState(0)
 
   const filters = useFilters<FindImageResult, TextFilter>({
     initialData: [],
     filters: [textFilterFor<FindImageResult>(it => [it.name])],
   })
 
-  const sorting = useSorting<FindImageResult, FindImageResultSorting>(filters.filtered, {
-    initialField: 'name',
-    initialDirection: 'asc',
-    sortFunctions: {
-      name: stringSort,
-    },
-  })
-
+  const [confirmModalConfig, confirm] = useConfirmation()
   const sock = useWebSocket(routes.registry.socket())
+
   sock.on(WS_TYPE_FIND_IMAGE_RESULT, (message: FindImageResultMessage) => {
     if (message.registryId === registry?.id) {
       setLoading(false)
-      setTotal(message.images.length)
       filters.setItems(
         message.images.map(it => ({
           name: it.name,
         })),
       )
-      setPagination(defaultPagination)
     }
   })
 
@@ -98,16 +87,12 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       registryId: registry.id,
       filter: '',
     } as FindImageMessage)
+
     setLoading(true)
-  }, [])
+  }, [registry.type, registry.id, sock])
 
-  useEffect(() => {
-    setTotal(filters.filtered.length)
-    setPagination(p => ({ pageNumber: 0, pageSize: p ? p.pageSize : defaultPagination.pageSize }))
-  }, [filters.filtered])
-
-  const onRegistryEdited = reg => {
-    setEditing(false)
+  const onRegistryEdited = (reg: RegistryDetails) => {
+    setEditState('details')
     setRegistry(reg)
   }
 
@@ -117,36 +102,44 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(routes.registry.list())
+      await router.replace(routes.registry.list())
     } else {
-      handleApiError(res)
+      await handleApiError(res)
     }
   }
 
-  const getPagedImages = () =>
-    sorting.items.slice(
-      pagination.pageNumber * pagination.pageSize,
-      pagination.pageNumber * pagination.pageSize + pagination.pageSize,
-    )
+  const onCreateRegistryToken = () => setEditState('create-token')
+  const onRevokeRegistryToken = async () => {
+    const confirmed = await confirm({
+      qaLabel: QA_DIALOG_LABEL_REVOKE_REGISTRY_TOKEN,
+      title: t('common:areYouSure'),
+      description: t('tokens:areYouSureRevoke'),
+      confirmText: t('tokens:revoke'),
+      confirmColor: 'bg-error-red',
+    })
 
-  const headers = ['common:images']
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 px-2 font-semibold'
-  const headerClasses = [
-    clsx('rounded-tl-lg pl-6', defaultHeaderClass),
-    ...Array.from({ length: headers.length - 3 }).map(() => defaultHeaderClass),
-    clsx('text-center', defaultHeaderClass),
-    clsx('rounded-tr-lg pr-6 text-center', defaultHeaderClass),
-  ]
+    if (!confirmed) {
+      return
+    }
 
-  const defaultItemClass = 'h-11 min-h-min text-light-eased p-2 w-fit'
-  const itemClasses = [
-    clsx('pl-6', defaultItemClass),
-    ...Array.from({ length: headerClasses.length - 3 }).map(() => defaultItemClass),
-    clsx('text-center', defaultItemClass),
-    clsx('pr-6 text-center', defaultItemClass),
-  ]
+    const res = await fetch(routes.registry.api.token(registry.id), { method: 'DELETE' })
 
-  const itemTemplate = (item: FindImageResult) => [item.name]
+    if (!res.ok) {
+      await handleApiError(res)
+      return
+    }
+
+    onRegistryEdited({
+      ...registry,
+      registryToken: null,
+    })
+  }
+
+  const onRegistryTokenCreated = (registryToken: RegistryToken) =>
+    onRegistryEdited({
+      ...registry,
+      registryToken,
+    })
 
   const pageLink: BreadcrumbLink = {
     name: t('common:registries'),
@@ -166,9 +159,9 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       >
         <DetailsPageMenu
           onDelete={onDelete}
-          editing={editing}
-          setEditing={setEditing}
-          submitRef={submitRef}
+          editing={editState === 'edit'}
+          setEditing={it => setEditState(it ? 'edit' : 'details')}
+          submit={submit}
           deleteModalTitle={t('common:areYouSureDeleteName', { name: registry.name })}
           deleteModalDescription={t('common:proceedYouLoseAllDataToName', {
             name: registry.name,
@@ -176,15 +169,28 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
         />
       </PageHeading>
 
-      {!editing ? (
-        <RegistryCard registry={registryDetailsToRegistry(registry)} />
-      ) : (
-        <EditRegistryCard
-          className="p-8"
+      {editState === 'edit' ? (
+        <EditRegistryCard className="p-8" registry={registry} onRegistryEdited={onRegistryEdited} submit={submit} />
+      ) : editState === 'create-token' ? (
+        <CreateRegistryTokenCard
           registry={registry}
-          onRegistryEdited={onRegistryEdited}
-          submitRef={submitRef}
+          submit={submit}
+          onDiscard={() => setEditState('details')}
+          onTokenCreated={onRegistryTokenCreated}
         />
+      ) : (
+        <div className="flex flex-row gap-4">
+          <RegistryCard className="flex-auto p-6" registry={registryDetailsToRegistry(registry)} disableTitleHref />
+
+          {registry.type === 'v2' && (
+            <RegistryTokenCard
+              className="p-6"
+              token={registry.registryToken}
+              onCreate={onCreateRegistryToken}
+              onRevoke={onRevokeRegistryToken}
+            />
+          )}
+        </div>
       )}
 
       {registry.type === 'unchecked' ? null : loading ? (
@@ -202,19 +208,18 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
           </div>
 
           <DyoCard className="relative mt-4">
-            <DyoList
-              headers={[...headers, '']}
-              headerClassName={headerClasses}
-              itemClassName={itemClasses}
-              data={getPagedImages()}
-              noSeparator
-              headerBuilder={sortHeaderBuilder<FindImageResult, FindImageResultSorting>(sorting, sortHeaders, text =>
-                t(text),
-              )}
-              itemBuilder={itemTemplate}
-              footer={<Paginator onChanged={setPagination} length={total} defaultPagination={defaultPagination} />}
-            />
+            <DyoTable
+              data={filters.filtered}
+              dataKey="name"
+              pagination="client"
+              initialSortColumn={0}
+              initialSortDirection="asc"
+            >
+              <DyoColumn header={t('common:images')} field="name" sortable sort={sortString} />
+            </DyoTable>
           </DyoCard>
+
+          <DyoConfirmationModal config={confirmModalConfig} className="w-1/4" />
         </>
       )}
     </Layout>
@@ -223,7 +228,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
 
 export default RegistryDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const registryId = context.query.registryId as string

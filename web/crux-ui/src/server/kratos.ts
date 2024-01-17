@@ -11,7 +11,7 @@ import {
   VerifiableIdentityAddress,
 } from '@ory/kratos-client'
 import http from 'http'
-import { NextApiRequest, NextPageContext } from 'next'
+import { NextApiRequest, GetServerSidePropsContext } from 'next'
 
 const config = new Configuration({ basePath: process.env.KRATOS_URL })
 const kratos = new FrontendApi(config)
@@ -39,7 +39,7 @@ const updateMetadata = async (session: Session, metadata: Partial<IdentityPublic
     })
   ).data
 
-  identities.updateIdentity({
+  await identities.updateIdentity({
     id: identity.id,
     updateIdentityBody: {
       schema_id: identity.schema_id,
@@ -151,7 +151,7 @@ export const sessionOf = (nextRequest: NextApiRequest): Session => {
   return req.session
 }
 
-export const sessionOfContext = (context: NextPageContext): Session => {
+export const sessionOfContext = (context: GetServerSidePropsContext): Session => {
   const cruxContext = context.req as IncomingMessageWithSession
   return cruxContext.session
 }

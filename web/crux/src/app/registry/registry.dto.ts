@@ -1,9 +1,42 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsBoolean, IsDate, IsIn, IsNotEmptyObject, IsOptional, IsString, IsUUID, IsUrl } from 'class-validator'
+import {
+  IsBoolean,
+  IsDate,
+  IsIn,
+  IsNotEmptyObject,
+  IsOptional,
+  IsPositive,
+  IsString,
+  IsUUID,
+  IsUrl,
+  ValidateIf,
+  ValidateNested,
+} from 'class-validator'
 
 export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github', 'google', 'unchecked'] as const
 export type RegistryType = (typeof REGISTRY_TYPE_VALUES)[number]
+
+const propertyIsPresent = (property: string) => (dto: any) => {
+  const value = dto[property]
+  return typeof value !== 'undefined'
+}
+
+const propertyIsTrue = (property: string) => (dto: any) => {
+  const value = dto[property]
+  return value === true
+}
+
+const privateAndPropertyIsPresent =
+  (property: string) =>
+  (dto: any): boolean => {
+    const pub = dto.public
+    if (pub) {
+      return false
+    }
+
+    return propertyIsPresent(property)(dto)
+  }
 
 export class BasicRegistryDto {
   @IsUUID()
@@ -48,32 +81,52 @@ export class RegistryDto {
   type: RegistryType
 }
 
+export class RegistryTokenDto {
+  @IsUUID()
+  id: string
+
+  @Type(() => Date)
+  @IsDate()
+  createdAt: Date
+
+  @Type(() => Date)
+  @IsDate()
+  @IsOptional()
+  expiresAt?: Date | null
+}
+
+export class CreateRegistryTokenDto {
+  @IsPositive()
+  @IsOptional()
+  expirationInDays?: number
+}
+
+export class RegistryTokenCreatedDto extends RegistryTokenDto {
+  @IsString()
+  token: string
+
+  @IsString()
+  config: string
+}
+
 export class HubRegistryDetailsDto {
   @IsString()
   @ApiProperty()
   imageNamePrefix: string
+
+  @IsBoolean()
+  public: boolean
 }
 
 export class V2RegistryDetailsDto {
   @IsUrl()
   url: string
 
-  @IsString()
-  @IsOptional()
-  user?: string | null
-
-  @IsString()
-  @IsOptional()
-  token?: string | null
+  @IsBoolean()
+  public: boolean
 }
 
 export class GitlabRegistryDetailsDto {
-  @IsString()
-  user: string
-
-  @IsString()
-  token: string
-
   @IsString()
   imageNamePrefix: string
 
@@ -95,12 +148,6 @@ export class GitlabRegistryDetailsDto {
 
 export class GithubRegistryDetailsDto {
   @IsString()
-  user: string
-
-  @IsString()
-  token: string
-
-  @IsString()
   imageNamePrefix: string
 
   @ApiProperty({
@@ -115,13 +162,8 @@ export class GoogleRegistryDetailsDto {
   @IsUrl()
   url: string
 
-  @IsString()
-  @IsOptional()
-  user?: string | null
-
-  @IsString()
-  @IsOptional()
-  token?: string | null
+  @IsBoolean()
+  public: boolean
 
   @IsString()
   imageNamePrefix: string
@@ -131,6 +173,94 @@ export class UncheckedRegistryDetailsDto {
   @IsUrl()
   url: string
 }
+
+export class CreateHubRegistryDetailsDto extends HubRegistryDetailsDto {
+  @IsString()
+  @IsOptional()
+  @ValidateIf(privateAndPropertyIsPresent('token'))
+  user?: string
+
+  @IsString()
+  @IsOptional()
+  @ValidateIf(privateAndPropertyIsPresent('user'))
+  token?: string
+}
+
+export class CreateV2RegistryDetailsDto extends V2RegistryDetailsDto {
+  @IsString()
+  @IsOptional()
+  @ValidateIf(privateAndPropertyIsPresent('token'))
+  user?: string
+
+  @IsString()
+  @IsOptional()
+  @ValidateIf(privateAndPropertyIsPresent('user'))
+  token?: string
+}
+
+export class CreateGitlabRegistryDetailsDto extends GitlabRegistryDetailsDto {
+  @IsString()
+  user: string
+
+  @IsString()
+  token: string
+}
+
+export class CreateGithubRegistryDetailsDto extends GithubRegistryDetailsDto {
+  @IsString()
+  user: string
+
+  @IsString()
+  token: string
+}
+
+export class CreateGoogleRegistryDetailsDto extends GoogleRegistryDetailsDto {
+  @IsString()
+  @IsOptional()
+  @ValidateIf(privateAndPropertyIsPresent('token'))
+  user?: string
+
+  @IsString()
+  @IsOptional()
+  @ValidateIf(privateAndPropertyIsPresent('user'))
+  token?: string
+}
+
+export class CreateUncheckedRegistryDetailsDto {
+  @IsUrl()
+  @ValidateIf(propertyIsTrue('local'))
+  url: string
+
+  @IsBoolean()
+  local: boolean
+}
+
+export class UpdateHubRegistryDetailsDto extends CreateHubRegistryDetailsDto {}
+
+export class UpdateV2RegistryDetailsDto extends CreateV2RegistryDetailsDto {}
+
+export class UpdateGitlabRegistryDetailsDto extends GitlabRegistryDetailsDto {
+  @IsString()
+  @ValidateIf(propertyIsPresent('token'))
+  user?: string
+
+  @IsString()
+  @ValidateIf(propertyIsPresent('user'))
+  token?: string
+}
+
+export class UpdateGithubRegistryDetailsDto extends GithubRegistryDetailsDto {
+  @IsString()
+  @ValidateIf(propertyIsPresent('token'))
+  user?: string
+
+  @IsString()
+  @ValidateIf(propertyIsPresent('user'))
+  token?: string
+}
+
+export class UpdateGoogleRegistryDetailsDto extends CreateGoogleRegistryDetailsDto {}
+export class UpdateUncheckedRegistryDetailsDto extends CreateUncheckedRegistryDetailsDto {}
 
 const RegistryDetailsOneOf = () =>
   ApiProperty({
@@ -188,6 +318,10 @@ export class RegistryDetailsDto {
   })
   type: RegistryType
 
+  @ValidateNested()
+  @IsOptional()
+  registryToken: RegistryTokenDto | null
+
   @RegistryDetailsOneOf()
   @IsNotEmptyObject()
   details:
@@ -199,7 +333,29 @@ export class RegistryDetailsDto {
     | UncheckedRegistryDetailsDto
 }
 
-@RegistryDetailsExtraModels()
+const RegistryCreateDetailsOneOf = () =>
+  ApiProperty({
+    oneOf: [
+      { $ref: getSchemaPath(CreateHubRegistryDetailsDto) },
+      { $ref: getSchemaPath(CreateV2RegistryDetailsDto) },
+      { $ref: getSchemaPath(CreateGitlabRegistryDetailsDto) },
+      { $ref: getSchemaPath(CreateGithubRegistryDetailsDto) },
+      { $ref: getSchemaPath(CreateGoogleRegistryDetailsDto) },
+      { $ref: getSchemaPath(CreateUncheckedRegistryDetailsDto) },
+    ],
+  })
+
+const RegistryCreateDetailsExtraModels = () =>
+  ApiExtraModels(
+    CreateHubRegistryDetailsDto,
+    CreateV2RegistryDetailsDto,
+    CreateGitlabRegistryDetailsDto,
+    CreateGithubRegistryDetailsDto,
+    CreateGoogleRegistryDetailsDto,
+    CreateUncheckedRegistryDetailsDto,
+  )
+
+@RegistryCreateDetailsExtraModels()
 export class CreateRegistryDto {
   @IsString()
   name: string
@@ -218,18 +374,40 @@ export class CreateRegistryDto {
   })
   type: RegistryType
 
-  @RegistryDetailsOneOf()
+  @RegistryCreateDetailsOneOf()
   @IsNotEmptyObject()
   details:
-    | HubRegistryDetailsDto
-    | V2RegistryDetailsDto
-    | GitlabRegistryDetailsDto
-    | GithubRegistryDetailsDto
-    | GoogleRegistryDetailsDto
-    | UncheckedRegistryDetailsDto
+    | CreateHubRegistryDetailsDto
+    | CreateV2RegistryDetailsDto
+    | CreateGitlabRegistryDetailsDto
+    | CreateGithubRegistryDetailsDto
+    | CreateGoogleRegistryDetailsDto
+    | CreateUncheckedRegistryDetailsDto
 }
 
-@RegistryDetailsExtraModels()
+const RegistryUpdateDetailsOneOf = () =>
+  ApiProperty({
+    oneOf: [
+      { $ref: getSchemaPath(UpdateHubRegistryDetailsDto) },
+      { $ref: getSchemaPath(UpdateV2RegistryDetailsDto) },
+      { $ref: getSchemaPath(UpdateGitlabRegistryDetailsDto) },
+      { $ref: getSchemaPath(UpdateGithubRegistryDetailsDto) },
+      { $ref: getSchemaPath(UpdateGoogleRegistryDetailsDto) },
+      { $ref: getSchemaPath(UpdateUncheckedRegistryDetailsDto) },
+    ],
+  })
+
+const RegistryUpdateDetailsExtraModels = () =>
+  ApiExtraModels(
+    UpdateHubRegistryDetailsDto,
+    UpdateV2RegistryDetailsDto,
+    UpdateGitlabRegistryDetailsDto,
+    UpdateGithubRegistryDetailsDto,
+    UpdateGoogleRegistryDetailsDto,
+    UpdateUncheckedRegistryDetailsDto,
+  )
+
+@RegistryUpdateDetailsExtraModels()
 export class UpdateRegistryDto {
   @IsString()
   name: string
@@ -249,13 +427,47 @@ export class UpdateRegistryDto {
   })
   type: RegistryType
 
-  @RegistryDetailsOneOf()
+  @RegistryUpdateDetailsOneOf()
   @IsNotEmptyObject()
   details:
-    | HubRegistryDetailsDto
-    | V2RegistryDetailsDto
-    | GitlabRegistryDetailsDto
-    | GithubRegistryDetailsDto
-    | GoogleRegistryDetailsDto
+    | UpdateHubRegistryDetailsDto
+    | UpdateV2RegistryDetailsDto
+    | UpdateGitlabRegistryDetailsDto
+    | UpdateGithubRegistryDetailsDto
+    | UpdateGoogleRegistryDetailsDto
     | UncheckedRegistryDetailsDto
+}
+
+export const REGISTRY_V2_HOOK_ACTION_TYPE = ['push', 'pull'] as const
+export type RegistryV2HookActionTypeDto = (typeof REGISTRY_V2_HOOK_ACTION_TYPE)[number]
+
+export class RegistryV2HookTargetDto {
+  @IsString()
+  repository: string // image name
+
+  @IsString()
+  tag: string
+
+  @IsUrl()
+  url: string
+}
+
+export class RegistryV2HookEventDto {
+  @IsUUID()
+  id: string
+
+  @IsString()
+  @IsIn(REGISTRY_V2_HOOK_ACTION_TYPE)
+  @ApiProperty({
+    enum: REGISTRY_V2_HOOK_ACTION_TYPE,
+  })
+  action: RegistryV2HookActionTypeDto
+
+  @ValidateNested()
+  target: RegistryV2HookTargetDto
+}
+
+export class RegistryV2HookEnvelopeDto {
+  @ValidateNested({ each: true })
+  events: RegistryV2HookEventDto[]
 }

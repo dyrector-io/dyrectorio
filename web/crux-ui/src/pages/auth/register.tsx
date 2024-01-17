@@ -6,6 +6,7 @@ import DyoForm from '@app/elements/dyo-form'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoMessage from '@app/elements/dyo-message'
+import DyoPassword from '@app/elements/dyo-password'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
@@ -28,7 +29,7 @@ import { RegistrationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import { cookieOf, forwardCookie } from '@server/cookie'
 import kratos, { obtainSessionFromRequest, registrationOidcInvalid } from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import Link from 'next/link'
@@ -127,7 +128,7 @@ const RegisterPage = (props: RegisterPageProps) => {
       })
 
       if (res.ok) {
-        router.replace(verificationUrl({ email: values.email }))
+        await router.replace(verificationUrl({ email: values.email }))
       } else if (res.status === 410) {
         await router.reload()
       } else {
@@ -158,6 +159,7 @@ const RegisterPage = (props: RegisterPageProps) => {
             <DyoInput
               label={t('common:firstName')}
               name="firstName"
+              type="text"
               onChange={formik.handleChange}
               value={formik.values.firstName}
               message={formik.errors.firstName}
@@ -167,6 +169,7 @@ const RegisterPage = (props: RegisterPageProps) => {
             <DyoInput
               label={t('common:lastName')}
               name="lastName"
+              type="text"
               onChange={formik.handleChange}
               value={formik.values.lastName}
               message={formik.errors.lastName}
@@ -184,18 +187,16 @@ const RegisterPage = (props: RegisterPageProps) => {
               message={formik.errors.email ?? findMessage(ui, 'traits.email')}
             />
 
-            <DyoInput
+            <DyoPassword
               label={t('common:password')}
               name="password"
-              type="password"
               onChange={formik.handleChange}
               value={formik.values.password}
             />
 
-            <DyoInput
+            <DyoPassword
               label={t('common:confirmPass')}
               name="confirmPassword"
-              type="password"
               onChange={formik.handleChange}
               value={formik.values.confirmPassword}
             />
@@ -280,7 +281,7 @@ const RegisterPage = (props: RegisterPageProps) => {
 
 export default RegisterPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const flowId = context.query.flow as string
 
   const session = await obtainSessionFromRequest(context.req)

@@ -7,19 +7,21 @@ import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
 import ViewModeToggle from '@app/components/shared/view-mode-toggle'
+import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import usePersistedViewMode from '@app/hooks/use-persisted-view-mode'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Project, ProjectType, PROJECT_TYPE_VALUES } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { auditToLocaleDate, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 type ProjectFilter = TextFilter & {
   type?: ProjectType | 'all'
@@ -52,7 +54,7 @@ const ProjectsPage = (props: ProjectsPageProps) => {
   })
 
   const [creating, setCreating] = useState(false)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const [viewMode, setViewMode] = usePersistedViewMode({ initialViewMode: 'tile', pageName: 'projects' })
 
@@ -72,17 +74,16 @@ const ProjectsPage = (props: ProjectsPageProps) => {
   return (
     <Layout title={t('common:projects')}>
       <PageHeading pageLink={pageLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
+        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
       </PageHeading>
-      {!creating ? null : (
-        <EditProjectCard className="mb-8 px-8 py-6" submitRef={submitRef} onProjectEdited={onCreated} />
-      )}
+      {!creating ? null : <EditProjectCard className="mb-8 px-8 py-6" submit={submit} onProjectEdited={onCreated} />}
 
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
               className="pl-6"
+              name="projectTypeFilter"
               choices={PROJECT_TYPE_VALUES}
               converter={it => t(it)}
               selection={filters.filter?.type}
@@ -91,6 +92,7 @@ const ProjectsPage = (props: ProjectsPageProps) => {
                   type,
                 })
               }}
+              qaLabel={chipsQALabelFromValue}
             />
           </Filters>
           <div className="flex flex-row mt-4 justify-end">
@@ -113,7 +115,7 @@ const ProjectsPage = (props: ProjectsPageProps) => {
 }
 export default ProjectsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const projects = await getCruxFromContext<Project[]>(context, routes.project.api.list())

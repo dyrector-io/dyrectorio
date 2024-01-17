@@ -1,4 +1,3 @@
-import { exec, ExecOptions, execSync } from 'child_process'
 /* eslint-disable import/no-extraneous-dependencies */
 import { internalError } from '@app/error-responses'
 import { UserMeta } from '@app/models'

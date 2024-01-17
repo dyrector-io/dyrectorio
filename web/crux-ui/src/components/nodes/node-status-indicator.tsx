@@ -15,12 +15,12 @@ const statusToColor = (status: NodeStatus) => {
   }
 }
 
-interface NodeStatusStatusIndicatorProps {
+interface NodeStatusIndicatorProps {
   className?: string
   status: NodeStatus
 }
 
-const NodeStatusIndicator = (props: NodeStatusStatusIndicatorProps) => {
+const NodeStatusIndicator = (props: NodeStatusIndicatorProps) => {
   const { status, className } = props
 
   const { t } = useTranslation('common')

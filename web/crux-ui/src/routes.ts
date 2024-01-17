@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import { AuditLogQuery, ContainerIdentifier, ContainerOperation, VersionSectionsState } from './models'
 
 // Routes:
@@ -38,6 +38,7 @@ export const API_SETTINGS_OIDC = '/api/auth/settings/oidc'
 export const API_RECOVERY = '/api/auth/recovery'
 export const API_VERIFICATION = '/api/auth/verify'
 export const API_CREATE_ACCOUNT = '/api/auth/create-account'
+export const API_QUALITY_ASSURANCE = '/api/quality-assurance'
 
 export const API_STATUS = '/api/status'
 
@@ -76,14 +77,14 @@ export const appendUrlParams = <T extends AnchorUrlParams>(url: string, params: 
   if (paramMap.size > 0) {
     const entries = Array.from(paramMap.entries())
     const [firstKey, firstValue] = entries[0]
-    result = `${result}?${firstKey}=${firstValue}`
+    result = `${result}?${firstKey}=${encodeURIComponent(firstValue)}`
 
     if (entries.length > 1) {
       const rest = entries.slice(1)
 
       result = rest.reduce((prev, current) => {
         const [key, value] = current
-        return `${prev}&${key}=${value}`
+        return `${prev}&${key}=${encodeURIComponent(value)}`
       }, result)
     }
   }
@@ -100,7 +101,7 @@ const urlQuery = (url: string, query: object) => {
         return null
       }
 
-      return `${key}=${value}`
+      return `${key}=${encodeURIComponent(value)}`
     })
     .filter(it => it !== null)
 
@@ -203,6 +204,8 @@ class NodeApi {
 
   deployments = (id: string) => `${this.details(id)}/deployments`
 
+  kick = (id: string) => `${this.details(id)}/kick`
+
   // node-global-container
   globalContainerList = (id: string) => `${this.details(id)}/containers`
 
@@ -253,6 +256,12 @@ class NodeRoutes {
       ...params,
       anchor: null,
     })
+
+  containerInspect = (id: string, params: ContainerLogParams) =>
+    appendUrlParams(`${this.details(id)}/inspect`, {
+      ...params,
+      anchor: null,
+    })
 }
 
 class RegistryApi {
@@ -265,6 +274,8 @@ class RegistryApi {
   list = () => this.root
 
   details = (id: string) => `${this.root}/${id}`
+
+  token = (id: string) => `${this.details(id)}/token`
 }
 
 class RegistryRoutes {
@@ -533,6 +544,53 @@ class StorageRoutes {
   details = (id: string) => `${this.root}/${id}`
 }
 
+// pipeline
+
+class PipelineApi {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `/api${root}`
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+
+  runs = (id: string) => `${this.details(id)}/runs`
+}
+
+type PipelineDetailsRouteOptions = {
+  trigger?: boolean
+}
+
+export const ANCHOR_TRIGGER = '#trigger'
+
+class PipelineRoutes {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `${root}/pipelines`
+  }
+
+  private _api: PipelineApi
+
+  get api() {
+    if (!this._api) {
+      this._api = new PipelineApi(this.root)
+    }
+
+    return this._api
+  }
+
+  list = () => this.root
+
+  details = (id: string, options?: PipelineDetailsRouteOptions) =>
+    `${this.root}/${id}${options?.trigger ? ANCHOR_TRIGGER : ''}`
+
+  socket = () => this.root
+}
+
 // config bundle
 
 class ConfigBundleApi {
@@ -595,6 +653,8 @@ export class TeamRoutes {
   private _notification: NotificationRoutes
 
   private _storage: StorageRoutes
+
+  private _pipeline: PipelineRoutes
 
   private _configBundles: ConfigBundleRoutes
 
@@ -662,6 +722,14 @@ export class TeamRoutes {
     return this._storage
   }
 
+  get pipeline() {
+    if (!this._pipeline) {
+      this._pipeline = new PipelineRoutes(this.root)
+    }
+
+    return this._pipeline
+  }
+
   get configBundles() {
     if (!this._configBundles) {
       this._configBundles = new ConfigBundleRoutes(this.root)
@@ -670,7 +738,7 @@ export class TeamRoutes {
     return this._configBundles
   }
 
-  static fromContext(context: NextPageContext): TeamRoutes | null {
+  static fromContext(context: GetServerSidePropsContext): TeamRoutes | null {
     const teamSlug = context.query.teamSlug as string
     if (!teamSlug) {
       return null

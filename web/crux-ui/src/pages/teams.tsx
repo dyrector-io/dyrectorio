@@ -5,6 +5,7 @@ import { ListPageMenu } from '@app/components/shared/page-menu'
 import EditTeamCard from '@app/components/team/edit-team-card'
 import TeamCard from '@app/components/team/team-card'
 import { COOKIE_TEAM_SLUG } from '@app/const'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Team } from '@app/models'
 import { appendTeamSlug } from '@app/providers/team-routes'
@@ -12,9 +13,9 @@ import { API_TEAMS, API_USERS_ME, ROUTE_INDEX, ROUTE_TEAMS } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { getCookie } from '@server/cookie'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useSWRConfig } from 'swr'
 
 interface TeamsPageProps {
@@ -32,12 +33,12 @@ const TeamsPage = (props: TeamsPageProps) => {
   const [teams, setTeams] = useState(propsTeams)
   const [creating, setCreating] = useState(false)
 
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
-  const onCreated = (team: Team) => {
+  const onCreated = async (team: Team): Promise<void> => {
     setCreating(false)
     setTeams([...teams, team])
-    mutate(API_USERS_ME)
+    await mutate(API_USERS_ME)
   }
 
   const selfLink: BreadcrumbLink = {
@@ -48,10 +49,10 @@ const TeamsPage = (props: TeamsPageProps) => {
   return (
     <Layout title={t('common:teams')}>
       <PageHeading pageLink={selfLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
+        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
       </PageHeading>
 
-      {!creating ? null : <EditTeamCard className="mb-8 px-8 py-6" submitRef={submitRef} onTeamEdited={onCreated} />}
+      {!creating ? null : <EditTeamCard className="mb-8 px-8 py-6" submit={submit} onTeamEdited={onCreated} />}
 
       {teams.map((team, index) => (
         <TeamCard key={`team-${index}`} className="my-2" team={team} highlighted={team.slug === routes?.teamSlug} />
@@ -62,7 +63,7 @@ const TeamsPage = (props: TeamsPageProps) => {
 
 export default TeamsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const teams = await getCruxFromContext<Team[]>(context, API_TEAMS)
 
   if (teams.length < 1) {

@@ -7,6 +7,7 @@ import DyoTextArea from '@app/elements/dyo-text-area'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { DeploymentDetails, PatchDeployment } from '@app/models'
 import { sendForm } from '@app/utils'
@@ -17,12 +18,12 @@ import React from 'react'
 interface EditDeploymentCardProps {
   className?: string
   deployment: DeploymentDetails
-  submitRef: React.MutableRefObject<() => Promise<any>>
+  submit: SubmitHook
   onDeploymentEdited: (deployment: DeploymentDetails) => void
 }
 
 const EditDeploymentCard = (props: EditDeploymentCardProps) => {
-  const { deployment, className, onDeploymentEdited, submitRef } = props
+  const { deployment, className, onDeploymentEdited, submit } = props
 
   const { t } = useTranslation('deployments')
   const routes = useTeamRoutes()
@@ -30,13 +31,11 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: deployment,
     validationSchema: updateDeploymentSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const transformedValues = updateDeploymentSchema.cast(values) as any
 
       const body: PatchDeployment = {
@@ -45,15 +44,13 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
 
       const res = await sendForm('PATCH', routes.deployment.api.details(deployment.id), body)
 
-      setSubmitting(false)
-
       if (res.ok) {
         onDeploymentEdited({
           ...deployment,
           ...transformedValues,
         })
       } else {
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })

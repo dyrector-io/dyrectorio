@@ -99,3 +99,23 @@ func TestHostRoutingDomainGeneration(t *testing.T) {
 func TestDomainStrictHostRule(t *testing.T) {
 	assert.Equal(t, "localhost", domain.GetHostRuleStrict(&domain.HostRouting{RootDomain: "localhost"}))
 }
+
+func TestIsCompliantDNS(t *testing.T) {
+	type args struct {
+		str string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := domain.IsCompliantDNS(tt.args.str); (err != nil) != tt.wantErr {
+				t.Errorf("IsCompliantDNS() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

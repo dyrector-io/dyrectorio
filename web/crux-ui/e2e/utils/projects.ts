@@ -2,7 +2,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { ProjectType } from '@app/models'
 import { expect, Page } from '@playwright/test'
-import { REGISTRY_NAME, TEAM_ROUTES } from './common'
+import { GHCR_PREFIX, REGISTRY_NAME, TEAM_ROUTES } from './common'
 
 export const createProject = async (page: Page, name: string, type: ProjectType) => {
   await page.goto(TEAM_ROUTES.project.list())
@@ -19,7 +19,6 @@ export const createProject = async (page: Page, name: string, type: ProjectType)
   await page.locator('button:has-text("Save")').click()
 
   await page.waitForURL(`${TEAM_ROUTES.project.list()}/**`)
-  await page.waitForLoadState('networkidle')
   await page.waitForSelector(`h5:text-is("${name}")`)
 
   if (type === 'versionless') {
@@ -63,7 +62,7 @@ export const createImage = async (page: Page, projectId: string, versionId: stri
   const registry = await page.waitForSelector(`button:has-text("${REGISTRY_NAME}")`)
   await registry.click()
 
-  await page.locator('input[name=imageName] >> visible=true').fill(image)
+  await page.locator('input[name=imageName] >> visible=true').fill(`${GHCR_PREFIX}/${image}`)
 
   const addButton = await page.waitForSelector('button:has-text("Add")')
   await addButton.click()
@@ -88,7 +87,7 @@ export const addImageToVersion = async (page: Page, projectId: string, versionId
   const registry = await page.waitForSelector(`button:has-text("${REGISTRY_NAME}")`)
   await registry.click()
 
-  await page.locator('input[name=imageName] >> visible=true').fill(image)
+  await page.locator('input[name=imageName] >> visible=true').fill(`${GHCR_PREFIX}/${image}`)
   await page.locator('button:has-text("Add")').click()
   await page.waitForSelector(`div:has-text("${image}")`)
 }
@@ -103,7 +102,7 @@ export const addImageToVersionlessProject = async (page: Page, projectId: string
   const registry = await page.waitForSelector(`button:has-text("${REGISTRY_NAME}")`)
   await registry.click()
 
-  await page.locator('input[name=imageName] >> visible=true').fill(image)
+  await page.locator('input[name=imageName] >> visible=true').fill(`${GHCR_PREFIX}/${image}`)
   await page.locator('button:has-text("Add")').click()
   await page.waitForSelector(`div:has-text("${image}")`)
 }
@@ -206,7 +205,7 @@ export const deleteDeployment = async (page: Page, deploymentId: string) => {
 
   const currentUrl = page.url()
   await confirmDeleteButton.click()
-  await page.waitForURL(it => it.toString() != currentUrl)
+  await page.waitForURL(it => it.toString() !== currentUrl)
 }
 
 export const copyDeployment = async (page: Page, deploymentId: string, newName: string) => {

@@ -13,6 +13,7 @@ import {
 } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import toast from 'react-hot-toast'
+import { QA_DIALOG_LABEL_DEPLOY_PROTECTED } from 'quality-assurance'
 
 export type UseDeployOptions = {
   router: NextRouter
@@ -118,6 +119,7 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
 
       if (property === 'protectedDeploymentId') {
         const confirmed = await confirm({
+          qaLabel: QA_DIALOG_LABEL_DEPLOY_PROTECTED,
           title: t('common:deployProtection.title'),
           description: t('common:deployProtection.description'),
         })
@@ -174,7 +176,7 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
       return
     }
 
-    handleApiError(res)
+    await handleApiError(res)
   }
 
   return deploy

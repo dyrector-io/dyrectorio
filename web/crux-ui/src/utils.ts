@@ -2,21 +2,16 @@ import { Session, UiContainer, UiNodeInputAttributes } from '@ory/kratos-client'
 import { getCookie, setCookie } from '@server/cookie'
 import { postCruxFromContext } from '@server/crux-api'
 import {
-  identityWasRecovered,
   IncomingMessageWithSession,
+  identityWasRecovered,
   obtainSessionFromRequest,
   verifiableEmailOfIdentity,
 } from '@server/kratos'
 import { FormikErrors, FormikHandlers, FormikState } from 'formik'
-import {
-  GetServerSideProps,
-  GetServerSidePropsContext,
-  GetServerSidePropsResult,
-  NextApiRequest,
-  NextPageContext,
-} from 'next'
+import { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult, NextApiRequest } from 'next'
 import { Translate } from 'next-translate'
 import { NextRouter } from 'next/router'
+import { QASettings, QA_SETTINGS_PROP, fetchQualityAssuranceSettings } from 'quality-assurance'
 import toast, { ToastOptions } from 'react-hot-toast'
 import { COOKIE_TEAM_SLUG } from './const'
 import { MessageType } from './elements/dyo-input'
@@ -238,20 +233,38 @@ export const formikFieldValueConverter =
   (field, value, shouldValidate) =>
     formik.setFieldValue(field, converter(value), shouldValidate)
 
+export const formikSetFieldValueOrIgnore =
+  (formik: { setFieldValue: FormikSetFieldValue }, ignore: boolean): FormikSetFieldValue =>
+  (field, value, shouldValidate) => {
+    if (ignore) {
+      return undefined
+    }
+
+    return formik.setFieldValue(field, value, shouldValidate)
+  }
+
 export const sendForm = async <Dto>(
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   url: string,
   body?: Dto,
-): Promise<Response> =>
-  await fetch(url, {
-    method,
-    headers: body
-      ? {
-          'Content-Type': 'application/json',
-        }
-      : undefined,
-    body: body ? JSON.stringify(body) : null,
-  })
+): Promise<Response> => {
+  try {
+    const data = await fetch(url, {
+      method,
+      headers: body
+        ? {
+            'Content-Type': 'application/json',
+          }
+        : undefined,
+      body: body ? JSON.stringify(body) : null,
+    })
+
+    return data
+  } catch (err) {
+    console.error('sendFormError', err)
+    throw err
+  }
+}
 
 // routing
 export const anchorLinkOf = (router: NextRouter): string => {
@@ -264,7 +277,7 @@ export const anchorLinkOf = (router: NextRouter): string => {
   return `#${parts[1]}`
 }
 
-export const searchParamsOf = (context: NextPageContext): string => {
+export const searchParamsOf = (context: GetServerSidePropsContext): string => {
   const url = context.req?.url ?? ''
   const parts = url.split('?')
   if (parts.length < 2) {
@@ -282,7 +295,7 @@ export const redirectTo = (destination: string, permanent = false): GetServerSid
   },
 })
 
-export type CruxGetServerSideProps<T> = (context: NextPageContext) => Promise<GetServerSidePropsResult<T>>
+export type CruxGetServerSideProps<T> = (context: GetServerSidePropsContext) => Promise<GetServerSidePropsResult<T>>
 
 const dyoApiErrorStatusToRedirectUrl = (status: number): string => {
   switch (status) {
@@ -297,7 +310,7 @@ const dyoApiErrorStatusToRedirectUrl = (status: number): string => {
   }
 }
 
-export const teamSlugOrFirstTeam = async (context: NextPageContext): Promise<string> => {
+export const teamSlugOrFirstTeam = async (context: GetServerSidePropsContext): Promise<string> => {
   let teamSlug = getCookie(context, COOKIE_TEAM_SLUG)
   if (!teamSlug) {
     const meta = await postCruxFromContext<UserMeta>(context, API_USERS_ME)
@@ -312,7 +325,7 @@ export const teamSlugOrFirstTeam = async (context: NextPageContext): Promise<str
 }
 
 export const setupContextSession = async (
-  context: GetServerSidePropsContext | NextPageContext,
+  context: GetServerSidePropsContext,
   session: Session,
 ): Promise<GetServerSidePropsResult<any>> => {
   const req = context.req as IncomingMessageWithSession
@@ -340,8 +353,7 @@ export const withContextErrorHandling =
   <T>(getServerSideProps: CruxGetServerSideProps<T>): GetServerSideProps<T> =>
   async (context: GetServerSidePropsContext) => {
     try {
-      const props = await getServerSideProps(context as any as NextPageContext)
-      return props
+      return await getServerSideProps(context)
     } catch (err) {
       if (isDyoApiError(err)) {
         console.error(`[ERROR]: ${err.status} - prop: ${err.property}: ${err.value} - ${err.description}`)
@@ -364,6 +376,43 @@ export const withContextErrorHandling =
     }
   }
 
+const KEY_PROPS = 'props'
+const appendToServerSideProps = async <T>(
+  serverSideProps: GetServerSidePropsResult<T>,
+  name: string,
+  value: any,
+): Promise<GetServerSidePropsResult<T>> => {
+  const innerProps: any = serverSideProps[KEY_PROPS]
+  if (!innerProps) {
+    return serverSideProps
+  }
+
+  innerProps[name] = value
+
+  return {
+    ...serverSideProps,
+    props: innerProps,
+  }
+}
+
+const withQualityAssurance =
+  <T>(getServerSideProps: CruxGetServerSideProps<T>): GetServerSideProps<T> =>
+  async (context: GetServerSidePropsContext) => {
+    let qaSettings: QASettings = null
+
+    try {
+      qaSettings = await fetchQualityAssuranceSettings(context)
+    } catch (err) {
+      if (err.status !== 403) {
+        console.error('[ERROR]: Failed to fetch QA settings')
+        console.error(err)
+      }
+    }
+
+    const props = await getServerSideProps(context)
+    return await appendToServerSideProps(props, QA_SETTINGS_PROP, qaSettings)
+  }
+
 export const withContextAuthorization =
   <T>(getServerSideProps: CruxGetServerSideProps<T>): GetServerSideProps<T> =>
   async (context: GetServerSidePropsContext) => {
@@ -378,7 +427,8 @@ export const withContextAuthorization =
       setCookie(context, COOKIE_TEAM_SLUG, teamSlug)
     }
 
-    return await withContextErrorHandling(getServerSideProps)(context)
+    const ssr = withContextErrorHandling(withQualityAssurance(getServerSideProps))
+    return await ssr(context)
   }
 
 export const parseStringUnionType = <T>(value: string, fallback: T, validValues: ReadonlyArray<T>): T => {
@@ -398,9 +448,6 @@ export const writeToClipboard = async (t: Translate, content: string) => {
     toast(t('errors:insecure'))
   }
 }
-
-export const snakeToCamel = str =>
-  str.toLowerCase().replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', ''))
 
 export const toastWarning = (message: string, opts?: ToastOptions) => {
   toast(message, {
@@ -453,8 +500,3 @@ export const getEndOfToday = () => {
   endOfToday.setHours(23, 59, 59, 999)
   return endOfToday
 }
-
-export const delay = (ms: number): Promise<boolean> =>
-  new Promise(resolve => {
-    setTimeout(() => resolve(null), ms)
-  })

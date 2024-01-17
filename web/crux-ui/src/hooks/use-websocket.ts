@@ -28,10 +28,12 @@ const useWebSocket = (route: string, options?: WebSocketClientOptions): WebSocke
     }
 
     if (!readyState) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       wsContext.client.register(endpointRef.current)
     } else if (readyState === WebSocket.CLOSED) {
       destructCallback.current()
 
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       wsContext.client.register(endpointRef.current)
     }
   }, [wsContext, readyState])

@@ -2,6 +2,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Observable } from 'rxjs'
 import AgentService from 'src/app/agent/agent.service'
 import ContainerMapper from 'src/app/container/container.mapper'
+import { ImageValidation } from 'src/app/image/image.dto'
 import {
   ContainerConfigData,
   InstanceContainerConfigData,
@@ -10,7 +11,8 @@ import {
   UniqueSecretKeyValue,
 } from 'src/domain/container'
 import { checkDeploymentDeployability } from 'src/domain/deployment'
-import { startDeploymentSchema, yupValidate } from 'src/domain/validation'
+import { parseDyrectorioEnvRules } from 'src/domain/image'
+import { createStartDeploymentSchema, yupValidate } from 'src/domain/validation'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 import { StartDeploymentDto } from '../deploy.dto'
@@ -88,7 +90,17 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
       instances,
     }
 
-    yupValidate(startDeploymentSchema, target)
+    const instanceValidations = instances.reduce((prev, it) => {
+      const rules = parseDyrectorioEnvRules(it.image.labels as Record<string, string>)
+      const validation: ImageValidation = {
+        environmentRules: rules,
+      }
+
+      prev[it.id] = validation
+      return prev
+    }, {})
+
+    yupValidate(createStartDeploymentSchema(instanceValidations), target)
 
     const node = this.agentService.getById(deployment.nodeId)
     if (!node?.ready) {

@@ -6,7 +6,8 @@ import { randomUUID } from 'crypto'
 import { setDefaultResultOrder } from 'dns'
 import http from 'http'
 import { IdentityTraits, KRATOS_IDENTITY_SCHEMA, KratosInvitation } from 'src/domain/identity'
-import { KRATOS_LIST_PAGE_SIZE, PRODUCTION } from 'src/shared/const'
+import { productionEnvironment } from 'src/shared/config'
+import { KRATOS_LIST_PAGE_SIZE } from 'src/shared/const'
 
 type KratosListHeaders = {
   link?: string
@@ -24,7 +25,7 @@ export default class KratosService {
     const dnsResultOrder = config.get<string>('DNS_DEFAULT_RESULT_ORDER')
     if (dnsResultOrder) {
       setDefaultResultOrder(dnsResultOrder === 'ipv4first' ? 'ipv4first' : 'verbatim')
-    } else if (config.get<string>('NODE_ENV') !== PRODUCTION) {
+    } else if (!productionEnvironment(config)) {
       setDefaultResultOrder('ipv4first')
     }
 
@@ -71,9 +72,12 @@ export default class KratosService {
 
         const url = new URL(nextLink)
 
+        const page = Number.parseInt(url.searchParams.get('page'), 10)
+        const perPage = Number.parseInt(url.searchParams.get('per_page'), 10)
         // eslint-disable-next-line no-await-in-loop
-        identities = await this.identity.listIdentities(undefined, {
-          params: Object.entries(url.searchParams),
+        identities = await this.identity.listIdentities({
+          page,
+          perPage,
         })
       }
 

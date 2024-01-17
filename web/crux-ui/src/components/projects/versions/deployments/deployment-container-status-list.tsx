@@ -2,7 +2,9 @@ import ContainerStatusIndicator from '@app/components/nodes/container-status-ind
 import ContainerStatusTag from '@app/components/nodes/container-status-tag'
 import { SECOND_IN_MILLIS } from '@app/const'
 import DyoIcon from '@app/elements/dyo-icon'
-import { DyoList } from '@app/elements/dyo-list'
+import DyoLink from '@app/elements/dyo-link'
+import DyoProgress from '@app/elements/dyo-progress'
+import DyoTable, { DyoColumn } from '@app/elements/dyo-table'
 import useInterval from '@app/hooks/use-interval'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
@@ -17,11 +19,17 @@ import {
 } from '@app/models'
 import { timeAgo, utcNow } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 import { useState } from 'react'
 
+export type ContainerProgress = {
+  status: string
+  progress: number
+}
+
 interface DeploymentContainerStatusListProps {
+  className?: string
   deployment: DeploymentRoot
+  progress: Record<string, ContainerProgress>
 }
 
 type ContainerWithInstance = Container & {
@@ -29,10 +37,11 @@ type ContainerWithInstance = Container & {
 }
 
 const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps) => {
+  const { deployment, progress, className } = props
+
   const { t } = useTranslation('deployments')
   const routes = useTeamRoutes()
 
-  const { deployment } = props
   const now = utcNow()
 
   const [containers, setContainers] = useState<ContainerWithInstance[]>(() =>
@@ -53,7 +62,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
   )
 
   useInterval(() => {
-    setContainers([...containers])
+    setContainers(it => [...it])
   }, SECOND_IN_MILLIS)
 
   const sock = useWebSocket(routes.node.detailsSocket(deployment.node.id), {
@@ -85,7 +94,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
   }
 
   sock.on(WS_TYPE_CONTAINERS_STATE_LIST, (message: ContainersStateListMessage) =>
-    setContainers(merge(containers, message.containers)),
+    setContainers(it => merge(it, message.containers)),
   )
 
   const formatContainerTime = (container: Container) => {
@@ -99,34 +108,58 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     return timeAgo(t, seconds)
   }
 
-  const itemTemplate = (container: ContainerWithInstance) => {
-    const logUrl = routes.node.containerLog(deployment.node.id, container.id)
-
-    /* eslint-disable react/jsx-key */
-    return [
-      <ContainerStatusIndicator state={container.state} />,
-      <span>{container.id.name}</span>,
-      <span>{`${container.imageName}:${container.imageTag}`}</span>,
-      <span>{formatContainerTime(container)}</span>,
-      <ContainerStatusTag className="inline-block" state={container.state} />,
-      <span>{container.reason}</span>,
-      <span className="flex flex-row mr-14 justify-end">
-        {container.state && (
-          <div className="inline-block mr-2">
-            <Link href={logUrl} passHref>
-              <DyoIcon src="/note.svg" alt={t('showLogs')} size="md" />
-            </Link>
+  return !containers ? null : (
+    <DyoTable className={className} headless dataKey="instanceId" data={containers}>
+      <DyoColumn
+        className="w-2/12"
+        body={(it: Container) => (
+          <div className="flex flex-row items-center">
+            <ContainerStatusIndicator className="mr-1" state={it.state} />
+            {it.id.name}
           </div>
         )}
-        <Link href={routes.deployment.instanceDetails(deployment.id, container.instanceId)} passHref>
-          <DyoIcon src="/instance_config_icon.svg" alt={t('common:instanceConfig')} size="md" />
-        </Link>
-      </span>,
-    ]
-    /* eslint-enable react/jsx-key */
-  }
+      />
+      <DyoColumn
+        className="w-4/12"
+        body={(it: ContainerWithInstance) =>
+          progress[it.instanceId]?.progress < 1 ? (
+            <DyoProgress progress={progress[it.instanceId].progress} text={`${it.imageName}:${it.imageTag}`} />
+          ) : (
+            <span>{`${it.imageName}:${it.imageTag}`}</span>
+          )
+        }
+      />
+      <DyoColumn className="w-2/12" body={(it: Container) => <span>{formatContainerTime(it)}</span>} />
+      <DyoColumn
+        className="text-center"
+        body={(it: Container) => <ContainerStatusTag className="inline-block" state={it.state} title={it.reason} />}
+      />
+      <DyoColumn
+        className="w-24 text-center"
+        body={(it: ContainerWithInstance) => (
+          <>
+            {it.state && (
+              <div className="inline-block mr-2">
+                <DyoLink
+                  href={routes.node.containerLog(deployment.node.id, it.id)}
+                  qaLabel="container-status-list-logs-icon"
+                >
+                  <DyoIcon src="/note.svg" alt={t('showLogs')} size="md" />
+                </DyoLink>
+              </div>
+            )}
 
-  return !containers ? null : <DyoList className="mt-6 mb-2" data={containers} noSeparator itemBuilder={itemTemplate} />
+            <DyoLink
+              href={routes.deployment.instanceDetails(deployment.id, it.instanceId)}
+              qaLabel="container-status-instance-config-icon"
+            >
+              <DyoIcon src="/instance_config_icon.svg" alt={t('common:instanceConfig')} size="md" />
+            </DyoLink>
+          </>
+        )}
+      />
+    </DyoTable>
+  )
 }
 
 export default DeploymentContainerStatusList

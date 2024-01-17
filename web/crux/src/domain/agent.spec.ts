@@ -11,7 +11,8 @@ import {
   DeploymentStatusMessage,
   Empty,
 } from 'src/grpc/protobuf/proto/common'
-import { DEFAULT_CONTAINER_LOG_TAIL } from 'src/shared/const'
+import { DEFAULT_CONTAINER_LOG_TAIL, GET_CONTAINER_SECRETS_TIMEOUT_MILLIS } from 'src/shared/const'
+import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { Agent, AgentConnectionMessage } from './agent'
 import { generateAgentToken } from './agent-token'
 import AgentUpdate from './agent-update'
@@ -45,7 +46,7 @@ it('containerPrefixNameOf should return the combined prefix name', () => {
 })
 
 describe('agent', () => {
-  let agentConnection: any = null
+  let agentConnection: GrpcNodeConnection = null
   let agent: Agent = null
   let eventChannel: Subject<AgentConnectionMessage> = null
 
@@ -325,7 +326,7 @@ describe('agent', () => {
 
         await expect(secrets).rejects.toThrow()
       },
-      Agent.SECRET_TIMEOUT * 2,
+      GET_CONTAINER_SECRETS_TIMEOUT_MILLIS * 2,
     )
     // Default timeout is 5sec, but getContainerSecrets also uses a 5sec timeout
     // so we need to increase the default timeout to test the secret timeout

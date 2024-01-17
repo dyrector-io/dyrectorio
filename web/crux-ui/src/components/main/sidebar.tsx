@@ -1,4 +1,5 @@
 import DyoIcon from '@app/elements/dyo-icon'
+import DyoLink from '@app/elements/dyo-link'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   ROUTE_DOCS,
@@ -11,7 +12,6 @@ import {
 } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import Link from 'next/link'
 import NavButton from './nav-button'
 import { MenuOption, NavSection } from './nav-section'
 
@@ -54,6 +54,21 @@ export const sidebarSectionsOf = (routes: TeamRoutes): MenuSection[] => [
         link: routes.registry.list(),
       },
       {
+        icon: '/config_bundle.svg',
+        text: 'configBundles',
+        link: routes.configBundles.list(),
+      },
+      {
+        icon: '/storage.svg',
+        text: 'storages',
+        link: routes.storage.list(),
+      },
+      {
+        icon: '/robotic-arm.svg',
+        text: 'pipelines',
+        link: routes.pipeline.list(),
+      },
+      {
         icon: '/notification.svg',
         text: 'notifications',
         link: routes.notification.list(),
@@ -62,16 +77,6 @@ export const sidebarSectionsOf = (routes: TeamRoutes): MenuSection[] => [
         icon: '/template.svg',
         text: 'templates',
         link: ROUTE_TEMPLATES,
-      },
-      {
-        icon: '/storage.svg',
-        text: 'storages',
-        link: routes.storage.list(),
-      },
-      {
-        icon: '/config_bundle.svg',
-        text: 'configBundles',
-        link: routes.configBundles.list(),
       },
     ],
   },
@@ -120,7 +125,7 @@ export const Sidebar = (props: SidebarProps) => {
   return (
     <div className={className}>
       <div className="mx-12">
-        <Link href={ROUTE_INDEX} passHref>
+        <DyoLink href={ROUTE_INDEX} passHref qaLabel="sidebar-dyo-logo">
           <Image
             className="cursor-pointer mt-4"
             src="/dyrector_io_logo_white.svg"
@@ -128,12 +133,12 @@ export const Sidebar = (props: SidebarProps) => {
             width={160}
             height={27}
           />
-        </Link>
+        </DyoLink>
       </div>
 
       {sidebarSections && (
-        <div className="flex flex-col flex-grow pb-4">
-          <div className="mt-6 flex text-bright">
+        <div className="flex flex-col grow">
+          <div className="flex text-bright my-6">
             <NavButton href={routes.dashboard.index()} icon={<DyoIcon src="/dashboard.svg" alt={t('dashboard')} />}>
               {t('dashboard')}
             </NavButton>
@@ -142,7 +147,7 @@ export const Sidebar = (props: SidebarProps) => {
           {sidebarSections.map((it, index) => (
             <NavSection
               key={index}
-              className={index < sidebarSections.length - 1 ? 'mt-6' : 'mt-auto mt-6'}
+              className={index < sidebarSections.length - 1 ? 'mb-6' : 'mt-auto mb-3'}
               title={t(it.title)}
               options={it.items}
             />

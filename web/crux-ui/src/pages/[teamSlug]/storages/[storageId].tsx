@@ -5,15 +5,16 @@ import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import EditStorageCard from '@app/components/storages/edit-storage-card'
 import StorageCard from '@app/components/storages/storage-card'
 import { defaultApiErrorHandler } from '@app/errors'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { StorageDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { toastWarning, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 interface StorageDetailsPageProps {
   storage: StorageDetails
@@ -28,7 +29,7 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
 
   const [storage, setStorage] = useState(propsStorage)
   const [editing, setEditing] = useState(false)
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -43,11 +44,11 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(routes.storage.list())
+      await router.replace(routes.storage.list())
     } else if (res.status === 412) {
       toastWarning(t('inUse'))
     } else {
-      handleApiError(res)
+      await handleApiError(res)
     }
   }
 
@@ -71,7 +72,7 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
           onDelete={onDelete}
           editing={editing}
           setEditing={setEditing}
-          submitRef={submitRef}
+          submit={submit}
           deleteModalTitle={t('common:areYouSureDeleteName', { name: storage.name })}
           deleteModalDescription={t('common:proceedYouLoseAllDataToName', {
             name: storage.name,
@@ -80,9 +81,9 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
       </PageHeading>
 
       {!editing ? (
-        <StorageCard storage={storage} />
+        <StorageCard storage={storage} disableTitleHref />
       ) : (
-        <EditStorageCard className="p-8" storage={storage} onStorageEdited={onStorageEdited} submitRef={submitRef} />
+        <EditStorageCard className="p-8" storage={storage} onStorageEdited={onStorageEdited} submit={submit} />
       )}
     </Layout>
   )
@@ -90,7 +91,7 @@ const StorageDetailsPage = (props: StorageDetailsPageProps) => {
 
 export default StorageDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const storageId = context.query.storageId as string

@@ -1,7 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { Prisma } from '@prisma/client'
-import { EmptyError, Observable, filter, firstValueFrom, map, mergeAll, mergeWith, of, timeout } from 'rxjs'
+import {
+  EmptyError,
+  Observable,
+  filter,
+  firstValueFrom,
+  lastValueFrom,
+  map,
+  mergeAll,
+  mergeWith,
+  of,
+  timeout,
+} from 'rxjs'
 import { Agent, AgentConnectionMessage } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
 import {
@@ -18,6 +29,7 @@ import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
 import {
   ContainerDto,
+  ContainerInspectionDto,
   CreateNodeDto,
   NodeAuditLogListDto,
   NodeAuditLogQueryDto,
@@ -406,6 +418,18 @@ export default class NodeService {
       })),
       total,
     }
+  }
+
+  async inspectContainer(nodeId: string, prefix: string, name: string): Promise<ContainerInspectionDto> {
+    const agent = this.agentService.getByIdOrThrow(nodeId)
+    const watcher = agent.getContainerInspection(prefix, name)
+    const inspectionMessage = await lastValueFrom(watcher)
+
+    return this.mapper.containerInspectionMessageToDto(inspectionMessage)
+  }
+
+  async kickNode(id: string, identity: Identity): Promise<void> {
+    await this.agentService.kick(id, 'user-kick', identity.id)
   }
 
   private static snakeCaseToCamelCase(snake: string): string {

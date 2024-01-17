@@ -38,12 +38,6 @@ type Connection struct {
 	Client agent.AgentClient
 }
 
-type ConnectionParams struct {
-	nodeID  string
-	address string
-	token   string
-}
-
 type ContainerLogEvent struct {
 	Message string
 	Error   error
@@ -78,6 +72,7 @@ type ClientLoop struct {
 	Secrets     config.SecretStore
 	cancel      context.CancelFunc
 	AppConfig   *config.CommonConfiguration
+	NodeID      string
 }
 
 type (
@@ -91,6 +86,7 @@ type (
 	ContainerCommandFunc     func(context.Context, *common.ContainerCommandRequest) error
 	DeleteContainersFunc     func(context.Context, *common.DeleteContainersRequest) error
 	ContainerLogFunc         func(context.Context, *agent.ContainerLogRequest) (*ContainerLogContext, error)
+	ContainerInspectFunc     func(context.Context, *agent.ContainerInspectRequest) (string, error)
 	ReplaceTokenFunc         func(context.Context, *agent.ReplaceTokenRequest) error
 )
 
@@ -105,6 +101,7 @@ type WorkerFunctions struct {
 	ContainerCommand     ContainerCommandFunc
 	DeleteContainers     DeleteContainersFunc
 	ContainerLog         ContainerLogFunc
+	ContainerInspect     ContainerInspectFunc
 }
 
 type contextKey int
@@ -114,13 +111,7 @@ const (
 	contextMetadataKeyToken            = "dyo-node-token" // #nosec G101
 )
 
-func TokenToConnectionParams(grpcToken *config.ValidJWT) *ConnectionParams {
-	return &ConnectionParams{
-		nodeID:  grpcToken.Subject,
-		address: grpcToken.Issuer,
-		token:   grpcToken.StringifiedToken,
-	}
-}
+var ErrConnectionRefused = errors.New("server refused connection")
 
 func (g *Connection) SetClient(client agent.AgentClient) {
 	g.Client = client
@@ -170,85 +161,6 @@ func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool,
 	return pool, nil
 }
 
-func Init(grpcContext context.Context,
-	connParams *ConnectionParams,
-	appConfig *config.CommonConfiguration,
-	workerFuncs *WorkerFunctions,
-	secrets config.SecretStore,
-) {
-	log.Info().Msg("Spinning up gRPC Agent client...")
-	if grpcConn == nil {
-		grpcConn = &Connection{}
-	}
-
-	ctx, cancel := context.WithCancel(grpcContext)
-	loop := ClientLoop{
-		cancel:      cancel,
-		AppConfig:   appConfig,
-		Ctx:         ctx,
-		WorkerFuncs: *workerFuncs,
-		Secrets:     secrets,
-	}
-
-	err := health.Serve(loop.Ctx)
-	if err != nil {
-		log.Warn().Err(err).Msg("Failed to start serving health")
-	}
-
-	loop.Ctx = metadata.AppendToOutgoingContext(loop.Ctx, contextMetadataKeyToken, connParams.token)
-
-	if grpcConn.Conn == nil {
-		var creds credentials.TransportCredentials
-
-		httpAddr := fmt.Sprintf("https://%s", connParams.address)
-		certPool, err := fetchCertificatesFromURL(loop.Ctx, httpAddr)
-		if err != nil {
-			if appConfig.Debug {
-				log.Warn().Err(err).Msg("Secure mode is disabled in demo/dev environment, falling back to plain-text gRPC")
-				creds = insecure.NewCredentials()
-			} else {
-				log.Panic().Err(err).Msg("Could not fetch valid certificate")
-			}
-		} else {
-			creds = credentials.NewClientTLSFromCert(certPool, "")
-		}
-
-		opts := []grpc.DialOption{
-			grpc.WithTransportCredentials(creds),
-			grpc.WithBlock(),
-			grpc.WithKeepaliveParams(
-				keepalive.ClientParameters{
-					Time:                appConfig.GrpcKeepalive,
-					Timeout:             appConfig.DefaultTimeout,
-					PermitWithoutStream: true,
-				}),
-		}
-
-		log.Info().Str("address", connParams.address).Msg("Dialing to address.")
-		conn, err := grpc.Dial(connParams.address, opts...)
-		if err != nil {
-			log.Panic().Stack().Err(err).Msg("Failed to dial gRPC")
-		}
-
-		for {
-			state := conn.GetState()
-			if state != connectivity.Ready {
-				log.Debug().Msgf("Waiting for state to change: %d", state)
-				conn.WaitForStateChange(loop.Ctx, state)
-				log.Debug().Msgf("State Changed to: %d", conn.GetState())
-			} else {
-				break
-			}
-		}
-		if err != nil {
-			log.Error().Stack().Err(err).Msg("gRPC connection error")
-		}
-		grpcConn.Conn = conn
-	}
-
-	loop.grpcLoop(connParams)
-}
-
 func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 	switch {
 	case command.GetDeploy() != nil:
@@ -271,6 +183,8 @@ func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 		go executeDeleteMultipleContainers(cl.Ctx, command.GetDeleteContainers(), cl.WorkerFuncs.DeleteContainers)
 	case command.GetContainerLog() != nil:
 		go executeContainerLog(cl.Ctx, command.GetContainerLog(), cl.WorkerFuncs.ContainerLog)
+	case command.GetContainerInspect() != nil:
+		go executeContainerInspect(cl.Ctx, command.GetContainerInspect(), cl.WorkerFuncs.ContainerInspect)
 	case command.GetReplaceToken() != nil:
 		// NOTE(@m8vago): should be sync?
 		err := cl.executeReplaceToken(command.GetReplaceToken())
@@ -282,11 +196,19 @@ func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 	}
 }
 
-func (cl *ClientLoop) grpcLoop(connParams *ConnectionParams) {
+func (cl *ClientLoop) grpcLoop(token *config.ValidJWT) error {
 	var stream agent.Agent_ConnectClient
 	var err error
 	defer cl.cancel()
-	defer grpcConn.Conn.Close()
+	defer func() {
+		err = grpcConn.Conn.Close()
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to close gRPC connection")
+		}
+
+		grpcConn.Conn = nil
+		grpcConn.Client = nil
+	}()
 	for {
 		if grpcConn.Client == nil {
 			client := agent.NewAgentClient(grpcConn.Conn)
@@ -307,7 +229,7 @@ func (cl *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 			}
 
 			stream, err = grpcConn.Client.Connect(
-				cl.Ctx, &agent.AgentInfo{Id: connParams.nodeID, Version: version.BuildVersion(), PublicKey: publicKey, ContainerName: &containerName},
+				cl.Ctx, &agent.AgentInfo{Id: cl.NodeID, Version: version.BuildVersion(), PublicKey: publicKey, ContainerName: &containerName},
 				grpc.WaitForReady(true),
 			)
 			if err != nil {
@@ -325,8 +247,8 @@ func (cl *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 		if err != nil {
 			s := status.Convert(err)
 			if s != nil && (s.Code() == codes.Unauthenticated || s.Code() == codes.PermissionDenied || s.Code() == codes.NotFound) {
-				cl.handleGrpcTokenError(err)
-				break
+				cl.handleGrpcTokenError(err, token)
+				return ErrConnectionRefused
 			}
 
 			grpcConn.Client = nil
@@ -347,8 +269,118 @@ func (cl *ClientLoop) grpcLoop(connParams *ConnectionParams) {
 	}
 }
 
-func (cl *ClientLoop) handleGrpcTokenError(err error) {
-	if cl.AppConfig.JwtToken.Type == config.Connection {
+func initWithToken(
+	grpcContext context.Context,
+	appConfig *config.CommonConfiguration,
+	workerFuncs *WorkerFunctions,
+	secrets config.SecretStore,
+	token *config.ValidJWT,
+) error {
+	address := token.Issuer
+
+	ctx, cancel := context.WithCancel(grpcContext)
+	loop := ClientLoop{
+		cancel:      cancel,
+		AppConfig:   appConfig,
+		Ctx:         ctx,
+		WorkerFuncs: *workerFuncs,
+		Secrets:     secrets,
+		NodeID:      token.Subject,
+	}
+
+	loop.Ctx = metadata.AppendToOutgoingContext(loop.Ctx, contextMetadataKeyToken, token.StringifiedToken)
+
+	var creds credentials.TransportCredentials
+
+	httpAddr := fmt.Sprintf("https://%s", address)
+	certPool, err := fetchCertificatesFromURL(loop.Ctx, httpAddr)
+	if err != nil {
+		if appConfig.Debug {
+			log.Warn().Err(err).Msg("Secure mode is disabled in demo/dev environment, falling back to plain-text gRPC")
+			creds = insecure.NewCredentials()
+		} else {
+			log.Panic().Err(err).Msg("Could not fetch valid certificate")
+		}
+	} else {
+		creds = credentials.NewClientTLSFromCert(certPool, "")
+	}
+
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(creds),
+		grpc.WithBlock(),
+		grpc.WithKeepaliveParams(
+			keepalive.ClientParameters{
+				Time:                appConfig.GrpcKeepalive,
+				Timeout:             appConfig.DefaultTimeout,
+				PermitWithoutStream: true,
+			}),
+	}
+
+	log.Info().Str("address", address).Msg("Dialing to address.")
+	conn, err := grpc.Dial(address, opts...)
+	if err != nil {
+		log.Panic().Stack().Err(err).Msg("Failed to dial gRPC")
+	}
+
+	for {
+		state := conn.GetState()
+		if state != connectivity.Ready {
+			log.Debug().Msgf("Waiting for state to change: %d", state)
+			conn.WaitForStateChange(loop.Ctx, state)
+			log.Debug().Msgf("State Changed to: %d", conn.GetState())
+		} else {
+			break
+		}
+	}
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("gRPC connection error")
+	}
+	grpcConn.Conn = conn
+
+	return loop.grpcLoop(token)
+}
+
+func Init(grpcContext context.Context,
+	appConfig *config.CommonConfiguration,
+	secrets config.SecretStore,
+	workerFuncs *WorkerFunctions,
+) {
+	log.Info().Msg("Spinning up gRPC Agent client...")
+	if grpcConn == nil {
+		grpcConn = &Connection{}
+	}
+
+	healthContext, cancel := context.WithCancel(grpcContext)
+	defer cancel()
+
+	err := health.Serve(healthContext)
+	if err != nil {
+		log.Warn().Err(err).Msg("Failed to start serving health")
+	}
+
+	err = initWithToken(grpcContext, appConfig, workerFuncs, secrets, appConfig.JwtToken)
+	if err == nil {
+		return
+	}
+
+	if !errors.Is(err, ErrConnectionRefused) {
+		log.Panic().Err(err).Msg("Connection refused")
+	}
+
+	if appConfig.FallbackJwtToken == nil {
+		return
+	}
+
+	log.Warn().Msg("Connection failed, trying fallback token")
+
+	err = initWithToken(grpcContext, appConfig, workerFuncs, secrets, appConfig.FallbackJwtToken)
+	if err != nil {
+		log.Panic().Err(err).Msg("Connection refused with fallback token")
+	}
+}
+
+func (cl *ClientLoop) handleGrpcTokenError(err error, token *config.ValidJWT) {
+	if token.Type == config.Connection {
 		log.Error().Err(err).Msg("Invalid connection token. Removing")
 
 		// overwrite JWT token
@@ -359,7 +391,7 @@ func (cl *ClientLoop) handleGrpcTokenError(err error) {
 	} else {
 		log.Error().Err(err).Msg("Invalid install token. Blacklisting nonce")
 
-		err = cl.Secrets.BlacklistNonce(cl.AppConfig.JwtToken.Nonce)
+		err = cl.Secrets.BlacklistNonce(token.Nonce)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to blacklist the install token")
 		}
@@ -410,7 +442,7 @@ func executeVersionDeployRequest(
 
 		if err = deploy(ctx, dog, imageReq, versionData); err != nil {
 			failed = true
-			dog.Write(err.Error())
+			dog.WriteError(err.Error())
 		}
 	}
 
@@ -588,11 +620,11 @@ func executeVersionDeployLegacyRequest(
 
 	deployStatus := common.DeploymentStatus_SUCCESSFUL
 	if err = deploy(ctx, dog, &deployImageRequest, nil); err == nil {
-		dog.Write(fmt.Sprintf("Deployment took: %.2f seconds", time.Since(t1).Seconds()))
-		dog.Write("Deployment succeeded.")
+		dog.WriteInfo(fmt.Sprintf("Deployment took: %.2f seconds", time.Since(t1).Seconds()))
+		dog.WriteInfo("Deployment succeeded.")
 	} else {
 		deployStatus = common.DeploymentStatus_FAILED
-		dog.Write("Deployment failed " + err.Error())
+		dog.WriteError(fmt.Sprintf("Deployment failed %s", err.Error()))
 	}
 
 	dog.WriteDeploymentStatus(deployStatus)
@@ -835,6 +867,35 @@ func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest
 	<-streamCtx.Done()
 
 	log.Trace().Str("prefix", prefix).Str("name", name).Msg("Container log exited")
+}
+
+func executeContainerInspect(ctx context.Context, command *agent.ContainerInspectRequest, inspectFunc ContainerInspectFunc) {
+	if inspectFunc == nil {
+		log.Error().Msg("Container inspect function not implemented")
+		return
+	}
+
+	prefix := command.Container.Prefix
+	name := command.Container.Name
+
+	log.Info().Str("prefix", prefix).Str("name", name).Msg("Getting container inspection")
+
+	inspection, err := inspectFunc(ctx, command)
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("Failed to inspect container")
+	}
+
+	resp := &common.ContainerInspectMessage{
+		Prefix:     prefix,
+		Name:       name,
+		Inspection: inspection,
+	}
+
+	_, err = grpcConn.Client.ContainerInspect(ctx, resp)
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("Container inspection response error")
+		return
+	}
 }
 
 func (cl *ClientLoop) executeReplaceToken(command *agent.ReplaceTokenRequest) error {

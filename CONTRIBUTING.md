@@ -1,10 +1,10 @@
 # Contributing
 
-We'd love you to contribute to dyrector.io platform. We want contribution to dyrector.io to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including issues, new docs as well as updates and tweaks, blog posts, workshops, and more.
+We'd love you to contribute to [dyrector.io](https://dyrector.io/) platform. We want contribution to dyrector.io to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including issues, new docs as well as updates and tweaks, blog posts, workshops, and more.
 
 ## Code of Conduct
 
-Help us keep dyrector.io open and inclusive. Please read and follow our [Code of Conduct](/CODE_OF_CONDUCT.md).
+Help us keep [dyrector.io](https://dyrector.io/) open and inclusive. Please read and follow our [Code of Conduct](/CODE_OF_CONDUCT.md).
 
 ## How to Start?
 
@@ -29,16 +29,16 @@ If you're worried or don’t know where to start, check out our next section exp
 
 6. On Mac / Windows you may have to edit your OS's hosts file to be sure the `host.docker.internal` domain resolves to docker's bridge network.
 
--   Alternatively you can use your machine's LAN IP.
+-   Alternatively, you can use your machine's LAN IP.
 
 7. Deploy the database with `npm run prisma:migrate`
-8. Start the backend with `npm run start`
+8. Start the backend in development mode with `npm start`
 9. Go to the `web/crux-ui` directory: `cd web/crux-ui`
 10. Install dependencies `npm ci`
 11. Copy the _env.example_ file as _.env_ `cp .env.example .env`
-12. Start the frontend with `npm run start`
-13. After you navigated to `localhost:8000` (this is the default Traefik port) you will see a Login screen
-14. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
+12. Start the frontend in development mode with `npm start` but in a different terminal
+13. After you navigate to `localhost:8000` (this is the default Traefik port) you will see a Login screen
+14. Register an account with whatever e-mail address you see fit (doesn't have to be a valid one)
 15. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
 16. Open your e-mail message and using the link inside you can activate your account
 17. Fruitful contributing! 🎬
@@ -146,7 +146,7 @@ The commit contains the following structural elements, to communicate intent to 
 1. **BREAKING CHANGE:** a commit that has a footer `BREAKING CHANGE:`, or appends a `!` after the type/scope, introduces a breaking API change (correlating with [`MAJOR`](http://semver.org/#summary) in Semantic Versioning).
    A BREAKING CHANGE can be part of commits of any _type_.
 1. _types_ other than `fix:` and `feat:` are allowed, for example [@commitlint/config-conventional](https://github.com/conventional-changelog/commitlint/tree/master/%40commitlint/config-conventional) (based on the [the Angular convention](https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#-commit-message-guidelines)) recommends `build:`, `chore:`,
-   `ci:`, `docs:`, `style:`, `refactor:`, `perf:`, `test:`, and others.
+   `ci:`, `doc:`, `style:`, `refactor:`, `test:`, and others.
 1. _footers_ other than `BREAKING CHANGE: <description>` may be provided and follow a convention similar to
    [git trailer format](https://git-scm.com/docs/git-interpret-trailers).
 

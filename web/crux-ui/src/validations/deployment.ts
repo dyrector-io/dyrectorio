@@ -1,6 +1,6 @@
 import yup from './yup'
 import { nameRule } from './common'
-import { mergedContainerConfigSchema, uniqueKeyValuesSchema } from './container'
+import { createMergedContainerConfigSchema, uniqueKeyValuesSchema } from './container'
 
 const prefixRule = yup
   .string()
@@ -40,7 +40,7 @@ export const startDeploymentSchema = yup.object({
   instances: yup
     .array(
       yup.object().shape({
-        config: mergedContainerConfigSchema,
+        config: createMergedContainerConfigSchema(null),
       }),
     )
     .ensure()

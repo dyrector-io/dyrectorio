@@ -1,6 +1,6 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
@@ -75,9 +75,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
     },
     validationSchema: nodeGenerateScriptSchema,
     t,
-    onSubmit: async (values, { setSubmitting }) => {
-      setSubmitting(true)
-
+    onSubmit: async values => {
       if (remaining > 0) {
         cancelCountdown()
       }
@@ -85,7 +83,6 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
       const res = await sendForm('POST', routes.node.api.script(node.id), values)
 
       if (!res.ok) {
-        setSubmitting(false)
         await handleApiError(res)
         return
       }
@@ -95,17 +92,15 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
       startCountdown(expiresIn(new Date(install.expireAt)))
 
       onNodeInstallChanged(install)
-
-      setSubmitting(false)
     },
   })
 
   const onTraefikChanged = it => formik.setFieldValue('dagentTraefik', it ? {} : null)
 
-  const onTypeChanged = it => {
+  const onTypeChanged = async it => {
     if (it === 'k8s') {
       // If kubernetes is selected make sure to set the script type back to shell
-      formik.setFieldValue('scriptType', 'shell', false)
+      await formik.setFieldValue('scriptType', 'shell', false)
     }
     onNodeTypeChanged(it)
   }
@@ -132,14 +127,16 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
             </DyoHeading>
 
             <DyoChips
+              name="nodeType"
               className="mb-2 ml-2"
               choices={NODE_TYPE_VALUES}
               selection={formik.values.type}
               converter={(it: NodeType) => t(`technologies.${it}`)}
-              onSelectionChange={it => {
-                formik.setFieldValue('type', it, true)
-                onTypeChanged(it)
+              onSelectionChange={async it => {
+                await formik.setFieldValue('type', it, true)
+                await onTypeChanged(it)
               }}
+              qaLabel={chipsQALabelFromValue}
             />
 
             {node.type === 'docker' && (
@@ -187,11 +184,13 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                 </DyoHeading>
 
                 <DyoChips
+                  name="scriptType"
                   className="mb-2 ml-2"
                   choices={NODE_INSTALL_SCRIPT_TYPE_VALUES}
                   selection={formik.values.scriptType}
                   converter={(it: NodeInstallScriptType) => t(`installScript.${it}`)}
                   onSelectionChange={it => formik.setFieldValue('scriptType', it, true)}
+                  qaLabel={chipsQALabelFromValue}
                 />
 
                 <DyoLabel className="text-lg mb-2.5" textColor="text-bright">

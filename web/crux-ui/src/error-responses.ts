@@ -54,15 +54,21 @@ export const preconditionFailedError = (
   description: description ?? `Precondition failed for: ${property}`,
 })
 
-export const unauthorizedError = (description: string = 'Unauthorized', error?: string): DyoApiError => ({
+export const unauthorizedError = (
+  description: string = 'Unauthorized',
+  property?: string,
+  error?: string,
+): DyoApiError => ({
   status: 401,
+  property,
   error: error ?? 'unauthorized',
   description,
 })
 
-export const forbiddenError = (description: string = 'Forbidden', error?: string): DyoApiError => ({
+export const forbiddenError = (description: string = 'Forbidden', property?: string, error?: string): DyoApiError => ({
   status: 403,
   error: error ?? 'forbidden',
+  property,
   description,
 })
 
@@ -93,7 +99,7 @@ export const fromApiError = (status: number, apiError: CruxApiError): DyoApiErro
       return unavailableError('crux', message)
     }
     case 401: {
-      return unauthorizedError(message, error)
+      return unauthorizedError(message, property, error)
     }
     case 404: {
       return notFoundError(property, message, value, error)
@@ -108,7 +114,7 @@ export const fromApiError = (status: number, apiError: CruxApiError): DyoApiErro
       return preconditionFailedError(property, message, value, error)
     }
     case 403: {
-      return forbiddenError(message, error)
+      return forbiddenError(message, property, error)
     }
     default: {
       return internalError(apiError.message ?? 'Unknown error')

@@ -21,8 +21,8 @@ import {
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
-import { PaginationSettings } from '../shared/paginator'
 import useNodeState from './use-node-state'
+import { QA_DIALOG_LABEL_DELETE_CONTAINER } from 'quality-assurance'
 
 export type NodeDetailsSection = 'editing' | 'containers' | 'logs' | 'deployments'
 
@@ -34,15 +34,12 @@ export type NodeDetailsState = {
   confirmationModal: DyoConfirmationModalConfig
   containerTargetStates: ContainerTargetStates
   containerFilters: FilterConfig<Container, TextFilter>
-  containerPagination: PaginationSettings
-  containerItems: Container[]
 }
 
 export type NodeDetailsActions = {
   onNodeEdited: (node: NodeDetails, shouldClose?: boolean) => void
   setSection: (section: NodeDetailsSection) => void
   setEditing: (editing: boolean) => void
-  setContainerPagination: (pagination: PaginationSettings) => void
   onStartContainer: (container: Container) => void
   onStopContainer: (container: Container) => void
   onRestartContainer: (container: Container) => void
@@ -72,10 +69,6 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
   }
 
   const [containerTargetStates, setContainerTargetStates] = useState<ContainerTargetStates>({})
-  const [containerPagination, setContainerPagination] = useState<PaginationSettings>({
-    pageNumber: 0,
-    pageSize: 10,
-  })
   const containerFilters = useFilters<Container, TextFilter>({
     initialData: [],
     filters: [
@@ -91,11 +84,6 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     ],
   })
 
-  const currentPageNumber =
-    containerPagination.pageNumber * containerPagination.pageSize >= containerFilters.filtered.length
-      ? Math.floor(containerFilters.filtered.length / containerPagination.pageSize)
-      : containerPagination.pageNumber
-
   useEffect(() => {
     if (node.status === 'connected') {
       sock.send(WS_TYPE_WATCH_CONTAINERS_STATE, { prefix: '' } as WatchContainerStatusMessage)
@@ -107,15 +95,6 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
       containerFilters.setItems([])
     }
   }, [node.status, containerFilters])
-
-  useEffect(() => {
-    if (currentPageNumber !== containerPagination.pageNumber) {
-      setContainerPagination({
-        ...containerPagination,
-        pageNumber: currentPageNumber,
-      })
-    }
-  }, [containerFilters.filtered])
 
   sock.on(WS_TYPE_CONTAINERS_STATE_LIST, (message: ContainersStateListMessage) => {
     containerFilters.setItems(message.containers)
@@ -174,6 +153,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
 
   const onDeleteContainer = async (container: Container) => {
     const confirmed = await confirm({
+      qaLabel: QA_DIALOG_LABEL_DELETE_CONTAINER,
       title: t('areYouSure'),
       description: t('areYouSureDeleteName', { name: containerPrefixNameOf(container.id) }),
       confirmText: t('delete'),
@@ -189,26 +169,18 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     } as DeleteContainerMessage)
   }
 
-  const containerItems = containerFilters.filtered.slice(
-    currentPageNumber * containerPagination.pageSize,
-    currentPageNumber * containerPagination.pageSize + containerPagination.pageSize,
-  )
-
   return [
     {
       section,
       node,
       containerTargetStates,
-      containerFilters,
-      containerPagination,
-      containerItems,
       confirmationModal,
+      containerFilters,
     },
     {
       onNodeEdited,
       setSection,
       setEditing,
-      setContainerPagination,
       onStartContainer,
       onStopContainer,
       onRestartContainer,

@@ -30,6 +30,7 @@ service Agent {
   rpc AbortUpdate(AgentAbortUpdate) returns (common.Empty);
   rpc DeleteContainers(common.DeleteContainersRequest) returns (common.Empty);
   rpc ContainerLog(stream common.ContainerLogMessage) returns (common.Empty);
+  rpc ContainerInspect(common.ContainerInspectMessage) returns (common.Empty);
   rpc TokenReplaced(common.Empty) returns (common.Empty);
 }
 
@@ -57,6 +58,7 @@ message AgentCommand {
     common.DeleteContainersRequest deleteContainers = 9;
     ContainerLogRequest containerLog = 10;
     ReplaceTokenRequest replaceToken = 11;
+    ContainerInspectRequest containerInspect = 12;
   }
 }
 
@@ -199,6 +201,7 @@ message CommonContainerConfig {
   optional ImportContainer importContainer = 105;
   optional int64 user = 106;
   optional bool TTY = 107;
+  optional string workingDirectory = 108;
 
   repeated Port ports = 1000;
   repeated PortRangeBinding portRanges = 1001;
@@ -270,6 +273,14 @@ message ContainerLogRequest {
   common.ContainerIdentifier container = 1;
   bool streaming = 2;
   uint32 tail = 3;
+}
+
+/*
+ * Container inspect
+ *
+ */
+message ContainerInspectRequest {
+  common.ContainerIdentifier container = 1;
 }
 
 /*

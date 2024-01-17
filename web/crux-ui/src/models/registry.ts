@@ -3,6 +3,8 @@ import { REGISTRY_GITHUB_URL, REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from '@ap
 export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github', 'google', 'unchecked'] as const
 export type RegistryType = (typeof REGISTRY_TYPE_VALUES)[number]
 
+export const PUBLIC_REGISTRY_TYPES: RegistryType[] = ['hub', 'v2', 'google']
+
 export const GITHUB_NAMESPACE_VALUES = ['organization', 'user'] as const
 export const GITLAB_NAMESPACE_VALUES = ['group', 'project'] as const
 export type GitlabNamespace = (typeof GITLAB_NAMESPACE_VALUES)[number]
@@ -21,64 +23,93 @@ export type Registry = BasicRegistry & {
   url: string
 }
 
-export type RegistryDetailsBase = {
+export type RegistryDetailsBase = Omit<Registry, 'url'> & {
+  updatedAt: string
   inUse: boolean
+  registryToken?: RegistryToken | null
 }
 
-type HubRegistryDetailsDto = {
-  type: 'hub'
-  imageNamePrefix: string
+export type RegistryToken = {
+  id: string
+  createdAt: string
+  expiresAt?: string | null
 }
-export type HubRegistryDetails = RegistryDetailsBase & HubRegistryDetailsDto
 
-type V2RegistryDetailsDto = {
-  type: 'v2'
-  url: string
-  private?: boolean
-  user?: string
-  token?: string
+export type CreateRegistryToken = {
+  expirationInDays?: number
 }
-export type V2RegistryDetails = RegistryDetailsBase & V2RegistryDetailsDto
 
-type GitlabRegistryDetailsDto = {
-  type: 'gitlab'
-  imageNamePrefix: string
+export type RegistryTokenCreated = RegistryToken & {
+  token: string
+  config: string
+}
+
+type EditableRegistryCredentials = {
+  changeCredentials: boolean
   user: string
   token: string
+}
+
+type HubRegistryDetailsBase = {
+  type: 'hub'
+  imageNamePrefix: string
+  public: boolean
+}
+
+export type HubRegistryDetails = RegistryDetailsBase & HubRegistryDetailsBase
+export type EditableHubRegistryDetails = EditableRegistryCredentials & HubRegistryDetails
+
+type V2RegistryDetailsBase = {
+  type: 'v2'
+  url: string
+  public: boolean
+}
+
+export type V2RegistryDetails = RegistryDetailsBase & V2RegistryDetailsBase
+export type EditableV2RegistryDetails = EditableRegistryCredentials & V2RegistryDetails
+
+type GitlabRegistryDetailsBase = {
+  type: 'gitlab'
+  imageNamePrefix: string
   selfManaged?: boolean
   namespace: RegistryNamespace
   url?: string
   apiUrl?: string
 }
-export type GitlabRegistryDetails = RegistryDetailsBase & GitlabRegistryDetailsDto
 
-type GithubRegistryDetailsDto = {
+export type GitlabRegistryDetails = RegistryDetailsBase & GitlabRegistryDetailsBase
+export type EditableGitlabRegistryDetails = EditableRegistryCredentials & GitlabRegistryDetails
+
+type GithubRegistryDetailsBase = {
   type: 'github'
   imageNamePrefix: string
-  user: string
-  token: string
   namespace: RegistryNamespace
 }
-export type GithubRegistryDetails = RegistryDetailsBase & GithubRegistryDetailsDto
 
-type GoogleRegistryDetailsDto = {
+export type GithubRegistryDetails = RegistryDetailsBase & GithubRegistryDetailsBase
+export type EditableGithubRegistryDetails = EditableRegistryCredentials & GithubRegistryDetails
+
+type GoogleRegistryDetailsBase = {
   type: 'google'
   url: string
   imageNamePrefix: string
-  private?: boolean
-  user?: string
-  token?: string
+  public: boolean
 }
-export type GoogleRegistryDetails = RegistryDetailsBase & GoogleRegistryDetailsDto
 
-type UncheckedRegistryDetailsDto = {
+export type GoogleRegistryDetails = RegistryDetailsBase & GoogleRegistryDetailsBase
+export type EditableGoogleRegistryDetails = EditableRegistryCredentials & GoogleRegistryDetails
+
+type UncheckedRegistryDetailsBase = {
   type: 'unchecked'
   local?: boolean
   url: string
 }
-export type UncheckedRegistryDetails = RegistryDetailsBase & UncheckedRegistryDetailsDto
 
-export type RegistryDetails = Omit<Registry, 'url'> &
+export type UncheckedRegistryDetails = RegistryDetailsBase & UncheckedRegistryDetailsBase
+
+type UpsertDetailsDto<T> = Omit<T & Partial<EditableRegistryCredentials>, 'type' | 'changeCredentials'>
+
+export type RegistryDetails = RegistryDetailsBase &
   (
     | HubRegistryDetails
     | V2RegistryDetails
@@ -86,76 +117,52 @@ export type RegistryDetails = Omit<Registry, 'url'> &
     | GithubRegistryDetails
     | GoogleRegistryDetails
     | UncheckedRegistryDetails
-  ) & {
-    updatedAt: string
-    inUse: boolean
-  }
+  )
 
-export type UpdateRegistry = RegistryDetails
-export type CreateRegistry = UpdateRegistry
+export type EditableRegistry = RegistryDetailsBase &
+  EditableRegistryCredentials &
+  (
+    | EditableHubRegistryDetails
+    | EditableV2RegistryDetails
+    | EditableGitlabRegistryDetails
+    | EditableGithubRegistryDetails
+    | EditableGoogleRegistryDetails
+    | UncheckedRegistryDetails
+  )
 
 // crux dto
-export class RegistryDetailsDto {
-  id: string
-
-  name: string
-
-  description?: string
-
-  icon?: string
-
-  inUse: boolean
-
+export type RegistryDetailsDto = RegistryDetails & {
   createdAt: string
-
-  updatedAt: string
-
-  type: RegistryType
-
-  details:
-    | HubRegistryDetailsDto
-    | V2RegistryDetailsDto
-    | GitlabRegistryDetailsDto
-    | GithubRegistryDetailsDto
-    | GoogleRegistryDetailsDto
-    | UncheckedRegistryDetailsDto
+  details: Omit<
+    | HubRegistryDetailsBase
+    | V2RegistryDetailsBase
+    | GitlabRegistryDetailsBase
+    | GithubRegistryDetailsBase
+    | GoogleRegistryDetailsBase
+    | UncheckedRegistryDetailsBase,
+    'type'
+  >
 }
 
-export class CreateRegistryDto {
-  name: string
-
-  description?: string
-
-  icon?: string
-
-  type: RegistryType
-
-  details:
-    | HubRegistryDetailsDto
-    | V2RegistryDetailsDto
-    | GitlabRegistryDetailsDto
-    | GithubRegistryDetailsDto
-    | GoogleRegistryDetailsDto
-    | UncheckedRegistryDetailsDto
+type UpsertRegistryDtoBase = Omit<
+  RegistryDetails,
+  'id' | 'updatedAt' | 'createdAt' | 'inUse' | 'token' | 'changeCredentials'
+>
+export type CreateRegistryDto = UpsertRegistryDtoBase & {
+  details: Omit<
+    | ((
+        | HubRegistryDetailsBase
+        | V2RegistryDetailsBase
+        | GitlabRegistryDetailsBase
+        | GithubRegistryDetailsBase
+        | GoogleRegistryDetailsBase
+      ) &
+        Partial<EditableRegistryCredentials>)
+    | UncheckedRegistryDetailsBase,
+    'type' | 'changeCredentials'
+  >
 }
-
-export class UpdateRegistryDto {
-  name: string
-
-  description?: string
-
-  icon?: string
-
-  type: RegistryType
-
-  details:
-    | HubRegistryDetailsDto
-    | V2RegistryDetailsDto
-    | GitlabRegistryDetailsDto
-    | GithubRegistryDetailsDto
-    | GoogleRegistryDetailsDto
-    | UncheckedRegistryDetailsDto
-}
+export type UpdateRegistryDto = CreateRegistryDto
 
 // ws
 
@@ -227,107 +234,140 @@ export const registryDetailsDtoToUI = (dto: RegistryDetailsDto): RegistryDetails
     icon: dto.icon ?? null,
     updatedAt: dto.updatedAt ?? dto.createdAt,
     type: dto.type,
-  }
-  if (dto.type === 'hub') {
-    const hubDetails = dto.details as HubRegistryDetails
-    return {
-      ...registry,
-      ...hubDetails,
-    }
-  }
-  if (dto.type === 'v2') {
-    const v2Details = dto.details as V2RegistryDetails
-    return {
-      ...registry,
-      ...v2Details,
-      private: !!v2Details.user,
-    }
-  }
-  if (dto.type === 'gitlab') {
-    const gitlabDetails = dto.details as GitlabRegistryDetails
-    return {
-      ...registry,
-      ...gitlabDetails,
-      selfManaged: !!gitlabDetails.apiUrl,
-      namespace: gitlabDetails.namespace,
-    }
-  }
-  if (dto.type === 'github') {
-    const githubDetails = dto.details as GithubRegistryDetails
-    return {
-      ...registry,
-      ...githubDetails,
-      namespace: githubDetails.namespace,
-    }
-  }
-  if (dto.type === 'google') {
-    const googleDetail = dto.details as GoogleRegistryDetails
-    return {
-      ...registry,
-      ...googleDetail,
-      private: !!googleDetail.user,
-    }
-  }
-  if (dto.type === 'unchecked') {
-    const uncheckedDetails = dto.details as UncheckedRegistryDetails
-    return {
-      ...registry,
-      ...uncheckedDetails,
-      local: uncheckedDetails.url === '',
-    }
+    registryToken: dto.registryToken,
+    changeCredentials: false,
   }
 
-  throw new Error(`Unknown registry type: ${dto.type}`)
+  switch (dto.type) {
+    case 'hub':
+    case 'v2':
+    case 'google': {
+      const details = dto.details as HubRegistryDetails | V2RegistryDetails | GoogleRegistryDetails
+
+      return {
+        ...registry,
+        ...details,
+      }
+    }
+    case 'gitlab': {
+      const details = dto.details as GitlabRegistryDetails
+      return {
+        ...registry,
+        ...details,
+        selfManaged: !!details.apiUrl,
+        namespace: details.namespace,
+      }
+    }
+    case 'github': {
+      const details = dto.details as GithubRegistryDetails
+      return {
+        ...registry,
+        ...details,
+        namespace: details.namespace,
+      }
+    }
+    case 'unchecked': {
+      const details = dto.details as UncheckedRegistryDetails
+      return {
+        ...registry,
+        ...details,
+        local: details.url === '',
+      }
+    }
+    default:
+      throw new Error(`Unknown registry type on: ${dto}`)
+  }
 }
 
-export const registryCreateToDto = (ui: CreateRegistry): CreateRegistryDto => ({
-  name: ui.name,
-  description: ui.description,
-  icon: ui.icon,
-  type: ui.type,
-  details:
-    ui.type === 'hub'
-      ? {
-          type: 'hub',
-          imageNamePrefix: ui.imageNamePrefix,
-        }
-      : ui.type === 'v2'
-      ? {
-          type: 'v2',
-          url: ui.url,
-          user: ui.user,
-          token: ui.token,
-        }
-      : ui.type === 'gitlab'
-      ? {
-          type: 'gitlab',
-          user: ui.user,
-          token: ui.token,
-          imageNamePrefix: ui.imageNamePrefix,
-          url: ui.selfManaged ? ui.url : null,
-          apiUrl: ui.selfManaged ? ui.apiUrl : null,
-          namespace: ui.namespace,
-        }
-      : ui.type === 'github'
-      ? {
-          type: 'github',
-          user: ui.user,
-          token: ui.token,
-          imageNamePrefix: ui.imageNamePrefix,
-          namespace: ui.namespace,
-        }
-      : ui.type === 'google'
-      ? {
-          type: 'google',
-          url: ui.url,
-          imageNamePrefix: ui.imageNamePrefix,
-          user: ui.user,
-          token: ui.token,
-        }
-      : ui.type === 'unchecked'
-      ? {
-          type: 'unchecked',
-          url: ui.url,
-        }
-      : null,
-})
+export const editableRegistryToDto = (ui: EditableRegistry): CreateRegistryDto => {
+  const dto: UpsertRegistryDtoBase = {
+    name: ui.name,
+    description: ui.description,
+    icon: ui.icon,
+    type: ui.type,
+  }
+
+  switch (ui.type) {
+    case 'hub': {
+      const details: UpsertDetailsDto<HubRegistryDetailsBase> = {
+        imageNamePrefix: ui.imageNamePrefix,
+        public: ui.public,
+        user: !ui.public && ui.changeCredentials ? ui.user : null,
+        token: !ui.public && ui.changeCredentials ? ui.token : null,
+      }
+
+      return {
+        ...dto,
+        details,
+      }
+    }
+    case 'v2': {
+      const details: UpsertDetailsDto<V2RegistryDetailsBase> = {
+        url: ui.url,
+        public: ui.public,
+        user: !ui.public && ui.changeCredentials ? ui.user : null,
+        token: !ui.public && ui.changeCredentials ? ui.token : null,
+      }
+
+      return {
+        ...dto,
+        details,
+      }
+    }
+    case 'google': {
+      const details: UpsertDetailsDto<GoogleRegistryDetailsBase> = {
+        imageNamePrefix: ui.imageNamePrefix,
+        url: ui.url,
+        public: ui.public,
+        user: !ui.public && ui.changeCredentials ? ui.user : null,
+        token: !ui.public && ui.changeCredentials ? ui.token : null,
+      }
+
+      return {
+        ...dto,
+        details,
+      }
+    }
+    case 'gitlab': {
+      const details: UpsertDetailsDto<GitlabRegistryDetailsBase> = {
+        imageNamePrefix: ui.imageNamePrefix,
+        url: ui.selfManaged ? ui.url : null,
+        apiUrl: ui.selfManaged ? ui.apiUrl : null,
+        namespace: ui.namespace,
+        user: ui.changeCredentials ? ui.user : null,
+        token: ui.changeCredentials ? ui.token : null,
+      }
+
+      return {
+        ...dto,
+        details,
+      }
+    }
+    case 'github': {
+      const details: UpsertDetailsDto<GithubRegistryDetailsBase> = {
+        imageNamePrefix: ui.imageNamePrefix,
+        namespace: ui.namespace,
+        user: ui.changeCredentials ? ui.user : null,
+        token: ui.changeCredentials ? ui.token : null,
+      }
+
+      return {
+        ...dto,
+        details,
+      }
+    }
+    case 'unchecked': {
+      const details: Omit<UncheckedRegistryDetailsBase, 'type'> = {
+        url: ui.url,
+        local: ui.local,
+      }
+
+      return {
+        ...dto,
+        details,
+      }
+    }
+    default:
+      throw new Error(`Unknown registry type on: ${dto}`)
+  }
+}

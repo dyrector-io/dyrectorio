@@ -13,11 +13,14 @@ import {
   ContainerNetworkMode,
   ContainerPort,
   ContainerRestartPolicyType,
+  EnvironmentRule,
   Metrics,
+  UniqueKeyValue,
   VolumeType,
 } from '@app/models'
 import * as yup from 'yup'
-import { matchNoTrailingWhitespace, matchNoWhitespace } from './common'
+import { matchNoLeadingOrTrailingWhitespaces, matchNoWhitespace } from './common'
+import { parseDyrectorioEnvRules } from './labels'
 
 const ERROR_NO_SENSITIVE = 'container:validation.noSensitive'
 const ERROR_INVALID_KUBERNETES_QUANTITY = 'container:validation.kubernetesQuantity'
@@ -65,7 +68,7 @@ export const unsafeUniqueKeyValuesSchema = yup
 export const shellCommandSchema = yup
   .array(
     yup.object().shape({
-      key: matchNoTrailingWhitespace(yup.string().required().ensure().label('container:common.key')),
+      key: matchNoLeadingOrTrailingWhitespaces(yup.string().required().ensure().label('container:common.key')),
       value: yup.string().ensure().label('container:common.value'),
     }),
   )
@@ -306,8 +309,8 @@ const initContainerRule = yup
     yup.object().shape({
       name: matchNoWhitespace(yup.string().required().label('container:common.name')),
       image: yup.string().required().label('container:common.image'),
-      command: uniqueKeysOnlySchema.default([]).nullable().label('container:common.images'),
-      args: uniqueKeysOnlySchema.default([]).nullable().label('container:common.arguments'),
+      command: shellCommandSchema.default([]).nullable().label('container:common.images'),
+      args: shellCommandSchema.default([]).nullable().label('container:common.arguments'),
       environment: uniqueKeyValuesSchema.default([]).nullable().label('container:common.environment'),
       useParentConfig: yup.boolean().default(false).required().label('container:common.useParent'),
       volumes: initContainerVolumeLinkRule.default([]).nullable().label('container:common.volumes'),
@@ -398,47 +401,125 @@ const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
     .label('container:crane.metrics')
 })
 
-const containerConfigBaseSchema = yup.object().shape({
-  name: matchNoWhitespace(yup.string().required().label('container:common.containerName')),
-  environment: unsafeUniqueKeyValuesSchema.default([]).nullable().label('container:common.environment'),
-  routing: routingRule,
-  expose: exposeRule,
-  user: yup.number().default(null).min(-1).max(UID_MAX).nullable().label('container:common.user'),
-  tty: yup.boolean().default(false).required().label('container:common.tty'),
-  configContainer: configContainerRule,
-  ports: portConfigRule,
-  portRanges: portRangeConfigRule,
-  volumes: volumeConfigRule,
-  commands: shellCommandSchema.default([]).nullable(),
-  args: shellCommandSchema.default([]).nullable(),
-  initContainers: initContainerRule,
-  capabilities: uniqueKeyValuesSchema.default([]).nullable().label('container:common.capabilities'),
-  storage: storageRule,
+const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: UniqueKeyValue) => {
+  const { key, value } = env
 
-  // dagent:
-  logConfig: logConfigRule,
-  restartPolicy: restartPolicyRule,
-  networkMode: networkModeRule,
-  networks: uniqueKeysOnlySchema.default([]).nullable().label('container:dagent.networks'),
-  dockerLabels: uniqueKeyValuesSchema.default([]).nullable().label('container:dagent.dockerLabels'),
+  try {
+    switch (rule.type) {
+      case 'boolean':
+        yup.boolean().validateSync(value)
+        break
+      case 'int':
+        yup.number().validateSync(value)
+        break
+      case 'string':
+        yup.string().validateSync(value)
+        break
+      default:
+        return new yup.ValidationError('errors:yup.mixed.default', rule.type, `environment[${index}]`)
+    }
+  } catch (fieldError) {
+    const err = new yup.ValidationError(fieldError.message, key, `environment[${index}]`)
+    err.params = {
+      ...fieldError.params,
+      path: key,
+    }
+    return err
+  }
 
-  // crane
-  deploymentStrategy: deploymentStrategyRule,
-  customHeaders: uniqueKeysOnlySchema.default([]).nullable().label('container:crane.customHeaders'),
-  proxyHeaders: yup.boolean().default(false).required().label('container:crane.proxyHeaders'),
-  useLoadBalancer: yup.boolean().default(false).required().label('container:crane.useLoadBalancer'),
-  extraLBAnnotations: uniqueKeyValuesSchema.default([]).nullable().label('container:crane.extraLBAnnotations'),
-  healthCheckConfig: healthCheckConfigRule,
-  resourceConfig: resourceConfigRule,
-  labels: markerRule.label('container:crane.labels'),
-  annotations: markerRule.label('container:crane.annotations'),
-  metrics: metricsRule,
-})
+  return null
+}
 
-export const containerConfigSchema = containerConfigBaseSchema.shape({
-  secrets: uniqueKeySchema.default([]).nullable().label('container:common.secrets'),
-})
+const testEnvironment = (imageLabels: Record<string, string>) => (arr: UniqueKeyValue[]) => {
+  if (!imageLabels) {
+    return true
+  }
 
-export const mergedContainerConfigSchema = containerConfigBaseSchema.shape({
-  secrets: uniqueKeyValuesSchema.default([]).nullable().label('container:common.secrets'),
-})
+  const rules = parseDyrectorioEnvRules(imageLabels)
+
+  const requiredKeys = Object.entries(rules)
+    .filter(([, rule]) => rule.required)
+    .map(([key]) => key)
+  const foundKeys = arr.map(it => it.key)
+
+  const missingKey = requiredKeys.find(it => !foundKeys.includes(it))
+  if (missingKey) {
+    const err = new yup.ValidationError('errors:yup.mixed.required', missingKey, 'environment')
+    err.params = {
+      path: missingKey,
+    }
+    return err
+  }
+
+  const fieldErrors = arr
+    .map((it, index) => {
+      const { key } = it
+      const rule = rules[key]
+      if (!rule) {
+        return null
+      }
+
+      return validateEnvironmentRule(rule, index, it)
+    })
+    .filter(it => !!it)
+
+  if (fieldErrors.length > 0) {
+    const err = new yup.ValidationError(fieldErrors, missingKey, 'environment')
+    return err
+  }
+
+  return true
+}
+
+const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
+  yup.object().shape({
+    name: matchNoWhitespace(yup.string().required().label('container:common.containerName')),
+    environment: unsafeUniqueKeyValuesSchema
+      .default([])
+      .nullable()
+      .label('container:common.environment')
+      .test('ruleValidation', 'errors:yup.mixed.required', testEnvironment(imageLabels)),
+    routing: routingRule,
+    expose: exposeRule,
+    user: yup.number().default(null).min(-1).max(UID_MAX).nullable().label('container:common.user'),
+    workingDirectory: yup.string().default(null).nullable().optional().label('container:common.workingDirectory'),
+    tty: yup.boolean().default(false).required().label('container:common.tty'),
+    configContainer: configContainerRule,
+    ports: portConfigRule,
+    portRanges: portRangeConfigRule,
+    volumes: volumeConfigRule,
+    commands: shellCommandSchema.default([]).nullable(),
+    args: shellCommandSchema.default([]).nullable(),
+    initContainers: initContainerRule,
+    capabilities: uniqueKeyValuesSchema.default([]).nullable().label('container:common.capabilities'),
+    storage: storageRule,
+
+    // dagent:
+    logConfig: logConfigRule,
+    restartPolicy: restartPolicyRule,
+    networkMode: networkModeRule,
+    networks: uniqueKeysOnlySchema.default([]).nullable().label('container:dagent.networks'),
+    dockerLabels: uniqueKeyValuesSchema.default([]).nullable().label('container:dagent.dockerLabels'),
+
+    // crane
+    deploymentStrategy: deploymentStrategyRule,
+    customHeaders: uniqueKeysOnlySchema.default([]).nullable().label('container:crane.customHeaders'),
+    proxyHeaders: yup.boolean().default(false).required().label('container:crane.proxyHeaders'),
+    useLoadBalancer: yup.boolean().default(false).required().label('container:crane.useLoadBalancer'),
+    extraLBAnnotations: uniqueKeyValuesSchema.default([]).nullable().label('container:crane.extraLBAnnotations'),
+    healthCheckConfig: healthCheckConfigRule,
+    resourceConfig: resourceConfigRule,
+    labels: markerRule.label('container:crane.labels'),
+    annotations: markerRule.label('container:crane.annotations'),
+    metrics: metricsRule,
+  })
+
+export const createContainerConfigSchema = (imageLabels: Record<string, string>) =>
+  createContainerConfigBaseSchema(imageLabels).shape({
+    secrets: uniqueKeySchema.default([]).nullable().label('container:common.secrets'),
+  })
+
+export const createMergedContainerConfigSchema = (imageLabels: Record<string, string>) =>
+  createContainerConfigBaseSchema(imageLabels).shape({
+    secrets: uniqueKeyValuesSchema.default([]).nullable().label('container:common.secrets'),
+  })

@@ -16,7 +16,7 @@ import {
   UniqueKey,
   UniqueKeyValue,
 } from 'src/domain/container'
-import { deploymentStatusToDb } from 'src/domain/deployment'
+import { deploymentLogLevelToDb, deploymentStatusToDb } from 'src/domain/deployment'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import {
   InitContainer as AgentInitContainer,
@@ -35,6 +35,7 @@ import {
   ExposeStrategy as ProtoExposeStrategy,
   containerStateToJSON,
 } from 'src/grpc/protobuf/proto/common'
+import EncryptionService from 'src/services/encryption.service'
 import AuditMapper from '../audit/audit.mapper'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
@@ -47,7 +48,9 @@ import {
   DeploymentDetailsDto,
   DeploymentDto,
   DeploymentEventDto,
+  DeploymentEventLogDto,
   DeploymentEventTypeDto,
+  DeploymentLogLevelDto,
   DeploymentStatusDto,
   DeploymentWithBasicNodeDto,
   DeploymentWithNode,
@@ -73,6 +76,7 @@ export default class DeployMapper {
     private versionMapper: VersionMapper,
     @Inject(forwardRef(() => NodeMapper))
     private nodeMapper: NodeMapper,
+    private encryptionService: EncryptionService,
   ) {}
 
   statusToDto(it: DeploymentStatusEnum): DeploymentStatusDto {
@@ -224,7 +228,8 @@ export default class DeployMapper {
 
     switch (event.type) {
       case DeploymentEventTypeEnum.log: {
-        result.log = event.value as string[]
+        const value = event.value as { log: string[]; level: DeploymentLogLevelDto }
+        result.log = value as DeploymentEventLogDto
         break
       }
       case DeploymentEventTypeEnum.deploymentStatus: {
@@ -251,7 +256,10 @@ export default class DeployMapper {
       events.push({
         type: 'log',
         createdAt: new Date(),
-        log: message.log,
+        log: {
+          log: message.log,
+          level: deploymentLogLevelToDb(message.logLevel),
+        },
       })
     }
 
@@ -270,6 +278,19 @@ export default class DeployMapper {
         containerState: {
           instanceId: message.instance.instanceId,
           state: this.containerStateToDto(message.instance.state),
+        },
+      })
+    }
+
+    if (message.containerProgress) {
+      const progress = Math.max(0, Math.min(1, message.containerProgress.progress ?? 0))
+      events.push({
+        type: 'container-progress',
+        createdAt: new Date(),
+        containerProgress: {
+          instanceId: message.containerProgress.instanceId,
+          status: message.containerProgress.status,
+          progress,
         },
       })
     }
@@ -298,6 +319,9 @@ export default class DeployMapper {
       commands: this.mapUniqueKeyToStringArray(config.commands),
       expose: this.imageMapper.exposeStrategyToProto(config.expose) ?? ProtoExposeStrategy.NONE_ES,
       args: this.mapUniqueKeyToStringArray(config.args),
+      // Set user to the given value, if not null or use 0 if specifically 0, otherwise set null
+      user: config.user === -1 ? null : config.user,
+      workingDirectory: config.workingDirectory,
       TTY: config.tty,
       configContainer: config.configContainer,
       importContainer: config.storageId ? this.storageToImportContainer(config, storage) : null,
@@ -305,8 +329,6 @@ export default class DeployMapper {
       initContainers: this.mapInitContainerToAgent(config.initContainers),
       portRanges: config.portRanges,
       ports: config.ports,
-      // Set user to the given value, if not null or use 0 if specifically 0, otherwise set null
-      user: config.user === -1 ? null : config.user,
       volumes: this.imageMapper.volumesToProto(config.volumes ?? []),
     }
   }
@@ -411,8 +433,8 @@ export default class DeployMapper {
     if (storage.accessKey && storage.secretKey) {
       environment = {
         ...environment,
-        RCLONE_CONFIG_S3_ACCESS_KEY_ID: storage.accessKey,
-        RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: storage.secretKey,
+        RCLONE_CONFIG_S3_ACCESS_KEY_ID: this.encryptionService.decrypt(storage.accessKey),
+        RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: this.encryptionService.decrypt(storage.secretKey),
       }
     }
 

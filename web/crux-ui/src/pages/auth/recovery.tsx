@@ -25,7 +25,7 @@ import { RecoveryFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import { forwardCookie } from '@server/cookie'
 import kratos, { obtainSessionFromRequest } from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
@@ -102,7 +102,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
     },
   })
 
-  const resendEmail = () => {
+  const resendEmail = async () => {
     setFlow({
       ...flow,
       state: null,
@@ -110,7 +110,11 @@ const RecoveryPage = (props: RecoveryPageProps) => {
 
     startCountdown(AUTH_RESEND_DELAY)
 
-    formik.submitForm()
+    await formik.submitForm()
+  }
+
+  const recaptchaChange = () => {
+    recaptcha.current?.reset()
   }
 
   const submitDisabled = countdown > 0
@@ -180,7 +184,9 @@ const RecoveryPage = (props: RecoveryPageProps) => {
           messageType="error"
         />
 
-        {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
+        {recaptchaSiteKey ? (
+          <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} onChange={recaptchaChange} />
+        ) : null}
       </DyoCard>
     </SingleFormLayout>
   )
@@ -188,7 +194,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
 
 export default RecoveryPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const session = await obtainSessionFromRequest(context.req)
 
   if (session) {

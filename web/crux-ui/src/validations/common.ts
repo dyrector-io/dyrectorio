@@ -27,7 +27,7 @@ export const yupErrorTranslate = (error: yup.ValidationError, t: Translate): yup
     return t(messageKey, params)
   }
 
-  if (error.inner.length === 0) {
+  if (!error.inner || error.inner.length < 1) {
     return {
       ...error,
       message: tMessage(error.message, error),
@@ -90,10 +90,10 @@ export const descriptionRule = yup.string().optional().label('common:description
 export const identityNameRule = yup.string().trim().max(16)
 export const passwordLengthRule = yup.string().min(8).max(70).label('common:password')
 
-const REGEX_ERROR_NO_WHITESPACES = { regex: 'errors:yup.string.notContainWhitespaces' }
+export const REGEX_ERROR_NO_WHITESPACES = { regex: 'errors:yup.string.notContainWhitespaces' }
 
 export const matchNoWhitespace = (schema: yup.StringSchema<string, yup.AnyObject, undefined>) =>
   schema.matches(/^\S+$/g, { message: REGEX_ERROR_NO_WHITESPACES }) // all characters are non-whitespaces
 
-export const matchNoTrailingWhitespace = (schema: yup.StringSchema<string, yup.AnyObject, undefined>) =>
-  schema.matches(/^\S.*\S$/g, { message: REGEX_ERROR_NO_WHITESPACES }) // any characters but no trailing whitespaces
+export const matchNoLeadingOrTrailingWhitespaces = (schema: yup.StringSchema<string, yup.AnyObject, undefined>) =>
+  schema.matches(/^[^\s]+(\s+[^\s]+)*$/g, { message: REGEX_ERROR_NO_WHITESPACES }) // any characters but no trailing whitespaces

@@ -10,7 +10,7 @@ import {
   WS_TYPE_INSTANCE_SECRETS,
   WS_TYPE_PATCH_INSTANCE,
 } from '@app/models'
-import { containerConfigSchema, getValidationError } from '@app/validations'
+import { createContainerConfigSchema, getValidationError } from '@app/validations'
 import { useState } from 'react'
 import { DeploymentActions, DeploymentState } from '../use-deployment-state'
 import useTranslation from 'next-translate/useTranslation'
@@ -29,7 +29,7 @@ export type InstanceState = {
 }
 
 export type InstanceActions = {
-  resetSection: (section: ImageConfigProperty) => InstanceContainerConfigData
+  resetSection: (section: ImageConfigProperty) => void
   onPatch: (newConfig: Partial<ContainerConfigData>) => void
   onParseError: (error: Error) => void
 }
@@ -53,7 +53,8 @@ const useInstanceState = (options: InstanceStateOptions) => {
 
   const mergedConfig = mergeConfigs(instance.image.config, instance.config)
 
-  const errorMessage = parseError ?? getValidationError(containerConfigSchema, mergedConfig, null, t)?.message
+  const errorMessage =
+    parseError ?? getValidationError(createContainerConfigSchema(instance.image.labels), mergedConfig, null, t)?.message
 
   const resetSection = (section: ImageConfigProperty): InstanceContainerConfigData => {
     const newConfig = { ...instance.config } as any

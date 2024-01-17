@@ -21,6 +21,7 @@ import { SemVer, coerce } from 'semver'
 import { Agent, AgentConnectionMessage, AgentTokenReplacement } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { generateAgentToken } from 'src/domain/agent-token'
+import { AgentUpdateResult } from 'src/domain/agent-update'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
 import { BasicNode } from 'src/domain/node'
 import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
@@ -28,6 +29,7 @@ import { CruxNotFoundException } from 'src/exception/crux-exception'
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerIdentifier,
+  ContainerInspectMessage,
   ContainerLogMessage,
   ContainerStateListMessage,
   DeleteContainersRequest,
@@ -215,7 +217,7 @@ export default class AgentService {
         await this.deployService.finishDeployment(agent.id, deployment, status)
 
         const messageType: NotificationMessageType =
-          deployment.getStatus() === 'successful' ? 'successful-deploy' : 'failed-deploy'
+          deployment.getStatus() === 'successful' ? 'deploy-successful' : 'deploy-failed'
         await this.notificationService.sendNotification({
           teamId: deployment.notification.teamId,
           messageType,
@@ -353,6 +355,14 @@ export default class AgentService {
     )
   }
 
+  handleContainerInspect(connection: GrpcNodeConnection, request: ContainerInspectMessage): Observable<Empty> {
+    const agent = this.getByIdOrThrow(connection.nodeId)
+
+    agent.onContainerInspect(request)
+
+    return of(Empty)
+  }
+
   async tokenReplaced(connection: GrpcNodeConnection): Promise<Empty> {
     const agent = this.getByIdOrThrow(connection.nodeId)
 
@@ -379,6 +389,22 @@ export default class AgentService {
     return Empty
   }
 
+  agentUpdateCompleted(connection: GrpcNodeConnection): AgentUpdateResult {
+    const { nodeId } = connection
+
+    const agent = this.agents.get(nodeId)
+    if (!agent) {
+      throw new CruxNotFoundException({
+        message: 'Agent not found',
+        property: 'id',
+        value: nodeId,
+      })
+    }
+
+    this.agents.delete(nodeId)
+    return agent.onUpdateCompleted(connection)
+  }
+
   agentVersionSupported(version: string): boolean {
     const agentVersion = this.getAgentSemVer(version)
     if (!agentVersion) {
@@ -386,7 +412,6 @@ export default class AgentService {
     }
 
     const packageVersion = coerce(getPackageVersion(this.configService))
-
     return (
       agentVersion.compare(AGENT_SUPPORTED_MINIMUM_VERSION) >= 0 && // agent version is newer (bigger) or the same
       agentVersion.compare(packageVersion) <= 0

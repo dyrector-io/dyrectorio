@@ -13,15 +13,15 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Deployment, NodeDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useRef } from 'react'
 import { useSWRConfig } from 'swr'
 
 interface NodeDetailsPageProps {
@@ -42,7 +42,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
   const [state, actions] = useNodeDetailsState({
     node: propsNode,
   })
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   const { node } = state
 
@@ -54,7 +54,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
     })
 
     if (!res.ok) {
-      handleApiError(res)
+      await handleApiError(res)
       return
     }
 
@@ -89,7 +89,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
           onDelete={onDelete}
           editing={state.section === 'editing'}
           setEditing={actions.setEditing}
-          submitRef={submitRef}
+          submit={submit}
           deleteModalTitle={t('common:areYouSureDeleteName', { name: node.name })}
           deleteModalDescription={t('common:proceedYouLoseAllDataToName', {
             name: node.name,
@@ -98,11 +98,11 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
       </PageHeading>
 
       {state.section === 'editing' ? (
-        <EditNodeSection node={node} onNodeEdited={onNodeEdited} submitRef={submitRef} />
+        <EditNodeSection node={node} onNodeEdited={onNodeEdited} submit={submit} />
       ) : (
         <>
           <div className="flex flex-row gap-4 mb-4">
-            <DyoNodeCard className="w-2/3 p-6" node={node} hideConnectionInfo />
+            <DyoNodeCard className="w-2/3 p-6" node={node} disableTitleHref hideConnectionInfo />
 
             <NodeConnectionCard className="w-1/3 px-6 py-4" node={node} />
           </div>
@@ -130,7 +130,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
 
 export default NodeDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const nodeId = context.query.nodeId as string

@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -23,6 +24,7 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/crypt"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/golang/internal/domain"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
@@ -49,6 +51,8 @@ type DockerVersion struct {
 	ServerVersion string
 	ClientVersion string
 }
+
+var ErrUnknownContainer = errors.New("unknown container")
 
 func GetContainerLogs(name string, skip, take uint) []string {
 	ctx := context.Background()
@@ -156,23 +160,23 @@ func logDeployInfo(
 	}
 
 	if deployImageRequest.Registry == nil || *deployImageRequest.Registry == "" {
-		dog.Write(
-			fmt.Sprintf("Starting container: %s", containerName),
+		dog.WriteInfo(
+			fmt.Sprintf("Deploying container: %s", containerName),
 			fmt.Sprintf("Using image: %s:%s", deployImageRequest.ImageName, deployImageRequest.Tag),
 		)
 	} else {
-		dog.Write(
-			fmt.Sprintf("Starting container: %s", containerName),
+		dog.WriteInfo(
+			fmt.Sprintf("Deploying container: %s", containerName),
 			fmt.Sprintf("Using image: %s", expandedImageName),
 		)
 	}
 
 	if deployImageRequest.ContainerConfig.RestartPolicy != "" {
-		dog.Write(fmt.Sprintf("Using restart policy: %v", deployImageRequest.ContainerConfig.RestartPolicy))
+		dog.WriteInfo(fmt.Sprintf("Using restart policy: %v", deployImageRequest.ContainerConfig.RestartPolicy))
 	}
 
 	if deployImageRequest.ContainerConfig.User != nil {
-		dog.Write(fmt.Sprintf("User: %v", *deployImageRequest.ContainerConfig.User))
+		dog.WriteInfo(fmt.Sprintf("Using user: %v", *deployImageRequest.ContainerConfig.User))
 	}
 }
 
@@ -194,7 +198,7 @@ func buildMountList(cfg *config.Configuration, dog *dogger.DeploymentLogger, dep
 			cfg,
 		)
 		if err != nil {
-			dog.Write("could not create config file\n", err.Error())
+			dog.WriteError("could not create config file\n", err.Error())
 		}
 	}
 
@@ -202,7 +206,7 @@ func buildMountList(cfg *config.Configuration, dog *dogger.DeploymentLogger, dep
 }
 
 func writeDoggerError(dog *dogger.DeploymentLogger, msg string, err error) {
-	dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED, err.Error(), msg)
+	dog.WriteContainerState(common.ContainerState_CONTAINER_STATE_UNSPECIFIED, err.Error(), dogger.Error, msg)
 }
 
 func getImageNameFromRequest(deployImageRequest *v1.DeployImageRequest) (string, error) {
@@ -214,12 +218,22 @@ func getImageNameFromRequest(deployImageRequest *v1.DeployImageRequest) (string,
 	return imageHelper.ExpandImageName(imageName)
 }
 
+//nolint:funlen,gocyclo // TODO(@nandor-magyar): refactor this function into smaller parts
 func DeployImage(ctx context.Context,
 	dog *dogger.DeploymentLogger,
 	deployImageRequest *v1.DeployImageRequest,
 	versionData *v1.VersionData,
 ) error {
 	containerName := getContainerName(deployImageRequest)
+	prefix := getContainerPrefix(deployImageRequest)
+	err := domain.IsCompliantDNS(prefix)
+	if err != nil {
+		return fmt.Errorf("deployment failed, invalid prefix: %w", err)
+	}
+	err = domain.IsCompliantDNS(containerName)
+	if err != nil {
+		return fmt.Errorf("deployment failed, invalid container name: %w", err)
+	}
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -235,7 +249,32 @@ func DeployImage(ctx context.Context,
 	log.Debug().Str("name", deployImageRequest.ImageName).Str("full", expandedImageName).Msg("Image name parsed")
 	logDeployInfo(dog, deployImageRequest, expandedImageName, containerName)
 
-	envMap := MergeStringMapUnique(deployImageRequest.InstanceConfig.Environment, deployImageRequest.ContainerConfig.Environment)
+	if len(deployImageRequest.InstanceConfig.SharedEnvironment) > 0 {
+		err = WriteSharedEnvironmentVariables(
+			cfg.InternalMountPath,
+			prefix,
+			deployImageRequest.InstanceConfig.SharedEnvironment)
+		if err != nil {
+			dog.WriteError("could not write shared environment variables, aborting...", err.Error())
+			return err
+		}
+	}
+
+	var envMap map[string]string
+
+	if deployImageRequest.InstanceConfig.UseSharedEnvs {
+		envMap, err = ReadSharedEnvironmentVariables(cfg.InternalMountPath,
+			prefix)
+		if err != nil {
+			dog.WriteError("could not load shared environment variables, while useSharedEnvs is on, aborting...", err.Error())
+			return err
+		}
+	} else {
+		envMap = MergeStringMapUnique(deployImageRequest.InstanceConfig.SharedEnvironment,
+			deployImageRequest.InstanceConfig.Environment)
+	}
+	envMap = MergeStringMapUnique(envMap, deployImageRequest.ContainerConfig.Environment)
+
 	secret, err := crypt.DecryptSecrets(deployImageRequest.ContainerConfig.Secrets, &cfg.CommonConfiguration)
 	if err != nil {
 		return fmt.Errorf("deployment failed, secret error: %w", err)
@@ -251,7 +290,7 @@ func DeployImage(ctx context.Context,
 	}
 
 	if matchedContainer != nil {
-		dog.WriteContainerState(mapper.MapDockerStateToCruxContainerState(matchedContainer.State), matchedContainer.State)
+		dog.WriteContainerState(mapper.MapDockerStateToCruxContainerState(matchedContainer.State), matchedContainer.State, dogger.Info)
 
 		err = dockerHelper.DeleteContainerByID(ctx, dog, matchedContainer.ID)
 		if err != nil {
@@ -284,6 +323,7 @@ func DeployImage(ctx context.Context,
 		WithUser(deployImageRequest.ContainerConfig.User).
 		WithEntrypoint(deployImageRequest.ContainerConfig.Command).
 		WithCmd(deployImageRequest.ContainerConfig.Args).
+		WithWorkingDirectory(deployImageRequest.ContainerConfig.WorkingDirectory).
 		WithoutConflict().
 		WithLogWriter(dog).
 		WithPullDisplayFunc(dog.WriteDockerPull)
@@ -307,7 +347,7 @@ func DeployImage(ctx context.Context,
 	}
 
 	dog.WriteContainerState(mapper.MapDockerStateToCruxContainerState(matchedContainer.State),
-		matchedContainer.State, "Started container: "+containerName)
+		matchedContainer.State, dogger.Info, "Started container: "+containerName)
 
 	if versionData != nil {
 		DraftRelease(deployImageRequest.InstanceConfig.ContainerPreName, *versionData, v1.DeployVersionResponse{}, cfg)
@@ -388,18 +428,20 @@ func volumeToMount(vol *v1.Volume) string {
 }
 
 func getContainerName(deployImageRequest *v1.DeployImageRequest) string {
-	containerName := ""
+	return util.JoinV("-", getContainerPrefix(deployImageRequest), deployImageRequest.ContainerConfig.Container)
+}
+
+func getContainerPrefix(deployImageRequest *v1.DeployImageRequest) string {
+	containerPrefix := ""
 
 	if deployImageRequest.ContainerConfig.Container != "" {
 		if deployImageRequest.InstanceConfig.MountPath != "" {
-			containerName = util.JoinV("-", deployImageRequest.InstanceConfig.MountPath, deployImageRequest.ContainerConfig.Container)
+			containerPrefix = deployImageRequest.InstanceConfig.MountPath
 		} else if deployImageRequest.InstanceConfig.ContainerPreName != "" {
-			containerName = util.JoinV("-", deployImageRequest.InstanceConfig.ContainerPreName, deployImageRequest.ContainerConfig.Container)
-		} else {
-			containerName = deployImageRequest.ContainerConfig.Container
+			containerPrefix = deployImageRequest.InstanceConfig.ContainerPreName
 		}
 	}
-	return containerName
+	return containerPrefix
 }
 
 func containsConfig(mounts []mount.Mount) bool {
@@ -784,4 +826,35 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 	}
 
 	return logContext, nil
+}
+
+func ContainerInspect(ctx context.Context, request *agent.ContainerInspectRequest) (string, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return "", err
+	}
+
+	prefix := request.Container.Prefix
+	name := request.Container.Name
+
+	cont, err := GetContainerByPrefixAndName(ctx, cli, prefix, name)
+	if cont == nil {
+		return "", ErrUnknownContainer
+	}
+	if err != nil {
+		return "", err
+	}
+
+	containerInfo, err := cli.ContainerInspect(ctx, cont.ID)
+	if err != nil {
+		return "", err
+	}
+
+	inspectionJSON, err := json.Marshal(containerInfo)
+	if err != nil {
+		return "", err
+	}
+	inspection := string(inspectionJSON)
+
+	return inspection, nil
 }

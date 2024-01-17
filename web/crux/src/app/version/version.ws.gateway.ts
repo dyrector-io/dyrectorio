@@ -123,12 +123,13 @@ export default class VersionWebSocketGateway {
 
   @SubscribeMessage('add-images')
   async addImages(
+    @TeamSlug() teamSlug: string,
     @VersionId() versionId: string,
     @SocketMessage() message: AddImagesMessage,
     @IdentityFromSocket() identity: Identity,
     @SocketSubscription() subscription: WsSubscription,
   ): Promise<void> {
-    const images = await this.imageService.addImagesToVersion(versionId, message.registryImages, identity)
+    const images = await this.imageService.addImagesToVersion(teamSlug, versionId, message.registryImages, identity)
 
     const res: WsMessage<ImagesAddedMessage> = {
       type: WS_TYPE_IMAGES_ADDED,
@@ -157,6 +158,7 @@ export default class VersionWebSocketGateway {
 
   @SubscribeMessage('patch-image')
   async patchImage(
+    @TeamSlug() teamSlug,
     @SocketClient() client: WsClient,
     @SocketMessage() message: PatchImageMessage,
     @IdentityFromSocket() identity: Identity,
@@ -171,7 +173,7 @@ export default class VersionWebSocketGateway {
       cruxReq = message
     }
 
-    await this.imageService.patchImage(message.id, cruxReq, identity)
+    await this.imageService.patchImage(teamSlug, message.id, cruxReq, identity)
 
     const res: WsMessage<PatchImageMessage> = {
       type: WS_TYPE_IMAGE_UPDATED,

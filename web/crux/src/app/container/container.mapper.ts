@@ -75,6 +75,7 @@ export default class ContainerMapper {
       configContainer: toPrismaJson(config.configContainer),
       // Set user to the given value, if not null or use 0 if specifically 0, otherwise set to default -1
       user: config.user ?? (config.user === 0 ? 0 : -1),
+      workingDirectory: config.workingDirectory,
       tty: config.tty !== null ? config.tty : false,
       ports: toPrismaJson(config.ports),
       portRanges: toPrismaJson(config.portRanges),
@@ -143,6 +144,7 @@ export default class ContainerMapper {
       environment: instance.environment ?? image.environment,
       secrets: this.mergeSecrets(instance.secrets, image.secrets),
       user: instance.user ?? image.user,
+      workingDirectory: instance.workingDirectory ?? image.workingDirectory,
       tty: instance.tty ?? image.tty,
       portRanges: instance.portRanges ?? image.portRanges,
       args: instance.args ?? image.args,

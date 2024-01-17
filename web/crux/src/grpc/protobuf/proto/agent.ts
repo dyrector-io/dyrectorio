@@ -6,6 +6,7 @@ import {
   ConfigContainer,
   ContainerCommandRequest,
   ContainerIdentifier,
+  ContainerInspectMessage,
   ContainerLogMessage,
   ContainerStateListMessage,
   DeleteContainersRequest,
@@ -114,6 +115,7 @@ export interface AgentCommand {
   deleteContainers?: DeleteContainersRequest | undefined
   containerLog?: ContainerLogRequest | undefined
   replaceToken?: ReplaceTokenRequest | undefined
+  containerInspect?: ContainerInspectRequest | undefined
 }
 
 /**
@@ -293,6 +295,7 @@ export interface CommonContainerConfig {
   importContainer?: ImportContainer | undefined
   user?: number | undefined
   TTY?: boolean | undefined
+  workingDirectory?: string | undefined
   ports: Port[]
   portRanges: PortRangeBinding[]
   volumes: Volume[]
@@ -368,6 +371,11 @@ export interface ContainerLogRequest {
   tail: number
 }
 
+/** Container inspect */
+export interface ContainerInspectRequest {
+  container: ContainerIdentifier | undefined
+}
+
 export interface CloseConnectionRequest {
   reason: CloseReason
 }
@@ -422,6 +430,9 @@ export const AgentCommand = {
         : undefined,
       containerLog: isSet(object.containerLog) ? ContainerLogRequest.fromJSON(object.containerLog) : undefined,
       replaceToken: isSet(object.replaceToken) ? ReplaceTokenRequest.fromJSON(object.replaceToken) : undefined,
+      containerInspect: isSet(object.containerInspect)
+        ? ContainerInspectRequest.fromJSON(object.containerInspect)
+        : undefined,
     }
   },
 
@@ -455,6 +466,10 @@ export const AgentCommand = {
       (obj.containerLog = message.containerLog ? ContainerLogRequest.toJSON(message.containerLog) : undefined)
     message.replaceToken !== undefined &&
       (obj.replaceToken = message.replaceToken ? ReplaceTokenRequest.toJSON(message.replaceToken) : undefined)
+    message.containerInspect !== undefined &&
+      (obj.containerInspect = message.containerInspect
+        ? ContainerInspectRequest.toJSON(message.containerInspect)
+        : undefined)
     return obj
   },
 }
@@ -1145,6 +1160,7 @@ export const CommonContainerConfig = {
       importContainer: isSet(object.importContainer) ? ImportContainer.fromJSON(object.importContainer) : undefined,
       user: isSet(object.user) ? Number(object.user) : undefined,
       TTY: isSet(object.TTY) ? Boolean(object.TTY) : undefined,
+      workingDirectory: isSet(object.workingDirectory) ? String(object.workingDirectory) : undefined,
       ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
       portRanges: Array.isArray(object?.portRanges)
         ? object.portRanges.map((e: any) => PortRangeBinding.fromJSON(e))
@@ -1182,6 +1198,7 @@ export const CommonContainerConfig = {
       (obj.importContainer = message.importContainer ? ImportContainer.toJSON(message.importContainer) : undefined)
     message.user !== undefined && (obj.user = Math.round(message.user))
     message.TTY !== undefined && (obj.TTY = message.TTY)
+    message.workingDirectory !== undefined && (obj.workingDirectory = message.workingDirectory)
     if (message.ports) {
       obj.ports = message.ports.map(e => (e ? Port.toJSON(e) : undefined))
     } else {
@@ -1441,6 +1458,23 @@ export const ContainerLogRequest = {
   },
 }
 
+function createBaseContainerInspectRequest(): ContainerInspectRequest {
+  return { container: undefined }
+}
+
+export const ContainerInspectRequest = {
+  fromJSON(object: any): ContainerInspectRequest {
+    return { container: isSet(object.container) ? ContainerIdentifier.fromJSON(object.container) : undefined }
+  },
+
+  toJSON(message: ContainerInspectRequest): unknown {
+    const obj: any = {}
+    message.container !== undefined &&
+      (obj.container = message.container ? ContainerIdentifier.toJSON(message.container) : undefined)
+    return obj
+  },
+}
+
 function createBaseCloseConnectionRequest(): CloseConnectionRequest {
   return { reason: 0 }
 }
@@ -1481,6 +1515,8 @@ export interface AgentClient {
   deleteContainers(request: DeleteContainersRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
   containerLog(request: Observable<ContainerLogMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  containerInspect(request: ContainerInspectMessage, metadata: Metadata, ...rest: any): Observable<Empty>
 
   tokenReplaced(request: Empty, metadata: Metadata, ...rest: any): Observable<Empty>
 }
@@ -1526,12 +1562,25 @@ export interface AgentController {
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
 
+  containerInspect(
+    request: ContainerInspectMessage,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<Empty> | Observable<Empty> | Empty
+
   tokenReplaced(request: Empty, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 }
 
 export function AgentControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['connect', 'secretList', 'abortUpdate', 'deleteContainers', 'tokenReplaced']
+    const grpcMethods: string[] = [
+      'connect',
+      'secretList',
+      'abortUpdate',
+      'deleteContainers',
+      'containerInspect',
+      'tokenReplaced',
+    ]
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('Agent', method)(constructor.prototype[method], method, descriptor)

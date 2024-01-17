@@ -7,15 +7,16 @@ import { ListPageMenu } from '@app/components/shared/page-menu'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoWrap from '@app/elements/dyo-wrap'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Notification } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 interface NotificationsPageProps {
   notifications: Notification[]
@@ -40,15 +41,15 @@ const NotificationsPage = (props: NotificationsPageProps) => {
     setNotifications([...notifications, item])
   }
 
-  const submitRef = useRef<() => Promise<any>>()
+  const submit = useSubmit()
 
   return (
     <Layout title={t('common:notifications')}>
       <PageHeading pageLink={pageLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
+        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
       </PageHeading>
       {creating && (
-        <EditNotificationCard onNotificationEdited={onSubmitted} submitRef={submitRef} className="mb-8 px-8 py-6" />
+        <EditNotificationCard onNotificationEdited={onSubmitted} submit={submit} className="mb-8 px-8 py-6" />
       )}
       {notifications.length ? (
         <>
@@ -61,7 +62,6 @@ const NotificationsPage = (props: NotificationsPageProps) => {
                 className={clsx('max-h-64 w-full p-6')}
                 key={`notification-${index}`}
                 notification={it}
-                titleHref={routes.notification.details(it.id)}
               />
             ))}
           </DyoWrap>
@@ -75,7 +75,7 @@ const NotificationsPage = (props: NotificationsPageProps) => {
   )
 }
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
   const notifications = await getCruxFromContext<Notification[]>(context, routes.notification.api.list())

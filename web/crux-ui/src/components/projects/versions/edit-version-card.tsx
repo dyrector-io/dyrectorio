@@ -1,7 +1,7 @@
 import useVersionHint from '@app/components/projects/versions/use-version-hint'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -9,26 +9,27 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateVersion, EditableVersion, Project, UpdateVersion, VERSION_TYPE_VALUES } from '@app/models'
 import { sendForm } from '@app/utils'
 import { createVersionSchema, updateVersionSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { useState } from 'react'
 
 interface EditVersionCardProps {
   className?: string
   project: Project
   version?: EditableVersion
   onVersionEdited: (version: EditableVersion) => void
-  submitRef?: MutableRefObject<() => Promise<any>>
+  submit?: SubmitHook
 }
 
 const EditVersionCard = (props: EditVersionCardProps) => {
   const { t } = useTranslation('versions')
   const routes = useTeamRoutes()
 
-  const { project, className, version: propsVersion, onVersionEdited, submitRef } = props
+  const { project, className, version: propsVersion, onVersionEdited, submit } = props
 
   const [version, setVersion] = useState<EditableVersion>(
     propsVersion ?? {
@@ -48,20 +49,18 @@ const EditVersionCard = (props: EditVersionCardProps) => {
   const [versionHint, setVersionHint] = useVersionHint(version.name)
 
   const formik = useDyoFormik({
-    submitRef,
+    submit,
     initialValues: {
       ...version,
     },
     validationSchema: !editing ? createVersionSchema : updateVersionSchema,
     t,
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
-      setSubmitting(true)
-
+    onSubmit: async (values, { setFieldError }) => {
       const body: CreateVersion | UpdateVersion = values
 
-      const res = await (!editing
-        ? sendForm('POST', routes.project.versions(project.id).api.list(), body as CreateVersion)
-        : sendForm('PUT', routes.project.versions(project.id).api.details(version.id), body as UpdateVersion))
+      const res = !editing
+        ? await sendForm('POST', routes.project.versions(project.id).api.list(), body as CreateVersion)
+        : await sendForm('PUT', routes.project.versions(project.id).api.details(version.id), body as UpdateVersion)
 
       if (res.ok) {
         let result: EditableVersion
@@ -75,11 +74,9 @@ const EditVersionCard = (props: EditVersionCardProps) => {
         }
 
         setVersion(result)
-        setSubmitting(false)
         onVersionEdited(result)
       } else {
-        setSubmitting(false)
-        handleApiError(res, setFieldError)
+        await handleApiError(res, setFieldError)
       }
     },
   })
@@ -100,9 +97,9 @@ const EditVersionCard = (props: EditVersionCardProps) => {
           type="name"
           required
           label={t('common:name')}
-          onChange={e => {
-            formik.handleChange(e)
-            setVersionHint(e.target.value)
+          onChange={ev => {
+            formik.handleChange(ev)
+            setVersionHint(ev.target.value)
           }}
           value={formik.values.name}
           message={versionHint ?? formik.errors.name}
@@ -125,12 +122,14 @@ const EditVersionCard = (props: EditVersionCardProps) => {
 
             <DyoChips
               className="text-bright"
+              name="versionType"
               choices={VERSION_TYPE_VALUES}
               selection={formik.values.type}
               converter={it => t(it)}
-              onSelectionChange={type => {
-                formik.setFieldValue('type', type, false)
+              onSelectionChange={async (type): Promise<void> => {
+                await formik.setFieldValue('type', type, false)
               }}
+              qaLabel={chipsQALabelFromValue}
             />
           </>
         )}

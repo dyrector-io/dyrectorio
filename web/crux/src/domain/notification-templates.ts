@@ -4,7 +4,14 @@ import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
 const title = 'dyrector.io'
 
-export type NotificationMessageType = 'node' | 'version' | 'invite' | 'failed-deploy' | 'successful-deploy'
+export type NotificationMessageType =
+  | 'node'
+  | 'version'
+  | 'invite'
+  | 'deploy-failed'
+  | 'deploy-successful'
+  | 'image-pushed'
+  | 'image-pulled'
 
 export type BaseMessage = {
   owner: Identity | string
@@ -22,6 +29,11 @@ export type InviteMessage = BaseMessage & {
 export type DeployMessage = BaseMessage & {
   version: string
   node: string
+}
+
+export type RegistryImageMessage = BaseMessage & {
+  image: string
+  registry: string
 }
 
 export type Message = BaseMessage | VersionMessage | InviteMessage | DeployMessage
@@ -102,6 +114,28 @@ const getTeamsTemplate = (message: string): any => ({
   ],
 })
 
+const getMattermostTemplate = (message: string): any => ({
+  attachments: [
+    {
+      title,
+      color: '1555130',
+      text: message,
+      title_link: 'https://dyrector.io',
+    },
+  ],
+})
+
+const getRocketTemplate = (message: string): any => ({
+  attachments: [
+    {
+      title,
+      color: '1555130',
+      text: message,
+      title_link: 'https://dyrector.io',
+    },
+  ],
+})
+
 export const getTemplate = (notificationType: NotificationTypeEnum, message: string): any | null => {
   switch (notificationType) {
     case 'discord':
@@ -110,6 +144,10 @@ export const getTemplate = (notificationType: NotificationTypeEnum, message: str
       return getSlackTemplate(message)
     case 'teams':
       return getTeamsTemplate(message)
+    case 'rocket':
+      return getRocketTemplate(message)
+    case 'mattermost':
+      return getMattermostTemplate(message)
     default:
       throw new CruxInternalServerErrorException({
         message: 'Unsupported notification type',

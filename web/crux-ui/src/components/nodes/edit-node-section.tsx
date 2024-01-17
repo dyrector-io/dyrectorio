@@ -18,22 +18,23 @@ import {
 } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject } from 'react'
 import toast from 'react-hot-toast'
 import DyoNodeSetup from './dyo-node-setup'
 import EditNodeCard from './edit-node-card'
 import NodeConnectionCard from './node-connection-card'
 import useNodeState from './use-node-state'
+import { SubmitHook } from '@app/hooks/use-submit'
+import { QA_DIALOG_LABEL_KICK_AGENT, QA_DIALOG_LABEL_REVOKE_NODE_TOKEN } from 'quality-assurance'
 
 interface EditNodeSectionProps {
   className?: string
   node?: NodeDetails
   onNodeEdited: (node: NodeDetails, shouldClose?: boolean) => void
-  submitRef?: MutableRefObject<() => Promise<any>>
+  submit?: SubmitHook
 }
 
 const EditNodeSection = (props: EditNodeSectionProps) => {
-  const { className, node: propsNode, onNodeEdited: propsOnNodeEdited, submitRef } = props
+  const { className, node: propsNode, onNodeEdited: propsOnNodeEdited, submit } = props
 
   const { t } = useTranslation('nodes')
   const routes = useTeamRoutes()
@@ -94,6 +95,7 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
 
   const onRevokeToken = async () => {
     const confirmed = await confirmTokenRevoke({
+      qaLabel: QA_DIALOG_LABEL_REVOKE_NODE_TOKEN,
       title: t('tokens:areYouSureRevoke'),
       confirmText: t('tokens:revoke'),
       confirmColor: 'bg-error-red',
@@ -108,7 +110,7 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
     })
 
     if (!res.ok) {
-      handleApiError(res)
+      await handleApiError(res)
       return
     }
 
@@ -118,6 +120,38 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
       version: null,
       hasToken: false,
       install: null,
+    } as NodeDetails
+
+    setNode(newNode)
+    onNodeEdited(newNode)
+  }
+
+  const onKickAgent = async () => {
+    const confirmed = await confirmTokenRevoke({
+      qaLabel: QA_DIALOG_LABEL_KICK_AGENT,
+      title: t('areYouSureKickAgent'),
+      description: t('kickingAnAgentWillStopIt'),
+      confirmText: t('kick'),
+      confirmColor: 'bg-error-red',
+    })
+
+    if (!confirmed) {
+      return
+    }
+
+    const res = await fetch(routes.node.api.kick(node.id), {
+      method: 'POST',
+    })
+
+    if (!res.ok) {
+      await handleApiError(res)
+      return
+    }
+
+    const newNode = {
+      ...node,
+      status: 'unreachable',
+      version: null,
     } as NodeDetails
 
     setNode(newNode)
@@ -145,7 +179,7 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
   return (
     <>
       <div className={clsx(className, 'flex flex-row gap-4')}>
-        <EditNodeCard className="w-1/2 p-8" submitRef={submitRef} onNodeEdited={onNodeEdited} node={node} />
+        <EditNodeCard className="w-1/2 p-8" submit={submit} onNodeEdited={onNodeEdited} node={node} />
 
         <div className="flex flex-col flex-grow w-1/2">
           {node.hasToken && <NodeConnectionCard className="mb-4 p-6" node={node} />}
@@ -180,6 +214,15 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
                     {t('update')}
                     {node.status === 'updating' && <LoadingIndicator className="inline-block ml-2" />}
                   </span>
+                </DyoButton>
+
+                <DyoButton
+                  className="px-6"
+                  color="bg-error-red"
+                  onClick={onKickAgent}
+                  disabled={node.status === 'unreachable'}
+                >
+                  {t('kick')}
                 </DyoButton>
               </div>
             </DyoCard>

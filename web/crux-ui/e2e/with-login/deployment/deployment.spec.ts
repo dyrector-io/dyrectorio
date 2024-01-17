@@ -129,14 +129,13 @@ test('Select specific instances to deploy', async ({ page }) => {
   const projectId = await createProject(page, projectName, 'versionless')
 
   await addImageToVersionlessProject(page, projectId, 'nginx')
-  await addImageToVersionlessProject(page, projectId, 'busybox')
+  await addImageToVersionlessProject(page, projectId, 'redis')
 
   const { id: deploymentId } = await addDeploymentToVersionlessProject(page, projectId, DAGENT_NODE, { prefix })
 
-  const instanceBody = await page.locator('.table-row-group')
-  const instanceRow = await instanceBody.locator('.table-row')
+  const instanceRow = await page.locator('table.w-full >> tbody >> tr')
 
-  await instanceRow.locator('img[alt="check"]:left-of(div:text-is("busybox"))').click()
+  await instanceRow.locator('img[alt="check"]:left-of(td:text-is("redis"))').click()
 
   await deploy(page, deploymentId, false, false)
 
@@ -152,9 +151,7 @@ test('Select specific instances to deploy', async ({ page }) => {
   await page.waitForSelector('button:text-is("Containers")')
   await page.locator('input[placeholder="Search"]').type(prefix)
 
-  const containerBody = await page.locator('.table-row-group')
-  const nodeContainerRow = await containerBody.locator('.table-row')
-
+  const nodeContainerRow = await page.locator('table.w-full >> tbody >> tr')
   await expect(nodeContainerRow).toHaveCount(1)
 })
 
@@ -184,7 +181,7 @@ test('Incremental versions should keep config bundle environment after a success
   const wsRoute = TEAM_ROUTES.deployment.detailsSocket(deploymentId)
   const wsPatchReceived = waitSocketReceived(ws, wsRoute, WS_TYPE_PATCH_RECEIVED)
 
-  await page.click('label:text-is("None"):right-of(label:text-is("Config bundle"))')
+  await page.click('label:text-is("None"):below(label:text-is("CONFIG BUNDLE"))')
   await page.click(`label:text-is("${bundleName}"):below(label:text-is("None"))`)
 
   await wsPatchReceived
@@ -193,7 +190,7 @@ test('Incremental versions should keep config bundle environment after a success
 
   await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
-  await expect(page.locator('label:text-is("None"):right-of(label:text-is("Config bundle"))')).toHaveCount(1)
+  await expect(page.locator('label:text-is("None"):below(label:text-is("CONFIG BUNDLE"))')).toHaveCount(1)
 
   await expect(page.locator('input[placeholder="Key"]').first()).toHaveValue(BUNDLE_ENV)
   await expect(page.locator('input[placeholder="Value"]').first()).toHaveValue(BUNDLE_VALUE)

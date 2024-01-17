@@ -7,6 +7,7 @@ import { teamUserRoleApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
+import { QA_DIALOG_LABEL_UPDATE_USER_ROLE } from 'quality-assurance'
 import { useState } from 'react'
 
 interface UserRoleActionProps {
@@ -30,6 +31,7 @@ const UserRoleAction = (props: UserRoleActionProps) => {
 
   const onUpdateUserRole = async (updatedRole: UserRole, promote: boolean) => {
     const confirmed = await confirmRoleUpdate({
+      qaLabel: QA_DIALOG_LABEL_UPDATE_USER_ROLE,
       title: t('common:areYouSure'),
       description: t('confirmRoleAction', {
         action: t(promote ? 'promote' : 'demote'),
@@ -53,7 +55,7 @@ const UserRoleAction = (props: UserRoleActionProps) => {
     if (res.ok) {
       onRoleUpdated(updatedRole)
     } else {
-      handleApiError(res)
+      await handleApiError(res)
     }
 
     setUpdating(false)

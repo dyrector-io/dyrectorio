@@ -2,6 +2,7 @@ import { FormikSetFieldValue } from '@app/utils'
 import clsx from 'clsx'
 import { useState } from 'react'
 import DyoBadge from './dyo-badge'
+import { sendQASelectIconEvent } from 'quality-assurance'
 
 interface DyoIconPickerProps {
   className?: string
@@ -49,13 +50,14 @@ const DyoIconPicker = (props: DyoIconPickerProps) => {
 
   const [selected, setSelected] = useState(value ?? null)
 
-  const onSelectIcon = icon => {
+  const onSelectIcon = async (icon: string): Promise<void> => {
     if (selected === icon) {
       icon = null
     }
 
     setSelected(icon)
-    setFieldValue(name, icon)
+    await setFieldValue(name, icon)
+    sendQASelectIconEvent(icon)
   }
 
   return (

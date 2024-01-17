@@ -75,6 +75,6 @@ type Audit = {
   updatedBy: string
 }
 
-type AuditLogWithDeploymentToken = AuditLog & {
+export type AuditLogWithDeploymentToken = AuditLog & {
   deploymentToken: Pick<DeploymentToken, 'name'>
 }

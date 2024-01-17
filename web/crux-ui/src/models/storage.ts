@@ -9,16 +9,41 @@ export type Storage = BasicStorage & {
   url: string
 }
 
-export type StorageDetails = Storage & {
+type StorageCredentials = {
+  changeCredentials: boolean
   accessKey?: string
   secretKey?: string
+}
+
+export type StorageDetails = Storage & {
+  public: boolean
   inUse: boolean
 }
 
-export type CreateStorage = Omit<Storage, 'id' | 'inUse'>
+export type EditableStorage = StorageDetails & StorageCredentials
+
+export type CreateStorage = Omit<StorageDetails & StorageCredentials, 'id' | 'inUse' | 'changeCredentials'>
+
 export type UpdateStorage = CreateStorage
 
 export type StorageOption = {
   id: string
   name: string
+}
+
+export const editableStorageToDto = (storage: EditableStorage): CreateStorage | UpdateStorage => {
+  const dto: CreateStorage | UpdateStorage = {
+    name: storage.name,
+    description: storage.description,
+    icon: storage.icon,
+    url: storage.url,
+    public: storage.public,
+  }
+
+  if (!storage.public && storage.changeCredentials) {
+    dto.accessKey = storage.accessKey
+    dto.secretKey = storage.secretKey
+  }
+
+  return dto
 }

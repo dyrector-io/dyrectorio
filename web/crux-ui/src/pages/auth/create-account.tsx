@@ -13,7 +13,7 @@ import { findUiMessage, isDyoError, redirectTo, sendForm, upsertDyoError, withCo
 import { RecoveryFlow } from '@ory/kratos-client'
 import { forwardCookie } from '@server/cookie'
 import kratos from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
@@ -47,7 +47,7 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
 
       const res = await sendForm('POST', API_CREATE_ACCOUNT, body)
       if (res.ok) {
-        router.replace(res.headers.get(HEADER_LOCATION) ?? ROUTE_INDEX)
+        await router.replace(res.headers.get(HEADER_LOCATION) ?? ROUTE_INDEX)
       } else if (res.status === 410) {
         await router.reload()
       } else {
@@ -60,7 +60,7 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
         } else if (res.status === 403) {
           // can't retry the recovery flow
 
-          router.replace(ROUTE_INDEX)
+          await router.replace(ROUTE_INDEX)
         } else {
           toast(t('errors:internalError'))
         }
@@ -93,7 +93,7 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
 
 export default AcceptInvitationPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const flowId = context.query.flow as string
   const code = context.query.code as string
   const team = context.query.team as string

@@ -12,20 +12,65 @@ import useTranslation from 'next-translate/useTranslation'
 
 type FilterSet = Record<BaseImageConfigFilterType, ImageConfigProperty[]>
 
-export const filterSet: FilterSet = {
+export const defaultFilterSet: FilterSet = {
   all: [...ALL_CONFIG_PROPERTIES],
   common: [...COMMON_CONFIG_PROPERTIES],
   crane: [...CRANE_CONFIG_PROPERTIES].filter(it => it !== 'extraLBAnnotations'),
   dagent: [...DAGENT_CONFIG_PROPERTIES],
 }
 
-interface ImageConfigFilterProps {
+export const k8sFilterSet: FilterSet = {
+  all: [...COMMON_CONFIG_PROPERTIES, ...CRANE_CONFIG_PROPERTIES],
+  common: [...COMMON_CONFIG_PROPERTIES],
+  crane: [...CRANE_CONFIG_PROPERTIES].filter(it => it !== 'extraLBAnnotations'),
+  dagent: null,
+}
+
+export const dockerFilterSet: FilterSet = {
+  all: [...COMMON_CONFIG_PROPERTIES, ...DAGENT_CONFIG_PROPERTIES],
+  common: [...COMMON_CONFIG_PROPERTIES],
+  crane: null,
+  dagent: [...DAGENT_CONFIG_PROPERTIES],
+}
+
+const getBorderColor = (type: BaseImageConfigFilterType): string => {
+  switch (type) {
+    case 'common':
+      return 'border-dyo-orange/50'
+    case 'crane':
+      return 'border-dyo-violet/50'
+    case 'dagent':
+      return 'border-dyo-sky/50'
+    default:
+      return 'border-dyo-turquoise'
+  }
+}
+
+const getBgColor = (type: BaseImageConfigFilterType): string => {
+  switch (type) {
+    case 'common':
+      return 'bg-dyo-orange/50'
+    case 'crane':
+      return 'bg-dyo-violet/50'
+    case 'dagent':
+      return 'bg-dyo-sky/50'
+    default:
+      return 'bg-dyo-turquoise'
+  }
+}
+
+type ImageConfigFilterProps = {
   onChange: (filters: ImageConfigProperty[]) => void
   filters: ImageConfigProperty[]
+  filterSet?: FilterSet
 }
 
 const ImageConfigFilters = (props: ImageConfigFilterProps) => {
-  const { onChange, filters } = props
+  const { onChange, filters, filterSet = defaultFilterSet } = props
+
+  const filterSetKeys = Object.entries(filterSet)
+    .filter(([_, value]) => !!value)
+    .map(([key]) => key) as BaseImageConfigFilterType[]
 
   const { t } = useTranslation('container')
 
@@ -45,41 +90,17 @@ const ImageConfigFilters = (props: ImageConfigFilterProps) => {
     onChange(newFilters)
   }
 
-  const getBorderColor = (type: BaseImageConfigFilterType): string => {
-    switch (type) {
-      case 'common':
-        return 'border-dyo-orange/50'
-      case 'crane':
-        return 'border-dyo-violet/50'
-      case 'dagent':
-        return 'border-dyo-sky/50'
-      default:
-        return 'border-dyo-turquoise'
-    }
-  }
-
-  const getBgColor = (type: BaseImageConfigFilterType): string => {
-    switch (type) {
-      case 'common':
-        return 'bg-dyo-orange/50'
-      case 'crane':
-        return 'bg-dyo-violet/50'
-      case 'dagent':
-        return 'bg-dyo-sky/50'
-      default:
-        return 'bg-dyo-turquoise'
-    }
-  }
-
   return (
     <div className="flex flex-col">
       <DyoLabel className="font-medium text-light-eased">{t('base.filters')}</DyoLabel>
+
       <div className="flex my-2">
-        {(Object.keys(filterSet) as BaseImageConfigFilterType[]).map((base, index) => {
+        {filterSetKeys.map((base, index) => {
           const selected =
             base === 'all'
               ? filters.length === ALL_CONFIG_PROPERTIES.length
-              : filters.filter(it => filterSet[base].indexOf(it) !== -1).length === filterSet[base].length
+              : filters.filter(it => filterSet[base].includes(it)).length === filterSet[base].length
+
           return (
             <button
               key={`filter-${index}`}
@@ -96,9 +117,11 @@ const ImageConfigFilters = (props: ImageConfigFilterProps) => {
           )
         })}
       </div>
+
       <DyoLabel className="my-2 font-medium text-light-eased">{t('base.subFilters')}</DyoLabel>
+
       <div className="flex flex-wrap">
-        {(Object.keys(filterSet) as BaseImageConfigFilterType[]).map(base =>
+        {filterSetKeys.map(base =>
           base === 'all' ? null : (
             <div className="flex flex-wrap" key={`filter-base-${base}`}>
               {filterSet[base].map((value, index) => (

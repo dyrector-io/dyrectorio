@@ -101,6 +101,10 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		containerConfig.TTY = *cc.TTY
 	}
 
+	if cc.WorkingDirectory != nil {
+		containerConfig.WorkingDirectory = *cc.WorkingDirectory
+	}
+
 	if cc.Args != nil {
 		containerConfig.Args = cc.Args
 	}
@@ -655,6 +659,8 @@ func MapDockerContainerEventToContainerState(event string) common.ContainerState
 		return common.ContainerState_EXITED
 	case "die":
 		return common.ContainerState_EXITED
+	case "kill":
+		return common.ContainerState_WAITING
 	default:
 		return common.ContainerState_CONTAINER_STATE_UNSPECIFIED
 	}

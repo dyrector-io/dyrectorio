@@ -1,16 +1,20 @@
 import type { Config } from '@jest/types'
 
 const config: Config.InitialOptions = {
-  moduleFileExtensions: ['js', 'json', 'ts'],
+  preset: 'ts-jest',
   modulePaths: ['.'],
   testRegex: '.*\\.spec\\.ts$',
-  transform: {
-    '^.+\\.(t|j)s$': 'ts-jest',
-  },
-  collectCoverageFrom: ['src/server/**/*.(t|j)s'],
+  collectCoverage: true,
+  collectCoverageFrom: [
+    "src/**/*.ts"
+  ],
   coveragePathIgnorePatterns: ['src/server/console', 'src/server/migration'],
   coverageDirectory: 'coverage',
   testEnvironment: 'node',
+  coverageReporters: [
+    "text",
+    "cobertura"
+  ]
 }
 
 export default config

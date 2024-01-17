@@ -2,6 +2,7 @@ import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { getRegistryApiException } from 'src/exception/registry-exception'
 import { RegistryImageTags } from '../registry.message'
 import { RegistryApiClient } from './registry-api-client'
+import V2Labels from './v2-labels'
 
 export type RegistryV2ApiClientOptions = {
   username?: string
@@ -64,6 +65,13 @@ class RegistryV2ApiClient implements RegistryApiClient {
       name: image,
       tags: json.flatMap(it => it.tags),
     }
+  }
+
+  async labels(image: string, tag: string): Promise<Record<string, string>> {
+    const labelClient = new V2Labels(this.url, {
+      headers: this.headers,
+    })
+    return labelClient.fetchLabels(image, tag)
   }
 
   private async fetch(endpoint: string, init?: RequestInit): Promise<Response> {

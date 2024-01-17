@@ -8,7 +8,7 @@ import { API_USERS_ME, ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, userInvitationApiUrl
 import { redirectTo, setupContextSession, withContextErrorHandling } from '@app/utils'
 import { postCruxFromContext } from '@server/crux-api'
 import { obtainSessionFromRequest } from '@server/kratos'
-import { NextPageContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
@@ -31,17 +31,17 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const sendInvitationRequest = async (method: 'POST' | 'DELETE') => {
+  const sendInvitationRequest = async (method: 'POST' | 'DELETE'): Promise<void> => {
     const res = await fetch(userInvitationApiUrl(team.id), {
       method,
     })
 
     if (res.ok) {
-      router.replace(ROUTE_INDEX)
+      await router.replace(ROUTE_INDEX)
     } else if (res.status === 412) {
       setExpired(true)
     } else {
-      handleApiError(res)
+      await handleApiError(res)
     }
   }
 
@@ -89,7 +89,7 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
 
 export default AcceptInvitationPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
+const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const teamId = context.query.teamId as string
   const session = await obtainSessionFromRequest(context.req)
   if (!session) {
