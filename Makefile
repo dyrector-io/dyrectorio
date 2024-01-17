@@ -189,19 +189,26 @@ gource:
 		ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i - -vcodec libx264 \
 		-preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 git-history-visualization.mp4
 
+.PHONY: check-dependencies
+check-dependencies: check-golang-dependencies check-nodejs-dependencies
+	@echo "All dependencies are up to date."
+
 .PHONY: check-golang-dependencies
 check-golang-dependencies:
 	@echo "Checking Golang dependencies..."
-	@go list -f '{{if not .Indirect}}{{.}}{{end}}' ./... | xargs go list -f '{{if not .Standard}}{{.ImportPath}}{{end}}' | xargs go get -u
+	@go list -f '{{if not .Indirect}}{{.}}{{end}}' ./... | xargs go list -f '{{if not .Standard}}{{.ImportPath}}{{end}}' | xargs go get -u 2>&1 | grep "go: "
+	@if [ $$? -eq 0 ]; then \
+		echo "Golang dependencies are missing"; \
+		exit 1; \
+	else \
+		echo "Golang dependencies are up to date."; \
+	fi
 
 .PHONY: check-nodejs-dependencies
 check-nodejs-dependencies:
 	@echo "Checking Node.js dependencies..."
-	@npm install
+	@npm install 2>&1 | grep "npm ERR!" && (echo "Node.js dependencies are missing" && exit 1) || echo "Node.js dependencies are up to date."
 
-.PHONY: check-dependencies
-check-dependencies: check-golang-dependencies check-nodejs-dependencies
-	@echo "All dependencies are up to date."
 
 # Compile the all gRPC files
 .PHONY: protogen
