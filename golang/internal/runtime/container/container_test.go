@@ -219,16 +219,15 @@ func FuzzVersionCheck(f *testing.F) {
 
 		_, servErr := containerRuntime.VersionCheck(context.TODO(), newMockClient(mockClientVersion, dockerInfo))
 		if servErr != nil {
-			t.Log("paneer", err)
 			// create a function to verify expected error
-			switch err {
+			switch servErr {
 			case containerRuntime.ErrServerIsOutdated:
 				assert.ErrorIs(t, containerRuntime.SatisfyVersion(containerRuntime.MinimumDockerServerVersion, containerRuntime.RecommendedDockerServerVersion, mockClientVersion), servErr)
 			case containerRuntime.ErrServerVersionIsNotSupported:
 				assert.ErrorIs(t, containerRuntime.SatisfyVersion(containerRuntime.MinimumDockerServerVersion, containerRuntime.RecommendedDockerServerVersion, mockClientVersion), servErr)
 			case containerRuntime.ErrServerUnknown:
 				_, serverErr := containerRuntime.GetContainerRuntime(context.TODO(), newMockClient(mockClientVersion, dockerInfo))
-				assert.ErrorIs(t, serverErr, serverErr)
+				assert.ErrorIs(t, serverErr, servErr)
 			default:
 				// handle external error
 				assert.Error(t, servErr)
