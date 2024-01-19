@@ -217,20 +217,30 @@ func FuzzVersionCheck(f *testing.F) {
 			InitBinary: dockerInitBinary,
 		}
 
-		_, servErr := containerRuntime.VersionCheck(context.TODO(), newMockClient(mockClientVersion, dockerInfo))
-		if servErr != nil {
+		_, err = containerRuntime.VersionCheck(context.TODO(), newMockClient(mockClientVersion, dockerInfo))
+		if err != nil {
 			// create a function to verify expected error
-			switch servErr {
+			switch err {
 			case containerRuntime.ErrServerIsOutdated:
-				assert.ErrorIs(t, containerRuntime.SatisfyVersion(containerRuntime.MinimumDockerServerVersion, containerRuntime.RecommendedDockerServerVersion, mockClientVersion), servErr)
+				if dockerInfo == getDockerInfoDocker() {
+					assert.ErrorIs(t, containerRuntime.SatisfyVersion(containerRuntime.MinimumDockerServerVersion, containerRuntime.RecommendedDockerServerVersion, mockClientVersion), err)
+				}
+				if dockerInfo == getDockerInfoPodman() {
+					assert.ErrorIs(t, containerRuntime.SatisfyVersion(containerRuntime.MinimumPodmanServerVersion, containerRuntime.RecommendedPodmanServerVersion, mockClientVersion), err)
+				}
 			case containerRuntime.ErrServerVersionIsNotSupported:
-				assert.ErrorIs(t, containerRuntime.SatisfyVersion(containerRuntime.MinimumDockerServerVersion, containerRuntime.RecommendedDockerServerVersion, mockClientVersion), servErr)
+				if dockerInfo == getDockerInfoDocker() {
+					assert.ErrorIs(t, containerRuntime.SatisfyVersion(containerRuntime.MinimumDockerServerVersion, containerRuntime.RecommendedDockerServerVersion, mockClientVersion), err)
+				}
+				if dockerInfo == getDockerInfoPodman() {
+					assert.ErrorIs(t, containerRuntime.SatisfyVersion(containerRuntime.MinimumPodmanServerVersion, containerRuntime.RecommendedPodmanServerVersion, mockClientVersion), err)
+				}
 			case containerRuntime.ErrServerUnknown:
 				_, serverErr := containerRuntime.GetContainerRuntime(context.TODO(), newMockClient(mockClientVersion, dockerInfo))
-				assert.ErrorIs(t, serverErr, servErr)
+				assert.ErrorIs(t, serverErr, serverErr)
 			default:
 				// handle external error
-				assert.Error(t, servErr)
+				assert.Error(t, err)
 			}
 		}
 	})
