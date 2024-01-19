@@ -80,9 +80,9 @@ type VersionTestCase struct {
 	ErrExpected       error
 }
 
-func TestVersionCheck(t *testing.T) {
-	errExternal := errors.New("externalError")
-	testCases := []VersionTestCase{
+var (
+	errExternal          = errors.New("externalError")
+	versionCheckTestCase = []VersionTestCase{
 		// no errors
 		{
 			Info:              getDockerInfoDocker(),
@@ -137,8 +137,10 @@ func TestVersionCheck(t *testing.T) {
 			ErrExpected:       errExternal,
 		},
 	}
+)
 
-	for _, tC := range testCases {
+func TestVersionCheck(t *testing.T) {
+	for _, tC := range versionCheckTestCase {
 		_, err := containerRuntime.VersionCheck(context.TODO(), newMockClient(tC.MockClientVersion, tC.Info))
 		// if the we expect external error there is no strict error matching
 		if errors.Is(tC.ErrExpected, errExternal) {
@@ -150,54 +152,8 @@ func TestVersionCheck(t *testing.T) {
 }
 
 func FuzzVersionCheck(f *testing.F) {
-	testCases := []VersionTestCase{
-		// no errors
-		{
-			Info:              getDockerInfoDocker(),
-			MockClientVersion: "23.0.0",
-		},
-		{
-			Info:              getDockerInfoPodman(),
-			MockClientVersion: "4.4.0",
-		},
-		// server outdated errors
-		{
-			Info:              getDockerInfoDocker(),
-			MockClientVersion: "20.10.0",
-		},
-		{
-			Info:              getDockerInfoPodman(),
-			MockClientVersion: "4.0.0",
-		},
-		{
-			Info:              getDockerInfoDocker(),
-			MockClientVersion: "19.03.0",
-		},
-		{
-			Info:              getDockerInfoPodman(),
-			MockClientVersion: "3.4.0",
-		},
-		{
-			Info:              getDockerInfoInvalid(),
-			MockClientVersion: "23.0.0",
-		},
-		{
-			Info:              getDockerInfoInvalid(),
-			MockClientVersion: "4.4.0",
-		},
-		// We don't check the specific error there, since it is not covered by the package but by an external dependency.
-		{
-			Info:              getDockerInfoDocker(),
-			MockClientVersion: "a.b.c",
-		},
-		{
-			Info:              getDockerInfoPodman(),
-			MockClientVersion: "a.b.c",
-		},
-	}
-
 	// seed corpus
-	for _, tC := range testCases {
+	for _, tC := range versionCheckTestCase {
 		f.Add(tC.MockClientVersion, tC.Info.InitBinary)
 	}
 
