@@ -38,7 +38,7 @@ const DeploymentTokenCard = (props: DeploymentTokenCardProps) => {
 
           <span>{token.name}</span>
 
-          <span>{t('created')}</span>
+          <span>{t('common:created')}</span>
 
           <span suppressHydrationWarning>{utcDateToLocale(token.createdAt)}</span>
 

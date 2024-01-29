@@ -65,9 +65,10 @@ export const unauthorizedError = (
   description,
 })
 
-export const forbiddenError = (description: string = 'Forbidden', error?: string): DyoApiError => ({
+export const forbiddenError = (description: string = 'Forbidden', property?: string, error?: string): DyoApiError => ({
   status: 403,
   error: error ?? 'forbidden',
+  property,
   description,
 })
 
@@ -113,7 +114,7 @@ export const fromApiError = (status: number, apiError: CruxApiError): DyoApiErro
       return preconditionFailedError(property, message, value, error)
     }
     case 403: {
-      return forbiddenError(message, error)
+      return forbiddenError(message, property, error)
     }
     default: {
       return internalError(apiError.message ?? 'Unknown error')

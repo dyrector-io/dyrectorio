@@ -66,7 +66,7 @@ const StoragesPage = (props: StoragesPageProps) => {
               return (
                 <StorageCard
                   className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
-                  key={`registry-${index}`}
+                  key={`storage-${index}`}
                   storage={it}
                 />
               )

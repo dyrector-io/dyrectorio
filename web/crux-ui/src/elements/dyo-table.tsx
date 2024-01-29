@@ -97,7 +97,7 @@ export const dyoCheckboxColumn = (props: DyoCheckboxColumnProps & DyoColumnProps
 
 export interface DyoTableProps<T> {
   data: T[]
-  dataKey?: string
+  dataKey?: keyof T
   className?: string
   headless?: boolean
 
@@ -283,7 +283,7 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
         {pageItems.map((it, rowIndex) => {
           const click = onRowClick ? () => onRowClick(it) : null
 
-          const key = dataKey ? getField(it, dataKey) : rowIndex
+          const key = dataKey ? getField(it, dataKey as string) : rowIndex
 
           return (
             <tr key={key} className={headless ? null : 'hover:bg-medium-muted'}>

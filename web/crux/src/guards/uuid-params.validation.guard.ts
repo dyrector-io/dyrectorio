@@ -26,7 +26,7 @@ export default class UuidValidationGuard implements CanActivate {
     params.forEach(paramName => {
       const id = req.params[paramName] as string
 
-      if (!validator.isUUID(id)) {
+      if (!id || !validator.isUUID(id)) {
         throw new CruxBadRequestException({
           message: 'Invalid UUID parameter.',
           property: paramName,

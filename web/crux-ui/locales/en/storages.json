@@ -9,5 +9,5 @@
     "secretKey": "Secret key",
     "storageAlreadyInUse": "This storage is already in use. Modifying the url or the credentials may break existing deployments.",
     "inUse": "This storage is already in use.",
-    "altDefaultStoragePicture": "Picture of storage"
+    "cogwheelsIcon": "Cogwheels icon"
 }

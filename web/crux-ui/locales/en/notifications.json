@@ -24,16 +24,18 @@
 
   "hook": {
     "textWebhook": "Test Webhook",
-    "message": "Its a test!",
+    "message": "It's a test!",
     "success": "Your hook is working!",
     "error": "Something is wrong with your hook!"
   },
 
   "events": "Send message when:",
   "eventType": {
-    "deploymentCreated": "New deployment is created",
-    "versionCreated": "New version is added",
-    "nodeAdded": "New node is added",
-    "userInvited": "New user invited to my team"
+    "deploymentStatus": "Deploy result",
+    "versionCreated": "New version added",
+    "nodeAdded": "New node added",
+    "userInvited": "New user invited",
+    "imagePushed": "Registry image push",
+    "imagePulled": "Registry image pull"
   }
 }

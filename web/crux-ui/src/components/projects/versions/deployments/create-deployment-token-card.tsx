@@ -118,7 +118,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
             onSelectionChange={async (it): Promise<void> => {
               await formik.setFieldValue('expirationInDays', it, false)
             }}
-            qaLabel={(name, choice) => chipsQALabelFromValue(name, choice.toString())}
+            qaLabel={(name, choice) => chipsQALabelFromValue(name, choice?.toString())}
           />
 
           <DyoButton className="hidden" type="submit" />
@@ -147,7 +147,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
           </div>
 
           <DyoHeading element="h4" className="text-xl text-bright mt-8">
-            {t('jwtToken')}
+            {t('tokens:jwtToken')}
           </DyoHeading>
 
           <div className="flex flex-wrap gap-2 text-bright items-center">
@@ -167,7 +167,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
                 rel="noreferrer"
                 href={apiDocsUrl({ anchor: 'api-deployments-deploymentid-start' })}
               >
-                {t('clickHereForMoreInfo')}
+                {t('common:clickHereForMoreInfo')}
               </a>
             </span>
           </div>

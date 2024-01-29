@@ -27,6 +27,7 @@ model Team {
   notifications Notification[]
   storages      Storage[]
   configBundles ConfigBundle[]
+  Pipeline      Pipeline[]
 }
 
 model Token {
@@ -116,10 +117,25 @@ model Registry {
   apiUrl          String?
 
   images Image[]
+  registryToken RegistryToken?
   team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String  @db.Uuid
 
   @@unique([name, teamId])
+}
+
+model RegistryToken {
+  id           String    @id @default(uuid()) @db.Uuid
+  registryId   String    @db.Uuid
+  createdBy    String    @db.Uuid
+  createdAt    DateTime  @default(now()) @db.Timestamptz(6)
+  expiresAt    DateTime? @db.Timestamptz(6)
+  nonce        String    @db.Uuid
+
+  registry Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
+
+  @@unique([registryId])
+  @@unique([registryId, nonce])
 }
 
 model Project {
@@ -511,10 +527,12 @@ enum NotificationTypeEnum {
 }
 
 enum NotificationEventTypeEnum {
-  deploymentCreated
+  deploymentStatus
   versionCreated
   nodeAdded
   userInvited
+  imagePushed
+  imagePulled
 }
 
 enum NodeEventTypeEnum {
@@ -548,6 +566,57 @@ model Storage {
   instanceConfigs  InstanceContainerConfig[]
 
   @@unique([name, teamId])
+}
+
+enum PipelineTypeEnum {
+  github
+  gitlab
+  azure
+}
+
+enum PipelineStatusEnum {
+  unknown
+  queued
+  running
+  successful
+  failed
+}
+
+model Pipeline {
+  id          String           @id @default(uuid()) @db.Uuid
+  createdAt   DateTime         @default(now()) @db.Timestamptz(6)
+  createdBy   String           @db.Uuid
+  updatedAt   DateTime         @updatedAt @db.Timestamptz(6)
+  updatedBy   String?          @db.Uuid
+  name        String           @db.VarChar(70)
+  type        PipelineTypeEnum
+  description String?
+  icon        String?
+  token       Bytes
+  repository  Json
+  trigger     Json
+  hooks       Json
+
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String @db.Uuid
+
+  runs PipelineRun[]
+
+  @@unique([name, teamId])
+}
+
+model PipelineRun {
+  id         String             @id @default(uuid()) @db.Uuid
+  externalId Int
+  status     PipelineStatusEnum
+  createdAt  DateTime           @default(now()) @db.Timestamptz(6)
+  createdBy  String             @db.Uuid
+  finishedAt DateTime?
+
+  pipeline   Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  pipelineId String   @db.Uuid
+
+  @@unique([pipelineId, externalId])
 }
 
 model ConfigBundle {
