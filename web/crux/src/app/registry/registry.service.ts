@@ -1,17 +1,22 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { JwtService } from '@nestjs/jwt'
 import { Identity } from '@ory/kratos-client'
-import { Observable, Subject } from 'rxjs'
-import { RegistryImageMessage } from 'src/domain/notification-templates'
-import { RegistryConnectionInfo } from 'src/domain/registry'
+import {
+  REGISTRY_EVENT_UPDATE,
+  RegistryConnectionInfo,
+  RegistryUpdatedEvent,
+  RegistryV2Event,
+} from 'src/domain/registry'
 import { RegistryTokenPayload, RegistryTokenScriptGenerator } from 'src/domain/registry-token'
-import DomainNotificationService from 'src/services/domain.notification.service'
 import EncryptionService from 'src/services/encryption.service'
 import PrismaService from 'src/services/prisma.service'
+import { USER_AGENT_CRUX } from 'src/shared/const'
 import RegistryMetrics from 'src/shared/metrics/registry.metrics'
 import { v4 as uuid } from 'uuid'
 import TeamRepository from '../team/team.repository'
+import RegistryClientProvider from './registry-client.provider'
 import {
   CreateRegistryDto,
   CreateRegistryTokenDto,
@@ -27,16 +32,16 @@ import RegistryMapper from './registry.mapper'
 export default class RegistryService {
   private readonly logger = new Logger(RegistryService.name)
 
-  private readonly registryChangedEvent = new Subject<string>()
-
   constructor(
     private readonly teamRepository: TeamRepository,
     private readonly encryptionService: EncryptionService,
-    private readonly notificationService: DomainNotificationService,
     private readonly prisma: PrismaService,
     private readonly mapper: RegistryMapper,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    @Inject(forwardRef(() => RegistryClientProvider))
+    private readonly clientProvider: RegistryClientProvider,
+    private readonly events: EventEmitter2,
   ) {}
 
   async checkRegistryIsInTeam(teamId: string, registryId: string): Promise<boolean> {
@@ -121,7 +126,9 @@ export default class RegistryService {
       },
     })
 
-    this.registryChangedEvent.next(registry.id)
+    this.events.emit(REGISTRY_EVENT_UPDATE, {
+      id: registry.id,
+    } as RegistryUpdatedEvent)
 
     return this.mapper.detailsToDto(registry)
   }
@@ -136,7 +143,9 @@ export default class RegistryService {
       },
     })
 
-    this.registryChangedEvent.next(id)
+    this.events.emit(REGISTRY_EVENT_UPDATE, {
+      id,
+    } as RegistryUpdatedEvent)
 
     RegistryMetrics.count(deleted.type).dec()
   }
@@ -211,34 +220,34 @@ export default class RegistryService {
   }
 
   async registryV2Event(id: string, req: RegistryV2HookEnvelopeDto): Promise<void> {
+    req.events = req.events.filter(it => it.request.useragent !== USER_AGENT_CRUX)
+
     const registry = await this.prisma.registry.findUniqueOrThrow({
       where: {
         id,
       },
-      select: {
-        name: true,
-        teamId: true,
-      },
     })
 
-    const notis = req.events.map(async ev => {
-      const { target } = ev
+    const { client } = await this.clientProvider.getByRegistryId(registry.teamId, registry.id)
 
-      await this.notificationService.sendNotification({
-        teamId: registry.teamId,
-        messageType: this.mapper.v2HookActionTypeToNotificationMessageType(ev.action),
-        message: {
-          registry: registry.name,
-          image: `${target.repository}:${target.tag}`,
-        } as RegistryImageMessage,
-      })
-    })
+    await Promise.all(
+      req.events.map(async ev => {
+        const { target } = ev
+        const imageName = target.repository
+        const imageTag = target.tag
 
-    await Promise.all(notis)
-  }
+        const labels = await client.labels(imageName, imageTag)
 
-  watchRegistryEvents(): Observable<string> {
-    return this.registryChangedEvent.asObservable()
+        const event: RegistryV2Event = {
+          registry,
+          imageName,
+          imageTag: target.tag,
+          labels,
+        }
+
+        await this.events.emitAsync(this.mapper.v2HookActionTypeToEvent(ev.action), event)
+      }),
+    )
   }
 
   async getRegistryConnectionInfoById(id: string): Promise<RegistryConnectionInfo> {

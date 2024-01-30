@@ -452,6 +452,11 @@ export class RegistryV2HookTargetDto {
   url: string
 }
 
+export class RegistryV2HookRequestDto {
+  @IsString()
+  useragent: string
+}
+
 export class RegistryV2HookEventDto {
   @IsUUID()
   id: string
@@ -465,6 +470,9 @@ export class RegistryV2HookEventDto {
 
   @ValidateNested()
   target: RegistryV2HookTargetDto
+
+  @ValidateNested()
+  request: RegistryV2HookRequestDto
 }
 
 export class RegistryV2HookEnvelopeDto {

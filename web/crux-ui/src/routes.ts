@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { GetServerSidePropsContext } from 'next'
-import { AuditLogQuery, ContainerIdentifier, ContainerOperation, VersionSectionsState } from './models'
+import { AuditLogQuery, ContainerIdentifier, ContainerOperation, PaginationQuery, VersionSectionsState } from './models'
 
 // Routes:
 export const ROUTE_DOCS = 'https://docs.dyrector.io'
@@ -103,7 +103,7 @@ const urlQuery = (url: string, query: object) => {
 
       return `${key}=${encodeURIComponent(value)}`
     })
-    .filter(it => it !== null)
+    .filter(it => !!it)
 
   if (params.length < 1) {
     return url
@@ -557,7 +557,20 @@ class PipelineApi {
 
   details = (id: string) => `${this.root}/${id}`
 
-  runs = (id: string) => `${this.details(id)}/runs`
+  runs = (pipelineId: string, query?: PaginationQuery) => {
+    const url = `${this.details(pipelineId)}/runs`
+
+    if (!query) {
+      return url
+    }
+
+    return urlQuery(url, query)
+  }
+
+  eventWatchers = (pipelineId: string) => `${this.details(pipelineId)}/event-watchers`
+
+  eventWatcherDetails = (pipelineId: string, eventWatcherId: string) =>
+    `${this.eventWatchers(pipelineId)}/${eventWatcherId}`
 }
 
 type PipelineDetailsRouteOptions = {

@@ -38,8 +38,16 @@ export type WebSocketSaveState = 'saved' | 'saving' | 'connected' | 'disconnecte
 export type PaginationQuery = {
   skip: number
   take: number
+}
+
+export type PaginationWithDateQuery = PaginationQuery & {
   from: string
   to: string
+}
+
+export type PaginatedList<T> = {
+  items: T[]
+  total: number
 }
 
 // https://gist.github.com/codeguy/6684588?permalink_comment_id=3426313#gistcomment-3426313
