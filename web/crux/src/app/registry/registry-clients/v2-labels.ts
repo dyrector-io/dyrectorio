@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
+import { USER_AGENT_CRUX } from 'src/shared/const'
 
 type V2Error = {
   code: string
@@ -52,6 +53,7 @@ const HEADER_WWW_AUTHENTICATE = 'www-authenticate'
 
 const MEDIA_TYPE_INDEX = 'application/vnd.oci.image.index.v1+json'
 const MEDIA_TYPE_MANIFEST = 'application/vnd.oci.image.manifest.v1+json'
+const MEDIA_TYPE_DISTRIBUTION_MANIFEST_V2 = 'application/vnd.docker.distribution.manifest.v2+json'
 
 const MANIFEST_MAX_DEPTH = 5
 
@@ -62,15 +64,26 @@ export default class V2Labels {
 
   private manifestMimeType: string
 
+  private requestInit: RequestInit
+
   constructor(
     private baseUrl: string,
-    private requestInit?: RequestInit,
+    requestInit?: RequestInit,
     manifestMime?: string,
     private tokenInit?: RequestInit,
   ) {
+    this.requestInit = requestInit ?? {}
+    this.requestInit = {
+      ...this.requestInit,
+      headers: {
+        ...(this.requestInit.headers ?? {}),
+        'User-Agent': USER_AGENT_CRUX,
+      },
+    }
+
     this.token = null
 
-    this.manifestMimeType = manifestMime ?? 'application/vnd.docker.distribution.manifest.v2+json'
+    this.manifestMimeType = manifestMime ?? MEDIA_TYPE_DISTRIBUTION_MANIFEST_V2
   }
 
   private getHeaders(): RequestInit {
@@ -206,7 +219,7 @@ export default class V2Labels {
     manifest: ManifestBaseResponse,
     depth: number,
   ): Promise<Record<string, string>> {
-    if (manifest.mediaType === MEDIA_TYPE_MANIFEST) {
+    if (manifest.mediaType === MEDIA_TYPE_MANIFEST || manifest.mediaType === MEDIA_TYPE_DISTRIBUTION_MANIFEST_V2) {
       const labelManifest = manifest as ManifestResponse
 
       const configManifest = await this.fetchV2<BlobResponse>(`${image}/blobs/${labelManifest.config.digest}`)

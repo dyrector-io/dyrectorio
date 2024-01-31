@@ -8,14 +8,22 @@ import {
   AzureDevOpsRunResult,
   AzureDevOpsRunState,
 } from 'src/domain/pipeline'
+import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
 import { AuditDto } from '../audit/audit.dto'
 import { UniqueKeyValueDto } from '../container/container.dto'
+import { BasicRegistryDto } from '../registry/registry.dto'
+import { BasicUserDto } from '../team/user.dto'
 
 export const PIPELINE_TYPE_VALUES = ['gitlab', 'github', 'azure'] as const
 export type PipelineTypeDto = (typeof PIPELINE_TYPE_VALUES)[number]
 
 export const PIPELINE_RUN_STATUS_VALUES = ['unknown', 'queued', 'running', 'successful', 'failed'] as const
 export type PipelineRunStatusDto = (typeof PIPELINE_RUN_STATUS_VALUES)[number]
+
+export const PIPELINE_TRIGGER_EVENT_VALUES = ['image-push', 'image-pull'] as const
+export type PipelineTriggerEventDto = (typeof PIPELINE_TRIGGER_EVENT_VALUES)[number]
+
+export class PipelineRunQueryDto extends PaginationQuery {}
 
 export class BasicPipelineDto {
   @IsUUID()
@@ -37,8 +45,9 @@ export class PipelineRunDto {
   @IsDate()
   startedAt: Date
 
-  @IsUUID()
-  startedBy: string
+  @IsOptional()
+  @ValidateNested()
+  startedBy?: BasicUserDto
 
   @Type(() => Date)
   @IsDate()
@@ -48,6 +57,51 @@ export class PipelineRunDto {
   @ApiProperty({ enum: PIPELINE_RUN_STATUS_VALUES })
   @IsIn(PIPELINE_RUN_STATUS_VALUES)
   status: PipelineRunStatusDto
+}
+
+export class PaginatedPipelineRunListDto extends PaginatedList<PipelineRunDto> {
+  @Type(() => PipelineRunDto)
+  items: PipelineRunDto[]
+
+  total: number
+}
+
+export class PipelineEventWatcherFiltersDto {
+  @IsString()
+  @IsOptional()
+  imageNameStartsWith: string
+}
+
+export class CreatePipelineEventWatcherDto {
+  @IsString()
+  name: string
+
+  @ApiProperty({ enum: PIPELINE_TRIGGER_EVENT_VALUES })
+  @IsIn(PIPELINE_TRIGGER_EVENT_VALUES)
+  event: PipelineTriggerEventDto
+
+  @ValidateNested()
+  filters: PipelineEventWatcherFiltersDto
+
+  @IsUUID()
+  registryId: string
+
+  @ValidateNested({ each: true })
+  triggerInputs: UniqueKeyValueDto[]
+}
+
+export class UpdatePipelineEventWatcherDto extends CreatePipelineEventWatcherDto {}
+
+export class PipelineEventWatcherDto extends OmitType(CreatePipelineEventWatcherDto, ['registryId']) {
+  @IsUUID()
+  id: string
+
+  @Type(() => Date)
+  @IsDate()
+  createdAt: Date
+
+  @ValidateNested()
+  registry: BasicRegistryDto
 }
 
 export class AzureDevOpsRepositoryDto {
@@ -88,7 +142,7 @@ export class PipelineDto extends BasicPipelineDto {
   lastRun?: PipelineRunDto | null
 }
 
-export class PipelineDetailsDto extends OmitType(PipelineDto, ['trigger', 'lastRun']) {
+export class PipelineDetailsDto extends OmitType(PipelineDto, ['trigger']) {
   @Type(() => AuditDto)
   @ValidateNested()
   audit: AuditDto
@@ -98,7 +152,7 @@ export class PipelineDetailsDto extends OmitType(PipelineDto, ['trigger', 'lastR
   trigger: PipelineTriggerDto
 
   @ValidateNested({ each: true })
-  runs: PipelineRunDto[]
+  eventWatchers: PipelineEventWatcherDto[]
 }
 
 export class CreatePipelineDto extends OmitType(PipelineDetailsDto, ['id', 'audit']) {

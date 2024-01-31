@@ -1,7 +1,7 @@
 import DyoIndicator from '@app/elements/dyo-indicator'
 import { PipelineRunStatus } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
-import { pipelineStatusTranslation } from './pipeline-status-tag'
+import { pipelineStatusTranslation } from './pipeline-run-status-tag'
 
 const statusToColor = (status: PipelineRunStatus) => {
   switch (status) {

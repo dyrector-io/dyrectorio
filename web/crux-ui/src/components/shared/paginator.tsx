@@ -91,6 +91,7 @@ const Paginator = (props: PaginatorProps) => {
       </div>
       <div className="flex items-center mx-4">
         <a className="text-light-eased mr-8">{t('showingItems', { pageFrom, pageTo, total: length })}</a>
+
         <DyoButton
           className="w-8 text-xl"
           onClick={() => onPageChanged({ type: 'first' })}
@@ -100,6 +101,7 @@ const Paginator = (props: PaginatorProps) => {
         >
           <DyoIcon className="aspect-square h-6 m-auto pt-0.5" src="/carets_left.svg" size="md" alt={t('first')} />
         </DyoButton>
+
         <DyoButton
           className="w-8 text-xl"
           onClick={() => onPageChanged({ type: 'previous' })}
@@ -109,6 +111,7 @@ const Paginator = (props: PaginatorProps) => {
         >
           <DyoIcon className="aspect-square h-6 m-auto pt-0.5" src="/caret_left.svg" size="md" alt={t('previous')} />
         </DyoButton>
+
         {pagination.pageNumber - 2 >= 0 && (
           <DyoButton
             className="w-8 text-l text-light-eased"
@@ -120,6 +123,7 @@ const Paginator = (props: PaginatorProps) => {
             {pagination.pageNumber - 1}
           </DyoButton>
         )}
+
         {pagination.pageNumber - 1 >= 0 && (
           <DyoButton
             className="w-8 text-l text-light-eased"
@@ -131,6 +135,7 @@ const Paginator = (props: PaginatorProps) => {
             {pagination.pageNumber}
           </DyoButton>
         )}
+
         <DyoInput
           className="w-4 h-10 bg-dyo-turquoise rounded-full text-center !text-white font-semibold p-0"
           value={pagination.pageNumber + 1}
@@ -138,6 +143,7 @@ const Paginator = (props: PaginatorProps) => {
           grow
           disabled={disabled}
         />
+
         {pagination.pageNumber + 1 <= maxPage && (
           <DyoButton
             className="w-8 text-l text-light-eased"
@@ -149,6 +155,7 @@ const Paginator = (props: PaginatorProps) => {
             {pagination.pageNumber + 2}
           </DyoButton>
         )}
+
         {pagination.pageNumber + 2 <= maxPage && (
           <DyoButton
             className="w-8 text-l text-light-eased"
@@ -160,6 +167,7 @@ const Paginator = (props: PaginatorProps) => {
             {pagination.pageNumber + 3}
           </DyoButton>
         )}
+
         <DyoButton
           className="w-8 text-xl"
           onClick={() => onPageChanged({ type: 'next' })}
@@ -169,6 +177,7 @@ const Paginator = (props: PaginatorProps) => {
         >
           <DyoIcon className="aspect-square h-6 m-auto pt-0.5" src="/caret_right.svg" size="md" alt={t('next')} />
         </DyoButton>
+
         <DyoButton
           className="w-8 text-xl"
           onClick={() => onPageChanged({ type: 'last' })}

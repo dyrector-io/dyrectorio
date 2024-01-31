@@ -1,4 +1,4 @@
-import { PaginationQuery } from './common'
+import { PaginationWithDateQuery } from './common'
 import { Container, ContainerCommand, ContainerIdentifier } from './container'
 
 export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
@@ -82,7 +82,7 @@ export type NodeDeleteContainer = {
   prefix?: string
 }
 
-export type NodeAuditLogQuery = PaginationQuery & {
+export type NodeAuditLogQuery = PaginationWithDateQuery & {
   filterEventType?: NodeEventType
 }
 

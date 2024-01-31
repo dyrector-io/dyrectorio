@@ -2,7 +2,6 @@ import { HttpModule } from '@nestjs/axios'
 import { Module } from '@nestjs/common'
 import NotificationTemplateBuilder from 'src/builders/notification.template.builder'
 import { CruxJwtModuleImports } from 'src/config/jwt.config'
-import DomainNotificationService from 'src/services/domain.notification.service'
 import EncryptionService from 'src/services/encryption.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
@@ -28,7 +27,6 @@ import RegistryWebSocketGateway from './registry.ws.gateway'
     KratosService,
     EncryptionService,
     NotificationTemplateBuilder,
-    DomainNotificationService,
     RegistryWebSocketGateway,
     RegistryClientProvider,
     RegistryJwtStrategy,

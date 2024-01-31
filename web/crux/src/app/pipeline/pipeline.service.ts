@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { OnEvent } from '@nestjs/event-emitter'
 import { JwtService } from '@nestjs/jwt'
 import { Identity } from '@ory/kratos-client'
+import { PipelineTriggerEventEnum } from '@prisma/client'
 import { Subject } from 'rxjs'
 import {
   AZURE_DEV_OPS_STATE_CHANGED_EVENT_TYPE_VALUES,
@@ -9,22 +11,33 @@ import {
   AzureHook,
   AzureRepository,
   AzureTrigger,
+  PipelineCreateRunOptions,
+  PipelineEventWatcherTrigger,
   PipelineRunStatusEvent,
+  PipelineRunWithPipline,
+  applyPipelineInputTemplate,
+  mergeEventWatcherInputs,
+  registryV2EventToTemplates,
 } from 'src/domain/pipeline'
 import { PipelineTokenPayload } from 'src/domain/pipeline-token'
+import { REGISTRY_EVENT_V2_PULL, REGISTRY_EVENT_V2_PUSH, RegistryV2Event } from 'src/domain/registry'
 import { generateNonce } from 'src/domain/utils'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 import AzureDevOpsService from 'src/services/azure-devops.service'
 import EncryptionService from 'src/services/encryption.service'
+import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
-import { PIPELINE_RUNS_TAKE } from 'src/shared/const'
+import { PaginatedList } from 'src/shared/dtos/paginating'
 import TeamRepository from '../team/team.repository'
 import {
   AzurePipelineStateDto,
   CreatePipelineDto,
+  CreatePipelineEventWatcherDto,
   PipelineDetailsDto,
   PipelineDto,
+  PipelineEventWatcherDto,
   PipelineRunDto,
+  PipelineRunQueryDto,
   TriggerPipelineDto,
   UpdatePipelineDto,
 } from './pipeline.dto'
@@ -41,6 +54,7 @@ export default class PipelineService {
     private readonly prisma: PrismaService,
     private readonly mapper: PipelineMapper,
     private readonly azureService: AzureDevOpsService,
+    private readonly kratosService: KratosService,
     private readonly jwtService: JwtService,
     private readonly encryptionService: EncryptionService,
   ) {}
@@ -62,17 +76,26 @@ export default class PipelineService {
       },
     })
 
-    return pipelines.map(it => this.mapper.toDto(it))
+    const identities = await this.kratosService.getIdentitiesByIds(
+      new Set(pipelines.flatMap(it => it.runs).map(it => it.createdBy)),
+    )
+
+    return pipelines.map(it => this.mapper.toDto(it, identities))
   }
 
   async getPipelineDetails(id: string): Promise<PipelineDetailsDto> {
     const pipeline = await this.prisma.pipeline.findUniqueOrThrow({
       include: {
-        runs: {
-          orderBy: {
-            createdAt: 'desc',
+        eventWatchers: {
+          include: {
+            registry: {
+              select: {
+                id: true,
+                name: true,
+                type: true,
+              },
+            },
           },
-          take: PIPELINE_RUNS_TAKE,
         },
       },
       where: {
@@ -121,7 +144,7 @@ export default class PipelineService {
 
     return this.mapper.toDetailsDto({
       ...createdPipeline,
-      runs: [],
+      eventWatchers: [],
     })
   }
 
@@ -210,6 +233,33 @@ export default class PipelineService {
     }
   }
 
+  async getRuns(pipelineId: string, query: PipelineRunQueryDto): Promise<PaginatedList<PipelineRunDto>> {
+    const where = {
+      pipelineId,
+    }
+
+    const [runs, total] = await this.prisma.$transaction([
+      this.prisma.pipelineRun.findMany({
+        where,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip: query.skip,
+        take: query.take,
+      }),
+      this.prisma.pipelineRun.count({ where }),
+    ])
+
+    const identitiyIds = new Set(runs.filter(it => it.creatorType === 'user').map(it => it.createdBy))
+
+    const identities = await this.kratosService.getIdentitiesByIds(identitiyIds)
+
+    return {
+      items: runs.map(it => this.mapper.toPipelineRunDto(it, identities)),
+      total,
+    }
+  }
+
   async trigger(id: string, req: TriggerPipelineDto, identity: Identity): Promise<PipelineRunDto> {
     const pipeline = await this.prisma.pipeline.findUnique({
       where: {
@@ -217,36 +267,60 @@ export default class PipelineService {
       },
     })
 
-    const creds = this.mapper.toAzureDevOpsCredentials(pipeline)
+    const run = await this.createRun({
+      pipeline,
+      inputs: req.inputs,
+      creatorType: 'user',
+      creator: identity,
+    })
 
-    const trigger = pipeline.trigger as AzureTrigger
-    if (req.inputs) {
-      trigger.inputs = req.inputs
-    }
+    return this.mapper.toPipelineRunDto(run, new Map(Object.entries({ [identity.id]: identity })))
+  }
 
-    const azRun = await this.azureService.trigger(creds, trigger.name, trigger.inputs)
-
-    const run = await this.prisma.pipelineRun.create({
+  async createEventWatcher(
+    pipelineId: string,
+    req: CreatePipelineEventWatcherDto,
+    identity: Identity,
+  ): Promise<PipelineEventWatcherDto> {
+    const watcher = await this.prisma.pipelineEventWatcher.create({
       data: {
+        ...this.mapper.eventWatcherToDb(req),
+        pipelineId,
         createdBy: identity.id,
-        status: 'queued',
-        pipelineId: id,
-        externalId: azRun.id,
       },
       include: {
-        pipeline: {
+        registry: {
           select: {
             id: true,
-            teamId: true,
+            name: true,
+            type: true,
           },
         },
       },
     })
 
-    this.runStatusEvent.next(this.mapper.toPipelineRunStatusEvent(run))
+    return this.mapper.eventWatcherToDto(watcher)
+  }
 
-    this.logger.verbose(`Pipeline triggered: ${pipeline.id}`)
-    return this.mapper.toPipelineRunDto(run)
+  async updateEventWatcher(id: string, req: CreatePipelineEventWatcherDto, identity: Identity): Promise<void> {
+    await this.prisma.pipelineEventWatcher.update({
+      where: {
+        id,
+      },
+      data: {
+        ...this.mapper.eventWatcherToDb(req),
+        updatedAt: new Date(),
+        updatedBy: identity.id,
+      },
+    })
+  }
+
+  async deleteEventWatcher(id: string): Promise<void> {
+    await this.prisma.pipelineEventWatcher.delete({
+      where: {
+        id,
+      },
+    })
   }
 
   async onAzurePipelineStateChanged(pipelineId: string, req: AzurePipelineStateDto): Promise<void> {
@@ -280,7 +354,92 @@ export default class PipelineService {
       },
     })
 
-    this.runStatusEvent.next(this.mapper.toPipelineRunStatusEvent(run))
+    const startedBy = run.creatorType === 'user' ? await this.kratosService.getIdentityById(run.createdBy) : null
+
+    this.runStatusEvent.next(this.mapper.runToRunStatusEvent(run, startedBy))
+  }
+
+  @OnEvent(REGISTRY_EVENT_V2_PUSH, { async: true })
+  async onRegistryV2Push(event: RegistryV2Event): Promise<void> {
+    await this.triggerPipelineForEvent('imagePush', event)
+  }
+
+  @OnEvent(REGISTRY_EVENT_V2_PULL, { async: true })
+  async onRegistryV2Pull(event: RegistryV2Event): Promise<void> {
+    await this.triggerPipelineForEvent('imagePull', event)
+  }
+
+  private async triggerPipelineForEvent(triggerEvent: PipelineTriggerEventEnum, event: RegistryV2Event): Promise<void> {
+    const watchers = await this.prisma.pipelineEventWatcher.findMany({
+      where: {
+        event: triggerEvent,
+        registryId: event.registry.id,
+      },
+      include: {
+        pipeline: true,
+      },
+    })
+
+    const templates = registryV2EventToTemplates(event)
+
+    await Promise.all(
+      watchers
+        .filter(it => {
+          const eventWatcherTrigger = it.trigger as PipelineEventWatcherTrigger
+          return event.imageName.startsWith(eventWatcherTrigger.filters.imageNameStartsWith)
+        })
+        .map(async eventWatcher => {
+          const trigger = eventWatcher.pipeline.trigger as AzureTrigger
+          const eventWatcherTrigger = eventWatcher.trigger as PipelineEventWatcherTrigger
+
+          const inputs = mergeEventWatcherInputs(trigger.inputs, eventWatcherTrigger.inputs)
+
+          applyPipelineInputTemplate(inputs, templates)
+
+          await this.createRun({
+            creatorType: 'eventWatcher',
+            creator: eventWatcher,
+            pipeline: eventWatcher.pipeline,
+            inputs,
+          })
+        }),
+    )
+  }
+
+  private async createRun(options: PipelineCreateRunOptions): Promise<PipelineRunWithPipline> {
+    const { pipeline, inputs, creatorType, creator } = options
+
+    const creds = this.mapper.toAzureDevOpsCredentials(pipeline)
+
+    const trigger = pipeline.trigger as AzureTrigger
+    if (inputs) {
+      trigger.inputs = inputs
+    }
+
+    const azRun = await this.azureService.trigger(creds, trigger.name, trigger.inputs)
+
+    const run = await this.prisma.pipelineRun.create({
+      data: {
+        createdBy: creator.id,
+        status: 'queued',
+        pipelineId: pipeline.id,
+        externalId: azRun.id,
+        creatorType,
+      },
+      include: {
+        pipeline: {
+          select: {
+            id: true,
+            teamId: true,
+          },
+        },
+      },
+    })
+
+    this.runStatusEvent.next(this.mapper.runToRunStatusEvent(run, creatorType === 'user' ? creator : null))
+
+    this.logger.verbose(`Pipeline triggered: ${pipeline.id}`)
+    return run
   }
 
   private async createAzureHook(

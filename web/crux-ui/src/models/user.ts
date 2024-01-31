@@ -4,9 +4,12 @@ export type UserRole = (typeof USER_ROLE_VALUES)[number]
 export const USER_STATUS_VALUES = ['pending', 'verified', 'expired', 'declined'] as const
 export type UserStatus = (typeof USER_STATUS_VALUES)[number]
 
-export type User = {
+export type BasicUser = {
   id: string
   name: string
+}
+
+export type User = BasicUser & {
   email: string
   role: UserRole
   status: UserStatus
@@ -20,10 +23,7 @@ export type InviteUser = {
   captcha?: string
 }
 
-export type UserMetaUser = {
-  id: string
-  name: string
-}
+export type UserMetaUser = BasicUser
 
 export type UserMetaBasicTeam = {
   id: string

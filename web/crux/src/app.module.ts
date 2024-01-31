@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { EventEmitterModule } from '@nestjs/event-emitter'
 import { PrometheusModule } from '@willsoto/nestjs-prometheus'
 import { LoggerModule } from 'nestjs-pino'
 import AgentModule from './app/agent/agent.module'
@@ -46,6 +47,7 @@ const imports = [
   ConfigBundleModule,
   ConfigModule.forRoot(appConfig),
   EmailModule,
+  EventEmitterModule.forRoot(),
   QualityAssuranceModule,
   {
     ...PrometheusModule.register(),

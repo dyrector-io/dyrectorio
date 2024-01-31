@@ -40,7 +40,7 @@ const DEFAULT_EDITABLE_PIPELINE: EditablePipeline = {
   },
   token: '',
   audit: null,
-  runs: [],
+  eventWatchers: [],
 }
 
 type EditPipelineCardProps = Omit<DyoCardProps, 'children'> & {
@@ -239,8 +239,6 @@ const EditPipelineCard = (props: EditPipelineCardProps) => {
           />
         </div>
 
-        <DyoButton className="hidden" type="submit" />
-
         <div className="col-span-2">
           <DyoLabel>{t('defaultInputs')}</DyoLabel>
 
@@ -252,6 +250,8 @@ const EditPipelineCard = (props: EditPipelineCardProps) => {
             editorOptions={OFFLINE_EDITOR_STATE}
           />
         </div>
+
+        <DyoButton className="hidden" type="submit" />
       </DyoForm>
     </DyoCard>
   )

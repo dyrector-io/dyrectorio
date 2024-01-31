@@ -1,4 +1,4 @@
-import { PipelineRepository, PipelineType } from '@app/models'
+import { PIPELINE_TRIGGER_EVENT_VALUES, PipelineRepository, PipelineTriggerEvent, PipelineType } from '@app/models'
 import * as yup from 'yup'
 import { descriptionRule, iconRule, nameRule } from './common'
 import { uniqueKeyValuesSchema } from './container'
@@ -28,3 +28,16 @@ export const createPipelineSchema = updatePipelineSchema.concat(
     token: yup.string().required().label('common:token'),
   }),
 )
+
+export const upsertEventWatcherSchema = yup.object().shape({
+  name: nameRule,
+  event: yup
+    .mixed<PipelineTriggerEvent>()
+    .oneOf([...PIPELINE_TRIGGER_EVENT_VALUES])
+    .label('pipelines:triggerEvent'),
+  filters: yup.object().shape({
+    imageNameStartsWith: yup.string().optional().nullable(),
+  }),
+  registryId: yup.string().required().label('common:registry'),
+  triggerInputs: uniqueKeyValuesSchema,
+})

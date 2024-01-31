@@ -1,4 +1,4 @@
-import { PaginationQuery } from './common'
+import { PaginatedList, PaginationWithDateQuery } from './common'
 
 export type Audit = {
   updatedAt: string
@@ -32,12 +32,9 @@ export type AuditLog = {
   data?: any
 }
 
-export type AuditLogList = {
-  items: AuditLog[]
-  total: number
-}
+export type AuditLogList = PaginatedList<AuditLog>
 
-export type AuditLogQuery = PaginationQuery & {
+export type AuditLogQuery = PaginationWithDateQuery & {
   filter?: string
 }
 

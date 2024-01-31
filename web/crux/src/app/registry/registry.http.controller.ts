@@ -205,7 +205,11 @@ export default class RegistryHttpController {
   @UuidParams(PARAM_REGISTRY_ID)
   @AuthStrategy('registry-hook')
   @AuditLogLevel('disabled')
-  async postV2Hook(@RegistryId() id: string, @Body() req: RegistryV2HookEnvelopeDto): Promise<void> {
+  async postV2Hook(
+    @TeamSlug() _: string,
+    @RegistryId() id: string,
+    @Body() req: RegistryV2HookEnvelopeDto,
+  ): Promise<void> {
     await this.service.registryV2Event(id, req)
   }
 

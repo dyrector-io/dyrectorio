@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Registry, RegistryToken, RegistryTypeEnum } from '@prisma/client'
-import { NotificationMessageType } from 'src/domain/notification-templates'
+import { REGISTRY_EVENT_V2_PULL, REGISTRY_EVENT_V2_PUSH } from 'src/domain/registry'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 import EncryptionService from 'src/services/encryption.service'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
@@ -218,12 +218,12 @@ export default class RegistryMapper {
     }
   }
 
-  v2HookActionTypeToNotificationMessageType(action: RegistryV2HookActionTypeDto): NotificationMessageType {
+  v2HookActionTypeToEvent(action: RegistryV2HookActionTypeDto): string {
     switch (action) {
       case 'push':
-        return 'image-pushed'
+        return REGISTRY_EVENT_V2_PUSH
       case 'pull':
-        return 'image-pulled'
+        return REGISTRY_EVENT_V2_PULL
       default:
         throw new CruxBadRequestException({
           message: `Invalid action type : ${action}`,

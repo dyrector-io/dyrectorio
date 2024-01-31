@@ -149,6 +149,7 @@
   },
 
   "pipelineStatuses": {
+    "unknown": "Unknown",
     "queued": "Queued",
     "running": "Running"
   },

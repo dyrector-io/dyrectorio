@@ -1,13 +1,25 @@
 import { Injectable } from '@nestjs/common'
-import { Pipeline, PipelineRun, PipelineStatusEnum, Prisma } from '@prisma/client'
+import { Identity } from '@ory/kratos-client'
+import {
+  Pipeline,
+  PipelineEventWatcher,
+  PipelineRun,
+  PipelineStatusEnum,
+  PipelineTriggerEventEnum,
+  Prisma,
+  Registry,
+} from '@prisma/client'
 import { JsonValue } from '@prisma/client/runtime/library'
+import { nameOfIdentity } from 'src/domain/identity'
 import {
   AzureDevOpsCredentials,
   AzureDevOpsRunResult,
   AzureDevOpsRunState,
   AzureRepository,
   AzureTrigger,
+  PipelineEventWatcherTrigger,
   PipelineRunStatusEvent,
+  PipelineRunWithPipline,
 } from 'src/domain/pipeline'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import EncryptionService from 'src/services/encryption.service'
@@ -17,10 +29,14 @@ import {
   AzureDevOpsRepositoryDto,
   BasicPipelineDto,
   CreatePipelineDto,
+  CreatePipelineEventWatcherDto,
   PipelineDetailsDto,
   PipelineDto,
+  PipelineEventWatcherDto,
   PipelineRunDto,
+  PipelineTriggerEventDto,
   UpdatePipelineDto,
+  UpdatePipelineEventWatcherDto,
 } from './pipeline.dto'
 
 @Injectable()
@@ -38,7 +54,7 @@ export default class PipelineMapper {
     }
   }
 
-  toDto(it: PipelineWithRuns): PipelineDto {
+  toDto(it: PipelineWithRuns, identites: Map<string, Identity>): PipelineDto {
     const trigger = it.trigger as AzureTrigger
 
     return {
@@ -47,11 +63,11 @@ export default class PipelineMapper {
       description: it.description,
       icon: it.icon,
       repository: it.repository as any as AzureDevOpsRepositoryDto,
-      lastRun: this.toPipelineRunDto(it.runs.find(Boolean)),
+      lastRun: this.toPipelineRunDto(it.runs.find(Boolean), identites),
     }
   }
 
-  toDetailsDto(pipeline: PipelineWithRuns): PipelineDetailsDto {
+  toDetailsDto(pipeline: PipelineWithEventWatchers): PipelineDetailsDto {
     const repo = pipeline.repository as AzureRepository
 
     return {
@@ -64,11 +80,11 @@ export default class PipelineMapper {
       },
       audit: this.auditMapper.toDto(pipeline),
       trigger: pipeline.trigger as AzureTrigger,
-      runs: pipeline.runs.map(it => this.toPipelineRunDto(it)),
+      eventWatchers: pipeline.eventWatchers.map(it => this.eventWatcherToDto(it)),
     }
   }
 
-  toPipelineRunDto(it: PipelineRun): PipelineRunDto {
+  toPipelineRunDto(it: PipelineRun, identitites: Map<string, Identity>): PipelineRunDto {
     if (!it) {
       return null
     }
@@ -76,7 +92,13 @@ export default class PipelineMapper {
     return {
       id: it.id,
       startedAt: it.createdAt,
-      startedBy: it.createdBy,
+      startedBy:
+        it.creatorType !== 'user'
+          ? null
+          : {
+              id: it.createdBy,
+              name: nameOfIdentity(identitites.get(it.createdBy)),
+            },
       status: it.status,
       finishedAt: it.finishedAt,
     }
@@ -99,12 +121,48 @@ export default class PipelineMapper {
     }
   }
 
-  toPipelineRunStatusEvent(it: PipelineRunWithPipline): PipelineRunStatusEvent {
+  eventWatcherToDb(
+    it: CreatePipelineEventWatcherDto | UpdatePipelineEventWatcherDto,
+  ): Omit<
+    Extract<Prisma.PipelineEventWatcherUncheckedCreateInput, Prisma.PipelineEventWatcherUncheckedUpdateInput>,
+    'id' | 'pipelineId' | 'createdBy'
+  > {
+    const trigger: PipelineEventWatcherTrigger = {
+      filters: {
+        imageNameStartsWith: it.filters.imageNameStartsWith,
+      },
+      inputs: it.triggerInputs,
+    }
+
+    return {
+      name: it.name,
+      event: this.triggerEventToDb(it.event),
+      registryId: it.registryId,
+      trigger: trigger as JsonValue,
+    }
+  }
+
+  eventWatcherToDto(it: EventWatcherWithRegistry): PipelineEventWatcherDto {
+    const trigger = it.trigger as PipelineEventWatcherTrigger
+
+    return {
+      id: it.id,
+      name: it.name,
+      event: this.triggerEventToDto(it.event),
+      filters: trigger.filters,
+      triggerInputs: trigger.inputs,
+      createdAt: it.createdAt,
+      registry: it.registry,
+    }
+  }
+
+  runToRunStatusEvent(it: PipelineRunWithPipline, identity: Identity | null): PipelineRunStatusEvent {
     return {
       teamId: it.pipeline.teamId,
       pipelineId: it.pipeline.id,
       runId: it.id,
       status: it.status,
+      startedBy: identity,
       finishedAt: it.finishedAt,
     }
   }
@@ -142,17 +200,46 @@ export default class PipelineMapper {
         return 'unknown'
     }
   }
+
+  triggerEventToDb(dto: PipelineTriggerEventDto): PipelineTriggerEventEnum {
+    switch (dto) {
+      case 'image-pull':
+        return 'imagePull'
+      case 'image-push':
+        return 'imagePush'
+      default:
+        throw new CruxInternalServerErrorException({
+          message: 'Invalid trigger event dto',
+          value: dto,
+        })
+    }
+  }
+
+  triggerEventToDto(event: PipelineTriggerEventEnum): PipelineTriggerEventDto {
+    switch (event) {
+      case 'imagePull':
+        return 'image-pull'
+      case 'imagePush':
+        return 'image-push'
+      default:
+        throw new CruxInternalServerErrorException({
+          message: 'Invalid PipelineTriggerEventEnum',
+          value: event,
+        })
+    }
+  }
 }
 
 type PipelineCredentials = Pick<Pipeline, 'type' | 'repository' | 'token'>
 
-type PipelineWithRuns = Pipeline & {
-  runs: PipelineRun[]
+type EventWatcherWithRegistry = PipelineEventWatcher & {
+  registry: Pick<Registry, BasicProperties>
 }
 
-type PipelineRunWithPipline = PipelineRun & {
-  pipeline: {
-    id: string
-    teamId: string
-  }
+type PipelineWithEventWatchers = Pipeline & {
+  eventWatchers: EventWatcherWithRegistry[]
+}
+
+type PipelineWithRuns = Pipeline & {
+  runs: PipelineRun[]
 }

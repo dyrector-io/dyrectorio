@@ -12,7 +12,6 @@ import TeamRepository from '../team/team.repository'
 import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import { PipelineStatusMessage, WS_TYPE_PIPELINE_STATUS } from './pipeline.message'
 import PipelineRunStateService from './pipeline.run-state.service'
-import PipelineService from './pipeline.service'
 
 const TeamSlug = () => WsParam('teamSlug')
 
@@ -24,7 +23,6 @@ const TeamSlug = () => WsParam('teamSlug')
 @UseGlobalWsInterceptors()
 export default class PipelineWebSocketGateway {
   constructor(
-    private readonly service: PipelineService,
     private readonly runStateService: PipelineRunStateService,
     private readonly teamRepository: TeamRepository,
   ) {}
