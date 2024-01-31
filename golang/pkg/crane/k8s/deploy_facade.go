@@ -307,5 +307,9 @@ func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest 
 		return err
 	}
 
+	if err := deployFacade.PostDeploy(); err != nil {
+		return err
+	}
+
 	return deployFacade.PostDeploy()
 }

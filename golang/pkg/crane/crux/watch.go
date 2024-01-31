@@ -282,10 +282,9 @@ func watchPods(
 	}
 
 	opts := metav1.ListOptions{
-		Watch:             true,
-		SendInitialEvents: pointer.ToBool(false),
-		TimeoutSeconds:    pointer.ToInt64(timeoutOneHour),
-		ResourceVersion:   list.ResourceVersion,
+		Watch:           true,
+		TimeoutSeconds:  pointer.ToInt64(timeoutOneHour),
+		ResourceVersion: list.ResourceVersion,
 	}
 
 	watcher, err := clientSet.CoreV1().Events(util.Fallback(namespace, corev1.NamespaceAll)).Watch(ctx, opts)

@@ -18,11 +18,9 @@ const ContainerStatusTag = (props: ContainerStatusTagProps) => {
       case 'running':
         return 'bg-dyo-green'
       case 'exited':
-      case 'dead':
-      case 'restarting':
         return 'bg-error-red'
-      case 'removing':
-        return 'bg-dyo-purple'
+      case 'waiting':
+        return 'bg-warning-orange'
       default:
         return 'bg-warning-orange'
     }
@@ -33,11 +31,9 @@ const ContainerStatusTag = (props: ContainerStatusTagProps) => {
       case 'running':
         return 'text-dyo-green'
       case 'exited':
-      case 'dead':
-      case 'restarting':
         return 'text-error-red'
-      case 'removing':
-        return 'text-dyo-purple-light'
+      case 'waiting':
+        return 'text-warning-orange'
       default:
         return 'text-warning-orange'
     }
@@ -48,7 +44,6 @@ const ContainerStatusTag = (props: ContainerStatusTagProps) => {
       color={state ? statusToBgColor() : 'bg-bright'}
       textColor={state ? statusToTextColor() : 'text-bright'}
       className={className}
-      solid={state === 'removing'}
       title={title}
     >
       {state ? t(`containerStatuses.${state}`) : t('errors:notFound')}

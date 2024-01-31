@@ -265,6 +265,7 @@ describe('DeployMapper', () => {
       },
     ],
     metrics: null,
+    expectedState: null,
   }
 
   const fullInstance: InstanceContainerConfigData = {
@@ -488,6 +489,7 @@ describe('DeployMapper', () => {
       },
     ],
     metrics: null,
+    expectedState: null,
   }
 
   const generateUndefinedInstance = (): InstanceContainerConfigData => {
@@ -848,6 +850,7 @@ describe('DeployMapper', () => {
         networkMode: NetworkMode.HOST,
         restartPolicy: RestartPolicy.ALWAYS,
         labels: {},
+        expectedState: null,
       }
       expect(config).toEqual(expected)
     })
@@ -868,6 +871,7 @@ describe('DeployMapper', () => {
         networkMode: NetworkMode.HOST,
         restartPolicy: RestartPolicy.ALWAYS,
         labels: {},
+        expectedState: null,
       }
       expect(config).toEqual(expected)
     })
@@ -891,6 +895,7 @@ describe('DeployMapper', () => {
         networkMode: NetworkMode.HOST,
         restartPolicy: RestartPolicy.ALWAYS,
         labels: {},
+        expectedState: null,
       }
       expect(config).toEqual(expected)
     })

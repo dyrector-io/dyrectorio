@@ -10,6 +10,7 @@ import {
   CONTAINER_LOG_DRIVER_VALUES,
   CONTAINER_NETWORK_MODE_VALUES,
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
+  CONTAINER_STATE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   ContainerDeploymentStrategyType,
   ContainerExposeStrategy,
@@ -356,6 +357,17 @@ const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
     .default(null)
 })
 
+const expectedContainerStateRule = yup
+  .object()
+  .shape({
+    state: yup.string().default(null).nullable().oneOf(CONTAINER_STATE_VALUES),
+    timeout: yup.number().default(null).nullable().min(0),
+    exitCode: yup.number().default(0).nullable().min(-127).max(128),
+  })
+  .default({})
+  .nullable()
+  .optional()
+
 export const containerConfigSchema = yup.object().shape({
   name: yup.string().required().matches(/^\S+$/g),
   environment: uniqueKeyValuesSchema.default([]).nullable(),
@@ -382,6 +394,7 @@ export const containerConfigSchema = yup.object().shape({
   networkMode: networkModeRule,
   networks: uniqueKeysOnlySchema.default([]).nullable(),
   dockerLabels: uniqueKeyValuesSchema.default([]).nullable(),
+  expectedState: expectedContainerStateRule,
 
   // crane
   deploymentStrategy: deploymentStrategyRule,
@@ -421,6 +434,7 @@ export const instanceContainerConfigSchema = yup.object().shape({
   networkMode: instanceNetworkModeRule,
   networks: uniqueKeysOnlySchema.default([]).nullable(),
   dockerLabels: uniqueKeyValuesSchema.default([]).nullable(),
+  expectedState: expectedContainerStateRule,
 
   // crane
   deploymentStrategy: instanceDeploymentStrategyRule,

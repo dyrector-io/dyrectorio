@@ -17,12 +17,14 @@ import {
   CONTAINER_LOG_DRIVER_VALUES,
   CONTAINER_NETWORK_MODE_VALUES,
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
+  CONTAINER_STATE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   ContainerDeploymentStrategyType,
   ContainerExposeStrategy,
   ContainerLogDriverType,
   ContainerNetworkMode,
   ContainerRestartPolicyType,
+  ContainerState,
   ContainerVolumeType,
   PORT_MAX,
   PORT_MIN,
@@ -287,6 +289,20 @@ export class MetricsDto {
   port?: number
 }
 
+export class ExpectedContainerStateDto {
+  @ApiProperty({ enum: CONTAINER_STATE_VALUES })
+  @IsIn(CONTAINER_STATE_VALUES)
+  state: ContainerState
+
+  @IsOptional()
+  @IsNumber()
+  timeout?: number
+
+  @IsOptional()
+  @IsNumber()
+  exitCode?: number
+}
+
 export class ContainerConfigDto {
   // common
   @IsString()
@@ -377,6 +393,10 @@ export class ContainerConfigDto {
   @IsOptional()
   @ValidateNested({ each: true })
   dockerLabels?: UniqueKeyValueDto[]
+
+  @IsOptional()
+  @ValidateNested()
+  expectedState?: ExpectedContainerStateDto
 
   // crane
   @ApiProperty({ enum: CONTAINER_DEPLOYMENT_STRATEGY_VALUES })

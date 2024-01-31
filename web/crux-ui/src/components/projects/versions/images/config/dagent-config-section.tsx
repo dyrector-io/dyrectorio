@@ -20,11 +20,15 @@ import {
   DagentConfigDetails,
   InstanceDagentConfigDetails,
   mergeConfigs,
+  ContainerState,
+  CONTAINER_STATE_VALUES,
 } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 import ConfigSectionLabel from './config-section-label'
 import DyoMessage from '@app/elements/dyo-message'
 import { ContainerConfigValidationErrors, findErrorFor } from '@app/validations'
+import MultiInput from '@app/components/editor/multi-input'
+import { toNumber } from '@app/utils'
 
 type DagentConfigSectionBaseProps<T> = {
   config: T
@@ -191,6 +195,71 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
                 disabled={disabled}
               />
               <DyoMessage message={findErrorFor(fieldErrors, 'logConfig.options')} messageType="error" />
+            </div>
+          </div>
+        )}
+
+        {/* expectedState */}
+        {filterContains('expectedState', selectedFilters) && (
+          <div className="grid break-inside-avoid mb-8">
+            <ConfigSectionLabel
+              disabled={disabledOnImage || !resetableConfig?.expectedState}
+              onResetSection={() => onResetSection('expectedState')}
+            >
+              {t('dagent.expectedState').toUpperCase()}
+            </ConfigSectionLabel>
+
+            <div className="ml-2">
+              <DyoChips
+                className="ml-2 mb-2"
+                name="expectedState"
+                choices={CONTAINER_STATE_VALUES}
+                selection={config.expectedState?.state ?? 'running'}
+                converter={(it: ContainerState) => t(`common:containerStatuses.${it}`)}
+                onSelectionChange={it => onChange({ expectedState: { ...config.expectedState, state: it } })}
+                disabled={disabled}
+                qaLabel={chipsQALabelFromValue}
+              />
+
+              {config.expectedState?.state === 'exited' && (
+                <MultiInput
+                  id="expectedExitCode"
+                  label={t('dagent.expectedExitCode')}
+                  containerClassName="max-w-lg mb-3"
+                  labelClassName="my-auto mr-4 w-40"
+                  className="w-full"
+                  grow
+                  inline
+                  value={config.expectedState.exitCode ?? 0}
+                  placeholder={t('dagent.placeholders.expectedExitCode')}
+                  onPatch={it => {
+                    const val = toNumber(it)
+                    onChange({ expectedState: { ...config.expectedState, exitCode: val } })
+                  }}
+                  editorOptions={editorOptions}
+                  message={findErrorFor(fieldErrors, 'expectedState.exitCode')}
+                  disabled={disabled}
+                />
+              )}
+
+              <MultiInput
+                id="expectedStateTimeout"
+                label={t('dagent.expectedStateTimeout')}
+                containerClassName="max-w-lg mb-3"
+                labelClassName="my-auto mr-4 w-40"
+                className="w-full"
+                grow
+                inline
+                value={config.expectedState?.timeout ?? 120}
+                placeholder={t('dagent.placeholders.expectedStateTimeout')}
+                onPatch={it => {
+                  const val = toNumber(it)
+                  onChange({ expectedState: { ...config.expectedState, timeout: val } })
+                }}
+                editorOptions={editorOptions}
+                message={findErrorFor(fieldErrors, 'expectedState.timeout')}
+                disabled={disabled}
+              />
             </div>
           </div>
         )}

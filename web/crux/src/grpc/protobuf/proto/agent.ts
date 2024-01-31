@@ -8,6 +8,7 @@ import {
   ContainerIdentifier,
   ContainerInspectMessage,
   ContainerLogMessage,
+  ContainerState,
   ContainerStateListMessage,
   DeleteContainersRequest,
   DeploymentStatusMessage,
@@ -22,6 +23,8 @@ import {
   RestartPolicy,
   Routing,
   VolumeType,
+  containerStateFromJSON,
+  containerStateToJSON,
   deploymentStrategyFromJSON,
   deploymentStrategyToJSON,
   driverTypeFromJSON,
@@ -251,10 +254,22 @@ export interface Marker_IngressEntry {
   value: string
 }
 
+export interface Metrics {
+  port: string
+  path: string
+}
+
+export interface ExpectedState {
+  state: ContainerState
+  timeout?: number | undefined
+  exitCode?: number | undefined
+}
+
 export interface DagentContainerConfig {
   logConfig?: LogConfig | undefined
   restartPolicy?: RestartPolicy | undefined
   networkMode?: NetworkMode | undefined
+  expectedState?: ExpectedState | undefined
   networks: string[]
   labels: { [key: string]: string }
 }
@@ -262,11 +277,6 @@ export interface DagentContainerConfig {
 export interface DagentContainerConfig_LabelsEntry {
   key: string
   value: string
-}
-
-export interface Metrics {
-  port: string
-  path: string
 }
 
 export interface CraneContainerConfig {
@@ -981,6 +991,45 @@ export const Marker_IngressEntry = {
   },
 }
 
+function createBaseMetrics(): Metrics {
+  return { port: '', path: '' }
+}
+
+export const Metrics = {
+  fromJSON(object: any): Metrics {
+    return { port: isSet(object.port) ? String(object.port) : '', path: isSet(object.path) ? String(object.path) : '' }
+  },
+
+  toJSON(message: Metrics): unknown {
+    const obj: any = {}
+    message.port !== undefined && (obj.port = message.port)
+    message.path !== undefined && (obj.path = message.path)
+    return obj
+  },
+}
+
+function createBaseExpectedState(): ExpectedState {
+  return { state: 0 }
+}
+
+export const ExpectedState = {
+  fromJSON(object: any): ExpectedState {
+    return {
+      state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
+      timeout: isSet(object.timeout) ? Number(object.timeout) : undefined,
+      exitCode: isSet(object.exitCode) ? Number(object.exitCode) : undefined,
+    }
+  },
+
+  toJSON(message: ExpectedState): unknown {
+    const obj: any = {}
+    message.state !== undefined && (obj.state = containerStateToJSON(message.state))
+    message.timeout !== undefined && (obj.timeout = Math.round(message.timeout))
+    message.exitCode !== undefined && (obj.exitCode = Math.round(message.exitCode))
+    return obj
+  },
+}
+
 function createBaseDagentContainerConfig(): DagentContainerConfig {
   return { networks: [], labels: {} }
 }
@@ -991,6 +1040,7 @@ export const DagentContainerConfig = {
       logConfig: isSet(object.logConfig) ? LogConfig.fromJSON(object.logConfig) : undefined,
       restartPolicy: isSet(object.restartPolicy) ? restartPolicyFromJSON(object.restartPolicy) : undefined,
       networkMode: isSet(object.networkMode) ? networkModeFromJSON(object.networkMode) : undefined,
+      expectedState: isSet(object.expectedState) ? ExpectedState.fromJSON(object.expectedState) : undefined,
       networks: Array.isArray(object?.networks) ? object.networks.map((e: any) => String(e)) : [],
       labels: isObject(object.labels)
         ? Object.entries(object.labels).reduce<{ [key: string]: string }>((acc, [key, value]) => {
@@ -1009,6 +1059,8 @@ export const DagentContainerConfig = {
       (obj.restartPolicy = message.restartPolicy !== undefined ? restartPolicyToJSON(message.restartPolicy) : undefined)
     message.networkMode !== undefined &&
       (obj.networkMode = message.networkMode !== undefined ? networkModeToJSON(message.networkMode) : undefined)
+    message.expectedState !== undefined &&
+      (obj.expectedState = message.expectedState ? ExpectedState.toJSON(message.expectedState) : undefined)
     if (message.networks) {
       obj.networks = message.networks.map(e => e)
     } else {
@@ -1037,23 +1089,6 @@ export const DagentContainerConfig_LabelsEntry = {
     const obj: any = {}
     message.key !== undefined && (obj.key = message.key)
     message.value !== undefined && (obj.value = message.value)
-    return obj
-  },
-}
-
-function createBaseMetrics(): Metrics {
-  return { port: '', path: '' }
-}
-
-export const Metrics = {
-  fromJSON(object: any): Metrics {
-    return { port: isSet(object.port) ? String(object.port) : '', path: isSet(object.path) ? String(object.path) : '' }
-  },
-
-  toJSON(message: Metrics): unknown {
-    const obj: any = {}
-    message.port !== undefined && (obj.port = message.port)
-    message.path !== undefined && (obj.path = message.path)
     return obj
   },
 }

@@ -172,6 +172,14 @@ func mapDagentConfig(dagent *agent.DagentContainerConfig, containerConfig *v1.Co
 	if dagent.Labels != nil {
 		containerConfig.DockerLabels = dagent.Labels
 	}
+
+	if dagent.ExpectedState != nil {
+		containerConfig.ExpectedState = &v1.ExpectedState{
+			State:    mapContainerState(dagent.ExpectedState.State),
+			Timeout:  dagent.ExpectedState.Timeout,
+			ExitCode: dagent.ExpectedState.ExitCode,
+		}
+	}
 }
 
 func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.ContainerConfig) {
@@ -225,6 +233,23 @@ func mapRestartPolicy(policy string) builder.RestartPolicyName {
 	lower := strings.ToLower(policy)
 
 	return builder.RestartPolicyName(strings.Replace(lower, "_", "-", -1))
+}
+
+func mapContainerState(state common.ContainerState) v1.ContainerState {
+	switch state {
+	case common.ContainerState_CONTAINER_STATE_UNSPECIFIED:
+		return v1.Running
+	case common.ContainerState_RUNNING:
+		return v1.Running
+	case common.ContainerState_EXITED:
+		return v1.Exited
+	case common.ContainerState_WAITING:
+		return v1.Waiting
+	case common.ContainerState_REMOVED:
+		return v1.Removed
+	default:
+		return v1.Running
+	}
 }
 
 func mapResourceConfig(resourceConfig *common.ResourceConfig) v1.ResourceConfig {

@@ -9,11 +9,18 @@ import {
   Registry,
   RestartPolicy,
 } from '@prisma/client'
-import { ContainerConfigData, ContainerLogDriverType, ContainerVolumeType, Volume } from 'src/domain/container'
+import {
+  ContainerConfigData,
+  ContainerLogDriverType,
+  ContainerState,
+  ContainerVolumeType,
+  Volume,
+} from 'src/domain/container'
 import { toPrismaJson } from 'src/domain/utils'
 import { Volume as ProtoVolume } from 'src/grpc/protobuf/proto/agent'
 import {
   DriverType,
+  ContainerState as ProtoContainerState,
   DeploymentStrategy as ProtoDeploymentStrategy,
   ExposeStrategy as ProtoExposeStrategy,
   NetworkMode as ProtoNetworkMode,
@@ -79,6 +86,7 @@ export default class ImageMapper {
       networkMode: config.networkMode,
       networks: toPrismaJson(config.networks),
       dockerLabels: toPrismaJson(config.dockerLabels),
+      expectedState: toPrismaJson(config.expectedState),
 
       // crane
       deploymentStrategy: config.deploymentStrategy,
@@ -240,6 +248,23 @@ export default class ImageMapper {
     }
 
     return volumeTypeFromJSON(it.toUpperCase())
+  }
+
+  stateToProto(state: ContainerState): ProtoContainerState {
+    if (!state) {
+      return null
+    }
+
+    switch (state) {
+      case 'running':
+        return ProtoContainerState.RUNNING
+      case 'waiting':
+        return ProtoContainerState.WAITING
+      case 'exited':
+        return ProtoContainerState.EXITED
+      default:
+        return ProtoContainerState.CONTAINER_STATE_UNSPECIFIED
+    }
   }
 }
 

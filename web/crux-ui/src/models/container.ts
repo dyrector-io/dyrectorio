@@ -1,14 +1,6 @@
 import { v4 as uuid } from 'uuid'
 
-export const CONTAINER_STATE_VALUES = [
-  'created',
-  'restarting',
-  'running',
-  'removing',
-  'paused',
-  'exited',
-  'dead',
-] as const
+export const CONTAINER_STATE_VALUES = ['running', 'waiting', 'exited', 'removed'] as const
 export type ContainerState = (typeof CONTAINER_STATE_VALUES)[number]
 
 export type ContainerPort = {
@@ -197,6 +189,12 @@ export type Metrics = {
   port?: number
 }
 
+export type ExpectedContainerState = {
+  state: ContainerState
+  timeout?: number
+  exitCode?: number
+}
+
 export type ContainerConfigData = {
   // common
   name: string
@@ -223,6 +221,7 @@ export type ContainerConfigData = {
   networkMode: ContainerNetworkMode
   networks?: UniqueKey[]
   dockerLabels?: UniqueKeyValue[]
+  expectedState?: ExpectedContainerState
 
   // crane
   deploymentStrategy: ContainerDeploymentStrategyType
@@ -237,7 +236,13 @@ export type ContainerConfigData = {
   metrics?: Metrics
 }
 
-type DagentSpecificConfig = 'logConfig' | 'restartPolicy' | 'networkMode' | 'networks' | 'dockerLabels'
+type DagentSpecificConfig =
+  | 'logConfig'
+  | 'restartPolicy'
+  | 'networkMode'
+  | 'networks'
+  | 'dockerLabels'
+  | 'expectedState'
 type CraneSpecificConfig =
   | 'deploymentStrategy'
   | 'customHeaders'
@@ -308,6 +313,7 @@ export type JsonContainerConfig = {
   initContainers?: JsonInitContainer[]
   capabilities?: JsonKeyValue
   storage?: ContainerStorage
+  expectedState?: ExpectedContainerState
 
   // dagent
   logConfig?: JsonContainerConfigLog
@@ -418,6 +424,13 @@ export const mergeConfigs = (
     restartPolicy: instance.restartPolicy ?? image.restartPolicy ?? 'unlessStopped',
     networks: instance.networks ?? image.networks,
     dockerLabels: instance.dockerLabels ?? image.dockerLabels,
+    expectedState:
+      !!image.expectedState || !!instance.expectedState
+        ? {
+            ...image.expectedState,
+            ...instance.expectedState,
+          }
+        : null,
   }
 }
 
@@ -789,8 +802,8 @@ export const containerPortsToString = (ports: ContainerPort[], truncateAfter: nu
 export const containerPrefixNameOf = (id: ContainerIdentifier): string =>
   !id.prefix ? id.name : `${id.prefix}-${id.name}`
 
-export const containerIsStartable = (state: ContainerState) => state !== 'running' && state !== 'removing'
-export const containerIsStopable = (state: ContainerState) => state === 'running' || state === 'paused'
+export const containerIsStartable = (state: ContainerState) => state === 'exited'
+export const containerIsStopable = (state: ContainerState) => state === 'running'
 export const containerIsRestartable = (state: ContainerState) => state === 'running'
 
 export const serviceCategoryIsHidden = (it: string | null) => it && it.startsWith('_')

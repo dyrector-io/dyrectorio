@@ -101,10 +101,14 @@
     "logConfig": "Log config",
     "options": "Options",
     "networks": "Networks",
+    "dockerLabels": "Docker labels",
+    "expectedState": "Expected state",
+    "expectedStateTimeout": "Timeout (s)",
+    "expectedExitCode": "Exit code",
     "placeholders": {
-      "network": "Network"
-    },
-    "dockerLabels": "Docker labels"
+      "network": "Network",
+      "expectedExitCode": "Expected exit code"
+    }
   },
 
   "crane": {

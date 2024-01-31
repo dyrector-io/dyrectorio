@@ -111,6 +111,7 @@ export const DAGENT_CONFIG_PROPERTIES = [
   'networkMode',
   'networks',
   'dockerLabels',
+  'expectedState',
 ] as const
 
 export const ALL_CONFIG_PROPERTIES = [

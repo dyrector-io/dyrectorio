@@ -52,6 +52,12 @@ type DockerVersion struct {
 	ClientVersion string
 }
 
+const (
+	ContainerHealthyStatus    = "healthy"
+	ContainerStateWaitSeconds = 120
+	TypeContainer             = "container"
+)
+
 var ErrUnknownContainer = errors.New("unknown container")
 
 func GetContainerLogs(name string, skip, take uint) []string {
@@ -218,6 +224,114 @@ func getImageNameFromRequest(deployImageRequest *v1.DeployImageRequest) (string,
 	return imageHelper.ExpandImageName(imageName)
 }
 
+func expectedStateToProto(state *v1.ExpectedState) common.ContainerState {
+	if state == nil {
+		return common.ContainerState_RUNNING
+	}
+
+	switch state.State {
+	case v1.Running:
+		return common.ContainerState_RUNNING
+	case v1.Waiting:
+		return common.ContainerState_WAITING
+	case v1.Exited:
+		return common.ContainerState_EXITED
+	case v1.Removed:
+		return common.ContainerState_REMOVED
+	default:
+		return common.ContainerState_RUNNING
+	}
+}
+
+func checkContainerState(ctx context.Context, cli *client.Client, expected *v1.ExpectedState, containerID string) (bool, error) {
+	matchedContainer, err := dockerHelper.GetContainerByID(ctx, containerID)
+	if err != nil {
+		return false, err
+	}
+
+	currentState := mapper.MapDockerStateToCruxContainerState(matchedContainer.State)
+	expectedState := expectedStateToProto(expected)
+
+	if expectedState == common.ContainerState_EXITED {
+		if currentState != common.ContainerState_EXITED {
+			return false, nil
+		}
+
+		inspect, err := cli.ContainerInspect(ctx, containerID)
+		if err != nil {
+			return false, err
+		}
+
+		expectedCode := 0
+		if expected.ExitCode != nil {
+			expectedCode = int(*expected.ExitCode)
+		}
+
+		if inspect.State.ExitCode != expectedCode {
+			return false, fmt.Errorf("unexpected exit code, actual: %d, expected: %d", inspect.State.ExitCode, expectedCode)
+		}
+
+		return true, nil
+	}
+
+	return currentState == expectedState, nil
+}
+
+func waitForContainer(
+	ctx context.Context,
+	cli *client.Client,
+	containerID string,
+	expected *v1.ExpectedState,
+) error {
+	finished, err := checkContainerState(ctx, cli, expected, containerID)
+	if err != nil || finished {
+		return err
+	}
+
+	errorChannel := make(chan error)
+
+	timeoutSeconds := ContainerStateWaitSeconds
+	if expected.Timeout != nil {
+		timeoutSeconds = int(*expected.Timeout)
+	}
+
+	go func() {
+		timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSeconds)*time.Second)
+		defer cancel()
+
+		chanMessages, chanErrors := cli.Events(timeoutCtx, types.EventsOptions{
+			Filters: filters.NewArgs(
+				filters.KeyValuePair{
+					Key:   TypeContainer,
+					Value: containerID,
+				}),
+		})
+
+		for {
+			select {
+			case <-timeoutCtx.Done():
+				errorChannel <- fmt.Errorf("timeout while waiting for expected container state")
+				return
+			case eventError := <-chanErrors:
+				errorChannel <- eventError
+				return
+			case eventMessage := <-chanMessages:
+				if eventMessage.Type != TypeContainer {
+					continue
+				}
+
+				finished, err := checkContainerState(timeoutCtx, cli, expected, containerID)
+				if err != nil || finished {
+					errorChannel <- err
+					return
+				}
+			}
+		}
+	}()
+
+	return <-errorChannel
+}
+
 //nolint:funlen,gocyclo // TODO(@nandor-magyar): refactor this function into smaller parts
 func DeployImage(ctx context.Context,
 	dog *dogger.DeploymentLogger,
@@ -349,9 +463,16 @@ func DeployImage(ctx context.Context,
 	dog.WriteContainerState(mapper.MapDockerStateToCruxContainerState(matchedContainer.State),
 		matchedContainer.State, dogger.Info, "Started container: "+containerName)
 
+	err = waitForContainer(ctx, cli, matchedContainer.ID, deployImageRequest.ContainerConfig.ExpectedState)
+	if err != nil {
+		return fmt.Errorf("expected container state failed: %w", err)
+	}
+
 	if versionData != nil {
 		DraftRelease(deployImageRequest.InstanceConfig.ContainerPreName, *versionData, v1.DeployVersionResponse{}, cfg)
 	}
+
+	dog.WriteInfo(fmt.Sprintf("Container deployed: %s", containerName))
 
 	return err
 }

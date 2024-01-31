@@ -4,14 +4,12 @@ import useTranslation from 'next-translate/useTranslation'
 
 const statusToColor = (status: ContainerState) => {
   switch (status) {
-    case 'exited':
     case 'running':
       return 'bg-dyo-green'
-    case 'dead':
-    case 'restarting':
+    case 'exited':
       return 'bg-dyo-red'
-    case 'removing':
-      return 'bg-error-red'
+    case 'waiting':
+      return 'bg-warning-orange'
     default:
       return 'bg-warning-orange'
   }

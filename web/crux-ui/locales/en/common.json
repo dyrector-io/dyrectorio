@@ -164,7 +164,8 @@
   "containerStatuses": {
     "running": "Running",
     "waiting": "Waiting",
-    "exited": "Exited"
+    "exited": "Exited",
+    "removed": "Removed"
   },
 
   "secretStatuses": {

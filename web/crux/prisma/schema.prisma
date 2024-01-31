@@ -253,6 +253,7 @@ model ContainerConfig {
   storageSet       Boolean?
   storageId        String?        @db.Uuid
   storageConfig    Json?
+  expectedState    Json?
 
   //Dagent
   logConfig     Json?
@@ -354,6 +355,7 @@ model InstanceContainerConfig {
   storageSet       Boolean?
   storageId        String?         @unique @db.Uuid
   storageConfig    Json?
+  expectedState    Json?
 
   //Dagent
   logConfig     Json?

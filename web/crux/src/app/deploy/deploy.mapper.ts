@@ -347,6 +347,13 @@ export default class DeployMapper {
       networkMode: this.imageMapper.networkModeToProto(config.networkMode),
       restartPolicy: this.imageMapper.restartPolicyToProto(config.restartPolicy),
       labels: this.mapKeyValueToMap(config.dockerLabels),
+      expectedState: !config.expectedState
+        ? null
+        : {
+            state: this.imageMapper.stateToProto(config.expectedState.state),
+            timeout: config.expectedState.timeout,
+            exitCode: config.expectedState.exitCode,
+          },
     }
   }
 
