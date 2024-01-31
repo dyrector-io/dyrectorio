@@ -255,7 +255,7 @@ export default class PipelineService {
     const identities = await this.kratosService.getIdentitiesByIds(identitiyIds)
 
     return {
-      items: runs.map(it => this.mapper.runToDto(it, identities)),
+      items: runs.map(it => this.mapper.toPipelineRunDto(it, identities)),
       total,
     }
   }
@@ -274,7 +274,7 @@ export default class PipelineService {
       creator: identity,
     })
 
-    return this.mapper.runToDto(run, new Map(Object.entries({ [identity.id]: identity })))
+    return this.mapper.toPipelineRunDto(run, new Map(Object.entries({ [identity.id]: identity })))
   }
 
   async createEventWatcher(
@@ -409,7 +409,7 @@ export default class PipelineService {
   private async createRun(options: PipelineCreateRunOptions): Promise<PipelineRunWithPipline> {
     const { pipeline, inputs, creatorType, creator } = options
 
-    const creds = this.mapper.toAzureCredentials(pipeline)
+    const creds = this.mapper.toAzureDevOpsCredentials(pipeline)
 
     const trigger = pipeline.trigger as AzureTrigger
     if (inputs) {
