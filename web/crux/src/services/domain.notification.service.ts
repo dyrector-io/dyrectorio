@@ -1,10 +1,17 @@
 import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
+import { OnEvent } from '@nestjs/event-emitter'
 import { NotificationEventTypeEnum, NotificationTypeEnum } from '@prisma/client'
 import { lastValueFrom } from 'rxjs'
 import NotificationTemplateBuilder from 'src/builders/notification.template.builder'
 import { nameOrEmailOfIdentity } from 'src/domain/identity'
-import { NotificationMessageType, NotificationTemplate, getTemplate } from 'src/domain/notification-templates'
+import {
+  NotificationMessageType,
+  NotificationTemplate,
+  RegistryImageMessage,
+  getTemplate,
+} from 'src/domain/notification-templates'
+import { REGISTRY_EVENT_V2_PULL, REGISTRY_EVENT_V2_PUSH, RegistryV2Event } from 'src/domain/registry'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import PrismaService from './prisma.service'
 
@@ -43,6 +50,29 @@ export default class DomainNotificationService {
     if (notifications.length > 0) {
       await Promise.all(notifications.map(it => this.send(it.url, it.type, template)))
     }
+  }
+
+  @OnEvent(REGISTRY_EVENT_V2_PUSH, { async: true })
+  async onRegistryV2Push(event: RegistryV2Event): Promise<void> {
+    await this.sendRegistryV2EventNotification('image-pushed', event)
+  }
+
+  @OnEvent(REGISTRY_EVENT_V2_PULL, { async: true })
+  async onRegistryV2Pull(event: RegistryV2Event): Promise<void> {
+    await this.sendRegistryV2EventNotification('image-pulled', event)
+  }
+
+  private async sendRegistryV2EventNotification(type: NotificationMessageType, event: RegistryV2Event) {
+    const { registry } = event
+
+    await this.sendNotification({
+      teamId: registry.teamId,
+      messageType: type,
+      message: {
+        registry: registry.name,
+        image: `${event.imageName}:${event.imageTag}`,
+      } as RegistryImageMessage,
+    })
   }
 
   private async send(url: string, type: NotificationTypeEnum, temp: NotificationTemplate): Promise<void> {

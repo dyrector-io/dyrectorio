@@ -51,6 +51,7 @@ const PipelinesPage = (props: PipelinesPageProps) => {
       const pipeline = newItems.find(it => it.id === message.pipelineId)
       pipeline.lastRun = {
         id: message.runId,
+        startedBy: message.startedBy,
         finishedAt: message.finishedAt,
         startedAt: pipeline.lastRun?.startedAt ?? new Date().toUTCString(),
         status: message.status,
@@ -97,7 +98,7 @@ const PipelinesPage = (props: PipelinesPageProps) => {
         </>
       ) : (
         <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
-          {t('noItems')}
+          {t('noPipelines')}
         </DyoHeading>
       )}
     </Layout>

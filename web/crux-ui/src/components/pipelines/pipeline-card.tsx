@@ -21,15 +21,10 @@ type PipelineCardProps = Omit<DyoCardProps, 'children'> & {
 const statusOf = (
   pipeline: (Pipeline | PipelineDetails) & {
     lastRun?: PipelineRun
-    runs?: PipelineRun[]
   },
 ): PipelineRunStatus => {
   if (pipeline.lastRun) {
     return pipeline.lastRun.status
-  }
-
-  if (pipeline.runs && pipeline.runs.length > 0) {
-    return pipeline.runs[0].status
   }
 
   return 'unknown'

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Observable, Subject, finalize } from 'rxjs'
+import { nameOfIdentity } from 'src/domain/identity'
 import { PipelineRunStatusEvent } from 'src/domain/pipeline'
 import TeamRepository from '../team/team.repository'
 import { PipelineStatusMessage } from './pipeline.message'
@@ -70,6 +71,12 @@ export default class PipelineRunStateService {
       pipelineId: event.pipelineId,
       runId: event.runId,
       status: event.status,
+      startedBy: !event.startedBy
+        ? null
+        : {
+            id: event.startedBy.id,
+            name: nameOfIdentity(event.startedBy),
+          },
       finishedAt: event.finishedAt?.toUTCString(),
     })
   }

@@ -1,27 +1,46 @@
 import { Layout } from '@app/components/layout'
+import EditEventWatcherCard from '@app/components/pipelines/edit-event-watcher-card'
 import EditPipelineCard from '@app/components/pipelines/edit-pipeline-card'
 import PipelineCard from '@app/components/pipelines/pipeline-card'
-import PipelineStatusTag from '@app/components/pipelines/pipeline-status-tag'
+import PipelineEventWatcherList from '@app/components/pipelines/pipeline-event-watcher-list'
+import PipelineRunList from '@app/components/pipelines/pipeline-run-list'
 import TriggerPipelineCard from '@app/components/pipelines/trigger-pipeline-card'
+import usePipelineDetailsState, {
+  editEventWatcher,
+  pipelineEdited,
+  pipelineTriggered,
+  removeEventWatcher,
+  selectPipelineSectionState,
+  selectedEditedEventWatcher,
+  setViewState,
+  updateRunState,
+  upsertEventWatcher,
+} from '@app/components/pipelines/use-pipeline-state'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
-import { DyoCard } from '@app/elements/dyo-card'
-import DyoTable, { DyoColumn } from '@app/elements/dyo-table'
+import DyoButton from '@app/elements/dyo-button'
+import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
+import useConfirmation from '@app/hooks/use-confirmation'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
-import { PipelineDetails, PipelineRun, PipelineStatusMessage, WS_TYPE_PIPELINE_STATUS } from '@app/models'
+import {
+  PipelineDetails,
+  PipelineEventWatcher,
+  PipelineRun,
+  PipelineStatusMessage,
+  WS_TYPE_PIPELINE_STATUS,
+} from '@app/models'
 import { ANCHOR_TRIGGER, TeamRoutes } from '@app/routes'
-import { anchorLinkOf, toastWarning, utcDateToLocale, withContextAuthorization } from '@app/utils'
+import { anchorLinkOf, toastWarning, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useEffect, useState } from 'react'
-
-type PipelineDetailsEditState = 'run-list' | 'editing' | 'trigger'
+import { QA_DIALOG_LABEL_DELETE_PIPELINE_EVENT_WATCHER } from 'quality-assurance'
+import { useEffect } from 'react'
 
 const stateFromAnchor = (anchor: string) => (anchor === ANCHOR_TRIGGER ? 'trigger' : 'run-list')
 
@@ -36,61 +55,28 @@ const PipelineDetailsPage = (props: PipelineDetailsPageProps) => {
   const routes = useTeamRoutes()
   const router = useRouter()
 
-  const [pipeline, setPipeline] = useState(propsPipeline)
-  const [state, setState] = useState<PipelineDetailsEditState>('run-list')
   const submit = useSubmit()
+
+  const [modalConfig, confirm] = useConfirmation()
+  const [state, dispatch] = usePipelineDetailsState({
+    viewState: 'run-list',
+    pipeline: propsPipeline,
+    runs: [],
+    editedEventWatcher: null,
+  })
 
   const anchor = anchorLinkOf(router)
   useEffect(() => {
-    setState(stateFromAnchor(anchor))
-  }, [anchor])
+    dispatch(setViewState(stateFromAnchor(anchor)))
+  }, [anchor, dispatch])
 
   const sock = useWebSocket(routes.pipeline.socket())
-  sock.on(WS_TYPE_PIPELINE_STATUS, (message: PipelineStatusMessage) => {
-    if (message.pipelineId !== pipeline.id) {
-      return
-    }
+  sock.on(WS_TYPE_PIPELINE_STATUS, (message: PipelineStatusMessage) => dispatch(updateRunState(message)))
 
-    setPipeline(oldPipeline => {
-      let runList = oldPipeline.runs
-      let run = runList.find(it => it.id === message.runId)
-      if (!run) {
-        run = {
-          id: message.runId,
-          startedAt: new Date().toUTCString(),
-          finishedAt: message.finishedAt,
-          status: message.status,
-        }
-
-        runList = [run, ...oldPipeline.runs]
-      } else {
-        run.finishedAt = message.finishedAt
-        run.status = message.status
-      }
-
-      return {
-        ...oldPipeline,
-        runs: runList,
-      }
-    })
-  })
+  const { pipeline, viewState } = state
+  const sectionState = selectPipelineSectionState(state)
 
   const handleApiError = defaultApiErrorHandler(t)
-
-  const onPipelineEdited = (it: PipelineDetails) => {
-    setState('run-list')
-    setPipeline(it)
-  }
-
-  const onPipelineTriggered = (run: PipelineRun) => {
-    const newPipeline = {
-      ...pipeline,
-      runs: [run, ...pipeline.runs],
-    }
-
-    setPipeline(newPipeline)
-    setState('run-list')
-  }
 
   const onDelete = async () => {
     const res = await fetch(routes.pipeline.api.details(pipeline.id), {
@@ -104,6 +90,38 @@ const PipelineDetailsPage = (props: PipelineDetailsPageProps) => {
     } else {
       await handleApiError(res)
     }
+  }
+
+  const onPipelineEdited = (it: PipelineDetails) => dispatch(pipelineEdited(it))
+
+  const onPipelineTriggered = (it: PipelineRun) => dispatch(pipelineTriggered(it))
+
+  const onEventWatcherEdited = (it: PipelineEventWatcher) => dispatch(upsertEventWatcher(it))
+
+  const onEditEventWatcher = (it: PipelineEventWatcher) => dispatch(editEventWatcher(it))
+
+  const onDeleteEventWatcher = async (eventWatcher: PipelineEventWatcher) => {
+    const confirmed = await confirm({
+      qaLabel: QA_DIALOG_LABEL_DELETE_PIPELINE_EVENT_WATCHER,
+      title: t('common:areYouSure'),
+      description: t('areYouSureDeleteEventWatcher', eventWatcher),
+      confirmText: t('common:delete'),
+      confirmColor: 'bg-error-red',
+    })
+
+    if (!confirmed) {
+      return
+    }
+
+    const res = await fetch(routes.pipeline.api.eventWatcherDetails(pipeline.id, eventWatcher.id), {
+      method: 'DELETE',
+    })
+
+    if (!res.ok) {
+      await handleApiError(res)
+    }
+
+    dispatch(removeEventWatcher(eventWatcher))
   }
 
   const pageLink: BreadcrumbLink = {
@@ -124,8 +142,8 @@ const PipelineDetailsPage = (props: PipelineDetailsPageProps) => {
       >
         <DetailsPageMenu
           onDelete={onDelete}
-          editing={state === 'editing'}
-          setEditing={it => setState(it ? 'editing' : 'run-list')}
+          editing={viewState === 'editing'}
+          setEditing={it => dispatch(setViewState(it ? 'editing' : 'run-list'))}
           submit={submit}
           deleteModalTitle={t('common:areYouSureDeleteName', { name: pipeline.name })}
           deleteModalDescription={t('common:proceedYouLoseAllDataToName', {
@@ -134,46 +152,80 @@ const PipelineDetailsPage = (props: PipelineDetailsPageProps) => {
         />
       </PageHeading>
 
-      {state === 'editing' ? (
+      {viewState === 'editing' ? (
         <EditPipelineCard pipeline={pipeline} onPipelineEdited={onPipelineEdited} submit={submit} />
       ) : (
         <>
-          <PipelineCard pipeline={pipeline} hideTrigger={state === 'trigger'} onTrigger={() => setState('trigger')} />
+          <PipelineCard pipeline={pipeline} hideTrigger onTrigger={() => dispatch(setViewState('trigger'))} />
 
-          {state === 'trigger' && (
+          {viewState === 'trigger' ? (
             <TriggerPipelineCard
               className="p-6 mt-4"
               pipeline={pipeline}
               onPipelineTriggered={onPipelineTriggered}
-              onClose={() => setState('run-list')}
+              onClose={() => dispatch(setViewState('run-list'))}
             />
-          )}
+          ) : viewState === 'edit-event-watcher' ? (
+            <EditEventWatcherCard
+              className="p-6 mt-4"
+              pipeline={state.pipeline}
+              eventWatcher={selectedEditedEventWatcher(state)}
+              onEventWatcherEdited={onEventWatcherEdited}
+              onDiscard={() => dispatch(setViewState('event-watchers'))}
+            />
+          ) : null}
+
+          <div className="flex flex-row gap-3 mt-4">
+            <DyoButton
+              text
+              thin
+              underlined={sectionState === 'run-list'}
+              textColor="text-bright"
+              className="mx-6"
+              onClick={() => dispatch(setViewState('run-list'))}
+            >
+              {t('runs')}
+            </DyoButton>
+
+            <DyoButton
+              text
+              thin
+              underlined={sectionState === 'event-watchers'}
+              textColor="text-bright"
+              className="ml-6"
+              onClick={() => dispatch(setViewState('event-watchers'))}
+            >
+              {t('eventWatchers')}
+            </DyoButton>
+
+            <span className="mx-auto" />
+
+            {viewState !== 'trigger' && (
+              <DyoButton className="px-6" onClick={() => dispatch(setViewState('trigger'))}>
+                {t('trigger')}
+              </DyoButton>
+            )}
+
+            {viewState !== 'edit-event-watcher' && (
+              <DyoButton className="px-6" onClick={() => dispatch(editEventWatcher(null))}>
+                {t('addEventWatcher')}
+              </DyoButton>
+            )}
+          </div>
+
+          {sectionState === 'run-list' ? (
+            <PipelineRunList state={state} dispatch={dispatch} />
+          ) : sectionState === 'event-watchers' ? (
+            <PipelineEventWatcherList
+              eventWatchers={pipeline.eventWatchers}
+              onEditEventWatcher={onEditEventWatcher}
+              onDeleteEventWatcher={onDeleteEventWatcher}
+            />
+          ) : null}
         </>
       )}
 
-      {pipeline.runs.length > 0 && (
-        <DyoCard className="mt-4">
-          <DyoTable data={pipeline.runs} dataKey="id">
-            <DyoColumn
-              header={t('common:status')}
-              className="w-2/12 text-center"
-              body={(it: PipelineRun) => <PipelineStatusTag status={it.status} className="w-fit mx-auto" />}
-            />
-            <DyoColumn
-              header={t('common:createdAt')}
-              className="w-2/12"
-              suppressHydrationWarning
-              body={(it: PipelineRun) => utcDateToLocale(it.startedAt)}
-            />
-            <DyoColumn
-              header={t('finishedAt')}
-              className="w-2/12"
-              suppressHydrationWarning
-              body={(it: PipelineRun) => (it.finishedAt ? utcDateToLocale(it.finishedAt) : null)}
-            />
-          </DyoTable>
-        </DyoCard>
-      )}
+      <DyoConfirmationModal config={modalConfig} />
     </Layout>
   )
 }

@@ -2,7 +2,7 @@
   "new": "New pipeline",
   "pipelinesName": "Pipelines - {{name}}",
   "tips": "Pipelines are CI/CD jobs for your git repository.",
-  "noItems": "You haven't added a pipeline yet.",
+  "noPipelines": "You haven't added a pipeline yet.",
   "repository": "Repository",
   "repoBranchingIcon": "Code repository branching icon",
   "trigger": "Trigger",
@@ -12,6 +12,8 @@
   "pipelineName": "Pipeline name",
   "areYouSureTriggerName": "Are you sure you want to trigger pipeline {{name}}?",
   "triggerPipeline": "Trigger pipeline",
+  "noRuns": "You haven't triggered any runs yet.",
+  "noEventWatchers": "You haven't added an event watcher yet.",
 
   "type": {
     "gitlab": "Gitlab",
@@ -19,5 +21,26 @@
     "azure": "Azure DevOps"
   },
 
-  "finishedAt": "Finished at"
+  "triggeredBy": "Triggered by",
+  "finishedAt": "Finished at",
+  "runs": "Runs",
+
+  "newEventWatcher": "New event watcher",
+  "eventWatchers": "Event watchers",
+  "addEventWatcher": "Add event watcher",
+  "needV2Registry": "You will need a V2 registry to create an event watcher",
+
+  "triggerEvent": "Trigger event",
+
+  "triggerEvents": {
+    "image-push": "Image push",
+    "image-pull": "Image pull"
+  },
+
+  "templateTips": "Available templates: {{imageName}}, {{imageTag}}, {{label:<label-name>}}",
+  "areYouSureDeleteEventWatcher": "Are you sure you want to delete event watcher {{name}}?",
+
+  "filters": {
+    "imageNameStartsWith": "Image name starts with"
+  }
 }

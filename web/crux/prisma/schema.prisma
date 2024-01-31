@@ -116,21 +116,22 @@ model Registry {
   imageNamePrefix String?
   apiUrl          String?
 
-  images Image[]
+  images        Image[]
+  eventWatchers PipelineEventWatcher[]
   registryToken RegistryToken?
-  team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  teamId String  @db.Uuid
+  team          Team                   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId        String                 @db.Uuid
 
   @@unique([name, teamId])
 }
 
 model RegistryToken {
-  id           String    @id @default(uuid()) @db.Uuid
-  registryId   String    @db.Uuid
-  createdBy    String    @db.Uuid
-  createdAt    DateTime  @default(now()) @db.Timestamptz(6)
-  expiresAt    DateTime? @db.Timestamptz(6)
-  nonce        String    @db.Uuid
+  id         String    @id @default(uuid()) @db.Uuid
+  registryId String    @db.Uuid
+  createdBy  String    @db.Uuid
+  createdAt  DateTime  @default(now()) @db.Timestamptz(6)
+  expiresAt  DateTime? @db.Timestamptz(6)
+  nonce      String    @db.Uuid
 
   registry Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
 
@@ -545,17 +546,17 @@ enum NodeEventTypeEnum {
 }
 
 model Storage {
-  id           String   @id @default(uuid()) @db.Uuid
-  createdAt    DateTime @default(now()) @db.Timestamptz(6)
-  createdBy    String   @db.Uuid
-  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
-  updatedBy    String?  @db.Uuid
-  name         String   @db.VarChar(70)
-  description  String?
-  icon         String?
-  url          String
-  accessKey    Bytes?
-  secretKey    Bytes?
+  id          String   @id @default(uuid()) @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  createdBy   String   @db.Uuid
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  updatedBy   String?  @db.Uuid
+  name        String   @db.VarChar(70)
+  description String?
+  icon        String?
+  url         String
+  accessKey   Bytes?
+  secretKey   Bytes?
 
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String @db.Uuid
@@ -598,23 +599,52 @@ model Pipeline {
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String @db.Uuid
 
-  runs PipelineRun[]
+  runs          PipelineRun[]
+  eventWatchers PipelineEventWatcher[]
 
   @@unique([name, teamId])
 }
 
+enum PipelineRunCreatorTypeEnum {
+  user
+  eventWatcher
+}
+
 model PipelineRun {
-  id         String             @id @default(uuid()) @db.Uuid
-  externalId Int
-  status     PipelineStatusEnum
-  createdAt  DateTime           @default(now()) @db.Timestamptz(6)
-  createdBy  String             @db.Uuid
-  finishedAt DateTime?
+  id          String                     @id @default(uuid()) @db.Uuid
+  externalId  Int
+  status      PipelineStatusEnum
+  createdAt   DateTime                   @default(now()) @db.Timestamptz(6)
+  creatorType PipelineRunCreatorTypeEnum
+  createdBy   String                     @db.Uuid
+  finishedAt  DateTime?
 
   pipeline   Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
   pipelineId String   @db.Uuid
 
   @@unique([pipelineId, externalId])
+}
+
+enum PipelineTriggerEventEnum {
+  imagePush
+  imagePull
+}
+
+model PipelineEventWatcher {
+  id        String                   @id @default(uuid()) @db.Uuid
+  name      String
+  event     PipelineTriggerEventEnum
+  trigger   Json
+  createdAt DateTime                 @default(now()) @db.Timestamptz(6)
+  createdBy String                   @db.Uuid
+  updatedAt DateTime                 @updatedAt @db.Timestamptz(6)
+  updatedBy String?                  @db.Uuid
+
+  pipeline   Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  pipelineId String   @db.Uuid
+
+  registry   Registry? @relation(fields: [registryId], references: [id], onDelete: Cascade)
+  registryId String?   @db.Uuid
 }
 
 model ConfigBundle {

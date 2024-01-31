@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable, forwardRef } from '@nestjs/common'
+import { OnEvent } from '@nestjs/event-emitter'
+import { REGISTRY_EVENT_UPDATE, RegistryUpdatedEvent } from 'src/domain/registry'
 import { CruxForbiddenException } from 'src/exception/crux-exception'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
 import CachedPublicHubApiClient from './registry-clients/cached-hub-api-client'
@@ -29,9 +31,10 @@ export default class RegistryClientProvider {
 
   private registriesByTeam: Map<string, string[]> = new Map() // teamId to registyIds
 
-  constructor(private readonly service: RegistryService) {
-    service.watchRegistryEvents().subscribe(it => this.invalidate(it))
-  }
+  constructor(
+    @Inject(forwardRef(() => RegistryService))
+    private readonly service: RegistryService,
+  ) {}
 
   removeClientsByTeam(teamId: string) {
     const registries = this.registriesByTeam.get(teamId)
@@ -142,6 +145,11 @@ export default class RegistryClientProvider {
     teamRegistries.push(registryId)
 
     return client
+  }
+
+  @OnEvent(REGISTRY_EVENT_UPDATE)
+  onRegistryUpdated(event: RegistryUpdatedEvent) {
+    this.invalidate(event.id)
   }
 
   private invalidate(registryId: string, delay: number | null = null) {

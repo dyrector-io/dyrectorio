@@ -47,7 +47,7 @@ interface PipelineStatusTagProps {
   status: PipelineRunStatus
 }
 
-const PipelineStatusTag = (props: PipelineStatusTagProps) => {
+const PipelineRunStatusTag = (props: PipelineStatusTagProps) => {
   const { status, className } = props
 
   const { t } = useTranslation('common')
@@ -59,4 +59,4 @@ const PipelineStatusTag = (props: PipelineStatusTagProps) => {
   )
 }
 
-export default PipelineStatusTag
+export default PipelineRunStatusTag
