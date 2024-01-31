@@ -17,8 +17,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 )
 
-const PodStateTimeoutSeconds = 120
-
 type DeployFacade struct {
 	ctx            context.Context
 	params         *DeployFacadeParams
