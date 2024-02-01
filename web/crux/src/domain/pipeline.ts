@@ -18,6 +18,11 @@ export type PipelineRunStatusEvent = {
   finishedAt?: Date
 }
 
+export type PipelineHookOptions = {
+  teamSlug: string
+  pipelineId: string
+}
+
 export type AzureRepository = {
   organization: string
   project: string

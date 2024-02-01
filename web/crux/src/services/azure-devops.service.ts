@@ -9,6 +9,7 @@ import {
   AzureDevOpsProject,
   AzureDevOpsRun,
   AzureDevOpsVariable,
+  PipelineHookOptions,
 } from 'src/domain/pipeline'
 import {
   CruxForbiddenException,
@@ -124,9 +125,9 @@ export default class AzureDevOpsService {
 
   async createHook(
     creds: AzureDevOpsCredentials,
-    pipelineId: string,
     pipelineName: string,
     jwt: string,
+    options: PipelineHookOptions,
   ): Promise<AzureDevOpsHook> {
     const pipeline = await this.getPipeline(creds, pipelineName)
     const project = await this.getProject(creds)
@@ -135,7 +136,9 @@ export default class AzureDevOpsService {
       consumerActionId: 'httpRequest',
       consumerId: 'webHooks',
       consumerInputs: {
-        url: `${this.config.getOrThrow('CRUX_UI_URL')}/api/dyo/pipelines/${pipelineId}/hooks/azure/pipeline-state`,
+        url: `${this.config.getOrThrow('CRUX_UI_URL')}/api/${options.teamSlug}/pipelines/${
+          options.pipelineId
+        }/hooks/azure/pipeline-state`,
         httpHeaders: `Authorization: Bearer ${jwt}`,
         messagesToSend: 'none',
         detailedMessagesToSend: 'none',
