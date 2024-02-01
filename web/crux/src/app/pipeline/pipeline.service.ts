@@ -13,6 +13,7 @@ import {
   AzureTrigger,
   PipelineCreateRunOptions,
   PipelineEventWatcherTrigger,
+  PipelineHookOptions,
   PipelineRunStatusEvent,
   PipelineRunWithPipline,
   applyPipelineInputTemplate,
@@ -128,7 +129,10 @@ export default class PipelineService {
         },
       })
 
-      const hook = await this.createAzureHook(creds, pipeline.id, req.trigger)
+      const hook = await this.createAzureHook(creds, req.trigger, {
+        teamSlug,
+        pipelineId: pipeline.id,
+      })
 
       pipeline = await prisma.pipeline.update({
         where: {
@@ -148,7 +152,7 @@ export default class PipelineService {
     })
   }
 
-  async updatePipeline(id: string, req: UpdatePipelineDto, identity: Identity): Promise<void> {
+  async updatePipeline(teamSlug: string, id: string, req: UpdatePipelineDto, identity: Identity): Promise<void> {
     const oldPipeline = await this.prisma.pipeline.findUnique({
       where: {
         id,
@@ -191,7 +195,10 @@ export default class PipelineService {
         }
       }
 
-      const hook = await this.createAzureHook(creds, id, trigger)
+      const hook = await this.createAzureHook(creds, trigger, {
+        teamSlug,
+        pipelineId: id,
+      })
       hooks = [hook]
     }
 
@@ -444,17 +451,17 @@ export default class PipelineService {
 
   private async createAzureHook(
     creds: AzureDevOpsCredentials,
-    pipelineId: string,
     trigger: AzureTrigger,
+    options: PipelineHookOptions,
   ): Promise<AzureHook> {
     const token: PipelineTokenPayload = {
-      sub: pipelineId,
+      sub: options.pipelineId,
       nonce: generateNonce(),
     }
 
     const signedToken = this.jwtService.sign(token)
 
-    const azHook = await this.azureService.createHook(creds, pipelineId, trigger.name, signedToken)
+    const azHook = await this.azureService.createHook(creds, trigger.name, signedToken, options)
 
     return {
       ...azHook,

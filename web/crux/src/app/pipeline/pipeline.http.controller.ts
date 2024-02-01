@@ -132,12 +132,12 @@ export default class PipelineHttpController {
   @UseGuards(PipelineAccessValidationGuard)
   @AuditLogLevel('no-data')
   async updatePipeline(
-    @TeamSlug() _: string,
+    @TeamSlug() teamSlug: string,
     @PipelineId() id: string,
     @Body() request: UpdatePipelineDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<void> {
-    await this.service.updatePipeline(id, request, identity)
+    await this.service.updatePipeline(teamSlug, id, request, identity)
   }
 
   @Delete(ROUTE_PIPELINE_ID)
