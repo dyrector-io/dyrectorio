@@ -77,11 +77,29 @@ export const pipelineEdited =
 
 export const pipelineTriggered =
   (run: PipelineRun): RepatchAction<PipelineDetailsState> =>
-  state => ({
-    ...state,
-    viewState: 'run-list',
-    runs: [run, ...state.runs],
-  })
+  state => {
+    let runList = [...state.runs]
+
+    const index = runList.findIndex(it => it.id === run.id)
+    if (index > -1) {
+      // ws message update has arrived earlier
+
+      const existingRun = runList[index]
+      runList[index] = {
+        ...run,
+        status: existingRun.status,
+        finishedAt: existingRun.finishedAt,
+      }
+    } else {
+      runList = [run, ...runList]
+    }
+
+    return {
+      ...state,
+      viewState: 'run-list',
+      runs: runList,
+    }
+  }
 
 export const upsertEventWatcher =
   (eventWatcher: PipelineEventWatcher): RepatchAction<PipelineDetailsState> =>

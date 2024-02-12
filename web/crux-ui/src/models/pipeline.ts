@@ -76,7 +76,7 @@ export type CreatePipeline = UpdatePipeline & {
 }
 
 export type TriggerPipeline = {
-  inputs?: Record<string, string>
+  inputs?: UniqueKeyValue[]
 }
 
 export const WS_TYPE_PIPELINE_STATUS = 'pipeline-status'

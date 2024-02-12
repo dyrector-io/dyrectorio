@@ -2,18 +2,20 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoMessage from '@app/elements/dyo-message'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import { fromApiError } from '@app/error-responses'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { PipelineDetails, PipelineRun } from '@app/models'
+import { PipelineDetails, PipelineRun, TriggerPipeline } from '@app/models'
 import { sendForm } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import { QA_DIALOG_LABEL_TRIGGER_PIPELINE } from 'quality-assurance'
 import { useState } from 'react'
 import { OFFLINE_EDITOR_STATE } from '../editor/use-item-editor-state'
 import KeyValueInput from '../shared/key-value-input'
-import { QA_DIALOG_LABEL_TRIGGER_PIPELINE } from 'quality-assurance'
 
 type TriggerPipelineCardProps = Omit<DyoCardProps, 'children'> & {
   pipeline: PipelineDetails
@@ -30,10 +32,13 @@ const TriggerPipelineCard = (props: TriggerPipelineCardProps) => {
 
   const [confirmConfig, confirm] = useConfirmation()
   const [inputs, setInputs] = useState(pipeline.trigger.inputs)
+  const [error, setError] = useState<string>(null)
 
   const handleApiError = defaultApiErrorHandler(t)
 
   const onTrigger = async (): Promise<void> => {
+    setError(null)
+
     const confirmed = await confirm({
       title: t('common:areYouSure'),
       description: t('areYouSureTriggerName', pipeline),
@@ -45,20 +50,21 @@ const TriggerPipelineCard = (props: TriggerPipelineCardProps) => {
       return
     }
 
-    const body: Record<string, string> =
-      inputs.length < 1
-        ? null
-        : inputs.reduce((result, it) => {
-            const { key, value } = it
-
-            result[key] = value
-            return result
-          }, {})
+    const body: TriggerPipeline = {
+      inputs: inputs && inputs.length > 0 ? inputs : null,
+    }
 
     const res = await sendForm('POST', routes.pipeline.api.runs(pipeline.id), body)
 
     if (!res.ok) {
+      if (res.status === 400) {
+        const err = fromApiError(res.status, await res.json())
+        setError(err.description)
+        return
+      }
+
       await handleApiError(res)
+      return
     }
 
     const run = (await res.json()) as PipelineRun
@@ -71,6 +77,8 @@ const TriggerPipelineCard = (props: TriggerPipelineCardProps) => {
         <DyoHeading element="h4" className="text-lg text-bright">
           {t('triggerPipeline')}
         </DyoHeading>
+
+        <DyoMessage className="text-xs italic mb-4" message={error} messageType="info" />
 
         <DyoForm className="flex flex-col gap-4">
           <div className="flex flex-row self-end">
