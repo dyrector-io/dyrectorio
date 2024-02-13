@@ -1,6 +1,30 @@
 # CHANGELOG
 
 
+<a name="0.11.0"></a>
+## [0.11.0](https://github.com/dyrector-io/dyrectorio/compare/0.10.0...0.11.0) (2024-02-13)
+
+### Feat
+
+* container expected state ([#891](https://github.com/dyrector-io/dyrectorio/issues/891))
+* **(web):** pipeline event watchers ([#905](https://github.com/dyrector-io/dyrectorio/issues/905))
+* **(web):** pipelines ([#900](https://github.com/dyrector-io/dyrectorio/issues/900))
+* **(web):** add image push and pull to notifications ([#897](https://github.com/dyrector-io/dyrectorio/issues/897))
+* adds crux coverage to codecov ([#898](https://github.com/dyrector-io/dyrectorio/issues/898))
+* **(web):** add encryption for third party credentials ([#892](https://github.com/dyrector-io/dyrectorio/issues/892))
+* COAL ([#878](https://github.com/dyrector-io/dyrectorio/issues/878))
+
+### Fix
+
+* pipeline related bugs ([#907](https://github.com/dyrector-io/dyrectorio/issues/907))
+* missing teamslug from pipeline hooks ([#906](https://github.com/dyrector-io/dyrectorio/issues/906))
+* **(crux):** pipelines migration
+* **(web):** v2 manifest list & yup translate error ([#896](https://github.com/dyrector-io/dyrectorio/issues/896))
+* **(crux):** coal label parser typo ([#895](https://github.com/dyrector-io/dyrectorio/issues/895))
+* **(crux):** crash while selecting tag for images without an environment ([#894](https://github.com/dyrector-io/dyrectorio/issues/894))
+* **(crux-ui):** hide change credentials field when creating a registry or storage ([#893](https://github.com/dyrector-io/dyrectorio/issues/893))
+
+
 <a name="0.10.0"></a>
 ## [0.10.0](https://github.com/dyrector-io/dyrectorio/compare/0.9.0...0.10.0) (2023-12-04)
 
