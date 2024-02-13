@@ -6,12 +6,15 @@ import {
   AzureDevOpsHook,
   AzureDevOpsListResponse,
   AzureDevOpsPipeline,
+  AzureDevOpsPipelineTrigger,
+  AzureDevOpsPipelineTriggerError,
   AzureDevOpsProject,
   AzureDevOpsRun,
   AzureDevOpsVariable,
   PipelineHookOptions,
 } from 'src/domain/pipeline'
 import {
+  CruxBadRequestException,
   CruxForbiddenException,
   CruxInternalServerErrorException,
   CruxNotFoundException,
@@ -110,8 +113,21 @@ export default class AzureDevOpsService {
       return result
     }, {})
 
-    const res = await this.post(creds, `/pipelines/${pipeline.id}/runs`, variables)
+    const body: AzureDevOpsPipelineTrigger = {
+      variables,
+    }
+
+    const res = await this.post(creds, `/pipelines/${pipeline.id}/runs`, body)
     if (!res.ok) {
+      if (res.status === 400) {
+        const error = (await res.json()) as AzureDevOpsPipelineTriggerError
+
+        throw new CruxBadRequestException({
+          message: error.message,
+        })
+      }
+
+      this.logger.error(`Failed to start AzureDevOps pipeline. Status: ${res.status}, ${await res.text()}`)
       throw new CruxInternalServerErrorException({
         message: 'Failed to start pipeline',
         property: 'httpStatus',

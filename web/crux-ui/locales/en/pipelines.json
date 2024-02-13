@@ -42,5 +42,9 @@
 
   "filters": {
     "imageNameStartsWith": "Image name starts with"
+  },
+
+  "errors": {
+    "trigger": "Failed to start the pipeline. There might be a undeclared variables?"
   }
 }

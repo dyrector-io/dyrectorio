@@ -58,6 +58,14 @@ export type AzureDevOpsVariable = {
   value: string
 }
 
+export type AzureDevOpsPipelineTrigger = {
+  variables: Record<string, AzureDevOpsVariable>
+}
+
+export type AzureDevOpsPipelineTriggerError = {
+  message: string
+}
+
 export type AzureDevOpsPipeline = {
   id: number
   name: string
@@ -121,14 +129,14 @@ export type PipelineCreateRunOptions = {
     }
 )
 
-const applyTemplate = (template: string, value: string, candidate: string): string =>
-  candidate.replace(new RegExp(`{{\\s*${template}\\s*}}`), value)
+const applyTemplate = (template: string, inputValue: string, templateValue: string): string =>
+  inputValue.replace(new RegExp(`{{\\s*${template}\\s*}}`), templateValue)
 
 const applyTemplatesOnInput = (input: UniqueKeyValue, templates: Record<string, string>) => {
   Object.entries(templates).forEach(entry => {
-    const [template, value] = entry
+    const [template, templateValue] = entry
 
-    input.value = applyTemplate(template, value, input.key)
+    input.value = applyTemplate(template, input.value, templateValue)
   })
 }
 

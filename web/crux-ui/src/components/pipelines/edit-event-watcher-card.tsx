@@ -173,7 +173,7 @@ const EditEventWatcherCard = (props: EditEventWatcherCardProps) => {
         />
 
         <div className="mt-6">
-          <DyoLabel>{t('defaultInputs')}</DyoLabel>
+          <DyoLabel>{t('inputs')}</DyoLabel>
 
           <DyoMessage className="text-xs mt-2" message={t('templateTips')} messageType="info" />
 
