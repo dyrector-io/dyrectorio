@@ -1,7 +1,9 @@
 import AddDeploymentCard from '@app/components/deployments/add-deployment-card'
 import { Layout } from '@app/components/layout'
 import CopyDeploymentCard from '@app/components/projects/versions/deployments/copy-deployment-card'
-import DeploymentStatusTag from '@app/components/projects/versions/deployments/deployment-status-tag'
+import DeploymentStatusTag, {
+  deploymentStatusTranslation,
+} from '@app/components/projects/versions/deployments/deployment-status-tag'
 import useCopyDeploymentState from '@app/components/projects/versions/deployments/use-copy-deployment-state'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
@@ -142,7 +144,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
               className="pl-6"
               name="deploymentStatusFilter"
               choices={DEPLOYMENT_STATUS_VALUES}
-              converter={it => t(`common:deploymentStatuses.${it}`)}
+              converter={it => t(deploymentStatusTranslation(it))}
               selection={filters.filter?.enum}
               onSelectionChange={type => {
                 filters.setFilter({

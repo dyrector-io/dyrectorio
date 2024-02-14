@@ -39,7 +39,7 @@ import {
   QA_MODAL_LABEL_DEPLOYMENT_NOTE,
 } from 'quality-assurance'
 import { useEffect, useState } from 'react'
-import DeploymentStatusTag from './deployments/deployment-status-tag'
+import DeploymentStatusTag, { deploymentStatusTranslation } from './deployments/deployment-status-tag'
 import { VersionActions } from './use-version-state'
 
 interface VersionDeploymentsSectionProps {
@@ -163,7 +163,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
               name="deploymentStatusFilter"
               selection={filters.filter?.enum}
               choices={DEPLOYMENT_STATUS_VALUES}
-              converter={it => t(`common:deploymentStatuses.${it}`)}
+              converter={it => t(deploymentStatusTranslation(it))}
               onSelectionChange={type => {
                 filters.setFilter({
                   enum: type,

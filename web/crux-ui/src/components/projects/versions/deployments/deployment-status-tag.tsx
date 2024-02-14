@@ -36,10 +36,11 @@ const statusToTextColor = (status: DeploymentStatus) => {
   }
 }
 
-const deploymentStatusTranslation = (status: DeploymentStatus): string => {
+export const deploymentStatusTranslation = (status: DeploymentStatus | 'all'): string => {
   switch (status) {
     case 'successful':
     case 'failed':
+    case 'all':
       return `common:${status}`
     default:
       return `common:deploymentStatuses.${status}`

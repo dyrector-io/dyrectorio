@@ -1,4 +1,6 @@
-import DeploymentStatusTag from '@app/components/projects/versions/deployments/deployment-status-tag'
+import DeploymentStatusTag, {
+  deploymentStatusTranslation,
+} from '@app/components/projects/versions/deployments/deployment-status-tag'
 import Filters from '@app/components/shared/filters'
 import { DyoCard } from '@app/elements/dyo-card'
 import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
@@ -51,7 +53,7 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
               className="pl-6"
               name="deploymentStatusFilter"
               choices={DEPLOYMENT_STATUS_VALUES}
-              converter={it => t(`common:deploymentStatuses.${it}`)}
+              converter={it => t(deploymentStatusTranslation(it))}
               selection={filters.filter?.enum}
               onSelectionChange={type => {
                 filters.setFilter({
