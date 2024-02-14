@@ -158,9 +158,7 @@
     "obsolete": "Obsolete",
     "unknown": "Unknown",
     "preparing": "Preparing",
-    "in-progress": "In progress",
-    "successful": "Successful",
-    "failed": "Failed"
+    "in-progress": "In progress"
   },
 
   "containerStatuses": {
