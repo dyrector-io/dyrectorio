@@ -12,7 +12,7 @@
 
 <p align="center">
   <a href="https://github.com/dyrector-io/dyrectorio/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/dyrector-io/dyrectorio" alt="GitHub tag (latest by date)"/></a>
-    <a href="./LICENSE" target="_blank"><img src="https://img.shields.io/badge/licence-Apache%202.0-brightgreen.svg?style=flat)" alt="License"/></a>
+    <a href="./LICENSE" target="_blank"><img src="https://img.shields.io/badge/License-Apache%202.0-brightgreen.svg?style=flat)" alt="License"/></a>
     <a href="https://discord.gg/pZWbd4fxga" target="_blank"><img src="https://img.shields.io/discord/797082431902449694" alt="Discord Budget"/></a>
     <a href="https://codecov.io/gh/dyrector-io/dyrectorio" target="_blank"><img src="https://img.shields.io/codecov/c/github/dyrector-io/dyrectorio/develop?logo=Go&token=F5TZTAJTKX" alt="codecov"/></a>
     <a href="https://github.com/dyrector-io/dyrectorio/graphs/contributors" target="_blank"><img src="https://img.shields.io/github/contributors/dyrector-io/dyrectorio" alt="GitHub contributors"/></a>
@@ -32,7 +32,7 @@ Join our Discord and connect with other members to share and learn together. If 
 </strong>
 </p>
 
-## Getting started
+## Getting Started
 
 You have various options to set up the platform right away:
 
@@ -40,7 +40,7 @@ You have various options to set up the platform right away:
 -   [SaaS](#hosted-version-saas)
 -   [docker-compose.yaml](./docker-compose.yaml)
 
-## Use cases
+## Use Cases
 
 #### 🚢 Manage environments without SSH or kubectl
 
@@ -66,7 +66,7 @@ Editing container settings no longer requires direct access or expertise in JSON
 
 https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a7e4-c6ec4f727b7f.mp4
 
-## Key features
+## Key Features
 
 -   Kubernetes, Docker, and Podman support
 -   Multi-instance deployment
@@ -81,11 +81,11 @@ https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a
 -   Fine-grained RBAC
 -   ChatOps & notification solutions
 
-## Hosted version (SaaS)
+## Deployment Options
 
 Besides the self-hosted instance, you can check out the platform's alpha at [app.dyrectorio.com](https://app.dyrectorio.com). The platform is still in the works, we might reset the database, so it's not recommended for production yet. If you are interested in using dyrector.io in production, reach out to us via [email](hello@dyrector.io) and we'll set up a stable instance for you.
 
-## How it works
+## How it Works
 
 [dyrector.io](https://dyrector.io/) consists of an agent (GoLang) and a platform (UI developed in React.js, Next.js. Backend developed in Node.js, Nest.js). There are two types of agents communicating with the platform: one for Docker and another for Kubernetes. Communication takes place in gRPC with TLS encryption. The data is managed in a PostgreSQL database which we use with Prisma ORM.
 
@@ -122,7 +122,7 @@ We use [semantic versioning](https://semver.org/), but shifted to the right, we 
 
 The minor version is raised if:
 
--   introduction of a braking API change (proto or HTTP)
+-   introduction of a breaking API change (proto or HTTP)
 -   new feature set is completed
 -   milestone is reached
 -   agent configuration changes
