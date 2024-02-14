@@ -40,6 +40,7 @@ export const deploymentStatusTranslation = (status: DeploymentStatus | 'all'): s
   switch (status) {
     case 'successful':
     case 'failed':
+    case 'all':
       return `common:${status}`
     default:
       return `common:deploymentStatuses.${status}`
