@@ -57,7 +57,7 @@ test('using an incorrect slack webhook url should give an error', async ({ page 
   await testCreateNotification(page, 'slack', 'https://hooks.slack.com/invalid/test')
 
   await expect(await page.locator('p.text-error-red')).toContainText(
-    'https://hooks.slack.com/services/T0000000000/B0000000000/XXXXXXXXXXXXXXXXXXXXXXXX/',
+    'https://hooks.slack.com/services/T0000000000/B0000000000/XXXXXXXXXXXXXXXXXXXXXXXX',
   )
 })
 
