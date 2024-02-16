@@ -55,6 +55,7 @@ func InitCLI() *ucli.App {
 				Aliases: []string{"v"},
 				Action:  run,
 			},
+			GetGenerateCommand(),
 		},
 		Flags: []ucli.Flag{
 			&ucli.BoolFlag{
