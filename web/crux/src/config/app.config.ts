@@ -18,7 +18,7 @@ const configSchema = yup.object({
 
   JWT_SECRET: yup.string().min(16).required(),
   ENCRYPTION_SECRET_KEY: encryptionKeyRule.required(
-    'Invalid ENCRYPTION_SECRET_KEY; You can generate a one with `npm run encrypt:generate`',
+    'Invalid or missing env: ENCRYPTION_SECRET_KEY; You can generate a one with `docker run --rm ghcr.io/dyrector-io/dyrectorio/cli/dyo:latest generate crux encryption-key`',
   ),
   ENCRYPTION_DEPRECATED_KEY: encryptionKeyRule.optional(),
 
@@ -54,6 +54,10 @@ class InvalidEnvironmentError extends Error {
 }
 
 const validate = (config: Record<string, any>): Record<string, any> => {
+  if (process.argv.length > 2 && process.argv[2] === 'encrypt') {
+    return config
+  }
+
   try {
     configSchema.validateSync(config, {
       abortEarly: false,
