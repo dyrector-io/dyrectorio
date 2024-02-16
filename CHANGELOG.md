@@ -1,6 +1,24 @@
 # CHANGELOG
 
 
+<a name="0.11.1"></a>
+## [0.11.1](https://github.com/dyrector-io/dyrectorio/compare/0.11.0...0.11.1) (2024-02-16)
+
+### Docs
+
+* braking typo fix and smalle adjustments ([#908](https://github.com/dyrector-io/dyrectorio/issues/908))
+
+### Feat
+
+* **(cli):** add frontend for crux encryption-key generation ([#913](https://github.com/dyrector-io/dyrectorio/issues/913))
+
+### Fix
+
+* **(crux):** encryption key generation ([#914](https://github.com/dyrector-io/dyrectorio/issues/914))
+* **(crux-ui):** notification webhook validations ([#911](https://github.com/dyrector-io/dyrectorio/issues/911))
+* **(web):** add missing i18n lines ([#909](https://github.com/dyrector-io/dyrectorio/issues/909))
+
+
 <a name="0.11.0"></a>
 ## [0.11.0](https://github.com/dyrector-io/dyrectorio/compare/0.10.0...0.11.0) (2024-02-13)
 
@@ -845,7 +863,7 @@
 
 
 <a name="0.2.1"></a>
-## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.1...0.2.1) (2022-09-27)
+## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...0.2.1) (2022-09-27)
 
 ### Chore
 
@@ -998,12 +1016,8 @@
 * websocket message routing
 
 
-<a name="v0.1.1"></a>
-## [v0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...v0.1.1) (2022-08-03)
-
-
 <a name="0.1.1"></a>
-## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.0...0.1.1) (2022-08-03)
+## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...0.1.1) (2022-08-03)
 
 ### Chore
 
@@ -1017,10 +1031,6 @@
 ### Refactor
 
 * **(agent):** tests ([#54](https://github.com/dyrector-io/dyrectorio/issues/54))
-
-
-<a name="v0.1.0"></a>
-## [v0.1.0](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...v0.1.0) (2022-08-01)
 
 
 <a name="0.1.0"></a>
