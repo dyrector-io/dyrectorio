@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { DeploymentStatusEnum } from '@prisma/client'
-import { catchError, finalize, Observable, of, Subject, Subscription, throwError, timeout, TimeoutError } from 'rxjs'
+import { Observable, Subject, Subscription, TimeoutError, catchError, finalize, of, throwError, timeout } from 'rxjs'
 import { NodeConnectionStatus } from 'src/app/node/node.dto'
 import {
   CruxConflictException,
@@ -19,7 +20,6 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import {
   CONTAINER_DELETE_TIMEOUT_MILLIS,
-  DEFAULT_CONTAINER_LOG_TAIL,
   GET_CONTAINER_INSPECTION_TIMEOUT_MILLIS,
   GET_CONTAINER_SECRETS_TIMEOUT_MILLIS,
 } from 'src/shared/const'
@@ -165,13 +165,13 @@ export class Agent {
     return watcher
   }
 
-  upsertContainerLogStream(container: ContainerIdentifier): ContainerLogStream {
+  upsertContainerLogStream(container: ContainerIdentifier, configService: ConfigService): ContainerLogStream {
     this.throwIfCommandsAreDisabled()
 
     const key = Agent.containerPrefixNameOf(container)
     let stream = this.logStreams.get(key)
     if (!stream) {
-      stream = new ContainerLogStream(container, DEFAULT_CONTAINER_LOG_TAIL)
+      stream = new ContainerLogStream(container, configService)
       this.logStreams.set(key, stream)
       stream.start(this.commandChannel)
     }

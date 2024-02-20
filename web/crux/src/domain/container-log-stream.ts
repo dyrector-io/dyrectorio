@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config'
 import { finalize, Observable, startWith, Subject } from 'rxjs'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
@@ -15,7 +16,7 @@ export default class ContainerLogStream {
 
   constructor(
     private container: ContainerIdentifier,
-    private tail: number,
+    private readonly configService: ConfigService,
   ) {}
 
   start(commandChannel: Subject<AgentCommand>) {
@@ -27,7 +28,7 @@ export default class ContainerLogStream {
       containerLog: {
         container: this.container,
         streaming: true,
-        tail: this.tail,
+        tail: this.configService.get<number>('DEFAULT_CONTAINER_LOG_TAIL', 1000),
       },
     } as AgentCommand)
     this.started = true

@@ -11,7 +11,7 @@ import {
   DeploymentStatusMessage,
   Empty,
 } from 'src/grpc/protobuf/proto/common'
-import { DEFAULT_CONTAINER_LOG_TAIL, GET_CONTAINER_SECRETS_TIMEOUT_MILLIS } from 'src/shared/const'
+import { GET_CONTAINER_SECRETS_TIMEOUT_MILLIS } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { Agent, AgentConnectionMessage } from './agent'
 import { generateAgentToken } from './agent-token'
@@ -21,6 +21,7 @@ const AGENT_ID = 'agent-id'
 const AGENT_ADDRESS = '127.0.0.1:1234'
 const AGENT_VERSION = '1.2.3'
 const AGENT_PUBLIC_KEY = 'public-key'
+const DEFAULT_CONTAINER_LOG_TAIL = '1000'
 
 const GrpcNodeConnectionMock = jest.fn().mockImplementation(() => ({
   nodeId: AGENT_ID,
