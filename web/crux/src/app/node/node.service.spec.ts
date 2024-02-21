@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config'
 import { Test, TestingModule } from '@nestjs/testing'
 import { of } from 'rxjs'
 import DomainNotificationService from 'src/services/domain.notification.service'
@@ -42,6 +43,10 @@ describe('NodeService', () => {
           {
             provide: PrismaService,
             useValue: jest.mocked(PrismaService),
+          },
+          {
+            provide: ConfigService,
+            useValue: jest.mocked(ConfigService),
           },
           NodeService,
         ],

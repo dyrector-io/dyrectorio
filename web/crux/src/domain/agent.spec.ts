@@ -21,7 +21,7 @@ const AGENT_ID = 'agent-id'
 const AGENT_ADDRESS = '127.0.0.1:1234'
 const AGENT_VERSION = '1.2.3'
 const AGENT_PUBLIC_KEY = 'public-key'
-const DEFAULT_CONTAINER_LOG_TAIL = '1000'
+const DEFAULT_CONTAINER_LOG_TAIL = '-1'
 
 const GrpcNodeConnectionMock = jest.fn().mockImplementation(() => ({
   nodeId: AGENT_ID,
@@ -342,7 +342,12 @@ describe('agent', () => {
       name: 'name',
     }
 
-    const logStream = agent.upsertContainerLogStream(container)
+    const ConfigServiceMock = jest.fn().mockImplementation(() => ({
+      get: jest.fn().mockReturnValue('-1'),
+    }))
+    const configServiceMock = new ConfigServiceMock()
+
+    const logStream = agent.upsertContainerLogStream(container, configServiceMock)
 
     const logEvent = firstValueFrom(logStream.watch().pipe(skip(1)))
 
