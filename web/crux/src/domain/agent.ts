@@ -1,5 +1,4 @@
 import { Logger } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { Observable, Subject, Subscription, TimeoutError, catchError, finalize, of, throwError, timeout } from 'rxjs'
 import { NodeConnectionStatus } from 'src/app/node/node.dto'
@@ -165,13 +164,13 @@ export class Agent {
     return watcher
   }
 
-  upsertContainerLogStream(container: ContainerIdentifier, configService: ConfigService): ContainerLogStream {
+  upsertContainerLogStream(container: ContainerIdentifier, tail: number): ContainerLogStream {
     this.throwIfCommandsAreDisabled()
 
     const key = Agent.containerPrefixNameOf(container)
     let stream = this.logStreams.get(key)
     if (!stream) {
-      stream = new ContainerLogStream(container, configService)
+      stream = new ContainerLogStream(container, tail)
       this.logStreams.set(key, stream)
       stream.start(this.commandChannel)
     }

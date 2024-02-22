@@ -249,7 +249,10 @@ export default class NodeService {
 
     const agent = this.agentService.getByIdOrThrow(nodeId)
 
-    const stream = agent.upsertContainerLogStream(container, this.configService)
+    const stream = agent.upsertContainerLogStream(
+      container,
+      this.configService.get<number>('DEFAULT_CONTAINER_LOG_TAIL', 1000),
+    )
 
     return stream.watch()
   }
