@@ -11,7 +11,7 @@ import {
   DeploymentStatusMessage,
   Empty,
 } from 'src/grpc/protobuf/proto/common'
-import { DEFAULT_CONTAINER_LOG_TAIL, GET_CONTAINER_SECRETS_TIMEOUT_MILLIS } from 'src/shared/const'
+import { GET_CONTAINER_SECRETS_TIMEOUT_MILLIS } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { Agent, AgentConnectionMessage } from './agent'
 import { generateAgentToken } from './agent-token'
@@ -341,7 +341,8 @@ describe('agent', () => {
       name: 'name',
     }
 
-    const logStream = agent.upsertContainerLogStream(container)
+    const tail = 1000
+    const logStream = agent.upsertContainerLogStream(container, tail)
 
     const logEvent = firstValueFrom(logStream.watch().pipe(skip(1)))
 
@@ -353,7 +354,7 @@ describe('agent', () => {
           name: 'name',
         },
         streaming: true,
-        tail: DEFAULT_CONTAINER_LOG_TAIL,
+        tail,
       },
     })
 

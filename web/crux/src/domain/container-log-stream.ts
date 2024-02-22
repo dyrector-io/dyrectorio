@@ -14,8 +14,8 @@ export default class ContainerLogStream {
   private completer: ContainerLogStreamCompleter = null
 
   constructor(
-    private container: ContainerIdentifier,
-    private tail: number,
+    private readonly container: ContainerIdentifier,
+    private readonly tail: number,
   ) {}
 
   start(commandChannel: Subject<AgentCommand>) {
