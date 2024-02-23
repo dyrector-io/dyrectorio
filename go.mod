@@ -14,7 +14,7 @@ require (
 	github.com/thanhpk/randstr v1.0.5
 	github.com/urfave/cli/v2 v2.25.1
 	golang.org/x/exp v0.0.0-20230420155640-133eef4313cb
-	golang.org/x/net v0.10.0
+	golang.org/x/net v0.17.0
 	google.golang.org/grpc v1.56.3
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -25,7 +25,7 @@ require (
 
 require (
 	github.com/docker/distribution v2.8.2+incompatible
-	github.com/docker/docker v23.0.5+incompatible
+	github.com/docker/docker v23.0.8+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/google/go-containerregistry v0.15.1
 	golang.org/x/sync v0.1.0
