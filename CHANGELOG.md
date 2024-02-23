@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+<a name="0.11.2"></a>
+## [0.11.2](https://github.com/dyrector-io/dyrectorio/compare/0.11.1...0.11.2) (2024-02-22)
+
+### Feat
+
+* **(web):** add DEFAULT_CONTAINER_LOG_TAIL to .env ([#915](https://github.com/dyrector-io/dyrectorio/issues/915))
+
+
 <a name="0.11.1"></a>
 ## [0.11.1](https://github.com/dyrector-io/dyrectorio/compare/0.11.0...0.11.1) (2024-02-16)
 
@@ -863,7 +871,7 @@
 
 
 <a name="0.2.1"></a>
-## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...0.2.1) (2022-09-27)
+## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.1...0.2.1) (2022-09-27)
 
 ### Chore
 
@@ -1016,8 +1024,12 @@
 * websocket message routing
 
 
+<a name="v0.1.1"></a>
+## [v0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...v0.1.1) (2022-08-03)
+
+
 <a name="0.1.1"></a>
-## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...0.1.1) (2022-08-03)
+## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.0...0.1.1) (2022-08-03)
 
 ### Chore
 
@@ -1031,6 +1043,10 @@
 ### Refactor
 
 * **(agent):** tests ([#54](https://github.com/dyrector-io/dyrectorio/issues/54))
+
+
+<a name="v0.1.0"></a>
+## [v0.1.0](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...v0.1.0) (2022-08-01)
 
 
 <a name="0.1.0"></a>
