@@ -1,12 +1,14 @@
 import { HEADER_LOCATION } from '@app/const'
 import { invalidArgument } from '@app/error-responses'
-import { IdentityTraits, Register, toKratosLocationChangeRequiredError } from '@app/models'
-import { registerSchema } from '@app/validations'
 import {
-  UpdateRegistrationFlowBody,
-  UpdateRegistrationFlowWithOidcMethod,
-  UpdateRegistrationFlowWithPasswordMethod,
-} from '@ory/kratos-client'
+  IdentityTraits,
+  Register,
+  UpdateRegistrationWithOidc,
+  UpdateRegistrationWithPassword,
+  toKratosLocationChangeRequiredError,
+} from '@app/models'
+import { registerSchema } from '@app/validations'
+import { UpdateRegistrationFlowBody } from '@ory/kratos-client'
 import { validateCaptcha } from '@server/captcha'
 import { forwardCookieToResponse } from '@server/cookie'
 import { useErrorMiddleware } from '@server/error-middleware'
@@ -27,7 +29,7 @@ const dtoToKratosBody = (dto: Register): UpdateRegistrationFlowBody => {
         },
       }
 
-      const body: UpdateRegistrationFlowWithPasswordMethod = {
+      const body: UpdateRegistrationWithPassword = {
         csrf_token: dto.csrfToken,
         method: 'password',
         password: dto.password,
@@ -37,7 +39,7 @@ const dtoToKratosBody = (dto: Register): UpdateRegistrationFlowBody => {
       return body
     }
     case 'oidc': {
-      const body: UpdateRegistrationFlowWithOidcMethod = {
+      const body: UpdateRegistrationWithOidc = {
         method: 'oidc',
         provider: dto.provider,
         csrf_token: dto.csrfToken,

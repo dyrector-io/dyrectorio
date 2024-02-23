@@ -1,4 +1,14 @@
-import { Identity } from '@ory/kratos-client'
+import {
+  Identity,
+  UpdateLoginFlowWithOidcMethod,
+  UpdateLoginFlowWithPasswordMethod,
+  UpdateRecoveryFlowWithCodeMethod,
+  UpdateRegistrationFlowWithOidcMethod,
+  UpdateRegistrationFlowWithPasswordMethod,
+  UpdateSettingsFlowWithOidcMethod,
+  UpdateSettingsFlowWithPasswordMethod,
+  UpdateSettingsFlowWithProfileMethod,
+} from '@ory/kratos-client'
 
 export type AxiosErrorResponse<T> = {
   status: number
@@ -48,6 +58,23 @@ export type LoginWithOidc = LoginBase & {
 }
 
 export type Login = LoginWithPassword | LoginWithOidc
+
+type PasswordMethod = { method: 'password' }
+type OidcMethod = { method: 'oidc' }
+type CodeMethod = { method: 'code' }
+type ProfileMethod = { method: 'profile' }
+
+export type UpdateRegistrationWithPassword = UpdateRegistrationFlowWithPasswordMethod & PasswordMethod
+export type UpdateRegistrationWithOidc = UpdateRegistrationFlowWithOidcMethod & OidcMethod
+
+export type UpdateLoginWithPassword = UpdateLoginFlowWithPasswordMethod & PasswordMethod
+export type UpdateLoginWithOidc = UpdateLoginFlowWithOidcMethod & OidcMethod
+
+export type UpdateRecoveryWithCode = UpdateRecoveryFlowWithCodeMethod & CodeMethod
+
+export type UpdateSettingsWithPassword = UpdateSettingsFlowWithPasswordMethod & PasswordMethod
+export type UpdateSettingsWithOidc = UpdateSettingsFlowWithOidcMethod & OidcMethod
+export type UpdateSettingsWithProfile = UpdateSettingsFlowWithProfileMethod & ProfileMethod
 
 type RegisterBase = {
   flow: string

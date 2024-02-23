@@ -1,6 +1,5 @@
 import { HEADER_LOCATION } from '@app/const'
-import { RecoverEmail, toKratosLocationChangeRequiredError } from '@app/models'
-import { UpdateRecoveryFlowWithCodeMethod } from '@ory/kratos-client'
+import { RecoverEmail, UpdateRecoveryWithCode, toKratosLocationChangeRequiredError } from '@app/models'
 import { validateCaptcha } from '@server/captcha'
 import { cookieOf, forwardCookieToResponse } from '@server/cookie'
 import { useErrorMiddleware } from '@server/error-middleware'
@@ -17,7 +16,7 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const { code } = dto
 
-  const body: UpdateRecoveryFlowWithCodeMethod = {
+  const body: UpdateRecoveryWithCode = {
     csrf_token: dto.csrfToken,
     method: 'code',
     email: !code ? dto.email : null,

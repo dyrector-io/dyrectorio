@@ -55,7 +55,7 @@ down:
 .PHONY: upd
 upd:
 	cd cmd/dyo && \
-	go run . --disable-crux --disable-crux-ui --image-tag latest --prefix dyo-latest up
+	go run . --disable-crux --disable-crux-ui --image-tag latest --prefix dyo-latest --prefer-local-images up
 
 .PHONY: downd
 downd:

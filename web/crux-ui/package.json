@@ -31,7 +31,7 @@
     "install:x64": "npm install --target_arch=x64"
   },
   "dependencies": {
-    "@ory/kratos-client": "^0.13.1",
+    "@ory/kratos-client": "^1.1.0",
     "clsx": "^2.0.0",
     "formik": "^2.4.3",
     "next": "^13.5.4",

@@ -1,13 +1,13 @@
 import { HEADER_LOCATION } from '@app/const'
 import { invalidArgument } from '@app/error-responses'
-import { AxiosErrorResponse, Login, toKratosLocationChangeRequiredError } from '@app/models'
 import {
-  LoginFlow,
-  UiContainer,
-  UpdateLoginFlowBody,
-  UpdateLoginFlowWithOidcMethod,
-  UpdateLoginFlowWithPasswordMethod,
-} from '@ory/kratos-client'
+  AxiosErrorResponse,
+  Login,
+  UpdateLoginWithOidc,
+  UpdateLoginWithPassword,
+  toKratosLocationChangeRequiredError,
+} from '@app/models'
+import { LoginFlow, UiContainer, UpdateLoginFlowBody } from '@ory/kratos-client'
 import { validateCaptcha } from '@server/captcha'
 import { cookieOf, forwardCookieToResponse } from '@server/cookie'
 import { useErrorMiddleware } from '@server/error-middleware'
@@ -21,7 +21,7 @@ const LOGIN_DETECTED = 'A valid session was detected and thus login is not possi
 const dtoToKratosBody = (dto: Login): UpdateLoginFlowBody => {
   switch (dto.method) {
     case 'password': {
-      const body: UpdateLoginFlowWithPasswordMethod = {
+      const body: UpdateLoginWithPassword = {
         method: 'password',
         csrf_token: dto.csrfToken,
         identifier: dto.email,
@@ -31,7 +31,7 @@ const dtoToKratosBody = (dto: Login): UpdateLoginFlowBody => {
       return body
     }
     case 'oidc': {
-      const body: UpdateLoginFlowWithOidcMethod = {
+      const body: UpdateLoginWithOidc = {
         method: 'oidc',
         provider: dto.provider,
         csrf_token: dto.csrfToken,

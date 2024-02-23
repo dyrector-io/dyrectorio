@@ -1,5 +1,4 @@
-import { EditProfile } from '@app/models'
-import { UpdateSettingsFlowWithProfileMethod } from '@ory/kratos-client'
+import { EditProfile, UpdateSettingsWithProfile } from '@app/models'
 import { cookieOf } from '@server/cookie'
 import kratos from '@server/kratos'
 import useKratosErrorMiddleware from '@server/kratos-error-middleware'
@@ -11,7 +10,7 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const cookie = cookieOf(req)
 
-  const body: UpdateSettingsFlowWithProfileMethod = {
+  const body: UpdateSettingsWithProfile = {
     method: 'profile',
     csrf_token: dto.csrfToken,
     traits: {
