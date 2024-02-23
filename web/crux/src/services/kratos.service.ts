@@ -45,6 +45,8 @@ export default class KratosService {
   }
 
   async getIdentitiesByIds(identityIds: Set<string>): Promise<Map<string, Identity>> {
+    const ids: string[] = Array.from(identityIds.keys())
+
     const result: Map<string, Identity> = new Map()
 
     let identities: Pick<AxiosResponse<Identity[]>, 'data' | 'headers'> = null
@@ -52,7 +54,8 @@ export default class KratosService {
       if (!identities) {
         // eslint-disable-next-line no-await-in-loop
         identities = await this.identity.listIdentities({
-          perPage: KRATOS_LIST_PAGE_SIZE,
+          pageSize: KRATOS_LIST_PAGE_SIZE,
+          ids,
         })
       } else {
         const headers = identities.headers as KratosListHeaders
@@ -72,21 +75,21 @@ export default class KratosService {
 
         const url = new URL(nextLink)
 
-        const page = Number.parseInt(url.searchParams.get('page'), 10)
-        const perPage = Number.parseInt(url.searchParams.get('per_page'), 10)
+        const pageToken = url.searchParams.get('page_token')
+        const pageSize = Number.parseInt(url.searchParams.get('page_size'), 10)
         // eslint-disable-next-line no-await-in-loop
         identities = await this.identity.listIdentities({
-          page,
-          perPage,
+          pageToken,
+          pageSize,
+          ids,
         })
       }
 
       identities.data.forEach(it => {
         const { id } = it
-        if (identityIds.has(id)) {
-          result.set(id, it)
-          identityIds.delete(id)
-        }
+
+        result.set(id, it)
+        identityIds.delete(id)
       })
     } while (identityIds.size > 0)
 
