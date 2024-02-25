@@ -1,15 +1,10 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable import/no-cycle */
 import { ATTRIB_CSRF, HEADER_SET_COOKIE } from '@app/const'
+import { UpdateLoginWithPassword } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { findAttributes } from '@app/utils'
-import {
-  Configuration,
-  FrontendApi,
-  Identity,
-  IdentityApi,
-  UpdateLoginFlowWithPasswordMethod,
-} from '@ory/kratos-client'
+import { Configuration, FrontendApi, Identity, IdentityApi } from '@ory/kratos-client'
 import { Locator, Page } from '@playwright/test'
 import { ChildProcess, ExecException, ExecOptions, exec } from 'child_process'
 import path from 'path'
@@ -144,10 +139,10 @@ export const deleteUserByEmail = async (kratos: IdentityApi, email: string) => {
 
 export const getUserSessionToken = async (frontend: FrontendApi) => {
   const flow = await frontend.createBrowserLoginFlow()
-  const cookie = flow.headers[HEADER_SET_COOKIE]
+  const cookie = flow.headers[HEADER_SET_COOKIE] as any as string
   const { data } = flow
 
-  const body: UpdateLoginFlowWithPasswordMethod = {
+  const body: UpdateLoginWithPassword = {
     method: 'password',
     csrf_token: findAttributes(data.ui, ATTRIB_CSRF)?.value,
     identifier: USER_EMAIL,

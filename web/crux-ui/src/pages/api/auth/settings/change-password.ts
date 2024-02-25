@@ -1,5 +1,4 @@
-import { ChangePassword } from '@app/models'
-import { UpdateSettingsFlowWithPasswordMethod } from '@ory/kratos-client'
+import { ChangePassword, UpdateSettingsWithPassword } from '@app/models'
 import { cookieOf } from '@server/cookie'
 import kratos, { identityPasswordSet, sessionOf } from '@server/kratos'
 import useKratosErrorMiddleware from '@server/kratos-error-middleware'
@@ -10,7 +9,7 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
   const dto = req.body as ChangePassword
   const cookie = cookieOf(req)
 
-  const body: UpdateSettingsFlowWithPasswordMethod = {
+  const body: UpdateSettingsWithPassword = {
     method: 'password',
     csrf_token: dto.csrfToken,
     password: dto.password,

@@ -1,6 +1,5 @@
 import { HEADER_LOCATION } from '@app/const'
-import { toKratosLocationChangeRequiredError } from '@app/models'
-import { UpdateSettingsFlowWithOidcMethod } from '@ory/kratos-client'
+import { UpdateSettingsWithOidc, toKratosLocationChangeRequiredError } from '@app/models'
 import { cookieOf, forwardCookieToResponse } from '@server/cookie'
 import kratos from '@server/kratos'
 import useKratosErrorMiddleware from '@server/kratos-error-middleware'
@@ -12,8 +11,8 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const dto = req.body as any
 
-  const body: UpdateSettingsFlowWithOidcMethod = {
-    method: 'profile',
+  const body: UpdateSettingsWithOidc = {
+    method: 'oidc',
     flow: dto.flow,
     link: dto.provider,
   }
@@ -44,8 +43,8 @@ const onDelete = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const dto = req.body as any
 
-  const body: UpdateSettingsFlowWithOidcMethod = {
-    method: 'profile',
+  const body: UpdateSettingsWithOidc = {
+    method: 'oidc',
     flow: dto.flow,
     unlink: dto.provider,
   }

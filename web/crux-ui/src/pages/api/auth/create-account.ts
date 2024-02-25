@@ -1,8 +1,7 @@
 import { HEADER_LOCATION } from '@app/const'
 import { missingParameter } from '@app/error-responses'
-import { CreateAccount, toKratosLocationChangeRequiredError } from '@app/models'
+import { CreateAccount, UpdateRecoveryWithCode, toKratosLocationChangeRequiredError } from '@app/models'
 import { userInvitationApiUrl } from '@app/routes'
-import { UpdateRecoveryFlowWithCodeMethod } from '@ory/kratos-client'
 import { cookieOf, forwardCookieToResponse } from '@server/cookie'
 import { fetchCrux } from '@server/crux-api'
 import { useErrorMiddleware } from '@server/error-middleware'
@@ -29,7 +28,7 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
 
   let cookie = cookieOf(req)
 
-  const body: UpdateRecoveryFlowWithCodeMethod = {
+  const body: UpdateRecoveryWithCode = {
     method: 'code',
     code: dto.code,
   }
