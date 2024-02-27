@@ -41,6 +41,7 @@ services:
       - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
       - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
       - QA_OPT_OUT=${QA_OPT_OUT:-false}
+      - ENCRYPTION_SECRET_KEY=${ENCRYPTION_SECRET_KEY}
     depends_on:
       crux-postgres:
         condition: service_healthy

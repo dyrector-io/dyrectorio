@@ -10,6 +10,8 @@ export const installDagent = async (page: Page) => {
 
   await page.locator('button:has-text("Add")').click()
 
+  await page.waitForSelector('h4:text-is("New node")')
+
   await page.locator('input[name=name] >> visible=true').fill(DAGENT_NODE)
 
   await page.locator('button:has-text("Save")').click()
