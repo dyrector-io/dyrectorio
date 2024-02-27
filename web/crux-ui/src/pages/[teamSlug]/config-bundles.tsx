@@ -7,18 +7,18 @@ import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
+import useAnchor from '@app/hooks/use-anchor'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { ConfigBundle } from '@app/models'
-import { TeamRoutes } from '@app/routes'
+import { ANCHOR_NEW, ListRouteOptions, TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
 
 interface ConfigBundlesPageProps {
   bundles: ConfigBundle[]
@@ -30,20 +30,22 @@ const ConfigBundles = (props: ConfigBundlesPageProps) => {
   const { t } = useTranslation('config-bundles')
   const routes = useTeamRoutes()
   const router = useRouter()
+  const anchor = useAnchor()
 
   const filters = useFilters<ConfigBundle, TextFilter>({
     filters: [textFilterFor<ConfigBundle>(it => [it.name])],
     initialData: bundles,
   })
 
-  const [creating, setCreating] = useState(false)
+  const creating = anchor === ANCHOR_NEW
   const submit = useSubmit()
 
   const onCreated = async (bundle: ConfigBundle) => {
-    setCreating(false)
-    filters.setItems([...filters.items, bundle])
-
     await router.push(routes.configBundles.details(bundle.id))
+  }
+
+  const onRouteOptionsChange = async (routeOptions: ListRouteOptions) => {
+    await router.replace(routes.configBundles.list(routeOptions))
   }
 
   const selfLink: BreadcrumbLink = {
@@ -54,7 +56,7 @@ const ConfigBundles = (props: ConfigBundlesPageProps) => {
   return (
     <Layout title={t('common:configBundles')}>
       <PageHeading pageLink={selfLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
+        <ListPageMenu creating={creating} onRouteOptionsChange={onRouteOptionsChange} submit={submit} />
       </PageHeading>
 
       {!creating ? null : <AddConfigBundleCard className="mb-8 px-8 py-6" submit={submit} onCreated={onCreated} />}

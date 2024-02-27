@@ -10,18 +10,18 @@ import ViewModeToggle from '@app/components/shared/view-mode-toggle'
 import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import useAnchor from '@app/hooks/use-anchor'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import usePersistedViewMode from '@app/hooks/use-persisted-view-mode'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Project, ProjectType, PROJECT_TYPE_VALUES } from '@app/models'
-import { TeamRoutes } from '@app/routes'
+import { PROJECT_TYPE_VALUES, Project, ProjectType } from '@app/models'
+import { ANCHOR_NEW, ListRouteOptions, TeamRoutes } from '@app/routes'
 import { auditToLocaleDate, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
 
 type ProjectFilter = TextFilter & {
   type?: ProjectType | 'all'
@@ -44,6 +44,7 @@ const ProjectsPage = (props: ProjectsPageProps) => {
   const { t } = useTranslation('projects')
   const routes = useTeamRoutes()
   const router = useRouter()
+  const anchor = useAnchor()
 
   const filters = useFilters<Project, ProjectFilter>({
     initialData: projects,
@@ -53,17 +54,18 @@ const ProjectsPage = (props: ProjectsPageProps) => {
     ],
   })
 
-  const [creating, setCreating] = useState(false)
+  const creating = anchor === ANCHOR_NEW
   const submit = useSubmit()
 
   const [viewMode, setViewMode] = usePersistedViewMode({ initialViewMode: 'tile', pageName: 'projects' })
 
-  const onCreated = async (project: Project) => {
-    setCreating(false)
-    filters.setItems([...filters.items, project])
-
+  const onProjectCreated = async (project: Project) => {
     // When creating navigate the user to the project detail page
     await router.push(routes.project.details(project.id))
+  }
+
+  const onRouteOptionsChange = async (routeOptions: ListRouteOptions) => {
+    await router.replace(routes.project.list(routeOptions))
   }
 
   const pageLink: BreadcrumbLink = {
@@ -74,9 +76,11 @@ const ProjectsPage = (props: ProjectsPageProps) => {
   return (
     <Layout title={t('common:projects')}>
       <PageHeading pageLink={pageLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
+        <ListPageMenu creating={creating} onRouteOptionsChange={onRouteOptionsChange} submit={submit} />
       </PageHeading>
-      {!creating ? null : <EditProjectCard className="mb-8 px-8 py-6" submit={submit} onProjectEdited={onCreated} />}
+      {!creating ? null : (
+        <EditProjectCard className="mb-8 px-8 py-6" submit={submit} onProjectEdited={onProjectCreated} />
+      )}
 
       {filters.items.length ? (
         <>

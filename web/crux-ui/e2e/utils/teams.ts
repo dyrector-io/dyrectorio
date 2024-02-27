@@ -10,7 +10,8 @@ export const createTeam = async (page: Page, name: string, slug: string) => {
   await page.locator('input[name="name"]').fill(name)
   await page.locator('input[name="slug"]').fill(slug)
   await page.locator('button:has-text("Save")').click()
-  await page.locator(`h4:has-text('${name}')`).click()
+  await page.locator(`h4:text-is("${name}")`).click()
+
   await page.waitForURL(`${ROUTE_TEAMS}/**`)
   return page.url().split('/').pop()
 }

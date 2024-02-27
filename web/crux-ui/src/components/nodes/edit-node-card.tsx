@@ -20,7 +20,7 @@ import useTranslation from 'next-translate/useTranslation'
 type EditNodeCardProps = {
   className?: string
   node: NodeDetails
-  onNodeEdited: (node: NodeDetails, shouldClose?: boolean) => void
+  onNodeEdited: (node: NodeDetails) => Promise<void>
   submit?: SubmitHook
 }
 
@@ -65,7 +65,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
           } as NodeDetails
         }
 
-        onNodeEdited(result, editing)
+        await onNodeEdited(result)
       } else {
         await handleApiError(res, setFieldError)
       }

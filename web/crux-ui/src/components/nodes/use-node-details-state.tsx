@@ -1,4 +1,5 @@
 import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
+import useAnchor from '@app/hooks/use-anchor'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { FilterConfig, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useTeamRoutes from '@app/hooks/use-team-routes'
@@ -7,22 +8,23 @@ import {
   Container,
   ContainerCommandMessage,
   ContainerOperation,
-  containerPrefixNameOf,
-  ContainersStateListMessage,
   ContainerState,
+  ContainersStateListMessage,
   DeleteContainerMessage,
   NodeDetails,
-  WatchContainerStatusMessage,
   WS_TYPE_CONTAINERS_STATE_LIST,
   WS_TYPE_CONTAINER_COMMAND,
   WS_TYPE_DELETE_CONTAINER,
   WS_TYPE_WATCH_CONTAINERS_STATE,
+  WatchContainerStatusMessage,
+  containerPrefixNameOf,
 } from '@app/models'
+import { ANCHOR_EDIT } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
+import { QA_DIALOG_LABEL_DELETE_CONTAINER } from 'quality-assurance'
 import { useEffect, useState } from 'react'
 import useNodeState from './use-node-state'
-import { QA_DIALOG_LABEL_DELETE_CONTAINER } from 'quality-assurance'
 
 export type NodeDetailsSection = 'editing' | 'containers' | 'logs' | 'deployments'
 
@@ -37,7 +39,7 @@ export type NodeDetailsState = {
 }
 
 export type NodeDetailsActions = {
-  onNodeEdited: (node: NodeDetails, shouldClose?: boolean) => void
+  onNodeEdited: (node: NodeDetails, shouldClose: boolean) => void
   setSection: (section: NodeDetailsSection) => void
   setEditing: (editing: boolean) => void
   onStartContainer: (container: Container) => void
@@ -53,19 +55,24 @@ export type NodeDetailsStateOptions = {
 const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsState, NodeDetailsActions] => {
   const { t } = useTranslation('common')
   const routes = useTeamRoutes()
+  const anchor = useAnchor()
 
   const [section, setSection] = useState<NodeDetailsSection>('containers')
   const [node, setNode] = useNodeState(options.node)
   const [confirmationModal, confirm] = useConfirmation()
 
+  useEffect(() => {
+    setSection(anchor === ANCHOR_EDIT ? 'editing' : 'containers')
+  }, [anchor])
+
   const sock = useWebSocket(routes.node.detailsSocket(node.id))
 
-  const onNodeEdited = (newNode: NodeDetails, shouldClose?: boolean) => {
+  const onNodeEdited = (newNode: NodeDetails, shouldClose: boolean) => {
+    setNode(newNode)
+
     if (shouldClose) {
       setSection('containers')
     }
-
-    setNode(newNode)
   }
 
   const [containerTargetStates, setContainerTargetStates] = useState<ContainerTargetStates>({})

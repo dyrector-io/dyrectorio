@@ -1,8 +1,8 @@
 import { expect, Page } from '@playwright/test'
-import { test } from '../utils/test.fixture'
 import { TEAM_ROUTES } from 'e2e/utils/common'
+import { test } from '../utils/test.fixture'
 
-const testCreateNotification = async (page: Page, typeChipText: string, hookUrl: string) => {
+const fillNotificationForm = async (page: Page, typeChipText: string, hookUrl: string): string => {
   const notificationName = `TEST NOTIFICATION ${typeChipText.toUpperCase()}`
 
   await page.goto(TEAM_ROUTES.notification.list())
@@ -14,6 +14,12 @@ const testCreateNotification = async (page: Page, typeChipText: string, hookUrl:
   await page.locator('input[name=name] >> visible=true').fill(notificationName)
   await page.locator(`form >> text=${typeChipText}`).click()
   await page.locator('input[name=url]').fill(hookUrl)
+
+  return notificationName
+}
+
+const testCreateNotification = async (page: Page, typeChipText: string, hookUrl: string) => {
+  const notificationName = await fillNotificationForm(page, typeChipText, hookUrl)
 
   await page.locator('text=Save').click()
 
@@ -48,13 +54,17 @@ test('adding a new teams notification should work', async ({ page }) => {
 })
 
 test('using an incorrect discord webhook url should give an error', async ({ page }) => {
-  await testCreateNotification(page, 'Discord', 'https://discord.com/invalid/webhook')
+  await fillNotificationForm(page, 'Discord', 'https://discord.com/invalid/webhook')
+
+  await page.locator('text=Save').click()
 
   await expect(await page.locator('p.text-error-red')).toContainText('https://discord(app).com/api/webhooks/ID/TOKEN')
 })
 
 test('using an incorrect slack webhook url should give an error', async ({ page }) => {
-  await testCreateNotification(page, 'slack', 'https://hooks.slack.com/invalid/test')
+  await fillNotificationForm(page, 'slack', 'https://hooks.slack.com/invalid/test')
+
+  await page.locator('text=Save').click()
 
   await expect(await page.locator('p.text-error-red')).toContainText(
     'https://hooks.slack.com/services/T0000000000/B0000000000/XXXXXXXXXXXXXXXXXXXXXXXX',
@@ -62,7 +72,9 @@ test('using an incorrect slack webhook url should give an error', async ({ page 
 })
 
 test('using an incorrect teams webhook url should give an error', async ({ page }) => {
-  await testCreateNotification(page, 'teams', 'https://test.invalid.office.com/test')
+  await fillNotificationForm(page, 'teams', 'https://test.invalid.office.com/test')
+
+  await page.locator('text=Save').click()
 
   await expect(await page.locator('p.text-error-red')).toContainText(
     'https://subdomain.webhook.office.com/webhookb2/GUID/IncomingWebhook/',

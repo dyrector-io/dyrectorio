@@ -12,7 +12,7 @@ test('Can create team', async ({ page }) => {
   await page.goto(ROUTE_TEAMS)
   await page.waitForSelector('h2:text-is("Teams")')
 
-  await expect(page.locator(`h4:has-text('${teamName}')`)).toBeVisible()
+  await expect(page.locator(`h4:has-text("${teamName}")`)).toBeVisible()
 })
 
 test('Cant create teams with same name', async ({ page }) => {

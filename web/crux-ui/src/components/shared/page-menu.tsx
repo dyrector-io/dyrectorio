@@ -2,6 +2,7 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { SubmitHook } from '@app/hooks/use-submit'
+import { ListRouteOptions } from '@app/routes'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { QA_DIALOG_LABEL_DELETE_FROM_PAGE_MENU } from 'quality-assurance'
@@ -15,25 +16,25 @@ export type ListPageMenuTexts = {
 
 export interface ListPageMenuProps {
   texts?: ListPageMenuTexts
-  creating: boolean
-  setCreating: (editing: boolean) => void
   submit: SubmitHook
+  creating: boolean
+  onRouteOptionsChange: (options: ListRouteOptions) => Promise<void>
 }
 
 export const ListPageMenu = (props: ListPageMenuProps) => {
-  const { texts: propsTexts, creating, setCreating, submit } = props
+  const { texts: propsTexts, creating, onRouteOptionsChange, submit } = props
 
   const { t } = useTranslation('common')
 
   const texts = propsTexts ?? {}
 
   return !creating ? (
-    <DyoButton className="ml-auto px-4" onClick={() => setCreating(true)}>
+    <DyoButton className="ml-auto px-4" onClick={async () => await onRouteOptionsChange({ new: true })}>
       {texts.add ?? t('add')}
     </DyoButton>
   ) : (
     <>
-      <DyoButton className="ml-auto px-4" secondary onClick={() => setCreating(false)}>
+      <DyoButton className="ml-auto px-4" secondary onClick={async () => await onRouteOptionsChange(null)}>
         {texts.discard ?? t('discard')}
       </DyoButton>
 

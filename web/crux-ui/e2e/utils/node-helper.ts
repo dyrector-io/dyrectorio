@@ -14,6 +14,8 @@ export const installDagent = async (page: Page) => {
 
   await page.locator('button:has-text("Save")').click()
 
+  await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
+
   await page.waitForSelector('h4:has-text("Technology")')
 
   const generateScriptButton = await page.locator('button:has-text("Generate script")')

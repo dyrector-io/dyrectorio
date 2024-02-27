@@ -50,11 +50,31 @@ export const API_USERS_ME = '/api/users/me'
 export const API_USERS_ME_INVITATIONS = `${API_USERS_ME}/invitations`
 export const API_USERS_ME_PREFERENCES_ONBOARDING = `${API_USERS_ME}/preferences/onboarding`
 
-export type AnchorUrlParams = {
-  anchor?: string
+export const ANCHOR_NEW = '#new'
+export const ANCHOR_EDIT = '#edit'
+export const ANCHOR_TRIGGER = '#trigger'
+
+export type AnchorUrlParams = Record<string, string | boolean> & {
+  anchor?: string | undefined
 }
 
-export const appendUrlParams = <T extends AnchorUrlParams>(url: string, params: T): string => {
+export type ListRouteOptions = {
+  new?: boolean
+}
+
+type DetailsRouteOptions = {
+  edit?: boolean
+}
+
+const appendAnchorWhenDeclared = (url: string, anchor: string, anchorProp?: boolean) => {
+  if (anchorProp) {
+    return `${url}${anchor}`
+  }
+
+  return url
+}
+
+const appendUrlParams = (url: string, params?: AnchorUrlParams): string => {
   let result = url
   const paramMap: Map<string, any> = new Map()
   const anchor = params?.anchor
@@ -89,7 +109,7 @@ export const appendUrlParams = <T extends AnchorUrlParams>(url: string, params: 
     }
   }
 
-  return anchor ? `${result}#${anchor}` : result
+  return anchor ? `${result}${anchor}` : result
 }
 
 const urlQuery = (url: string, query: object) => {
@@ -123,7 +143,6 @@ export const apiDocsUrl = (params: AnchorUrlParams) => appendUrlParams(`${ROUTE_
 
 // auth
 export type VerificationUrlParams = {
-  anchor?: VersionUrlAnchor
   email?: string
   restart?: boolean
 }
@@ -131,6 +150,8 @@ export type VerificationUrlParams = {
 export const verificationUrl = (params: VerificationUrlParams) => appendUrlParams(ROUTE_VERIFICATION, params)
 
 // team
+export const teamListUrl = (options?: ListRouteOptions) =>
+  appendAnchorWhenDeclared(ROUTE_TEAMS, ANCHOR_NEW, options?.new)
 export const teamUrl = (id: string) => `${ROUTE_TEAMS}/${id}`
 export const teamApiUrl = (id: string) => `${API_TEAMS}/${id}`
 export const teamInvitationUrl = (teamId: string) => `${ROUTE_TEAMS}/${teamId}/invitation`
@@ -245,22 +266,21 @@ class NodeRoutes {
 
   detailsSocket = (id: string) => this.details(id)
 
-  list = () => this.root
+  list = (options?: ListRouteOptions) => appendAnchorWhenDeclared(this.root, ANCHOR_NEW, options?.new)
 
-  details = (id: string) => `${this.root}/${id}`
+  details = (id: string, options?: DetailsRouteOptions) =>
+    appendAnchorWhenDeclared(`${this.root}/${id}`, ANCHOR_EDIT, options?.edit)
 
   inspect = (id: string, prefix?: string) => `${this.details(id)}?prefix=${prefix}`
 
   containerLog = (id: string, params: ContainerLogParams) =>
     appendUrlParams(`${this.details(id)}/log`, {
       ...params,
-      anchor: null,
     })
 
   containerInspect = (id: string, params: ContainerLogParams) =>
     appendUrlParams(`${this.details(id)}/inspect`, {
       ...params,
-      anchor: null,
     })
 }
 
@@ -297,15 +317,14 @@ class RegistryRoutes {
 
   socket = () => this.root
 
-  list = () => this.root
+  list = (options?: ListRouteOptions) => appendAnchorWhenDeclared(this.root, ANCHOR_NEW, options?.new)
 
   details = (id: string) => `${this.root}/${id}`
 }
 
 // version
-export type VersionUrlAnchor = 'edit'
 export type VersionUrlParams = {
-  anchor?: VersionUrlAnchor
+  edit?: boolean
   section?: VersionSectionsState
 }
 
@@ -395,7 +414,7 @@ class ProjectRoutes {
     return this._api
   }
 
-  list = () => this.root
+  list = (options?: ListRouteOptions) => appendAnchorWhenDeclared(this.root, ANCHOR_NEW, options?.new)
 
   details = (id: string, params?: VersionUrlParams) => appendUrlParams(`${this.root}/${id}`, params)
 
@@ -409,7 +428,7 @@ class ProjectRoutes {
 }
 
 // deployment
-export type DeployStartUrlParams = AnchorUrlParams & {
+export type DeployStartUrlParams = {
   ignoreProtected?: boolean
 }
 
@@ -429,7 +448,7 @@ class DeploymentApi {
   start = (id: string, ignoreProtected?: boolean) =>
     appendUrlParams(`${this.details(id)}/start`, {
       ignoreProtected,
-    } as DeployStartUrlParams)
+    })
 
   token = (id: string) => `${this.details(id)}/token`
 
@@ -459,7 +478,7 @@ class DeploymentRoutes {
 
   detailsSocket = (id: string) => this.details(id)
 
-  list = () => this.root
+  list = (options?: ListRouteOptions) => appendAnchorWhenDeclared(this.root, ANCHOR_NEW, options?.new)
 
   details = (id: string) => `${this.root}/${id}`
 
@@ -501,7 +520,7 @@ class NotificationRoutes {
     return this._api
   }
 
-  list = () => this.root
+  list = (options?: ListRouteOptions) => appendAnchorWhenDeclared(this.root, ANCHOR_NEW, options?.new)
 
   details = (id: string) => `${this.root}/${id}`
 }
@@ -539,7 +558,7 @@ class StorageRoutes {
     return this._api
   }
 
-  list = () => this.root
+  list = (options?: ListRouteOptions) => appendAnchorWhenDeclared(this.root, ANCHOR_NEW, options?.new)
 
   details = (id: string) => `${this.root}/${id}`
 }
@@ -577,8 +596,6 @@ type PipelineDetailsRouteOptions = {
   trigger?: boolean
 }
 
-export const ANCHOR_TRIGGER = '#trigger'
-
 class PipelineRoutes {
   private readonly root: string
 
@@ -596,10 +613,17 @@ class PipelineRoutes {
     return this._api
   }
 
-  list = () => this.root
+  list = (options?: ListRouteOptions) => appendAnchorWhenDeclared(this.root, ANCHOR_NEW, options?.new)
 
   details = (id: string, options?: PipelineDetailsRouteOptions) =>
-    `${this.root}/${id}${options?.trigger ? ANCHOR_TRIGGER : ''}`
+    appendUrlParams(
+      `${this.root}/${id}`,
+      options?.trigger
+        ? {
+            ANCHOR_TRIGGER,
+          }
+        : null,
+    )
 
   socket = () => this.root
 }
@@ -637,7 +661,7 @@ class ConfigBundleRoutes {
     return this._api
   }
 
-  list = () => this.root
+  list = (options?: ListRouteOptions) => appendAnchorWhenDeclared(this.root, ANCHOR_NEW, options?.new)
 
   details = (id: string) => `${this.root}/${id}`
 

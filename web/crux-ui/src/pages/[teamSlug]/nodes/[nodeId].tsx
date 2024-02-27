@@ -34,10 +34,9 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
 
   const { t } = useTranslation('nodes')
   const routes = useTeamRoutes()
+  const router = useRouter()
 
   const { mutate } = useSWRConfig()
-
-  const router = useRouter()
 
   const [state, actions] = useNodeDetailsState({
     node: propsNode,
@@ -47,6 +46,11 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
   const { node } = state
 
   const handleApiError = defaultApiErrorHandler(t)
+
+  const setEditing = async (editing: boolean) => {
+    actions.setEditing(editing)
+    await router.replace(routes.node.details(node.id, editing ? { edit: true } : null))
+  }
 
   const onDelete = async () => {
     const res = await fetch(routes.node.api.details(node.id), {
@@ -62,10 +66,11 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
     await router.push(routes.node.list())
   }
 
-  const onNodeEdited = async (edited: NodeDetails, shouldClose?: boolean) => {
+  const onNodeEdited = async (edited: NodeDetails, shouldClose: boolean) => {
     actions.onNodeEdited(edited, shouldClose)
+
     if (shouldClose) {
-      await router.replace(routes.node.list())
+      await router.replace(routes.node.details(edited.id))
     }
   }
 
@@ -88,7 +93,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
         <DetailsPageMenu
           onDelete={onDelete}
           editing={state.section === 'editing'}
-          setEditing={actions.setEditing}
+          setEditing={setEditing}
           submit={submit}
           deleteModalTitle={t('common:areYouSureDeleteName', { name: node.name })}
           deleteModalDescription={t('common:proceedYouLoseAllDataToName', {

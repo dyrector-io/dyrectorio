@@ -10,18 +10,19 @@ import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoLink from '@app/elements/dyo-link'
 import DyoWrap from '@app/elements/dyo-wrap'
+import useAnchor from '@app/hooks/use-anchor'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import { DyoNode, NODE_STATUS_VALUES, NodeEventMessage, NodeStatus, WS_TYPE_NODE_EVENT } from '@app/models'
-import { ROUTE_DOCS, TeamRoutes } from '@app/routes'
+import { ANCHOR_NEW, ListRouteOptions, ROUTE_DOCS, TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useState } from 'react'
+import { useRouter } from 'next/router'
 import toast from 'react-hot-toast'
 import { useSWRConfig } from 'swr'
 
@@ -36,6 +37,8 @@ const NodesPage = (props: NodesPageProps) => {
 
   const { t } = useTranslation('nodes')
   const routes = useTeamRoutes()
+  const router = useRouter()
+  const anchor = useAnchor()
 
   const { mutate } = useSWRConfig()
 
@@ -47,7 +50,7 @@ const NodesPage = (props: NodesPageProps) => {
     initialData: nodes,
   })
 
-  const [creating, setCreating] = useState(false)
+  const creating = anchor === ANCHOR_NEW
   const submit = useSubmit()
 
   const socket = useWebSocket(routes.node.socket(), {
@@ -75,23 +78,15 @@ const NodesPage = (props: NodesPageProps) => {
   })
 
   const onNodeEdited = async (node: DyoNode) => {
-    const newNodes = [...filters.items]
-    const index = filters.items.findIndex(it => it.id === node.id)
-
-    if (index < 0) {
-      newNodes.push(node)
-    } else {
-      const old = filters.items[index]
-      const newNode = {
-        ...old,
-        ...node,
-      }
-      newNodes[index] = newNode
-    }
-
-    filters.setItems(newNodes)
     await mutate(routes.node.api.list(), null)
+
+    await router.replace(routes.node.details(node.id, { edit: true }))
   }
+
+  const onRouteOptionsChange = async (routeOptions: ListRouteOptions) => {
+    await router.replace(routes.node.list(routeOptions))
+  }
+
   const pageLink: BreadcrumbLink = {
     name: t('common:nodes'),
     url: routes.node.list(),
@@ -100,10 +95,11 @@ const NodesPage = (props: NodesPageProps) => {
   return (
     <Layout title={t('common:nodes')}>
       <PageHeading pageLink={pageLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
+        <ListPageMenu creating={creating} onRouteOptionsChange={onRouteOptionsChange} submit={submit} />
       </PageHeading>
 
       {!creating ? null : <EditNodeSection className="mb-4" submit={submit} onNodeEdited={onNodeEdited} />}
+
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
