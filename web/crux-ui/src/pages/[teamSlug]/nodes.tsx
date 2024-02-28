@@ -17,7 +17,7 @@ import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import { DyoNode, NODE_STATUS_VALUES, NodeEventMessage, NodeStatus, WS_TYPE_NODE_EVENT } from '@app/models'
 import { ANCHOR_NEW, ListRouteOptions, ROUTE_DOCS, TeamRoutes } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
+import { isServerSide, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { GetServerSidePropsContext } from 'next'
@@ -51,7 +51,16 @@ const NodesPage = (props: NodesPageProps) => {
   })
 
   const creating = anchor === ANCHOR_NEW
+  console.info(
+    new Date().toISOString(),
+    'creating',
+    creating,
+    anchor,
+    router.asPath,
+    !isServerSide() ? document.location.href : 'ssr',
+  )
   const submit = useSubmit()
+  console.info('creating', creating, anchor, router.asPath)
 
   const socket = useWebSocket(routes.node.socket(), {
     onError: _ => {
@@ -84,7 +93,17 @@ const NodesPage = (props: NodesPageProps) => {
   }
 
   const onRouteOptionsChange = async (routeOptions: ListRouteOptions) => {
-    await router.replace(routes.node.list(routeOptions))
+    console.info(new Date().toISOString(), 'navigation', routes.node.list(routeOptions), routeOptions)
+
+    console.info(
+      new Date().toISOString(),
+      'nav-creating',
+      creating,
+      anchor,
+      router.asPath,
+      !isServerSide() ? document.location.href : 'ssr',
+    )
+    await router.replace(`${routes.node.list(routeOptions)}`)
   }
 
   const pageLink: BreadcrumbLink = {

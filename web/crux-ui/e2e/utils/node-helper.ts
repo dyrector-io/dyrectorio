@@ -8,8 +8,10 @@ export const installDagent = async (page: Page) => {
   await page.goto(TEAM_ROUTES.node.list())
   await page.waitForSelector('h2:text-is("Nodes")')
 
-  await page.locator('button:has-text("Add")').click()
+  await page.waitForTimeout(1000)
 
+  page.addListener('framenavigated', frame => console.info('PW navigated', frame.url()))
+  await page.locator('button:text-is("Add")').click()
   await page.waitForSelector('h4:text-is("New node")')
 
   await page.locator('input[name=name] >> visible=true').fill(DAGENT_NODE)

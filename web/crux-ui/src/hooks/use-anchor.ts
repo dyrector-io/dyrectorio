@@ -1,5 +1,4 @@
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
 
 const anchorOfPath = (path: string): string | null => {
   const parts = path.split('#')
@@ -12,17 +11,8 @@ const anchorOfPath = (path: string): string | null => {
 
 const useAnchor = (): string | null => {
   const router = useRouter()
-  const path = router.asPath
 
-  const [anchor, setAnchor] = useState(null)
-
-  useEffect(() => {
-    const newAnchor = anchorOfPath(path)
-
-    setAnchor(newAnchor)
-  }, [path])
-
-  return anchor
+  return anchorOfPath(router.asPath)
 }
 
 export default useAnchor
