@@ -16,6 +16,7 @@ export default class ContainerLogStream {
   constructor(
     private readonly container: ContainerIdentifier,
     private readonly tail: number,
+    private readonly streaming: boolean = true,
   ) {}
 
   start(commandChannel: Subject<AgentCommand>) {
@@ -26,7 +27,7 @@ export default class ContainerLogStream {
     commandChannel.next({
       containerLog: {
         container: this.container,
-        streaming: true,
+        streaming: this.streaming,
         tail: this.tail,
       },
     } as AgentCommand)
