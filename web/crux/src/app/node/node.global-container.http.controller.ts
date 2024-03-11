@@ -132,6 +132,6 @@ export default class NodeGlobalContainerHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for container log.' })
   @UuidParams(PARAM_NODE_ID)
   async getContainerLog(@TeamSlug() _: string, @NodeId() nodeId: string, @Name() name: string): Promise<string> {
-    return this.service.containerLog(nodeId, GLOBAL_PREFIX, name)
+    return this.service.getContainerLog(nodeId, GLOBAL_PREFIX, name)
   }
 }

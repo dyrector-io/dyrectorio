@@ -437,7 +437,7 @@ export default class NodeService {
     return this.mapper.containerInspectionMessageToDto(inspectionMessage)
   }
 
-  async containerLog(nodeId: string, prefix: string, name: string): Promise<string> {
+  async getContainerLog(nodeId: string, prefix: string, name: string): Promise<string> {
     const agent = this.agentService.getByIdOrThrow(nodeId)
 
     const container = {

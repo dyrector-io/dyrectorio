@@ -159,6 +159,6 @@ export default class NodePrefixContainerHttpController {
     @Prefix() prefix: string,
     @Name() name: string,
   ): Promise<string> {
-    return this.service.containerLog(nodeId, prefix, name)
+    return this.service.getContainerLog(nodeId, prefix, name)
   }
 }
