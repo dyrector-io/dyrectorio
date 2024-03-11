@@ -453,7 +453,7 @@ export default class NodeService {
 
     const watcher = stream.watch().pipe(
       map(it => it.log),
-      reduce((acc, it) => `${acc}\n${it}`, ''),
+      reduce((acc, it) => `${acc.trimEnd()}\n${it}`, ''),
       timeout({
         each: GET_CONTAINER_LOG_TIMEOUT_MILLIS,
         with: () =>
