@@ -164,13 +164,17 @@ export class Agent {
     return watcher
   }
 
-  upsertContainerLogStream(container: ContainerIdentifier, tail: number): ContainerLogStream {
+  upsertContainerLogStream(
+    container: ContainerIdentifier,
+    tail: number,
+    streaming: boolean = true,
+  ): ContainerLogStream {
     this.throwIfCommandsAreDisabled()
 
     const key = Agent.containerPrefixNameOf(container)
     let stream = this.logStreams.get(key)
     if (!stream) {
-      stream = new ContainerLogStream(container, tail)
+      stream = new ContainerLogStream(container, tail, streaming)
       this.logStreams.set(key, stream)
       stream.start(this.commandChannel)
     }

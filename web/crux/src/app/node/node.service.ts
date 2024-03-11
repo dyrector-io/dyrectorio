@@ -12,10 +12,13 @@ import {
   mergeAll,
   mergeWith,
   of,
+  reduce,
+  throwError,
   timeout,
 } from 'rxjs'
 import { Agent, AgentConnectionMessage } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
+import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import {
   ContainerCommandRequest,
   ContainerIdentifier,
@@ -26,6 +29,7 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
+import { GET_CONTAINER_LOG_TIMEOUT_MILLIS } from 'src/shared/const'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
 import {
@@ -431,6 +435,38 @@ export default class NodeService {
     const inspectionMessage = await lastValueFrom(watcher)
 
     return this.mapper.containerInspectionMessageToDto(inspectionMessage)
+  }
+
+  async getContainerLog(nodeId: string, prefix: string, name: string): Promise<string> {
+    const agent = this.agentService.getByIdOrThrow(nodeId)
+
+    const container = {
+      prefix,
+      name,
+    }
+
+    const stream = agent.upsertContainerLogStream(
+      container,
+      this.configService.get<number>('DEFAULT_CONTAINER_LOG_TAIL', 1000),
+      false,
+    )
+
+    const watcher = stream.watch().pipe(
+      map(it => it.log),
+      reduce((acc, it) => `${acc}\n${it}`, ''),
+      timeout({
+        each: GET_CONTAINER_LOG_TIMEOUT_MILLIS,
+        with: () =>
+          throwError(
+            () =>
+              new CruxInternalServerErrorException({
+                message: 'Agent container log timed out.',
+              }),
+          ),
+      }),
+    )
+
+    return lastValueFrom(watcher)
   }
 
   async kickNode(id: string, identity: Identity): Promise<void> {
