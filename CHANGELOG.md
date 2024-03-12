@@ -1,8 +1,33 @@
 # CHANGELOG
 
 
+<a name="0.11.3"></a>
+## [0.11.3](https://github.com/dyrector-io/dyrectorio/compare/ls...0.11.3) (2024-03-11)
+
+### Feat
+
+* container log api ([#931](https://github.com/dyrector-io/dyrectorio/issues/931))
+
+### Fix
+
+* container log new line ([#932](https://github.com/dyrector-io/dyrectorio/issues/932))
+* add ENCRYPTION_SECRET_KEY to compose files ([#927](https://github.com/dyrector-io/dyrectorio/issues/927))
+
+
+<a name="ls"></a>
+## [ls](https://github.com/dyrector-io/dyrectorio/compare/0.11.2...ls) (2024-02-26)
+
+### Doc
+
+* **(crux):** add extra info encrpytion gey generation ([#926](https://github.com/dyrector-io/dyrectorio/issues/926))
+
+### Feat
+
+* **(web):** update kratos to 1.1.0 ([#925](https://github.com/dyrector-io/dyrectorio/issues/925))
+
+
 <a name="0.11.2"></a>
-## [0.11.2](https://github.com/dyrector-io/dyrectorio/compare/0.11.1...0.11.2) (2024-02-22)
+## [0.11.2](https://github.com/dyrector-io/dyrectorio/compare/0.11.1...0.11.2) (2024-02-23)
 
 ### Feat
 

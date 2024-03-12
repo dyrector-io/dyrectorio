@@ -775,6 +775,12 @@ func streamContainerLog(reader ContainerLogReader,
 		if event.Error != nil {
 			if event.Error == io.EOF && !streaming {
 				log.Trace().Str("prefix", prefix).Str("name", name).Msg("Container log finished non streaming (EOF)")
+
+				err := client.CloseSend()
+				if err != nil {
+					log.Error().Err(err).Stack().Str("prefix", prefix).Str("name", name).Msg("Failed to close client")
+				}
+
 				break
 			}
 

@@ -120,4 +120,18 @@ export default class NodeGlobalContainerHttpController {
   async inspectContainer(@NodeId() nodeId: string, @Name() name: string): Promise<ContainerInspectionDto> {
     return await this.service.inspectContainer(nodeId, GLOBAL_PREFIX, name)
   }
+
+  @Get(`${ROUTE_NAME}/log`)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    description: 'Request must include `nodeId`, and the `name` of the container.',
+    summary: 'Get the logs of a container.',
+  })
+  @ApiOkResponse({ description: 'Container log.', type: String })
+  @ApiBadRequestResponse({ description: 'Bad request for container log.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for container log.' })
+  @UuidParams(PARAM_NODE_ID)
+  async getContainerLog(@TeamSlug() _: string, @NodeId() nodeId: string, @Name() name: string): Promise<string> {
+    return this.service.getContainerLog(nodeId, GLOBAL_PREFIX, name)
+  }
 }
