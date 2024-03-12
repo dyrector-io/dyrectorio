@@ -14,4 +14,5 @@ module.exports = {
   eslint: {
     dirs: ['src', 'e2e'],
   },
+  output: 'standalone',
 }

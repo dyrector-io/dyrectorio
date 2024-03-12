@@ -313,7 +313,7 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 				cont containerbuilder.ParentContainer,
 			) error {
 				addr := fmt.Sprintf("http://%s:%d/api/status", traefikHost, state.SettingsFile.TraefikWebPort)
-				return healhProbe(ctx, addr)
+				return healthProbe(ctx, addr)
 			})
 	} else {
 		traefik = traefik.
@@ -613,7 +613,7 @@ func CopyTraefikConfiguration(ctx context.Context, name, internalHostDomain stri
 	return err
 }
 
-func healhProbe(ctx context.Context, address string) error {
+func healthProbe(ctx context.Context, address string) error {
 	ctx, cancel := context.WithTimeout(ctx, healhProbeTimeout)
 	defer cancel()
 
