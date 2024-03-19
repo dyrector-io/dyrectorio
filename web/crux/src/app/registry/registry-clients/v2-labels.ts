@@ -67,10 +67,11 @@ export default class V2Labels {
   private requestInit: RequestInit
 
   constructor(
-    private baseUrl: string,
+    private readonly baseUrl: string,
+    private readonly imageNamePrefix?: string,
     requestInit?: RequestInit,
     manifestMime?: string,
-    private tokenInit?: RequestInit,
+    private readonly tokenInit?: RequestInit,
   ) {
     this.requestInit = requestInit ?? {}
     this.requestInit = {
@@ -130,17 +131,21 @@ export default class V2Labels {
     const tokenService = params.service
     const tokenScope = params.scope
 
+    const tokenInit = this.tokenInit ?? this.requestInit
+
     const tokenUrl = `${tokenServer}?service=${encodeURIComponent(tokenService)}&scope=${encodeURIComponent(
       tokenScope,
     )}`
 
     this.logger.debug(`Fetching token from '${tokenUrl}'`)
 
-    const tokenResponse = await fetch(tokenUrl, this.tokenInit)
+    const tokenResponse = await fetch(tokenUrl, tokenInit)
 
     this.logger.debug(`Got token response for '${tokenUrl}' - ${tokenResponse.status}`)
 
     if (tokenResponse.status !== 200) {
+      this.logger.error('V2 token fetch failed', tokenResponse.status, await tokenResponse.text())
+
       throw new CruxInternalServerErrorException({
         message: 'Failed to fetch V2 token',
       })
@@ -206,6 +211,7 @@ export default class V2Labels {
         return null
       }
 
+      this.logger.error('V2 API fetch failed', result.res.status, result.data)
       throw new CruxInternalServerErrorException({
         message: 'Failed to fetch v2 API!',
       })
@@ -214,7 +220,7 @@ export default class V2Labels {
     return result.data
   }
 
-  async fetchLabelsByManifest(
+  private async fetchLabelsByManifest(
     image: string,
     manifest: ManifestBaseResponse,
     depth: number,
@@ -259,11 +265,16 @@ export default class V2Labels {
   }
 
   async fetchLabels(image: string, tag: string): Promise<Record<string, string>> {
+    if (this.imageNamePrefix) {
+      image = `${this.imageNamePrefix}/${image}`
+    }
+
     const manifest = await this.fetchV2<ManifestBaseResponse>(`${image}/manifests/${tag ?? 'latest'}`, {
       headers: {
         Accept: this.manifestMimeType,
       },
     })
+
     if (!manifest) {
       return {}
     }

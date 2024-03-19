@@ -75,7 +75,8 @@ class GithubRegistryClient implements RegistryApiClient {
   async labels(image: string, tag: string): Promise<Record<string, string>> {
     // NOTE(@robot9706): ghcr.io expects the accept manifest to be "v1" but it responds with v2 manifests
     const labelClient = new V2Labels(
-      'ghcr.io',
+      REGISTRY_GITHUB_URL,
+      this.imageNamePrefix,
       {
         headers: this.basicAuthHeaders,
       },

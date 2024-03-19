@@ -68,9 +68,10 @@ class RegistryV2ApiClient implements RegistryApiClient {
   }
 
   async labels(image: string, tag: string): Promise<Record<string, string>> {
-    const labelClient = new V2Labels(this.url, {
+    const labelClient = new V2Labels(this.url, null, {
       headers: this.headers,
     })
+
     return labelClient.fetchLabels(image, tag)
   }
 

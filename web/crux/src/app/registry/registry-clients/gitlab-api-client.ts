@@ -84,9 +84,10 @@ export class GitlabRegistryClient implements RegistryApiClient {
   }
 
   async labels(image: string, tag: string): Promise<Record<string, string>> {
-    const labelClient = new V2Labels(this.urls.registryUrl, null, null, {
+    const labelClient = new V2Labels(this.urls.registryUrl, null, null, null, {
       headers: this.basicAuthHeaders,
     })
+
     return labelClient.fetchLabels(image, tag)
   }
 }
