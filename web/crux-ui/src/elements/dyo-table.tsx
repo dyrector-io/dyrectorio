@@ -144,14 +144,15 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
   const [pagination, setPagination] = useState<PaginationSettings>({ pageNumber: 0, pageSize: 10 })
   const [data, setData] = useState(propData)
   const [sort, setSort] = useState<SortState>(() => {
-    if (initialSortColumn != null && initialSortDirection) {
-      return {
-        column: initialSortColumn,
-        direction: initialSortDirection,
-      }
-    }
+    const direction = initialSortDirection ?? 'asc'
+    const sortColum = initialSortColumn != null ? initialSortColumn : columns.findIndex(it => it.sortable)
 
-    return null
+    return sortColum > -1
+      ? {
+          column: sortColum,
+          direction,
+        }
+      : null
   })
 
   const getField = (obj: any, field: string | ((it: any) => any)) => {
@@ -192,15 +193,10 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
       return
     }
 
-    if (sort.direction === 'asc') {
-      setSort({
-        column,
-        direction: 'desc',
-      })
-      return
-    }
-
-    setSort(null)
+    setSort({
+      column,
+      direction: sort.direction === 'asc' ? 'desc' : 'asc',
+    })
   }
 
   const paginate = (it: PaginationSettings) => {
