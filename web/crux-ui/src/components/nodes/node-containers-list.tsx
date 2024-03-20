@@ -55,7 +55,9 @@ const NodeContainersList = (props: NodeContainersListProps) => {
           sortField={(it: Container) => imageName(it.imageName, it.imageTag)}
           sort={sortString}
           bodyClassName="overflow-hidden truncate"
-          body={(it: Container) => imageName(it.imageName, it.imageTag)}
+          body={(it: Container) => (
+            <span title={imageName(it.imageName, it.imageTag)}>{imageName(it.imageName, it.imageTag)}</span>
+          )}
         />
         <DyoColumn
           header={t('common:state')}
