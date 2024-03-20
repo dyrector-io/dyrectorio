@@ -87,7 +87,8 @@ export default class PrivateHubApiClient extends HubApiClient implements Registr
   }
 
   async labels(image: string, tag: string): Promise<Record<string, string>> {
-    const labelClient = new V2Labels(DOCKER_HUB_REGISTRY_URL, null, null, this.labelsAuth)
+    const labelClient = new V2Labels(DOCKER_HUB_REGISTRY_URL, null, null, null, this.labelsAuth)
+
     return labelClient.fetchLabels(this.prefix ? `${this.prefix}/${image}` : image, tag)
   }
 }
