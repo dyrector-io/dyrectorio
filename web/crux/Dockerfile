@@ -1,5 +1,5 @@
 # Stage 1
-FROM docker.io/library/node:19.2-alpine3.17 AS BUILDER
+FROM docker.io/library/node:20-alpine3.17 AS BUILDER
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ RUN npm run build && \
     npm prune --production
 
 # Stage 2
-FROM docker.io/library/node:20.5.0-alpine3.17 AS RUNNER
+FROM docker.io/library/node:20-alpine3.17 AS RUNNER
 
 ENV NODE_ENV production
 ENV TZ UTC

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 function useInterval(onTick: VoidFunction, interval: number | null) {
   const callback = useRef(onTick)
-  const timer = useRef<NodeJS.Timer>(null)
+  const timer = useRef<NodeJS.Timeout>(null)
 
   if (onTick !== callback.current) {
     callback.current = onTick

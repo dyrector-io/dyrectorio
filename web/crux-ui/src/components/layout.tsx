@@ -78,7 +78,9 @@ export const Layout = (props: LayoutProps) => {
             {topBarContent}
           </Topbar>
 
-          <div className="flex flex-col h-full">{children}</div>
+          <div key={router.asPath} className="flex flex-col h-full">
+            {children}
+          </div>
 
           <Footer className="mt-auto" />
         </div>

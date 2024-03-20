@@ -7,6 +7,7 @@ import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
+import useAnchor from '@app/hooks/use-anchor'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
@@ -18,13 +19,13 @@ import {
   WS_TYPE_PIPELINE_STATUS,
   pipelineDetailsToPipeline,
 } from '@app/models'
-import { TeamRoutes } from '@app/routes'
+import { ANCHOR_NEW, ListRouteOptions, TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useState } from 'react'
+import { useRouter } from 'next/router'
 
 type PipelinesPageProps = {
   pipelines: Pipeline[]
@@ -35,13 +36,15 @@ const PipelinesPage = (props: PipelinesPageProps) => {
 
   const { t } = useTranslation('pipelines')
   const routes = useTeamRoutes()
+  const router = useRouter()
+  const anchor = useAnchor()
 
   const filters = useFilters<Pipeline, TextFilter>({
     filters: [textFilterFor<Pipeline>(it => [it.name, it.description, it.icon, it.type])],
     initialData: pipelines,
   })
 
-  const [creating, setCreating] = useState(false)
+  const creating = anchor === ANCHOR_NEW
   const submit = useSubmit()
 
   const socket = useWebSocket(routes.pipeline.socket())
@@ -61,11 +64,15 @@ const PipelinesPage = (props: PipelinesPageProps) => {
     })
   })
 
-  const onCreated = (pipeline: PipelineDetails) => {
+  const onPipelineCreated = async (pipeline: PipelineDetails) => {
     const newPipeline = pipelineDetailsToPipeline(pipeline)
-
-    setCreating(false)
     filters.setItems([...filters.items, newPipeline])
+
+    await router.replace(routes.pipeline.list())
+  }
+
+  const onRouteOptionsChange = async (routeOptions: ListRouteOptions) => {
+    await router.replace(routes.pipeline.list(routeOptions))
   }
 
   const selfLink: BreadcrumbLink = {
@@ -76,10 +83,12 @@ const PipelinesPage = (props: PipelinesPageProps) => {
   return (
     <Layout title={t('common:pipelines')}>
       <PageHeading pageLink={selfLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
+        <ListPageMenu creating={creating} onRouteOptionsChange={onRouteOptionsChange} submit={submit} />
       </PageHeading>
 
-      {!creating ? null : <EditPipelineCard className="mb-8 px-8 py-6" submit={submit} onPipelineEdited={onCreated} />}
+      {!creating ? null : (
+        <EditPipelineCard className="mb-8 px-8 py-6" submit={submit} onPipelineEdited={onPipelineCreated} />
+      )}
 
       {filters.items.length ? (
         <>

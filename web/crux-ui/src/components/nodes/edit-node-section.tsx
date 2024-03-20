@@ -5,6 +5,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
+import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -18,18 +19,17 @@ import {
 } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import { QA_DIALOG_LABEL_KICK_AGENT, QA_DIALOG_LABEL_REVOKE_NODE_TOKEN } from 'quality-assurance'
 import toast from 'react-hot-toast'
 import DyoNodeSetup from './dyo-node-setup'
 import EditNodeCard from './edit-node-card'
 import NodeConnectionCard from './node-connection-card'
 import useNodeState from './use-node-state'
-import { SubmitHook } from '@app/hooks/use-submit'
-import { QA_DIALOG_LABEL_KICK_AGENT, QA_DIALOG_LABEL_REVOKE_NODE_TOKEN } from 'quality-assurance'
 
 interface EditNodeSectionProps {
   className?: string
   node?: NodeDetails
-  onNodeEdited: (node: NodeDetails, shouldClose?: boolean) => void
+  onNodeEdited: (node: NodeDetails, shouldClose: boolean) => Promise<void>
   submit?: SubmitHook
 }
 
@@ -56,13 +56,17 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const onNodeEdited = (newNode: NodeDetails, shouldClose?: boolean) => {
+  const onNodeEdited = async (newNode: NodeDetails, shouldClose?: boolean) => {
     setNode(newNode)
-    propsOnNodeEdited(newNode, shouldClose)
+    await propsOnNodeEdited(newNode, !!shouldClose)
+  }
+
+  const onNodeSaved = async (newNode: NodeDetails) => {
+    await onNodeEdited(newNode, true)
   }
 
   const socket = useWebSocket(routes.node.socket())
-  socket.on(WS_TYPE_NODE_EVENT, (message: NodeEventMessage) => {
+  socket.on(WS_TYPE_NODE_EVENT, async (message: NodeEventMessage) => {
     if (message.id !== node.id) {
       return
     }
@@ -81,16 +85,16 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
       install: message.status === 'connected' ? null : node.install,
     } as NodeDetails
 
-    onNodeEdited(newNode)
+    await onNodeEdited(newNode)
   })
 
-  const onNodeInstallChanged = (install: NodeInstall) => {
+  const onNodeInstallChanged = async (install: NodeInstall) => {
     const newNode = {
       ...node,
       install,
     }
 
-    onNodeEdited(newNode)
+    await onNodeEdited(newNode)
   }
 
   const onRevokeToken = async () => {
@@ -123,7 +127,7 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
     } as NodeDetails
 
     setNode(newNode)
-    onNodeEdited(newNode)
+    await onNodeEdited(newNode)
   }
 
   const onKickAgent = async () => {
@@ -155,7 +159,7 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
     } as NodeDetails
 
     setNode(newNode)
-    onNodeEdited(newNode)
+    await onNodeEdited(newNode)
   }
 
   const onNodeTypeChanged = (type: NodeType): void => {
@@ -179,7 +183,7 @@ const EditNodeSection = (props: EditNodeSectionProps) => {
   return (
     <>
       <div className={clsx(className, 'flex flex-row gap-4')}>
-        <EditNodeCard className="w-1/2 p-8" submit={submit} onNodeEdited={onNodeEdited} node={node} />
+        <EditNodeCard className="w-1/2 p-8" submit={submit} onNodeEdited={onNodeSaved} node={node} />
 
         <div className="flex flex-col flex-grow w-1/2">
           {node.hasToken && <NodeConnectionCard className="mb-4 p-6" node={node} />}

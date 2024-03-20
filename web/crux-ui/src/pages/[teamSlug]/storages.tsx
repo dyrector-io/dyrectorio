@@ -7,17 +7,18 @@ import EditStorageCard from '@app/components/storages/edit-storage-card'
 import StorageCard from '@app/components/storages/storage-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
+import useAnchor from '@app/hooks/use-anchor'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Storage, StorageDetails } from '@app/models'
-import { TeamRoutes } from '@app/routes'
+import { ANCHOR_NEW, ListRouteOptions, TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useState } from 'react'
+import { useRouter } from 'next/router'
 
 interface StoragesPageProps {
   storages: Storage[]
@@ -28,18 +29,25 @@ const StoragesPage = (props: StoragesPageProps) => {
 
   const { t } = useTranslation('storages')
   const routes = useTeamRoutes()
+  const router = useRouter()
+  const anchor = useAnchor()
 
   const filters = useFilters<Storage, TextFilter>({
     filters: [textFilterFor<Storage>(it => [it.name, it.url, it.description, it.icon])],
     initialData: storages,
   })
 
-  const [creating, setCreating] = useState(false)
+  const creating = anchor === ANCHOR_NEW
   const submit = useSubmit()
 
-  const onCreated = (storage: StorageDetails) => {
-    setCreating(false)
+  const onStorageCreated = async (storage: StorageDetails) => {
     filters.setItems([...filters.items, storage])
+
+    await router.replace(routes.storage.list())
+  }
+
+  const onRouteOptionsChange = async (routeOptions: ListRouteOptions) => {
+    await router.replace(routes.storage.list(routeOptions))
   }
 
   const selfLink: BreadcrumbLink = {
@@ -50,10 +58,12 @@ const StoragesPage = (props: StoragesPageProps) => {
   return (
     <Layout title={t('common:storages')}>
       <PageHeading pageLink={selfLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
+        <ListPageMenu creating={creating} onRouteOptionsChange={onRouteOptionsChange} submit={submit} />
       </PageHeading>
 
-      {!creating ? null : <EditStorageCard className="mb-8 px-8 py-6" submit={submit} onStorageEdited={onCreated} />}
+      {!creating ? null : (
+        <EditStorageCard className="mb-8 px-8 py-6" submit={submit} onStorageEdited={onStorageCreated} />
+      )}
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })} />

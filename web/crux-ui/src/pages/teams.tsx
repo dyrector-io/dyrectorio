@@ -5,16 +5,26 @@ import { ListPageMenu } from '@app/components/shared/page-menu'
 import EditTeamCard from '@app/components/team/edit-team-card'
 import TeamCard from '@app/components/team/team-card'
 import { COOKIE_TEAM_SLUG } from '@app/const'
+import useAnchor from '@app/hooks/use-anchor'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Team } from '@app/models'
 import { appendTeamSlug } from '@app/providers/team-routes'
-import { API_TEAMS, API_USERS_ME, ROUTE_INDEX, ROUTE_TEAMS } from '@app/routes'
+import {
+  ANCHOR_NEW,
+  API_TEAMS,
+  API_USERS_ME,
+  ListRouteOptions,
+  ROUTE_INDEX,
+  ROUTE_TEAMS,
+  teamListUrl,
+} from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { getCookie } from '@server/cookie'
 import { getCruxFromContext } from '@server/crux-api'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
+import { useRouter } from 'next/router'
 import { useState } from 'react'
 import { useSWRConfig } from 'swr'
 
@@ -28,17 +38,24 @@ const TeamsPage = (props: TeamsPageProps) => {
   const { t } = useTranslation('teams')
 
   const routes = useTeamRoutes()
+  const router = useRouter()
+  const anchor = useAnchor()
+
   const { mutate } = useSWRConfig()
 
   const [teams, setTeams] = useState(propsTeams)
-  const [creating, setCreating] = useState(false)
 
+  const creating = anchor === ANCHOR_NEW
   const submit = useSubmit()
 
   const onCreated = async (team: Team): Promise<void> => {
-    setCreating(false)
     setTeams([...teams, team])
     await mutate(API_USERS_ME)
+    await router.replace(teamListUrl())
+  }
+
+  const onRouteOptionsChange = async (routeOptions: ListRouteOptions) => {
+    await router.replace(teamListUrl(routeOptions))
   }
 
   const selfLink: BreadcrumbLink = {
@@ -49,7 +66,7 @@ const TeamsPage = (props: TeamsPageProps) => {
   return (
     <Layout title={t('common:teams')}>
       <PageHeading pageLink={selfLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
+        <ListPageMenu creating={creating} onRouteOptionsChange={onRouteOptionsChange} submit={submit} />
       </PageHeading>
 
       {!creating ? null : <EditTeamCard className="mb-8 px-8 py-6" submit={submit} onTeamEdited={onCreated} />}

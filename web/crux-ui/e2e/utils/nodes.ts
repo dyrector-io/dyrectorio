@@ -14,9 +14,9 @@ export const createNode = async (page: Page, name: string) => {
 
   await page.locator('button:has-text("Save")').click()
 
-  const item = await page.waitForSelector(`h3:has-text("${name}")`)
+  await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
 
-  await item.click()
+  await page.locator('button:has-text("Save")').click()
 
   await page.waitForSelector(`label:has-text("${name}")`)
   await page.waitForSelector(`h3:has-text("${name}")`)

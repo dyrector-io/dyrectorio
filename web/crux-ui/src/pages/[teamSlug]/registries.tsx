@@ -9,17 +9,18 @@ import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
+import useAnchor from '@app/hooks/use-anchor'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Registry, REGISTRY_TYPE_VALUES, RegistryDetails, registryDetailsToRegistry, RegistryType } from '@app/models'
-import { TeamRoutes } from '@app/routes'
+import { ANCHOR_NEW, ListRouteOptions, TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useState } from 'react'
+import { useRouter } from 'next/router'
 
 interface RegistriesPageProps {
   registries: Registry[]
@@ -32,6 +33,8 @@ const RegistriesPage = (props: RegistriesPageProps) => {
 
   const { t } = useTranslation('registries')
   const routes = useTeamRoutes()
+  const router = useRouter()
+  const anchor = useAnchor()
 
   const filters = useFilters<Registry, RegistryFilter>({
     filters: [
@@ -41,14 +44,19 @@ const RegistriesPage = (props: RegistriesPageProps) => {
     initialData: registries,
   })
 
-  const [creating, setCreating] = useState(false)
+  const creating = anchor === ANCHOR_NEW
   const submit = useSubmit()
 
-  const onCreated = (newRegistry: RegistryDetails) => {
+  const onRegistryCreated = async (newRegistry: RegistryDetails) => {
     const reg = registryDetailsToRegistry(newRegistry)
 
-    setCreating(false)
     filters.setItems([...filters.items, reg])
+
+    await router.replace(routes.registry.list())
+  }
+
+  const onRouteOptionsChange = async (routeOptions: ListRouteOptions) => {
+    await router.replace(routes.registry.list(routeOptions))
   }
 
   const selfLink: BreadcrumbLink = {
@@ -59,10 +67,12 @@ const RegistriesPage = (props: RegistriesPageProps) => {
   return (
     <Layout title={t('common:registries')}>
       <PageHeading pageLink={selfLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
+        <ListPageMenu creating={creating} onRouteOptionsChange={onRouteOptionsChange} submit={submit} />
       </PageHeading>
 
-      {!creating ? null : <EditRegistryCard className="mb-8 px-8 py-6" submit={submit} onRegistryEdited={onCreated} />}
+      {!creating ? null : (
+        <EditRegistryCard className="mb-8 px-8 py-6" submit={submit} onRegistryEdited={onRegistryCreated} />
+      )}
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>

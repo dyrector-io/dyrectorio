@@ -26,6 +26,8 @@ test('After adding a new node the setup process should be shown', async ({ page 
 
   await page.locator('button:has-text("Save")').click()
 
+  await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
+
   await page.waitForSelector('h4:has-text("Technology")')
 
   const dockerHost = await page.locator('button:has-text("Docker Host")')
@@ -64,6 +66,8 @@ test('Generate script should show the curl command and the script', async ({ pag
 
   await page.locator('button:has-text("Save")').click()
 
+  await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
+
   await page.waitForSelector('h4:has-text("Technology")')
 
   const dockerHost = await page.locator('button:has-text("Docker Host")')
@@ -101,6 +105,8 @@ test('Generate script should show script type selector for Docker', async ({ pag
 
   await page.locator('button:has-text("Save")').click()
 
+  await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
+
   await page.waitForSelector('h4:has-text("Technology")')
 
   const dockerHost = await page.locator('button:has-text("Docker Host")')
@@ -122,6 +128,8 @@ test('Docker generate script should show Traefik options', async ({ page }) => {
   await page.locator('input[name=name]').fill('PW_DAGENT_DOCKER_TRAEFIK')
 
   await page.locator('button:has-text("Save")').click()
+
+  await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
 
   await page.waitForSelector('h4:has-text("Technology")')
 
@@ -158,9 +166,11 @@ test('Deleting node', async ({ page }) => {
 
   await page.locator('button:has-text("Save")').click()
 
-  await page.locator(`h3:has-text("${name}")`).click()
   await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
+
   await page.waitForSelector('h2:text-is("Nodes")')
+
+  await page.locator('button:has-text("Discard")').click()
 
   await page.locator('button:has-text("Delete")').click()
 

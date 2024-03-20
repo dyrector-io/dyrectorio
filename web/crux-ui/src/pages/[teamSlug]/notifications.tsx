@@ -7,15 +7,17 @@ import { ListPageMenu } from '@app/components/shared/page-menu'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoWrap from '@app/elements/dyo-wrap'
+import useAnchor from '@app/hooks/use-anchor'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { Notification } from '@app/models'
-import { TeamRoutes } from '@app/routes'
+import { ANCHOR_NEW, ListRouteOptions, TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
+import { useRouter } from 'next/router'
 import { useState } from 'react'
 
 interface NotificationsPageProps {
@@ -27,30 +29,38 @@ const NotificationsPage = (props: NotificationsPageProps) => {
 
   const { t } = useTranslation('notifications')
   const routes = useTeamRoutes()
+  const router = useRouter()
+  const anchor = useAnchor()
 
-  const [creating, setCreating] = useState<boolean>(false)
   const [notifications, setNotifications] = useState<Notification[]>(propsNotifications)
+
+  const creating = anchor === ANCHOR_NEW
+  const submit = useSubmit()
+
+  const onNotificationCreated = async (noti: Notification) => {
+    setNotifications([...notifications, noti])
+    await router.replace(routes.notification.list())
+  }
+
+  const onRouteOptionsChange = async (routeOptions: ListRouteOptions) => {
+    await router.replace(routes.notification.list(routeOptions))
+  }
 
   const pageLink: BreadcrumbLink = {
     name: t('common:notifications'),
     url: routes.notification.list(),
   }
 
-  const onSubmitted = (item: Notification) => {
-    setCreating(false)
-    setNotifications([...notifications, item])
-  }
-
-  const submit = useSubmit()
-
   return (
     <Layout title={t('common:notifications')}>
       <PageHeading pageLink={pageLink}>
-        <ListPageMenu creating={creating} setCreating={setCreating} submit={submit} />
+        <ListPageMenu creating={creating} onRouteOptionsChange={onRouteOptionsChange} submit={submit} />
       </PageHeading>
+
       {creating && (
-        <EditNotificationCard onNotificationEdited={onSubmitted} submit={submit} className="mb-8 px-8 py-6" />
+        <EditNotificationCard onNotificationEdited={onNotificationCreated} submit={submit} className="mb-8 px-8 py-6" />
       )}
+
       {notifications.length ? (
         <>
           <DyoLabel className="w-full px-2 text-xl" textColor="text-bright">
