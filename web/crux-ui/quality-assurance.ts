@@ -90,6 +90,7 @@ export const sendQADialogEvent = (label: string, eventType: DialogEventType) => 
   posthog.capture(`${QA_EVENT_DIALOG}-${eventType}`, event)
 }
 
+export const QA_DIALOG_LABEL_INFO = 'info'
 export const QA_DIALOG_LABEL_DELETE_CONFIG_BUNDLE = 'deleteConfigBundle'
 export const QA_DIALOG_LABEL_REVOKE_NODE_TOKEN = 'revokeNodeToken'
 export const QA_DIALOG_LABEL_KICK_AGENT = 'kickAgent'
@@ -117,8 +118,6 @@ export const QA_MODAL_LABEL_NODE_AUDIT_DETAILS = 'nodeAuditDetails'
 export const QA_MODAL_LABEL_DEPLOYMENT_NOTE = 'deploymentNote'
 export const QA_MODAL_LABEL_IMAGE_TAGS = 'image-tags'
 export const QA_MODAL_LABEL_AUDIT_LOG_DETAILS = 'auditLogDetails'
-
-export const QA_LINK_LABEL = ''
 
 export type QualityAssurance = {
   disabled: boolean

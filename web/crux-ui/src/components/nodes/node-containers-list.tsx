@@ -4,8 +4,10 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
 import DyoImgButton from '@app/elements/dyo-img-button'
 import DyoLink from '@app/elements/dyo-link'
+import { DyoInfoModal } from '@app/elements/dyo-modal'
 import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 import LoadingIndicator from '@app/elements/loading-indicator'
+import useInfoModal from '@app/hooks/use-info-modal'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   CONTAINER_STATE_VALUES,
@@ -37,105 +39,133 @@ const NodeContainersList = (props: NodeContainersListProps) => {
 
   const listItems = showHidden ? items : items.filter(it => !containerIsHidden(it))
 
+  const [infoModal, showInfo] = useInfoModal()
+
   return (
-    <DyoCard className="mt-4">
-      <DyoTable data={listItems} pagination="client" initialSortColumn={4} initialSortDirection="asc">
-        <DyoColumn
-          header={t('common:name')}
-          className="w-2/12"
-          body={(it: Container) => containerPrefixNameOf(it.id)}
-          sortable
-          sortField={(it: Container) => containerPrefixNameOf(it.id)}
-          sort={sortString}
-        />
-        <DyoColumn
-          header={t('images:imageTag')}
-          className="w-3/12"
-          sortable
-          sortField={(it: Container) => imageName(it.imageName, it.imageTag)}
-          sort={sortString}
-          bodyClassName="overflow-hidden truncate"
-          body={(it: Container) => imageName(it.imageName, it.imageTag)}
-        />
-        <DyoColumn
-          header={t('common:state')}
-          className="w-1/12 text-center"
-          sortable
-          sortField="state"
-          sort={sortEnum(CONTAINER_STATE_VALUES)}
-          body={(it: Container) => <ContainerStatusTag className="inline-block" state={it.state} />}
-        />
-        <DyoColumn header={t('common:reason')} field="reason" className="w-1/12" sortable sort={sortString} />
-        <DyoColumn
-          header={t('common:createdAt')}
-          sortable
-          sortField="createdAt"
-          sort={sortDate}
-          suppressHydrationWarning
-          body={(it: Container) => utcDateToLocale(it.createdAt)}
-        />
-        <DyoColumn
-          header={t('ports')}
-          body={(it: Container) =>
-            !it.ports ? null : <span className="overflow-hidden truncate">{containerPortsToString(it.ports)}</span>
-          }
-        />
-        <DyoColumn
-          header={t('common:actions')}
-          className="w-40 text-center"
-          bodyClassName="flex flex-wrap gap-1 justify-center items-center"
-          body={(it: Container) => {
-            const name = containerPrefixNameOf(it.id)
-            const targetState = state.containerTargetStates[name]
-            if (targetState) {
-              return <LoadingIndicator />
+    <>
+      <DyoCard className="mt-4">
+        <DyoTable data={listItems} pagination="client" initialSortColumn={4} initialSortDirection="asc">
+          <DyoColumn
+            header={t('common:name')}
+            className="w-2/12"
+            body={(it: Container) => containerPrefixNameOf(it.id)}
+            sortable
+            sortField={(it: Container) => containerPrefixNameOf(it.id)}
+            sort={sortString}
+          />
+          <DyoColumn
+            header={t('images:imageTag')}
+            className="w-3/12"
+            sortable
+            sortField={(it: Container) => imageName(it.imageName, it.imageTag)}
+            sort={sortString}
+            bodyClassName="truncate"
+            body={(it: Container) => imageName(it.imageName, it.imageTag)}
+          />
+          <DyoColumn
+            header={t('common:state')}
+            className="text-center"
+            sortable
+            sortField="state"
+            sort={sortEnum(CONTAINER_STATE_VALUES)}
+            body={(it: Container) => <ContainerStatusTag className="w-full" state={it.state} />}
+          />
+          <DyoColumn header={t('common:reason')} field="reason" className="w-1/12" sortable sort={sortString} />
+          <DyoColumn
+            header={t('common:createdAt')}
+            sortable
+            sortField="createdAt"
+            sort={sortDate}
+            suppressHydrationWarning
+            bodyClassName="truncate"
+            body={(it: Container) => {
+              const date = utcDateToLocale(it.createdAt)
+              return <span title={date}>{date}</span>
+            }}
+          />
+          <DyoColumn
+            header={t('ports')}
+            bodyClassName="truncate"
+            body={(it: Container) =>
+              !it.ports ? null : (
+                <span
+                  className="cursor-pointer"
+                  onClick={() =>
+                    showInfo({
+                      title: t('ports'),
+                      qaLabel: 'ports',
+                      body: (
+                        <div className="flex flex-wrap max-w-2xl overflow-y-auto bg-gray-900 rounded-md text-bright p-4 mt-8">
+                          {containerPortsToString(it.ports, it.ports.length)}
+                        </div>
+                      ),
+                    })
+                  }
+                >
+                  {containerPortsToString(it.ports)}
+                </span>
+              )
             }
+          />
+          <DyoColumn
+            header={t('common:actions')}
+            className="w-40 text-center"
+            bodyClassName="flex flex-wrap gap-1 justify-center items-center"
+            body={(it: Container) => {
+              const name = containerPrefixNameOf(it.id)
+              const targetState = state.containerTargetStates[name]
+              if (targetState) {
+                return <LoadingIndicator />
+              }
 
-            return (
-              <>
-                {containerIsRestartable(it.state) ? (
+              return (
+                <>
+                  {containerIsRestartable(it.state) ? (
+                    <DyoImgButton
+                      src="/restart.svg"
+                      alt={t('restart')}
+                      height={24}
+                      onClick={() => actions.onRestartContainer(it)}
+                    />
+                  ) : (
+                    <DyoImgButton
+                      disabled={!containerIsStartable(it.state)}
+                      src="/start.svg"
+                      alt={t('start')}
+                      height={24}
+                      onClick={() => actions.onStartContainer(it)}
+                    />
+                  )}
+
                   <DyoImgButton
-                    src="/restart.svg"
-                    alt={t('restart')}
+                    disabled={!containerIsStopable(it.state)}
+                    src="/stop.svg"
+                    alt={t('stop')}
                     height={24}
-                    onClick={() => actions.onRestartContainer(it)}
+                    onClick={() => actions.onStopContainer(it)}
                   />
-                ) : (
+
+                  {it.state && (
+                    <DyoLink href={routes.node.containerLog(state.node.id, it.id)} qaLabel="container-list-logs-icon">
+                      <DyoIcon className="align-bottom" src="/note.svg" alt={t('logs')} size="md" />
+                    </DyoLink>
+                  )}
+
                   <DyoImgButton
-                    disabled={!containerIsStartable(it.state)}
-                    src="/start.svg"
-                    alt={t('start')}
+                    src="/trash-can.svg"
+                    alt={t('common:delete')}
                     height={24}
-                    onClick={() => actions.onStartContainer(it)}
+                    onClick={() => actions.onDeleteContainer(it)}
                   />
-                )}
+                </>
+              )
+            }}
+          />
+        </DyoTable>
+      </DyoCard>
 
-                <DyoImgButton
-                  disabled={!containerIsStopable(it.state)}
-                  src="/stop.svg"
-                  alt={t('stop')}
-                  height={24}
-                  onClick={() => actions.onStopContainer(it)}
-                />
-
-                {it.state && (
-                  <DyoLink href={routes.node.containerLog(state.node.id, it.id)} qaLabel="container-list-logs-icon">
-                    <DyoIcon className="align-bottom" src="/note.svg" alt={t('logs')} size="md" />
-                  </DyoLink>
-                )}
-
-                <DyoImgButton
-                  src="/trash-can.svg"
-                  alt={t('common:delete')}
-                  height={24}
-                  onClick={() => actions.onDeleteContainer(it)}
-                />
-              </>
-            )
-          }}
-        />
-      </DyoTable>
-    </DyoCard>
+      <DyoInfoModal config={infoModal} />
+    </>
   )
 }
 
