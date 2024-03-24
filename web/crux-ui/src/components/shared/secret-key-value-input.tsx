@@ -188,14 +188,22 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
     let newItems = [...state].filter(it => !isCompletelyEmpty(it))
 
     newItems = await Promise.all(
-      [...newItems].map(
-        async (it): Promise<UniqueSecretKeyValue> => ({
+      [...newItems].map(async (it): Promise<UniqueSecretKeyValue> => {
+        let { value } = it
+        let encryptedWithPublicKey = it.publicKey
+
+        if (!it.encrypted) {
+          value = await encryptWithPGP(it.value, publicKey)
+          encryptedWithPublicKey = publicKey
+        }
+
+        return {
           ...it,
-          value: await encryptWithPGP(it.value, publicKey),
+          value,
           encrypted: true,
-          publicKey,
-        }),
-      ),
+          publicKey: encryptedWithPublicKey,
+        }
+      }),
     )
 
     propsOnSubmit(newItems)
