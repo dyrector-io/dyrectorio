@@ -1,7 +1,7 @@
 import DyoButton from '@app/elements/dyo-button'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { sendQADialogEvent, sendQAKeyEvent } from 'quality-assurance'
+import { QA_DIALOG_LABEL_INFO, sendQADialogEvent, sendQAKeyEvent } from 'quality-assurance'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { DyoCard } from './dyo-card'
 import { DyoHeading } from './dyo-heading'
@@ -139,6 +139,47 @@ export const DyoConfirmationModal = (props: DyoConfirmationModalProps) => {
       }
     >
       {!actualDescription ? null : <p className="text-bright mt-8 overflow-y-auto">{actualDescription}</p>}
+    </DyoModal>
+  )
+}
+
+export type DyoInfoModalConfig = {
+  onClose: VoidFunction
+  qaLabel?: string
+  title: string
+  body: string | React.ReactNode
+}
+
+export type DyoInfoModalProps = {
+  className?: string
+  config: DyoInfoModalConfig
+}
+
+export const DyoInfoModal = (props: DyoInfoModalProps) => {
+  const { className, config } = props
+
+  if (!config) {
+    return null
+  }
+
+  const { title, qaLabel, body, onClose } = config
+
+  const { t } = useTranslation('common')
+
+  return (
+    <DyoModal
+      className={clsx(className, 'min-w-[450px]')}
+      title={title}
+      open
+      onClose={() => onClose()}
+      qaLabel={`${QA_DIALOG_LABEL_INFO}-${qaLabel}`}
+      buttons={
+        <DyoButton autoFocus onClick={() => onClose()}>
+          {t('ok')}
+        </DyoButton>
+      }
+    >
+      {typeof body === 'string' ? <p className="text-bright mt-8 overflow-y-auto">{body}</p> : body}
     </DyoModal>
   )
 }
