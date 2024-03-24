@@ -1,5 +1,6 @@
 import {
   ContainerConfigData,
+  GetInstanceSecretsMessage,
   ImageConfigProperty,
   Instance,
   InstanceContainerConfigData,
@@ -7,11 +8,12 @@ import {
   mergeConfigs,
   MergedContainerConfigData,
   PatchInstanceMessage,
+  WS_TYPE_GET_INSTANCE_SECRETS,
   WS_TYPE_INSTANCE_SECRETS,
   WS_TYPE_PATCH_INSTANCE,
 } from '@app/models'
 import { createContainerConfigSchema, getValidationError } from '@app/validations'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { DeploymentActions, DeploymentState } from '../use-deployment-state'
 import useTranslation from 'next-translate/useTranslation'
 
@@ -50,6 +52,12 @@ const useInstanceState = (options: InstanceStateOptions) => {
 
     setDefinedSecrets(message.keys)
   })
+
+  useEffect(() => {
+    sock.send(WS_TYPE_GET_INSTANCE_SECRETS, {
+      id: instance.id,
+    } as GetInstanceSecretsMessage)
+  }, [instance.id, sock])
 
   const mergedConfig = mergeConfigs(instance.image.config, instance.config)
 
