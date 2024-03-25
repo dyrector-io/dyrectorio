@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+<a name="0.11.4"></a>
+## [0.11.4](https://github.com/dyrector-io/dyrectorio/compare/0.11.3...0.11.4) (2024-03-24)
+
+### Feat
+
+* add tooltip for container names in node container list ([#934](https://github.com/dyrector-io/dyrectorio/issues/934))
+
+### Fix
+
+* overwritten deployment secrets ([#939](https://github.com/dyrector-io/dyrectorio/issues/939))
+* **(crux-ui):** simplify list sorting ([#935](https://github.com/dyrector-io/dyrectorio/issues/935))
+* **(crux-ui):** truncate ports in container list ([#936](https://github.com/dyrector-io/dyrectorio/issues/936))
+* active menu ([#938](https://github.com/dyrector-io/dyrectorio/issues/938))
+* **(web):** breadcrumb navigations on list pages ([#928](https://github.com/dyrector-io/dyrectorio/issues/928))
+* github label fetching ([#933](https://github.com/dyrector-io/dyrectorio/issues/933))
+
+
 <a name="0.11.3"></a>
 ## [0.11.3](https://github.com/dyrector-io/dyrectorio/compare/ls...0.11.3) (2024-03-11)
 
