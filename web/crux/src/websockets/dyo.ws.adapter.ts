@@ -24,6 +24,7 @@ import {
 } from 'rxjs'
 import JwtAuthGuard, { AuthorizedHttpRequest } from 'src/app/token/jwt-auth.guard'
 import { WebSocketExceptionOptions } from 'src/exception/websocket-exception'
+import { MAX_TIMEOUT } from 'src/shared/const'
 import WsMetrics from 'src/shared/metrics/ws.metrics'
 import { v4 as uuid } from 'uuid'
 import { WebSocketServer } from 'ws'
@@ -181,24 +182,25 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     const onReceiveSub = new Subject<any>()
     const onReceive = onReceiveSub.pipe(
       mergeWith(fromEvent(client, 'message')),
-      mergeMap(buffer =>
-        this.onClientMessage(client, buffer).pipe(
-          filter(result => typeof result !== 'undefined' && result !== null),
-          catchError(err => {
-            const errorMsg = 'Error while handling message'
-            this.logger.error(errorMsg)
-            this.logger.error(err)
-            const message: WsMessage<WebSocketExceptionOptions> = {
-              type: WS_TYPE_ERROR,
-              data: {
-                status: HttpStatus.INTERNAL_SERVER_ERROR,
-                message: errorMsg,
-              },
-            }
+      mergeMap(
+        buffer =>
+          this.onClientMessage(client, buffer)?.pipe(
+            filter(result => typeof result !== 'undefined' && result !== null),
+            catchError(err => {
+              const errorMsg = 'Error while handling message'
+              this.logger.error(errorMsg)
+              this.logger.error(err)
+              const message: WsMessage<WebSocketExceptionOptions> = {
+                type: WS_TYPE_ERROR,
+                data: {
+                  status: HttpStatus.INTERNAL_SERVER_ERROR,
+                  message: errorMsg,
+                },
+              }
 
-            return of(message)
-          }),
-        ),
+              return of(message)
+            }),
+          ) ?? EMPTY,
       ),
       takeUntil(onClose),
     )
@@ -310,8 +312,16 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
   private startClientExpiryTimer(client: WsClient) {
     const { sessionExpiresAt } = client.connectionRequest
 
+    if (!sessionExpiresAt) {
+      return
+    }
+
     const now = new Date().getTime()
-    const expireTime = sessionExpiresAt - now
+    let expireTime = sessionExpiresAt - now
+
+    if (expireTime > MAX_TIMEOUT) {
+      expireTime = MAX_TIMEOUT
+    }
 
     client.expireTimeout = setTimeout(() => {
       this.logger.warn(`Session expired for ${client.token}`)

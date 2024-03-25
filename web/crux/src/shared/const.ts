@@ -11,6 +11,8 @@ export const REGISTRY_GITLAB_URLS = {
 
 export const VERSIONLESS_PROJECT_VERSION_NAME = 'rolling'
 
+export const MAX_TIMEOUT = 2 ** 31 - 1
+
 const DAY_IN_MILLIS = 24 * 60 * 60 * 1000
 export const TEAM_INVITATION_EXPIRATION = 7 * DAY_IN_MILLIS
 export const JWT_EXPIRATION_MILLIS = 10 * 60 * 1000 // 10 minutes
