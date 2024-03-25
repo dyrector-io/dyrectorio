@@ -37,7 +37,7 @@ export default class TokenService {
     })
 
     const jwt = this.jwtService.sign(
-      expirationDate ? { exp: expirationDate.getTime() / 1000, data: payload } : { data: payload },
+      expirationDate ? { exp: Math.floor(expirationDate.getTime() / 1000), data: payload } : { data: payload },
     )
 
     return this.mapper.generatedTokenToDto(newToken, jwt)

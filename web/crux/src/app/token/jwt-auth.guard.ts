@@ -86,7 +86,10 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
     const userId = jwt.data.sub
     try {
       req.identity = await this.kratos.getIdentityById(userId)
-      req.sessionExpiresAt = jwt.exp
+      if (jwt.exp) {
+        req.sessionExpiresAt = Math.floor(jwt.exp * 1000) // convert to millis
+      }
+
       this.logger.verbose('Authorized. JWT was found legit.')
     } catch {
       this.logger.verbose('Unauthorized. JWT was found, but failed to authorize with kratos.')
@@ -98,10 +101,9 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
 
   private handleWsConnection(req: AuthorizedHttpRequest): void {
     const [path, paramsString] = req.url.split('?')
-    if (path !== '/') {
+    if (path !== '/api') {
       return
     }
-
     const [paramName, token] = paramsString.split('=')
     if (paramName !== 'token' || !token) {
       return
