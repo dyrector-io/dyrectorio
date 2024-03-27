@@ -1,6 +1,6 @@
 import { Param, PipeTransform, Type } from '@nestjs/common'
 
-export const GLOBAL_PREFIX = ''
+export const GLOBAL_PREFIX = '_'
 
 export const ROUTE_TEAM_SLUG = ':teamSlug'
 export const ROUTE_NODES = 'nodes'

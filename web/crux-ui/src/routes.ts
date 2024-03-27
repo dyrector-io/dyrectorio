@@ -50,6 +50,8 @@ export const API_USERS_ME = '/api/users/me'
 export const API_USERS_ME_INVITATIONS = `${API_USERS_ME}/invitations`
 export const API_USERS_ME_PREFERENCES_ONBOARDING = `${API_USERS_ME}/preferences/onboarding`
 
+export const GLOBAL_CONTAINER = '_'
+
 export const ANCHOR_NEW = '#new'
 export const ANCHOR_EDIT = '#edit'
 export const ANCHOR_TRIGGER = '#trigger'
@@ -227,22 +229,14 @@ class NodeApi {
 
   kick = (id: string) => `${this.details(id)}/kick`
 
-  // node-global-container
-  globalContainerList = (id: string) => `${this.details(id)}/containers`
-
-  globalContainer = (id: string, containerName: string) => `${this.globalContainerList(id)}/${containerName}`
-
-  globalContainerOperation = (id: string, containerName: string, operation: ContainerOperation) =>
-    `${this.globalContainer(id, containerName)}/${operation}`
-
   // node-prefix-container
-  prefixContainerList = (id: string, prefix: string) => `${this.details(id)}/${prefix}/containers`
+  containerList = (id: string, prefix: string = GLOBAL_CONTAINER) => `${this.details(id)}/${prefix}/containers`
 
-  prefixContainer = (id: string, contianer: ContainerIdentifier) =>
-    `${this.prefixContainerList(id, contianer.prefix)}/${contianer.name}`
+  container = (id: string, contianer: ContainerIdentifier) =>
+    `${this.containerList(id, contianer.prefix ?? GLOBAL_CONTAINER)}/${contianer.name}`
 
-  prefixContainerOperation = (id: string, container: ContainerIdentifier, operation: ContainerOperation) =>
-    `${this.prefixContainer(id, container)}/${operation}`
+  containerOperation = (id: string, container: ContainerIdentifier, operation: ContainerOperation) =>
+    `${this.container(id, container)}/${operation}`
 }
 
 class NodeRoutes {

@@ -9,18 +9,17 @@ import AuditLoggerModule from '../audit.logger/audit.logger.module'
 import DeployModule from '../deploy/deploy.module'
 import TeamModule from '../team/team.module'
 import TeamRepository from '../team/team.repository'
+import NodeContainerHttpController from './node.container.http.controller'
 import NodeContainerWebSocketGateway from './node.container.ws.gateway'
-import NodeGlobalContainerHttpController from './node.global-container.http.controller'
 import NodeHttpController from './node.http.controller'
 import NodeMapper from './node.mapper'
-import NodePrefixContainerHttpController from './node.prefix-container.http.controller'
 import NodeService from './node.service'
 import NodeWebSocketGateway from './node.ws.gateway'
 
 @Module({
   imports: [AgentModule, TeamModule, HttpModule, AuditLoggerModule, DeployModule],
   exports: [NodeMapper],
-  controllers: [NodeHttpController, NodePrefixContainerHttpController, NodeGlobalContainerHttpController],
+  controllers: [NodeHttpController, NodeContainerHttpController],
   providers: [
     PrismaService,
     NodeService,

@@ -5,6 +5,7 @@ import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerCommandRequest,
+  ContainerLogMessage,
   ContainerOperation,
   DeleteContainersRequest,
   DeploymentStatus,
@@ -344,7 +345,7 @@ describe('agent', () => {
     const tail = 1000
     const logStream = agent.upsertContainerLogStream(container, tail)
 
-    const logEvent = firstValueFrom(logStream.watch().pipe(skip(1)))
+    const logEvent = firstValueFrom(logStream.watch())
 
     const streamStartEventActual = await streamStartEvent
     expect(streamStartEventActual).toEqual({
@@ -358,24 +359,23 @@ describe('agent', () => {
       },
     })
 
-    const [stream, completer] = agent.onContainerLogStreamStarted(container)
-    const completerPromise = firstValueFrom(completer)
+    const agentInput = new Subject<ContainerLogMessage>()
 
+    const stream = agent.onContainerLogStreamStarted(container)
     expect(stream).toEqual(logStream)
+
+    stream.onAgentStreamStarted(agentInput).subscribe()
 
     const testLog = {
       log: 'test log',
     }
 
-    stream.update(testLog)
+    agentInput.next(testLog)
 
     const logEventActual = await logEvent
     expect(logEventActual).toEqual(testLog)
 
-    agent.onContainerLogStreamFinished(container)
-
-    const completerActual = await completerPromise
-    expect(completerActual).toEqual(undefined)
+    agentInput.complete()
   })
 
   it('getting container status should stream events', async () => {

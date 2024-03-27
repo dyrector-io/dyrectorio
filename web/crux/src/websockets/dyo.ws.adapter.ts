@@ -225,7 +225,12 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
   }
 
   onClientMessage(client: WsClient, buffer: any): Observable<WsMessage> {
-    const message: WsMessage = JSON.parse(buffer.data)
+    const message: WsMessage = this.parseMessage(buffer)
+    if (!message) {
+      this.logger.verbose(`Received invalid message from ${client.token}`)
+
+      return EMPTY
+    }
 
     this.logger.verbose(`Received ${buffer.data}`)
 
@@ -379,5 +384,19 @@ export default class DyoWsAdapter extends AbstractWsAdapter {
     }
 
     return [route, match]
+  }
+
+  private parseMessage(buffer: any): WsMessage | null {
+    try {
+      const message: WsMessage = JSON.parse(buffer.data)
+
+      if (typeof message.type !== 'string' || typeof message.data !== 'object') {
+        return null
+      }
+
+      return message
+    } catch {
+      return null
+    }
   }
 }

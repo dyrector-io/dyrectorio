@@ -1,4 +1,5 @@
 import { Layout } from '@app/components/layout'
+import useNodeState from '@app/components/nodes/use-node-state'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import EventsTerminal, { TerminalEvent } from '@app/components/shared/events-terminal'
 import PageHeading from '@app/components/shared/page-heading'
@@ -18,7 +19,7 @@ import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface InstanceLogPageProps {
   node: NodeDetails
@@ -27,15 +28,19 @@ interface InstanceLogPageProps {
 }
 
 const NodeContainerLogPage = (props: InstanceLogPageProps) => {
-  const { node, prefix, name } = props
+  const { node: propsNode, prefix, name } = props
 
   const { t } = useTranslation('common')
   const routes = useTeamRoutes()
 
   const [log, setLog] = useState<ContainerLogMessage[]>([])
 
-  const sock = useWebSocket(routes.node.detailsSocket(node.id), {
-    onOpen: () => {
+  const [node] = useNodeState(propsNode)
+
+  const sock = useWebSocket(routes.node.detailsSocket(node.id))
+
+  useEffect(() => {
+    if (node.status === 'connected') {
       const request: WatchContainerLogMessage = {
         container: {
           prefix,
@@ -43,9 +48,10 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
         },
       }
 
+      setLog([])
       sock.send(WS_TYPE_WATCH_CONTAINER_LOG, request)
-    },
-  })
+    }
+  }, [node.status, prefix, name, sock])
 
   sock.on(WS_TYPE_CONTAINER_LOG, (message: ContainerLogMessage) => {
     setLog(prevLog => [...prevLog, message])

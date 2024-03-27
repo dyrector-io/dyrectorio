@@ -32,7 +32,7 @@ const TeamSlug = () => Param(PARAM_TEAM_SLUG)
 @Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_PREFIX}/${ROUTE_CONTAINERS}`)
 @ApiTags(ROUTE_NODES)
 @UseGuards(NodeTeamAccessGuard)
-export default class NodePrefixContainerHttpController {
+export default class NodeContainerHttpController {
   constructor(private service: NodeService) {}
 
   @Post(`${ROUTE_NAME}/start`)
@@ -158,7 +158,7 @@ export default class NodePrefixContainerHttpController {
     @NodeId() nodeId: string,
     @Prefix() prefix: string,
     @Name() name: string,
-  ): Promise<string> {
+  ): Promise<string[]> {
     return this.service.getContainerLog(nodeId, prefix, name)
   }
 }
