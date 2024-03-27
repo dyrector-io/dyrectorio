@@ -12,13 +12,10 @@ import {
   mergeAll,
   mergeWith,
   of,
-  reduce,
-  throwError,
   timeout,
 } from 'rxjs'
 import { Agent, AgentConnectionMessage } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
-import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import {
   ContainerCommandRequest,
   ContainerIdentifier,
@@ -29,9 +26,9 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
-import { GET_CONTAINER_LOG_TIMEOUT_MILLIS } from 'src/shared/const'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
+import { GLOBAL_PREFIX } from './node.const'
 import {
   ContainerDto,
   ContainerInspectionDto,
@@ -266,6 +263,10 @@ export default class NodeService {
   }
 
   async startContainer(nodeId: string, prefix: string, name: string): Promise<void> {
+    if (prefix === GLOBAL_PREFIX) {
+      prefix = ''
+    }
+
     await this.sendContainerOperation(
       nodeId,
       {
@@ -277,6 +278,10 @@ export default class NodeService {
   }
 
   async stopContainer(nodeId: string, prefix: string, name: string): Promise<void> {
+    if (prefix === GLOBAL_PREFIX) {
+      prefix = ''
+    }
+
     await this.sendContainerOperation(
       nodeId,
       {
@@ -288,6 +293,10 @@ export default class NodeService {
   }
 
   async restartContainer(nodeId: string, prefix: string, name: string): Promise<void> {
+    if (prefix === GLOBAL_PREFIX) {
+      prefix = ''
+    }
+
     await this.sendContainerOperation(
       nodeId,
       {
@@ -299,6 +308,10 @@ export default class NodeService {
   }
 
   async deleteAllContainers(nodeId: string, prefix: string): Promise<Observable<void>> {
+    if (prefix === GLOBAL_PREFIX) {
+      prefix = ''
+    }
+
     const agent = this.agentService.getByIdOrThrow(nodeId)
     const cmd: DeleteContainersRequest = {
       prefix,
@@ -313,6 +326,10 @@ export default class NodeService {
   }
 
   async deleteContainer(nodeId: string, prefix: string, name: string): Promise<Observable<void>> {
+    if (prefix === GLOBAL_PREFIX) {
+      prefix = ''
+    }
+
     const agent = this.agentService.getByIdOrThrow(nodeId)
     const cmd: DeleteContainersRequest = {
       container: {
@@ -430,6 +447,10 @@ export default class NodeService {
   }
 
   async inspectContainer(nodeId: string, prefix: string, name: string): Promise<ContainerInspectionDto> {
+    if (prefix === GLOBAL_PREFIX) {
+      prefix = ''
+    }
+
     const agent = this.agentService.getByIdOrThrow(nodeId)
     const watcher = agent.getContainerInspection(prefix, name)
     const inspectionMessage = await lastValueFrom(watcher)
@@ -437,7 +458,11 @@ export default class NodeService {
     return this.mapper.containerInspectionMessageToDto(inspectionMessage)
   }
 
-  async getContainerLog(nodeId: string, prefix: string, name: string): Promise<string> {
+  async getContainerLog(nodeId: string, prefix: string, name: string): Promise<string[]> {
+    if (prefix === GLOBAL_PREFIX) {
+      prefix = ''
+    }
+
     const agent = this.agentService.getByIdOrThrow(nodeId)
 
     const container = {
@@ -448,25 +473,11 @@ export default class NodeService {
     const stream = agent.upsertContainerLogStream(
       container,
       this.configService.get<number>('DEFAULT_CONTAINER_LOG_TAIL', 1000),
-      false,
     )
 
-    const watcher = stream.watch().pipe(
-      map(it => it.log),
-      reduce((acc, it) => `${acc.trimEnd()}\n${it}`, ''),
-      timeout({
-        each: GET_CONTAINER_LOG_TIMEOUT_MILLIS,
-        with: () =>
-          throwError(
-            () =>
-              new CruxInternalServerErrorException({
-                message: 'Agent container log timed out.',
-              }),
-          ),
-      }),
-    )
+    const messages = await stream.fetchOnce()
 
-    return lastValueFrom(watcher)
+    return messages.map(it => it.log)
   }
 
   async kickNode(id: string, identity: Identity): Promise<void> {

@@ -1,90 +1,89 @@
-import { finalize, Observable, startWith, Subject } from 'rxjs'
-import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
+import { finalize, lastValueFrom, Observable, startWith, Subject, tap, toArray } from 'rxjs'
 import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
-import { ContainerIdentifier, ContainerLogMessage } from 'src/grpc/protobuf/proto/common'
-import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import { ContainerIdentifier, ContainerLogMessage, Empty } from 'src/grpc/protobuf/proto/common'
+import FixedLengthLinkedList from 'src/shared/fixed-length-linked-list'
+import AgentTunnel from './agent-tunnel'
 
-export type ContainerLogStreamCompleter = Subject<unknown>
+type ContainerLogStreamState = 'ready' | 'fetching' | 'streaming'
 
 export default class ContainerLogStream {
-  private stream = new Subject<ContainerLogMessage>()
+  private readonly cache: FixedLengthLinkedList<ContainerLogMessage> = new FixedLengthLinkedList(this.tail)
 
-  private started = false
+  private currentTunel: AgentTunnel<ContainerLogMessage> = null
 
-  private completer: ContainerLogStreamCompleter = null
+  private nextTunnel: AgentTunnel<ContainerLogMessage> = null
+
+  private state: ContainerLogStreamState = 'ready'
 
   constructor(
+    private readonly commandChannel: Subject<AgentCommand>,
     private readonly container: ContainerIdentifier,
     private readonly tail: number,
-    private readonly streaming: boolean = true,
+    private readonly onFree: VoidFunction,
   ) {}
 
-  start(commandChannel: Subject<AgentCommand>) {
-    if (this.started) {
-      return
+  watch(): Observable<ContainerLogMessage> {
+    if (this.state === 'fetching') {
+      if (!this.nextTunnel) {
+        this.nextTunnel = new AgentTunnel()
+      }
+
+      return this.nextTunnel.watch()
     }
 
-    commandChannel.next({
+    if (this.state === 'ready') {
+      this.currentTunel = new AgentTunnel()
+      this.sendAgentCommand('streaming')
+    }
+
+    return this.currentTunel.watch().pipe(startWith(...Array.from(this.cache)))
+  }
+
+  async fetchOnce(): Promise<ContainerLogMessage[]> {
+    if (this.state === 'streaming') {
+      return Array.from(this.cache)
+    }
+
+    if (this.state === 'ready') {
+      this.currentTunel = new AgentTunnel()
+      this.sendAgentCommand('fetching')
+    }
+
+    return lastValueFrom(this.currentTunel.watch().pipe(toArray()))
+  }
+
+  onAgentStreamStarted(stream: Observable<ContainerLogMessage>): Observable<Empty> {
+    return this.currentTunel
+      .onAgentStreamStarted(stream.pipe(tap(message => this.cache.push(message))))
+      .pipe(finalize(() => this.onAgenStreamFinished()))
+  }
+
+  private onAgenStreamFinished() {
+    this.currentTunel = null
+
+    if (this.state === 'fetching') {
+      if (this.nextTunnel?.watched) {
+        this.currentTunel = this.nextTunnel
+        this.nextTunnel = null
+        this.sendAgentCommand('streaming')
+        return
+      }
+    }
+
+    this.nextTunnel = null
+    this.state = 'ready'
+    this.onFree()
+  }
+
+  private sendAgentCommand(commandType: ContainerLogStreamState) {
+    this.state = commandType
+
+    this.commandChannel.next({
       containerLog: {
         container: this.container,
-        streaming: this.streaming,
+        streaming: commandType === 'streaming',
         tail: this.tail,
       },
     } as AgentCommand)
-    this.started = true
-  }
-
-  update(log: ContainerLogMessage) {
-    this.stream.next(log)
-  }
-
-  stop() {
-    if (!this.started) {
-      return
-    }
-
-    this.started = false
-    this.stream.complete()
-    this.completer?.next(undefined)
-    this.completer = null
-  }
-
-  watch(): Observable<ContainerLogMessage> {
-    return this.stream.pipe(
-      // necessary, because of: https://github.com/nestjs/nest/issues/8111
-      startWith({
-        log: '',
-      } as ContainerLogMessage),
-      finalize(() => this.onWatcherDisconnected()),
-    )
-  }
-
-  onNodeStreamStarted(): ContainerLogStreamCompleter {
-    if (this.completer) {
-      throw new CruxPreconditionFailedException({
-        message: 'There is already a container status stream connection for container',
-        property: GrpcNodeConnection.META_FILTER_PREFIX,
-        value: `${this.container.prefix ?? ''}-${this.container.name}`,
-      })
-    }
-
-    this.completer = new Subject<unknown>()
-    return this.completer
-  }
-
-  onNodeStreamFinished() {
-    if (!this.started) {
-      return
-    }
-
-    this.stream.complete()
-    this.completer?.next(undefined)
-    this.completer = null
-  }
-
-  private onWatcherDisconnected() {
-    if (!this.stream.observed) {
-      this.stop()
-    }
   }
 }

@@ -25,7 +25,7 @@ import {
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { AgentToken } from './agent-token'
 import AgentUpdate, { AgentUpdateOptions, AgentUpdateResult } from './agent-update'
-import ContainerLogStream, { ContainerLogStreamCompleter } from './container-log-stream'
+import ContainerLogStream from './container-log-stream'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
 import Deployment from './deployment'
 import { BufferedSubject } from './utils'
@@ -164,19 +164,17 @@ export class Agent {
     return watcher
   }
 
-  upsertContainerLogStream(
-    container: ContainerIdentifier,
-    tail: number,
-    streaming: boolean = true,
-  ): ContainerLogStream {
+  upsertContainerLogStream(container: ContainerIdentifier, tail: number): ContainerLogStream {
     this.throwIfCommandsAreDisabled()
 
     const key = Agent.containerPrefixNameOf(container)
     let stream = this.logStreams.get(key)
     if (!stream) {
-      stream = new ContainerLogStream(container, tail, streaming)
+      stream = new ContainerLogStream(this.commandChannel, container, tail, () => {
+        this.logStreams.delete(key)
+      })
+
       this.logStreams.set(key, stream)
-      stream.start(this.commandChannel)
     }
 
     return stream
@@ -263,7 +261,6 @@ export class Agent {
     this.statusWatchers.forEach(it => it.stop())
     this.secretsWatchers.forEach(it => it.complete())
     this.inspectionWatchers.forEach(it => it.complete())
-    this.logStreams.forEach(it => it.stop())
     this.commandChannel.complete()
 
     this.eventChannel.next({
@@ -299,26 +296,9 @@ export class Agent {
     watcher.onNodeStreamFinished()
   }
 
-  onContainerLogStreamStarted(id: ContainerIdentifier): [ContainerLogStream, ContainerLogStreamCompleter] {
+  onContainerLogStreamStarted(id: ContainerIdentifier): ContainerLogStream {
     const key = Agent.containerPrefixNameOf(id)
-
-    const stream = this.logStreams.get(key)
-    if (!stream) {
-      return [null, null]
-    }
-
-    return [stream, stream.onNodeStreamStarted()]
-  }
-
-  onContainerLogStreamFinished(id: ContainerIdentifier) {
-    const key = Agent.containerPrefixNameOf(id)
-    const watcher = this.logStreams.get(key)
-    if (!watcher) {
-      return
-    }
-
-    this.logStreams.delete(key)
-    watcher.onNodeStreamFinished()
+    return this.logStreams.get(key)
   }
 
   getContainerSecrets(prefix: string, name: string): Observable<ListSecretsResponse> {

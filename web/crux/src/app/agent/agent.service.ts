@@ -329,30 +329,14 @@ export default class AgentService {
     }
 
     const key = Agent.containerPrefixNameOf(container)
-    const [stream, completer] = agent.onContainerLogStreamStarted(container)
+    const stream = agent.onContainerLogStreamStarted(container)
     if (!stream) {
       this.logger.warn(`${agent.id} - There was no stream for ${key}`)
 
       return of(Empty)
     }
 
-    return request.pipe(
-      // necessary, because of: https://github.com/nestjs/nest/issues/8111
-      startWith({
-        log: '',
-      } as ContainerLogMessage),
-      map(it => {
-        this.logger.verbose(`${agent.id} - Container log - '${key}' -> '${it.log}'`)
-
-        stream.update(it)
-        return Empty
-      }),
-      finalize(() => {
-        agent.onContainerLogStreamFinished(container)
-        this.logger.debug(`${agent.id} - Container log listening finished: ${key}`)
-      }),
-      takeUntil(completer),
-    )
+    return stream.onAgentStreamStarted(request)
   }
 
   handleContainerInspect(connection: GrpcNodeConnection, request: ContainerInspectMessage): Observable<Empty> {
