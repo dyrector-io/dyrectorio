@@ -1,4 +1,4 @@
-import { finalize, lastValueFrom, Observable, startWith, Subject, tap, toArray } from 'rxjs'
+import { finalize, lastValueFrom, Observable, startWith, Subject, tap, timeout, TimeoutConfig, toArray } from 'rxjs'
 import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
 import { ContainerIdentifier, ContainerLogMessage, Empty } from 'src/grpc/protobuf/proto/common'
 import FixedLengthLinkedList from 'src/shared/fixed-length-linked-list'
@@ -39,7 +39,7 @@ export default class ContainerLogStream {
     return this.currentTunel.watch().pipe(startWith(...Array.from(this.cache)))
   }
 
-  async fetchOnce(): Promise<ContainerLogMessage[]> {
+  async fetchOnce(timeoutConfig: TimeoutConfig<ContainerLogMessage>): Promise<ContainerLogMessage[]> {
     if (this.state === 'streaming') {
       return Array.from(this.cache)
     }
@@ -49,7 +49,7 @@ export default class ContainerLogStream {
       this.sendAgentCommand('fetching')
     }
 
-    return lastValueFrom(this.currentTunel.watch().pipe(toArray()))
+    return lastValueFrom(this.currentTunel.watch().pipe(timeout(timeoutConfig), toArray()))
   }
 
   onAgentStreamStarted(stream: Observable<ContainerLogMessage>): Observable<Empty> {
