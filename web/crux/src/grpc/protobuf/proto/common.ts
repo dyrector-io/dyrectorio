@@ -617,6 +617,10 @@ export interface ContainerLogMessage {
   log: string
 }
 
+export interface ContainerLogListResponse {
+  logs: string[]
+}
+
 export interface ContainerInspectMessage {
   prefix: string
   name: string
@@ -922,6 +926,26 @@ export const ContainerLogMessage = {
   toJSON(message: ContainerLogMessage): unknown {
     const obj: any = {}
     message.log !== undefined && (obj.log = message.log)
+    return obj
+  },
+}
+
+function createBaseContainerLogListResponse(): ContainerLogListResponse {
+  return { logs: [] }
+}
+
+export const ContainerLogListResponse = {
+  fromJSON(object: any): ContainerLogListResponse {
+    return { logs: Array.isArray(object?.logs) ? object.logs.map((e: any) => String(e)) : [] }
+  },
+
+  toJSON(message: ContainerLogListResponse): unknown {
+    const obj: any = {}
+    if (message.logs) {
+      obj.logs = message.logs.map(e => e)
+    } else {
+      obj.logs = []
+    }
     return obj
   },
 }

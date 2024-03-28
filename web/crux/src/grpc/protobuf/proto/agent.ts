@@ -7,6 +7,7 @@ import {
   ContainerCommandRequest,
   ContainerIdentifier,
   ContainerInspectMessage,
+  ContainerLogListResponse,
   ContainerLogMessage,
   ContainerState,
   ContainerStateListMessage,
@@ -1549,7 +1550,9 @@ export interface AgentClient {
 
   deleteContainers(request: DeleteContainersRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
-  containerLog(request: Observable<ContainerLogMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
+  containerLog(request: ContainerLogListResponse, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  containerLogStream(request: Observable<ContainerLogMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
 
   containerInspect(request: ContainerInspectMessage, metadata: Metadata, ...rest: any): Observable<Empty>
 
@@ -1592,6 +1595,12 @@ export interface AgentController {
   ): Promise<Empty> | Observable<Empty> | Empty
 
   containerLog(
+    request: ContainerLogListResponse,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<Empty> | Observable<Empty> | Empty
+
+  containerLogStream(
     request: Observable<ContainerLogMessage>,
     metadata: Metadata,
     ...rest: any
@@ -1613,6 +1622,7 @@ export function AgentControllerMethods() {
       'secretList',
       'abortUpdate',
       'deleteContainers',
+      'containerLog',
       'containerInspect',
       'tokenReplaced',
     ]
@@ -1620,7 +1630,7 @@ export function AgentControllerMethods() {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('Agent', method)(constructor.prototype[method], method, descriptor)
     }
-    const grpcStreamMethods: string[] = ['deploymentStatus', 'containerState', 'containerLog']
+    const grpcStreamMethods: string[] = ['deploymentStatus', 'containerState', 'containerLogStream']
     for (const method of grpcStreamMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcStreamMethod('Agent', method)(constructor.prototype[method], method, descriptor)

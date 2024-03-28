@@ -1,6 +1,7 @@
-import { Observable, Subject, finalize, map, takeUntil } from 'rxjs'
+import { Observable, Subject, finalize, map, startWith, takeUntil, timeout } from 'rxjs'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { Empty } from 'src/grpc/protobuf/proto/common'
+import { AGENT_CALLBACK_TIMEOUT } from 'src/shared/const'
 
 export default class AgentTunnel<T> {
   private readonly clientStream = new Subject<T>()
@@ -17,6 +18,9 @@ export default class AgentTunnel<T> {
 
   watch(): Observable<T> {
     return this.clientStream.pipe(
+      timeout({
+        first: AGENT_CALLBACK_TIMEOUT,
+      }),
       takeUntil(this.agentCompleter),
       finalize(() => this.onWatcherDisconnected()),
     )
@@ -37,6 +41,7 @@ export default class AgentTunnel<T> {
 
         return Empty
       }),
+      startWith(Empty),
       takeUntil(this.clientCompleter),
       finalize(() => this.agentCompleter.next(undefined)),
     )

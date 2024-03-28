@@ -113,7 +113,7 @@ func sendDeploymentInformerEvent(
 	filterNamespace string,
 	deploymentHandler *k8s.Deployment,
 	svcHandler *k8s.Service,
-	watchContext *grpc.ContainerWatchContext,
+	watchContext *grpc.ContainerStateContext,
 	cfg *config.Configuration,
 ) {
 	data, ok := obj.(*unstructured.Unstructured)
@@ -149,7 +149,7 @@ func watchDeployments(
 	clusterClient *dynamic.DynamicClient,
 	deploymentHandler *k8s.Deployment,
 	svcHandler *k8s.Service,
-	watchContext *grpc.ContainerWatchContext,
+	watchContext *grpc.ContainerStateContext,
 	cfg *config.Configuration,
 ) {
 	resource := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
@@ -227,7 +227,7 @@ func podToStateItem(
 func pushEvent(
 	ctx context.Context,
 	event watch.Event,
-	watchContext *grpc.ContainerWatchContext,
+	watchContext *grpc.ContainerStateContext,
 	deploymentHandler *k8s.Deployment,
 	svcHandler *k8s.Service,
 	cfg *config.Configuration,
@@ -265,16 +265,9 @@ func watchPods(
 	clientSet *kubernetes.Clientset,
 	deploymentHandler *k8s.Deployment,
 	svcHandler *k8s.Service,
-	watchContext *grpc.ContainerWatchContext,
+	watchContext *grpc.ContainerStateContext,
 	cfg *config.Configuration,
 ) {
-	initialState, err := getInitialStateList(ctx, deploymentHandler, svcHandler, namespace, cfg)
-	if err != nil {
-		watchContext.Error <- err
-		return
-	}
-	watchContext.Events <- initialState
-
 	list, err := clientSet.CoreV1().Events(util.Fallback(namespace, corev1.NamespaceAll)).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		watchContext.Error <- err

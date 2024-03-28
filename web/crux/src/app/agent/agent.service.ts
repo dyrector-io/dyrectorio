@@ -30,6 +30,7 @@ import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc
 import {
   ContainerIdentifier,
   ContainerInspectMessage,
+  ContainerLogListResponse,
   ContainerLogMessage,
   ContainerStateListMessage,
   DeleteContainersRequest,
@@ -317,7 +318,7 @@ export default class AgentService {
     return Empty
   }
 
-  handleContainerLog(connection: GrpcNodeConnection, request: Observable<ContainerLogMessage>): Observable<Empty> {
+  handleContainerLogStream(connection: GrpcNodeConnection, request: Observable<ContainerLogMessage>): Observable<Empty> {
     const agent = this.getByIdOrThrow(connection.nodeId)
 
     const containerPrefix = connection.getStringMetadata(GrpcNodeConnection.META_CONTAINER_PREFIX)
@@ -339,12 +340,28 @@ export default class AgentService {
     return stream.onAgentStreamStarted(request)
   }
 
-  handleContainerInspect(connection: GrpcNodeConnection, request: ContainerInspectMessage): Observable<Empty> {
+  handleContainerLog(connection: GrpcNodeConnection, request: ContainerLogListResponse): Empty {
+    const agent = this.getByIdOrThrow(connection.nodeId)
+
+    const containerPrefix = connection.getStringMetadata(GrpcNodeConnection.META_CONTAINER_PREFIX)
+    const containerName = connection.getStringMetadata(GrpcNodeConnection.META_CONTAINER_NAME)
+
+    const container: ContainerIdentifier = {
+      prefix: containerPrefix ?? '',
+      name: containerName,
+    }
+
+    agent.onContainerLog(container, request)
+
+    return Empty
+  }
+
+  handleContainerInspect(connection: GrpcNodeConnection, request: ContainerInspectMessage): Empty {
     const agent = this.getByIdOrThrow(connection.nodeId)
 
     agent.onContainerInspect(request)
 
-    return of(Empty)
+    return Empty
   }
 
   async tokenReplaced(connection: GrpcNodeConnection): Promise<Empty> {

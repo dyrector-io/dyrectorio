@@ -12,7 +12,6 @@ import {
   mergeAll,
   mergeWith,
   of,
-  throwError,
   timeout,
 } from 'rxjs'
 import { Agent, AgentConnectionMessage } from 'src/domain/agent'
@@ -49,8 +48,6 @@ import {
   WatchContainerLogMessage,
   WatchContainersStateMessage,
 } from './node.message'
-import { GET_CONTAINER_LOG_TIMEOUT_MILLIS } from 'src/shared/const'
-import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
 @Injectable()
 export default class NodeService {
@@ -467,29 +464,14 @@ export default class NodeService {
     }
 
     const agent = this.agentService.getByIdOrThrow(nodeId)
-
-    const container = {
+    const watcher = agent.getContainerLog(
       prefix,
       name,
-    }
-
-    const stream = agent.upsertContainerLogStream(
-      container,
       this.configService.get<number>('DEFAULT_CONTAINER_LOG_TAIL', 1000),
     )
+    const message = await lastValueFrom(watcher)
 
-    const messages = await stream.fetchOnce({
-      each: GET_CONTAINER_LOG_TIMEOUT_MILLIS,
-      with: () =>
-        throwError(
-          () =>
-            new CruxInternalServerErrorException({
-              message: 'Agent container log timed out.',
-            }),
-        ),
-    })
-
-    return messages.map(it => it.log)
+    return message.logs
   }
 
   async kickNode(id: string, identity: Identity): Promise<void> {

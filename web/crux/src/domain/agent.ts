@@ -12,6 +12,7 @@ import {
   ContainerCommandRequest,
   ContainerIdentifier,
   ContainerInspectMessage,
+  ContainerLogListResponse,
   DeleteContainersRequest,
   DeploymentStatusMessage,
   Empty,
@@ -20,6 +21,7 @@ import {
 import {
   CONTAINER_DELETE_TIMEOUT_MILLIS,
   GET_CONTAINER_INSPECTION_TIMEOUT_MILLIS,
+  GET_CONTAINER_LOG_TIMEOUT_MILLIS,
   GET_CONTAINER_SECRETS_TIMEOUT_MILLIS,
 } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
@@ -51,6 +53,8 @@ export class Agent {
   private statusWatchers: Map<string, ContainerStatusWatcher> = new Map()
 
   private secretsWatchers: Map<string, Subject<ListSecretsResponse>> = new Map()
+
+  private containerLogWatchers: Map<string, Subject<ContainerLogListResponse>> = new Map()
 
   private inspectionWatchers: Map<string, Subject<ContainerInspectMessage>> = new Map()
 
@@ -354,6 +358,63 @@ export class Agent {
     watcher.complete()
 
     this.secretsWatchers.delete(key)
+  }
+
+  getContainerLog(prefix: string, name: string, tail: number): Observable<ContainerLogListResponse> {
+    this.throwIfCommandsAreDisabled()
+
+    const key = Agent.containerPrefixNameOf({
+      prefix,
+      name,
+    })
+
+    let watcher = this.containerLogWatchers.get(key)
+    if (!watcher) {
+      watcher = new Subject<ContainerLogListResponse>()
+      this.containerLogWatchers.set(key, watcher)
+
+      this.commandChannel.next({
+        containerLog: {
+          container: {
+            prefix,
+            name,
+          },
+          streaming: false,
+          tail,
+        },
+      } as AgentCommand)
+    }
+
+    return watcher.pipe(
+      finalize(() => {
+        this.containerLogWatchers.delete(key)
+      }),
+      timeout({
+        each: GET_CONTAINER_LOG_TIMEOUT_MILLIS,
+        with: () => {
+          this.containerLogWatchers.delete(key)
+
+          return throwError(
+            () =>
+              new CruxInternalServerErrorException({
+                message: 'Agent container log request timed out.',
+              }),
+          )
+        },
+      }),
+    )
+  }
+
+  onContainerLog(container: ContainerIdentifier, res: ContainerLogListResponse) {
+    const key = Agent.containerPrefixNameOf(container)
+
+    const watcher = this.containerLogWatchers.get(key)
+    if (!watcher) {
+      return
+    }
+
+    watcher.next(res)
+    watcher.complete()
   }
 
   getContainerInspection(prefix: string, name: string): Observable<ContainerInspectMessage> {

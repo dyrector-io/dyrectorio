@@ -29,7 +29,8 @@ service Agent {
   rpc SecretList(common.ListSecretsResponse) returns (common.Empty);
   rpc AbortUpdate(AgentAbortUpdate) returns (common.Empty);
   rpc DeleteContainers(common.DeleteContainersRequest) returns (common.Empty);
-  rpc ContainerLog(stream common.ContainerLogMessage) returns (common.Empty);
+  rpc ContainerLog(common.ContainerLogListResponse) returns (common.Empty);
+  rpc ContainerLogStream(stream common.ContainerLogMessage) returns (common.Empty);
   rpc ContainerInspect(common.ContainerInspectMessage) returns (common.Empty);
   rpc TokenReplaced(common.Empty) returns (common.Empty);
 }

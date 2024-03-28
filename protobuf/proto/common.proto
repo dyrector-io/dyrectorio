@@ -92,6 +92,10 @@ message ContainerLogMessage {
   string log = 100;
 }
 
+message ContainerLogListResponse {
+  repeated string logs = 1000;
+}
+
 message ContainerInspectMessage {
   string prefix = 1;
   string name = 2;

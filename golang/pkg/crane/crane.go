@@ -39,7 +39,7 @@ func Serve(cfg *config.Configuration, secretStore commonConfig.SecretStore) {
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
 	grpc.Init(grpcContext, &cfg.CommonConfiguration, secretStore, &grpc.WorkerFunctions{
 		Deploy:           k8s.Deploy,
-		Watch:            crux.WatchDeploymentsByPrefix,
+		ContainerState:   crux.WatchDeploymentsByPrefix,
 		Delete:           k8s.Delete,
 		ContainerCommand: crux.DeploymentCommand,
 		DeleteContainers: k8s.DeleteMultiple,
