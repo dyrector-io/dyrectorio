@@ -621,10 +621,8 @@ export interface ContainerLogListResponse {
   logs: string[]
 }
 
-export interface ContainerInspectMessage {
-  prefix: string
-  name: string
-  inspection: string
+export interface ContainerInspectResponse {
+  data: string
 }
 
 export interface Routing {
@@ -950,24 +948,18 @@ export const ContainerLogListResponse = {
   },
 }
 
-function createBaseContainerInspectMessage(): ContainerInspectMessage {
-  return { prefix: '', name: '', inspection: '' }
+function createBaseContainerInspectResponse(): ContainerInspectResponse {
+  return { data: '' }
 }
 
-export const ContainerInspectMessage = {
-  fromJSON(object: any): ContainerInspectMessage {
-    return {
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      inspection: isSet(object.inspection) ? String(object.inspection) : '',
-    }
+export const ContainerInspectResponse = {
+  fromJSON(object: any): ContainerInspectResponse {
+    return { data: isSet(object.data) ? String(object.data) : '' }
   },
 
-  toJSON(message: ContainerInspectMessage): unknown {
+  toJSON(message: ContainerInspectResponse): unknown {
     const obj: any = {}
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    message.name !== undefined && (obj.name = message.name)
-    message.inspection !== undefined && (obj.inspection = message.inspection)
+    message.data !== undefined && (obj.data = message.data)
     return obj
   },
 }

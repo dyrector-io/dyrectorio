@@ -1,4 +1,15 @@
-import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common'
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
 import {
   ApiBadRequestResponse,
   ApiForbiddenResponse,
@@ -8,9 +19,9 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger'
-import { Observable, from, mergeAll } from 'rxjs'
 import UuidParams from 'src/decorators/api-params.decorator'
 import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
+import NodePrefixInterceptor from './interceptors/node.prefix.interceptor'
 import {
   Name,
   NodeId,
@@ -23,8 +34,9 @@ import {
   ROUTE_PREFIX,
   ROUTE_TEAM_SLUG,
 } from './node.const'
-import { ContainerInspectionDto } from './node.dto'
+import { ContainerInspectionDto, NodeContainerLogQuery } from './node.dto'
 import NodeService from './node.service'
+import NodeContainerLogQueryValidationPipe from './pipes/node.container-log-query.pipe'
 
 const PARAM_TEAM_SLUG = 'teamSlug'
 const TeamSlug = () => Param(PARAM_TEAM_SLUG)
@@ -32,6 +44,7 @@ const TeamSlug = () => Param(PARAM_TEAM_SLUG)
 @Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_NODES}/${ROUTE_NODE_ID}/${ROUTE_PREFIX}/${ROUTE_CONTAINERS}`)
 @ApiTags(ROUTE_NODES)
 @UseGuards(NodeTeamAccessGuard)
+@UseInterceptors(NodePrefixInterceptor)
 export default class NodeContainerHttpController {
   constructor(private service: NodeService) {}
 
@@ -102,8 +115,8 @@ export default class NodeContainerHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for container delete.' })
   @ApiNotFoundResponse({ description: 'Container not found.' })
   @UuidParams(PARAM_NODE_ID)
-  deleteAllContainers(@TeamSlug() _: string, @NodeId() nodeId: string, @Prefix() prefix: string): Observable<void> {
-    return from(this.service.deleteAllContainers(nodeId, prefix)).pipe(mergeAll())
+  async deleteAllContainers(@TeamSlug() _: string, @NodeId() nodeId: string, @Prefix() prefix: string): Promise<void> {
+    return await this.service.deleteAllContainers(nodeId, prefix)
   }
 
   @Delete(`${ROUTE_NAME}`)
@@ -116,13 +129,13 @@ export default class NodeContainerHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for container delete.' })
   @ApiNotFoundResponse({ description: 'Container not found.' })
   @UuidParams(PARAM_NODE_ID)
-  deleteContainer(
+  async deleteContainer(
     @TeamSlug() _: string,
     @NodeId() nodeId: string,
     @Prefix() prefix: string,
     @Name() name: string,
-  ): Observable<void> {
-    return from(this.service.deleteContainer(nodeId, prefix, name)).pipe(mergeAll())
+  ): Promise<void> {
+    return await this.service.deleteContainer(nodeId, prefix, name)
   }
 
   @Get(`${ROUTE_NAME}/inspect`)
@@ -158,7 +171,8 @@ export default class NodeContainerHttpController {
     @NodeId() nodeId: string,
     @Prefix() prefix: string,
     @Name() name: string,
+    @Query(NodeContainerLogQueryValidationPipe) query: NodeContainerLogQuery,
   ): Promise<string[]> {
-    return this.service.getContainerLog(nodeId, prefix, name)
+    return this.service.getContainerLog(nodeId, prefix, name, query)
   }
 }

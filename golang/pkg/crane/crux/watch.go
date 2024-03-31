@@ -267,7 +267,18 @@ func watchPods(
 	svcHandler *k8s.Service,
 	watchContext *grpc.ContainerStateContext,
 	cfg *config.Configuration,
+	sendInitialStates bool,
 ) {
+	if sendInitialStates {
+		initialState, err := getInitialStateList(ctx, deploymentHandler, svcHandler, namespace, cfg)
+		if err != nil {
+			watchContext.Error <- err
+			return
+		}
+
+		watchContext.Events <- initialState
+	}
+
 	list, err := clientSet.CoreV1().Events(util.Fallback(namespace, corev1.NamespaceAll)).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		watchContext.Error <- err

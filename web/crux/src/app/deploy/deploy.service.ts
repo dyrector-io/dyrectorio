@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { Identity } from '@ory/kratos-client'
 import { ConfigBundle, DeploymentStatusEnum, Prisma } from '@prisma/client'
-import { EMPTY, Observable, Subject, concatAll, concatMap, filter, from, lastValueFrom, map, of } from 'rxjs'
+import { EMPTY, Observable, Subject, concatAll, concatMap, filter, from, map, of } from 'rxjs'
 import {
   ContainerConfigData,
   InstanceContainerConfigData,
@@ -405,12 +405,14 @@ export default class DeployService {
 
     if (deployment.status === 'successful') {
       const agent = this.agentService.getById(deployment.nodeId)
-      if (agent) {
-        agent.deleteContainers({
-          prefix: deployment.prefix,
-          container: null,
-        })
+      if (!agent) {
+        return
       }
+
+      await agent.deleteContainers({
+        prefix: deployment.prefix,
+        container: null,
+      })
     }
   }
 
@@ -905,9 +907,12 @@ export default class DeployService {
       })
     }
 
-    const watcher = agent.getContainerSecrets(deployment.prefix, containerName)
-
-    const secrets = await lastValueFrom(watcher)
+    const secrets = await agent.listSecrets({
+      container: {
+        prefix: deployment.prefix,
+        name: containerName,
+      },
+    })
 
     return this.mapper.secretsResponseToInstanceSecretsDto(secrets)
   }

@@ -16,11 +16,9 @@ export const MAX_TIMEOUT = 2 ** 31 - 1
 const DAY_IN_MILLIS = 24 * 60 * 60 * 1000
 export const TEAM_INVITATION_EXPIRATION = 7 * DAY_IN_MILLIS
 export const JWT_EXPIRATION_MILLIS = 10 * 60 * 1000 // 10 minutes
-export const CONTAINER_DELETE_TIMEOUT_MILLIS = 1000
-export const AGENT_CALLBACK_TIMEOUT = 60_000
-export const GET_CONTAINER_SECRETS_TIMEOUT_MILLIS = 5000
-export const GET_CONTAINER_INSPECTION_TIMEOUT_MILLIS = 5000
-export const GET_CONTAINER_LOG_TIMEOUT_MILLIS = 15_000
+export const AGENT_CALLBACK_TIMEOUT = 5000
+export const AGENT_STREAM_TIMEOUT = 60_000
+export const GET_CONTAINER_LOG_DEFAULT_TAKE = 100
 
 // NOTE(@m8vago): This should be incremented, when a new release includes a proto file change
 const AGENT_PROTO_COMPATIBILITY_MINIMUM_VERSION = '0.11.0'

@@ -96,10 +96,8 @@ message ContainerLogListResponse {
   repeated string logs = 1000;
 }
 
-message ContainerInspectMessage {
-  string prefix = 1;
-  string name = 2;
-  string inspection = 3;
+message ContainerInspectResponse {
+  string data = 1;
 }
 
 enum NetworkMode {

@@ -42,20 +42,10 @@ func WatchDeploymentsByPrefix(ctx context.Context, namespace string, sendInitial
 		Error:  errorChannel,
 	}
 
-	var initialState []*common.ContainerStateItem = nil
-	if sendInitialStates {
-		initialState, err = getInitialStateList(ctx, deploymentHandler, svcHandler, namespace, cfg)
-		if err != nil {
-			return nil, err
-		}
-
-		watchContext.Events <- initialState
-	}
-
 	// For some unknown reason the watcher used by watchPods does not get any deployment delete events
 	// so a separate watcher is required
 	go watchDeployments(ctx, namespace, clusterClient, deploymentHandler, svcHandler, watchContext, cfg)
-	go watchPods(ctx, namespace, clientSet, deploymentHandler, svcHandler, watchContext, cfg)
+	go watchPods(ctx, namespace, clientSet, deploymentHandler, svcHandler, watchContext, cfg, sendInitialStates)
 
 	return watchContext, nil
 }

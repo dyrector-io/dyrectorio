@@ -6,7 +6,7 @@ import { ContainerState } from 'src/domain/container'
 import { NodeWithToken } from 'src/domain/node'
 import { fromTimestamp } from 'src/domain/utils'
 import {
-  ContainerInspectMessage,
+  ContainerInspectResponse,
   ContainerOperation,
   ContainerStateItem,
   ContainerStateListMessage,
@@ -141,9 +141,9 @@ export default class NodeMapper {
     }
   }
 
-  containerInspectionMessageToDto(it: ContainerInspectMessage): ContainerInspectionDto {
+  containerInspectToDto(it: ContainerInspectResponse): ContainerInspectionDto {
     return {
-      inspection: it.inspection,
+      inspection: it.data,
     }
   }
 }

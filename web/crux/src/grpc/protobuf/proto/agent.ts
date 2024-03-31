@@ -6,7 +6,7 @@ import {
   ConfigContainer,
   ContainerCommandRequest,
   ContainerIdentifier,
-  ContainerInspectMessage,
+  ContainerInspectResponse,
   ContainerLogListResponse,
   ContainerLogMessage,
   ContainerState,
@@ -139,8 +139,7 @@ export interface VersionDeployRequest {
 
 /** Request for a keys of existing secrets in a prefix, eg. namespace */
 export interface ListSecretsRequest {
-  prefix: string
-  name: string
+  container: ContainerIdentifier | undefined
 }
 
 /** Deploys a single container */
@@ -530,21 +529,18 @@ export const VersionDeployRequest = {
 }
 
 function createBaseListSecretsRequest(): ListSecretsRequest {
-  return { prefix: '', name: '' }
+  return { container: undefined }
 }
 
 export const ListSecretsRequest = {
   fromJSON(object: any): ListSecretsRequest {
-    return {
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-    }
+    return { container: isSet(object.container) ? ContainerIdentifier.fromJSON(object.container) : undefined }
   },
 
   toJSON(message: ListSecretsRequest): unknown {
     const obj: any = {}
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    message.name !== undefined && (obj.name = message.name)
+    message.container !== undefined &&
+      (obj.container = message.container ? ContainerIdentifier.toJSON(message.container) : undefined)
     return obj
   },
 }
@@ -1540,21 +1536,25 @@ export interface AgentClient {
 
   connect(request: AgentInfo, metadata: Metadata, ...rest: any): Observable<AgentCommand>
 
+  /** streams */
+
   deploymentStatus(request: Observable<DeploymentStatusMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
 
   containerState(request: Observable<ContainerStateListMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  containerLogStream(request: Observable<ContainerLogMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  /** one-shot requests */
 
   secretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Observable<Empty>
 
   abortUpdate(request: AgentAbortUpdate, metadata: Metadata, ...rest: any): Observable<Empty>
 
-  deleteContainers(request: DeleteContainersRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+  deleteContainers(request: Empty, metadata: Metadata, ...rest: any): Observable<Empty>
 
   containerLog(request: ContainerLogListResponse, metadata: Metadata, ...rest: any): Observable<Empty>
 
-  containerLogStream(request: Observable<ContainerLogMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
-
-  containerInspect(request: ContainerInspectMessage, metadata: Metadata, ...rest: any): Observable<Empty>
+  containerInspect(request: ContainerInspectResponse, metadata: Metadata, ...rest: any): Observable<Empty>
 
   tokenReplaced(request: Empty, metadata: Metadata, ...rest: any): Observable<Empty>
 }
@@ -1572,6 +1572,8 @@ export interface AgentController {
 
   connect(request: AgentInfo, metadata: Metadata, ...rest: any): Observable<AgentCommand>
 
+  /** streams */
+
   deploymentStatus(
     request: Observable<DeploymentStatusMessage>,
     metadata: Metadata,
@@ -1584,15 +1586,19 @@ export interface AgentController {
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
 
+  containerLogStream(
+    request: Observable<ContainerLogMessage>,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<Empty> | Observable<Empty> | Empty
+
+  /** one-shot requests */
+
   secretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
   abortUpdate(request: AgentAbortUpdate, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
-  deleteContainers(
-    request: DeleteContainersRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<Empty> | Observable<Empty> | Empty
+  deleteContainers(request: Empty, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
   containerLog(
     request: ContainerLogListResponse,
@@ -1600,14 +1606,8 @@ export interface AgentController {
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
 
-  containerLogStream(
-    request: Observable<ContainerLogMessage>,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<Empty> | Observable<Empty> | Empty
-
   containerInspect(
-    request: ContainerInspectMessage,
+    request: ContainerInspectResponse,
     metadata: Metadata,
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty

@@ -1,16 +1,19 @@
 import DyoButton from '@app/elements/dyo-button'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
+import DyoSelect from '@app/elements/dyo-select'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
 
 type PaginationType = 'first' | 'last' | 'next' | 'previous'
-export const pageSizes = [5, 10, 20, 50, 100, 250] as const
+
+export const PAGE_SIZE_VALUES = [5, 10, 20, 50, 100, 250] as const
+
 export type PaginationSettings = {
-  pageSize: (typeof pageSizes)[number]
+  pageSize: (typeof PAGE_SIZE_VALUES)[number]
   pageNumber: number
 }
-export interface PaginatorProps {
+export type PaginatorProps = {
   length: number
   defaultPagination: PaginationSettings
   onChanged: (settings: PaginationSettings) => void
@@ -68,27 +71,23 @@ const Paginator = (props: PaginatorProps) => {
     <div className="flex justify-between my-2 items-center">
       <div>
         <a className="text-light-eased mx-4">{t('itemsPerPage')}</a>
-        <select
-          className="bg-transparent h-8 ring-2 ring-light-grey rounded-md !text-white focus:outline-none"
-          onChange={e => {
-            const newMaxPage = Math.ceil(length / pageSizes[e.target.value]) - 1
+
+        <DyoSelect
+          onChange={index => {
+            const newMaxPage = Math.ceil(length / PAGE_SIZE_VALUES[index]) - 1
             const newPagination: PaginationSettings = {
-              pageSize: pageSizes[e.target.value],
+              pageSize: PAGE_SIZE_VALUES[index],
               pageNumber: Math.min(newMaxPage, pagination.pageNumber),
             }
 
             setPagination(newPagination)
             onChanged(newPagination)
           }}
-          value={pageSizes.indexOf(pagination.pageSize)}
-        >
-          {pageSizes.map((v, i) => (
-            <option key={v} value={i} className="bg-medium">
-              {v}
-            </option>
-          ))}
-        </select>
+          options={PAGE_SIZE_VALUES.map(it => it.toString())}
+          selected={PAGE_SIZE_VALUES.indexOf(pagination.pageSize)}
+        />
       </div>
+
       <div className="flex items-center mx-4">
         <a className="text-light-eased mr-8">{t('showingItems', { pageFrom, pageTo, total: length })}</a>
 

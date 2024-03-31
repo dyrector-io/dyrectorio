@@ -579,6 +579,23 @@ func executeDeleteMultipleContainers(ctx context.Context, req *common.DeleteCont
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Failed to delete multiple containers")
 	}
+
+	var prefix, name string
+	if req.GetContainer() != nil {
+		prefix = req.GetContainer().Prefix
+		name = req.GetContainer().Name
+	} else {
+		prefix = req.GetPrefix()
+		name = ""
+	}
+
+	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", prefix, "dyo-container-name", name)
+
+	_, err = grpcConn.Client.DeleteContainers(ctx, &common.Empty{})
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("Secret list response error")
+		return
+	}
 }
 
 func executeVersionDeployLegacyRequest(
@@ -651,8 +668,8 @@ func executeSecretList(
 		return
 	}
 
-	prefix := command.Prefix
-	name := command.Name
+	prefix := command.Container.Prefix
+	name := command.Container.Name
 
 	log.Info().Str("prefix", prefix).Str("name", name).Msg("Getting secrets")
 
@@ -675,6 +692,8 @@ func executeSecretList(
 		HasKeys:   keys != nil,
 		Keys:      keys,
 	}
+
+	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", prefix, "dyo-container-name", name)
 
 	_, err = grpcConn.Client.SecretList(ctx, resp)
 	if err != nil {
@@ -768,6 +787,13 @@ func executeContainerCommand(ctx context.Context, command *common.ContainerComma
 func readContainerLog(logContext *ContainerLogContext, sendLog SendLogFunc, prefix, name string) error {
 	reader := logContext.Reader
 
+	defer func() {
+		err := reader.Close()
+		if err != nil {
+			log.Error().Err(err).Str("prefix", prefix).Str("name", name).Msg("Failed to close container log reader")
+		}
+	}()
+
 	for {
 		event := <-reader.Next()
 		if event.Error != nil {
@@ -797,7 +823,11 @@ func readContainerLog(logContext *ContainerLogContext, sendLog SendLogFunc, pref
 	return nil
 }
 
-func waitForContainerState(ctx context.Context, containerStateFn ContainerStateFunc, prefix, name string, state common.ContainerState) error {
+func waitForContainerState(ctx context.Context,
+	containerStateFn ContainerStateFunc,
+	prefix, name string,
+	state common.ContainerState,
+) error {
 	eventsContext, err := containerStateFn(ctx, prefix, false)
 	if err != nil {
 		log.Error().Err(err).Str("prefix", prefix).Msg("Failed to open container state reader")
@@ -816,8 +846,6 @@ func waitForContainerState(ctx context.Context, containerStateFn ContainerStateF
 				if ev.Id.Prefix != prefix || ev.Id.Name != name {
 					continue
 				}
-
-				println(ev.State, ev.Status)
 
 				if ev.State == state {
 					return nil
@@ -846,21 +874,11 @@ func streamContainerLog(
 			return
 		}
 
-		reader := logContext.Reader
-
-		defer func() {
-			err = reader.Close()
-			if err != nil {
-				log.Error().Err(err).Str("prefix", prefix).Str("name", name).Msg("Failed to close container log reader")
-			}
-		}()
-
 		err = readContainerLog(logContext, func(log string) error {
 			message.Log = log
 			return client.Send(&message)
 		}, prefix, name)
 		if err == nil {
-			println("readlog err was null")
 			return
 		}
 
@@ -886,7 +904,11 @@ func streamContainerLog(
 	}
 }
 
-func executeContainerLogStream(streamCtx context.Context, logFunc ContainerLogFunc, stateFunc ContainerStateFunc, command *agent.ContainerLogRequest) {
+func executeContainerLogStream(streamCtx context.Context,
+	logFunc ContainerLogFunc,
+	stateFunc ContainerStateFunc,
+	command *agent.ContainerLogRequest,
+) {
 	prefix := command.Container.Prefix
 	name := command.Container.Name
 
@@ -950,15 +972,6 @@ func executeContainerLogRequest(ctx context.Context, logFunc ContainerLogFunc, c
 		return
 	}
 
-	reader := logContext.Reader
-
-	defer func() {
-		err = reader.Close()
-		if err != nil {
-			log.Error().Err(err).Str("prefix", prefix).Str("name", name).Msg("Failed to close container log reader")
-		}
-	}()
-
 	logs := collectContainerLog(logContext, prefix, name)
 
 	_, err = grpcConn.Client.ContainerLog(ctx, &common.ContainerLogListResponse{
@@ -1004,16 +1017,16 @@ func executeContainerInspect(ctx context.Context, command *agent.ContainerInspec
 
 	log.Info().Str("prefix", prefix).Str("name", name).Msg("Getting container inspection")
 
-	inspection, err := inspectFunc(ctx, command)
+	data, err := inspectFunc(ctx, command)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Failed to inspect container")
 	}
 
-	resp := &common.ContainerInspectMessage{
-		Prefix:     prefix,
-		Name:       name,
-		Inspection: inspection,
+	resp := &common.ContainerInspectResponse{
+		Data: data,
 	}
+
+	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", prefix, "dyo-container-name", name)
 
 	_, err = grpcConn.Client.ContainerInspect(ctx, resp)
 	if err != nil {

@@ -12,7 +12,7 @@ export default class ContainerLogStream {
   constructor(
     private readonly commandChannel: Subject<AgentCommand>,
     private readonly container: ContainerIdentifier,
-    private readonly tail: number,
+    private tail: number,
     private readonly onFree: VoidFunction,
   ) {}
 
@@ -20,16 +20,23 @@ export default class ContainerLogStream {
     if (!this.currentTunel) {
       this.currentTunel = new AgentTunnel()
 
-      this.commandChannel.next({
-        containerLog: {
-          container: this.container,
-          streaming: true,
-          tail: this.tail,
-        },
-      } as AgentCommand)
+      this.sendCommand()
     }
 
     return this.currentTunel.watch().pipe(startWith(...Array.from(this.cache)))
+  }
+
+  resize(size: number) {
+    this.tail = size
+    this.cache.resize(size)
+
+    if (!this.currentTunel) {
+      return
+    }
+
+    this.currentTunel.closeAgentStream()
+    this.currentTunel = null
+    this.sendCommand()
   }
 
   onAgentStreamStarted(stream: Observable<ContainerLogMessage>): Observable<Empty> {
@@ -41,5 +48,15 @@ export default class ContainerLogStream {
   private onAgenStreamFinished() {
     this.currentTunel = null
     this.onFree()
+  }
+
+  private sendCommand() {
+    this.commandChannel.next({
+      containerLog: {
+        container: this.container,
+        streaming: true,
+        tail: this.tail,
+      },
+    } as AgentCommand)
   }
 }

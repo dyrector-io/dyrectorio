@@ -54,6 +54,26 @@ export default class FixedLengthLinkedList<T> implements Iterable<T> {
     this.length++
   }
 
+  resize(size: number) {
+    if (size < 0) {
+      throw new Error('Invalid size')
+    }
+
+    this.maxSize = size
+
+    if (size === 0) {
+      this.length = 0
+      this.first = null
+      this.last = null
+      return
+    }
+
+    while (this.length > this.maxSize) {
+      this.first = this.first.next
+      this.length--
+    }
+  }
+
   [Symbol.iterator](): Iterator<T, T, T> {
     return new FixedLengthLinkedListIterator(this.first)
   }

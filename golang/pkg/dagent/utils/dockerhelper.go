@@ -101,7 +101,7 @@ func ContainerStateStream(ctx context.Context, prefix string, sendInitalStates b
 		return nil, err
 	}
 
-	var containers []types.Container = nil
+	var containers []types.Container
 	if sendInitalStates {
 		if prefix == "" {
 			containers, err = dockerHelper.GetAllContainers(ctx)
@@ -116,7 +116,11 @@ func ContainerStateStream(ctx context.Context, prefix string, sendInitalStates b
 	return WatchContainersByPrefix(ctx, cli, prefix, containers)
 }
 
-func WatchContainersByPrefix(ctx context.Context, cli client.APIClient, prefix string, initialStates []types.Container) (*grpc.ContainerStateContext, error) {
+func WatchContainersByPrefix(ctx context.Context,
+	cli client.APIClient,
+	prefix string,
+	initialStates []types.Container,
+) (*grpc.ContainerStateContext, error) {
 	var err error
 
 	eventChannel := make(chan []*common.ContainerStateItem)

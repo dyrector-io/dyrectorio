@@ -5,6 +5,7 @@ import EventsTerminal, { TerminalEvent } from '@app/components/shared/events-ter
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoSelect from '@app/elements/dyo-select'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -27,17 +28,22 @@ interface InstanceLogPageProps {
   name: string
 }
 
+const LOG_TAKE_VALUES = [50, 100, 500, 1000]
+
 const NodeContainerLogPage = (props: InstanceLogPageProps) => {
   const { node: propsNode, prefix, name } = props
 
   const { t } = useTranslation('common')
   const routes = useTeamRoutes()
 
+  const [takeIndex, setTakeIndex] = useState<number>(0)
   const [log, setLog] = useState<ContainerLogMessage[]>([])
 
   const [node] = useNodeState(propsNode)
 
   const sock = useWebSocket(routes.node.detailsSocket(node.id))
+
+  const take = LOG_TAKE_VALUES[takeIndex]
 
   useEffect(() => {
     if (node.status === 'connected') {
@@ -46,12 +52,13 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
           prefix,
           name,
         },
+        take,
       }
 
       setLog([])
       sock.send(WS_TYPE_WATCH_CONTAINER_LOG, request)
     }
-  }, [node.status, prefix, name, sock])
+  }, [node.status, prefix, name, take, sock])
 
   sock.on(WS_TYPE_CONTAINER_LOG, (message: ContainerLogMessage) => {
     setLog(prevLog => [...prevLog, message])
@@ -88,6 +95,8 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
           <DyoHeading element="h4" className="text-xl text-bright">
             {t('logOf', { name: prefix ? `${prefix}-${name}` : name })}
           </DyoHeading>
+
+          <DyoSelect options={LOG_TAKE_VALUES.map(it => it.toString())} selected={takeIndex} onChange={setTakeIndex} />
         </div>
 
         <EventsTerminal events={log} formatEvent={formatEvent} />

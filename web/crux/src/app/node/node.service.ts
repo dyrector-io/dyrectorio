@@ -2,18 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Identity } from '@ory/kratos-client'
 import { Prisma } from '@prisma/client'
-import {
-  EmptyError,
-  Observable,
-  filter,
-  firstValueFrom,
-  lastValueFrom,
-  map,
-  mergeAll,
-  mergeWith,
-  of,
-  timeout,
-} from 'rxjs'
+import { EmptyError, Observable, filter, firstValueFrom, map, mergeAll, mergeWith, of, timeout } from 'rxjs'
 import { Agent, AgentConnectionMessage } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
 import {
@@ -28,13 +17,13 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
-import { GLOBAL_PREFIX } from './node.const'
 import {
   ContainerDto,
   ContainerInspectionDto,
   CreateNodeDto,
   NodeAuditLogListDto,
   NodeAuditLogQueryDto,
+  NodeContainerLogQuery,
   NodeDetailsDto,
   NodeDto,
   NodeGenerateScriptDto,
@@ -242,7 +231,7 @@ export default class NodeService {
   }
 
   watchContainerLog(nodeId: string, message: WatchContainerLogMessage): Observable<ContainerLogMessage> {
-    const { container } = message
+    const { container, take } = message
 
     this.logger.debug(
       `Opening container log stream for container: ${nodeId} - ${Agent.containerPrefixNameOf(container)}}`,
@@ -250,10 +239,8 @@ export default class NodeService {
 
     const agent = this.agentService.getByIdOrThrow(nodeId)
 
-    const stream = agent.upsertContainerLogStream(
-      container,
-      this.configService.get<number>('DEFAULT_CONTAINER_LOG_TAIL', 1000),
-    )
+    const stream = agent.upsertContainerLogStream(container, take)
+    stream.resize(take)
 
     return stream.watch()
   }
@@ -263,10 +250,6 @@ export default class NodeService {
   }
 
   async startContainer(nodeId: string, prefix: string, name: string): Promise<void> {
-    if (prefix === GLOBAL_PREFIX) {
-      prefix = ''
-    }
-
     await this.sendContainerOperation(
       nodeId,
       {
@@ -278,10 +261,6 @@ export default class NodeService {
   }
 
   async stopContainer(nodeId: string, prefix: string, name: string): Promise<void> {
-    if (prefix === GLOBAL_PREFIX) {
-      prefix = ''
-    }
-
     await this.sendContainerOperation(
       nodeId,
       {
@@ -293,10 +272,6 @@ export default class NodeService {
   }
 
   async restartContainer(nodeId: string, prefix: string, name: string): Promise<void> {
-    if (prefix === GLOBAL_PREFIX) {
-      prefix = ''
-    }
-
     await this.sendContainerOperation(
       nodeId,
       {
@@ -307,43 +282,19 @@ export default class NodeService {
     )
   }
 
-  async deleteAllContainers(nodeId: string, prefix: string): Promise<Observable<void>> {
-    if (prefix === GLOBAL_PREFIX) {
-      prefix = ''
-    }
-
-    const agent = this.agentService.getByIdOrThrow(nodeId)
-    const cmd: DeleteContainersRequest = {
+  async deleteAllContainers(nodeId: string, prefix: string): Promise<void> {
+    await this.sendDeleteContainerCommand(nodeId, 'deleteContainers', {
       prefix,
-    }
-
-    await this.agentService.createAgentAudit(nodeId, 'containerCommand', {
-      operation: 'deleteContainers',
-      ...cmd,
     })
-
-    return agent.deleteContainers(cmd).pipe(map(() => undefined))
   }
 
-  async deleteContainer(nodeId: string, prefix: string, name: string): Promise<Observable<void>> {
-    if (prefix === GLOBAL_PREFIX) {
-      prefix = ''
-    }
-
-    const agent = this.agentService.getByIdOrThrow(nodeId)
-    const cmd: DeleteContainersRequest = {
+  async deleteContainer(nodeId: string, prefix: string, name: string): Promise<void> {
+    await this.sendDeleteContainerCommand(nodeId, 'deleteContainer', {
       container: {
         prefix: prefix ?? '',
         name,
       },
-    }
-
-    await this.agentService.createAgentAudit(nodeId, 'containerCommand', {
-      operation: 'deleteContainer',
-      ...cmd,
     })
-
-    return agent.deleteContainers(cmd).pipe(map(() => undefined))
   }
 
   async getContainers(nodeId: string, prefix?: string): Promise<ContainerDto[]> {
@@ -447,35 +398,48 @@ export default class NodeService {
   }
 
   async inspectContainer(nodeId: string, prefix: string, name: string): Promise<ContainerInspectionDto> {
-    if (prefix === GLOBAL_PREFIX) {
-      prefix = ''
-    }
-
     const agent = this.agentService.getByIdOrThrow(nodeId)
-    const watcher = agent.getContainerInspection(prefix, name)
-    const inspectionMessage = await lastValueFrom(watcher)
 
-    return this.mapper.containerInspectionMessageToDto(inspectionMessage)
+    const res = await agent.inspectContainer({
+      container: {
+        prefix,
+        name,
+      },
+    })
+
+    return this.mapper.containerInspectToDto(res)
   }
 
-  async getContainerLog(nodeId: string, prefix: string, name: string): Promise<string[]> {
-    if (prefix === GLOBAL_PREFIX) {
-      prefix = ''
-    }
-
+  async getContainerLog(nodeId: string, prefix: string, name: string, query: NodeContainerLogQuery): Promise<string[]> {
     const agent = this.agentService.getByIdOrThrow(nodeId)
-    const watcher = agent.getContainerLog(
-      prefix,
-      name,
-      this.configService.get<number>('DEFAULT_CONTAINER_LOG_TAIL', 1000),
-    )
-    const message = await lastValueFrom(watcher)
 
-    return message.logs
+    const res = await agent.getContainerLog({
+      container: {
+        prefix,
+        name,
+      },
+      tail: query.take,
+    })
+
+    return res.logs
   }
 
   async kickNode(id: string, identity: Identity): Promise<void> {
     await this.agentService.kick(id, 'user-kick', identity.id)
+  }
+
+  private async sendDeleteContainerCommand(
+    nodeId: string,
+    operation: 'deleteContainer' | 'deleteContainers',
+    command: DeleteContainersRequest,
+  ): Promise<void> {
+    const agent = this.agentService.getByIdOrThrow(nodeId)
+    await agent.deleteContainers(command)
+
+    await this.agentService.createAgentAudit(nodeId, 'containerCommand', {
+      operation,
+      ...command,
+    })
   }
 
   private static snakeCaseToCamelCase(snake: string): string {
