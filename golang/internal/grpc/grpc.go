@@ -93,7 +93,7 @@ type (
 
 type WorkerFunctions struct {
 	Deploy               DeployFunc
-	ContainerState       ContainerStateFunc
+	WatchContainerState  ContainerStateFunc
 	Delete               DeleteFunc
 	SecretList           SecretListFunc
 	SelfUpdate           SelfUpdateFunc
@@ -167,7 +167,7 @@ func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 	case command.GetDeploy() != nil:
 		go executeVersionDeployRequest(cl.Ctx, command.GetDeploy(), cl.WorkerFuncs.Deploy, cl.AppConfig)
 	case command.GetContainerState() != nil:
-		go executeContainerState(cl.Ctx, command.GetContainerState(), cl.WorkerFuncs.ContainerState)
+		go executeContainerState(cl.Ctx, command.GetContainerState(), cl.WorkerFuncs.WatchContainerState)
 	case command.GetContainerDelete() != nil:
 		go executeDeleteContainer(cl.Ctx, command.GetContainerDelete(), cl.WorkerFuncs.Delete)
 	case command.GetDeployLegacy() != nil:
@@ -183,7 +183,7 @@ func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 	case command.GetDeleteContainers() != nil:
 		go executeDeleteMultipleContainers(cl.Ctx, command.GetDeleteContainers(), cl.WorkerFuncs.DeleteContainers)
 	case command.GetContainerLog() != nil:
-		go executeContainerLog(cl.Ctx, command.GetContainerLog(), cl.WorkerFuncs.ContainerLog, cl.WorkerFuncs.ContainerState)
+		go executeContainerLog(cl.Ctx, command.GetContainerLog(), cl.WorkerFuncs.ContainerLog, cl.WorkerFuncs.WatchContainerState)
 	case command.GetContainerInspect() != nil:
 		go executeContainerInspect(cl.Ctx, command.GetContainerInspect(), cl.WorkerFuncs.ContainerInspect)
 	case command.GetReplaceToken() != nil:
