@@ -84,9 +84,7 @@ message VersionDeployRequest {
 /*
  * Request for a keys of existing secrets in a prefix, eg. namespace
  */
-message ListSecretsRequest {
-  common.ContainerIdentifier container = 1;
-}
+message ListSecretsRequest { common.ContainerIdentifier container = 1; }
 
 /**
  * Deploys a single container

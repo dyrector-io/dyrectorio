@@ -12,7 +12,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
-func WatchDeploymentsByPrefix(ctx context.Context, namespace string, sendInitialStates bool) (*grpc.ContainerStateStream, error) {
+func WatchDeploymentsByPrefix(ctx context.Context, namespace string, sendInitialStates bool) (*grpc.ContainerStatusStream, error) {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 	client := k8s.NewClient(cfg)
 
@@ -37,7 +37,7 @@ func WatchDeploymentsByPrefix(ctx context.Context, namespace string, sendInitial
 	eventChannel := make(chan []*common.ContainerStateItem)
 	errorChannel := make(chan error)
 
-	watchContext := &grpc.ContainerStateStream{
+	watchContext := &grpc.ContainerStatusStream{
 		Events: eventChannel,
 		Error:  errorChannel,
 	}

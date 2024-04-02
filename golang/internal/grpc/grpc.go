@@ -53,7 +53,7 @@ type ContainerLogContext struct {
 	Echo   bool
 }
 
-type ContainerStateStream struct {
+type ContainerStatusStream struct {
 	Events chan []*common.ContainerStateItem
 	Error  chan error
 }
@@ -77,7 +77,7 @@ type ClientLoop struct {
 
 type (
 	DeployFunc               func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
-	ContainerStateFunc       func(context.Context, string, bool) (*ContainerStateStream, error)
+	WatchContainerStatusFunc func(context.Context, string, bool) (*ContainerStatusStream, error)
 	DeleteFunc               func(context.Context, string, string) error
 	SecretListFunc           func(context.Context, string, string) ([]string, error)
 	SelfUpdateFunc           func(context.Context, *agent.AgentUpdateRequest, UpdateOptions) error
@@ -93,7 +93,7 @@ type (
 
 type WorkerFunctions struct {
 	Deploy               DeployFunc
-	WatchContainerState  ContainerStateFunc
+	WatchContainerStatus WatchContainerStatusFunc
 	Delete               DeleteFunc
 	SecretList           SecretListFunc
 	SelfUpdate           SelfUpdateFunc
@@ -167,7 +167,7 @@ func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 	case command.GetDeploy() != nil:
 		go executeVersionDeployRequest(cl.Ctx, command.GetDeploy(), cl.WorkerFuncs.Deploy, cl.AppConfig)
 	case command.GetContainerState() != nil:
-		go executeContainerState(cl.Ctx, command.GetContainerState(), cl.WorkerFuncs.WatchContainerState)
+		go executeWatchContainerStatus(cl.Ctx, command.GetContainerState(), cl.WorkerFuncs.WatchContainerStatus)
 	case command.GetContainerDelete() != nil:
 		go executeDeleteContainer(cl.Ctx, command.GetContainerDelete(), cl.WorkerFuncs.Delete)
 	case command.GetDeployLegacy() != nil:
@@ -183,7 +183,7 @@ func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 	case command.GetDeleteContainers() != nil:
 		go executeDeleteMultipleContainers(cl.Ctx, command.GetDeleteContainers(), cl.WorkerFuncs.DeleteContainers)
 	case command.GetContainerLog() != nil:
-		go executeContainerLog(cl.Ctx, command.GetContainerLog(), cl.WorkerFuncs.ContainerLog, cl.WorkerFuncs.WatchContainerState)
+		go executeContainerLog(cl.Ctx, command.GetContainerLog(), cl.WorkerFuncs.ContainerLog, cl.WorkerFuncs.WatchContainerStatus)
 	case command.GetContainerInspect() != nil:
 		go executeContainerInspect(cl.Ctx, command.GetContainerInspect(), cl.WorkerFuncs.ContainerInspect)
 	case command.GetReplaceToken() != nil:
@@ -462,19 +462,19 @@ func executeVersionDeployRequest(
 	}
 }
 
-func streamContainerState(
+func streamContainerStatus(
 	streamCtx context.Context,
 	filterPrefix string,
 	stream agent.Agent_ContainerStateClient,
 	req *agent.ContainerStateRequest,
-	eventsContext *ContainerStateStream,
+	eventsContext *ContainerStatusStream,
 ) {
 	for {
 		select {
 		case <-streamCtx.Done():
 			return
 		case eventError := <-eventsContext.Error:
-			log.Error().Err(eventError).Msg("Container state stream error")
+			log.Error().Err(eventError).Msg("Container status stream error")
 			return
 		case event := <-eventsContext.Events:
 			err := stream.Send(&common.ContainerStateListMessage{
@@ -482,16 +482,16 @@ func streamContainerState(
 				Data:   event,
 			})
 			if err != nil {
-				log.Error().Err(err).Msg("Container state channel error")
+				log.Error().Err(err).Msg("Container status channel error")
 				return
 			}
 
 			if req.OneShot != nil && *req.OneShot {
 				err := stream.CloseSend()
 				if err == nil {
-					log.Info().Str("prefix", filterPrefix).Msg("Closed container state channel")
+					log.Info().Str("prefix", filterPrefix).Msg("Closed container status channel")
 				} else {
-					log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to close container state channel")
+					log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to close container status channel")
 				}
 
 				return
@@ -501,8 +501,8 @@ func streamContainerState(
 	}
 }
 
-func executeContainerState(ctx context.Context, req *agent.ContainerStateRequest, containerStateFn ContainerStateFunc) {
-	if containerStateFn == nil {
+func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateRequest, containerStatusFn WatchContainerStatusFunc) {
+	if containerStatusFn == nil {
 		log.Error().Msg("Watch function not implemented")
 		return
 	}
@@ -512,32 +512,32 @@ func executeContainerState(ctx context.Context, req *agent.ContainerStateRequest
 		filterPrefix = *req.Prefix
 	}
 
-	log.Info().Str("prefix", filterPrefix).Msg("Opening container state channel")
+	log.Info().Str("prefix", filterPrefix).Msg("Opening container status channel")
 
 	streamCtx := metadata.AppendToOutgoingContext(ctx, "dyo-filter-prefix", filterPrefix)
 	stream, err := grpcConn.Client.ContainerState(streamCtx, grpc.WaitForReady(true))
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to open container state channel")
+		log.Error().Err(err).Msg("Failed to open container status channel")
 		return
 	}
 
 	defer func() {
 		err = stream.CloseSend()
 		if err != nil {
-			log.Error().Err(err).Stack().Str("prefix", filterPrefix).Msg("Failed to close container state stream")
+			log.Error().Err(err).Stack().Str("prefix", filterPrefix).Msg("Failed to close container status stream")
 		}
 	}()
 
 	streamCtx = stream.Context()
 
-	eventsContext, err := containerStateFn(streamCtx, filterPrefix, true)
+	eventsContext, err := containerStatusFn(streamCtx, filterPrefix, true)
 	if err != nil {
-		log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to open container state reader")
+		log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to open container status reader")
 		return
 	}
 
 	// The channel consumer must run in a gofunc so RecvMsg can receive server side stream close events
-	go streamContainerState(streamCtx, filterPrefix, stream, req, eventsContext)
+	go streamContainerStatus(streamCtx, filterPrefix, stream, req, eventsContext)
 
 	// RecvMsg must be called in order to get an error if the server closes the stream
 	for {
@@ -550,7 +550,7 @@ func executeContainerState(ctx context.Context, req *agent.ContainerStateRequest
 
 	<-streamCtx.Done()
 
-	log.Info().Str("prefix", filterPrefix).Msg("Container state channel closed")
+	log.Info().Str("prefix", filterPrefix).Msg("Container status channel closed")
 }
 
 func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteRequest, deleteFn DeleteFunc) {
@@ -593,7 +593,7 @@ func executeDeleteMultipleContainers(ctx context.Context, req *common.DeleteCont
 
 	_, err = grpcConn.Client.DeleteContainers(ctx, &common.Empty{})
 	if err != nil {
-		log.Error().Stack().Err(err).Msg("Secret list response error")
+		log.Error().Stack().Err(err).Msg("Delete multiple containers response error")
 		return
 	}
 }
@@ -823,14 +823,14 @@ func readContainerLog(logContext *ContainerLogContext, sendLog SendLogFunc, pref
 	return nil
 }
 
-func waitForContainerState(ctx context.Context,
-	containerStateFn ContainerStateFunc,
+func waitForContainerStatus(ctx context.Context,
+	containerStatusFn WatchContainerStatusFunc,
 	prefix, name string,
-	state common.ContainerState,
+	containerStatus common.ContainerState,
 ) error {
-	eventsContext, err := containerStateFn(ctx, prefix, false)
+	eventsContext, err := containerStatusFn(ctx, prefix, false)
 	if err != nil {
-		log.Error().Err(err).Str("prefix", prefix).Msg("Failed to open container state reader")
+		log.Error().Err(err).Str("prefix", prefix).Msg("Failed to open container status reader")
 		return err
 	}
 
@@ -839,7 +839,7 @@ func waitForContainerState(ctx context.Context,
 		case <-ctx.Done():
 			return nil
 		case err = <-eventsContext.Error:
-			log.Error().Err(err).Msg("Container state stream error, while streaming the container log")
+			log.Error().Err(err).Msg("Container status stream error, while streaming the container log")
 			return err
 		case events := <-eventsContext.Events:
 			for _, ev := range events {
@@ -847,7 +847,7 @@ func waitForContainerState(ctx context.Context,
 					continue
 				}
 
-				if ev.State == state {
+				if ev.State == containerStatus {
 					return nil
 				}
 			}
@@ -859,7 +859,7 @@ func streamContainerLog(
 	streamCtx context.Context,
 	logFunc ContainerLogFunc,
 	client agent.Agent_ContainerLogStreamClient,
-	containerStateFn ContainerStateFunc,
+	containerStatusFn WatchContainerStatusFunc,
 	command *agent.ContainerLogRequest,
 ) {
 	prefix := command.Container.Prefix
@@ -889,9 +889,9 @@ func streamContainerLog(
 
 		log.Trace().Str("prefix", prefix).Str("name", name).Msg("Container log finished non streaming (EOF), waiting for running state")
 
-		err = waitForContainerState(streamCtx, containerStateFn, prefix, name, common.ContainerState_RUNNING)
+		err = waitForContainerStatus(streamCtx, containerStatusFn, prefix, name, common.ContainerState_RUNNING)
 		if err != nil {
-			log.Error().Err(err).Stack().Str("prefix", prefix).Str("name", name).Msg("Container state stream error")
+			log.Error().Err(err).Stack().Str("prefix", prefix).Str("name", name).Msg("Container status stream error")
 			break
 		}
 	}
@@ -906,7 +906,7 @@ func streamContainerLog(
 
 func executeContainerLogStream(streamCtx context.Context,
 	logFunc ContainerLogFunc,
-	stateFunc ContainerStateFunc,
+	statusFunc WatchContainerStatusFunc,
 	command *agent.ContainerLogRequest,
 ) {
 	prefix := command.Container.Prefix
@@ -927,7 +927,7 @@ func executeContainerLogStream(streamCtx context.Context,
 
 	streamCtx = stream.Context()
 
-	go streamContainerLog(streamCtx, logFunc, stream, stateFunc, command)
+	go streamContainerLog(streamCtx, logFunc, stream, statusFunc, command)
 
 	for {
 		var msg interface{}
@@ -985,7 +985,12 @@ func executeContainerLogRequest(ctx context.Context, logFunc ContainerLogFunc, c
 	log.Trace().Str("prefix", prefix).Str("name", name).Msg("Container log sent")
 }
 
-func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest, logFunc ContainerLogFunc, stateFunc ContainerStateFunc) {
+func executeContainerLog(
+	ctx context.Context,
+	command *agent.ContainerLogRequest,
+	logFunc ContainerLogFunc,
+	statusFunc WatchContainerStatusFunc,
+) {
 	if logFunc == nil {
 		log.Error().Msg("Container log function not implemented")
 		return
@@ -1000,7 +1005,7 @@ func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest
 	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", prefix, "dyo-container-name", name)
 
 	if command.Streaming {
-		executeContainerLogStream(ctx, logFunc, stateFunc, command)
+		executeContainerLogStream(ctx, logFunc, statusFunc, command)
 	} else {
 		executeContainerLogRequest(ctx, logFunc, command)
 	}
