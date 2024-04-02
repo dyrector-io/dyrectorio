@@ -95,32 +95,34 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
     fetcher,
   )
 
+  const { setFieldValue: formikSetFieldValue, setFieldError: formikSetFieldError, values: formikValues } = formik
+
   useEffect(() => {
-    if (nodes?.length === 1 && !formik.values.nodeId) {
+    if (nodes?.length === 1 && !formikValues.nodeId) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      formik.setFieldValue('nodeId', nodes[0].id)
+      formikSetFieldValue('nodeId', nodes[0].id)
     }
-  }, [nodes, formik])
+  }, [nodes, formikValues.nodeId, formikSetFieldValue])
 
   useEffect(() => {
     if (projects?.length === 1) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      formik.setFieldValue('projectId', projects[0].id)
+      formikSetFieldValue('projectId', projects[0].id)
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      formik.setFieldValue('prefix', projectNameToDeploymentPrefix(projects[0].name))
+      formikSetFieldValue('prefix', projectNameToDeploymentPrefix(projects[0].name))
     }
-  }, [projects, formik])
+  }, [projects, formikSetFieldValue])
 
   useEffect(() => {
     if (versions?.length === 1) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      formik.setFieldValue('versionId', versions[0].id)
+      formikSetFieldValue('versionId', versions[0].id)
     } else {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      formik.setFieldValue('versionId', null)
+      formikSetFieldValue('versionId', null)
     }
-    formik.setFieldError('versionId', null)
-  }, [versions, formik])
+    formikSetFieldError('versionId', null)
+  }, [versions, formikSetFieldValue, formikSetFieldError])
 
   return (
     <DyoCard className={className}>

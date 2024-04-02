@@ -887,7 +887,7 @@ func streamContainerLog(
 			break
 		}
 
-		log.Trace().Str("prefix", prefix).Str("name", name).Msg("Container log finished non streaming (EOF), waiting for running state")
+		log.Trace().Str("prefix", prefix).Str("name", name).Msg("Container log finished non streaming (EOF), waiting for running status")
 
 		err = waitForContainerStatus(streamCtx, containerStatusFn, prefix, name, common.ContainerState_RUNNING)
 		if err != nil {
@@ -899,7 +899,7 @@ func streamContainerLog(
 	if client.Context().Err() == nil {
 		err := client.CloseSend()
 		if err != nil {
-			log.Error().Err(err).Stack().Str("prefix", prefix).Str("name", name).Msg("Failed to close client")
+			log.Error().Err(err).Stack().Str("prefix", prefix).Str("name", name).Msg("Failed to close container log stream")
 		}
 	}
 }
@@ -914,7 +914,7 @@ func executeContainerLogStream(streamCtx context.Context,
 
 	stream, err := grpcConn.Client.ContainerLogStream(streamCtx, grpc.WaitForReady(true))
 	if err != nil {
-		log.Error().Err(err).Str("prefix", prefix).Str("name", name).Msg("Failed to open container log channel")
+		log.Error().Err(err).Str("prefix", prefix).Str("name", name).Msg("Failed to open container log stream")
 		return
 	}
 

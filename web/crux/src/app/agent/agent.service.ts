@@ -310,7 +310,7 @@ export default class AgentService {
     return Empty
   }
 
-  containersDeleted(connection: GrpcNodeConnection): Empty {
+  handleDeleteContainers(connection: GrpcNodeConnection): Empty {
     const container = AgentService.containerIdOf(connection)
 
     this.logger.log(`Containers deleted on '${connection.nodeId}'`)

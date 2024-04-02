@@ -121,7 +121,7 @@ export class Agent {
         Agent.containerPrefixNameOf(
           req?.container ?? {
             prefix: req.prefix,
-            name: '',
+            name: null,
           },
         ),
         { deleteContainers: req },
@@ -458,7 +458,7 @@ export class Agent {
   }
 
   public static containerPrefixNameOf = (id: ContainerIdentifier): string =>
-    !id.prefix ? id.name : `${id.prefix}-${id.name}`
+    !id.prefix ? id.name : `${id.prefix}-${id.name ?? ''}`
 }
 
 export type AgentConnectionMessage = {

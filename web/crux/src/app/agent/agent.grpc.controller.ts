@@ -52,7 +52,7 @@ export default class AgentController implements GrpcAgentController {
   }
 
   deleteContainers(_: Empty, __: Metadata, call: NodeGrpcCall): Empty {
-    return this.service.containersDeleted(call.connection)
+    return this.service.handleDeleteContainers(call.connection)
   }
 
   containerLogStream(request: Observable<ContainerLogMessage>, _: Metadata, call: NodeGrpcCall): Observable<Empty> {
