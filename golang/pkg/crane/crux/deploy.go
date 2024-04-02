@@ -12,7 +12,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
-func WatchDeploymentsByPrefix(ctx context.Context, namespace string) (*grpc.ContainerWatchContext, error) {
+func WatchDeploymentsByPrefix(ctx context.Context, namespace string, sendInitialStates bool) (*grpc.ContainerStatusStream, error) {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 	client := k8s.NewClient(cfg)
 
@@ -37,7 +37,7 @@ func WatchDeploymentsByPrefix(ctx context.Context, namespace string) (*grpc.Cont
 	eventChannel := make(chan []*common.ContainerStateItem)
 	errorChannel := make(chan error)
 
-	watchContext := &grpc.ContainerWatchContext{
+	watchContext := &grpc.ContainerStatusStream{
 		Events: eventChannel,
 		Error:  errorChannel,
 	}
@@ -45,7 +45,7 @@ func WatchDeploymentsByPrefix(ctx context.Context, namespace string) (*grpc.Cont
 	// For some unknown reason the watcher used by watchPods does not get any deployment delete events
 	// so a separate watcher is required
 	go watchDeployments(ctx, namespace, clusterClient, deploymentHandler, svcHandler, watchContext, cfg)
-	go watchPods(ctx, namespace, clientSet, deploymentHandler, svcHandler, watchContext, cfg)
+	go watchPods(ctx, namespace, clientSet, deploymentHandler, svcHandler, watchContext, cfg, sendInitialStates)
 
 	return watchContext, nil
 }

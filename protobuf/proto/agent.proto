@@ -22,15 +22,21 @@ service Agent {
    * For prefix state reports, should be closed by the server.
    */
   rpc Connect(AgentInfo) returns (stream AgentCommand);
+
+  // streams
   rpc DeploymentStatus(stream common.DeploymentStatusMessage)
       returns (common.Empty);
   rpc ContainerState(stream common.ContainerStateListMessage)
       returns (common.Empty);
+  rpc ContainerLogStream(stream common.ContainerLogMessage)
+      returns (common.Empty);
+
+  // one-shot requests
   rpc SecretList(common.ListSecretsResponse) returns (common.Empty);
   rpc AbortUpdate(AgentAbortUpdate) returns (common.Empty);
-  rpc DeleteContainers(common.DeleteContainersRequest) returns (common.Empty);
-  rpc ContainerLog(stream common.ContainerLogMessage) returns (common.Empty);
-  rpc ContainerInspect(common.ContainerInspectMessage) returns (common.Empty);
+  rpc DeleteContainers(common.Empty) returns (common.Empty);
+  rpc ContainerLog(common.ContainerLogListResponse) returns (common.Empty);
+  rpc ContainerInspect(common.ContainerInspectResponse) returns (common.Empty);
   rpc TokenReplaced(common.Empty) returns (common.Empty);
 }
 
@@ -78,10 +84,7 @@ message VersionDeployRequest {
 /*
  * Request for a keys of existing secrets in a prefix, eg. namespace
  */
-message ListSecretsRequest {
-  string prefix = 1;
-  string name = 2;
-}
+message ListSecretsRequest { common.ContainerIdentifier container = 1; }
 
 /**
  * Deploys a single container
@@ -94,7 +97,7 @@ message InstanceConfig {
   */
   string prefix = 1;
   optional string mountPath = 2;        // mount path of instance (docker only)
-  map<string, string> environment = 3; // environment variable map
+  map<string, string> environment = 3;  // environment variable map
   optional string repositoryPrefix = 4; // registry repo prefix
 }
 
@@ -266,9 +269,7 @@ message AgentUpdateRequest {
   string token = 3;
 }
 
-message ReplaceTokenRequest {
-  string token = 1;
-}
+message ReplaceTokenRequest { string token = 1; }
 
 message AgentAbortUpdate { string error = 1; }
 
@@ -286,9 +287,7 @@ message ContainerLogRequest {
  * Container inspect
  *
  */
-message ContainerInspectRequest {
-  common.ContainerIdentifier container = 1;
-}
+message ContainerInspectRequest { common.ContainerIdentifier container = 1; }
 
 /*
  * Connection close

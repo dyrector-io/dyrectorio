@@ -43,7 +43,7 @@ const configSchema = yup.object({
   QA_OPT_OUT: yup.bool().default(false).required(),
   QA_GROUP_NAME: yup.string().optional(),
 
-  DEFAULT_CONTAINER_LOG_TAIL: yup.number().optional(),
+  MAX_CONTAINER_LOG_TAKE: yup.number().optional(),
 })
 
 class InvalidEnvironmentError extends Error {

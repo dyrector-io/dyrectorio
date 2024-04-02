@@ -30,13 +30,16 @@ type AgentClient interface {
 	// For deployment status reports, closed when ended.
 	// For prefix state reports, should be closed by the server.
 	Connect(ctx context.Context, in *AgentInfo, opts ...grpc.CallOption) (Agent_ConnectClient, error)
+	// streams
 	DeploymentStatus(ctx context.Context, opts ...grpc.CallOption) (Agent_DeploymentStatusClient, error)
 	ContainerState(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerStateClient, error)
+	ContainerLogStream(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerLogStreamClient, error)
+	// one-shot requests
 	SecretList(ctx context.Context, in *common.ListSecretsResponse, opts ...grpc.CallOption) (*common.Empty, error)
 	AbortUpdate(ctx context.Context, in *AgentAbortUpdate, opts ...grpc.CallOption) (*common.Empty, error)
-	DeleteContainers(ctx context.Context, in *common.DeleteContainersRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	ContainerLog(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerLogClient, error)
-	ContainerInspect(ctx context.Context, in *common.ContainerInspectMessage, opts ...grpc.CallOption) (*common.Empty, error)
+	DeleteContainers(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*common.Empty, error)
+	ContainerLog(ctx context.Context, in *common.ContainerLogListResponse, opts ...grpc.CallOption) (*common.Empty, error)
+	ContainerInspect(ctx context.Context, in *common.ContainerInspectResponse, opts ...grpc.CallOption) (*common.Empty, error)
 	TokenReplaced(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
@@ -148,6 +151,40 @@ func (x *agentContainerStateClient) CloseAndRecv() (*common.Empty, error) {
 	return m, nil
 }
 
+func (c *agentClient) ContainerLogStream(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerLogStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Agent_ServiceDesc.Streams[3], "/agent.Agent/ContainerLogStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &agentContainerLogStreamClient{stream}
+	return x, nil
+}
+
+type Agent_ContainerLogStreamClient interface {
+	Send(*common.ContainerLogMessage) error
+	CloseAndRecv() (*common.Empty, error)
+	grpc.ClientStream
+}
+
+type agentContainerLogStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *agentContainerLogStreamClient) Send(m *common.ContainerLogMessage) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *agentContainerLogStreamClient) CloseAndRecv() (*common.Empty, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(common.Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *agentClient) SecretList(ctx context.Context, in *common.ListSecretsResponse, opts ...grpc.CallOption) (*common.Empty, error) {
 	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/SecretList", in, out, opts...)
@@ -166,7 +203,7 @@ func (c *agentClient) AbortUpdate(ctx context.Context, in *AgentAbortUpdate, opt
 	return out, nil
 }
 
-func (c *agentClient) DeleteContainers(ctx context.Context, in *common.DeleteContainersRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+func (c *agentClient) DeleteContainers(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*common.Empty, error) {
 	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/DeleteContainers", in, out, opts...)
 	if err != nil {
@@ -175,41 +212,16 @@ func (c *agentClient) DeleteContainers(ctx context.Context, in *common.DeleteCon
 	return out, nil
 }
 
-func (c *agentClient) ContainerLog(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerLogClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Agent_ServiceDesc.Streams[3], "/agent.Agent/ContainerLog", opts...)
+func (c *agentClient) ContainerLog(ctx context.Context, in *common.ContainerLogListResponse, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/agent.Agent/ContainerLog", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &agentContainerLogClient{stream}
-	return x, nil
+	return out, nil
 }
 
-type Agent_ContainerLogClient interface {
-	Send(*common.ContainerLogMessage) error
-	CloseAndRecv() (*common.Empty, error)
-	grpc.ClientStream
-}
-
-type agentContainerLogClient struct {
-	grpc.ClientStream
-}
-
-func (x *agentContainerLogClient) Send(m *common.ContainerLogMessage) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *agentContainerLogClient) CloseAndRecv() (*common.Empty, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(common.Empty)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *agentClient) ContainerInspect(ctx context.Context, in *common.ContainerInspectMessage, opts ...grpc.CallOption) (*common.Empty, error) {
+func (c *agentClient) ContainerInspect(ctx context.Context, in *common.ContainerInspectResponse, opts ...grpc.CallOption) (*common.Empty, error) {
 	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/ContainerInspect", in, out, opts...)
 	if err != nil {
@@ -238,13 +250,16 @@ type AgentServer interface {
 	// For deployment status reports, closed when ended.
 	// For prefix state reports, should be closed by the server.
 	Connect(*AgentInfo, Agent_ConnectServer) error
+	// streams
 	DeploymentStatus(Agent_DeploymentStatusServer) error
 	ContainerState(Agent_ContainerStateServer) error
+	ContainerLogStream(Agent_ContainerLogStreamServer) error
+	// one-shot requests
 	SecretList(context.Context, *common.ListSecretsResponse) (*common.Empty, error)
 	AbortUpdate(context.Context, *AgentAbortUpdate) (*common.Empty, error)
-	DeleteContainers(context.Context, *common.DeleteContainersRequest) (*common.Empty, error)
-	ContainerLog(Agent_ContainerLogServer) error
-	ContainerInspect(context.Context, *common.ContainerInspectMessage) (*common.Empty, error)
+	DeleteContainers(context.Context, *common.Empty) (*common.Empty, error)
+	ContainerLog(context.Context, *common.ContainerLogListResponse) (*common.Empty, error)
+	ContainerInspect(context.Context, *common.ContainerInspectResponse) (*common.Empty, error)
 	TokenReplaced(context.Context, *common.Empty) (*common.Empty, error)
 	mustEmbedUnimplementedAgentServer()
 }
@@ -262,19 +277,22 @@ func (UnimplementedAgentServer) DeploymentStatus(Agent_DeploymentStatusServer) e
 func (UnimplementedAgentServer) ContainerState(Agent_ContainerStateServer) error {
 	return status.Errorf(codes.Unimplemented, "method ContainerState not implemented")
 }
+func (UnimplementedAgentServer) ContainerLogStream(Agent_ContainerLogStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method ContainerLogStream not implemented")
+}
 func (UnimplementedAgentServer) SecretList(context.Context, *common.ListSecretsResponse) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SecretList not implemented")
 }
 func (UnimplementedAgentServer) AbortUpdate(context.Context, *AgentAbortUpdate) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AbortUpdate not implemented")
 }
-func (UnimplementedAgentServer) DeleteContainers(context.Context, *common.DeleteContainersRequest) (*common.Empty, error) {
+func (UnimplementedAgentServer) DeleteContainers(context.Context, *common.Empty) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteContainers not implemented")
 }
-func (UnimplementedAgentServer) ContainerLog(Agent_ContainerLogServer) error {
-	return status.Errorf(codes.Unimplemented, "method ContainerLog not implemented")
+func (UnimplementedAgentServer) ContainerLog(context.Context, *common.ContainerLogListResponse) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ContainerLog not implemented")
 }
-func (UnimplementedAgentServer) ContainerInspect(context.Context, *common.ContainerInspectMessage) (*common.Empty, error) {
+func (UnimplementedAgentServer) ContainerInspect(context.Context, *common.ContainerInspectResponse) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ContainerInspect not implemented")
 }
 func (UnimplementedAgentServer) TokenReplaced(context.Context, *common.Empty) (*common.Empty, error) {
@@ -366,6 +384,32 @@ func (x *agentContainerStateServer) Recv() (*common.ContainerStateListMessage, e
 	return m, nil
 }
 
+func _Agent_ContainerLogStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(AgentServer).ContainerLogStream(&agentContainerLogStreamServer{stream})
+}
+
+type Agent_ContainerLogStreamServer interface {
+	SendAndClose(*common.Empty) error
+	Recv() (*common.ContainerLogMessage, error)
+	grpc.ServerStream
+}
+
+type agentContainerLogStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *agentContainerLogStreamServer) SendAndClose(m *common.Empty) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *agentContainerLogStreamServer) Recv() (*common.ContainerLogMessage, error) {
+	m := new(common.ContainerLogMessage)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func _Agent_SecretList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(common.ListSecretsResponse)
 	if err := dec(in); err != nil {
@@ -403,7 +447,7 @@ func _Agent_AbortUpdate_Handler(srv interface{}, ctx context.Context, dec func(i
 }
 
 func _Agent_DeleteContainers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(common.DeleteContainersRequest)
+	in := new(common.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -415,39 +459,31 @@ func _Agent_DeleteContainers_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/agent.Agent/DeleteContainers",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentServer).DeleteContainers(ctx, req.(*common.DeleteContainersRequest))
+		return srv.(AgentServer).DeleteContainers(ctx, req.(*common.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Agent_ContainerLog_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(AgentServer).ContainerLog(&agentContainerLogServer{stream})
-}
-
-type Agent_ContainerLogServer interface {
-	SendAndClose(*common.Empty) error
-	Recv() (*common.ContainerLogMessage, error)
-	grpc.ServerStream
-}
-
-type agentContainerLogServer struct {
-	grpc.ServerStream
-}
-
-func (x *agentContainerLogServer) SendAndClose(m *common.Empty) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *agentContainerLogServer) Recv() (*common.ContainerLogMessage, error) {
-	m := new(common.ContainerLogMessage)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+func _Agent_ContainerLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(common.ContainerLogListResponse)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return m, nil
+	if interceptor == nil {
+		return srv.(AgentServer).ContainerLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/agent.Agent/ContainerLog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).ContainerLog(ctx, req.(*common.ContainerLogListResponse))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Agent_ContainerInspect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(common.ContainerInspectMessage)
+	in := new(common.ContainerInspectResponse)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -459,7 +495,7 @@ func _Agent_ContainerInspect_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/agent.Agent/ContainerInspect",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentServer).ContainerInspect(ctx, req.(*common.ContainerInspectMessage))
+		return srv.(AgentServer).ContainerInspect(ctx, req.(*common.ContainerInspectResponse))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -502,6 +538,10 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Agent_DeleteContainers_Handler,
 		},
 		{
+			MethodName: "ContainerLog",
+			Handler:    _Agent_ContainerLog_Handler,
+		},
+		{
 			MethodName: "ContainerInspect",
 			Handler:    _Agent_ContainerInspect_Handler,
 		},
@@ -527,8 +567,8 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 		{
-			StreamName:    "ContainerLog",
-			Handler:       _Agent_ContainerLog_Handler,
+			StreamName:    "ContainerLogStream",
+			Handler:       _Agent_ContainerLogStream_Handler,
 			ClientStreams: true,
 		},
 	},

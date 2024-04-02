@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { Subject, firstValueFrom } from 'rxjs'
+import { Subject } from 'rxjs'
 import { Agent } from 'src/domain/agent'
 import { generateAgentToken } from 'src/domain/agent-token'
 import { CruxConflictException } from 'src/exception/crux-exception'
@@ -80,14 +80,12 @@ export default class AgentConnectionLegacyStrategy extends AgentConnectionStrate
       // remove the old agent's container
 
       this.logger.verbose("Removing old agent's container.")
-      await firstValueFrom(
-        newAgent.deleteContainers({
-          container: {
-            prefix: '',
-            name: `${containerName}-update`,
-          },
-        }),
-      )
+      await newAgent.deleteContainers({
+        container: {
+          prefix: '',
+          name: `${containerName}-update`,
+        },
+      })
     }
   }
 

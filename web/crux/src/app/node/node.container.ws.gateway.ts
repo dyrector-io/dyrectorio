@@ -22,6 +22,7 @@ import {
   WatchContainersStateMessage,
 } from './node.message'
 import NodeService from './node.service'
+import NodeContainerLogQueryValidationPipe from './pipes/node.container-log-query.pipe'
 
 const TeamSlug = () => WsParam('teamSlug')
 const NodeId = () => WsParam('nodeId')
@@ -78,7 +79,7 @@ export default class NodeContainerWebSocketGateway {
   @SubscribeMessage('watch-container-log')
   watchContainerLog(
     @NodeId() nodeId: string,
-    @SocketMessage() message: WatchContainerLogMessage,
+    @SocketMessage(NodeContainerLogQueryValidationPipe) message: WatchContainerLogMessage,
   ): Observable<WsMessage<ContainerLogMessage>> {
     return this.service.watchContainerLog(nodeId, message).pipe(
       map(it => {

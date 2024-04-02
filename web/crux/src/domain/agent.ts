@@ -1,31 +1,35 @@
 import { Logger } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
-import { Observable, Subject, Subscription, TimeoutError, catchError, finalize, of, throwError, timeout } from 'rxjs'
+import { Observable, Subject, Subscription } from 'rxjs'
 import { NodeConnectionStatus } from 'src/app/node/node.dto'
 import {
   CruxConflictException,
   CruxInternalServerErrorException,
   CruxPreconditionFailedException,
 } from 'src/exception/crux-exception'
-import { AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
+import {
+  AgentCommand,
+  AgentInfo,
+  CloseReason,
+  ContainerInspectRequest,
+  ContainerLogRequest,
+  ListSecretsRequest,
+} from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerCommandRequest,
   ContainerIdentifier,
-  ContainerInspectMessage,
+  ContainerInspectResponse,
+  ContainerLogListResponse,
   DeleteContainersRequest,
   DeploymentStatusMessage,
   Empty,
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
-import {
-  CONTAINER_DELETE_TIMEOUT_MILLIS,
-  GET_CONTAINER_INSPECTION_TIMEOUT_MILLIS,
-  GET_CONTAINER_SECRETS_TIMEOUT_MILLIS,
-} from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import AgentCallback, { CallbackCommand, KeyAndCommandProvider } from './agent-callback'
 import { AgentToken } from './agent-token'
 import AgentUpdate, { AgentUpdateOptions, AgentUpdateResult } from './agent-update'
-import ContainerLogStream, { ContainerLogStreamCompleter } from './container-log-stream'
+import ContainerLogStream from './container-log-stream'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
 import Deployment from './deployment'
 import { BufferedSubject } from './utils'
@@ -44,29 +48,25 @@ export type AgentTokenReplacement = {
 }
 
 export class Agent {
+  private readonly connection: GrpcNodeConnection
+
   private readonly commandChannel = new BufferedSubject<AgentCommand>()
 
-  private deployments: Map<string, Deployment> = new Map()
+  private readonly eventChannel: Subject<AgentConnectionMessage>
 
-  private statusWatchers: Map<string, ContainerStatusWatcher> = new Map()
+  private readonly deployments: Map<string, Deployment> = new Map()
 
-  private secretsWatchers: Map<string, Subject<ListSecretsResponse>> = new Map()
+  private readonly callbacks: Map<keyof CallbackCommand, AgentCallback<any, any>>
 
-  private inspectionWatchers: Map<string, Subject<ContainerInspectMessage>> = new Map()
+  private readonly statusStreams: Map<string, ContainerStatusWatcher> = new Map()
 
-  private deleteContainersRequests: Map<string, Subject<Empty>> = new Map()
-
-  private logStreams: Map<string, ContainerLogStream> = new Map()
+  private readonly logStreams: Map<string, ContainerLogStream> = new Map()
 
   private update: AgentUpdate | null = null
 
   private replacementToken: AgentTokenReplacement | null = null
 
-  private statusSubscriber: Subscription
-
-  private readonly eventChannel: Subject<AgentConnectionMessage>
-
-  private readonly connection: GrpcNodeConnection
+  private statusSubscription: Subscription | null = null
 
   readonly info: AgentInfo
 
@@ -101,6 +101,39 @@ export class Agent {
     this.info = options.info
     this.eventChannel = options.eventChannel
     this.outdated = options.outdated
+
+    const callbacks: Record<keyof CallbackCommand, KeyAndCommandProvider<any>> = {
+      listSecrets: (req: ListSecretsRequest) => [Agent.containerPrefixNameOf(req.container), { listSecrets: req }],
+      containerLog: (req: ContainerLogRequest) => [
+        Agent.containerPrefixNameOf(req.container),
+        {
+          containerLog: {
+            ...req,
+            streaming: false,
+          },
+        },
+      ],
+      containerInspect: (req: ContainerInspectRequest) => [
+        Agent.containerPrefixNameOf(req.container),
+        { containerInspect: req },
+      ],
+      deleteContainers: (req: DeleteContainersRequest) => [
+        Agent.containerPrefixNameOf(
+          req?.container ?? {
+            prefix: req.prefix,
+            name: null,
+          },
+        ),
+        { deleteContainers: req },
+      ],
+    }
+
+    this.callbacks = new Map(
+      Object.entries(callbacks).map(entry => {
+        const [type, provider] = entry
+        return [type as keyof CallbackCommand, new AgentCallback(this.commandChannel, provider)]
+      }),
+    )
   }
 
   getConnectionStatus(): NodeConnectionStatus {
@@ -154,29 +187,27 @@ export class Agent {
   upsertContainerStatusWatcher(prefix: string, oneShot: boolean): ContainerStatusWatcher {
     this.throwIfCommandsAreDisabled()
 
-    let watcher = this.statusWatchers.get(prefix)
+    let watcher = this.statusStreams.get(prefix)
     if (!watcher) {
       watcher = new ContainerStatusWatcher(prefix, oneShot)
-      this.statusWatchers.set(prefix, watcher)
+      this.statusStreams.set(prefix, watcher)
       watcher.start(this.commandChannel)
     }
 
     return watcher
   }
 
-  upsertContainerLogStream(
-    container: ContainerIdentifier,
-    tail: number,
-    streaming: boolean = true,
-  ): ContainerLogStream {
+  upsertContainerLogStream(container: ContainerIdentifier, tail: number): ContainerLogStream {
     this.throwIfCommandsAreDisabled()
 
     const key = Agent.containerPrefixNameOf(container)
     let stream = this.logStreams.get(key)
     if (!stream) {
-      stream = new ContainerLogStream(container, tail, streaming)
+      stream = new ContainerLogStream(this.commandChannel, container, tail, () => {
+        this.logStreams.delete(key)
+      })
+
       this.logStreams.set(key, stream)
-      stream.start(this.commandChannel)
     }
 
     return stream
@@ -192,6 +223,30 @@ export class Agent {
     }
 
     this.commandChannel.complete()
+  }
+
+  async listSecrets(req: ListSecretsRequest): Promise<ListSecretsResponse> {
+    const callback: AgentCallback<ListSecretsRequest, ListSecretsResponse> = this.getCallback('listSecrets')
+    return await callback.fetch(req)
+  }
+
+  async deleteContainers(req: DeleteContainersRequest): Promise<Empty> {
+    const callback: AgentCallback<DeleteContainersRequest, Empty> = this.getCallback('deleteContainers')
+    return await callback.fetch(req)
+  }
+
+  async getContainerLog(req: Omit<ContainerLogRequest, 'streaming'>): Promise<ContainerLogListResponse> {
+    const callback: AgentCallback<ContainerLogRequest, ContainerLogListResponse> = this.getCallback('containerLog')
+    return await callback.fetch({
+      ...req,
+      streaming: false,
+    })
+  }
+
+  async inspectContainer(req: ContainerInspectRequest): Promise<ContainerInspectResponse> {
+    const callback: AgentCallback<ContainerInspectRequest, ContainerInspectResponse> =
+      this.getCallback('containerInspect')
+    return await callback.fetch(req)
   }
 
   sendContainerCommand(command: ContainerCommandRequest) {
@@ -219,33 +274,8 @@ export class Agent {
     })
   }
 
-  deleteContainers(request: DeleteContainersRequest): Observable<Empty> {
-    this.throwIfCommandsAreDisabled()
-
-    const reqId = Agent.containerDeleteRequestToRequestId(request)
-    const result = new Subject<Empty>()
-    this.deleteContainersRequests.set(reqId, result)
-
-    this.commandChannel.next({
-      deleteContainers: request,
-    } as AgentCommand)
-
-    return result.pipe(
-      timeout(CONTAINER_DELETE_TIMEOUT_MILLIS),
-      catchError(err => {
-        if (err instanceof TimeoutError) {
-          result.complete()
-          this.deleteContainersRequests.delete(reqId)
-          return of(Empty)
-        }
-
-        throw err
-      }),
-    )
-  }
-
   onConnected(statusListener: (status: NodeConnectionStatus) => void): Observable<AgentCommand> {
-    this.statusSubscriber = this.connection.status().subscribe(statusListener)
+    this.statusSubscription = this.connection.status().subscribe(statusListener)
 
     this.eventChannel.next({
       id: this.id,
@@ -260,10 +290,8 @@ export class Agent {
 
   onDisconnected() {
     this.deployments.forEach(it => it.onDisconnected())
-    this.statusWatchers.forEach(it => it.stop())
-    this.secretsWatchers.forEach(it => it.complete())
-    this.inspectionWatchers.forEach(it => it.complete())
-    this.logStreams.forEach(it => it.stop())
+    this.statusStreams.forEach(it => it.stop())
+    this.callbacks.forEach(it => it.cancel())
     this.commandChannel.complete()
 
     this.eventChannel.next({
@@ -281,7 +309,7 @@ export class Agent {
   }
 
   onContainerStateStreamStarted(prefix: string): [ContainerStatusWatcher, ContainerStatusStreamCompleter] {
-    const watcher = this.statusWatchers.get(prefix)
+    const watcher = this.statusStreams.get(prefix)
     if (!watcher) {
       return [null, null]
     }
@@ -290,147 +318,23 @@ export class Agent {
   }
 
   onContainerStatusStreamFinished(prefix: string) {
-    const watcher = this.statusWatchers.get(prefix)
+    const watcher = this.statusStreams.get(prefix)
     if (!watcher) {
       return
     }
 
-    this.statusWatchers.delete(prefix)
+    this.statusStreams.delete(prefix)
     watcher.onNodeStreamFinished()
   }
 
-  onContainerLogStreamStarted(id: ContainerIdentifier): [ContainerLogStream, ContainerLogStreamCompleter] {
+  onContainerLogStreamStarted(id: ContainerIdentifier): ContainerLogStream {
     const key = Agent.containerPrefixNameOf(id)
-
-    const stream = this.logStreams.get(key)
-    if (!stream) {
-      return [null, null]
-    }
-
-    return [stream, stream.onNodeStreamStarted()]
+    return this.logStreams.get(key)
   }
 
-  onContainerLogStreamFinished(id: ContainerIdentifier) {
-    const key = Agent.containerPrefixNameOf(id)
-    const watcher = this.logStreams.get(key)
-    if (!watcher) {
-      return
-    }
-
-    this.logStreams.delete(key)
-    watcher.onNodeStreamFinished()
-  }
-
-  getContainerSecrets(prefix: string, name: string): Observable<ListSecretsResponse> {
-    this.throwIfCommandsAreDisabled()
-
-    const key = Agent.containerPrefixNameOf({
-      prefix,
-      name,
-    })
-
-    let watcher = this.secretsWatchers.get(key)
-    if (!watcher) {
-      watcher = new Subject<ListSecretsResponse>()
-      this.secretsWatchers.set(key, watcher)
-
-      this.commandChannel.next({
-        listSecrets: {
-          prefix,
-          name,
-        },
-      } as AgentCommand)
-    }
-
-    return watcher.pipe(
-      finalize(() => {
-        this.secretsWatchers.delete(key)
-      }),
-      timeout({
-        each: GET_CONTAINER_SECRETS_TIMEOUT_MILLIS,
-        with: () => {
-          this.secretsWatchers.delete(key)
-
-          return throwError(
-            () =>
-              new CruxInternalServerErrorException({
-                message: 'Agent container secrets timed out.',
-              }),
-          )
-        },
-      }),
-    )
-  }
-
-  onContainerSecrets(res: ListSecretsResponse) {
-    const key = Agent.containerPrefixNameOf(res)
-
-    const watcher = this.secretsWatchers.get(key)
-    if (!watcher) {
-      return
-    }
-
-    watcher.next(res)
-    watcher.complete()
-
-    this.secretsWatchers.delete(key)
-  }
-
-  getContainerInspection(prefix: string, name: string): Observable<ContainerInspectMessage> {
-    this.throwIfCommandsAreDisabled()
-
-    const key = Agent.containerPrefixNameOf({
-      prefix,
-      name,
-    })
-
-    let watcher = this.inspectionWatchers.get(key)
-    if (!watcher) {
-      watcher = new Subject<ContainerInspectMessage>()
-      this.inspectionWatchers.set(key, watcher)
-
-      this.commandChannel.next({
-        containerInspect: {
-          container: {
-            prefix,
-            name,
-          },
-        },
-      } as AgentCommand)
-    }
-
-    return watcher.pipe(
-      finalize(() => {
-        this.inspectionWatchers.delete(key)
-      }),
-      timeout({
-        each: GET_CONTAINER_INSPECTION_TIMEOUT_MILLIS,
-        with: () => {
-          this.inspectionWatchers.delete(key)
-
-          return throwError(
-            () =>
-              new CruxInternalServerErrorException({
-                message: 'Agent container inspection timed out.',
-              }),
-          )
-        },
-      }),
-    )
-  }
-
-  onContainerInspect(res: ContainerInspectMessage) {
-    const key = Agent.containerPrefixNameOf(res)
-
-    const watcher = this.inspectionWatchers.get(key)
-    if (!watcher) {
-      return
-    }
-
-    watcher.next(res)
-    watcher.complete()
-
-    this.inspectionWatchers.delete(key)
+  onCallback<Res>(type: keyof CallbackCommand, key: string, response: Res) {
+    const callback = this.callbacks.get(type)
+    callback.onResponse(key, response)
   }
 
   startUpdate(tag: string, options: AgentUpdateOptions) {
@@ -471,7 +375,7 @@ export class Agent {
     const result = this.update.complete(connection)
 
     try {
-      this.statusSubscriber.unsubscribe()
+      this.statusSubscription.unsubscribe()
 
       this.close(CloseReason.SELF_DESTRUCT)
     } catch {
@@ -485,15 +389,6 @@ export class Agent {
     })
 
     return result
-  }
-
-  onContainerDeleted(request: DeleteContainersRequest) {
-    const reqId = Agent.containerDeleteRequestToRequestId(request)
-    const result = this.deleteContainersRequests.get(reqId)
-    if (result) {
-      this.deleteContainersRequests.delete(reqId)
-      result.complete()
-    }
   }
 
   /**
@@ -518,7 +413,7 @@ export class Agent {
   debugInfo(logger: Logger) {
     logger.verbose(`Agent id: ${this.id}, open: ${!this.commandChannel.closed}`)
     logger.verbose(`Deployments: ${this.deployments.size}`)
-    logger.verbose(`Watchers: ${this.statusWatchers.size}`)
+    logger.verbose(`Watchers: ${this.statusStreams.size}`)
     logger.verbose(`Log streams: ${this.logStreams.size}`)
     this.deployments.forEach(it => it.debugInfo(logger))
   }
@@ -549,16 +444,21 @@ export class Agent {
     }
   }
 
-  private static containerDeleteRequestToRequestId(request: DeleteContainersRequest): string {
-    if (request.container) {
-      return Agent.containerPrefixNameOf(request.container)
+  private getCallback(type: keyof CallbackCommand): AgentCallback<any, any> {
+    this.throwIfCommandsAreDisabled()
+
+    const callback = this.callbacks.get(type)
+    if (!callback) {
+      throw new CruxInternalServerErrorException({
+        message: `Missing callback: ${type}`,
+      })
     }
 
-    return request.prefix
+    return callback
   }
 
   public static containerPrefixNameOf = (id: ContainerIdentifier): string =>
-    !id.prefix ? id.name : `${id.prefix}-${id.name}`
+    !id.prefix ? id.name : `${id.prefix}-${id.name ?? ''}`
 }
 
 export type AgentConnectionMessage = {

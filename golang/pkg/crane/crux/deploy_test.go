@@ -17,7 +17,7 @@ func TestWatchDeploymentsByPrefix(t *testing.T) {
 	ctx := grpc.WithGRPCConfig(context.Background(), &config.Configuration{
 		CraneInCluster: false,
 	})
-	res, err := crux.WatchDeploymentsByPrefix(ctx, "")
+	res, err := crux.WatchDeploymentsByPrefix(ctx, "", true)
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
 

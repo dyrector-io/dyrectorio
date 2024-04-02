@@ -95,26 +95,33 @@ func messageToStateItem(ctx context.Context, prefix string, event *events.Messag
 	return newState, nil
 }
 
-func WatchContainers(ctx context.Context, prefix string) (*grpc.ContainerWatchContext, error) {
+func ContainerStateStream(ctx context.Context, prefix string, sendInitalStates bool) (*grpc.ContainerStatusStream, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
 	}
 
-	return WatchContainersByPrefix(ctx, cli, prefix)
+	var containers []types.Container
+	if sendInitalStates {
+		if prefix == "" {
+			containers, err = dockerHelper.GetAllContainers(ctx)
+		} else {
+			containers, err = dockerHelper.GetAllContainersByLabel(ctx, label.GetPrefixLabelFilter(prefix))
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return WatchContainersByPrefix(ctx, cli, prefix, containers)
 }
 
-func WatchContainersByPrefix(ctx context.Context, cli client.APIClient, prefix string) (*grpc.ContainerWatchContext, error) {
+func WatchContainersByPrefix(ctx context.Context,
+	cli client.APIClient,
+	prefix string,
+	initialStates []types.Container,
+) (*grpc.ContainerStatusStream, error) {
 	var err error
-	var containers []types.Container
-	if prefix == "" {
-		containers, err = dockerHelper.GetAllContainers(ctx)
-	} else {
-		containers, err = dockerHelper.GetAllContainersByLabel(ctx, label.GetPrefixLabelFilter(prefix))
-	}
-	if err != nil {
-		return nil, err
-	}
 
 	eventChannel := make(chan []*common.ContainerStateItem)
 	errorChannel := make(chan error)
@@ -122,7 +129,9 @@ func WatchContainersByPrefix(ctx context.Context, cli client.APIClient, prefix s
 	chanMessages, chanErrors := cli.Events(ctx, types.EventsOptions{})
 
 	go func(ctx context.Context, prefix string, chanMessages <-chan events.Message, chanErrors <-chan error) {
-		eventChannel <- mapper.MapContainerStateList(containers, prefix)
+		if initialStates != nil {
+			eventChannel <- mapper.MapContainerStateList(initialStates, prefix)
+		}
 
 		for {
 			select {
@@ -147,7 +156,7 @@ func WatchContainersByPrefix(ctx context.Context, cli client.APIClient, prefix s
 		}
 	}(ctx, prefix, chanMessages, chanErrors)
 
-	return &grpc.ContainerWatchContext{
+	return &grpc.ContainerStatusStream{
 		Events: eventChannel,
 		Error:  errorChannel,
 	}, nil

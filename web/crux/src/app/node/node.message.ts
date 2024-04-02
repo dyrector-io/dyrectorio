@@ -42,6 +42,7 @@ export class ContainersStateListMessage {
 // container log
 export type WatchContainerLogMessage = {
   container: ContainerIdentifierDto
+  take: number
 }
 
 export const WS_TYPE_CONTAINER_LOG = 'container-log'

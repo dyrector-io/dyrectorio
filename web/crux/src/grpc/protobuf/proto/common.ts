@@ -617,10 +617,12 @@ export interface ContainerLogMessage {
   log: string
 }
 
-export interface ContainerInspectMessage {
-  prefix: string
-  name: string
-  inspection: string
+export interface ContainerLogListResponse {
+  logs: string[]
+}
+
+export interface ContainerInspectResponse {
+  data: string
 }
 
 export interface Routing {
@@ -926,24 +928,38 @@ export const ContainerLogMessage = {
   },
 }
 
-function createBaseContainerInspectMessage(): ContainerInspectMessage {
-  return { prefix: '', name: '', inspection: '' }
+function createBaseContainerLogListResponse(): ContainerLogListResponse {
+  return { logs: [] }
 }
 
-export const ContainerInspectMessage = {
-  fromJSON(object: any): ContainerInspectMessage {
-    return {
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      inspection: isSet(object.inspection) ? String(object.inspection) : '',
-    }
+export const ContainerLogListResponse = {
+  fromJSON(object: any): ContainerLogListResponse {
+    return { logs: Array.isArray(object?.logs) ? object.logs.map((e: any) => String(e)) : [] }
   },
 
-  toJSON(message: ContainerInspectMessage): unknown {
+  toJSON(message: ContainerLogListResponse): unknown {
     const obj: any = {}
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    message.name !== undefined && (obj.name = message.name)
-    message.inspection !== undefined && (obj.inspection = message.inspection)
+    if (message.logs) {
+      obj.logs = message.logs.map(e => e)
+    } else {
+      obj.logs = []
+    }
+    return obj
+  },
+}
+
+function createBaseContainerInspectResponse(): ContainerInspectResponse {
+  return { data: '' }
+}
+
+export const ContainerInspectResponse = {
+  fromJSON(object: any): ContainerInspectResponse {
+    return { data: isSet(object.data) ? String(object.data) : '' }
+  },
+
+  toJSON(message: ContainerInspectResponse): unknown {
+    const obj: any = {}
+    message.data !== undefined && (obj.data = message.data)
     return obj
   },
 }

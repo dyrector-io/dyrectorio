@@ -29,10 +29,10 @@ import { CruxNotFoundException } from 'src/exception/crux-exception'
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerIdentifier,
-  ContainerInspectMessage,
+  ContainerInspectResponse,
+  ContainerLogListResponse,
   ContainerLogMessage,
   ContainerStateListMessage,
-  DeleteContainersRequest,
   DeploymentStatusMessage,
   Empty,
   ListSecretsResponse,
@@ -270,9 +270,11 @@ export default class AgentService {
   }
 
   handleSecretList(connection: GrpcNodeConnection, request: ListSecretsResponse): Observable<Empty> {
+    const container = AgentService.containerIdOf(connection)
+
     const agent = this.getByIdOrThrow(connection.nodeId)
 
-    agent.onContainerSecrets(request)
+    agent.onCallback('listSecrets', Agent.containerPrefixNameOf(container), request)
 
     return of(Empty)
   }
@@ -308,59 +310,54 @@ export default class AgentService {
     return Empty
   }
 
-  containersDeleted(connection: GrpcNodeConnection, request: DeleteContainersRequest): Empty {
+  handleDeleteContainers(connection: GrpcNodeConnection): Empty {
+    const container = AgentService.containerIdOf(connection)
+
     this.logger.log(`Containers deleted on '${connection.nodeId}'`)
 
     const agent = this.getByIdOrThrow(connection.nodeId)
-    agent.onContainerDeleted(request)
+    agent.onCallback('deleteContainers', Agent.containerPrefixNameOf(container), Empty)
 
     return Empty
   }
 
-  handleContainerLog(connection: GrpcNodeConnection, request: Observable<ContainerLogMessage>): Observable<Empty> {
+  handleContainerLogStream(
+    connection: GrpcNodeConnection,
+    request: Observable<ContainerLogMessage>,
+  ): Observable<Empty> {
+    const container = AgentService.containerIdOf(connection)
+
     const agent = this.getByIdOrThrow(connection.nodeId)
 
-    const containerPrefix = connection.getStringMetadata(GrpcNodeConnection.META_CONTAINER_PREFIX)
-    const containerName = connection.getStringMetadata(GrpcNodeConnection.META_CONTAINER_NAME)
-
-    const container: ContainerIdentifier = {
-      prefix: containerPrefix ?? '',
-      name: containerName,
-    }
-
     const key = Agent.containerPrefixNameOf(container)
-    const [stream, completer] = agent.onContainerLogStreamStarted(container)
+    const stream = agent.onContainerLogStreamStarted(container)
     if (!stream) {
       this.logger.warn(`${agent.id} - There was no stream for ${key}`)
 
       return of(Empty)
     }
 
-    return request.pipe(
-      // necessary, because of: https://github.com/nestjs/nest/issues/8111
-      startWith({
-        log: '',
-      } as ContainerLogMessage),
-      map(it => {
-        this.logger.verbose(`${agent.id} - Container log - '${key}' -> '${it.log}'`)
-
-        stream.update(it)
-        return Empty
-      }),
-      finalize(() => {
-        agent.onContainerLogStreamFinished(container)
-        this.logger.debug(`${agent.id} - Container log listening finished: ${key}`)
-      }),
-      takeUntil(completer),
-    )
+    return stream.onAgentStreamStarted(request)
   }
 
-  handleContainerInspect(connection: GrpcNodeConnection, request: ContainerInspectMessage): Observable<Empty> {
+  handleContainerLog(connection: GrpcNodeConnection, request: ContainerLogListResponse): Empty {
+    const container = AgentService.containerIdOf(connection)
+
     const agent = this.getByIdOrThrow(connection.nodeId)
 
-    agent.onContainerInspect(request)
+    agent.onCallback('containerLog', Agent.containerPrefixNameOf(container), request)
 
-    return of(Empty)
+    return Empty
+  }
+
+  handleContainerInspect(connection: GrpcNodeConnection, request: ContainerInspectResponse): Empty {
+    const container = AgentService.containerIdOf(connection)
+
+    const agent = this.getByIdOrThrow(connection.nodeId)
+
+    agent.onCallback('containerInspect', Agent.containerPrefixNameOf(container), request)
+
+    return Empty
   }
 
   async tokenReplaced(connection: GrpcNodeConnection): Promise<Empty> {
@@ -570,5 +567,15 @@ export default class AgentService {
   private logServiceInfo(): void {
     this.logger.verbose(`Agents: ${this.agents.size}`)
     this.agents.forEach(it => it.debugInfo(this.logger))
+  }
+
+  private static containerIdOf(connection: GrpcNodeConnection): ContainerIdentifier {
+    const prefix = connection.getStringMetadata(GrpcNodeConnection.META_CONTAINER_PREFIX)
+    const name = connection.getStringMetadata(GrpcNodeConnection.META_CONTAINER_NAME)
+
+    return {
+      prefix: prefix ?? '',
+      name,
+    }
   }
 }

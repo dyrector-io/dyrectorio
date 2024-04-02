@@ -2,20 +2,26 @@ import { DeploymentStatusEnum } from '@prisma/client'
 import { Subject, firstValueFrom, skip } from 'rxjs'
 import { NodeConnectionStatus } from 'src/app/node/node.dto'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
-import { CloseReason } from 'src/grpc/protobuf/proto/agent'
+import { CloseReason, ListSecretsRequest } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerCommandRequest,
+  ContainerLogMessage,
   ContainerOperation,
   DeleteContainersRequest,
   DeploymentStatus,
   DeploymentStatusMessage,
   Empty,
+  ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
-import { GET_CONTAINER_SECRETS_TIMEOUT_MILLIS } from 'src/shared/const'
+import { AGENT_CALLBACK_TIMEOUT } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { Agent, AgentConnectionMessage } from './agent'
 import { generateAgentToken } from './agent-token'
 import AgentUpdate from './agent-update'
+
+// Default timeout is 5sec, but agent callbacks also use a 5sec timeout
+// so we need to increase the default timeout to test the secret timeout
+const CALLBACK_TEST_TIMEOUT = AGENT_CALLBACK_TIMEOUT * 2
 
 const AGENT_ID = 'agent-id'
 const AGENT_ADDRESS = '127.0.0.1:1234'
@@ -187,42 +193,55 @@ describe('agent', () => {
       })
     })
 
-    it('delete container command should send command', async () => {
-      const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
+    it(
+      'delete container command should send command',
+      async () => {
+        const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
-      const deleteRequest: DeleteContainersRequest = {
-        prefix: 'prefix',
-      }
+        const deleteRequest: DeleteContainersRequest = {
+          prefix: 'prefix',
+        }
 
-      const deleteSusbcription = agent.deleteContainers(deleteRequest).subscribe(() => {})
+        const deleteRes = agent.deleteContainers(deleteRequest)
 
-      const commandChannelActual = await commandChannel
-      expect(commandChannelActual).toEqual({
-        deleteContainers: deleteRequest,
-      })
+        const commandChannelActual = await commandChannel
+        expect(commandChannelActual).toEqual({
+          deleteContainers: deleteRequest,
+        })
 
-      agent.onContainerDeleted(deleteRequest)
+        agent.onCallback(
+          'deleteContainers',
+          Agent.containerPrefixNameOf({
+            prefix: deleteRequest.prefix,
+            name: '',
+          }),
+          Empty,
+        )
 
-      await expect(deleteSusbcription.closed).toBe(true)
-    })
+        await expect(deleteRes).resolves.toBe(Empty)
+      },
+      CALLBACK_TEST_TIMEOUT,
+    )
 
-    it('delete container command should timeout if without response', async () => {
-      const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
+    it(
+      'delete container command should timeout if it does not have a response',
+      async () => {
+        const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
-      const deleteRequest: DeleteContainersRequest = {
-        prefix: 'prefix',
-      }
+        const deleteRequest: DeleteContainersRequest = {
+          prefix: 'prefix',
+        }
 
-      const deleteChannel = firstValueFrom(agent.deleteContainers(deleteRequest))
+        const deleteRes = agent.deleteContainers(deleteRequest)
 
-      const commandChannelActual = await commandChannel
-      expect(commandChannelActual).toEqual({
-        deleteContainers: deleteRequest,
-      })
-
-      const deleteChannelActual = await deleteChannel
-      expect(deleteChannelActual).toEqual(Empty)
-    })
+        const commandChannelActual = await commandChannel
+        expect(commandChannelActual).toEqual({
+          deleteContainers: deleteRequest,
+        })
+        await expect(deleteRes).rejects.toThrow()
+      },
+      CALLBACK_TEST_TIMEOUT,
+    )
   })
 
   describe('update', () => {
@@ -285,17 +304,21 @@ describe('agent', () => {
     it('getting container secrets should send command to agent and resolve with secrets', async () => {
       const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
-      const secrets = firstValueFrom(agent.getContainerSecrets('prefix', 'name'))
-
-      const commandChannelActual = await commandChannel
-      expect(commandChannelActual).toEqual({
-        listSecrets: {
+      const req: ListSecretsRequest = {
+        container: {
           prefix: 'prefix',
           name: 'name',
         },
+      }
+
+      const secrets = agent.listSecrets(req)
+
+      const commandChannelActual = await commandChannel
+      expect(commandChannelActual).toEqual({
+        listSecrets: req,
       })
 
-      const message = {
+      const message: ListSecretsResponse = {
         prefix: 'prefix',
         name: 'name',
         publicKey: 'key',
@@ -303,7 +326,7 @@ describe('agent', () => {
         keys: ['k1', 'k2', 'k3'],
       }
 
-      agent.onContainerSecrets(message)
+      agent.onCallback('listSecrets', Agent.containerPrefixNameOf(req.container), message)
 
       const secretsActual = await secrets
       expect(secretsActual).toEqual(message)
@@ -314,22 +337,24 @@ describe('agent', () => {
       async () => {
         const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
-        const secrets = firstValueFrom(agent.getContainerSecrets('prefix', 'name'))
-
-        const commandChannelActual = await commandChannel
-        expect(commandChannelActual).toEqual({
-          listSecrets: {
+        const req: ListSecretsRequest = {
+          container: {
             prefix: 'prefix',
             name: 'name',
           },
+        }
+
+        const secrets = agent.listSecrets(req)
+
+        const commandChannelActual = await commandChannel
+        expect(commandChannelActual).toEqual({
+          listSecrets: req,
         })
 
         await expect(secrets).rejects.toThrow()
       },
-      GET_CONTAINER_SECRETS_TIMEOUT_MILLIS * 2,
+      CALLBACK_TEST_TIMEOUT,
     )
-    // Default timeout is 5sec, but getContainerSecrets also uses a 5sec timeout
-    // so we need to increase the default timeout to test the secret timeout
   })
 
   it('getting container logs should stream events', async () => {
@@ -344,7 +369,7 @@ describe('agent', () => {
     const tail = 1000
     const logStream = agent.upsertContainerLogStream(container, tail)
 
-    const logEvent = firstValueFrom(logStream.watch().pipe(skip(1)))
+    const logEvent = firstValueFrom(logStream.watch())
 
     const streamStartEventActual = await streamStartEvent
     expect(streamStartEventActual).toEqual({
@@ -358,24 +383,23 @@ describe('agent', () => {
       },
     })
 
-    const [stream, completer] = agent.onContainerLogStreamStarted(container)
-    const completerPromise = firstValueFrom(completer)
+    const agentInput = new Subject<ContainerLogMessage>()
 
+    const stream = agent.onContainerLogStreamStarted(container)
     expect(stream).toEqual(logStream)
+
+    stream.onAgentStreamStarted(agentInput).subscribe()
 
     const testLog = {
       log: 'test log',
     }
 
-    stream.update(testLog)
+    agentInput.next(testLog)
 
     const logEventActual = await logEvent
     expect(logEventActual).toEqual(testLog)
 
-    agent.onContainerLogStreamFinished(container)
-
-    const completerActual = await completerPromise
-    expect(completerActual).toEqual(undefined)
+    agentInput.complete()
   })
 
   it('getting container status should stream events', async () => {

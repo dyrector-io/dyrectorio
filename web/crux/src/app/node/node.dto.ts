@@ -7,6 +7,7 @@ import {
   IsIn,
   IsObject,
   IsOptional,
+  IsPositive,
   IsString,
   IsUUID,
   ValidateNested,
@@ -251,4 +252,10 @@ export class NodeAuditLogListDto extends PaginatedList<NodeAuditLogDto> {
 export class ContainerInspectionDto {
   @IsString()
   inspection: string
+}
+
+export class NodeContainerLogQuery {
+  @IsPositive()
+  @IsOptional()
+  take?: number
 }
