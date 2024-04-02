@@ -95,7 +95,7 @@ func messageToStateItem(ctx context.Context, prefix string, event *events.Messag
 	return newState, nil
 }
 
-func ContainerStateStream(ctx context.Context, prefix string, sendInitalStates bool) (*grpc.ContainerStateContext, error) {
+func ContainerStateStream(ctx context.Context, prefix string, sendInitalStates bool) (*grpc.ContainerStateStream, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func WatchContainersByPrefix(ctx context.Context,
 	cli client.APIClient,
 	prefix string,
 	initialStates []types.Container,
-) (*grpc.ContainerStateContext, error) {
+) (*grpc.ContainerStateStream, error) {
 	var err error
 
 	eventChannel := make(chan []*common.ContainerStateItem)
@@ -156,7 +156,7 @@ func WatchContainersByPrefix(ctx context.Context,
 		}
 	}(ctx, prefix, chanMessages, chanErrors)
 
-	return &grpc.ContainerStateContext{
+	return &grpc.ContainerStateStream{
 		Events: eventChannel,
 		Error:  errorChannel,
 	}, nil

@@ -53,7 +53,7 @@ type ContainerLogContext struct {
 	Echo   bool
 }
 
-type ContainerStateContext struct {
+type ContainerStateStream struct {
 	Events chan []*common.ContainerStateItem
 	Error  chan error
 }
@@ -77,7 +77,7 @@ type ClientLoop struct {
 
 type (
 	DeployFunc               func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
-	ContainerStateFunc       func(context.Context, string, bool) (*ContainerStateContext, error)
+	ContainerStateFunc       func(context.Context, string, bool) (*ContainerStateStream, error)
 	DeleteFunc               func(context.Context, string, string) error
 	SecretListFunc           func(context.Context, string, string) ([]string, error)
 	SelfUpdateFunc           func(context.Context, *agent.AgentUpdateRequest, UpdateOptions) error
@@ -467,7 +467,7 @@ func streamContainerState(
 	filterPrefix string,
 	stream agent.Agent_ContainerStateClient,
 	req *agent.ContainerStateRequest,
-	eventsContext *ContainerStateContext,
+	eventsContext *ContainerStateStream,
 ) {
 	for {
 		select {

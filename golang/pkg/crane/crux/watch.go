@@ -113,7 +113,7 @@ func sendDeploymentInformerEvent(
 	filterNamespace string,
 	deploymentHandler *k8s.Deployment,
 	svcHandler *k8s.Service,
-	watchContext *grpc.ContainerStateContext,
+	watchContext *grpc.ContainerStateStream,
 	cfg *config.Configuration,
 ) {
 	data, ok := obj.(*unstructured.Unstructured)
@@ -149,7 +149,7 @@ func watchDeployments(
 	clusterClient *dynamic.DynamicClient,
 	deploymentHandler *k8s.Deployment,
 	svcHandler *k8s.Service,
-	watchContext *grpc.ContainerStateContext,
+	watchContext *grpc.ContainerStateStream,
 	cfg *config.Configuration,
 ) {
 	resource := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
@@ -227,7 +227,7 @@ func podToStateItem(
 func pushEvent(
 	ctx context.Context,
 	event watch.Event,
-	watchContext *grpc.ContainerStateContext,
+	watchContext *grpc.ContainerStateStream,
 	deploymentHandler *k8s.Deployment,
 	svcHandler *k8s.Service,
 	cfg *config.Configuration,
@@ -265,7 +265,7 @@ func watchPods(
 	clientSet *kubernetes.Clientset,
 	deploymentHandler *k8s.Deployment,
 	svcHandler *k8s.Service,
-	watchContext *grpc.ContainerStateContext,
+	watchContext *grpc.ContainerStateStream,
 	cfg *config.Configuration,
 	sendInitialStates bool,
 ) {
