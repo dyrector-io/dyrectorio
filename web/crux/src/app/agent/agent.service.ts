@@ -19,14 +19,22 @@ import {
 } from 'rxjs'
 import { SemVer, coerce } from 'semver'
 import { Agent, AgentConnectionMessage, AgentTokenReplacement } from 'src/domain/agent'
+import { CallbackCommand } from 'src/domain/agent-callback'
 import AgentInstaller from 'src/domain/agent-installer'
 import { generateAgentToken } from 'src/domain/agent-token'
 import { AgentUpdateResult } from 'src/domain/agent-update'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
 import { BasicNode } from 'src/domain/node'
 import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
-import { CruxNotFoundException } from 'src/exception/crux-exception'
-import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
+import { CruxInternalServerErrorException, CruxNotFoundException } from 'src/exception/crux-exception'
+import {
+  AgentAbortUpdate,
+  AgentCommand,
+  AgentCommandError,
+  AgentError,
+  AgentInfo,
+  CloseReason,
+} from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerIdentifier,
   ContainerInspectResponse,
@@ -360,6 +368,17 @@ export default class AgentService {
     return Empty
   }
 
+  handleCommandError(connection: GrpcNodeConnection, request: AgentCommandError): Empty {
+    const container = AgentService.containerIdOf(connection)
+    const [type, agentError] = AgentService.agentErrorOf(request)
+
+    const agent = this.getByIdOrThrow(connection.nodeId)
+
+    agent.onCallbackError(type, Agent.containerPrefixNameOf(container), agentError)
+
+    return Empty
+  }
+
   async tokenReplaced(connection: GrpcNodeConnection): Promise<Empty> {
     const agent = this.getByIdOrThrow(connection.nodeId)
 
@@ -577,5 +596,21 @@ export default class AgentService {
       prefix: prefix ?? '',
       name,
     }
+  }
+
+  private static agentErrorOf(error: AgentCommandError): [keyof CallbackCommand, AgentError] {
+    const err = Object.entries(error).find(entry => {
+      const [, value] = entry
+      return !!value
+    })
+
+    if (!err) {
+      throw new CruxInternalServerErrorException({
+        message: 'Invalid agent error',
+      })
+    }
+
+    const [type, agentError] = err
+    return [type as keyof CallbackCommand, agentError]
   }
 }

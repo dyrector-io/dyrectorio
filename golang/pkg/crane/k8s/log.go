@@ -16,6 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
+	internalCommon "github.com/dyrector-io/dyrectorio/golang/internal/common"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
@@ -70,7 +71,7 @@ func openPodLogReaders(ctx context.Context,
 	}
 
 	if len(pods.Items) == 0 {
-		return nil, false, errors.New("no pods found")
+		return nil, false, internalCommon.ErrContainerNotFound
 	}
 
 	selfPodNamespace := cfg.Namespace
@@ -117,7 +118,7 @@ func openPodLogReaders(ctx context.Context,
 	return logStreams, enableEcho, nil
 }
 
-func PodLog(ctx context.Context, request *agent.ContainerLogRequest) (*grpc.ContainerLogContext, error) {
+func PodLog(ctx context.Context, request *agent.ContainerLogRequest) (*grpc.ContainerLogStream, error) {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 
 	client, err := NewClient(cfg).GetClientSet()
@@ -186,7 +187,7 @@ func PodLog(ctx context.Context, request *agent.ContainerLogRequest) (*grpc.Cont
 		LogStreams:   logStreams,
 	}
 
-	logContext := &grpc.ContainerLogContext{
+	logContext := &grpc.ContainerLogStream{
 		Reader: logReader,
 		Echo:   enableEcho,
 	}

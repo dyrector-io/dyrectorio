@@ -13,6 +13,7 @@ import (
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/client"
 
+	internalCommon "github.com/dyrector-io/dyrectorio/golang/internal/common"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
@@ -181,7 +182,7 @@ func GetContainerByPrefixAndName(ctx context.Context, cli client.APIClient, pref
 		}
 	}
 
-	return nil, fmt.Errorf("container not found by prefix(%s), name(%s)", prefix, name)
+	return nil, internalCommon.ErrContainerNotFound
 }
 
 func DeleteContainerByPrefixAndName(ctx context.Context, prefix, name string) error {
@@ -192,11 +193,11 @@ func DeleteContainerByPrefixAndName(ctx context.Context, prefix, name string) er
 
 	container, err := GetContainerByPrefixAndName(ctx, cli, prefix, name)
 	if err != nil {
-		return fmt.Errorf("could not get container (%s, %s) to delete: %s", prefix, name, err.Error())
-	}
+		if err == internalCommon.ErrContainerNotFound {
+			return nil
+		}
 
-	if container == nil {
-		return nil
+		return fmt.Errorf("could not get container (%s, %s) to delete: %s", prefix, name, err.Error())
 	}
 
 	return dockerHelper.DeleteContainer(ctx, container)

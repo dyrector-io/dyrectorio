@@ -14,6 +14,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
+	internalCommon "github.com/dyrector-io/dyrectorio/golang/internal/common"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/golang/internal/health"
@@ -48,7 +49,7 @@ type ContainerLogReader interface {
 	Close() error
 }
 
-type ContainerLogContext struct {
+type ContainerLogStream struct {
 	Reader ContainerLogReader
 	Echo   bool
 }
@@ -85,7 +86,7 @@ type (
 	CloseFunc                func(context.Context, agent.CloseReason, UpdateOptions) error
 	ContainerCommandFunc     func(context.Context, *common.ContainerCommandRequest) error
 	DeleteContainersFunc     func(context.Context, *common.DeleteContainersRequest) error
-	ContainerLogFunc         func(context.Context, *agent.ContainerLogRequest) (*ContainerLogContext, error)
+	ContainerLogFunc         func(context.Context, *agent.ContainerLogRequest) (*ContainerLogStream, error)
 	ContainerInspectFunc     func(context.Context, *agent.ContainerInspectRequest) (string, error)
 	ReplaceTokenFunc         func(context.Context, *agent.ReplaceTokenRequest) error
 	SendLogFunc              func(string) error
@@ -113,6 +114,22 @@ const (
 )
 
 var ErrConnectionRefused = errors.New("server refused connection")
+
+type AgentGrpcError struct {
+	Context    context.Context
+	InnerError error
+}
+
+func (e *AgentGrpcError) Error() string {
+	return e.InnerError.Error()
+}
+
+func agentError(ctx context.Context, err error) *AgentGrpcError {
+	return &AgentGrpcError{
+		Context:    ctx,
+		InnerError: err,
+	}
+}
 
 func (g *Connection) SetClient(client agent.AgentClient) {
 	g.Client = client
@@ -173,7 +190,10 @@ func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 	case command.GetDeployLegacy() != nil:
 		go executeVersionDeployLegacyRequest(cl.Ctx, command.GetDeployLegacy(), cl.WorkerFuncs.Deploy, cl.AppConfig)
 	case command.GetListSecrets() != nil:
-		go executeSecretList(cl.Ctx, command.GetListSecrets(), cl.WorkerFuncs.SecretList, cl.AppConfig)
+		go executeCallback(
+			mapListSecretsErrorToCommandError,
+			executeSecretList(cl.Ctx, command.GetListSecrets(), cl.WorkerFuncs.SecretList, cl.AppConfig),
+		)
 	case command.GetUpdate() != nil:
 		go executeUpdate(cl, command.GetUpdate(), cl.WorkerFuncs.SelfUpdate)
 	case command.GetClose() != nil:
@@ -181,11 +201,20 @@ func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 	case command.GetContainerCommand() != nil:
 		go executeContainerCommand(cl.Ctx, command.GetContainerCommand(), cl.WorkerFuncs.ContainerCommand)
 	case command.GetDeleteContainers() != nil:
-		go executeDeleteMultipleContainers(cl.Ctx, command.GetDeleteContainers(), cl.WorkerFuncs.DeleteContainers)
+		go executeCallback(
+			mapDeleteContainersErrorToCommandError,
+			executeDeleteMultipleContainers(cl.Ctx, command.GetDeleteContainers(), cl.WorkerFuncs.DeleteContainers),
+		)
 	case command.GetContainerLog() != nil:
-		go executeContainerLog(cl.Ctx, command.GetContainerLog(), cl.WorkerFuncs.ContainerLog, cl.WorkerFuncs.WatchContainerStatus)
+		go executeCallback(
+			mapContainerLogErrorToCommandError,
+			executeContainerLog(cl.Ctx, command.GetContainerLog(), cl.WorkerFuncs.ContainerLog, cl.WorkerFuncs.WatchContainerStatus),
+		)
 	case command.GetContainerInspect() != nil:
-		go executeContainerInspect(cl.Ctx, command.GetContainerInspect(), cl.WorkerFuncs.ContainerInspect)
+		go executeCallback(
+			mapContainerInspectErrorToCommandError,
+			executeContainerInspect(cl.Ctx, command.GetContainerInspect(), cl.WorkerFuncs.ContainerInspect),
+		)
 	case command.GetReplaceToken() != nil:
 		// NOTE(@m8vago): should be sync?
 		err := cl.executeReplaceToken(command.GetReplaceToken())
@@ -194,6 +223,34 @@ func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 		}
 	default:
 		log.Warn().Msg("Unknown agent command")
+	}
+}
+
+func statusCodeOf(err *AgentGrpcError) codes.Code {
+	if errors.Is(err.InnerError, internalCommon.ErrContainerNotFound) {
+		return codes.NotFound
+	}
+
+	return codes.Internal
+}
+
+func executeCallback(mapError func(*agent.AgentError) *agent.AgentCommandError, grpcErr *AgentGrpcError) {
+	if grpcErr == nil {
+		return
+	}
+
+	statusCode := statusCodeOf(grpcErr)
+
+	agentError := agent.AgentError{
+		Status: int32(statusCode),
+		Error:  grpcErr.InnerError.Error(),
+	}
+
+	cmdErr := mapError(&agentError)
+
+	_, err := grpcConn.Client.CommandError(grpcErr.Context, cmdErr)
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("Reporting callback error failed")
 	}
 }
 
@@ -567,19 +624,19 @@ func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteReque
 	}
 }
 
-func executeDeleteMultipleContainers(ctx context.Context, req *common.DeleteContainersRequest, deleteFn DeleteContainersFunc) {
-	if deleteFn == nil {
-		log.Error().Msg("Delete function not implemented")
-		return
+func mapDeleteContainersErrorToCommandError(err *agent.AgentError) *agent.AgentCommandError {
+	return &agent.AgentCommandError{
+		Command: &agent.AgentCommandError_DeleteContainers{
+			DeleteContainers: err,
+		},
 	}
+}
 
-	log.Info().Msg("Deleting multiple containers")
-
-	err := deleteFn(ctx, req)
-	if err != nil {
-		log.Error().Stack().Err(err).Msg("Failed to delete multiple containers")
-	}
-
+func executeDeleteMultipleContainers(
+	ctx context.Context,
+	req *common.DeleteContainersRequest,
+	deleteFn DeleteContainersFunc,
+) *AgentGrpcError {
 	var prefix, name string
 	if req.GetContainer() != nil {
 		prefix = req.GetContainer().Prefix
@@ -591,11 +648,25 @@ func executeDeleteMultipleContainers(ctx context.Context, req *common.DeleteCont
 
 	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", prefix, "dyo-container-name", name)
 
+	if deleteFn == nil {
+		return agentError(ctx, internalCommon.ErrMethodNotImplemented)
+	}
+
+	log.Info().Msg("Deleting multiple containers")
+
+	err := deleteFn(ctx, req)
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("Failed to delete multiple containers")
+		return agentError(ctx, err)
+	}
+
 	_, err = grpcConn.Client.DeleteContainers(ctx, &common.Empty{})
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Delete multiple containers response error")
-		return
+		return nil
 	}
+
+	return nil
 }
 
 func executeVersionDeployLegacyRequest(
@@ -657,32 +728,41 @@ func executeVersionDeployLegacyRequest(
 	}
 }
 
+func mapListSecretsErrorToCommandError(err *agent.AgentError) *agent.AgentCommandError {
+	return &agent.AgentCommandError{
+		Command: &agent.AgentCommandError_ListSecrets{
+			ListSecrets: err,
+		},
+	}
+}
+
 func executeSecretList(
 	ctx context.Context,
 	command *agent.ListSecretsRequest,
 	listFunc SecretListFunc,
 	appConfig *config.CommonConfiguration,
-) {
-	if listFunc == nil {
-		log.Error().Msg("Secret list function not implemented")
-		return
-	}
-
+) *AgentGrpcError {
 	prefix := command.Container.Prefix
 	name := command.Container.Name
+
+	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", prefix, "dyo-container-name", name)
+
+	if listFunc == nil {
+		return agentError(ctx, internalCommon.ErrMethodNotImplemented)
+	}
 
 	log.Info().Str("prefix", prefix).Str("name", name).Msg("Getting secrets")
 
 	keys, err := listFunc(ctx, prefix, name)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Secret list error")
-		return
+		return agentError(ctx, err)
 	}
 
 	publicKey, err := config.GetPublicKey(appConfig.SecretPrivateKey)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Failed to get public key")
-		return
+		return agentError(ctx, err)
 	}
 
 	resp := &common.ListSecretsResponse{
@@ -693,13 +773,13 @@ func executeSecretList(
 		Keys:      keys,
 	}
 
-	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", prefix, "dyo-container-name", name)
-
 	_, err = grpcConn.Client.SecretList(ctx, resp)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Secret list response error")
-		return
+		return nil
 	}
+
+	return nil
 }
 
 func executeUpdate(loop *ClientLoop, command *agent.AgentUpdateRequest, updateFunc SelfUpdateFunc) {
@@ -784,7 +864,7 @@ func executeContainerCommand(ctx context.Context, command *common.ContainerComma
 	}
 }
 
-func readContainerLog(logContext *ContainerLogContext, sendLog SendLogFunc, prefix, name string) error {
+func readContainerLog(logContext *ContainerLogStream, sendLog SendLogFunc, prefix, name string) error {
 	reader := logContext.Reader
 
 	defer func() {
@@ -943,7 +1023,7 @@ func executeContainerLogStream(streamCtx context.Context,
 }
 
 func collectContainerLog(
-	logContext *ContainerLogContext,
+	logContext *ContainerLogStream,
 	prefix, name string,
 ) []string {
 	containerLog := make([]string, 0)
@@ -962,14 +1042,14 @@ func collectContainerLog(
 	return containerLog
 }
 
-func executeContainerLogRequest(ctx context.Context, logFunc ContainerLogFunc, command *agent.ContainerLogRequest) {
+func executeContainerLogRequest(ctx context.Context, logFunc ContainerLogFunc, command *agent.ContainerLogRequest) *AgentGrpcError {
 	prefix := command.Container.Prefix
 	name := command.Container.Name
 
 	logContext, err := logFunc(ctx, command)
 	if err != nil {
-		log.Error().Err(err).Str("prefix", prefix).Str("name", name).Msg("Failed to open container log reader")
-		return
+		log.Error().Err(err).Str("prefix", prefix).Str("name", name).Send()
+		return agentError(ctx, err)
 	}
 
 	logs := collectContainerLog(logContext, prefix, name)
@@ -979,10 +1059,19 @@ func executeContainerLogRequest(ctx context.Context, logFunc ContainerLogFunc, c
 	})
 	if err != nil {
 		log.Error().Err(err).Str("prefix", prefix).Str("name", name).Msg("Failed to send container logs")
-		return
+		return nil
 	}
 
 	log.Trace().Str("prefix", prefix).Str("name", name).Msg("Container log sent")
+	return nil
+}
+
+func mapContainerLogErrorToCommandError(err *agent.AgentError) *agent.AgentCommandError {
+	return &agent.AgentCommandError{
+		Command: &agent.AgentCommandError_ContainerLog{
+			ContainerLog: err,
+		},
+	}
 }
 
 func executeContainerLog(
@@ -990,54 +1079,69 @@ func executeContainerLog(
 	command *agent.ContainerLogRequest,
 	logFunc ContainerLogFunc,
 	statusFunc WatchContainerStatusFunc,
-) {
-	if logFunc == nil {
-		log.Error().Msg("Container log function not implemented")
-		return
-	}
-
+) *AgentGrpcError {
 	prefix := command.Container.Prefix
 	name := command.Container.Name
+
+	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", prefix, "dyo-container-name", name)
+
+	if logFunc == nil {
+		return agentError(ctx, internalCommon.ErrMethodNotImplemented)
+	}
 
 	log.Debug().Str("prefix", prefix).Str("name", name).Uint32("tail", command.GetTail()).
 		Bool("stream", command.GetStreaming()).Msg("Getting container logs")
 
-	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", prefix, "dyo-container-name", name)
+	if !command.Streaming {
+		return executeContainerLogRequest(ctx, logFunc, command)
+	}
 
-	if command.Streaming {
-		executeContainerLogStream(ctx, logFunc, statusFunc, command)
-	} else {
-		executeContainerLogRequest(ctx, logFunc, command)
+	executeContainerLogStream(ctx, logFunc, statusFunc, command)
+	return nil
+}
+
+func mapContainerInspectErrorToCommandError(err *agent.AgentError) *agent.AgentCommandError {
+	return &agent.AgentCommandError{
+		Command: &agent.AgentCommandError_ContainerInspect{
+			ContainerInspect: err,
+		},
 	}
 }
 
-func executeContainerInspect(ctx context.Context, command *agent.ContainerInspectRequest, inspectFunc ContainerInspectFunc) {
-	if inspectFunc == nil {
-		log.Error().Msg("Container inspect function not implemented")
-		return
-	}
-
+func executeContainerInspect(
+	ctx context.Context,
+	command *agent.ContainerInspectRequest,
+	inspectFunc ContainerInspectFunc,
+) *AgentGrpcError {
 	prefix := command.Container.Prefix
 	name := command.Container.Name
+
+	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", prefix, "dyo-container-name", name)
+
+	if inspectFunc == nil {
+		log.Error().Msg("Container inspect function not implemented")
+		return agentError(ctx, internalCommon.ErrMethodNotImplemented)
+	}
 
 	log.Info().Str("prefix", prefix).Str("name", name).Msg("Getting container inspection")
 
 	data, err := inspectFunc(ctx, command)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Failed to inspect container")
+		return agentError(ctx, err)
 	}
 
 	resp := &common.ContainerInspectResponse{
 		Data: data,
 	}
 
-	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", prefix, "dyo-container-name", name)
-
 	_, err = grpcConn.Client.ContainerInspect(ctx, resp)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Container inspection response error")
-		return
+		return nil
 	}
+
+	return nil
 }
 
 func (cl *ClientLoop) executeReplaceToken(command *agent.ReplaceTokenRequest) error {

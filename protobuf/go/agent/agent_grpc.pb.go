@@ -30,17 +30,19 @@ type AgentClient interface {
 	// For deployment status reports, closed when ended.
 	// For prefix state reports, should be closed by the server.
 	Connect(ctx context.Context, in *AgentInfo, opts ...grpc.CallOption) (Agent_ConnectClient, error)
+	CommandError(ctx context.Context, in *AgentCommandError, opts ...grpc.CallOption) (*common.Empty, error)
+	// update releated
+	AbortUpdate(ctx context.Context, in *AgentAbortUpdate, opts ...grpc.CallOption) (*common.Empty, error)
+	TokenReplaced(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*common.Empty, error)
 	// streams
 	DeploymentStatus(ctx context.Context, opts ...grpc.CallOption) (Agent_DeploymentStatusClient, error)
 	ContainerState(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerStateClient, error)
 	ContainerLogStream(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerLogStreamClient, error)
 	// one-shot requests
 	SecretList(ctx context.Context, in *common.ListSecretsResponse, opts ...grpc.CallOption) (*common.Empty, error)
-	AbortUpdate(ctx context.Context, in *AgentAbortUpdate, opts ...grpc.CallOption) (*common.Empty, error)
 	DeleteContainers(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*common.Empty, error)
 	ContainerLog(ctx context.Context, in *common.ContainerLogListResponse, opts ...grpc.CallOption) (*common.Empty, error)
 	ContainerInspect(ctx context.Context, in *common.ContainerInspectResponse, opts ...grpc.CallOption) (*common.Empty, error)
-	TokenReplaced(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
 type agentClient struct {
@@ -81,6 +83,33 @@ func (x *agentConnectClient) Recv() (*AgentCommand, error) {
 		return nil, err
 	}
 	return m, nil
+}
+
+func (c *agentClient) CommandError(ctx context.Context, in *AgentCommandError, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/agent.Agent/CommandError", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *agentClient) AbortUpdate(ctx context.Context, in *AgentAbortUpdate, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/agent.Agent/AbortUpdate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *agentClient) TokenReplaced(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/agent.Agent/TokenReplaced", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *agentClient) DeploymentStatus(ctx context.Context, opts ...grpc.CallOption) (Agent_DeploymentStatusClient, error) {
@@ -194,15 +223,6 @@ func (c *agentClient) SecretList(ctx context.Context, in *common.ListSecretsResp
 	return out, nil
 }
 
-func (c *agentClient) AbortUpdate(ctx context.Context, in *AgentAbortUpdate, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
-	err := c.cc.Invoke(ctx, "/agent.Agent/AbortUpdate", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *agentClient) DeleteContainers(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*common.Empty, error) {
 	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/DeleteContainers", in, out, opts...)
@@ -230,15 +250,6 @@ func (c *agentClient) ContainerInspect(ctx context.Context, in *common.Container
 	return out, nil
 }
 
-func (c *agentClient) TokenReplaced(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
-	err := c.cc.Invoke(ctx, "/agent.Agent/TokenReplaced", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // AgentServer is the server API for Agent service.
 // All implementations must embed UnimplementedAgentServer
 // for forward compatibility
@@ -250,17 +261,19 @@ type AgentServer interface {
 	// For deployment status reports, closed when ended.
 	// For prefix state reports, should be closed by the server.
 	Connect(*AgentInfo, Agent_ConnectServer) error
+	CommandError(context.Context, *AgentCommandError) (*common.Empty, error)
+	// update releated
+	AbortUpdate(context.Context, *AgentAbortUpdate) (*common.Empty, error)
+	TokenReplaced(context.Context, *common.Empty) (*common.Empty, error)
 	// streams
 	DeploymentStatus(Agent_DeploymentStatusServer) error
 	ContainerState(Agent_ContainerStateServer) error
 	ContainerLogStream(Agent_ContainerLogStreamServer) error
 	// one-shot requests
 	SecretList(context.Context, *common.ListSecretsResponse) (*common.Empty, error)
-	AbortUpdate(context.Context, *AgentAbortUpdate) (*common.Empty, error)
 	DeleteContainers(context.Context, *common.Empty) (*common.Empty, error)
 	ContainerLog(context.Context, *common.ContainerLogListResponse) (*common.Empty, error)
 	ContainerInspect(context.Context, *common.ContainerInspectResponse) (*common.Empty, error)
-	TokenReplaced(context.Context, *common.Empty) (*common.Empty, error)
 	mustEmbedUnimplementedAgentServer()
 }
 
@@ -270,6 +283,15 @@ type UnimplementedAgentServer struct {
 
 func (UnimplementedAgentServer) Connect(*AgentInfo, Agent_ConnectServer) error {
 	return status.Errorf(codes.Unimplemented, "method Connect not implemented")
+}
+func (UnimplementedAgentServer) CommandError(context.Context, *AgentCommandError) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CommandError not implemented")
+}
+func (UnimplementedAgentServer) AbortUpdate(context.Context, *AgentAbortUpdate) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AbortUpdate not implemented")
+}
+func (UnimplementedAgentServer) TokenReplaced(context.Context, *common.Empty) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TokenReplaced not implemented")
 }
 func (UnimplementedAgentServer) DeploymentStatus(Agent_DeploymentStatusServer) error {
 	return status.Errorf(codes.Unimplemented, "method DeploymentStatus not implemented")
@@ -283,9 +305,6 @@ func (UnimplementedAgentServer) ContainerLogStream(Agent_ContainerLogStreamServe
 func (UnimplementedAgentServer) SecretList(context.Context, *common.ListSecretsResponse) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SecretList not implemented")
 }
-func (UnimplementedAgentServer) AbortUpdate(context.Context, *AgentAbortUpdate) (*common.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AbortUpdate not implemented")
-}
 func (UnimplementedAgentServer) DeleteContainers(context.Context, *common.Empty) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteContainers not implemented")
 }
@@ -294,9 +313,6 @@ func (UnimplementedAgentServer) ContainerLog(context.Context, *common.ContainerL
 }
 func (UnimplementedAgentServer) ContainerInspect(context.Context, *common.ContainerInspectResponse) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ContainerInspect not implemented")
-}
-func (UnimplementedAgentServer) TokenReplaced(context.Context, *common.Empty) (*common.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TokenReplaced not implemented")
 }
 func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
 
@@ -330,6 +346,60 @@ type agentConnectServer struct {
 
 func (x *agentConnectServer) Send(m *AgentCommand) error {
 	return x.ServerStream.SendMsg(m)
+}
+
+func _Agent_CommandError_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AgentCommandError)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).CommandError(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/agent.Agent/CommandError",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).CommandError(ctx, req.(*AgentCommandError))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Agent_AbortUpdate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AgentAbortUpdate)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).AbortUpdate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/agent.Agent/AbortUpdate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).AbortUpdate(ctx, req.(*AgentAbortUpdate))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Agent_TokenReplaced_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(common.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).TokenReplaced(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/agent.Agent/TokenReplaced",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).TokenReplaced(ctx, req.(*common.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Agent_DeploymentStatus_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -428,24 +498,6 @@ func _Agent_SecretList_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Agent_AbortUpdate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AgentAbortUpdate)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AgentServer).AbortUpdate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/agent.Agent/AbortUpdate",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentServer).AbortUpdate(ctx, req.(*AgentAbortUpdate))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Agent_DeleteContainers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(common.Empty)
 	if err := dec(in); err != nil {
@@ -500,24 +552,6 @@ func _Agent_ContainerInspect_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Agent_TokenReplaced_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(common.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AgentServer).TokenReplaced(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/agent.Agent/TokenReplaced",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentServer).TokenReplaced(ctx, req.(*common.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Agent_ServiceDesc is the grpc.ServiceDesc for Agent service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -526,12 +560,20 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AgentServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SecretList",
-			Handler:    _Agent_SecretList_Handler,
+			MethodName: "CommandError",
+			Handler:    _Agent_CommandError_Handler,
 		},
 		{
 			MethodName: "AbortUpdate",
 			Handler:    _Agent_AbortUpdate_Handler,
+		},
+		{
+			MethodName: "TokenReplaced",
+			Handler:    _Agent_TokenReplaced_Handler,
+		},
+		{
+			MethodName: "SecretList",
+			Handler:    _Agent_SecretList_Handler,
 		},
 		{
 			MethodName: "DeleteContainers",
@@ -544,10 +586,6 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ContainerInspect",
 			Handler:    _Agent_ContainerInspect_Handler,
-		},
-		{
-			MethodName: "TokenReplaced",
-			Handler:    _Agent_TokenReplaced_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
