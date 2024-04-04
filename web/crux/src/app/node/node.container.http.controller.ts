@@ -159,7 +159,8 @@ export default class NodeContainerHttpController {
   @Get(`${ROUTE_NAME}/log`)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    description: 'Request must include `nodeId`, `prefix`, and the `name` of the container.',
+    description:
+      'Request must include `nodeId`, `prefix`, and the `name` of the container. Use `_` as a prefix if you want to access global containers (those running on the node without deployment).',
     summary: 'Get the logs of a container.',
   })
   @ApiOkResponse({ description: 'Container log.', type: String })
