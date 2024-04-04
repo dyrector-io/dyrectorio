@@ -122,6 +122,18 @@ export interface AgentCommand {
   containerInspect?: ContainerInspectRequest | undefined
 }
 
+export interface AgentError {
+  status: number
+  error: string
+}
+
+export interface AgentCommandError {
+  listSecrets?: AgentError | undefined
+  deleteContainers?: AgentError | undefined
+  containerLog?: AgentError | undefined
+  containerInspect?: AgentError | undefined
+}
+
 /**
  * This is more of a placeholder, we could include more, or return this
  * instantly after validation success.
@@ -480,6 +492,54 @@ export const AgentCommand = {
       (obj.containerInspect = message.containerInspect
         ? ContainerInspectRequest.toJSON(message.containerInspect)
         : undefined)
+    return obj
+  },
+}
+
+function createBaseAgentError(): AgentError {
+  return { status: 0, error: '' }
+}
+
+export const AgentError = {
+  fromJSON(object: any): AgentError {
+    return {
+      status: isSet(object.status) ? Number(object.status) : 0,
+      error: isSet(object.error) ? String(object.error) : '',
+    }
+  },
+
+  toJSON(message: AgentError): unknown {
+    const obj: any = {}
+    message.status !== undefined && (obj.status = Math.round(message.status))
+    message.error !== undefined && (obj.error = message.error)
+    return obj
+  },
+}
+
+function createBaseAgentCommandError(): AgentCommandError {
+  return {}
+}
+
+export const AgentCommandError = {
+  fromJSON(object: any): AgentCommandError {
+    return {
+      listSecrets: isSet(object.listSecrets) ? AgentError.fromJSON(object.listSecrets) : undefined,
+      deleteContainers: isSet(object.deleteContainers) ? AgentError.fromJSON(object.deleteContainers) : undefined,
+      containerLog: isSet(object.containerLog) ? AgentError.fromJSON(object.containerLog) : undefined,
+      containerInspect: isSet(object.containerInspect) ? AgentError.fromJSON(object.containerInspect) : undefined,
+    }
+  },
+
+  toJSON(message: AgentCommandError): unknown {
+    const obj: any = {}
+    message.listSecrets !== undefined &&
+      (obj.listSecrets = message.listSecrets ? AgentError.toJSON(message.listSecrets) : undefined)
+    message.deleteContainers !== undefined &&
+      (obj.deleteContainers = message.deleteContainers ? AgentError.toJSON(message.deleteContainers) : undefined)
+    message.containerLog !== undefined &&
+      (obj.containerLog = message.containerLog ? AgentError.toJSON(message.containerLog) : undefined)
+    message.containerInspect !== undefined &&
+      (obj.containerInspect = message.containerInspect ? AgentError.toJSON(message.containerInspect) : undefined)
     return obj
   },
 }
@@ -1536,6 +1596,14 @@ export interface AgentClient {
 
   connect(request: AgentInfo, metadata: Metadata, ...rest: any): Observable<AgentCommand>
 
+  commandError(request: AgentCommandError, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  /** update releated */
+
+  abortUpdate(request: AgentAbortUpdate, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  tokenReplaced(request: Empty, metadata: Metadata, ...rest: any): Observable<Empty>
+
   /** streams */
 
   deploymentStatus(request: Observable<DeploymentStatusMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
@@ -1548,15 +1616,11 @@ export interface AgentClient {
 
   secretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Observable<Empty>
 
-  abortUpdate(request: AgentAbortUpdate, metadata: Metadata, ...rest: any): Observable<Empty>
-
   deleteContainers(request: Empty, metadata: Metadata, ...rest: any): Observable<Empty>
 
   containerLog(request: ContainerLogListResponse, metadata: Metadata, ...rest: any): Observable<Empty>
 
   containerInspect(request: ContainerInspectResponse, metadata: Metadata, ...rest: any): Observable<Empty>
-
-  tokenReplaced(request: Empty, metadata: Metadata, ...rest: any): Observable<Empty>
 }
 
 /** Service handling deployment of containers and fetching statuses */
@@ -1571,6 +1635,14 @@ export interface AgentController {
    */
 
   connect(request: AgentInfo, metadata: Metadata, ...rest: any): Observable<AgentCommand>
+
+  commandError(request: AgentCommandError, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+
+  /** update releated */
+
+  abortUpdate(request: AgentAbortUpdate, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+
+  tokenReplaced(request: Empty, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
   /** streams */
 
@@ -1596,8 +1668,6 @@ export interface AgentController {
 
   secretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
-  abortUpdate(request: AgentAbortUpdate, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
-
   deleteContainers(request: Empty, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
   containerLog(
@@ -1611,20 +1681,19 @@ export interface AgentController {
     metadata: Metadata,
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
-
-  tokenReplaced(request: Empty, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 }
 
 export function AgentControllerMethods() {
   return function (constructor: Function) {
     const grpcMethods: string[] = [
       'connect',
-      'secretList',
+      'commandError',
       'abortUpdate',
+      'tokenReplaced',
+      'secretList',
       'deleteContainers',
       'containerLog',
       'containerInspect',
-      'tokenReplaced',
     ]
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)

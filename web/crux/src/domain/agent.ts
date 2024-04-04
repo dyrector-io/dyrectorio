@@ -9,6 +9,7 @@ import {
 } from 'src/exception/crux-exception'
 import {
   AgentCommand,
+  AgentError,
   AgentInfo,
   CloseReason,
   ContainerInspectRequest,
@@ -335,6 +336,15 @@ export class Agent {
   onCallback<Res>(type: keyof CallbackCommand, key: string, response: Res) {
     const callback = this.callbacks.get(type)
     callback.onResponse(key, response)
+  }
+
+  onCallbackError(type: keyof CallbackCommand, key: string, error: AgentError) {
+    const callback = this.callbacks.get(type)
+    if (!type) {
+      return
+    }
+
+    callback.onError(key, error)
   }
 
   startUpdate(tag: string, options: AgentUpdateOptions) {

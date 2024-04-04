@@ -22,6 +22,7 @@ import (
 	"golang.org/x/exp/maps"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
+	internalCommon "github.com/dyrector-io/dyrectorio/golang/internal/common"
 	"github.com/dyrector-io/dyrectorio/golang/internal/crypt"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/golang/internal/domain"
@@ -57,8 +58,6 @@ const (
 	ContainerStateWaitSeconds = 120
 	TypeContainer             = "container"
 )
-
-var ErrUnknownContainer = errors.New("unknown container")
 
 func GetContainerLogs(name string, skip, take uint) []string {
 	ctx := context.Background()
@@ -135,22 +134,6 @@ func WriteContainerFile(ctx context.Context, cli *client.Client,
 
 	err := cli.CopyToContainer(ctx, cont, meta.FilePath, reader, types.CopyToContainerOptions{})
 	return err
-}
-
-func InspectContainer(name string) types.ContainerJSON {
-	ctx := context.Background()
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
-	inspection, err := cli.ContainerInspect(ctx, name)
-	if err != nil {
-		log.Err(err).Stack().Send()
-	}
-
-	return inspection
 }
 
 func logDeployInfo(
@@ -768,6 +751,10 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 		return err
 	}
 
+	if cont == nil {
+		return internalCommon.ErrContainerNotFound
+	}
+
 	if operation == common.ContainerOperation_START_CONTAINER {
 		err = cli.ContainerStart(ctx, cont.ID, types.ContainerStartOptions{})
 	} else if operation == common.ContainerOperation_STOP_CONTAINER {
@@ -874,7 +861,7 @@ func streamDockerLogTTY(reader io.ReadCloser, eventChannel chan grpc.ContainerLo
 	}
 }
 
-func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grpc.ContainerLogContext, error) {
+func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grpc.ContainerLogStream, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
@@ -899,7 +886,11 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 
 	cont, err := GetContainerByPrefixAndName(ctx, cli, prefix, name)
 	if err != nil {
-		return nil, fmt.Errorf("container not found: %w", err)
+		return nil, err
+	}
+
+	if cont == nil {
+		return nil, internalCommon.ErrContainerNotFound
 	}
 
 	containerID := cont.ID
@@ -941,7 +932,7 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 		Reader:       reader,
 	}
 
-	logContext := &grpc.ContainerLogContext{
+	logContext := &grpc.ContainerLogStream{
 		Reader: logReader,
 		Echo:   enableEcho,
 	}
@@ -959,11 +950,11 @@ func ContainerInspect(ctx context.Context, request *agent.ContainerInspectReques
 	name := request.Container.Name
 
 	cont, err := GetContainerByPrefixAndName(ctx, cli, prefix, name)
-	if cont == nil {
-		return "", ErrUnknownContainer
-	}
 	if err != nil {
 		return "", err
+	}
+	if cont == nil {
+		return "", internalCommon.ErrContainerNotFound
 	}
 
 	containerInfo, err := cli.ContainerInspect(ctx, cont.ID)

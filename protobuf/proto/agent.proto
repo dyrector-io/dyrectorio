@@ -22,6 +22,11 @@ service Agent {
    * For prefix state reports, should be closed by the server.
    */
   rpc Connect(AgentInfo) returns (stream AgentCommand);
+  rpc CommandError(AgentCommandError) returns (common.Empty);
+
+  // update releated
+  rpc AbortUpdate(AgentAbortUpdate) returns (common.Empty);
+  rpc TokenReplaced(common.Empty) returns (common.Empty);
 
   // streams
   rpc DeploymentStatus(stream common.DeploymentStatusMessage)
@@ -31,13 +36,12 @@ service Agent {
   rpc ContainerLogStream(stream common.ContainerLogMessage)
       returns (common.Empty);
 
+
   // one-shot requests
   rpc SecretList(common.ListSecretsResponse) returns (common.Empty);
-  rpc AbortUpdate(AgentAbortUpdate) returns (common.Empty);
   rpc DeleteContainers(common.Empty) returns (common.Empty);
   rpc ContainerLog(common.ContainerLogListResponse) returns (common.Empty);
   rpc ContainerInspect(common.ContainerInspectResponse) returns (common.Empty);
-  rpc TokenReplaced(common.Empty) returns (common.Empty);
 }
 
 /**
@@ -65,6 +69,20 @@ message AgentCommand {
     ContainerLogRequest containerLog = 10;
     ReplaceTokenRequest replaceToken = 11;
     ContainerInspectRequest containerInspect = 12;
+  }
+}
+
+message AgentError {
+  int32 status = 1;
+  string error = 2;
+}
+
+message AgentCommandError {
+  oneof command {
+    AgentError listSecrets = 5;
+    AgentError deleteContainers = 9;
+    AgentError containerLog = 10;
+    AgentError containerInspect = 12;
   }
 }
 

@@ -5,6 +5,7 @@ import GrpcExceptionFilter from 'src/filters/grpc.exception-filter'
 import {
   AgentAbortUpdate,
   AgentCommand,
+  AgentCommandError,
   AgentControllerMethods,
   AgentInfo,
   AgentController as GrpcAgentController,
@@ -65,6 +66,10 @@ export default class AgentController implements GrpcAgentController {
 
   containerInspect(request: ContainerInspectResponse, _: Metadata, call: NodeGrpcCall): Empty {
     return this.service.handleContainerInspect(call.connection, request)
+  }
+
+  commandError(request: AgentCommandError, _: Metadata, call: NodeGrpcCall): Empty {
+    return this.service.handleCommandError(call.connection, request)
   }
 
   async tokenReplaced(_: Empty, __: Metadata, call: NodeGrpcCall): Promise<Empty> {
