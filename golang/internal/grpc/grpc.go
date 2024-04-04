@@ -125,6 +125,10 @@ func (e *AgentGrpcError) Error() string {
 }
 
 func agentError(ctx context.Context, err error) *AgentGrpcError {
+	if err == nil {
+		err = internalCommon.ErrUnknown
+	}
+
 	return &AgentGrpcError{
 		Context:    ctx,
 		InnerError: err,
@@ -243,7 +247,7 @@ func executeCallback(mapError func(*agent.AgentError) *agent.AgentCommandError, 
 
 	agentError := agent.AgentError{
 		Status: int32(statusCode),
-		Error:  grpcErr.InnerError.Error(),
+		Error:  grpcErr.Error(),
 	}
 
 	cmdErr := mapError(&agentError)
