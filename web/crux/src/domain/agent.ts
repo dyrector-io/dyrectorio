@@ -142,7 +142,7 @@ export class Agent {
       return 'unreachable'
     }
 
-    if (this.updating) {
+    if (this.updating || !!this.replacementToken) {
       return 'updating'
     }
 
@@ -417,6 +417,11 @@ export class Agent {
     this.connection.onTokenReplaced(token, signedToken)
 
     this.replacementToken = null
+    this.eventChannel.next({
+      id: this.id,
+      status: this.getConnectionStatus(),
+    })
+
     return replacement
   }
 
