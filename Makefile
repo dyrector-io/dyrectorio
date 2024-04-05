@@ -129,12 +129,19 @@ endef
 
 # use on the branch to-release (develop or main for hotfixes)
 .PHONY: release
-release: branch-check
+release:
+	branch-check
 	$(info Do you want to continue? Version will be: $(version) from branch: $(shell git rev-parse --abbrev-ref HEAD))
 	read
 
 	git pull
-	git checkout -b "release/$(version)"
+
+	@if git checkout -b "release/$(version)"; then \
+		echo "Branch release/$(version) created and checked out"; \
+	else \
+		echo "Branch release/$(version) already exists, checking out"; \
+		git checkout "release/$(version)"; \
+	fi
 
 # Create changelog
 	git-chglog --next-tag $(version) -o CHANGELOG.md
