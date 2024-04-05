@@ -1,8 +1,29 @@
 # CHANGELOG
 
 
+<a name="0.11.5"></a>
+## [0.11.5](https://github.com/dyrector-io/dyrectorio/compare/help...0.11.5) (0001-01-01)
+
+
+<a name="help"></a>
+## [help](https://github.com/dyrector-io/dyrectorio/compare/0.11.4...help) (2024-04-05)
+
+### Feat
+
+* add agent proto compatibility version update to make release ([#946](https://github.com/dyrector-io/dyrectorio/issues/946))
+* add error handling for agent callbacks ([#944](https://github.com/dyrector-io/dyrectorio/issues/944))
+
+### Fix
+
+* agent token replacement status ([#945](https://github.com/dyrector-io/dyrectorio/issues/945))
+* **(crux):** improve log API description ([#943](https://github.com/dyrector-io/dyrectorio/issues/943))
+* **(web):** node container log stream sharing ([#942](https://github.com/dyrector-io/dyrectorio/issues/942))
+* websocket authentication with user tokens ([#941](https://github.com/dyrector-io/dyrectorio/issues/941))
+* add ENCRYPTION_SECRET_KEY to root .env.example ([#940](https://github.com/dyrector-io/dyrectorio/issues/940))
+
+
 <a name="0.11.4"></a>
-## [0.11.4](https://github.com/dyrector-io/dyrectorio/compare/0.11.3...0.11.4) (2024-03-24)
+## [0.11.4](https://github.com/dyrector-io/dyrectorio/compare/0.11.3...0.11.4) (2024-03-25)
 
 ### Feat
 
