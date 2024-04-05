@@ -148,6 +148,7 @@ release: branch-check
 	$(call update_version,'.version = "$(version)"', web/crux/package.json)
 	$(call update_version,'.version = "$(version)"', "web/crux/package-lock.json")
 	$(call update_version,'.packages."".version = "$(version)"', web/crux/package-lock.json)
+	sed "s/AGENT_PROTO_COMPATIBILITY_MINIMUM_VERSION = '[0-9]*\.[0-9]*\.[0-9]*'/AGENT_PROTO_COMPATIBILITY_MINIMUM_VERSION = '$(version)'/g" web/crux/src/shared/const.ts > temp_file && mv temp_file web/crux/src/shared/const.ts
 	git add web/crux/
 
 # Change version of crux-ui
