@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { Identity } from '@ory/kratos-client'
-import { UserTokenPayload } from 'src/domain/token'
+import { JwtTokenPayload, tokenSignOptionsFor } from 'src/domain/token'
 import PrismaService from 'src/services/prisma.service'
 import { v4 as uuid } from 'uuid'
 import { GenerateTokenDto, GeneratedTokenDto, TokenDto } from './token.dto'
@@ -22,8 +22,7 @@ export default class TokenService {
     const expirationDate = req.expirationInDays === 0 ? null : TokenService.getExpirationDate(req.expirationInDays)
     this.logger.verbose(expirationDate ? `Token expires at ${expirationDate.toISOString()}` : 'Token never expries')
 
-    const payload: UserTokenPayload = {
-      sub: identity.id,
+    const payload: JwtTokenPayload = {
       nonce,
     }
 
@@ -36,9 +35,7 @@ export default class TokenService {
       },
     })
 
-    const jwt = this.jwtService.sign(
-      expirationDate ? { exp: Math.floor(expirationDate.getTime() / 1000), data: payload } : { data: payload },
-    )
+    const jwt = this.jwtService.sign(payload, tokenSignOptionsFor(identity, expirationDate))
 
     return this.mapper.generatedTokenToDto(newToken, jwt)
   }

@@ -234,7 +234,7 @@ export default class NodeService {
     const { container, take } = message
 
     this.logger.debug(
-      `Opening container log stream for container: ${nodeId} - ${Agent.containerPrefixNameOf(container)}}`,
+      `Requesting container log stream for container: ${nodeId} - ${Agent.containerPrefixNameOf(container)}}`,
     )
 
     const agent = this.agentService.getByIdOrThrow(nodeId)

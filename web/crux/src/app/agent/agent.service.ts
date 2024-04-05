@@ -251,7 +251,7 @@ export default class AgentService {
 
     const [watcher, completer] = agent.onContainerStateStreamStarted(prefix)
     if (!watcher) {
-      this.logger.warn(`${agent.id} - There was no watcher for ${prefix}`)
+      this.logger.warn(`There was no watcher for ${agent.id} - ${prefix}`)
 
       completer.next(undefined)
       return completer
@@ -264,14 +264,14 @@ export default class AgentService {
         data: [],
       }),
       map(it => {
-        this.logger.verbose(`${agent.id} - Container status update - ${prefix}`)
+        this.logger.verbose(`Container status update: ${agent.id} - ${prefix}`)
 
         watcher.update(it)
         return Empty
       }),
       finalize(() => {
         agent.onContainerStatusStreamFinished(prefix)
-        this.logger.debug(`${agent.id} - Container status listening finished: ${prefix}`)
+        this.logger.debug(`Container status listening finished: ${agent.id} - ${prefix}`)
       }),
       takeUntil(completer),
     )
@@ -345,7 +345,17 @@ export default class AgentService {
       return of(Empty)
     }
 
-    return stream.onAgentStreamStarted(request)
+    this.logger.debug(
+      `Opening container log stream for container: ${agent.id} - ${Agent.containerPrefixNameOf(container)}}`,
+    )
+
+    return stream.onAgentStreamStarted(request).pipe(
+      finalize(() => {
+        this.logger.debug(
+          `Closing container log stream for container: ${agent.id} - ${Agent.containerPrefixNameOf(container)}}`,
+        )
+      }),
+    )
   }
 
   handleContainerLog(connection: GrpcNodeConnection, request: ContainerLogListResponse): Empty {

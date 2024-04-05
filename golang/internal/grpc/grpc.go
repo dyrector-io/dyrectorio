@@ -327,7 +327,7 @@ func (cl *ClientLoop) grpcLoop(token *config.ValidJWT) error {
 			continue
 		}
 
-		cl.grpcProcessCommand(command)
+		go cl.grpcProcessCommand(command)
 	}
 }
 
@@ -894,7 +894,7 @@ func readContainerLog(logContext *ContainerLogStream, sendLog SendLogFunc, prefi
 		}
 
 		if logContext.Echo {
-			log.Debug().Str("prefix", prefix).Str("name", name).Str("log", event.Message).Msg("Container log")
+			log.Trace().Str("prefix", prefix).Str("name", name).Str("log", event.Message).Msg("Container log")
 		}
 
 		err := sendLog(event.Message)

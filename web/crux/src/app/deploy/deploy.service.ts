@@ -12,7 +12,8 @@ import {
   UniqueSecretKeyValue,
 } from 'src/domain/container'
 import Deployment from 'src/domain/deployment'
-import { DeploymentTokenPayload, DeploymentTokenScriptGenerator } from 'src/domain/deployment-token'
+import { DeploymentTokenScriptGenerator } from 'src/domain/deployment-token'
+import { DeploymentTokenPayload, tokenSignOptionsFor } from 'src/domain/token'
 import { collectChildVersionIds, collectParentVersionIds, stripProtocol, toPrismaJson } from 'src/domain/utils'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
@@ -1047,20 +1048,11 @@ export default class DeployService {
     this.logger.verbose(`DeploymentToken expires at ${expiresAt?.toISOString()}`)
 
     const payload: DeploymentTokenPayload = {
-      sub: identity.id,
       deploymentId,
       nonce,
     }
 
-    const tokenProperties: Record<string, any> = {
-      data: payload,
-    }
-
-    if (expiresAt) {
-      tokenProperties.exp = expiresAt.getTime() / 1000
-    }
-
-    const jwt = this.jwtService.sign(tokenProperties)
+    const jwt = this.jwtService.sign(payload, tokenSignOptionsFor(identity, expiresAt))
 
     const tokenGenerator = new DeploymentTokenScriptGenerator(this.configService)
 

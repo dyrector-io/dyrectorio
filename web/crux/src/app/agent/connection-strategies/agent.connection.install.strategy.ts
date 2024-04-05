@@ -31,6 +31,7 @@ export default class AgentConnectionInstallStrategy extends AgentConnectionStrat
       connection,
       eventChannel,
       info,
+      callbackTimeout: this.callbackTimeout,
     })
 
     await this.service.completeInstaller(installer)

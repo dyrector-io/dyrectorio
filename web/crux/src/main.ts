@@ -1,5 +1,5 @@
 import { ServerCredentials } from '@grpc/grpc-js'
-import { Logger, ValidationPipe } from '@nestjs/common'
+import { LogLevel, Logger, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { MicroserviceOptions, Transport } from '@nestjs/microservices'
@@ -12,6 +12,7 @@ import AuditLoggerInterceptor from './app/audit.logger/audit.logger.interceptor'
 import metricsServerBootstrap from './app/metrics/metrics.server'
 import QualityAssuranceService from './app/quality.assurance/quality-assurance.service'
 import JwtAuthGuard from './app/token/jwt-auth.guard'
+import { PinoLogLevel } from './config/app.config'
 import createSwaggerConfig from './config/swagger.config'
 import encrypt from './encrypt'
 import HttpExceptionFilter from './filters/http.exception-filter'
@@ -53,11 +54,42 @@ const loadGrpcOptions = (port: number): GrpcOptions => ({
   url: `0.0.0.0:${port}`,
 })
 
+const createLogger = (): Logger | LogLevel[] => {
+  if (process.env.NODE_ENV === 'production') {
+    return new Logger()
+  }
+
+  const level = process.env.LOG_LEVEL ?? ('warn' as PinoLogLevel)
+  const selectedLevels: LogLevel[] = ['error']
+
+  switch (level) {
+    // eslint-disable-next-line default-case-last
+    default:
+    case 'trace':
+      selectedLevels.push('verbose')
+    // eslint-disable-next-line no-fallthrough
+    case 'debug':
+      selectedLevels.push('debug')
+    // eslint-disable-next-line no-fallthrough
+    case 'info':
+      selectedLevels.push('log')
+    // eslint-disable-next-line no-fallthrough
+    case 'warn':
+      selectedLevels.push('warn')
+    // eslint-disable-next-line no-fallthrough
+    case 'error':
+    case 'fatal':
+      selectedLevels.push('error')
+  }
+
+  return selectedLevels
+}
+
 const serve = async () => {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
     // Using Nestjs Logger Service for default logging
-    logger: new Logger(),
+    logger: createLogger(),
   })
 
   const configService = app.get(ConfigService)

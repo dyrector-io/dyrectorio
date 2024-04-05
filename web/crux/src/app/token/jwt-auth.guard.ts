@@ -83,7 +83,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     const jwt = req.user
-    const userId = jwt.data.sub
+    const userId = jwt.sub
     try {
       req.identity = await this.kratos.getIdentityById(userId)
       if (jwt.exp) {

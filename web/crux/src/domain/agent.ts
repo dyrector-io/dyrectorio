@@ -40,6 +40,7 @@ export type AgentOptions = {
   connection: GrpcNodeConnection
   info: AgentInfo
   outdated: boolean
+  callbackTimeout: number
 }
 
 export type AgentTokenReplacement = {
@@ -132,7 +133,10 @@ export class Agent {
     this.callbacks = new Map(
       Object.entries(callbacks).map(entry => {
         const [type, provider] = entry
-        return [type as keyof CallbackCommand, new AgentCallback(this.commandChannel, provider)]
+        return [
+          type as keyof CallbackCommand,
+          new AgentCallback(options.callbackTimeout, this.commandChannel, provider),
+        ]
       }),
     )
   }
