@@ -327,6 +327,7 @@ func (cl *ClientLoop) grpcLoop(token *config.ValidJWT) error {
 			continue
 		}
 
+		// TODO (@m8vago): needs to be executed as a goroutine to prevent watch container status from hanging
 		go cl.grpcProcessCommand(command)
 	}
 }
