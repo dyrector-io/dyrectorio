@@ -48,6 +48,7 @@ const configSchema = yup.object({
 
   MAX_CONTAINER_LOG_TAKE: yup.number().optional(),
   AGENT_CALLBACK_TIMEOUT: yup.number().optional(),
+  MAX_GRPC_RECEIVE_MESSAGE_LENGTH: yup.number().optional(),
 })
 
 class InvalidEnvironmentError extends Error {

@@ -48,12 +48,6 @@ const parseCruxCommand = (args: string[]): CruxCommand | null => {
   return command as CruxCommand
 }
 
-const loadGrpcOptions = (port: number): GrpcOptions => ({
-  // tls termination occurs at the reverse proxy
-  credentials: ServerCredentials.createInsecure(),
-  url: `0.0.0.0:${port}`,
-})
-
 const createLogger = (): Logger | LogLevel[] => {
   if (process.env.NODE_ENV === 'production') {
     return new Logger()
@@ -107,7 +101,7 @@ const serve = async () => {
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('/api/swagger', app, document)
 
-  const agentOptions = loadGrpcOptions(configService.get<number>('GRPC_AGENT_PORT'))
+  const agentPort = configService.get<number>('GRPC_AGENT_PORT')
   const httpOptions = configService.get<number>('HTTP_API_PORT')
   const metricsApiPort = configService.get<number>('METRICS_API_PORT')
 
@@ -133,7 +127,10 @@ const serve = async () => {
       package: ['agent'],
       protoPath: [join(__dirname, '../proto/agent.proto'), join(__dirname, '../proto/common.proto')],
       keepalive: { keepaliveTimeoutMs: HOUR_IN_MS },
-      ...agentOptions,
+      // tls termination occurs at the reverse proxy
+      credentials: ServerCredentials.createInsecure(),
+      url: `0.0.0.0:${agentPort}`,
+      maxReceiveMessageLength: configService.get('MAX_GRPC_RECEIVE_MESSAGE_LENGTH'),
     },
   })
 
