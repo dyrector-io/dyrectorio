@@ -201,3 +201,11 @@ export const execAsync = (
       resolve(childProcess)
     })
   })
+
+export const stopContainer = async (containerName: string) => {
+  await execAsync(`docker stop ${containerName}`, getExecOptions())
+}
+
+export const startContainer = async (containerName: string) => {
+  await execAsync(`docker start ${containerName}`, getExecOptions())
+}

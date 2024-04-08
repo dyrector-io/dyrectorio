@@ -1,6 +1,8 @@
 import { expect } from '@playwright/test'
+import { deployWithDagent } from 'e2e/utils/node-helper'
+import { addImageToVersionlessProject, createProject } from 'e2e/utils/projects'
+import { DAGENT_NODE, TEAM_ROUTES, screenshotPath, startContainer, stopContainer } from '../utils/common'
 import { test } from '../utils/test.fixture'
-import { DAGENT_NODE, screenshotPath, TEAM_ROUTES } from '../utils/common'
 
 test('Install dagent should be successful', async ({ page }) => {
   await page.goto(TEAM_ROUTES.node.list())
@@ -197,4 +199,58 @@ test('Logs should show agent events', async ({ page }) => {
   await nodeContainerRow.nth(0).waitFor()
 
   await expect(await nodeContainerRow.locator('td:has-text("Connected")').nth(0)).toBeVisible()
+})
+
+test('Stopping the underlying container of a log stream should not affect the container states stream', async ({
+  page,
+  browser,
+}) => {
+  const prefix = 'log'
+  const image = 'nginx'
+  const containerName = `pw-${prefix}-${image}`
+
+  const projectId = await createProject(page, 'node-log-stream', 'versionless')
+  await addImageToVersionlessProject(page, projectId, image)
+  await deployWithDagent(page, prefix, projectId)
+
+  await page.goto(TEAM_ROUTES.node.list())
+  await page.waitForSelector('h2:text-is("Nodes")')
+
+  await page.locator('input[placeholder="Search"]').type(`dagent`)
+
+  const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
+  await nodeButton.click()
+
+  await page.locator('button:has-text("Containers")').click()
+
+  const row = page.getByRole('row', { name: containerName })
+
+  await expect(row.getByRole('cell', { name: 'Running' }).nth(0)).toBeVisible()
+
+  await row.getByAltText('Logs').click()
+
+  const nodeId = page.url().split('/').pop()
+
+  await page.waitForURL(
+    TEAM_ROUTES.node.containerLog(nodeId, {
+      name: containerName,
+    }),
+  )
+
+  await stopContainer(containerName)
+
+  // check status
+  const detailsPage = await browser.newPage()
+
+  await detailsPage.goto(TEAM_ROUTES.node.details(nodeId))
+
+  await detailsPage.locator('button:has-text("Containers")').click()
+
+  const detailsRow = detailsPage.getByRole('row', { name: containerName })
+
+  await expect(detailsRow.getByRole('cell', { name: 'Exited' }).nth(0)).toBeVisible()
+
+  await startContainer(containerName)
+
+  await expect(detailsRow.getByRole('cell', { name: 'Running' }).nth(0)).toBeVisible()
 })
