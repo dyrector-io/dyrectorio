@@ -1,6 +1,9 @@
 import { ConfigModuleOptions } from '@nestjs/config'
 import * as yup from 'yup'
 
+const LOG_LEVEL_VALUES = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'] as const
+export type PinoLogLevel = (typeof LOG_LEVEL_VALUES)[number]
+
 const portRule = yup.number().positive().min(1).max(65565)
 const encryptionKeyRule = yup.string().length(43)
 
@@ -26,7 +29,7 @@ const configSchema = yup.object({
   CRUX_AGENT_IMAGE: yup.string().default('latest').required(),
   AGENT_INSTALL_SCRIPT_DISABLE_PULL: yup.bool().default(false).required(),
 
-  LOG_LEVEL: yup.string().oneOf(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).required(),
+  LOG_LEVEL: yup.string().oneOf(LOG_LEVEL_VALUES).required(),
 
   SMTP_URI: yup.string().required(),
   FROM_EMAIL: yup.string().email().required(),
@@ -44,6 +47,7 @@ const configSchema = yup.object({
   QA_GROUP_NAME: yup.string().optional(),
 
   MAX_CONTAINER_LOG_TAKE: yup.number().optional(),
+  AGENT_CALLBACK_TIMEOUT: yup.number().optional(),
 })
 
 class InvalidEnvironmentError extends Error {

@@ -13,7 +13,7 @@ import {
   Empty,
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
-import { AGENT_CALLBACK_TIMEOUT } from 'src/shared/const'
+import { AGENT_DEFAULT_CALLBACK_TIMEOUT } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { Agent, AgentConnectionMessage } from './agent'
 import { generateAgentToken } from './agent-token'
@@ -21,7 +21,7 @@ import AgentUpdate from './agent-update'
 
 // Default timeout is 5sec, but agent callbacks also use a 5sec timeout
 // so we need to increase the default timeout to test the secret timeout
-const CALLBACK_TEST_TIMEOUT = AGENT_CALLBACK_TIMEOUT * 2
+const CALLBACK_TEST_TIMEOUT = AGENT_DEFAULT_CALLBACK_TIMEOUT * 2
 
 const AGENT_ID = 'agent-id'
 const AGENT_ADDRESS = '127.0.0.1:1234'
@@ -70,6 +70,7 @@ describe('agent', () => {
         publicKey: AGENT_PUBLIC_KEY,
       },
       outdated: false,
+      callbackTimeout: AGENT_DEFAULT_CALLBACK_TIMEOUT,
     })
   })
 

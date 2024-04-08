@@ -9,7 +9,7 @@ import { NodeWithToken } from 'src/domain/node'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
-import { PRODUCTION } from 'src/shared/const'
+import { AGENT_DEFAULT_CALLBACK_TIMEOUT, PRODUCTION } from 'src/shared/const'
 import ContainerMapper from '../container/container.mapper'
 import DeployService from '../deploy/deploy.service'
 import { NodeConnectionStatus } from '../node/node.dto'
@@ -98,16 +98,18 @@ const mockModules = (env: string, packageVersion: string) => [
     provide: ConfigService,
     useValue: {
       get: jest.fn().mockImplementation(key => {
-        if (key === 'NODE_ENV') {
-          return env
+        switch (key) {
+          case 'NODE_ENV':
+            return env
+          case 'npm_package_version':
+            return packageVersion
+          case 'CRUX_AGENT_IMAGE':
+            return `${major(packageVersion)}.${minor(packageVersion)}`
+          case 'AGENT_CALLBACK_TIMEOUT':
+            return AGENT_DEFAULT_CALLBACK_TIMEOUT
+          default:
+            throw new Error(`Unexpected ConfigService key '${key}'`)
         }
-        if (key === 'npm_package_version') {
-          return packageVersion
-        }
-        if (key === 'CRUX_AGENT_IMAGE') {
-          return `${major(packageVersion)}.${minor(packageVersion)}`
-        }
-        throw new Error(`Unexpected ConfigService key '${key}'`)
       }),
     },
   },

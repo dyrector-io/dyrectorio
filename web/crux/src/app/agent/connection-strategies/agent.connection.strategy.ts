@@ -8,6 +8,7 @@ import { NodeWithToken } from 'src/domain/node'
 import { CruxBadRequestException, CruxConflictException, CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import PrismaService from 'src/services/prisma.service'
+import { AGENT_DEFAULT_CALLBACK_TIMEOUT } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { getPackageVersion } from 'src/shared/package'
 import AgentService from '../agent.service'
@@ -15,6 +16,10 @@ import AgentService from '../agent.service'
 @Injectable()
 export default class AgentConnectionStrategy {
   protected readonly logger = new Logger(AgentConnectionStrategy.name)
+
+  protected get callbackTimeout(): number {
+    return this.configService.get<number>('AGENT_CALLBACK_TIMEOUT', AGENT_DEFAULT_CALLBACK_TIMEOUT)
+  }
 
   constructor(
     @Inject(forwardRef(() => AgentService))
@@ -45,6 +50,7 @@ export default class AgentConnectionStrategy {
       info,
       node,
       outdated,
+      callbackTimeout: this.callbackTimeout,
     })
   }
 

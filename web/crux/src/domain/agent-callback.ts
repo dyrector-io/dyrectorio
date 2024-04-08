@@ -2,7 +2,6 @@ import { Status } from '@grpc/grpc-js/build/src/constants'
 import { Subject, finalize, firstValueFrom, map, merge, throwError, timeout } from 'rxjs'
 import { CruxException, CruxInternalServerErrorException, CruxNotFoundException } from 'src/exception/crux-exception'
 import { AgentCommand, AgentError } from 'src/grpc/protobuf/proto/agent'
-import { AGENT_CALLBACK_TIMEOUT } from 'src/shared/const'
 
 export type CallbackCommand = Pick<
   AgentCommand,
@@ -20,6 +19,7 @@ export default class AgentCallback<Req, Res> {
   private requests: Map<string, RunningRequest<Res>> = new Map()
 
   constructor(
+    private readonly callbackTimeout: number,
     private readonly commandChannel: Subject<AgentCommand>,
     private readonly keyAndCommandOf: KeyAndCommandProvider<Req>,
   ) {}
@@ -49,7 +49,7 @@ export default class AgentCallback<Req, Res> {
         this.requests.delete(key)
       }),
       timeout({
-        first: AGENT_CALLBACK_TIMEOUT,
+        first: this.callbackTimeout,
         with: () =>
           throwError(
             () =>

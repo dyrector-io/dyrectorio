@@ -34,6 +34,7 @@ export default class AgentConnectionUpdateStrategy extends AgentConnectionStrate
       info,
       node,
       outdated,
+      callbackTimeout: this.callbackTimeout,
     })
 
     // this will disconnect the old agent

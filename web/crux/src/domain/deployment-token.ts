@@ -28,9 +28,3 @@ export type DeploymentTokenOptions = {
   teamSlug: string
   deploymentId: string
 }
-
-export type DeploymentTokenPayload = {
-  sub: string
-  deploymentId: string
-  nonce: string
-}

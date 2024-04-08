@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { AuthorizedHttpRequest, authStrategyOfContext, identityOfRequest } from 'src/app/token/jwt-auth.guard'
-import { DeploymentTokenPayload } from 'src/domain/deployment-token'
+import { DeploymentTokenPayload } from 'src/domain/token'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
@@ -25,7 +25,7 @@ export default class DeployTeamAccessGuard implements CanActivate {
     const identity = identityOfRequest(context)
 
     if (!identity && strategy === 'deploy-token') {
-      const token = req.user.data as DeploymentTokenPayload
+      const token = req.user as DeploymentTokenPayload
       return await this.checkAccessWithDeployToken(token, teamSlug, deploymentId, instanceId)
     }
 

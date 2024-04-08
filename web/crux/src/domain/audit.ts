@@ -1,7 +1,7 @@
 import { AuditLogActorTypeEnum } from '@prisma/client'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
-import { DeploymentTokenPayload } from './deployment-token'
 import { RequestAuthenticationData } from './identity'
+import { DeploymentTokenPayload } from './token'
 
 export type AuditLogActor = {
   type: AuditLogActorTypeEnum
@@ -19,7 +19,7 @@ export const auditActorOfRequest = (authData: RequestAuthenticationData): AuditL
   }
 
   if (authData.user) {
-    const payload = authData.user.data as DeploymentTokenPayload
+    const payload = authData.user as DeploymentTokenPayload
     const deploymentId = payload?.deploymentId
 
     if (deploymentId) {

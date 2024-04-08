@@ -23,6 +23,7 @@ export default class AgentConnectionLegacyStrategy extends AgentConnectionStrate
           info,
           node,
           outdated: false,
+          callbackTimeout: this.callbackTimeout,
         })
 
         if (connectedAgent) {
@@ -50,6 +51,7 @@ export default class AgentConnectionLegacyStrategy extends AgentConnectionStrate
         info,
         node,
         outdated: true,
+        callbackTimeout: this.callbackTimeout,
       })
     }
 
@@ -65,6 +67,7 @@ export default class AgentConnectionLegacyStrategy extends AgentConnectionStrate
       eventChannel: new Subject(),
       info,
       outdated: true,
+      callbackTimeout: this.callbackTimeout,
     })
 
     await this.deleteOldAgentContainer(incomingAgent, connectedAgent)
