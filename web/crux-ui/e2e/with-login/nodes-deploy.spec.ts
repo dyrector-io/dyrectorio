@@ -47,8 +47,6 @@ test('Second successful deployment should make the first deployment obsolete', a
   await page.waitForSelector('h2:text-is("Versions")')
   await page.screenshot({ path: screenshotPath('deployment-should-be-obsolete'), fullPage: true })
 
-  await page.pause()
-
   const deploymentsRows = await page.locator('table.w-full >> tbody >> tr')
 
   await expect(deploymentsRows).toHaveCount(2)
