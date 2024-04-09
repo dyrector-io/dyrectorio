@@ -129,8 +129,7 @@ endef
 
 # use on the branch to-release (develop or main for hotfixes)
 .PHONY: release
-release:
-	branch-check
+release: branch-check
 	$(info Do you want to continue? Version will be: $(version) from branch: $(shell git rev-parse --abbrev-ref HEAD))
 	read
 
