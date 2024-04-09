@@ -27,11 +27,6 @@ import DyoWsAdapter from './websockets/dyo.ws.adapter'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
-type GrpcOptions = {
-  url: string
-  credentials: ServerCredentials
-}
-
 const CRUX_COMMANDS = ['serve', 'encrypt'] as const
 type CruxCommand = (typeof CRUX_COMMANDS)[number]
 
