@@ -1,8 +1,22 @@
 # CHANGELOG
 
 
+<a name="0.11.6"></a>
+## [0.11.6](https://github.com/dyrector-io/dyrectorio/compare/0.11.5...0.11.6) (2024-04-09)
+
+### Feat
+
+* **(crux):** add env to set grpc maxReceiveMessageLength ([#950](https://github.com/dyrector-io/dyrectorio/issues/950))
+
+### Fix
+
+* fix the Makefile mechanisms at release task ([#951](https://github.com/dyrector-io/dyrectorio/issues/951))
+* watch container status hanging, jwt payload ([#948](https://github.com/dyrector-io/dyrectorio/issues/948))
+* check existing branches in make release ([#947](https://github.com/dyrector-io/dyrectorio/issues/947))
+
+
 <a name="0.11.5"></a>
-## [0.11.5](https://github.com/dyrector-io/dyrectorio/compare/help...0.11.5) (0001-01-01)
+## [0.11.5](https://github.com/dyrector-io/dyrectorio/compare/help...0.11.5) (2024-04-05)
 
 
 <a name="help"></a>
