@@ -257,5 +257,6 @@ export class ContainerInspectionDto {
 export class NodeContainerLogQuery {
   @IsPositive()
   @IsOptional()
+  @Type(() => Number)
   take?: number
 }
