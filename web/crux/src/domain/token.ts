@@ -22,7 +22,11 @@ export const tokenSignOptionsFor = (identity: Identity, expiration: Date | null)
   }
 
   if (expiration) {
-    options.expiresIn = Math.floor(expiration.getTime() / 1000)
+    const now = new Date().getTime()
+    const expiresInMillis = expiration.getTime() - now
+    const expiresInSeconds = Math.floor(expiresInMillis / 1000)
+
+    options.expiresIn = expiresInSeconds
   }
 
   return options
