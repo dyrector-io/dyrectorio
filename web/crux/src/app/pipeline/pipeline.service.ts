@@ -20,8 +20,8 @@ import {
   mergeEventWatcherInputs,
   registryV2EventToTemplates,
 } from 'src/domain/pipeline'
-import { PipelineTokenPayload } from 'src/domain/pipeline-token'
 import { REGISTRY_EVENT_V2_PULL, REGISTRY_EVENT_V2_PUSH, RegistryV2Event } from 'src/domain/registry'
+import { JwtTokenPayload } from 'src/domain/token'
 import { generateNonce } from 'src/domain/utils'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 import AzureDevOpsService from 'src/services/azure-devops.service'
@@ -454,12 +454,13 @@ export default class PipelineService {
     trigger: AzureTrigger,
     options: PipelineHookOptions,
   ): Promise<AzureHook> {
-    const token: PipelineTokenPayload = {
-      sub: options.pipelineId,
+    const token: JwtTokenPayload = {
       nonce: generateNonce(),
     }
 
-    const signedToken = this.jwtService.sign(token)
+    const signedToken = this.jwtService.sign(token, {
+      subject: options.pipelineId,
+    })
 
     const azHook = await this.azureService.createHook(creds, trigger.name, signedToken, options)
 

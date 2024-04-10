@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
 import { AzureHook } from 'src/domain/pipeline'
-import { PipelineTokenPayload } from 'src/domain/pipeline-token'
+import { JwtToken } from 'src/domain/token'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 
@@ -22,7 +22,7 @@ export class PipelineJwtStrategy extends PassportStrategy(Strategy, PIPELINE_TOK
     })
   }
 
-  async validate(payload: PipelineTokenPayload): Promise<PipelineTokenPayload> {
+  async validate(payload: JwtToken): Promise<JwtToken> {
     const pipeline = await this.prisma.pipeline.findFirst({
       select: {
         hooks: true,

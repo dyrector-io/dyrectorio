@@ -127,7 +127,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
     const now = new Date().getTime()
     const { sessionExpiresAt } = req
 
-    if (!sessionExpiresAt || sessionExpiresAt <= now) {
+    if (typeof sessionExpiresAt === 'number' && sessionExpiresAt <= now) {
       this.logger.debug('WebSocket session expired.')
 
       throw new CruxUnauthorizedException()
