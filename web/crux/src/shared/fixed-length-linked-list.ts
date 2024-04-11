@@ -54,6 +54,12 @@ export default class FixedLengthLinkedList<T> implements Iterable<T> {
     this.length++
   }
 
+  clear() {
+    this.length = 0
+    this.first = null
+    this.last = null
+  }
+
   resize(size: number) {
     if (size < 0) {
       throw new Error('Invalid size')

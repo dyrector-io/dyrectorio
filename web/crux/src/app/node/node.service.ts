@@ -33,7 +33,9 @@ import {
 import NodeMapper from './node.mapper'
 import {
   ContainerLogMessage,
+  ContainerLogStartedMessage,
   ContainersStateListMessage,
+  SetContainerLogTakeMessage,
   WatchContainerLogMessage,
   WatchContainersStateMessage,
 } from './node.message'
@@ -230,7 +232,23 @@ export default class NodeService {
     )
   }
 
-  watchContainerLog(nodeId: string, message: WatchContainerLogMessage): Observable<ContainerLogMessage> {
+  setContainerLogTake(nodeId, message: SetContainerLogTakeMessage) {
+    const { container, take } = message
+
+    this.logger.debug(
+      `Setting container log stream take for container: ${nodeId} - ${Agent.containerPrefixNameOf(container)}}`,
+    )
+
+    const agent = this.agentService.getByIdOrThrow(nodeId)
+
+    const stream = agent.getContainerLogStream(container)
+    stream.resize(take)
+  }
+
+  watchContainerLog(
+    nodeId: string,
+    message: WatchContainerLogMessage,
+  ): [Observable<ContainerLogMessage>, Observable<ContainerLogStartedMessage>] {
     const { container, take } = message
 
     this.logger.debug(
@@ -240,7 +258,6 @@ export default class NodeService {
     const agent = this.agentService.getByIdOrThrow(nodeId)
 
     const stream = agent.upsertContainerLogStream(container, take)
-    stream.resize(take)
 
     return stream.watch()
   }

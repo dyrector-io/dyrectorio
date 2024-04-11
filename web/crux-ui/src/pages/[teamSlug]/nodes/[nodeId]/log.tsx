@@ -10,10 +10,14 @@ import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   ContainerLogMessage,
+  ContainerLogStartedMessage,
   NodeDetails,
-  WatchContainerLogMessage,
+  SetContainerLogTakeMessage,
   WS_TYPE_CONTAINER_LOG,
+  WS_TYPE_CONTAINER_LOG_STARTED,
+  WS_TYPE_SET_CONTAINER_LOG_TAKE,
   WS_TYPE_WATCH_CONTAINER_LOG,
+  WatchContainerLogMessage,
 } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
@@ -33,6 +37,11 @@ const LOG_TAKE_VALUES = [50, 100, 500, 1000]
 const NodeContainerLogPage = (props: InstanceLogPageProps) => {
   const { node: propsNode, prefix, name } = props
 
+  const container = {
+    prefix,
+    name,
+  }
+
   const { t } = useTranslation('common')
   const routes = useTeamRoutes()
 
@@ -43,26 +52,49 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
 
   const sock = useWebSocket(routes.node.detailsSocket(node.id))
 
-  const take = LOG_TAKE_VALUES[takeIndex]
-
   useEffect(() => {
     if (node.status === 'connected') {
-      const request: WatchContainerLogMessage = {
-        container: {
-          prefix,
-          name,
-        },
-        take,
+      sock.send(WS_TYPE_WATCH_CONTAINER_LOG, {
+        container,
+        take: LOG_TAKE_VALUES[takeIndex],
+      } as WatchContainerLogMessage)
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [node.status])
+
+  sock.on(WS_TYPE_CONTAINER_LOG_STARTED, (message: ContainerLogStartedMessage) => {
+    const index = LOG_TAKE_VALUES.indexOf(message.take)
+
+    if (index < 0) {
+      return
+    }
+
+    setLog([])
+    setTakeIndex(index)
+  })
+
+  sock.on(WS_TYPE_CONTAINER_LOG, (message: ContainerLogMessage) => {
+    setLog(messages => [...messages, message])
+  })
+
+  const onTakeIndexChange = (index: number) => {
+    if (index === takeIndex) {
+      return
+    }
+
+    setTakeIndex(index)
+
+    if (node.status === 'connected') {
+      const request: SetContainerLogTakeMessage = {
+        container,
+        take: LOG_TAKE_VALUES[index],
       }
 
       setLog([])
-      sock.send(WS_TYPE_WATCH_CONTAINER_LOG, request)
+      sock.send(WS_TYPE_SET_CONTAINER_LOG_TAKE, request)
     }
-  }, [node.status, prefix, name, take, sock])
-
-  sock.on(WS_TYPE_CONTAINER_LOG, (message: ContainerLogMessage) => {
-    setLog(prevLog => [...prevLog, message])
-  })
+  }
 
   const pageLink: BreadcrumbLink = {
     name: t('nodes'),
@@ -96,7 +128,11 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
             {t('logOf', { name: prefix ? `${prefix}-${name}` : name })}
           </DyoHeading>
 
-          <DyoSelect options={LOG_TAKE_VALUES.map(it => it.toString())} selected={takeIndex} onChange={setTakeIndex} />
+          <DyoSelect
+            options={LOG_TAKE_VALUES.map(it => it.toString())}
+            selected={takeIndex}
+            onChange={onTakeIndexChange}
+          />
         </div>
 
         <EventsTerminal events={log} formatEvent={formatEvent} />

@@ -369,8 +369,9 @@ describe('agent', () => {
 
     const tail = 1000
     const logStream = agent.upsertContainerLogStream(container, tail)
+    const [messages] = logStream.watch()
 
-    const logEvent = firstValueFrom(logStream.watch())
+    const logEvent = firstValueFrom(messages)
 
     const streamStartEventActual = await streamStartEvent
     expect(streamStartEventActual).toEqual({

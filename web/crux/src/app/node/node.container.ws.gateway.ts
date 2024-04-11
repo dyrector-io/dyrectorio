@@ -1,6 +1,6 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
-import { Observable, map } from 'rxjs'
+import { Observable, map, merge } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { WsAuthorize, WsMessage } from 'src/websockets/common'
 import {
@@ -14,10 +14,15 @@ import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import {
   ContainerCommandMessage,
   ContainerLogMessage,
+  ContainerLogStartedMessage,
   ContainersStateListMessage,
   DeleteContainerMessage,
+  SetContainerLogTakeMessage,
   WS_TYPE_CONTAINERS_STATE_LIST,
   WS_TYPE_CONTAINER_LOG,
+  WS_TYPE_CONTAINER_LOG_STARTED,
+  WS_TYPE_SET_CONTAINER_LOG_TAKE,
+  WS_TYPE_WATCH_CONTAINER_LOG,
   WatchContainerLogMessage,
   WatchContainersStateMessage,
 } from './node.message'
@@ -75,13 +80,23 @@ export default class NodeContainerWebSocketGateway {
     )
   }
 
+  @SubscribeMessage(WS_TYPE_SET_CONTAINER_LOG_TAKE)
+  setContainerLogTake(
+    @NodeId() nodeId: string,
+    @SocketMessage(NodeContainerLogQueryValidationPipe) message: SetContainerLogTakeMessage,
+  ): void {
+    this.service.setContainerLogTake(nodeId, message)
+  }
+
   @AuditLogLevel('disabled')
-  @SubscribeMessage('watch-container-log')
+  @SubscribeMessage(WS_TYPE_WATCH_CONTAINER_LOG)
   watchContainerLog(
     @NodeId() nodeId: string,
     @SocketMessage(NodeContainerLogQueryValidationPipe) message: WatchContainerLogMessage,
-  ): Observable<WsMessage<ContainerLogMessage>> {
-    return this.service.watchContainerLog(nodeId, message).pipe(
+  ): Observable<WsMessage<ContainerLogMessage | ContainerLogStartedMessage>> {
+    const [messagesStream, startMessagesStream] = this.service.watchContainerLog(nodeId, message)
+
+    const messages = messagesStream.pipe(
       map(it => {
         const msg: WsMessage<ContainerLogMessage> = {
           type: WS_TYPE_CONTAINER_LOG,
@@ -91,6 +106,19 @@ export default class NodeContainerWebSocketGateway {
         return msg
       }),
     )
+
+    const startMessages = startMessagesStream.pipe(
+      map(it => {
+        const msg: WsMessage<ContainerLogStartedMessage> = {
+          type: WS_TYPE_CONTAINER_LOG_STARTED,
+          data: it,
+        }
+
+        return msg
+      }),
+    )
+
+    return merge(startMessages, messages)
   }
 
   @SubscribeMessage('delete-container')
