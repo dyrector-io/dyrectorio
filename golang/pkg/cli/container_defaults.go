@@ -34,7 +34,7 @@ const (
 	defaultCruxAgentGrpcPort   = 5000
 	defaultCruxHTTPPort        = 1848
 	defaultCruxUIPort          = 3000
-	defaultTraefikWebPort      = 8000
+	defaultTraefikInternalPort = 8000
 	defaultTraefikUIPort       = 8080
 	defaultKratosPublicPort    = 4433
 	defaultKratosAdminPort     = 4434
@@ -168,7 +168,7 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 			state.SettingsFile.CruxPostgresDB),
 		fmt.Sprintf("KRATOS_URL=http://%s:%d/kratos",
 			state.Containers.Traefik.Name,
-			defaultTraefikWebPort),
+			defaultTraefikInternalPort),
 		fmt.Sprintf("KRATOS_ADMIN_URL=http://%s:%d",
 			state.Containers.Kratos.Name,
 			state.SettingsFile.KratosAdminPort),
@@ -198,10 +198,12 @@ func GetCruxUI(state *State, args *ArgsFlags) containerbuilder.Builder {
 	envs := append([]string{
 		fmt.Sprintf("TZ=%s", state.SettingsFile.TimeZone),
 		fmt.Sprintf("CRUX_UI_URL=http://%s:%d", traefikHost, state.SettingsFile.TraefikWebPort),
-		fmt.Sprintf("CRUX_URL=http://%s:%d", state.Containers.Traefik.Name, defaultTraefikWebPort),
+		fmt.Sprintf("CRUX_URL=http://%s:%d",
+			state.Containers.Traefik.Name,
+			defaultTraefikInternalPort),
 		fmt.Sprintf("KRATOS_URL=http://%s:%d/kratos",
 			state.Containers.Traefik.Name,
-			defaultTraefikWebPort),
+			defaultTraefikInternalPort),
 		fmt.Sprintf("KRATOS_ADMIN_URL=http://%s:%d",
 			state.Containers.Kratos.Name,
 			state.SettingsFile.KratosAdminPort),
@@ -264,7 +266,7 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 		"--api.insecure=true",
 		"--providers.docker=true",
 		"--providers.docker.exposedbydefault=false",
-		fmt.Sprintf("--entrypoints.web.address=:%d", defaultTraefikWebPort),
+		fmt.Sprintf("--entrypoints.web.address=:%d", defaultTraefikInternalPort),
 	}
 
 	if args.CruxUIDisabled {
@@ -319,7 +321,7 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 		traefik = traefik.
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
-					ExposedPort: defaultTraefikWebPort,
+					ExposedPort: defaultTraefikInternalPort,
 					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.TraefikWebPort)),
 				},
 				{
