@@ -5,6 +5,7 @@ import { NodeConnectionStatus } from 'src/app/node/node.dto'
 import {
   CruxConflictException,
   CruxInternalServerErrorException,
+  CruxNotFoundException,
   CruxPreconditionFailedException,
 } from 'src/exception/crux-exception'
 import {
@@ -200,6 +201,21 @@ export class Agent {
     }
 
     return watcher
+  }
+
+  getContainerLogStream(container: ContainerIdentifier): ContainerLogStream {
+    const key = Agent.containerPrefixNameOf(container)
+
+    const stream = this.logStreams.get(key)
+    if (!stream) {
+      throw new CruxNotFoundException({
+        message: 'Container log stream not found',
+        property: 'container',
+        value: key,
+      })
+    }
+
+    return stream
   }
 
   upsertContainerLogStream(container: ContainerIdentifier, tail: number): ContainerLogStream {

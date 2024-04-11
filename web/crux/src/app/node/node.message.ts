@@ -40,10 +40,17 @@ export class ContainersStateListMessage {
 }
 
 // container log
+export const WS_TYPE_WATCH_CONTAINER_LOG = 'watch-container-log'
 export type WatchContainerLogMessage = {
   container: ContainerIdentifierDto
   take: number
 }
+
+export const WS_TYPE_SET_CONTAINER_LOG_TAKE = 'set-container-log-take'
+export type SetContainerLogTakeMessage = WatchContainerLogMessage
+
+export const WS_TYPE_CONTAINER_LOG_STARTED = 'container-log-started'
+export type ContainerLogStartedMessage = WatchContainerLogMessage
 
 export const WS_TYPE_CONTAINER_LOG = 'container-log'
 export type ContainerLogMessage = {

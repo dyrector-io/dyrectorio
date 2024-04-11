@@ -6,9 +6,7 @@ import { AGENT_STREAM_TIMEOUT } from 'src/shared/const'
 export default class AgentTunnel<T> {
   private readonly clientStream = new Subject<T>()
 
-  private readonly clientCompleter = new Subject<unknown>()
-
-  private readonly agentCompleter = new Subject<unknown>()
+  private readonly cancelAgent = new Subject<unknown>()
 
   private agentConnected = false
 
@@ -21,13 +19,12 @@ export default class AgentTunnel<T> {
       timeout({
         first: AGENT_STREAM_TIMEOUT,
       }),
-      takeUntil(this.agentCompleter),
       finalize(() => this.onWatcherDisconnected()),
     )
   }
 
   closeAgentStream() {
-    this.clientCompleter.complete()
+    this.cancelAgent.next(undefined)
   }
 
   onAgentStreamStarted(agentStream: Observable<T>): Observable<Empty> {
@@ -46,7 +43,7 @@ export default class AgentTunnel<T> {
         return Empty
       }),
       startWith(Empty),
-      takeUntil(this.clientCompleter),
+      takeUntil(this.cancelAgent),
       finalize(() => this.onAgentDisconnected()),
     )
   }
@@ -56,11 +53,10 @@ export default class AgentTunnel<T> {
       return
     }
 
-    this.clientCompleter.next(undefined)
+    this.cancelAgent.next(undefined)
   }
 
   private onAgentDisconnected() {
     this.agentConnected = false
-    this.agentCompleter.next(undefined)
   }
 }
