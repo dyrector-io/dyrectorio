@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+<a name="0.11.7"></a>
+## [0.11.7](https://github.com/dyrector-io/dyrectorio/compare/0.11.6...0.11.7) (2024-04-11)
+
+### Fix
+
+* **(cli):** use default traefik port instead url for crux_url ([#952](https://github.com/dyrector-io/dyrectorio/issues/952))
+* **(crux):** token expiration ([#953](https://github.com/dyrector-io/dyrectorio/issues/953))
+
+### Refactor
+
+* container log stream ([#954](https://github.com/dyrector-io/dyrectorio/issues/954))
+
+
 <a name="0.11.6"></a>
 ## [0.11.6](https://github.com/dyrector-io/dyrectorio/compare/0.11.5...0.11.6) (2024-04-09)
 
