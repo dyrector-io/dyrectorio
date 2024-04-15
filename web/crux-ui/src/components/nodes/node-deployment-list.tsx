@@ -1,6 +1,4 @@
-import DeploymentStatusTag, {
-  deploymentStatusTranslation,
-} from '@app/components/projects/versions/deployments/deployment-status-tag'
+import DeploymentStatusTag, { deploymentStatusTranslation } from '@app/components/deployments/deployment-status-tag'
 import Filters from '@app/components/shared/filters'
 import { DyoCard } from '@app/elements/dyo-card'
 import { chipsQALabelFromValue } from '@app/elements/dyo-chips'
