@@ -16,7 +16,7 @@ require (
 	golang.org/x/exp v0.0.0-20230420155640-133eef4313cb
 	golang.org/x/net v0.17.0
 	google.golang.org/grpc v1.56.3
-	google.golang.org/protobuf v1.30.0
+	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.27.1
 	k8s.io/apimachinery v0.27.1
