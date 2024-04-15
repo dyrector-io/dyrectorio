@@ -178,6 +178,7 @@ export default class DeployService {
             registry: true,
           },
         },
+        config: true,
       },
     })
 
