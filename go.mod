@@ -25,7 +25,7 @@ require (
 
 require (
 	github.com/docker/distribution v2.8.2+incompatible
-	github.com/docker/docker v23.0.8+incompatible
+	github.com/docker/docker v24.0.9+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/google/go-containerregistry v0.15.1
 	golang.org/x/sync v0.1.0
