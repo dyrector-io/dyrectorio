@@ -1,8 +1,8 @@
 import { Layout } from '@app/components/layout'
 import DeploymentContainerStatusList, {
   ContainerProgress,
-} from '@app/components/projects/versions/deployments/deployment-container-status-list'
-import DeploymentDetailsCard from '@app/components/projects/versions/deployments/deployment-details-card'
+} from '@app/components/deployments/deployment-container-status-list'
+import DeploymentDetailsCard from '@app/components/deployments/deployment-details-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import EventsTerminal from '@app/components/shared/events-terminal'
 import PageHeading from '@app/components/shared/page-heading'
