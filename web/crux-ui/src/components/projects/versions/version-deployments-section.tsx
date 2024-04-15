@@ -39,7 +39,7 @@ import {
   QA_MODAL_LABEL_DEPLOYMENT_NOTE,
 } from 'quality-assurance'
 import { useEffect, useState } from 'react'
-import DeploymentStatusTag, { deploymentStatusTranslation } from './deployments/deployment-status-tag'
+import DeploymentStatusTag, { deploymentStatusTranslation } from '../../deployments/deployment-status-tag'
 import { VersionActions } from './use-version-state'
 
 interface VersionDeploymentsSectionProps {

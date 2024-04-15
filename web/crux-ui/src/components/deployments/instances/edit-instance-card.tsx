@@ -7,8 +7,8 @@ import {
   InstanceJsonContainerConfig,
   mergeJsonConfigToInstanceContainerConfig,
 } from '@app/models'
-import EditImageHeading from '../../images/edit-image-heading'
-import EditImageJson from '../../images/edit-image-json'
+import EditImageHeading from '../../projects/versions/images/edit-image-heading'
+import EditImageJson from '../../projects/versions/images/edit-image-json'
 import { DeploymentActions, DeploymentState } from '../use-deployment-state'
 import useInstanceState from './use-instance-state'
 

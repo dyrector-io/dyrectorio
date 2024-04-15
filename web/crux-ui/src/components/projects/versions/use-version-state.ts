@@ -41,7 +41,7 @@ import {
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
-import useCopyDeploymentState from './deployments/use-copy-deployment-state'
+import useCopyDeploymentState from '../../deployments/use-copy-deployment-state'
 
 // state
 export type ImageTagsMap = { [key: string]: RegistryImageTags } // image key to RegistryImageTags
