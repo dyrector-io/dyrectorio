@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/registry"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 
@@ -19,7 +19,7 @@ func registryAuthBase64(user, password string) string {
 		return ""
 	}
 
-	authConfig := types.AuthConfig{
+	authConfig := registry.AuthConfig{
 		Username: user,
 		Password: password,
 	}
@@ -70,7 +70,6 @@ func ReadDockerLogsFromReadCloser(logs io.ReadCloser, skip, take int) []string {
 		count := binary.BigEndian.Uint32(header[4:])
 		data := make([]byte, count)
 		_, err = logs.Read(data)
-
 		if err != nil {
 			if err != io.EOF {
 				panic(err)
