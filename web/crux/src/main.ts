@@ -24,6 +24,7 @@ import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import prismaBootstrap from './services/prisma.bootstrap'
 import { productionEnvironment } from './shared/config'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
+import { Root as ProtoRoot } from 'protobufjs'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -114,6 +115,15 @@ const serve = async () => {
   app.useBodyParser('json', { type: ['application/json', 'application/vnd.docker.distribution.events.v1+json'] })
 
   app.useWebSocketAdapter(new DyoWsAdapter(app, authGuard))
+
+  const REWRITE_PROTO_PATH = 'protobuf/proto/'
+  ProtoRoot.prototype.resolvePath = (_: string, target: string) => {
+    if (target.startsWith(REWRITE_PROTO_PATH)) {
+      const strippedPath = target.substring(REWRITE_PROTO_PATH.length)
+      return join(__dirname, `../proto/${strippedPath}`)
+    }
+    return target
+  }
 
   // agent
   app.connectMicroservice<MicroserviceOptions>({
