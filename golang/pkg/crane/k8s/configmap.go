@@ -76,7 +76,6 @@ func (cm *configmap) deployConfigMapRuntime(runtimeType v1.RuntimeConfigType, na
 			return err
 		}
 		err = cm.deployConfigMapData(namespace, fmt.Sprintf("%v-%v", containerName, runtimeType), envList)
-
 		if err != nil {
 			return err
 		}

@@ -31,7 +31,7 @@ func getContainerIdentifierFromEvent(event *events.Message) *common.ContainerIde
 	name, hasValue := event.Actor.Attributes["name"]
 	if !hasValue {
 		return nil
-	} else if len(prefix) > 0 {
+	} else if prefix != "" {
 		name = strings.TrimPrefix(name, prefix+"-")
 	}
 
@@ -76,7 +76,7 @@ func messageToStateItem(ctx context.Context, prefix string, event *events.Messag
 		return createRemovedState(containerID), nil
 	}
 
-	containerState := mapper.MapDockerContainerEventToContainerState(event.Action)
+	containerState := mapper.MapDockerContainerEventToContainerState(string(event.Action))
 	// Ingored events are mapped to unspecified, for example tty, exec, oom, etc.
 	if containerState == common.ContainerState_CONTAINER_STATE_UNSPECIFIED {
 		return nil, nil

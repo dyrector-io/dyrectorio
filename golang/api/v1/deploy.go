@@ -216,8 +216,8 @@ type ContainerConfig struct {
 
 	// dagent only
 	// docker log config https://docs.docker.com/config/containers/logging/configure/
-	LogConfig     *container.LogConfig      `json:"logConfig"`
-	RestartPolicy builder.RestartPolicyName `json:"restartPolicy"`
+	LogConfig     *container.LogConfig        `json:"logConfig"`
+	RestartPolicy container.RestartPolicyMode `json:"restartPolicy"`
 	// bridge(container, default) host, none or network name
 	NetworkMode string `json:"networkMode"`
 	// extra networks
@@ -430,10 +430,6 @@ func (jsonConfig *Base64JSONBytes) UnmarshalJSON(b []byte) error {
 	}
 
 	cleaned := util.RemoveJSONComment(decoded)
-	if err != nil {
-		return err
-	}
-
 	*jsonConfig = Base64JSONBytes(cleaned)
 
 	return err
@@ -471,6 +467,6 @@ func SetDeploymentDefaults(
 	}
 
 	if deployImageRequest.ContainerConfig.RestartPolicy == "" {
-		deployImageRequest.ContainerConfig.RestartPolicy = builder.RestartUnlessStoppedRestartPolicy
+		deployImageRequest.ContainerConfig.RestartPolicy = container.RestartPolicyUnlessStopped
 	}
 }

@@ -74,7 +74,7 @@ func (d *Deployment) DeployDeployment(p *DeploymentParams) error {
 
 	annot := map[string]string{}
 
-	if len(p.issuer) > 0 {
+	if p.issuer != "" {
 		annot[d.appConfig.KeyIssuer] = p.issuer
 	}
 

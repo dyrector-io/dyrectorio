@@ -498,7 +498,7 @@ func executeVersionDeployRequest(
 		dog.SetRequestID(imageReq.RequestID)
 
 		var versionData *v1.VersionData
-		if len(req.VersionName) > 0 {
+		if req.VersionName != "" {
 			versionData = &v1.VersionData{Version: req.VersionName, ReleaseNotes: req.ReleaseNotes}
 		}
 

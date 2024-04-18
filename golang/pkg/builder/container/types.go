@@ -2,7 +2,6 @@ package container
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/AlekSi/pointer"
@@ -38,68 +37,6 @@ type PortRange struct {
 type PortRangeBinding struct {
 	Internal PortRange `json:"internal" binding:"required"`
 	External PortRange `json:"external" binding:"required"`
-}
-
-// RestartPolicyName defines the restart policy used by a container.
-type RestartPolicyName string
-
-const (
-	EmptyRestartPolicy                RestartPolicyName = ""
-	AlwaysRestartPolicy               RestartPolicyName = "always"
-	RestartUnlessStoppedRestartPolicy RestartPolicyName = "unless-stopped"
-	NoRestartPolicy                   RestartPolicyName = "no"
-	OnFailureRestartPolicy            RestartPolicyName = "on-failure"
-)
-
-// RestartPolicyUnmarshalInvalidError represents custom error regarding restart policy
-type RestartPolicyUnmarshalInvalidError struct{}
-
-func (e *RestartPolicyUnmarshalInvalidError) Error() string {
-	return "restart policy invalid value provided"
-}
-
-// policyToString static mapping enum type into the docker supported string values
-var policyToString = map[RestartPolicyName]string{
-	EmptyRestartPolicy:                "unless-stopped",
-	RestartUnlessStoppedRestartPolicy: "unless-stopped",
-	NoRestartPolicy:                   "no",
-	AlwaysRestartPolicy:               "always",
-	OnFailureRestartPolicy:            "on-failure",
-}
-
-// policyToID static mapping string values eg. from JSON into enums
-var policyToID = map[string]RestartPolicyName{
-	"":               RestartUnlessStoppedRestartPolicy,
-	"unless-stopped": RestartUnlessStoppedRestartPolicy,
-	"no":             NoRestartPolicy,
-	"always":         AlwaysRestartPolicy,
-	"on-failure":     OnFailureRestartPolicy,
-}
-
-// custom enum marshal JSON interface implementation
-func (policy RestartPolicyName) MarshalJSON() ([]byte, error) {
-	str, ok := policyToString[policy]
-	if !ok {
-		return nil, &RestartPolicyUnmarshalInvalidError{}
-	}
-	return []byte(fmt.Sprintf(`%q`, str)), nil
-}
-
-// custom enum unmarshal JSON interface implementation
-func (policy *RestartPolicyName) UnmarshalJSON(b []byte) error {
-	var j string
-	err := json.Unmarshal(b, &j)
-	if err != nil {
-		return err
-	}
-
-	if _, ok := policyToID[j]; ok {
-		*policy = policyToID[j]
-	} else {
-		*policy = RestartPolicyName("")
-		err = &RestartPolicyUnmarshalInvalidError{}
-	}
-	return err
 }
 
 type ParentContainer struct {

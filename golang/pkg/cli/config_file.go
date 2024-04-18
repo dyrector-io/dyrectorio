@@ -131,14 +131,15 @@ const (
 func SettingsExists(settingsPath string) bool {
 	settingsFilePath := SettingsFileLocation(settingsPath)
 
-	if _, err := os.Stat(settingsFilePath); err == nil {
+	_, err := os.Stat(settingsFilePath)
+	if err == nil {
 		return true
-	} else if errors.Is(err, os.ErrNotExist) {
-		return false
-	} else {
-		log.Fatal().Err(err).Stack().Send()
+	}
+	if errors.Is(err, os.ErrNotExist) {
 		return false
 	}
+	log.Fatal().Err(err).Stack().Send()
+	return false
 }
 
 // SettingsFileLocation is assembling the location of the settings file

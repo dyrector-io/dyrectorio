@@ -54,8 +54,8 @@ func spawnImportContainer(
 		WithMountPoints([]mount.Mount{targetVolume}).
 		WithoutConflict().
 		WithLogWriter(dog).
-		WithPreStartHooks(func(ctx context.Context, client client.APIClient,
-			parentCont containerbuilder.ParentContainer,
+		WithPreStartHooks(func(_ context.Context, _ client.APIClient,
+			_ containerbuilder.ParentContainer,
 		) error {
 			dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
 			return nil

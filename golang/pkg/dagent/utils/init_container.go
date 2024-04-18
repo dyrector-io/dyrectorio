@@ -61,7 +61,7 @@ func spawnInitContainer(
 		WithNetworks(initCont.Networks).
 		WithoutConflict().
 		WithPreStartHooks(
-			func(ctx context.Context, client client.APIClient, parentCont containerbuilder.ParentContainer) error {
+			func(_ context.Context, _ client.APIClient, _ containerbuilder.ParentContainer) error {
 				dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for init container to finish")
 				return nil
 			}).

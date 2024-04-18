@@ -109,7 +109,7 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 	builder := containerbuilder.NewDockerBuilder(ctx).WithImage("index.docker.io/library/traefik:v2.8.0").
 		WithName("traefik").
 		WithMountPoints(mounts).
-		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
+		WithRestartPolicy(container.RestartPolicyAlways).
 		WithAutoRemove(false).
 		WithoutConflict().
 		WithNetworkMode("host").

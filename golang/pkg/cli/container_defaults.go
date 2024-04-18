@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/AlekSi/pointer"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/rs/zerolog/log"
@@ -58,11 +59,13 @@ func baseContainer(ctx context.Context, args *ArgsFlags) containerbuilder.Builde
 }
 
 // GetCrux services: db migrations and crux api service
+//
+//nolint:goconst
 func GetCrux(state *State, args *ArgsFlags) containerbuilder.Builder {
 	crux := baseContainer(state.Ctx, args).
 		WithImage(fmt.Sprintf("%s:%s", state.Crux.Image, state.SettingsFile.Version)).
 		WithName(state.Containers.Crux.Name).
-		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
+		WithRestartPolicy(container.RestartPolicyAlways).
 		WithEnv(getCruxEnvs(state, args)).
 		WithNetworks([]string{state.SettingsFile.Network}).
 		WithNetworkAliases(state.Containers.Crux.Name).
@@ -110,8 +113,8 @@ func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.Lifecy
 		fmt.Sprintf("ENCRYPTION_SECRET_KEY=%s", state.SettingsFile.CruxEncryptionKey),
 	}, state.EnvFile...)
 
-	return func(ctx context.Context, client client.APIClient,
-		parentCont containerbuilder.ParentContainer,
+	return func(ctx context.Context, _ client.APIClient,
+		_ containerbuilder.ParentContainer,
 	) error {
 		cruxMigrate := baseContainer(ctx, args).
 			WithImage(fmt.Sprintf("%s:%s", state.Crux.Image, state.SettingsFile.Version)).
@@ -213,7 +216,7 @@ func GetCruxUI(state *State, args *ArgsFlags) containerbuilder.Builder {
 	cruxUI := baseContainer(state.Ctx, args).
 		WithImage(fmt.Sprintf("%s:%s", state.CruxUI.Image, state.SettingsFile.Version)).
 		WithName(state.Containers.CruxUI.Name).
-		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
+		WithRestartPolicy(container.RestartPolicyAlways).
 		WithEnv(envs).
 		WithNetworks([]string{state.SettingsFile.Network}).
 		WithNetworkAliases(state.Containers.CruxUI.Name).
@@ -281,7 +284,7 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 	traefik := baseContainer(state.Ctx, args).
 		WithImage("docker.io/library/traefik:v2.9").
 		WithName(state.Containers.Traefik.Name).
-		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
+		WithRestartPolicy(container.RestartPolicyAlways).
 		WithNetworks([]string{state.SettingsFile.Network}).
 		WithNetworkAliases(state.Containers.Traefik.Name).
 		WithMountPoints([]mount.Mount{{
@@ -296,7 +299,7 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 			label.DyrectorioOrg + label.ServiceCategory: label.GetHiddenServiceCategory("internal"),
 		}).
-		WithPostStartHooks(func(ctx context.Context, client client.APIClient,
+		WithPostStartHooks(func(ctx context.Context, _ client.APIClient,
 			cont containerbuilder.ParentContainer,
 		) error {
 			return CopyTraefikConfiguration(
@@ -311,8 +314,8 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 	if args.FullyContainerized {
 		traefikHost := state.Containers.Traefik.Name
 		traefik.
-			WithPostStartHooks(func(ctx context.Context, client client.APIClient,
-				cont containerbuilder.ParentContainer,
+			WithPostStartHooks(func(ctx context.Context, _ client.APIClient,
+				_ containerbuilder.ParentContainer,
 			) error {
 				addr := fmt.Sprintf("http://%s:%d/api/status", traefikHost, state.SettingsFile.TraefikWebPort)
 				return healthProbe(ctx, addr)
@@ -338,7 +341,7 @@ func GetKratos(state *State, args *ArgsFlags) containerbuilder.Builder {
 	kratos := baseContainer(state.Ctx, args).
 		WithImage(fmt.Sprintf("%s:%s", state.Kratos.Image, state.SettingsFile.Version)).
 		WithName(state.Containers.Kratos.Name).
-		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
+		WithRestartPolicy(container.RestartPolicyAlways).
 		WithEnv(getKratosEnvs(state)).
 		WithNetworks([]string{state.SettingsFile.Network}).
 		WithNetworkAliases(state.Containers.Kratos.Name).
@@ -385,7 +388,7 @@ func getKratosInitContainer(state *State, args *ArgsFlags) containerbuilder.Life
 			state.SettingsFile.KratosPostgresDB),
 	}, state.EnvFile...)
 
-	return func(ctx context.Context, client client.APIClient, parentCont containerbuilder.ParentContainer) error {
+	return func(_ context.Context, _ client.APIClient, _ containerbuilder.ParentContainer) error {
 		kratosMigrate := baseContainer(state.Ctx, args).
 			WithImage(fmt.Sprintf("%s:%s", state.Kratos.Image, state.SettingsFile.Version)).
 			WithName(state.Containers.KratosMigrate.Name).
@@ -452,7 +455,7 @@ func GetMailSlurper(state *State, args *ArgsFlags) containerbuilder.Builder {
 	mailslurper := baseContainer(state.Ctx, args).
 		WithImage(mailSlurperImage).
 		WithName(state.Containers.MailSlurper.Name).
-		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
+		WithRestartPolicy(container.RestartPolicyAlways).
 		WithNetworks([]string{state.SettingsFile.Network}).
 		WithNetworkAliases(state.Containers.MailSlurper.Name).
 		WithLabels(map[string]string{
@@ -563,7 +566,7 @@ func getBasePostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 	basePostgres := baseContainer(state.Ctx, args).
 		WithImage(postgresImage).
 		WithNetworks([]string{state.SettingsFile.Network}).
-		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy)
+		WithRestartPolicy(container.RestartPolicyAlways)
 	return basePostgres
 }
 

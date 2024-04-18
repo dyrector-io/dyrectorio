@@ -17,8 +17,8 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 
 	"github.com/docker/distribution/reference"
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/errdefs"
@@ -66,9 +66,8 @@ func GetRegistryURL(reg *string, registryAuth *RegistryAuth) string {
 		return registryAuth.URL
 	} else if reg != nil {
 		return *reg
-	} else {
-		return ""
 	}
+	return ""
 }
 
 func GetRegistryURLProto(reg *string, registryAuth *agent.RegistryAuth) string {
@@ -76,13 +75,12 @@ func GetRegistryURLProto(reg *string, registryAuth *agent.RegistryAuth) string {
 		return registryAuth.Url
 	} else if reg != nil {
 		return *reg
-	} else {
-		return ""
 	}
+	return ""
 }
 
-func GetImageByReference(ctx context.Context, cli client.APIClient, ref string) (*types.ImageSummary, error) {
-	images, err := cli.ImageList(ctx, types.ImageListOptions{
+func GetImageByReference(ctx context.Context, cli client.APIClient, ref string) (*image.Summary, error) {
+	images, err := cli.ImageList(ctx, image.ListOptions{
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: ref}),
 	})
 	if err != nil {
@@ -105,7 +103,7 @@ func Exists(
 	logger io.StringWriter, expandedImageName, encodedAuth string,
 ) (*ExistResult, error) {
 	exists := ExistResult{}
-	images, err := cli.ImageList(ctx, types.ImageListOptions{
+	images, err := cli.ImageList(ctx, image.ListOptions{
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: expandedImageName}),
 	})
 	if err != nil {
@@ -163,7 +161,7 @@ func Pull(ctx context.Context, cli client.APIClient, logger io.StringWriter, exp
 		}
 	}
 
-	reader, err := cli.ImagePull(ctx, expandedImageName, types.ImagePullOptions{RegistryAuth: authCreds})
+	reader, err := cli.ImagePull(ctx, expandedImageName, image.PullOptions{RegistryAuth: authCreds})
 	if err != nil {
 		return err
 	}
@@ -248,7 +246,7 @@ func shouldUseLocalImage(ctx context.Context, cli client.APIClient,
 }
 
 func pullImage(ctx context.Context, cli client.APIClient, imageName, encodedAuth string) (io.ReadCloser, error) {
-	options := types.ImagePullOptions{
+	options := image.PullOptions{
 		RegistryAuth: encodedAuth,
 	}
 
@@ -349,8 +347,8 @@ func checkRemote(ctx context.Context, check remoteCheck) (err error) {
 	return errDigestsMatching
 }
 
-func ParseReference(image string) (reference.Reference, error) {
-	return reference.ParseAnyReference(strings.ToLower(image))
+func ParseReference(img string) (reference.Reference, error) {
+	return reference.ParseAnyReference(strings.ToLower(img))
 }
 
 func ExpandImageName(imageWithTag string) (string, error) {
@@ -371,8 +369,8 @@ func ExpandImageName(imageWithTag string) (string, error) {
 	return named.String(), nil
 }
 
-func ExpandImageNameWithTag(image, tag string) (string, error) {
-	ref, err := ParseReference(image)
+func ExpandImageNameWithTag(img, tag string) (string, error) {
+	ref, err := ParseReference(img)
 	if err != nil {
 		return "", err
 	}

@@ -43,7 +43,7 @@ type Builder interface {
 	WithLogConfig(config *container.LogConfig) Builder
 	WithRegistryAuth(auth *imageHelper.RegistryAuth) Builder
 	WithAutoRemove(remove bool) Builder
-	WithRestartPolicy(policy RestartPolicyName) Builder
+	WithRestartPolicy(policy container.RestartPolicyMode) Builder
 	WithEntrypoint(cmd []string) Builder
 	WithCmd(cmd []string) Builder
 	WithShell(shell []string) Builder
@@ -81,7 +81,7 @@ type DockerContainerBuilder struct {
 	registryAuth     string
 	remove           bool
 	withoutConflict  bool
-	restartPolicy    RestartPolicyName
+	restartPolicy    container.RestartPolicyMode
 	entrypoint       []string
 	cmd              []string
 	shell            []string
@@ -208,7 +208,7 @@ func (dc *DockerContainerBuilder) WithRegistryAuth(auth *imageHelper.RegistryAut
 }
 
 // Sets the restart policy of the container.
-func (dc *DockerContainerBuilder) WithRestartPolicy(policy RestartPolicyName) Builder {
+func (dc *DockerContainerBuilder) WithRestartPolicy(policy container.RestartPolicyMode) Builder {
 	dc.restartPolicy = policy
 	return dc
 }
@@ -341,8 +341,13 @@ func builderToDockerConfig(dc *DockerContainerBuilder) (hostConfig *container.Ho
 		hostConfig.LogConfig = *dc.logConfig
 	}
 
-	policy := container.RestartPolicy{}
-	policy.Name = string(dc.restartPolicy)
+	policy := container.RestartPolicy{
+		Name: dc.restartPolicy,
+	}
+	err = container.ValidateRestartPolicy(policy)
+	if err != nil {
+		return nil, nil, errors.Join(err, fmt.Errorf("builder: invalid restart policy"))
+	}
 	hostConfig.RestartPolicy = policy
 
 	if dc.networkMode != "" {
@@ -392,7 +397,7 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 	if err != nil {
 		dc.logError(fmt.Sprintln("Container create failed: ", err))
 	}
-	containers, err := dc.client.ContainerList(dc.ctx, types.ContainerListOptions{
+	containers, err := dc.client.ContainerList(dc.ctx, container.ListOptions{
 		All:     true,
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: containerCreateResp.ID}),
 	})
@@ -435,7 +440,7 @@ func (dc *DockerContainerBuilder) CreateAndStartWaitUntilExit() (Container, *Wai
 		return cont, res, err
 	}
 
-	logReader, err := dc.client.ContainerLogs(dc.ctx, *cont.GetContainerID(), types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
+	logReader, err := dc.client.ContainerLogs(dc.ctx, *cont.GetContainerID(), container.LogsOptions{ShowStdout: true, ShowStderr: true})
 	if err != nil {
 		return cont, res, err
 	}

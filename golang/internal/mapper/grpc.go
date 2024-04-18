@@ -159,7 +159,7 @@ func mapDagentConfig(dagent *agent.DagentContainerConfig, containerConfig *v1.Co
 	}
 
 	if dagent.RestartPolicy != nil {
-		containerConfig.RestartPolicy = mapRestartPolicy(dagent.RestartPolicy.String())
+		containerConfig.RestartPolicy = container.RestartPolicyMode(dagent.RestartPolicy.String())
 	}
 
 	if dagent.LogConfig != nil {
@@ -227,12 +227,6 @@ func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.Conta
 			Port: crane.Metrics.Path,
 		}
 	}
-}
-
-func mapRestartPolicy(policy string) builder.RestartPolicyName {
-	lower := strings.ToLower(policy)
-
-	return builder.RestartPolicyName(strings.Replace(lower, "_", "-", -1))
 }
 
 func mapContainerState(state common.ContainerState) v1.ContainerState {
