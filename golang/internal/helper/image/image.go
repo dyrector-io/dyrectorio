@@ -32,11 +32,11 @@ import (
 type PullResponse struct {
 	ID             string `json:"id"`
 	Status         string `json:"status"`
+	Progress       string `json:"progress"`
 	ProgressDetail struct {
 		Current int64 `json:"current"`
 		Total   int64 `json:"total"`
 	} `json:"progressDetail"`
-	Progress string `json:"progress"`
 }
 
 type remoteCheck struct {

@@ -43,8 +43,8 @@ type DockerConfigEntry struct {
 type Secret struct {
 	ctx       context.Context
 	client    *Client
-	avail     []string
 	appConfig *config.Configuration
+	avail     []string
 }
 
 func NewSecret(ctx context.Context, client *Client) *Secret {

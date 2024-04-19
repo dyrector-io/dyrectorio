@@ -17,9 +17,9 @@ import (
 // facade object for configmap management
 type configmap struct {
 	ctx       context.Context
+	appConfig *config.Configuration
 	status    string
 	avail     []string
-	appConfig *config.Configuration
 }
 
 func newConfigmap(ctx context.Context, cfg *config.Configuration) *configmap {

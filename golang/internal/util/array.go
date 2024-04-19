@@ -16,7 +16,7 @@ func ContainsMatcher[T comparable](arr []T, item T, comp func(T, T) bool) bool {
 		return false
 	}
 	for _, v := range arr {
-		if comp != nil && comp(v, item) {
+		if comp(v, item) {
 			return true
 		}
 	}

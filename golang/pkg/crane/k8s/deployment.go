@@ -39,8 +39,8 @@ var ErrPodHasNoOwner = errors.New("pod has no owner")
 // facade object for Deployment management
 type Deployment struct {
 	ctx       context.Context
-	status    string
 	appConfig *config.Configuration
+	status    string
 }
 
 func NewDeployment(ctx context.Context, cfg *config.Configuration) *Deployment {
@@ -48,19 +48,19 @@ func NewDeployment(ctx context.Context, cfg *config.Configuration) *Deployment {
 }
 
 type DeploymentParams struct {
+	volumes         map[string]v1.Volume
+	annotations     map[string]string
+	containerConfig *v1.ContainerConfig
+	labels          map[string]string
+	pullSecretName  string
 	namespace       string
 	image           string
-	containerConfig *v1.ContainerConfig
-	pullSecretName  string
-	configMapsEnv   []string
+	issuer          string
 	secrets         []string
-	volumes         map[string]v1.Volume
+	configMapsEnv   []string
 	portList        []builder.PortBinding
 	command         []string
 	args            []string
-	labels          map[string]string
-	annotations     map[string]string
-	issuer          string
 }
 
 func (d *Deployment) DeployDeployment(p *DeploymentParams) error {

@@ -25,16 +25,11 @@ const (
 )
 
 type TraefikDeployRequest struct {
-	// LogLevel defaults to INFO
 	LogLevel string `json:"logLevel"`
-	// if services exposed with certs, default: false
-	TLS bool `json:"TLS"`
-	// the email address for expiry notifications, sent by acme
 	AcmeMail string `json:"acmeMail" binding:"required_if=TLS true"`
-	// HTTP port
-	Port uint16 `json:"port"`
-	// HTTPS port
-	TLSPort uint16 `json:"tlsPort"`
+	Port     uint16 `json:"port"`
+	TLSPort  uint16 `json:"tlsPort"`
+	TLS      bool   `json:"TLS"`
 }
 
 type UnknownContainerError struct{}

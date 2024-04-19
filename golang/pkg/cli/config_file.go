@@ -25,29 +25,28 @@ import (
 // State itself exists per-execution, settingsFile is persisted
 // freedesktop spec folders used by default, $XDG_CONFIG_HOME
 type State struct {
-	Ctx                context.Context
-	SettingsFile       SettingsFile
+	Ctx context.Context
+	*Containers
 	InternalHostDomain string
 	EnvFile            []string
-	*Containers
+	SettingsFile       SettingsFile
 }
 
 // ArgsFlags are commandline arguments
 type ArgsFlags struct {
-	SettingsWrite     bool
-	SettingsExists    bool
-	SettingsFilePath  string
-	Command           string
-	ImageTag          string
-	Prefix            string
-	CruxDisabled      bool
-	CruxUIDisabled    bool
-	LocalAgent        bool
-	PreferLocalImages bool
-	EnvFile           string
-	// pipeline mode
-	FullyContainerized bool
+	EnvFile            string
 	Network            string
+	SettingsFilePath   string
+	Command            string
+	ImageTag           string
+	Prefix             string
+	CruxDisabled       bool
+	CruxUIDisabled     bool
+	LocalAgent         bool
+	PreferLocalImages  bool
+	SettingsWrite      bool
+	FullyContainerized bool
+	SettingsExists     bool
 	Silent             bool
 }
 
@@ -68,8 +67,8 @@ type Containers struct {
 type ContainerSettings struct {
 	Image    string
 	Name     string
-	Disabled bool
 	CruxAddr string
+	Disabled bool
 }
 
 // SettingsFile will be read/written as this struct
@@ -83,32 +82,32 @@ type SettingsFile struct {
 
 // Options are "globals" for the SettingsFile struct
 type Options struct {
-	TimeZone                       string `yaml:"timezone" env-default:"UTC"`
-	CruxAgentGrpcPort              uint   `yaml:"crux-agentgrpc-port" env-default:"5000"`
-	CruxHTTPPort                   uint   `yaml:"crux-http-port" env-default:"1848"`
-	CruxUIPort                     uint   `yaml:"crux-ui-port" env-default:"3000"`
+	KratosPostgresUser             string `yaml:"kratosPostgresUser" env-default:"kratos"`
+	KratosPostgresPassword         string `yaml:"kratosPostgresPassword"`
+	TraefikDockerSocket            string `yaml:"traefikDockerSocket" env-default:"/var/run/docker.sock"`
+	MailFromName                   string `yaml:"mailFromName" env-default:"dyrector.io - Platform"`
 	CruxSecret                     string `yaml:"crux-secret"`
 	CruxEncryptionKey              string `yaml:"crux-encryption-key"`
-	CruxPostgresPort               uint   `yaml:"cruxPostgresPort" env-default:"5432"`
+	KratosSecret                   string `yaml:"kratosSecret"`
 	CruxPostgresDB                 string `yaml:"cruxPostgresDB" env-default:"crux"`
 	CruxPostgresUser               string `yaml:"cruxPostgresUser" env-default:"crux"`
 	CruxPostgresPassword           string `yaml:"cruxPostgresPassword"`
+	TimeZone                       string `yaml:"timezone" env-default:"UTC"`
+	KratosPostgresDB               string `yaml:"kratosPostgresDB" env-default:"kratos"`
+	MailFromEmail                  string `yaml:"mailFromEmail" env-default:"noreply@example.com"`
 	TraefikWebPort                 uint   `yaml:"traefikWebPort" env-default:"8000"`
-	TraefikUIPort                  uint   `yaml:"traefikUIPort" env-default:"8080"`
-	TraefikDockerSocket            string `yaml:"traefikDockerSocket" env-default:"/var/run/docker.sock"`
-	TraefikIsDockerSocketNamedPipe bool   `yaml:"traefikIsDockerSocketNamedPipe" env-default:"false"`
-	KratosAdminPort                uint   `yaml:"kratosAdminPort" env-default:"4434"`
+	CruxUIPort                     uint   `yaml:"crux-ui-port" env-default:"3000"`
 	KratosPublicPort               uint   `yaml:"kratosPublicPort" env-default:"4433"`
 	KratosPostgresPort             uint   `yaml:"kratosPostgresPort" env-default:"5433"`
-	KratosPostgresDB               string `yaml:"kratosPostgresDB" env-default:"kratos"`
-	KratosPostgresUser             string `yaml:"kratosPostgresUser" env-default:"kratos"`
-	KratosPostgresPassword         string `yaml:"kratosPostgresPassword"`
-	KratosSecret                   string `yaml:"kratosSecret"`
-	MailSlurperSMTPPort            uint   `yaml:"mailSlurperSMTPPort" env-default:"1025"`
+	TraefikUIPort                  uint   `yaml:"traefikUIPort" env-default:"8080"`
+	CruxHTTPPort                   uint   `yaml:"crux-http-port" env-default:"1848"`
+	CruxAgentGrpcPort              uint   `yaml:"crux-agentgrpc-port" env-default:"5000"`
 	MailSlurperUIPort              uint   `yaml:"mailSlurperUIPort" env-default:"4436"`
+	MailSlurperSMTPPort            uint   `yaml:"mailSlurperSMTPPort" env-default:"1025"`
+	CruxPostgresPort               uint   `yaml:"cruxPostgresPort" env-default:"5432"`
 	MailSlurperAPIPort             uint   `yaml:"mailSlurperAPIPort" env-default:"4437"`
-	MailFromName                   string `yaml:"mailFromName" env-default:"dyrector.io - Platform"`
-	MailFromEmail                  string `yaml:"mailFromEmail" env-default:"noreply@example.com"`
+	KratosAdminPort                uint   `yaml:"kratosAdminPort" env-default:"4434"`
+	TraefikIsDockerSocketNamedPipe bool   `yaml:"traefikIsDockerSocketNamedPipe" env-default:"false"`
 }
 
 const (

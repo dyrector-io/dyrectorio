@@ -59,8 +59,6 @@ func baseContainer(ctx context.Context, args *ArgsFlags) containerbuilder.Builde
 }
 
 // GetCrux services: db migrations and crux api service
-//
-//nolint:goconst
 func GetCrux(state *State, args *ArgsFlags) containerbuilder.Builder {
 	crux := baseContainer(state.Ctx, args).
 		WithImage(fmt.Sprintf("%s:%s", state.Crux.Image, state.SettingsFile.Version)).

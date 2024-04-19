@@ -19,8 +19,8 @@ import (
 type Namespace struct {
 	ctx       context.Context
 	client    *Client
-	name      string
 	appConfig *config.Configuration
+	name      string
 }
 
 // namespace entity

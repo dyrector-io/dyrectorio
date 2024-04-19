@@ -63,39 +63,39 @@ type Builder interface {
 }
 
 type DockerContainerBuilder struct {
-	ctx              context.Context
+	logger           dogger.LogWriter
 	client           client.APIClient
-	containerID      *string
+	ctx              context.Context
+	logConfig        *container.LogConfig
 	networkMap       map[string]string
-	networkAliases   []string
+	labels           map[string]string
+	pullDisplayFn    imageHelper.PullDisplayFn
+	containerID      *string
+	user             *int64
+	workingDirectory string
 	containerName    string
 	imageWithTag     string
-	envList          []string
-	labels           map[string]string
-	logConfig        *container.LogConfig
-	portList         []PortBinding
-	portRanges       []PortRangeBinding
-	mountList        []mount.Mount
-	networkMode      string
-	networks         []string
 	registryAuth     string
-	remove           bool
-	withoutConflict  bool
+	networkMode      string
 	restartPolicy    container.RestartPolicyMode
+	networks         []string
+	hooksPostStart   []LifecycleFunc
+	hooksPreStart    []LifecycleFunc
+	hooksPreCreate   []LifecycleFunc
 	entrypoint       []string
 	cmd              []string
 	shell            []string
-	tty              bool
-	user             *int64
-	imagePriority    imageHelper.PullPriority
-	pullDisplayFn    imageHelper.PullDisplayFn
-	logger           dogger.LogWriter
-	workingDirectory string
-	extraHosts       []string
-	hooksPreCreate   []LifecycleFunc
 	hooksPostCreate  []LifecycleFunc
-	hooksPreStart    []LifecycleFunc
-	hooksPostStart   []LifecycleFunc
+	mountList        []mount.Mount
+	portRanges       []PortRangeBinding
+	portList         []PortBinding
+	envList          []string
+	networkAliases   []string
+	extraHosts       []string
+	imagePriority    imageHelper.PullPriority
+	tty              bool
+	withoutConflict  bool
+	remove           bool
 }
 
 // A shorthand function for creating a new DockerContainerBuilder and calling WithClient.
@@ -306,12 +306,6 @@ func (dc *DockerContainerBuilder) WithPostStartHooks(hooks ...LifecycleFunc) Bui
 }
 
 func builderToDockerConfig(dc *DockerContainerBuilder) (hostConfig *container.HostConfig, containerConfig *container.Config, err error) {
-	hostConfig = &container.HostConfig{}
-	containerConfig = &container.Config{}
-	if dc.containerName != "" {
-		containerConfig.Hostname = dc.containerName
-	}
-
 	portListNat := portListToNatBinding(dc.portRanges, dc.portList)
 	exposedPortSet := getPortSet(dc.portRanges, dc.portList)
 	hostConfig = &container.HostConfig{
@@ -331,6 +325,9 @@ func builderToDockerConfig(dc *DockerContainerBuilder) (hostConfig *container.Ho
 		Cmd:          dc.cmd,
 		Shell:        dc.shell,
 		WorkingDir:   dc.workingDirectory,
+	}
+	if dc.containerName != "" {
+		containerConfig.Hostname = dc.containerName
 	}
 
 	if dc.user != nil {

@@ -40,8 +40,8 @@ type Connection struct {
 }
 
 type ContainerLogEvent struct {
-	Message string
 	Error   error
+	Message string
 }
 
 type ContainerLogReader interface {
@@ -379,7 +379,7 @@ func initWithToken(
 	}
 
 	log.Info().Str("address", address).Msg("Dialing to address.")
-	conn, err := grpc.Dial(address, opts...)
+	conn, err := grpc.NewClient(address, opts...)
 	if err != nil {
 		log.Panic().Stack().Err(err).Msg("Failed to dial gRPC")
 	}

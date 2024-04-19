@@ -23,20 +23,26 @@ import (
 // facade object for ingress management
 type ingress struct {
 	ctx       context.Context
-	status    string
 	client    *Client
 	appConfig *config.Configuration
+	status    string
 }
 
 type DeployIngressOptions struct {
-	namespace, containerName, ingressName, ingressHost, ingressPath, uploadLimit string
-	stripPrefix                                                                  bool
-	port                                                                         uint16
-	portList                                                                     []int32
-	tls, proxyHeaders                                                            bool
-	customHeaders                                                                []string
-	labels                                                                       map[string]string
-	annotations                                                                  map[string]string
+	annotations   map[string]string
+	labels        map[string]string
+	containerName string
+	ingressName   string
+	ingressHost   string
+	ingressPath   string
+	uploadLimit   string
+	namespace     string
+	customHeaders []string
+	portList      []int32
+	port          uint16
+	stripPrefix   bool
+	proxyHeaders  bool
+	tls           bool
 }
 
 func newIngress(ctx context.Context, client *Client) *ingress {

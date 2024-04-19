@@ -40,11 +40,11 @@ type PortRangeBinding struct {
 }
 
 type ParentContainer struct {
+	Logger *dogger.LogWriter
+	*types.Container
 	Name        string
 	MountList   []mount.Mount
 	Environment []string
-	Logger      *dogger.LogWriter
-	*types.Container
 }
 
 // Hook function  which can be used to add custom logic before and after events of the lifecycle of a container.
@@ -53,6 +53,6 @@ type LifecycleFunc func(ctx context.Context, client client.APIClient, cont Paren
 
 // WaitResult with the status code from the container
 type WaitResult struct {
-	StatusCode int64
 	Logs       []string
+	StatusCode int64
 }

@@ -25,8 +25,6 @@ var (
 
 // generating container labels for traefik
 // if Expose is provided we bind 80 and the given (domainName or (containerName + prefix)) + RootDomain
-//
-//nolint:goconst
 func GetTraefikLabels(
 	instanceConfig *v1.InstanceConfig,
 	containerConfig *v1.ContainerConfig,
