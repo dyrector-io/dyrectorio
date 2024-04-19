@@ -256,8 +256,10 @@ type ContainerConfig struct {
 }
 
 type Metrics struct {
+	// Path the path to be scraped, if not defined /metrics is used
 	Path string `json:"path"`
-	Port string `json:"port"`
+	// Port exposed port of the service where metrics are available
+	Port int `json:"port"`
 }
 
 func (c *ContainerConfig) Strings(appConfig *config.CommonConfiguration) []string {

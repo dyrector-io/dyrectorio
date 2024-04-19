@@ -224,7 +224,7 @@ func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.Conta
 	if crane.Metrics != nil {
 		containerConfig.Metrics = &v1.Metrics{
 			Path: crane.Metrics.Path,
-			Port: crane.Metrics.Path,
+			Port: int(crane.Metrics.Port),
 		}
 	}
 }
