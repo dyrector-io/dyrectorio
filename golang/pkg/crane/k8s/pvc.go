@@ -19,10 +19,10 @@ import (
 type PVC struct {
 	ctx       context.Context
 	client    *Client
-	status    string
 	requested map[string]v1.Volume
 	avail     map[string]v1.Volume
 	appConfig *config.Configuration
+	status    string
 }
 
 func NewPVC(ctx context.Context, client *Client) *PVC {

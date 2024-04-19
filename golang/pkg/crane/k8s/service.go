@@ -24,10 +24,10 @@ import (
 type Service struct {
 	ctx        context.Context
 	client     *Client
+	appConfig  *config.Configuration
 	status     string
 	portsBound []int32
 	portNames  []string
-	appConfig  *config.Configuration
 }
 
 func NewService(ctx context.Context, client *Client) *Service {
@@ -35,15 +35,15 @@ func NewService(ctx context.Context, client *Client) *Service {
 }
 
 type ServiceParams struct {
+	LBAnnotations map[string]string
+	labels        map[string]string
+	annotations   map[string]string
 	namespace     string
 	name          string
 	selector      string
 	portBindings  []builder.PortBinding
 	portRanges    []builder.PortRangeBinding
 	useLB         bool
-	LBAnnotations map[string]string
-	labels        map[string]string
-	annotations   map[string]string
 }
 
 func (s *Service) DeployService(params *ServiceParams) error {

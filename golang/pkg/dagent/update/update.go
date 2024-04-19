@@ -17,7 +17,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/errdefs"
@@ -36,11 +36,11 @@ func getUniqueContainerName(ctx context.Context, cli client.APIClient, base stri
 	count := 0
 
 	for {
-		container, err := docker.GetContainerByName(ctx, cli, name)
+		cont, err := docker.GetContainerByName(ctx, cli, name)
 		if err != nil {
 			return base, err
 		}
-		if container == nil {
+		if cont == nil {
 			return name, nil
 		}
 
@@ -91,7 +91,7 @@ func createNewDAgentContainer(ctx context.Context, cli client.APIClient, oldCont
 	builder := containerbuilder.NewDockerBuilder(ctx).
 		WithClient(cli).
 		WithImage(imageWithTag).
-		WithRestartPolicy(containerbuilder.RestartPolicyName(inspect.HostConfig.RestartPolicy.Name)).
+		WithRestartPolicy(inspect.HostConfig.RestartPolicy.Name).
 		WithName(name).
 		WithEnv(inspect.Config.Env).
 		WithMountPoints(mounts)
@@ -125,12 +125,12 @@ func GetSelfContainerName(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	container, err := utils.GetOwnContainer(ctx, cli)
+	cont, err := utils.GetOwnContainer(ctx, cli)
 	if err != nil {
 		return "", err
 	}
 
-	name := container.Names[0]
+	name := cont.Names[0]
 	return name, nil
 }
 
@@ -146,12 +146,12 @@ func ExecuteSelfUpdate(ctx context.Context, cli client.APIClient, command *agent
 		return nil
 	}
 
-	container, err := utils.GetOwnContainer(ctx, cli)
+	cont, err := utils.GetOwnContainer(ctx, cli)
 	if err != nil {
 		return err
 	}
 
-	newImage, err := image.ExpandImageNameWithTag(container.Image, tag)
+	newImage, err := image.ExpandImageNameWithTag(cont.Image, tag)
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func ExecuteSelfUpdate(ctx context.Context, cli client.APIClient, command *agent
 		log.Warn().Msg("Updating matching image tags")
 	}
 
-	originalName := container.Names[0]
+	originalName := cont.Names[0]
 
 	rename, err := getUniqueContainerName(ctx, cli, originalName+"-update")
 	if err != nil {
@@ -186,14 +186,14 @@ func ExecuteSelfUpdate(ctx context.Context, cli client.APIClient, command *agent
 
 	log.Debug().Str("oldName", originalName).Str("newName", rename).Msg("Renaming DAgent container")
 
-	err = cli.ContainerRename(ctx, container.ID, rename)
+	err = cli.ContainerRename(ctx, cont.ID, rename)
 	if err != nil {
 		return err
 	}
 
-	err = createNewDAgentContainer(ctx, cli, container.ID, originalName, newImage)
+	err = createNewDAgentContainer(ctx, cli, cont.ID, originalName, newImage)
 	if err != nil {
-		renameErr := cli.ContainerRename(ctx, container.ID, originalName)
+		renameErr := cli.ContainerRename(ctx, cont.ID, originalName)
 		if renameErr != nil {
 			return fmt.Errorf("%s (%s)", err.Error(), renameErr.Error())
 		}
@@ -236,7 +236,7 @@ func RemoveSelf(ctx context.Context, options grpc.UpdateOptions) error {
 		return err
 	}
 
-	err = cli.ContainerRemove(ctx, self.ID, types.ContainerRemoveOptions{
+	err = cli.ContainerRemove(ctx, self.ID, container.RemoveOptions{
 		Force: true,
 	})
 	if err != nil {

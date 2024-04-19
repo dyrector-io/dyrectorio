@@ -30,6 +30,33 @@ func TestMapDeployImageRequest(t *testing.T) {
 	assert.Equal(t, expected, res)
 }
 
+type RestartTestCase struct {
+	policy     *common.RestartPolicy
+	dockerType container.RestartPolicyMode
+}
+
+func TestMapDeployImageRequestRestartPolicies(t *testing.T) {
+	req := testDeployRequest()
+	expected := testExpectedCommon(req)
+	cfg := testAppConfig()
+
+	cases := []RestartTestCase{
+		{common.RestartPolicy_NO.Enum(), container.RestartPolicyDisabled},
+		{common.RestartPolicy_ON_FAILURE.Enum(), container.RestartPolicyOnFailure},
+		{common.RestartPolicy_ALWAYS.Enum(), container.RestartPolicyAlways},
+		{common.RestartPolicy_UNLESS_STOPPED.Enum(), container.RestartPolicyUnlessStopped},
+		// should be "" to use container runtime default setting, but we enforce 'unless-stopped'
+		{common.RestartPolicy_UNDEFINED.Enum(), container.RestartPolicyUnlessStopped},
+		{common.RestartPolicy_POLICY_UNSPECIFIED.Enum(), container.RestartPolicyUnlessStopped},
+	}
+	for _, tC := range cases {
+		req.Dagent.RestartPolicy = tC.policy
+		expected.ContainerConfig.RestartPolicy = tC.dockerType
+		res := MapDeployImage(req, cfg)
+		assert.Equal(t, expected, res)
+	}
+}
+
 func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 	return &v1.DeployImageRequest{
 		RequestID: "testID",
@@ -97,7 +124,7 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 				Type:   "365",
 				Config: map[string]string{"opt1": "v1", "opt2": "v2"},
 			},
-			RestartPolicy: "always",
+			RestartPolicy: container.RestartPolicyAlways,
 			Networks:      []string{"n1", "n2"},
 			NetworkMode:   "BRIDGE",
 			CustomHeaders: []string(nil),

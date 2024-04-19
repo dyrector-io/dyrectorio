@@ -26,11 +26,10 @@ import (
 const LogBufferSize = 2048
 
 type KubeContainerLogReader struct {
-	EventChannel chan grpc.ContainerLogEvent
-	LogStreams   []io.ReadCloser
-	ErrorGroup   *errgroup.Group
-
 	grpc.ContainerLogReader
+	EventChannel chan grpc.ContainerLogEvent
+	ErrorGroup   *errgroup.Group
+	LogStreams   []io.ReadCloser
 }
 
 func (kubeReader *KubeContainerLogReader) Next() <-chan grpc.ContainerLogEvent {

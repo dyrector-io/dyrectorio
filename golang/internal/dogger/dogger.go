@@ -33,14 +33,13 @@ type status struct {
 }
 
 type DeploymentLogger struct {
+	stream agent.Agent_DeploymentStatusClient
+	ctx    context.Context
+	LogWriter
+	appConfig    *config.CommonConfiguration
 	deploymentID string
 	requestID    string
-	stream       agent.Agent_DeploymentStatusClient
 	logs         []string
-	ctx          context.Context
-	appConfig    *config.CommonConfiguration
-
-	LogWriter
 }
 
 func NewDeploymentLogger(ctx context.Context, deploymentID *string,

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/AlekSi/pointer"
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
@@ -28,6 +28,9 @@ func baseBuilder(ctx context.Context) containerbuilder.Builder {
 }
 
 func containerCleanup(container containerbuilder.Container) {
+	if container == nil {
+		return
+	}
 	ctx := context.Background()
 	if container.GetContainerID() != nil {
 		dockerHelper.DeleteContainerByID(ctx, nil, *container.GetContainerID())
@@ -70,6 +73,18 @@ func TestNameWithBuilder(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestRestartNegative(t *testing.T) {
+	var _ containerbuilder.Builder = (*containerbuilder.DockerContainerBuilder)(nil)
+
+	builder := containerbuilder.NewDockerBuilder(context.Background()).
+		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-alpine").
+		WithRestartPolicy(container.RestartPolicyMode("invalid"))
+
+	cont, err := builder.CreateAndStart()
+	defer containerCleanup(cont)
+	assert.Error(t, err, "error is thrown for invalid restart policy")
+}
+
 func TestEnvPortsLabelsRestartPolicySettings(t *testing.T) {
 	cont, err := containerbuilder.NewDockerBuilder(context.Background()).
 		WithName("test02").
@@ -92,7 +107,7 @@ func TestEnvPortsLabelsRestartPolicySettings(t *testing.T) {
 			"LABEL1": "TEST",
 			"LABEL2": "1234",
 		}).
-		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
+		WithRestartPolicy(container.RestartPolicyAlways).
 		WithImage("ghcr.io/dyrector-io/mirror/nginx:mainline-alpine").
 		CreateAndStart()
 
@@ -103,25 +118,25 @@ func TestEnvPortsLabelsRestartPolicySettings(t *testing.T) {
 		panic(err)
 	}
 
-	container, err := cli.ContainerInspect(context.Background(), *cont.GetContainerID())
+	containerResp, err := cli.ContainerInspect(context.Background(), *cont.GetContainerID())
 	assert.Nil(t, err)
 
-	assert.Equal(t, "/test02", container.Name)
+	assert.Equal(t, "/test02", containerResp.Name)
 
-	assert.Contains(t, container.Config.Env, "A=B")
-	assert.Contains(t, container.Config.Env, "E_N_V=123")
+	assert.Contains(t, containerResp.Config.Env, "A=B")
+	assert.Contains(t, containerResp.Config.Env, "E_N_V=123")
 
-	assertPortBinding(t, container.HostConfig.PortBindings, "1234", "2345")
+	assertPortBinding(t, containerResp.HostConfig.PortBindings, "1234", "2345")
 	for testPort := 0; testPort < 10; testPort++ {
-		assertPortBinding(t, container.HostConfig.PortBindings, fmt.Sprint(10+testPort), fmt.Sprint(30+testPort))
+		assertPortBinding(t, containerResp.HostConfig.PortBindings, fmt.Sprint(10+testPort), fmt.Sprint(30+testPort))
 	}
 
-	assert.Contains(t, container.Config.Labels, "LABEL1")
-	assert.Equal(t, container.Config.Labels["LABEL1"], "TEST")
-	assert.Contains(t, container.Config.Labels, "LABEL2")
-	assert.Equal(t, container.Config.Labels["LABEL2"], "1234")
+	assert.Contains(t, containerResp.Config.Labels, "LABEL1")
+	assert.Equal(t, containerResp.Config.Labels["LABEL1"], "TEST")
+	assert.Contains(t, containerResp.Config.Labels, "LABEL2")
+	assert.Equal(t, containerResp.Config.Labels["LABEL2"], "1234")
 
-	assert.Equal(t, container.HostConfig.RestartPolicy.Name, string(containerbuilder.AlwaysRestartPolicy))
+	assert.Equal(t, string(containerResp.HostConfig.RestartPolicy.Name), string(container.RestartPolicyAlways))
 }
 
 func TestLogging(t *testing.T) {
@@ -240,7 +255,7 @@ func TestConflict(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	list, err := cli.ContainerList(context.Background(), types.ContainerListOptions{
+	list, err := cli.ContainerList(context.Background(), container.ListOptions{
 		All:     true,
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: *cont2.GetContainerID()}),
 	})

@@ -43,7 +43,7 @@ type Builder interface {
 	WithLogConfig(config *container.LogConfig) Builder
 	WithRegistryAuth(auth *imageHelper.RegistryAuth) Builder
 	WithAutoRemove(remove bool) Builder
-	WithRestartPolicy(policy RestartPolicyName) Builder
+	WithRestartPolicy(policy container.RestartPolicyMode) Builder
 	WithEntrypoint(cmd []string) Builder
 	WithCmd(cmd []string) Builder
 	WithShell(shell []string) Builder
@@ -63,39 +63,39 @@ type Builder interface {
 }
 
 type DockerContainerBuilder struct {
-	ctx              context.Context
+	logger           dogger.LogWriter
 	client           client.APIClient
-	containerID      *string
+	ctx              context.Context
+	logConfig        *container.LogConfig
 	networkMap       map[string]string
-	networkAliases   []string
+	labels           map[string]string
+	pullDisplayFn    imageHelper.PullDisplayFn
+	containerID      *string
+	user             *int64
+	workingDirectory string
 	containerName    string
 	imageWithTag     string
-	envList          []string
-	labels           map[string]string
-	logConfig        *container.LogConfig
-	portList         []PortBinding
-	portRanges       []PortRangeBinding
-	mountList        []mount.Mount
-	networkMode      string
-	networks         []string
 	registryAuth     string
-	remove           bool
-	withoutConflict  bool
-	restartPolicy    RestartPolicyName
+	networkMode      string
+	restartPolicy    container.RestartPolicyMode
+	networks         []string
+	hooksPostStart   []LifecycleFunc
+	hooksPreStart    []LifecycleFunc
+	hooksPreCreate   []LifecycleFunc
 	entrypoint       []string
 	cmd              []string
 	shell            []string
-	tty              bool
-	user             *int64
-	imagePriority    imageHelper.PullPriority
-	pullDisplayFn    imageHelper.PullDisplayFn
-	logger           dogger.LogWriter
-	workingDirectory string
-	extraHosts       []string
-	hooksPreCreate   []LifecycleFunc
 	hooksPostCreate  []LifecycleFunc
-	hooksPreStart    []LifecycleFunc
-	hooksPostStart   []LifecycleFunc
+	mountList        []mount.Mount
+	portRanges       []PortRangeBinding
+	portList         []PortBinding
+	envList          []string
+	networkAliases   []string
+	extraHosts       []string
+	imagePriority    imageHelper.PullPriority
+	tty              bool
+	withoutConflict  bool
+	remove           bool
 }
 
 // A shorthand function for creating a new DockerContainerBuilder and calling WithClient.
@@ -208,7 +208,7 @@ func (dc *DockerContainerBuilder) WithRegistryAuth(auth *imageHelper.RegistryAut
 }
 
 // Sets the restart policy of the container.
-func (dc *DockerContainerBuilder) WithRestartPolicy(policy RestartPolicyName) Builder {
+func (dc *DockerContainerBuilder) WithRestartPolicy(policy container.RestartPolicyMode) Builder {
 	dc.restartPolicy = policy
 	return dc
 }
@@ -306,12 +306,6 @@ func (dc *DockerContainerBuilder) WithPostStartHooks(hooks ...LifecycleFunc) Bui
 }
 
 func builderToDockerConfig(dc *DockerContainerBuilder) (hostConfig *container.HostConfig, containerConfig *container.Config, err error) {
-	hostConfig = &container.HostConfig{}
-	containerConfig = &container.Config{}
-	if dc.containerName != "" {
-		containerConfig.Hostname = dc.containerName
-	}
-
 	portListNat := portListToNatBinding(dc.portRanges, dc.portList)
 	exposedPortSet := getPortSet(dc.portRanges, dc.portList)
 	hostConfig = &container.HostConfig{
@@ -332,6 +326,9 @@ func builderToDockerConfig(dc *DockerContainerBuilder) (hostConfig *container.Ho
 		Shell:        dc.shell,
 		WorkingDir:   dc.workingDirectory,
 	}
+	if dc.containerName != "" {
+		containerConfig.Hostname = dc.containerName
+	}
 
 	if dc.user != nil {
 		containerConfig.User = fmt.Sprint(*dc.user)
@@ -341,8 +338,13 @@ func builderToDockerConfig(dc *DockerContainerBuilder) (hostConfig *container.Ho
 		hostConfig.LogConfig = *dc.logConfig
 	}
 
-	policy := container.RestartPolicy{}
-	policy.Name = string(dc.restartPolicy)
+	policy := container.RestartPolicy{
+		Name: dc.restartPolicy,
+	}
+	err = container.ValidateRestartPolicy(policy)
+	if err != nil {
+		return nil, nil, errors.Join(err, fmt.Errorf("builder: invalid restart policy"))
+	}
 	hostConfig.RestartPolicy = policy
 
 	if dc.networkMode != "" {
@@ -392,7 +394,7 @@ func (dc *DockerContainerBuilder) Create() (Container, error) {
 	if err != nil {
 		dc.logError(fmt.Sprintln("Container create failed: ", err))
 	}
-	containers, err := dc.client.ContainerList(dc.ctx, types.ContainerListOptions{
+	containers, err := dc.client.ContainerList(dc.ctx, container.ListOptions{
 		All:     true,
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: containerCreateResp.ID}),
 	})
@@ -435,7 +437,7 @@ func (dc *DockerContainerBuilder) CreateAndStartWaitUntilExit() (Container, *Wai
 		return cont, res, err
 	}
 
-	logReader, err := dc.client.ContainerLogs(dc.ctx, *cont.GetContainerID(), types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
+	logReader, err := dc.client.ContainerLogs(dc.ctx, *cont.GetContainerID(), container.LogsOptions{ShowStdout: true, ShowStderr: true})
 	if err != nil {
 		return cont, res, err
 	}

@@ -19,28 +19,28 @@ import (
 
 type DeployFacade struct {
 	ctx            context.Context
-	params         *DeployFacadeParams
+	secret         *Secret
 	client         *Client
-	image          string
 	deployment     *Deployment
 	namespace      *Namespace
 	service        *Service
 	configmap      *configmap
 	ingress        *ingress
-	secret         *Secret
+	params         *DeployFacadeParams
 	pvc            *PVC
 	ServiceMonitor *ServiceMonitor
 	appConfig      *config.Configuration
+	image          string
 }
 
 type DeployFacadeParams struct {
 	Ctx              context.Context
-	Image            string
-	InstanceConfig   v1.InstanceConfig
-	ContainerConfig  v1.ContainerConfig
 	RuntimeConfig    *string
 	imagePullSecrets *imageHelper.RegistryAuth
+	Image            string
 	Issuer           string
+	InstanceConfig   v1.InstanceConfig
+	ContainerConfig  v1.ContainerConfig
 }
 
 func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *DeployFacade {

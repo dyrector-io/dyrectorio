@@ -12,7 +12,7 @@ func MapAppsettingsToEnv(in *string) (map[string]string, error) {
 	if in == nil {
 		return map[string]string{}, errors.New("Nil input")
 	}
-	if in != nil && *in == "" {
+	if *in == "" {
 		return map[string]string{}, errors.New("Empty input")
 	}
 	envList := map[string]string{}

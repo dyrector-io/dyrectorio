@@ -8,6 +8,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"github.com/rs/zerolog/log"
 
@@ -57,7 +58,7 @@ func deleteContainerByIDAndState(ctx context.Context, dog *dogger.DeploymentLogg
 			dog.WriteContainerState(common.ContainerState_WAITING, state, dogger.Info, "Removing container: "+helper.FirstN(id, VisibleIDLimit))
 		}
 
-		if err = cli.ContainerRemove(ctx, id, types.ContainerRemoveOptions{}); err != nil {
+		if err = cli.ContainerRemove(ctx, id, container.RemoveOptions{}); err != nil {
 			return fmt.Errorf("could not remove container (%s): %s", helper.FirstN(id, VisibleIDLimit), err.Error())
 		}
 
@@ -108,7 +109,7 @@ func GetAllContainers(ctx context.Context) ([]types.Container, error) {
 		log.Fatal().Err(err).Send()
 	}
 
-	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{All: true})
+	containers, err := cli.ContainerList(ctx, container.ListOptions{All: true})
 	if err != nil {
 		return []types.Container{}, err
 	}
@@ -173,7 +174,7 @@ func DeleteImage(ctx context.Context, imageID string) error {
 		log.Fatal().Err(err).Send()
 	}
 
-	_, err = cli.ImageRemove(ctx, imageID, types.ImageRemoveOptions{})
+	_, err = cli.ImageRemove(ctx, imageID, image.RemoveOptions{})
 	return err
 }
 
@@ -189,8 +190,8 @@ func checkOneContainer(containers []types.Container) (*types.Container, error) {
 	}
 }
 
-func containerListOptionsfilter(filtertype, filter string) types.ContainerListOptions {
-	return types.ContainerListOptions{
+func containerListOptionsfilter(filtertype, filter string) container.ListOptions {
+	return container.ListOptions{
 		All: true,
 		Filters: filters.NewArgs(
 			filters.KeyValuePair{
