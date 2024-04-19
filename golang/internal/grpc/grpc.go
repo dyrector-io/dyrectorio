@@ -381,24 +381,19 @@ func initWithToken(
 	log.Info().Str("address", address).Msg("Dialing to address.")
 	conn, err := grpc.NewClient(address, opts...)
 	if err != nil {
-		log.Panic().Stack().Err(err).Msg("Failed to dial gRPC")
+		return err
 	}
 
 	for {
 		state := conn.GetState()
-		if state != connectivity.Ready {
-			log.Debug().Msgf("Waiting for state to change: %d", state)
-			conn.WaitForStateChange(loop.Ctx, state)
-			log.Debug().Msgf("State Changed to: %d", conn.GetState())
-		} else {
+		if state == connectivity.Ready || state == connectivity.Idle {
 			break
 		}
-	}
-	if err != nil {
-		log.Error().Stack().Err(err).Msg("gRPC connection error")
+		log.Debug().Msgf("Waiting for state to change: %s", state.String())
+		conn.WaitForStateChange(loop.Ctx, state)
+		log.Debug().Msgf("State Changed to: %d", conn.GetState())
 	}
 	grpcConn.Conn = conn
-
 	return loop.grpcLoop(token)
 }
 
