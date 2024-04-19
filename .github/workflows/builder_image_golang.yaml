@@ -12,7 +12,7 @@ permissions:
 env:
   GITHUB_REGISTRY: ghcr.io
   BUILDER_IMAGE_NAME: dyrector-io/dyrectorio/builder-images/golang
-  VERSION: 2
+  VERSION: 3
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -37,7 +37,7 @@ jobs:
   push:
     runs-on: ubuntu-22.04
     needs: build
-    if: github.ref_name == 'develop'
+    #if: github.ref_name == 'develop'
     environment: Workflow - Protected
     steps:
       - name: Artifact download
