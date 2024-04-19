@@ -387,7 +387,7 @@ export default class DeployMapper {
       metrics: config.metrics?.enabled
         ? {
             path: config.metrics.path ?? null,
-            port: config.metrics.port?.toString() ?? null,
+            port: config.metrics.port ?? null,
           }
         : null,
     }

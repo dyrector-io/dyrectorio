@@ -267,7 +267,7 @@ export interface Marker_IngressEntry {
 }
 
 export interface Metrics {
-  port: string
+  port: number
   path: string
 }
 
@@ -1049,17 +1049,17 @@ export const Marker_IngressEntry = {
 }
 
 function createBaseMetrics(): Metrics {
-  return { port: '', path: '' }
+  return { port: 0, path: '' }
 }
 
 export const Metrics = {
   fromJSON(object: any): Metrics {
-    return { port: isSet(object.port) ? String(object.port) : '', path: isSet(object.path) ? String(object.path) : '' }
+    return { port: isSet(object.port) ? Number(object.port) : 0, path: isSet(object.path) ? String(object.path) : '' }
   },
 
   toJSON(message: Metrics): unknown {
     const obj: any = {}
-    message.port !== undefined && (obj.port = message.port)
+    message.port !== undefined && (obj.port = Math.round(message.port))
     message.path !== undefined && (obj.path = message.path)
     return obj
   },

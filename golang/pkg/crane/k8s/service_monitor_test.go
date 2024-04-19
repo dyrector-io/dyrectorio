@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 func TestServiceMonitorSpawning(t *testing.T) {
 	m, err := k8s.NewServiceMonitor(context.Background(), k8s.NewClient(getTestConfig()))
 	assert.Nil(t, err, "client is spawned without errors")
-	err = m.Deploy("crane-sm-test", "test-sm", v1.Metrics{Path: "/metrics", Port: "tcp-metrics"}, "")
+	err = m.Deploy("crane-sm-test", "test-sm", v1.Metrics{Path: "/metrics", Port: 8080}, "")
 	assert.Nil(t, err, "no errors expected with default parameters")
 }
 
