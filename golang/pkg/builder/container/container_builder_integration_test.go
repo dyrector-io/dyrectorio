@@ -136,7 +136,7 @@ func TestEnvPortsLabelsRestartPolicySettings(t *testing.T) {
 	assert.Contains(t, containerResp.Config.Labels, "LABEL2")
 	assert.Equal(t, containerResp.Config.Labels["LABEL2"], "1234")
 
-	assert.Equal(t, containerResp.HostConfig.RestartPolicy.Name, string(container.RestartPolicyAlways))
+	assert.Equal(t, string(containerResp.HostConfig.RestartPolicy.Name), string(container.RestartPolicyAlways))
 }
 
 func TestLogging(t *testing.T) {
