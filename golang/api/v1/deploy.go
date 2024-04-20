@@ -21,15 +21,15 @@ import (
 )
 
 type DeployImageRequest struct {
-	RequestID       string                    `json:"RequestId" binding:"required"`
 	RegistryAuth    *imageHelper.RegistryAuth `json:"RegistryAuth,omitempty"`
-	InstanceConfig  InstanceConfig            `json:"InstanceConfig" binding:"required"`
-	ContainerConfig ContainerConfig           `json:"ContainerConfig" binding:"required"`
-	RuntimeConfig   Base64JSONBytes           `json:"RuntimeConfig,omitempty"`
 	Registry        *string                   `json:"Registry,omitempty"`
+	RequestID       string                    `json:"RequestId" binding:"required"`
 	ImageName       string                    `json:"ImageName" binding:"required"`
 	Tag             string                    `json:"Tag" binding:"required"`
 	Issuer          string                    `json:"Issuer"`
+	InstanceConfig  InstanceConfig            `json:"InstanceConfig" binding:"required"`
+	RuntimeConfig   Base64JSONBytes           `json:"RuntimeConfig,omitempty"`
+	ContainerConfig ContainerConfig           `json:"ContainerConfig" binding:"required"`
 }
 type VersionData struct {
 	Version      string `json:"version" binding:"required"`
@@ -55,12 +55,12 @@ func (d *DeployImageRequest) Strings(appConfig *config.CommonConfiguration) []st
 }
 
 type DeployImageResponse struct {
-	Started   bool     `json:"started"`
-	Error     string   `json:"error"`
 	RequestID *string  `json:"requestId"`
 	ImageName *string  `json:"imageName"`
+	Error     string   `json:"error"`
 	Tag       string   `json:"tag"`
 	Logs      []string `json:"logs"`
+	Started   bool     `json:"started"`
 }
 
 type DeployVersionResponse []DeployImageResponse
@@ -68,22 +68,14 @@ type DeployVersionResponse []DeployImageResponse
 type Base64JSONBytes []byte
 
 type InstanceConfig struct {
-	// prefix of the container, identifies namespace
-	ContainerPreName string `json:"containerPreName" binding:"required"`
-	// not-in-use
-	MountPath string `json:"mountPath"`
-	// name of the instance eg. configmaps
-	Name string `json:"name"`
-	// variables for instance; configmaps: name-common, name must be defined
-	Environment map[string]string `json:"environment,omitempty"`
-	// not-in-use/unimplemented; registry is taken from containerConfig
-	Registry string `json:"registry"`
-	// not-in-use/unimplemented; git repository prefix
-	RepositoryPreName string `json:"repositoryPreName"`
-	// namespace global envs
+	Environment       map[string]string `json:"environment,omitempty"`
 	SharedEnvironment map[string]string `json:"sharedEnvironment,omitempty"`
-	// use preexisting namespaced envs
-	UseSharedEnvs bool `json:"useSharedEnvs" validate:"excluded_with=SharedEnvironment"`
+	ContainerPreName  string            `json:"containerPreName" binding:"required"`
+	MountPath         string            `json:"mountPath"`
+	Name              string            `json:"name"`
+	Registry          string            `json:"registry"`
+	RepositoryPreName string            `json:"repositoryPreName"`
+	UseSharedEnvs     bool              `json:"useSharedEnvs" validate:"excluded_with=SharedEnvironment"`
 }
 
 func (i *InstanceConfig) Strings() []string {
@@ -105,10 +97,10 @@ const (
 )
 
 type HealthCheckConfig struct {
-	Port           uint16 `json:"Port"`
 	LivenessProbe  *Probe `json:"livenessProbe"`
 	ReadinessProbe *Probe `json:"readinessProbe"`
 	StartupProbe   *Probe `json:"startupProbe"`
+	Port           uint16 `json:"Port"`
 }
 
 type Resources struct {
@@ -140,124 +132,61 @@ const (
 )
 
 type ExpectedState struct {
-	State    ContainerState `json:"state"`
 	Timeout  *int32         `json:"timeout"`
 	ExitCode *int32         `json:"exitCode"`
+	State    ContainerState `json:"state"`
 }
 
 type ContainerConfig struct {
-	// ContainerPreName identifies namespace to be used
-	ContainerPreName string `json:"containerPreName"`
-	// name of the container used for service, configmap names, various component names
-	Container string `json:"container" binding:"required"`
-	// portbinding list contains external/interal ports
-	Ports []builder.PortBinding `json:"port" binding:"dive"`
-	// Port ranges to be exposed ! no native range support in k8s
-	PortRanges []builder.PortRangeBinding `json:"portRanges" binding:"dive"`
-	// mount list, if a name starts with @ it can be used by multiple components eg @data|/target/mount/path
-	Mounts []string `json:"mount"`
-	// volumes
-	Volumes []Volume `json:"volumes,omitempty" binding:"dive"`
-	// environment variables list
-	Environment map[string]string `json:"environment"`
-	// Secrets
-	Secrets map[string]string `json:"secrets,omitempty"`
-	// the type of the runtime text provided eg. dotnet-appsettings
-	RuntimeConfigType RuntimeConfigType `json:"runtimeConfigType"`
-	// create an ingress object or not
-	Expose bool `json:"expose"`
-	// use nginx tls configuration
-	ExposeTLS bool `json:"exposeTls"`
-
-	/*
-		// proposal: all components need to match this
-
-		// Domain name, if defined `<IngressName>.<RootDomain>` otherwise `<ContainerName>.<Prefix>.<RootDomain>`
-		// If RootDomain is empty it's omitted
-		RoutingDomain string `json:"routingDomain"`
-		// Set endpoint upload limit, default value is: 1m
-		// for docker hosts, this is needs to be bytes: 1000000 ~1m
-		RoutingUploadLimit string `json:"routingUploadLimit"`
-	*/
-
-	// ingress prefix before hostname, `containerName.containerPrefix.<ingress root>` by default, this replaces both before root
-	IngressName string `json:"ingressName"`
-	// ingress hostname, env value used by default, can be overridden here
-	IngressHost string `json:"ingressHost"`
-	// ingress path for path based routing
-	IngressPath string `json:"ingressPath"`
-	// ingress path for path based routing
-	IngressStripPath bool `json:"ingressPathStrip"`
-	// ingress port to target
-	IngressPort uint16 `json:"ingressPort"`
-	// for docker hosts, this is needs to be bytes: 1000000 ~1m
-	IngressUploadLimit string `json:"ingressUploadLimit"`
-	// if put together with another instances consume their shared configs eg. -common config map, generated from here
-	Shared bool `json:"shared"`
-	// config container is spawned as an initcontainer copying files to a shared volume
-	ConfigContainer *ConfigContainer `json:"configContainer,omitempty"`
-	// import container uses rclone to copy over files before container startup
-	ImportContainer *ImportContainer `json:"importContainer,omitempty"`
-	// standard initContainers
-	InitContainers []InitContainer `json:"initContainers,omitempty" binding:"dive"`
-	// container UID
-	User *int64 `json:"user"`
-	// the initial command of a container have mixed terms
-	// docker --> k8s: entrypoint => command, cmd => args
-	// we use the k8s term here
-	// command is the active process of the container
-	Command []string `json:"command"`
-	// args are added to the command
-	Args []string `json:"args"`
-	// if we need to spawn a pseudo-terminal
-	TTY bool `json:"tty"`
-	// working directory of the container or pod
-	WorkingDirectory string `json:"workingDirectory"`
-
-	// dagent only
-	// docker log config https://docs.docker.com/config/containers/logging/configure/
-	LogConfig     *container.LogConfig      `json:"logConfig"`
-	RestartPolicy builder.RestartPolicyName `json:"restartPolicy"`
-	// bridge(container, default) host, none or network name
-	NetworkMode string `json:"networkMode"`
-	// extra networks
-	Networks []string `json:"networks"`
-	// docker only labels
-	DockerLabels map[string]string `json:"dockerLabels"`
-
-	// k8s-only-section
-	// Deployments strategy, on deployment how to restart underlying pods
-	// Values: Recreate (all-at-once), RollingUpdate(one-by-one only if succeeds)
-	DeploymentStrategy string `json:"deploymentStrategy"`
-	// health check configuration
-	HealthCheckConfig HealthCheckConfig `json:"healthCheck"`
-	// custom header configuration
-	CustomHeaders []string `json:"customHeaders,omitempty"`
-	// resource management
-	ResourceConfig ResourceConfig `json:"resourceConfig"`
-	// add proxy and cors headers
-	ProxyHeaders bool `json:"proxyHeaders"`
-	// Expose service using external IP
-	// also sets the externalTrafficPolcy to "local"
-	UseLoadBalancer bool `json:"useLoadBalancer"`
-	// ExtraLBAnnotations, this is legacy
-	// Annotations.Service does the same, keeping it for compat
-	// lots of cloud provider specific configs can be put into annotations
-	// they vary enough to have it exposed like this
-	ExtraLBAnnotations map[string]string `json:"extraLBAnnotations,omitempty"`
-	// Annotations
-	Annotations Markers `json:"annotations"`
-	// k8s labels
-	Labels Markers `json:"labels"`
-	// Metrics
-	Metrics *Metrics `json:"metrics,omitempty"`
-	// Expected state
-	ExpectedState *ExpectedState `json:"expectedState,omitempty"`
+	HealthCheckConfig  HealthCheckConfig           `json:"healthCheck"`
+	Labels             Markers                     `json:"labels"`
+	Annotations        Markers                     `json:"annotations"`
+	ConfigContainer    *ConfigContainer            `json:"configContainer,omitempty"`
+	ImportContainer    *ImportContainer            `json:"importContainer,omitempty"`
+	ExpectedState      *ExpectedState              `json:"expectedState,omitempty"`
+	Environment        map[string]string           `json:"environment"`
+	Secrets            map[string]string           `json:"secrets,omitempty"`
+	LogConfig          *container.LogConfig        `json:"logConfig"`
+	ExtraLBAnnotations map[string]string           `json:"extraLBAnnotations,omitempty"`
+	User               *int64                      `json:"user"`
+	Metrics            *Metrics                    `json:"metrics,omitempty"`
+	DockerLabels       map[string]string           `json:"dockerLabels"`
+	ResourceConfig     ResourceConfig              `json:"resourceConfig"`
+	IngressPath        string                      `json:"ingressPath"`
+	Container          string                      `json:"container" binding:"required"`
+	DeploymentStrategy string                      `json:"deploymentStrategy"`
+	IngressUploadLimit string                      `json:"ingressUploadLimit"`
+	IngressHost        string                      `json:"ingressHost"`
+	WorkingDirectory   string                      `json:"workingDirectory"`
+	IngressName        string                      `json:"ingressName"`
+	ContainerPreName   string                      `json:"containerPreName"`
+	NetworkMode        string                      `json:"networkMode"`
+	RestartPolicy      container.RestartPolicyMode `json:"restartPolicy"`
+	RuntimeConfigType  RuntimeConfigType           `json:"runtimeConfigType"`
+	InitContainers     []InitContainer             `json:"initContainers,omitempty" binding:"dive"`
+	Volumes            []Volume                    `json:"volumes,omitempty" binding:"dive"`
+	Args               []string                    `json:"args"`
+	Command            []string                    `json:"command"`
+	Networks           []string                    `json:"networks"`
+	Ports              []builder.PortBinding       `json:"port" binding:"dive"`
+	PortRanges         []builder.PortRangeBinding  `json:"portRanges" binding:"dive"`
+	CustomHeaders      []string                    `json:"customHeaders,omitempty"`
+	Mounts             []string                    `json:"mount"`
+	IngressPort        uint16                      `json:"ingressPort"`
+	Shared             bool                        `json:"shared"`
+	UseLoadBalancer    bool                        `json:"useLoadBalancer"`
+	Expose             bool                        `json:"expose"`
+	ProxyHeaders       bool                        `json:"proxyHeaders"`
+	ExposeTLS          bool                        `json:"exposeTls"`
+	IngressStripPath   bool                        `json:"ingressPathStrip"`
+	TTY                bool                        `json:"tty"`
 }
 
 type Metrics struct {
+	// Path the path to be scraped, if not defined /metrics is used
 	Path string `json:"path"`
-	Port string `json:"port"`
+	// Port exposed port of the service where metrics are available
+	Port int `json:"port"`
 }
 
 func (c *ContainerConfig) Strings(appConfig *config.CommonConfiguration) []string {
@@ -327,20 +256,13 @@ type ImportContainer struct {
 // classic initContainer, also mimicked on docker
 // TODO(nandor-magyar): extend docs here
 type InitContainer struct {
-	// name of the init container, they must be unique within a pod
-	Name string `json:"name"`
-	// image to use
-	Image string `json:"image"`
-	// Reference(s) to already existing volume(s)
-	Volumes []VolumeLink `json:"volumes"`
-	// command to run, expecting exit code 0
-	Command []string `json:"command"`
-	// arguments added to the command
-	Args []string `json:"args"`
-	// use env/secrets from the parent container
-	UseParent bool `json:"useParent"`
-	// envs directly defined
-	Envs map[string]string `json:"envs"`
+	Envs      map[string]string `json:"envs"`
+	Name      string            `json:"name"`
+	Image     string            `json:"image"`
+	Volumes   []VolumeLink      `json:"volumes"`
+	Command   []string          `json:"command"`
+	Args      []string          `json:"args"`
+	UseParent bool              `json:"useParent"`
 }
 
 type VolumeLink struct {
@@ -430,10 +352,6 @@ func (jsonConfig *Base64JSONBytes) UnmarshalJSON(b []byte) error {
 	}
 
 	cleaned := util.RemoveJSONComment(decoded)
-	if err != nil {
-		return err
-	}
-
 	*jsonConfig = Base64JSONBytes(cleaned)
 
 	return err
@@ -471,6 +389,6 @@ func SetDeploymentDefaults(
 	}
 
 	if deployImageRequest.ContainerConfig.RestartPolicy == "" {
-		deployImageRequest.ContainerConfig.RestartPolicy = builder.RestartUnlessStoppedRestartPolicy
+		deployImageRequest.ContainerConfig.RestartPolicy = container.RestartPolicyUnlessStopped
 	}
 }

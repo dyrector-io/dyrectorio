@@ -32,12 +32,12 @@ type ExecBuilder interface {
 
 type DockerExecBuilder struct {
 	ctx          context.Context
-	client       *client.Client
+	logger       *dogger.LogWriter
 	containerID  *string
 	user         *int64
+	client       *client.Client
 	workingDir   string
 	cmd          []string
-	logger       *dogger.LogWriter
 	tty          bool
 	detach       bool
 	attachStdin  bool
@@ -175,9 +175,9 @@ func (de *DockerExecBuilder) Create() (Exec, error) {
 
 type Exec struct {
 	ctx            context.Context
+	execStartCheck types.ExecStartCheck
 	client         *client.Client
 	ExecID         string
-	execStartCheck types.ExecStartCheck
 }
 
 func (e Exec) Start() error {

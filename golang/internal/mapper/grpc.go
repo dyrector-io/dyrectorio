@@ -159,12 +159,12 @@ func mapDagentConfig(dagent *agent.DagentContainerConfig, containerConfig *v1.Co
 	}
 
 	if dagent.RestartPolicy != nil {
-		containerConfig.RestartPolicy = mapRestartPolicy(dagent.RestartPolicy.String())
+		containerConfig.RestartPolicy = container.RestartPolicyMode(ProtoEnumToKebabCase(dagent.RestartPolicy.String()))
 	}
 
 	if dagent.LogConfig != nil {
 		containerConfig.LogConfig = &container.LogConfig{
-			Type:   strings.ToLower(strings.ReplaceAll(strings.TrimPrefix(dagent.LogConfig.Driver.String(), "DRIVER_TYPE_"), "_", "-")),
+			Type:   ProtoEnumToKebabCase(strings.TrimPrefix(dagent.LogConfig.Driver.String(), "DRIVER_TYPE_")),
 			Config: dagent.LogConfig.Options,
 		}
 	}
@@ -180,6 +180,14 @@ func mapDagentConfig(dagent *agent.DagentContainerConfig, containerConfig *v1.Co
 			ExitCode: dagent.ExpectedState.ExitCode,
 		}
 	}
+}
+
+func ProtoEnumToKebabCase(in string) string {
+	res := strings.ToLower(strings.ReplaceAll(in, "_", "-"))
+	if strings.Contains(res, "unspecified") || strings.Contains(res, "undefined") {
+		return ""
+	}
+	return res
 }
 
 func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.ContainerConfig) {
@@ -224,15 +232,9 @@ func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.Conta
 	if crane.Metrics != nil {
 		containerConfig.Metrics = &v1.Metrics{
 			Path: crane.Metrics.Path,
-			Port: crane.Metrics.Path,
+			Port: int(crane.Metrics.Port),
 		}
 	}
-}
-
-func mapRestartPolicy(policy string) builder.RestartPolicyName {
-	lower := strings.ToLower(policy)
-
-	return builder.RestartPolicyName(strings.Replace(lower, "_", "-", -1))
 }
 
 func mapContainerState(state common.ContainerState) v1.ContainerState {

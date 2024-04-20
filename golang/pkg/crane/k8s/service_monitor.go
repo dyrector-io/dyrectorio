@@ -11,6 +11,7 @@ import (
 
 	smv1 "github.com/prometheus-operator/prometheus-operator/pkg/client/applyconfiguration/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 type ServiceMonitor struct {
@@ -58,28 +59,28 @@ func (sm *ServiceMonitor) Deploy(namespace, serviceName string, metricParams v1.
 		return err
 	}
 
-	portName := metricParams.Port
-
-	if portName == "" {
-		portName = firstPort
-	}
-
 	metricsPath := metricParams.Path
 	if metricsPath == "" {
 		metricsPath = "/metrics"
 	}
 
+	endpoint := smv1.Endpoint().WithPath(metricsPath)
+	if metricParams.Port != 0 {
+		endpoint = endpoint.WithTargetPort(intstr.FromInt(metricParams.Port))
+	} else {
+		endpoint = endpoint.WithPort(firstPort)
+	}
+
 	smApplyConfig := smv1.ServiceMonitor(serviceName, namespace).
 		WithSpec(smv1.ServiceMonitorSpec().
-			WithEndpoints(
-				smv1.Endpoint().WithPort(portName).WithPath(metricsPath),
-			).WithSelector(
-			metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"app": serviceName,
+			WithEndpoints(endpoint).
+			WithSelector(
+				metav1.LabelSelector{
+					MatchLabels: map[string]string{
+						"app": serviceName,
+					},
 				},
-			},
-		))
+			))
 
 	_, err = sm.ClientSet.MonitoringV1().ServiceMonitors(namespace).Apply(sm.Ctx, smApplyConfig, metav1.ApplyOptions{
 		FieldManager: sm.appConfig.FieldManagerName,

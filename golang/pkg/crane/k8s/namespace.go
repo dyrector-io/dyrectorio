@@ -19,8 +19,8 @@ import (
 type Namespace struct {
 	ctx       context.Context
 	client    *Client
-	name      string
 	appConfig *config.Configuration
+	name      string
 }
 
 // namespace entity
@@ -74,7 +74,6 @@ func (n *Namespace) DeployNamespace(name string) error {
 			FieldManager: n.appConfig.FieldManagerName,
 			Force:        n.appConfig.ForceOnConflicts,
 		})
-
 	if err != nil {
 		return err
 	}

@@ -12,6 +12,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 )
 
+//nolint:gosec
 const (
 	missingKeyFile = "missing-file.key"
 	testPrivateKey = `-----BEGIN PGP PRIVATE KEY BLOCK-----

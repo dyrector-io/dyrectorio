@@ -16,9 +16,9 @@ import (
 )
 
 type jwtTest struct {
+	expErr              error
 	name                string
 	jwtTokenStringified string
-	expErr              error
 }
 
 func (j jwtTest) run(t *testing.T) {

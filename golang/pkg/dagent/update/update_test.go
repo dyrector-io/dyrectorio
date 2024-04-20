@@ -13,11 +13,12 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/errdefs"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
-	"github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
+	imagehelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/update"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -68,7 +69,7 @@ func NewMockClient(opts ...MockClientOpt) client.APIClient {
 	return cli
 }
 
-func (d *DockerClientMock) ContainerList(ctx context.Context, opts types.ContainerListOptions) ([]types.Container, error) {
+func (d *DockerClientMock) ContainerList(ctx context.Context, opts container.ListOptions) ([]types.Container, error) {
 	imgs := []types.Container{}
 
 	if len(opts.Filters.Get("name")) > 0 && opts.Filters.Get("name")[0] == "^own-container-update$" {
@@ -85,11 +86,11 @@ func (d *DockerClientMock) ContainerList(ctx context.Context, opts types.Contain
 	return imgs, nil
 }
 
-func (d *DockerClientMock) ImageList(ctx context.Context, opts types.ImageListOptions) ([]types.ImageSummary, error) {
+func (d *DockerClientMock) ImageList(ctx context.Context, opts types.ImageListOptions) ([]image.Summary, error) {
 	if d.denyImageExistence {
-		return []types.ImageSummary{}, nil
+		return []image.Summary{}, nil
 	}
-	return []types.ImageSummary{
+	return []image.Summary{
 		{},
 	}, nil
 }
@@ -128,7 +129,7 @@ func (d *DockerClientMock) ContainerCreate(context.Context, *container.Config, *
 	return container.CreateResponse{}, nil
 }
 
-func (d *DockerClientMock) ContainerStart(context.Context, string, types.ContainerStartOptions) error {
+func (d *DockerClientMock) ContainerStart(context.Context, string, container.StartOptions) error {
 	return nil
 }
 
@@ -136,7 +137,7 @@ type DockerClientErrMock struct {
 	client.APIClient
 }
 
-func (d *DockerClientErrMock) ContainerList(ctx context.Context, opts types.ContainerListOptions) ([]types.Container, error) {
+func (d *DockerClientErrMock) ContainerList(ctx context.Context, opts container.ListOptions) ([]types.Container, error) {
 	return []types.Container{{}}, errors.New("test error")
 }
 
@@ -164,7 +165,7 @@ func TestSelfUpdateInvalid(t *testing.T) {
 		Tag:            "-----",
 		TimeoutSeconds: 1,
 	}, defaultUpdateOptions)
-	assert.ErrorIs(t, update.RewriteUpdateErrors(err), image.ErrInvalidTag)
+	assert.ErrorIs(t, update.RewriteUpdateErrors(err), imagehelper.ErrInvalidTag)
 }
 
 func TestSelfUpdateOK(t *testing.T) {
