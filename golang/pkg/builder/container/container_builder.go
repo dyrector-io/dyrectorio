@@ -53,6 +53,7 @@ type Builder interface {
 	WithPullDisplayFunc(imageHelper.PullDisplayFn) Builder
 	WithExtraHosts(hosts []string) Builder
 	WithWorkingDirectory(workingDirectory string) Builder
+	WithSysctls(sysctls map[string]string) Builder
 	WithPreCreateHooks(hooks ...LifecycleFunc) Builder
 	WithPostCreateHooks(hooks ...LifecycleFunc) Builder
 	WithPreStartHooks(hooks ...LifecycleFunc) Builder
@@ -66,21 +67,21 @@ type DockerContainerBuilder struct {
 	logger           dogger.LogWriter
 	client           client.APIClient
 	ctx              context.Context
-	logConfig        *container.LogConfig
+	user             *int64
 	networkMap       map[string]string
 	labels           map[string]string
 	pullDisplayFn    imageHelper.PullDisplayFn
 	containerID      *string
-	user             *int64
+	logConfig        *container.LogConfig
+	sysctls          map[string]string
 	workingDirectory string
 	containerName    string
 	imageWithTag     string
 	registryAuth     string
 	networkMode      string
 	restartPolicy    container.RestartPolicyMode
-	networks         []string
 	hooksPostStart   []LifecycleFunc
-	hooksPreStart    []LifecycleFunc
+	portList         []PortBinding
 	hooksPreCreate   []LifecycleFunc
 	entrypoint       []string
 	cmd              []string
@@ -88,10 +89,11 @@ type DockerContainerBuilder struct {
 	hooksPostCreate  []LifecycleFunc
 	mountList        []mount.Mount
 	portRanges       []PortRangeBinding
-	portList         []PortBinding
+	hooksPreStart    []LifecycleFunc
 	envList          []string
 	networkAliases   []string
 	extraHosts       []string
+	networks         []string
 	imagePriority    imageHelper.PullPriority
 	tty              bool
 	withoutConflict  bool
@@ -281,6 +283,13 @@ func (dc *DockerContainerBuilder) WithWorkingDirectory(workingDirectory string) 
 	return dc
 }
 
+// Sets the the sysctl/kernel parameters for containers runtime,
+// key is the name of the setting value is the actual value eg. { "net.core.somaxconn": "1024" }
+func (dc *DockerContainerBuilder) WithSysctls(sysctls map[string]string) Builder {
+	dc.sysctls = sysctls
+	return dc
+}
+
 // Sets an array of hooks which runs before the container is created. ContainerID is nil in these hooks.
 func (dc *DockerContainerBuilder) WithPreCreateHooks(hooks ...LifecycleFunc) Builder {
 	dc.hooksPreCreate = hooks
@@ -313,6 +322,7 @@ func builderToDockerConfig(dc *DockerContainerBuilder) (hostConfig *container.Ho
 		PortBindings: portListNat,
 		AutoRemove:   dc.remove,
 		ExtraHosts:   dc.extraHosts,
+		Sysctls:      dc.sysctls,
 	}
 
 	containerConfig = &container.Config{
