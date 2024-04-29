@@ -7,6 +7,7 @@ import { NestExpressApplication } from '@nestjs/platform-express'
 import { SwaggerModule } from '@nestjs/swagger'
 import { Logger as PinoLogger } from 'nestjs-pino'
 import { join } from 'path'
+import { Root as ProtoRoot } from 'protobufjs'
 import AppModule from './app.module'
 import AuditLoggerInterceptor from './app/audit.logger/audit.logger.interceptor'
 import metricsServerBootstrap from './app/metrics/metrics.server'
@@ -114,6 +115,15 @@ const serve = async () => {
   app.useBodyParser('json', { type: ['application/json', 'application/vnd.docker.distribution.events.v1+json'] })
 
   app.useWebSocketAdapter(new DyoWsAdapter(app, authGuard))
+
+  const REWRITE_PROTO_PATH = 'protobuf/proto/'
+  ProtoRoot.prototype.resolvePath = (_: string, target: string) => {
+    if (target.startsWith(REWRITE_PROTO_PATH)) {
+      const strippedPath = target.substring(REWRITE_PROTO_PATH.length)
+      return join(__dirname, `../proto/${strippedPath}`)
+    }
+    return target
+  }
 
   // agent
   app.connectMicroservice<MicroserviceOptions>({
