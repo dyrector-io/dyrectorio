@@ -7,6 +7,7 @@ import { NestExpressApplication } from '@nestjs/platform-express'
 import { SwaggerModule } from '@nestjs/swagger'
 import { Logger as PinoLogger } from 'nestjs-pino'
 import { join } from 'path'
+import { Root as ProtoRoot } from 'protobufjs'
 import AppModule from './app.module'
 import AuditLoggerInterceptor from './app/audit.logger/audit.logger.interceptor'
 import metricsServerBootstrap from './app/metrics/metrics.server'
@@ -24,7 +25,6 @@ import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import prismaBootstrap from './services/prisma.bootstrap'
 import { productionEnvironment } from './shared/config'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
-import { Root as ProtoRoot } from 'protobufjs'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
