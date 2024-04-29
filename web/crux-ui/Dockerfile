@@ -28,7 +28,7 @@ COPY --from=BUILDER --chown=node:node /app/.next/static ./.next/static
 USER node
 
 EXPOSE 3000
-ENV HOSTNAME "0.0.0.0"
+ENV HOSTNAME "::"
 ENV PORT 3000
 LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/web/crux-ui"
 
