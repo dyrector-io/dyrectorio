@@ -28,7 +28,7 @@ export const fetchCrux = async (
     try {
       body = await res.json()
     } catch (e: any) {
-      console.error('[ERROR]: Crux fetch failed to parse error body of url', url, e)
+      console.error('[ERROR]: Crux fetch failed to parse error body of url', `${cruxUrl}${url}`, e)
     }
 
     const apiError = fromApiError(res.status, body ?? {})

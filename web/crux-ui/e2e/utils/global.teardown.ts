@@ -33,7 +33,7 @@ export const fetchCruxFromBrowser = async (cookie: string, cruxUrl: string, url:
     try {
       body = await res.json()
     } catch (e: any) {
-      console.error('[ERROR]: Crux fetch failed to parse error body of url', url, e)
+      console.error('[ERROR]: Crux fetch failed to parse error body of url', `${cruxUrl}${url}`, e)
     }
 
     if (body && isDyoError(body)) {
