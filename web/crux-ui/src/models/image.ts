@@ -1,4 +1,3 @@
-import { REGISTRY_HUB_URL } from '@app/const'
 import { ContainerConfigData } from './container'
 import { BasicRegistry, RegistryImages } from './registry'
 

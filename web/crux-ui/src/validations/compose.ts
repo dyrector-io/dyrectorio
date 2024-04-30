@@ -2,13 +2,13 @@ import {
   COMPOSE_LOG_DRIVER_VALUES,
   COMPOSE_NETWORK_MODE_VALUES,
   COMPOSE_RESTART_VALUES,
+  COMPOSE_TARGET_TYPE_VALUES,
   ComposeLogDriver,
   ComposeNetworkMode,
   ComposeRestart,
   ComposeTargetType,
-  COMPOSE_TARGET_TYPE_VALUES,
-  VersionType,
   VERSION_TYPE_VALUES,
+  VersionType,
 } from '@app/models'
 import * as yup from 'yup'
 import { matchValues, nameRule, portRule, stringArrayRule } from './common'
@@ -76,12 +76,12 @@ export const generateVersionSchema = yup.object().shape({
   targetType: yup.mixed<ComposeTargetType>().oneOf(COMPOSE_TARGET_TYPE_VALUES),
   versionName: nameRule,
   versionType: yup.mixed<VersionType>().oneOf(VERSION_TYPE_VALUES),
-  projectName: nameRule.when('targetType',{
+  projectName: nameRule.when('targetType', {
     is: it => it === 'existing-project',
     then: s => s.optional().nullable(),
     otherwise: s => s.required(),
   }),
-  project: yup.object().when('targetType',{
+  project: yup.object().when('targetType', {
     is: it => it === 'existing-project',
     then: s => s.required(),
     otherwise: s => s.optional().nullable(),
