@@ -20,7 +20,7 @@ func mapShortNotationToVolumeMap(volumes []string) map[string]v1.Volume {
 
 		var volumeType v1.VolumeType
 
-		if len(name) > 0 {
+		if name != "" {
 			switch name[0] {
 			case '@':
 				volumeType = v1.ReadWriteManyVolumeType

@@ -33,14 +33,14 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
-	"github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
+	dockerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
 	"github.com/docker/docker/api/types"
-	dockerContainer "github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
@@ -70,7 +70,7 @@ func GetContainerLogs(name string, skip, take uint) []string {
 	const BASE = 10
 	tail := skip + take
 
-	options := types.ContainerLogsOptions{
+	options := container.LogsOptions{
 		ShowStderr: true,
 		ShowStdout: true,
 		Tail:       strconv.FormatUint(uint64(tail), BASE),
@@ -82,7 +82,7 @@ func GetContainerLogs(name string, skip, take uint) []string {
 	}
 	defer logdefer.LogDeferredErr(logs.Close, log.Warn(), "error closing container log reader")
 
-	return container.ReadDockerLogsFromReadCloser(logs, int(skip), int(take))
+	return dockerbuilder.ReadDockerLogsFromReadCloser(logs, int(skip), int(take))
 }
 
 func CopyToContainer(ctx context.Context, name string, meta v1.UploadFileData, fileHeader *multipart.FileHeader) error {
@@ -396,7 +396,7 @@ func DeployImage(ctx context.Context,
 		}
 	}
 
-	builder := container.NewDockerBuilder(ctx)
+	builder := dockerbuilder.NewDockerBuilder(ctx)
 	networkMode, networks := setNetwork(deployImageRequest)
 	labels, err := setImageLabels(expandedImageName, deployImageRequest, cfg)
 	if err != nil {
@@ -469,14 +469,14 @@ func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, 
 	return networkMode, deployImageRequest.ContainerConfig.Networks
 }
 
-func WithInitContainers(dc container.Builder, containerConfig *v1.ContainerConfig,
+func WithInitContainers(dc dockerbuilder.Builder, containerConfig *v1.ContainerConfig,
 	dog *dogger.DeploymentLogger, envMap map[string]string, cfg *config.Configuration,
 ) {
-	initFuncs := []container.LifecycleFunc{}
+	initFuncs := []dockerbuilder.LifecycleFunc{}
 	if containerConfig.ImportContainer != nil {
 		initFuncs = append(initFuncs,
 			func(ctx context.Context, client client.APIClient,
-				parentCont container.ParentContainer,
+				parentCont dockerbuilder.ParentContainer,
 			) error {
 				if initError := spawnImportContainer(ctx, client, parentCont.Name, parentCont.MountList,
 					containerConfig.ImportContainer, dog, cfg); initError != nil {
@@ -490,7 +490,7 @@ func WithInitContainers(dc container.Builder, containerConfig *v1.ContainerConfi
 
 	if len(containerConfig.InitContainers) > 0 {
 		initFuncs = append(initFuncs, func(ctx context.Context, client client.APIClient,
-			parentCont container.ParentContainer,
+			parentCont dockerbuilder.ParentContainer,
 		) error {
 			for i := range containerConfig.InitContainers {
 				var initContConfig *InitContainerConfig
@@ -566,7 +566,7 @@ func mountStrToDocker(mountIn []string, containerPreName, containerName string, 
 		mountStr := mountIn[i]
 		if strings.ContainsRune(mountStr, '|') {
 			mountSplit := strings.Split(mountStr, "|")
-			if len(mountSplit[0]) > 0 && len(mountSplit[1]) > 0 {
+			if mountSplit[0] != "" && mountSplit[1] != "" {
 				containerPath := path.Join(cfg.InternalMountPath, containerPreName, containerName, mountSplit[0])
 				hostPath := ""
 				if strings.HasPrefix(mountSplit[0], "/") {
@@ -593,7 +593,7 @@ func mountStrToDocker(mountIn []string, containerPreName, containerName string, 
 func createRuntimeConfigFileOnHost(mounts []mount.Mount, containerName, containerPreName,
 	runtimeConfig string, cfg *config.Configuration,
 ) ([]mount.Mount, error) {
-	if len(runtimeConfig) > 0 {
+	if runtimeConfig != "" {
 		configDir := path.Join(cfg.InternalMountPath, containerPreName, containerName, "config")
 		_, err := os.Stat(configDir)
 		if os.IsNotExist(err) {
@@ -713,7 +713,7 @@ func SecretList(ctx context.Context, prefix, name string) ([]string, error) {
 		return nil, err
 	}
 
-	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
+	containers, err := cli.ContainerList(ctx, container.ListOptions{
 		All:     true,
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "name", Value: fmt.Sprintf("^/?%s-%s$", prefix, name)}),
 	})
@@ -756,11 +756,11 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 	}
 
 	if operation == common.ContainerOperation_START_CONTAINER {
-		err = cli.ContainerStart(ctx, cont.ID, types.ContainerStartOptions{})
+		err = cli.ContainerStart(ctx, cont.ID, container.StartOptions{})
 	} else if operation == common.ContainerOperation_STOP_CONTAINER {
-		err = cli.ContainerStop(ctx, cont.ID, dockerContainer.StopOptions{})
+		err = cli.ContainerStop(ctx, cont.ID, container.StopOptions{})
 	} else if operation == common.ContainerOperation_RESTART_CONTAINER {
-		err = cli.ContainerRestart(ctx, cont.ID, dockerContainer.StopOptions{})
+		err = cli.ContainerRestart(ctx, cont.ID, container.StopOptions{})
 	} else {
 		log.Error().Str("operation", operation.String()).Str("prefix", prefix).Str("name", name).Msg("Unknown operation")
 	}
@@ -910,7 +910,7 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 
 	eventChannel := make(chan grpc.ContainerLogEvent)
 
-	reader, err := cli.ContainerLogs(ctx, containerID, types.ContainerLogsOptions{
+	reader, err := cli.ContainerLogs(ctx, containerID, container.LogsOptions{
 		ShowStderr: true,
 		ShowStdout: true,
 		Follow:     streaming,

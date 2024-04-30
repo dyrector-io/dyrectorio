@@ -12,7 +12,7 @@ permissions:
 env:
   GITHUB_REGISTRY: ghcr.io
   BUILDER_IMAGE_NAME: dyrector-io/dyrectorio/builder-images/golang
-  VERSION: 2
+  VERSION: 3
 jobs:
   build:
     runs-on: ubuntu-22.04

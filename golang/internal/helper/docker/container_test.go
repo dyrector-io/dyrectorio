@@ -55,7 +55,7 @@ func (testSuite *DockerContainerHelperTestSuite) SetupSuite() {
 		preparedContainer := containerbuilder.NewDockerBuilder(context.Background()).
 			WithImage(nginxImage).
 			WithName(fmt.Sprintf("%s-%s", testSuite.prefix, testSuite.containerNames[i])).
-			WithRestartPolicy(containerbuilder.NoRestartPolicy)
+			WithRestartPolicy(container.RestartPolicyDisabled)
 		testSuite.testContainers = append(testSuite.testContainers, preparedContainer)
 	}
 }
@@ -79,7 +79,7 @@ func (testSuite *DockerContainerHelperTestSuite) SetupTest() {
 // this function executes after each test case
 func (testSuite *DockerContainerHelperTestSuite) TearDownTest() {
 	containers, err := testSuite.dockerClient.ContainerList(testSuite.ctx,
-		types.ContainerListOptions{
+		container.ListOptions{
 			All: true,
 			Filters: filters.NewArgs(
 				filters.KeyValuePair{
@@ -97,7 +97,7 @@ func (testSuite *DockerContainerHelperTestSuite) TearDownTest() {
 		if err != nil {
 			log.Warn().Err(err).Send()
 		}
-		err = testSuite.dockerClient.ContainerRemove(testSuite.ctx, containers[i].ID, types.ContainerRemoveOptions{})
+		err = testSuite.dockerClient.ContainerRemove(testSuite.ctx, containers[i].ID, container.RemoveOptions{})
 		if err != nil {
 			log.Warn().Err(err).Send()
 		}

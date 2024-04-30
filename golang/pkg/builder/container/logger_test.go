@@ -7,10 +7,9 @@ import (
 )
 
 type TestLogger struct {
+	dogger.LogWriter
 	test       *testing.T
 	gotMessage bool
-
-	dogger.LogWriter
 }
 
 func (testLogger *TestLogger) WriteInfo(s ...string) {

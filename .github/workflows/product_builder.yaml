@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       # yamlfmt resides here because alpine doesn't provide yamlfmt package
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:3
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:3
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -139,7 +139,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:3
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -163,7 +163,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:3
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -197,7 +197,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:3
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -258,7 +258,7 @@ jobs:
       - go_integration
       - gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:3
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -661,7 +661,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:2
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:3
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}

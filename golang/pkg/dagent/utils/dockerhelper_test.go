@@ -7,6 +7,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/events"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
 	"github.com/stretchr/testify/assert"
@@ -165,7 +166,7 @@ func TestEventToMessageContainer(t *testing.T) {
 	builder, err := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(nginxImage).
 		WithName("test-event-to-message").
-		WithRestartPolicy(containerbuilder.NoRestartPolicy).
+		WithRestartPolicy(container.RestartPolicyDisabled).
 		Create()
 
 	assert.NoError(t, err)

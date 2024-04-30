@@ -69,7 +69,7 @@ func (d DockerContainer) Start(ctx context.Context, cli client.APIClient) error 
 		return hookError
 	}
 
-	err := cli.ContainerStart(ctx, d.container.ID, types.ContainerStartOptions{})
+	err := cli.ContainerStart(ctx, d.container.ID, container.StartOptions{})
 	if err != nil {
 		return err
 	}

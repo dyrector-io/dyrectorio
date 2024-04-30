@@ -15,6 +15,7 @@ import (
 	containerRuntime "github.com/dyrector-io/dyrectorio/golang/internal/runtime/container"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/system"
 	"github.com/docker/docker/client"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,21 +23,21 @@ import (
 type mockDockerClient struct {
 	client.APIClient
 	version string
-	info    *types.Info
+	info    *system.Info
 }
 
 type mockErrDockerClient struct {
 	client.APIClient
 }
 
-func newMockClient(version string, info *types.Info) client.APIClient {
+func newMockClient(version string, info *system.Info) client.APIClient {
 	return &mockDockerClient{
 		version: version,
 		info:    info,
 	}
 }
 
-func (m mockDockerClient) Info(ctx context.Context) (types.Info, error) {
+func (m mockDockerClient) Info(ctx context.Context) (system.Info, error) {
 	return *m.info, nil
 }
 
@@ -54,30 +55,30 @@ func (m mockErrDockerClient) ServerVersion(ctx context.Context) (types.Version, 
 	return types.Version{}, fmt.Errorf("expected version error")
 }
 
-func (m mockErrDockerClient) Info(ctx context.Context) (types.Info, error) {
-	return types.Info{}, fmt.Errorf("expected info error")
+func (m mockErrDockerClient) Info(ctx context.Context) (system.Info, error) {
+	return system.Info{}, fmt.Errorf("expected info error")
 }
 
-func getDockerInfoDocker() *types.Info {
-	return &types.Info{
+func getDockerInfoDocker() *system.Info {
+	return &system.Info{
 		InitBinary: "docker-init",
 	}
 }
 
-func getDockerInfoPodman() *types.Info {
-	return &types.Info{
+func getDockerInfoPodman() *system.Info {
+	return &system.Info{
 		InitBinary: "",
 	}
 }
 
-func getDockerInfoInvalid() *types.Info {
-	return &types.Info{
+func getDockerInfoInvalid() *system.Info {
+	return &system.Info{
 		InitBinary: "invalidInitBinaryString",
 	}
 }
 
 type VersionTestCase struct {
-	Info              *types.Info
+	Info              *system.Info
 	MockClientVersion string
 }
 
@@ -207,7 +208,7 @@ func getMajorMinor(f *testing.F, versionStr string) (uint16, uint16) {
 	return uint16(major), uint16(minor)
 }
 
-func fuzzVersionWithRuntime(f *testing.F, dockerInfo *types.Info, majorMin, minorMin uint16) func(t *testing.T, major, minor, patch uint16) {
+func fuzzVersionWithRuntime(_ *testing.F, dockerInfo *system.Info, majorMin, minorMin uint16) func(t *testing.T, major, minor, patch uint16) {
 	return func(t *testing.T, major, minor, patch uint16) {
 		versionStr := fmt.Sprintf("%d.%d.%d", major, minor, patch)
 
@@ -233,7 +234,7 @@ func FuzzVersionCheckPodman(f *testing.F) {
 	f.Add(uint16(20), uint16(0), uint16(10))
 	f.Add(uint16(4), uint16(0), uint16(0))
 	majorMin, minorMin := getMajorMinor(f, containerRuntime.RecommendedPodmanServerVersion)
-	dockerInfo := &types.Info{}
+	dockerInfo := &system.Info{}
 	f.Fuzz(fuzzVersionWithRuntime(f, dockerInfo, majorMin, minorMin))
 }
 
@@ -242,7 +243,7 @@ func FuzzVersionCheckDocker(f *testing.F) {
 	f.Add(uint16(20), uint16(0), uint16(10))
 	f.Add(uint16(21), uint16(0), uint16(10))
 	f.Add(uint16(4), uint16(0), uint16(0))
-	dockerInfo := &types.Info{
+	dockerInfo := &system.Info{
 		InitBinary: "docker-init",
 	}
 	majorMin, minorMin := getMajorMinor(f, containerRuntime.RecommendedDockerServerVersion)

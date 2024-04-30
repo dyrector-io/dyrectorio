@@ -15,7 +15,6 @@ import (
 
 type DeleteFacade struct {
 	ctx        context.Context
-	name       string
 	deployment *Deployment
 	namespace  *Namespace
 	service    *Service
@@ -23,6 +22,7 @@ type DeleteFacade struct {
 	ingress    *ingress
 	pvc        *PVC
 	appConfig  *config.Configuration
+	name       string
 }
 
 func NewDeleteFacade(ctx context.Context, namespace, name string, cfg *config.Configuration) *DeleteFacade {
