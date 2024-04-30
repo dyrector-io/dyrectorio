@@ -68,9 +68,12 @@ export const composeServiceSchema = yup.object().shape({
   env_file: yup.string().optional().nullable(),
 })
 
-export const composeSchema = yup.object().shape({
-  services: matchValues('services', '`services` must be an object', composeServiceSchema),
-})
+export const composeSchema = yup
+  .object()
+  .label('compose')
+  .shape({
+    services: matchValues('services', composeServiceSchema),
+  })
 
 export const generateVersionSchema = yup.object().shape({
   targetType: yup.mixed<ComposeTargetType>().oneOf(COMPOSE_TARGET_TYPE_VALUES),

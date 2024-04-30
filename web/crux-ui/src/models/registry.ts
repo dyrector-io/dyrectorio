@@ -374,6 +374,10 @@ export const editableRegistryToDto = (ui: EditableRegistry): CreateRegistryDto =
 }
 
 export const imageUrlOfImageName = (image: string): string => {
+  if (!image) {
+    return null
+  }
+
   let [name] = image.split(':')
 
   if (name.includes('.') && !name.includes('docker.io') && !name.includes(REGISTRY_HUB_URL)) {

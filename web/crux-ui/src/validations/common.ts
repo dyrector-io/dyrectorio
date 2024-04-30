@@ -100,12 +100,18 @@ export const matchNoWhitespace = (schema: yup.StringSchema<string, yup.AnyObject
 export const matchNoLeadingOrTrailingWhitespaces = (schema: yup.StringSchema<string, yup.AnyObject, undefined>) =>
   schema.matches(/^[^\s]+(\s+[^\s]+)*$/g, { message: REGEX_ERROR_NO_WHITESPACES }) // any characters but no trailing whitespaces
 
-export const matchValues = (name: string, errorMessage: string, valueSchema: yup.AnySchema) =>
-  yup.object().test(name, errorMessage, obj => {
-    if (!obj) {
-      return true
-    }
+export const matchValues = (name: string, valueSchema: yup.AnySchema) =>
+  yup
+    .object()
+    .label('services')
+    .test(name, obj => {
+      if (!obj) {
+        return true
+      }
 
-    Object.values(obj).forEach(it => valueSchema.validateSync(it))
-    return true
-  })
+      Object.entries(obj).forEach(entry => {
+        const [serviceName, value] = entry
+        valueSchema.label(`service '${serviceName}'`).validateSync(value)
+      })
+      return true
+    })
