@@ -1,7 +1,6 @@
 {
   "nodesName": "Nodes - {{name}}",
 
-  "containers": "Containers",
   "logs": "Logs",
   "inspect": "Inspect",
 

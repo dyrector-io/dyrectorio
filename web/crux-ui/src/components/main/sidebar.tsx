@@ -2,6 +2,7 @@ import DyoIcon from '@app/elements/dyo-icon'
 import DyoLink from '@app/elements/dyo-link'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
+  ROUTE_COMPOSER,
   ROUTE_DOCS,
   ROUTE_INDEX,
   ROUTE_LOGOUT,
@@ -77,6 +78,11 @@ export const sidebarSectionsOf = (routes: TeamRoutes): MenuSection[] => [
         icon: '/template.svg',
         text: 'templates',
         link: ROUTE_TEMPLATES,
+      },
+      {
+        icon: '/composer.svg',
+        text: 'composer',
+        link: ROUTE_COMPOSER,
       },
     ],
   },

@@ -79,6 +79,9 @@ export class RegistryDto {
   @IsString()
   @IsIn(REGISTRY_TYPE_VALUES)
   type: RegistryType
+
+  @IsUrl()
+  imageUrlPrefix: string
 }
 
 export class RegistryTokenDto {

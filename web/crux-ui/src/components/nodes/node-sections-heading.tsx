@@ -22,7 +22,7 @@ const NodeSectionsHeading = (props: NodeSectionsHeadingProps) => {
         className="mx-6"
         onClick={() => setSection('containers')}
       >
-        {t('containers')}
+        {t('common:containers')}
       </DyoButton>
 
       <DyoButton

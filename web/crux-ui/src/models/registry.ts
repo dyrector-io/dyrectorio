@@ -21,6 +21,7 @@ export type Registry = BasicRegistry & {
   icon?: string
   description?: string
   url: string
+  imageUrlPrefix: string
 }
 
 export type RegistryDetailsBase = Omit<Registry, 'url'> & {
@@ -146,7 +147,7 @@ export type RegistryDetailsDto = RegistryDetails & {
 
 type UpsertRegistryDtoBase = Omit<
   RegistryDetails,
-  'id' | 'updatedAt' | 'createdAt' | 'inUse' | 'token' | 'changeCredentials'
+  'id' | 'updatedAt' | 'createdAt' | 'inUse' | 'token' | 'changeCredentials' | 'imageUrlPrefix'
 >
 export type CreateRegistryDto = UpsertRegistryDtoBase & {
   details: Omit<
@@ -371,3 +372,24 @@ export const editableRegistryToDto = (ui: EditableRegistry): CreateRegistryDto =
       throw new Error(`Unknown registry type on: ${dto}`)
   }
 }
+
+export const imageUrlOfImageName = (image: string): string => {
+  let [name] = image.split(':')
+
+  if (name.includes('.') && !name.includes('docker.io') && !name.includes(REGISTRY_HUB_URL)) {
+    return name
+  }
+
+  // hub image
+
+  name = name.replace('index.docker.io/', '').replace('docker.io/', '').replace(REGISTRY_HUB_URL, '')
+
+  if (name.includes('/') || name.startsWith('library')) {
+    return `${REGISTRY_HUB_URL}/${name}`
+  }
+
+  return `${REGISTRY_HUB_URL}/library/${name}`
+}
+
+export const findRegistryByUrl = (registries: Registry[], url: string) =>
+  registries.filter(it => it.type !== 'unchecked').find(it => url.startsWith(it.imageUrlPrefix))

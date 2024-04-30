@@ -250,7 +250,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
             <div className="flex flex-col">
               <DyoLabel className="mb-2.5">{t('script')}</DyoLabel>
 
-              <ShEditor className="h-48 mb-4 w-full overflow-x-auto" readOnly value={node.install.script} />
+              <ShEditor className="h-48 mb-4 w-full overflow-x-auto" readOnly initialValue={node.install.script} />
             </div>
           </>
         )}

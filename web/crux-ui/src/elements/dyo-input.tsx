@@ -48,7 +48,7 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
           </DyoLabel>
         )}
 
-        <span className={clsx('relative', className, grow ? 'w-full' : 'w-80')}>
+        <div className={clsx('relative', className, grow ? 'w-full' : 'w-80')}>
           <input
             {...forwardedProps}
             name={name}
@@ -69,7 +69,7 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
           />
 
           {children}
-        </span>
+        </div>
 
         {!hidden && message && !inline ? (
           <DyoMessage message={message} messageType={messageType} className="text-xs italic" />

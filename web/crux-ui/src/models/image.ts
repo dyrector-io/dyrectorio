@@ -1,3 +1,4 @@
+import { REGISTRY_HUB_URL } from '@app/const'
 import { ContainerConfigData } from './container'
 import { BasicRegistry, RegistryImages } from './registry'
 
@@ -28,6 +29,11 @@ export type PatchVersionImage = {
 }
 
 export type ViewState = 'editor' | 'json'
+
+export type AddImages = {
+  registryId: string
+  images: string[]
+}
 
 // ws
 

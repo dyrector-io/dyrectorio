@@ -172,7 +172,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
             </span>
           </div>
 
-          <ShEditor className="h-26 p-2 mb-4 mt-2 w-full overflow-x-auto" readOnly value={token.token} />
+          <ShEditor className="h-26 p-2 mb-4 mt-2 w-full overflow-x-auto" readOnly initialValue={token.token} />
         </>
       )}
     </DyoCard>

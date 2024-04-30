@@ -41,9 +41,11 @@ module.exports = {
       },
       height: {
         128: '32rem',
+        'screen-2/3': '66.666667vh',
       },
       maxHeight: {
         128: '32rem',
+        'screen-2/3': '66.666667vh',
       },
       boxShadow: {
         modal: '0 0 20px 5px rgb(0 0 0 / 0.25)',

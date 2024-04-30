@@ -41,6 +41,7 @@
     "/[teamSlug]/deployments/[deploymentId]/instances/[instanceId]": ["images", "deployments", "container"],
     "/status": ["status"],
     "/templates": ["templates", "projects"],
+    "/composer": ["compose", "versions", "container"],
     "/[teamSlug]/dashboard": ["dashboard"],
     "/[teamSlug]/storages": ["storages"],
     "/[teamSlug]/storages/[storageId]": ["storages"],

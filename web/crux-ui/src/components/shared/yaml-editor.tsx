@@ -1,25 +1,26 @@
 import clsx from 'clsx'
 import { highlight, languages } from 'prismjs'
-import 'prismjs/components/prism-bash'
+import 'prismjs/components/prism-yaml'
 import 'prismjs/themes/prism-tomorrow.css'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Editor from 'react-simple-code-editor'
 
-interface ShEditorProps {
+type YamlEditorProps = {
   className?: string
   readOnly?: boolean
   initialValue?: string
-  onChange?: (text: string) => void
+  onChange: (value: string) => void
 }
 
-const ShEditor = (props: ShEditorProps) => {
-  const { className, readOnly, initialValue: value, onChange: propsOnChange } = props
+const YamlEditor = (props: YamlEditorProps) => {
+  const { className, readOnly, initialValue, onChange: propsOnChange } = props
 
-  const [state, setState] = useState(value)
+  const [state, setState] = useState(initialValue ?? '')
+  const ref = useRef()
 
   const onChange = (text: string) => {
     setState(text)
-    propsOnChange?.call(null, text)
+    propsOnChange(text)
   }
 
   return (
@@ -27,16 +28,17 @@ const ShEditor = (props: ShEditorProps) => {
       className={clsx('bg-gray-900 rounded-md ring-2 ring-light-grey border-dark caret-white text-blue-300', className)}
     >
       <Editor
+        ref={ref}
         readOnly={readOnly}
         padding={2}
         tabSize={2}
         insertSpaces
         value={state}
         onValueChange={onChange}
-        highlight={newValue => highlight(newValue, languages.shell, 'shell')}
+        highlight={newValue => highlight(newValue, languages.yaml, 'yaml')}
       />
     </div>
   )
 }
 
-export default ShEditor
+export default YamlEditor

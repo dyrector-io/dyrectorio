@@ -26,6 +26,7 @@ import { createFullDeploymentSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect } from 'react'
 import useSWR from 'swr'
+import SelectProjectChips from '../projects/select-project-chips'
 
 interface AddDeploymentCardProps {
   className?: string
@@ -40,7 +41,6 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   const routes = useTeamRoutes()
 
   const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(routes.node.api.list(), fetcher)
-  const { data: projects, error: fetchProjectsError } = useSWR<Project[]>(routes.project.api.list(), fetcher)
 
   const handleApiError = apiErrorHandler((stringId: string, status: number, dto: DyoApiError) => {
     if (deploymentHasError(dto)) {
@@ -65,7 +65,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       prefix: '',
       protected: false,
       versionId: null as string,
-      projectId: null as string,
+      project: null as Project,
     },
     validationSchema: createFullDeploymentSchema,
     t,
@@ -88,10 +88,8 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
     },
   })
 
-  const currentProject = projects?.find(it => it.id === formik.values.projectId)
-
   const { data: versions, error: fetchVersionsError } = useSWR<Version[]>(
-    formik.values.projectId ? routes.project.versions(formik.values.projectId).api.list() : null,
+    formik.values.project ? routes.project.versions(formik.values.project.id).api.list() : null,
     fetcher,
   )
 
@@ -105,15 +103,6 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   }, [nodes, formikValues.nodeId, formikSetFieldValue])
 
   useEffect(() => {
-    if (projects?.length === 1) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      formikSetFieldValue('projectId', projects[0].id)
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      formikSetFieldValue('prefix', projectNameToDeploymentPrefix(projects[0].name))
-    }
-  }, [projects, formikSetFieldValue])
-
-  useEffect(() => {
     if (versions?.length === 1) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       formikSetFieldValue('versionId', versions[0].id)
@@ -123,6 +112,17 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
     }
     formikSetFieldError('versionId', null)
   }, [versions, formikSetFieldValue, formikSetFieldError])
+
+  const onProjectsFetched = (projects: Project[] | null) => {
+    if (projects?.length === 1) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      formikSetFieldValue('projectId', projects[0].id)
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      formikSetFieldValue('prefix', projectNameToDeploymentPrefix(projects[0].name))
+    }
+  }
+
+  const currentProject = formik.values.project
 
   return (
     <DyoCard className={className}>
@@ -166,33 +166,17 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         )}
 
         <DyoLabel className="mt-8 mb-2.5">{t('common:projects')}</DyoLabel>
-        {fetchProjectsError ? (
-          <DyoLabel>
-            {t('errors:fetchFailed', {
-              type: t('common:projects'),
-            })}
-          </DyoLabel>
-        ) : !projects ? (
-          <DyoLabel>{t('common:loading')}</DyoLabel>
-        ) : projects.length === 0 ? (
-          <DyoMessage message={t('common:noNameFound', { name: t('common:projects') })} messageType="error" />
-        ) : !projects ? (
-          <DyoLabel>{t('common:loading')}</DyoLabel>
-        ) : (
-          <>
-            <DyoChips
-              name="projects"
-              choices={projects ?? []}
-              converter={(it: Project) => it.name}
-              selection={currentProject}
-              onSelectionChange={async it => {
-                await formik.setFieldValue('projectId', it.id)
-                await formik.setFieldValue('prefix', projectNameToDeploymentPrefix(it.name))
-              }}
-            />
-            {formik.errors.projectId && <DyoMessage message={formik.errors.projectId} messageType="error" />}
-          </>
-        )}
+
+        <SelectProjectChips
+          name="projects"
+          selection={currentProject}
+          onSelectionChange={async it => {
+            await formik.setFieldValue('project', it)
+            await formik.setFieldValue('prefix', projectNameToDeploymentPrefix(it.name))
+          }}
+          errorMessage={formik.errors.project as string}
+          onProjectsFetched={onProjectsFetched}
+        />
 
         {currentProject && (
           <>
@@ -203,7 +187,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
                   type: t('common:versions'),
                 })}
               </DyoLabel>
-            ) : !versions && formik.values.projectId ? (
+            ) : !versions && formik.values.project ? (
               <DyoLabel>{t('common:loading')}</DyoLabel>
             ) : versions.length === 0 ? (
               <DyoMessage message={t('noVersions')} />
