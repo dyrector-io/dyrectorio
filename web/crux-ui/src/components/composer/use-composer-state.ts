@@ -17,12 +17,17 @@ export const DEFAULT_ENVIRONMENT_NAME = '.env'
 export type ComposerUpperSection = 'compose' | 'generate'
 export type ComposerBottomSection = 'containers' | 'environment'
 
+type ParsedCompose = {
+  text: string
+  yaml?: Compose
+  error?: string
+}
+
 export type ComposerState = {
   upperSection: ComposerUpperSection
   bottomSection: ComposerBottomSection
   showDefaultDotEnv: boolean
-  compose?: Compose
-  composeError?: string
+  compose: ParsedCompose
   containers: ConvertedContainer[]
   environment: DotEnvironment[]
 }
@@ -36,7 +41,6 @@ const initialState: ComposerState = {
   bottomSection: 'containers',
   showDefaultDotEnv: true,
   compose: null,
-  composeError: null,
   containers: [],
   environment: [{ name: DEFAULT_ENVIRONMENT_NAME, environment: {} }],
 }
@@ -82,7 +86,7 @@ const applyEnvironments = (
 }
 
 type ApplyComposeToStateOptions = {
-  originalCompose: Compose
+  compose: ParsedCompose
   envedCompose: Compose
   t: Translate
 }
@@ -94,8 +98,7 @@ const applyComposeToState = (state: ComposerState, options: ApplyComposeToStateO
 
     return {
       ...state,
-      compose: options.originalCompose,
-      composeError: null,
+      compose: options.compose,
       containers: newContainers,
     }
   } catch (err) {
@@ -103,8 +106,10 @@ const applyComposeToState = (state: ComposerState, options: ApplyComposeToStateO
 
     return {
       ...state,
-      compose: null,
-      composeError: t('errors.failedToParseFile', { file: t('composeFile') }),
+      compose: {
+        ...state.compose,
+        error: t('errors.failedToParseFile', { file: t('composeFile') }),
+      },
       containers: [],
     }
   }
@@ -117,7 +122,6 @@ export const convertComposeFile =
       return {
         ...state,
         compose: null,
-        composeError: null,
       }
     }
 
@@ -128,8 +132,11 @@ export const convertComposeFile =
       if (!compose) {
         return {
           ...state,
-          compose: null,
-          composeError: null,
+          compose: {
+            text,
+            yaml: null,
+            error: null,
+          },
         }
       }
     } catch (err) {
@@ -137,8 +144,11 @@ export const convertComposeFile =
 
       return {
         ...state,
-        compose: null,
-        composeError: t('errors.failedToParseFile', { file: t('composeFile') }),
+        compose: {
+          text,
+          yaml: null,
+          error: t('errors.failedToParseFile', { file: t('composeFile') }),
+        },
         containers: [],
       }
     }
@@ -147,8 +157,11 @@ export const convertComposeFile =
     if (error) {
       return {
         ...state,
-        compose: null,
-        composeError: error.message,
+        compose: {
+          text,
+          yaml: null,
+          error: error.message,
+        },
       }
     }
 
@@ -158,7 +171,11 @@ export const convertComposeFile =
     }
 
     return applyComposeToState(state, {
-      originalCompose: compose,
+      compose: {
+        text,
+        yaml: compose,
+        error: null,
+      },
       envedCompose,
       t,
     })
@@ -209,12 +226,12 @@ export const convertEnvFile =
     const { compose } = state
 
     const envedCompose = {
-      ...compose,
-      services: applyEnvironments(compose?.services, newEnv),
+      ...compose.yaml,
+      services: applyEnvironments(compose?.yaml?.services, newEnv),
     }
 
     const newState = applyComposeToState(state, {
-      originalCompose: compose,
+      compose,
       envedCompose,
       t,
     })

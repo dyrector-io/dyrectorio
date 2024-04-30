@@ -62,7 +62,6 @@ const ComposerPage = () => {
       }
 
       const url = imageUrlOfImageName(image)
-
       return !!findRegistryByUrl(registries, url)
     },
     [registries],
@@ -111,7 +110,11 @@ const ComposerPage = () => {
 
       {state.upperSection === 'compose' ? (
         <div className={clsx('grid gap-4', showDefaultEnv ? 'grid-cols-2' : 'grid-cols-1')}>
-          <ComposeFileCard errorMessage={state.composeError} onChange={onComposeFileChange} />
+          <ComposeFileCard
+            errorMessage={state.compose?.error}
+            initialText={state.compose?.text}
+            onChange={onComposeFileChange}
+          />
 
           {showDefaultEnv && (
             <DotEnvFileCard dotEnv={defaultDotEnv} onEnvChange={text => onEnvFileChange(defaultDotEnv.name, text)} />

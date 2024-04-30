@@ -39,7 +39,7 @@ const SelectProjectChips = (props: SelectProjectChipsProps) => {
     onProjectsFetched?.call(null, projects)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projects])
+  }, [projectsData])
 
   return fetchProjectsError ? (
     <DyoLabel>

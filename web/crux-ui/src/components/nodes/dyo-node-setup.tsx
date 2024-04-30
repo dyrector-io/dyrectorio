@@ -24,7 +24,7 @@ import {
 import { sendForm, writeToClipboard } from '@app/utils'
 import { nodeGenerateScriptSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
-import ShEditor from '../shared/sh-editor'
+import ShEditor from '../shared/sh-editor-dynamic-module'
 
 const expiresIn = (expireAt: Date): number => {
   const now = new Date().getTime()

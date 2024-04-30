@@ -3,8 +3,7 @@
     "composeFile": "Compose file",
     "dotEnvFile": ".env file",
     "errors": {
-        "failedToParseFile": "Failed to parse the {{file}}",
-        "noRegistryForUrl": "No registry for url {{url}}"
+        "failedToParseFile": "Failed to parse the {{file}}"
     },
     "registryFound": "Registry found",
     "missingRegistry": "Missing registry",

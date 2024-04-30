@@ -4,6 +4,7 @@ import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { SubmitHook } from '@app/hooks/use-submit'
@@ -58,6 +59,27 @@ const GenerateVersionCard = (props: GenerateVersionCardProps) => {
     onSubmit: async values => {
       let { project } = values
 
+      const addImagesBody: AddImages[] = containers.map(it => {
+        const url = imageUrlOfImageTag(it.image)
+        const registry = findRegistryByUrl(registries, url)
+        const imageName = url.replace(`${registry.imageUrlPrefix}/`, '')
+
+        if (!registry) {
+          return null
+        }
+
+        return {
+          registryId: registry.id,
+          images: [imageName],
+        }
+      })
+
+      const missingRegistry = addImagesBody.find(it => !it)
+      if (missingRegistry) {
+        toast.error(t('missingRegistry'))
+        return
+      }
+
       if (values.targetType === 'new-project') {
         const body: CreateProject = {
           name: values.projectName,
@@ -85,24 +107,6 @@ const GenerateVersionCard = (props: GenerateVersionCardProps) => {
 
       const version = (await res.json()) as VersionDetails
 
-      const addImagesBody: AddImages[] = containers
-        .map(it => {
-          const url = imageUrlOfImageTag(it.image)
-          const registry = findRegistryByUrl(registries, url)
-          const imageName = url.replace(`${registry.imageUrlPrefix}/`, '')
-
-          if (!registry) {
-            toast.error(t('errors.noRegistryForUrl', { url }))
-            return null
-          }
-
-          return {
-            registryId: registry.id,
-            images: [imageName],
-          }
-        })
-        .filter(it => !!it)
-
       const createImagesRes = await sendForm(
         'POST',
         routes.project.versions(project.id).api.images(version.id),
@@ -124,7 +128,9 @@ const GenerateVersionCard = (props: GenerateVersionCardProps) => {
     }
   }
 
-  return (
+  return formik.isSubmitting ? (
+    <LoadingIndicator className="self-center" />
+  ) : (
     <DyoCard className={className}>
       <DyoForm className="flex flex-col">
         <DyoHeading element="h4" className="text-lg text-bright">

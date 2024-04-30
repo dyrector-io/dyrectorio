@@ -1,4 +1,4 @@
-import ShEditor from '@app/components/shared/sh-editor'
+import ShEditor from '@app/components/shared/sh-editor-dynamic-module'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'

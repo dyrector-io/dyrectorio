@@ -52,7 +52,7 @@ export const composeServiceSchema = yup.object().shape({
     .object()
     .shape({
       driver: yup.mixed<ComposeLogDriver>().oneOf(COMPOSE_LOG_DRIVER_VALUES).optional().nullable(),
-      options: matchValues('logging.options', 'Invalid logging options', yup.string()),
+      options: matchValues('logging.options', yup.string()),
     })
     .optional()
     .nullable(),

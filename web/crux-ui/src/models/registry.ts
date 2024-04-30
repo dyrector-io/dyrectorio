@@ -395,5 +395,7 @@ export const imageUrlOfImageName = (image: string): string => {
   return `${REGISTRY_HUB_URL}/library/${name}`
 }
 
-export const findRegistryByUrl = (registries: Registry[], url: string) =>
-  registries.filter(it => it.type !== 'unchecked').find(it => url.startsWith(it.imageUrlPrefix))
+export const findRegistryByUrl = (registries: Registry[], url: string): Registry | null =>
+  !registries || !url
+    ? null
+    : registries.filter(it => it.type !== 'unchecked').find(it => url.startsWith(it.imageUrlPrefix))

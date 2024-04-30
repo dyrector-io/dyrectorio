@@ -6,7 +6,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import { DotEnvironment } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import ShEditor from '../shared/sh-editor'
+import ShEditor from '../shared/sh-editor-dynamic-module'
 
 type DotEnvFileCardProps = {
   className?: string
