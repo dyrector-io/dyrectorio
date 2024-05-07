@@ -53,6 +53,7 @@
   "address": "Address",
   "actions": "Actions",
   "note": "Note",
+  "containers": "Containers",
 
   "editName": "Edit {{name}}",
   "add": "Add",
@@ -89,6 +90,7 @@
   "profile": "Profile",
   "tokens": "Tokens",
   "templates": "Templates",
+  "composer": "Composer",
   "pipelines": "Pipelines",
   "storages": "Storages",
   "configBundles": "Config bundles",

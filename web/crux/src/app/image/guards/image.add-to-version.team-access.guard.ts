@@ -13,7 +13,7 @@ export default class ImageAddToVersionTeamAccessGuard implements CanActivate {
     const versionId = req.params.versionId as string
     const body = req.body as AddImagesDto[]
 
-    const regIds = body.map(it => it.registryId)
+    const regIds = Array.from(new Set(body.map(it => it.registryId)))
     const registries = await this.prisma.registry.count({
       where: {
         id: {

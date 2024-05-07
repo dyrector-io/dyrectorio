@@ -29,6 +29,11 @@ export type PatchVersionImage = {
 
 export type ViewState = 'editor' | 'json'
 
+export type AddImages = {
+  registryId: string
+  images: string[]
+}
+
 // ws
 
 export const WS_TYPE_ADD_IMAGES = 'add-images'

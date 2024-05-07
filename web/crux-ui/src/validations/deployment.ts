@@ -31,7 +31,7 @@ export const createFullDeploymentSchema = yup.object().shape({
   nodeId: yup.string().required(),
   prefix: prefixRule,
   versionId: yup.string().required().label('common:versions'),
-  projectId: yup.string().required().label('common:projects'),
+  project: yup.object().required().label('common:projects'),
   note: yup.string().nullable().optional().label('common:note'),
 })
 

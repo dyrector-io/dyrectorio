@@ -63,6 +63,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
       public: true,
       updatedAt: null,
       inUse: false,
+      imageUrlPrefix: '',
     },
   )
 

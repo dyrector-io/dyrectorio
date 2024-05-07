@@ -26,6 +26,7 @@ export const ROUTE_TEAMS = '/teams'
 export const ROUTE_TEAMS_CREATE = '/teams/create'
 
 export const ROUTE_TEMPLATES = '/templates'
+export const ROUTE_COMPOSER = '/composer'
 
 export const API_AUTH_REGISTER = '/api/auth/register'
 export const API_AUTH_LOGIN = '/api/auth/login'
