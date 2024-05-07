@@ -1,4 +1,4 @@
-import ShEditor from '@app/components/shared/sh-editor'
+import ShEditor from '@app/components/shared/sh-editor-dynamic-module'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
@@ -113,12 +113,12 @@ const CreateRegistryTokenCard = (props: CreateRegistryTokenCardProps) => {
             {t('tokens:jwtToken')}
           </DyoHeading>
 
-          <ShEditor className="h-26 p-2 mb-4 mt-2 w-full overflow-x-auto" readOnly value={token.token} />
+          <ShEditor className="h-26 p-2 mb-4 mt-2 w-full overflow-x-auto" readOnly initialValue={token.token} />
 
           <div className="flex flex-wrap gap-2 text-bright items-center mt-8">
             <span>{t('toUseTheTokenInV2')}</span>
 
-            <ShEditor className="h-26 p-2 mb-4 mt-2 w-full overflow-x-auto" readOnly value={token.config} />
+            <ShEditor className="h-26 p-2 mb-4 mt-2 w-full overflow-x-auto" readOnly initialValue={token.config} />
 
             <span>
               {t('readMoreAboutV2')}

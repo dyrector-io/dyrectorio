@@ -35,8 +35,8 @@ const useSubmit = (): SubmitHook => {
 
     stateRef.current.submit = target
     if (stateRef.current.submitWhenSet) {
-      stateRef.current.submitWhenSet = false
       if (target) {
+        stateRef.current.submitWhenSet = false
         await target()
       }
     }

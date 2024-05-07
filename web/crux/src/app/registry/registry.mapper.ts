@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Registry, RegistryToken, RegistryTypeEnum } from '@prisma/client'
 import { REGISTRY_EVENT_V2_PULL, REGISTRY_EVENT_V2_PUSH } from 'src/domain/registry'
-import { CruxBadRequestException } from 'src/exception/crux-exception'
+import { CruxBadRequestException, CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import EncryptionService from 'src/services/encryption.service'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
 import { BasicProperties } from '../../shared/dtos/shared.dto'
@@ -48,6 +48,7 @@ export default class RegistryMapper {
       url: it.url,
       description: it.description,
       icon: it.icon,
+      imageUrlPrefix: this.imageUrlOf(it),
     }
   }
 
@@ -228,6 +229,25 @@ export default class RegistryMapper {
         throw new CruxBadRequestException({
           message: `Invalid action type : ${action}`,
           property: 'action',
+        })
+    }
+  }
+
+  private imageUrlOf(reg: Registry): string {
+    switch (reg.type) {
+      case RegistryTypeEnum.hub:
+        return `${reg.url}/${reg.imageNamePrefix}`
+      case RegistryTypeEnum.v2:
+      case RegistryTypeEnum.unchecked:
+        return reg.url
+      case RegistryTypeEnum.gitlab:
+      case RegistryTypeEnum.github:
+      case RegistryTypeEnum.google:
+        return `${reg.url}/${reg.imageNamePrefix}`
+      default:
+        throw new CruxInternalServerErrorException({
+          message: 'Invalid registry type',
+          value: reg.type,
         })
     }
   }

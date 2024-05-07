@@ -1,7 +1,7 @@
 import { DYO_ICONS } from '@app/elements/dyo-icon-picker'
-import yup from './yup'
 import { Translate } from 'next-translate'
 import { ValidationError } from 'yup'
+import yup from './yup'
 
 export type ErrorWithPath = {
   path: string
@@ -89,6 +89,8 @@ export const nameRule = yup.string().required().trim().min(3).max(70).label('com
 export const descriptionRule = yup.string().optional().label('common:description')
 export const identityNameRule = yup.string().trim().max(16)
 export const passwordLengthRule = yup.string().min(8).max(70).label('common:password')
+export const stringArrayRule = yup.array().of(yup.string())
+export const portRule = yup.number().min(1).max(65565).label('common:port')
 
 export const REGEX_ERROR_NO_WHITESPACES = { regex: 'errors:yup.string.notContainWhitespaces' }
 
@@ -97,3 +99,19 @@ export const matchNoWhitespace = (schema: yup.StringSchema<string, yup.AnyObject
 
 export const matchNoLeadingOrTrailingWhitespaces = (schema: yup.StringSchema<string, yup.AnyObject, undefined>) =>
   schema.matches(/^[^\s]+(\s+[^\s]+)*$/g, { message: REGEX_ERROR_NO_WHITESPACES }) // any characters but no trailing whitespaces
+
+export const matchValues = (name: string, valueSchema: yup.AnySchema) =>
+  yup
+    .object()
+    .label('services')
+    .test(name, obj => {
+      if (!obj) {
+        return true
+      }
+
+      Object.entries(obj).forEach(entry => {
+        const [serviceName, value] = entry
+        valueSchema.label(`service '${serviceName}'`).validateSync(value)
+      })
+      return true
+    })

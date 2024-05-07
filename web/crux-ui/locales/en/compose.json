@@ -1,0 +1,24 @@
+{
+    "compose": "Compose",
+    "composeFile": "Compose file",
+    "dotEnvFile": ".env file",
+    "errors": {
+        "failedToParseFile": "Failed to parse the {{file}}"
+    },
+    "registryFound": "Registry found",
+    "missingRegistry": "Missing registry",
+    "entrypoint": "Entrypoint",
+    "pasteYourCompose": "Paste your compose file",
+    "defaultDotEnv": "Default .env",
+    "addDotEnv": "Add .env",
+    "generate": "Generate",
+    "generateVersion": "Generate version",
+    "target": "Target",
+    "targetType": {
+        "new-project": "New project",
+        "existing-project": "Existing project"
+    },
+    "versionName": "Version name",
+    "versionType": "Version type",
+    "projectName": "Project name"
+}
