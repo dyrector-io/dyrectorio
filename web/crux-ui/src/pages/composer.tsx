@@ -22,7 +22,7 @@ import DyoToggle from '@app/elements/dyo-toggle'
 import DyoWrap from '@app/elements/dyo-wrap'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Project, Registry, VersionDetails, findRegistryByUrl, imageUrlOfImageName } from '@app/models'
+import { DotEnvironment, Project, Registry, VersionDetails, findRegistryByUrl, imageUrlOfImageName } from '@app/models'
 import { appendTeamSlug } from '@app/providers/team-routes'
 import { ROUTE_COMPOSER, ROUTE_INDEX } from '@app/routes'
 import { fetcher, redirectTo, teamSlugOrFirstTeam, withContextAuthorization } from '@app/utils'
@@ -72,7 +72,7 @@ const ComposerPage = () => {
   const onComposeFileChange = (text: string) => dispatch(convertComposeFile(t, text))
   const onToggleShowDefaultDotEnv = () => dispatch(toggleShowDefaultDotEnv())
 
-  const onEnvFileChange = (name: string, text: string) => dispatch(convertEnvFile(t, name, text))
+  const onEnvFileChange = (target: DotEnvironment, text: string) => dispatch(convertEnvFile(t, target, text))
   const onAddDotEnv = () => dispatch(addEnvFile())
 
   const onActivateGenerate = () => dispatch(activateUpperSection('generate'))
@@ -117,7 +117,7 @@ const ComposerPage = () => {
           />
 
           {showDefaultEnv && (
-            <DotEnvFileCard dotEnv={defaultDotEnv} onEnvChange={text => onEnvFileChange(defaultDotEnv.name, text)} />
+            <DotEnvFileCard dotEnv={defaultDotEnv} onEnvChange={text => onEnvFileChange(defaultDotEnv, text)} />
           )}
         </div>
       ) : (

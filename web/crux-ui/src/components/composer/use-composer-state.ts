@@ -74,10 +74,17 @@ const applyEnvironments = (
   const appliedServices = services.map(entry => {
     const [key, service] = entry
 
-    const dotEnvName = service.env_file ?? DEFAULT_ENVIRONMENT_NAME
-    const dotEnv = envs.find(it => it.name === dotEnvName)
+    const envFile: string[] = !service.env_file
+      ? [DEFAULT_ENVIRONMENT_NAME]
+      : typeof service.env_file === 'string'
+      ? [service.env_file]
+      : service.env_file
+    const dotEnvs = envFile.map(envName => envs.find(it => it.name === envName)).filter(it => !!it)
 
-    const applied = applyDotEnvToComposeService(service, dotEnv.environment)
+    let applied = service
+    dotEnvs.forEach(it => {
+      applied = applyDotEnvToComposeService(applied, it.environment)
+    })
 
     return [key, applied]
   })
@@ -90,11 +97,15 @@ type ApplyComposeToStateOptions = {
   envedCompose: Compose
   t: Translate
 }
-const applyComposeToState = (state: ComposerState, options: ApplyComposeToStateOptions) => {
+const applyComposeToState = (
+  state: ComposerState,
+  options: ApplyComposeToStateOptions,
+  environment: DotEnvironment[],
+) => {
   const { t } = options
 
   try {
-    const newContainers = mapComposeServices(options.envedCompose)
+    const newContainers = mapComposeServices(options.envedCompose, environment)
 
     return {
       ...state,
@@ -170,23 +181,27 @@ export const convertComposeFile =
       services: applyEnvironments(compose?.services, state.environment),
     }
 
-    return applyComposeToState(state, {
-      compose: {
-        text,
-        yaml: compose,
-        error: null,
+    return applyComposeToState(
+      state,
+      {
+        compose: {
+          text,
+          yaml: compose,
+          error: null,
+        },
+        envedCompose,
+        t,
       },
-      envedCompose,
-      t,
-    })
+      state.environment,
+    )
   }
 
 export const convertEnvFile =
-  (t: Translate, name: string, text: string): ComposerAction =>
+  (t: Translate, target: DotEnvironment, text: string): ComposerAction =>
   state => {
     const { environment } = state
 
-    const index = environment.findIndex(it => it.name === name)
+    const index = environment.findIndex(it => it === target)
     if (index < 0) {
       return state
     }
@@ -223,18 +238,24 @@ export const convertEnvFile =
     const newEnv = [...environment]
     newEnv[index] = dotEnv
 
+    let newState = state
     const { compose } = state
+    if (compose) {
+      const envedCompose = {
+        ...compose.yaml,
+        services: applyEnvironments(compose?.yaml?.services, newEnv),
+      }
 
-    const envedCompose = {
-      ...compose.yaml,
-      services: applyEnvironments(compose?.yaml?.services, newEnv),
+      newState = applyComposeToState(
+        state,
+        {
+          compose,
+          envedCompose,
+          t,
+        },
+        newEnv,
+      )
     }
-
-    const newState = applyComposeToState(state, {
-      compose,
-      envedCompose,
-      t,
-    })
 
     return {
       ...newState,
@@ -243,18 +264,18 @@ export const convertEnvFile =
   }
 
 export const changeEnvFileName =
-  (from: string, to: string): ComposerAction =>
+  (target: DotEnvironment, name: string): ComposerAction =>
   state => {
     const { environment } = state
 
-    const index = environment.findIndex(it => it.name === from)
+    const index = environment.findIndex(it => it === target)
     if (index < 0) {
       return state
     }
 
     const dotEnv: DotEnvironment = {
       ...environment[index],
-      name: to,
+      name,
     }
 
     const newEnv = [...environment]
@@ -285,23 +306,45 @@ export const addEnvFile = (): ComposerAction => state => {
 }
 
 export const removeEnvFile =
-  (name: string): ComposerAction =>
+  (t: Translate, target: DotEnvironment): ComposerAction =>
   state => {
-    if (name === DEFAULT_ENVIRONMENT_NAME) {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    const defaultDotEnv = selectDefaultEnvironment(state)
+    if (defaultDotEnv === target) {
       return state
     }
 
     const { environment } = state
 
-    const index = environment.findIndex(it => it.name === name)
+    const index = environment.findIndex(it => it === target)
     if (index < 0) {
       return state
     }
 
-    return {
+    const newState = {
       ...state,
-      environment: environment.filter(it => it.name !== name),
+      environment: environment.filter(it => it !== target),
     }
+
+    const compose = newState.compose?.yaml
+    if (!compose) {
+      return newState
+    }
+
+    const envedCompose = {
+      ...compose,
+      services: applyEnvironments(compose.services, newState.environment),
+    }
+
+    return applyComposeToState(
+      newState,
+      {
+        compose: newState.compose,
+        envedCompose,
+        t,
+      },
+      newState.environment,
+    )
   }
 
 // selectors

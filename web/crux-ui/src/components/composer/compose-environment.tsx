@@ -1,4 +1,5 @@
 import DyoWrap from '@app/elements/dyo-wrap'
+import { DotEnvironment } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 import DotEnvFileCard from './dot-env-file-card'
 import {
@@ -21,9 +22,9 @@ const ComposeEnvironment = (props: ComposeEnvironmentProps) => {
 
   const { t } = useTranslation('compose')
 
-  const onEnvFileChange = (name: string, text: string) => dispatch(convertEnvFile(t, name, text))
-  const onEnvNameChange = (from: string, to: string) => dispatch(changeEnvFileName(from, to))
-  const onRemoveDotEnv = (name: string) => dispatch(removeEnvFile(name))
+  const onEnvFileChange = (target: DotEnvironment, text: string) => dispatch(convertEnvFile(t, target, text))
+  const onEnvNameChange = (target: DotEnvironment, to: string) => dispatch(changeEnvFileName(target, to))
+  const onRemoveDotEnv = (target: DotEnvironment) => dispatch(removeEnvFile(t, target))
 
   const defaultDotEnv = selectDefaultEnvironment(state)
 
@@ -33,9 +34,9 @@ const ComposeEnvironment = (props: ComposeEnvironmentProps) => {
         <DotEnvFileCard
           key={`dot-env-${index}`}
           dotEnv={it}
-          onEnvChange={text => onEnvFileChange(it.name, text)}
-          onNameChange={it !== defaultDotEnv ? name => onEnvNameChange(it.name, name) : null}
-          onRemove={it !== defaultDotEnv ? () => onRemoveDotEnv(it.name) : null}
+          onEnvChange={text => onEnvFileChange(it, text)}
+          onNameChange={it !== defaultDotEnv ? name => onEnvNameChange(it, name) : null}
+          onRemove={it !== defaultDotEnv ? () => onRemoveDotEnv(it) : null}
         />
       ))}
     </DyoWrap>
