@@ -42,6 +42,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           config-preset: conventionalcommits
+          config-version: 7.0.2
       - name: Run title validation
         # if it's not a PR we skip
         if: ${{ github.event_name == 'pull_request' }}
