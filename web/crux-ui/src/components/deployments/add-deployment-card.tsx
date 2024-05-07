@@ -116,7 +116,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   const onProjectsFetched = (projects: Project[] | null) => {
     if (projects?.length === 1) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      formikSetFieldValue('projectId', projects[0].id)
+      formikSetFieldValue('project', projects[0])
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       formikSetFieldValue('prefix', projectNameToDeploymentPrefix(projects[0].name))
     }
