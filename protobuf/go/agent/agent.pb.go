@@ -85,12 +85,13 @@ func (CloseReason) EnumDescriptor() ([]byte, []int) {
 // *
 type AgentInfo struct {
 	state         protoimpl.MessageState
-	ContainerName *string `protobuf:"bytes,4,opt,name=containerName,proto3,oneof" json:"containerName,omitempty"`
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
 	Id            string  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Version       string  `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
 	PublicKey     string  `protobuf:"bytes,3,opt,name=publicKey,proto3" json:"publicKey,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	ContainerName *string `protobuf:"bytes,4,opt,name=containerName,proto3,oneof" json:"containerName,omitempty"`
 }
 
 func (x *AgentInfo) Reset() {
@@ -154,10 +155,25 @@ func (x *AgentInfo) GetContainerName() string {
 }
 
 type AgentCommand struct {
-	Command       isAgentCommand_Command `protobuf_oneof:"command"`
 	state         protoimpl.MessageState
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Command:
+	//
+	//	*AgentCommand_Deploy
+	//	*AgentCommand_ContainerState
+	//	*AgentCommand_ContainerDelete
+	//	*AgentCommand_DeployLegacy
+	//	*AgentCommand_ListSecrets
+	//	*AgentCommand_Update
+	//	*AgentCommand_Close
+	//	*AgentCommand_ContainerCommand
+	//	*AgentCommand_DeleteContainers
+	//	*AgentCommand_ContainerLog
+	//	*AgentCommand_ReplaceToken
+	//	*AgentCommand_ContainerInspect
+	Command isAgentCommand_Command `protobuf_oneof:"command"`
 }
 
 func (x *AgentCommand) Reset() {
@@ -361,10 +377,11 @@ func (*AgentCommand_ContainerInspect) isAgentCommand_Command() {}
 
 type AgentError struct {
 	state         protoimpl.MessageState
-	Error         string `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
-	Status        int32 `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+
+	Status int32  `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
+	Error  string `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 }
 
 func (x *AgentError) Reset() {
@@ -414,10 +431,17 @@ func (x *AgentError) GetError() string {
 }
 
 type AgentCommandError struct {
-	Command       isAgentCommandError_Command `protobuf_oneof:"command"`
 	state         protoimpl.MessageState
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Command:
+	//
+	//	*AgentCommandError_ListSecrets
+	//	*AgentCommandError_DeleteContainers
+	//	*AgentCommandError_ContainerLog
+	//	*AgentCommandError_ContainerInspect
+	Command isAgentCommandError_Command `protobuf_oneof:"command"`
 }
 
 func (x *AgentCommandError) Reset() {
@@ -519,9 +543,10 @@ func (*AgentCommandError_ContainerInspect) isAgentCommandError_Command() {}
 // instantly after validation success.
 type DeployResponse struct {
 	state         protoimpl.MessageState
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
-	Started       bool `protobuf:"varint,1,opt,name=started,proto3" json:"started,omitempty"`
+	unknownFields protoimpl.UnknownFields
+
+	Started bool `protobuf:"varint,1,opt,name=started,proto3" json:"started,omitempty"`
 }
 
 func (x *DeployResponse) Reset() {
@@ -565,12 +590,13 @@ func (x *DeployResponse) GetStarted() bool {
 
 type VersionDeployRequest struct {
 	state         protoimpl.MessageState
-	Id            string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	VersionName   string `protobuf:"bytes,2,opt,name=versionName,proto3" json:"versionName,omitempty"`
-	ReleaseNotes  string `protobuf:"bytes,3,opt,name=releaseNotes,proto3" json:"releaseNotes,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	Requests      []*DeployRequest `protobuf:"bytes,4,rep,name=requests,proto3" json:"requests,omitempty"`
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id           string           `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	VersionName  string           `protobuf:"bytes,2,opt,name=versionName,proto3" json:"versionName,omitempty"`
+	ReleaseNotes string           `protobuf:"bytes,3,opt,name=releaseNotes,proto3" json:"releaseNotes,omitempty"`
+	Requests     []*DeployRequest `protobuf:"bytes,4,rep,name=requests,proto3" json:"requests,omitempty"`
 }
 
 func (x *VersionDeployRequest) Reset() {
@@ -636,9 +662,10 @@ func (x *VersionDeployRequest) GetRequests() []*DeployRequest {
 // Request for a keys of existing secrets in a prefix, eg. namespace
 type ListSecretsRequest struct {
 	state         protoimpl.MessageState
-	Container     *common.ContainerIdentifier `protobuf:"bytes,1,opt,name=container,proto3" json:"container,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Container *common.ContainerIdentifier `protobuf:"bytes,1,opt,name=container,proto3" json:"container,omitempty"`
 }
 
 func (x *ListSecretsRequest) Reset() {
@@ -683,13 +710,16 @@ func (x *ListSecretsRequest) GetContainer() *common.ContainerIdentifier {
 // *
 // Deploys a single container
 type InstanceConfig struct {
-	state            protoimpl.MessageState
-	MountPath        *string           `protobuf:"bytes,2,opt,name=mountPath,proto3,oneof" json:"mountPath,omitempty"`
-	Environment      map[string]string `protobuf:"bytes,3,rep,name=environment,proto3" json:"environment,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	RepositoryPrefix *string           `protobuf:"bytes,4,opt,name=repositoryPrefix,proto3,oneof" json:"repositoryPrefix,omitempty"`
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// prefix mapped into host folder structure,
+	// used as namespace id
 	Prefix           string            `protobuf:"bytes,1,opt,name=prefix,proto3" json:"prefix,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	MountPath        *string           `protobuf:"bytes,2,opt,name=mountPath,proto3,oneof" json:"mountPath,omitempty"`                                                                                       // mount path of instance (docker only)
+	Environment      map[string]string `protobuf:"bytes,3,rep,name=environment,proto3" json:"environment,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"` // environment variable map
+	RepositoryPrefix *string           `protobuf:"bytes,4,opt,name=repositoryPrefix,proto3,oneof" json:"repositoryPrefix,omitempty"`                                                                         // registry repo prefix
 }
 
 func (x *InstanceConfig) Reset() {
@@ -754,12 +784,13 @@ func (x *InstanceConfig) GetRepositoryPrefix() string {
 
 type RegistryAuth struct {
 	state         protoimpl.MessageState
-	Name          string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Url           string `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
-	User          string `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
-	Password      string `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name     string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Url      string `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
+	User     string `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
+	Password string `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`
 }
 
 func (x *RegistryAuth) Reset() {
@@ -824,10 +855,11 @@ func (x *RegistryAuth) GetPassword() string {
 
 type Port struct {
 	state         protoimpl.MessageState
-	External      *int32 `protobuf:"varint,101,opt,name=external,proto3,oneof" json:"external,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
-	Internal      int32 `protobuf:"varint,100,opt,name=internal,proto3" json:"internal,omitempty"`
+	unknownFields protoimpl.UnknownFields
+
+	Internal int32  `protobuf:"varint,100,opt,name=internal,proto3" json:"internal,omitempty"`
+	External *int32 `protobuf:"varint,101,opt,name=external,proto3,oneof" json:"external,omitempty"`
 }
 
 func (x *Port) Reset() {
@@ -878,10 +910,11 @@ func (x *Port) GetExternal() int32 {
 
 type PortRange struct {
 	state         protoimpl.MessageState
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
-	From          int32 `protobuf:"varint,100,opt,name=from,proto3" json:"from,omitempty"`
-	To            int32 `protobuf:"varint,101,opt,name=to,proto3" json:"to,omitempty"`
+	unknownFields protoimpl.UnknownFields
+
+	From int32 `protobuf:"varint,100,opt,name=from,proto3" json:"from,omitempty"`
+	To   int32 `protobuf:"varint,101,opt,name=to,proto3" json:"to,omitempty"`
 }
 
 func (x *PortRange) Reset() {
@@ -932,10 +965,11 @@ func (x *PortRange) GetTo() int32 {
 
 type PortRangeBinding struct {
 	state         protoimpl.MessageState
-	Internal      *PortRange `protobuf:"bytes,100,opt,name=internal,proto3" json:"internal,omitempty"`
-	External      *PortRange `protobuf:"bytes,101,opt,name=external,proto3" json:"external,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Internal *PortRange `protobuf:"bytes,100,opt,name=internal,proto3" json:"internal,omitempty"`
+	External *PortRange `protobuf:"bytes,101,opt,name=external,proto3" json:"external,omitempty"`
 }
 
 func (x *PortRangeBinding) Reset() {
@@ -986,13 +1020,14 @@ func (x *PortRangeBinding) GetExternal() *PortRange {
 
 type Volume struct {
 	state         protoimpl.MessageState
-	Size          *string            `protobuf:"bytes,102,opt,name=size,proto3,oneof" json:"size,omitempty"`
-	Type          *common.VolumeType `protobuf:"varint,103,opt,name=type,proto3,enum=common.VolumeType,oneof" json:"type,omitempty"`
-	Class         *string            `protobuf:"bytes,104,opt,name=class,proto3,oneof" json:"class,omitempty"`
-	Name          string             `protobuf:"bytes,100,opt,name=name,proto3" json:"name,omitempty"`
-	Path          string             `protobuf:"bytes,101,opt,name=path,proto3" json:"path,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name  string             `protobuf:"bytes,100,opt,name=name,proto3" json:"name,omitempty"`
+	Path  string             `protobuf:"bytes,101,opt,name=path,proto3" json:"path,omitempty"`
+	Size  *string            `protobuf:"bytes,102,opt,name=size,proto3,oneof" json:"size,omitempty"`
+	Type  *common.VolumeType `protobuf:"varint,103,opt,name=type,proto3,enum=common.VolumeType,oneof" json:"type,omitempty"`
+	Class *string            `protobuf:"bytes,104,opt,name=class,proto3,oneof" json:"class,omitempty"`
 }
 
 func (x *Volume) Reset() {
@@ -1064,10 +1099,11 @@ func (x *Volume) GetClass() string {
 
 type VolumeLink struct {
 	state         protoimpl.MessageState
-	Name          string `protobuf:"bytes,100,opt,name=name,proto3" json:"name,omitempty"`
-	Path          string `protobuf:"bytes,101,opt,name=path,proto3" json:"path,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name string `protobuf:"bytes,100,opt,name=name,proto3" json:"name,omitempty"`
+	Path string `protobuf:"bytes,101,opt,name=path,proto3" json:"path,omitempty"`
 }
 
 func (x *VolumeLink) Reset() {
@@ -1117,16 +1153,17 @@ func (x *VolumeLink) GetPath() string {
 }
 
 type InitContainer struct {
-	state           protoimpl.MessageState
-	UseParentConfig *bool             `protobuf:"varint,102,opt,name=useParentConfig,proto3,oneof" json:"useParentConfig,omitempty"`
-	Environment     map[string]string `protobuf:"bytes,1003,rep,name=environment,proto3" json:"environment,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
 	Name            string            `protobuf:"bytes,100,opt,name=name,proto3" json:"name,omitempty"`
 	Image           string            `protobuf:"bytes,101,opt,name=image,proto3" json:"image,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	Volumes         []*VolumeLink `protobuf:"bytes,1000,rep,name=volumes,proto3" json:"volumes,omitempty"`
-	Command         []string      `protobuf:"bytes,1001,rep,name=command,proto3" json:"command,omitempty"`
-	Args            []string      `protobuf:"bytes,1002,rep,name=args,proto3" json:"args,omitempty"`
-	sizeCache       protoimpl.SizeCache
+	UseParentConfig *bool             `protobuf:"varint,102,opt,name=useParentConfig,proto3,oneof" json:"useParentConfig,omitempty"`
+	Volumes         []*VolumeLink     `protobuf:"bytes,1000,rep,name=volumes,proto3" json:"volumes,omitempty"`
+	Command         []string          `protobuf:"bytes,1001,rep,name=command,proto3" json:"command,omitempty"`
+	Args            []string          `protobuf:"bytes,1002,rep,name=args,proto3" json:"args,omitempty"`
+	Environment     map[string]string `protobuf:"bytes,1003,rep,name=environment,proto3" json:"environment,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *InitContainer) Reset() {
@@ -1212,11 +1249,12 @@ func (x *InitContainer) GetEnvironment() map[string]string {
 
 type ImportContainer struct {
 	state         protoimpl.MessageState
-	Environment   map[string]string `protobuf:"bytes,1000,rep,name=environment,proto3" json:"environment,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	Volume        string            `protobuf:"bytes,100,opt,name=volume,proto3" json:"volume,omitempty"`
-	Command       string            `protobuf:"bytes,101,opt,name=command,proto3" json:"command,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Volume      string            `protobuf:"bytes,100,opt,name=volume,proto3" json:"volume,omitempty"`
+	Command     string            `protobuf:"bytes,101,opt,name=command,proto3" json:"command,omitempty"`
+	Environment map[string]string `protobuf:"bytes,1000,rep,name=environment,proto3" json:"environment,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *ImportContainer) Reset() {
@@ -1274,10 +1312,11 @@ func (x *ImportContainer) GetEnvironment() map[string]string {
 
 type LogConfig struct {
 	state         protoimpl.MessageState
-	Options       map[string]string `protobuf:"bytes,1000,rep,name=options,proto3" json:"options,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
-	Driver        common.DriverType `protobuf:"varint,100,opt,name=driver,proto3,enum=common.DriverType" json:"driver,omitempty"`
+	unknownFields protoimpl.UnknownFields
+
+	Driver  common.DriverType `protobuf:"varint,100,opt,name=driver,proto3,enum=common.DriverType" json:"driver,omitempty"`
+	Options map[string]string `protobuf:"bytes,1000,rep,name=options,proto3" json:"options,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *LogConfig) Reset() {
@@ -1328,11 +1367,12 @@ func (x *LogConfig) GetOptions() map[string]string {
 
 type Marker struct {
 	state         protoimpl.MessageState
-	Deployment    map[string]string `protobuf:"bytes,1000,rep,name=deployment,proto3" json:"deployment,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	Service       map[string]string `protobuf:"bytes,1001,rep,name=service,proto3" json:"service,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	Ingress       map[string]string `protobuf:"bytes,1002,rep,name=ingress,proto3" json:"ingress,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Deployment map[string]string `protobuf:"bytes,1000,rep,name=deployment,proto3" json:"deployment,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Service    map[string]string `protobuf:"bytes,1001,rep,name=service,proto3" json:"service,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Ingress    map[string]string `protobuf:"bytes,1002,rep,name=ingress,proto3" json:"ingress,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *Marker) Reset() {
@@ -1390,10 +1430,11 @@ func (x *Marker) GetIngress() map[string]string {
 
 type Metrics struct {
 	state         protoimpl.MessageState
-	Path          string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
-	Port          int32 `protobuf:"varint,1,opt,name=port,proto3" json:"port,omitempty"`
+	unknownFields protoimpl.UnknownFields
+
+	Port int32  `protobuf:"varint,1,opt,name=port,proto3" json:"port,omitempty"`
+	Path string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
 }
 
 func (x *Metrics) Reset() {
@@ -1444,11 +1485,12 @@ func (x *Metrics) GetPath() string {
 
 type ExpectedState struct {
 	state         protoimpl.MessageState
-	Timeout       *int32 `protobuf:"varint,101,opt,name=timeout,proto3,oneof" json:"timeout,omitempty"`
-	ExitCode      *int32 `protobuf:"varint,102,opt,name=exitCode,proto3,oneof" json:"exitCode,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
-	State         common.ContainerState `protobuf:"varint,100,opt,name=state,proto3,enum=common.ContainerState" json:"state,omitempty"`
+	unknownFields protoimpl.UnknownFields
+
+	State    common.ContainerState `protobuf:"varint,100,opt,name=state,proto3,enum=common.ContainerState" json:"state,omitempty"`
+	Timeout  *int32                `protobuf:"varint,101,opt,name=timeout,proto3,oneof" json:"timeout,omitempty"`
+	ExitCode *int32                `protobuf:"varint,102,opt,name=exitCode,proto3,oneof" json:"exitCode,omitempty"`
 }
 
 func (x *ExpectedState) Reset() {
@@ -1506,14 +1548,15 @@ func (x *ExpectedState) GetExitCode() int32 {
 
 type DagentContainerConfig struct {
 	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
 	LogConfig     *LogConfig            `protobuf:"bytes,100,opt,name=logConfig,proto3,oneof" json:"logConfig,omitempty"`
 	RestartPolicy *common.RestartPolicy `protobuf:"varint,101,opt,name=restartPolicy,proto3,enum=common.RestartPolicy,oneof" json:"restartPolicy,omitempty"`
 	NetworkMode   *common.NetworkMode   `protobuf:"varint,102,opt,name=networkMode,proto3,enum=common.NetworkMode,oneof" json:"networkMode,omitempty"`
 	ExpectedState *ExpectedState        `protobuf:"bytes,103,opt,name=expectedState,proto3,oneof" json:"expectedState,omitempty"`
+	Networks      []string              `protobuf:"bytes,1000,rep,name=networks,proto3" json:"networks,omitempty"`
 	Labels        map[string]string     `protobuf:"bytes,1001,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	unknownFields protoimpl.UnknownFields
-	Networks      []string `protobuf:"bytes,1000,rep,name=networks,proto3" json:"networks,omitempty"`
-	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DagentContainerConfig) Reset() {
@@ -1591,19 +1634,20 @@ func (x *DagentContainerConfig) GetLabels() map[string]string {
 }
 
 type CraneContainerConfig struct {
-	ProxyHeaders       *bool                      `protobuf:"varint,103,opt,name=proxyHeaders,proto3,oneof" json:"proxyHeaders,omitempty"`
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
 	DeploymentStrategy *common.DeploymentStrategy `protobuf:"varint,100,opt,name=deploymentStrategy,proto3,enum=common.DeploymentStrategy,oneof" json:"deploymentStrategy,omitempty"`
 	HealthCheckConfig  *common.HealthCheckConfig  `protobuf:"bytes,101,opt,name=healthCheckConfig,proto3,oneof" json:"healthCheckConfig,omitempty"`
 	ResourceConfig     *common.ResourceConfig     `protobuf:"bytes,102,opt,name=resourceConfig,proto3,oneof" json:"resourceConfig,omitempty"`
-	state              protoimpl.MessageState
-	UseLoadBalancer    *bool             `protobuf:"varint,104,opt,name=useLoadBalancer,proto3,oneof" json:"useLoadBalancer,omitempty"`
-	Annotations        *Marker           `protobuf:"bytes,105,opt,name=annotations,proto3,oneof" json:"annotations,omitempty"`
-	Labels             *Marker           `protobuf:"bytes,106,opt,name=labels,proto3,oneof" json:"labels,omitempty"`
-	Metrics            *Metrics          `protobuf:"bytes,107,opt,name=metrics,proto3,oneof" json:"metrics,omitempty"`
-	ExtraLBAnnotations map[string]string `protobuf:"bytes,1001,rep,name=extraLBAnnotations,proto3" json:"extraLBAnnotations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	unknownFields      protoimpl.UnknownFields
-	CustomHeaders      []string `protobuf:"bytes,1000,rep,name=customHeaders,proto3" json:"customHeaders,omitempty"`
-	sizeCache          protoimpl.SizeCache
+	ProxyHeaders       *bool                      `protobuf:"varint,103,opt,name=proxyHeaders,proto3,oneof" json:"proxyHeaders,omitempty"`
+	UseLoadBalancer    *bool                      `protobuf:"varint,104,opt,name=useLoadBalancer,proto3,oneof" json:"useLoadBalancer,omitempty"`
+	Annotations        *Marker                    `protobuf:"bytes,105,opt,name=annotations,proto3,oneof" json:"annotations,omitempty"`
+	Labels             *Marker                    `protobuf:"bytes,106,opt,name=labels,proto3,oneof" json:"labels,omitempty"`
+	Metrics            *Metrics                   `protobuf:"bytes,107,opt,name=metrics,proto3,oneof" json:"metrics,omitempty"`
+	CustomHeaders      []string                   `protobuf:"bytes,1000,rep,name=customHeaders,proto3" json:"customHeaders,omitempty"`
+	ExtraLBAnnotations map[string]string          `protobuf:"bytes,1001,rep,name=extraLBAnnotations,proto3" json:"extraLBAnnotations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *CraneContainerConfig) Reset() {
@@ -1709,25 +1753,26 @@ func (x *CraneContainerConfig) GetExtraLBAnnotations() map[string]string {
 }
 
 type CommonContainerConfig struct {
-	User             *int64  `protobuf:"varint,106,opt,name=user,proto3,oneof" json:"user,omitempty"`
-	WorkingDirectory *string `protobuf:"bytes,108,opt,name=workingDirectory,proto3,oneof" json:"workingDirectory,omitempty"`
-	state            protoimpl.MessageState
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name             string                  `protobuf:"bytes,101,opt,name=name,proto3" json:"name,omitempty"`
 	Expose           *common.ExposeStrategy  `protobuf:"varint,102,opt,name=expose,proto3,enum=common.ExposeStrategy,oneof" json:"expose,omitempty"`
 	Routing          *common.Routing         `protobuf:"bytes,103,opt,name=routing,proto3,oneof" json:"routing,omitempty"`
 	ConfigContainer  *common.ConfigContainer `protobuf:"bytes,104,opt,name=configContainer,proto3,oneof" json:"configContainer,omitempty"`
 	ImportContainer  *ImportContainer        `protobuf:"bytes,105,opt,name=importContainer,proto3,oneof" json:"importContainer,omitempty"`
+	User             *int64                  `protobuf:"varint,106,opt,name=user,proto3,oneof" json:"user,omitempty"`
 	TTY              *bool                   `protobuf:"varint,107,opt,name=TTY,proto3,oneof" json:"TTY,omitempty"`
-	Secrets          map[string]string       `protobuf:"bytes,1006,rep,name=secrets,proto3" json:"secrets,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	Environment      map[string]string       `protobuf:"bytes,1005,rep,name=environment,proto3" json:"environment,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	Name             string                  `protobuf:"bytes,101,opt,name=name,proto3" json:"name,omitempty"`
-	InitContainers   []*InitContainer        `protobuf:"bytes,1007,rep,name=initContainers,proto3" json:"initContainers,omitempty"`
+	WorkingDirectory *string                 `protobuf:"bytes,108,opt,name=workingDirectory,proto3,oneof" json:"workingDirectory,omitempty"`
+	Ports            []*Port                 `protobuf:"bytes,1000,rep,name=ports,proto3" json:"ports,omitempty"`
 	PortRanges       []*PortRangeBinding     `protobuf:"bytes,1001,rep,name=portRanges,proto3" json:"portRanges,omitempty"`
 	Volumes          []*Volume               `protobuf:"bytes,1002,rep,name=volumes,proto3" json:"volumes,omitempty"`
 	Commands         []string                `protobuf:"bytes,1003,rep,name=commands,proto3" json:"commands,omitempty"`
 	Args             []string                `protobuf:"bytes,1004,rep,name=args,proto3" json:"args,omitempty"`
-	Ports            []*Port                 `protobuf:"bytes,1000,rep,name=ports,proto3" json:"ports,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	Environment      map[string]string       `protobuf:"bytes,1005,rep,name=environment,proto3" json:"environment,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Secrets          map[string]string       `protobuf:"bytes,1006,rep,name=secrets,proto3" json:"secrets,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	InitContainers   []*InitContainer        `protobuf:"bytes,1007,rep,name=initContainers,proto3" json:"initContainers,omitempty"`
 }
 
 func (x *CommonContainerConfig) Reset() {
@@ -1875,20 +1920,24 @@ func (x *CommonContainerConfig) GetInitContainers() []*InitContainer {
 }
 
 type DeployRequest struct {
-	RuntimeConfig  *string                `protobuf:"bytes,7,opt,name=runtimeConfig,proto3,oneof" json:"runtimeConfig,omitempty"`
-	Crane          *CraneContainerConfig  `protobuf:"bytes,6,opt,name=crane,proto3,oneof" json:"crane,omitempty"`
-	RegistryAuth   *RegistryAuth          `protobuf:"bytes,11,opt,name=registryAuth,proto3,oneof" json:"registryAuth,omitempty"`
-	Dagent         *DagentContainerConfig `protobuf:"bytes,5,opt,name=dagent,proto3,oneof" json:"dagent,omitempty"`
-	state          protoimpl.MessageState
-	InstanceConfig *InstanceConfig        `protobuf:"bytes,3,opt,name=instanceConfig,proto3" json:"instanceConfig,omitempty"`
-	Registry       *string                `protobuf:"bytes,8,opt,name=registry,proto3,oneof" json:"registry,omitempty"`
-	Common         *CommonContainerConfig `protobuf:"bytes,4,opt,name=common,proto3,oneof" json:"common,omitempty"`
-	ContainerName  string                 `protobuf:"bytes,2,opt,name=containerName,proto3" json:"containerName,omitempty"`
-	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ImageName      string                 `protobuf:"bytes,9,opt,name=imageName,proto3" json:"imageName,omitempty"`
-	Tag            string                 `protobuf:"bytes,10,opt,name=tag,proto3" json:"tag,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id            string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ContainerName string `protobuf:"bytes,2,opt,name=containerName,proto3" json:"containerName,omitempty"`
+	// InstanceConfig is set for multiple containers
+	InstanceConfig *InstanceConfig `protobuf:"bytes,3,opt,name=instanceConfig,proto3" json:"instanceConfig,omitempty"`
+	// ContainerConfigs
+	Common *CommonContainerConfig `protobuf:"bytes,4,opt,name=common,proto3,oneof" json:"common,omitempty"`
+	Dagent *DagentContainerConfig `protobuf:"bytes,5,opt,name=dagent,proto3,oneof" json:"dagent,omitempty"`
+	Crane  *CraneContainerConfig  `protobuf:"bytes,6,opt,name=crane,proto3,oneof" json:"crane,omitempty"`
+	// Runtime info and requirements of a container
+	RuntimeConfig *string       `protobuf:"bytes,7,opt,name=runtimeConfig,proto3,oneof" json:"runtimeConfig,omitempty"`
+	Registry      *string       `protobuf:"bytes,8,opt,name=registry,proto3,oneof" json:"registry,omitempty"`
+	ImageName     string        `protobuf:"bytes,9,opt,name=imageName,proto3" json:"imageName,omitempty"`
+	Tag           string        `protobuf:"bytes,10,opt,name=tag,proto3" json:"tag,omitempty"`
+	RegistryAuth  *RegistryAuth `protobuf:"bytes,11,opt,name=registryAuth,proto3,oneof" json:"registryAuth,omitempty"`
 }
 
 func (x *DeployRequest) Reset() {
@@ -2002,10 +2051,11 @@ func (x *DeployRequest) GetRegistryAuth() *RegistryAuth {
 
 type ContainerStateRequest struct {
 	state         protoimpl.MessageState
-	Prefix        *string `protobuf:"bytes,1,opt,name=prefix,proto3,oneof" json:"prefix,omitempty"`
-	OneShot       *bool   `protobuf:"varint,2,opt,name=oneShot,proto3,oneof" json:"oneShot,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Prefix  *string `protobuf:"bytes,1,opt,name=prefix,proto3,oneof" json:"prefix,omitempty"`
+	OneShot *bool   `protobuf:"varint,2,opt,name=oneShot,proto3,oneof" json:"oneShot,omitempty"`
 }
 
 func (x *ContainerStateRequest) Reset() {
@@ -2056,10 +2106,11 @@ func (x *ContainerStateRequest) GetOneShot() bool {
 
 type ContainerDeleteRequest struct {
 	state         protoimpl.MessageState
-	Prefix        string `protobuf:"bytes,1,opt,name=prefix,proto3" json:"prefix,omitempty"`
-	Name          string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Prefix string `protobuf:"bytes,1,opt,name=prefix,proto3" json:"prefix,omitempty"`
+	Name   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 }
 
 func (x *ContainerDeleteRequest) Reset() {
@@ -2110,10 +2161,11 @@ func (x *ContainerDeleteRequest) GetName() string {
 
 type DeployRequestLegacy struct {
 	state         protoimpl.MessageState
-	RequestId     string `protobuf:"bytes,1,opt,name=requestId,proto3" json:"requestId,omitempty"`
-	Json          string `protobuf:"bytes,2,opt,name=json,proto3" json:"json,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	RequestId string `protobuf:"bytes,1,opt,name=requestId,proto3" json:"requestId,omitempty"` // for early dogger logging
+	Json      string `protobuf:"bytes,2,opt,name=json,proto3" json:"json,omitempty"`
 }
 
 func (x *DeployRequestLegacy) Reset() {
@@ -2164,12 +2216,13 @@ func (x *DeployRequestLegacy) GetJson() string {
 
 // Dagent update
 type AgentUpdateRequest struct {
-	state          protoimpl.MessageState
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
 	Tag            string `protobuf:"bytes,1,opt,name=tag,proto3" json:"tag,omitempty"`
+	TimeoutSeconds int32  `protobuf:"varint,2,opt,name=timeoutSeconds,proto3" json:"timeoutSeconds,omitempty"`
 	Token          string `protobuf:"bytes,3,opt,name=token,proto3" json:"token,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-	TimeoutSeconds int32 `protobuf:"varint,2,opt,name=timeoutSeconds,proto3" json:"timeoutSeconds,omitempty"`
 }
 
 func (x *AgentUpdateRequest) Reset() {
@@ -2227,9 +2280,10 @@ func (x *AgentUpdateRequest) GetToken() string {
 
 type ReplaceTokenRequest struct {
 	state         protoimpl.MessageState
-	Token         string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Token string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
 }
 
 func (x *ReplaceTokenRequest) Reset() {
@@ -2273,9 +2327,10 @@ func (x *ReplaceTokenRequest) GetToken() string {
 
 type AgentAbortUpdate struct {
 	state         protoimpl.MessageState
-	Error         string `protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Error string `protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
 }
 
 func (x *AgentAbortUpdate) Reset() {
@@ -2320,11 +2375,12 @@ func (x *AgentAbortUpdate) GetError() string {
 // Container log
 type ContainerLogRequest struct {
 	state         protoimpl.MessageState
-	Container     *common.ContainerIdentifier `protobuf:"bytes,1,opt,name=container,proto3" json:"container,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
-	Tail          uint32 `protobuf:"varint,3,opt,name=tail,proto3" json:"tail,omitempty"`
-	Streaming     bool   `protobuf:"varint,2,opt,name=streaming,proto3" json:"streaming,omitempty"`
+	unknownFields protoimpl.UnknownFields
+
+	Container *common.ContainerIdentifier `protobuf:"bytes,1,opt,name=container,proto3" json:"container,omitempty"`
+	Streaming bool                        `protobuf:"varint,2,opt,name=streaming,proto3" json:"streaming,omitempty"`
+	Tail      uint32                      `protobuf:"varint,3,opt,name=tail,proto3" json:"tail,omitempty"`
 }
 
 func (x *ContainerLogRequest) Reset() {
@@ -2383,9 +2439,10 @@ func (x *ContainerLogRequest) GetTail() uint32 {
 // Container inspect
 type ContainerInspectRequest struct {
 	state         protoimpl.MessageState
-	Container     *common.ContainerIdentifier `protobuf:"bytes,1,opt,name=container,proto3" json:"container,omitempty"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Container *common.ContainerIdentifier `protobuf:"bytes,1,opt,name=container,proto3" json:"container,omitempty"`
 }
 
 func (x *ContainerInspectRequest) Reset() {
@@ -2429,9 +2486,10 @@ func (x *ContainerInspectRequest) GetContainer() *common.ContainerIdentifier {
 
 type CloseConnectionRequest struct {
 	state         protoimpl.MessageState
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
-	Reason        CloseReason `protobuf:"varint,1,opt,name=reason,proto3,enum=agent.CloseReason" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+
+	Reason CloseReason `protobuf:"varint,1,opt,name=reason,proto3,enum=agent.CloseReason" json:"reason,omitempty"`
 }
 
 func (x *CloseConnectionRequest) Reset() {
