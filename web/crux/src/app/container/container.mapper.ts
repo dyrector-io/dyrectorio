@@ -69,13 +69,13 @@ export default class ContainerMapper {
 
   configDataToDb(config: Partial<ContainerConfigData>): Omit<ContainerConfig, 'id' | 'imageId'> {
     return {
-      name: config.name,
-      expose: config.expose,
+      name: config.name ?? undefined,
+      expose: config.expose ?? undefined,
       routing: toPrismaJson(config.routing),
       configContainer: toPrismaJson(config.configContainer),
       // Set user to the given value, if not null or use 0 if specifically 0, otherwise set to default -1
       user: config.user ?? (config.user === 0 ? 0 : -1),
-      workingDirectory: config.workingDirectory,
+      workingDirectory: config.workingDirectory ?? undefined,
       tty: config.tty !== null ? config.tty : false,
       ports: toPrismaJson(config.ports),
       portRanges: toPrismaJson(config.portRanges),
@@ -86,19 +86,19 @@ export default class ContainerMapper {
       secrets: toPrismaJson(config.secrets),
       initContainers: toPrismaJson(config.initContainers),
       logConfig: toPrismaJson(config.logConfig),
-      storageSet: config.storageSet,
-      storageId: config.storageId,
+      storageSet: config.storageSet ?? undefined,
+      storageId: config.storageId ?? undefined,
       storageConfig: toPrismaJson(config.storageConfig),
 
       // dagent
-      restartPolicy: config.restartPolicy,
-      networkMode: config.networkMode,
+      restartPolicy: config.restartPolicy ?? undefined,
+      networkMode: config.networkMode ?? undefined,
       networks: toPrismaJson(config.networks),
       dockerLabels: toPrismaJson(config.dockerLabels),
       expectedState: toPrismaJson(config.expectedState),
 
       // crane
-      deploymentStrategy: config.deploymentStrategy,
+      deploymentStrategy: config.deploymentStrategy ?? undefined,
       healthCheckConfig: toPrismaJson(config.healthCheckConfig),
       resourceConfig: toPrismaJson(config.resourceConfig),
       proxyHeaders: config.proxyHeaders !== null ? config.proxyHeaders : false,
