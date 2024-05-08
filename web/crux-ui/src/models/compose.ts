@@ -12,8 +12,8 @@ import {
   UniqueKeyValue,
   VolumeType,
 } from './container'
-import { VersionType } from './version'
 import { Project } from './project'
+import { VersionType } from './version'
 
 export const COMPOSE_RESTART_VALUES = ['no', 'always', 'on-failure', 'unless-stopped'] as const
 export type ComposeRestart = (typeof COMPOSE_RESTART_VALUES)[number]
@@ -52,7 +52,7 @@ export type ComposeService = {
   tty?: boolean
   working_dir?: string
   user?: string // we only support numbers, so '0' will work but root won't
-  env_file?: string
+  env_file?: string | string[]
 }
 
 export type Compose = {
@@ -188,6 +188,29 @@ const mapUser = (user: string): number => {
   }
 }
 
+const mapKeyValuesToRecord = (items: string[] | null): Record<string, string> =>
+  items?.reduce((result, it) => {
+    const [key, value] = it.split('=')
+
+    result[key] = value
+    return result
+  }, {})
+
+const mapRecordToKeyValues = (map: Record<string, string> | null): UniqueKeyValue[] | null => {
+  if (!map) {
+    return null
+  }
+
+  return Object.entries(map).map(entry => {
+    const [key, value] = entry
+    return {
+      id: uuid(),
+      key,
+      value,
+    }
+  })
+}
+
 const mapKeyValues = (items: string[] | null): UniqueKeyValue[] | null =>
   items?.map(it => {
     const [key, value] = it.split('=')
@@ -210,6 +233,7 @@ const mapStringOrStringArray = (candidate: string | string[]): UniqueKey[] =>
 export const mapComposeServiceToContainerConfig = (
   service: ComposeService,
   serviceKey: string,
+  envs: DotEnvironment[],
 ): ContainerConfigData => {
   const ports: ContainerConfigPort[] = []
   const portRanges: ContainerConfigPortRange[] = []
@@ -222,9 +246,34 @@ export const mapComposeServiceToContainerConfig = (
     }
   })
 
+  let environment = mapKeyValuesToRecord(service.environment)
+  if (service.env_file) {
+    const envFile = typeof service.env_file === 'string' ? [service.env_file] : service.env_file
+
+    const dotEnvs = envs.filter(it => envFile.includes(it.name))
+    if (dotEnvs.length > 0) {
+      if (!environment) {
+        environment = {}
+      }
+
+      const mergedEnvs = dotEnvs.reduce(
+        (result, it) => ({
+          ...result,
+          ...it.environment,
+        }),
+        {},
+      )
+
+      environment = {
+        ...mergedEnvs,
+        ...environment,
+      }
+    }
+  }
+
   return {
     name: service.container_name ?? serviceKey,
-    environment: mapKeyValues(service.environment),
+    environment: mapRecordToKeyValues(environment),
     commands: mapStringOrStringArray(service.entrypoint),
     args: mapStringOrStringArray(service.command),
     ports: ports.length > 0 ? ports : null,
@@ -263,13 +312,13 @@ export const mapComposeServiceToContainerConfig = (
   }
 }
 
-export const mapComposeServices = (compose: Compose): ConvertedContainer[] =>
+export const mapComposeServices = (compose: Compose, envs: DotEnvironment[]): ConvertedContainer[] =>
   Object.entries(compose.services).map(entry => {
     const [key, service] = entry
 
     return {
       image: service.image,
-      config: mapComposeServiceToContainerConfig(service, key),
+      config: mapComposeServiceToContainerConfig(service, key, envs),
     }
   })
 

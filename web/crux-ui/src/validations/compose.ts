@@ -65,7 +65,7 @@ export const composeServiceSchema = yup.object().shape({
 
     return it
   }),
-  env_file: yup.string().optional().nullable(),
+  env_file: mixedStringOrStringArrayRule.optional().nullable(),
 })
 
 export const composeSchema = yup
