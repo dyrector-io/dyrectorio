@@ -72,13 +72,13 @@ protogen:| proto-agent proto-crux
 # Run linting on the Go code
 .PHONY: go-lint
 go-lint:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/builder-images/protobuf:2 ash -c "\
 		cd golang && make lint"
 
 # Generate agent gRPC files
 .PHONY: proto-agent
 proto-agent:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/builder-images/protobuf:2 ash -c "\
 		mkdir -p protobuf/go && \
 		protoc -I. \
 			--go_out /tmp \
@@ -91,7 +91,7 @@ proto-agent:
 # Generate API grpc files
 .PHONY: proto-crux
 proto-crux:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/builder-images/protobuf:2 ash -c "\
 		mkdir -p ./web/crux/src/grpc && \
 		protoc \
 			--experimental_allow_proto3_optional \
@@ -105,10 +105,6 @@ proto-crux:
 	cp -r protobuf/proto web/crux/ && \
 	cd ./web/crux/src/grpc && \
 	npx prettier -w "./**.ts"
-
-.PHONY: build-proto-image
-build-proto-image:
-	docker build -t ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-4 -f images/alpine-proto/Dockerfile --progress plain .
 
 .PHONY: branch-check
 branch-check:
