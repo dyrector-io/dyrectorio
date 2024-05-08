@@ -16,11 +16,13 @@ import {
   ConvertedContainer,
   CreateProject,
   CreateVersion,
+  PatchVersionImage,
   Project,
   ProjectDetails,
   Registry,
   VERSION_TYPE_VALUES,
   VersionDetails,
+  VersionImage,
   findRegistryByUrl,
   imageUrlOfImageName as imageUrlOfImageTag,
 } from '@app/models'
@@ -112,10 +114,29 @@ const GenerateVersionCard = (props: GenerateVersionCardProps) => {
         routes.project.versions(project.id).api.images(version.id),
         addImagesBody,
       )
+
       if (!createImagesRes.ok) {
         await handleApiError(createImagesRes)
         return
       }
+
+      const images = (await createImagesRes.json()) as VersionImage[]
+
+      const configPatches = images.map((image, index) => {
+        const container = containers[index]
+
+        const patchImageBody: PatchVersionImage = {
+          config: container.config,
+        }
+
+        return sendForm(
+          'PATCH',
+          routes.project.versions(project.id).api.imageDetails(version.id, image.id),
+          patchImageBody,
+        )
+      })
+
+      await Promise.all(configPatches)
 
       await onVersionGenerated(project, version)
     },

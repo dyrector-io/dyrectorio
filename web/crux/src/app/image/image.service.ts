@@ -238,7 +238,9 @@ export default class ImageService {
         labels: labels ?? undefined,
         tag: request.tag ?? undefined,
         config: {
-          update: config,
+          update: {
+            data: config,
+          },
         },
         updatedBy: identity.id,
       },

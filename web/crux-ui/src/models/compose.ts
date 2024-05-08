@@ -188,28 +188,13 @@ const mapUser = (user: string): number => {
   }
 }
 
-const mapKeyValuesToRecord = (items: string[] | null): Record<string, string> =>
+export const mapKeyValuesToRecord = (items: string[] | null): Record<string, string> =>
   items?.reduce((result, it) => {
     const [key, value] = it.split('=')
 
     result[key] = value
     return result
   }, {})
-
-const mapRecordToKeyValues = (map: Record<string, string> | null): UniqueKeyValue[] | null => {
-  if (!map) {
-    return null
-  }
-
-  return Object.entries(map).map(entry => {
-    const [key, value] = entry
-    return {
-      id: uuid(),
-      key,
-      value,
-    }
-  })
-}
 
 const mapKeyValues = (items: string[] | null): UniqueKeyValue[] | null =>
   items?.map(it => {
@@ -233,7 +218,6 @@ const mapStringOrStringArray = (candidate: string | string[]): UniqueKey[] =>
 export const mapComposeServiceToContainerConfig = (
   service: ComposeService,
   serviceKey: string,
-  envs: DotEnvironment[],
 ): ContainerConfigData => {
   const ports: ContainerConfigPort[] = []
   const portRanges: ContainerConfigPortRange[] = []
@@ -246,34 +230,9 @@ export const mapComposeServiceToContainerConfig = (
     }
   })
 
-  let environment = mapKeyValuesToRecord(service.environment)
-  if (service.env_file) {
-    const envFile = typeof service.env_file === 'string' ? [service.env_file] : service.env_file
-
-    const dotEnvs = envs.filter(it => envFile.includes(it.name))
-    if (dotEnvs.length > 0) {
-      if (!environment) {
-        environment = {}
-      }
-
-      const mergedEnvs = dotEnvs.reduce(
-        (result, it) => ({
-          ...result,
-          ...it.environment,
-        }),
-        {},
-      )
-
-      environment = {
-        ...mergedEnvs,
-        ...environment,
-      }
-    }
-  }
-
   return {
     name: service.container_name ?? serviceKey,
-    environment: mapRecordToKeyValues(environment),
+    environment: mapKeyValues(service.environment),
     commands: mapStringOrStringArray(service.entrypoint),
     args: mapStringOrStringArray(service.command),
     ports: ports.length > 0 ? ports : null,
@@ -312,35 +271,33 @@ export const mapComposeServiceToContainerConfig = (
   }
 }
 
-export const mapComposeServices = (compose: Compose, envs: DotEnvironment[]): ConvertedContainer[] =>
+export const mapComposeServices = (compose: Compose): ConvertedContainer[] =>
   Object.entries(compose.services).map(entry => {
     const [key, service] = entry
 
     return {
       image: service.image,
-      config: mapComposeServiceToContainerConfig(service, key, envs),
+      config: mapComposeServiceToContainerConfig(service, key),
     }
   })
 
-class DotEnvApplicator {
+export class DotEnvApplicator {
   constructor(private readonly dotEnv: Record<string, string>) {}
 
   applyToString(candidate: string): string {
-    if (!candidate) {
-      return candidate
+    let original = candidate ?? undefined
+    let applied = this.applyToStringOnce(candidate) ?? undefined
+
+    let iterations = 0
+    while (original !== applied && iterations < 32) {
+      original = applied
+      applied = this.applyToStringOnce(original) ?? undefined
+      candidate = applied
+
+      iterations++
     }
 
-    candidate = candidate.replace(/\${[^}]*}/g, subStr => {
-      const envName = subStr.substring(2, subStr.length - 1)
-      return this.applyEnvToFoundEnv(envName)
-    })
-
-    candidate = candidate.replace(/\$[^{ ]*\s/g, subStr => {
-      const envName = subStr.substring(1).trim()
-      return this.applyEnvToFoundEnv(envName)
-    })
-
-    return candidate
+    return applied
   }
 
   applyToStringArray(candidate: string[]): string[] {
@@ -411,6 +368,24 @@ class DotEnvApplicator {
     }
 
     return this.dotEnv[key] ?? defaultValue ?? `\${${key}}`
+  }
+
+  private applyToStringOnce(candidate: string): string {
+    if (!candidate) {
+      return candidate
+    }
+
+    candidate = candidate.replace(/\${[^}]*}/g, subStr => {
+      const envName = subStr.substring(2, subStr.length - 1)
+      return this.applyEnvToFoundEnv(envName)
+    })
+
+    candidate = candidate.replace(/\$[^{][a-zA-Z0-9_]*/g, subStr => {
+      const envName = subStr.substring(1).trim()
+      return this.applyEnvToFoundEnv(envName)
+    })
+
+    return candidate
   }
 }
 
