@@ -21,6 +21,7 @@ GOSEC=v2.19.0
 GOLANGCI=v1.57.2
 GOFUMPT=v0.6.0
 YAMLFMT=v0.11.0
+FIELDALIGN=v0.20.0
 
 # support for: linux darwin windows
 GOOS?=linux
@@ -121,6 +122,7 @@ install-go-tools:
 	go install github.com/securego/gosec/v2/cmd/gosec@${GOSEC}
 	go install mvdan.cc/gofumpt@${GOFUMPT}
 	go install github.com/google/yamlfmt/cmd/yamlfmt@${YAMLFMT}
+	go install go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@${FIELDALIGN}
 
 .PHONY: compile-agents
 compile-agents: compile-crane compile-dagent

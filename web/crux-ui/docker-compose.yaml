@@ -1,4 +1,3 @@
-version: '3.3'
 services:
   crux-ui:
     container_name: crux-ui
