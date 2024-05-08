@@ -1,6 +1,7 @@
 # this image is our official way of generating proto-files
 # for reproducable builds, anywhere
-FROM docker.io/library/golang:1.20-alpine3.17
+# note: update this together with golang image
+FROM docker.io/library/golang:1.22-alpine3.19
 
 ENV GOLANGCI_LINT_CACHE $GOPATH/cache
 ENV GOCACHE $GOPATH/cache
@@ -14,7 +15,7 @@ RUN mkdir -p $GOPATH/src && \
     mkdir -p $GOPATH/cache && \
     mkdir -p $GOPATH/pkg
 
-RUN apk add nodejs npm alpine-sdk protoc protobuf-dev rsync docker git zstd openssl1.1-compat bash jq
+RUN apk add nodejs npm alpine-sdk protoc protobuf-dev rsync docker git zstd openssl bash jq
 
 RUN npm i -g \
         ts-proto@1.138.0 \
