@@ -67,6 +67,8 @@ const ComposerPage = () => {
     [registries],
   )
 
+  const missingRegistries = !state.containers.every(it => hasRegistry(it.image))
+
   const submit = useSubmit()
 
   const onComposeFileChange = (text: string) => dispatch(convertComposeFile(t, text))
@@ -94,14 +96,16 @@ const ComposerPage = () => {
     <Layout title={t('common:composer')}>
       <PageHeading pageLink={pageLink}>
         {state.upperSection === 'compose' ? (
-          <DyoButton onClick={onActivateGenerate}>{t('generate')}</DyoButton>
+          <DyoButton onClick={onActivateGenerate} disabled={missingRegistries}>
+            {t('generate')}
+          </DyoButton>
         ) : (
           <>
             <DyoButton className="px-4" secondary onClick={onDiscardVersion}>
               {t('common:discard')}
             </DyoButton>
 
-            <DyoButton className="px-4 ml-4" onClick={onGenerateVersion}>
+            <DyoButton className="px-4 ml-4" onClick={onGenerateVersion} disabled={missingRegistries}>
               {t('generate')}
             </DyoButton>
           </>

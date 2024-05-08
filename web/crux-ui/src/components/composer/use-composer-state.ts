@@ -6,6 +6,7 @@ import {
   DotEnvironment,
   applyDotEnvToComposeService,
   mapComposeServices,
+  mapKeyValuesToRecord as mapKeyValuesToObject,
 } from '@app/models'
 import { composeSchema, getValidationError } from '@app/validations'
 import { load } from 'js-yaml'
@@ -66,6 +67,33 @@ export const toggleShowDefaultDotEnv = (): ComposerAction => state => ({
   showDefaultDotEnv: !state.showDefaultDotEnv,
 })
 
+const mergeDotEnvsWithServiceEnv = (envs: DotEnvironment[], serviceEnv: string[] | null): string[] | null => {
+  if (envs.length < 1) {
+    return serviceEnv
+  }
+
+  let merged = envs.reduce(
+    (result, it) => ({
+      ...result,
+      ...it.environment,
+    }),
+    {},
+  )
+
+  if (serviceEnv) {
+    const serviceEnvObj = mapKeyValuesToObject(serviceEnv)
+    merged = {
+      ...merged,
+      ...serviceEnvObj,
+    }
+  }
+
+  return Object.entries(merged).map(entry => {
+    const [key, value] = entry
+    return `${key}=${value}`
+  })
+}
+
 const applyEnvironments = (
   composeServices: Record<string, ComposeService>,
   envs: DotEnvironment[],
@@ -75,13 +103,23 @@ const applyEnvironments = (
     const [key, service] = entry
 
     const envFile: string[] = !service.env_file
-      ? [DEFAULT_ENVIRONMENT_NAME]
+      ? []
       : typeof service.env_file === 'string'
       ? [service.env_file]
       : service.env_file
-    const dotEnvs = envFile.map(envName => envs.find(it => it.name === envName)).filter(it => !!it)
+    let dotEnvs = envs.filter(it => envFile.includes(it.name))
 
-    let applied = service
+    // add explicit envs to environment
+    let applied: ComposeService = {
+      ...service,
+      environment: mergeDotEnvsWithServiceEnv(dotEnvs, service.environment),
+    }
+
+    const defaultDotEnv = envs.find(it => it.name === DEFAULT_ENVIRONMENT_NAME)
+    if (dotEnvs.length < 1 && defaultDotEnv) {
+      dotEnvs = [defaultDotEnv]
+    }
+
     dotEnvs.forEach(it => {
       applied = applyDotEnvToComposeService(applied, it.environment)
     })
@@ -97,15 +135,11 @@ type ApplyComposeToStateOptions = {
   envedCompose: Compose
   t: Translate
 }
-const applyComposeToState = (
-  state: ComposerState,
-  options: ApplyComposeToStateOptions,
-  environment: DotEnvironment[],
-) => {
+const applyComposeToState = (state: ComposerState, options: ApplyComposeToStateOptions) => {
   const { t } = options
 
   try {
-    const newContainers = mapComposeServices(options.envedCompose, environment)
+    const newContainers = mapComposeServices(options.envedCompose)
 
     return {
       ...state,
@@ -181,19 +215,15 @@ export const convertComposeFile =
       services: applyEnvironments(compose?.services, state.environment),
     }
 
-    return applyComposeToState(
-      state,
-      {
-        compose: {
-          text,
-          yaml: compose,
-          error: null,
-        },
-        envedCompose,
-        t,
+    return applyComposeToState(state, {
+      compose: {
+        text,
+        yaml: compose,
+        error: null,
       },
-      state.environment,
-    )
+      envedCompose,
+      t,
+    })
   }
 
 export const convertEnvFile =
@@ -246,15 +276,11 @@ export const convertEnvFile =
         services: applyEnvironments(compose?.yaml?.services, newEnv),
       }
 
-      newState = applyComposeToState(
-        state,
-        {
-          compose,
-          envedCompose,
-          t,
-        },
-        newEnv,
-      )
+      newState = applyComposeToState(state, {
+        compose,
+        envedCompose,
+        t,
+      })
     }
 
     return {
@@ -336,15 +362,11 @@ export const removeEnvFile =
       services: applyEnvironments(compose.services, newState.environment),
     }
 
-    return applyComposeToState(
-      newState,
-      {
-        compose: newState.compose,
-        envedCompose,
-        t,
-      },
-      newState.environment,
-    )
+    return applyComposeToState(newState, {
+      compose: newState.compose,
+      envedCompose,
+      t,
+    })
   }
 
 // selectors
