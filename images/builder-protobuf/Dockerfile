@@ -1,6 +1,7 @@
 # this image is our official way of generating proto-files
 # for reproducable builds, anywhere
-FROM docker.io/library/golang:1.20-alpine3.17
+# note: update this together with golang image
+FROM docker.io/library/golang:1.22-alpine3.19
 
 ENV GOLANGCI_LINT_CACHE $GOPATH/cache
 ENV GOCACHE $GOPATH/cache
