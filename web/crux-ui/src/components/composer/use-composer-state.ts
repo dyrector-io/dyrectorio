@@ -5,6 +5,7 @@ import {
   ConvertedContainer,
   DotEnvironment,
   applyDotEnvToComposeService,
+  envStringToKeyValue,
   mapComposeServices,
   mapKeyValuesToRecord as mapKeyValuesToObject,
 } from '@app/models'
@@ -251,7 +252,7 @@ export const convertEnvFile =
             line = line.substring(0, commentIndex).trim()
           }
 
-          const [key, value] = line.split('=')
+          const [key, value] = envStringToKeyValue(line)
           return [key, value]
         })
         .filter(it => {

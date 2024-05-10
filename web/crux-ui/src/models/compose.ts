@@ -161,7 +161,7 @@ const mapVolume = (volume: string): ContainerConfigVolume => {
     id: uuid(),
     name: path ? name : '',
     path: path || name,
-    type: type && CONTAINER_VOLUME_TYPE_VALUES.includes(type as VolumeType) ? (type as VolumeType) : null,
+    type: type && CONTAINER_VOLUME_TYPE_VALUES.includes(type as VolumeType) ? (type as VolumeType) : 'rwo',
   }
 }
 
@@ -188,9 +188,15 @@ const mapUser = (user: string): number => {
   }
 }
 
+export const envStringToKeyValue = (env: string): [string, string] => {
+  const [key, ...rest] = env.split('=')
+  const value = rest.join('=')
+  return [key, value]
+}
+
 export const mapKeyValuesToRecord = (items: string[] | null): Record<string, string> =>
   items?.reduce((result, it) => {
-    const [key, value] = it.split('=')
+    const [key, value] = envStringToKeyValue(it)
 
     result[key] = value
     return result
@@ -198,7 +204,7 @@ export const mapKeyValuesToRecord = (items: string[] | null): Record<string, str
 
 const mapKeyValues = (items: string[] | null): UniqueKeyValue[] | null =>
   items?.map(it => {
-    const [key, value] = it.split('=')
+    const [key, value] = envStringToKeyValue(it)
 
     return {
       id: uuid(),
