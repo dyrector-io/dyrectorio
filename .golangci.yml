@@ -39,12 +39,6 @@ linters-settings:
     min-complexity: 15
   goimports:
     local-prefixes: github.com/golangci/golangci-lint,github.com/dyrector-io/dyrectorio
-  gomnd:
-    checks:
-      - argument
-      - case
-      - condition
-      - return
   govet:
     enable-all: true
   lll:
