@@ -114,8 +114,8 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 	}
 
 	if cc.Expose != nil {
-		containerConfig.Expose = *cc.Expose > 1
-		containerConfig.ExposeTLS = *cc.Expose > 2
+		containerConfig.Expose = *cc.Expose >= common.ExposeStrategy_EXPOSE
+		containerConfig.ExposeTLS = *cc.Expose == common.ExposeStrategy_EXPOSE_WITH_TLS
 	}
 
 	if cc.Routing != nil {

@@ -45,6 +45,12 @@ linters-settings:
     line-length: 140
   misspell:
     locale: US
+  mnd:
+    checks:
+      - argument
+      - case
+      - condition
+      - return
   nolintlint:
     allow-unused: false # report any unused nolint directives
     require-explanation: false # don't require an explanation for nolint directives

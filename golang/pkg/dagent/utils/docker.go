@@ -48,6 +48,8 @@ import (
 
 const DockerLogHeaderLength = 8
 
+const RWOwnerROther = 0o644
+
 type DockerVersion struct {
 	ServerVersion string
 	ClientVersion string
@@ -113,7 +115,7 @@ func WriteContainerFile(ctx context.Context, cli *client.Client,
 
 	tarHeader := &tar.Header{
 		Name:    filename,
-		Mode:    0o644,
+		Mode:    RWOwnerROther,
 		Size:    fileSize,
 		Uid:     meta.UID,
 		Gid:     meta.GID,
