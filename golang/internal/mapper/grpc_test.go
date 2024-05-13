@@ -217,7 +217,7 @@ func testDeployRequest() *agent.DeployRequest {
 	upLimit := "5Mi"
 	mntPath := "/path/to/mount"
 	repoPrefix := "repo-prefix"
-	strategy := common.ExposeStrategy(777)
+	strategy := common.ExposeStrategy_EXPOSE_WITH_TLS
 	b := true
 	return &agent.DeployRequest{
 		Id:            "testID",
