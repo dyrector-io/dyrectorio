@@ -1,6 +1,36 @@
 # CHANGELOG
 
 
+<a name="0.12.0"></a>
+## [0.12.0](https://github.com/dyrector-io/dyrectorio/compare/0.11.7...0.12.0) (2024-05-13)
+
+### Chore
+
+* **(agent):** remove magic numbers, adjust related rules ([#973](https://github.com/dyrector-io/dyrectorio/issues/973))
+* more consistent release generation, adjust to new version of ([#972](https://github.com/dyrector-io/dyrectorio/issues/972))
+* bump proto image version to be in sync with golang ([#970](https://github.com/dyrector-io/dyrectorio/issues/970))
+* **(agent):** use new docker types, go upgrade ([#963](https://github.com/dyrector-io/dyrectorio/issues/963))
+
+### Feat
+
+* **(agent):** add sysctls option to builder ([#966](https://github.com/dyrector-io/dyrectorio/issues/966))
+* **(web):** composer ([#967](https://github.com/dyrector-io/dyrectorio/issues/967))
+
+### Fix
+
+* **(crux-ui):** envs split only at the first equals sign ([#971](https://github.com/dyrector-io/dyrectorio/issues/971))
+* **(web):** missing composer image config patches ([#969](https://github.com/dyrector-io/dyrectorio/issues/969))
+* **(crux-ui):** compose env_file apply ([#968](https://github.com/dyrector-io/dyrectorio/issues/968))
+* **(crux-ui):** add IPv6 listen for dual-stack listening ([#965](https://github.com/dyrector-io/dyrectorio/issues/965))
+* crane uses port/targetPort in serviceMonitors for metrics ([#964](https://github.com/dyrector-io/dyrectorio/issues/964))
+* **(agent):** deprecated types.AuthConfig ([#962](https://github.com/dyrector-io/dyrectorio/issues/962))
+* **(crux):** get instance config ([#961](https://github.com/dyrector-io/dyrectorio/issues/961))
+
+### Refactor
+
+* **(crux-ui):** move deployment related components to the root deployments folder ([#960](https://github.com/dyrector-io/dyrectorio/issues/960))
+
+
 <a name="0.11.7"></a>
 ## [0.11.7](https://github.com/dyrector-io/dyrectorio/compare/0.11.6...0.11.7) (2024-04-11)
 
@@ -29,11 +59,7 @@
 
 
 <a name="0.11.5"></a>
-## [0.11.5](https://github.com/dyrector-io/dyrectorio/compare/help...0.11.5) (2024-04-05)
-
-
-<a name="help"></a>
-## [help](https://github.com/dyrector-io/dyrectorio/compare/0.11.4...help) (2024-04-05)
+## [0.11.5](https://github.com/dyrector-io/dyrectorio/compare/0.11.4...0.11.5) (2024-04-05)
 
 ### Feat
 
@@ -67,20 +93,7 @@
 
 
 <a name="0.11.3"></a>
-## [0.11.3](https://github.com/dyrector-io/dyrectorio/compare/ls...0.11.3) (2024-03-11)
-
-### Feat
-
-* container log api ([#931](https://github.com/dyrector-io/dyrectorio/issues/931))
-
-### Fix
-
-* container log new line ([#932](https://github.com/dyrector-io/dyrectorio/issues/932))
-* add ENCRYPTION_SECRET_KEY to compose files ([#927](https://github.com/dyrector-io/dyrectorio/issues/927))
-
-
-<a name="ls"></a>
-## [ls](https://github.com/dyrector-io/dyrectorio/compare/0.11.2...ls) (2024-02-26)
+## [0.11.3](https://github.com/dyrector-io/dyrectorio/compare/0.11.2...0.11.3) (2024-03-11)
 
 ### Doc
 
@@ -88,7 +101,13 @@
 
 ### Feat
 
+* container log api ([#931](https://github.com/dyrector-io/dyrectorio/issues/931))
 * **(web):** update kratos to 1.1.0 ([#925](https://github.com/dyrector-io/dyrectorio/issues/925))
+
+### Fix
+
+* container log new line ([#932](https://github.com/dyrector-io/dyrectorio/issues/932))
+* add ENCRYPTION_SECRET_KEY to compose files ([#927](https://github.com/dyrector-io/dyrectorio/issues/927))
 
 
 <a name="0.11.2"></a>
@@ -961,7 +980,7 @@
 
 
 <a name="0.2.1"></a>
-## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.1...0.2.1) (2022-09-27)
+## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...0.2.1) (2022-09-27)
 
 ### Chore
 
@@ -1114,12 +1133,8 @@
 * websocket message routing
 
 
-<a name="v0.1.1"></a>
-## [v0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...v0.1.1) (2022-08-03)
-
-
 <a name="0.1.1"></a>
-## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.0...0.1.1) (2022-08-03)
+## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...0.1.1) (2022-08-03)
 
 ### Chore
 
@@ -1133,10 +1148,6 @@
 ### Refactor
 
 * **(agent):** tests ([#54](https://github.com/dyrector-io/dyrectorio/issues/54))
-
-
-<a name="v0.1.0"></a>
-## [v0.1.0](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...v0.1.0) (2022-08-01)
 
 
 <a name="0.1.0"></a>
