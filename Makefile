@@ -129,7 +129,7 @@ release: branch-check
 	$(info Do you want to continue? Version will be: $(version) from branch: $(shell git rev-parse --abbrev-ref HEAD))
 	read
 
-	git pull
+	git pull --tags
 
 	@if git checkout -b "release/$(version)"; then \
 		echo "Branch release/$(version) created and checked out"; \
