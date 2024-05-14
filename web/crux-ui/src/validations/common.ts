@@ -52,7 +52,7 @@ export const yupErrorTranslate = (error: yup.ValidationError, t: Translate): yup
 }
 
 export const getValidationError = (
-  schema: yup.Schema,
+  schema: yup.AnySchema,
   candidate: any,
   options?: yup.ValidateOptions,
   t?: Translate,
