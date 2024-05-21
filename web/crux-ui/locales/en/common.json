@@ -27,8 +27,9 @@
   "log": "Log",
 
   "home": "Home",
-  "settings": "Settings",
   "components": "Components",
+  "integrations": "Integrations",
+  "tools": "Tools",
 
   "logout": "Log out",
 

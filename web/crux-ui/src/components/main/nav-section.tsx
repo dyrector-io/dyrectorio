@@ -1,4 +1,3 @@
-import DyoIcon from '@app/elements/dyo-icon'
 import useTranslation from 'next-translate/useTranslation'
 import NavButton from './nav-button'
 
@@ -9,7 +8,7 @@ export type MenuOption = {
   icon: string
 }
 
-interface NavSectionProps {
+type NavSectionProps = {
   title: string
   options: MenuOption[]
   className?: string
@@ -20,17 +19,14 @@ export const NavSection = (props: NavSectionProps) => {
 
   const { t } = useTranslation('common')
 
-  const optionToIcon = (it: MenuOption) => <DyoIcon src={it.icon} alt={t(it.text)} />
-
   return (
     <div className={className}>
-      <p className="text-bright px-6 text-sm tracking-widest">{title.toUpperCase()}</p>
-      <ul className="list-none flex flex-col text-bright">
-        {options.map((option, index) => (
-          <li key={index} className="flex flex-row items-center mt-2">
-            <NavButton href={option.link} icon={optionToIcon(option)} target={option.target}>
-              {t(option.text)}
-            </NavButton>
+      <p className="text-light px-6 text-sm tracking-widest">{title.toUpperCase()}</p>
+
+      <ul className="list-none flex flex-col text-bright pt-2">
+        {options.map((it, index) => (
+          <li key={index} className="flex flex-row items-center">
+            <NavButton activeIndicator href={it.link} icon={it.icon} text={t(it.text)} target={it.target} />
           </li>
         ))}
       </ul>

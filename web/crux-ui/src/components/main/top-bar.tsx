@@ -9,7 +9,7 @@ import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import UserDefaultAvatar from '../team/user-default-avatar'
-import TeamSelectionCard from './team-selection-card'
+import ProfileCard from './profile-card'
 
 interface TopbarProps {
   className?: string
@@ -60,12 +60,13 @@ const Topbar = (props: TopbarProps) => {
           {!teamSelectionVisible ? null : (
             <>
               <div className="w-full absolute bottom-0 right-0">
-                <TeamSelectionCard
-                  className="flex flex-col flex-grow absolute top-0 right-0 mt-2 z-20"
+                <ProfileCard
+                  className="flex flex-col absolute top-0 right-0 mt-2 z-20"
                   meta={meta}
                   onTeamSelected={onTeamSelected}
                 />
               </div>
+
               <div className="w-full h-full fixed top-0 right-0 z-10" onClick={toggleTeamSelection} />
             </>
           )}
