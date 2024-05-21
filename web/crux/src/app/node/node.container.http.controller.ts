@@ -34,7 +34,7 @@ import {
   ROUTE_PREFIX,
   ROUTE_TEAM_SLUG,
 } from './node.const'
-import { ContainerInspectionDto, NodeContainerLogQuery } from './node.dto'
+import { ContainerDto, ContainerInspectionDto, NodeContainerLogQuery } from './node.dto'
 import NodeService from './node.service'
 import NodeContainerLogQueryValidationPipe from './pipes/node.container-log-query.pipe'
 
@@ -47,6 +47,23 @@ const TeamSlug = () => Param(PARAM_TEAM_SLUG)
 @UseInterceptors(NodePrefixInterceptor)
 export default class NodeContainerHttpController {
   constructor(private service: NodeService) {}
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    description: 'Request must include `nodeId`, `prefix`.',
+    summary: 'Returns a list of containers on a node.  Use `_` as the prefix to get all containers.',
+  })
+  @ApiOkResponse({ description: 'Container list.' })
+  @ApiBadRequestResponse({ description: 'Bad request for get container list.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for get container list.' })
+  async getContainers(
+    @TeamSlug() _: string,
+    @NodeId() nodeId: string,
+    @Prefix() prefix: string,
+  ): Promise<ContainerDto[]> {
+    return await this.service.getContainers(nodeId, prefix)
+  }
 
   @Post(`${ROUTE_NAME}/start`)
   @HttpCode(HttpStatus.NO_CONTENT)
