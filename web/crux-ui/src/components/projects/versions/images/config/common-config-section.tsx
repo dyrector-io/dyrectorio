@@ -32,7 +32,14 @@ import {
   mergeConfigs,
 } from '@app/models'
 import { fetcher, toNumber } from '@app/utils'
-import { ContainerConfigValidationErrors, findErrorFor, findErrorStartsWith, matchError } from '@app/validations'
+import {
+  ContainerConfigValidationErrors,
+  findErrorFor,
+  findErrorStartsWith,
+  getValidationError,
+  matchError,
+  unsafeUniqueKeyValuesSchema,
+} from '@app/validations'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import useSWR from 'swr'
@@ -136,6 +143,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
     }
     onChange(patch)
   }
+
+  const environmentWarning =
+    getValidationError(unsafeUniqueKeyValuesSchema, config.environment, undefined, t)?.message ?? null
 
   return !filterEmpty([...COMMON_CONFIG_PROPERTIES], selectedFilters) ? null : (
     <div className="my-4">
@@ -453,7 +463,8 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 editorOptions={editorOptions}
                 disabled={disabled}
                 findErrorMessage={index => findErrorStartsWith(fieldErrors, `environment[${index}]`)}
-                message={findErrorFor(fieldErrors, `environment`)}
+                message={findErrorFor(fieldErrors, `environment`) ?? environmentWarning}
+                messageType={!findErrorFor(fieldErrors, `environment`) && environmentWarning ? 'info' : 'error'}
               />
             </div>
           )}
