@@ -16,17 +16,20 @@ export type Version = BasicVersion & {
   changelog?: string
   default: boolean
   increasable: boolean
+  autoCopyDeployments?: boolean
   audit: Audit
 }
 
-export type EditableVersion = Omit<Version, 'default'>
+export type EditableVersion = Omit<Version, 'default' | 'increasable'>
 
 export type IncreaseVersion = {
   name: string
   changelog?: string
 }
 
-export type UpdateVersion = IncreaseVersion
+export type UpdateVersion = IncreaseVersion & {
+  autoCopyDeployments?: boolean
+}
 
 export type CreateVersion = UpdateVersion & {
   type: VersionType

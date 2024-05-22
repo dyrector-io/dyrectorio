@@ -50,6 +50,7 @@ export default class VersionMapper {
       mutable: versionIsMutable(version),
       deletable: versionIsDeletable(version),
       increasable: versionIsIncreasable(version),
+      autoCopyDeployments: version.autoCopyDeployments,
       images: version.images.map(it => this.imageMapper.toDto(it)),
       deployments: version.deployments.map(it =>
         this.deployMapper.toDeploymentWithBasicNodeDto(it, nodeStatusLookup.get(it.nodeId)),

@@ -42,6 +42,10 @@ export class UpdateVersionDto {
   @IsString()
   @IsOptional()
   changelog?: string
+
+  @IsBoolean()
+  @IsOptional()
+  autoCopyDeployments?: boolean
 }
 
 export class CreateVersionDto extends UpdateVersionDto {
@@ -53,7 +57,14 @@ export class CreateVersionDto extends UpdateVersionDto {
   type: VersionTypeDto
 }
 
-export class IncreaseVersionDto extends UpdateVersionDto {}
+export class IncreaseVersionDto {
+  @IsString()
+  name: string
+
+  @IsString()
+  @IsOptional()
+  changelog?: string
+}
 
 export class VersionDetailsDto extends VersionDto {
   @IsBoolean()
@@ -61,6 +72,10 @@ export class VersionDetailsDto extends VersionDto {
 
   @IsBoolean()
   deletable: boolean
+
+  @IsBoolean()
+  @IsOptional()
+  autoCopyDeployments?: boolean
 
   @Type(() => ImageDto)
   images: ImageDto[]

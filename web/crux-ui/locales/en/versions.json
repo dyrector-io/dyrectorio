@@ -9,6 +9,7 @@
   "type": "Type",
   "incremental": "Incremental",
   "rolling": "Rolling",
+  "copyDeployments": "Copy deployments on increase",
   "noItems": "You haven't added a version to this project yet. Click on 'Add Version'.",
   "noDeployments": "You haven't added a deployment to this version. Click 'Add deployment' to browse images you can add.",
 
