@@ -1,16 +1,6 @@
-import DyoIcon from '@app/elements/dyo-icon'
 import DyoLink from '@app/elements/dyo-link'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import {
-  ROUTE_COMPOSER,
-  ROUTE_DOCS,
-  ROUTE_INDEX,
-  ROUTE_LOGOUT,
-  ROUTE_PROFILE,
-  ROUTE_TEAMS,
-  ROUTE_TEMPLATES,
-  TeamRoutes,
-} from '@app/routes'
+import { ROUTE_COMPOSER, ROUTE_INDEX, ROUTE_TEMPLATES, TeamRoutes } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import NavButton from './nav-button'
@@ -27,7 +17,7 @@ export interface SidebarProps {
 
 export const sidebarSectionsOf = (routes: TeamRoutes): MenuSection[] => [
   {
-    title: 'project',
+    title: 'components',
     items: [
       {
         icon: '/projects.svg',
@@ -39,11 +29,6 @@ export const sidebarSectionsOf = (routes: TeamRoutes): MenuSection[] => [
         text: 'deployments',
         link: routes.deployment.list(),
       },
-    ],
-  },
-  {
-    title: 'components',
-    items: [
       {
         icon: '/servers.svg',
         text: 'nodes',
@@ -59,6 +44,11 @@ export const sidebarSectionsOf = (routes: TeamRoutes): MenuSection[] => [
         text: 'configBundles',
         link: routes.configBundles.list(),
       },
+    ],
+  },
+  {
+    title: 'integrations',
+    items: [
       {
         icon: '/storage.svg',
         text: 'storages',
@@ -74,6 +64,11 @@ export const sidebarSectionsOf = (routes: TeamRoutes): MenuSection[] => [
         text: 'notifications',
         link: routes.notification.list(),
       },
+    ],
+  },
+  {
+    title: 'tools',
+    items: [
       {
         icon: '/template.svg',
         text: 'templates',
@@ -83,37 +78,6 @@ export const sidebarSectionsOf = (routes: TeamRoutes): MenuSection[] => [
         icon: '/composer.svg',
         text: 'composer',
         link: ROUTE_COMPOSER,
-      },
-    ],
-  },
-  {
-    title: 'settings',
-    items: [
-      {
-        icon: '/audit.svg',
-        text: 'audit',
-        link: routes.audit.list(),
-      },
-      {
-        icon: '/team.svg',
-        text: 'teams',
-        link: ROUTE_TEAMS,
-      },
-      {
-        icon: '/profile.svg',
-        text: 'profile',
-        link: ROUTE_PROFILE,
-      },
-      {
-        icon: '/documentation.svg',
-        text: 'documentation',
-        link: ROUTE_DOCS,
-        target: '_blank',
-      },
-      {
-        icon: '/logout.svg',
-        text: 'logout',
-        link: ROUTE_LOGOUT,
       },
     ],
   },
@@ -145,18 +109,11 @@ export const Sidebar = (props: SidebarProps) => {
       {sidebarSections && (
         <div className="flex flex-col grow">
           <div className="flex text-bright my-6">
-            <NavButton href={routes.dashboard.index()} icon={<DyoIcon src="/dashboard.svg" alt={t('dashboard')} />}>
-              {t('dashboard')}
-            </NavButton>
+            <NavButton activeIndicator href={routes.dashboard.index()} icon="/dashboard.svg" text={t('dashboard')} />
           </div>
 
           {sidebarSections.map((it, index) => (
-            <NavSection
-              key={index}
-              className={index < sidebarSections.length - 1 ? 'mb-6' : 'mt-auto mb-3'}
-              title={t(it.title)}
-              options={it.items}
-            />
+            <NavSection key={index} className="mb-6" title={t(it.title)} options={it.items} />
           ))}
         </div>
       )}
