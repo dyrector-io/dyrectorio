@@ -1,4 +1,3 @@
-import DyoIcon from '@app/elements/dyo-icon'
 import DyoLink from '@app/elements/dyo-link'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { ROUTE_COMPOSER, ROUTE_INDEX, ROUTE_TEMPLATES, TeamRoutes } from '@app/routes'
