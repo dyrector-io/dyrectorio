@@ -7,6 +7,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
+import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { SubmitHook } from '@app/hooks/use-submit'
@@ -14,6 +15,7 @@ import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreateVersion, EditableVersion, Project, UpdateVersion, VERSION_TYPE_VALUES } from '@app/models'
 import { sendForm } from '@app/utils'
 import { createVersionSchema, updateVersionSchema } from '@app/validations'
+import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
@@ -37,7 +39,7 @@ const EditVersionCard = (props: EditVersionCardProps) => {
       name: '',
       changelog: '',
       type: 'incremental',
-      increasable: true,
+      autoCopyDeployments: true,
       audit: null,
     },
   )
@@ -57,6 +59,7 @@ const EditVersionCard = (props: EditVersionCardProps) => {
     t,
     onSubmit: async (values, { setFieldError }) => {
       const body: CreateVersion | UpdateVersion = values
+      body.autoCopyDeployments = values.type === 'incremental' ? body.autoCopyDeployments : null
 
       const res = !editing
         ? await sendForm('POST', routes.project.versions(project.id).api.list(), body as CreateVersion)
@@ -116,23 +119,35 @@ const EditVersionCard = (props: EditVersionCardProps) => {
           message={formik.errors.changelog}
         />
 
-        {editing ? null : (
-          <>
-            <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('type')}</DyoLabel>
+        <div className="flex flex-row gap-8">
+          {!editing && (
+            <div className="flex flex-col">
+              <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('type')}</DyoLabel>
 
-            <DyoChips
-              className="text-bright"
-              name="versionType"
-              choices={VERSION_TYPE_VALUES}
-              selection={formik.values.type}
-              converter={it => t(it)}
-              onSelectionChange={async (type): Promise<void> => {
-                await formik.setFieldValue('type', type, false)
-              }}
-              qaLabel={chipsQALabelFromValue}
+              <DyoChips
+                className="text-bright"
+                name="versionType"
+                choices={VERSION_TYPE_VALUES}
+                selection={formik.values.type}
+                converter={it => t(it)}
+                onSelectionChange={async (type): Promise<void> => {
+                  await formik.setFieldValue('type', type, false)
+                }}
+                qaLabel={chipsQALabelFromValue}
+              />
+            </div>
+          )}
+
+          {formik.values.type === 'incremental' && (
+            <DyoToggle
+              className={clsx(!editing ? ' self-center mt-16' : 'mt-8 mb-2')}
+              name="autoCopyDeployments"
+              label={t('copyDeployments')}
+              checked={formik.values.autoCopyDeployments}
+              setFieldValue={formik.setFieldValue}
             />
-          </>
-        )}
+          )}
+        </div>
 
         <DyoButton className="hidden" type="submit" />
       </DyoForm>
