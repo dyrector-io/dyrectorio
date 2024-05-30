@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 interface DragAndDropListProps<T> {
   items: T[]
@@ -9,9 +9,8 @@ interface DragAndDropListProps<T> {
 type DragState = { counter: number; current: HTMLDivElement }
 
 const DragAndDropList = <T,>(props: DragAndDropListProps<T>) => {
-  const { itemBuilder, onItemsChange, items: propsItems } = props
+  const { itemBuilder, onItemsChange, items } = props
 
-  const [items, setItems] = useState(propsItems)
   const [dragging, setDragging] = useState<T>()
 
   const dragState = useRef<DragState>({ counter: 0, current: null })
@@ -74,7 +73,7 @@ const DragAndDropList = <T,>(props: DragAndDropListProps<T>) => {
       newItems = [...before, dragging, ...after]
     }
 
-    setItems(newItems)
+    onItemsChange(newItems)
     setDragging(null)
   }
 
@@ -82,8 +81,6 @@ const DragAndDropList = <T,>(props: DragAndDropListProps<T>) => {
     event.stopPropagation()
     event.preventDefault()
   }
-
-  useEffect(() => onItemsChange?.call(null, items), [items, onItemsChange])
 
   return (
     <div className="flex flex-col flex-grow" onDragEnd={onDragEndContainer}>
