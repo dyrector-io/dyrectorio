@@ -62,7 +62,7 @@ export const useConfigBundleDetailsState = (
   const [fieldErrors, setFieldErrors] = useState<ValidationError[]>([])
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
 
-  const sock = useWebSocket(routes.configBundles.detailsSocket(configBundle.id), {
+  const sock = useWebSocket(routes.configBundle.detailsSocket(configBundle.id), {
     onOpen: () => setSaveState('connected'),
     onClose: () => setSaveState('disconnected'),
     onSend: message => {
@@ -89,12 +89,12 @@ export const useConfigBundleDetailsState = (
   })
 
   const onDelete = async (): Promise<void> => {
-    const res = await fetch(routes.configBundles.api.details(configBundle.id), {
+    const res = await fetch(routes.configBundle.api.details(configBundle.id), {
       method: 'DELETE',
     })
 
     if (res.ok) {
-      await router.replace(routes.configBundles.list())
+      await router.replace(routes.configBundle.list())
     } else if (res.status === 412) {
       toastWarning(t('inUse'))
     } else {

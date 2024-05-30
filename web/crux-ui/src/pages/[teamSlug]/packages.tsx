@@ -1,6 +1,6 @@
-import AddConfigBundleCard from '@app/components/config-bundles/add-config-bundle-card'
-import ConfigBundleCard from '@app/components/config-bundles/config-bundle-card'
 import { Layout } from '@app/components/layout'
+import EditPackageCard from '@app/components/packages/edit-package-card'
+import PackageCard from '@app/components/packages/package-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
@@ -11,72 +11,74 @@ import useAnchor from '@app/hooks/use-anchor'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { ConfigBundle } from '@app/models'
+import { Package } from '@app/models'
 import { ANCHOR_NEW, ListRouteOptions, TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
-import clsx from 'clsx'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 
-interface ConfigBundlesPageProps {
-  bundles: ConfigBundle[]
+type PackagesPageProps = {
+  packages: Package[]
 }
 
-const ConfigBundles = (props: ConfigBundlesPageProps) => {
-  const { bundles } = props
+const PackagesPage = (props: PackagesPageProps) => {
+  const { packages } = props
 
-  const { t } = useTranslation('config-bundles')
+  const { t } = useTranslation('packages')
   const routes = useTeamRoutes()
   const router = useRouter()
   const anchor = useAnchor()
 
-  const filters = useFilters<ConfigBundle, TextFilter>({
-    filters: [textFilterFor<ConfigBundle>(it => [it.name])],
-    initialData: bundles,
+  const filters = useFilters<Package, TextFilter>({
+    filters: [
+      textFilterFor<Package>(pack => [
+        pack.name,
+        pack.description,
+        pack.icon,
+        ...pack.environments,
+        ...pack.versionChains.map(it => it.project.name),
+        ...pack.versionChains.map(it => it.earliest.name),
+        ...pack.versionChains.map(it => it.latest?.name).filter(it => !!it),
+      ]),
+    ],
+    initialData: packages,
   })
 
   const creating = anchor === ANCHOR_NEW
   const submit = useSubmit()
 
-  const onCreated = async (bundle: ConfigBundle) => {
-    await router.push(routes.configBundle.details(bundle.id))
+  const onPackageCreated = async (pack: Package) => {
+    // When creating navigate the user to the project detail page
+    await router.push(routes.package.details(pack.id))
   }
 
   const onRouteOptionsChange = async (routeOptions: ListRouteOptions) => {
-    await router.replace(routes.configBundle.list(routeOptions))
+    await router.replace(routes.package.list(routeOptions))
   }
 
-  const selfLink: BreadcrumbLink = {
-    name: t('common:configBundles'),
-    url: routes.configBundle.list(),
+  const pageLink: BreadcrumbLink = {
+    name: t('common:packages'),
+    url: routes.package.list(),
   }
 
   return (
-    <Layout title={t('common:configBundles')}>
-      <PageHeading pageLink={selfLink}>
+    <Layout title={pageLink.name}>
+      <PageHeading pageLink={pageLink}>
         <ListPageMenu creating={creating} onRouteOptionsChange={onRouteOptionsChange} submit={submit} />
       </PageHeading>
 
-      {!creating ? null : <AddConfigBundleCard className="mb-8 px-8 py-6" submit={submit} onCreated={onCreated} />}
-      {filters.items.length ? (
+      {creating && <EditPackageCard className="mb-8 px-8 py-6" submit={submit} onPackageEdited={onPackageCreated} />}
+
+      {filters.items.length > 0 ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })} />
 
-          <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3">
-            {filters.filtered.map((it, index) => {
-              const modulo3Class = index % 3 === 1 ? 'xl:mx-4' : null
-              const modulo2Class = clsx(index % 2 > 0 ? 'lg:ml-2' : 'lg:mr-2', modulo3Class ?? 'xl:mx-0')
-
-              return (
-                <ConfigBundleCard
-                  className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
-                  key={`bundle-${index}`}
-                  configBundle={it}
-                />
-              )
-            })}
+          <DyoWrap className="gap-4 mt-4" itemClassName="lg:w-1/2 xl:w-1/3">
+            {filters.filtered.map((it, index) => (
+              <PackageCard className="w-full p-8" key={`package-${index}`} pack={it} />
+            ))}
           </DyoWrap>
         </>
       ) : (
@@ -87,17 +89,16 @@ const ConfigBundles = (props: ConfigBundlesPageProps) => {
     </Layout>
   )
 }
-
-export default ConfigBundles
+export default PackagesPage
 
 const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
-  const bundles = await getCruxFromContext<ConfigBundle[]>(context, routes.configBundle.api.list())
+  const packages = await getCruxFromContext<Package[]>(context, routes.package.api.list())
 
   return {
     props: {
-      bundles,
+      packages,
     },
   }
 }

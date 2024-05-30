@@ -13,11 +13,13 @@ import {
   CreateVersionDto,
   IncreaseVersionDto,
   UpdateVersionDto,
+  VersionChainDto,
   VersionDetailsDto,
   VersionDto,
   VersionListQuery,
 } from './version.dto'
 import VersionMapper from './version.mapper'
+import { versionChainOf } from 'src/domain/version'
 
 @Injectable()
 export default class VersionService {
@@ -95,6 +97,42 @@ export default class VersionService {
     })
 
     return versions.map(it => this.mapper.toDto(it))
+  }
+
+  async getVersionChainsByProject(projectId: string): Promise<VersionChainDto[]> {
+    // have to select from the version table, cause childless versions
+    // does not have a VersionsOnParentVersion record
+    const chains = await this.prisma.version.findMany({
+      where: {
+        projectId,
+        type: 'incremental',
+        // select only the first links
+        parent: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        chainLinks: {
+          select: {
+            child: {
+              include: {
+                _count: {
+                  select: {
+                    children: true,
+                  },
+                }
+              }
+            },
+          },
+        },
+      },
+    })
+
+    return chains.map(firstLink => {
+      const chain = versionChainOf(firstLink)
+
+      return this.mapper.chainToDto(chain)
+    })
   }
 
   async getVersionDetails(versionId: string): Promise<VersionDetailsDto> {
@@ -362,6 +400,11 @@ export default class VersionService {
         id: versionId,
       },
       include: {
+        parent: {
+          select: {
+            chainId: true,
+          },
+        },
         images: {
           include: {
             config: true,
@@ -497,6 +540,7 @@ export default class VersionService {
       // Save the relationship between the new version and the base (increased) one
       await prisma.versionsOnParentVersion.create({
         data: {
+          chainId: parentVersion.parent?.chainId ?? parentVersion.id,
           parentVersionId: parentVersion.id,
           versionId: version.id,
         },

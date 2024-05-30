@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator'
+import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator'
 import { AuditDto } from '../audit/audit.dto'
 import { DeploymentWithBasicNodeDto } from '../deploy/deploy.dto'
 import { ImageDto } from '../image/image.dto'
@@ -33,6 +33,17 @@ export class VersionDto extends BasicVersionDto {
 
   @IsBoolean()
   increasable: boolean
+}
+
+export class VersionChainDto {
+  @IsUUID()
+  id: string
+
+  @ValidateNested()
+  earliest: BasicVersionDto
+
+  @ValidateNested()
+  latest: BasicVersionDto
 }
 
 export class UpdateVersionDto {

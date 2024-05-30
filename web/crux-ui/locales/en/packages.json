@@ -1,0 +1,14 @@
+{
+    "new": "New package",
+    "packageName": "Package - {{name}}",
+    "newEnvironment": "New environment",
+    "tips": "Packages are a composition of related project versions and nodes. By creating a package you can track and update your applications across various nodes.",
+    "noItems": "You haven't created a package yet. Make one by clicking 'Add' on the top right.",
+    "environments": "Environments",
+    "addEnvironment": "Add environment",
+    "versionChains": "Version chains",
+    "addVersionChains": "Add version chains",
+    "earliest": "Earliest",
+    "latest": "Latest",
+    "noVersionChains": "You haven't selected any version chain yet."
+}

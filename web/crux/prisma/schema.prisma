@@ -27,7 +27,8 @@ model Team {
   notifications Notification[]
   storages      Storage[]
   configBundles ConfigBundle[]
-  Pipeline      Pipeline[]
+  pipelines     Pipeline[]
+  packages      Package[]
 }
 
 model Token {
@@ -84,9 +85,10 @@ model Node {
   team           Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId         String        @db.Uuid
 
-  deployments Deployment[]
-  events      NodeEvent[]
-  token       NodeToken?
+  deployments  Deployment[]
+  events       NodeEvent[]
+  token        NodeToken?
+  environments PackageEnvironment[]
 
   @@unique([name, teamId])
 }
@@ -172,20 +174,25 @@ model Version {
   project     Project                   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   images      Image[]
   deployments Deployment[]
+  chainLinks  VersionsOnParentVersion[] @relation("chain")
   parent      VersionsOnParentVersion?  @relation("child")
   children    VersionsOnParentVersion[] @relation("parent")
+  packages    VersionChainsOnPackage[]
 
   @@unique([projectId, name])
 }
 
 model VersionsOnParentVersion {
+  chainId         String @db.Uuid
   versionId       String @unique @db.Uuid
   parentVersionId String @unique @db.Uuid
 
+  chain  Version @relation(name: "chain", fields: [chainId], references: [id], onDelete: Cascade)
   child  Version @relation(name: "child", fields: [versionId], references: [id], onDelete: Cascade)
   parent Version @relation(name: "parent", fields: [parentVersionId], references: [id], onDelete: Cascade)
 
   @@id([versionId, parentVersionId])
+  @@unique([chainId, versionId])
 }
 
 model Image {
@@ -681,4 +688,47 @@ model ConfigBundleOnDeployments {
 model QualityAssuranceConfig {
   id   String  @id @default(uuid()) @db.Uuid
   name String?
+}
+
+model Package {
+  id          String   @id @default(uuid()) @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  createdBy   String   @db.Uuid
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  updatedBy   String?  @db.Uuid
+  name        String   @db.VarChar(70)
+  description String?
+  icon        String?
+
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String @db.Uuid
+
+  chains       VersionChainsOnPackage[]
+  environments PackageEnvironment[]
+
+  @@unique([name, teamId])
+}
+
+model VersionChainsOnPackage {
+  versionId String @db.Uuid
+  packageId String @db.Uuid
+
+  earliest Version @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  package  Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@id([versionId, packageId])
+  @@unique([versionId, packageId])
+}
+
+model PackageEnvironment {
+  id        String @id @default(uuid()) @db.Uuid
+  name      String
+  packageId String @db.Uuid
+  nodeId    String @db.Uuid
+  prefix    String
+
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  node    Node    @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@unique([name, packageId])
 }

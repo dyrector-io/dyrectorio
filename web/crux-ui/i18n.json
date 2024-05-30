@@ -46,7 +46,8 @@
     "/[teamSlug]/storages": ["storages"],
     "/[teamSlug]/storages/[storageId]": ["storages"],
     "/[teamSlug]/config-bundles": ["config-bundles"],
-    "/[teamSlug]/config-bundles/[configBundleId]": ["config-bundles"],
+    "/[teamSlug]/packages": ["packages"],
+    "/[teamSlug]/packages/[packageId]": ["packages"],
     "/[teamSlug]/pipelines": ["pipelines"],
     "/[teamSlug]/pipelines/[pipelineId]": ["pipelines"]
   }

@@ -112,5 +112,8 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
     ConfigBundle: 'configBundle',
     ConfigBundleOnDeployments: 'configBundleOnDeployments',
     QualityAssuranceConfig: 'qualityAssuranceConfig',
+    Package: 'package',
+    PackageEnvironment: 'package',
+    VersionChainsOnPackage: 'package',
   }
 }
