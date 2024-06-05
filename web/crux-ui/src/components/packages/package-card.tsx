@@ -11,10 +11,11 @@ import useTranslation from 'next-translate/useTranslation'
 type PackageCardProps = {
   className?: string
   pack: Package
+  hideEnvironments?: boolean
 }
 
 const PackageCard = (props: PackageCardProps) => {
-  const { className, pack } = props
+  const { className, pack, hideEnvironments } = props
 
   const { t } = useTranslation('packages')
   const routes = useTeamRoutes()
@@ -32,7 +33,7 @@ const PackageCard = (props: PackageCardProps) => {
 
       <p className="text-md text-light mt-4 line-clamp-2 break-words">{pack.description}</p>
 
-      {pack.environments.length > 0 && (
+      {!hideEnvironments && pack.environments.length > 0 && (
         <>
           <span className="text-bright mt-4 mb-2">{t('environments')}</span>
 

@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum, Prisma } from '@prisma/client'
 import { VersionMessage } from 'src/domain/notification-templates'
+import { versionChainOf } from 'src/domain/version'
 import { increaseIncrementalVersion } from 'src/domain/version-increase'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
@@ -19,7 +20,6 @@ import {
   VersionListQuery,
 } from './version.dto'
 import VersionMapper from './version.mapper'
-import { versionChainOf } from 'src/domain/version'
 
 @Injectable()
 export default class VersionService {
@@ -120,8 +120,8 @@ export default class VersionService {
                   select: {
                     children: true,
                   },
-                }
-              }
+                },
+              },
             },
           },
         },
@@ -411,7 +411,6 @@ export default class VersionService {
           },
         },
         deployments: {
-          distinct: ['nodeId', 'prefix'],
           where: {
             OR: [
               { status: DeploymentStatusEnum.successful },

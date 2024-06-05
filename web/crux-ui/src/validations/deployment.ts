@@ -2,7 +2,7 @@ import yup from './yup'
 import { nameRule } from './common'
 import { createMergedContainerConfigSchema, uniqueKeyValuesSchema } from './container'
 
-const prefixRule = yup
+export const prefixRule = yup
   .string()
   .trim()
   .matches(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/) // RFC 1123

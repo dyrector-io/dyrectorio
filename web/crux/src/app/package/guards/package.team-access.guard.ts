@@ -9,6 +9,7 @@ export default class PackageTeamAccessGuard implements CanActivate {
     const req = context.switchToHttp().getRequest()
     const teamSlug = req.params.teamSlug as string
     const packageId = req.params.packageId as string
+    const environmentId = req.params.environmentId as string
 
     if (!packageId) {
       return true
@@ -20,6 +21,13 @@ export default class PackageTeamAccessGuard implements CanActivate {
         team: {
           slug: teamSlug,
         },
+        environments: !environmentId
+          ? undefined
+          : {
+              some: {
+                id: environmentId,
+              },
+            },
       },
     })
 

@@ -16,6 +16,7 @@ import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 import AddVersionChains from './add-version-chains'
 import VersionChainList from './version-chain-list'
+import { packageSchema } from '@app/validations'
 
 type EditPackageCardProps = {
   className?: string
@@ -43,22 +44,6 @@ const EditPackageCard = (props: EditPackageCardProps) => {
 
   const [addingVersionChains, setAddingVersionChains] = useState(false)
 
-  const onVersionChainsAdded = (chains: PackageVersionChain[]) => {
-    setPackage({
-      ...pack,
-      versionChains: [...pack.versionChains, ...chains],
-    })
-
-    setAddingVersionChains(false)
-  }
-
-  const onRemoveVersionChain = (chain: PackageVersionChain) => {
-    setPackage({
-      ...pack,
-      versionChains: pack.versionChains.filter(it => it.id !== chain.id),
-    })
-  }
-
   const editing = !!pack.id
 
   const handleApiError = defaultApiErrorHandler(t)
@@ -66,7 +51,7 @@ const EditPackageCard = (props: EditPackageCardProps) => {
   const formik = useDyoFormik<PackageDetails>({
     submit,
     initialValues: pack,
-    // validationSchema: packageSchema,
+    validationSchema: packageSchema,
     t,
     onSubmit: async values => {
       const body: CreatePackage | UpdatePackage = {
@@ -94,6 +79,19 @@ const EditPackageCard = (props: EditPackageCardProps) => {
       onPackageEdited(result)
     },
   })
+
+  const onVersionChainsAdded = async (chains: PackageVersionChain[]) => {
+    await formik.setFieldValue('versionChains', [...formik.values.versionChains, ...chains])
+
+    setAddingVersionChains(false)
+  }
+
+  const onRemoveVersionChain = async (chain: PackageVersionChain) => {
+    await formik.setFieldValue(
+      'versionChains',
+      formik.values.versionChains.filter(it => it.id !== chain.id),
+    )
+  }
 
   return (
     <DyoCard className={className}>
@@ -138,7 +136,7 @@ const EditPackageCard = (props: EditPackageCardProps) => {
         {addingVersionChains ? (
           <AddVersionChains
             className="mt-4"
-            currentChains={pack.versionChains}
+            currentChains={formik.values.versionChains}
             onAdd={onVersionChainsAdded}
             onDiscard={() => setAddingVersionChains(false)}
           />
@@ -150,8 +148,12 @@ const EditPackageCard = (props: EditPackageCardProps) => {
               {t('common:add')}
             </DyoButton>
 
-            {pack.versionChains.length > 0 ? (
-              <VersionChainList className="mt-4" versionChains={pack.versionChains} onRemove={onRemoveVersionChain} />
+            {formik.values.versionChains.length > 0 ? (
+              <VersionChainList
+                className="mt-4"
+                versionChains={formik.values.versionChains}
+                onRemove={onRemoveVersionChain}
+              />
             ) : (
               <p className="text-light my-2">{t('noVersionChains')}</p>
             )}

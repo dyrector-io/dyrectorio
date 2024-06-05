@@ -21,7 +21,7 @@ const PackageEnvironmentCard = (props: PackageEnvironmentCardProps) => {
 
   const { t } = useTranslation('packages')
   const routes = useTeamRoutes()
-  const titleHref = routes.package.api.environmentDetails(packageId, environment.id)
+  const titleHref = routes.package.environmentDetails(packageId, environment.id)
 
   const title = (
     <DyoHeading element="h5" className="text-xl text-bright" onClick={onClick}>
@@ -37,12 +37,15 @@ const PackageEnvironmentCard = (props: PackageEnvironmentCardProps) => {
         </DyoLink>
       </div>
 
-      <div className="flex flex-row gap-2">
-        <NodeStatusIndicator status={node.status} />
+      <div className="flex flex-row gap-2 mt-4">
+        <NodeStatusIndicator className="mt-1" status={node.status} />
 
-        <DyoLabel>{node.name}</DyoLabel>
-
-        <DyoLabel>{environment.prefix}</DyoLabel>
+        <div className="grid grid-cols-2 gap-2">
+          <DyoLabel>{t('common:node')}</DyoLabel>
+          <DyoLabel>{node.name}</DyoLabel>
+          <DyoLabel>{t('common:prefix')}</DyoLabel>
+          <DyoLabel>{environment.prefix}</DyoLabel>
+        </div>
       </div>
     </DyoCard>
   )

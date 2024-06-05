@@ -48,6 +48,7 @@
     "/[teamSlug]/config-bundles": ["config-bundles"],
     "/[teamSlug]/packages": ["packages"],
     "/[teamSlug]/packages/[packageId]": ["packages"],
+    "/[teamSlug]/packages/[packageId]/environments/[environmentId]": ["packages", "deployments"],
     "/[teamSlug]/pipelines": ["pipelines"],
     "/[teamSlug]/pipelines/[pipelineId]": ["pipelines"]
   }

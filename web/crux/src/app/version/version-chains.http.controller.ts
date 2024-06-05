@@ -35,7 +35,7 @@ export default class VersionChainHttpController {
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for project version chains.' })
   @UuidParams(PARAM_PROJECT_ID)
-  async getVersions(@TeamSlug() _: string, @ProjectId() projectId: string): Promise<VersionChainDto[]> {
+  async getVersionChains(@TeamSlug() _: string, @ProjectId() projectId: string): Promise<VersionChainDto[]> {
     return await this.service.getVersionChainsByProject(projectId)
   }
 }

@@ -10,5 +10,7 @@
     "addVersionChains": "Add version chains",
     "earliest": "Earliest",
     "latest": "Latest",
-    "noVersionChains": "You haven't selected any version chain yet."
+    "noVersionChains": "You haven't selected any version chain yet.",
+    "createDeployment": "Create deployment",
+    "deployed": "Deployed"
 }

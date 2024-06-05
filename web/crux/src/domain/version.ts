@@ -1,4 +1,4 @@
-import { DeploymentStatusEnum, ProjectTypeEnum, VersionTypeEnum } from '@prisma/client'
+import { Deployment, DeploymentStatusEnum, ProjectTypeEnum, Version, VersionTypeEnum } from '@prisma/client'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { checkDeploymentMutability } from './deployment'
 
@@ -103,4 +103,8 @@ export const versionChainOf = (earliest: VersionWithChains): VersionChain => {
     earliest,
     latest,
   }
+}
+
+export type VersionWithDeployments = Version & {
+  deployments: Deployment[]
 }

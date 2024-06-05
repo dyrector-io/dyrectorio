@@ -6,7 +6,7 @@ import PackageEnvironmentCard from '@app/components/packages/package-environment
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu, DetailsPageTexts } from '@app/components/shared/page-menu'
-import { defaultApiErrorHandler } from '@app/errors'
+import DyoWrap from '@app/elements/dyo-wrap'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { PackageDetails, PackageEnvironment, packageDetailsToPackage } from '@app/models'
@@ -67,7 +67,7 @@ const PackageDetailsPage = (props: PackageDetailsPageProps) => {
   }
 
   const pageLink: BreadcrumbLink = {
-    name: t('common:package'),
+    name: t('common:packages'),
     url: routes.package.list(),
   }
 
@@ -99,23 +99,36 @@ const PackageDetailsPage = (props: PackageDetailsPageProps) => {
         />
       </PageHeading>
 
-      {state === 'environments' ? (
-        <PackageCard pack={packageDetailsToPackage(pack)} />
-      ) : state === 'edit-package' ? (
-        <EditPackageCard className="mb-8 px-8 py-6" package={pack} onPackageEdited={onPackageEdited} submit={submit} />
-      ) : state === 'add-environment' ? (
-        <EditPackageEnvironmentCard
-          className="mb-8 px-8 py-6"
-          packageId={pack.id}
-          submit={submit}
-          onEnvironmentEdited={onEnvironmentCreated}
-        />
-      ) : null}
+      <div className="flex flex-col gap-4">
+        {state === 'environments' ? (
+          <PackageCard pack={packageDetailsToPackage(pack)} hideEnvironments />
+        ) : state === 'edit-package' ? (
+          <EditPackageCard
+            className="mb-8 px-8 py-6"
+            package={pack}
+            onPackageEdited={onPackageEdited}
+            submit={submit}
+          />
+        ) : state === 'add-environment' ? (
+          <EditPackageEnvironmentCard
+            className="mb-8 px-8 py-6"
+            packageId={pack.id}
+            submit={submit}
+            onEnvironmentEdited={onEnvironmentCreated}
+          />
+        ) : null}
 
-      {state === 'environments' &&
-        pack.environments.map((env, index) => (
-          <PackageEnvironmentCard key={`env-${index}`} packageId={pack.id} environment={env} />
-        ))}
+        {state === 'environments' &&
+          (pack.environments.length < 1 ? (
+            <span>notyet</span>
+          ) : (
+            <DyoWrap className="gap-4" itemClassName="lg:w-1/2 xl:w-1/3">
+              {pack.environments.map((env, index) => (
+                <PackageEnvironmentCard key={`env-${index}`} packageId={pack.id} environment={env} />
+              ))}
+            </DyoWrap>
+          ))}
+      </div>
     </Layout>
   )
 }

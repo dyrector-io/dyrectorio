@@ -121,7 +121,7 @@ const VersionViewList = (props: VersionViewListProps) => {
 
       <DyoConfirmationModal config={deleteModal} className="w-1/4" />
 
-      {!tagsModalTarget ? null : (
+      {tagsModalTarget && (
         <DyoModal
           className="w-1/3 min-w-[450px]"
           titleClassName="pl-4 font-medium text-xl text-bright mb-3"

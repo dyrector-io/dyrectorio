@@ -15,7 +15,7 @@ import SelectProjectChips from '../projects/select-project-chips'
 type AddVersionChainsProps = {
   className?: string
   currentChains: PackageVersionChain[]
-  onAdd: (chains: PackageVersionChain[]) => void
+  onAdd: (chains: PackageVersionChain[]) => Promise<void>
   onDiscard: VoidFunction
 }
 
@@ -58,7 +58,7 @@ const AddVersionChains = (props: AddVersionChainsProps) => {
     setProject(proj)
   }
 
-  const onAdd = () => propsOnAdd(selected)
+  const onAdd = async () => await propsOnAdd(selected)
 
   const onChainCheckedChange = (selectable: PackageVersionChain, checked: boolean) => {
     if (checked) {

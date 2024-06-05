@@ -1,4 +1,3 @@
-import { Project } from 'playwright/test'
 import { Audit } from './audit'
 import { DeploymentStatus } from './common'
 import { VersionImage } from './image'

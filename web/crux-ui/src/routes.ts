@@ -678,7 +678,10 @@ export class PackageApi {
 
   environments = (packageId: string) => `${this.details(packageId)}/environments`
 
-  environmentDetails = (packageId: string, envId: string) => `${this.environments(packageId)}/${envId}`
+  environmentDetails = (packageId: string, environmentId: string) => `${this.environments(packageId)}/${environmentId}`
+
+  environmentDeployments = (packageId: string, environmentId: string) =>
+    `${this.environmentDetails(packageId, environmentId)}/deployments`
 }
 
 export class PackageRoutes {
@@ -701,6 +704,9 @@ export class PackageRoutes {
   list = (options?: ListRouteOptions) => appendAnchorWhenDeclared(this.root, ANCHOR_NEW, options?.new)
 
   details = (id: string) => `${this.root}/${id}`
+
+  environmentDetails = (packageId: string, environmentId: string) =>
+    `${this.details(packageId)}/environments/${environmentId}`
 }
 
 export class TeamRoutes {

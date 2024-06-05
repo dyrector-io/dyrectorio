@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, UseGuards } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
 import {
   ApiBadRequestResponse,
   ApiBody,
@@ -14,11 +26,15 @@ import {
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from 'src/interceptors/created-with-location.decorator'
+import { BasicDeploymentDto } from '../deploy/deploy.dto'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import PackageNodeAccessGuard from './guards/package.node-access.guard'
 import PackageTeamAccessGuard from './guards/package.team-access.guard'
 import PackageVersionAccessGuard from './guards/package.version-access.guard'
+import PackageVersionChainAccessGuard from './guards/package.version-chain-access.guard'
+import PackageCreateDeploymentInterceptor from './interceptors/package.create-deployment.interceptor'
 import {
+  CreatePackageDeploymentDto,
   CreatePackageDto,
   CreatePackageEnvironmentDto,
   PackageDetailsDto,
@@ -39,6 +55,7 @@ const ROUTE_PACKAGES = 'packages'
 const ROUTE_PACKAGE_ID = ':packageId'
 const ROUTE_ENVIRONMENTS = 'environments'
 const ROUTE_ENVIRONMENT_ID = ':environmentId'
+const ROUTE_DEPLOYMENTS = 'deployments'
 
 const ROUTE_TEAM_SLUG = ':teamSlug'
 const PARAM_TEAM_SLUG = 'teamSlug'
@@ -95,7 +112,7 @@ class PackageHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for package creation.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for package creation.' })
   @ApiConflictResponse({ description: 'Package name taken.' })
-  @UseGuards(PackageVersionAccessGuard)
+  @UseGuards(PackageVersionChainAccessGuard)
   async createPackage(
     @TeamSlug() teamSlug: string,
     @Body() request: CreatePackageDto,
@@ -104,7 +121,7 @@ class PackageHttpController {
     const pack = await this.service.createPackage(teamSlug, request, identity)
 
     return {
-      url: `${teamSlug}/${ROUTE_PACKAGES}/${pack.id}`,
+      url: PackageHttpController.packageUrlOf(teamSlug, pack.id),
       body: pack,
     }
   }
@@ -121,7 +138,7 @@ class PackageHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for package details modification.' })
   @ApiNotFoundResponse({ description: 'Package not found.' })
   @ApiConflictResponse({ description: 'Package name taken.' })
-  @UseGuards(PackageVersionAccessGuard)
+  @UseGuards(PackageVersionChainAccessGuard)
   @UuidParams(PARAM_PACKAGE_ID)
   async updatePackage(
     @TeamSlug() _: string,
@@ -146,6 +163,26 @@ class PackageHttpController {
     await this.service.deletePackage(id)
   }
 
+  @Get(`${ROUTE_PACKAGE_ID}/${ROUTE_ENVIRONMENTS}/${ROUTE_ENVIRONMENT_ID}`)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    description:
+      "Returns a package environment's details. `teamSlug`, `packageId` and `environmentId` needs to be included in URL. The response is consisting of the package's `name`, `id`, `node`, `prefix` and the version chains.",
+    summary: 'Fetch details of a package environment.',
+  })
+  @ApiOkResponse({ type: PackageDetailsDto, description: 'Details of a package environment.' })
+  @ApiBadRequestResponse({ description: 'Bad request for package environment details.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for package environment details.' })
+  @ApiNotFoundResponse({ description: 'Package environment not found.' })
+  @UuidParams(PARAM_PACKAGE_ID)
+  async getPackageEnvironmentDetails(
+    @TeamSlug() _: string,
+    @PackageId() __: string,
+    @EnvironmentId() environmentId: string,
+  ): Promise<PackageEnvironmentDto> {
+    return await this.service.getEnvironmentById(environmentId)
+  }
+
   @Post(`${ROUTE_PACKAGE_ID}/${ROUTE_ENVIRONMENTS}`)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
@@ -162,13 +199,14 @@ class PackageHttpController {
   @UseGuards(PackageNodeAccessGuard)
   async createPackageEnvironment(
     @TeamSlug() teamSlug: string,
+    @PackageId() packageId: string,
     @Body() request: CreatePackageEnvironmentDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreatedResponse<PackageEnvironmentDto>> {
-    const env = await this.service.createEnvironment(teamSlug, request, identity)
+    const env = await this.service.createEnvironment(packageId, request, identity)
 
     return {
-      url: `${teamSlug}/${ROUTE_PACKAGES}/${env.id}`,
+      url: PackageHttpController.environmentUrlOf(teamSlug, packageId, env.id),
       body: env,
     }
   }
@@ -215,6 +253,47 @@ class PackageHttpController {
     @IdentityFromRequest() identity: Identity,
   ): Promise<void> {
     await this.service.deleteEnvironment(packageId, environmentId, identity)
+  }
+
+  @Post(`${ROUTE_PACKAGE_ID}/${ROUTE_ENVIRONMENTS}/${ROUTE_ENVIRONMENT_ID}/${ROUTE_DEPLOYMENTS}`)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    description:
+      'Create a deployment for the selected version. `teamSlug`, `packageId` and `environmentId` needs to be included in URL. Response should include deployment `id`, `prefix`, `status`, `note`, and `audit` log details, as well as the `project`, `version` and `node`.',
+    summary: 'Create a new deployment.',
+  })
+  @CreatedWithLocation()
+  @ApiBody({ type: CreatePackageDto })
+  @ApiCreatedResponse({ type: PackageDto, description: 'New deployment created.' })
+  @ApiBadRequestResponse({ description: 'Bad request for deployment creation.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for deployment creation.' })
+  @ApiConflictResponse({
+    description:
+      'A preparing deployment already exists on the same node with the same prefix for the selected version.',
+  })
+  @UseGuards(PackageVersionAccessGuard)
+  @UseInterceptors(PackageCreateDeploymentInterceptor)
+  async createPackageDeployment(
+    @TeamSlug() teamSlug: string,
+    @PackageId() _: string,
+    @EnvironmentId() environmentId: string,
+    @Body() request: CreatePackageDeploymentDto,
+    @IdentityFromRequest() identity: Identity,
+  ): Promise<CreatedResponse<BasicDeploymentDto>> {
+    const deploy = await this.service.createPackageDeployment(environmentId, request, identity)
+
+    return {
+      url: `${teamSlug}/${ROUTE_DEPLOYMENTS}/${deploy.id}`,
+      body: deploy,
+    }
+  }
+
+  private static packageUrlOf(teamSlug: string, packageId: string) {
+    return `${teamSlug}/${ROUTE_PACKAGES}/${packageId}`
+  }
+
+  private static environmentUrlOf(teamSlug: string, packageId: string, environmentId: string) {
+    return `${PackageHttpController.packageUrlOf(teamSlug, packageId)}/${ROUTE_ENVIRONMENTS}/${environmentId}`
   }
 }
 

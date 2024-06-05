@@ -7,7 +7,7 @@ import useTranslation from 'next-translate/useTranslation'
 type VersionChainListProps = {
   className?: string
   versionChains: PackageVersionChain[]
-  onRemove: (chain: PackageVersionChain) => void
+  onRemove: (chain: PackageVersionChain) => Promise<void>
 }
 
 const VersionChainList = (props: VersionChainListProps) => {
@@ -28,7 +28,7 @@ const VersionChainList = (props: VersionChainListProps) => {
           src="/trash-can.svg"
           alt={t('common:delete')}
           height={24}
-          onClick={() => onRemove(chain)}
+          onClick={async () => await onRemove(chain)}
         />
       </div>,
     ]

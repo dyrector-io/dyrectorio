@@ -11,7 +11,7 @@ import useAnchor from '@app/hooks/use-anchor'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Package } from '@app/models'
+import { Package, PackageDetails } from '@app/models'
 import { ANCHOR_NEW, ListRouteOptions, TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
@@ -49,7 +49,7 @@ const PackagesPage = (props: PackagesPageProps) => {
   const creating = anchor === ANCHOR_NEW
   const submit = useSubmit()
 
-  const onPackageCreated = async (pack: Package) => {
+  const onPackageCreated = async (pack: PackageDetails) => {
     // When creating navigate the user to the project detail page
     await router.push(routes.package.details(pack.id))
   }

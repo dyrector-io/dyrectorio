@@ -1,8 +1,9 @@
-import { OmitType } from '@nestjs/swagger'
+import { OmitType, PickType } from '@nestjs/swagger'
 import { IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator'
+import { BasicDeploymentDto } from '../deploy/deploy.dto'
 import { NodeDto } from '../node/node.dto'
 import { BasicProjectDto } from '../project/project.dto'
-import { VersionChainDto } from '../version/version.dto'
+import { BasicVersionDto, VersionChainDto } from '../version/version.dto'
 
 export class PackageEnvironmentDto {
   @IsUUID()
@@ -23,13 +24,15 @@ export class PackageVersionChainDto extends VersionChainDto {
   project: BasicProjectDto
 }
 
-export class PackageDto {
+export class BasicPackageDto {
   @IsUUID()
   id: string
 
   @IsString()
   name: string
+}
 
+export class PackageDto extends BasicPackageDto {
   @IsString()
   @IsOptional()
   description?: string
@@ -68,6 +71,31 @@ export class UpdatePackageDto {
 
 export class CreatePackageDto extends UpdatePackageDto {}
 
+export class PackageVersionDto extends PickType(BasicVersionDto, ['id', 'name']) {
+  @IsOptional()
+  @ValidateNested()
+  deployment?: BasicDeploymentDto
+}
+
+export class PackageEnvironmentVersionChainDto {
+  @IsUUID()
+  chainId: string
+
+  @ValidateNested()
+  project: BasicProjectDto
+
+  @ValidateNested({ each: true })
+  versions: PackageVersionDto[]
+}
+
+export class PackageEnvironmentDetailsDto extends PackageEnvironmentDto {
+  @ValidateNested()
+  package: BasicPackageDto
+
+  @ValidateNested({ each: true })
+  versionChains: PackageEnvironmentVersionChainDto[]
+}
+
 export class UpdatePackageEnvironmentDto {
   @IsString()
   name: string
@@ -80,3 +108,8 @@ export class UpdatePackageEnvironmentDto {
 }
 
 export class CreatePackageEnvironmentDto extends UpdatePackageEnvironmentDto {}
+
+export class CreatePackageDeploymentDto {
+  @IsUUID()
+  versionId: string
+}

@@ -10,6 +10,7 @@ import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreatePackageEnvironment, DyoNode, PackageEnvironment, UpdatePackageEnvironment } from '@app/models'
 import { sendForm } from '@app/utils'
+import { packageEnvironmentSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 import SelectNodeChips from '../nodes/select-node-chips'
@@ -44,7 +45,7 @@ const EditPackageEnvironmentCard = (props: EditPackageEnvironmentCardProps) => {
   const formik = useDyoFormik({
     submit,
     initialValues: environment,
-    // validationSchema: !editing ? createProjectSchema : updateProjectSchema,
+    validationSchema: packageEnvironmentSchema,
     t,
     onSubmit: async (values, { setFieldError }) => {
       const body: CreatePackageEnvironment | UpdatePackageEnvironment = {
@@ -122,8 +123,8 @@ const EditPackageEnvironmentCard = (props: EditPackageEnvironmentCardProps) => {
           type="text"
           label={t('common:prefix')}
           onChange={formik.handleChange}
-          value={formik.values.name}
-          message={formik.errors.name}
+          value={formik.values.prefix}
+          message={formik.errors.prefix}
         />
 
         <DyoButton className="hidden" type="submit" />

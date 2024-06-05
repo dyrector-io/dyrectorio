@@ -11,7 +11,7 @@ export default class NodeGetScriptValidationPipe implements PipeTransform {
   ) {}
 
   async transform(id: string) {
-    const node = await this.prisma.node.findUnique({
+    const node = await this.prisma.node.findUniqueOrThrow({
       select: {
         id: true,
       },

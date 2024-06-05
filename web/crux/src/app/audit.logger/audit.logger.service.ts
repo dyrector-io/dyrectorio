@@ -50,7 +50,7 @@ export default class AuditLoggerService {
     // deploymentToken
     const { deploymentId } = actor
 
-    const deploymentToken = await this.prisma.deploymentToken.findUnique({
+    const deploymentToken = await this.prisma.deploymentToken.findUniqueOrThrow({
       where: {
         deploymentId,
       },

@@ -1,3 +1,4 @@
+import { BasicDeployment } from './deployment'
 import { DyoNode } from './node'
 import { BasicProject } from './project'
 import { VersionChain } from './version'
@@ -7,6 +8,28 @@ export type PackageEnvironment = {
   name: string
   node: DyoNode
   prefix: string
+}
+
+export type PackageVersion = {
+  id: string
+  name: string
+  deployment?: BasicDeployment
+}
+
+export type PackageVersionChainDetails = {
+  chainId: string
+  project: BasicProject
+  versions: PackageVersion[]
+}
+
+export type BasicPackage = {
+  id: string
+  name: string
+}
+
+export type PackageEnvironmentDetails = PackageEnvironment & {
+  package: BasicPackage
+  versionChains: PackageVersionChainDetails[]
 }
 
 export type PackageVersionChain = VersionChain & {
@@ -47,3 +70,7 @@ export const packageDetailsToPackage = (pack: PackageDetails): Package => ({
   ...pack,
   environments: pack.environments.map(it => it.name),
 })
+
+export type CreatePackageDeployment = {
+  versionId: string
+}

@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
-import { CreatePackageDto, UpdatePackageDto } from '../package.dto'
+import { CreatePackageDeploymentDto } from '../package.dto'
 
 @Injectable()
 export default class PackageVersionAccessGuard implements CanActivate {
@@ -9,8 +9,9 @@ export default class PackageVersionAccessGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest()
     const teamSlug = req.params.teamSlug as string
+    const packageId = req.params.packageId as string
 
-    const body = req.body as CreatePackageDto | UpdatePackageDto
+    const body = req.body as CreatePackageDeploymentDto
 
     const versions = await this.prisma.version.count({
       where: {
@@ -19,12 +20,30 @@ export default class PackageVersionAccessGuard implements CanActivate {
             slug: teamSlug,
           },
         },
-        id: {
-          in: body.chainIds,
-        },
+        id: body.versionId,
+        OR: [
+          {
+            packages: {
+              some: {
+                packageId,
+              },
+            },
+          },
+          {
+            parent: {
+              chain: {
+                packages: {
+                  some: {
+                    packageId,
+                  },
+                },
+              },
+            },
+          },
+        ],
       },
     })
 
-    return versions === body.chainIds.length
+    return versions > 0
   }
 }
