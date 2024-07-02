@@ -21,26 +21,13 @@ export default class PackageVersionAccessGuard implements CanActivate {
           },
         },
         id: body.versionId,
-        OR: [
-          {
-            packages: {
-              some: {
-                packageId,
-              },
+        chain: {
+          packages: {
+            some: {
+              packageId,
             },
           },
-          {
-            parent: {
-              chain: {
-                packages: {
-                  some: {
-                    packageId,
-                  },
-                },
-              },
-            },
-          },
-        ],
+        },
       },
     })
 
