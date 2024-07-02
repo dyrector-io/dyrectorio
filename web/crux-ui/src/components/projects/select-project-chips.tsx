@@ -51,8 +51,6 @@ const SelectProjectChips = (props: SelectProjectChipsProps) => {
     <DyoLabel>{t('common:loading')}</DyoLabel>
   ) : projects.length === 0 ? (
     <DyoMessage message={t('common:noNameFound', { name: t('common:projects') })} messageType="error" />
-  ) : !projects ? (
-    <DyoLabel>{t('common:loading')}</DyoLabel>
   ) : (
     <>
       <DyoChips

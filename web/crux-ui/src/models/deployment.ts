@@ -9,6 +9,14 @@ import { BasicVersion, VersionDetails, VersionType } from './version'
 
 export type EnvironmentToConfigBundleNameMap = Record<string, string>
 
+export type BasicDeployment = {
+  id: string
+  prefix: string
+  status: DeploymentStatus
+  protected: boolean
+  audit: Audit
+}
+
 export type Deployment = {
   id: string
   audit: Audit

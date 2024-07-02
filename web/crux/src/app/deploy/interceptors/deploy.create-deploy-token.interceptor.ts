@@ -14,7 +14,7 @@ export default class DeployCreateDeployTokenValidationInterceptor implements Nes
     const deploymentId = req.params.deploymentId as string
     const body = req.body as CreateDeploymentTokenDto
 
-    const deployment = await this.prisma.deployment.findUnique({
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id: deploymentId,
       },

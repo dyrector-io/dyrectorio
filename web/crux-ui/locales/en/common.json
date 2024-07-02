@@ -95,6 +95,7 @@
   "pipelines": "Pipelines",
   "storages": "Storages",
   "configBundles": "Config bundles",
+  "packages": "Packages",
 
   "role": {
     "owner": "Owner",

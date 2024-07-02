@@ -26,6 +26,7 @@ import { createFullDeploymentSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect } from 'react'
 import useSWR from 'swr'
+import SelectNodeChips from '../nodes/select-node-chips'
 import SelectProjectChips from '../projects/select-project-chips'
 
 interface AddDeploymentCardProps {
@@ -39,8 +40,6 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
   const { t } = useTranslation('deployments')
   const routes = useTeamRoutes()
-
-  const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(routes.node.api.list(), fetcher)
 
   const handleApiError = apiErrorHandler((stringId: string, status: number, dto: DyoApiError) => {
     if (deploymentHasError(dto)) {
@@ -60,7 +59,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
   const formik = useDyoFormik({
     initialValues: {
-      nodeId: null as string,
+      node: null as DyoNode,
       note: '',
       prefix: '',
       protected: false,
@@ -71,7 +70,10 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
     t,
     onSubmit: async (values, { setFieldError }) => {
       const body: CreateDeployment = {
-        ...values,
+        nodeId: values.node?.id,
+        prefix: values.prefix,
+        protected: values.protected,
+        versionId: values.versionId,
       }
 
       const res = await sendForm('POST', routes.deployment.api.list(), body)
@@ -93,14 +95,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
     fetcher,
   )
 
-  const { setFieldValue: formikSetFieldValue, setFieldError: formikSetFieldError, values: formikValues } = formik
-
-  useEffect(() => {
-    if (nodes?.length === 1 && !formikValues.nodeId) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      formikSetFieldValue('nodeId', nodes[0].id)
-    }
-  }, [nodes, formikValues.nodeId, formikSetFieldValue])
+  const { setFieldValue: formikSetFieldValue, setFieldError: formikSetFieldError } = formik
 
   useEffect(() => {
     if (versions?.length === 1) {
@@ -119,6 +114,13 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       formikSetFieldValue('project', projects[0])
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       formikSetFieldValue('prefix', projectNameToDeploymentPrefix(projects[0].name))
+    }
+  }
+
+  const onNodesFetched = (nodes: DyoNode[] | null) => {
+    if (nodes?.length === 1) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      formikSetFieldValue('project', nodes[0])
     }
   }
 
@@ -142,28 +144,16 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
       <div className="flex flex-col">
         <DyoLabel className="mt-8 mb-2.5">{t('common:nodes')}</DyoLabel>
-        {fetchNodesError ? (
-          <DyoLabel>
-            {t('errors:fetchFailed', {
-              type: t('common:nodes'),
-            })}
-          </DyoLabel>
-        ) : !nodes ? (
-          <DyoLabel>{t('common:loading')}</DyoLabel>
-        ) : nodes.length === 0 ? (
-          <DyoMessage message={t('common:noNameFound', { name: t('common:nodes') })} messageType="error" />
-        ) : (
-          <>
-            <DyoChips
-              name="nodes"
-              choices={nodes ?? []}
-              converter={(it: DyoNode) => it.name}
-              selection={nodes.find(it => it.id === formik.values.nodeId)}
-              onSelectionChange={it => formik.setFieldValue('nodeId', it.id)}
-            />
-            {formik.errors.nodeId && <DyoMessage message={formik.errors.nodeId} messageType="error" />}
-          </>
-        )}
+
+        <SelectNodeChips
+          name="nodes"
+          onSelectionChange={async it => {
+            await formik.setFieldValue('node', it)
+          }}
+          onNodesFetched={onNodesFetched}
+          selection={formik.values.node}
+          errorMessage={formik.errors.node as string}
+        />
 
         <DyoLabel className="mt-8 mb-2.5">{t('common:projects')}</DyoLabel>
 
@@ -187,7 +177,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
                   type: t('common:versions'),
                 })}
               </DyoLabel>
-            ) : !versions && formik.values.project ? (
+            ) : !versions && currentProject ? (
               <DyoLabel>{t('common:loading')}</DyoLabel>
             ) : versions.length === 0 ? (
               <DyoMessage message={t('noVersions')} />

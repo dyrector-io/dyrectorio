@@ -51,15 +51,15 @@ export class BasicDeploymentDto {
   @ApiProperty({ enum: DEPLOYMENT_STATUS_VALUES })
   @IsIn(DEPLOYMENT_STATUS_VALUES)
   status: DeploymentStatusDto
+
+  @ValidateNested()
+  audit: AuditDto
 }
 
 export class DeploymentDto extends BasicDeploymentDto {
   @IsString()
   @IsOptional()
   note?: string | null
-
-  @ValidateNested()
-  audit: AuditDto
 
   @ValidateNested()
   project: BasicProjectDto

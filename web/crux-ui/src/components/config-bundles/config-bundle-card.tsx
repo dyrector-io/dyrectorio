@@ -17,7 +17,7 @@ const ConfigBundleCard = (props: ConfigBundleCardProps) => {
 
   const { t } = useTranslation('config-bundles')
   const routes = useTeamRoutes()
-  const titleHref = routes.configBundles.details(configBundle.id)
+  const titleHref = routes.configBundle.details(configBundle.id)
 
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>

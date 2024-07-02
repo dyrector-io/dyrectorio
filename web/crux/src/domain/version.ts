@@ -1,6 +1,12 @@
-import { DeploymentStatusEnum, ProjectTypeEnum, VersionTypeEnum } from '@prisma/client'
+import { Deployment, DeploymentStatusEnum, ProjectTypeEnum, Version, VersionTypeEnum } from '@prisma/client'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { checkDeploymentMutability } from './deployment'
+
+export type VersionWithName = Pick<Version, 'id' | 'name'>
+
+export type VersionWithDeployments = Version & {
+  deployments: Deployment[]
+}
 
 export type VersionIncreasabilityCheckDao = {
   type: VersionTypeEnum

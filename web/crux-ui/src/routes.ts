@@ -385,6 +385,8 @@ class ProjectApi {
 
   details = (id: string) => `${this.root}/${id}`
 
+  versionChains = (id: string) => `${this.details(id)}/version-chains`
+
   convertToVersioned = (id: string) => `${this.details(id)}/convert`
 }
 
@@ -663,6 +665,50 @@ class ConfigBundleRoutes {
   detailsSocket = (id: string) => this.details(id)
 }
 
+export class PackageApi {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `/api${root}`
+  }
+
+  list = () => this.root
+
+  details = (id: string) => `${this.root}/${id}`
+
+  environments = (packageId: string) => `${this.details(packageId)}/environments`
+
+  environmentDetails = (packageId: string, environmentId: string) => `${this.environments(packageId)}/${environmentId}`
+
+  environmentDeployments = (packageId: string, environmentId: string) =>
+    `${this.environmentDetails(packageId, environmentId)}/deployments`
+}
+
+export class PackageRoutes {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `${root}/packages`
+  }
+
+  private _api: PackageApi
+
+  get api() {
+    if (!this._api) {
+      this._api = new PackageApi(this.root)
+    }
+
+    return this._api
+  }
+
+  list = (options?: ListRouteOptions) => appendAnchorWhenDeclared(this.root, ANCHOR_NEW, options?.new)
+
+  details = (id: string) => `${this.root}/${id}`
+
+  environmentDetails = (packageId: string, environmentId: string) =>
+    `${this.details(packageId)}/environments/${environmentId}`
+}
+
 export class TeamRoutes {
   readonly root: string
 
@@ -688,7 +734,9 @@ export class TeamRoutes {
 
   private _pipeline: PipelineRoutes
 
-  private _configBundles: ConfigBundleRoutes
+  private _configBundle: ConfigBundleRoutes
+
+  private _package: PackageRoutes
 
   get audit() {
     if (!this._audit) {
@@ -762,12 +810,20 @@ export class TeamRoutes {
     return this._pipeline
   }
 
-  get configBundles() {
-    if (!this._configBundles) {
-      this._configBundles = new ConfigBundleRoutes(this.root)
+  get configBundle() {
+    if (!this._configBundle) {
+      this._configBundle = new ConfigBundleRoutes(this.root)
     }
 
-    return this._configBundles
+    return this._configBundle
+  }
+
+  get package() {
+    if (!this._package) {
+      this._package = new PackageRoutes(this.root)
+    }
+
+    return this._package
   }
 
   static fromContext(context: GetServerSidePropsContext): TeamRoutes | null {

@@ -41,16 +41,16 @@ const ConfigBundles = (props: ConfigBundlesPageProps) => {
   const submit = useSubmit()
 
   const onCreated = async (bundle: ConfigBundle) => {
-    await router.push(routes.configBundles.details(bundle.id))
+    await router.push(routes.configBundle.details(bundle.id))
   }
 
   const onRouteOptionsChange = async (routeOptions: ListRouteOptions) => {
-    await router.replace(routes.configBundles.list(routeOptions))
+    await router.replace(routes.configBundle.list(routeOptions))
   }
 
   const selfLink: BreadcrumbLink = {
     name: t('common:configBundles'),
-    url: routes.configBundles.list(),
+    url: routes.configBundle.list(),
   }
 
   return (
@@ -93,7 +93,7 @@ export default ConfigBundles
 const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const routes = TeamRoutes.fromContext(context)
 
-  const bundles = await getCruxFromContext<ConfigBundle[]>(context, routes.configBundles.api.list())
+  const bundles = await getCruxFromContext<ConfigBundle[]>(context, routes.configBundle.api.list())
 
   return {
     props: {

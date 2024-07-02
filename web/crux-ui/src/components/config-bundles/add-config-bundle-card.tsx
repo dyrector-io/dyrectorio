@@ -41,7 +41,7 @@ const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
         ...values,
       }
 
-      const res = await sendForm('POST', routes.configBundles.api.list(), body)
+      const res = await sendForm('POST', routes.configBundle.api.list(), body)
 
       if (res.ok) {
         let result: ConfigBundle

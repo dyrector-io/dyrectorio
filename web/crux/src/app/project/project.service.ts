@@ -94,7 +94,7 @@ export default class ProjectService {
   }
 
   async updateProject(id: string, req: UpdateProjectDto, identity: Identity): Promise<ProjectListItemDto> {
-    const currentProject = await this.prisma.project.findUnique({
+    const currentProject = await this.prisma.project.findUniqueOrThrow({
       select: {
         type: true,
       },

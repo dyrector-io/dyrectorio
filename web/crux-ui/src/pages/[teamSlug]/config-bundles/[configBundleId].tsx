@@ -49,7 +49,7 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
 
   const pageLink: BreadcrumbLink = {
     name: t('common:configBundles'),
-    url: routes.configBundles.list(),
+    url: routes.configBundle.list(),
   }
 
   return (
@@ -59,7 +59,7 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
         sublinks={[
           {
             name: configBundle.name,
-            url: routes.configBundles.details(configBundle.id),
+            url: routes.configBundle.details(configBundle.id),
           },
         ]}
       >
@@ -144,7 +144,7 @@ const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
 
   const configBundle = await getCruxFromContext<ConfigBundleDetails>(
     context,
-    routes.configBundles.api.details(configBundleId),
+    routes.configBundle.api.details(configBundleId),
   )
 
   return {

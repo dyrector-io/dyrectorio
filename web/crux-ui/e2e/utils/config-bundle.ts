@@ -11,7 +11,7 @@ const matchPatchEnvironment = (expected: Record<string, string>) => (message: Pa
   )
 
 export const createConfigBundle = async (page: Page, name: string, data: Record<string, string>): Promise<string> => {
-  await page.goto(TEAM_ROUTES.configBundles.list())
+  await page.goto(TEAM_ROUTES.configBundle.list())
   await page.waitForSelector('h2:text-is("Config bundles")')
 
   await page.locator('button:has-text("Add")').click()
@@ -20,13 +20,13 @@ export const createConfigBundle = async (page: Page, name: string, data: Record<
 
   const sock = waitSocketRef(page)
   await page.locator('text=Save').click()
-  await page.waitForURL(`${TEAM_ROUTES.configBundles.list()}/**`)
+  await page.waitForURL(`${TEAM_ROUTES.configBundle.list()}/**`)
   await page.waitForSelector(`h4:text-is("View ${name}")`)
 
   const configBundleId = page.url().split('/').pop()
 
   const ws = await sock
-  const wsRoute = TEAM_ROUTES.configBundles.detailsSocket(configBundleId)
+  const wsRoute = TEAM_ROUTES.configBundle.detailsSocket(configBundleId)
 
   await page.locator('button:has-text("Edit")').click()
 
