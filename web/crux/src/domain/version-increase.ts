@@ -118,6 +118,7 @@ export const increaseIncrementalVersion = (
   changelog: string,
 ): IncreasedVersion => {
   const newVersion: IncreasedVersion = {
+    chainId: parentVersion.chainId,
     name,
     changelog,
     default: false,

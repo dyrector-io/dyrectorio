@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum, Prisma } from '@prisma/client'
 import { VersionMessage } from 'src/domain/notification-templates'
-import { versionChainOf } from 'src/domain/version'
+import { versionChainMembersOf } from 'src/domain/version-chain'
 import { increaseIncrementalVersion } from 'src/domain/version-increase'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
@@ -100,27 +100,26 @@ export default class VersionService {
   }
 
   async getVersionChainsByProject(projectId: string): Promise<VersionChainDto[]> {
-    // have to select from the version table, cause childless versions
-    // does not have a VersionsOnParentVersion record
-    const chains = await this.prisma.version.findMany({
+    // we have to select all members, until https://github.com/prisma/prisma/issues/8935 gets resolved
+
+    const chains = await this.prisma.versionChain.findMany({
       where: {
         projectId,
-        type: 'incremental',
-        // select only the first links
-        parent: null,
       },
       select: {
         id: true,
-        name: true,
-        chainLinks: {
+        members: {
           select: {
-            child: {
-              include: {
-                _count: {
-                  select: {
-                    children: true,
-                  },
-                },
+            id: true,
+            name: true,
+            parent: {
+              select: {
+                versionId: true,
+              },
+            },
+            _count: {
+              select: {
+                children: true,
               },
             },
           },
@@ -128,8 +127,8 @@ export default class VersionService {
       },
     })
 
-    return chains.map(firstLink => {
-      const chain = versionChainOf(firstLink)
+    return chains.map(it => {
+      const chain = versionChainMembersOf(it)
 
       return this.mapper.chainToDto(chain)
     })
@@ -227,6 +226,24 @@ export default class VersionService {
           },
         },
       })
+
+      if (newVersion.type === 'incremental') {
+        await prisma.versionChain.create({
+          data: {
+            id: newVersion.id,
+            project: {
+              connect: {
+                id: newVersion.projectId,
+              },
+            },
+            members: {
+              connect: {
+                id: newVersion.id,
+              },
+            },
+          },
+        })
+      }
 
       if (defaultVersion) {
         const newImages = await Promise.all(
@@ -400,11 +417,7 @@ export default class VersionService {
         id: versionId,
       },
       include: {
-        parent: {
-          select: {
-            chainId: true,
-          },
-        },
+        chain: true,
         images: {
           include: {
             config: true,
@@ -461,6 +474,17 @@ export default class VersionService {
           },
         },
       })
+
+      if (!parentVersion.chain) {
+        // we need to create the chain
+
+        await prisma.versionChain.create({
+          data: {
+            id: version.id,
+            projectId: version.projectId,
+          },
+        })
+      }
 
       // Create images
       const imageIdEntries: [string, string][] = await Promise.all(
@@ -539,7 +563,6 @@ export default class VersionService {
       // Save the relationship between the new version and the base (increased) one
       await prisma.versionsOnParentVersion.create({
         data: {
-          chainId: parentVersion.parent?.chainId ?? parentVersion.id,
           parentVersionId: parentVersion.id,
           versionId: version.id,
         },

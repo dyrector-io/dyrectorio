@@ -1,7 +1,8 @@
 import { Version } from '.prisma/client'
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import { ProjectTypeEnum } from '@prisma/client'
-import { VersionChain, versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/domain/version'
+import { versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/domain/version'
+import { VersionChainWithEdges } from 'src/domain/version-chain'
 import { BasicProperties } from '../../shared/dtos/shared.dto'
 import AuditMapper from '../audit/audit.mapper'
 import { DeploymentWithNode } from '../deploy/deploy.dto'
@@ -58,7 +59,7 @@ export default class VersionMapper {
     }
   }
 
-  chainToDto(chain: VersionChain): VersionChainDto {
+  chainToDto(chain: VersionChainWithEdges): VersionChainDto {
     return {
       id: chain.id,
       earliest: {

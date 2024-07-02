@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Deployment, Node, Package, PackageEnvironment, Project } from '@prisma/client'
-import { VersionWithChains, versionChainOf } from 'src/domain/version'
+import { VersionWithName } from 'src/domain/version'
+import { VersionChainWithMembers, versionChainMembersOf } from 'src/domain/version-chain'
 import DeployMapper from '../deploy/deploy.mapper'
 import NodeMapper from '../node/node.mapper'
 import ProjectMapper from '../project/project.mapper'
@@ -24,11 +25,11 @@ class PackageMapper {
       icon: pack.icon,
       environments: pack.environments.map(it => it.name),
       versionChains: pack.chains.map(it => {
-        const chain = versionChainOf(it.earliest)
+        const chain = versionChainMembersOf(it.chain)
 
         return {
           ...this.versionMapper.chainToDto(chain),
-          project: this.projectMapper.toBasicDto(it.earliest.project),
+          project: this.projectMapper.toBasicDto(it.chain.project),
         }
       }),
     }
@@ -62,32 +63,21 @@ class PackageMapper {
       },
       node: this.nodeMapper.toDto(env.node),
       prefix: env.prefix,
-      versionChains: pack.chains.map(chain => {
-        const { earliest } = chain
-
-        const earliestDeployment = earliest.deployments.at(0)
+      versionChains: pack.chains.map(packageChain => {
+        const { chain } = packageChain
 
         return {
-          chainId: earliest.id,
-          project: this.projectMapper.toDto(earliest.project),
-          versions: [
-            {
-              id: earliest.id,
-              name: earliest.name,
-              deployment: !earliestDeployment ? null : this.deployMapper.toBasicDto(earliestDeployment),
-            },
-            ...earliest.chainLinks.map(link => {
-              const { child } = link
+          chainId: chain.id,
+          project: this.projectMapper.toDto(chain.project),
+          versions: chain.members.map(it => {
+            const deployment = it.deployments.at(0)
 
-              const deployment = child.deployments.at(0)
-
-              return {
-                id: child.id,
-                name: child.name,
-                deployment: !deployment ? null : this.deployMapper.toBasicDto(deployment),
-              }
-            }),
-          ],
+            return {
+              id: it.id,
+              name: it.name,
+              deployment: !deployment ? null : this.deployMapper.toBasicDto(deployment),
+            }
+          }),
         }
       }),
     }
@@ -98,38 +88,34 @@ type PackageEnvironmentWithNode = PackageEnvironment & {
   node: Node
 }
 
-type VersionChainsWithDeployments = {
-  child: {
-    id: string
-    name: string
-    deployments: Deployment[]
-  }
+type BasicVersionWithDeployments = VersionWithName & {
+  deployments: Deployment[]
 }
 
-type VersionWithProjectAndChainsWithDeployments = {
+type VersionChainDetails = {
   id: string
-  name: string
   project: Project
-  deployments: Deployment[]
-  chainLinks: VersionChainsWithDeployments[]
+  members: BasicVersionWithDeployments[]
+}
+
+type PackageEnvironmentVersionChain = {
+  chain: VersionChainDetails
 }
 
 type PackageEnvironmentDetails = PackageEnvironmentWithNode & {
   package: {
     id: string
     name: string
-    chains: {
-      earliest: VersionWithProjectAndChainsWithDeployments
-    }[]
+    chains: PackageEnvironmentVersionChain[]
   }
 }
 
-type VersionWithChainsAndProject = VersionWithChains & {
+type VersionChainWithMembersAndProject = VersionChainWithMembers & {
   project: Project
 }
 
 type PackageChain = {
-  earliest: VersionWithChainsAndProject
+  chain: VersionChainWithMembersAndProject
 }
 
 type PackageWithChainsAndEnvironmentNames = Package & {

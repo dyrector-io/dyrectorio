@@ -44,7 +44,7 @@ class PackageService {
             name: true,
           },
         },
-        chains: PackageService.packageChainQuery,
+        chains: PackageService.packageChainsQuery,
       },
     })
 
@@ -62,7 +62,7 @@ class PackageService {
             node: true,
           },
         },
-        chains: PackageService.packageChainQuery,
+        chains: PackageService.packageChainsQuery,
       },
     })
 
@@ -80,7 +80,7 @@ class PackageService {
         chains: {
           createMany: {
             data: req.chainIds.map(it => ({
-              versionId: it,
+              chainId: it,
             })),
           },
         },
@@ -93,7 +93,7 @@ class PackageService {
             name: true,
           },
         },
-        chains: PackageService.packageChainQuery,
+        chains: PackageService.packageChainsQuery,
       },
     })
 
@@ -112,19 +112,19 @@ class PackageService {
         chains: {
           deleteMany: {
             packageId: id,
-            versionId: {
+            chainId: {
               notIn: req.chainIds,
             },
           },
           connectOrCreate: req.chainIds.map(chainId => ({
             where: {
-              versionId_packageId: {
+              chainId_packageId: {
                 packageId: id,
-                versionId: chainId,
+                chainId,
               },
             },
             create: {
-              versionId: chainId,
+              chainId,
             },
           })),
         },
@@ -161,30 +161,20 @@ class PackageService {
         name: true,
         chains: {
           select: {
-            earliest: {
+            chain: {
               include: {
                 project: true,
-                deployments: {
-                  where: {
-                    nodeId: env.nodeId,
-                    prefix: env.prefix,
-                  },
-                },
-                chainLinks: {
+                members: {
                   include: {
-                    child: {
-                      include: {
-                        deployments: {
-                          where: {
-                            nodeId: env.nodeId,
-                            prefix: env.prefix,
-                          },
-                          orderBy: {
-                            updatedAt: 'desc',
-                          },
-                          take: 1,
-                        },
+                    deployments: {
+                      where: {
+                        nodeId: env.nodeId,
+                        prefix: env.prefix,
                       },
+                      orderBy: {
+                        updatedAt: 'desc',
+                      },
+                      take: 1,
                     },
                   },
                 },
@@ -277,33 +267,6 @@ class PackageService {
     })
   }
 
-  private static packageChainQuery = {
-    select: {
-      earliest: {
-        select: {
-          id: true,
-          name: true,
-          project: true,
-          chainLinks: {
-            select: {
-              child: {
-                select: {
-                  id: true,
-                  name: true,
-                  _count: {
-                    select: {
-                      children: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  }
-
   async createPackageDeployment(
     environmentId: string,
     req: CreatePackageDeploymentDto,
@@ -331,40 +294,23 @@ class PackageService {
     const packageChain = await this.prisma.versionChainsOnPackage.findFirst({
       where: {
         packageId: env.packageId,
-        earliest: {
-          OR: [
-            {
+        chain: {
+          members: {
+            some: {
               id: req.versionId,
             },
-            {
-              chainLinks: {
-                some: {
-                  versionId: req.versionId,
-                },
-              },
-            },
-          ],
+          },
         },
       },
       select: {
-        earliest: {
-          include: {
-            deployments: {
-              where: {
-                nodeId: env.nodeId,
-                prefix: env.prefix,
-              },
-            },
-            chainLinks: {
-              select: {
-                child: {
-                  include: {
-                    deployments: {
-                      where: {
-                        nodeId: env.nodeId,
-                        prefix: env.prefix,
-                      },
-                    },
+        chain: {
+          select: {
+            members: {
+              include: {
+                deployments: {
+                  where: {
+                    nodeId: env.nodeId,
+                    prefix: env.prefix,
                   },
                 },
               },
@@ -374,10 +320,7 @@ class PackageService {
       },
     })
 
-    const versions: VersionWithDeployments[] = [
-      packageChain.earliest,
-      ...packageChain.earliest.chainLinks.map(it => it.child),
-    ]
+    const versions: VersionWithDeployments[] = packageChain.chain.members
 
     const sourceIndex = versions.findIndex(it => it.id === req.versionId)
     let source = versions[sourceIndex]
@@ -572,6 +515,33 @@ class PackageService {
     )
 
     return this.deployMapper.toDto(newDeployment)
+  }
+
+  private static packageChainsQuery = {
+    select: {
+      chain: {
+        select: {
+          id: true,
+          project: true,
+          members: {
+            select: {
+              id: true,
+              name: true,
+              parent: {
+                select: {
+                  versionId: true,
+                },
+              },
+              _count: {
+                select: {
+                  children: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   }
 }
 

@@ -2,6 +2,12 @@ import { Deployment, DeploymentStatusEnum, ProjectTypeEnum, Version, VersionType
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { checkDeploymentMutability } from './deployment'
 
+export type VersionWithName = Pick<Version, 'id' | 'name'>
+
+export type VersionWithDeployments = Version & {
+  deployments: Deployment[]
+}
+
 export type VersionIncreasabilityCheckDao = {
   type: VersionTypeEnum
   children: { versionId: string }[]
@@ -67,44 +73,4 @@ export const checkVersionMutability = (version: VersionMutabilityCheckDao) => {
   }
 
   return false
-}
-
-export type VersionWithChains = {
-  id: string
-  name: string
-  chainLinks: {
-    child: {
-      id: string
-      name: string
-      _count: {
-        children: number
-      }
-    }
-  }[]
-}
-
-type VersionWithName = {
-  id: string
-  name: string
-}
-
-export type VersionChain = {
-  id: string
-  earliest: VersionWithName
-  latest: VersionWithName
-}
-
-export const versionChainOf = (earliest: VersionWithChains): VersionChain => {
-  const links = earliest.chainLinks
-  const latest = links && links.length > 0 ? links.find(it => it.child._count.children < 1)?.child : earliest
-
-  return {
-    id: earliest.id,
-    earliest,
-    latest,
-  }
-}
-
-export type VersionWithDeployments = Version & {
-  deployments: Deployment[]
 }
