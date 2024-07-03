@@ -450,6 +450,11 @@ export default class VersionService {
       createdBy: identity.id,
       images: undefined,
       deployments: undefined,
+      chain: {
+        connect: {
+          id: parentVersion.chainId,
+        }
+      },
       project: {
         connect: {
           id: parentVersion.projectId,

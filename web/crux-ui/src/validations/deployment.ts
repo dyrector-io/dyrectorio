@@ -28,7 +28,7 @@ export const createDeploymentTokenSchema = yup.object().shape({
 })
 
 export const createFullDeploymentSchema = yup.object().shape({
-  nodeId: yup.string().required(),
+  node: yup.object().required().label('common:node'),
   prefix: prefixRule,
   versionId: yup.string().required().label('common:versions'),
   project: yup.object().required().label('common:projects'),

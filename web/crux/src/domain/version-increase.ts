@@ -39,7 +39,7 @@ type CopiedDeploymentWithInstances = Omit<Deployment, 'id' | 'versionId' | 'crea
   instances: CopiedInstanceWithConfig[]
 }
 
-export type IncreasedVersion = Omit<Version, 'id' | 'createdAt' | 'createdBy' | 'projectId'> & {
+export type IncreasedVersion = Omit<Version, 'id' | 'createdAt' | 'createdBy' | 'projectId' | 'chainId'> & {
   images: CopiedImageWithConfig[]
   deployments: CopiedDeploymentWithInstances[]
 }
@@ -118,7 +118,6 @@ export const increaseIncrementalVersion = (
   changelog: string,
 ): IncreasedVersion => {
   const newVersion: IncreasedVersion = {
-    chainId: parentVersion.chainId,
     name,
     changelog,
     default: false,
