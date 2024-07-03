@@ -78,7 +78,7 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
 
       <DyoCard>
         <DyoHeading element="h4" className="text-lg text-bright">
-          {t(editing ? 'common:editName' : 'view', { name: configBundle.name })}
+          {t(editing ? 'common:editName' : 'view', configBundle)}
         </DyoHeading>
 
         <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>

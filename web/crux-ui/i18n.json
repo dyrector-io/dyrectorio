@@ -46,6 +46,7 @@
     "/[teamSlug]/storages": ["storages"],
     "/[teamSlug]/storages/[storageId]": ["storages"],
     "/[teamSlug]/config-bundles": ["config-bundles"],
+    "/[teamSlug]/config-bundles/[configBundleId]": ["config-bundles"],
     "/[teamSlug]/packages": ["packages"],
     "/[teamSlug]/packages/[packageId]": ["packages"],
     "/[teamSlug]/packages/[packageId]/environments/[environmentId]": ["packages", "deployments"],
