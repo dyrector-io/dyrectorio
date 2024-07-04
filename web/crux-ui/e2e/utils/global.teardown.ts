@@ -5,6 +5,8 @@ import { API_USERS_ME, teamApiUrl } from '@app/routes'
 import { isDyoError } from '@app/utils'
 import { BASE_URL } from '../../playwright.config'
 import {
+  REGISTERED_USER_EMAIL,
+  USER_EMAIL,
   cruxUrlFromEnv,
   deleteUserByEmail,
   execAsync,
@@ -14,7 +16,6 @@ import {
   kratosFromConfig,
   kratosFrontendFromConfig,
   logCmdOutput,
-  USER_EMAIL,
 } from './common'
 
 const logInfo = (...messages: string[]) => console.info('[E2E]: Teardown -', ...messages)
@@ -85,6 +86,7 @@ export const globalTeardown = async () => {
 
   logInfo('fetch', 'delete user')
   await deleteUserByEmail(kratos, USER_EMAIL)
+  await deleteUserByEmail(kratos, REGISTERED_USER_EMAIL)
 
   const settings = getExecOptions()
 

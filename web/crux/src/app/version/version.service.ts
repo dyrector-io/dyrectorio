@@ -453,7 +453,7 @@ export default class VersionService {
       chain: {
         connect: {
           id: parentVersion.chainId,
-        }
+        },
       },
       project: {
         connect: {

@@ -1,9 +1,14 @@
 import { ROUTE_LOGIN, ROUTE_REGISTER, verificationUrl } from '@app/routes'
 import { expect } from '@playwright/test'
+import {
+  REGISTERED_USER_EMAIL,
+  USER_PASSWORD,
+  deleteUserByEmail,
+  kratosFromBaseURL,
+  screenshotPath,
+} from '../utils/common'
 import { test } from '../utils/test.fixture'
-import { deleteUserByEmail, kratosFromBaseURL, screenshotPath, USER_EMAIL, USER_PASSWORD } from '../utils/common'
 
-const REGISTERED_USER_EMAIL = `r.${USER_EMAIL}`
 const REGISTERED_USER_PASSWORD = `r.${USER_PASSWORD}`
 const REGISTERED_USER_FIRST_NAME = 'r.John'
 
