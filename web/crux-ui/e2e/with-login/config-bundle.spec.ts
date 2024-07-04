@@ -12,7 +12,7 @@ test('Creating a config bundle', async ({ page }) => {
     [ENV_KEY]: ENV_VALUE,
   })
 
-  await page.goto(TEAM_ROUTES.configBundles.details(configBundleId))
+  await page.goto(TEAM_ROUTES.configBundle.details(configBundleId))
 
   const keyInput = page.locator('input[placeholder="Key"]').first()
   await expect(keyInput).toBeDisabled()

@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum, Prisma } from '@prisma/client'
 import { VersionMessage } from 'src/domain/notification-templates'
+import { versionChainMembersOf } from 'src/domain/version-chain'
 import { increaseIncrementalVersion } from 'src/domain/version-increase'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
@@ -13,6 +14,7 @@ import {
   CreateVersionDto,
   IncreaseVersionDto,
   UpdateVersionDto,
+  VersionChainDto,
   VersionDetailsDto,
   VersionDto,
   VersionListQuery,
@@ -95,6 +97,41 @@ export default class VersionService {
     })
 
     return versions.map(it => this.mapper.toDto(it))
+  }
+
+  async getVersionChainsByProject(projectId: string): Promise<VersionChainDto[]> {
+    // we have to select all members, until https://github.com/prisma/prisma/issues/8935 gets resolved
+
+    const chains = await this.prisma.versionChain.findMany({
+      where: {
+        projectId,
+      },
+      select: {
+        id: true,
+        members: {
+          select: {
+            id: true,
+            name: true,
+            parent: {
+              select: {
+                versionId: true,
+              },
+            },
+            _count: {
+              select: {
+                children: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    return chains.map(it => {
+      const chain = versionChainMembersOf(it)
+
+      return this.mapper.chainToDto(chain)
+    })
   }
 
   async getVersionDetails(versionId: string): Promise<VersionDetailsDto> {
@@ -189,6 +226,24 @@ export default class VersionService {
           },
         },
       })
+
+      if (newVersion.type === 'incremental') {
+        await prisma.versionChain.create({
+          data: {
+            id: newVersion.id,
+            project: {
+              connect: {
+                id: newVersion.projectId,
+              },
+            },
+            members: {
+              connect: {
+                id: newVersion.id,
+              },
+            },
+          },
+        })
+      }
 
       if (defaultVersion) {
         const newImages = await Promise.all(
@@ -362,13 +417,13 @@ export default class VersionService {
         id: versionId,
       },
       include: {
+        chain: true,
         images: {
           include: {
             config: true,
           },
         },
         deployments: {
-          distinct: ['nodeId', 'prefix'],
           where: {
             OR: [
               { status: DeploymentStatusEnum.successful },
@@ -395,6 +450,11 @@ export default class VersionService {
       createdBy: identity.id,
       images: undefined,
       deployments: undefined,
+      chain: {
+        connect: {
+          id: parentVersion.chainId,
+        },
+      },
       project: {
         connect: {
           id: parentVersion.projectId,
@@ -419,6 +479,17 @@ export default class VersionService {
           },
         },
       })
+
+      if (!parentVersion.chain) {
+        // we need to create the chain
+
+        await prisma.versionChain.create({
+          data: {
+            id: version.id,
+            projectId: version.projectId,
+          },
+        })
+      }
 
       // Create images
       const imageIdEntries: [string, string][] = await Promise.all(

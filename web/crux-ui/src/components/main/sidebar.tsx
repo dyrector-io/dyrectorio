@@ -42,7 +42,12 @@ export const sidebarSectionsOf = (routes: TeamRoutes): MenuSection[] => [
       {
         icon: '/config_bundle.svg',
         text: 'configBundles',
-        link: routes.configBundles.list(),
+        link: routes.configBundle.list(),
+      },
+      {
+        icon: '/package.svg',
+        text: 'packages',
+        link: routes.package.list(),
       },
     ],
   },

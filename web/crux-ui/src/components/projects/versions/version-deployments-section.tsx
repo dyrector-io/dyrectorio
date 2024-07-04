@@ -292,7 +292,8 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           {t('noDeployments')}
         </DyoHeading>
       )}
-      {!showInfo ? null : (
+
+      {showInfo && (
         <DyoModal
           className="w-1/2 h-1/2"
           titleClassName="pl-4 font-medium text-xl text-bright mb-3"

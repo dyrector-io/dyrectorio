@@ -251,7 +251,7 @@ export default class RegistryService {
   }
 
   async getRegistryConnectionInfoById(id: string): Promise<RegistryConnectionInfo> {
-    const registry = await this.prisma.registry.findUnique({
+    const registry = await this.prisma.registry.findUniqueOrThrow({
       where: {
         id,
       },

@@ -11,6 +11,7 @@ import DeployModule from '../deploy/deploy.module'
 import EditorModule from '../editor/editor.module'
 import ImageModule from '../image/image.module'
 import TeamRepository from '../team/team.repository'
+import VersionChainHttpController from './version-chains.http.controller'
 import VersionHttpController from './version.http.controller'
 import VersionMapper from './version.mapper'
 import VersionService from './version.service'
@@ -19,7 +20,7 @@ import VersionWebSocketGateway from './version.ws.gateway'
 @Module({
   imports: [ImageModule, HttpModule, DeployModule, AgentModule, EditorModule, AuditLoggerModule],
   exports: [VersionService, VersionMapper],
-  controllers: [VersionHttpController],
+  controllers: [VersionHttpController, VersionChainHttpController],
   providers: [
     VersionService,
     VersionMapper,

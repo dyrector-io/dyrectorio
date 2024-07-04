@@ -2,7 +2,7 @@ import yup from './yup'
 import { nameRule } from './common'
 import { createMergedContainerConfigSchema, uniqueKeyValuesSchema } from './container'
 
-const prefixRule = yup
+export const prefixRule = yup
   .string()
   .trim()
   .matches(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/) // RFC 1123
@@ -28,7 +28,7 @@ export const createDeploymentTokenSchema = yup.object().shape({
 })
 
 export const createFullDeploymentSchema = yup.object().shape({
-  nodeId: yup.string().required(),
+  node: yup.object().required().label('common:node'),
   prefix: prefixRule,
   versionId: yup.string().required().label('common:versions'),
   project: yup.object().required().label('common:projects'),

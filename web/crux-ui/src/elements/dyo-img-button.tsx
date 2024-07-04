@@ -51,6 +51,7 @@ const DyoImgButton = (props: DyoImgButtonProps) => {
       className={clsx(color, ring, className, 'rounded grid items-center', disabled ? 'opacity-40' : null)}
       disabled={disabled}
       onClick={onClick}
+      type="button"
     >
       <Image
         className={imageClassName}

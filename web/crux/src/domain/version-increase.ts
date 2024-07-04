@@ -8,7 +8,7 @@ import {
   Version,
 } from '@prisma/client'
 
-type ImageWithConfig = Image & {
+export type ImageWithConfig = Image & {
   config: ContainerConfig
 }
 
@@ -39,7 +39,7 @@ type CopiedDeploymentWithInstances = Omit<Deployment, 'id' | 'versionId' | 'crea
   instances: CopiedInstanceWithConfig[]
 }
 
-export type IncreasedVersion = Omit<Version, 'id' | 'createdAt' | 'createdBy' | 'projectId'> & {
+export type IncreasedVersion = Omit<Version, 'id' | 'createdAt' | 'createdBy' | 'projectId' | 'chainId'> & {
   images: CopiedImageWithConfig[]
   deployments: CopiedDeploymentWithInstances[]
 }
@@ -65,7 +65,7 @@ const copyInstance = (instance: InstanceWithConfig): CopiedInstanceWithConfig =>
   return newInstance
 }
 
-const copyDeployment = (deployment: DeploymentWithInstances): CopiedDeploymentWithInstances => {
+export const copyDeployment = (deployment: DeploymentWithInstances): CopiedDeploymentWithInstances => {
   const newDeployment: CopiedDeploymentWithInstances = {
     note: deployment.note,
     prefix: deployment.prefix,

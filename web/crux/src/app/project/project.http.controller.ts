@@ -68,7 +68,7 @@ export default class ProjectHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      "Returns a project's details. `teamSlug` and `ProjectID` needs to be included in URL. The response should contain an array, consisting of the project's `name`, `id`, `type`, `description`, `deletability`, versions and version related data, including version `name` and `id`, `changelog`, increasibility.",
+      "Returns a project's details. `teamSlug` and `ProjectID` needs to be included in URL. The response is consisting of the project's `name`, `id`, `type`, `description`, `deletability`, versions and version related data, including version `name` and `id`, `changelog`, increasibility.",
     summary: 'Fetch details of a project.',
   })
   @ApiOkResponse({ type: ProjectDetailsDto, description: 'Details of a project.' })
@@ -84,7 +84,7 @@ export default class ProjectHttpController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
-      'Create a new project for a team. `teamSlug` needs to be included in URL. Newly created team has a `type` and a `name` as required variables, and optionally a `description` and a `changelog`.',
+      'Create a new project for a team. `teamSlug` needs to be included in URL. Newly created project has a `type` and a `name` as required variables, and optionally a `description` and a `changelog`.',
     summary: 'Create a new project for a team.',
   })
   @CreatedWithLocation()

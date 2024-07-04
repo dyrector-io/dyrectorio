@@ -118,6 +118,7 @@ export const QA_MODAL_LABEL_NODE_AUDIT_DETAILS = 'nodeAuditDetails'
 export const QA_MODAL_LABEL_DEPLOYMENT_NOTE = 'deploymentNote'
 export const QA_MODAL_LABEL_IMAGE_TAGS = 'image-tags'
 export const QA_MODAL_LABEL_AUDIT_LOG_DETAILS = 'auditLogDetails'
+export const QA_MODAL_LABEL_CREATE_PACKAGE_DEPLOYMENT = 'createPackageDeployment'
 
 export type QualityAssurance = {
   disabled: boolean

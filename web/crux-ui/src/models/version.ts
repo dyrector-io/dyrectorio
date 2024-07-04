@@ -55,3 +55,9 @@ export type VersionAddSectionState = 'image' | 'deployment' | 'none'
 
 export const VERSION_SECTIONS_STATE_VALUES = ['images', 'deployments', 'reorder'] as const
 export type VersionSectionsState = (typeof VERSION_SECTIONS_STATE_VALUES)[number]
+
+export type VersionChain = {
+  id: string
+  earliest: BasicVersion
+  latest?: BasicVersion
+}

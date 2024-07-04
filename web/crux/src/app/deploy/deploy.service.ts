@@ -341,7 +341,7 @@ export default class DeployService {
     req: PatchInstanceDto,
     identity: Identity,
   ): Promise<void> {
-    const instance = await this.prisma.instance.findUnique({
+    const instance = await this.prisma.instance.findUniqueOrThrow({
       where: {
         id: instanceId,
       },
