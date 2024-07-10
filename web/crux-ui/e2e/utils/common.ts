@@ -19,6 +19,7 @@ export const USER_TEAM_SLUG = 'jot'
 export const USER_FIRSTNAME = 'John'
 export const USER_LASTNAME = 'Doe'
 export const USER_FULLNAME = `${USER_FIRSTNAME} ${USER_LASTNAME}`
+export const REGISTERED_USER_EMAIL = `r.${USER_EMAIL}`
 
 export const TEAM_ROUTES = new TeamRoutes(USER_TEAM_SLUG)
 

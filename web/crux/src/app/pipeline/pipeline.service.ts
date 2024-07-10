@@ -153,7 +153,7 @@ export default class PipelineService {
   }
 
   async updatePipeline(teamSlug: string, id: string, req: UpdatePipelineDto, identity: Identity): Promise<void> {
-    const oldPipeline = await this.prisma.pipeline.findUnique({
+    const oldPipeline = await this.prisma.pipeline.findUniqueOrThrow({
       where: {
         id,
       },
@@ -268,7 +268,7 @@ export default class PipelineService {
   }
 
   async trigger(id: string, req: TriggerPipelineDto, identity: Identity): Promise<PipelineRunDto> {
-    const pipeline = await this.prisma.pipeline.findUnique({
+    const pipeline = await this.prisma.pipeline.findUniqueOrThrow({
       where: {
         id,
       },

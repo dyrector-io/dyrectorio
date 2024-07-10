@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum, Prisma } from '@prisma/client'
 import { VersionMessage } from 'src/domain/notification-templates'
+import { versionChainMembersOf } from 'src/domain/version-chain'
+import { increaseIncrementalVersion } from 'src/domain/version-increase'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import AgentService from '../agent/agent.service'
@@ -12,6 +14,7 @@ import {
   CreateVersionDto,
   IncreaseVersionDto,
   UpdateVersionDto,
+  VersionChainDto,
   VersionDetailsDto,
   VersionDto,
   VersionListQuery,
@@ -96,6 +99,41 @@ export default class VersionService {
     return versions.map(it => this.mapper.toDto(it))
   }
 
+  async getVersionChainsByProject(projectId: string): Promise<VersionChainDto[]> {
+    // we have to select all members, until https://github.com/prisma/prisma/issues/8935 gets resolved
+
+    const chains = await this.prisma.versionChain.findMany({
+      where: {
+        projectId,
+      },
+      select: {
+        id: true,
+        members: {
+          select: {
+            id: true,
+            name: true,
+            parent: {
+              select: {
+                versionId: true,
+              },
+            },
+            _count: {
+              select: {
+                children: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    return chains.map(it => {
+      const chain = versionChainMembersOf(it)
+
+      return this.mapper.chainToDto(chain)
+    })
+  }
+
   async getVersionDetails(versionId: string): Promise<VersionDetailsDto> {
     const version = await this.prisma.version.findUniqueOrThrow({
       where: {
@@ -170,6 +208,7 @@ export default class VersionService {
           name: req.name,
           changelog: req.changelog,
           type: req.type,
+          autoCopyDeployments: req.type === 'incremental' && req.autoCopyDeployments,
           default: !defaultVersion,
           createdBy: identity.id,
         },
@@ -187,6 +226,24 @@ export default class VersionService {
           },
         },
       })
+
+      if (newVersion.type === 'incremental') {
+        await prisma.versionChain.create({
+          data: {
+            id: newVersion.id,
+            project: {
+              connect: {
+                id: newVersion.projectId,
+              },
+            },
+            members: {
+              connect: {
+                id: newVersion.id,
+              },
+            },
+          },
+        })
+      }
 
       if (defaultVersion) {
         const newImages = await Promise.all(
@@ -281,6 +338,15 @@ export default class VersionService {
   }
 
   async updateVersion(versionId: string, req: UpdateVersionDto, identity: Identity): Promise<void> {
+    const version = await this.prisma.version.findUniqueOrThrow({
+      where: {
+        id: versionId,
+      },
+      select: {
+        type: true,
+      },
+    })
+
     await this.prisma.version.update({
       where: {
         id: versionId,
@@ -288,6 +354,7 @@ export default class VersionService {
       data: {
         name: req.name,
         changelog: req.changelog,
+        autoCopyDeployments: version.type === 'incremental' && req.autoCopyDeployments,
         updatedBy: identity.id,
       },
     })
@@ -331,8 +398,9 @@ export default class VersionService {
 
   /**
    * Increasing an existing Version means copying the whole Version object
-   * with Images and connected ImageConfigs and with Deployments and connected
-   * Instances and InstanceConfigs.
+   * with Images and connected ImageConfigs,
+   * and - when autoCopyDeployments is true - with Deployments
+   * with their connected Instances and InstanceConfigs.
    *
    * @async
    * @method
@@ -349,13 +417,13 @@ export default class VersionService {
         id: versionId,
       },
       include: {
+        chain: true,
         images: {
           include: {
             config: true,
           },
         },
         deployments: {
-          distinct: ['nodeId', 'prefix'],
           where: {
             OR: [
               { status: DeploymentStatusEnum.successful },
@@ -375,16 +443,28 @@ export default class VersionService {
       },
     })
 
-    const increasedVersion = await this.prisma.$transaction(async prisma => {
-      const version = await prisma.version.create({
-        data: {
-          projectId: parentVersion.projectId,
-          name: request.name,
-          changelog: request.changelog,
-          default: false,
-          createdBy: identity.id,
-          type: parentVersion.type,
+    const increased = increaseIncrementalVersion(parentVersion, request.name, request.changelog)
+
+    const newVersionData: Prisma.VersionCreateInput = {
+      ...increased,
+      createdBy: identity.id,
+      images: undefined,
+      deployments: undefined,
+      chain: {
+        connect: {
+          id: parentVersion.chainId,
         },
+      },
+      project: {
+        connect: {
+          id: parentVersion.projectId,
+        },
+      },
+    }
+
+    const newVersion = await this.prisma.$transaction(async prisma => {
+      const version = await prisma.version.create({
+        data: newVersionData,
         include: {
           children: {
             select: {
@@ -400,69 +480,86 @@ export default class VersionService {
         },
       })
 
-      const images: [string, string][] = await Promise.all(
-        // Iterate through the version images
-        parentVersion.images.map(async image => {
+      if (!parentVersion.chain) {
+        // we need to create the chain
+
+        await prisma.versionChain.create({
+          data: {
+            id: version.id,
+            projectId: version.projectId,
+          },
+        })
+      }
+
+      // Create images
+      const imageIdEntries: [string, string][] = await Promise.all(
+        increased.images.map(async image => {
+          const { originalId } = image
+          delete image.originalId
+
           const createdImage = await prisma.image.create({
             data: {
-              name: image.name,
-              tag: image.tag,
-              order: image.order,
-              registryId: image.registryId,
+              ...image,
               versionId: version.id,
               createdBy: identity.id,
+              config: {
+                create: this.imageMapper.dbContainerConfigToCreateImageStatement({
+                  ...image.config,
+                  id: undefined,
+                  imageId: undefined,
+                }),
+              },
             },
           })
 
-          await prisma.containerConfig.create({
-            data: {
-              ...this.imageMapper.dbContainerConfigToCreateImageStatement(image.config),
-              id: undefined,
-              imageId: createdImage.id,
-            },
-          })
-
-          return [image.id, createdImage.id]
+          return [originalId, createdImage.id]
         }),
       )
 
-      const imageMap = new Map(images)
+      // Create deployments
+      const imageIdMap = new Map(imageIdEntries)
       await Promise.all(
-        // Iterate through the deployments images
-        parentVersion.deployments.map(async deployment => {
-          const createdDeploy = await prisma.deployment.create({
+        increased.deployments.map(async deployment => {
+          const newDeployment = await prisma.deployment.create({
             data: {
+              ...deployment,
               createdBy: identity.id,
-              note: deployment.note,
-              prefix: deployment.prefix,
-              // Default status for deployments is preparing
-              status: DeploymentStatusEnum.preparing,
-              environment: deployment.environment ?? [],
-              nodeId: deployment.nodeId,
               versionId: version.id,
+              instances: undefined,
             },
           })
 
           await Promise.all(
             deployment.instances.map(async instance => {
-              const imageId = imageMap.get(instance.imageId)
+              const { originalImageId } = instance
+              delete instance.originalImageId
 
-              const createdInstance = await prisma.instance.create({
+              const newImageId = imageIdMap.get(originalImageId)
+
+              await prisma.instance.create({
                 data: {
-                  deploymentId: createdDeploy.id,
-                  imageId,
+                  ...instance,
+                  deployment: {
+                    connect: {
+                      id: newDeployment.id,
+                    },
+                  },
+                  image: {
+                    connect: {
+                      id: newImageId,
+                    },
+                  },
+                  config: !instance.config
+                    ? undefined
+                    : {
+                        create: this.imageMapper.dbContainerConfigToCreateImageStatement({
+                          ...instance.config,
+                          id: undefined,
+                          instanceId: undefined,
+                        }),
+                      },
                 },
               })
-
-              if (instance.config) {
-                await prisma.instanceContainerConfig.create({
-                  data: {
-                    ...this.imageMapper.dbContainerConfigToCreateImageStatement(instance.config),
-                    id: undefined,
-                    instanceId: createdInstance.id,
-                  },
-                })
-              }
             }),
           )
         }),
@@ -480,16 +577,16 @@ export default class VersionService {
     }) // End of Prisma transaction
 
     await this.notificationService.sendNotification({
-      teamId: increasedVersion.project.teamId,
+      teamId: newVersion.project.teamId,
       messageType: 'version',
       message: {
-        subject: increasedVersion.project.name,
-        version: increasedVersion.name,
+        subject: newVersion.project.name,
+        version: newVersion.name,
         owner: identity,
       } as VersionMessage,
     })
 
-    return this.mapper.toDto(increasedVersion)
+    return this.mapper.toDto(newVersion)
   }
 
   async onEditorJoined(

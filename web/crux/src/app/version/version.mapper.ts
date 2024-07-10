@@ -2,13 +2,14 @@ import { Version } from '.prisma/client'
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import { ProjectTypeEnum } from '@prisma/client'
 import { versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/domain/version'
+import { VersionChainWithEdges } from 'src/domain/version-chain'
 import { BasicProperties } from '../../shared/dtos/shared.dto'
 import AuditMapper from '../audit/audit.mapper'
 import { DeploymentWithNode } from '../deploy/deploy.dto'
 import DeployMapper from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import { NodeConnectionStatus } from '../node/node.dto'
-import { BasicVersionDto, VersionDetailsDto, VersionDto } from './version.dto'
+import { BasicVersionDto, VersionChainDto, VersionDetailsDto, VersionDto } from './version.dto'
 
 @Injectable()
 export default class VersionMapper {
@@ -50,10 +51,25 @@ export default class VersionMapper {
       mutable: versionIsMutable(version),
       deletable: versionIsDeletable(version),
       increasable: versionIsIncreasable(version),
+      autoCopyDeployments: version.autoCopyDeployments,
       images: version.images.map(it => this.imageMapper.toDto(it)),
       deployments: version.deployments.map(it =>
         this.deployMapper.toDeploymentWithBasicNodeDto(it, nodeStatusLookup.get(it.nodeId)),
       ),
+    }
+  }
+
+  chainToDto(chain: VersionChainWithEdges): VersionChainDto {
+    return {
+      id: chain.id,
+      earliest: {
+        ...chain.earliest,
+        type: 'incremental',
+      },
+      latest: {
+        ...chain.latest,
+        type: 'incremental',
+      },
     }
   }
 }

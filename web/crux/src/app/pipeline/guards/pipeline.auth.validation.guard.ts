@@ -31,7 +31,7 @@ export default class PipelineAccessValidationGuard implements CanActivate {
     if (pipelineId) {
       // update
 
-      const pipeline = await this.prisma.pipeline.findUnique({
+      const pipeline = await this.prisma.pipeline.findUniqueOrThrow({
         where: {
           id: pipelineId,
         },

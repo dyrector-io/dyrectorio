@@ -16,17 +16,20 @@ export type Version = BasicVersion & {
   changelog?: string
   default: boolean
   increasable: boolean
+  autoCopyDeployments?: boolean
   audit: Audit
 }
 
-export type EditableVersion = Omit<Version, 'default'>
+export type EditableVersion = Omit<Version, 'default' | 'increasable'>
 
 export type IncreaseVersion = {
   name: string
   changelog?: string
 }
 
-export type UpdateVersion = IncreaseVersion
+export type UpdateVersion = IncreaseVersion & {
+  autoCopyDeployments?: boolean
+}
 
 export type CreateVersion = UpdateVersion & {
   type: VersionType
@@ -52,3 +55,9 @@ export type VersionAddSectionState = 'image' | 'deployment' | 'none'
 
 export const VERSION_SECTIONS_STATE_VALUES = ['images', 'deployments', 'reorder'] as const
 export type VersionSectionsState = (typeof VERSION_SECTIONS_STATE_VALUES)[number]
+
+export type VersionChain = {
+  id: string
+  earliest: BasicVersion
+  latest?: BasicVersion
+}

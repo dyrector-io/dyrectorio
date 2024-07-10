@@ -2,7 +2,9 @@ name: product_builder
 on:
   push:
     branches: [develop, main]
-    tags: ['*']
+  release:
+    types:
+      - "published"
   pull_request:
     types: [edited, opened, synchronize, reopened]
 permissions:
@@ -24,7 +26,7 @@ env:
   KRATOS_WORKING_DIRECTORY: web/kratos
   GOLANG_WORKING_DIRECTORY: golang
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.sha }}
   cancel-in-progress: true
 jobs:
   conventional_commits:
@@ -68,6 +70,7 @@ jobs:
       cruxui: ${{ steps.filter.outputs.cruxui }}
       kratos: ${{ steps.filter.outputs.kratos }}
       tag: ${{ steps.settag.outputs.tag }}
+      extratag: ${{ steps.settag.outputs.extratag }}
       version: ${{ steps.settag.outputs.version }}
       minorversion: ${{ steps.settag.outputs.minorversion }}
       release: ${{ steps.release.outputs.release }}
@@ -519,7 +522,7 @@ jobs:
     # runs-on: self-hosted
     container:
       image: ghcr.io/dyrector-io/dyrectorio/playwright:latest
-      volumes: ['/var/run/docker.sock:/var/run/docker']
+      volumes: ["/var/run/docker.sock:/var/run/docker"]
     needs:
       - go_build
       - crux_build
@@ -613,11 +616,11 @@ jobs:
           # DEBUG: pw:api
           HUB_PROXY_URL: ${{ secrets.HUB_PROXY_URL }}
           HUB_PROXY_TOKEN: ${{ secrets.HUB_PROXY_TOKEN }}
-          E2E_BASE_URL: 'http://dyo-e2e_traefik:8000'
-          MAILSLURPER_URL: 'http://dyo-e2e_mailslurper:4437'
-          CRUX_UI_URL: 'http://dyo-e2e_traefik:8000'
-          KRATOS_URL: 'http://dyo-e2e_kratos:4433'
-          KRATOS_ADMIN_URL: 'http://dyo-e2e_kratos:4434'
+          E2E_BASE_URL: "http://dyo-e2e_traefik:8000"
+          MAILSLURPER_URL: "http://dyo-e2e_mailslurper:4437"
+          CRUX_UI_URL: "http://dyo-e2e_traefik:8000"
+          KRATOS_URL: "http://dyo-e2e_kratos:4433"
+          KRATOS_ADMIN_URL: "http://dyo-e2e_kratos:4434"
           CI: true
         run: |
           npm ci --include=dev --arch=x64 --cache .npm --prefer-offline --no-fund
@@ -763,6 +766,15 @@ jobs:
           crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }}
           crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }}
           crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }}
+      - name: Docker tag extra
+        if: ${{ needs.gather_changes.outputs.extratag != '' }}
+        run: |
+          crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.extratag }}
+          crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.extratag }}
+          crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.extratag }}
+          crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
+          crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
+          crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
       - name: Add minor version tag
         if: github.ref_type == 'tag'
         run: |
@@ -823,12 +835,17 @@ jobs:
       - name: Docker tag
         run: |
           docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.tag }}
+      - name: Docker tag extra
+        if: ${{ needs.gather_changes.outputs.extratag != '' }}
+        run: |
+          docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
+          docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.extratag }}
       - name: Add minor version tag
         if: github.ref_type == 'tag'
         run: |
           docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.minorversion }}
           docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
-      - name: Docker tag
+      - name: Docker push all tags
         run: |
           docker push -a ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}
           docker push -a ${DOCKERHUB_REGISTRY}/crux
@@ -881,12 +898,17 @@ jobs:
       - name: Docker tag
         run: |
           docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.tag }}
+      - name: Docker tag extra
+        if: ${{ needs.gather_changes.outputs.extratag != '' }}
+        run: |
+          docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
+          docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.extratag }}
       - name: Add minor version tag
         if: github.ref_type == 'tag'
         run: |
           docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.minorversion }}
           docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
-      - name: Docker push
+      - name: Docker push all tags
         run: |
           docker push -a ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}
           docker push -a ${DOCKERHUB_REGISTRY}/crux-ui
@@ -939,12 +961,17 @@ jobs:
       - name: Docker tag
         run: |
           docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.tag }}
+      - name: Docker tag extra
+        if: ${{ needs.gather_changes.outputs.extratag != '' }}
+        run: |
+          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
+          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.extratag }}
       - name: Add minor version tag
         if: github.ref_type == 'tag'
         run: |
           docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.minorversion }}
           docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
-      - name: Docker push
+      - name: Docker push all tags
         run: |
           docker push -a ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}
           docker push -a ${DOCKERHUB_REGISTRY}/kratos

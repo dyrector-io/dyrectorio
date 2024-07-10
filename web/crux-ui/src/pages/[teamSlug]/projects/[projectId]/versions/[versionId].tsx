@@ -58,6 +58,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
     newAllVersion[index] = {
       ...newVersion,
       default: oldVersion.default,
+      increasable: oldVersion.increasable,
     }
     setAllVersions(newAllVersion)
   }

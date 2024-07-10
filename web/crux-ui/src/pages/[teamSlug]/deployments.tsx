@@ -250,6 +250,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           {t('noItems')}
         </DyoHeading>
       )}
+
       {!showInfo ? null : (
         <DyoModal
           className="w-1/2 h-1/2"

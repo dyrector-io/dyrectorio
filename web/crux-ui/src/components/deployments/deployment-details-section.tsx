@@ -31,12 +31,12 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
 
   const editorState = useItemEditorState(editor, sock, ITEM_ID)
 
-  const { data: configBundleOptions } = useSWR<ConfigBundleOption[]>(teamRoutes.configBundles.api.options(), fetcher)
+  const { data: configBundleOptions } = useSWR<ConfigBundleOption[]>(teamRoutes.configBundle.api.options(), fetcher)
 
   const configBundlesHref =
     deployment.configBundleIds?.length === 1
-      ? teamRoutes.configBundles.details(deployment.configBundleIds[0])
-      : teamRoutes.configBundles.list()
+      ? teamRoutes.configBundle.details(deployment.configBundleIds[0])
+      : teamRoutes.configBundle.list()
 
   return (
     <DyoCard className={clsx('flex flex-col', className ?? 'p-6')}>

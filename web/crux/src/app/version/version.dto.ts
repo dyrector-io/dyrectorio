@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator'
+import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator'
 import { AuditDto } from '../audit/audit.dto'
 import { DeploymentWithBasicNodeDto } from '../deploy/deploy.dto'
 import { ImageDto } from '../image/image.dto'
@@ -35,6 +35,17 @@ export class VersionDto extends BasicVersionDto {
   increasable: boolean
 }
 
+export class VersionChainDto {
+  @IsUUID()
+  id: string
+
+  @ValidateNested()
+  earliest: BasicVersionDto
+
+  @ValidateNested()
+  latest: BasicVersionDto
+}
+
 export class UpdateVersionDto {
   @IsString()
   name: string
@@ -42,6 +53,10 @@ export class UpdateVersionDto {
   @IsString()
   @IsOptional()
   changelog?: string
+
+  @IsBoolean()
+  @IsOptional()
+  autoCopyDeployments?: boolean
 }
 
 export class CreateVersionDto extends UpdateVersionDto {
@@ -53,7 +68,14 @@ export class CreateVersionDto extends UpdateVersionDto {
   type: VersionTypeDto
 }
 
-export class IncreaseVersionDto extends UpdateVersionDto {}
+export class IncreaseVersionDto {
+  @IsString()
+  name: string
+
+  @IsString()
+  @IsOptional()
+  changelog?: string
+}
 
 export class VersionDetailsDto extends VersionDto {
   @IsBoolean()
@@ -61,6 +83,10 @@ export class VersionDetailsDto extends VersionDto {
 
   @IsBoolean()
   deletable: boolean
+
+  @IsBoolean()
+  @IsOptional()
+  autoCopyDeployments?: boolean
 
   @Type(() => ImageDto)
   images: ImageDto[]

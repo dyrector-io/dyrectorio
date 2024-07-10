@@ -111,7 +111,7 @@ const EditProjectCard = (props: EditProjectCardProps) => {
           value={formik.values.description}
         />
 
-        {editing ? null : (
+        {!editing && (
           <DyoToggle
             className="justify-self-start mt-8"
             name="type"

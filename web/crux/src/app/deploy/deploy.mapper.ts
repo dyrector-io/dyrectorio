@@ -44,6 +44,7 @@ import NodeMapper from '../node/node.mapper'
 import ProjectMapper from '../project/project.mapper'
 import VersionMapper from '../version/version.mapper'
 import {
+  BasicDeploymentDto,
   DeploymentDetails,
   DeploymentDetailsDto,
   DeploymentDto,
@@ -96,6 +97,17 @@ export default class DeployMapper {
       status: this.statusToDto(it.status),
       updatedAt: it.updatedAt ?? it.createdAt,
       node: this.nodeMapper.toBasicWithStatusDto(it.node, nodeStatus),
+      audit: this.auditMapper.toDto(it),
+    }
+  }
+
+  toBasicDto(it: Deployment): BasicDeploymentDto {
+    return {
+      id: it.id,
+      prefix: it.prefix,
+      protected: it.protected,
+      status: this.statusToDto(it.status),
+      audit: this.auditMapper.toDto(it),
     }
   }
 

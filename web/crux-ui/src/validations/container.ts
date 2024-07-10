@@ -487,7 +487,7 @@ const testEnvironment = (imageLabels: Record<string, string>) => (arr: UniqueKey
 const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
   yup.object().shape({
     name: matchNoWhitespace(yup.string().required().label('container:common.containerName')),
-    environment: unsafeUniqueKeyValuesSchema
+    environment: uniqueKeyValuesSchema
       .default([])
       .nullable()
       .label('container:common.environment')
