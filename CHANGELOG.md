@@ -1,6 +1,31 @@
 # CHANGELOG
 
 
+<a name="0.13.0"></a>
+## [0.13.0](https://github.com/dyrector-io/dyrectorio/compare/0.12.0...0.13.0) (2024-07-10)
+
+### Ci
+
+* tag version only from release ([#975](https://github.com/dyrector-io/dyrectorio/issues/975))
+
+### Doc
+
+* fix typo ([#984](https://github.com/dyrector-io/dyrectorio/issues/984))
+
+### Feat
+
+* **(web):** packages ([#981](https://github.com/dyrector-io/dyrectorio/issues/981))
+* **(web):** add option to disable deployment copy on version increase ([#978](https://github.com/dyrector-io/dyrectorio/issues/978))
+* **(crux-ui):** reorganize the menu structure ([#977](https://github.com/dyrector-io/dyrectorio/issues/977))
+* **(crux):** get container list api ([#976](https://github.com/dyrector-io/dyrectorio/issues/976))
+
+### Fix
+
+* **(ci):** add dev-deps to scopes in pr_title_validation.sh ([#987](https://github.com/dyrector-io/dyrectorio/issues/987))
+* **(crux-ui):** image ordering ([#979](https://github.com/dyrector-io/dyrectorio/issues/979))
+* **(crux-ui):** secret releated env keys ([#974](https://github.com/dyrector-io/dyrectorio/issues/974))
+
+
 <a name="0.12.0"></a>
 ## [0.12.0](https://github.com/dyrector-io/dyrectorio/compare/0.11.7...0.12.0) (2024-05-13)
 
@@ -59,7 +84,11 @@
 
 
 <a name="0.11.5"></a>
-## [0.11.5](https://github.com/dyrector-io/dyrectorio/compare/0.11.4...0.11.5) (2024-04-05)
+## [0.11.5](https://github.com/dyrector-io/dyrectorio/compare/help...0.11.5) (2024-04-05)
+
+
+<a name="help"></a>
+## [help](https://github.com/dyrector-io/dyrectorio/compare/0.11.4...help) (2024-04-05)
 
 ### Feat
 
@@ -93,7 +122,20 @@
 
 
 <a name="0.11.3"></a>
-## [0.11.3](https://github.com/dyrector-io/dyrectorio/compare/0.11.2...0.11.3) (2024-03-11)
+## [0.11.3](https://github.com/dyrector-io/dyrectorio/compare/ls...0.11.3) (2024-03-11)
+
+### Feat
+
+* container log api ([#931](https://github.com/dyrector-io/dyrectorio/issues/931))
+
+### Fix
+
+* container log new line ([#932](https://github.com/dyrector-io/dyrectorio/issues/932))
+* add ENCRYPTION_SECRET_KEY to compose files ([#927](https://github.com/dyrector-io/dyrectorio/issues/927))
+
+
+<a name="ls"></a>
+## [ls](https://github.com/dyrector-io/dyrectorio/compare/0.11.2...ls) (2024-02-26)
 
 ### Doc
 
@@ -101,13 +143,7 @@
 
 ### Feat
 
-* container log api ([#931](https://github.com/dyrector-io/dyrectorio/issues/931))
 * **(web):** update kratos to 1.1.0 ([#925](https://github.com/dyrector-io/dyrectorio/issues/925))
-
-### Fix
-
-* container log new line ([#932](https://github.com/dyrector-io/dyrectorio/issues/932))
-* add ENCRYPTION_SECRET_KEY to compose files ([#927](https://github.com/dyrector-io/dyrectorio/issues/927))
 
 
 <a name="0.11.2"></a>
@@ -980,7 +1016,7 @@
 
 
 <a name="0.2.1"></a>
-## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...0.2.1) (2022-09-27)
+## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.1...0.2.1) (2022-09-27)
 
 ### Chore
 
@@ -1133,8 +1169,12 @@
 * websocket message routing
 
 
+<a name="v0.1.1"></a>
+## [v0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...v0.1.1) (2022-08-03)
+
+
 <a name="0.1.1"></a>
-## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...0.1.1) (2022-08-03)
+## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.0...0.1.1) (2022-08-03)
 
 ### Chore
 
@@ -1148,6 +1188,10 @@
 ### Refactor
 
 * **(agent):** tests ([#54](https://github.com/dyrector-io/dyrectorio/issues/54))
+
+
+<a name="v0.1.0"></a>
+## [v0.1.0](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...v0.1.0) (2022-08-01)
 
 
 <a name="0.1.0"></a>
