@@ -3,7 +3,6 @@ package container
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/docker/docker/client"
 	"github.com/hashicorp/go-version"
@@ -32,6 +31,7 @@ var (
 	ErrServerVersionIsNotSupported    = errors.New("serverversion is not supported")
 	ErrServerUnknown                  = errors.New("server is unknown")
 	ErrServerVersionIsNotValid        = errors.New("server version is not valid")
+	ErrInvalidVersionConstant         = errors.New("invalid version constant in code")
 	ErrCannotParseServerVersion       = errors.New("cannot parse server version")
 	ErrCannotParseVersionConstraint   = errors.New("cannot parse version constraint")
 	ErrCannotGetServerInformation     = errors.New("cannot get server information")
@@ -73,29 +73,27 @@ func VersionCheck(ctx context.Context, cli client.APIClient) (*zerolog.Event, er
 	}
 }
 
-func SatisfyVersion(minimumVer, preferredVer, actualVer string) error {
-	serVer, err := version.NewVersion(actualVer)
+func SatisfyVersion(minVerStr, preferredVerStr, actualVerStr string) error {
+	actualVer, err := version.NewVersion(actualVerStr)
 	if err != nil {
 		return ErrCannotParseServerVersion
 	}
 
-	// Checking minimum supported version
-	constraints, err := version.NewConstraint(fmt.Sprintf(">=%s", minimumVer))
+	minVer, err := version.NewVersion(minVerStr)
 	if err != nil {
-		return err
+		return ErrInvalidVersionConstant
 	}
 
-	if !constraints.Check(serVer) {
+	preferredVer, err := version.NewVersion(preferredVerStr)
+	if err != nil {
+		return ErrInvalidVersionConstant
+	}
+
+	if !actualVer.GreaterThanOrEqual(minVer) {
 		return ErrServerVersionIsNotSupported
 	}
 
-	// Checking recommended version
-	constraints, err = version.NewConstraint(fmt.Sprintf(">=%s", preferredVer))
-	if err != nil {
-		return err
-	}
-
-	if !constraints.Check(serVer) {
+	if !actualVer.GreaterThanOrEqual(preferredVer) {
 		return ErrServerIsOutdated
 	}
 

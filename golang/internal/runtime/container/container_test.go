@@ -107,6 +107,11 @@ var (
 			Info:              getDockerInfoPodman(),
 			MockClientVersion: "4.8.0",
 		},
+		// rhel based distros include additional metadata in version
+		{
+			Info:              getDockerInfoPodman(),
+			MockClientVersion: "4.9.4-rhel",
+		},
 	}
 	testCasesErrnous = []VersionTestCaseWithErr{
 		// server outdated errors
