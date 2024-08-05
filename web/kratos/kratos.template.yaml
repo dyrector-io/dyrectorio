@@ -99,6 +99,7 @@ selfservice:
     registration:
       lifespan: 10m
       ui_url: ${CRUX_UI_URL}/auth/registration
+      enable_legacy_one_step: true
       after:
         password:
           hooks:
