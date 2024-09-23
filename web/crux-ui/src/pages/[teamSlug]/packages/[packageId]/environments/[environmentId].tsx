@@ -78,7 +78,7 @@ const EnvironmentDetailsPage = (props: EnvironmentDetailsPageProps) => {
           setEditing={setEditing}
           submit={submit}
           deleteModalTitle={t('common:areYouSureDeleteName', { name: env.name })}
-          deleteModalDescription={t('proceedYouLoseAllDataToName', {
+          deleteModalDescription={t('common:proceedYouLoseAllDataToName', {
             name: env.name,
           })}
         />
