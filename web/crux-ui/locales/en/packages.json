@@ -11,6 +11,7 @@
     "earliest": "Earliest",
     "latest": "Latest",
     "noVersionChains": "You haven't selected any version chain yet.",
+    "noEnvironments": "You haven't created an environment yet. Make one by clicking 'Add' on the top right.",
     "createDeployment": "Create deployment",
     "deployed": "Deployed"
 }

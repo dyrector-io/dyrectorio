@@ -11,6 +11,6 @@ export const packageSchema = yup.object().shape({
 
 export const packageEnvironmentSchema = yup.object().shape({
   name: nameRule.required(),
-  nodeId: yup.string().required().label('common:node'),
+  node: yup.object().required().label('common:node'),
   prefix: prefixRule,
 })

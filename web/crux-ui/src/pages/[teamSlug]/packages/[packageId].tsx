@@ -6,6 +6,7 @@ import PackageEnvironmentCard from '@app/components/packages/package-environment
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu, DetailsPageTexts } from '@app/components/shared/page-menu'
+import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
@@ -93,7 +94,7 @@ const PackageDetailsPage = (props: PackageDetailsPageProps) => {
           setEditing={editing => setState(editing ? 'edit-package' : 'environments')}
           submit={submit}
           deleteModalTitle={t('common:areYouSureDeleteName', { name: pack.name })}
-          deleteModalDescription={t('proceedYouLoseAllDataToName', {
+          deleteModalDescription={t('common:proceedYouLoseAllDataToName', {
             name: pack.name,
           })}
         />
@@ -120,7 +121,9 @@ const PackageDetailsPage = (props: PackageDetailsPageProps) => {
 
         {state === 'environments' &&
           (pack.environments.length < 1 ? (
-            <span>notyet</span>
+            <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
+              {t('noEnvironments')}
+            </DyoHeading>
           ) : (
             <DyoWrap className="gap-4" itemClassName="lg:w-1/2 xl:w-1/3">
               {pack.environments.map((env, index) => (
