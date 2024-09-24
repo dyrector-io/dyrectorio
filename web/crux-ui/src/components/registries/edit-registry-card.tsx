@@ -19,12 +19,12 @@ import {
   EditableGoogleRegistryDetails,
   EditableHubRegistryDetails,
   EditableRegistry,
+  EditableUncheckedRegistryDetails,
   EditableV2RegistryDetails,
   PUBLIC_REGISTRY_TYPES,
   REGISTRY_TYPE_VALUES,
   RegistryDetails,
   RegistryType,
-  UncheckedRegistryDetails,
   UpdateRegistryDto,
   editableRegistryToDto,
 } from '@app/models'
@@ -216,7 +216,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
           ) : registryType === 'google' ? (
             <GoogleRegistryFields formik={formik as FormikProps<EditableGoogleRegistryDetails>} />
           ) : registryType === 'unchecked' ? (
-            <UncheckedRegistryFields formik={formik as FormikProps<UncheckedRegistryDetails>} />
+            <UncheckedRegistryFields formik={formik as FormikProps<EditableUncheckedRegistryDetails>} />
           ) : (
             <div className="bg-red-500">{t('unknownRegistryType', { registryType })}</div>
           )}

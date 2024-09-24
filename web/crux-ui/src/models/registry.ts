@@ -3,7 +3,7 @@ import { REGISTRY_GITHUB_URL, REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from '@ap
 export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github', 'google', 'unchecked'] as const
 export type RegistryType = (typeof REGISTRY_TYPE_VALUES)[number]
 
-export const PUBLIC_REGISTRY_TYPES: RegistryType[] = ['hub', 'v2', 'google']
+export const PUBLIC_REGISTRY_TYPES: RegistryType[] = ['hub', 'v2', 'unchecked', 'google']
 
 export const GITHUB_NAMESPACE_VALUES = ['organization', 'user'] as const
 export const GITLAB_NAMESPACE_VALUES = ['group', 'project'] as const
@@ -104,9 +104,11 @@ type UncheckedRegistryDetailsBase = {
   type: 'unchecked'
   local?: boolean
   url: string
+  public: boolean
 }
 
 export type UncheckedRegistryDetails = RegistryDetailsBase & UncheckedRegistryDetailsBase
+export type EditableUncheckedRegistryDetails = EditableRegistryCredentials & UncheckedRegistryDetails
 
 type UpsertDetailsDto<T> = Omit<T & Partial<EditableRegistryCredentials>, 'type' | 'changeCredentials'>
 
@@ -358,9 +360,12 @@ export const editableRegistryToDto = (ui: EditableRegistry): CreateRegistryDto =
       }
     }
     case 'unchecked': {
-      const details: Omit<UncheckedRegistryDetailsBase, 'type'> = {
+      const details: UpsertDetailsDto<UncheckedRegistryDetailsBase> = {
         url: ui.url,
         local: ui.local,
+        public: ui.public,
+        user: !ui.public && ui.changeCredentials ? ui.user : null,
+        token: !ui.public && ui.changeCredentials ? ui.token : null,
       }
 
       return {
