@@ -22,7 +22,7 @@ FROM docker.io/library/node:20-alpine3.17 AS RUNNER
 ENV NODE_ENV production
 ENV TZ UTC
 
-RUN apk --update add tzdata openssl1.1-compat
+RUN apk --update add tzdata openssl1.1-compat ca-certificates
 
 WORKDIR /app
 

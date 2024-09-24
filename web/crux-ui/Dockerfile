@@ -17,7 +17,7 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV TZ UTC
-RUN apk --update add tzdata && \
+RUN apk --update add tzdata ca-certificates && \
     mkdir .next && \
     chown node:node .next
 
