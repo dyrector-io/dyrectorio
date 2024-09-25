@@ -1,8 +1,22 @@
 # CHANGELOG
 
 
+<a name="0.14.0"></a>
+## [0.14.0](https://github.com/dyrector-io/dyrectorio/compare/0.13.0...0.14.0) (2024-09-25)
+
+### Feat
+
+* add private unchecked registry ([#1001](https://github.com/dyrector-io/dyrectorio/issues/1001))
+* **(web):** add executable to manage custom certs ([#1000](https://github.com/dyrector-io/dyrectorio/issues/1000))
+* update kratos to 1.12.0 ([#990](https://github.com/dyrector-io/dyrectorio/issues/990))
+
+### Fix
+
+* **(crux-ui):** typos and environment validation ([#999](https://github.com/dyrector-io/dyrectorio/issues/999))
+
+
 <a name="0.13.0"></a>
-## [0.13.0](https://github.com/dyrector-io/dyrectorio/compare/0.12.0...0.13.0) (2024-07-10)
+## [0.13.0](https://github.com/dyrector-io/dyrectorio/compare/0.12.0...0.13.0) (2024-07-15)
 
 ### Ci
 
