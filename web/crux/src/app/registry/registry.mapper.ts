@@ -85,6 +85,7 @@ export default class RegistryMapper {
         : registry.type === RegistryTypeEnum.unchecked
         ? {
             url: registry.url,
+            public: !registry.user,
           }
         : null
 
@@ -171,12 +172,14 @@ export default class RegistryMapper {
         }
       }
       case 'unchecked': {
-        const details = req.details as CreateUncheckedRegistryDetailsDto | UpdateUncheckedRegistryDetailsDto
+        const details = this.dtoDetailsToDb(
+          req.details as CreateUncheckedRegistryDetailsDto | UpdateUncheckedRegistryDetailsDto,
+        )
         return {
           type: RegistryTypeEnum.unchecked,
           url: details.local ? '' : details.url,
-          user: null,
-          token: null,
+          user: details.user,
+          token: details.token,
           apiUrl: null,
           imageNamePrefix: null,
           namespace: null,

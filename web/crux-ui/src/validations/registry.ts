@@ -27,7 +27,7 @@ const createRegistryCredentialRole = (label: string) =>
     .meta(shouldResetMetaData)
     .requiredWhenTypeIs({
       public: ['gitlab', 'github'],
-      private: ['v2', 'google', 'hub'],
+      private: ['v2', 'unchecked', 'google', 'hub'],
     })
     .label(label)
 
@@ -90,6 +90,7 @@ export const registrySchema = yup.object().shape({
     gitlab: 'token',
     github: 'pat',
     v2: 'token',
+    unchecked: 'token',
     google: 'privateKey',
     hub: 'token',
   }),

@@ -236,6 +236,16 @@ export class CreateUncheckedRegistryDetailsDto {
 
   @IsBoolean()
   local: boolean
+
+  @IsString()
+  @IsOptional()
+  @ValidateIf(privateAndPropertyIsPresent('token'))
+  user?: string
+
+  @IsString()
+  @IsOptional()
+  @ValidateIf(privateAndPropertyIsPresent('user'))
+  token?: string
 }
 
 export class UpdateHubRegistryDetailsDto extends CreateHubRegistryDetailsDto {}
