@@ -192,9 +192,9 @@ func TestExpandImageNameWithTag(t *testing.T) {
 		{
 			name:     "capitalsHandled",
 			desc:     "with capitals in the image parsing works smoothly",
-			image:    "my-reg.com/Library/nginx:my-tag",
-			tag:      "tag-4",
-			expImage: "my-reg.com/library/nginx:tag-4",
+			image:    "my-reg.com/library/nginx",
+			tag:      "Tag-4",
+			expImage: "my-reg.com/library/nginx:Tag-4",
 		},
 	}
 	for _, tC := range testCases {
