@@ -348,7 +348,7 @@ func checkRemote(ctx context.Context, check remoteCheck) (err error) {
 }
 
 func ParseReference(img string) (reference.Reference, error) {
-	return reference.ParseAnyReference(strings.ToLower(img))
+	return reference.ParseAnyReference(img)
 }
 
 func ExpandImageName(imageWithTag string) (string, error) {
