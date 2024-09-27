@@ -127,10 +127,10 @@ func TestExpandImageName(t *testing.T) {
 			expImage: "my-reg.com/library/nginx:my-tag",
 		},
 		{
-			name:     "ifNotLowerCaseThatisFine",
-			desc:     "image is expanded regardless not just lowercase characters were provided",
-			image:    "ghcr.io/Test-Org/image:latest",
-			expImage: "ghcr.io/test-org/image:latest",
+			name:     "ifNotLowerCaseThatisFineAndRespected",
+			desc:     "image is expanded regardless not just lowercase characters were provided, tags can be uppercase",
+			image:    "ghcr.io/test-org/image:MixedCase",
+			expImage: "ghcr.io/test-org/image:MixedCase",
 		},
 	}
 	for _, tC := range testCases {
@@ -192,9 +192,9 @@ func TestExpandImageNameWithTag(t *testing.T) {
 		{
 			name:     "capitalsHandled",
 			desc:     "with capitals in the image parsing works smoothly",
-			image:    "my-reg.com/Library/nginx:my-tag",
-			tag:      "tag-4",
-			expImage: "my-reg.com/library/nginx:tag-4",
+			image:    "my-reg.com/library/nginx",
+			tag:      "Tag-4",
+			expImage: "my-reg.com/library/nginx:Tag-4",
 		},
 	}
 	for _, tC := range testCases {
