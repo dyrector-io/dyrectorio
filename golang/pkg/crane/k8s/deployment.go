@@ -601,7 +601,12 @@ func getVolumesFromMap(volumes map[string]v1.Volume, cfg *config.Configuration) 
 		} else {
 			tmpStorageSize = resource.MustParse(cfg.DefaultVolumeSize)
 		}
-		if volume.Type == string(v1.EmptyDirVolumeType) {
+		if volume.Type == v1.SecretVolumeType {
+			volumeList = append(volumeList,
+				corev1.Volume().
+					WithSecret(corev1.SecretVolumeSource().WithSecretName(volume.Name)).
+					WithName(volume.Name))
+		} else if volume.Type == v1.EmptyDirVolumeType {
 			volumeList = append(volumeList,
 				corev1.Volume().
 					WithName(volume.Name).
@@ -609,7 +614,7 @@ func getVolumesFromMap(volumes map[string]v1.Volume, cfg *config.Configuration) 
 						corev1.EmptyDirVolumeSource().
 							WithMedium(coreV1.StorageMediumDefault).
 							WithSizeLimit(tmpStorageSize)))
-		} else if volume.Type == string(v1.MemoryVolumeType) {
+		} else if volume.Type == v1.MemoryVolumeType {
 			volumeList = append(volumeList,
 				corev1.Volume().
 					WithName(volume.Name).
@@ -635,7 +640,8 @@ func getVolumeMountsFromMap(mounts map[string]v1.Volume) []*corev1.VolumeMountAp
 		volumes = append(volumes,
 			corev1.VolumeMount().
 				WithName(volume.Name).
-				WithMountPath(volume.Path))
+				WithMountPath(volume.Path).
+				WithReadOnly(volume.Type == "RO" || volume.Type == "secret"))
 	}
 
 	return volumes

@@ -311,6 +311,7 @@ export enum VolumeType {
   RWX = 3,
   MEM = 4,
   TMP = 5,
+  SECRET = 6,
   UNRECOGNIZED = -1,
 }
 
@@ -334,6 +335,9 @@ export function volumeTypeFromJSON(object: any): VolumeType {
     case 5:
     case 'TMP':
       return VolumeType.TMP
+    case 6:
+    case 'SECRET':
+      return VolumeType.SECRET
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -355,6 +359,8 @@ export function volumeTypeToJSON(object: VolumeType): string {
       return 'MEM'
     case VolumeType.TMP:
       return 'TMP'
+    case VolumeType.SECRET:
+      return 'SECRET'
     case VolumeType.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'

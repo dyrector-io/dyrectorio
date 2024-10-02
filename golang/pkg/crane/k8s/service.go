@@ -137,7 +137,7 @@ func getServicePorts(portBindings []builder.PortBinding, portRanges []builder.Po
 		externalFrom := int(portRanges[i].External.From)
 		internalTo := int(portRanges[i].Internal.To)
 		for j := 0; internalFrom+j < internalTo; j++ {
-			portNum := int32(internalFrom + j)
+			portNum := int32(internalFrom + j) //#nosec G115
 			ports = append(ports,
 				acorev1.ServicePort().
 					WithName(fmt.Sprintf("tcp-%v", portNum)).
