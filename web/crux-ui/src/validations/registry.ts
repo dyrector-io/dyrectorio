@@ -45,6 +45,7 @@ export const registrySchema = yup.object().shape({
     .labelType({
       hub: 'orgOrUser',
       google: 'organization',
+      v2: 'subpath',
       gitlab: it => it.labelNamespace('group', 'registries:group', 'registries:project'),
       github: it => it.labelNamespace('organization', 'registries:organization', 'registries:userName'),
     }),

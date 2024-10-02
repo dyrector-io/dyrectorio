@@ -12,6 +12,7 @@ import EditorModule from '../editor/editor.module'
 import ImageModule from '../image/image.module'
 import NodeMapper from '../node/node.mapper'
 import ProjectMapper from '../project/project.mapper'
+import RegistryModule from '../registry/registry.module'
 import TeamRepository from '../team/team.repository'
 import VersionMapper from '../version/version.mapper'
 import DeployHttpController from './deploy.http.controller'
@@ -25,6 +26,7 @@ import DeployWebSocketGateway from './deploy.ws.gateway'
     forwardRef(() => AgentModule),
     ImageModule,
     EditorModule,
+    RegistryModule,
     ContainerModule,
     ConfigModule,
     AuditLoggerModule,

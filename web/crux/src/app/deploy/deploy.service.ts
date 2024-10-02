@@ -14,7 +14,7 @@ import {
 import Deployment from 'src/domain/deployment'
 import { DeploymentTokenScriptGenerator } from 'src/domain/deployment-token'
 import { DeploymentTokenPayload, tokenSignOptionsFor } from 'src/domain/token'
-import { collectChildVersionIds, collectParentVersionIds, stripProtocol, toPrismaJson } from 'src/domain/utils'
+import { collectChildVersionIds, collectParentVersionIds, toPrismaJson } from 'src/domain/utils'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import EncryptionService from 'src/services/encryption.service'
@@ -26,6 +26,7 @@ import { EditorLeftMessage, EditorMessage } from '../editor/editor.message'
 import EditorServiceProvider from '../editor/editor.service.provider'
 import { ImageEvent } from '../image/image.event'
 import ImageEventService from '../image/image.event.service'
+import RegistryMapper from '../registry/registry.mapper'
 import {
   CopyDeploymentDto,
   CreateDeploymentDto,
@@ -58,6 +59,7 @@ export default class DeployService {
     @Inject(forwardRef(() => AgentService)) private readonly agentService: AgentService,
     readonly imageEventService: ImageEventService,
     private readonly mapper: DeployMapper,
+    private readonly registryMapper: RegistryMapper,
     private readonly containerMapper: ContainerMapper,
     private readonly editorServices: EditorServiceProvider,
     private readonly configService: ConfigService,
@@ -601,16 +603,7 @@ export default class DeployService {
         requests: await Promise.all(
           deployment.instances.map(async it => {
             const { registry } = it.image
-            const registryUrl =
-              registry.type === 'google' || registry.type === 'github'
-                ? `${registry.url}/${registry.imageNamePrefix}`
-                : registry.type === 'v2' || registry.type === 'gitlab'
-                ? registry.url
-                : registry.type === 'hub'
-                ? registry.imageNamePrefix
-                : registry.type === 'unchecked'
-                ? stripProtocol(registry.url)
-                : ''
+            const registryUrl = this.registryMapper.pullUrlOf(registry)
 
             const mergedConfig = mergedConfigs.get(it.id)
             const storage = mergedConfig.storageId

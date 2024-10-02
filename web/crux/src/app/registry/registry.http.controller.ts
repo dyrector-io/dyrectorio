@@ -19,7 +19,7 @@ import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
 import { AuthStrategy, IdentityFromRequest } from '../token/jwt-auth.guard'
-import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
+import RegistryAuthValidationGuard from './guards/registry.auth.validation.guard'
 import RegistryJwtAuthGuard from './guards/registry.jwt-auth.guard'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
 import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
@@ -96,7 +96,7 @@ export default class RegistryHttpController {
   @ApiBadRequestResponse({ description: 'Bad request for registry creation.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for registry creation.' })
   @ApiConflictResponse({ description: 'Registry name taken.' })
-  @UseGuards(RegistryAccessValidationGuard)
+  @UseGuards(RegistryAuthValidationGuard)
   @AuditLogLevel('no-data')
   async createRegistry(
     @TeamSlug() teamSlug: string,
@@ -118,7 +118,7 @@ export default class RegistryHttpController {
       "Modify the `name`, `type`, `description`, `details`, and `icon`. `RegistryId` refers to the registry's ID. `teamSlug` and `RegistryID` is required in URL, body must include `type`, `details`, and `name`.",
     summary: 'Modify the details of a registry.',
   })
-  @UseGuards(RegistryAccessValidationGuard)
+  @UseGuards(RegistryAuthValidationGuard)
   @ApiBody({ type: UpdateRegistryDto })
   @ApiNoContentResponse({ description: 'Registry modified.' })
   @ApiBadRequestResponse({ description: 'Bad request for registry modification.' })

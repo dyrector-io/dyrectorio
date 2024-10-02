@@ -5,6 +5,7 @@ import { RegistryApiClient } from './registry-api-client'
 import V2Labels from './v2-labels'
 
 export type RegistryV2ApiClientOptions = {
+  imageNamePrefix?: string
   username?: string
   password?: string
 }
@@ -14,6 +15,12 @@ export const registryCredentialsToBasicAuth = (options: RegistryV2ApiClientOptio
 
 class RegistryV2ApiClient implements RegistryApiClient {
   private headers: HeadersInit
+
+  private imageNamePrefix?: string
+
+  get subpath(): string {
+    return !this.imageNamePrefix ? '/v2' : `/v2/${this.imageNamePrefix}`
+  }
 
   constructor(
     private url: string,
@@ -32,6 +39,8 @@ class RegistryV2ApiClient implements RegistryApiClient {
     } else {
       this.headers = {}
     }
+
+    this.imageNamePrefix = options?.imageNamePrefix
   }
 
   async version() {
@@ -68,7 +77,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
   }
 
   async labels(image: string, tag: string): Promise<Record<string, string>> {
-    const labelClient = new V2Labels(this.url, null, {
+    const labelClient = new V2Labels(`${this.url}`, this.imageNamePrefix, {
       headers: this.headers,
     })
 
@@ -77,7 +86,8 @@ class RegistryV2ApiClient implements RegistryApiClient {
 
   private async fetch(endpoint: string, init?: RequestInit): Promise<Response> {
     const initializer = init ?? {}
-    const fullUrl = `https://${this.url}/v2${endpoint}`
+
+    const fullUrl = `https://${this.url}${this.subpath}${endpoint}`
 
     return await fetch(fullUrl, {
       ...initializer,

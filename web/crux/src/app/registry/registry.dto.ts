@@ -125,6 +125,10 @@ export class V2RegistryDetailsDto {
   @IsUrl()
   url: string
 
+  @IsString()
+  @IsOptional()
+  imageNamePrefix?: string | null
+
   @IsBoolean()
   public: boolean
 }

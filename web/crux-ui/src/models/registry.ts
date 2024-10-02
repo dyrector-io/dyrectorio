@@ -63,6 +63,7 @@ export type EditableHubRegistryDetails = EditableRegistryCredentials & HubRegist
 type V2RegistryDetailsBase = {
   type: 'v2'
   url: string
+  imageNamePrefix?: string
   public: boolean
 }
 
@@ -308,6 +309,7 @@ export const editableRegistryToDto = (ui: EditableRegistry): CreateRegistryDto =
       const details: UpsertDetailsDto<V2RegistryDetailsBase> = {
         url: ui.url,
         public: ui.public,
+        imageNamePrefix: !ui.imageNamePrefix || ui.imageNamePrefix.trim() === '' ? null : ui.imageNamePrefix,
         user: !ui.public && ui.changeCredentials ? ui.user : null,
         token: !ui.public && ui.changeCredentials ? ui.token : null,
       }

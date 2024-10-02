@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Registry, RegistryToken, RegistryTypeEnum } from '@prisma/client'
 import { REGISTRY_EVENT_V2_PULL, REGISTRY_EVENT_V2_PUSH } from 'src/domain/registry'
+import { stripProtocol } from 'src/domain/utils'
 import { CruxBadRequestException, CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import EncryptionService from 'src/services/encryption.service'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
@@ -63,6 +64,7 @@ export default class RegistryMapper {
         ? {
             url: registry.url,
             public: !registry.user,
+            imageNamePrefix: registry.imageNamePrefix,
           }
         : registry.type === RegistryTypeEnum.gitlab
         ? {
@@ -130,7 +132,7 @@ export default class RegistryMapper {
         return {
           type: RegistryTypeEnum.v2,
           ...details,
-          imageNamePrefix: null,
+          imageNamePrefix: details.imageNamePrefix ?? null,
           apiUrl: null,
           namespace: null,
         }
@@ -194,6 +196,24 @@ export default class RegistryMapper {
     }
   }
 
+  pullUrlOf(registry: Registry): string {
+    switch (registry.type) {
+      case 'google':
+      case 'github':
+        return `${registry.url}/${registry.imageNamePrefix}`
+      case 'v2':
+        return !registry.imageNamePrefix ? registry.url : `${registry.url}/${registry.imageNamePrefix}`
+      case 'gitlab':
+        return registry.url
+      case 'hub':
+        return registry.imageNamePrefix
+      case 'unchecked':
+        return stripProtocol(registry.url)
+      default:
+        return ''
+    }
+  }
+
   private dtoDetailsToDb<T extends CredentialsDto>(dto: T): T & Pick<Registry, 'user' | 'token'> {
     const { public: pub } = dto
     delete dto.public
@@ -241,6 +261,7 @@ export default class RegistryMapper {
       case RegistryTypeEnum.hub:
         return `${reg.url}/${reg.imageNamePrefix}`
       case RegistryTypeEnum.v2:
+        return !reg.imageNamePrefix ? reg.url : `${reg.url}/${reg.imageNamePrefix}`
       case RegistryTypeEnum.unchecked:
         return reg.url
       case RegistryTypeEnum.gitlab:
