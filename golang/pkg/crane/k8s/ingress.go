@@ -65,7 +65,7 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 
 	routedPort := options.port
 	if routedPort == 0 {
-		routedPort = uint16(options.portList[0])
+		routedPort = uint16(options.portList[0]) //#nosec G115
 	}
 
 	ingressDomain := domain.GetHostRule(

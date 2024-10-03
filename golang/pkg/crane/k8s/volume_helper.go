@@ -34,7 +34,7 @@ func mapShortNotationToVolumeMap(volumes []string) map[string]v1.Volume {
 			v[name] = v1.Volume{
 				Name: name,
 				Path: path,
-				Type: string(volumeType),
+				Type: volumeType,
 			}
 		} else {
 			log.Warn().Msg("Empty volume name")

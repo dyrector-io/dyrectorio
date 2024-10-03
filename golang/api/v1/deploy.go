@@ -294,13 +294,14 @@ type Volume struct {
 	// some PVCs support dynamic expansion/shrink, others not
 	Size string `json:"size" binding:"validSize"`
 
-	// type of the volume: RO,RWO,RWX,mem,tmp
+	// type of the volume: RO,RWO,RWX,mem,tmp, secret
 	// RO: readonly
 	// RWO: readwrite once normal (default)
 	// RWX: readwrite many, shared volume within the instance
-	// mem: use inmemory tmpfs
+	// mem: use in-memory tmpfs
 	// tmp: use tmpfs, with disk
-	Type string `json:"type"`
+	// secret: use secret of the name, mounted its keys as files
+	Type VolumeType `json:"type"`
 
 	// kubernetes only
 	// storage classes depend on the cloud providers
@@ -323,6 +324,7 @@ const (
 	ReadWriteManyVolumeType VolumeType = "RWX"
 	MemoryVolumeType        VolumeType = "mem"
 	EmptyDirVolumeType      VolumeType = "tmp"
+	SecretVolumeType        VolumeType = "secret"
 )
 
 type ConfigContainer struct {
@@ -365,7 +367,7 @@ func (vt *VolumeType) UnmarshalJSON(b []byte) error {
 	}
 	volumeType := VolumeType(s)
 	switch volumeType {
-	case ReadOnlyVolumeType, ReadWriteOnceVolumeType, ReadWriteManyVolumeType, EmptyDirVolumeType, MemoryVolumeType:
+	case ReadOnlyVolumeType, ReadWriteOnceVolumeType, ReadWriteManyVolumeType, EmptyDirVolumeType, MemoryVolumeType, SecretVolumeType:
 		*vt = volumeType
 		return nil
 	}

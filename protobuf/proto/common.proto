@@ -88,17 +88,11 @@ message ContainerStateItem {
   map<string, string> labels = 1001;
 }
 
-message ContainerLogMessage {
-  string log = 100;
-}
+message ContainerLogMessage { string log = 100; }
 
-message ContainerLogListResponse {
-  repeated string logs = 1000;
-}
+message ContainerLogListResponse { repeated string logs = 1000; }
 
-message ContainerInspectResponse {
-  string data = 1;
-}
+message ContainerInspectResponse { string data = 1; }
 
 enum NetworkMode {
   NETWORK_MODE_UNSPECIFIED = 0;
@@ -129,6 +123,7 @@ enum VolumeType {
   RWX = 3;
   MEM = 4;
   TMP = 5;
+  SECRET = 6;
 }
 
 enum DriverType {
