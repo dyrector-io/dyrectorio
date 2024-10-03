@@ -49,21 +49,21 @@ func (p *PVC) DeployPVC(namespace, name string, mountList []string, volumes []v1
 		volume := p.requested[i]
 		switch p.requested[i].Type {
 		// VOLUME
-		case string(v1.ReadOnlyVolumeType):
+		case v1.ReadOnlyVolumeType:
 			if err := p.ApplyVolume(client, namespace,
 				name, &volume,
 				coreV1.ReadOnlyMany); err != nil {
 				return err
 			}
 
-		case string(v1.ReadWriteOnceVolumeType), "":
+		case v1.ReadWriteOnceVolumeType, "":
 			if err := p.ApplyVolume(client, namespace,
 				name, &volume,
 				coreV1.ReadWriteOnce); err != nil {
 				return err
 			}
 
-		case string(v1.ReadWriteManyVolumeType):
+		case v1.ReadWriteManyVolumeType:
 			if err := p.ApplyVolume(client, namespace,
 				name, &volume,
 				coreV1.ReadWriteMany); err != nil {
@@ -71,19 +71,25 @@ func (p *PVC) DeployPVC(namespace, name string, mountList []string, volumes []v1
 			}
 
 		// TMP - these cases wont need pvc, adhoc volume created on the deployment
-		case string(v1.MemoryVolumeType):
+		case v1.MemoryVolumeType:
 			p.avail[name] = v1.Volume{
 				Name: util.JoinV("-", name, p.requested[i].Name),
-				Type: string(v1.MemoryVolumeType),
+				Type: v1.MemoryVolumeType,
 				Path: p.requested[i].Path,
 				Size: p.requested[i].Size,
 			}
-		case string(v1.EmptyDirVolumeType):
+		case v1.EmptyDirVolumeType:
 			p.avail[name] = v1.Volume{
 				Name: util.JoinV("-", name, p.requested[i].Name),
-				Type: string(v1.EmptyDirVolumeType),
+				Type: v1.EmptyDirVolumeType,
 				Path: p.requested[i].Path,
 				Size: p.requested[i].Size,
+			}
+		case v1.SecretVolumeType:
+			p.avail[name] = v1.Volume{
+				Name: p.requested[i].Name,
+				Type: p.requested[i].Type,
+				Path: p.requested[i].Path,
 			}
 		}
 	}

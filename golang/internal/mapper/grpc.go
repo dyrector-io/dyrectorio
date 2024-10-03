@@ -131,7 +131,7 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		containerConfig.IngressUploadLimit = pointer.GetString(cc.Routing.UploadLimit)
 		containerConfig.IngressPath = pointer.GetString(cc.Routing.Path)
 		containerConfig.IngressStripPath = pointer.GetBool(cc.Routing.StripPath)
-		containerConfig.IngressPort = uint16(pointer.GetUint32(cc.Routing.Port))
+		containerConfig.IngressPort = uint16(pointer.GetUint32(cc.Routing.Port)) //#nosec G115
 	}
 
 	if cc.ConfigContainer != nil {
@@ -288,7 +288,7 @@ func mapHealthCheckConfig(healthCheckConfig *common.HealthCheckConfig) v1.Health
 	mappedConfig := v1.HealthCheckConfig{}
 
 	if healthCheckConfig.Port != nil {
-		mappedConfig.Port = uint16(*healthCheckConfig.Port)
+		mappedConfig.Port = uint16(*healthCheckConfig.Port) //#nosec G115
 	}
 
 	if healthCheckConfig.LivenessProbe != nil {
@@ -324,10 +324,10 @@ func mapVolumes(in []*agent.Volume) []v1.Volume {
 		}
 
 		if in[i].Type != nil {
-			if *in[i].Type == common.VolumeType_MEM || *in[i].Type == common.VolumeType_TMP {
-				volume.Type = strings.ToLower(in[i].Type.String())
+			if *in[i].Type == common.VolumeType_MEM || *in[i].Type == common.VolumeType_TMP || *in[i].Type == common.VolumeType_SECRET {
+				volume.Type = v1.VolumeType(strings.ToLower(in[i].Type.String()))
 			} else {
-				volume.Type = in[i].Type.String()
+				volume.Type = v1.VolumeType(in[i].Type.String())
 			}
 		}
 
@@ -342,8 +342,8 @@ func mapPortRanges(in []*agent.PortRangeBinding) []builder.PortRangeBinding {
 
 	for i := range in {
 		portRanges = append(portRanges, builder.PortRangeBinding{
-			Internal: builder.PortRange{From: uint16(in[i].Internal.From), To: uint16(in[i].Internal.To)},
-			External: builder.PortRange{From: uint16(in[i].External.From), To: uint16(in[i].External.To)},
+			Internal: builder.PortRange{From: uint16(in[i].Internal.From), To: uint16(in[i].Internal.To)}, //#nosec G115
+			External: builder.PortRange{From: uint16(in[i].External.From), To: uint16(in[i].External.To)}, //#nosec G115
 		})
 	}
 
@@ -365,8 +365,8 @@ func MapPorts(in []*agent.Port) []builder.PortBinding {
 
 	for i := range in {
 		ports = append(ports, builder.PortBinding{
-			ExposedPort: uint16(in[i].Internal),
-			PortBinding: pointer.ToUint16OrNil(uint16(pointer.Get(in[i].External))),
+			ExposedPort: uint16(in[i].Internal),                                     //#nosec G115
+			PortBinding: pointer.ToUint16OrNil(uint16(pointer.Get(in[i].External))), //#nosec G115
 		})
 	}
 
