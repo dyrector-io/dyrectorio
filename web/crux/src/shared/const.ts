@@ -21,7 +21,7 @@ export const AGENT_STREAM_TIMEOUT = 60_000
 export const GET_CONTAINER_LOG_DEFAULT_TAKE = 100
 
 // NOTE(@m8vago): This should be incremented, when a new release includes a proto file change
-const AGENT_PROTO_COMPATIBILITY_MINIMUM_VERSION = '0.14.0'
+const AGENT_PROTO_COMPATIBILITY_MINIMUM_VERSION = '0.14.1'
 export const AGENT_SUPPORTED_MINIMUM_VERSION = coerce(AGENT_PROTO_COMPATIBILITY_MINIMUM_VERSION)
 
 export const API_CREATED_LOCATION_HEADERS = {

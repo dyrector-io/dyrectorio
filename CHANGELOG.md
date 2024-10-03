@@ -1,6 +1,18 @@
 # CHANGELOG
 
 
+<a name="0.14.1"></a>
+## [0.14.1](https://github.com/dyrector-io/dyrectorio/compare/0.14.0...0.14.1) (2024-10-03)
+
+### Feat
+
+* **(web):** add subpath for v2 registries ([#1003](https://github.com/dyrector-io/dyrectorio/issues/1003))
+
+### Fix
+
+* **(agent):** add support for mixed-case image tags ([#1002](https://github.com/dyrector-io/dyrectorio/issues/1002))
+
+
 <a name="0.14.0"></a>
 ## [0.14.0](https://github.com/dyrector-io/dyrectorio/compare/0.13.0...0.14.0) (2024-09-25)
 
