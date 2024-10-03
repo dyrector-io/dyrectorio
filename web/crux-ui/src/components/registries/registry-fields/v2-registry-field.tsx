@@ -29,6 +29,17 @@ const V2RegistryFields = (props: EditRegistryTypeProps<EditableV2RegistryDetails
         message={errors.url}
       />
 
+      <DyoInput
+        className="max-w-lg"
+        grow
+        name="imageNamePrefix"
+        type="text"
+        label={t('subpath')}
+        onChange={handleChange}
+        value={values.imageNamePrefix}
+        message={errors.imageNamePrefix}
+      />
+
       <DyoToggle
         className="mt-8"
         name="public"

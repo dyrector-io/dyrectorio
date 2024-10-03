@@ -63,6 +63,7 @@ export default class RegistryClientProvider {
           ? {
               username: connInfo.user,
               password: connInfo.token,
+              imageNamePrefix: connInfo.imageNamePrefix,
             }
           : null,
       )

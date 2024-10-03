@@ -10,6 +10,7 @@
   "pat": "Personal access token",
   "accessToken": "Access token",
   "url": "URL",
+  "subpath": "Subpath",
   "orgOrUser": "Organization name or username",
   "organization": "Organization name",
   "group": "Group ID",

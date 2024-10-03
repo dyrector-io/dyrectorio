@@ -25,13 +25,13 @@ import {
 import RegistryService from '../registry.service'
 
 @Injectable()
-export default class RegistryAccessValidationGuard implements CanActivate {
+export default class RegistryAuthValidationGuard implements CanActivate {
   constructor(
     private httpService: HttpService,
     private service: RegistryService,
   ) {}
 
-  private readonly logger = new Logger(RegistryAccessValidationGuard.name)
+  private readonly logger = new Logger(RegistryAuthValidationGuard.name)
 
   /**
    * Guard that checks the URL is a valid registry URL
@@ -134,7 +134,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
     const auth = await this.getCredentialsForRegistry(registryId, req)
 
     return this.httpService
-      .get(`https://${req.url}/v2/`, {
+      .get(`https://${req.url}/v2/${req.imageNamePrefix ?? ''}`, {
         withCredentials,
         auth,
       })
