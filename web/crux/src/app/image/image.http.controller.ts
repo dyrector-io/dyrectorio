@@ -35,6 +35,7 @@ import ImageService from './image.service'
 import ImageAddToVersionValidationInterceptor from './interceptors/image.add-images.interceptor'
 import DeleteImageValidationInterceptor from './interceptors/image.delete.interceptor'
 import OrderImagesValidationInterceptor from './interceptors/image.order.interceptor'
+import ValidateNonEmptyArrayPipe from './pipes/image.add.pipe'
 
 const PARAM_TEAM_SLUG = 'teamSlug'
 const PARAM_IMAGE_ID = 'imageId'
@@ -115,7 +116,7 @@ export default class ImageHttpController {
     @TeamSlug() teamSlug: string,
     @ProjectId() projectId: string,
     @VersionId() versionId: string,
-    @Body() request: AddImagesDto[],
+    @Body(new ValidateNonEmptyArrayPipe()) request: AddImagesDto[],
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreatedResponse<ImageDto[]>> {
     const images = await this.service.addImagesToVersion(teamSlug, versionId, request, identity)
