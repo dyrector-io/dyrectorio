@@ -1,26 +1,31 @@
 import { Injectable } from '@nestjs/common'
-import { ContainerConfig } from '@prisma/client'
-import {
-  ContainerConfigData,
-  InstanceContainerConfigData,
-  MergedContainerConfigData,
-  Metrics,
-  UniqueKeyValue,
-  UniqueSecretKey,
-  UniqueSecretKeyValue,
-} from 'src/domain/container'
-import { toPrismaJson } from 'src/domain/utils'
-import { ContainerConfigDto, PartialContainerConfigDto, UniqueKeyValueDto } from './container.dto'
+import { ContainerConfig, ContainerConfigType } from '@prisma/client'
+import { ContainerConfigData } from 'src/domain/container'
+import { ContainerConfigUpdatedEvent } from 'src/domain/domain-events'
+import { toNullableBoolean, toNullableNumber, toPrismaJson } from 'src/domain/utils'
+import { ConfigUpdatedMessage } from './container-config.message'
+import { ContainerConfigDto, ContainerConfigTypeDto } from './container.dto'
 
 @Injectable()
 export default class ContainerMapper {
-  uniqueKeyValueDtoToDb(it: UniqueKeyValueDto): UniqueKeyValue {
-    return it
+  typeToDto(type: ContainerConfigType): ContainerConfigTypeDto {
+    switch (type) {
+      case 'configBundle':
+        return 'config-bundle'
+      default:
+        return type
+    }
   }
 
-  configDataToDto(config: ContainerConfigData): ContainerConfigDto {
+  configDataToDto(id: string, type: ContainerConfigType, config: ContainerConfigData): ContainerConfigDto {
+    if (!config) {
+      return null
+    }
+
     return {
       ...config,
+      id,
+      type: this.typeToDto(type),
       capabilities: null,
       storage: !config.storageSet
         ? null
@@ -32,51 +37,62 @@ export default class ContainerMapper {
     }
   }
 
-  configDtoToConfigData(current: ContainerConfigData, patch: PartialContainerConfigDto): ContainerConfigData {
-    const storagePatch =
-      'storage' in patch
-        ? {
-            storageSet: !!patch.storage?.storageId,
-            storageId: patch.storage?.storageId ?? null,
-            storageConfig: patch.storage?.storageId
-              ? {
-                  path: patch.storage.path,
-                  bucket: patch.storage.bucket,
-                }
-              : null,
-          }
-        : undefined
-
-    return {
+  configDtoToConfigData(current: ContainerConfigData, patch: ContainerConfigDto): ContainerConfigData {
+    let result: ContainerConfigData = {
       ...current,
       ...patch,
-      capabilities: undefined, // TODO (@m8vago, @nandor-magyar): Remove this line, when capabilites are ready
-      annotations: !patch.annotations
-        ? current.annotations
-        : {
-            ...(current.annotations ?? {}),
-            ...patch.annotations,
-          },
-      labels: !patch.labels
-        ? current.labels
-        : {
-            ...(current.labels ?? {}),
-            ...patch.labels,
-          },
-      ...storagePatch,
     }
+
+    if ('storage' in patch) {
+      result = {
+        ...result,
+        storageSet: true,
+        storageId: patch.storage?.storageId ?? null,
+        storageConfig: patch.storage?.storageId
+          ? {
+              path: patch.storage.path,
+              bucket: patch.storage.bucket,
+            }
+          : null,
+      }
+    }
+
+    if ('annotations' in patch) {
+      result = {
+        ...result,
+        annotations: {
+          ...(current.annotations ?? {}),
+          ...patch.annotations,
+        },
+      }
+    }
+
+    if ('labels' in patch) {
+      result = {
+        ...result,
+        labels: {
+          ...(current.labels ?? {}),
+          ...patch.labels,
+        },
+      }
+    }
+
+    return result
   }
 
-  configDataToDb(config: Partial<ContainerConfigData>): Omit<ContainerConfig, 'id' | 'imageId'> {
+  dbConfigToCreateConfigStatement(
+    config: Omit<ContainerConfig, 'id'>,
+  ): Omit<ContainerConfig, 'id' | 'updatedAt' | 'updatedBy'> {
     return {
-      name: config.name ?? undefined,
-      expose: config.expose ?? undefined,
+      type: config.type,
+      // common
+      name: config.name ?? null,
+      expose: config.expose ?? null,
       routing: toPrismaJson(config.routing),
-      configContainer: toPrismaJson(config.configContainer),
-      // Set user to the given value, if not null or use 0 if specifically 0, otherwise set to default -1
-      user: config.user ?? (config.user === 0 ? 0 : -1),
-      workingDirectory: config.workingDirectory ?? undefined,
-      tty: config.tty !== null ? config.tty : false,
+      configContainer: toPrismaJson(config.configContainer) ?? null,
+      user: toNullableNumber(config.user),
+      workingDirectory: config.workingDirectory ?? null,
+      tty: toNullableBoolean(config.tty),
       ports: toPrismaJson(config.ports),
       portRanges: toPrismaJson(config.portRanges),
       volumes: toPrismaJson(config.volumes),
@@ -86,23 +102,23 @@ export default class ContainerMapper {
       secrets: toPrismaJson(config.secrets),
       initContainers: toPrismaJson(config.initContainers),
       logConfig: toPrismaJson(config.logConfig),
-      storageSet: config.storageSet ?? undefined,
-      storageId: config.storageId ?? undefined,
+      storageSet: toNullableBoolean(config.storageSet),
+      storageId: config.storageId ?? null,
       storageConfig: toPrismaJson(config.storageConfig),
 
       // dagent
-      restartPolicy: config.restartPolicy ?? undefined,
-      networkMode: config.networkMode ?? undefined,
+      restartPolicy: config.restartPolicy ?? null,
+      networkMode: config.networkMode ?? null,
       networks: toPrismaJson(config.networks),
       dockerLabels: toPrismaJson(config.dockerLabels),
       expectedState: toPrismaJson(config.expectedState),
 
       // crane
-      deploymentStrategy: config.deploymentStrategy ?? undefined,
+      deploymentStrategy: config.deploymentStrategy ?? null,
       healthCheckConfig: toPrismaJson(config.healthCheckConfig),
       resourceConfig: toPrismaJson(config.resourceConfig),
-      proxyHeaders: config.proxyHeaders !== null ? config.proxyHeaders : false,
-      useLoadBalancer: config.useLoadBalancer !== null ? config.useLoadBalancer : false,
+      proxyHeaders: toNullableBoolean(config.proxyHeaders),
+      useLoadBalancer: toNullableBoolean(config.useLoadBalancer),
       customHeaders: toPrismaJson(config.customHeaders),
       extraLBAnnotations: toPrismaJson(config.extraLBAnnotations),
       capabilities: toPrismaJson(config.capabilities),
@@ -112,94 +128,56 @@ export default class ContainerMapper {
     }
   }
 
-  mergeSecrets(instanceSecrets: UniqueSecretKeyValue[], imageSecrets: UniqueSecretKey[]): UniqueSecretKeyValue[] {
-    imageSecrets = imageSecrets ?? []
-    instanceSecrets = instanceSecrets ?? []
-
-    const overriddenIds: Set<string> = new Set(instanceSecrets?.map(it => it.id))
-
-    const missing: UniqueSecretKeyValue[] = imageSecrets
-      .filter(it => !overriddenIds.has(it.id))
-      .map(it => ({
-        ...it,
-        value: '',
-        encrypted: false,
-        publicKey: null,
-      }))
-
-    return [...missing, ...instanceSecrets]
-  }
-
-  mergeMetrics(instance: Metrics, image: Metrics): Metrics {
-    if (!instance) {
-      return image?.enabled ? image : null
-    }
-
-    return instance
-  }
-
-  mergeConfigs(image: ContainerConfigData, instance: InstanceContainerConfigData): MergedContainerConfigData {
+  configDataToDbPatch(config: ContainerConfigData): ContainerConfigDbPatch {
     return {
-      // common
-      name: instance.name ?? image.name,
-      environment: instance.environment ?? image.environment,
-      secrets: this.mergeSecrets(instance.secrets, image.secrets),
-      user: instance.user ?? image.user,
-      workingDirectory: instance.workingDirectory ?? image.workingDirectory,
-      tty: instance.tty ?? image.tty,
-      portRanges: instance.portRanges ?? image.portRanges,
-      args: instance.args ?? image.args,
-      commands: instance.commands ?? image.commands,
-      expose: instance.expose ?? image.expose,
-      configContainer: instance.configContainer ?? image.configContainer,
-      routing: instance.routing ?? image.routing,
-      volumes: instance.volumes ?? image.volumes,
-      initContainers: instance.initContainers ?? image.initContainers,
-      capabilities: [], // TODO (@m8vago, @nandor-magyar): capabilities feature is still missing
-      ports: instance.ports ?? image.ports,
-      storageSet: instance.storageSet || image.storageSet,
-      storageId: instance.storageSet ? instance.storageId : image.storageId,
-      storageConfig: instance.storageSet ? instance.storageConfig : image.storageConfig,
-
-      // crane
-      customHeaders: instance.customHeaders ?? image.customHeaders,
-      proxyHeaders: instance.proxyHeaders ?? image.proxyHeaders,
-      extraLBAnnotations: instance.extraLBAnnotations ?? image.extraLBAnnotations,
-      healthCheckConfig: instance.healthCheckConfig ?? image.healthCheckConfig,
-      resourceConfig: instance.resourceConfig ?? image.resourceConfig,
-      useLoadBalancer: instance.useLoadBalancer ?? image.useLoadBalancer,
-      deploymentStrategy: instance.deploymentStrategy ?? image.deploymentStrategy,
-      labels:
-        instance.labels || image.labels
-          ? {
-              deployment: instance.labels?.deployment ?? image.labels?.deployment ?? [],
-              service: instance.labels?.service ?? image.labels?.service ?? [],
-              ingress: instance.labels?.ingress ?? image.labels?.ingress ?? [],
-            }
-          : null,
-      annotations:
-        image.annotations || instance.annotations
-          ? {
-              deployment: instance.annotations?.deployment ?? image.annotations?.deployment ?? [],
-              service: instance.annotations?.service ?? image.annotations?.service ?? [],
-              ingress: instance.annotations?.ingress ?? image.annotations?.ingress ?? [],
-            }
-          : null,
-      metrics: this.mergeMetrics(instance.metrics, image.metrics),
+      name: 'name' in config ? config.name ?? null : undefined,
+      expose: 'expose' in config ? config.expose ?? null : undefined,
+      routing: 'routing' in config ? toPrismaJson(config.routing) : undefined,
+      configContainer: 'configContainer' in config ? toPrismaJson(config.configContainer) : undefined,
+      user: 'user' in config ? toNullableNumber(config.user) : undefined,
+      workingDirectory: 'workingDirectory' in config ? config.workingDirectory ?? null : undefined,
+      tty: 'tty' in config ? toNullableBoolean(config.tty) : undefined,
+      ports: 'ports' in config ? toPrismaJson(config.ports) : undefined,
+      portRanges: 'portRanges' in config ? toPrismaJson(config.portRanges) : undefined,
+      volumes: 'volumes' in config ? toPrismaJson(config.volumes) : undefined,
+      commands: 'commands' in config ? toPrismaJson(config.commands) : undefined,
+      args: 'args' in config ? toPrismaJson(config.args) : undefined,
+      environment: 'environment' in config ? toPrismaJson(config.environment) : undefined,
+      secrets: 'secrets' in config ? toPrismaJson(config.secrets) : undefined,
+      initContainers: 'initContainers' in config ? toPrismaJson(config.initContainers) : undefined,
+      logConfig: 'logConfig' in config ? toPrismaJson(config.logConfig) : undefined,
+      storageSet: 'storageSet' in config ? toNullableBoolean(config.storageSet) : undefined,
+      storageId: 'storageId' in config ? config.storageId ?? null : undefined,
+      storageConfig: 'storageConfig' in config ? toPrismaJson(config.storageConfig) : undefined,
 
       // dagent
-      logConfig: instance.logConfig ?? image.logConfig,
-      networkMode: instance.networkMode ?? image.networkMode,
-      restartPolicy: instance.restartPolicy ?? image.restartPolicy,
-      networks: instance.networks ?? image.networks,
-      dockerLabels: instance.dockerLabels ?? image.dockerLabels,
-      expectedState:
-        !!image.expectedState || !!instance.expectedState
-          ? {
-              ...image.expectedState,
-              ...instance.expectedState,
-            }
-          : null,
+      restartPolicy: 'restartPolicy' in config ? config.restartPolicy ?? null : undefined,
+      networkMode: 'networkMode' in config ? config.networkMode ?? null : undefined,
+      networks: 'networks' in config ? toPrismaJson(config.networks) : undefined,
+      dockerLabels: 'dockerLabels' in config ? toPrismaJson(config.dockerLabels) : undefined,
+      expectedState: 'expectedState' in config ? toPrismaJson(config.expectedState) : undefined,
+
+      // crane
+      deploymentStrategy: 'deploymentStrategy' in config ? config.deploymentStrategy ?? null : undefined,
+      healthCheckConfig: 'healthCheckConfig' in config ? toPrismaJson(config.healthCheckConfig) : undefined,
+      resourceConfig: 'resourceConfig' in config ? toPrismaJson(config.resourceConfig) : undefined,
+      proxyHeaders: 'proxyHeaders' in config ? toNullableBoolean(config.proxyHeaders) : undefined,
+      useLoadBalancer: 'useLoadBalancer' in config ? toNullableBoolean(config.useLoadBalancer) : undefined,
+      customHeaders: 'customHeaders' in config ? toPrismaJson(config.customHeaders) : undefined,
+      extraLBAnnotations: 'extraLBAnnotations' in config ? toPrismaJson(config.extraLBAnnotations) : undefined,
+      capabilities: 'capabilities' in config ? toPrismaJson(config.capabilities) : undefined,
+      annotations: 'annotations' in config ? toPrismaJson(config.annotations) : undefined,
+      labels: 'labels' in config ? toPrismaJson(config.labels) : undefined,
+      metrics: 'metrics' in config ? toPrismaJson(config.metrics) : undefined,
+    }
+  }
+
+  configUpdatedEventToMessage(event: ContainerConfigUpdatedEvent): ConfigUpdatedMessage {
+    return {
+      ...event.patch,
+      id: event.id,
     }
   }
 }
+
+export type ContainerConfigDbPatch = Omit<ContainerConfig, 'id' | 'type' | 'updatedAt' | 'updatedBy'>

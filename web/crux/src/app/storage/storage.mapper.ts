@@ -23,7 +23,7 @@ export default class StorageMapper {
     return {
       ...this.listItemToDto(storage),
       public: !storage.accessKey,
-      inUse: storage._count.containerConfigs > 0 || storage._count.instanceConfigs > 0,
+      inUse: storage._count.containerConfigs > 0,
     }
   }
 
@@ -47,6 +47,5 @@ export default class StorageMapper {
 type StorageWithCount = Storage & {
   _count: {
     containerConfigs: number
-    instanceConfigs: number
   }
 }

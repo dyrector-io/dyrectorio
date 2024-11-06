@@ -1,22 +1,15 @@
-import {
-  ContainerConfig,
-  Deployment,
-  DeploymentStatusEnum,
-  Image,
-  Instance,
-  InstanceContainerConfig,
-  Version,
-} from '@prisma/client'
+import { ContainerConfig, Deployment, DeploymentStatusEnum, Image, Instance, Version } from '@prisma/client'
 
 export type ImageWithConfig = Image & {
   config: ContainerConfig
 }
 
 type InstanceWithConfig = Instance & {
-  config: InstanceContainerConfig | null
+  config: ContainerConfig | null
 }
 
 type DeploymentWithInstances = Deployment & {
+  config: ContainerConfig | null
   instances: InstanceWithConfig[]
 }
 
@@ -25,17 +18,18 @@ export type IncreasableVersion = Version & {
   deployments: DeploymentWithInstances[]
 }
 
-type CopiedImageWithConfig = Omit<Image, 'id' | 'versionId' | 'createdAt' | 'createdBy'> & {
+type CopiedImageWithConfig = Image & {
   originalId: string
-  config: Omit<ContainerConfig, 'id' | 'imageId'>
+  config: Omit<ContainerConfig, 'id'>
 }
 
-type CopiedInstanceWithConfig = Omit<Instance, 'id' | 'deploymentId' | 'imageId'> & {
+type CopiedInstanceWithConfig = Omit<Instance, 'id' | 'configId' | 'deploymentId' | 'imageId'> & {
   originalImageId: string
-  config: Omit<InstanceContainerConfig, 'id' | 'instanceId'>
+  config: Omit<ContainerConfig, 'id'>
 }
 
-type CopiedDeploymentWithInstances = Omit<Deployment, 'id' | 'versionId' | 'createdAt' | 'createdBy'> & {
+type CopiedDeploymentWithInstances = Deployment & {
+  config: Omit<ContainerConfig, 'id'>
   instances: CopiedInstanceWithConfig[]
 }
 
@@ -44,22 +38,24 @@ export type IncreasedVersion = Omit<Version, 'id' | 'createdAt' | 'createdBy' | 
   deployments: CopiedDeploymentWithInstances[]
 }
 
+const copyConfig = (config: ContainerConfig | null): Omit<ContainerConfig, 'id'> | null => {
+  if (!config) {
+    return null
+  }
+
+  const newConf = {
+    ...config,
+  }
+
+  delete newConf.id
+
+  return newConf
+}
+
 const copyInstance = (instance: InstanceWithConfig): CopiedInstanceWithConfig => {
   const newInstance: CopiedInstanceWithConfig = {
     originalImageId: instance.imageId,
-    updatedAt: undefined,
-    config: null,
-  }
-
-  if (instance.config) {
-    const config = {
-      ...instance.config,
-    }
-
-    delete config.id
-    delete config.instanceId
-
-    newInstance.config = config
+    config: copyConfig(instance.config),
   }
 
   return newInstance
@@ -67,15 +63,14 @@ const copyInstance = (instance: InstanceWithConfig): CopiedInstanceWithConfig =>
 
 export const copyDeployment = (deployment: DeploymentWithInstances): CopiedDeploymentWithInstances => {
   const newDeployment: CopiedDeploymentWithInstances = {
-    note: deployment.note,
-    prefix: deployment.prefix,
+    ...deployment,
     // default status for deployments is preparing
     status: DeploymentStatusEnum.preparing,
-    environment: deployment.environment ?? [],
-    nodeId: deployment.nodeId,
-    protected: deployment.protected,
+    config: copyConfig(deployment.config),
     tries: 0,
     instances: [],
+    createdAt: undefined,
+    createdBy: undefined,
     updatedAt: undefined,
     updatedBy: undefined,
   }
@@ -90,23 +85,12 @@ export const copyDeployment = (deployment: DeploymentWithInstances): CopiedDeplo
 }
 
 const copyImage = (image: ImageWithConfig): CopiedImageWithConfig => {
-  const config = {
-    ...image.config,
-  }
-
-  delete config.id
-  delete config.imageId
+  const config = copyConfig(image.config)
 
   const newImage: CopiedImageWithConfig = {
+    ...image,
     originalId: image.id,
-    name: image.name,
-    tag: image.tag,
-    order: image.order,
-    registryId: image.registryId,
-    labels: image.labels,
     config,
-    updatedAt: undefined,
-    updatedBy: undefined,
   }
 
   return newImage

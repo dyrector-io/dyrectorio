@@ -1,5 +1,5 @@
-import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger'
-import { Deployment, DeploymentToken, Instance, InstanceContainerConfig, Node, Project, Version } from '@prisma/client'
+import { ApiProperty } from '@nestjs/swagger'
+import { Deployment, Node, Project, Version } from '@prisma/client'
 import { Type } from 'class-transformer'
 import {
   IsBoolean,
@@ -8,7 +8,6 @@ import {
   IsInt,
   IsJWT,
   IsNumber,
-  IsObject,
   IsOptional,
   IsString,
   IsUUID,
@@ -20,23 +19,15 @@ import { CONTAINER_STATE_VALUES, ContainerState } from 'src/domain/container'
 import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
 import { BasicProperties } from '../../shared/dtos/shared.dto'
 import { AuditDto } from '../audit/audit.dto'
-import {
-  ContainerConfigDto,
-  ContainerIdentifierDto,
-  UniqueKeyValueDto,
-  UniqueSecretKeyValueDto,
-} from '../container/container.dto'
+import { ConfigBundleDetailsDto } from '../config.bundle/config.bundle.dto'
+import { ConcreteContainerConfigDto, ContainerIdentifierDto } from '../container/container.dto'
 import { ImageDto } from '../image/image.dto'
-import { ImageEvent } from '../image/image.event'
-import { ImageDetails } from '../image/image.mapper'
 import { BasicNodeDto, BasicNodeWithStatus } from '../node/node.dto'
 import { BasicProjectDto } from '../project/project.dto'
 import { BasicVersionDto } from '../version/version.dto'
 
 const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete'] as const
 export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]
-
-export type EnvironmentToConfigBundleNameMap = Record<string, string>
 
 export class BasicDeploymentDto {
   @IsUUID()
@@ -84,12 +75,6 @@ export class DeploymentWithBasicNodeDto extends BasicDeploymentDto {
   node: BasicNodeWithStatus
 }
 
-export class InstanceContainerConfigDto extends OmitType(PartialType(ContainerConfigDto), ['secrets']) {
-  @IsOptional()
-  @ValidateNested({ each: true })
-  secrets?: UniqueSecretKeyValueDto[]
-}
-
 export class InstanceDto {
   @IsUUID()
   id: string
@@ -103,7 +88,17 @@ export class InstanceDto {
 
   @IsOptional()
   @ValidateNested()
-  config?: InstanceContainerConfigDto | null
+  config?: ConcreteContainerConfigDto
+}
+
+export class PatchInstanceDto {
+  @IsString()
+  @IsOptional()
+  tag?: string | null
+
+  @IsOptional()
+  @ValidateNested()
+  config?: ConcreteContainerConfigDto | null
 }
 
 export class DeploymentTokenDto {
@@ -143,11 +138,9 @@ export class DeploymentTokenCreatedDto extends DeploymentTokenDto {
 }
 
 export class DeploymentDetailsDto extends DeploymentDto {
-  @ValidateNested({ each: true })
-  environment: UniqueKeyValueDto[]
-
-  @IsObject()
-  configBundleEnvironment: EnvironmentToConfigBundleNameMap
+  @ValidateNested()
+  @IsOptional()
+  config?: ConcreteContainerConfigDto
 
   @IsString()
   @IsOptional()
@@ -165,7 +158,7 @@ export class DeploymentDetailsDto extends DeploymentDto {
 
   @IsString({ each: true })
   @IsOptional()
-  configBundleIds: string[]
+  configBundles: ConfigBundleDetailsDto[]
 }
 
 export class CreateDeploymentDto {
@@ -186,31 +179,18 @@ export class CreateDeploymentDto {
   note?: string | null
 }
 
-export class PatchDeploymentDto {
+export class UpdateDeploymentDto {
   @IsString()
   @IsOptional()
   note?: string | null
 
   @IsString()
-  @IsOptional()
-  prefix?: string | null
+  prefix: string
 
   @IsBoolean()
-  @IsOptional()
-  protected?: boolean
+  protected: boolean
 
-  @IsOptional()
-  @ValidateNested({ each: true })
-  environment?: UniqueKeyValueDto[] | null
-
-  @IsString({ each: true })
-  @IsOptional()
-  configBundleIds?: string[]
-}
-
-export class PatchInstanceDto {
-  @ValidateNested()
-  config: InstanceContainerConfigDto
+  configBundles: string[]
 }
 
 export class CopyDeploymentDto {
@@ -324,11 +304,6 @@ export class StartDeploymentDto {
   instances?: string[]
 }
 
-export type DeploymentImageEvent = ImageEvent & {
-  deploymentIds?: string[]
-  instances?: InstanceDetails[]
-}
-
 export type DeploymentWithNode = Deployment & {
   node: Pick<Node, BasicProperties>
 }
@@ -337,19 +312,4 @@ export type DeploymentWithNodeVersion = DeploymentWithNode & {
   version: Pick<Version, BasicProperties> & {
     project: Pick<Project, BasicProperties>
   }
-}
-
-export type InstanceDetails = Instance & {
-  image: ImageDetails
-  config?: InstanceContainerConfig
-}
-
-export type DeploymentDetails = DeploymentWithNodeVersion & {
-  tokens: Pick<DeploymentToken, 'id' | 'name' | 'createdAt' | 'expiresAt'>[]
-  instances: InstanceDetails[]
-  configBundles: {
-    configBundle: {
-      id: string
-    }
-  }[]
 }

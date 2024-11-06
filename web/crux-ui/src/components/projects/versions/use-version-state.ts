@@ -14,9 +14,8 @@ import {
   ImageMessage,
   ImagesAddedMessage,
   ImagesWereReorderedMessage,
-  ImageUpdateMessage,
+  ImageTagMessage,
   OrderImagesMessage,
-  PatchImageMessage,
   PatchVersionImage,
   RegistryImages,
   RegistryImageTags,
@@ -28,12 +27,13 @@ import {
   WS_TYPE_ADD_IMAGES,
   WS_TYPE_GET_IMAGE,
   WS_TYPE_IMAGE,
+  WS_TYPE_IMAGE_DELETED,
+  WS_TYPE_IMAGE_SET_TAG,
+  WS_TYPE_IMAGE_TAG_UPDATED,
   WS_TYPE_IMAGES_ADDED,
   WS_TYPE_IMAGES_WERE_REORDERED,
-  WS_TYPE_IMAGE_DELETED,
-  WS_TYPE_IMAGE_UPDATED,
   WS_TYPE_ORDER_IMAGES,
-  WS_TYPE_PATCH_IMAGE,
+  WS_TYPE_PATCH_CONFIG,
   WS_TYPE_PATCH_RECEIVED,
   WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS,
   WS_TYPE_REGISTRY_IMAGE_TAGS,
@@ -159,7 +159,7 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
     onOpen: viewMode !== 'tile' ? null : () => setSaveState('connected'),
     onClose: viewMode !== 'tile' ? null : () => setSaveState('disconnected'),
     onSend: message => {
-      if (message.type === WS_TYPE_PATCH_IMAGE) {
+      if (message.type === WS_TYPE_IMAGE_SET_TAG || message.type === WS_TYPE_PATCH_CONFIG) {
         setSaveState('saving')
       }
     },
@@ -217,17 +217,20 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
     setVersion({ ...version, images: newImages })
   })
 
-  versionSock.on(WS_TYPE_IMAGE_UPDATED, (message: ImageUpdateMessage) => {
-    const index = version.images.findIndex(it => it.id === message.id)
+  versionSock.on(WS_TYPE_IMAGE_TAG_UPDATED, (message: ImageTagMessage) => {
+    const index = version.images.findIndex(it => it.id === message.imageId)
     if (index < 0) {
       versionSock.send(WS_TYPE_GET_IMAGE, {
-        id: message.id,
+        id: message.imageId,
       } as GetImageMessage)
       return
     }
 
     const oldImage = version.images[index]
-    const image = mergeImagePatch(oldImage, message)
+
+    const image = mergeImagePatch(oldImage, {
+      tag: message.tag,
+    })
 
     const newImages = [...version.images]
     newImages[index] = image
@@ -314,10 +317,10 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
 
     setVersion({ ...version, images: newImages })
 
-    versionSock.send(WS_TYPE_PATCH_IMAGE, {
-      id: image.id,
+    versionSock.send(WS_TYPE_IMAGE_SET_TAG, {
+      imageId: image.id,
       tag,
-    } as PatchImageMessage)
+    } as ImageTagMessage)
   }
 
   const updateImageConfig = (image: VersionImage, config: Partial<ContainerConfigData>) => {

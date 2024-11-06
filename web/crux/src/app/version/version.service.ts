@@ -1,15 +1,22 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum, Prisma } from '@prisma/client'
+import { Observable, filter, map } from 'rxjs'
+import { IMAGE_EVENT_ADD, IMAGE_EVENT_DELETE, ImageDeletedEvent, ImagesAddedEvent } from 'src/domain/domain-events'
 import { VersionMessage } from 'src/domain/notification-templates'
 import { versionChainMembersOf } from 'src/domain/version-chain'
 import { increaseIncrementalVersion } from 'src/domain/version-increase'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
+import { DomainEvent } from 'src/shared/domain-event'
+import { WsMessage } from 'src/websockets/common'
 import AgentService from '../agent/agent.service'
+import ContainerMapper from '../container/container.mapper'
+import DeployMapper from '../deploy/deploy.mapper'
 import { EditorLeftMessage, EditorMessage } from '../editor/editor.message'
 import EditorServiceProvider from '../editor/editor.service.provider'
 import ImageMapper from '../image/image.mapper'
+import VersionDomainEventListener from './version.domain-event.listener'
 import {
   CreateVersionDto,
   IncreaseVersionDto,
@@ -20,17 +27,21 @@ import {
   VersionListQuery,
 } from './version.dto'
 import VersionMapper from './version.mapper'
+import { WS_TYPE_IMAGES_ADDED, WS_TYPE_IMAGE_DELETED } from './version.message'
 
 @Injectable()
 export default class VersionService {
   private readonly logger = new Logger(VersionService.name)
 
   constructor(
-    private prisma: PrismaService,
-    private mapper: VersionMapper,
-    private imageMapper: ImageMapper,
-    private notificationService: DomainNotificationService,
-    private agentService: AgentService,
+    private readonly prisma: PrismaService,
+    private readonly mapper: VersionMapper,
+    private readonly imageMapper: ImageMapper,
+    private readonly deployMapper: DeployMapper,
+    private readonly containerMapper: ContainerMapper,
+    private readonly domainEvents: VersionDomainEventListener,
+    private readonly notificationService: DomainNotificationService,
+    private readonly agentService: AgentService,
     private readonly editorServices: EditorServiceProvider,
   ) {}
 
@@ -74,8 +85,15 @@ export default class VersionService {
     return versions > 0
   }
 
+  subscribeToDomainEvents(versionId: string): Observable<WsMessage> {
+    return this.domainEvents.watchEvents(versionId).pipe(
+      map(it => this.transformDomainEventToWsMessage(it)),
+      filter(it => !!it),
+    )
+  }
+
   async getVersionsByProjectId(projectId: string, user: Identity, query?: VersionListQuery): Promise<VersionDto[]> {
-    const filter: Prisma.VersionWhereInput = {
+    const versionWhere: Prisma.VersionWhereInput = {
       name: query?.nameContains
         ? {
             contains: query.nameContains,
@@ -92,7 +110,7 @@ export default class VersionService {
         project: {
           id: projectId,
         },
-        ...filter,
+        ...versionWhere,
       },
     })
 
@@ -192,6 +210,7 @@ export default class VersionService {
           },
           deployments: {
             include: {
+              config: true,
               instances: {
                 include: {
                   config: true,
@@ -248,20 +267,25 @@ export default class VersionService {
       if (defaultVersion) {
         const newImages = await Promise.all(
           defaultVersion.images.map(async image => {
+            const data = this.imageMapper.dbImageToCreateImageStatement(image)
+
             const newImage = await prisma.image.create({
               select: {
                 id: true,
               },
               data: {
-                ...image,
-                id: undefined,
-                versionId: newVersion.id,
-                config: {
-                  create: {
-                    ...this.imageMapper.dbContainerConfigToCreateImageStatement(image.config),
-                    id: undefined,
-                  },
-                },
+                ...data,
+                updatedAt: undefined,
+                updatedBy: undefined,
+                createdAt: undefined,
+                createdBy: identity.id,
+                registry: { connect: { id: image.registryId } },
+                version: { connect: { id: newVersion.id } },
+                config: !image.config
+                  ? undefined
+                  : {
+                      create: this.containerMapper.dbConfigToCreateConfigStatement(image.config),
+                    },
               },
             })
 
@@ -280,16 +304,32 @@ export default class VersionService {
 
         const deployments = await Promise.all(
           defaultVersion.deployments.map(async deployment => {
+            const data = this.deployMapper.dbDeploymentToCreateDeploymentStatement(deployment)
+
             const newDeployment = await prisma.deployment.create({
               select: {
                 id: true,
               },
               data: {
-                ...deployment,
-                id: undefined,
+                ...data,
                 status: DeploymentStatusEnum.preparing,
-                versionId: newVersion.id,
-                environment: deployment.environment ?? [],
+                node: {
+                  connect: {
+                    id: deployment.nodeId,
+                  },
+                },
+                version: {
+                  connect: {
+                    id: newVersion.id,
+                  },
+                },
+                config: !deployment.config
+                  ? undefined
+                  : {
+                      create: {
+                        ...this.containerMapper.dbConfigToCreateConfigStatement(deployment.config),
+                      },
+                    },
                 events: undefined,
                 instances: undefined,
                 protected: false,
@@ -297,27 +337,32 @@ export default class VersionService {
             })
 
             await Promise.all(
-              deployment.instances.map(it =>
-                prisma.instance.create({
+              deployment.instances.map(async it => {
+                await prisma.instance.create({
                   select: {
                     id: true,
                   },
                   data: {
-                    ...it,
-                    id: undefined,
-                    deploymentId: newDeployment.id,
-                    imageId: imageMap[it.imageId],
-                    config: it.config
-                      ? {
+                    deployment: {
+                      connect: {
+                        id: newDeployment.id,
+                      },
+                    },
+                    image: {
+                      connect: {
+                        id: imageMap[it.imageId],
+                      },
+                    },
+                    config: !it.config
+                      ? undefined
+                      : {
                           create: {
-                            ...this.imageMapper.dbContainerConfigToCreateImageStatement(it.config),
-                            id: undefined,
+                            ...this.containerMapper.dbConfigToCreateConfigStatement(it.config),
                           },
-                        }
-                      : undefined,
+                        },
                   },
-                }),
-              ),
+                })
+              }),
             )
           }),
         )
@@ -432,6 +477,7 @@ export default class VersionService {
             ],
           },
           include: {
+            config: true,
             instances: {
               include: {
                 config: true,
@@ -497,18 +543,19 @@ export default class VersionService {
           const { originalId } = image
           delete image.originalId
 
+          const data = this.imageMapper.dbImageToCreateImageStatement(image)
+
           const createdImage = await prisma.image.create({
             data: {
-              ...image,
-              versionId: version.id,
+              ...data,
               createdBy: identity.id,
-              config: {
-                create: this.imageMapper.dbContainerConfigToCreateImageStatement({
-                  ...image.config,
-                  id: undefined,
-                  imageId: undefined,
-                }),
+              registry: {
+                connect: {
+                  id: image.registryId,
+                },
               },
+              version: { connect: { id: version.id } },
+              config: { create: this.containerMapper.dbConfigToCreateConfigStatement(image.config) },
             },
           })
 
@@ -520,11 +567,22 @@ export default class VersionService {
       const imageIdMap = new Map(imageIdEntries)
       await Promise.all(
         increased.deployments.map(async deployment => {
+          const data = this.deployMapper.dbDeploymentToCreateDeploymentStatement(deployment)
+
           const newDeployment = await prisma.deployment.create({
             data: {
-              ...deployment,
+              ...data,
               createdBy: identity.id,
-              versionId: version.id,
+              node: {
+                connect: {
+                  id: deployment.nodeId,
+                },
+              },
+              version: {
+                connect: {
+                  id: version.id,
+                },
+              },
               instances: undefined,
             },
           })
@@ -552,11 +610,7 @@ export default class VersionService {
                   config: !instance.config
                     ? undefined
                     : {
-                        create: this.imageMapper.dbContainerConfigToCreateImageStatement({
-                          ...instance.config,
-                          id: undefined,
-                          instanceId: undefined,
-                        }),
+                        create: this.containerMapper.dbConfigToCreateConfigStatement(instance.config),
                       },
                 },
               })
@@ -611,5 +665,24 @@ export default class VersionService {
     }
 
     return message
+  }
+
+  private transformDomainEventToWsMessage(ev: DomainEvent<object>): WsMessage {
+    switch (ev.type) {
+      case IMAGE_EVENT_ADD:
+        return {
+          type: WS_TYPE_IMAGES_ADDED,
+          data: this.mapper.imagesAddedEventToMessage(ev.event as ImagesAddedEvent),
+        }
+      case IMAGE_EVENT_DELETE:
+        return {
+          type: WS_TYPE_IMAGE_DELETED,
+          data: this.mapper.imageDeletedEventToMessage(ev.event as ImageDeletedEvent),
+        }
+      default: {
+        this.logger.error(`Unhandled domain event ${ev.type}`)
+        return null
+      }
+    }
   }
 }

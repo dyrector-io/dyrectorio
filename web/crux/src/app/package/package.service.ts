@@ -4,9 +4,9 @@ import { DeploymentStatusEnum } from '@prisma/client'
 import { VersionWithDeployments } from 'src/domain/version'
 import { ImageWithConfig, copyDeployment } from 'src/domain/version-increase'
 import PrismaService from 'src/services/prisma.service'
+import ContainerMapper from '../container/container.mapper'
 import { DeploymentDto } from '../deploy/deploy.dto'
 import DeployMapper from '../deploy/deploy.mapper'
-import ImageMapper from '../image/image.mapper'
 import TeamRepository from '../team/team.repository'
 import {
   CreatePackageDeploymentDto,
@@ -26,7 +26,7 @@ class PackageService {
   constructor(
     private readonly mapper: PackageMapper,
     private readonly deployMapper: DeployMapper,
-    private readonly imageMapper: ImageMapper,
+    private readonly containerMapper: ContainerMapper,
     private readonly teamRepository: TeamRepository,
     private readonly prisma: PrismaService,
   ) {}
@@ -367,6 +367,7 @@ class PackageService {
             ],
           },
           include: {
+            config: true,
             instances: {
               include: {
                 config: true,
@@ -417,12 +418,27 @@ class PackageService {
       sourceVersion.deployments.at(0)
 
     const copiedDeployment = copyDeployment(sourceDeployment)
+    const data = this.deployMapper.dbDeploymentToCreateDeploymentStatement(copiedDeployment)
 
     const newDeployment = await this.prisma.deployment.create({
       data: {
-        ...copiedDeployment,
+        ...data,
         createdBy: identity.id,
-        versionId: target.id,
+        version: {
+          connect: {
+            id: target.id,
+          },
+        },
+        node: {
+          connect: {
+            id: copiedDeployment.nodeId,
+          },
+        },
+        config: !copiedDeployment.config
+          ? undefined
+          : {
+              create: this.containerMapper.dbConfigToCreateConfigStatement(copiedDeployment.config),
+            },
         instances: undefined,
       },
       include: {
@@ -503,10 +519,8 @@ class PackageService {
             config: !instance.config
               ? undefined
               : {
-                  create: this.imageMapper.dbContainerConfigToCreateImageStatement({
+                  create: this.containerMapper.dbConfigToCreateConfigStatement({
                     ...instance.config,
-                    id: undefined,
-                    instanceId: undefined,
                   }),
                 },
           },

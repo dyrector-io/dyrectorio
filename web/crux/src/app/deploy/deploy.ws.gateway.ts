@@ -1,6 +1,6 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
-import { Observable, Subject, map, of, startWith, takeUntil } from 'rxjs'
+import { Observable, map, of, startWith, takeUntil } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { WsAuthorize, WsClient, WsMessage, WsSubscribe, WsSubscription, WsUnsubscribe } from 'src/websockets/common'
 import SocketClient from 'src/websockets/decorators/ws.client.decorator'
@@ -27,32 +27,19 @@ import {
 } from '../editor/editor.message'
 import EditorServiceProvider from '../editor/editor.service.provider'
 import { IdentityFromSocket } from '../token/jwt-auth.guard'
-import { ImageDeletedMessage, WS_TYPE_IMAGE_DELETED } from '../version/version.message'
-import { PatchDeploymentDto, PatchInstanceDto } from './deploy.dto'
 import {
-  DeploymentEnvUpdatedMessage,
   DeploymentEventListMessage,
   DeploymentEventMessage,
   GetInstanceMessage,
   GetInstanceSecretsMessage,
   InstanceMessage,
   InstanceSecretsMessage,
-  InstanceUpdatedMessage,
-  InstancesAddedMessage,
-  PatchDeploymentEnvMessage,
-  PatchInstanceMessage,
-  WS_TYPE_DEPLOYMENT_ENV_UPDATED,
   WS_TYPE_DEPLOYMENT_EVENT_LIST,
   WS_TYPE_FETCH_DEPLOYMENT_EVENTS,
   WS_TYPE_GET_INSTANCE,
   WS_TYPE_GET_INSTANCE_SECRETS,
   WS_TYPE_INSTANCE,
-  WS_TYPE_INSTANCES_ADDED,
   WS_TYPE_INSTANCE_SECRETS,
-  WS_TYPE_INSTANCE_UPDATED,
-  WS_TYPE_PATCH_DEPLOYMENT_ENV,
-  WS_TYPE_PATCH_INSTANCE,
-  WS_TYPE_PATCH_RECEIVED,
 } from './deploy.message'
 import DeployService from './deploy.service'
 
@@ -66,8 +53,6 @@ const DeploymentId = () => WsParam('deploymentId')
 @UseGlobalWsGuards()
 @UseGlobalWsInterceptors()
 export default class DeployWebSocketGateway {
-  private deploymentEventCompleters = new Map<string, Subject<unknown>>()
-
   constructor(
     private readonly service: DeployService,
     private readonly editorServices: EditorServiceProvider,
@@ -95,33 +80,10 @@ export default class DeployWebSocketGateway {
       data: me,
     })
 
-    const key = `${client.token}-${deploymentId}`
-    if (this.deploymentEventCompleters.has(key)) {
-      this.deploymentEventCompleters.get(key).next(undefined)
-      this.deploymentEventCompleters.delete(key)
-    }
-
-    const completer = new Subject<unknown>()
-    this.deploymentEventCompleters.set(key, completer)
-
     this.service
-      .subscribeToDeploymentEditEvents(deploymentId)
-      .pipe(takeUntil(completer))
-      .subscribe(event => {
-        if (event.type === 'create' && event.instances) {
-          subscription.sendToAll({
-            type: WS_TYPE_INSTANCES_ADDED,
-            data: event.instances.filter(it => it.deploymentId === deploymentId),
-          } as WsMessage<InstancesAddedMessage>)
-        } else if (event.type === 'delete') {
-          subscription.sendToAll({
-            type: WS_TYPE_IMAGE_DELETED,
-            data: {
-              imageId: event.imageId,
-            },
-          } as WsMessage<ImageDeletedMessage>)
-        }
-      })
+      .subscribeToDomainEvents(deploymentId)
+      .pipe(takeUntil(subscription.getCompleter(client.token)))
+      .subscribe(message => subscription.sendToAll(message))
 
     return {
       type: WS_TYPE_EDITOR_INIT,
@@ -139,17 +101,12 @@ export default class DeployWebSocketGateway {
     @SocketSubscription() subscription: WsSubscription,
   ): Promise<void> {
     const data = await this.service.onEditorLeft(deploymentId, client.token)
+
     const message: WsMessage<EditorLeftMessage> = {
       type: WS_TYPE_EDITOR_LEFT,
       data,
     }
     subscription.sendToAllExcept(client, message)
-
-    const key = `${client.token}-${deploymentId}`
-    if (this.deploymentEventCompleters.has(key)) {
-      this.deploymentEventCompleters.get(key).next(undefined)
-      this.deploymentEventCompleters.delete(key)
-    }
   }
 
   @AuditLogLevel('disabled')
@@ -182,81 +139,6 @@ export default class DeployWebSocketGateway {
         return msg
       }),
     )
-  }
-
-  @SubscribeMessage(WS_TYPE_PATCH_INSTANCE)
-  async patchInstance(
-    @DeploymentId() deploymentId: string,
-    @SocketMessage() message: PatchInstanceMessage,
-    @IdentityFromSocket() identity: Identity,
-    @SocketClient() client: WsClient,
-    @SocketSubscription() subscription: WsSubscription,
-  ): Promise<WsMessage<null>> {
-    const cruxReq: Pick<PatchInstanceDto, 'config'> = {
-      config: {},
-    }
-
-    if (message.resetSection) {
-      cruxReq.config[message.resetSection as string] = null
-    } else {
-      cruxReq.config = message.config
-    }
-
-    await this.service.patchInstance(deploymentId, message.instanceId, cruxReq, identity)
-
-    const updateMessage: WsMessage<InstanceUpdatedMessage> = {
-      type: WS_TYPE_INSTANCE_UPDATED,
-      data: {
-        instanceId: message.instanceId,
-        ...cruxReq.config,
-      },
-    }
-
-    subscription.sendToAllExcept(client, updateMessage)
-
-    return {
-      type: WS_TYPE_PATCH_RECEIVED,
-      data: null,
-    }
-  }
-
-  @SubscribeMessage(WS_TYPE_PATCH_DEPLOYMENT_ENV)
-  async patchDeploymentEnvironment(
-    @DeploymentId() deploymentId: string,
-    @SocketMessage() message: PatchDeploymentEnvMessage,
-    @SocketClient() client: WsClient,
-    @SocketSubscription() subscription: WsSubscription,
-    @IdentityFromSocket() identity: Identity,
-  ): Promise<WsMessage<null>> {
-    const cruxReq: PatchDeploymentDto = {
-      environment: message.environment,
-      configBundleIds: message.configBundleIds,
-    }
-
-    await this.service.patchDeployment(deploymentId, cruxReq, identity)
-
-    const configBundleEnvironment = await this.service.getConfigBundleEnvironmentById(deploymentId)
-
-    const response: WsMessage<DeploymentEnvUpdatedMessage> = {
-      type: WS_TYPE_DEPLOYMENT_ENV_UPDATED,
-      data: {
-        ...message,
-        configBundleEnvironment,
-      },
-    } as WsMessage<DeploymentEnvUpdatedMessage>
-
-    if (message.configBundleIds) {
-      // If config bundles change send the response to every client
-      // so the configBundleEnvironment will update
-      subscription.sendToAll(response)
-    } else {
-      subscription.sendToAllExcept(client, response)
-    }
-
-    return {
-      type: WS_TYPE_PATCH_RECEIVED,
-      data: null,
-    }
   }
 
   @AuditLogLevel('disabled')

@@ -1,17 +1,15 @@
 import { Injectable } from '@nestjs/common'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Identity } from '@ory/kratos-client'
-import { ContainerConfig } from '@prisma/client'
-import { ContainerConfigData, UniqueKeyValue } from 'src/domain/container'
-import { containerNameFromImageName } from 'src/domain/deployment'
+import { UniqueKeyValue } from 'src/domain/container'
+import { IMAGE_EVENT_ADD, IMAGE_EVENT_DELETE, ImageDeletedEvent, ImagesAddedEvent } from 'src/domain/domain-events'
 import { EnvironmentRule, parseDyrectorioEnvRules } from 'src/domain/image'
 import PrismaService from 'src/services/prisma.service'
-import { v4 } from 'uuid'
-import ContainerMapper from '../container/container.mapper'
-import EditorServiceProvider from '../editor/editor.service.provider'
+import { v4 as uuid } from 'uuid'
+import ContainerConfigService from '../container/container-config.service'
 import RegistryClientProvider from '../registry/registry-client.provider'
 import TeamRepository from '../team/team.repository'
 import { AddImagesDto, ImageDto, PatchImageDto } from './image.dto'
-import ImageEventService from './image.event.service'
 import ImageMapper from './image.mapper'
 
 type LabelMap = Record<string, string>
@@ -21,11 +19,10 @@ type RegistryLabelMap = Record<string, ImageLabelMap>
 @Injectable()
 export default class ImageService {
   constructor(
-    private prisma: PrismaService,
-    private mapper: ImageMapper,
-    private containerMapper: ContainerMapper,
-    private editorServices: EditorServiceProvider,
-    private eventService: ImageEventService,
+    private readonly prisma: PrismaService,
+    private readonly mapper: ImageMapper,
+    private readonly containerConfigService: ContainerConfigService,
+    private readonly events: EventEmitter2,
     private readonly teamRepository: TeamRepository,
     private readonly registryClients: RegistryClientProvider,
   ) {}
@@ -123,24 +120,13 @@ export default class ImageService {
               registry: true,
             },
             data: {
-              registryId: registyImages.registryId,
-              versionId,
+              registry: { connect: { id: registyImages.registryId } },
+              version: { connect: { id: versionId } },
+              config: { create: { type: 'image' } },
               createdBy: identity.id,
               name: imageName,
               tag: imageTag,
               order: order++,
-              config: {
-                create: {
-                  name: containerNameFromImageName(imageName),
-                  deploymentStrategy: 'recreate',
-                  expose: 'none',
-                  networkMode: 'bridge',
-                  proxyHeaders: false,
-                  restartPolicy: 'no',
-                  tty: false,
-                  useLoadBalancer: false,
-                },
-              },
             },
           })
 
@@ -161,7 +147,7 @@ export default class ImageService {
           const defaultEnvs = Object.entries(envRules)
             .filter(([, rule]) => rule.required || !!rule.default)
             .map(([key, rule]) => ({
-              id: v4(),
+              id: uuid(),
               key,
               value: rule.default ?? '',
             }))
@@ -185,33 +171,44 @@ export default class ImageService {
 
     const dtos = images.map(it => this.mapper.toDto(it))
 
-    this.eventService.imagesAddedToVersion(versionId, dtos)
+    const event: ImagesAddedEvent = {
+      versionId,
+      images,
+    }
+    await this.events.emitAsync(IMAGE_EVENT_ADD, event)
 
     return dtos
   }
 
   async patchImage(teamSlug: string, imageId: string, request: PatchImageDto, identity: Identity): Promise<void> {
-    const currentConfig = await this.prisma.containerConfig.findUniqueOrThrow({
+    const currentConfig = await this.prisma.containerConfig.findFirstOrThrow({
       where: {
-        imageId,
+        image: {
+          id: imageId,
+        },
       },
     })
 
-    const configData = this.containerMapper.configDtoToConfigData(
-      currentConfig as any as ContainerConfigData,
-      request.config ?? {},
-    )
+    if (request.config) {
+      await this.containerConfigService.patchConfig(
+        currentConfig.id,
+        {
+          config: request.config,
+        },
+        identity,
+      )
+    }
 
-    let labels: Record<string, string> = null
-
+    let labels: Record<string, string>
     if (request.tag) {
-      const image = await this.prisma.image.findFirst({
+      const image = await this.prisma.image.findUniqueOrThrow({
         where: {
           id: imageId,
         },
         select: {
           name: true,
           registryId: true,
+          config: true,
         },
       })
 
@@ -221,12 +218,13 @@ export default class ImageService {
       labels = await api.client.labels(image.name, request.tag)
       const rules = parseDyrectorioEnvRules(labels)
 
-      configData.environment = ImageService.mergeEnvironmentsRules(configData.environment, rules)
+      image.config.environment = ImageService.mergeEnvironmentsRules(
+        image.config.environment as UniqueKeyValue[],
+        rules,
+      )
     }
 
-    const config: Omit<ContainerConfig, 'id' | 'imageId'> = this.containerMapper.configDataToDb(configData)
-
-    const image = await this.prisma.image.update({
+    await this.prisma.image.update({
       where: {
         id: imageId,
       },
@@ -237,17 +235,10 @@ export default class ImageService {
       data: {
         labels: labels ?? undefined,
         tag: request.tag ?? undefined,
-        config: {
-          update: {
-            data: config,
-          },
-        },
+        updatedAt: new Date(),
         updatedBy: identity.id,
       },
     })
-
-    const dto = this.mapper.toDto(image)
-    this.eventService.imageUpdated(image.versionId, dto)
   }
 
   async deleteImage(imageId: string): Promise<void> {
@@ -257,13 +248,22 @@ export default class ImageService {
       },
       select: {
         versionId: true,
+        instances: {
+          select: {
+            id: true,
+            configId: true,
+            deploymentId: true,
+          },
+        },
       },
     })
 
-    const editors = await this.editorServices.getService(image.versionId)
-    editors?.onDeleteItem(imageId)
-
-    this.eventService.imageDeletedFromVersion(image.versionId, imageId)
+    const event: ImageDeletedEvent = {
+      versionId: image.versionId,
+      imageId,
+      instances: image.instances,
+    }
+    await this.events.emitAsync(IMAGE_EVENT_DELETE, event)
   }
 
   async orderImages(request: string[], identity: Identity): Promise<void> {
@@ -301,7 +301,7 @@ export default class ImageService {
       const [key, rule] = it
 
       map[key] = {
-        id: currentEnv[key]?.id ?? v4(),
+        id: currentEnv[key]?.id ?? uuid(),
         key,
         value: currentEnv[key]?.value ?? rule.default ?? '',
       }

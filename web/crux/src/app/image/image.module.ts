@@ -9,14 +9,13 @@ import RegistryClientProvider from '../registry/registry-client.provider'
 import RegistryMapper from '../registry/registry.mapper'
 import RegistryModule from '../registry/registry.module'
 import TeamRepository from '../team/team.repository'
-import ImageEventService from './image.event.service'
 import ImageHttpController from './image.http.controller'
 import ImageMapper from './image.mapper'
 import ImageService from './image.service'
 
 @Module({
   imports: [RegistryModule, EditorModule, ContainerModule, AuditLoggerModule],
-  exports: [ImageService, ImageMapper, ImageEventService],
+  exports: [ImageService, ImageMapper],
   providers: [
     PrismaService,
     ImageService,
@@ -25,7 +24,6 @@ import ImageService from './image.service'
     RegistryMapper,
     KratosService,
     EncryptionService,
-    ImageEventService,
     RegistryClientProvider,
   ],
   controllers: [ImageHttpController],

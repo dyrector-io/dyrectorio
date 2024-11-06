@@ -1,5 +1,6 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
+import { takeUntil } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { WsAuthorize, WsClient, WsMessage, WsSubscribe, WsSubscription, WsUnsubscribe } from 'src/websockets/common'
 import SocketClient from 'src/websockets/decorators/ws.client.decorator'
@@ -26,48 +27,47 @@ import {
 } from '../editor/editor.message'
 import EditorServiceProvider from '../editor/editor.service.provider'
 import { IdentityFromSocket } from '../token/jwt-auth.guard'
-import { PatchConfigBundleDto } from './config.bundle.dto'
-import {
-  ConfigBundleEnvUpdatedMessage,
-  PatchConfigBundleEnvMessage,
-  WS_TYPE_CONFIG_BUNDLE_UPDATED,
-  WS_TYPE_PATCH_CONFIG_BUNDLE,
-  WS_TYPE_PATCH_RECEIVED,
-} from './config.bundle.message'
-import ConfigBundleService from './config.bundle.service'
+import { PatchConfigMessage, WS_TYPE_PATCH_CONFIG, WS_TYPE_PATCH_RECEIVED } from './container-config.message'
+import ContainerConfigService from './container-config.service'
 
 const TeamSlug = () => WsParam('teamSlug')
-const ConfigBundleId = () => WsParam('configBundleId')
+const ConfigId = () => WsParam('configId')
 
 @WebSocketGateway({
-  namespace: ':teamSlug/config-bundles/:configBundleId',
+  namespace: ':teamSlug/container-configurations/:configId',
 })
 @UseGlobalWsFilters()
 @UseGlobalWsGuards()
 @UseGlobalWsInterceptors()
-export default class ConfigBundleWebSocketGateway {
+export default class ContainerConfigWebSocketGateway {
   constructor(
-    private readonly service: ConfigBundleService,
+    private readonly service: ContainerConfigService,
     private readonly editorServices: EditorServiceProvider,
   ) {}
 
   @WsAuthorize()
   async onAuthorize(
     @TeamSlug() teamSlug: string,
-    @ConfigBundleId() configBundleId: string,
+    @ConfigId() configId: string,
     @IdentityFromSocket() identity: Identity,
   ): Promise<boolean> {
-    return await this.service.checkConfigBundleIsInTeam(teamSlug, configBundleId, identity)
+    return await this.service.checkConfigIsInTeam(teamSlug, configId, identity)
   }
 
   @WsSubscribe()
   async onSubscribe(
     @SocketClient() client: WsClient,
-    @ConfigBundleId() configBundleId: string,
+    @ConfigId() configId: string,
     @IdentityFromSocket() identity,
     @SocketSubscription() subscription: WsSubscription,
   ): Promise<WsMessage<EditorInitMessage>> {
-    const [me, editors] = await this.service.onEditorJoined(configBundleId, client.token, identity)
+    const [me, editors] = await this.service.onEditorJoined(configId, client.token, identity)
+
+    this.service
+      .subscribeToDomainEvents(configId)
+      .pipe(takeUntil(subscription.getCompleter(client.token)))
+      .subscribe(message => subscription.sendToAll(message))
+
     subscription.sendToAllExcept(client, {
       type: WS_TYPE_EDITOR_JOINED,
       data: me,
@@ -85,35 +85,25 @@ export default class ConfigBundleWebSocketGateway {
   @WsUnsubscribe()
   async onUnsubscribe(
     @SocketClient() client: WsClient,
-    @ConfigBundleId() configBundleId: string,
+    @ConfigId() configId: string,
     @SocketSubscription() subscription: WsSubscription,
   ): Promise<void> {
-    const data = await this.service.onEditorLeft(configBundleId, client.token)
+    const data = await this.service.onEditorLeft(configId, client.token)
     const message: WsMessage<EditorLeftMessage> = {
       type: WS_TYPE_EDITOR_LEFT,
       data,
     }
+
     subscription.sendToAllExcept(client, message)
   }
 
-  @SubscribeMessage(WS_TYPE_PATCH_CONFIG_BUNDLE)
-  async patchConfigBundleEnvironment(
-    @ConfigBundleId() configBundleId: string,
-    @SocketMessage() message: PatchConfigBundleEnvMessage,
+  @SubscribeMessage(WS_TYPE_PATCH_CONFIG)
+  async patchConfig(
+    @ConfigId() configId: string,
+    @SocketMessage() message: PatchConfigMessage,
     @IdentityFromSocket() identity: Identity,
-    @SocketClient() client: WsClient,
-    @SocketSubscription() subscription: WsSubscription,
   ): Promise<WsMessage<null>> {
-    const cruxReq: PatchConfigBundleDto = {
-      ...message,
-    }
-
-    await this.service.patchConfigBundle(configBundleId, cruxReq, identity)
-
-    subscription.sendToAllExcept(client, {
-      type: WS_TYPE_CONFIG_BUNDLE_UPDATED,
-      data: message,
-    } as WsMessage<ConfigBundleEnvUpdatedMessage>)
+    await this.service.patchConfig(configId, message, identity)
 
     return {
       type: WS_TYPE_PATCH_RECEIVED,
@@ -125,11 +115,11 @@ export default class ConfigBundleWebSocketGateway {
   @SubscribeMessage(WS_TYPE_FOCUS_INPUT)
   async onFocusInput(
     @SocketClient() client: WsClient,
-    @ConfigBundleId() configBundleId: string,
+    @ConfigId() configId: string,
     @SocketMessage() message: InputFocusMessage,
     @SocketSubscription() subscription: WsSubscription,
   ): Promise<void> {
-    const editors = await this.editorServices.getService(configBundleId)
+    const editors = await this.editorServices.getService(configId)
     if (!editors) {
       return
     }
@@ -148,11 +138,11 @@ export default class ConfigBundleWebSocketGateway {
   @SubscribeMessage(WS_TYPE_BLUR_INPUT)
   async onBlurInput(
     @SocketClient() client: WsClient,
-    @ConfigBundleId() configBundleId: string,
+    @ConfigId() configId: string,
     @SocketMessage() message: InputFocusMessage,
     @SocketSubscription() subscription: WsSubscription,
   ): Promise<void> {
-    const editors = await this.editorServices.getService(configBundleId)
+    const editors = await this.editorServices.getService(configId)
     if (!editors) {
       return
     }

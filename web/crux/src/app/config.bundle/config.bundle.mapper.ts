@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common'
-import { ConfigBundle } from '@prisma/client'
-import { UniqueKeyValue } from 'src/domain/container'
+import { ConfigBundle, ContainerConfig } from '@prisma/client'
+import { ContainerConfigData } from 'src/domain/container'
+import ContainerMapper from '../container/container.mapper'
 import { ConfigBundleDetailsDto, ConfigBundleDto } from './config.bundle.dto'
 
 @Injectable()
 export default class ConfigBundleMapper {
+  constructor(private readonly containerMapper: ContainerMapper) {}
+
   listItemToDto(configBundle: ConfigBundle): ConfigBundleDto {
     return {
       id: configBundle.id,
@@ -13,10 +16,18 @@ export default class ConfigBundleMapper {
     }
   }
 
-  detailsToDto(configBundle: ConfigBundle): ConfigBundleDetailsDto {
+  detailsToDto(configBundle: ConfigBundleDetails): ConfigBundleDetailsDto {
     return {
       ...this.listItemToDto(configBundle),
-      environment: configBundle.data as UniqueKeyValue[],
+      config: this.containerMapper.configDataToDto(
+        configBundle.id,
+        'configBundle',
+        configBundle.config as any as ContainerConfigData,
+      ),
     }
   }
+}
+
+type ConfigBundleDetails = ConfigBundle & {
+  config?: ContainerConfig
 }

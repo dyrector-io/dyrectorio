@@ -35,7 +35,6 @@ export type AddImages = {
 }
 
 // ws
-
 export const WS_TYPE_ADD_IMAGES = 'add-images'
 export type AddImagesMessage = {
   registryImages: RegistryImages[]
@@ -56,9 +55,11 @@ export type ImagesAddedMessage = {
   images: VersionImage[]
 }
 
-export const WS_TYPE_PATCH_IMAGE = 'patch-image'
-export type PatchImageMessage = PatchVersionImage & {
-  id: string
+export const WS_TYPE_IMAGE_SET_TAG = 'image-set-tag'
+export const WS_TYPE_IMAGE_TAG_UPDATED = 'image-tag-updated'
+export type ImageTagMessage = {
+  imageId: string
+  tag: string
 }
 
 export const WS_TYPE_ORDER_IMAGES = 'order-images'
@@ -66,9 +67,6 @@ export type OrderImagesMessage = string[]
 
 export const WS_TYPE_IMAGES_WERE_REORDERED = 'images-were-reordered'
 export type ImagesWereReorderedMessage = string[]
-
-export const WS_TYPE_IMAGE_UPDATED = 'image-updated'
-export type ImageUpdateMessage = PatchImageMessage
 
 export const WS_TYPE_GET_IMAGE = 'get-image'
 export type GetImageMessage = {

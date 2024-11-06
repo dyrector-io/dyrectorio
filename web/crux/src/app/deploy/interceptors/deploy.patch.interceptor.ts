@@ -4,7 +4,7 @@ import { Observable } from 'rxjs'
 import { checkDeploymentMutability } from 'src/domain/deployment'
 import { CruxConflictException, CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
-import { PatchDeploymentDto } from '../deploy.dto'
+import { UpdateDeploymentDto } from '../deploy.dto'
 
 @Injectable()
 export default class DeployPatchValidationInterceptor implements NestInterceptor {
@@ -12,7 +12,7 @@ export default class DeployPatchValidationInterceptor implements NestInterceptor
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest()
-    const body = req.body as PatchDeploymentDto
+    const body = req.body as UpdateDeploymentDto
 
     const deploymentId = req.params.deploymentId as string
     const deployment = await this.prisma.deployment.findUniqueOrThrow({

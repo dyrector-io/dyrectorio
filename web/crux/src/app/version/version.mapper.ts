@@ -1,6 +1,7 @@
 import { Version } from '.prisma/client'
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import { ProjectTypeEnum } from '@prisma/client'
+import { ImageDeletedEvent, ImagesAddedEvent } from 'src/domain/domain-events'
 import { versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/domain/version'
 import { VersionChainWithEdges } from 'src/domain/version-chain'
 import { BasicProperties } from '../../shared/dtos/shared.dto'
@@ -10,6 +11,7 @@ import DeployMapper from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import { NodeConnectionStatus } from '../node/node.dto'
 import { BasicVersionDto, VersionChainDto, VersionDetailsDto, VersionDto } from './version.dto'
+import { ImageDeletedMessage, ImagesAddedMessage } from './version.message'
 
 @Injectable()
 export default class VersionMapper {
@@ -70,6 +72,18 @@ export default class VersionMapper {
         ...chain.latest,
         type: 'incremental',
       },
+    }
+  }
+
+  imagesAddedEventToMessage(event: ImagesAddedEvent): ImagesAddedMessage {
+    return {
+      images: event.images.map(it => this.imageMapper.toDto(it)),
+    }
+  }
+
+  imageDeletedEventToMessage(event: ImageDeletedEvent): ImageDeletedMessage {
+    return {
+      imageId: event.imageId,
     }
   }
 }

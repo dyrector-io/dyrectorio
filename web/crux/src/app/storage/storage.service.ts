@@ -32,8 +32,13 @@ export default class StorageService {
       include: {
         _count: {
           select: {
-            containerConfigs: true,
-            instanceConfigs: true,
+            containerConfigs: {
+              where: {
+                type: {
+                  in: ['image', 'instance'],
+                },
+              },
+            },
           },
         },
       },
@@ -60,7 +65,6 @@ export default class StorageService {
       ...storage,
       _count: {
         containerConfigs: 0,
-        instanceConfigs: 0,
       },
     })
   }

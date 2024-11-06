@@ -6,21 +6,21 @@ import {
   ConfigBundleDetails,
   ConfigBundleUpdatedMessage,
   PatchConfigBundleMessage,
-  WS_TYPE_CONFIG_BUNDLE_UPDATED,
-  WS_TYPE_PATCH_CONFIG_BUNDLE,
   UniqueKeyValue,
   WS_TYPE_CONFIG_BUNDLE_PATCH_RECEIVED,
+  WS_TYPE_CONFIG_BUNDLE_UPDATED,
+  WS_TYPE_PATCH_CONFIG_BUNDLE,
   WebSocketSaveState,
 } from '@app/models'
+import { toastWarning } from '@app/utils'
+import { configBundlePatchSchema, getValidationError } from '@app/validations'
+import useTranslation from 'next-translate/useTranslation'
+import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import { ValidationError } from 'yup'
+import EditorBadge from '../editor/editor-badge'
 import useEditorState from '../editor/use-editor-state'
 import useItemEditorState, { ItemEditorState } from '../editor/use-item-editor-state'
-import { toastWarning } from '@app/utils'
-import { useRouter } from 'next/router'
-import useTranslation from 'next-translate/useTranslation'
-import { ValidationError } from 'yup'
-import { getValidationError, configBundlePatchSchema } from '@app/validations'
-import EditorBadge from '../editor/editor-badge'
 
 export type ConfigBundleStateOptions = {
   configBundle: ConfigBundleDetails

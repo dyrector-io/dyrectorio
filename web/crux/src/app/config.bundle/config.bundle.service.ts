@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { toPrismaJson } from 'src/domain/utils'
 import PrismaService from 'src/services/prisma.service'
+import ContainerConfigService from '../container/container-config.service'
 import { EditorLeftMessage, EditorMessage } from '../editor/editor.message'
 import EditorServiceProvider from '../editor/editor.service.provider'
 import TeamRepository from '../team/team.repository'
@@ -19,9 +19,10 @@ export default class ConfigBundleService {
   private readonly logger = new Logger(ConfigBundleService.name)
 
   constructor(
-    private teamRepository: TeamRepository,
-    private prisma: PrismaService,
-    private mapper: ConfigBundleMapper,
+    private readonly teamRepository: TeamRepository,
+    private readonly prisma: PrismaService,
+    private readonly mapper: ConfigBundleMapper,
+    private readonly containerConfigService: ContainerConfigService,
     private readonly editorServices: EditorServiceProvider,
   ) {}
 
@@ -58,8 +59,13 @@ export default class ConfigBundleService {
       data: {
         name: req.name,
         description: req.description,
-        data: [],
-        teamId,
+        config: {
+          create: {
+            type: 'configBundle',
+            updatedBy: identity.id,
+          },
+        },
+        team: { connect: { id: teamId } },
         createdBy: identity.id,
       },
     })
@@ -68,6 +74,16 @@ export default class ConfigBundleService {
   }
 
   async patchConfigBundle(id: string, req: PatchConfigBundleDto, identity: Identity): Promise<void> {
+    if (req.config) {
+      await this.containerConfigService.patchConfig(
+        req.config.id,
+        {
+          config: req.config,
+        },
+        identity,
+      )
+    }
+
     await this.prisma.configBundle.update({
       where: {
         id,
@@ -75,7 +91,6 @@ export default class ConfigBundleService {
       data: {
         name: req.name ?? undefined,
         description: req.description ?? undefined,
-        data: req.environment ? toPrismaJson(req.environment) : undefined,
         updatedBy: identity.id,
       },
     })

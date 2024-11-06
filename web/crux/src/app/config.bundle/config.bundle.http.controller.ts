@@ -6,8 +6,8 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
-  Put,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
@@ -128,7 +128,7 @@ export default class ConfigBundlesHttpController {
     }
   }
 
-  @Put(ROUTE_CONFIG_BUNDLE_ID)
+  @Patch(ROUTE_CONFIG_BUNDLE_ID)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Updates a config bundle. Request must include `id`, `name`, and `data`',

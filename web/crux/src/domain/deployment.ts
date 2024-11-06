@@ -16,7 +16,7 @@ import {
   containerStateToJSON,
   deploymentStatusToJSON,
 } from 'src/grpc/protobuf/proto/common'
-import { ContainerState, MergedContainerConfigData, UniqueKeyValue } from './container'
+import { ConcreteContainerConfigData, ContainerState } from './container'
 
 export type DeploymentLogLevel = 'info' | 'warn' | 'error'
 
@@ -134,22 +134,42 @@ export type DeploymentNotification = {
   nodeName: string
 }
 
+export type DeploymentOptions = {
+  request: VersionDeployRequest
+  notification: DeploymentNotification
+  instanceConfigs: Map<string, ConcreteContainerConfigData>
+  deploymentConfig: ConcreteContainerConfigData
+  tries: number
+}
+
 export default class Deployment {
   private statusChannel = new Subject<DeploymentStatusMessage>()
 
   private status: DeploymentStatusEnum = 'preparing'
 
-  readonly id: string
+  private readonly request: VersionDeployRequest
 
-  constructor(
-    private readonly request: VersionDeployRequest,
-    public notification: DeploymentNotification,
-    public mergedConfigs: Map<string, MergedContainerConfigData>,
-    public sharedEnvironment: UniqueKeyValue[],
-    public readonly tries: number,
-  ) {
-    this.id = request.id
+  get id(): string {
+    return this.options.request.id
   }
+
+  get notification(): DeploymentNotification {
+    return this.options.notification
+  }
+
+  get instanceConfigs(): Map<string, ConcreteContainerConfigData> {
+    return this.options.instanceConfigs
+  }
+
+  get deploymentConfig(): ConcreteContainerConfigData {
+    return this.options.deploymentConfig
+  }
+
+  get tries(): number {
+    return this.options.tries
+  }
+
+  constructor(private readonly options: DeploymentOptions) {}
 
   getStatus() {
     return this.status

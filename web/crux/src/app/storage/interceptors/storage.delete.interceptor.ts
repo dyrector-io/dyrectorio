@@ -18,21 +18,8 @@ export default class StorageDeleteValidationInterceptor implements NestIntercept
       },
       take: 1,
     })
-    if (usedContainerConfig > 0) {
-      throw new CruxPreconditionFailedException({
-        property: 'id',
-        value: storageId,
-        message: 'Storage is already in use.',
-      })
-    }
 
-    const usedInstanceContainerConfig = await this.prisma.instanceContainerConfig.count({
-      where: {
-        storageId,
-      },
-      take: 1,
-    })
-    if (usedInstanceContainerConfig > 0) {
+    if (usedContainerConfig > 0) {
       throw new CruxPreconditionFailedException({
         property: 'id',
         value: storageId,

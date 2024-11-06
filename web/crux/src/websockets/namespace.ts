@@ -38,6 +38,11 @@ export default class WsNamespace implements WsSubscription {
     this.logger.verbose('Closed')
   }
 
+  getCompleter(clientToken: string): Observable<undefined> {
+    const resources = this.clients.get(clientToken)
+    return resources.completer as Observable<undefined>
+  }
+
   getParameter(name: string): string | null {
     return this.params[name] ?? null
   }

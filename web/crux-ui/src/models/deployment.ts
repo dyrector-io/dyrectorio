@@ -1,7 +1,8 @@
 import { Audit } from './audit'
 import { DeploymentStatus, DyoApiError, slugify } from './common'
-import { ContainerIdentifier, ContainerState, InstanceContainerConfigData, UniqueKeyValue } from './container'
-import { ImageConfigProperty, ImageDeletedMessage } from './image'
+import { ConfigBundleDetails } from './config-bundle'
+import { ContainerIdentifier, ContainerState, UniqueKeyValue } from './container'
+import { ImageDeletedMessage, VersionImage } from './image'
 import { Instance } from './instance'
 import { DyoNode } from './node'
 import { BasicProject, ProjectDetails } from './project'
@@ -137,30 +138,9 @@ export type StartDeployment = {
 }
 
 // ws
-
-export const WS_TYPE_PATCH_DEPLOYMENT_ENV = 'patch-deployment-env'
-export type PatchDeploymentEnvMessage = {
-  environment?: UniqueKeyValue[]
-  configBundleIds?: string[]
-}
-
-export const WS_TYPE_DEPLOYMENT_ENV_UPDATED = 'deployment-env-updated'
-export type DeploymentEnvUpdatedMessage = {
-  environment?: UniqueKeyValue[]
-  configBundleIds?: string[]
-  configBundleEnvironment: EnvironmentToConfigBundleNameMap
-}
-
-export const WS_TYPE_PATCH_INSTANCE = 'patch-instance'
-export type PatchInstanceMessage = {
-  instanceId: string
-  config?: Partial<InstanceContainerConfigData>
-  resetSection?: ImageConfigProperty
-}
-
-export const WS_TYPE_INSTANCE_UPDATED = 'instance-updated'
-export type InstanceUpdatedMessage = InstanceContainerConfigData & {
-  instanceId: string
+export const WS_TYPE_DEPLOYMENT_BUNDLES_UPDATED = 'deployment-bundles-updated'
+export type DeploymentBundlesUpdatedMessage = {
+  bundles: ConfigBundleDetails[]
 }
 
 export const WS_TYPE_GET_INSTANCE = 'get-instance'
@@ -172,7 +152,18 @@ export const WS_TYPE_INSTANCE = 'instance'
 export type InstanceMessage = Instance & {}
 
 export const WS_TYPE_INSTANCES_ADDED = 'instances-added'
-export type InstancesAddedMessage = Instance[]
+type InstanceCreatedMessage = {
+  id: string
+  configId: string
+  image: VersionImage
+}
+export type InstancesAddedMessage = InstanceCreatedMessage[]
+
+export const WS_TYPE_INSTANCE_DELETED = 'instance-deleted'
+export type InstanceDeletedMessage = {
+  instanceId: string
+  configId: string
+}
 
 export type DeploymentEditEventMessage = InstancesAddedMessage | ImageDeletedMessage
 

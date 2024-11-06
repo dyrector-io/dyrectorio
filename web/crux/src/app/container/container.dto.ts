@@ -1,4 +1,4 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger'
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger'
 import {
   IsBoolean,
   IsIn,
@@ -30,6 +30,9 @@ import {
   PORT_MIN,
 } from 'src/domain/container'
 import { UID_MAX } from 'src/shared/const'
+
+export const CONTAINER_CONFIG_TYPE_VALUES = ['image', 'instance', 'deployment', 'config-bundle'] as const
+export type ContainerConfigTypeDto = (typeof CONTAINER_CONFIG_TYPE_VALUES)[number]
 
 export class UniqueKeyDto {
   @IsUUID()
@@ -304,9 +307,18 @@ export class ExpectedContainerStateDto {
 }
 
 export class ContainerConfigDto {
+  @IsString()
+  id: string
+
+  @ApiProperty({ enum: CONTAINER_CONFIG_TYPE_VALUES })
+  @IsIn(CONTAINER_CONFIG_TYPE_VALUES)
+  @IsOptional()
+  type: ContainerConfigTypeDto
+
   // common
   @IsString()
-  name: string
+  @IsOptional()
+  name?: string
 
   @IsOptional()
   @ValidateNested({ each: true })
@@ -322,7 +334,8 @@ export class ContainerConfigDto {
 
   @ApiProperty({ enum: CONTAINER_EXPOSE_STRATEGY_VALUES })
   @IsIn(CONTAINER_EXPOSE_STRATEGY_VALUES)
-  expose: ContainerExposeStrategy
+  @IsOptional()
+  expose?: ContainerExposeStrategy
 
   @IsOptional()
   @IsInt()
@@ -335,7 +348,8 @@ export class ContainerConfigDto {
   workingDirectory?: string
 
   @IsBoolean()
-  tty: boolean
+  @IsOptional()
+  tty?: boolean
 
   @IsOptional()
   @ValidateNested()
@@ -380,11 +394,13 @@ export class ContainerConfigDto {
 
   @ApiProperty({ enum: CONTAINER_RESTART_POLICY_TYPE_VALUES })
   @IsIn(CONTAINER_RESTART_POLICY_TYPE_VALUES)
-  restartPolicy: ContainerRestartPolicyType
+  @IsOptional()
+  restartPolicy?: ContainerRestartPolicyType
 
   @ApiProperty({ enum: CONTAINER_NETWORK_MODE_VALUES })
   @IsIn(CONTAINER_NETWORK_MODE_VALUES)
-  networkMode: ContainerNetworkMode
+  @IsOptional()
+  networkMode?: ContainerNetworkMode
 
   @IsOptional()
   @ValidateNested({ each: true })
@@ -401,17 +417,20 @@ export class ContainerConfigDto {
   // crane
   @ApiProperty({ enum: CONTAINER_DEPLOYMENT_STRATEGY_VALUES })
   @IsIn(CONTAINER_DEPLOYMENT_STRATEGY_VALUES)
-  deploymentStrategy: ContainerDeploymentStrategyType
+  @IsOptional()
+  deploymentStrategy?: ContainerDeploymentStrategyType
 
   @IsOptional()
   @ValidateNested({ each: true })
   customHeaders?: UniqueKeyDto[]
 
   @IsBoolean()
-  proxyHeaders: boolean
+  @IsOptional()
+  proxyHeaders?: boolean
 
   @IsBoolean()
-  useLoadBalancer: boolean
+  @IsOptional()
+  useLoadBalancer?: boolean
 
   @IsOptional()
   @ValidateNested({ each: true })
@@ -438,7 +457,11 @@ export class ContainerConfigDto {
   metrics?: MetricsDto
 }
 
-export class PartialContainerConfigDto extends PartialType(ContainerConfigDto) {}
+export class ConcreteContainerConfigDto extends OmitType(PartialType(ContainerConfigDto), ['secrets']) {
+  @IsOptional()
+  @ValidateNested({ each: true })
+  secrets?: UniqueSecretKeyValueDto[]
+}
 
 export class ContainerIdentifierDto {
   @IsString()

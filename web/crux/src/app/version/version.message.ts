@@ -1,5 +1,4 @@
-import { ImageConfigProperty } from '../image/image.const'
-import { AddImagesDto, ImageDto, PatchImageDto } from '../image/image.dto'
+import { AddImagesDto, ImageDto } from '../image/image.dto'
 
 export type GetImageMessage = {
   id: string
@@ -10,6 +9,13 @@ export type ImageMessage = ImageDto
 
 export type AddImagesMessage = {
   registryImages: AddImagesDto[]
+}
+
+export const WS_TYPE_IMAGE_SET_TAG = 'image-set-tag'
+export const WS_TYPE_IMAGE_TAG_UPDATED = 'image-tag-updated'
+export type ImageTagMessage = {
+  imageId: string
+  tag: string
 }
 
 export const WS_TYPE_IMAGES_ADDED = 'images-added'
@@ -25,14 +31,6 @@ export const WS_TYPE_IMAGE_DELETED = 'image-deleted'
 export type ImageDeletedMessage = {
   imageId: string
 }
-
-export const WS_TYPE_IMAGE_UPDATED = 'image-updated'
-export type PatchImageMessage = PatchImageDto & {
-  id: string
-  resetSection?: ImageConfigProperty
-}
-
-export const WS_TYPE_PATCH_RECEIVED = 'patch-received'
 
 export const WS_TYPE_IMAGES_WERE_REORDERED = 'images-were-reordered'
 export type OrderImagesMessage = string[]

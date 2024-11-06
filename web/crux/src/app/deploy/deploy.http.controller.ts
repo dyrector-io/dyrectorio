@@ -40,9 +40,9 @@ import {
   DeploymentTokenCreatedDto,
   InstanceDto,
   InstanceSecretsDto,
-  PatchDeploymentDto,
   PatchInstanceDto,
   StartDeploymentDto,
+  UpdateDeploymentDto,
 } from './deploy.dto'
 import DeployService from './deploy.service'
 import DeployCreateTeamAccessGuard from './guards/deploy.create.team-access.guard'
@@ -194,10 +194,10 @@ export default class DeployHttpController {
   async patchDeployment(
     @TeamSlug() _: string,
     @DeploymentId() deploymentId: string,
-    @Body() request: PatchDeploymentDto,
+    @Body() request: UpdateDeploymentDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<void> {
-    await this.service.patchDeployment(deploymentId, request, identity)
+    await this.service.updateDeployment(deploymentId, request, identity)
   }
 
   @Patch(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)

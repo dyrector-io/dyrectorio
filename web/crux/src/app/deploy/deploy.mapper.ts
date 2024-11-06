@@ -1,22 +1,37 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import {
+  ConfigBundle,
+  ContainerConfig,
   Deployment,
   DeploymentEvent,
   DeploymentEventTypeEnum,
   DeploymentStatusEnum,
-  InstanceContainerConfig,
+  DeploymentStrategy,
+  DeploymentToken,
+  ExposeStrategy,
+  Instance,
+  NetworkMode,
+  RestartPolicy,
   Storage,
 } from '@prisma/client'
 import {
+  ConcreteContainerConfigData,
   ContainerConfigData,
+  ContainerLogDriverType,
   ContainerState,
+  ContainerVolumeType,
   InitContainer,
-  InstanceContainerConfigData,
-  MergedContainerConfigData,
   UniqueKey,
   UniqueKeyValue,
+  Volume,
 } from 'src/domain/container'
+import { mergeMarkers, mergeSecrets } from 'src/domain/container-merge'
 import { deploymentLogLevelToDb, deploymentStatusToDb } from 'src/domain/deployment'
+import {
+  DeploymentConfigBundlesUpdatedEvent,
+  InstanceDeletedEvent,
+  InstancesCreatedEvent,
+} from 'src/domain/domain-events'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import {
   InitContainer as AgentInitContainer,
@@ -25,27 +40,36 @@ import {
   DagentContainerConfig,
   ImportContainer,
   InstanceConfig,
+  Volume as ProtoVolume,
 } from 'src/grpc/protobuf/proto/agent'
 import {
   DeploymentStatusMessage,
+  DriverType,
   KeyValue,
   ListSecretsResponse,
   ContainerState as ProtoContainerState,
   DeploymentStrategy as ProtoDeploymentStrategy,
   ExposeStrategy as ProtoExposeStrategy,
+  NetworkMode as ProtoNetworkMode,
+  RestartPolicy as ProtoRestartPolicy,
+  VolumeType as ProtoVolumeType,
   containerStateToJSON,
+  driverTypeFromJSON,
+  networkModeFromJSON,
+  volumeTypeFromJSON,
 } from 'src/grpc/protobuf/proto/common'
 import EncryptionService from 'src/services/encryption.service'
 import AuditMapper from '../audit/audit.mapper'
+import ConfigBundleMapper from '../config.bundle/config.bundle.mapper'
+import { ConcreteContainerConfigDto, ContainerConfigDto } from '../container/container.dto'
 import ContainerMapper from '../container/container.mapper'
-import ImageMapper from '../image/image.mapper'
+import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import { NodeConnectionStatus } from '../node/node.dto'
 import NodeMapper from '../node/node.mapper'
 import ProjectMapper from '../project/project.mapper'
 import VersionMapper from '../version/version.mapper'
 import {
   BasicDeploymentDto,
-  DeploymentDetails,
   DeploymentDetailsDto,
   DeploymentDto,
   DeploymentEventDto,
@@ -56,28 +80,31 @@ import {
   DeploymentWithBasicNodeDto,
   DeploymentWithNode,
   DeploymentWithNodeVersion,
-  EnvironmentToConfigBundleNameMap,
-  InstanceContainerConfigDto,
-  InstanceDetails,
   InstanceDto,
   InstanceSecretsDto,
 } from './deploy.dto'
-import { DeploymentEventMessage } from './deploy.message'
+import {
+  DeploymentBundlesUpdatedMessage,
+  DeploymentEventMessage,
+  InstanceDeletedMessage,
+  InstancesAddedMessage,
+} from './deploy.message'
 
 @Injectable()
 export default class DeployMapper {
   constructor(
     @Inject(forwardRef(() => ImageMapper))
-    private imageMapper: ImageMapper,
-    private containerMapper: ContainerMapper,
+    private readonly imageMapper: ImageMapper,
+    private readonly containerMapper: ContainerMapper,
     @Inject(forwardRef(() => ProjectMapper))
-    private projectMapper: ProjectMapper,
-    private auditMapper: AuditMapper,
+    private readonly projectMapper: ProjectMapper,
+    private readonly auditMapper: AuditMapper,
     @Inject(forwardRef(() => VersionMapper))
-    private versionMapper: VersionMapper,
+    private readonly versionMapper: VersionMapper,
     @Inject(forwardRef(() => NodeMapper))
-    private nodeMapper: NodeMapper,
-    private encryptionService: EncryptionService,
+    private readonly nodeMapper: NodeMapper,
+    private readonly configBundleMapper: ConfigBundleMapper,
+    private readonly encryptionService: EncryptionService,
   ) {}
 
   statusToDto(it: DeploymentStatusEnum): DeploymentStatusDto {
@@ -125,29 +152,24 @@ export default class DeployMapper {
     }
   }
 
-  toDetailsDto(
-    deployment: DeploymentDetails,
-    publicKey?: string,
-    configBundleEnvironment?: EnvironmentToConfigBundleNameMap,
-  ): DeploymentDetailsDto {
+  toDetailsDto(deployment: DeploymentDetails, publicKey?: string): DeploymentDetailsDto {
     return {
       ...this.toDto(deployment),
-      token: deployment.tokens.length > 0 ? deployment.tokens[0] : null,
+      token: deployment.token ?? null,
       lastTry: deployment.tries,
       publicKey,
-      configBundleIds: deployment.configBundles.map(it => it.configBundle.id),
-      environment: deployment.environment as UniqueKeyValue[],
+      configBundles: deployment.configBundles.map(it => this.configBundleMapper.detailsToDto(it.configBundle)),
+      config: this.instanceConfigToDto(deployment.config),
       instances: deployment.instances.map(it => this.instanceToDto(it)),
-      configBundleEnvironment: configBundleEnvironment ?? {},
     }
   }
 
   instanceToDto(it: InstanceDetails): InstanceDto {
     return {
       id: it.id,
-      updatedAt: it.updatedAt,
+      updatedAt: it.config?.updatedAt ?? it.image.config?.updatedAt ?? it.image.updatedAt,
       image: this.imageMapper.toDto(it.image),
-      config: this.instanceConfigToDto(it.config as any as InstanceContainerConfigData),
+      config: this.instanceConfigToDto(it.config),
     }
   }
 
@@ -162,63 +184,60 @@ export default class DeployMapper {
     }
   }
 
-  instanceConfigToDto(it?: InstanceContainerConfigData): InstanceContainerConfigDto {
-    if (!it) {
-      return null
-    }
+  instanceConfigToDto(it: ContainerConfig): ConcreteContainerConfigDto {
+    const concreteConf = it as any as ConcreteContainerConfigData
 
     return {
-      ...this.containerMapper.configDataToDto(it as ContainerConfigData),
-      secrets: it.secrets,
+      ...this.containerMapper.configDataToDto(it.id, 'instance', it as any as ContainerConfigData),
+      secrets: concreteConf.secrets,
     }
+  }
+
+  dbDeploymentToCreateDeploymentStatement(
+    deployment: Deployment,
+  ): Omit<Deployment, 'id' | 'nodeId' | 'versionId' | 'configId'> {
+    const result = {
+      ...deployment,
+    }
+
+    delete result.id
+    delete result.nodeId
+    delete result.versionId
+    delete result.configId
+
+    return result
   }
 
   instanceConfigDtoToInstanceContainerConfigData(
     imageConfig: ContainerConfigData,
-    currentConfig: InstanceContainerConfigData,
-    patch: InstanceContainerConfigDto,
-  ): InstanceContainerConfigData {
-    const config = this.containerMapper.configDtoToConfigData(currentConfig as ContainerConfigData, patch)
+    instanceConfig: ConcreteContainerConfigData,
+    patch: ConcreteContainerConfigDto,
+  ): ConcreteContainerConfigData {
+    const config = this.containerMapper.configDtoToConfigData(
+      instanceConfig as ContainerConfigData,
+      patch as ContainerConfigDto,
+    )
 
-    if (config.labels) {
-      const currentLabels = currentConfig.labels ?? imageConfig.labels ?? {}
+    if ('labels' in patch) {
+      const currentLabels = instanceConfig.labels ?? imageConfig.labels ?? {}
+      config.labels = mergeMarkers(config.labels, currentLabels)
+    }
 
-      config.labels = {
-        deployment: config.labels.deployment ?? currentLabels.deployment,
-        ingress: config.labels.ingress ?? currentLabels.ingress,
-        service: config.labels.service ?? currentLabels.service,
+    if ('annotations' in patch) {
+      const currentAnnotations = instanceConfig.annotations ?? imageConfig.annotations ?? {}
+      config.annotations = mergeMarkers(config.annotations, currentAnnotations)
+    }
+
+    if ('secrets' in patch) {
+      // when they are already overridden, we simply use the patch
+      // otherwise we need to merge with them with the image secrets
+      return {
+        ...config,
+        secrets: instanceConfig.secrets ? patch.secrets : mergeSecrets(patch.secrets, imageConfig.secrets),
       }
     }
 
-    if (config.annotations) {
-      const currentAnnotations = currentConfig.annotations ?? imageConfig.annotations ?? {}
-
-      config.annotations = {
-        deployment: config.annotations.deployment ?? currentAnnotations.deployment,
-        ingress: config.annotations.ingress ?? currentAnnotations.ingress,
-        service: config.annotations.service ?? currentAnnotations.service,
-      }
-    }
-
-    let secrets = !patch.secrets ? currentConfig.secrets : patch.secrets
-    if (secrets && !currentConfig.secrets && imageConfig.secrets) {
-      secrets = this.containerMapper.mergeSecrets(secrets, imageConfig.secrets)
-    }
-
-    return {
-      ...config,
-      secrets,
-    }
-  }
-
-  instanceConfigDataToDb(config: InstanceContainerConfigData): Omit<InstanceContainerConfig, 'id' | 'instanceId'> {
-    const imageConfig = this.containerMapper.configDataToDb(config)
-    return {
-      ...imageConfig,
-      tty: config.tty,
-      useLoadBalancer: config.useLoadBalancer,
-      proxyHeaders: config.proxyHeaders,
-    }
+    return config as ConcreteContainerConfigData
   }
 
   eventTypeToDto(it: DeploymentEventTypeEnum): DeploymentEventTypeDto {
@@ -310,7 +329,7 @@ export default class DeployMapper {
     return events
   }
 
-  deploymentToAgentInstanceConfig(deployment: Deployment, mergedEnvironment: UniqueKeyValue[]): InstanceConfig {
+  instanceConfigToAgent(deployment: Deployment, mergedEnvironment: UniqueKeyValue[]): InstanceConfig {
     const environmentMap = this.mapKeyValueToMap(mergedEnvironment)
 
     return {
@@ -323,29 +342,28 @@ export default class DeployMapper {
     return state ? (containerStateToJSON(state).toLowerCase() as ContainerState) : null
   }
 
-  commonConfigToAgentProto(config: MergedContainerConfigData, storage?: Storage): CommonContainerConfig {
+  commonConfigToAgentProto(config: ConcreteContainerConfigData, storage: Storage): CommonContainerConfig {
     return {
       name: config.name,
       environment: this.mapKeyValueToMap(config.environment),
       secrets: this.mapKeyValueToMap(config.secrets),
       commands: this.mapUniqueKeyToStringArray(config.commands),
-      expose: this.imageMapper.exposeStrategyToProto(config.expose) ?? ProtoExposeStrategy.NONE_ES,
+      expose: this.exposeStrategyToProto(config.expose),
       args: this.mapUniqueKeyToStringArray(config.args),
-      // Set user to the given value, if not null or use 0 if specifically 0, otherwise set null
-      user: config.user === -1 ? null : config.user,
+      user: config.user,
       workingDirectory: config.workingDirectory,
       TTY: config.tty,
       configContainer: config.configContainer,
-      importContainer: config.storageId ? this.storageToImportContainer(config, storage) : null,
+      importContainer: config.storageSet ? this.storageToImportContainer(config, storage) : null,
       routing: config.routing,
       initContainers: this.mapInitContainerToAgent(config.initContainers),
-      portRanges: config.portRanges,
-      ports: config.ports,
-      volumes: this.imageMapper.volumesToProto(config.volumes ?? []),
+      portRanges: config.portRanges ?? [],
+      ports: config.ports ?? [],
+      volumes: this.volumesToProto(config.volumes),
     }
   }
 
-  dagentConfigToAgentProto(config: MergedContainerConfigData): DagentContainerConfig {
+  dagentConfigToAgentProto(config: ConcreteContainerConfigData): DagentContainerConfig {
     return {
       networks: this.mapUniqueKeyToStringArray(config.networks),
       logConfig:
@@ -353,28 +371,28 @@ export default class DeployMapper {
           ? null
           : {
               ...config.logConfig,
-              driver: this.imageMapper.logDriverToProto(config.logConfig.driver),
+              driver: this.logDriverToProto(config.logConfig.driver),
               options: this.mapKeyValueToMap(config.logConfig.options),
             },
-      networkMode: this.imageMapper.networkModeToProto(config.networkMode),
-      restartPolicy: this.imageMapper.restartPolicyToProto(config.restartPolicy),
+      networkMode: this.networkModeToProto(config.networkMode),
+      restartPolicy: this.restartPolicyToProto(config.restartPolicy),
       labels: this.mapKeyValueToMap(config.dockerLabels),
       expectedState: !config.expectedState
         ? null
         : {
-            state: this.imageMapper.stateToProto(config.expectedState.state),
+            state: this.stateToProto(config.expectedState.state),
             timeout: config.expectedState.timeout,
             exitCode: config.expectedState.exitCode,
           },
     }
   }
 
-  craneConfigToAgentProto(config: MergedContainerConfigData): CraneContainerConfig {
+  craneConfigToAgentProto(config: ConcreteContainerConfigData): CraneContainerConfig {
     return {
       customHeaders: this.mapUniqueKeyToStringArray(config.customHeaders),
       extraLBAnnotations: this.mapKeyValueToMap(config.extraLBAnnotations),
       deploymentStrategy:
-        this.imageMapper.deploymentStrategyToProto(config.deploymentStrategy) ?? ProtoDeploymentStrategy.ROLLING_UPDATE,
+        this.deploymentStrategyToProto(config.deploymentStrategy) ?? ProtoDeploymentStrategy.ROLLING_UPDATE,
       healthCheckConfig: config.healthCheckConfig,
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
@@ -405,10 +423,35 @@ export default class DeployMapper {
     }
   }
 
+  instancesCreatedEventToMessage(event: InstancesCreatedEvent): InstancesAddedMessage {
+    return event.instances.map(it => ({
+      id: it.id,
+      configId: it.configId,
+      image: this.imageMapper.toDto(it.image),
+    }))
+  }
+
+  instanceDeletedEventToMessage(event: InstanceDeletedEvent): InstanceDeletedMessage {
+    return {
+      instanceId: event.id,
+      configId: event.configId,
+    }
+  }
+
+  bundlesUpdatedEventToMessage(event: DeploymentConfigBundlesUpdatedEvent): DeploymentBundlesUpdatedMessage {
+    return {
+      bundles: event.bundles.map(it => this.configBundleMapper.detailsToDto(it)),
+    }
+  }
+
   private mapInitContainerToAgent(list: InitContainer[]): AgentInitContainer[] {
+    if (!list) {
+      return []
+    }
+
     const result: AgentInitContainer[] = []
 
-    list?.forEach(it => {
+    list.forEach(it => {
       result.push({
         ...it,
         environment: this.mapKeyValueToMap(it.environment as KeyValue[]),
@@ -442,7 +485,7 @@ export default class DeployMapper {
     return list.map(it => it.key)
   }
 
-  private storageToImportContainer(config: MergedContainerConfigData, storage: Storage): ImportContainer {
+  private storageToImportContainer(config: ConcreteContainerConfigData, storage: Storage): ImportContainer {
     const url = /^(http)s?/.test(storage.url) ? storage.url : `https://${storage.url}`
     let environment: { [key: string]: string } = {
       RCLONE_CONFIG_S3_TYPE: 's3',
@@ -463,4 +506,125 @@ export default class DeployMapper {
       environment,
     }
   }
+
+  private logDriverToProto(it: ContainerLogDriverType): DriverType {
+    switch (it) {
+      case undefined:
+      case null:
+      case 'none':
+        return DriverType.DRIVER_TYPE_NONE
+      case 'json-file':
+        return DriverType.JSON_FILE
+      default:
+        return driverTypeFromJSON(it.toUpperCase())
+    }
+  }
+
+  private volumesToProto(volumes: Volume[]): ProtoVolume[] {
+    if (!volumes) {
+      return []
+    }
+
+    return volumes.map(it => ({ ...it, type: this.volumeTypeToProto(it.type) }))
+  }
+
+  private volumeTypeToProto(it?: ContainerVolumeType): ProtoVolumeType {
+    if (!it) {
+      return ProtoVolumeType.RO
+    }
+
+    return volumeTypeFromJSON(it.toUpperCase())
+  }
+
+  private stateToProto(state: ContainerState): ProtoContainerState {
+    if (!state) {
+      return null
+    }
+
+    switch (state) {
+      case 'running':
+        return ProtoContainerState.RUNNING
+      case 'waiting':
+        return ProtoContainerState.WAITING
+      case 'exited':
+        return ProtoContainerState.EXITED
+      default:
+        return ProtoContainerState.CONTAINER_STATE_UNSPECIFIED
+    }
+  }
+
+  private exposeStrategyToProto(type: ExposeStrategy): ProtoExposeStrategy {
+    if (!type) {
+      return ProtoExposeStrategy.NONE_ES
+    }
+
+    switch (type) {
+      case ExposeStrategy.expose:
+        return ProtoExposeStrategy.EXPOSE
+      case ExposeStrategy.exposeWithTls:
+        return ProtoExposeStrategy.EXPOSE_WITH_TLS
+      default:
+        return ProtoExposeStrategy.NONE_ES
+    }
+  }
+
+  private restartPolicyToProto(type: RestartPolicy): ProtoRestartPolicy {
+    if (!type) {
+      return null
+    }
+
+    switch (type) {
+      case RestartPolicy.always:
+        return ProtoRestartPolicy.ALWAYS
+      case RestartPolicy.no:
+        return ProtoRestartPolicy.NO
+      case RestartPolicy.unlessStopped:
+        return ProtoRestartPolicy.UNLESS_STOPPED
+      case RestartPolicy.onFailure:
+        return ProtoRestartPolicy.ON_FAILURE
+      default:
+        return ProtoRestartPolicy.NO
+    }
+  }
+
+  private deploymentStrategyToProto(type: DeploymentStrategy): ProtoDeploymentStrategy {
+    if (!type) {
+      return null
+    }
+
+    switch (type) {
+      case DeploymentStrategy.recreate:
+        return ProtoDeploymentStrategy.RECREATE
+      case DeploymentStrategy.rolling:
+        return ProtoDeploymentStrategy.ROLLING_UPDATE
+      default:
+        return ProtoDeploymentStrategy.DEPLOYMENT_STRATEGY_UNSPECIFIED
+    }
+  }
+
+  private networkModeToProto(it: NetworkMode): ProtoNetworkMode {
+    if (!it) {
+      return null
+    }
+
+    return networkModeFromJSON(it?.toUpperCase())
+  }
+}
+
+type InstanceDetails = Instance & {
+  image: ImageDetails
+  config: ContainerConfig
+}
+
+type ConfigBundleDetails = ConfigBundle & {
+  config: ContainerConfig
+}
+
+type DeploymentDetails = DeploymentWithNodeVersion & {
+  token: Pick<DeploymentToken, 'id' | 'name' | 'createdAt' | 'expiresAt'>
+  instances: InstanceDetails[]
+  config: ContainerConfig
+  configBundles: {
+    configBundle: ConfigBundleDetails
+  }[]
 }
