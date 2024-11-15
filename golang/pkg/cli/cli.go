@@ -19,6 +19,7 @@ const (
 	FlagDebug              = "debug"
 	FlagPreferLocalImages  = "prefer-local-images"
 	FlagConfigPath         = "config"
+	FlagHosts              = "host"
 	FlagPrefix             = "prefix"
 	FlagImageTag           = "image-tag"
 	FlagSilent             = "silent"
@@ -112,6 +113,14 @@ func InitCLI() *ucli.App {
 				Required:    false,
 				EnvVars:     []string{"DYO_CONFIG"},
 			},
+			&ucli.StringSliceFlag{
+				Name:        FlagHosts,
+				Aliases:     []string{},
+				Value:       ucli.NewStringSlice("localhost"),
+				DefaultText: "localhost",
+				Usage:       "Use this hosts instead of default one. Eg. 'localhost,extradomain1.example.com,extradomain2.example.com'",
+				Required:    false,
+			},
 			&ucli.StringFlag{
 				Name:     FlagImageTag,
 				Value:    "",
@@ -179,6 +188,7 @@ func run(cCtx *ucli.Context) error {
 		LocalAgent:         cCtx.Bool(FlagLocalAgent),
 		Command:            cCtx.Command.Name,
 		EnvFile:            cCtx.String(FlagEnvFile),
+		Hosts:              cCtx.StringSlice(FlagHosts),
 	}
 
 	initialState := State{

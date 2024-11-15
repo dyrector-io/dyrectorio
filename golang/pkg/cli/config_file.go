@@ -40,6 +40,7 @@ type ArgsFlags struct {
 	Command            string
 	ImageTag           string
 	Prefix             string
+	Hosts              []string
 	CruxDisabled       bool
 	CruxUIDisabled     bool
 	LocalAgent         bool

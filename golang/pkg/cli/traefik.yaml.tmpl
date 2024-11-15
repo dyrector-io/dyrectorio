@@ -1,14 +1,20 @@
 http:
   routers:
     crux-ui:
-      rule: Host(`localhost`) || Host(`{{.InternalHost}}`)
+      rule: {{.HostRules}}
       service: crux-ui
       entryPoints:
         - web
 
-    crux:
-      rule: (Host(`localhost`) || Host(`{{.InternalHost}}`)) && (PathPrefix(`/api`) && !PathPrefix(`/api/auth`) && !PathPrefix(`/api/status`))
-      service: crux
+    crux-http:
+      rule: ({{.HostRules}}) && (PathPrefix(`/api`) && !PathPrefix(`/api/auth`) && !PathPrefix(`/api/status`))
+      service: crux-http
+      entryPoints:
+        - web
+
+    crux-grpc:
+      rule: ({{.HostRules}}) && Headers(`content-type`, `application/grpc`)
+      service: crux-grpc
       entryPoints:
         - web
 
@@ -18,7 +24,13 @@ http:
         servers:
           - url: http://{{.InternalHost}}:{{.CruxUIPort}}
 
-    crux:
+    crux-http:
       loadBalancer:
         servers:
           - url: http://{{.InternalHost}}:{{.CruxPort}}
+
+    crux-grpc:
+      loadBalancer:
+        servers:
+          - url: h2c://{{.InternalHost}}:5000
+

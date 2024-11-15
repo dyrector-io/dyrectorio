@@ -53,6 +53,7 @@ const (
 
 type traefikFileProviderData struct {
 	InternalHost string
+	HostRules    string
 	CruxUIPort   uint
 	CruxPort     uint
 }
