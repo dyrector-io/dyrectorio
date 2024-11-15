@@ -47,8 +47,13 @@ const configSchema = yup.object({
   QA_GROUP_NAME: yup.string().optional(),
 
   MAX_CONTAINER_LOG_TAKE: yup.number().optional(),
-  AGENT_CALLBACK_TIMEOUT: yup.number().optional(),
-  MAX_GRPC_RECEIVE_MESSAGE_LENGTH: yup.number().optional(),
+  AGENT_CALLBACK_TIMEOUT: yup.number().positive().optional(),
+  MAX_GRPC_RECEIVE_MESSAGE_LENGTH: yup.number().positive().optional(),
+
+  GRPC_KEEPALIVE_TIMEOUT_MS: yup.number().positive().min(1000).optional(), // 5000
+  GRPC_KEEPALIVE_TIME_MS: yup.number().positive().min(10000).optional(), // 30000
+  HTTP2_MINPINGINTERVAL_MS: yup.number().positive().min(5000).optional(), // 30000
+  HTTP2_MINTIMEBETWEENPINGS_MS: yup.number().positive().min(1000).optional(), // 10000
 })
 
 class InvalidEnvironmentError extends Error {
