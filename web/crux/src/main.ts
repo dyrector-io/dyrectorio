@@ -26,8 +26,6 @@ import prismaBootstrap from './services/prisma.bootstrap'
 import { productionEnvironment } from './shared/config'
 import DyoWsAdapter from './websockets/dyo.ws.adapter'
 
-const HOUR_IN_MS: number = 60 * 60 * 1000
-
 const CRUX_COMMANDS = ['serve', 'encrypt'] as const
 type CruxCommand = (typeof CRUX_COMMANDS)[number]
 
@@ -131,7 +129,13 @@ const serve = async () => {
     options: {
       package: ['agent'],
       protoPath: [join(__dirname, '../proto/agent.proto'), join(__dirname, '../proto/common.proto')],
-      keepalive: { keepaliveTimeoutMs: HOUR_IN_MS },
+      keepalive: {
+        keepaliveTimeoutMs: configService.get<number>('GRPC_KEEPALIVE_TIMEOUT_MS') ?? 5 * 1000,
+        keepaliveTimeMs: configService.get<number>('GRPC_KEEPALIVE_TIME_MS') ?? 30 * 1000,
+        keepalivePermitWithoutCalls: 1,
+        http2MinPingIntervalWithoutDataMs: configService.get<number>('HTTP2_MINPINGINTERVAL_MS') ?? 30 * 1000,
+        http2MinTimeBetweenPingsMs: configService.get<number>('HTTP2_MINTIMEBETWEENPINGS_MS') ?? 10 * 1000,
+      },
       // tls termination occurs at the reverse proxy
       credentials: ServerCredentials.createInsecure(),
       url: `0.0.0.0:${agentPort}`,
