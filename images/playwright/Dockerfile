@@ -1,4 +1,4 @@
-FROM ubuntu:lunar
+FROM ubuntu:noble
 
 RUN apt-get update && apt-get install -y docker-compose nodejs npm jq curl zstd
 
