@@ -604,7 +604,7 @@ jobs:
       - name: Setup using cli
         run: |
           export GITHUB_NETWORK=$(docker network ls -f name=github_network --format {{.Name}})
-          docker run -v /var/run/docker.sock:/var/run/docker.sock --network $GITHUB_NETWORK ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network $GITHUB_NETWORK --prefer-local-images --expect-container-env --debug -p dyo-e2e up
+          docker run -v /var/run/docker.sock:/var/run/docker.sock --network $GITHUB_NETWORK ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network $GITHUB_NETWORK --prefer-local-images --expect-container-env --host localhost,dyo-e2e_traefik --debug -p dyo-e2e up
       - name: Setup NPM caches
         uses: actions/cache/restore@v3
         with:
