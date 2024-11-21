@@ -12,6 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	tm "github.com/buger/goterm"
+	"github.com/na4ma4/go-permbits"
 )
 
 // PrintWelcomeMessage prints a welcome mesage before the command runs
@@ -53,7 +54,7 @@ func NotifyOnce(name string, notifyFunc func()) {
 
 	notificationPath := path.Join(targetDir, CLIDirName, "."+name)
 	if _, err := os.Stat(notificationPath); err != nil {
-		err = os.WriteFile(notificationPath, []byte{}, os.ModePerm)
+		err = os.WriteFile(notificationPath, []byte{}, permbits.UserAll)
 		if err != nil {
 			log.Trace().Err(err).Msgf("cache folder is not available to store temporary info")
 		}

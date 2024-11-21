@@ -52,10 +52,12 @@ const (
 )
 
 type traefikFileProviderData struct {
-	InternalHost string
-	HostRules    string
-	CruxUIPort   uint
-	CruxPort     uint
+	InternalHost   string
+	HostRules      string
+	CruxUIPort     uint
+	CruxPort       uint
+	CruxUIDisabled bool
+	CruxDisabled   bool
 }
 
 //go:embed traefik.yaml.tmpl

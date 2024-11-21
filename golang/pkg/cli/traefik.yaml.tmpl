@@ -1,11 +1,15 @@
 http:
   routers:
+    {{ if .CruxUIDisabled }}
     crux-ui:
       rule: {{.HostRules}}
       service: crux-ui
       entryPoints:
         - web
+    {{ end }}
 
+
+    {{ if .CruxDisabled }}
     crux-http:
       rule: ({{.HostRules}}) && (PathPrefix(`/api`) && !PathPrefix(`/api/auth`) && !PathPrefix(`/api/status`))
       service: crux-http
@@ -17,13 +21,17 @@ http:
       service: crux-grpc
       entryPoints:
         - web
+    {{ end }}
 
   services:
+    {{ if .CruxUIDisabled }}
     crux-ui:
       loadBalancer:
         servers:
           - url: http://{{.InternalHost}}:{{.CruxUIPort}}
+    {{ end }}
 
+    {{ if .CruxDisabled }}
     crux-http:
       loadBalancer:
         servers:
@@ -33,4 +41,4 @@ http:
       loadBalancer:
         servers:
           - url: h2c://{{.InternalHost}}:5000
-
+    {{ end }}

@@ -2,14 +2,12 @@ package utils
 
 import (
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 
 	"github.com/joho/godotenv"
+	"github.com/na4ma4/go-permbits"
 )
-
-const dirPerm = 0o700
 
 type SharedVariableParamError struct {
 	variable string
@@ -37,12 +35,12 @@ func WriteSharedEnvironmentVariables(dataRoot, prefix string, in map[string]stri
 	sharedEnvDirPath := getSharedEnvDir(dataRoot, prefix)
 	sharedEnvFilePath := getSharedEnvPath(dataRoot, prefix)
 
-	err = os.MkdirAll(sharedEnvDirPath, dirPerm)
+	err = os.MkdirAll(sharedEnvDirPath, permbits.UserAll)
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(sharedEnvFilePath, []byte(out), fs.ModePerm)
+	err = os.WriteFile(sharedEnvFilePath, []byte(out), permbits.UserReadWrite)
 	if err != nil {
 		return err
 	}

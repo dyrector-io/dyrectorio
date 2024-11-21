@@ -21,8 +21,6 @@ type Configuration struct {
 	TraefikTLS     bool   `yaml:"traefikTLS"           env:"TRAEFIK_TLS"            env-default:"false"`
 }
 
-const filePermReadWriteOnlyByOwner = 0o600
-
 func (c *Configuration) CheckPermissions() error {
 	path := c.appendInternalMountPath(config.ConnectionTokenFileName)
 	return checkFilePermissions(path)

@@ -7,7 +7,6 @@ import (
 
 const (
 	socketType = "unix"
-	dirPerm    = 0o755
 )
 
 type Status struct {

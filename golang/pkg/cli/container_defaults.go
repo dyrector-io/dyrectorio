@@ -271,7 +271,7 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 		fmt.Sprintf("--entrypoints.web.address=:%d", defaultTraefikInternalPort),
 	}
 
-	if args.CruxUIDisabled {
+	if args.CruxUIDisabled || args.CruxDisabled {
 		commands = append(commands, "--providers.file.directory=/etc/traefik", "--providers.file.watch=true")
 	}
 
@@ -304,10 +304,14 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 			return CopyTraefikConfiguration(
 				ctx,
 				cont.Name,
-				state.InternalHostDomain,
-				args.Hosts,
-				state.SettingsFile.CruxHTTPPort,
-				state.SettingsFile.CruxUIPort,
+				traefikFileProviderData{
+					InternalHost:   state.InternalHostDomain,
+					HostRules:      RenderTraefikHostRules(append(args.Hosts, state.InternalHostDomain, cont.Name)...),
+					CruxUIPort:     state.SettingsFile.CruxUIPort,
+					CruxPort:       state.SettingsFile.CruxHTTPPort,
+					CruxUIDisabled: args.CruxUIDisabled,
+					CruxDisabled:   args.CruxDisabled,
+				},
 			)
 		})
 
@@ -572,7 +576,7 @@ func getBasePostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 }
 
 // CopyTraefikConfiguration copies a config file to Traefik Container
-func CopyTraefikConfiguration(ctx context.Context, name, internalHost string, hosts []string, cruxPort, cruxUIPort uint) error {
+func CopyTraefikConfiguration(ctx context.Context, containerName string, traefikTmplConfig traefikFileProviderData) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return err
@@ -589,14 +593,7 @@ func CopyTraefikConfiguration(ctx context.Context, name, internalHost string, ho
 
 	var result bytes.Buffer
 
-	traefikData := traefikFileProviderData{
-		HostRules:    RenderTraefikHostRules(append(hosts, internalHost)...),
-		InternalHost: internalHost,
-		CruxUIPort:   cruxUIPort,
-		CruxPort:     cruxPort,
-	}
-
-	err = traefikConfig.Execute(&result, traefikData)
+	err = traefikConfig.Execute(&result, traefikTmplConfig)
 	if err != nil {
 		return err
 	}
@@ -610,7 +607,7 @@ func CopyTraefikConfiguration(ctx context.Context, name, internalHost string, ho
 	err = dagentutils.WriteContainerFile(
 		ctx,
 		cli,
-		name,
+		containerName,
 		"traefik/dynamic_conf.yml",
 		data,
 		int64(len([]rune(result.String()))),

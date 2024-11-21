@@ -4,12 +4,12 @@
 package utils_test
 
 import (
-	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
+	"github.com/na4ma4/go-permbits"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -82,7 +82,7 @@ func TestReadSharedEnvironmentVariables(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sharedEnvPath := filepath.Join(tt.dataRoot, tt.prefix, ".shared-env")
-			err := os.WriteFile(sharedEnvPath, []byte(tt.fileContent), fs.ModePerm)
+			err := os.WriteFile(sharedEnvPath, []byte(tt.fileContent), permbits.UserReadWrite)
 			assert.NoError(t, err)
 
 			defer func() {

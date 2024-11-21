@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 
+	"github.com/na4ma4/go-permbits"
 	"github.com/rs/zerolog/log"
 )
 
@@ -61,7 +62,7 @@ func Serve(ctx context.Context) error {
 		log.Error().Str("file", socketPath).Err(err).Msg("Failed to check socket file")
 	}
 
-	err = os.MkdirAll(getSocketDir(), dirPerm)
+	err = os.MkdirAll(getSocketDir(), permbits.UserAll+permbits.GroupReadWrite+permbits.OtherReadWrite)
 	if err != nil {
 		return err
 	}
