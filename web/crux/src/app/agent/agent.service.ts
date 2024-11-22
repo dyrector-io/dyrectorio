@@ -132,6 +132,7 @@ export default class AgentService {
     rootPath: string | null,
     scriptType: NodeScriptTypeDto,
     traefik: DagentTraefikOptionsDto | null,
+    containerName: string | null,
     identity: Identity,
   ): Promise<AgentInstaller> {
     let installer = this.getInstallerByNodeId(node.id)
@@ -154,6 +155,7 @@ export default class AgentService {
       startedBy: identity.id,
       rootPath,
       scriptType,
+      containerName,
       dagentTraefikAcmeEmail: traefik?.acmeEmail,
     })
 

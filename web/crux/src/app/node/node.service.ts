@@ -176,6 +176,7 @@ export default class NodeService {
       req.rootPath ?? null,
       req.scriptType,
       req.dagentTraefik ?? null,
+      req.containerName ?? null,
       identity,
     )
 

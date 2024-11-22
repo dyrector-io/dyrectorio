@@ -62,6 +62,10 @@
   "traefikExplanation": "Traefik is a reverse proxy which lets users deploy services to subdomains as well as use HTTPS.",
   "in-progress": "In progress",
 
+  "containerName": "Container name",
+  "optionalContainerName": "Optional, leave empty for 'dagent'",
+  "containerNameExplanation": "If you want to run multiple agents on the same node you can enter a different name for each container. By default 'dagent' will be used.",
+
   "start": "Start",
   "stop": "Stop",
   "restart": "Restart",

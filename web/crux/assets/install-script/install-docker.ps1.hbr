@@ -53,7 +53,7 @@ docker run `
   {{/if}}
   -e HOST_DOCKER_SOCK_PATH=//var/run/docker.sock `
   --add-host=host.docker.internal:host-gateway `
-  --name 'dagent' `
+  --name '{{#if containerName}}{{containerName}}{{else}}dagent{{/if}}' `
   -v ${DATA_MOUNT_PATH}:/srv/dagent `
   -v //var/run/docker.sock:/var/run/docker.sock `
   -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:{{agentImageTag}}

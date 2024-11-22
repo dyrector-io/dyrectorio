@@ -194,6 +194,22 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                 />
 
                 <DyoLabel className="text-lg mb-2.5" textColor="text-bright">
+                  {t('containerName')}
+                </DyoLabel>
+
+                <DyoInput
+                  name="containerName"
+                  placeholder={t('optionalContainerName')}
+                  className="max-w-lg ml-2 mb-2.5"
+                  grow
+                  value={formik.values.containerName}
+                  onChange={formik.handleChange}
+                  message={formik.errors.containerName}
+                />
+
+                <p className="text-sm text-light-eased ml-4 mb-2.5">{t('containerNameExplanation')}</p>
+
+                <DyoLabel className="text-lg mb-2.5" textColor="text-bright">
                   {t('persistentDataPath')}
                 </DyoLabel>
 
