@@ -22,7 +22,7 @@
     "format:win32": "prettier --write \"./**/*.tsx\" \"./**/*.ts\"",
     "build": "next build",
     "start": "npm run dev",
-    "start:prod": "next start",
+    "start:prod": "node .next/standalone/server.js",
     "test:e2e": "playwright test",
     "test:e2e-debug": "DEBUG=1 playwright test --debug",
     "test": "jest",
