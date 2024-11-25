@@ -141,12 +141,15 @@ const createOverlapTest = (
 // note: here yup passes reference as array
 const portConfigRule = yup.mixed().when('portRanges', ([portRanges]) => {
   if (!portRanges?.length) {
-    return yup.array(
-      yup.object().shape({
-        internal: portNumberRule,
-        external: portNumberOptionalRule,
-      }),
-    ).nullable().optional()
+    return yup
+      .array(
+        yup.object().shape({
+          internal: portNumberRule,
+          external: portNumberOptionalRule,
+        }),
+      )
+      .nullable()
+      .optional()
   }
 
   return yup
@@ -155,7 +158,9 @@ const portConfigRule = yup.mixed().when('portRanges', ([portRanges]) => {
         internal: createOverlapTest(portNumberRule, portRanges, 'internal'),
         external: createOverlapTest(portNumberOptionalRule, portRanges, 'external'),
       }),
-    ).nullable().optional()
+    )
+    .nullable()
+    .optional()
 })
 
 const portRangeConfigRule = yup.array(
@@ -256,15 +261,19 @@ const createMetricsPortRule = (ports: ContainerPort[]) => {
 const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
   const portRule = createMetricsPortRule(ports)
 
-  return yup.object().when({
-    is: (it: Metrics) => it?.enabled,
-    then: schema =>
-      schema.shape({
-        enabled: yup.boolean(),
-        path: yup.string().nullable(),
-        port: portRule,
-      }),
-  }).nullable().optional()
+  return yup
+    .object()
+    .when({
+      is: (it: Metrics) => it?.enabled,
+      then: schema =>
+        schema.shape({
+          enabled: yup.boolean(),
+          path: yup.string().nullable(),
+          port: portRule,
+        }),
+    })
+    .nullable()
+    .optional()
 })
 
 const expectedContainerStateRule = yup.object().shape({

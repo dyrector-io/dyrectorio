@@ -71,7 +71,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
               <div className="inline-block mr-2">
                 <DyoLink
                   href={routes.containerConfig.details(it.image.config.id)}
-                  qaLabel="deployment-list-image-config-icon"
+                  qaLabel="deployment-list-container-config-icon"
                 >
                   <DyoIcon src="/container_config.svg" alt={t('common:imageConfig')} size="md" />
                 </DyoLink>

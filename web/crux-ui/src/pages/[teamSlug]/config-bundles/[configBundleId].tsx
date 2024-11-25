@@ -76,7 +76,7 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
       {editing ? (
         <EditConfigBundleCard submit={submit} configBundle={configBundle} onConfigBundleEdited={setConfigBundle} />
       ) : (
-        <ConfigBundleCard configBundle={detailsToConfigBundle(configBundle)} showConfigIcon />
+        <ConfigBundleCard configBundle={detailsToConfigBundle(configBundle)} />
       )}
       <span className="text-white">TODO deployment list and config</span>
     </Layout>

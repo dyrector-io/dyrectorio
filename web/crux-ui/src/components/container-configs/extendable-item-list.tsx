@@ -122,7 +122,7 @@ const ExtendableItemList = <T extends Item>(props: ExtendableItemListProps<T>) =
     onResetSection,
     emptyItemFactory,
     itemClassName,
-    error,
+    error: sectionLabelError,
   } = props
 
   const [state, dispatch] = useRepatch<InternalState<T>>({
@@ -153,7 +153,7 @@ const ExtendableItemList = <T extends Item>(props: ExtendableItemListProps<T>) =
           labelClassName="text-bright font-semibold tracking-wide"
           disabled={!hasValue || disabled || !onResetSection}
           onResetSection={onResetSection}
-          error={error}
+          error={sectionLabelError}
         >
           {label.toUpperCase()}
         </ConfigSectionLabel>

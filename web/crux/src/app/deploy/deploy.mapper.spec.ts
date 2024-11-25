@@ -632,6 +632,8 @@ describe('DeployMapper', () => {
       updatedAt: new Date(),
       createdBy: 'created-by',
       updatedBy: 'updated-by',
+      deployedAt: null,
+      deployedBy: null,
       node: {
         id: 'deployment-node-id',
         name: 'deployment node',

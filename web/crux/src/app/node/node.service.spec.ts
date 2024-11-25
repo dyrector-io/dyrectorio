@@ -96,9 +96,11 @@ describe('NodeService', () => {
       await nodeService.deleteContainer('test-node-id', 'test-prefix', 'test-name')
 
       expect(createAgentEventMock).toHaveBeenCalledWith('test-node-id', 'containerCommand', {
-        container: {
-          prefix: 'test-prefix',
-          name: 'test-name',
+        target: {
+          container: {
+            prefix: 'test-prefix',
+            name: 'test-name',
+          },
         },
         operation: 'deleteContainer',
       })
@@ -108,7 +110,9 @@ describe('NodeService', () => {
       await nodeService.deleteAllContainers('test-node-id', 'test-prefix')
 
       expect(createAgentEventMock).toHaveBeenCalledWith('test-node-id', 'containerCommand', {
-        prefix: 'test-prefix',
+        target: {
+          prefix: 'test-prefix',
+        },
         operation: 'deleteContainers',
       })
     })

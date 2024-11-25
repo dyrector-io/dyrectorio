@@ -76,7 +76,6 @@ const ConfigBundles = (props: ConfigBundlesPageProps) => {
                   className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
                   key={`bundle-${index}`}
                   configBundle={it}
-                  showConfigIcon
                 />
               )
             })}

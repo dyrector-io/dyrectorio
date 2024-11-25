@@ -295,19 +295,6 @@ export type CraneConfigKey = (typeof CRANE_CONFIG_KEYS)[number]
 export type DagentConfigKey = (typeof DAGENT_CONFIG_KEYS)[number]
 export type ContainerConfigKey = (typeof CONTAINER_CONFIG_KEYS)[number]
 
-export type DagentConfigData = Pick<ContainerConfigData, DagentConfigKey>
-export type CraneConfigData = Pick<ContainerConfigData, CraneConfigKey>
-export type CommonConfigData = Omit<ContainerConfigData, DagentConfigKey | CraneConfigKey>
-
-export type ConcreteDagentConfigData = Pick<ConcreteContainerConfigData, DagentConfigKey>
-export type ConcreteCraneConfigData = Pick<ConcreteContainerConfigData, CraneConfigKey>
-export type ConcreteCommonConfigData = Omit<
-  ConcreteContainerConfigData,
-  DagentConfigKey | CraneConfigKey | 'secrets'
-> & {
-  secrets?: UniqueSecretKeyValue[]
-}
-
 export type ConcreteContainerConfigData = Omit<ContainerConfigData, 'secrets'> & {
   secrets?: UniqueSecretKeyValue[]
 }

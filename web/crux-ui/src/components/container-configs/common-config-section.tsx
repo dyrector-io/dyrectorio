@@ -15,9 +15,7 @@ import {
   CONTAINER_EXPOSE_STRATEGY_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   CommonConfigKey,
-  ConcreteCommonConfigData,
   ConcreteContainerConfigData,
-  ConcreteCraneConfigData,
   ContainerConfigData,
   ContainerConfigErrors,
   ContainerConfigExposeStrategy,
@@ -105,7 +103,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
     })
 
   const onPortsChanged = (ports: Port[]) => {
-    let patch: Partial<ConcreteCommonConfigData & Pick<ConcreteCraneConfigData, 'metrics'>> = {
+    let patch: ConcreteContainerConfigData = {
       ports,
     }
 

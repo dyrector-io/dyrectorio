@@ -12,11 +12,10 @@ import Image from 'next/image'
 type ConfigBundleCardProps = {
   className?: string
   configBundle: ConfigBundle
-  showConfigIcon?: boolean
 }
 
 const ConfigBundleCard = (props: ConfigBundleCardProps) => {
-  const { configBundle, className, showConfigIcon } = props
+  const { configBundle, className } = props
 
   const { t } = useTranslation('config-bundles')
   const routes = useTeamRoutes()
@@ -41,22 +40,20 @@ const ConfigBundleCard = (props: ConfigBundleCardProps) => {
         modalTitle={configBundle.name}
       />
 
-      {showConfigIcon && (
-        <div className="flex flex-row ml-auto mt-auto">
-          <DyoButton className="px-2" outlined href={routes.containerConfig.details(configBundle.configId)}>
-            <div className="flex flex-row items-center gap-2">
-              <Image
-                className="aspect-square"
-                src="/container_config_turquoise.svg"
-                alt={t('common:config')}
-                width={24}
-                height={24}
-              />
-              {t('common:config')}
-            </div>
-          </DyoButton>
-        </div>
-      )}
+      <div className="flex flex-row ml-auto mt-auto">
+        <DyoButton className="px-2" outlined href={routes.containerConfig.details(configBundle.configId)}>
+          <div className="flex flex-row items-center gap-2">
+            <Image
+              className="aspect-square"
+              src="/container_config_turquoise.svg"
+              alt={t('common:config')}
+              width={24}
+              height={24}
+            />
+            {t('common:config')}
+          </div>
+        </DyoButton>
+      </div>
     </DyoCard>
   )
 }

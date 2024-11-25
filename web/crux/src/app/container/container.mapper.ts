@@ -16,6 +16,7 @@ import { ContainerConfigUpdatedEvent } from 'src/domain/domain-events'
 import { ImageDetails } from 'src/domain/image'
 import { toNullableBoolean, toNullableNumber, toPrismaJson } from 'src/domain/utils'
 import { versionIsMutable } from 'src/domain/version'
+import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import ConfigBundleMapper from '../config.bundle/config.bundle.mapper'
 import DeployMapper from '../deploy/deploy.mapper'
 import ImageMapper from '../image/image.mapper'
@@ -31,7 +32,6 @@ import {
   ContainerConfigTypeDto,
   ContainerSecretsDto,
 } from './container.dto'
-import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 
 @Injectable()
 export default class ContainerMapper {

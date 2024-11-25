@@ -1,5 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
+import AgentModule from '../agent/agent.module'
 import AuditLoggerModule from '../audit.logger/audit.logger.module'
 import ConfigBundleModule from '../config.bundle/config.bundle.module'
 import DeployModule from '../deploy/deploy.module'
@@ -12,7 +13,6 @@ import ContainerConfigHttpController from './container-config.http.service'
 import ContainerConfigService from './container-config.service'
 import ContainerConfigWebSocketGateway from './container-config.ws.gateway'
 import ContainerMapper from './container.mapper'
-import AgentModule from '../agent/agent.module'
 
 @Module({
   imports: [

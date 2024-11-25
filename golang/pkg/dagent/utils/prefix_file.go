@@ -38,7 +38,7 @@ func NewSharedEnvPrefixFile(dataRoot, prefix string) prefixFile {
 	}
 }
 
-func NewSecretsFile(dataRoot, prefix string) prefixFile {
+func NewSecretsPrefixFile(dataRoot, prefix string) prefixFile {
 	return prefixFile{
 		DataRoot: dataRoot,
 		Prefix:   prefix,

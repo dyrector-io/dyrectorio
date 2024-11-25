@@ -6,6 +6,7 @@ describe('container-merge', () => {
     name: 'img',
     capabilities: [],
     deploymentStrategy: 'recreate',
+    workingDirectory: '/app',
     expose: 'expose',
     networkMode: 'bridge',
     proxyHeaders: false,
@@ -219,14 +220,15 @@ describe('container-merge', () => {
         type: 'mem',
       },
     ],
-    metrics: null,
-    expectedState: null,
+    metrics: undefined,
+    expectedState: undefined,
   }
 
   const fullConcreteConfig: ConcreteContainerConfigData = {
     name: 'instance.img',
     capabilities: [],
     deploymentStrategy: 'recreate',
+    workingDirectory: '/app',
     expose: 'exposeWithTls',
     networkMode: 'host',
     proxyHeaders: true,
@@ -443,8 +445,8 @@ describe('container-merge', () => {
         type: 'rwo',
       },
     ],
-    metrics: null,
-    expectedState: null,
+    metrics: undefined,
+    expectedState: undefined,
   }
 
   describe('mergeConfigsWithConcreteConfig', () => {

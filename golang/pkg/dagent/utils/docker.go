@@ -323,7 +323,7 @@ func DeploySharedSecrets(ctx context.Context,
 ) error {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 
-	pf := NewSecretsFile(cfg.InternalMountPath, prefix)
+	pf := NewSecretsPrefixFile(cfg.InternalMountPath, prefix)
 	err := pf.WriteVariables(secrets)
 	if err != nil {
 		return fmt.Errorf("could not write secrets, aborting: %w", err)
@@ -728,7 +728,7 @@ func SecretList(ctx context.Context, prefix string, name string) ([]string, erro
 	if name == "" {
 		cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 
-		pf := NewSecretsFile(cfg.InternalMountPath, prefix)
+		pf := NewSecretsPrefixFile(cfg.InternalMountPath, prefix)
 		secrets, err := pf.ReadVariables()
 		if err != nil {
 			return []string{}, fmt.Errorf("could not read secrets, aborting: %w", err)

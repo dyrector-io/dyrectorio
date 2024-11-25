@@ -104,6 +104,7 @@ const VersionViewList = (props: VersionViewListProps) => {
                     onClick={() => onOpenTagsDialog(it)}
                   />
                 </div>
+
                 <div className="inline-block">
                   <DyoIcon
                     className="cursor-pointer"
@@ -113,6 +114,7 @@ const VersionViewList = (props: VersionViewListProps) => {
                     onClick={() => onDelete(it)}
                   />
                 </div>
+
                 <DyoLink href={routes.containerConfig.details(it.config.id)} qaLabel="version-list-image-config-icon">
                   <DyoIcon src="/container_config.svg" alt={t('common:imageConfig')} size="md" />
                 </DyoLink>
