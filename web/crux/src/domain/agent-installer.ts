@@ -23,7 +23,7 @@ export type AgentInstallerOptions = {
   scriptType: NodeScriptType
   rootPath?: string | null
   dagentTraefikAcmeEmail?: string | null
-  containerName?: string | null,
+  workloadName?: string | null
 }
 
 export default class AgentInstaller {
@@ -90,7 +90,7 @@ export default class AgentInstaller {
       network: configLocalDeployment,
       networkName: configLocalDeploymentNetwork,
       debugMode,
-      containerName: this.options.containerName,
+      workloadName: this.options.workloadName,
       rootPath: this.options.rootPath,
       traefik: this.options.dagentTraefikAcmeEmail
         ? {
@@ -168,7 +168,7 @@ export type InstallScriptConfig = {
   token: string
   network: string
   networkName: string
-  containerName: string
+  workloadName: string
   debugMode: boolean
   agentImageTag: string
   rootPath?: string

@@ -164,7 +164,7 @@ export class NodeGenerateScriptDto {
 
   @IsString()
   @IsOptional()
-  containerName?: string
+  workloadName?: string
 }
 
 export type ContainerOperationDto = 'start' | 'stop' | 'restart'

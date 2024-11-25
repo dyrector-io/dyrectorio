@@ -139,7 +139,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
               qaLabel={chipsQALabelFromValue}
             />
 
-            {node.type === 'docker' && (
+            {node.type === 'docker' ? (
               <div className="flex flex-col">
                 <DyoHeading element="h4" className="text-lg text-bright">
                   {t('traefik')}
@@ -198,13 +198,13 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                 </DyoLabel>
 
                 <DyoInput
-                  name="containerName"
-                  placeholder={t('optionalContainerName')}
+                  name="workloadName"
+                  placeholder={t('optionalContainerName.dagent')}
                   className="max-w-lg ml-2 mb-2.5"
                   grow
-                  value={formik.values.containerName}
+                  value={formik.values.workloadName}
                   onChange={formik.handleChange}
-                  message={formik.errors.containerName}
+                  message={formik.errors.workloadName}
                 />
 
                 <p className="text-sm text-light-eased ml-4 mb-2.5">{t('containerNameExplanation')}</p>
@@ -224,7 +224,25 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                 />
                 <p className="text-sm text-light-eased ml-4 mb-2.5">{t('persistentDataExplanation')}</p>
               </div>
-            )}
+            ) : node.type === 'k8s' ? (
+              <div className="flex flex-col">
+                <DyoLabel className="text-lg mb-2.5" textColor="text-bright">
+                  {t('containerName')}
+                </DyoLabel>
+
+                <DyoInput
+                  name="workloadName"
+                  placeholder={t('optionalContainerName.crane')}
+                  className="max-w-lg ml-2 mb-2.5"
+                  grow
+                  value={formik.values.workloadName}
+                  onChange={formik.handleChange}
+                  message={formik.errors.workloadName}
+                />
+
+                <p className="text-sm text-light-eased ml-4 mb-2.5">{t('containerNameExplanation')}</p>
+              </div>
+            ) : null}
 
             <DyoButton className="px-4 py-2 mt-4 mr-auto" type="submit">
               {t('generateScript')}

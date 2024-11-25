@@ -156,7 +156,7 @@ dagent_install() {
     {{/if}}
     -e HOST_DOCKER_SOCK_PATH="$HOST_DOCKER_SOCK_PATH" \
     --add-host=host.docker.internal:host-gateway \
-    --name '{{#if containerName}}{{containerName}}{{else}}dagent{{/if}}' \
+    --name '{{workloadName}}' \
     -v "$PERSISTENCE_FOLDER/":/srv/dagent \
     -v "$HOST_DOCKER_SOCK_PATH":/var/run/docker.sock \
     -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:{{agentImageTag}}

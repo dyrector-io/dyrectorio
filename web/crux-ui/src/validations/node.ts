@@ -27,4 +27,5 @@ export const nodeGenerateScriptSchema = yup.object().shape({
     })
     .nullable()
     .default(null),
+  workloadName: yup.string().label('nodes:containerName'),
 })

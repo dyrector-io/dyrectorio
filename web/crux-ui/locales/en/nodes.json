@@ -63,8 +63,11 @@
   "in-progress": "In progress",
 
   "containerName": "Container name",
-  "optionalContainerName": "Optional, leave empty for 'dagent'",
-  "containerNameExplanation": "If you want to run multiple agents on the same node you can enter a different name for each container. By default 'dagent' will be used.",
+  "optionalContainerName": {
+    "dagent": "Optional, leave empty for 'dagent'",
+    "crane": "Optional, leave empty for 'crane'"
+  },
+  "containerNameExplanation": "If you want to run multiple agents on the same node you can enter a different name for each container.",
 
   "start": "Start",
   "stop": "Stop",

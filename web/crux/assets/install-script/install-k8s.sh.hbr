@@ -10,7 +10,7 @@ metadata:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: crane-config
+  name: {{workloadName}}-config
   namespace: dyrectorio
 data:
   CRANE_IN_CLUSTER: "true"
@@ -96,19 +96,19 @@ subjects:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dyrectorio-k8s-agent
+  name: dyrectorio-k8s-{{workloadName}}
   namespace: dyrectorio
   labels:
-    app: dyrectorio-k8s-agent
+    app: dyrectorio-k8s-{{workloadName}}
 spec:
   selector:
     matchLabels:
-      app: dyrectorio-k8s-agent
+      app: dyrectorio-k8s-{{workloadName}}
   replicas: 1
   template:
     metadata:
       labels:
-        app: dyrectorio-k8s-agent
+        app: dyrectorio-k8s-{{workloadName}}
     spec:
       initContainers:
       - name: crane-init
@@ -124,7 +124,7 @@ spec:
               memory: 256Mi
         envFrom:
         - configMapRef:
-            name: crane-config
+            name: {{workloadName}}-config
         env:
         - name: CRANE_DEPLOYMENT_NAME
           valueFrom: {fieldRef: {fieldPath: metadata.name}}
