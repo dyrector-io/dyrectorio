@@ -1,5 +1,5 @@
 import { HttpModule } from '@nestjs/axios'
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import NotificationTemplateBuilder from 'src/builders/notification.template.builder'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
@@ -20,7 +20,15 @@ import VersionService from './version.service'
 import VersionWebSocketGateway from './version.ws.gateway'
 
 @Module({
-  imports: [ImageModule, ContainerModule, HttpModule, DeployModule, AgentModule, EditorModule, AuditLoggerModule],
+  imports: [
+    forwardRef(() => ImageModule),
+    forwardRef(() => ContainerModule),
+    HttpModule,
+    forwardRef(() => DeployModule),
+    forwardRef(() => AgentModule),
+    EditorModule,
+    AuditLoggerModule,
+  ],
   exports: [VersionService, VersionMapper],
   controllers: [VersionHttpController, VersionChainHttpController],
   providers: [

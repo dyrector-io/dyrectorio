@@ -1,79 +1,65 @@
+import MultiInput from '@app/components/editor/multi-input'
 import { ItemEditorState } from '@app/components/editor/use-item-editor-state'
 import KeyOnlyInput from '@app/components/shared/key-only-input'
 import KeyValueInput from '@app/components/shared/key-value-input'
 import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoMessage from '@app/elements/dyo-message'
 import {
-  DagentConfigProperty,
-  DAGENT_CONFIG_PROPERTIES,
-  filterContains,
-  filterEmpty,
-  ImageConfigProperty,
-  ContainerConfigData,
-  ContainerLogDriverType,
-  ContainerNetworkMode,
-  ContainerRestartPolicyType,
+  ConcreteContainerConfigData,
   CONTAINER_LOG_DRIVER_VALUES,
   CONTAINER_NETWORK_MODE_VALUES,
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
-  DagentConfigDetails,
-  InstanceDagentConfigDetails,
-  mergeConfigs,
-  ContainerState,
   CONTAINER_STATE_VALUES,
+  ContainerConfigData,
+  ContainerConfigErrors,
+  ContainerConfigKey,
+  ContainerLogDriverType,
+  ContainerNetworkMode,
+  ContainerRestartPolicyType,
+  ContainerState,
+  DAGENT_CONFIG_KEYS,
+  DagentConfigKey,
+  filterContains,
+  filterEmpty,
+  stringResettable,
 } from '@app/models'
+import { toNumber } from '@app/utils'
+import { ContainerConfigValidationErrors, findErrorFor } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import ConfigSectionLabel from './config-section-label'
-import DyoMessage from '@app/elements/dyo-message'
-import { ContainerConfigValidationErrors, findErrorFor } from '@app/validations'
-import MultiInput from '@app/components/editor/multi-input'
-import { toNumber } from '@app/utils'
 
-type DagentConfigSectionBaseProps<T> = {
-  config: T
-  resetableConfig?: T
-  onChange: (config: Partial<T>) => void
-  onResetSection: (section: DagentConfigProperty) => void
-  selectedFilters: ImageConfigProperty[]
+type DagentConfigSectionProps = {
+  config: ContainerConfigData | ConcreteContainerConfigData
+  onChange: (config: ContainerConfigData | ConcreteContainerConfigData) => void
+  onResetSection: (section: DagentConfigKey) => void
+  selectedFilters: ContainerConfigKey[]
   editorOptions: ItemEditorState
   disabled?: boolean
   fieldErrors: ContainerConfigValidationErrors
+  conflictErrors: ContainerConfigErrors
+  baseConfig: ContainerConfigData | null
+  resettableConfig: ContainerConfigData | ConcreteContainerConfigData
 }
-
-type ImageDagentConfigSectionProps = DagentConfigSectionBaseProps<DagentConfigDetails> & {
-  configType: 'image'
-}
-
-type InstanceDagentConfigSectionProps = DagentConfigSectionBaseProps<InstanceDagentConfigDetails> & {
-  configType: 'instance'
-  imageConfig: ContainerConfigData
-}
-
-type DagentConfigSectionProps = ImageDagentConfigSectionProps | InstanceDagentConfigSectionProps
 
 const DagentConfigSection = (props: DagentConfigSectionProps) => {
   const {
-    config: propsConfig,
-    resetableConfig: propsResetableConfig,
-    configType,
+    config,
+    resettableConfig,
+    baseConfig,
     onResetSection,
     selectedFilters,
     onChange,
     editorOptions,
     disabled,
     fieldErrors,
+    conflictErrors,
   } = props
 
   const { t } = useTranslation('container')
 
-  const disabledOnImage = configType === 'image' || disabled
-  // eslint-disable-next-line react/destructuring-assignment
-  const imageConfig = configType === 'instance' ? props.imageConfig : null
-  const resetableConfig = propsResetableConfig ?? propsConfig
-  const config = configType === 'instance' ? mergeConfigs(imageConfig, propsConfig) : propsConfig
-
-  return !filterEmpty([...DAGENT_CONFIG_PROPERTIES], selectedFilters) ? null : (
+  return !filterEmpty([...DAGENT_CONFIG_KEYS], selectedFilters) ? null : (
     <div className="my-4">
       <DyoHeading className="text-lg text-bright uppercase font-semibold tracking-wide bg-dyo-sky/50 w-40 rounded-t-lg text-center pt-[2px]">
         {t('base.dagent')}
@@ -84,8 +70,9 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
         {filterContains('networkMode', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <ConfigSectionLabel
-              disabled={disabledOnImage || !resetableConfig.networkMode}
+              disabled={!stringResettable(baseConfig?.networkMode, resettableConfig.networkMode)}
               onResetSection={() => onResetSection('networkMode')}
+              error={conflictErrors?.networkMode}
             >
               {t('dagent.networkMode').toUpperCase()}
             </ConfigSectionLabel>
@@ -112,7 +99,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               items={config.networks ?? []}
               keyPlaceholder={t('dagent.placeholders.network')}
               onChange={it => onChange({ networks: it })}
-              onResetSection={resetableConfig.networks ? () => onResetSection('networks') : null}
+              onResetSection={resettableConfig.networks ? () => onResetSection('networks') : null}
               unique={false}
               editorOptions={editorOptions}
               disabled={disabled}
@@ -129,10 +116,11 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               labelClassName="text-bright font-semibold tracking-wide mb-2"
               label={t('dagent.dockerLabels').toUpperCase()}
               onChange={it => onChange({ dockerLabels: it })}
-              onResetSection={resetableConfig.dockerLabels ? () => onResetSection('dockerLabels') : null}
+              onResetSection={resettableConfig.dockerLabels ? () => onResetSection('dockerLabels') : null}
               items={config.dockerLabels ?? []}
               editorOptions={editorOptions}
               disabled={disabled}
+              errors={conflictErrors?.dockerLabels}
             />
             <DyoMessage message={findErrorFor(fieldErrors, 'dockerLabels')} messageType="error" />
           </div>
@@ -142,8 +130,9 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
         {filterContains('restartPolicy', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <ConfigSectionLabel
-              disabled={disabledOnImage || !resetableConfig.restartPolicy}
+              disabled={disabled || !stringResettable(baseConfig?.restartPolicy, resettableConfig.restartPolicy)}
               onResetSection={() => onResetSection('restartPolicy')}
+              error={conflictErrors?.restartPolicy}
             >
               {t('dagent.restartPolicy').toUpperCase()}
             </ConfigSectionLabel>
@@ -165,8 +154,9 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
         {filterContains('logConfig', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <ConfigSectionLabel
-              disabled={disabled || !resetableConfig.logConfig}
+              disabled={disabled || !resettableConfig.logConfig}
               onResetSection={() => onResetSection('logConfig')}
+              error={conflictErrors?.logConfig}
             >
               {t('dagent.logConfig').toUpperCase()}
             </ConfigSectionLabel>
@@ -203,8 +193,9 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
         {filterContains('expectedState', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <ConfigSectionLabel
-              disabled={disabledOnImage || !resetableConfig?.expectedState}
+              disabled={!resettableConfig?.expectedState}
               onResetSection={() => onResetSection('expectedState')}
+              error={conflictErrors?.expectedState}
             >
               {t('dagent.expectedState').toUpperCase()}
             </ConfigSectionLabel>

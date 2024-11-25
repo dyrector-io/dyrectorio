@@ -1,6 +1,6 @@
 import { ConfigBundle } from '@prisma/client'
-import { ImageDetails } from 'src/app/image/image.mapper'
 import { ContainerConfigData } from './container'
+import { ImageDetails } from './image'
 
 // container
 export const CONTAINER_CONFIG_EVENT_UPDATE = 'container-config.update'

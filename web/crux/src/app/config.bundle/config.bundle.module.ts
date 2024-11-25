@@ -1,5 +1,5 @@
 import { HttpModule } from '@nestjs/axios'
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import AuditLoggerModule from '../audit.logger/audit.logger.module'
@@ -12,15 +12,9 @@ import ConfigBundleMapper from './config.bundle.mapper'
 import ConfigBundleService from './config.bundle.service'
 
 @Module({
-  imports: [HttpModule, TeamModule, AuditLoggerModule, EditorModule, ContainerModule],
+  imports: [HttpModule, TeamModule, AuditLoggerModule, EditorModule, forwardRef(() => ContainerModule)],
   exports: [ConfigBundleMapper, ConfigBundleService],
   controllers: [ConfigBundlesHttpController],
-  providers: [
-    ConfigBundleService,
-    PrismaService,
-    ConfigBundleMapper,
-    TeamRepository,
-    KratosService,
-  ],
+  providers: [ConfigBundleService, PrismaService, ConfigBundleMapper, TeamRepository, KratosService],
 })
 export default class ConfigBundleModule {}

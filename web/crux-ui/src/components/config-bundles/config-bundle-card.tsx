@@ -1,4 +1,5 @@
-import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
+import DyoButton from '@app/elements/dyo-button'
+import { DyoCard } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoLink from '@app/elements/dyo-link'
@@ -8,12 +9,14 @@ import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 
-interface ConfigBundleCardProps extends Omit<DyoCardProps, 'children'> {
+type ConfigBundleCardProps = {
+  className?: string
   configBundle: ConfigBundle
+  showConfigIcon?: boolean
 }
 
 const ConfigBundleCard = (props: ConfigBundleCardProps) => {
-  const { configBundle, className } = props
+  const { configBundle, className, showConfigIcon } = props
 
   const { t } = useTranslation('config-bundles')
   const routes = useTeamRoutes()
@@ -37,6 +40,23 @@ const ConfigBundleCard = (props: ConfigBundleCardProps) => {
         buttonClassName="ml-auto"
         modalTitle={configBundle.name}
       />
+
+      {showConfigIcon && (
+        <div className="flex flex-row ml-auto mt-auto">
+          <DyoButton className="px-2" outlined href={routes.containerConfig.details(configBundle.configId)}>
+            <div className="flex flex-row items-center gap-2">
+              <Image
+                className="aspect-square"
+                src="/container_config_turquoise.svg"
+                alt={t('common:config')}
+                width={24}
+                height={24}
+              />
+              {t('common:config')}
+            </div>
+          </DyoButton>
+        </div>
+      )}
     </DyoCard>
   )
 }

@@ -1,4 +1,4 @@
-import { ContainerConfigData, UniqueKeyValue } from './container'
+import { ContainerConfig, ContainerConfigData } from './container'
 
 export type BasicConfigBundle = {
   id: string
@@ -7,10 +7,11 @@ export type BasicConfigBundle = {
 
 export type ConfigBundle = BasicConfigBundle & {
   description?: string
+  configId: string
 }
 
-export type ConfigBundleDetails = ConfigBundle & {
-  config: ContainerConfigData
+export type ConfigBundleDetails = Omit<ConfigBundle, 'configId'> & {
+  config: ContainerConfig
 }
 
 export type CreateConfigBundle = {
@@ -24,8 +25,7 @@ export type PatchConfigBundle = {
   config?: ContainerConfigData
 }
 
-export type UpdateConfigBundle = CreateConfigBundle & {
-  environment: UniqueKeyValue[]
-}
-
-export type ConfigBundleOption = BasicConfigBundle
+export const detailsToConfigBundle = (bundle: ConfigBundleDetails): ConfigBundle => ({
+  ...bundle,
+  configId: bundle.config.id,
+})

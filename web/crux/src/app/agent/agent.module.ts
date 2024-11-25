@@ -15,7 +15,13 @@ import AgentController from './agent.grpc.controller'
 import AgentService from './agent.service'
 
 @Module({
-  imports: [HttpModule, CruxJwtModule, ImageModule, ContainerModule, forwardRef(() => DeployModule)],
+  imports: [
+    HttpModule,
+    CruxJwtModule,
+    forwardRef(() => ImageModule),
+    forwardRef(() => ContainerModule),
+    forwardRef(() => DeployModule),
+  ],
   exports: [AgentService],
   controllers: [AgentController],
   providers: [

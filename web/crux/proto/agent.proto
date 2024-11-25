@@ -36,7 +36,6 @@ service Agent {
   rpc ContainerLogStream(stream common.ContainerLogMessage)
       returns (common.Empty);
 
-
   // one-shot requests
   rpc SecretList(common.ListSecretsResponse) returns (common.Empty);
   rpc DeleteContainers(common.Empty) returns (common.Empty);
@@ -57,7 +56,7 @@ message AgentInfo {
 
 message AgentCommand {
   oneof command {
-    VersionDeployRequest deploy = 1;
+    DeployRequest deploy = 1;
     ContainerStateRequest containerState = 2;
     ContainerDeleteRequest containerDelete = 3;
     DeployRequestLegacy deployLegacy = 4;
@@ -92,31 +91,20 @@ message AgentCommandError {
  */
 message DeployResponse { bool started = 1; }
 
-message VersionDeployRequest {
+message DeployRequest {
   string id = 1;
   string versionName = 2;
   string releaseNotes = 3;
+  string prefix = 4;
 
-  repeated DeployRequest requests = 4;
+  map<string, string> secrets = 5;
+  repeated DeployWorkloadRequest requests = 6;
 }
 /*
  * Request for a keys of existing secrets in a prefix, eg. namespace
  */
-message ListSecretsRequest { common.ContainerIdentifier container = 1; }
-
-/**
- * Deploys a single container
- *
- */
-message InstanceConfig {
-  /*
-  prefix mapped into host folder structure,
-  used as namespace id
-  */
-  string prefix = 1;
-  optional string mountPath = 2;        // mount path of instance (docker only)
-  map<string, string> environment = 3;  // environment variable map
-  optional string repositoryPrefix = 4; // registry repo prefix
+message ListSecretsRequest {
+  common.ContainerOrPrefix target = 1;
 }
 
 message RegistryAuth {
@@ -241,25 +229,20 @@ message CommonContainerConfig {
   repeated InitContainer initContainers = 1007;
 }
 
-message DeployRequest {
+message DeployWorkloadRequest {
   string id = 1;
   string containerName = 2;
 
-  /* InstanceConfig is set for multiple containers */
-  InstanceConfig instanceConfig = 3;
-
   /* ContainerConfigs */
-  optional CommonContainerConfig common = 4;
-  optional DagentContainerConfig dagent = 5;
-  optional CraneContainerConfig crane = 6;
+  optional CommonContainerConfig common = 3;
+  optional DagentContainerConfig dagent = 4;
+  optional CraneContainerConfig crane = 5;
 
-  /* Runtime info and requirements of a container */
-  optional string runtimeConfig = 7;
-  optional string registry = 8;
-  string imageName = 9;
-  string tag = 10;
+  optional string registry = 6;
+  string imageName = 7;
+  string tag = 8;
 
-  optional RegistryAuth registryAuth = 11;
+  optional RegistryAuth registryAuth = 9;
 }
 
 message ContainerStateRequest {

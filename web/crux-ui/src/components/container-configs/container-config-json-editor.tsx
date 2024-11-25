@@ -1,13 +1,11 @@
 import { ItemEditorState } from '@app/components/editor/use-item-editor-state'
 import useMultiInputState from '@app/components/editor/use-multi-input-state'
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
-import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
-import { CANCEL_THROTTLE, useThrottling } from '@app/hooks/use-throttleing'
 import { editIdOf } from '@app/models'
 import clsx from 'clsx'
 import { CSSProperties, useCallback, useState } from 'react'
 
-interface EditImageJsonProps<Config, Json> {
+type EditImageJsonProps<Config, Json> = {
   disabled?: boolean
   className?: string
   config: Config
@@ -19,7 +17,7 @@ interface EditImageJsonProps<Config, Json> {
 
 const JSON_EDITOR_COMPARATOR = <Json,>(one: Json, other: Json): boolean => JSON.stringify(one) === JSON.stringify(other)
 
-const EditImageJson = <Config, Json>(props: EditImageJsonProps<Config, Json>) => {
+const ContainerConfigJsonEditor = <Config, Json>(props: EditImageJsonProps<Config, Json>) => {
   const {
     disabled,
     editorOptions,
@@ -29,8 +27,6 @@ const EditImageJson = <Config, Json>(props: EditImageJsonProps<Config, Json>) =>
     onParseError: propOnParseError,
     convertConfigToJson,
   } = props
-
-  const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
   const [jsonError, setJsonError] = useState<boolean>(false)
 
@@ -64,12 +60,9 @@ const EditImageJson = <Config, Json>(props: EditImageJsonProps<Config, Json>) =>
   const onParseError = useCallback(
     (err: Error) => {
       setJsonError(true)
-
-      throttle(CANCEL_THROTTLE)
-
       propOnParseError(err)
     },
-    [throttle, propOnParseError],
+    [propOnParseError],
   )
 
   const { highlightColor } = editorState
@@ -96,4 +89,4 @@ const EditImageJson = <Config, Json>(props: EditImageJsonProps<Config, Json>) =>
   )
 }
 
-export default EditImageJson
+export default ContainerConfigJsonEditor

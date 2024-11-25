@@ -25,7 +25,7 @@ export type WsMessageCallback<T = any> = (message: T) => void
 
 export type WsErrorHandler = (message: WsErrorMessage) => void
 
-export type WebSocketSendMessage = (message: WsMessage) => boolean
+export type WebSocketClientSendMessage = (message: WsMessage) => boolean
 
 export type WebSocketClientOptions = {
   onOpen?: VoidFunction

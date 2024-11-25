@@ -1,4 +1,4 @@
-import { IMAGE_FILTER_MIN_LENGTH, IMAGE_WS_REQUEST_DELAY } from '@app/const'
+import { IMAGE_FILTER_MIN_LENGTH, WS_PATCH_DELAY } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoCheckbox from '@app/elements/dyo-checkbox'
@@ -47,7 +47,7 @@ const AddImagesCard = (props: AddImagesCardProps) => {
   const [images, setImages] = useState<SelectableImage[]>([])
   const [filterOrName, setFilterOrName] = useState('')
   const [inputMessage, setInputMessage] = useState<string | null>(null)
-  const throttleFilter = useThrottling(IMAGE_WS_REQUEST_DELAY)
+  const throttleFilter = useThrottling(WS_PATCH_DELAY)
 
   const registriesFound = registries?.length > 0
 

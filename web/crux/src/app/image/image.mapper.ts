@@ -1,33 +1,39 @@
-import { Injectable } from '@nestjs/common'
-import {
-  ContainerConfig,
-  DeploymentStrategy,
-  ExposeStrategy,
-  Image,
-  NetworkMode,
-  Registry,
-  RestartPolicy,
-} from '@prisma/client'
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
+import { DeploymentStrategy, ExposeStrategy, Image, NetworkMode, RestartPolicy } from '@prisma/client'
 import { ContainerConfigData } from 'src/domain/container'
+import { ImageDetails, ImageWithRegistry } from 'src/domain/image'
 import {
+  networkModeToJSON,
   DeploymentStrategy as ProtoDeploymentStrategy,
   ExposeStrategy as ProtoExposeStrategy,
   NetworkMode as ProtoNetworkMode,
   RestartPolicy as ProtoRestartPolicy,
-  networkModeToJSON,
 } from 'src/grpc/protobuf/proto/common'
 import ContainerMapper from '../container/container.mapper'
 import RegistryMapper from '../registry/registry.mapper'
-import { ImageDto } from './image.dto'
+import { ImageDetailsDto, ImageDto } from './image.dto'
 
 @Injectable()
 export default class ImageMapper {
   constructor(
     private registryMapper: RegistryMapper,
+    @Inject(forwardRef(() => ContainerMapper))
     private readonly containerMapper: ContainerMapper,
   ) {}
 
-  toDto(it: ImageDetails): ImageDto {
+  toDto(it: ImageWithRegistry): ImageDto {
+    return {
+      id: it.id,
+      name: it.name,
+      tag: it.tag,
+      order: it.order,
+      registry: this.registryMapper.toDto(it.registry),
+      createdAt: it.createdAt,
+      labels: it.labels as Record<string, string>,
+    }
+  }
+
+  toDetailsDto(it: ImageDetails): ImageDetailsDto {
     return {
       id: it.id,
       name: it.name,
@@ -113,9 +119,4 @@ export default class ImageMapper {
 
     return networkModeToJSON(it).toLowerCase() as NetworkMode
   }
-}
-
-export type ImageDetails = Image & {
-  config: ContainerConfig
-  registry: Registry
 }

@@ -80,7 +80,7 @@ test.describe('Deleting default version', () => {
     await expect(imagesRows).toHaveCount(1)
     await expect(page.locator('td:has-text("nginx")').first()).toBeVisible()
 
-    const settingsButton = await page.waitForSelector(`[src="/image_config_icon.svg"]:right-of(:text("nginx"))`)
+    const settingsButton = await page.waitForSelector(`[src="/container_config.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
 
     await page.waitForSelector(`h2:has-text("Image")`)
@@ -185,7 +185,7 @@ test.describe('Deleting default version', () => {
     await expect(instancesRows).toHaveCount(1)
     await expect(page.locator('td:has-text("nginx")').first()).toBeVisible()
 
-    const settingsButton = await page.waitForSelector(`[src="/instance_config_icon.svg"]:right-of(:text("nginx"))`)
+    const settingsButton = await page.waitForSelector(`[src="/concrete_container_config.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
 
     await page.waitForSelector(`h2:has-text("Container")`)
@@ -224,7 +224,7 @@ test.describe('Deleting default version', () => {
 
     await expect(page.locator('td:has-text("nginx")').first()).toBeVisible()
     const newVersionDeploymentSettingsButton = await page.waitForSelector(
-      `[src="/instance_config_icon.svg"]:right-of(:text("nginx"))`,
+      `[src="/concrete_container_config.svg"]:right-of(:text("nginx"))`,
     )
     await newVersionDeploymentSettingsButton.click()
 
@@ -284,7 +284,7 @@ test.describe("Deleting copied deployment's parent", () => {
     await expect(instancesRows).toHaveCount(1)
     await expect(page.locator('td:has-text("nginx")').first()).toBeVisible()
 
-    const settingsButton = await page.waitForSelector(`[src="/instance_config_icon.svg"]:right-of(:text("nginx"))`)
+    const settingsButton = await page.waitForSelector(`[src="/concrete_container_config.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
     await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**/instances/**`)
     await page.waitForSelector('h2:text-is("Container")')
@@ -329,7 +329,7 @@ test.describe("Deleting copied deployment's parent", () => {
 
     await expect(page.locator('td:has-text("nginx")').first()).toBeVisible()
     const newDeploymentSettingsButton = await page.waitForSelector(
-      `[src="/instance_config_icon.svg"]:right-of(:text("nginx"))`,
+      `[src="/concrete_container_config.svg"]:right-of(:text("nginx"))`,
     )
     await newDeploymentSettingsButton.click()
 

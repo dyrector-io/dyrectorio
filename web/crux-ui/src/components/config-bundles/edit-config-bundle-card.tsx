@@ -3,58 +3,71 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
+import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { ConfigBundle, CreateConfigBundle } from '@app/models'
+import { ConfigBundleDetails, CreateConfigBundle, PatchConfigBundle } from '@app/models'
 import { sendForm } from '@app/utils'
-import { configBundleCreateSchema } from '@app/validations'
+import { configBundleSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
+import { useState } from 'react'
 
-interface AddConfigBundleCardProps {
+type EditConfigBundleCardProps = {
   className?: string
-  configBundle?: ConfigBundle
-  onCreated: (configBundle: ConfigBundle) => void
+  configBundle?: ConfigBundleDetails
+  onConfigBundleEdited: (configBundle: ConfigBundleDetails) => void
   submit: SubmitHook
 }
 
-const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
-  const { className, configBundle: propsConfigBundle, onCreated, submit } = props
+const EditConfigBundleCard = (props: EditConfigBundleCardProps) => {
+  const { className, configBundle, onConfigBundleEdited, submit } = props
 
   const { t } = useTranslation('config-bundles')
   const routes = useTeamRoutes()
+
+  const [bundle, setBundle] = useState<ConfigBundleDetails>(
+    configBundle ?? {
+      id: null,
+      name: null,
+      description: null,
+      config: {
+        id: null,
+        type: 'config-bundle',
+      },
+    },
+  )
+
+  const editing = !!bundle.id
 
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useDyoFormik({
     submit,
-    initialValues: {
-      name: propsConfigBundle?.name ?? '',
-      description: propsConfigBundle?.description ?? '',
-    },
-    validationSchema: configBundleCreateSchema,
+    initialValues: bundle,
+    validationSchema: configBundleSchema,
     t,
     onSubmit: async (values, { setFieldError }) => {
-      const body: CreateConfigBundle = {
+      const body: CreateConfigBundle | PatchConfigBundle = {
         ...values,
       }
 
-      const res = await sendForm('POST', routes.configBundle.api.list(), body)
+      const res = await (!editing
+        ? sendForm('POST', routes.configBundle.api.list(), body)
+        : sendForm('PATCH', routes.configBundle.api.details(bundle.id), body))
 
       if (res.ok) {
-        let result: ConfigBundle
+        let result: ConfigBundleDetails
         if (res.status !== 204) {
-          result = (await res.json()) as ConfigBundle
+          result = (await res.json()) as ConfigBundleDetails
         } else {
-          result = {
-            id: propsConfigBundle.id,
-            ...values,
-          }
+          result = values
         }
 
-        onCreated(result)
+        setBundle(result)
+        onConfigBundleEdited(result)
       } else {
         await handleApiError(res, setFieldError)
       }
@@ -64,8 +77,10 @@ const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
   return (
     <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
-        {t('new')}
+        {t(!editing ? 'new' : 'common:editName', configBundle)}
       </DyoHeading>
+
+      <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
 
       <DyoForm className="grid grid-cols-2 gap-8" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
         <div className="flex flex-col">
@@ -96,4 +111,4 @@ const AddConfigBundleCard = (props: AddConfigBundleCardProps) => {
   )
 }
 
-export default AddConfigBundleCard
+export default EditConfigBundleCard

@@ -62,20 +62,38 @@ ALTER COLUMN "proxyHeaders" DROP NOT NULL,
 ALTER COLUMN "tty" DROP NOT NULL,
 ALTER COLUMN "useLoadBalancer" DROP NOT NULL;
 
+-- Image
+
+-- add missing configs
+SELECT "i"."id"
+INTO "_prisma_migrations_ConfiglessImages"
+FROM "Image" AS "i"
+WHERE "i"."configId" IS NULL;
+
+UPDATE "Image"
+SET "configId" = gen_random_uuid()
+WHERE "Image"."id" IN (SELECT id FROM "_prisma_migrations_ConfiglessImages");
+
+INSERT INTO "ContainerConfig"
+("id", "type", "updatedAt", "updatedBy")
+SELECT "i"."configId", 'image'::"ContainerConfigType", "i"."updatedAt", "i"."updatedBy"
+FROM "Image" AS "i"
+WHERE "i"."id" IN (SELECT id FROM "_prisma_migrations_ConfiglessImages");
+
+DROP TABLE "_prisma_migrations_ConfiglessImages";
+
 
 -- ConfigBundle
 ALTER TABLE "ConfigBundle"
 ADD COLUMN     "configId" UUID;
 
 UPDATE "ConfigBundle"
-SET "configId" = gen_random_uuid()
-WHERE "data" IS NOT NULL;
+SET "configId" = gen_random_uuid();
 
 INSERT INTO "ContainerConfig"
 ("id", "type", "updatedAt", "updatedBy", "environment")
 SELECT "configId", 'configBundle'::"ContainerConfigType", "updatedAt", "updatedBy", "data"
-FROM "ConfigBundle"
-WHERE "data" IS NOT NULL;
+FROM "ConfigBundle";
 
 ALTER TABLE "ConfigBundle"
 DROP COLUMN "data";
@@ -86,14 +104,12 @@ ALTER TABLE "Deployment"
 ADD COLUMN     "configId" UUID;
 
 UPDATE "Deployment"
-SET "configId" = gen_random_uuid()
-WHERE "environment" IS NOT NULL;
+SET "configId" = gen_random_uuid();
 
 INSERT INTO "ContainerConfig"
 ("id", "type", "updatedAt", "updatedBy", "environment")
 SELECT "configId", 'deployment'::"ContainerConfigType", "updatedAt", "updatedBy", "environment"
-FROM "Deployment"
-WHERE "environment" IS NOT NULL;
+FROM "Deployment";
 
 
 ALTER TABLE "Deployment"
@@ -169,6 +185,46 @@ ALTER TABLE "Instance"
 DROP COLUMN "updatedAt";
 
 DROP TABLE "InstanceContainerConfig";
+
+-- add missing configs
+SELECT "i"."id"
+INTO "_prisma_migrations_ConfiglessInstances"
+FROM "Instance" AS "i"
+WHERE "i"."configId" IS NULL;
+
+UPDATE "Instance"
+SET "configId" = gen_random_uuid()
+WHERE "Instance"."id" IN (SELECT id FROM "_prisma_migrations_ConfiglessInstances");
+
+INSERT INTO "ContainerConfig"
+("id", "type", "updatedAt", "updatedBy")
+SELECT "i"."configId", 'instance'::"ContainerConfigType", "d"."updatedAt", "d"."updatedBy"
+FROM "Instance" AS "i"
+INNER JOIN "Deployment" AS "d" ON "d".id = "i"."deploymentId"
+WHERE "i"."id" IN (SELECT id FROM "_prisma_migrations_ConfiglessInstances");
+
+DROP TABLE "_prisma_migrations_ConfiglessInstances";
+
+-- AlterTable
+ALTER TABLE "Deployment" ADD COLUMN     "deployedAt" TIMESTAMPTZ(6),
+ADD COLUMN     "deployedBy" UUID;
+
+UPDATE "Deployment"
+SET "deployedAt" = "d"."updatedAt"
+FROM (select "id", "updatedAt" FROM "Deployment") AS "d"
+WHERE "d"."id" = "Deployment"."id";
+
+-- AlterTable
+ALTER TABLE "ConfigBundle" ALTER COLUMN "configId" SET NOT NULL;
+
+-- AlterTable
+ALTER TABLE "Deployment" ALTER COLUMN "configId" SET NOT NULL;
+
+-- AlterTable
+ALTER TABLE "Image" ALTER COLUMN "configId" SET NOT NULL;
+
+-- AlterTable
+ALTER TABLE "Instance" ALTER COLUMN "configId" SET NOT NULL;
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ConfigBundle_configId_key" ON "ConfigBundle"("configId");

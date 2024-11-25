@@ -220,8 +220,8 @@ model Image {
   version   Version @relation(fields: [versionId], references: [id], onDelete: Cascade)
   versionId String  @db.Uuid
 
-  config   ContainerConfig? @relation(fields: [configId], references: [id], onDelete: SetNull)
-  configId String?          @unique @db.Uuid
+  config   ContainerConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  configId String          @unique @db.Uuid
 
   instances Instance[]
 }
@@ -319,6 +319,8 @@ model Deployment {
   createdBy String   @db.Uuid
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
   updatedBy String?  @db.Uuid
+  deployedAt DateTime? @db.Timestamptz(6)
+  deployedBy String?  @db.Uuid
 
   note      String?
   prefix    String?
@@ -332,8 +334,8 @@ model Deployment {
   node   Node   @relation(fields: [nodeId], references: [id], onDelete: Cascade)
   nodeId String @db.Uuid
 
-  config   ContainerConfig? @relation(fields: [configId], references: [id], onDelete: SetNull)
-  configId String?          @unique @db.Uuid
+  config   ContainerConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  configId String          @unique @db.Uuid
 
   instances     Instance[]
   events        DeploymentEvent[]
@@ -365,8 +367,8 @@ model Instance {
   image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId String @db.Uuid
 
-  config   ContainerConfig? @relation(fields: [configId], references: [id], onDelete: SetNull)
-  configId String?          @unique @db.Uuid
+  config   ContainerConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  configId String          @unique @db.Uuid
 }
 
 model DeploymentEvent {
@@ -650,8 +652,8 @@ model ConfigBundle {
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String @db.Uuid
 
-  config   ContainerConfig? @relation(fields: [configId], references: [id], onDelete: SetNull)
-  configId String?          @unique @db.Uuid
+  config   ContainerConfig? @relation(fields: [configId], references: [id], onDelete: Cascade)
+  configId String          @unique @db.Uuid
 
   deployments ConfigBundleOnDeployments[]
 

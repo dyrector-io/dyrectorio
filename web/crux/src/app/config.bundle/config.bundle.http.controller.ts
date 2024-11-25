@@ -30,7 +30,6 @@ import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import {
   ConfigBundleDetailsDto,
   ConfigBundleDto,
-  ConfigBundleOptionDto,
   CreateConfigBundleDto,
   PatchConfigBundleDto,
 } from './config.bundle.dto'
@@ -67,24 +66,6 @@ export default class ConfigBundlesHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for config bundles.' })
   async getConfigBundles(@TeamSlug() teamSlug: string): Promise<ConfigBundleDto[]> {
     return this.service.getConfigBundles(teamSlug)
-  }
-
-  @Get('options')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    description: 'Response should include `id`, and `name`.',
-    summary: 'Fetch the name and ID of available config bundle options.',
-  })
-  @ApiOkResponse({
-    type: ConfigBundleOptionDto,
-    isArray: true,
-    description: 'Name and ID of config bundle options listed.',
-  })
-  @ApiBadRequestResponse({ description: 'Bad request for config bundle options.' })
-  @ApiForbiddenResponse({ description: 'Unauthorized request for config bundle options.' })
-  @ApiNotFoundResponse({ description: 'Config bundle options not found.' })
-  async getConfigBundleOptions(@TeamSlug() teamSlug: string): Promise<ConfigBundleOptionDto[]> {
-    return this.service.getConfigBundleOptions(teamSlug)
   }
 
   @Get(ROUTE_CONFIG_BUNDLE_ID)
@@ -131,7 +112,7 @@ export default class ConfigBundlesHttpController {
   @Patch(ROUTE_CONFIG_BUNDLE_ID)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Updates a config bundle. Request must include `id`, `name`, and `data`',
+    description: 'Updates a config bundle.',
     summary: 'Modify a config bundle.',
   })
   @ApiNoContentResponse({ description: 'Config bundle updated.' })
@@ -140,7 +121,7 @@ export default class ConfigBundlesHttpController {
   @ApiNotFoundResponse({ description: 'Config bundle not found.' })
   @ApiConflictResponse({ description: 'Config bundle name taken.' })
   @UuidParams(PARAM_CONFIG_BUNDLE_ID)
-  async updateConfigBundle(
+  async patchConfigBundle(
     @TeamSlug() _: string,
     @ConfigBundleId() id: string,
     @Body() request: PatchConfigBundleDto,

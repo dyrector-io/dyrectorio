@@ -45,6 +45,7 @@
     "/[teamSlug]/dashboard": ["dashboard"],
     "/[teamSlug]/storages": ["storages"],
     "/[teamSlug]/storages/[storageId]": ["storages"],
+    "/[teamSlug]/container-configurations/[configId]": ["container"],
     "/[teamSlug]/config-bundles": ["config-bundles"],
     "/[teamSlug]/config-bundles/[configBundleId]": ["config-bundles"],
     "/[teamSlug]/packages": ["packages"],

@@ -35,13 +35,16 @@ export default class ConfigBundleService {
       },
     })
 
-    return configBundles.map(it => this.mapper.listItemToDto(it))
+    return configBundles.map(it => this.mapper.toDto(it))
   }
 
   async getConfigBundleDetails(id: string): Promise<ConfigBundleDetailsDto> {
     const configBundle = await this.prisma.configBundle.findUniqueOrThrow({
       where: {
         id,
+      },
+      include: {
+        config: true,
       },
     })
 
@@ -59,14 +62,12 @@ export default class ConfigBundleService {
       data: {
         name: req.name,
         description: req.description,
-        config: {
-          create: {
-            type: 'configBundle',
-            updatedBy: identity.id,
-          },
-        },
+        config: { create: { type: 'configBundle' } },
         team: { connect: { id: teamId } },
         createdBy: identity.id,
+      },
+      include: {
+        config: true,
       },
     })
 

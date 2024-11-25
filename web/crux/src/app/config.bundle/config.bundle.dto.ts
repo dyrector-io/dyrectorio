@@ -13,6 +13,9 @@ export class ConfigBundleDto extends BasicConfigBundleDto {
   @IsString()
   @IsOptional()
   description?: string
+
+  @IsUUID()
+  configId: string
 }
 
 export class ConfigBundleDetailsDto extends ConfigBundleDto {

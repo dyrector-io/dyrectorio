@@ -1,7 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import AgentService from 'src/app/agent/agent.service'
-import ContainerMapper from 'src/app/container/container.mapper'
 import { ImageValidation } from 'src/app/image/image.dto'
 import { ConcreteContainerConfigData, ContainerConfigData, ContainerConfigDataWithId } from 'src/domain/container'
 import { getConflictsForConcreteConfig } from 'src/domain/container-conflict'
@@ -9,7 +8,7 @@ import { mergeConfigsWithConcreteConfig } from 'src/domain/container-merge'
 import { checkDeploymentDeployability } from 'src/domain/deployment'
 import { parseDyrectorioEnvRules } from 'src/domain/image'
 import { missingSecretsOf } from 'src/domain/start-deployment'
-import { createStartDeploymentSchema, yupValidate } from 'src/domain/validation'
+import { createStartDeploymentSchema, nullifyUndefinedProperties, yupValidate } from 'src/domain/validation'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 import { StartDeploymentDto } from '../deploy.dto'
@@ -19,7 +18,6 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
   constructor(
     private prisma: PrismaService,
     private agentService: AgentService,
-    private containerMapper: ContainerMapper,
   ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
@@ -104,6 +102,12 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
       return prev
     }, {})
 
+    nullifyUndefinedProperties(target.config)
+    target.configBundles.forEach(it => nullifyUndefinedProperties(it.configBundle.config))
+    target.instances.forEach(instance => {
+      nullifyUndefinedProperties(instance.config)
+      nullifyUndefinedProperties(instance.image.config)
+    })
     yupValidate(createStartDeploymentSchema(instanceValidations), target)
 
     const missingSecrets = deployment.instances
@@ -133,7 +137,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
         throw new CruxPreconditionFailedException({
           message: 'Unresolved conflicts between config bundles',
           property: 'configBundles',
-          value: conflicts,
+          value: Object.keys(conflicts).join(', '),
         })
       }
 

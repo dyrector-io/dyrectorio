@@ -75,6 +75,7 @@ export default class AgentCallback<Req, Res> {
   }
 
   onError(key: string, error: AgentError) {
+    console.log('error', key)
     const result = this.requests.get(key)
     if (!result) {
       return

@@ -36,6 +36,7 @@ func Serve(cfg *config.Configuration) {
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
 	grpc.Init(grpcContext, &cfg.CommonConfiguration, cfg, &grpc.WorkerFunctions{
 		Deploy:               utils.DeployImage,
+		DeploySharedSecrets:  utils.DeploySharedSecrets,
 		WatchContainerStatus: utils.ContainerStateStream,
 		Delete:               utils.DeleteContainerByPrefixAndName,
 		SecretList:           utils.SecretList,

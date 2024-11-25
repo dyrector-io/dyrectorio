@@ -1,17 +1,17 @@
-import { AddImagesDto, ImageDto } from '../image/image.dto'
+import { AddImagesDto, ImageDetailsDto } from '../image/image.dto'
 
 export type GetImageMessage = {
   id: string
 }
 
 export const WS_TYPE_IMAGE = 'image'
-export type ImageMessage = ImageDto
+export type ImageMessage = ImageDetailsDto
 
 export type AddImagesMessage = {
   registryImages: AddImagesDto[]
 }
 
-export const WS_TYPE_IMAGE_SET_TAG = 'image-set-tag'
+export const WS_TYPE_SET_IMAGE_TAG = 'set-image-tag'
 export const WS_TYPE_IMAGE_TAG_UPDATED = 'image-tag-updated'
 export type ImageTagMessage = {
   imageId: string
@@ -20,7 +20,7 @@ export type ImageTagMessage = {
 
 export const WS_TYPE_IMAGES_ADDED = 'images-added'
 export type ImagesAddedMessage = {
-  images: ImageDto[]
+  images: ImageDetailsDto[]
 }
 
 export type DeleteImageMessage = {

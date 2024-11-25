@@ -26,10 +26,10 @@ import DeployWebSocketGateway from './deploy.ws.gateway'
 @Module({
   imports: [
     forwardRef(() => AgentModule),
-    ImageModule,
+    forwardRef(() => ImageModule),
     EditorModule,
     RegistryModule,
-    ContainerModule,
+    forwardRef(() => ContainerModule),
     ConfigModule,
     ConfigBundleModule,
     AuditLoggerModule,

@@ -33,7 +33,7 @@ interface DeploymentContainerStatusListProps {
 }
 
 type ContainerWithInstance = Container & {
-  instanceId: string
+  configId: string
 }
 
 const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps) => {
@@ -46,10 +46,10 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
 
   const [containers, setContainers] = useState<ContainerWithInstance[]>(() =>
     deployment.instances.map(it => ({
-      instanceId: it.id,
+      configId: it.config.id,
       id: {
         prefix: deployment.prefix,
-        name: it.config?.name ?? it.image.config.name,
+        name: it.config.name ?? it.image.config.name,
       },
       createdAt: null,
       state: null,
@@ -88,7 +88,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
         ? it
         : {
             ...strong[index],
-            instanceId: it.instanceId,
+            configId: it.configId,
           }
     })
   }
@@ -109,7 +109,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
   }
 
   return !containers ? null : (
-    <DyoTable className={className} headless dataKey="instanceId" data={containers}>
+    <DyoTable className={className} headless dataKey="configId" data={containers}>
       <DyoColumn
         className="w-2/12"
         body={(it: Container) => (
@@ -122,8 +122,8 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       <DyoColumn
         className="w-4/12"
         body={(it: ContainerWithInstance) =>
-          progress[it.instanceId]?.progress < 1 ? (
-            <DyoProgress progress={progress[it.instanceId].progress} text={`${it.imageName}:${it.imageTag}`} />
+          progress[it.configId]?.progress < 1 ? (
+            <DyoProgress progress={progress[it.configId].progress} text={`${it.imageName}:${it.imageTag}`} />
           ) : (
             <span>{`${it.imageName}:${it.imageTag}`}</span>
           )
@@ -149,11 +149,8 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
               </div>
             )}
 
-            <DyoLink
-              href={routes.deployment.instanceDetails(deployment.id, it.instanceId)}
-              qaLabel="container-status-instance-config-icon"
-            >
-              <DyoIcon src="/instance_config_icon.svg" alt={t('common:instanceConfig')} size="md" />
+            <DyoLink href={routes.containerConfig.details(it.configId)} qaLabel="container-status-instance-config-icon">
+              <DyoIcon src="/concrete_container_config.svg" alt={t('common:instanceConfig')} size="md" />
             </DyoLink>
           </>
         )}

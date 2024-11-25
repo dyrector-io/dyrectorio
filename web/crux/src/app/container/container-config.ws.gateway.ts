@@ -27,7 +27,14 @@ import {
 } from '../editor/editor.message'
 import EditorServiceProvider from '../editor/editor.service.provider'
 import { IdentityFromSocket } from '../token/jwt-auth.guard'
-import { PatchConfigMessage, WS_TYPE_PATCH_CONFIG, WS_TYPE_PATCH_RECEIVED } from './container-config.message'
+import {
+  ConfigSecretsMessage,
+  PatchConfigMessage,
+  WS_TYPE_CONFIG_SECRETS,
+  WS_TYPE_GET_CONFIG_SECRETS,
+  WS_TYPE_PATCH_CONFIG,
+  WS_TYPE_PATCH_RECEIVED,
+} from './container-config.message'
 import ContainerConfigService from './container-config.service'
 
 const TeamSlug = () => WsParam('teamSlug')
@@ -108,6 +115,19 @@ export default class ContainerConfigWebSocketGateway {
     return {
       type: WS_TYPE_PATCH_RECEIVED,
       data: null,
+    }
+  }
+
+  @SubscribeMessage(WS_TYPE_GET_CONFIG_SECRETS)
+  async getConfigSecrets(@ConfigId() configId: string): Promise<WsMessage<ConfigSecretsMessage>> {
+    const secrets = await this.service.getConfigSecrets(configId)
+
+    return {
+      type: WS_TYPE_CONFIG_SECRETS,
+      data: secrets ?? {
+        publicKey: null,
+        keys: [],
+      },
     }
   }
 

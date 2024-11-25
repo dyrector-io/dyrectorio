@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWriteSharedEnvironmentVariables(t *testing.T) {
+func TestWriteVariables(t *testing.T) {
 	tests := []struct {
 		name           string
 		dataRoot       string
@@ -37,13 +37,15 @@ func TestWriteSharedEnvironmentVariables(t *testing.T) {
 			prefix:         "prefix",
 			instanceName:   "instance",
 			inputVariables: map[string]string{"key1": "value1", "key2": "value2"},
-			expectedError:  utils.NewErrSharedVariableParamEmpty("dataRoot"),
+			expectedError:  utils.NewErrPrefixFileParamEmpty("dataRoot"),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := utils.WriteSharedEnvironmentVariables(tt.dataRoot, tt.prefix, tt.inputVariables)
+			pf := utils.NewSharedEnvPrefixFile(tt.dataRoot, tt.prefix)
+
+			err := pf.WriteVariables(tt.inputVariables)
 			assert.Equal(t, tt.expectedError, err)
 
 			if err == nil {
@@ -60,7 +62,7 @@ func TestWriteSharedEnvironmentVariables(t *testing.T) {
 	}
 }
 
-func TestReadSharedEnvironmentVariables(t *testing.T) {
+func TestReadVariables(t *testing.T) {
 	tests := []struct {
 		name           string
 		dataRoot       string
@@ -81,6 +83,8 @@ func TestReadSharedEnvironmentVariables(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			pf := utils.NewSharedEnvPrefixFile(tt.dataRoot, tt.prefix)
+
 			sharedEnvPath := filepath.Join(tt.dataRoot, tt.prefix, ".shared-env")
 			err := os.WriteFile(sharedEnvPath, []byte(tt.fileContent), fs.ModePerm)
 			assert.NoError(t, err)
@@ -90,7 +94,7 @@ func TestReadSharedEnvironmentVariables(t *testing.T) {
 				assert.NoError(t, removeErr)
 			}()
 
-			result, err := utils.ReadSharedEnvironmentVariables(tt.dataRoot, tt.prefix)
+			result, err := pf.ReadVariables()
 			assert.Equal(t, tt.expectedError, err)
 			assert.Equal(t, tt.expectedResult, result)
 		})

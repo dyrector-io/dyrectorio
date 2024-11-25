@@ -1,14 +1,18 @@
 import { Version } from '.prisma/client'
-import { Inject, Injectable, forwardRef } from '@nestjs/common'
-import { ProjectTypeEnum } from '@prisma/client'
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { ImageDeletedEvent, ImagesAddedEvent } from 'src/domain/domain-events'
-import { versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/domain/version'
+import {
+  VersionDetails,
+  versionIsDeletable,
+  versionIsIncreasable,
+  versionIsMutable,
+  VersionWithChildren,
+} from 'src/domain/version'
 import { VersionChainWithEdges } from 'src/domain/version-chain'
 import { BasicProperties } from '../../shared/dtos/shared.dto'
 import AuditMapper from '../audit/audit.mapper'
-import { DeploymentWithNode } from '../deploy/deploy.dto'
 import DeployMapper from '../deploy/deploy.mapper'
-import ImageMapper, { ImageDetails } from '../image/image.mapper'
+import ImageMapper from '../image/image.mapper'
 import { NodeConnectionStatus } from '../node/node.dto'
 import { BasicVersionDto, VersionChainDto, VersionDetailsDto, VersionDto } from './version.dto'
 import { ImageDeletedMessage, ImagesAddedMessage } from './version.message'
@@ -18,6 +22,7 @@ export default class VersionMapper {
   constructor(
     @Inject(forwardRef(() => DeployMapper))
     private deployMapper: DeployMapper,
+    @Inject(forwardRef(() => ImageMapper))
     private imageMapper: ImageMapper,
     private auditMapper: AuditMapper,
   ) {}
@@ -54,7 +59,7 @@ export default class VersionMapper {
       deletable: versionIsDeletable(version),
       increasable: versionIsIncreasable(version),
       autoCopyDeployments: version.autoCopyDeployments,
-      images: version.images.map(it => this.imageMapper.toDto(it)),
+      images: version.images.map(it => this.imageMapper.toDetailsDto(it)),
       deployments: version.deployments.map(it =>
         this.deployMapper.toDeploymentWithBasicNodeDto(it, nodeStatusLookup.get(it.nodeId)),
       ),
@@ -77,7 +82,7 @@ export default class VersionMapper {
 
   imagesAddedEventToMessage(event: ImagesAddedEvent): ImagesAddedMessage {
     return {
-      images: event.images.map(it => this.imageMapper.toDto(it)),
+      images: event.images.map(it => this.imageMapper.toDetailsDto(it)),
     }
   }
 
@@ -86,16 +91,4 @@ export default class VersionMapper {
       imageId: event.imageId,
     }
   }
-}
-
-export type VersionWithChildren = Version & {
-  children: { versionId: string }[]
-}
-
-export type VersionDetails = VersionWithChildren & {
-  project: {
-    type: ProjectTypeEnum
-  }
-  images: ImageDetails[]
-  deployments: DeploymentWithNode[]
 }

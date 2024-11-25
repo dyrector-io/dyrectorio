@@ -9,6 +9,7 @@ import {
   ContainerInspectResponse,
   ContainerLogListResponse,
   ContainerLogMessage,
+  ContainerOrPrefix,
   ContainerState,
   ContainerStateListMessage,
   DeleteContainersRequest,
@@ -108,7 +109,7 @@ export interface AgentInfo {
 }
 
 export interface AgentCommand {
-  deploy?: VersionDeployRequest | undefined
+  deploy?: DeployRequest | undefined
   containerState?: ContainerStateRequest | undefined
   containerDelete?: ContainerDeleteRequest | undefined
   deployLegacy?: DeployRequestLegacy | undefined
@@ -142,36 +143,23 @@ export interface DeployResponse {
   started: boolean
 }
 
-export interface VersionDeployRequest {
+export interface DeployRequest {
   id: string
   versionName: string
   releaseNotes: string
-  requests: DeployRequest[]
+  prefix: string
+  secrets: { [key: string]: string }
+  requests: DeployWorkloadRequest[]
+}
+
+export interface DeployRequest_SecretsEntry {
+  key: string
+  value: string
 }
 
 /** Request for a keys of existing secrets in a prefix, eg. namespace */
 export interface ListSecretsRequest {
-  container: ContainerIdentifier | undefined
-}
-
-/** Deploys a single container */
-export interface InstanceConfig {
-  /**
-   * prefix mapped into host folder structure,
-   * used as namespace id
-   */
-  prefix: string
-  /** mount path of instance (docker only) */
-  mountPath?: string | undefined
-  /** environment variable map */
-  environment: { [key: string]: string }
-  /** registry repo prefix */
-  repositoryPrefix?: string | undefined
-}
-
-export interface InstanceConfig_EnvironmentEntry {
-  key: string
-  value: string
+  target: ContainerOrPrefix | undefined
 }
 
 export interface RegistryAuth {
@@ -338,17 +326,13 @@ export interface CommonContainerConfig_SecretsEntry {
   value: string
 }
 
-export interface DeployRequest {
+export interface DeployWorkloadRequest {
   id: string
   containerName: string
-  /** InstanceConfig is set for multiple containers */
-  instanceConfig: InstanceConfig | undefined
   /** ContainerConfigs */
   common?: CommonContainerConfig | undefined
   dagent?: DagentContainerConfig | undefined
   crane?: CraneContainerConfig | undefined
-  /** Runtime info and requirements of a container */
-  runtimeConfig?: string | undefined
   registry?: string | undefined
   imageName: string
   tag: string
@@ -435,7 +419,7 @@ function createBaseAgentCommand(): AgentCommand {
 export const AgentCommand = {
   fromJSON(object: any): AgentCommand {
     return {
-      deploy: isSet(object.deploy) ? VersionDeployRequest.fromJSON(object.deploy) : undefined,
+      deploy: isSet(object.deploy) ? DeployRequest.fromJSON(object.deploy) : undefined,
       containerState: isSet(object.containerState) ? ContainerStateRequest.fromJSON(object.containerState) : undefined,
       containerDelete: isSet(object.containerDelete)
         ? ContainerDeleteRequest.fromJSON(object.containerDelete)
@@ -460,8 +444,7 @@ export const AgentCommand = {
 
   toJSON(message: AgentCommand): unknown {
     const obj: any = {}
-    message.deploy !== undefined &&
-      (obj.deploy = message.deploy ? VersionDeployRequest.toJSON(message.deploy) : undefined)
+    message.deploy !== undefined && (obj.deploy = message.deploy ? DeployRequest.toJSON(message.deploy) : undefined)
     message.containerState !== undefined &&
       (obj.containerState = message.containerState ? ContainerStateRequest.toJSON(message.containerState) : undefined)
     message.containerDelete !== undefined &&
@@ -560,27 +543,43 @@ export const DeployResponse = {
   },
 }
 
-function createBaseVersionDeployRequest(): VersionDeployRequest {
-  return { id: '', versionName: '', releaseNotes: '', requests: [] }
+function createBaseDeployRequest(): DeployRequest {
+  return { id: '', versionName: '', releaseNotes: '', prefix: '', secrets: {}, requests: [] }
 }
 
-export const VersionDeployRequest = {
-  fromJSON(object: any): VersionDeployRequest {
+export const DeployRequest = {
+  fromJSON(object: any): DeployRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       versionName: isSet(object.versionName) ? String(object.versionName) : '',
       releaseNotes: isSet(object.releaseNotes) ? String(object.releaseNotes) : '',
-      requests: Array.isArray(object?.requests) ? object.requests.map((e: any) => DeployRequest.fromJSON(e)) : [],
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      secrets: isObject(object.secrets)
+        ? Object.entries(object.secrets).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
+      requests: Array.isArray(object?.requests)
+        ? object.requests.map((e: any) => DeployWorkloadRequest.fromJSON(e))
+        : [],
     }
   },
 
-  toJSON(message: VersionDeployRequest): unknown {
+  toJSON(message: DeployRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.versionName !== undefined && (obj.versionName = message.versionName)
     message.releaseNotes !== undefined && (obj.releaseNotes = message.releaseNotes)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    obj.secrets = {}
+    if (message.secrets) {
+      Object.entries(message.secrets).forEach(([k, v]) => {
+        obj.secrets[k] = v
+      })
+    }
     if (message.requests) {
-      obj.requests = message.requests.map(e => (e ? DeployRequest.toJSON(e) : undefined))
+      obj.requests = message.requests.map(e => (e ? DeployWorkloadRequest.toJSON(e) : undefined))
     } else {
       obj.requests = []
     }
@@ -588,70 +587,35 @@ export const VersionDeployRequest = {
   },
 }
 
+function createBaseDeployRequest_SecretsEntry(): DeployRequest_SecretsEntry {
+  return { key: '', value: '' }
+}
+
+export const DeployRequest_SecretsEntry = {
+  fromJSON(object: any): DeployRequest_SecretsEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: DeployRequest_SecretsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+}
+
 function createBaseListSecretsRequest(): ListSecretsRequest {
-  return { container: undefined }
+  return { target: undefined }
 }
 
 export const ListSecretsRequest = {
   fromJSON(object: any): ListSecretsRequest {
-    return { container: isSet(object.container) ? ContainerIdentifier.fromJSON(object.container) : undefined }
+    return { target: isSet(object.target) ? ContainerOrPrefix.fromJSON(object.target) : undefined }
   },
 
   toJSON(message: ListSecretsRequest): unknown {
     const obj: any = {}
-    message.container !== undefined &&
-      (obj.container = message.container ? ContainerIdentifier.toJSON(message.container) : undefined)
-    return obj
-  },
-}
-
-function createBaseInstanceConfig(): InstanceConfig {
-  return { prefix: '', environment: {} }
-}
-
-export const InstanceConfig = {
-  fromJSON(object: any): InstanceConfig {
-    return {
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-      mountPath: isSet(object.mountPath) ? String(object.mountPath) : undefined,
-      environment: isObject(object.environment)
-        ? Object.entries(object.environment).reduce<{ [key: string]: string }>((acc, [key, value]) => {
-            acc[key] = String(value)
-            return acc
-          }, {})
-        : {},
-      repositoryPrefix: isSet(object.repositoryPrefix) ? String(object.repositoryPrefix) : undefined,
-    }
-  },
-
-  toJSON(message: InstanceConfig): unknown {
-    const obj: any = {}
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    message.mountPath !== undefined && (obj.mountPath = message.mountPath)
-    obj.environment = {}
-    if (message.environment) {
-      Object.entries(message.environment).forEach(([k, v]) => {
-        obj.environment[k] = v
-      })
-    }
-    message.repositoryPrefix !== undefined && (obj.repositoryPrefix = message.repositoryPrefix)
-    return obj
-  },
-}
-
-function createBaseInstanceConfig_EnvironmentEntry(): InstanceConfig_EnvironmentEntry {
-  return { key: '', value: '' }
-}
-
-export const InstanceConfig_EnvironmentEntry = {
-  fromJSON(object: any): InstanceConfig_EnvironmentEntry {
-    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
-  },
-
-  toJSON(message: InstanceConfig_EnvironmentEntry): unknown {
-    const obj: any = {}
-    message.key !== undefined && (obj.key = message.key)
-    message.value !== undefined && (obj.value = message.value)
+    message.target !== undefined && (obj.target = message.target ? ContainerOrPrefix.toJSON(message.target) : undefined)
     return obj
   },
 }
@@ -1371,20 +1335,18 @@ export const CommonContainerConfig_SecretsEntry = {
   },
 }
 
-function createBaseDeployRequest(): DeployRequest {
-  return { id: '', containerName: '', instanceConfig: undefined, imageName: '', tag: '' }
+function createBaseDeployWorkloadRequest(): DeployWorkloadRequest {
+  return { id: '', containerName: '', imageName: '', tag: '' }
 }
 
-export const DeployRequest = {
-  fromJSON(object: any): DeployRequest {
+export const DeployWorkloadRequest = {
+  fromJSON(object: any): DeployWorkloadRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       containerName: isSet(object.containerName) ? String(object.containerName) : '',
-      instanceConfig: isSet(object.instanceConfig) ? InstanceConfig.fromJSON(object.instanceConfig) : undefined,
       common: isSet(object.common) ? CommonContainerConfig.fromJSON(object.common) : undefined,
       dagent: isSet(object.dagent) ? DagentContainerConfig.fromJSON(object.dagent) : undefined,
       crane: isSet(object.crane) ? CraneContainerConfig.fromJSON(object.crane) : undefined,
-      runtimeConfig: isSet(object.runtimeConfig) ? String(object.runtimeConfig) : undefined,
       registry: isSet(object.registry) ? String(object.registry) : undefined,
       imageName: isSet(object.imageName) ? String(object.imageName) : '',
       tag: isSet(object.tag) ? String(object.tag) : '',
@@ -1392,18 +1354,15 @@ export const DeployRequest = {
     }
   },
 
-  toJSON(message: DeployRequest): unknown {
+  toJSON(message: DeployWorkloadRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.containerName !== undefined && (obj.containerName = message.containerName)
-    message.instanceConfig !== undefined &&
-      (obj.instanceConfig = message.instanceConfig ? InstanceConfig.toJSON(message.instanceConfig) : undefined)
     message.common !== undefined &&
       (obj.common = message.common ? CommonContainerConfig.toJSON(message.common) : undefined)
     message.dagent !== undefined &&
       (obj.dagent = message.dagent ? DagentContainerConfig.toJSON(message.dagent) : undefined)
     message.crane !== undefined && (obj.crane = message.crane ? CraneContainerConfig.toJSON(message.crane) : undefined)
-    message.runtimeConfig !== undefined && (obj.runtimeConfig = message.runtimeConfig)
     message.registry !== undefined && (obj.registry = message.registry)
     message.imageName !== undefined && (obj.imageName = message.imageName)
     message.tag !== undefined && (obj.tag = message.tag)

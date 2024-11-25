@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid'
 import ContainerConfigService from '../container/container-config.service'
 import RegistryClientProvider from '../registry/registry-client.provider'
 import TeamRepository from '../team/team.repository'
-import { AddImagesDto, ImageDto, PatchImageDto } from './image.dto'
+import { AddImagesDto, ImageDetailsDto, PatchImageDto } from './image.dto'
 import ImageMapper from './image.mapper'
 
 type LabelMap = Record<string, string>
@@ -27,7 +27,7 @@ export default class ImageService {
     private readonly registryClients: RegistryClientProvider,
   ) {}
 
-  async getImagesByVersionId(versionId: string): Promise<ImageDto[]> {
+  async getImagesByVersionId(versionId: string): Promise<ImageDetailsDto[]> {
     const images = await this.prisma.image.findMany({
       where: {
         versionId,
@@ -38,10 +38,10 @@ export default class ImageService {
       },
     })
 
-    return images.map(it => this.mapper.toDto(it))
+    return images.map(it => this.mapper.toDetailsDto(it))
   }
 
-  async getImageDetails(imageId: string): Promise<ImageDto> {
+  async getImageDetails(imageId: string): Promise<ImageDetailsDto> {
     const image = await this.prisma.image.findUniqueOrThrow({
       where: {
         id: imageId,
@@ -51,7 +51,7 @@ export default class ImageService {
         registry: true,
       },
     })
-    return this.mapper.toDto(image)
+    return this.mapper.toDetailsDto(image)
   }
 
   async addImagesToVersion(
@@ -59,7 +59,7 @@ export default class ImageService {
     versionId: string,
     request: AddImagesDto[],
     identity: Identity,
-  ): Promise<ImageDto[]> {
+  ): Promise<ImageDetailsDto[]> {
     const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
     const labelLookupPromises = request.map(async it => {
@@ -169,7 +169,7 @@ export default class ImageService {
       ),
     )
 
-    const dtos = images.map(it => this.mapper.toDto(it))
+    const dtos = images.map(it => this.mapper.toDetailsDto(it))
 
     const event: ImagesAddedEvent = {
       versionId,
@@ -235,7 +235,6 @@ export default class ImageService {
       data: {
         labels: labels ?? undefined,
         tag: request.tag ?? undefined,
-        updatedAt: new Date(),
         updatedBy: identity.id,
       },
     })

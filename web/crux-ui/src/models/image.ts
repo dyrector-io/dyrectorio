@@ -1,5 +1,5 @@
-import { ContainerConfigData } from './container'
-import { BasicRegistry, RegistryImages } from './registry'
+import { ContainerConfig, ContainerConfigData, ContainerConfigKey } from './container'
+import { BasicRegistry, imageName, RegistryImages } from './registry'
 
 export const ENVIRONMENT_VALUE_TYPES = ['string', 'boolean', 'int'] as const
 export type EnvironmentValueType = (typeof ENVIRONMENT_VALUE_TYPES)[number]
@@ -15,7 +15,7 @@ export type VersionImage = {
   name: string
   tag: string
   order: number
-  config: ContainerConfigData
+  config: ContainerConfig
   createdAt: string
   registry: BasicRegistry
   labels: Record<string, string>
@@ -24,7 +24,7 @@ export type VersionImage = {
 export type PatchVersionImage = {
   tag?: string
   config?: Partial<ContainerConfigData>
-  resetSection?: ImageConfigProperty
+  resetSection?: ContainerConfigKey
 }
 
 export type ViewState = 'editor' | 'json'
@@ -55,7 +55,7 @@ export type ImagesAddedMessage = {
   images: VersionImage[]
 }
 
-export const WS_TYPE_IMAGE_SET_TAG = 'image-set-tag'
+export const WS_TYPE_SET_IMAGE_TAG = 'set-image-tag'
 export const WS_TYPE_IMAGE_TAG_UPDATED = 'image-tag-updated'
 export type ImageTagMessage = {
   imageId: string
@@ -76,74 +76,6 @@ export type GetImageMessage = {
 export const WS_TYPE_IMAGE = 'image'
 export type ImageMessage = VersionImage
 
-export const COMMON_CONFIG_PROPERTIES = [
-  'name',
-  'environment',
-  'secrets',
-  'routing',
-  'expose',
-  'user',
-  'tty',
-  'workingDirectory',
-  'configContainer',
-  'ports',
-  'portRanges',
-  'volumes',
-  'commands',
-  'args',
-  'initContainers',
-  'storage',
-] as const
+export const imageNameOf = (image: VersionImage): string => imageName(image.name, image.tag)
 
-export const CRANE_CONFIG_PROPERTIES = [
-  'deploymentStrategy',
-  'customHeaders',
-  'proxyHeaders',
-  'useLoadBalancer',
-  'extraLBAnnotations',
-  'healthCheckConfig',
-  'resourceConfig',
-  'labels',
-  'annotations',
-  'metrics',
-] as const
-
-export const DAGENT_CONFIG_PROPERTIES = [
-  'logConfig',
-  'restartPolicy',
-  'networkMode',
-  'networks',
-  'dockerLabels',
-  'expectedState',
-] as const
-
-export const ALL_CONFIG_PROPERTIES = [
-  ...COMMON_CONFIG_PROPERTIES,
-  ...CRANE_CONFIG_PROPERTIES,
-  ...DAGENT_CONFIG_PROPERTIES,
-] as const
-
-export const CRANE_CONFIG_FILTER_VALUES = CRANE_CONFIG_PROPERTIES.filter(it => it !== 'extraLBAnnotations')
-
-export type CommonConfigProperty = (typeof COMMON_CONFIG_PROPERTIES)[number]
-export type CraneConfigProperty = (typeof CRANE_CONFIG_PROPERTIES)[number]
-export type DagentConfigProperty = (typeof DAGENT_CONFIG_PROPERTIES)[number]
-export type ImageConfigProperty = (typeof ALL_CONFIG_PROPERTIES)[number]
-
-export type BaseImageConfigFilterType = 'all' | 'common' | 'dagent' | 'crane'
-
-export const filterContains = (
-  filter: CommonConfigProperty | CraneConfigProperty | DagentConfigProperty,
-  filters: ImageConfigProperty[],
-): boolean => filters.includes(filter)
-
-export const filterEmpty = (filterValues: string[], filters: ImageConfigProperty[]): boolean =>
-  filterValues.filter(x => filters.includes(x as ImageConfigProperty)).length > 0
-
-export const imageName = (name: string, tag?: string): string => {
-  if (!tag) {
-    return name
-  }
-
-  return `${name}:${tag}`
-}
+export const containerNameOfImage = (image: VersionImage) => image.config.name ?? image.name

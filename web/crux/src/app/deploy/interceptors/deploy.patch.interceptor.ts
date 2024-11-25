@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { VersionTypeEnum } from '@prisma/client'
 import { Observable } from 'rxjs'
-import { checkDeploymentMutability } from 'src/domain/deployment'
+import { deploymentIsMutable } from 'src/domain/deployment'
 import { CruxConflictException, CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 import { UpdateDeploymentDto } from '../deploy.dto'
@@ -24,7 +24,7 @@ export default class DeployPatchValidationInterceptor implements NestInterceptor
       },
     })
 
-    if (!checkDeploymentMutability(deployment.status, deployment.version.type)) {
+    if (!deploymentIsMutable(deployment.status, deployment.version.type)) {
       throw new CruxPreconditionFailedException({
         message: 'Invalid deployment status.',
         property: 'status',

@@ -42,16 +42,13 @@ import {
   WS_TYPE_IMAGES_ADDED,
   WS_TYPE_IMAGES_WERE_REORDERED,
   WS_TYPE_IMAGE_DELETED,
-  WS_TYPE_IMAGE_SET_TAG,
   WS_TYPE_IMAGE_TAG_UPDATED,
+  WS_TYPE_SET_IMAGE_TAG,
 } from './version.message'
 import VersionService from './version.service'
 
 const VersionId = () => WsParam('versionId')
 const TeamSlug = () => WsParam('teamSlug')
-
-// TODO(@m8vago): make an event aggregator for image updates patches etc
-// so subscribers will be notified of the changes regardless of the transport platform
 
 @WebSocketGateway({
   namespace: ':teamSlug/projects/:projectId/versions/:versionId',
@@ -162,7 +159,7 @@ export default class VersionWebSocketGateway {
     subscription.sendToAll(res)
   }
 
-  @SubscribeMessage(WS_TYPE_IMAGE_SET_TAG)
+  @SubscribeMessage(WS_TYPE_SET_IMAGE_TAG)
   async setImageTag(
     @TeamSlug() teamSlug,
     @SocketClient() client: WsClient,

@@ -5,7 +5,7 @@ import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoTable, { DyoColumn, sortDate, sortString } from '@app/elements/dyo-table'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { DeleteImageMessage, VersionImage, WS_TYPE_DELETE_IMAGE } from '@app/models'
+import { DeleteImageMessage, containerNameOfImage, VersionImage, WS_TYPE_DELETE_IMAGE } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { QA_DIALOG_LABEL_DELETE_IMAGE, QA_MODAL_LABEL_IMAGE_TAGS } from 'quality-assurance'
@@ -54,7 +54,13 @@ const VersionViewList = (props: VersionViewListProps) => {
     <>
       <DyoCard className="relative mt-4">
         <DyoTable data={state.version.images} dataKey="id" initialSortColumn={0} initialSortDirection="asc">
-          <DyoColumn header={t('containerName')} field="config.name" sortable sort={sortString} />
+          <DyoColumn
+            header={t('containerName')}
+            sortField={containerNameOfImage}
+            body={containerNameOfImage}
+            sortable
+            sort={sortString}
+          />
           <DyoColumn
             header={t('common:registry')}
             field="registry.name"
@@ -107,11 +113,8 @@ const VersionViewList = (props: VersionViewListProps) => {
                     onClick={() => onDelete(it)}
                   />
                 </div>
-                <DyoLink
-                  href={routes.project.versions(state.projectId).imageDetails(state.version.id, it.id)}
-                  qaLabel="version-list-image-config-icon"
-                >
-                  <DyoIcon src="/image_config_icon.svg" alt={t('common:imageConfig')} size="md" />
+                <DyoLink href={routes.containerConfig.details(it.config.id)} qaLabel="version-list-image-config-icon">
+                  <DyoIcon src="/container_config.svg" alt={t('common:imageConfig')} size="md" />
                 </DyoLink>
               </>
             )}

@@ -1,12 +1,12 @@
-import { ALL_CONFIG_PROPERTIES, ContainerConfigData, ImageConfigProperty } from '@app/models'
+import { CONTAINER_CONFIG_KEYS, ContainerConfigData, ContainerConfigKey } from '@app/models'
 import { ContainerConfigValidationErrors, findErrorStartsWith } from '@app/validations'
 
 const configToFilters = <T extends ContainerConfigData>(
-  current: ImageConfigProperty[],
+  current: ContainerConfigKey[],
   configData: T,
   fieldErrors?: ContainerConfigValidationErrors,
-): ImageConfigProperty[] => {
-  const newFilters = ALL_CONFIG_PROPERTIES.filter(it => {
+): ContainerConfigKey[] => {
+  const newFilters = CONTAINER_CONFIG_KEYS.filter(it => {
     const value = configData[it]
 
     if (fieldErrors && findErrorStartsWith(fieldErrors, it)) {
@@ -18,10 +18,6 @@ const configToFilters = <T extends ContainerConfigData>(
     }
 
     if (!value) {
-      return false
-    }
-
-    if (Array.isArray(value) && value.length < 1) {
       return false
     }
 

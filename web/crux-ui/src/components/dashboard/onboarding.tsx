@@ -47,7 +47,7 @@ const onboardingLinkFactories = (routes: TeamRoutes): Record<keyof OnboardingDto
     }
 
     return item.done
-      ? routes.project.versions(projectId).imageDetails(versionId, item.resourceId)
+      ? routes.containerConfig.details(item.resourceId)
       : routes.project.versions(projectId).details(versionId, { section: 'images' })
   },
   addDeployment: (onboarding, item) => {

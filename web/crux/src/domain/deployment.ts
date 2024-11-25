@@ -1,13 +1,20 @@
 import {
+  ConfigBundle,
+  ContainerConfig,
   Deployment as DbDeployment,
   DeploymentEventTypeEnum,
   DeploymentStatusEnum,
+  DeploymentToken,
+  Instance,
+  Node,
+  Project,
+  Version,
   VersionTypeEnum,
 } from '.prisma/client'
 import { Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { Observable, Subject } from 'rxjs'
-import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
+import { AgentCommand, DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
   DeploymentMessageLevel,
   DeploymentStatusMessage,
@@ -16,7 +23,44 @@ import {
   containerStateToJSON,
   deploymentStatusToJSON,
 } from 'src/grpc/protobuf/proto/common'
+import { BasicProperties } from 'src/shared/dtos/shared.dto'
 import { ConcreteContainerConfigData, ContainerState } from './container'
+import { ImageDetails } from './image'
+
+export type DeploymentWithNode = DbDeployment & {
+  node: Pick<Node, BasicProperties>
+}
+
+export type DeploymentWithNodeVersion = DeploymentWithNode & {
+  version: Pick<Version, BasicProperties> & {
+    project: Pick<Project, BasicProperties>
+  }
+}
+
+export type InstanceDetails = Instance & {
+  image: ImageDetails
+  config: ContainerConfig
+}
+
+type ConfigBundleDetails = ConfigBundle & {
+  config: ContainerConfig
+}
+
+export type DeploymentWithConfig = DbDeployment & {
+  config: ContainerConfig
+}
+
+export type DeploymentWithConfigAndBundles = DeploymentWithNodeVersion & {
+  config: ContainerConfig
+  configBundles: {
+    configBundle: ConfigBundleDetails
+  }[]
+}
+
+export type DeploymentDetails = DeploymentWithConfigAndBundles & {
+  token: Pick<DeploymentToken, 'id' | 'name' | 'createdAt' | 'expiresAt'>
+  instances: InstanceDetails[]
+}
 
 export type DeploymentLogLevel = 'info' | 'warn' | 'error'
 
@@ -99,9 +143,9 @@ export const checkPrefixAvailability = (
   return !relevantDeployments.find(it => it.status === 'preparing' || it.status === 'inProgress')
 }
 
-export const checkDeploymentDeletability = (status: DeploymentStatusEnum): boolean => status !== 'inProgress'
+export const deploymentIsDeletable = (status: DeploymentStatusEnum): boolean => status !== 'inProgress'
 
-export const checkDeploymentMutability = (status: DeploymentStatusEnum, type: VersionTypeEnum): boolean => {
+export const deploymentIsMutable = (status: DeploymentStatusEnum, type: VersionTypeEnum): boolean => {
   switch (status) {
     case 'preparing':
     case 'failed':
@@ -135,7 +179,7 @@ export type DeploymentNotification = {
 }
 
 export type DeploymentOptions = {
-  request: VersionDeployRequest
+  request: DeployRequest
   notification: DeploymentNotification
   instanceConfigs: Map<string, ConcreteContainerConfigData>
   deploymentConfig: ConcreteContainerConfigData
@@ -146,8 +190,6 @@ export default class Deployment {
   private statusChannel = new Subject<DeploymentStatusMessage>()
 
   private status: DeploymentStatusEnum = 'preparing'
-
-  private readonly request: VersionDeployRequest
 
   get id(): string {
     return this.options.request.id
@@ -184,7 +226,7 @@ export default class Deployment {
     })
 
     commandChannel.next({
-      deploy: this.request,
+      deploy: this.options.request,
     } as AgentCommand)
 
     return this.statusChannel.asObservable()

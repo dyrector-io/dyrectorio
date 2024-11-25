@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { Deployment, Node, Project, Version } from '@prisma/client'
 import { Type } from 'class-transformer'
 import {
   IsBoolean,
@@ -17,11 +16,14 @@ import {
 } from 'class-validator'
 import { CONTAINER_STATE_VALUES, ContainerState } from 'src/domain/container'
 import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
-import { BasicProperties } from '../../shared/dtos/shared.dto'
 import { AuditDto } from '../audit/audit.dto'
 import { ConfigBundleDetailsDto } from '../config.bundle/config.bundle.dto'
-import { ConcreteContainerConfigDto, ContainerIdentifierDto } from '../container/container.dto'
-import { ImageDto } from '../image/image.dto'
+import {
+  ConcreteContainerConfigDataDto,
+  ConcreteContainerConfigDto,
+  ContainerIdentifierDto,
+} from '../container/container.dto'
+import { ImageDetailsDto } from '../image/image.dto'
 import { BasicNodeDto, BasicNodeWithStatus } from '../node/node.dto'
 import { BasicProjectDto } from '../project/project.dto'
 import { BasicVersionDto } from '../version/version.dto'
@@ -84,21 +86,18 @@ export class InstanceDto {
   updatedAt: Date
 
   @ValidateNested()
-  image: ImageDto
+  image: ImageDetailsDto
+}
 
-  @IsOptional()
+export class InstanceDetailsDto extends InstanceDto {
   @ValidateNested()
-  config?: ConcreteContainerConfigDto
+  config: ConcreteContainerConfigDto
 }
 
 export class PatchInstanceDto {
-  @IsString()
-  @IsOptional()
-  tag?: string | null
-
   @IsOptional()
   @ValidateNested()
-  config?: ConcreteContainerConfigDto | null
+  config?: ConcreteContainerConfigDataDto | null
 }
 
 export class DeploymentTokenDto {
@@ -137,28 +136,30 @@ export class DeploymentTokenCreatedDto extends DeploymentTokenDto {
   curl: string
 }
 
-export class DeploymentDetailsDto extends DeploymentDto {
-  @ValidateNested()
-  @IsOptional()
-  config?: ConcreteContainerConfigDto
-
+export class DeploymentWithConfigDto extends DeploymentDto {
   @IsString()
   @IsOptional()
   publicKey?: string | null
 
   @ValidateNested()
-  instances: InstanceDto[]
+  config: ConcreteContainerConfigDto
+
+  @IsString({ each: true })
+  @IsOptional()
+  configBundles: ConfigBundleDetailsDto[]
+}
+
+export class DeploymentDetailsDto extends DeploymentWithConfigDto {
+  @ValidateNested({ each: true })
+  instances: InstanceDetailsDto[]
 
   @IsInt()
   @Min(0)
   lastTry: number
 
   @ValidateNested()
-  token: DeploymentTokenDto
-
-  @IsString({ each: true })
   @IsOptional()
-  configBundles: ConfigBundleDetailsDto[]
+  token?: DeploymentTokenDto
 }
 
 export class CreateDeploymentDto {
@@ -190,6 +191,7 @@ export class UpdateDeploymentDto {
   @IsBoolean()
   protected: boolean
 
+  @IsString({ each: true })
   configBundles: string[]
 }
 
@@ -270,16 +272,17 @@ export class DeploymentEventDto {
   containerProgress?: DeploymentEventContainerProgressDto | null
 }
 
-export class InstanceSecretsDto {
-  @ValidateNested()
-  container: ContainerIdentifierDto
-
+export class DeploymentSecretsDto {
   @IsString()
   publicKey: string
 
-  @IsOptional()
   @IsString({ each: true })
-  keys?: string[] | null
+  keys: string[]
+}
+
+export class InstanceSecretsDto extends DeploymentSecretsDto {
+  @ValidateNested()
+  container: ContainerIdentifierDto
 }
 
 export class DeploymentLogListDto extends PaginatedList<DeploymentEventDto> {
@@ -302,14 +305,4 @@ export class StartDeploymentDto {
   @IsOptional()
   @IsString({ each: true })
   instances?: string[]
-}
-
-export type DeploymentWithNode = Deployment & {
-  node: Pick<Node, BasicProperties>
-}
-
-export type DeploymentWithNodeVersion = DeploymentWithNode & {
-  version: Pick<Version, BasicProperties> & {
-    project: Pick<Project, BasicProperties>
-  }
 }

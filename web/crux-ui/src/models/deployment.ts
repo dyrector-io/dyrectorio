@@ -1,7 +1,7 @@
 import { Audit } from './audit'
 import { DeploymentStatus, DyoApiError, slugify } from './common'
 import { ConfigBundleDetails } from './config-bundle'
-import { ContainerIdentifier, ContainerState, UniqueKeyValue } from './container'
+import { ConcreteContainerConfig, ContainerIdentifier, ContainerState } from './container'
 import { ImageDeletedMessage, VersionImage } from './image'
 import { Instance } from './instance'
 import { DyoNode } from './node'
@@ -47,12 +47,15 @@ export type DeploymentTokenCreated = DeploymentToken & {
   curl: string
 }
 
-export type DeploymentDetails = Deployment & {
-  environment: UniqueKeyValue[]
-  configBundleEnvironment: EnvironmentToConfigBundleNameMap
+export type DeploymentWithConfig = Deployment & {
+  config: ConcreteContainerConfig
   publicKey?: string
-  configBundleIds?: string[]
-  token: DeploymentToken
+  configBundles: ConfigBundleDetails[]
+}
+
+export type DeploymentDetails = DeploymentWithConfig & {
+  token?: DeploymentToken
+  lastTry: number
   instances: Instance[]
 }
 
@@ -106,12 +109,11 @@ export type CreateDeployment = {
   note?: string | undefined
 }
 
-export type PatchDeployment = {
-  id: string
-  prefix?: string
+export type UpdateDeployment = {
   note?: string
+  prefix?: string
   protected?: boolean
-  environment?: UniqueKeyValue[]
+  configBundles?: string[]
 }
 
 export type CopyDeployment = {
@@ -238,3 +240,11 @@ export const lastDeploymentStatusOfEvents = (events: DeploymentEvent[]): Deploym
 
 export const deploymentHasError = (dto: DyoApiError): boolean =>
   dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing'
+
+export const instanceCreatedMessageToInstance = (it: InstanceCreatedMessage): Instance => ({
+  ...it,
+  config: {
+    id: it.configId,
+    type: 'instance',
+  },
+})

@@ -28,7 +28,7 @@ import {
   WS_TYPE_GET_IMAGE,
   WS_TYPE_IMAGE,
   WS_TYPE_IMAGE_DELETED,
-  WS_TYPE_IMAGE_SET_TAG,
+  WS_TYPE_SET_IMAGE_TAG,
   WS_TYPE_IMAGE_TAG_UPDATED,
   WS_TYPE_IMAGES_ADDED,
   WS_TYPE_IMAGES_WERE_REORDERED,
@@ -159,7 +159,7 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
     onOpen: viewMode !== 'tile' ? null : () => setSaveState('connected'),
     onClose: viewMode !== 'tile' ? null : () => setSaveState('disconnected'),
     onSend: message => {
-      if (message.type === WS_TYPE_IMAGE_SET_TAG || message.type === WS_TYPE_PATCH_CONFIG) {
+      if (message.type === WS_TYPE_SET_IMAGE_TAG || message.type === WS_TYPE_PATCH_CONFIG) {
         setSaveState('saving')
       }
     },
@@ -317,7 +317,7 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
 
     setVersion({ ...version, images: newImages })
 
-    versionSock.send(WS_TYPE_IMAGE_SET_TAG, {
+    versionSock.send(WS_TYPE_SET_IMAGE_TAG, {
       imageId: image.id,
       tag,
     } as ImageTagMessage)

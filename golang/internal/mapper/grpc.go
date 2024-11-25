@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -25,33 +26,18 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func mapInstanceConfig(in *agent.InstanceConfig) v1.InstanceConfig {
-	instanceConfig := v1.InstanceConfig{
-		ContainerPreName:  in.Prefix,
-		Name:              in.Prefix,
-		SharedEnvironment: map[string]string{},
-	}
+var ErrNoTargetContainerOrPrefix = errors.New("no target container or prefix")
 
-	if in.RepositoryPrefix != nil {
-		instanceConfig.RepositoryPreName = *in.RepositoryPrefix
-	}
-
-	if in.MountPath != nil {
-		instanceConfig.MountPath = *in.MountPath
-	}
-
-	if in.Environment != nil {
-		instanceConfig.Environment = in.Environment
-	}
-
-	return instanceConfig
-}
-
-func MapDeployImage(req *agent.DeployRequest, appConfig *config.CommonConfiguration) *v1.DeployImageRequest {
+func MapDeployImage(prefix string, req *agent.DeployWorkloadRequest, appConfig *config.CommonConfiguration) *v1.DeployImageRequest {
 	res := &v1.DeployImageRequest{
-		RequestID:       req.Id,
-		InstanceConfig:  mapInstanceConfig(req.InstanceConfig),
-		ContainerConfig: mapContainerConfig(req),
+		RequestID: req.Id,
+		InstanceConfig: v1.InstanceConfig{
+			UseSharedEnvs:     false,
+			Environment:       map[string]string{},
+			SharedEnvironment: map[string]string{},
+			ContainerPreName:  prefix,
+		},
+		ContainerConfig: mapContainerConfig(prefix, req),
 		ImageName:       req.ImageName,
 		Tag:             req.Tag,
 		Registry:        req.Registry,
@@ -68,22 +54,18 @@ func MapDeployImage(req *agent.DeployRequest, appConfig *config.CommonConfigurat
 
 	v1.SetDeploymentDefaults(res, appConfig)
 
-	if req.RuntimeConfig != nil {
-		res.RuntimeConfig = v1.Base64JSONBytes(*req.RuntimeConfig)
-	}
-
 	if req.Registry != nil {
 		res.Registry = req.Registry
 	}
 	return res
 }
 
-func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
+func mapContainerConfig(prefix string, in *agent.DeployWorkloadRequest) v1.ContainerConfig {
 	cc := in.Common
 
 	containerConfig := v1.ContainerConfig{
 		Container:        cc.Name,
-		ContainerPreName: in.InstanceConfig.Prefix,
+		ContainerPreName: prefix,
 		Ports:            MapPorts(cc.Ports),
 		PortRanges:       mapPortRanges(cc.PortRanges),
 		Volumes:          mapVolumes(cc.Volumes),
@@ -691,4 +673,20 @@ func MapDockerContainerEventToContainerState(event string) common.ContainerState
 	default:
 		return common.ContainerState_CONTAINER_STATE_UNSPECIFIED
 	}
+}
+
+func MapContainerOrPrefixToPrefixName(target *common.ContainerOrPrefix) (string, string, error) {
+	if target == nil {
+		return "", "", ErrNoTargetContainerOrPrefix
+	}
+
+	if target.GetContainer() != nil {
+		return target.GetContainer().GetPrefix(), target.GetContainer().Name, nil
+	}
+
+	if target.GetPrefix() == "" {
+		return "", "", ErrNoTargetContainerOrPrefix
+	}
+
+	return target.GetPrefix(), "", nil
 }

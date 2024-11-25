@@ -3,7 +3,7 @@ import { Type } from 'class-transformer'
 import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator'
 import { AuditDto } from '../audit/audit.dto'
 import { DeploymentWithBasicNodeDto } from '../deploy/deploy.dto'
-import { ImageDto } from '../image/image.dto'
+import { ImageDetailsDto } from '../image/image.dto'
 
 export const VERSION_TYPE_VALUES = ['incremental', 'rolling'] as const
 export type VersionTypeDto = (typeof VERSION_TYPE_VALUES)[number]
@@ -88,8 +88,8 @@ export class VersionDetailsDto extends VersionDto {
   @IsOptional()
   autoCopyDeployments?: boolean
 
-  @Type(() => ImageDto)
-  images: ImageDto[]
+  @Type(() => ImageDetailsDto)
+  images: ImageDetailsDto[]
 
   deployments: DeploymentWithBasicNodeDto[]
 }

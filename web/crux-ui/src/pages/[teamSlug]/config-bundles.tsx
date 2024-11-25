@@ -1,5 +1,5 @@
-import AddConfigBundleCard from '@app/components/config-bundles/add-config-bundle-card'
 import ConfigBundleCard from '@app/components/config-bundles/config-bundle-card'
+import EditConfigBundleCard from '@app/components/config-bundles/edit-config-bundle-card'
 import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
@@ -11,7 +11,7 @@ import useAnchor from '@app/hooks/use-anchor'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { ConfigBundle } from '@app/models'
+import { ConfigBundle, ConfigBundleDetails } from '@app/models'
 import { ANCHOR_NEW, ListRouteOptions, TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
@@ -40,7 +40,7 @@ const ConfigBundles = (props: ConfigBundlesPageProps) => {
   const creating = anchor === ANCHOR_NEW
   const submit = useSubmit()
 
-  const onCreated = async (bundle: ConfigBundle) => {
+  const onCreated = async (bundle: ConfigBundleDetails) => {
     await router.push(routes.configBundle.details(bundle.id))
   }
 
@@ -59,7 +59,9 @@ const ConfigBundles = (props: ConfigBundlesPageProps) => {
         <ListPageMenu creating={creating} onRouteOptionsChange={onRouteOptionsChange} submit={submit} />
       </PageHeading>
 
-      {!creating ? null : <AddConfigBundleCard className="mb-8 px-8 py-6" submit={submit} onCreated={onCreated} />}
+      {!creating ? null : (
+        <EditConfigBundleCard className="mb-8 px-8 py-6" submit={submit} onConfigBundleEdited={onCreated} />
+      )}
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })} />
@@ -74,6 +76,7 @@ const ConfigBundles = (props: ConfigBundlesPageProps) => {
                   className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
                   key={`bundle-${index}`}
                   configBundle={it}
+                  showConfigIcon
                 />
               )
             })}

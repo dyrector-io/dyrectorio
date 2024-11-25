@@ -1,6 +1,7 @@
 import { ContainerConfig, DeploymentStatusEnum, VersionTypeEnum } from '@prisma/client'
 import { ConcreteContainerConfigData, ContainerConfigData, UniqueSecretKeyValue } from './container'
 import { mergeConfigsWithConcreteConfig, mergeInstanceConfigWithDeploymentConfig } from './container-merge'
+import { DeploymentWithConfig } from './deployment'
 
 export type InvalidSecrets = {
   configId: string
@@ -18,14 +19,16 @@ export const missingSecretsOf = (configId: string, config: ConcreteContainerConf
     return null
   }
 
-  const requiredAndMissingSecrets = config.secrets.filter(it => it.required && it.encrypted && it.value.length > 0)
-  if (requiredAndMissingSecrets.length < 1) {
+  const requiredSecrets = config.secrets.filter(it => it.required || (it.value && it.value.length > 0))
+  const missingSecrets = requiredSecrets.filter(it => !it.encrypted)
+
+  if (missingSecrets.length < 1) {
     return null
   }
 
   return {
     configId,
-    secretKeys: requiredAndMissingSecrets.map(it => it.key),
+    secretKeys: missingSecrets.map(it => it.key),
   }
 }
 
@@ -119,4 +122,44 @@ export const instanceConfigOf = (
   // then we merge and override the rest with the instance config
   const instanceConfig = instance.config as any as ConcreteContainerConfigData
   return mergeInstanceConfigWithDeploymentConfig(mergedDeploymentConfig, instanceConfig)
+}
+
+type SecretCandidate = {
+  deployedAt: Date
+  value: string
+}
+export const mergePrefixNeighborSecrets = (
+  deployments: DeploymentWithConfig[],
+  publicKey: string,
+): Record<string, string> => {
+  const result = new Map<string, SecretCandidate>()
+
+  deployments
+    .sort((one, other) => other.createdAt.getTime() - one.createdAt.getTime())
+    .forEach(depl => {
+      const secrets = depl.config.secrets as UniqueSecretKeyValue[]
+      secrets.forEach(it => {
+        if (it.publicKey !== publicKey) {
+          return
+        }
+
+        const candidate = result.get(it.key)
+        if (candidate && candidate.deployedAt.getTime() > depl.deployedAt.getTime()) {
+          // when there is already a deployment for the key, and it's the more recent one
+          return
+        }
+
+        result.set(it.key, {
+          deployedAt: depl.deployedAt,
+          value: it.value,
+        })
+      })
+    })
+
+  const entries = [...result.entries()].map(entry => {
+    const [key, candidate] = entry
+    return [key, candidate.value]
+  })
+
+  return Object.fromEntries(entries)
 }

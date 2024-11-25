@@ -57,7 +57,7 @@ func TestMapDeployImageRequestRestartPolicies(t *testing.T) {
 	}
 }
 
-func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
+func testExpectedCommon(req *agent.DeployWorkloadRequest) *v1.DeployImageRequest {
 	return &v1.DeployImageRequest{
 		RequestID: "testID",
 		RegistryAuth: &image.RegistryAuth{
@@ -210,7 +210,7 @@ func TestMapDockerContainerEventToContainerState(t *testing.T) {
 	assert.Equal(t, common.ContainerState_EXITED, MapDockerContainerEventToContainerState("die"))
 }
 
-func testDeployRequest() *agent.DeployRequest {
+func testDeployRequest() *agent.DeployWorkloadRequest {
 	registry := "https://my-registry.com"
 	runtimeCfg := "key1=val1,key2=val2"
 	var uid int64 = 777
@@ -219,7 +219,7 @@ func testDeployRequest() *agent.DeployRequest {
 	repoPrefix := "repo-prefix"
 	strategy := common.ExposeStrategy_EXPOSE_WITH_TLS
 	b := true
-	return &agent.DeployRequest{
+	return &agent.DeployWorkloadRequest{
 		Id:            "testID",
 		ContainerName: "test-container",
 		ImageName:     "test-image",
@@ -411,7 +411,7 @@ func testAppConfig() *config.CommonConfiguration {
 	}
 }
 
-func testDeployRequestWithLogDriver(driverType common.DriverType) *agent.DeployRequest {
+func testDeployRequestWithLogDriver(driverType common.DriverType) *agent.DeployWorkloadRequest {
 	request := testDeployRequest()
 	if driverType == common.DriverType_NODE_DEFAULT {
 		request.Dagent.LogConfig = nil
@@ -421,7 +421,7 @@ func testDeployRequestWithLogDriver(driverType common.DriverType) *agent.DeployR
 	return request
 }
 
-func testExpectedCommonWithLogConfigType(req *agent.DeployRequest, logConfigType string) *v1.DeployImageRequest {
+func testExpectedCommonWithLogConfigType(req *agent.DeployWorkloadRequest, logConfigType string) *v1.DeployImageRequest {
 	expected := testExpectedCommon(req)
 	if req.Dagent.LogConfig == nil {
 		expected.ContainerConfig.LogConfig = nil

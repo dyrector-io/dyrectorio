@@ -18,7 +18,7 @@ export default class DashboardMapper {
       createNode: this.resourceToOnboardItem(deployment ? deployment.node : team.nodes.find(Boolean)),
       createProject: this.resourceToOnboardItem(team.project),
       createVersion: this.resourceToOnboardItem(team.version),
-      addImages: this.resourceToOnboardItem(team.image),
+      addImages: this.resourceToOnboardItem(team.image.config),
       addDeployment: this.resourceToOnboardItem(deployment),
       deploy: {
         done: (deployment && deployment.status !== 'preparing') ?? false,
@@ -55,6 +55,8 @@ export type DashboardTeam = ResourceWithId & {
   nodes: ResourceWithId[]
   project: ResourceWithId
   version: ResourceWithId
-  image: ResourceWithId
+  image: {
+    config: ResourceWithId
+  }
   deployment: DashboardDeployment
 }

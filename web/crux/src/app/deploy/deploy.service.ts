@@ -11,7 +11,7 @@ import {
   UniqueSecretKeyValue,
   configIsEmpty,
 } from 'src/domain/container'
-import Deployment from 'src/domain/deployment'
+import Deployment, { DeploymentWithConfig } from 'src/domain/deployment'
 import { DeploymentTokenScriptGenerator } from 'src/domain/deployment-token'
 import {
   DEPLOYMENT_EVENT_CONFIG_BUNDLES_UPDATE,
@@ -26,12 +26,13 @@ import {
   collectInvalidSecrets,
   deploymentConfigOf,
   instanceConfigOf,
+  mergePrefixNeighborSecrets,
 } from 'src/domain/start-deployment'
 import { DeploymentTokenPayload, tokenSignOptionsFor } from 'src/domain/token'
 import { collectChildVersionIds, collectParentVersionIds, toPrismaJson } from 'src/domain/utils'
 import { copyDeployment } from 'src/domain/version-increase'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
-import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
+import { DeployWorkloadRequest } from 'src/grpc/protobuf/proto/agent'
 import EncryptionService from 'src/services/encryption.service'
 import PrismaService from 'src/services/prisma.service'
 import { DomainEvent } from 'src/shared/domain-event'
@@ -52,8 +53,9 @@ import {
   DeploymentEventDto,
   DeploymentLogListDto,
   DeploymentLogPaginationQuery,
+  DeploymentSecretsDto,
   DeploymentTokenCreatedDto,
-  InstanceDto,
+  InstanceDetailsDto,
   InstanceSecretsDto,
   PatchInstanceDto,
   UpdateDeploymentDto,
@@ -73,11 +75,14 @@ export default class DeployService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    @Inject(forwardRef(() => AgentService)) private readonly agentService: AgentService,
+    @Inject(forwardRef(() => AgentService))
+    private readonly agentService: AgentService,
     private readonly domainEvents: DeployDomainEventListener,
+    @Inject(forwardRef(() => DeployMapper))
     private readonly mapper: DeployMapper,
     private readonly events: EventEmitter2,
     private readonly registryMapper: RegistryMapper,
+    @Inject(forwardRef(() => ContainerMapper))
     private readonly containerMapper: ContainerMapper,
     private readonly editorServices: EditorServiceProvider,
     private readonly configService: ConfigService,
@@ -162,9 +167,7 @@ export default class DeployService {
       },
     })
 
-    const publicKey = this.agentService.getById(deployment.nodeId)?.publicKey
-
-    return this.mapper.toDetailsDto(deployment, publicKey)
+    return this.mapper.toDetailsDto(deployment)
   }
 
   async getDeploymentEvents(deploymentId: string, tryCount?: number): Promise<DeploymentEventDto[]> {
@@ -181,7 +184,7 @@ export default class DeployService {
     return events.map(it => this.mapper.eventToDto(it))
   }
 
-  async getInstance(instanceId: string): Promise<InstanceDto> {
+  async getInstance(instanceId: string): Promise<InstanceDetailsDto> {
     const instance = await this.prisma.instance.findUniqueOrThrow({
       where: {
         id: instanceId,
@@ -212,56 +215,11 @@ export default class DeployService {
       },
     })
 
-    const deployment = await this.prisma.deployment.create({
-      data: {
-        versionId: request.versionId,
-        nodeId: request.nodeId,
-        status: DeploymentStatusEnum.preparing,
-        note: request.note,
-        createdBy: identity.id,
-        prefix: request.prefix,
-        protected: request.protected,
-        instances: {
-          createMany: {
-            data: version.images.map(it => ({
-              imageId: it.id,
-            })),
-          },
-        },
-      },
-      include: {
-        node: true,
-        version: {
-          include: {
-            project: true,
-          },
-        },
-      },
-    })
-
-    const instanceIds = await this.prisma.instance.findMany({
-      where: {
-        deploymentId: deployment.id,
-      },
-      select: {
-        id: true,
-        imageId: true,
-        image: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    })
-
     const previousDeployment = await this.prisma.deployment.findFirst({
       where: {
         prefix: request.prefix,
         nodeId: request.nodeId,
         versionId: request.versionId,
-        id: {
-          not: deployment.id,
-        },
       },
       include: {
         instances: {
@@ -276,34 +234,97 @@ export default class DeployService {
       },
     })
 
-    if (previousDeployment?.instances) {
-      instanceIds.forEach(async it => {
-        const secrets: UniqueSecretKeyValue[] =
-          (previousDeployment.instances.find(instance => instance.imageId === it.imageId).config
-            ?.secrets as UniqueSecretKeyValue[]) ?? []
-
-        if (secrets.length < 1) {
-          return
-        }
-
-        await this.prisma.instance.update({
-          where: {
-            id: it.id,
+    const deploy = await this.prisma.$transaction(async prisma => {
+      const deployment = await this.prisma.deployment.create({
+        data: {
+          version: { connect: { id: request.versionId } },
+          node: { connect: { id: request.nodeId } },
+          status: DeploymentStatusEnum.preparing,
+          note: request.note,
+          createdBy: identity.id,
+          prefix: request.prefix,
+          protected: request.protected,
+          config: { create: { type: 'deployment' } },
+        },
+        include: {
+          node: true,
+          version: {
+            include: {
+              project: true,
+            },
           },
-          data: {
-            config: {
-              create: {
-                type: 'instance',
-                updatedBy: identity.id,
-                secrets,
+          instances: {
+            select: {
+              id: true,
+              imageId: true,
+              image: {
+                select: {
+                  name: true,
+                },
               },
             },
           },
-        })
+        },
       })
-    }
 
-    return this.mapper.toDto(deployment)
+      const instances = await Promise.all(
+        version.images.map(
+          async image =>
+            await prisma.instance.create({
+              data: {
+                deployment: { connect: { id: deployment.id } },
+                image: { connect: { id: image.id } },
+                config: { create: { type: 'instance' } },
+              },
+              select: {
+                id: true,
+                imageId: true,
+                image: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            }),
+        ),
+      )
+
+      deployment.instances = instances
+
+      const previousSecrets: Map<string, UniqueSecretKeyValue[]> = new Map(
+        previousDeployment?.instances
+          ?.filter(it => {
+            const secrets = it.config.secrets as UniqueSecretKeyValue[]
+            return !!it.config.secrets || secrets.length > 0
+          })
+          ?.map(it => [it.imageId, it.config.secrets as UniqueSecretKeyValue[]]) ?? [],
+      )
+
+      await Promise.all(
+        deployment.instances.map(async it => {
+          const secrets = previousSecrets[it.imageId]
+
+          await prisma.instance.update({
+            where: {
+              id: it.id,
+            },
+            data: {
+              config: {
+                create: {
+                  type: 'instance',
+                  updatedBy: identity.id,
+                  secrets,
+                },
+              },
+            },
+          })
+        }),
+      )
+
+      return deployment
+    })
+
+    return this.mapper.toDto(deploy)
   }
 
   async updateDeployment(deploymentId: string, req: UpdateDeploymentDto, identity: Identity): Promise<void> {
@@ -321,7 +342,6 @@ export default class DeployService {
           },
           create: req.configBundles.map(configBundleId => ({ configBundle: { connect: { id: configBundleId } } })),
         },
-        updatedAt: new Date(),
         updatedBy: identity.id,
       },
       select: {
@@ -365,7 +385,7 @@ export default class DeployService {
       },
     })
 
-    const configData = this.mapper.instanceConfigDtoToInstanceContainerConfigData(
+    const configData = this.mapper.concreteConfigDtoToConcreteContainerConfigData(
       instance.image.config as any as ContainerConfigData,
       (instance.config ?? {}) as any as ConcreteContainerConfigData,
       req.config,
@@ -377,11 +397,6 @@ export default class DeployService {
       updatedAt: new Date(),
       updatedBy: identity.id,
     }
-
-    // // We should overwrite the user in the ConfigData. This is an edge case, which is why we haven't
-    // // implemented a new mapper for configDataToDb. However, in the long run, if there are more similar
-    // // situations, we will have to create a different mapper for InstanceConfig.
-    // config.user = configData.user
 
     await this.prisma.deployment.update({
       where: {
@@ -406,7 +421,7 @@ export default class DeployService {
   }
 
   async deleteDeployment(deploymentId: string): Promise<void> {
-    const deployment = await this.prisma.deployment.delete({
+    await this.prisma.deployment.delete({
       where: {
         id: deploymentId,
       },
@@ -416,18 +431,6 @@ export default class DeployService {
         status: true,
       },
     })
-
-    if (deployment.status === 'successful') {
-      const agent = this.agentService.getById(deployment.nodeId)
-      if (!agent) {
-        return
-      }
-
-      await agent.deleteContainers({
-        prefix: deployment.prefix,
-        container: null,
-      })
-    }
   }
 
   async startDeployment(deploymentId: string, identity: Identity, instances?: string[]): Promise<void> {
@@ -541,6 +544,9 @@ export default class DeployService {
       await this.updateInvalidSecretsAndThrow(invalidSecrets)
     }
 
+    const prefixNeighbors = await this.collectLatestSuccessfulDeploymentsForPrefix(deployment.nodeId, deployment.prefix)
+    const sharedSecrets = mergePrefixNeighborSecrets(prefixNeighbors, publicKey)
+
     const tries = deployment.tries + 1
     await this.prisma.deployment.update({
       where: {
@@ -556,6 +562,8 @@ export default class DeployService {
         id: deployment.id,
         releaseNotes: deployment.version.changelog,
         versionName: deployment.version.name,
+        prefix: deployment.prefix,
+        secrets: sharedSecrets,
         requests: await Promise.all(
           deployment.instances.map(async it => {
             const { registry } = it.image
@@ -587,10 +595,11 @@ export default class DeployService {
                     user: registry.user,
                     password: this.encryptionService.decrypt(registry.token),
                   },
-            } as DeployRequest
+            } as DeployWorkloadRequest
           }),
         ),
       },
+      instanceConfigs,
       notification: {
         teamId: deployment.version.project.teamId,
         actor: identity ?? deployment.token?.name ?? null,
@@ -598,12 +607,6 @@ export default class DeployService {
         versionName: deployment.version.name,
         nodeName: deployment.node.name,
       },
-      instanceConfigs: new Map(
-        [...instanceConfigs.entries()].filter(entry => {
-          const [, conf] = entry
-          return !configIsEmpty(conf)
-        }),
-      ),
       deploymentConfig: !configIsEmpty(deploymentConfig) ? deploymentConfig : null,
       tries,
     })
@@ -618,6 +621,8 @@ export default class DeployService {
       },
       data: {
         status: DeploymentStatusEnum.inProgress,
+        deployedAt: new Date(),
+        deployedBy: identity.id,
       },
     })
   }
@@ -664,6 +669,7 @@ export default class DeployService {
         },
         data: {
           status: finalStatus,
+          deployedAt: new Date(),
         },
       })
 
@@ -763,13 +769,7 @@ export default class DeployService {
           },
           data: {
             config: {
-              upsert: {
-                update: data,
-                create: {
-                  ...data,
-                  type: 'instance',
-                },
-              },
+              update: data,
             },
           },
         })
@@ -843,6 +843,31 @@ export default class DeployService {
     return deployments.map(it => this.mapper.toDto(it))
   }
 
+  async getDeploymentSecrets(deploymentId: string): Promise<DeploymentSecretsDto> {
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
+      where: {
+        id: deploymentId,
+      },
+    })
+
+    const agent = this.agentService.getById(deployment.nodeId)
+    if (!agent) {
+      throw new CruxPreconditionFailedException({
+        message: 'Node is unreachable',
+        property: 'nodeId',
+        value: deployment.nodeId,
+      })
+    }
+
+    const secrets = await agent.listSecrets({
+      target: {
+        prefix: deployment.prefix,
+      },
+    })
+
+    return this.mapper.secretsResponseToDeploymentSecretsDto(secrets)
+  }
+
   async getInstanceSecrets(instanceId: string): Promise<InstanceSecretsDto> {
     const instance = await this.prisma.instance.findUniqueOrThrow({
       where: {
@@ -871,9 +896,11 @@ export default class DeployService {
     }
 
     const secrets = await agent.listSecrets({
-      container: {
-        prefix: deployment.prefix,
-        name: containerName,
+      target: {
+        container: {
+          prefix: deployment.prefix,
+          name: containerName,
+        },
       },
     })
 
@@ -1115,5 +1142,40 @@ export default class DeployService {
       property: 'secrets',
       value: secrets.map(it => ({ ...it, secrets: undefined })),
     })
+  }
+
+  private async collectLatestSuccessfulDeploymentsForPrefix(
+    nodeId: string,
+    prefix: string,
+  ): Promise<DeploymentWithConfig[]> {
+    const versions = await this.prisma.version.findMany({
+      where: {
+        deployments: {
+          some: {
+            prefix,
+            nodeId,
+            status: 'successful',
+          },
+        },
+      },
+      include: {
+        deployments: {
+          where: {
+            prefix,
+            nodeId,
+            status: 'successful',
+          },
+          take: 1,
+          orderBy: {
+            createdAt: 'desc',
+          },
+          include: {
+            config: true,
+          },
+        },
+      },
+    })
+
+    return versions.flatMap(it => it.deployments)
   }
 }

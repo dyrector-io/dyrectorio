@@ -1,13 +1,51 @@
-import { Injectable } from '@nestjs/common'
-import { ContainerConfig, ContainerConfigType } from '@prisma/client'
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
+import {
+  ConfigBundle,
+  ContainerConfig,
+  ContainerConfigType,
+  Deployment,
+  DeploymentStatusEnum,
+  Image,
+  Project,
+  Version,
+  VersionsOnParentVersion,
+} from '@prisma/client'
 import { ContainerConfigData } from 'src/domain/container'
+import { deploymentIsMutable, DeploymentWithConfigAndBundles } from 'src/domain/deployment'
 import { ContainerConfigUpdatedEvent } from 'src/domain/domain-events'
+import { ImageDetails } from 'src/domain/image'
 import { toNullableBoolean, toNullableNumber, toPrismaJson } from 'src/domain/utils'
+import { versionIsMutable } from 'src/domain/version'
+import ConfigBundleMapper from '../config.bundle/config.bundle.mapper'
+import DeployMapper from '../deploy/deploy.mapper'
+import ImageMapper from '../image/image.mapper'
+import ProjectMapper from '../project/project.mapper'
+import VersionMapper from '../version/version.mapper'
 import { ConfigUpdatedMessage } from './container-config.message'
-import { ContainerConfigDto, ContainerConfigTypeDto } from './container.dto'
+import {
+  ContainerConfigDataDto,
+  ContainerConfigDetailsDto,
+  ContainerConfigDto,
+  ContainerConfigParentDto,
+  ContainerConfigRelationsDto,
+  ContainerConfigTypeDto,
+  ContainerSecretsDto,
+} from './container.dto'
+import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 
 @Injectable()
 export default class ContainerMapper {
+  constructor(
+    private readonly projectMapper: ProjectMapper,
+    private readonly versionMapper: VersionMapper,
+    @Inject(forwardRef(() => ImageMapper))
+    private readonly imageMapper: ImageMapper,
+    @Inject(forwardRef(() => DeployMapper))
+    private readonly deployMapper: DeployMapper,
+    @Inject(forwardRef(() => ConfigBundleMapper))
+    private readonly configBundleMapper: ConfigBundleMapper,
+  ) {}
+
   typeToDto(type: ContainerConfigType): ContainerConfigTypeDto {
     switch (type) {
       case 'configBundle':
@@ -37,7 +75,64 @@ export default class ContainerMapper {
     }
   }
 
-  configDtoToConfigData(current: ContainerConfigData, patch: ContainerConfigDto): ContainerConfigData {
+  configDetailsToDto(config: ContainerConfigDetails): ContainerConfigDetailsDto {
+    return {
+      ...this.configDataToDto(config.id, config.type, config as any as ContainerConfigData),
+      parent: this.configDetailsToParentDto(config),
+      updatedAt: config.updatedAt,
+      updatedBy: config.updatedBy,
+    }
+  }
+
+  configRelationsToDto(config: ContainerConfigRelations): ContainerConfigRelationsDto {
+    switch (config.type) {
+      case 'image': {
+        const { version } = config.image
+
+        return {
+          image: this.imageMapper.toDetailsDto(config.image),
+          project: this.projectMapper.toBasicDto(version.project),
+          version: this.versionMapper.toBasicDto(version),
+        }
+      }
+      case 'instance': {
+        const { deployment } = config.instance
+        const { version } = deployment
+
+        return {
+          image: this.imageMapper.toDetailsDto(config.instance.image),
+          project: this.projectMapper.toBasicDto(version.project),
+          version: this.versionMapper.toBasicDto(version),
+          deployment: this.deployMapper.toDeploymentWithConfigDto(deployment),
+        }
+      }
+      case 'deployment': {
+        const { deployment } = config
+        const { version } = deployment
+
+        return {
+          project: this.projectMapper.toBasicDto(version.project),
+          version: this.versionMapper.toBasicDto(version),
+          deployment: this.deployMapper.toDeploymentWithConfigDto(deployment),
+        }
+      }
+      case 'configBundle':
+        return {
+          configBundle: this.configBundleMapper.toDto(config.configBundle),
+        }
+      default:
+        throw new Error(`Unknown ContainerConfigType ${config.type}`)
+    }
+  }
+
+  secretsResponseToDto(secrets: ListSecretsResponse): ContainerSecretsDto {
+    return {
+      keys: secrets.keys ?? [],
+      publicKey: secrets.publicKey,
+    }
+  }
+
+  configDtoToConfigData(current: ContainerConfigData, patch: ContainerConfigDataDto): ContainerConfigData {
     let result: ContainerConfigData = {
       ...current,
       ...patch,
@@ -178,6 +273,86 @@ export default class ContainerMapper {
       id: event.id,
     }
   }
+
+  private configDetailsToParentDto(config: ContainerConfigDetails): ContainerConfigParentDto {
+    switch (config.type) {
+      case 'image': {
+        const { image } = config
+
+        return {
+          id: image.id,
+          name: image.name,
+          mutable: versionIsMutable(image.version),
+        }
+      }
+      case 'instance': {
+        const { instance } = config
+        const { image, deployment } = instance
+
+        return {
+          id: image.id,
+          name: image.name,
+          mutable: deploymentIsMutable(deployment.status, deployment.version.type),
+        }
+      }
+      case 'deployment': {
+        const { deployment } = config
+
+        return {
+          id: deployment.id,
+          name: deployment.prefix,
+          mutable: deploymentIsMutable(deployment.status, deployment.version.type),
+        }
+      }
+      case 'configBundle': {
+        const { configBundle } = config
+
+        return {
+          id: configBundle.id,
+          name: configBundle.name,
+          mutable: true,
+        }
+      }
+      default:
+        throw new Error(`Unknown ContainerConfigType ${config.type}`)
+    }
+  }
+}
+
+type ContainerConfigRelations = {
+  type: ContainerConfigType
+  image: ImageDetails & {
+    version: Version & {
+      project: Project
+    }
+  }
+  instance: {
+    image: ImageDetails
+    deployment: DeploymentWithConfigAndBundles
+  }
+  deployment: DeploymentWithConfigAndBundles
+  configBundle: ConfigBundle
+}
+
+type ContainerConfigDetails = ContainerConfig & {
+  image: Image & {
+    version: Version & {
+      deployments: {
+        status: DeploymentStatusEnum
+      }[]
+      children: VersionsOnParentVersion[]
+    }
+  }
+  instance: {
+    image: Image
+    deployment: Deployment & {
+      version: Version
+    }
+  }
+  deployment: Deployment & {
+    version: Version
+  }
+  configBundle: ConfigBundle
 }
 
 export type ContainerConfigDbPatch = Omit<ContainerConfig, 'id' | 'type' | 'updatedAt' | 'updatedBy'>

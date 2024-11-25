@@ -1,8 +1,8 @@
 import { expect } from '@playwright/test'
-import { test } from '../../utils/test.fixture'
 import { DAGENT_NODE, screenshotPath, TEAM_ROUTES } from '../../utils/common'
 import { deployWithDagent } from '../../utils/node-helper'
 import { addDeploymentToVersionlessProject, addImageToVersionlessProject, createProject } from '../../utils/projects'
+import { test } from '../../utils/test.fixture'
 
 const image = 'nginx'
 
@@ -14,7 +14,9 @@ test.describe('Versionless Project', () => {
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
-    const configButton = await page.locator(`[src="/instance_config_icon.svg"]:right-of(:has-text("${image}"))`).first()
+    const configButton = await page
+      .locator(`[src="/concrete_container_config.svg"]:right-of(:has-text("${image}"))`)
+      .first()
     await configButton.click()
 
     await page.waitForSelector('input[id="common.containerName"]')
@@ -36,7 +38,9 @@ test.describe('Versionless Project', () => {
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
-    const configButton = await page.locator(`[src="/instance_config_icon.svg"]:right-of(:has-text("${image}"))`).first()
+    const configButton = await page
+      .locator(`[src="/concrete_container_config.svg"]:right-of(:has-text("${image}"))`)
+      .first()
     await configButton.click()
 
     await page.waitForSelector('input[id="common.containerName"]')

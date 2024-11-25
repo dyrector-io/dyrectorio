@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum, Prisma } from '@prisma/client'
-import { Observable, filter, map } from 'rxjs'
+import { filter, map, Observable } from 'rxjs'
 import { IMAGE_EVENT_ADD, IMAGE_EVENT_DELETE, ImageDeletedEvent, ImagesAddedEvent } from 'src/domain/domain-events'
 import { VersionMessage } from 'src/domain/notification-templates'
 import { versionChainMembersOf } from 'src/domain/version-chain'
@@ -27,7 +27,7 @@ import {
   VersionListQuery,
 } from './version.dto'
 import VersionMapper from './version.mapper'
-import { WS_TYPE_IMAGES_ADDED, WS_TYPE_IMAGE_DELETED } from './version.message'
+import { WS_TYPE_IMAGE_DELETED, WS_TYPE_IMAGES_ADDED } from './version.message'
 
 @Injectable()
 export default class VersionService {
@@ -38,6 +38,7 @@ export default class VersionService {
     private readonly mapper: VersionMapper,
     private readonly imageMapper: ImageMapper,
     private readonly deployMapper: DeployMapper,
+    @Inject(forwardRef(() => ContainerMapper))
     private readonly containerMapper: ContainerMapper,
     private readonly domainEvents: VersionDomainEventListener,
     private readonly notificationService: DomainNotificationService,
@@ -584,6 +585,11 @@ export default class VersionService {
                 },
               },
               instances: undefined,
+              config: {
+                create: {
+                  type: 'deployment',
+                },
+              },
             },
           })
 

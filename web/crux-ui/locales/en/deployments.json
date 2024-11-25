@@ -24,6 +24,5 @@
   "areYouSureDeployNodePrefix": "Are you sure you want start the deployment to {{node}} with the {{prefix}} prefix?",
   "noInstancesSelected": "No instances selected to deploy.",
   "protected": "Protected",
-  "configBundle": "Config bundle",
-  "bundleNameVariableWillBeOverwritten": "Bundle {{configBundle}} variable will be overwritten."
+  "configBundle": "Config bundle"
 }

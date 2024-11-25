@@ -81,7 +81,7 @@ export const mergeMarkers = (strong: Marker, weak: Marker): Marker => {
   }
 }
 
-const squashSecrets = (one: UniqueSecretKey[], other: UniqueSecretKey[]): UniqueSecretKey[] => {
+const mergeSecretKeys = (one: UniqueSecretKey[], other: UniqueSecretKey[]): UniqueSecretKey[] => {
   if (!one) {
     return other
   }
@@ -92,18 +92,6 @@ const squashSecrets = (one: UniqueSecretKey[], other: UniqueSecretKey[]): Unique
 
   return [...one, ...other.filter(it => !one.includes(it))]
 }
-
-const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
-  configs.reduce((result, conf) => {
-    if ('secrets' in conf) {
-      conf.secrets = squashSecrets(result.secrets, conf.secrets)
-    }
-
-    return {
-      ...result,
-      ...conf,
-    }
-  }, {} as ContainerConfigData)
 
 export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretKey[]): UniqueSecretKeyValue[] => {
   weak = weak ?? []
@@ -123,6 +111,50 @@ export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretK
   return [...missing, ...strong]
 }
 
+export const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): ContainerConfigData => ({
+  // common
+  name: strong.name ?? weak.name,
+  environment: strong.environment ?? weak.environment,
+  secrets: mergeSecretKeys(strong.secrets, weak.secrets),
+  user: mergeNumber(strong.user, weak.user),
+  workingDirectory: strong.workingDirectory ?? weak.workingDirectory,
+  tty: mergeBoolean(strong.tty, weak.tty),
+  portRanges: strong.portRanges ?? weak.portRanges,
+  args: strong.args ?? weak.args,
+  commands: strong.commands ?? weak.commands,
+  expose: strong.expose ?? weak.expose,
+  configContainer: strong.configContainer ?? weak.configContainer,
+  routing: strong.routing ?? weak.routing,
+  volumes: strong.volumes ?? weak.volumes,
+  initContainers: strong.initContainers ?? weak.initContainers,
+  capabilities: [], // TODO (@m8vago, @nandor-magyar): capabilities feature is still missing
+  ports: strong.ports ?? weak.ports,
+  ...mergeStorage(strong, weak),
+
+  // crane
+  customHeaders: strong.customHeaders ?? weak.customHeaders,
+  proxyHeaders: mergeBoolean(strong.proxyHeaders, weak.proxyHeaders),
+  extraLBAnnotations: strong.extraLBAnnotations ?? weak.extraLBAnnotations,
+  healthCheckConfig: strong.healthCheckConfig ?? weak.healthCheckConfig,
+  resourceConfig: strong.resourceConfig ?? weak.resourceConfig,
+  useLoadBalancer: mergeBoolean(strong.useLoadBalancer, weak.useLoadBalancer),
+  deploymentStrategy: strong.deploymentStrategy ?? weak.deploymentStrategy,
+  labels: mergeMarkers(strong.labels, weak.labels),
+  annotations: mergeMarkers(strong.annotations, weak.annotations),
+  metrics: strong.metrics ?? weak.metrics,
+
+  // dagent
+  logConfig: strong.logConfig ?? weak.logConfig,
+  networkMode: strong.networkMode ?? weak.networkMode,
+  restartPolicy: strong.restartPolicy ?? weak.restartPolicy,
+  networks: strong.networks ?? weak.networks,
+  dockerLabels: strong.dockerLabels ?? weak.dockerLabels,
+  expectedState: strong.expectedState ?? weak.expectedState,
+})
+
+const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
+  configs.reduce((result, conf) => mergeConfigs(conf, result), {} as ContainerConfigData)
+
 // this assumes that the concrete config takes care of any conflict between the other configs
 export const mergeConfigsWithConcreteConfig = (
   configs: ContainerConfigData[],
@@ -131,45 +163,11 @@ export const mergeConfigsWithConcreteConfig = (
   const squashed = squashConfigs(configs.filter(it => !!it))
   concrete = concrete ?? {}
 
+  const baseConfig = mergeConfigs(concrete, squashed)
+
   return {
-    // common
-    name: concrete.name ?? squashed.name,
-    environment: concrete.environment ?? squashed.environment,
+    ...baseConfig,
     secrets: mergeSecrets(concrete.secrets, squashed.secrets),
-    user: mergeNumber(concrete.user, squashed.user),
-    workingDirectory: concrete.workingDirectory ?? squashed.workingDirectory,
-    tty: mergeBoolean(concrete.tty, squashed.tty),
-    portRanges: concrete.portRanges ?? squashed.portRanges,
-    args: concrete.args ?? squashed.args,
-    commands: concrete.commands ?? squashed.commands,
-    expose: concrete.expose ?? squashed.expose,
-    configContainer: concrete.configContainer ?? squashed.configContainer,
-    routing: concrete.routing ?? squashed.routing,
-    volumes: concrete.volumes ?? squashed.volumes,
-    initContainers: concrete.initContainers ?? squashed.initContainers,
-    capabilities: [], // TODO (@m8vago, @nandor-magyar): capabilities feature is still missing
-    ports: concrete.ports ?? squashed.ports,
-    ...mergeStorage(concrete, squashed),
-
-    // crane
-    customHeaders: concrete.customHeaders ?? squashed.customHeaders,
-    proxyHeaders: mergeBoolean(concrete.proxyHeaders, squashed.proxyHeaders),
-    extraLBAnnotations: concrete.extraLBAnnotations ?? squashed.extraLBAnnotations,
-    healthCheckConfig: concrete.healthCheckConfig ?? squashed.healthCheckConfig,
-    resourceConfig: concrete.resourceConfig ?? squashed.resourceConfig,
-    useLoadBalancer: mergeBoolean(concrete.useLoadBalancer, squashed.useLoadBalancer),
-    deploymentStrategy: concrete.deploymentStrategy ?? squashed.deploymentStrategy,
-    labels: mergeMarkers(concrete.labels, squashed.labels),
-    annotations: mergeMarkers(concrete.annotations, squashed.annotations),
-    metrics: concrete.metrics ?? squashed.metrics,
-
-    // dagent
-    logConfig: concrete.logConfig ?? squashed.logConfig,
-    networkMode: concrete.networkMode ?? squashed.networkMode,
-    restartPolicy: concrete.restartPolicy ?? squashed.restartPolicy,
-    networks: concrete.networks ?? squashed.networks,
-    dockerLabels: concrete.dockerLabels ?? squashed.dockerLabels,
-    expectedState: concrete.expectedState ?? squashed.expectedState,
   }
 }
 

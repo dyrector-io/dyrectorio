@@ -1,6 +1,7 @@
 import { DeploymentStatusEnum, NodeTypeEnum, ProjectTypeEnum, Storage, VersionTypeEnum } from '.prisma/client'
 import { Test, TestingModule } from '@nestjs/testing'
 import { ConcreteContainerConfigData, ContainerConfigData } from 'src/domain/container'
+import { DeploymentWithNodeVersion } from 'src/domain/deployment'
 import { CommonContainerConfig, DagentContainerConfig, ImportContainer } from 'src/grpc/protobuf/proto/agent'
 import { DriverType, NetworkMode, RestartPolicy } from 'src/grpc/protobuf/proto/common'
 import EncryptionService from 'src/services/encryption.service'
@@ -13,7 +14,7 @@ import NodeMapper from '../node/node.mapper'
 import ProjectMapper from '../project/project.mapper'
 import RegistryMapper from '../registry/registry.mapper'
 import VersionMapper from '../version/version.mapper'
-import { DeploymentDto, DeploymentWithNodeVersion, PatchInstanceDto } from './deploy.dto'
+import { DeploymentDto, PatchInstanceDto } from './deploy.dto'
 import DeployMapper from './deploy.mapper'
 
 describe('DeployMapper', () => {
@@ -527,7 +528,7 @@ describe('DeployMapper', () => {
         },
       ]
 
-      const actual = deployMapper.instanceConfigDtoToInstanceContainerConfigData(fullImage, {}, patch.config)
+      const actual = deployMapper.concreteConfigDtoToConcreteContainerConfigData(fullImage, {}, patch.config)
 
       expect(actual).toEqual(expected)
     })
@@ -560,7 +561,7 @@ describe('DeployMapper', () => {
         deployment: fullInstance.labels.deployment,
       }
 
-      const actual = deployMapper.instanceConfigDtoToInstanceContainerConfigData(fullImage, {}, patch.config)
+      const actual = deployMapper.concreteConfigDtoToConcreteContainerConfigData(fullImage, {}, patch.config)
 
       expect(actual).toEqual(expected)
     })
@@ -614,7 +615,7 @@ describe('DeployMapper', () => {
         ingress: labelIngress,
       }
 
-      const actual = deployMapper.instanceConfigDtoToInstanceContainerConfigData(fullImage, instance, patch.config)
+      const actual = deployMapper.concreteConfigDtoToConcreteContainerConfigData(fullImage, instance, patch.config)
 
       expect(actual).toEqual(expected)
     })

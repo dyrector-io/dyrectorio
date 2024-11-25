@@ -127,6 +127,7 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
     secretKeys.forEach(item => {
       const repeating = result.find(it => it.key === item.key)
 
+      console.log('status', item.key, secrets)
       result.push({
         ...item,
         encrypted: item.encrypted ?? false,

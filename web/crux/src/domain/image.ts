@@ -1,3 +1,4 @@
+import { ContainerConfig, Image, Registry } from '@prisma/client'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
 export const ENVIRONMENT_VALUE_TYPES = ['string', 'boolean', 'int'] as const
@@ -7,6 +8,14 @@ export type EnvironmentRule = {
   type: EnvironmentValueType
   required?: boolean
   default?: string
+}
+
+export type ImageWithRegistry = Image & {
+  registry: Registry
+}
+
+export type ImageDetails = ImageWithRegistry & {
+  config: ContainerConfig
 }
 
 /**

@@ -1,11 +1,11 @@
 import DyoImgButton from '@app/elements/dyo-img-button'
 import DyoMessage from '@app/elements/dyo-message'
 import useRepatch, { RepatchAction } from '@app/hooks/use-repatch'
+import { ErrorWithPath } from '@app/validations'
 import clsx from 'clsx'
 import { useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
 import ConfigSectionLabel from './config-section-label'
-import { ErrorWithPath } from '@app/validations'
 
 const addItem =
   <T extends Item>(item: Omit<T, 'id'>): RepatchAction<InternalState<T>> =>
@@ -92,11 +92,13 @@ type InternalState<T> = {
   editedItemId?: string
 }
 
-interface ExtendableItemListProps<T extends Item> {
+type ExtendableItemListProps<T extends Item> = {
   itemClassName?: string
   disabled?: boolean
   label: string
+  error?: string
   items: T[]
+  // id to error message
   renderItem: (
     item: T,
     error: ErrorWithPath,
@@ -120,6 +122,7 @@ const ExtendableItemList = <T extends Item>(props: ExtendableItemListProps<T>) =
     onResetSection,
     emptyItemFactory,
     itemClassName,
+    error,
   } = props
 
   const [state, dispatch] = useRepatch<InternalState<T>>({
@@ -150,6 +153,7 @@ const ExtendableItemList = <T extends Item>(props: ExtendableItemListProps<T>) =
           labelClassName="text-bright font-semibold tracking-wide"
           disabled={!hasValue || disabled || !onResetSection}
           onResetSection={onResetSection}
+          error={error}
         >
           {label.toUpperCase()}
         </ConfigSectionLabel>

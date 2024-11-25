@@ -14,6 +14,7 @@ const useWebsocketTranslate = (t: Translate) => {
     if (wsContext.client) {
       wsContext.client.setErrorHandler(defaultWsErrorHandler(t, router))
     }
+
     return () => {
       if (wsContext.client) {
         wsContext.client.setErrorHandler(defaultWsErrorHandler(defaultTranslate, router))

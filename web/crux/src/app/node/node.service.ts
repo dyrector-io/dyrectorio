@@ -301,15 +301,19 @@ export default class NodeService {
 
   async deleteAllContainers(nodeId: string, prefix: string): Promise<void> {
     await this.sendDeleteContainerCommand(nodeId, 'deleteContainers', {
-      prefix,
+      target: {
+        prefix,
+      },
     })
   }
 
   async deleteContainer(nodeId: string, prefix: string, name: string): Promise<void> {
     await this.sendDeleteContainerCommand(nodeId, 'deleteContainer', {
-      container: {
-        prefix: prefix ?? '',
-        name,
+      target: {
+        container: {
+          prefix: prefix ?? '',
+          name,
+        },
       },
     })
   }

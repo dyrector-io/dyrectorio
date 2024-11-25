@@ -11,25 +11,30 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoToggle from '@app/elements/dyo-toggle'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
-  COMMON_CONFIG_PROPERTIES,
+  COMMON_CONFIG_KEYS,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
-  CommonConfigDetails,
-  CommonConfigProperty,
+  CommonConfigKey,
+  ConcreteCommonConfigData,
+  ConcreteContainerConfigData,
+  ConcreteCraneConfigData,
   ContainerConfigData,
+  ContainerConfigErrors,
   ContainerConfigExposeStrategy,
-  ContainerConfigPort,
-  ContainerConfigVolume,
-  CraneConfigDetails,
-  ImageConfigProperty,
+  ContainerConfigKey,
+  ContainerConfigSectionType,
   InitContainerVolumeLink,
-  InstanceCommonConfigDetails,
-  InstanceCraneConfigDetails,
+  Port,
   StorageOption,
+  UniqueSecretKeyValue,
+  Volume,
   VolumeType,
+  booleanResettable,
   filterContains,
   filterEmpty,
-  mergeConfigs,
+  numberResettable,
+  portRangeToString,
+  stringResettable,
 } from '@app/models'
 import { fetcher, toNumber } from '@app/utils'
 import {
@@ -47,33 +52,20 @@ import { v4 as uuid } from 'uuid'
 import ConfigSectionLabel from './config-section-label'
 import ExtendableItemList from './extendable-item-list'
 
-type CommonConfigSectionBaseProps<T> = {
+type CommonConfigSectionProps = {
   disabled?: boolean
-  selectedFilters: ImageConfigProperty[]
+  selectedFilters: ContainerConfigKey[]
   editorOptions: ItemEditorState
-  config: T
-  resetableConfig?: T
-  onChange: (config: Partial<T>) => void
-  onResetSection: (section: CommonConfigProperty) => void
+  resettableConfig: ContainerConfigData | ConcreteContainerConfigData
+  config: ContainerConfigData | ConcreteContainerConfigData
+  onChange: (config: ContainerConfigData | ConcreteContainerConfigData) => void
+  onResetSection: (section: CommonConfigKey) => void
   fieldErrors: ContainerConfigValidationErrors
+  conflictErrors: ContainerConfigErrors
   definedSecrets?: string[]
   publicKey?: string
+  baseConfig: ContainerConfigData | null
 }
-
-type ImageCommonConfigSectionProps = CommonConfigSectionBaseProps<
-  CommonConfigDetails & Pick<CraneConfigDetails, 'metrics'>
-> & {
-  configType: 'image'
-}
-
-type InstanceCommonConfigSectionProps = CommonConfigSectionBaseProps<
-  InstanceCommonConfigDetails & Pick<InstanceCraneConfigDetails, 'metrics'>
-> & {
-  configType: 'instance'
-  imageConfig: ContainerConfigData
-}
-
-type CommonConfigSectionProps = ImageCommonConfigSectionProps | InstanceCommonConfigSectionProps
 
 const CommonConfigSection = (props: CommonConfigSectionProps) => {
   const { t } = useTranslation('container')
@@ -86,24 +78,21 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
     selectedFilters,
     editorOptions,
     fieldErrors,
-    configType,
+    conflictErrors,
     definedSecrets,
     publicKey,
-    config: propsConfig,
-    resetableConfig: propsResetableConfig,
+    resettableConfig,
+    config,
+    baseConfig,
   } = props
 
   const { data: storages } = useSWR<StorageOption[]>(routes.storage.api.options(), fetcher)
 
-  const disabledOnImage = configType === 'image' || disabled
-  // eslint-disable-next-line react/destructuring-assignment
-  const imageConfig = configType === 'instance' ? props.imageConfig : null
-  const resetableConfig = propsResetableConfig ?? propsConfig
-  const config = configType === 'instance' ? mergeConfigs(imageConfig, propsConfig) : propsConfig
+  const sectionType: ContainerConfigSectionType = baseConfig ? 'concrete' : 'base'
 
   const exposedPorts = config.ports?.filter(it => !!it.internal) ?? []
 
-  const onVolumesChanged = (it: ContainerConfigVolume[]) =>
+  const onVolumesChanged = (it: Volume[]) =>
     onChange({
       volumes: it,
       storage:
@@ -115,8 +104,8 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           : undefined,
     })
 
-  const onPortsChanged = (ports: ContainerConfigPort[]) => {
-    let patch: Partial<InstanceCommonConfigDetails & Pick<InstanceCraneConfigDetails, 'metrics'>> = {
+  const onPortsChanged = (ports: Port[]) => {
+    let patch: Partial<ConcreteCommonConfigData & Pick<ConcreteCraneConfigData, 'metrics'>> = {
       ports,
     }
 
@@ -147,7 +136,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
   const environmentWarning =
     getValidationError(unsafeUniqueKeyValuesSchema, config.environment, undefined, t)?.message ?? null
 
-  return !filterEmpty([...COMMON_CONFIG_PROPERTIES], selectedFilters) ? null : (
+  return !filterEmpty([...COMMON_CONFIG_KEYS], selectedFilters) ? null : (
     <div className="my-4">
       <DyoHeading className="text-lg text-bright font-semibold tracking-wide bg-dyo-orange/50 w-40 rounded-t-lg text-center pt-[2px]">
         {t('base.common').toUpperCase()}
@@ -160,7 +149,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             <div className="grid break-inside-avoid mb-4">
               <div className="flex flex-row gap-4 items-center">
                 <ConfigSectionLabel
-                  disabled={disabledOnImage || config.name === imageConfig?.name}
+                  disabled={disabled || !stringResettable(baseConfig?.name, resettableConfig.name)}
                   onResetSection={() => onResetSection('name')}
                 >
                   {t('common.containerName').toUpperCase()}
@@ -175,7 +164,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   placeholder={t('common.containerName')}
                   onPatch={it => onChange({ name: it })}
                   editorOptions={editorOptions}
-                  message={findErrorFor(fieldErrors, 'name')}
+                  message={findErrorFor(fieldErrors, 'name') ?? conflictErrors?.name}
                   disabled={disabled}
                 />
               </div>
@@ -188,11 +177,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               <div className="flex flex-row gap-4 items-start">
                 <ConfigSectionLabel
                   className="mt-2.5"
-                  disabled={
-                    disabled || configType === 'image'
-                      ? resetableConfig?.user === -1
-                      : !resetableConfig?.user && resetableConfig.user !== 0
-                  }
+                  disabled={disabled || !numberResettable(baseConfig?.user, resettableConfig.user)}
                   onResetSection={() => onResetSection('user')}
                 >
                   {t('common.user').toUpperCase()}
@@ -203,14 +188,14 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   containerClassName="max-w-lg mb-3"
                   labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
                   grow
-                  value={config.user === -1 ? '' : config.user}
+                  value={config.user !== -1 ? config.user : ''}
                   placeholder={t('common.placeholders.containerDefault')}
                   onPatch={it => {
                     const val = toNumber(it)
-                    onChange({ user: configType === 'instance' || val === 0 ? val : val ?? -1 })
+                    onChange({ user: typeof val !== 'number' ? -1 : val })
                   }}
                   editorOptions={editorOptions}
-                  message={findErrorFor(fieldErrors, 'user')}
+                  message={findErrorFor(fieldErrors, 'user') ?? conflictErrors?.user}
                   disabled={disabled}
                 />
               </div>
@@ -222,7 +207,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             <div className="grid break-inside-avoid mb-8">
               <div className="flex flex-row gap-4 items-start">
                 <ConfigSectionLabel
-                  disabled={disabledOnImage || config.workingDirectory === imageConfig?.workingDirectory}
+                  disabled={
+                    disabled || !stringResettable(baseConfig?.workingDirectory, resettableConfig.workingDirectory)
+                  }
                   onResetSection={() => onResetSection('workingDirectory')}
                 >
                   {t('common.workingDirectory').toUpperCase()}
@@ -237,7 +224,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   placeholder={t('common.placeholders.containerDefault')}
                   onPatch={it => onChange({ workingDirectory: it })}
                   editorOptions={editorOptions}
-                  message={findErrorFor(fieldErrors, 'workingDirectory')}
+                  message={findErrorFor(fieldErrors, 'workingDirectory') ?? conflictErrors?.workingDirectory}
                   disabled={disabled}
                 />
               </div>
@@ -248,8 +235,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {filterContains('expose', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
               <ConfigSectionLabel
-                disabled={disabledOnImage || !resetableConfig?.expose}
+                disabled={disabled || !stringResettable(baseConfig?.expose, resettableConfig.expose)}
                 onResetSection={() => onResetSection('expose')}
+                error={conflictErrors?.expose}
               >
                 {t('common.exposeStrategy').toUpperCase()}
               </ConfigSectionLabel>
@@ -271,8 +259,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {filterContains('tty', selectedFilters) && (
             <div className="flex flex-row break-inside-avoid mb-8">
               <ConfigSectionLabel
-                disabled={disabledOnImage || resetableConfig.tty === null}
+                disabled={disabled || !booleanResettable(baseConfig?.tty, resettableConfig.tty)}
                 onResetSection={() => onResetSection('tty')}
+                error={conflictErrors?.tty}
               >
                 {t('common.tty').toUpperCase()}
               </ConfigSectionLabel>
@@ -291,8 +280,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {filterContains('configContainer', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
               <ConfigSectionLabel
-                disabled={disabled || !resetableConfig.configContainer}
+                disabled={disabled || !resettableConfig.configContainer}
                 onResetSection={() => onResetSection('configContainer')}
+                error={conflictErrors?.configContainer}
               >
                 {t('common.configContainer').toUpperCase()}
               </ConfigSectionLabel>
@@ -357,8 +347,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {filterContains('routing', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
               <ConfigSectionLabel
-                disabled={disabled || !resetableConfig.routing}
+                disabled={disabled || !resettableConfig.routing}
                 onResetSection={() => onResetSection('routing')}
+                error={conflictErrors?.routing}
               >
                 {t('common.routing').toUpperCase()}
               </ConfigSectionLabel>
@@ -458,13 +449,14 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('common.environment').toUpperCase()}
                 onChange={it => onChange({ environment: it })}
-                onResetSection={resetableConfig.environment ? () => onResetSection('environment') : null}
+                onResetSection={resettableConfig.environment ? () => onResetSection('environment') : null}
                 items={config.environment}
                 editorOptions={editorOptions}
                 disabled={disabled}
                 findErrorMessage={index => findErrorStartsWith(fieldErrors, `environment[${index}]`)}
                 message={findErrorFor(fieldErrors, `environment`) ?? environmentWarning}
                 messageType={!findErrorFor(fieldErrors, `environment`) && environmentWarning ? 'info' : 'error'}
+                errors={conflictErrors?.environment}
               />
             </div>
           )}
@@ -472,14 +464,14 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {/* secrets */}
           {filterContains('secrets', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8 max-w-lg">
-              {configType === 'instance' ? (
+              {sectionType === 'concrete' ? (
                 <SecretKeyValueInput
                   className="max-h-128 overflow-y-auto mb-2"
                   keyPlaceholder={t('common.secrets').toUpperCase()}
                   labelClassName="text-bright font-semibold tracking-wide mb-2"
                   label={t('common.secrets').toUpperCase()}
                   onSubmit={it => onChange({ secrets: it })}
-                  items={propsConfig.secrets}
+                  items={config.secrets as UniqueSecretKeyValue[]}
                   editorOptions={editorOptions}
                   definedSecrets={definedSecrets}
                   publicKey={publicKey}
@@ -492,7 +484,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   labelClassName="text-bright font-semibold tracking-wide mb-2"
                   label={t('common.secrets').toUpperCase()}
                   onChange={it => onChange({ secrets: it.map(sit => ({ ...sit })) })}
-                  onResetSection={resetableConfig.secrets ? () => onResetSection('secrets') : null}
+                  onResetSection={resettableConfig.secrets ? () => onResetSection('secrets') : null}
                   items={config.secrets}
                   editorOptions={editorOptions}
                   disabled={disabled}
@@ -511,7 +503,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 label={t('common.commands').toUpperCase()}
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 onChange={it => onChange({ commands: it })}
-                onResetSection={resetableConfig.commands ? () => onResetSection('commands') : null}
+                onResetSection={resettableConfig.commands ? () => onResetSection('commands') : null}
                 items={config.commands}
                 editorOptions={editorOptions}
                 disabled={disabled}
@@ -529,7 +521,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 label={t('common.arguments').toUpperCase()}
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 onChange={it => onChange({ args: it })}
-                onResetSection={resetableConfig.args ? () => onResetSection('args') : null}
+                onResetSection={resettableConfig.args ? () => onResetSection('args') : null}
                 items={config.args}
                 editorOptions={editorOptions}
                 disabled={disabled}
@@ -543,8 +535,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
         {filterContains('storage', selectedFilters) && (
           <div className="grid mb-8 break-inside-avoid">
             <ConfigSectionLabel
-              disabled={disabled || !resetableConfig.storage}
+              disabled={disabled || !resettableConfig.storage}
               onResetSection={() => onResetSection('storage')}
+              error={conflictErrors?.storage}
             >
               {t('common.storage').toUpperCase()}
             </ConfigSectionLabel>
@@ -580,7 +573,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 placeholder={t('common.bucketPath')}
                 onPatch={it => onChange({ storage: { ...config.storage, bucket: it } })}
                 editorOptions={editorOptions}
-                disabled={disabled || !config.storage?.storageId}
+                disabled={disabled || !resettableConfig.storage?.storageId}
                 message={findErrorFor(fieldErrors, 'storage.bucket')}
               />
 
@@ -600,7 +593,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                       storage: { ...config.storage, path: it },
                     })
                   }
-                  disabled={disabled || !config.storage?.storageId}
+                  disabled={disabled || !resettableConfig.storage?.storageId}
                 />
               </div>
               <DyoMessage
@@ -621,57 +614,63 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             items={config.ports}
             label={t('common.ports')}
             onPatch={it => onPortsChanged(it)}
-            onResetSection={resetableConfig.ports ? () => onResetSection('ports') : null}
+            onResetSection={resettableConfig.ports ? () => onResetSection('ports') : null}
             findErrorMessage={index => findErrorStartsWith(fieldErrors, `ports[${index}]`)}
             emptyItemFactory={() => ({
               external: null,
               internal: null,
             })}
             renderItem={(item, error, removeButton, onPatch) => (
-              <div className="flex flex-row flex-grow">
-                <div className="w-6/12 ml-2">
-                  <MultiInput
-                    id={`common.ports-${item.id}-external`}
-                    className="w-full mr-2"
-                    grow
-                    placeholder={t('common.external')}
-                    value={item.external ?? ''}
-                    type="number"
-                    invalid={matchError(error, 'external')}
-                    onPatch={it => {
-                      const value = Number.parseInt(it, 10)
-                      const external = Number.isNaN(value) ? null : value
+              <>
+                <div className="flex flex-row flex-grow">
+                  <div className="w-6/12 ml-2">
+                    <MultiInput
+                      id={`common.ports-${item.id}-external`}
+                      className="w-full mr-2"
+                      grow
+                      placeholder={t('common.external')}
+                      value={item.external ?? ''}
+                      type="number"
+                      invalid={matchError(error, 'external')}
+                      onPatch={it => {
+                        const value = Number.parseInt(it, 10)
+                        const external = Number.isNaN(value) ? null : value
 
-                      onPatch({
-                        external,
-                      })
-                    }}
-                    editorOptions={editorOptions}
-                    disabled={disabled}
-                  />
+                        onPatch({
+                          external,
+                        })
+                      }}
+                      editorOptions={editorOptions}
+                      disabled={disabled}
+                    />
+                  </div>
+
+                  <div className="w-6/12 ml-2 mr-2">
+                    <MultiInput
+                      id={`common.ports-${item.id}-internal`}
+                      className="w-full mr-2"
+                      grow
+                      placeholder={t('common.internal')}
+                      value={item.internal ?? ''}
+                      type="number"
+                      invalid={matchError(error, 'internal')}
+                      onPatch={it =>
+                        onPatch({
+                          internal: toNumber(it),
+                        })
+                      }
+                      editorOptions={editorOptions}
+                      disabled={disabled}
+                    />
+                  </div>
+
+                  {removeButton()}
                 </div>
 
-                <div className="w-6/12 ml-2 mr-2">
-                  <MultiInput
-                    id={`common.ports-${item.id}-internal`}
-                    className="w-full mr-2"
-                    grow
-                    placeholder={t('common.internal')}
-                    value={item.internal ?? ''}
-                    type="number"
-                    invalid={matchError(error, 'internal')}
-                    onPatch={it =>
-                      onPatch({
-                        internal: toNumber(it),
-                      })
-                    }
-                    editorOptions={editorOptions}
-                    disabled={disabled}
-                  />
-                </div>
-
-                {removeButton()}
-              </div>
+                {(conflictErrors?.ports ?? {})[item.internal] && (
+                  <DyoMessage message={conflictErrors?.ports[item.internal]} messageType="error" />
+                )}
+              </>
             )}
           />
         )}
@@ -688,72 +687,81 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             })}
             findErrorMessage={index => findErrorStartsWith(fieldErrors, `portRanges[${index}]`)}
             onPatch={it => onChange({ portRanges: it })}
-            onResetSection={resetableConfig.portRanges ? () => onResetSection('portRanges') : null}
+            onResetSection={resettableConfig.portRanges ? () => onResetSection('portRanges') : null}
             renderItem={(item, error, removeButton, onPatch) => (
-              <div className="flex flex-col gap-2">
-                <DyoLabel>{t('common.internal').toUpperCase()}</DyoLabel>
+              <>
+                <div className="flex flex-col gap-2">
+                  <DyoLabel>{t('common.internal').toUpperCase()}</DyoLabel>
 
-                <div className="flex flex-row flex-grow gap-2 pl-2">
-                  <MultiInput
-                    id={`common.portRanges-${item.id}-internal.from`}
-                    containerClassName="w-5/12"
-                    type="number"
-                    grow
-                    placeholder={t('common.from')}
-                    value={item.internal?.from ?? ''}
-                    onPatch={it => onPatch({ ...item, internal: { ...item.internal, from: toNumber(it) } })}
-                    editorOptions={editorOptions}
-                    disabled={disabled}
-                    invalid={matchError(error, 'internal.from')}
-                  />
+                  <div className="flex flex-row flex-grow gap-2 pl-2">
+                    <MultiInput
+                      id={`common.portRanges-${item.id}-internal.from`}
+                      containerClassName="w-5/12"
+                      type="number"
+                      grow
+                      placeholder={t('common.from')}
+                      value={item.internal?.from ?? ''}
+                      onPatch={it => onPatch({ ...item, internal: { ...item.internal, from: toNumber(it) } })}
+                      editorOptions={editorOptions}
+                      disabled={disabled}
+                      invalid={matchError(error, 'internal.from')}
+                    />
 
-                  <MultiInput
-                    id={`common.portRanges-${item.id}-internal.to`}
-                    containerClassName="w-7/12"
-                    type="number"
-                    grow
-                    placeholder={t('common.to')}
-                    value={item?.internal?.to ?? ''}
-                    onPatch={it => onPatch({ ...item, internal: { ...item.internal, to: toNumber(it) } })}
-                    editorOptions={editorOptions}
-                    disabled={disabled}
-                    invalid={matchError(error, 'internal.to')}
-                  />
+                    <MultiInput
+                      id={`common.portRanges-${item.id}-internal.to`}
+                      containerClassName="w-7/12"
+                      type="number"
+                      grow
+                      placeholder={t('common.to')}
+                      value={item?.internal?.to ?? ''}
+                      onPatch={it => onPatch({ ...item, internal: { ...item.internal, to: toNumber(it) } })}
+                      editorOptions={editorOptions}
+                      disabled={disabled}
+                      invalid={matchError(error, 'internal.to')}
+                    />
+                  </div>
+
+                  {/* external part */}
+                  <DyoLabel>{t('common.external').toUpperCase()}</DyoLabel>
+
+                  <div className="flex flex-row flex-grow gap-2 pl-2">
+                    <MultiInput
+                      id={`common.portRanges-${item.id}-external.from`}
+                      containerClassName="w-5/12"
+                      type="number"
+                      grow
+                      placeholder={t('common.from')}
+                      value={item?.external?.from ?? ''}
+                      onPatch={it => onPatch({ ...item, external: { ...item.external, from: toNumber(it) } })}
+                      editorOptions={editorOptions}
+                      disabled={disabled}
+                      invalid={matchError(error, 'external.from')}
+                    />
+
+                    <MultiInput
+                      id={`common.portRanges-${item.id}-external.to`}
+                      containerClassName="w-7/12"
+                      type="number"
+                      grow
+                      placeholder={t('common.to')}
+                      value={item?.external?.to ?? ''}
+                      onPatch={it => onPatch({ ...item, external: { ...item.external, to: toNumber(it) } })}
+                      editorOptions={editorOptions}
+                      disabled={disabled}
+                      invalid={matchError(error, 'external.from')}
+                    />
+
+                    {removeButton()}
+                  </div>
                 </div>
 
-                {/* external part */}
-                <DyoLabel>{t('common.external').toUpperCase()}</DyoLabel>
-
-                <div className="flex flex-row flex-grow gap-2 pl-2">
-                  <MultiInput
-                    id={`common.portRanges-${item.id}-external.from`}
-                    containerClassName="w-5/12"
-                    type="number"
-                    grow
-                    placeholder={t('common.from')}
-                    value={item?.external?.from ?? ''}
-                    onPatch={it => onPatch({ ...item, external: { ...item.external, from: toNumber(it) } })}
-                    editorOptions={editorOptions}
-                    disabled={disabled}
-                    invalid={matchError(error, 'external.from')}
+                {(conflictErrors?.portRanges ?? {})[portRangeToString(item.internal)] && (
+                  <DyoMessage
+                    message={conflictErrors?.portRanges[portRangeToString(item.internal)]}
+                    messageType="error"
                   />
-
-                  <MultiInput
-                    id={`common.portRanges-${item.id}-external.to`}
-                    containerClassName="w-7/12"
-                    type="number"
-                    grow
-                    placeholder={t('common.to')}
-                    value={item?.external?.to ?? ''}
-                    onPatch={it => onPatch({ ...item, external: { ...item.external, to: toNumber(it) } })}
-                    editorOptions={editorOptions}
-                    disabled={disabled}
-                    invalid={matchError(error, 'external.from')}
-                  />
-
-                  {removeButton()}
-                </div>
-              </div>
+                )}
+              </>
             )}
           />
         )}
@@ -772,89 +780,95 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             })}
             findErrorMessage={index => findErrorStartsWith(fieldErrors, `volumes[${index}]`)}
             onPatch={it => onVolumesChanged(it)}
-            onResetSection={resetableConfig.volumes ? () => onResetSection('volumes') : null}
+            onResetSection={resettableConfig.volumes ? () => onResetSection('volumes') : null}
             renderItem={(item, error, removeButton, onPatch) => (
-              <div className="grid break-inside-avoid">
-                <div className="flex flex-row">
-                  <MultiInput
-                    id={`common.volumes-${item.id}-name`}
-                    label={t('common:name')}
-                    containerClassName="basis-2/3"
-                    labelClassName="my-auto mr-4"
-                    grow
-                    inline
-                    value={item.name ?? ''}
-                    onPatch={it => onPatch({ name: it })}
-                    editorOptions={editorOptions}
-                    disabled={disabled}
-                    invalid={matchError(error, 'name')}
-                  />
+              <>
+                <div className="grid break-inside-avoid">
+                  <div className="flex flex-row">
+                    <MultiInput
+                      id={`common.volumes-${item.id}-name`}
+                      label={t('common:name')}
+                      containerClassName="basis-2/3"
+                      labelClassName="my-auto mr-4"
+                      grow
+                      inline
+                      value={item.name ?? ''}
+                      onPatch={it => onPatch({ name: it })}
+                      editorOptions={editorOptions}
+                      disabled={disabled}
+                      invalid={matchError(error, 'name')}
+                    />
 
-                  <MultiInput
-                    id={`common.volumes-${item.id}-size`}
-                    label={t('common.size')}
-                    containerClassName="basis-1/3 ml-4"
-                    labelClassName="my-auto mr-4"
-                    grow
-                    inline
-                    value={item.size ?? ''}
-                    onPatch={it => onPatch({ size: it })}
-                    editorOptions={editorOptions}
-                    disabled={disabled}
-                    invalid={matchError(error, 'size')}
-                  />
-                </div>
+                    <MultiInput
+                      id={`common.volumes-${item.id}-size`}
+                      label={t('common.size')}
+                      containerClassName="basis-1/3 ml-4"
+                      labelClassName="my-auto mr-4"
+                      grow
+                      inline
+                      value={item.size ?? ''}
+                      onPatch={it => onPatch({ size: it })}
+                      editorOptions={editorOptions}
+                      disabled={disabled}
+                      invalid={matchError(error, 'size')}
+                    />
+                  </div>
 
-                <div className="flex flex-row my-4">
-                  <MultiInput
-                    id={`common.volumes-${item.id}-path`}
-                    label={t('common.path')}
-                    containerClassName="basis-1/2"
-                    labelClassName="my-auto mr-7"
-                    grow
-                    inline
-                    value={item.path ?? ''}
-                    onPatch={it => onPatch({ path: it })}
-                    editorOptions={editorOptions}
-                    disabled={disabled}
-                    invalid={matchError(error, 'path')}
-                  />
+                  <div className="flex flex-row my-4">
+                    <MultiInput
+                      id={`common.volumes-${item.id}-path`}
+                      label={t('common.path')}
+                      containerClassName="basis-1/2"
+                      labelClassName="my-auto mr-7"
+                      grow
+                      inline
+                      value={item.path ?? ''}
+                      onPatch={it => onPatch({ path: it })}
+                      editorOptions={editorOptions}
+                      disabled={disabled}
+                      invalid={matchError(error, 'path')}
+                    />
 
-                  <MultiInput
-                    id={`common.volumes-${item.id}-class`}
-                    label={t('common.class')}
-                    containerClassName="basis-1/2 ml-4"
-                    labelClassName="my-auto mr-4"
-                    grow
-                    inline
-                    value={item.class ?? ''}
-                    onPatch={it => onPatch({ class: it })}
-                    editorOptions={editorOptions}
-                    disabled={disabled}
-                    invalid={matchError(error, 'class')}
-                  />
-                </div>
+                    <MultiInput
+                      id={`common.volumes-${item.id}-class`}
+                      label={t('common.class')}
+                      containerClassName="basis-1/2 ml-4"
+                      labelClassName="my-auto mr-4"
+                      grow
+                      inline
+                      value={item.class ?? ''}
+                      onPatch={it => onPatch({ class: it })}
+                      editorOptions={editorOptions}
+                      disabled={disabled}
+                      invalid={matchError(error, 'class')}
+                    />
+                  </div>
 
-                <div className="flex flex-row justify-between">
-                  <div className="flex flex-col flex-grow">
-                    <DyoLabel className="my-auto mr-4">{t('common.type')}</DyoLabel>
+                  <div className="flex flex-row justify-between">
+                    <div className="flex flex-col flex-grow">
+                      <DyoLabel className="my-auto mr-4">{t('common.type')}</DyoLabel>
 
-                    <div className="flex flex-row">
-                      <DyoChips
-                        name="volumeType"
-                        choices={CONTAINER_VOLUME_TYPE_VALUES}
-                        selection={item.type}
-                        converter={(it: VolumeType) => t(`common.volumeTypes.${it}`)}
-                        onSelectionChange={it => onPatch({ type: it })}
-                        disabled={disabled}
-                        qaLabel={chipsQALabelFromValue}
-                      />
+                      <div className="flex flex-row">
+                        <DyoChips
+                          name="volumeType"
+                          choices={CONTAINER_VOLUME_TYPE_VALUES}
+                          selection={item.type}
+                          converter={(it: VolumeType) => t(`common.volumeTypes.${it}`)}
+                          onSelectionChange={it => onPatch({ type: it })}
+                          disabled={disabled}
+                          qaLabel={chipsQALabelFromValue}
+                        />
 
-                      {removeButton('self-center ml-auto')}
+                        {removeButton('self-center ml-auto')}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+
+                {(conflictErrors?.volumes ?? {})[item.path] && (
+                  <DyoMessage message={conflictErrors?.volumes[item.path]} messageType="error" />
+                )}
+              </>
             )}
           />
         )}
@@ -865,6 +879,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             disabled={disabled}
             items={config.initContainers}
             label={t('common.initContainers')}
+            error={conflictErrors?.initContainers}
             emptyItemFactory={() => ({
               id: uuid(),
               name: null,
@@ -877,7 +892,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             })}
             findErrorMessage={index => findErrorStartsWith(fieldErrors, `initContainers[${index}]`)}
             onPatch={it => onChange({ initContainers: it })}
-            onResetSection={resetableConfig.initContainers ? () => onResetSection('initContainers') : null}
+            onResetSection={resettableConfig.initContainers ? () => onResetSection('initContainers') : null}
             renderItem={(item, error, removeButton, onPatch) => (
               <div className="grid">
                 <MultiInput

@@ -44,7 +44,7 @@ const openContainerConfigByDeploymentTable = async (page: Page, containerName: s
 
   await expect(page.locator(`td:has-text("${containerName}")`).first()).toBeVisible()
   const containerSettingsButton = await page.waitForSelector(
-    `[src="/instance_config_icon.svg"]:right-of(:text("${containerName}"))`,
+    `[src="/concrete_container_config.svg"]:right-of(:text("${containerName}"))`,
   )
   await containerSettingsButton.click()
 

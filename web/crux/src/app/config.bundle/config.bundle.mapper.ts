@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { ConfigBundle, ContainerConfig } from '@prisma/client'
 import { ContainerConfigData } from 'src/domain/container'
 import ContainerMapper from '../container/container.mapper'
@@ -6,21 +6,25 @@ import { ConfigBundleDetailsDto, ConfigBundleDto } from './config.bundle.dto'
 
 @Injectable()
 export default class ConfigBundleMapper {
-  constructor(private readonly containerMapper: ContainerMapper) {}
+  constructor(
+    @Inject(forwardRef(() => ContainerMapper))
+    private readonly containerMapper: ContainerMapper,
+  ) {}
 
-  listItemToDto(configBundle: ConfigBundle): ConfigBundleDto {
+  toDto(it: ConfigBundle): ConfigBundleDto {
     return {
-      id: configBundle.id,
-      name: configBundle.name,
-      description: configBundle.description,
+      id: it.id,
+      name: it.name,
+      description: it.description,
+      configId: it.configId,
     }
   }
 
   detailsToDto(configBundle: ConfigBundleDetails): ConfigBundleDetailsDto {
     return {
-      ...this.listItemToDto(configBundle),
+      ...this.toDto(configBundle),
       config: this.containerMapper.configDataToDto(
-        configBundle.id,
+        configBundle.configId,
         'configBundle',
         configBundle.config as any as ContainerConfigData,
       ),
@@ -29,5 +33,5 @@ export default class ConfigBundleMapper {
 }
 
 type ConfigBundleDetails = ConfigBundle & {
-  config?: ContainerConfig
+  config: ContainerConfig
 }

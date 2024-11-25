@@ -4,9 +4,9 @@ import {
   CONTAINER_NETWORK_MODE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   ContainerConfigData,
-  ContainerConfigPort,
-  ContainerConfigPortRange,
-  ContainerConfigVolume,
+  Port,
+  ContainerPortRange,
+  Volume,
   ContainerRestartPolicyType,
   UniqueKey,
   UniqueKeyValue,
@@ -96,7 +96,7 @@ const splitPortRange = (range: string): [number, number] | null => {
   return [Number.parseInt(from, 10), Number.parseInt(to, 10)]
 }
 
-const mapPort = (port: string | number): [ContainerConfigPort, ContainerConfigPortRange] => {
+const mapPort = (port: string | number): [Port, ContainerPortRange] => {
   try {
     if (typeof port === 'number') {
       return [
@@ -154,7 +154,7 @@ const mapPort = (port: string | number): [ContainerConfigPort, ContainerConfigPo
   }
 }
 
-const mapVolume = (volume: string): ContainerConfigVolume => {
+const mapVolume = (volume: string): Volume => {
   const [name, path, type] = volume.split(':', 3)
 
   return {
@@ -184,7 +184,7 @@ const mapUser = (user: string): number => {
   try {
     return Number.parseInt(user, 10)
   } catch {
-    return -1
+    return null
   }
 }
 
@@ -225,8 +225,8 @@ export const mapComposeServiceToContainerConfig = (
   service: ComposeService,
   serviceKey: string,
 ): ContainerConfigData => {
-  const ports: ContainerConfigPort[] = []
-  const portRanges: ContainerConfigPortRange[] = []
+  const ports: Port[] = []
+  const portRanges: ContainerPortRange[] = []
   service.ports?.forEach(it => {
     const [port, portRange] = mapPort(it)
     if (port) {

@@ -1,19 +1,19 @@
 import { defaultApiErrorHandler } from '@app/errors'
-import { DeploymentDetails, DyoApiError, StartDeployment, mergeConfigs } from '@app/models'
+import { DeploymentDetails, DyoApiError, mergeConfigsWithConcreteConfig, StartDeployment } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { sendForm } from '@app/utils'
-import { Translate } from 'next-translate'
-import { NextRouter } from 'next/router'
-import { DyoConfirmationAction } from './use-confirmation'
 import {
   getValidationError,
   startDeploymentSchema,
   validationErrorToInstance,
   yupErrorTranslate,
 } from '@app/validations'
+import { Translate } from 'next-translate'
 import useTranslation from 'next-translate/useTranslation'
-import toast from 'react-hot-toast'
+import { NextRouter } from 'next/router'
 import { QA_DIALOG_LABEL_DEPLOY_PROTECTED } from 'quality-assurance'
+import toast from 'react-hot-toast'
+import { DyoConfirmationAction } from './use-confirmation'
 
 export type UseDeployOptions = {
   router: NextRouter
@@ -57,7 +57,10 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
         ...deployment,
         instances: selectedInstances.map(it => ({
           ...it,
-          config: mergeConfigs(it.image.config, it.config),
+          config: {
+            ...it.config,
+            ...mergeConfigsWithConcreteConfig([it.image.config], it.config),
+          },
         })),
       }
 
@@ -73,7 +76,7 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
             ...translatedError,
             path:
               intanceIndex !== null
-                ? selectedInstances[intanceIndex].config?.name ?? selectedInstances[intanceIndex].image.config.name
+                ? selectedInstances[intanceIndex].config.name ?? selectedInstances[intanceIndex].image.config.name
                 : translatedError.path,
           }),
           {
@@ -158,7 +161,7 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
             t('errors:validationFailedForInstance', {
               path:
                 intanceIndex !== null
-                  ? deployment.instances[intanceIndex].config?.name ??
+                  ? deployment.instances[intanceIndex].config.name ??
                     deployment.instances[intanceIndex].image.config.name
                   : property,
             }),

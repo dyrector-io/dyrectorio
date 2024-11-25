@@ -5,75 +5,56 @@ import KeyValueInput from '@app/components/shared/key-value-input'
 import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoMessage from '@app/elements/dyo-message'
 import DyoToggle from '@app/elements/dyo-toggle'
 import {
+  CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CRANE_CONFIG_FILTER_VALUES,
-  CraneConfigProperty,
-  ImageConfigProperty,
+  ConcreteContainerConfigData,
+  ContainerConfigData,
+  ContainerConfigErrors,
+  ContainerConfigKey,
+  ContainerDeploymentStrategyType,
+  CraneConfigKey,
+  booleanResettable,
   filterContains,
   filterEmpty,
-  CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
-  CommonConfigDetails,
-  ContainerConfigData,
-  ContainerDeploymentStrategyType,
-  CraneConfigDetails,
-  InstanceContainerConfigData,
-  InstanceCraneConfigDetails,
-  mergeConfigs,
+  stringResettable,
 } from '@app/models'
 import { nullify, toNumber } from '@app/utils'
-import useTranslation from 'next-translate/useTranslation'
-import ConfigSectionLabel from './config-section-label'
-import DyoMessage from '@app/elements/dyo-message'
-import { useEffect } from 'react'
 import { ContainerConfigValidationErrors, findErrorFor } from '@app/validations'
+import useTranslation from 'next-translate/useTranslation'
+import { useEffect } from 'react'
+import ConfigSectionLabel from './config-section-label'
 
-type CraneConfigSectionBaseProps<T> = {
-  config: T
-  resetableConfig?: T
-  onChange: (config: Partial<T>) => void
-  onResetSection: (section: CraneConfigProperty) => void
-  selectedFilters: ImageConfigProperty[]
+type CraneConfigSectionProps = {
+  config: ContainerConfigData | ConcreteContainerConfigData
+  onChange: (config: ContainerConfigData | ConcreteContainerConfigData) => void
+  onResetSection: (section: CraneConfigKey) => void
+  selectedFilters: ContainerConfigKey[]
   editorOptions: ItemEditorState
   disabled?: boolean
   fieldErrors: ContainerConfigValidationErrors
+  conflictErrors: ContainerConfigErrors
+  baseConfig: ContainerConfigData | null
+  resettableConfig: ContainerConfigData | ConcreteContainerConfigData
 }
-
-type ImageCraneConfigSectionProps = CraneConfigSectionBaseProps<
-  CraneConfigDetails & Pick<CommonConfigDetails, 'ports'>
-> & {
-  configType: 'image'
-}
-
-type InstanceCraneConfigSectionProps = CraneConfigSectionBaseProps<
-  InstanceCraneConfigDetails & Pick<InstanceContainerConfigData, 'ports'>
-> & {
-  configType: 'instance'
-  imageConfig: ContainerConfigData
-}
-
-export type CraneConfigSectionProps = ImageCraneConfigSectionProps | InstanceCraneConfigSectionProps
 
 const CraneConfigSection = (props: CraneConfigSectionProps) => {
   const {
-    config: propsConfig,
-    resetableConfig: propsResetableConfig,
-    configType,
+    config,
+    resettableConfig,
+    baseConfig,
     selectedFilters,
     onChange,
     onResetSection,
     editorOptions,
     disabled,
     fieldErrors,
+    conflictErrors,
   } = props
 
   const { t } = useTranslation('container')
-
-  const disabledOnImage = configType === 'image' || disabled
-  // eslint-disable-next-line react/destructuring-assignment
-  const imageConfig = configType === 'instance' ? props.imageConfig : null
-  const resetableConfig = propsResetableConfig ?? propsConfig
-  const config = configType === 'instance' ? mergeConfigs(imageConfig, propsConfig) : propsConfig
 
   const ports = config.ports?.filter(it => !!it.internal) ?? []
 
@@ -99,8 +80,9 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         {filterContains('deploymentStrategy', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <ConfigSectionLabel
-              disabled={disabledOnImage || !resetableConfig.deploymentStrategy}
+              disabled={!stringResettable(baseConfig?.deploymentStrategy, resettableConfig.deploymentStrategy)}
               onResetSection={() => onResetSection('deploymentStrategy')}
+              error={conflictErrors?.deploymentStrategy}
             >
               {t('crane.deploymentStrategy').toUpperCase()}
             </ConfigSectionLabel>
@@ -122,8 +104,9 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         {filterContains('healthCheckConfig', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <ConfigSectionLabel
-              disabled={disabled || !resetableConfig.healthCheckConfig}
+              disabled={disabled || !resettableConfig.healthCheckConfig}
               onResetSection={() => onResetSection('healthCheckConfig')}
+              error={conflictErrors?.healthCheckConfig}
             >
               {t('crane.healthCheckConfig').toUpperCase()}
             </ConfigSectionLabel>
@@ -223,7 +206,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               onChange={it => onChange({ customHeaders: it })}
               editorOptions={editorOptions}
               disabled={disabled}
-              onResetSection={resetableConfig.customHeaders ? () => onResetSection('customHeaders') : null}
+              onResetSection={resettableConfig.customHeaders ? () => onResetSection('customHeaders') : null}
             />
             <DyoMessage message={findErrorFor(fieldErrors, 'customHeaders')} messageType="error" />
           </div>
@@ -233,8 +216,9 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         {filterContains('resourceConfig', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <ConfigSectionLabel
-              disabled={disabled || !resetableConfig.resourceConfig}
+              disabled={disabled || !resettableConfig.resourceConfig}
               onResetSection={() => onResetSection('resourceConfig')}
+              error={conflictErrors?.resourceConfig}
             >
               {t('crane.resourceConfig').toUpperCase()}
             </ConfigSectionLabel>
@@ -343,8 +327,9 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         {filterContains('proxyHeaders', selectedFilters) && (
           <div className="flex flex-row mb-8">
             <ConfigSectionLabel
-              disabled={disabledOnImage || resetableConfig.proxyHeaders === null}
+              disabled={disabled || !booleanResettable(baseConfig?.proxyHeaders, resettableConfig.proxyHeaders)}
               onResetSection={() => onResetSection('proxyHeaders')}
+              error={conflictErrors?.proxyHeaders}
             >
               {t('crane.proxyHeaders').toUpperCase()}
             </ConfigSectionLabel>
@@ -364,8 +349,9 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
           <div className="grid break-inside-avoid mb-8">
             <div className="flex flex-row mb-2.5">
               <ConfigSectionLabel
-                disabled={disabledOnImage || resetableConfig.useLoadBalancer === null}
+                disabled={disabled || booleanResettable(baseConfig?.useLoadBalancer, resettableConfig.useLoadBalancer)}
                 onResetSection={() => onResetSection('useLoadBalancer')}
+                error={conflictErrors?.useLoadBalancer}
               >
                 {t('crane.useLoadBalancer').toUpperCase()}
               </ConfigSectionLabel>
@@ -387,7 +373,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 items={config.extraLBAnnotations ?? []}
                 editorOptions={editorOptions}
                 onChange={it => onChange({ extraLBAnnotations: it })}
-                onResetSection={resetableConfig.extraLBAnnotations ? () => onResetSection('extraLBAnnotations') : null}
+                onResetSection={resettableConfig.extraLBAnnotations ? () => onResetSection('extraLBAnnotations') : null}
                 disabled={disabled}
               />
             )}
@@ -397,10 +383,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         {/* Labels */}
         {filterContains('labels', selectedFilters) && (
           <div className="flex flex-col">
-            <ConfigSectionLabel
-              disabled={disabled || !resetableConfig.labels}
-              onResetSection={() => onResetSection('labels')}
-            >
+            <ConfigSectionLabel disabled={disabled || !config.labels} onResetSection={() => onResetSection('labels')}>
               {t('crane.labels').toUpperCase()}
             </ConfigSectionLabel>
 
@@ -413,6 +396,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 items={config.labels?.deployment ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
+                errors={conflictErrors?.labels?.deployment}
               />
               <DyoMessage message={findErrorFor(fieldErrors, 'labels.deployment')} messageType="error" />
             </div>
@@ -426,6 +410,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 items={config.labels?.service ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
+                errors={conflictErrors?.labels?.service}
               />
               <DyoMessage message={findErrorFor(fieldErrors, 'labels.service')} messageType="error" />
             </div>
@@ -439,6 +424,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 items={config.labels?.ingress ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
+                errors={conflictErrors?.labels?.ingress}
               />
               <DyoMessage message={findErrorFor(fieldErrors, 'labels.ingress')} messageType="error" />
             </div>
@@ -449,7 +435,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         {filterContains('annotations', selectedFilters) && (
           <div className="flex flex-col">
             <ConfigSectionLabel
-              disabled={disabled || !resetableConfig.annotations}
+              disabled={disabled || !resettableConfig.annotations}
               onResetSection={() => onResetSection('annotations')}
             >
               {t('crane.annotations').toUpperCase()}
@@ -464,6 +450,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 items={config.annotations?.deployment ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
+                errors={conflictErrors?.annotations?.deployment}
               />
               <DyoMessage message={findErrorFor(fieldErrors, 'annotations.deployment')} messageType="error" />
             </div>
@@ -477,6 +464,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 items={config.annotations?.service ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
+                errors={conflictErrors?.annotations.service}
               />
               <DyoMessage message={findErrorFor(fieldErrors, 'annotations.service')} messageType="error" />
             </div>
@@ -490,6 +478,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 items={config.annotations?.ingress ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
+                errors={conflictErrors?.annotations.ingress}
               />
               <DyoMessage message={findErrorFor(fieldErrors, 'annotations.ingress')} messageType="error" />
             </div>
@@ -500,8 +489,9 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         {filterContains('metrics', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <ConfigSectionLabel
-              disabled={disabledOnImage || resetableConfig.metrics === null}
+              disabled={disabled || !resettableConfig.metrics}
               onResetSection={() => onResetSection('metrics')}
+              error={conflictErrors?.metrics}
             >
               {t('crane.metrics').toUpperCase()}
             </ConfigSectionLabel>

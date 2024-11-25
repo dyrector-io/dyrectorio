@@ -2,14 +2,14 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import useTranslation from 'next-translate/useTranslation'
 
-interface EditImageHeadingProps {
+type EditContainerConfigHeadingProps = {
   className?: string
   imageName: string
-  imageTag: string
+  imageTag: string | null
   containerName: string
 }
 
-const EditImageHeading = (props: EditImageHeadingProps) => {
+const EditContainerConfigHeading = (props: EditContainerConfigHeadingProps) => {
   const { imageName, imageTag, containerName, className } = props
 
   const { t } = useTranslation('common')
@@ -36,4 +36,4 @@ const EditImageHeading = (props: EditImageHeadingProps) => {
   )
 }
 
-export default EditImageHeading
+export default EditContainerConfigHeading

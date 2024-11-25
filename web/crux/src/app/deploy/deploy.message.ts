@@ -1,6 +1,6 @@
 import { ConfigBundleDto } from '../config.bundle/config.bundle.dto'
-import { ImageDto } from '../image/image.dto'
-import { DeploymentEventDto, InstanceDto } from './deploy.dto'
+import { ImageDetailsDto } from '../image/image.dto'
+import { DeploymentEventDto } from './deploy.dto'
 
 export const WS_TYPE_FETCH_DEPLOYMENT_EVENTS = 'fetch-deployment-events'
 
@@ -15,17 +15,15 @@ export type DeploymentBundlesUpdatedMessage = {
   bundles: ConfigBundleDto[]
 }
 
-export const WS_TYPE_GET_INSTANCE = 'get-instance'
-export type GetInstanceMessage = {
-  id: string
-}
-
-export const WS_TYPE_INSTANCE = 'instance'
-export type InstanceMessage = InstanceDto
-
+export const WS_TYPE_GET_DEPLOYMENT_SECRETS = 'get-deployment-secrets'
 export const WS_TYPE_GET_INSTANCE_SECRETS = 'get-instance-secrets'
 export type GetInstanceSecretsMessage = {
   id: string
+}
+
+export const WS_TYPE_DEPLOYMENT_SECRETS = 'deployment-secrets'
+export type DeploymentSecretsMessage = {
+  keys: string[]
 }
 
 export const WS_TYPE_INSTANCE_SECRETS = 'instance-secrets'
@@ -37,7 +35,7 @@ export type InstanceSecretsMessage = {
 type InstanceCreatedMessage = {
   id: string
   configId: string
-  image: ImageDto
+  image: ImageDetailsDto
 }
 export const WS_TYPE_INSTANCES_ADDED = 'instances-added'
 export type InstancesAddedMessage = InstanceCreatedMessage[]

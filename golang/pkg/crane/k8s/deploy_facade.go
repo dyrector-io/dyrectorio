@@ -262,6 +262,20 @@ func (d *DeployFacade) Clear() error {
 	return nil
 }
 
+func DeploySharedSecrets(c context.Context, prefix string, secrets map[string]string) error {
+	cfg := grpc.GetConfigFromContext(c).(*config.Configuration)
+
+	k8sClient := NewClient(cfg)
+	secret := NewSecret(c, k8sClient)
+
+	err := secret.applySecrets(prefix, prefix+"-shared", secrets)
+	if err != nil {
+		return fmt.Errorf("could not write secrets, aborting: %w", err)
+	}
+
+	return nil
+}
+
 func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest,
 	_ *v1.VersionData,
 ) error {

@@ -46,10 +46,6 @@ export class ImageDto {
   @IsNumber()
   order: number
 
-  @ValidateNested()
-  @IsOptional()
-  config?: ContainerConfigDto
-
   @Type(() => Date)
   @IsDate()
   createdAt: Date
@@ -59,6 +55,11 @@ export class ImageDto {
 
   @ValidateNested()
   labels: Record<string, string>
+}
+
+export class ImageDetailsDto extends ImageDto {
+  @ValidateNested()
+  config: ContainerConfigDto
 }
 
 export class AddImagesDto {
