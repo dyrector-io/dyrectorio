@@ -194,12 +194,12 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                 />
 
                 <DyoLabel className="text-lg mb-2.5" textColor="text-bright">
-                  {t('containerName')}
+                  {t('workloadName')}
                 </DyoLabel>
 
                 <DyoInput
                   name="workloadName"
-                  placeholder={t('optionalContainerName.dagent')}
+                  placeholder={t('optionalWorkloadName.dagent')}
                   className="max-w-lg ml-2 mb-2.5"
                   grow
                   value={formik.values.workloadName}
@@ -207,7 +207,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                   message={formik.errors.workloadName}
                 />
 
-                <p className="text-sm text-light-eased ml-4 mb-2.5">{t('containerNameExplanation')}</p>
+                <p className="text-sm text-light-eased ml-4 mb-2.5">{t('workloadNameExplanation')}</p>
 
                 <DyoLabel className="text-lg mb-2.5" textColor="text-bright">
                   {t('persistentDataPath')}
@@ -227,12 +227,12 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
             ) : node.type === 'k8s' ? (
               <div className="flex flex-col">
                 <DyoLabel className="text-lg mb-2.5" textColor="text-bright">
-                  {t('containerName')}
+                  {t('workloadName')}
                 </DyoLabel>
 
                 <DyoInput
                   name="workloadName"
-                  placeholder={t('optionalContainerName.crane')}
+                  placeholder={t('optionalWorkloadName.crane')}
                   className="max-w-lg ml-2 mb-2.5"
                   grow
                   value={formik.values.workloadName}
@@ -240,7 +240,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                   message={formik.errors.workloadName}
                 />
 
-                <p className="text-sm text-light-eased ml-4 mb-2.5">{t('containerNameExplanation')}</p>
+                <p className="text-sm text-light-eased ml-4 mb-2.5">{t('workloadNameExplanation')}</p>
               </div>
             ) : null}
 
