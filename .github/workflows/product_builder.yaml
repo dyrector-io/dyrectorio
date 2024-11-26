@@ -640,7 +640,7 @@ jobs:
           docker ps
           mkdir logs
           CONTAINERS="dyo-e2e_crux-ui dyo-e2e_crux dyo-e2e_kratos dyo-e2e_traefik dagent"
-          for cont in CONTAINERS
+          for cont in $CONTAINERS
           do
             docker logs $cont > logs/$cont.log 2>&1
             docker inspect $cont > logs/$cont.inspect 2>&1
