@@ -601,15 +601,25 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
-      - name: Setup using cli
+      - name: Setup dyrectorio stack using dyo-cli
         run: |
           export GITHUB_NETWORK=$(docker network ls -f name=github_network --format {{.Name}})
           docker run -v /var/run/docker.sock:/var/run/docker.sock --network $GITHUB_NETWORK ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network $GITHUB_NETWORK --prefer-local-images --expect-container-env --debug -p dyo-e2e up
+      - name: Check if containers are running and reachable
+        run: |
+          curl -vL -m 30 http://dyo-e2e_traefik:8000 > /dev/null
       - name: Setup NPM caches
         uses: actions/cache/restore@v3
         with:
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/.npm/**
           key: ${{ runner.os }}-e2e_test-${{ hashFiles('web/crux-ui/package-lock.json') }}
+      - name: Setup playwright
+        working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
+        env:
+          CI: true
+        run: |
+          npm ci --include=dev --arch=x64 --cache .npm --prefer-offline --no-fund
+          npx playwright install chromium
       - name: Run tests
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
         env:
@@ -621,10 +631,7 @@ jobs:
           CRUX_UI_URL: "http://dyo-e2e_traefik:8000"
           KRATOS_URL: "http://dyo-e2e_kratos:4433"
           KRATOS_ADMIN_URL: "http://dyo-e2e_kratos:4434"
-          CI: true
         run: |
-          npm ci --include=dev --arch=x64 --cache .npm --prefer-offline --no-fund
-          npx playwright install chromium
           npm run test:e2e
       - name: Gather logs
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
