@@ -2,7 +2,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
 import DyoLink from '@app/elements/dyo-link'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
-import DyoTable, { DyoColumn, sortDate, sortString } from '@app/elements/dyo-table'
+import DyoTable, { DyoColumn, sortDate, sortNumber, sortString } from '@app/elements/dyo-table'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { DeleteImageMessage, VersionImage, WS_TYPE_DELETE_IMAGE } from '@app/models'
@@ -53,7 +53,8 @@ const VersionViewList = (props: VersionViewListProps) => {
   return (
     <>
       <DyoCard className="relative mt-4">
-        <DyoTable data={state.version.images} dataKey="id" initialSortColumn={0} initialSortDirection="asc">
+        <DyoTable data={state.version.images} dataKey="id" initialSortColumn={1} initialSortDirection="asc">
+          <DyoColumn className="w-1/12" header={t('order')} sortField="order" sortable sort={sortNumber} body={(data) => `#${(data.orders + 1)}`} />
           <DyoColumn header={t('containerName')} field="config.name" sortable sort={sortString} />
           <DyoColumn
             header={t('common:registry')}
