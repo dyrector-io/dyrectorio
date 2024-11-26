@@ -60,7 +60,10 @@ const NodeContainersList = (props: NodeContainersListProps) => {
             sortField={imageNameOfContainer}
             sort={sortString}
             bodyClassName="truncate"
-            body={(it: Container) => <span title={imageNameOfContainer(it)}>{imageNameOfContainer(it)}</span>}
+            body={(it: Container) => {
+              const name = imageNameOfContainer(it)
+              return <span title={name}>{name}</span>
+            }}
           />
           <DyoColumn
             header={t('common:state')}

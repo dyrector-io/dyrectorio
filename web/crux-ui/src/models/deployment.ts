@@ -1,7 +1,7 @@
 import { Audit } from './audit'
 import { DeploymentStatus, DyoApiError, slugify } from './common'
 import { ConfigBundleDetails } from './config-bundle'
-import { ConcreteContainerConfig, ContainerIdentifier, ContainerState } from './container'
+import { ConcreteContainerConfig, ContainerState } from './container'
 import { ImageDeletedMessage, VersionImage } from './image'
 import { Instance } from './instance'
 import { DyoNode } from './node'
@@ -150,9 +150,6 @@ export type GetInstanceMessage = {
   id: string
 }
 
-export const WS_TYPE_INSTANCE = 'instance'
-export type InstanceMessage = Instance & {}
-
 export const WS_TYPE_INSTANCES_ADDED = 'instances-added'
 type InstanceCreatedMessage = {
   id: string
@@ -179,25 +176,6 @@ export const WS_TYPE_DEPLOYMENT_EVENT_LIST = 'deployment-event-list'
 export type DeploymentEventMessage = DeploymentEvent
 
 export const WS_TYPE_DEPLOYMENT_FINISHED = 'deployment-finished'
-
-export const WS_TYPE_GET_INSTANCE_SECRETS = 'get-instance-secrets'
-export type GetInstanceSecretsMessage = {
-  id: string
-}
-
-export type InstanceSecrets = {
-  container: ContainerIdentifier
-
-  publicKey: string
-
-  keys?: string[]
-}
-
-export const WS_TYPE_INSTANCE_SECRETS = 'instance-secrets'
-export type InstanceSecretsMessage = {
-  instanceId: string
-  keys: string[]
-}
 
 export const deploymentIsMutable = (status: DeploymentStatus, type: VersionType): boolean => {
   switch (status) {

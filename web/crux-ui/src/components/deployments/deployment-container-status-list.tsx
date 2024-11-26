@@ -32,7 +32,7 @@ interface DeploymentContainerStatusListProps {
   progress: Record<string, ContainerProgress>
 }
 
-type ContainerWithInstance = Container & {
+type ContainerWithConfigId = Container & {
   configId: string
 }
 
@@ -44,7 +44,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
 
   const now = utcNow()
 
-  const [containers, setContainers] = useState<ContainerWithInstance[]>(() =>
+  const [containers, setContainers] = useState<ContainerWithConfigId[]>(() =>
     deployment.instances.map(it => ({
       configId: it.config.id,
       id: {
@@ -73,7 +73,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       } as WatchContainerStatusMessage),
   })
 
-  const merge = (weak: ContainerWithInstance[], strong: Container[]): ContainerWithInstance[] => {
+  const merge = (weak: ContainerWithConfigId[], strong: Container[]): ContainerWithConfigId[] => {
     if (!strong || strong.length === 0) {
       return weak
     }
@@ -121,7 +121,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       />
       <DyoColumn
         className="w-4/12"
-        body={(it: ContainerWithInstance) =>
+        body={(it: ContainerWithConfigId) =>
           progress[it.configId]?.progress < 1 ? (
             <DyoProgress progress={progress[it.configId].progress} text={`${it.imageName}:${it.imageTag}`} />
           ) : (
@@ -136,7 +136,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       />
       <DyoColumn
         className="w-24 text-center"
-        body={(it: ContainerWithInstance) => (
+        body={(it: ContainerWithConfigId) => (
           <>
             {it.state && (
               <div className="inline-block mr-2">

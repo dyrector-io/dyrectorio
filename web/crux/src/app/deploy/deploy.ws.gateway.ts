@@ -30,15 +30,8 @@ import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import {
   DeploymentEventListMessage,
   DeploymentEventMessage,
-  DeploymentSecretsMessage,
-  GetInstanceSecretsMessage,
-  InstanceSecretsMessage,
   WS_TYPE_DEPLOYMENT_EVENT_LIST,
-  WS_TYPE_DEPLOYMENT_SECRETS,
   WS_TYPE_FETCH_DEPLOYMENT_EVENTS,
-  WS_TYPE_GET_DEPLOYMENT_SECRETS,
-  WS_TYPE_GET_INSTANCE_SECRETS,
-  WS_TYPE_INSTANCE_SECRETS,
 } from './deploy.message'
 import DeployService from './deploy.service'
 
@@ -138,35 +131,6 @@ export default class DeployWebSocketGateway {
         return msg
       }),
     )
-  }
-
-  @AuditLogLevel('disabled')
-  @SubscribeMessage(WS_TYPE_GET_DEPLOYMENT_SECRETS)
-  async getDeploymentSecrets(@DeploymentId() deploymentId: string): Promise<WsMessage<DeploymentSecretsMessage>> {
-    const secrets = await this.service.getDeploymentSecrets(deploymentId)
-
-    return {
-      type: WS_TYPE_DEPLOYMENT_SECRETS,
-      data: {
-        keys: secrets.keys ?? [],
-      },
-    }
-  }
-
-  @AuditLogLevel('disabled')
-  @SubscribeMessage(WS_TYPE_GET_INSTANCE_SECRETS)
-  async getInstanceSecrets(
-    @SocketMessage() message: GetInstanceSecretsMessage,
-  ): Promise<WsMessage<InstanceSecretsMessage>> {
-    const secrets = await this.service.getInstanceSecrets(message.id)
-
-    return {
-      type: WS_TYPE_INSTANCE_SECRETS,
-      data: {
-        instanceId: message.id,
-        keys: secrets.keys ?? [],
-      },
-    }
   }
 
   @AuditLogLevel('disabled')

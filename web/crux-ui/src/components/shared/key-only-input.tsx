@@ -121,8 +121,6 @@ const KeyOnlyInput = (props: KeyInputProps) => {
   }
 
   const onResetSection = () => {
-    // dispatch(mergeItems(items))
-
     propsOnResetSection()
   }
 

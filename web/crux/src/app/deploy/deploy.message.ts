@@ -15,28 +15,12 @@ export type DeploymentBundlesUpdatedMessage = {
   bundles: ConfigBundleDto[]
 }
 
-export const WS_TYPE_GET_DEPLOYMENT_SECRETS = 'get-deployment-secrets'
-export const WS_TYPE_GET_INSTANCE_SECRETS = 'get-instance-secrets'
-export type GetInstanceSecretsMessage = {
-  id: string
-}
-
-export const WS_TYPE_DEPLOYMENT_SECRETS = 'deployment-secrets'
-export type DeploymentSecretsMessage = {
-  keys: string[]
-}
-
-export const WS_TYPE_INSTANCE_SECRETS = 'instance-secrets'
-export type InstanceSecretsMessage = {
-  instanceId: string
-  keys: string[]
-}
-
 type InstanceCreatedMessage = {
   id: string
   configId: string
   image: ImageDetailsDto
 }
+
 export const WS_TYPE_INSTANCES_ADDED = 'instances-added'
 export type InstancesAddedMessage = InstanceCreatedMessage[]
 
