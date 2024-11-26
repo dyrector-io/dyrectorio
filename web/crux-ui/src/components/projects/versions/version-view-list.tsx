@@ -54,7 +54,14 @@ const VersionViewList = (props: VersionViewListProps) => {
     <>
       <DyoCard className="relative mt-4">
         <DyoTable data={state.version.images} dataKey="id" initialSortColumn={1} initialSortDirection="asc">
-          <DyoColumn className="w-1/12" header={t('order')} sortField="order" sortable sort={sortNumber} body={(data) => `#${(data.orders + 1)}`} />
+          <DyoColumn
+            className="w-1/12"
+            header={t('order')}
+            sortField="order"
+            sortable
+            sort={sortNumber}
+            body={data => `#${data.order + 1}`}
+          />
           <DyoColumn header={t('containerName')} field="config.name" sortable sort={sortString} />
           <DyoColumn
             header={t('common:registry')}
