@@ -607,7 +607,7 @@ jobs:
           docker run -v /var/run/docker.sock:/var/run/docker.sock --network $GITHUB_NETWORK ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network $GITHUB_NETWORK --prefer-local-images --expect-container-env --debug -p dyo-e2e up
       - name: Check if containers are running and reachable
         run: |
-          curl -vL -m 30 http://dyo-e2e_traefik:8000 > /dev/null
+          curl -vfL -m 30 http://dyo-e2e_traefik:8000 > /dev/null
       - name: Setup NPM caches
         uses: actions/cache/restore@v3
         with:
