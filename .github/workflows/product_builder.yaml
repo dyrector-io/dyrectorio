@@ -639,11 +639,12 @@ jobs:
         run: |
           docker ps
           mkdir logs
-          docker logs dyo-e2e_crux-ui > logs/e2e-crux-ui.log 2>&1
-          docker logs dyo-e2e_crux > logs/e2e-crux.log 2>&1
-          docker logs dyo-e2e_kratos > logs/e2e-kratos.log 2>&1
-          docker logs dyo-e2e_traefik > logs/e2e-traefik.log 2>&1
-          docker logs dagent > logs/e2e-dagent.log 2>&1
+          CONTAINERS="dyo-e2e_crux-ui dyo-e2e_crux dyo-e2e_kratos dyo-e2e_traefik dagent"
+          for cont in CONTAINERS
+          do
+            docker logs $cont > logs/$cont.log 2>&1
+            docker inspect $cont > logs/$cont.inspect 2>&1
+          done
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
