@@ -24,5 +24,6 @@
   "unknownTag": "unknown",
   "invalidImageFormat": "Invalid format, please use 'NAME[:TAG]'",
   "tagRequired": "Tag is required",
-  "uncheckedRegistryExplanation": "Please be aware that you are using an unchecked registry. The tag you enter will be used directly, which means if the tag does not exist, the deployment will fail."
+  "uncheckedRegistryExplanation": "Please be aware that you are using an unchecked registry. The tag you enter will be used directly, which means if the tag does not exist, the deployment will fail.",
+  "order": "Order"
 }
