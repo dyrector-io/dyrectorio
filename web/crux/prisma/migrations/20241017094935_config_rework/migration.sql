@@ -205,7 +205,7 @@ WHERE "i"."id" IN (SELECT id FROM "_prisma_migrations_ConfiglessInstances");
 
 DROP TABLE "_prisma_migrations_ConfiglessInstances";
 
--- AlterTable
+-- add deployedAt and deployedBy
 ALTER TABLE "Deployment" ADD COLUMN     "deployedAt" TIMESTAMPTZ(6),
 ADD COLUMN     "deployedBy" UUID;
 
@@ -214,18 +214,17 @@ SET "deployedAt" = "d"."updatedAt"
 FROM (select "id", "updatedAt" FROM "Deployment") AS "d"
 WHERE "d"."id" = "Deployment"."id";
 
--- AlterTable
+-- set config id not null
 ALTER TABLE "ConfigBundle" ALTER COLUMN "configId" SET NOT NULL;
 
--- AlterTable
 ALTER TABLE "Deployment" ALTER COLUMN "configId" SET NOT NULL;
 
--- AlterTable
 ALTER TABLE "Image" ALTER COLUMN "configId" SET NOT NULL;
 
--- AlterTable
 ALTER TABLE "Instance" ALTER COLUMN "configId" SET NOT NULL;
 
+
+-- create indices and constraints
 -- CreateIndex
 CREATE UNIQUE INDEX "ConfigBundle_configId_key" ON "ConfigBundle"("configId");
 

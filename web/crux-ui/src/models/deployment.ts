@@ -140,6 +140,7 @@ export type StartDeployment = {
 }
 
 // ws
+// TODO (@m8vago): move this to the container-config ws endpoint
 export const WS_TYPE_DEPLOYMENT_BUNDLES_UPDATED = 'deployment-bundles-updated'
 export type DeploymentBundlesUpdatedMessage = {
   bundles: ConfigBundleDetails[]
