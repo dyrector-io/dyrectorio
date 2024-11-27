@@ -271,7 +271,11 @@ export default class NodeHttpController {
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
   async getDeployments(@TeamSlug() teamSlug: string, @NodeId() nodeId: string): Promise<DeploymentDto[]> {
-    return await this.deployService.getDeployments(teamSlug, nodeId)
+    const paged = await this.deployService.getDeployments(teamSlug, {
+      nodeId,
+    })
+
+    return paged.items
   }
 
   @Post(`${ROUTE_NODE_ID}/kick`)

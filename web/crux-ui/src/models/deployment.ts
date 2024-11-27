@@ -1,5 +1,5 @@
 import { Audit } from './audit'
-import { DeploymentStatus, DyoApiError, slugify } from './common'
+import { DeploymentStatus, DyoApiError, PaginatedList, PaginationQuery, slugify } from './common'
 import { ContainerIdentifier, ContainerState, InstanceContainerConfigData, UniqueKeyValue } from './container'
 import { ImageConfigProperty, ImageDeletedMessage } from './image'
 import { Instance } from './instance'
@@ -28,6 +28,14 @@ export type Deployment = {
   project: BasicProject
   version: BasicVersion
 }
+
+export type DeploymentQuery = PaginationQuery & {
+  nodeId?: string
+  filter?: string
+  status?: DeploymentStatus
+}
+
+export type DeploymentList = PaginatedList<Deployment>
 
 export type DeploymentToken = {
   id: string
