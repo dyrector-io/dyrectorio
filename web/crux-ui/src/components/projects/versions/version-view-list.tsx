@@ -53,7 +53,7 @@ const VersionViewList = (props: VersionViewListProps) => {
   return (
     <>
       <DyoCard className="relative mt-4">
-        <DyoTable data={state.version.images} dataKey="id" initialSortColumn={1} initialSortDirection="asc">
+        <DyoTable data={state.version.images} dataKey="id" initialSortColumn={0} initialSortDirection="asc">
           <DyoColumn
             className="w-1/12"
             header={t('order')}
