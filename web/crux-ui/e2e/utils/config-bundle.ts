@@ -18,17 +18,22 @@ export const createConfigBundle = async (page: Page, name: string, data: Record<
   await expect(page.locator('h4')).toContainText('New config bundle')
   await page.locator('input[name=name] >> visible=true').fill(name)
 
-  const sock = waitSocketRef(page)
   await page.locator('text=Save').click()
   await page.waitForURL(`${TEAM_ROUTES.configBundle.list()}/**`)
-  await page.waitForSelector(`h4:text-is("View ${name}")`)
+  await page.waitForSelector(`h3:text-is("${name}")`)
 
   const configBundleId = page.url().split('/').pop()
 
-  const ws = await sock
-  const wsRoute = TEAM_ROUTES.configBundle.detailsSocket(configBundleId)
+  const sock = waitSocketRef(page)
+  await page.locator('button:has-text("Config")').click()
+  await page.waitForURL(TEAM_ROUTES.containerConfig.details('**'))
 
-  await page.locator('button:has-text("Edit")').click()
+  const configId = page.url().split('/').pop()
+
+  const ws = await sock
+  const wsRoute = TEAM_ROUTES.configBundle.detailsSocket(configId)
+
+  await page.locator('button:has-text("Environment")').click()
 
   const wsPatchReceived = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, matchPatchEnvironment(data))
 
