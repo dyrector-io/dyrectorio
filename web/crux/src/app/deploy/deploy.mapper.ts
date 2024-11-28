@@ -120,6 +120,15 @@ export default class DeployMapper {
     }
   }
 
+  statusDtoToDb(it: DeploymentStatusDto): DeploymentStatusEnum {
+    switch (it) {
+      case 'in-progress':
+        return 'inProgress'
+      default:
+        return it as DeploymentStatusEnum
+    }
+  }
+
   toDeploymentWithBasicNodeDto(it: DeploymentWithNode, nodeStatus: NodeConnectionStatus): DeploymentWithBasicNodeDto {
     return {
       id: it.id,

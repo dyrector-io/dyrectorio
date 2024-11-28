@@ -31,6 +31,39 @@ import { BasicVersionDto } from '../version/version.dto'
 const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete'] as const
 export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]
 
+export type EnvironmentToConfigBundleNameMap = Record<string, string>
+
+export class DeploymentQueryDto {
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  @ApiProperty()
+  readonly skip?: number
+
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  @ApiProperty()
+  readonly take?: number
+
+  @IsOptional()
+  @IsString()
+  @Type(() => String)
+  @ApiProperty()
+  readonly nodeId?: string
+
+  @IsOptional()
+  @IsString()
+  @Type(() => String)
+  @ApiProperty()
+  readonly filter?: string
+
+  @IsOptional()
+  @ApiProperty({ enum: DEPLOYMENT_STATUS_VALUES })
+  @IsIn(DEPLOYMENT_STATUS_VALUES)
+  readonly status?: DeploymentStatusDto
+}
+
 export class BasicDeploymentDto {
   @IsUUID()
   id: string
@@ -305,4 +338,11 @@ export class StartDeploymentDto {
   @IsOptional()
   @IsString({ each: true })
   instances?: string[]
+}
+
+export class DeploymentListDto extends PaginatedList<DeploymentDto> {
+  @Type(() => DeploymentDto)
+  items: DeploymentDto[]
+
+  total: number
 }

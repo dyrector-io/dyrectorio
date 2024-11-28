@@ -2,16 +2,19 @@ import Onboarding from '@app/components/dashboard/onboarding'
 import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
+import { COOKIE_TEAM_SLUG } from '@app/const'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoLink from '@app/elements/dyo-link'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Dashboard } from '@app/models'
-import { API_USERS_ME_PREFERENCES_ONBOARDING, TeamRoutes } from '@app/routes'
+import { Dashboard, UserMeta } from '@app/models'
+import { API_USERS_ME, API_USERS_ME_PREFERENCES_ONBOARDING, TeamRoutes, teamUrl } from '@app/routes'
 import { fetcher, withContextAuthorization } from '@app/utils'
-import { getCruxFromContext } from '@server/crux-api'
+import { getCookie } from '@server/cookie'
+import { getCruxFromContext, postCruxFromContext } from '@server/crux-api'
 import { identityOnboardingDisabled, obtainSessionFromRequest } from '@server/kratos'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -23,10 +26,11 @@ import useSWR from 'swr'
 type DashboardPageProps = {
   dashboard: Dashboard
   onboardingDisabled: boolean
+  teamId: string
 }
 
 const DashboardPage = (props: DashboardPageProps) => {
-  const { dashboard: propsDashboard, onboardingDisabled: propsOnboardingDisabled } = props
+  const { dashboard: propsDashboard, onboardingDisabled: propsOnboardingDisabled, teamId } = props
 
   const { t, lang } = useTranslation('dashboard')
   const routes = useTeamRoutes()
@@ -89,23 +93,42 @@ const DashboardPage = (props: DashboardPageProps) => {
     }
   }
 
+  const getStatisticRedirect = (it: string) => {
+    switch (it) {
+      case 'projects':
+      case 'versions':
+        return routes.project.list()
+      case 'auditLog':
+        return routes.audit.list()
+      case 'deployments':
+      case 'failedDeployments':
+        return routes.deployment.list()
+      case 'users':
+        return teamUrl(teamId)
+      default:
+        return '#'
+    }
+  }
+
   const formatCount = (count: number) => Intl.NumberFormat(lang, { notation: 'compact' }).format(count)
 
   const statisticItem = (property: string, count: number) => (
-    <DyoCard className="flex flex-col p-4 justify-items-center items-center mb-4 break-inside-avoid" key={property}>
-      <Image
-        src={`/dashboard/${getStatisticIcon(property)}.svg`}
-        width={46}
-        height={46}
-        alt={t(getStatisticLabel(property))}
-      />
-      <DyoLabel className="text-lg font-semibold my-2" textColor="text-bright">
-        {formatCount(count)}
-      </DyoLabel>
-      <DyoLabel className="text-sm" textColor="text-light-eased">
-        {t(getStatisticLabel(property))}
-      </DyoLabel>
-    </DyoCard>
+    <DyoLink href={getStatisticRedirect(property)} qaLabel={`dashboard-statistic-item-${property}`}>
+      <DyoCard className="flex flex-col p-4 justify-items-center items-center mb-4 break-inside-avoid" key={property}>
+        <Image
+          src={`/dashboard/${getStatisticIcon(property)}.svg`}
+          width={46}
+          height={46}
+          alt={t(getStatisticLabel(property))}
+        />
+        <DyoLabel className="text-lg font-semibold my-2" textColor="text-bright">
+          {formatCount(count)}
+        </DyoLabel>
+        <DyoLabel className="text-sm" textColor="text-light-eased">
+          {t(getStatisticLabel(property))}
+        </DyoLabel>
+      </DyoCard>
+    </DyoLink>
   )
 
   return (
@@ -155,10 +178,15 @@ const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const session = await obtainSessionFromRequest(context.req)
   const onboardingDisabled = identityOnboardingDisabled(session)
 
+  const user = await postCruxFromContext<UserMeta>(context, API_USERS_ME)
+  const teamSlug = getCookie(context, COOKIE_TEAM_SLUG)
+  const teamId = user.teams.find(it => it.slug === teamSlug)?.id
+
   return {
     props: {
       dashboard,
       onboardingDisabled,
+      teamId,
     },
   }
 }

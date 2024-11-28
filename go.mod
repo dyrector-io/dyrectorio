@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/ProtonMail/gopenpgp/v2 v2.7.1
 	github.com/go-playground/validator/v10 v10.12.0
-	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/hashicorp/go-version v1.7.0
 	github.com/ilyakaznacheev/cleanenv v1.4.2
 	github.com/pkg/errors v0.9.1

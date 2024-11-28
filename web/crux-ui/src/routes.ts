@@ -1,6 +1,13 @@
 /* eslint-disable no-underscore-dangle */
 import { GetServerSidePropsContext } from 'next'
-import { AuditLogQuery, ContainerIdentifier, ContainerOperation, PaginationQuery, VersionSectionsState } from './models'
+import {
+  AuditLogQuery,
+  ContainerIdentifier,
+  ContainerOperation,
+  DeploymentQuery,
+  PaginationQuery,
+  VersionSectionsState,
+} from './models'
 
 // Routes:
 export const ROUTE_DOCS = 'https://docs.dyrector.io'
@@ -434,7 +441,7 @@ class DeploymentApi {
     this.root = `/api${root}`
   }
 
-  list = () => this.root
+  list = (query?: DeploymentQuery) => urlQuery(this.root, query)
 
   details = (id: string) => `${this.root}/${id}`
 

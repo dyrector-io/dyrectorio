@@ -1,5 +1,5 @@
 import { Audit } from './audit'
-import { DeploymentStatus, DyoApiError, slugify } from './common'
+import { DeploymentStatus, DyoApiError, PaginatedList, PaginationQuery, slugify } from './common'
 import { ConfigBundleDetails } from './config-bundle'
 import { ConcreteContainerConfig, ContainerState } from './container'
 import { ImageDeletedMessage, VersionImage } from './image'
@@ -29,6 +29,14 @@ export type Deployment = {
   project: BasicProject
   version: BasicVersion
 }
+
+export type DeploymentQuery = PaginationQuery & {
+  nodeId?: string
+  filter?: string
+  status?: DeploymentStatus
+}
+
+export type DeploymentList = PaginatedList<Deployment>
 
 export type DeploymentToken = {
   id: string

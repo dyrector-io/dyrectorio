@@ -189,9 +189,9 @@ const LoginPage = (props: LoginPageProps) => {
 
           {oidcEnabled(oidc) && (
             <div className="flex flex-col gap-2 items-center mx-auto mt-2">
-              <span className="text-light my-2">{t('orLogInWith')}</span>
+              <span className="mt-2 mb-4">{t('orLogInWith')}</span>
 
-              <div className="flex flex-row gap-8">
+              <div className="flex flex-row gap-4">
                 {oidc.gitlab && (
                   <DyoIcon src="/oidc/gitlab.svg" size="lg" alt="Gitlab" onClick={() => loginWithOidc('gitlab')} />
                 )}

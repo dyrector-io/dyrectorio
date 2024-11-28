@@ -632,7 +632,7 @@ func EnvMapToSlice(envs map[string]string) []string {
 	arr := []string{}
 
 	for key, value := range envs {
-		arr = append(arr, util.JoinV("=", key, value))
+		arr = append(arr, util.JoinVEmpty("=", key, value))
 	}
 
 	return arr

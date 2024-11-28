@@ -53,6 +53,7 @@ import {
   DeploymentEventDto,
   DeploymentLogListDto,
   DeploymentLogPaginationQuery,
+  DeploymentQueryDto,
   DeploymentSecretsDto,
   DeploymentTokenCreatedDto,
   InstanceDetailsDto,
@@ -803,44 +804,99 @@ export default class DeployService {
     return runningDeployment.watchStatus().pipe(map(it => this.mapper.progressEventToEventDto(it)))
   }
 
-  async getDeployments(teamSlug: string, nodeId?: string): Promise<DeploymentDto[]> {
-    const deployments = await this.prisma.deployment.findMany({
-      where: {
-        version: {
-          project: {
-            team: {
-              slug: teamSlug,
-            },
+  async getDeployments(teamSlug: string, query?: DeploymentQueryDto): Promise<DeploymentListDto> {
+    let where: Prisma.DeploymentWhereInput = {
+      version: {
+        project: {
+          team: {
+            slug: teamSlug,
           },
         },
-        nodeId,
       },
-      include: {
-        version: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            project: {
-              select: {
-                id: true,
-                name: true,
-                type: true,
+      nodeId: query?.nodeId,
+      status: query?.status ? this.mapper.statusDtoToDb(query.status) : undefined,
+    }
+
+    if (query.filter) {
+      const { filter: filterKeyword } = query
+      where = {
+        ...where,
+        OR: [
+          {
+            prefix: {
+              contains: filterKeyword,
+              mode: 'insensitive',
+            },
+          },
+          {
+            node: {
+              name: {
+                contains: filterKeyword,
+                mode: 'insensitive',
               },
             },
           },
+          {
+            version: {
+              name: {
+                contains: filterKeyword,
+                mode: 'insensitive',
+              },
+            },
+          },
+          {
+            version: {
+              project: {
+                name: {
+                  contains: filterKeyword,
+                  mode: 'insensitive',
+                },
+              },
+            },
+          },
+        ],
+      }
+    }
+
+    const [deployments, total] = await this.prisma.$transaction([
+      this.prisma.deployment.findMany({
+        where,
+        orderBy: {
+          createdAt: 'desc',
         },
-        node: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
+        skip: query?.skip,
+        take: query?.take,
+        include: {
+          version: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+              project: {
+                select: {
+                  id: true,
+                  name: true,
+                  type: true,
+                },
+              },
+            },
+          },
+          node: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+            },
           },
         },
-      },
-    })
+      }),
+      this.prisma.deployment.count({ where }),
+    ])
 
-    return deployments.map(it => this.mapper.toDto(it))
+    return {
+      items: deployments.map(it => this.mapper.toDto(it)),
+      total,
+    }
   }
 
   async getDeploymentSecrets(deploymentId: string): Promise<DeploymentSecretsDto> {
