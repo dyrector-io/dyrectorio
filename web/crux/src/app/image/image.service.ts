@@ -109,7 +109,7 @@ export default class ImageService {
         },
       })
 
-      const lastOrder = lastImageOrder?.order ?? 0
+      const lastOrder = lastImageOrder?.order ?? -1
       let order = lastOrder + 1
 
       // we need the generated uuids, so we can't use createMany
