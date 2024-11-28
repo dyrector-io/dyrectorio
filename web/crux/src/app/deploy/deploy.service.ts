@@ -51,6 +51,7 @@ import {
   DeploymentDetailsDto,
   DeploymentDto,
   DeploymentEventDto,
+  DeploymentListDto,
   DeploymentLogListDto,
   DeploymentLogPaginationQuery,
   DeploymentQueryDto,
