@@ -851,20 +851,20 @@ export default class DeployService {
     }
 
     if (query.filter) {
-      const filter = query.filter
+      const { filter: filterKeyword } = query
       where = {
         ...where,
         OR: [
           {
             prefix: {
-              contains: filter,
+              contains: filterKeyword,
               mode: 'insensitive',
             },
           },
           {
             node: {
               name: {
-                contains: filter,
+                contains: filterKeyword,
                 mode: 'insensitive',
               },
             },
@@ -872,7 +872,7 @@ export default class DeployService {
           {
             version: {
               name: {
-                contains: filter,
+                contains: filterKeyword,
                 mode: 'insensitive',
               },
             },
@@ -881,7 +881,7 @@ export default class DeployService {
             version: {
               project: {
                 name: {
-                  contains: filter,
+                  contains: filterKeyword,
                   mode: 'insensitive',
                 },
               },

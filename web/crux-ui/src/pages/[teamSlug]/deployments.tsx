@@ -5,7 +5,6 @@ import useCopyDeploymentState from '@app/components/deployments/use-copy-deploym
 import { Layout } from '@app/components/layout'
 import SelectNodeChips from '@app/components/nodes/select-node-chips'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
-import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { PaginationSettings } from '@app/components/shared/paginator'
 import DyoButton from '@app/elements/dyo-button'
@@ -81,7 +80,7 @@ const DeploymentsPage = () => {
       take: pagination.pageSize,
       filter: !filter.filter || filter.filter.trim() === '' ? null : filter.filter,
       nodeId: filterNode?.id ?? null,
-      status: status,
+      status,
     }
 
     const res = await fetch(routes.deployment.api.list(query))
