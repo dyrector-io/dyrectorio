@@ -62,6 +62,12 @@ export class DeploymentQueryDto {
   @ApiProperty({ enum: DEPLOYMENT_STATUS_VALUES })
   @IsIn(DEPLOYMENT_STATUS_VALUES)
   readonly status?: DeploymentStatusDto
+
+  @IsOptional()
+  @IsString()
+  @Type(() => String)
+  @ApiProperty()
+  readonly configBundleId?: string
 }
 
 export class BasicDeploymentDto {

@@ -818,6 +818,17 @@ export default class DeployService {
       status: query?.status ? this.mapper.statusDtoToDb(query.status) : undefined,
     }
 
+    if (!!query.configBundleId) {
+      where = {
+        ...where,
+        configBundles: {
+          some: {
+            configBundleId: query.configBundleId,
+          }
+        }
+      }
+    }
+
     if (query.filter) {
       const { filter: filterKeyword } = query
       where = {
