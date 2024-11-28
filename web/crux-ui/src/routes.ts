@@ -123,6 +123,10 @@ const appendUrlParams = (url: string, params?: AnchorUrlParams): string => {
 }
 
 const urlQuery = (url: string, query: object) => {
+  if (!query) {
+    return url
+  }
+
   const params = Object.entries(query)
     .map(it => {
       const [key, value] = it
