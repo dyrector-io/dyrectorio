@@ -23,6 +23,9 @@ import * as yup from 'yup'
 import { matchNoLeadingOrTrailingWhitespaces, matchNoWhitespace } from './common'
 import { parseDyrectorioEnvRules } from './labels'
 
+// Official regex from Docker daemon
+export const CONTAINER_NAME_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9_.-]+$/g
+
 const ERROR_NO_SENSITIVE = 'container:validation.noSensitive'
 const ERROR_INVALID_KUBERNETES_QUANTITY = 'container:validation.kubernetesQuantity'
 
@@ -30,6 +33,11 @@ const unsafeKeywords = ['password', 'secret', 'token']
 const unsafeKeywordsRegex = new RegExp(`^((?!(${unsafeKeywords.join('|')})).)*$`, 'i')
 
 export const unsafeKeyRule = yup.string().matches(unsafeKeywordsRegex, ERROR_NO_SENSITIVE)
+
+const REGEX_ERROR_INVALID_CONTAINER_NAME = { regex: 'errors:yup.string.containerName' }
+
+export const matchContainerName = (schema: yup.StringSchema<string, yup.AnyObject, undefined>) =>
+  schema.matches(CONTAINER_NAME_REGEX, { message: REGEX_ERROR_INVALID_CONTAINER_NAME }) // all characters are non-whitespaces
 
 export const uniqueKeySchema = yup
   .array(
@@ -493,7 +501,7 @@ const testEnvironment = (imageLabels: Record<string, string>) => (arr: UniqueKey
 
 const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
   yup.object().shape({
-    name: matchNoWhitespace(yup.string().default(null).nullable().optional().label('container:common.containerName')),
+    name: matchContainerName(yup.string().required().label('container:common.containerName')),
     environment: uniqueKeyValuesSchema
       .default(null)
       .nullable()

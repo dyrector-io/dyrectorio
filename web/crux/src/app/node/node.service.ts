@@ -170,12 +170,16 @@ export default class NodeService {
       },
     })
 
+    const defaultWorkloadName = nodeType === 'docker' ? 'dagent' : 'crane'
+    const workloadName = !req.workloadName || req.workloadName === '' ? defaultWorkloadName : req.workloadName
+
     const installer = await this.agentService.startInstallation(
       teamSlug,
       node,
       req.rootPath ?? null,
       req.scriptType,
       req.dagentTraefik ?? null,
+      workloadName,
       identity,
     )
 

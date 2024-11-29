@@ -1,6 +1,7 @@
 import { NodeInstallScriptType, NodeType, NODE_INSTALL_SCRIPT_TYPE_VALUES, NODE_TYPE_VALUES } from '@app/models'
 import yup from './yup'
 import { descriptionRule, iconRule, nameRule } from './common'
+import { matchContainerName } from './container'
 
 export const nodeSchema = yup.object().shape({
   name: nameRule,
@@ -27,4 +28,5 @@ export const nodeGenerateScriptSchema = yup.object().shape({
     })
     .nullable()
     .default(null),
+  workloadName: matchContainerName(yup.string().label('nodes:workloadName')),
 })
