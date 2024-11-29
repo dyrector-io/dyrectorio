@@ -3,9 +3,9 @@ import { toNumber } from './utils'
 describe('toNumber() tests', () => {
   beforeEach(() => {})
 
-  it('given string return NaN value', () => {
+  it('given string return null value', () => {
     const result = toNumber('test-string')
-    expect(result).toEqual(NaN)
+    expect(result).toEqual(null)
   })
 
   it('given negative int return negative value', () => {
