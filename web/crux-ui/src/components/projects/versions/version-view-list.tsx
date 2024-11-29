@@ -67,7 +67,8 @@ const VersionViewList = (props: VersionViewListProps) => {
             sortField={containerNameOfImage}
             body={containerNameOfImage}
             sortable
-            sort={sortString} />
+            sort={sortString}
+          />
           <DyoColumn
             header={t('common:registry')}
             field="registry.name"

@@ -11,16 +11,25 @@ import DyoIcon from '@app/elements/dyo-icon'
 import DyoLink from '@app/elements/dyo-link'
 import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 import { defaultApiErrorHandler } from '@app/errors'
+import usePagination from '@app/hooks/use-pagination'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { ConfigBundleDetails, Deployment, DEPLOYMENT_STATUS_VALUES, DeploymentList, DeploymentQuery, detailsToConfigBundle } from '@app/models'
+import {
+  ConfigBundleDetails,
+  Deployment,
+  DEPLOYMENT_STATUS_VALUES,
+  DeploymentQuery,
+  detailsToConfigBundle,
+  PaginatedList,
+  PaginationQuery,
+} from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { auditToLocaleDate, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
 
@@ -42,10 +51,29 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
 
   const submit = useSubmit()
 
-  const [pagination, setPagination] = useState<PaginationSettings>(defaultPagination)
+  const fetchData = useCallback(
+    async (paginationQuery: PaginationQuery): Promise<PaginatedList<Deployment>> => {
+      const query: DeploymentQuery = {
+        ...paginationQuery,
+        configBundleId: propsConfigBundle.id,
+      }
 
-  const [deployments, setDeployments] = useState<Deployment[]>([])
-  const [total, setTotal] = useState<number>(0)
+      const res = await fetch(routes.deployment.api.list(query))
+
+      if (!res.ok) {
+        await onApiError(res)
+        return null
+      }
+
+      return (await res.json()) as PaginatedList<Deployment>
+    },
+    [routes, onApiError],
+  )
+
+  const [pagination, setPagination] = usePagination({
+    defaultSettings: defaultPagination,
+    fetchData,
+  })
 
   const onDelete = async () => {
     const res = await fetch(routes.configBundle.api.details(configBundle.id), {
@@ -58,30 +86,6 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
       await onApiError(res)
     }
   }
-
-  
-  const fetchData = async () => {
-    const query: DeploymentQuery = {
-      skip: pagination.pageNumber * pagination.pageSize,
-      take: pagination.pageSize,
-      configBundleId: propsConfigBundle.id,
-    }
-
-    const res = await fetch(routes.deployment.api.list(query))
-
-    if (res.ok) {
-      const list = (await res.json()) as DeploymentList
-      setDeployments(list.items)
-      setTotal(list.total)
-    } else {
-      setDeployments([])
-    }
-  }
-
-  useEffect(() => {
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination])
 
   const pageLink: BreadcrumbLink = {
     name: t('common:configBundles'),
@@ -117,10 +121,10 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
       )}
       <DyoCard className="relative mt-4">
         <DyoTable
-          data={deployments}
+          data={pagination.data ?? []}
           dataKey="id"
           pagination="server"
-          paginationTotal={total}
+          paginationTotal={pagination.total}
           onServerPagination={setPagination}
           initialSortColumn={4}
           initialSortDirection="desc"

@@ -1,6 +1,6 @@
 import { PaginationSettings } from '@app/components/shared/paginator'
 import { PaginatedList, PaginationQuery } from '@app/models'
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
+import { DependencyList, Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 
 export type PaginationOptions<T> = {
   defaultSettings: PaginationSettings
@@ -9,13 +9,18 @@ export type PaginationOptions<T> = {
 
 export type DispatchPagination = Dispatch<SetStateAction<PaginationSettings>>
 
+export type RefreshPageFunc = () => void
+
 export type Pagination<T> = {
   total: number
   settings: PaginationSettings
   data: T[]
 }
 
-const usePagination = <T>(options: PaginationOptions<T>): [Pagination<T>, DispatchPagination] => {
+const usePagination = <T>(
+  options: PaginationOptions<T>,
+  deps?: DependencyList,
+): [Pagination<T>, DispatchPagination, RefreshPageFunc] => {
   const [total, setTotal] = useState(0)
   const [settings, setSettings] = useState<PaginationSettings>(options.defaultSettings)
   const [data, setData] = useState<T[]>(null)
@@ -39,7 +44,7 @@ const usePagination = <T>(options: PaginationOptions<T>): [Pagination<T>, Dispat
     setData(list.items)
     setTotal(list.total)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings])
+  }, [settings, ...(deps ?? [])])
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -54,6 +59,7 @@ const usePagination = <T>(options: PaginationOptions<T>): [Pagination<T>, Dispat
       total,
     },
     setSettings,
+    onFetchData,
   ]
 }
 

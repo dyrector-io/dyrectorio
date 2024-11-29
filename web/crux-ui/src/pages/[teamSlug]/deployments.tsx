@@ -19,15 +19,17 @@ import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
+import usePagination from '@app/hooks/use-pagination'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import {
   DEPLOYMENT_STATUS_VALUES,
   Deployment,
-  DeploymentList,
   DeploymentQuery,
   DeploymentStatus,
   DyoNode,
+  PaginatedList,
+  PaginationQuery,
   deploymentIsCopiable,
   deploymentIsDeletable,
 } from '@app/models'
@@ -36,13 +38,14 @@ import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 import { QA_DIALOG_LABEL_DELETE_DEPLOYMENT, QA_MODAL_LABEL_DEPLOYMENT_NOTE } from 'quality-assurance'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
 
 type FilterState = {
   filter: string
   status: DeploymentStatus | null
+  node: DyoNode | null
 }
 
 const DeploymentsPage = () => {
@@ -50,19 +53,15 @@ const DeploymentsPage = () => {
   const routes = useTeamRoutes()
   const router = useRouter()
 
-  const [deployments, setDeployments] = useState<Deployment[]>([])
-  const [total, setTotal] = useState<number>(0)
+  const handleApiError = defaultApiErrorHandler(t)
+
   const [filter, setFilter] = useState<FilterState>({
     filter: '',
     status: null,
+    node: null,
   })
-  const [filterNode, setFilterNode] = useState<DyoNode | null>(null)
-
-  const [pagination, setPagination] = useState<PaginationSettings>(defaultPagination)
 
   const [creating, setCreating] = useState(false)
-
-  const handleApiError = defaultApiErrorHandler(t)
 
   const [showInfo, setShowInfo] = useState<Deployment>(null)
   const [copyDeploymentTarget, setCopyDeploymentTarget] = useCopyDeploymentState({
@@ -72,37 +71,41 @@ const DeploymentsPage = () => {
 
   const throttle = useThrottling(1000)
 
-  const fetchData = async () => {
-    const { status } = filter
+  const fetchData = useCallback(
+    async (paginationQuery: PaginationQuery): Promise<PaginatedList<Deployment>> => {
+      const { filter: keywordFilter, node, status } = filter
 
-    const query: DeploymentQuery = {
-      skip: pagination.pageNumber * pagination.pageSize,
-      take: pagination.pageSize,
-      filter: !filter.filter || filter.filter.trim() === '' ? null : filter.filter,
-      nodeId: filterNode?.id ?? null,
-      status,
-    }
+      const query: DeploymentQuery = {
+        ...paginationQuery,
+        filter: !keywordFilter || keywordFilter.trim() === '' ? null : keywordFilter,
+        nodeId: node?.id ?? null,
+        status,
+      }
 
-    const res = await fetch(routes.deployment.api.list(query))
+      const res = await fetch(routes.deployment.api.list(query))
 
-    if (res.ok) {
-      const list = (await res.json()) as DeploymentList
-      setDeployments(list.items)
-      setTotal(list.total)
-    } else {
-      setDeployments([])
-    }
-  }
+      if (!res.ok) {
+        await handleApiError(res)
+        return null
+      }
+
+      return (await res.json()) as PaginatedList<Deployment>
+    },
+    [routes, handleApiError, filter],
+  )
+
+  const [pagination, setPagination, refreshPage] = usePagination(
+    {
+      defaultSettings: defaultPagination,
+      fetchData,
+    },
+    [filter],
+  )
 
   useEffect(() => {
-    throttle(fetchData)
+    throttle(refreshPage)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter, filterNode])
-
-  useEffect(() => {
-    throttle(fetchData, true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination])
+  }, [filter])
 
   const selfLink: BreadcrumbLink = {
     name: t('common:deployments'),
@@ -134,7 +137,7 @@ const DeploymentsPage = () => {
       return
     }
 
-    setDeployments([...deployments.filter(it => it.id !== deployment.id)])
+    refreshPage()
   }
 
   const onDeploymentCopied = async (deploymentId: string) => {
@@ -208,18 +211,18 @@ const DeploymentsPage = () => {
             className="mt-4"
             name="nodes"
             allowNull
-            onSelectionChange={async it => setFilterNode(it)}
-            selection={filterNode}
+            onSelectionChange={async it => setFilter({ ...filter, node: it })}
+            selection={filter.node}
           />
         </div>
       </DyoCard>
 
       <DyoCard className="relative mt-4">
         <DyoTable
-          data={deployments}
+          data={pagination.data ?? []}
           dataKey="id"
           pagination="server"
-          paginationTotal={total}
+          paginationTotal={pagination.total}
           onServerPagination={setPagination}
           onRowClick={onRowClick}
           initialSortColumn={4}
