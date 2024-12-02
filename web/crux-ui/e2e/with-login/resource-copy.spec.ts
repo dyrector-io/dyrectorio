@@ -301,7 +301,7 @@ test.describe("Deleting copied deployment's parent", () => {
     const copyButton = page.locator('button:has-text("Copy")')
     await copyButton.click()
 
-    await page.locator(`button:has-text("${DAGENT_NODE}")`).click()
+    await page.locator(`button:has-text("${DAGENT_NODE}")`).first().click()
     await fillDeploymentPrefix(page, `${prefix}-other`)
 
     const currentUrl = page.url()

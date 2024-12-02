@@ -116,7 +116,7 @@ test.describe('Deployment Copy', () => {
     await copyButton.click()
 
     const newPrefix = 'dcpy-second'
-    await page.locator(`button:has-text("${DAGENT_NODE}")`).click()
+    await page.locator(`button:has-text("${DAGENT_NODE}")`).first().click()
     await fillDeploymentPrefix(page, newPrefix)
 
     const currentUrl = page.url()
