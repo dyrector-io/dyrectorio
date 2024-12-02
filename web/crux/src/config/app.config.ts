@@ -26,7 +26,7 @@ const configSchema = yup.object({
   ENCRYPTION_DEPRECATED_KEY: encryptionKeyRule.optional(),
 
   CRUX_AGENT_ADDRESS: yup.string().required(),
-  CRUX_AGENT_IMAGE: yup.string().default('latest').required(),
+  CRUX_AGENT_IMAGE: yup.string(),
   AGENT_INSTALL_SCRIPT_DISABLE_PULL: yup.bool().default(false).required(),
 
   LOG_LEVEL: yup.string().oneOf(LOG_LEVEL_VALUES).required(),
