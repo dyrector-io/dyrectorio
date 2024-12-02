@@ -284,7 +284,7 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
           return (
             <tr key={key} className={headless ? null : 'hover:bg-medium-muted'}>
               {columns.map((col, index) => {
-                const cellData = col.field ? getField(it, col.field) : col.body ? col.body(it, index) : null
+                const cellData = col.field ? getField(it, col.field) : col.body ? col.body(it, rowIndex) : null
                 const paddingClass = index === 0 ? 'pl-6' : index === columns.length - 1 ? 'pr-6' : null
                 const cursorClass = click && !col.preventClickThrough ? 'cursor-pointer' : null
 
