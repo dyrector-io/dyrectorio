@@ -10,7 +10,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { ContainerConfig, ContainerConfigParent, VersionImage } from '@app/models'
-import { createContainerConfigSchema, getValidationError } from '@app/validations'
+import { createConfigSchema, getValidationError } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { QA_DIALOG_LABEL_DELETE_IMAGE } from 'quality-assurance'
 import ContainerConfigJsonEditor from './container-config-json-editor'
@@ -74,7 +74,7 @@ const EditContainerConfigCard = <Config extends ContainerConfig, Json>(props: Ed
 
   const errorMessage =
     state.parseError ??
-    getValidationError(createContainerConfigSchema(image?.labels ?? {}), state.config, null, t)?.message
+    getValidationError(createConfigSchema("image", image?.labels ?? {}), state.config, null, t)?.message
 
   return (
     <>

@@ -50,8 +50,8 @@ import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import {
   ContainerConfigValidationErrors,
-  getConcreteContainerConfigFieldErrors,
-  getContainerConfigFieldErrors,
+  createConfigSchema,
+  getConfigFieldErrorsForSchema,
   jsonErrorOf,
 } from '@app/validations'
 import { WsMessage } from '@app/websockets/common'
@@ -134,15 +134,7 @@ const getConfigErrors = (
   config: ContainerConfigDetails,
   imageLabels: Record<string, string>,
   t: Translate,
-): ContainerConfigValidationErrors => {
-  const type = containerConfigTypeToSectionType(config.type)
-
-  if (type === 'concrete') {
-    return getConcreteContainerConfigFieldErrors(config as ConcreteContainerConfigData, imageLabels, t)
-  }
-
-  return getContainerConfigFieldErrors(config, imageLabels, t)
-}
+): ContainerConfigValidationErrors => getConfigFieldErrorsForSchema(createConfigSchema(config.type, imageLabels), config, t)
 
 const getBaseConfig = (config: ContainerConfigDetails, relations: ContainerConfigRelations): ContainerConfigData => {
   switch (config.type) {
