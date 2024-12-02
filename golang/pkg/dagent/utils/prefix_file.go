@@ -24,29 +24,29 @@ func NewErrPrefixFileParamEmpty(param string) PrefixFileParamError {
 	return PrefixFileParamError{variable: param}
 }
 
-type prefixFile struct {
+type PrefixFile struct {
 	DataRoot string
 	Prefix   string
 	FileName string
 }
 
-func NewSharedEnvPrefixFile(dataRoot, prefix string) prefixFile {
-	return prefixFile{
+func NewSharedEnvPrefixFile(dataRoot, prefix string) PrefixFile {
+	return PrefixFile{
 		DataRoot: dataRoot,
 		Prefix:   prefix,
 		FileName: ".shared-env",
 	}
 }
 
-func NewSecretsPrefixFile(dataRoot, prefix string) prefixFile {
-	return prefixFile{
+func NewSecretsPrefixFile(dataRoot, prefix string) PrefixFile {
+	return PrefixFile{
 		DataRoot: dataRoot,
 		Prefix:   prefix,
 		FileName: ".shared-secrets",
 	}
 }
 
-func (pf *prefixFile) validatePath() error {
+func (pf *PrefixFile) validatePath() error {
 	if pf.DataRoot == "" {
 		return NewErrPrefixFileParamEmpty("dataRoot")
 	} else if pf.Prefix == "" {
@@ -56,15 +56,15 @@ func (pf *prefixFile) validatePath() error {
 	return nil
 }
 
-func (pf *prefixFile) getDirectory() string {
+func (pf *PrefixFile) getDirectory() string {
 	return filepath.Join(pf.DataRoot, pf.Prefix)
 }
 
-func (pf *prefixFile) getFilePath() string {
+func (pf *PrefixFile) getFilePath() string {
 	return filepath.Join(pf.getDirectory(), pf.FileName)
 }
 
-func (pf *prefixFile) ReadVariables() (map[string]string, error) {
+func (pf *PrefixFile) ReadVariables() (map[string]string, error) {
 	err := pf.validatePath()
 	if err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func (pf *prefixFile) ReadVariables() (map[string]string, error) {
 	return godotenv.UnmarshalBytes(file)
 }
 
-func (pf *prefixFile) WriteVariables(in map[string]string) error {
+func (pf *PrefixFile) WriteVariables(in map[string]string) error {
 	var err error
 	err = pf.validatePath()
 	if err != nil {

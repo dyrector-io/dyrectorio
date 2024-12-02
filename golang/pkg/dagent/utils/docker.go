@@ -365,7 +365,6 @@ func DeployImage(ctx context.Context,
 
 	pf := NewSharedEnvPrefixFile(cfg.InternalMountPath, prefix)
 	if len(deployImageRequest.InstanceConfig.SharedEnvironment) > 0 {
-
 		err = pf.WriteVariables(deployImageRequest.InstanceConfig.SharedEnvironment)
 		if err != nil {
 			dog.WriteError("could not write shared environment variables, aborting...", err.Error())
@@ -724,7 +723,7 @@ func setImageLabels(expandedImageName string,
 	return labels, nil
 }
 
-func SecretList(ctx context.Context, prefix string, name string) ([]string, error) {
+func SecretList(ctx context.Context, prefix, name string) ([]string, error) {
 	if name == "" {
 		cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 

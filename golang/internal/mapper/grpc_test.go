@@ -24,7 +24,7 @@ func TestMapDeployImageRequest(t *testing.T) {
 	req := testDeployRequest()
 	cfg := testAppConfig()
 
-	res := MapDeployImage(req, cfg)
+	res := MapDeployImage("", req, cfg)
 	expected := testExpectedCommon(req)
 
 	assert.Equal(t, expected, res)
@@ -52,7 +52,7 @@ func TestMapDeployImageRequestRestartPolicies(t *testing.T) {
 	for _, tC := range cases {
 		req.Dagent.RestartPolicy = tC.policy
 		expected.ContainerConfig.RestartPolicy = tC.dockerType
-		res := MapDeployImage(req, cfg)
+		res := MapDeployImage("", req, cfg)
 		assert.Equal(t, expected, res)
 	}
 }
@@ -508,7 +508,7 @@ func TestMapDeployImageLogConfig(t *testing.T) {
 			req := testDeployRequestWithLogDriver(tC.driver)
 			cfg := testAppConfig()
 
-			res := MapDeployImage(req, cfg)
+			res := MapDeployImage("", req, cfg)
 			expected := testExpectedCommonWithLogConfigType(req, tC.want)
 
 			assert.Equal(t, expected, res)

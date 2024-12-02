@@ -675,7 +675,7 @@ func MapDockerContainerEventToContainerState(event string) common.ContainerState
 	}
 }
 
-func MapContainerOrPrefixToPrefixName(target *common.ContainerOrPrefix) (string, string, error) {
+func MapContainerOrPrefixToPrefixName(target *common.ContainerOrPrefix) (prefix, name string, err error) {
 	if target == nil {
 		return "", "", ErrNoTargetContainerOrPrefix
 	}
