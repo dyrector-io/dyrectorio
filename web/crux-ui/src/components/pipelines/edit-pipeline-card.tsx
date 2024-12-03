@@ -33,7 +33,7 @@ const DEFAULT_EDITABLE_PIPELINE: EditablePipeline = {
   repository: {
     organization: '',
     project: '',
-    branch: null,
+    branch: '',
   },
   trigger: {
     name: '',
