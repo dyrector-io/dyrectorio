@@ -11,6 +11,7 @@ import RegistryClientProvider from '../registry/registry-client.provider'
 import TeamRepository from '../team/team.repository'
 import { AddImagesDto, ImageDetailsDto, PatchImageDto } from './image.dto'
 import ImageMapper from './image.mapper'
+import { Prisma } from '@prisma/client'
 
 type LabelMap = Record<string, string>
 type ImageLabelMap = Record<string, LabelMap>
@@ -200,6 +201,7 @@ export default class ImageService {
     }
 
     let labels: Record<string, string>
+    let configEnvironment: Prisma.JsonValue = null
     if (request.tag) {
       const image = await this.prisma.image.findUniqueOrThrow({
         where: {
@@ -218,7 +220,7 @@ export default class ImageService {
       labels = await api.client.labels(image.name, request.tag)
       const rules = parseDyrectorioEnvRules(labels)
 
-      image.config.environment = ImageService.mergeEnvironmentsRules(
+      configEnvironment = ImageService.mergeEnvironmentsRules(
         image.config.environment as UniqueKeyValue[],
         rules,
       )
@@ -236,6 +238,13 @@ export default class ImageService {
         labels: labels ?? undefined,
         tag: request.tag ?? undefined,
         updatedBy: identity.id,
+        ...(configEnvironment ? {
+          config: {
+            update: {
+              environment: configEnvironment,
+            },
+          },
+        } : {}),
       },
     })
   }
