@@ -110,6 +110,10 @@ export class AzureDevOpsRepositoryDto {
 
   @IsString()
   project: string
+
+  @IsString()
+  @IsOptional()
+  branch?: string
 }
 
 export class PipelineTriggerDto {

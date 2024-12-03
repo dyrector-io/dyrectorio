@@ -113,6 +113,7 @@
   "version": "Version",
   "pipeline": "Pipeline",
   "token": "Token",
+  "branch": "Branch",
 
   "changeToken": "Change token",
 

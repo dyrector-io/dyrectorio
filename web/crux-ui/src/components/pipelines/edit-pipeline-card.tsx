@@ -33,6 +33,7 @@ const DEFAULT_EDITABLE_PIPELINE: EditablePipeline = {
   repository: {
     organization: '',
     project: '',
+    branch: null,
   },
   trigger: {
     name: '',
@@ -200,6 +201,18 @@ const EditPipelineCard = (props: EditPipelineCardProps) => {
                 onChange={formik.handleChange}
                 value={formik.values.repository.project}
                 message={formik.errors.repository?.project}
+              />
+
+              <DyoInput
+                className="max-w-lg"
+                grow
+                name="repository.branch"
+                type="text"
+                label={t('common:branch')}
+                labelClassName="mr-2 mb-1 text-light-eased"
+                onChange={formik.handleChange}
+                value={formik.values.repository.branch}
+                message={formik.errors.repository?.branch}
               />
 
               {editing && (

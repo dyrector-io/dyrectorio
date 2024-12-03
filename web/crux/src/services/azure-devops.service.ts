@@ -9,6 +9,7 @@ import {
   AzureDevOpsPipelineTrigger,
   AzureDevOpsPipelineTriggerError,
   AzureDevOpsProject,
+  AzureDevOpsResources,
   AzureDevOpsRun,
   AzureDevOpsVariable,
   PipelineHookOptions,
@@ -113,8 +114,19 @@ export default class AzureDevOpsService {
       return result
     }, {})
 
+    const resources: AzureDevOpsResources = creds.repo.branch
+      ? {
+          repositories: {
+            self: {
+              refName: `refs/heads/${creds.repo.branch}`,
+            },
+          },
+        }
+      : null
+
     const body: AzureDevOpsPipelineTrigger = {
       variables,
+      resources,
     }
 
     const res = await this.post(creds, `/pipelines/${pipeline.id}/runs`, body)
