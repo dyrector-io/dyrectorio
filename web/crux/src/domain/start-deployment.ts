@@ -97,6 +97,7 @@ export const deploymentConfigOf = (deployment: DeployableDeployment): ConcreteCo
 type DeployableInstance = {
   image: {
     config: ContainerConfig
+    name: string
   }
   config: ContainerConfig
 }
@@ -121,7 +122,14 @@ export const instanceConfigOf = (
 
   // then we merge and override the rest with the instance config
   const instanceConfig = instance.config as any as ConcreteContainerConfigData
-  return mergeInstanceConfigWithDeploymentConfig(mergedDeploymentConfig, instanceConfig)
+  const result =  mergeInstanceConfigWithDeploymentConfig(mergedDeploymentConfig, instanceConfig)
+
+  // set defaults
+  if (!result.name) {
+    result.name = instance.image.name
+  }
+
+  return result
 }
 
 type SecretCandidate = {

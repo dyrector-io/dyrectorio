@@ -561,6 +561,11 @@ func getContainerPrefix(deployImageRequest *v1.DeployImageRequest) string {
 			containerPrefix = deployImageRequest.InstanceConfig.ContainerPreName
 		}
 	}
+
+	if containerPrefix == "" {
+		containerPrefix = deployImageRequest.ContainerConfig.ContainerPreName
+	}
+
 	return containerPrefix
 }
 
