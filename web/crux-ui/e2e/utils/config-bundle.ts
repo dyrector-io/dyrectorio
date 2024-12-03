@@ -31,7 +31,7 @@ export const createConfigBundle = async (page: Page, name: string, data: Record<
   const configId = page.url().split('/').pop()
 
   const ws = await sock
-  const wsRoute = TEAM_ROUTES.configBundle.detailsSocket(configId)
+  const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(configId)
 
   await page.locator('button:has-text("Environment")').click()
 
