@@ -137,6 +137,10 @@ export const mergePrefixNeighborSecrets = (
   deployments
     .sort((one, other) => other.createdAt.getTime() - one.createdAt.getTime())
     .forEach(depl => {
+      if (!depl.config.secrets) {
+        return
+      }
+
       const secrets = depl.config.secrets as UniqueSecretKeyValue[]
       secrets.forEach(it => {
         if (it.publicKey !== publicKey) {
