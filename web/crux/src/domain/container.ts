@@ -1,4 +1,5 @@
 import { NetworkMode } from '@prisma/client'
+import { registryImageNameToContainerName } from './image'
 
 export const PORT_MIN = 0
 export const PORT_MAX = 65535
@@ -278,4 +279,4 @@ type InstanceWithConfigAndImageConfig = {
 }
 
 export const nameOfInstance = (instance: InstanceWithConfigAndImageConfig) =>
-  instance.config.name ?? instance.image.config.name ?? instance.image.name
+  instance.config.name ?? instance.image.config.name ?? registryImageNameToContainerName(instance.image.name)
