@@ -126,7 +126,7 @@ export default class ImageService {
                 create: {
                   type: 'image',
                   name: imageName,
-                }
+                },
               },
               createdBy: identity.id,
               name: imageName,

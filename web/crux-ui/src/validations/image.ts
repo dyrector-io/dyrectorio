@@ -23,7 +23,7 @@ export const getContainerConfigFieldErrors = (
   imageLabels: Record<string, string>,
   t: Translate,
 ): ContainerConfigValidationErrors =>
-  getConfigFieldErrorsForSchema(createConfigSchema("image", imageLabels), newConfig, t)
+  getConfigFieldErrorsForSchema(createConfigSchema('image', imageLabels), newConfig, t)
 
 export const jsonErrorOf = (fieldErrors: ContainerConfigValidationErrors) => {
   const entries = Object.entries(fieldErrors)

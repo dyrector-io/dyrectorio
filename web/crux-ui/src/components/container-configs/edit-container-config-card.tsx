@@ -74,7 +74,7 @@ const EditContainerConfigCard = <Config extends ContainerConfig, Json>(props: Ed
 
   const errorMessage =
     state.parseError ??
-    getValidationError(createConfigSchema("image", image?.labels ?? {}), state.config, null, t)?.message
+    getValidationError(createConfigSchema('image', image?.labels ?? {}), state.config, null, t)?.message
 
   return (
     <>

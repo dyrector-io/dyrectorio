@@ -500,11 +500,17 @@ const testEnvironment = (imageLabels: Record<string, string>) => (arr: UniqueKey
   return true
 }
 
-const createContainerConfigBaseSchema = (imageLabels: Record<string, string>, nameRequired: boolean, secretsHaveValue: boolean) =>
+const createContainerConfigBaseSchema = (
+  imageLabels: Record<string, string>,
+  nameRequired: boolean,
+  secretsHaveValue: boolean,
+) =>
   yup.object().shape({
-    name: matchContainerName(nameRequired
-      ? yup.string().required().label('container:common.containerName')
-      : yup.string().optional().nullable().label('container:common.containerName')),
+    name: matchContainerName(
+      nameRequired
+        ? yup.string().required().label('container:common.containerName')
+        : yup.string().optional().nullable().label('container:common.containerName'),
+    ),
     environment: uniqueKeyValuesSchema
       .default(null)
       .nullable()
@@ -525,7 +531,11 @@ const createContainerConfigBaseSchema = (imageLabels: Record<string, string>, na
     initContainers: initContainerRule,
     capabilities: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.capabilities'),
     storage: storageRule,
-    secrets: (secretsHaveValue ? uniqueKeyValuesSchema : uniqueKeySchema).default(null).nullable().optional().label('container:common.secrets'),
+    secrets: (secretsHaveValue ? uniqueKeyValuesSchema : uniqueKeySchema)
+      .default(null)
+      .nullable()
+      .optional()
+      .label('container:common.secrets'),
 
     // dagent:
     logConfig: logConfigRule,
@@ -560,7 +570,7 @@ export const createConfigSchema = (type: ContainerConfigType, imageLabels: Recor
    * config bundles should also be able to store secret values (no agent key though...)
    */
 
-  const nameRequired = (type === "image" || type === "instance")
-  const secretsHaveValue = (type === "image" || type === "deployment")
+  const nameRequired = type === 'image' || type === 'instance'
+  const secretsHaveValue = type === 'image' || type === 'deployment'
   return createContainerConfigBaseSchema(imageLabels, nameRequired, secretsHaveValue)
 }

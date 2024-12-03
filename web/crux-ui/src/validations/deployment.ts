@@ -41,7 +41,7 @@ export const startDeploymentSchema = yup.object({
   instances: yup
     .array(
       yup.object().shape({
-        config: createConfigSchema("instance", null),
+        config: createConfigSchema('instance', null),
       }),
     )
     .ensure()

@@ -134,7 +134,8 @@ const getConfigErrors = (
   config: ContainerConfigDetails,
   imageLabels: Record<string, string>,
   t: Translate,
-): ContainerConfigValidationErrors => getConfigFieldErrorsForSchema(createConfigSchema(config.type, imageLabels), config, t)
+): ContainerConfigValidationErrors =>
+  getConfigFieldErrorsForSchema(createConfigSchema(config.type, imageLabels), config, t)
 
 const getBaseConfig = (config: ContainerConfigDetails, relations: ContainerConfigRelations): ContainerConfigData => {
   switch (config.type) {
