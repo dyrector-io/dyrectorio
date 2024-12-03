@@ -231,18 +231,17 @@ message CommonContainerConfig {
 
 message DeployWorkloadRequest {
   string id = 1;
-  string containerName = 2;
 
   /* ContainerConfigs */
-  optional CommonContainerConfig common = 3;
-  optional DagentContainerConfig dagent = 4;
-  optional CraneContainerConfig crane = 5;
+  optional CommonContainerConfig common = 2;
+  optional DagentContainerConfig dagent = 3;
+  optional CraneContainerConfig crane = 4;
 
-  optional string registry = 6;
-  string imageName = 7;
-  string tag = 8;
+  optional string registry = 5;
+  string imageName = 6;
+  string tag = 7;
 
-  optional RegistryAuth registryAuth = 9;
+  optional RegistryAuth registryAuth = 8;
 }
 
 message ContainerStateRequest {
