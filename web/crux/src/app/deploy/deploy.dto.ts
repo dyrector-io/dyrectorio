@@ -33,19 +33,7 @@ export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]
 
 export type EnvironmentToConfigBundleNameMap = Record<string, string>
 
-export class DeploymentQueryDto {
-  @IsOptional()
-  @IsInt()
-  @Type(() => Number)
-  @ApiProperty()
-  readonly skip?: number
-
-  @IsOptional()
-  @IsInt()
-  @Type(() => Number)
-  @ApiProperty()
-  readonly take?: number
-
+export class DeploymentQueryDto extends PaginationQuery {
   @IsOptional()
   @IsString()
   @Type(() => String)

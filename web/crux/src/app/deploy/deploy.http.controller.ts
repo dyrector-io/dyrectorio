@@ -88,25 +88,13 @@ export default class DeployHttpController {
       'Get the list of deployments. Request needs to include `teamSlug` in URL. Query could include `skip` and `take` to paginate. A deployment should include `id`, `prefix`, `status`, `note`, `audit` log details, project `name`, `id`, `type`, version `name`, `type`, `id`, and node `name`, `id`, `type`.',
     summary: 'Fetch the list of deployments.',
   })
-  @ApiExtraModels(DeploymentDto, DeploymentListDto)
-  @ApiOkResponse({
-    schema: {
-      anyOf: refs(DeploymentDto, DeploymentListDto),
-    },
-    description: 'List of deployments.',
-  })
+  @ApiOkResponse({ type: DeploymentQueryDto, description: 'Paginated list of deployments.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
   async getDeployments(
     @TeamSlug() teamSlug: string,
     @Query() query: DeploymentQueryDto,
-  ): Promise<DeploymentDto[] | DeploymentListDto> {
-    const page = await this.service.getDeployments(teamSlug, query)
-    if (!!query.skip || !!query.take) {
-      return page
-    }
-
-    // NOTE(@robot9706): If no pagination parameters are present return the items only to be backward compatible
-    return page.items
+  ): Promise<DeploymentListDto> {
+    return await this.service.getDeployments(teamSlug, query)
   }
 
   @Get(ROUTE_DEPLOYMENT_ID)

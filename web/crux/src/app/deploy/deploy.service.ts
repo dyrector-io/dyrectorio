@@ -814,8 +814,8 @@ export default class DeployService {
           },
         },
       },
-      nodeId: query?.nodeId,
-      status: query?.status ? this.mapper.statusDtoToDb(query.status) : undefined,
+      nodeId: query.nodeId,
+      status: query.status ? this.mapper.statusDtoToDb(query.status) : undefined,
     }
 
     if (query.configBundleId) {
@@ -876,8 +876,8 @@ export default class DeployService {
         orderBy: {
           createdAt: 'desc',
         },
-        skip: query?.skip,
-        take: query?.take,
+        skip: query.skip,
+        take: query.take,
         include: {
           version: {
             select: {
