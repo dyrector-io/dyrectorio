@@ -18,7 +18,6 @@ import {
   Metrics,
   UniqueKeyValue,
   VolumeType,
-  ContainerConfigType,
 } from '@app/models'
 import * as yup from 'yup'
 import { matchNoLeadingOrTrailingWhitespaces, matchNoWhitespace } from './common'
@@ -500,11 +499,9 @@ const testEnvironment = (imageLabels: Record<string, string>) => (arr: UniqueKey
   return true
 }
 
-const createContainerConfigBaseSchema = (imageLabels: Record<string, string>, nameRequired: boolean, secretsHaveValue: boolean) =>
+const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
   yup.object().shape({
-    name: matchContainerName(nameRequired
-      ? yup.string().required().label('container:common.containerName')
-      : yup.string().optional().nullable().label('container:common.containerName')),
+    name: matchContainerName(yup.string().required().label('container:common.containerName')),
     environment: uniqueKeyValuesSchema
       .default(null)
       .nullable()
@@ -525,7 +522,6 @@ const createContainerConfigBaseSchema = (imageLabels: Record<string, string>, na
     initContainers: initContainerRule,
     capabilities: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.capabilities'),
     storage: storageRule,
-    secrets: (secretsHaveValue ? uniqueKeyValuesSchema : uniqueKeySchema).default(null).nullable().optional().label('container:common.secrets'),
 
     // dagent:
     logConfig: logConfigRule,
@@ -552,15 +548,12 @@ const createContainerConfigBaseSchema = (imageLabels: Record<string, string>, na
     metrics: metricsRule,
   })
 
-export const createConfigSchema = (type: ContainerConfigType, imageLabels: Record<string, string>) => {
-  /**
-   * image/instance should require a container name
-   * bundle/deployment should not
-   *
-   * config bundles should also be able to store secret values (no agent key though...)
-   */
+export const createContainerConfigSchema = (imageLabels: Record<string, string>) =>
+  createContainerConfigBaseSchema(imageLabels).shape({
+    secrets: uniqueKeySchema.default(null).nullable().optional().label('container:common.secrets'),
+  })
 
-  const nameRequired = (type === "image" || type === "instance")
-  const secretsHaveValue = (type === "image" || type === "deployment")
-  return createContainerConfigBaseSchema(imageLabels, nameRequired, secretsHaveValue)
-}
+export const createConcreteContainerConfigSchema = (imageLabels: Record<string, string>) =>
+  createContainerConfigBaseSchema(imageLabels).shape({
+    secrets: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.secrets'),
+  })
