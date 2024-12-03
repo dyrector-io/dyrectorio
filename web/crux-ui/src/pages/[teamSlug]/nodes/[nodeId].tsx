@@ -26,11 +26,10 @@ import { useSWRConfig } from 'swr'
 
 interface NodeDetailsPageProps {
   node: NodeDetails
-  deployments: Deployment[]
 }
 
 const NodeDetailsPage = (props: NodeDetailsPageProps) => {
-  const { node: propsNode, deployments } = props
+  const { node: propsNode } = props
 
   const { t } = useTranslation('nodes')
   const routes = useTeamRoutes()
@@ -123,7 +122,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
           ) : state.section === 'logs' ? (
             <NodeAuditList node={node} />
           ) : (
-            <NodeDeploymentList deployments={deployments} />
+            <NodeDeploymentList nodeId={propsNode.id} />
           )}
         </>
       )}
@@ -141,12 +140,10 @@ const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const nodeId = context.query.nodeId as string
 
   const node = await getCruxFromContext<NodeDetails>(context, routes.node.api.details(nodeId))
-  const deployments = await getCruxFromContext<Deployment[]>(context, routes.node.api.deployments(nodeId))
 
   return {
     props: {
       node,
-      deployments,
     },
   }
 }

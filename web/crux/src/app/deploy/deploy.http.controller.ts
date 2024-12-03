@@ -18,14 +18,12 @@ import {
   ApiBody,
   ApiConflictResponse,
   ApiCreatedResponse,
-  ApiExtraModels,
   ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
-  refs,
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
@@ -90,10 +88,7 @@ export default class DeployHttpController {
   })
   @ApiOkResponse({ type: DeploymentQueryDto, description: 'Paginated list of deployments.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
-  async getDeployments(
-    @TeamSlug() teamSlug: string,
-    @Query() query: DeploymentQueryDto,
-  ): Promise<DeploymentListDto> {
+  async getDeployments(@TeamSlug() teamSlug: string, @Query() query: DeploymentQueryDto): Promise<DeploymentListDto> {
     return await this.service.getDeployments(teamSlug, query)
   }
 

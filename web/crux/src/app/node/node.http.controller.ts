@@ -27,7 +27,7 @@ import {
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
-import { DeploymentDto, DeploymentListDto } from '../deploy/deploy.dto'
+import { DeploymentListDto } from '../deploy/deploy.dto'
 import DeployService from '../deploy/deploy.service'
 import { DisableAuth, IdentityFromRequest } from '../token/jwt-auth.guard'
 import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
@@ -36,6 +36,7 @@ import {
   CreateNodeDto,
   NodeAuditLogListDto,
   NodeAuditLogQueryDto,
+  NodeDeploymentQueryDto,
   NodeDetailsDto,
   NodeDto,
   NodeGenerateScriptDto,
@@ -46,7 +47,6 @@ import NodeService from './node.service'
 import DeleteNodeValidationPipe from './pipes/node.delete.pipe'
 import NodeGenerateScriptValidationPipe from './pipes/node.generate-script.pipe'
 import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
-import { PaginationQuery } from 'src/shared/dtos/paginating'
 
 @Controller(`${ROUTE_TEAM_SLUG}/${ROUTE_NODES}`)
 @ApiTags(ROUTE_NODES)
@@ -270,7 +270,11 @@ export default class NodeHttpController {
     description: 'Paginated list of deployments.',
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
-  async getDeployments(@TeamSlug() teamSlug: string, @NodeId() nodeId: string, @Query() query: PaginationQuery): Promise<DeploymentListDto> {
+  async getDeployments(
+    @TeamSlug() teamSlug: string,
+    @NodeId() nodeId: string,
+    @Query() query: NodeDeploymentQueryDto,
+  ): Promise<DeploymentListDto> {
     return await this.deployService.getDeployments(teamSlug, {
       ...query,
       nodeId,
