@@ -10,7 +10,7 @@ import {
   wsPatchMatchRestartPolicy,
 } from 'e2e/utils/websocket-match'
 import { createImage, createProject, createVersion } from '../../utils/projects'
-import { WS_TYPE_PATCH_IMAGE } from '@app/models'
+import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 
 const setup = async (
   page: Page,
@@ -20,18 +20,18 @@ const setup = async (
 ): Promise<{ projectId: string; versionId: string; imageId: string }> => {
   const projectId = await createProject(page, projectName, 'versioned')
   const versionId = await createVersion(page, projectId, versionName, 'Incremental')
-  const imageId = await createImage(page, projectId, versionId, imageName)
+  const imageConfigId = await createImage(page, projectId, versionId, imageName)
 
-  return { projectId, versionId, imageId }
+  return { projectId, versionId, imageConfigId: imageConfigId }
 }
 
 test.describe.configure({ mode: 'parallel' })
 
 test.describe('Image docker config from JSON', () => {
   test('Network mode should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'networkmode-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { projectId, versionId, imageConfigId } = await setup(page, 'networkmode-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
@@ -45,7 +45,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.networkMode = mode
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchNetworkMode(mode))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchNetworkMode(mode))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -57,9 +57,9 @@ test.describe('Image docker config from JSON', () => {
   })
 
   test('Docker labels should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'dockerlabel-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { projectId, versionId, imageConfigId } = await setup(page, 'dockerlabel-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
@@ -74,7 +74,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.dockerLabels = { [key]: value }
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDockerLabel(key, value))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchDockerLabel(key, value))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -89,14 +89,14 @@ test.describe('Image docker config from JSON', () => {
   })
 
   test('Restart policy should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(
+    const { projectId, versionId, imageConfigId } = await setup(
       page,
       'restartpolicy-json',
       '1.0.0',
       NGINX_TEST_IMAGE_WITH_TAG,
     )
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
@@ -108,7 +108,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.restartPolicy = 'always'
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchRestartPolicy('always'))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchRestartPolicy('always'))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -120,9 +120,9 @@ test.describe('Image docker config from JSON', () => {
   })
 
   test('Log config should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'logconfig-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { projectId, versionId, imageConfigId } = await setup(page, 'logconfig-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
@@ -138,7 +138,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.logConfig = { driver: type, options: { [key]: value } }
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchLogConfig(type, key, value))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchLogConfig(type, key, value))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -151,9 +151,9 @@ test.describe('Image docker config from JSON', () => {
   })
 
   test('Networks should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'networks-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { projectId, versionId, imageConfigId } = await setup(page, 'networks-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
@@ -169,7 +169,7 @@ test.describe('Image docker config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.networks = [network]
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchNetwork(network))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchNetwork(network))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 

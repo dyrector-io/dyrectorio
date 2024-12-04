@@ -11,20 +11,20 @@ const setup = async (
 ): Promise<{ projectId: string; versionId: string; imageId: string }> => {
   const projectId = await createProject(page, projectName, 'versioned')
   const versionId = await createVersion(page, projectId, versionName, 'Incremental')
-  const imageId = await createImage(page, projectId, versionId, imageName)
+  const imageConfigId = await createImage(page, projectId, versionId, imageName)
 
   return {
     projectId,
     versionId,
-    imageId,
+    imageConfigId,
   }
 }
 
 test.describe('Filters', () => {
   test('None should be selected by default', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'filter-all', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { projectId, versionId, imageConfigId } = await setup(page, 'filter-all', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
 
     const allButton = await page.locator('button:has-text("All")')
@@ -34,9 +34,9 @@ test.describe('Filters', () => {
   })
 
   test('All should not be selected if one of the main filters are not selected', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'filter-select', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { projectId, versionId, imageConfigId } = await setup(page, 'filter-select', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
 
     await page.locator(`button:has-text("Common")`).first().click()
@@ -47,9 +47,9 @@ test.describe('Filters', () => {
   })
 
   test('Main filter should not be selected if one of its sub filters are not selected', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'sub-filter', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { projectId, versionId, imageConfigId } = await setup(page, 'sub-filter', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
 
     const subFilter = await page.locator(`button:has-text("Network mode")`)
@@ -62,9 +62,9 @@ test.describe('Filters', () => {
   })
 
   test('Config field should be invisible if its sub filter is not selected', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'sub-deselect', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { projectId, versionId, imageConfigId } = await setup(page, 'sub-deselect', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
 
     const subFilter = await page.locator(`button:has-text("Deployment strategy")`)

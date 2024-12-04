@@ -1,4 +1,4 @@
-import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_INSTANCE } from '@app/models'
+import { WS_TYPE_PATCH_CONFIG, WS_TYPE_PATCH_INSTANCE } from '@app/models'
 import { Page, expect } from '@playwright/test'
 import { wsPatchMatchEverySecret, wsPatchMatchNonNullSecretValues } from 'e2e/utils/websocket-match'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, waitForURLExcept } from '../../utils/common'
@@ -21,7 +21,7 @@ const addSecretToImage = async (
   secretKeys: string[],
 ): Promise<void> => {
   const sock = waitSocketRef(page)
-  await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+  await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
   await page.waitForSelector('h2:text-is("Image")')
   const ws = await sock
   const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
@@ -33,7 +33,7 @@ const addSecretToImage = async (
   const json = JSON.parse(await jsonEditor.inputValue())
   json.secrets = secretKeys.map(key => ({ key, required: false }))
 
-  const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchEverySecret(secretKeys))
+  const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchEverySecret(secretKeys))
   await jsonEditor.fill(JSON.stringify(json))
   await wsSent
 }
@@ -73,9 +73,9 @@ test.describe('Deployment Copy', () => {
     await createNode(page, newNodeName)
 
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
-    const imageId = await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
+    const imageConfigId = await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
-    await addSecretToImage(page, projectId, versionId, imageId, secretKeys)
+    await addSecretToImage(page, projectId, versionId, imageConfigId, secretKeys)
 
     const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, {
       prefix: originalPrefix,

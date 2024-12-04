@@ -11,20 +11,20 @@ const setup = async (
 ): Promise<{ projectId: string; versionId: string; imageId: string }> => {
   const projectId = await createProject(page, projectName, 'versioned')
   const versionId = await createVersion(page, projectId, versionName, 'Incremental')
-  const imageId = await createImage(page, projectId, versionId, imageName)
+  const imageConfigId = await createImage(page, projectId, versionId, imageName)
 
   return {
     projectId,
     versionId,
-    imageId,
+    imageId: imageConfigId,
   }
 }
 
 test.describe('View state', () => {
   test('Editor state should show the configuration fields', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'editor-state-conf', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { projectId, versionId, imageConfigId } = await setup(page, 'editor-state-conf', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
 
     const editorButton = await page.waitForSelector('button:has-text("Editor")')
@@ -39,9 +39,9 @@ test.describe('View state', () => {
   })
 
   test('JSON state should show the json editor', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'editor-state-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { projectId, versionId, imageConfigId } = await setup(page, 'editor-state-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')

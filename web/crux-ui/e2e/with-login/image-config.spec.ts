@@ -1,32 +1,32 @@
+import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 import { expect, Page } from '@playwright/test'
-import { test } from '../utils/test.fixture'
 import { NGINX_TEST_IMAGE_WITH_TAG, screenshotPath, TEAM_ROUTES } from '../utils/common'
 import { createImage, createProject, createVersion } from '../utils/projects'
+import { test } from '../utils/test.fixture'
 import { waitSocketRef, wsPatchSent } from '../utils/websocket'
-import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 
 const setup = async (
   page: Page,
   projectName: string,
   versionName: string,
   imageName: string,
-): Promise<{ projectId: string; versionId: string; imageId: string }> => {
+): Promise<{ projectId: string; versionId: string; imageConfigId: string }> => {
   const projectId = await createProject(page, projectName, 'versioned')
   const versionId = await createVersion(page, projectId, versionName, 'Incremental')
-  const imageId = await createImage(page, projectId, versionId, imageName)
+  const imageConfigId = await createImage(page, projectId, versionId, imageName)
 
   return {
     projectId,
     versionId,
-    imageId,
+    imageConfigId,
   }
 }
 
 test.describe('View state', () => {
   test('Editor state should show the configuration fields', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'editor-state-conf', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'editor-state-conf', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
 
     const editorButton = await page.waitForSelector('button:has-text("Editor")')
@@ -40,9 +40,9 @@ test.describe('View state', () => {
   })
 
   test('JSON state should show the json editor', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'editor-state-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'editor-state-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
@@ -57,9 +57,9 @@ test.describe('View state', () => {
 
 test.describe('Filters', () => {
   test('None should be selected by default', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'filter-all', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'filter-all', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
 
     const allButton = await page.locator('button:has-text("All")')
@@ -69,9 +69,9 @@ test.describe('Filters', () => {
   })
 
   test('All should not be selected if one of the main filters are not selected', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'filter-select', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'filter-select', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
 
     await page.locator(`button:has-text("Common")`).first().click()
@@ -82,9 +82,9 @@ test.describe('Filters', () => {
   })
 
   test('Main filter should not be selected if one of its sub filters are not selected', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'sub-filter', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'sub-filter', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
 
     const subFilter = await page.locator(`button:has-text("Network mode")`)
@@ -96,9 +96,9 @@ test.describe('Filters', () => {
   })
 
   test('Config field should be invisible if its sub filter is not selected', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'sub-deselect', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'sub-deselect', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
 
     const subFilter = await page.locator(`button:has-text("Deployment strategy")`)
@@ -119,17 +119,17 @@ const wsPatchMatchPorts = (internalPort: string, externalPort?: string) => (payl
 
 test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the config field', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'port-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { projectId, versionId, imageConfigId } = await setup(page, 'port-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
 
     await page.locator('button:has-text("Ports")').click()
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE)
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG)
     const addPortsButton = await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
     await addPortsButton.click()
     await wsSent
@@ -140,7 +140,7 @@ test.describe('Image configurations', () => {
     const internalInput = page.locator('input[placeholder="Internal"]')
     const externalInput = page.locator('input[placeholder="External"]')
 
-    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchPorts(internal, external))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchPorts(internal, external))
     await internalInput.type(internal)
     await externalInput.type(external)
     await wsSent
@@ -152,10 +152,10 @@ test.describe('Image configurations', () => {
   })
 
   test('Port should be saved after adding it from the json editor', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'port-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { projectId, versionId, imageConfigId } = await setup(page, 'port-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
@@ -172,7 +172,7 @@ test.describe('Image configurations', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.ports = [{ internal: internalAsNumber, external: externalAsNumber }]
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchPorts(internal, external))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchPorts(internal, external))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
