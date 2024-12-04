@@ -10,7 +10,7 @@ export const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:8000'
 export const STORAGE_STATE = path.join(__dirname, 'storageState.json')
 
 const DEBUG = !!process.env.DEBUG || !!process.env.PWDEBUG
-const IGNORE_DEPS = !!process.env.IGNORE_DEPENDENCIES
+const IGNORE_DEPS = !!process.env.IGNORE_DEPS
 const CI = !!process.env.CI
 
 const createProject = (name: string, testMatch: string | RegExp | (string | RegExp)[], deps?: string[]) => ({

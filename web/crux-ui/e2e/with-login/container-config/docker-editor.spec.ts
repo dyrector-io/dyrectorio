@@ -83,6 +83,7 @@ test.describe('Image docker config from editor', () => {
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchRestartPolicy('always'))
+    await page.locator('button:has-text("Restart policy")').click()
     await page.locator('div.grid:has(label:has-text("RESTART POLICY")) button:has-text("Always")').click()
     await wsSent
 
