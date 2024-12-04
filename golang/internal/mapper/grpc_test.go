@@ -67,17 +67,13 @@ func testExpectedCommon(req *agent.DeployWorkloadRequest) *v1.DeployImageRequest
 			Password: "test-pass",
 		},
 		InstanceConfig: v1.InstanceConfig{
-			ContainerPreName:  "test-prefix",
-			MountPath:         "/path/to/mount",
-			Name:              "test-prefix",
-			Environment:       map[string]string{"Evn1": "Val1", "Env2": "Val2"},
-			Registry:          "",
-			RepositoryPreName: "repo-prefix",
-			SharedEnvironment: map[string]string{},
 			UseSharedEnvs:     false,
+			Environment:       map[string]string{},
+			SharedEnvironment: map[string]string{},
+			ContainerPreName:  "",
 		},
 		ContainerConfig: v1.ContainerConfig{
-			ContainerPreName:   "test-prefix",
+			ContainerPreName:   "",
 			Container:          "test-common-config",
 			Ports:              []builder.PortBinding{{ExposedPort: 0x4d2, PortBinding: pointer.ToUint16(0x1a85)}},
 			PortRanges:         []builder.PortRangeBinding{{Internal: builder.PortRange{From: 0x0, To: 0x18}, External: builder.PortRange{From: 0x40, To: 0x80}}},
@@ -153,7 +149,7 @@ func testExpectedCommon(req *agent.DeployWorkloadRequest) *v1.DeployImageRequest
 			UseLoadBalancer:    true,
 			ExtraLBAnnotations: map[string]string{"annotation1": "value1"},
 		},
-		RuntimeConfig: v1.Base64JSONBytes{0x6b, 0x65, 0x79, 0x31, 0x3d, 0x76, 0x61, 0x6c, 0x31, 0x2c, 0x6b, 0x65, 0x79, 0x32, 0x3d, 0x76, 0x61, 0x6c, 0x32}, // encoded string: a2V5MT12YWwxLGtleTI9dmFsMg==
+		RuntimeConfig: nil,
 		Registry:      req.Registry,
 		ImageName:     "test-image",
 		Tag:           "test-tag",
@@ -212,22 +208,17 @@ func TestMapDockerContainerEventToContainerState(t *testing.T) {
 
 func testDeployRequest() *agent.DeployWorkloadRequest {
 	registry := "https://my-registry.com"
-	runtimeCfg := "key1=val1,key2=val2"
 	var uid int64 = 777
 	upLimit := "5Mi"
-	mntPath := "/path/to/mount"
-	repoPrefix := "repo-prefix"
 	strategy := common.ExposeStrategy_EXPOSE_WITH_TLS
 	b := true
 	return &agent.DeployWorkloadRequest{
-		Id:            "testID",
-		ContainerName: "test-container",
-		ImageName:     "test-image",
-		Tag:           "test-tag",
-		Registry:      &registry,
-		RuntimeConfig: &runtimeCfg,
-		Dagent:        testDagentConfig(),
-		Crane:         testCraneConfig(),
+		Id:        "testID",
+		ImageName: "test-image",
+		Tag:       "test-tag",
+		Registry:  &registry,
+		Dagent:    testDagentConfig(),
+		Crane:     testCraneConfig(),
 		Common: &agent.CommonContainerConfig{
 			Name:        "test-common-config",
 			Commands:    []string{"make", "test"},
@@ -273,12 +264,6 @@ func testDeployRequest() *agent.DeployWorkloadRequest {
 			User:     "test-user",
 			Password: "test-pass",
 			Url:      "https://test-url.com",
-		},
-		InstanceConfig: &agent.InstanceConfig{
-			Prefix:           "test-prefix",
-			MountPath:        &mntPath,
-			RepositoryPrefix: &repoPrefix,
-			Environment:      map[string]string{"Evn1": "Val1", "Env2": "Val2"},
 		},
 	}
 }

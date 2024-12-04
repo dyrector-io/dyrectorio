@@ -1,5 +1,5 @@
 import { ContainerConfig, DeploymentStatusEnum, VersionTypeEnum } from '@prisma/client'
-import { ConcreteContainerConfigData, ContainerConfigData, UniqueSecretKeyValue } from './container'
+import { ConcreteContainerConfigData, ContainerConfigData, UniqueSecretKeyValue, nameOfInstance } from './container'
 import { mergeConfigsWithConcreteConfig, mergeInstanceConfigWithDeploymentConfig } from './container-merge'
 import { DeploymentWithConfig } from './deployment'
 
@@ -97,6 +97,7 @@ export const deploymentConfigOf = (deployment: DeployableDeployment): ConcreteCo
 type DeployableInstance = {
   image: {
     config: ContainerConfig
+    name: string
   }
   config: ContainerConfig
 }
@@ -121,7 +122,14 @@ export const instanceConfigOf = (
 
   // then we merge and override the rest with the instance config
   const instanceConfig = instance.config as any as ConcreteContainerConfigData
-  return mergeInstanceConfigWithDeploymentConfig(mergedDeploymentConfig, instanceConfig)
+  const result = mergeInstanceConfigWithDeploymentConfig(mergedDeploymentConfig, instanceConfig)
+
+  // set defaults
+  if (!result.name) {
+    result.name = nameOfInstance(instance)
+  }
+
+  return result
 }
 
 type SecretCandidate = {

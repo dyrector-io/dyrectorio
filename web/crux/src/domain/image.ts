@@ -76,3 +76,11 @@ export const parseDyrectorioEnvRules = (labels: Record<string, string>): Record<
     }
   }, {})
 }
+
+export const registryImageNameToContainerName = (name: string) => {
+  if (name.includes('/')) {
+    return name.split('/').pop()
+  }
+
+  return name
+}

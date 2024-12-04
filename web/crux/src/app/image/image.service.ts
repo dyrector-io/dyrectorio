@@ -122,12 +122,7 @@ export default class ImageService {
             data: {
               registry: { connect: { id: registyImages.registryId } },
               version: { connect: { id: versionId } },
-              config: {
-                create: {
-                  type: 'image',
-                  name: imageName,
-                }
-              },
+              config: { create: { type: 'image' } },
               createdBy: identity.id,
               name: imageName,
               tag: imageTag,

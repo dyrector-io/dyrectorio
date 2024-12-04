@@ -1,4 +1,4 @@
-import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_INSTANCE } from '@app/models'
+import { WS_TYPE_PATCH_CONFIG, WS_TYPE_PATCH_INSTANCE } from '@app/models'
 import { expect } from '@playwright/test'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, waitForURLExcept } from 'e2e/utils/common'
 import { addPortsToContainerConfig } from 'e2e/utils/container-config'
@@ -51,17 +51,17 @@ test.describe('Deleting default version', () => {
     const projectId = await createProject(page, projectName, 'versioned')
     const defaultVersionName = 'default-version'
     const defaultVersionId = await createVersion(page, projectId, defaultVersionName, 'Rolling')
-    const defaultVersionImageId = await createImage(page, projectId, defaultVersionId, NGINX_TEST_IMAGE_WITH_TAG)
+    const imageConfigId = await createImage(page, projectId, defaultVersionId, NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(defaultVersionId, defaultVersionImageId))
+    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(defaultVersionId, imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(defaultVersionId)
 
     const internal = '1000'
     const external = '2000'
-    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_IMAGE, internal, external)
+    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_CONFIG, internal, external)
 
     const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
 

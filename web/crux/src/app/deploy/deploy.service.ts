@@ -585,7 +585,6 @@ export default class DeployService {
               crane: this.mapper.craneConfigToAgentProto(config),
               dagent: this.mapper.dagentConfigToAgentProto(config),
               id: it.id,
-              containerName: it.image.config.name,
               imageName: it.image.name,
               tag: it.image.tag,
               registry: registryUrl,

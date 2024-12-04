@@ -124,7 +124,7 @@ test.describe('Versioned Project', () => {
     await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const editorButton = await page.waitForSelector('button:has-text("JSON")')
     await editorButton.click()

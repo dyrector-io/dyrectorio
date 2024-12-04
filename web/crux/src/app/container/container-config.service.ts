@@ -259,7 +259,17 @@ export default class ContainerConfigService {
       })
     }
 
-    const data: ContainerConfigData = req.config ?? {}
+    const config = await this.prisma.containerConfig.findUnique({
+      where: {
+        id: configId,
+      },
+    })
+
+    const data: ContainerConfigData = this.mapper.configDtoToConfigData(
+      config as any as ContainerConfigData,
+      req.config ?? {},
+    )
+
     if (req.resetSection) {
       data[req.resetSection] = null
     }
