@@ -669,7 +669,7 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    needs: [gather_changes]
+    needs: [gather_changes, go_build]
     if: |
       always() &&
       (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
