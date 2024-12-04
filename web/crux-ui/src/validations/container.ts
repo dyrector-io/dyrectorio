@@ -507,12 +507,7 @@ const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
     .object()
     .shape({
       name: matchContainerName(yup.string().nullable().optional().label('container:common.containerName')),
-      environment: uniqueKeyValuesSchema
-        .default(null)
-        .nullable()
-        .optional()
-        .label('container:common.environment')
-        .test('ruleValidation', 'errors:yup.mixed.required', testEnvironment(imageLabels)),
+      environment: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.environment'),
       routing: routingRule,
       expose: exposeRule,
       user: yup.number().default(null).min(UID_MIN).max(UID_MAX).nullable().optional().label('container:common.user'),
