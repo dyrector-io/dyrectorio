@@ -13,16 +13,10 @@ import {
 import { hookTestPageEvents, test } from '../../utils/test.fixture'
 import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
 
-const addSecretToImage = async (
-  page: Page,
-  projectId: string,
-  versionId: string,
-  imageId: string,
-  secretKeys: string[],
-): Promise<void> => {
+const addSecretToImage = async (page: Page, imageConfigId: string, secretKeys: string[]): Promise<void> => {
   const sock = waitSocketRef(page)
   await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-  await page.waitForSelector('h2:text-is("Image")')
+  await page.waitForSelector('h2:text-is("Image config")')
   const ws = await sock
   const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -75,7 +69,7 @@ test.describe('Deployment Copy', () => {
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
     const imageConfigId = await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
-    await addSecretToImage(page, projectId, versionId, imageConfigId, secretKeys)
+    await addSecretToImage(page, imageConfigId, secretKeys)
 
     const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, {
       prefix: originalPrefix,

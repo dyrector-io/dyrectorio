@@ -54,8 +54,8 @@ test.describe('Deleting default version', () => {
     const imageConfigId = await createImage(page, projectId, defaultVersionId, NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(defaultVersionId, imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(defaultVersionId)
 

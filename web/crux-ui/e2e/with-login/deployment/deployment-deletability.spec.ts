@@ -15,7 +15,7 @@ test('In progress deployment should be not deletable', async ({ page }) => {
 
   const sock = waitSocketRef(page)
   await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-  await page.waitForSelector('h2:text-is("Image")')
+  await page.waitForSelector('h2:text-is("Image config")')
   const ws = await sock
   const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 

@@ -118,11 +118,11 @@ test.describe('Versioned Project', () => {
 
     const projectId = await createProject(page, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
-    const imageId = await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
+    const imageConfigId = await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 

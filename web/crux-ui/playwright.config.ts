@@ -10,13 +10,14 @@ export const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:8000'
 export const STORAGE_STATE = path.join(__dirname, 'storageState.json')
 
 const DEBUG = !!process.env.DEBUG || !!process.env.PWDEBUG
+const IGNORE_DEPS = !!process.env.IGNORE_DEPENDENCIES
 const CI = !!process.env.CI
 
 const createProject = (name: string, testMatch: string | RegExp | (string | RegExp)[], deps?: string[]) => ({
   name,
   testMatch,
   // If running in DEBUG mode only depend on 'global-setup' so any test can run without running the whole project structure
-  dependencies: DEBUG ? ['global-setup'] : deps ?? ['global-setup'],
+  dependencies: DEBUG || IGNORE_DEPS ? ['global-setup'] : deps ?? ['global-setup'],
   use: {
     ...devices['Desktop Chromium'],
     storageState: STORAGE_STATE,

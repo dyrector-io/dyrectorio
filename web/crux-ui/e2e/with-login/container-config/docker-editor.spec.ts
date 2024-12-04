@@ -30,7 +30,7 @@ test.describe('Image docker config from editor', () => {
     const { imageConfigId } = await setup(page, 'networkmode-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -51,7 +51,7 @@ test.describe('Image docker config from editor', () => {
     const { imageConfigId } = await setup(page, 'dockerlabel-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -77,7 +77,7 @@ test.describe('Image docker config from editor', () => {
     const { imageConfigId } = await setup(page, 'restartpolicy-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -96,7 +96,7 @@ test.describe('Image docker config from editor', () => {
     const { imageConfigId } = await setup(page, 'logconfig-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -125,7 +125,7 @@ test.describe('Image docker config from editor', () => {
     const { imageConfigId } = await setup(page, 'networks-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
