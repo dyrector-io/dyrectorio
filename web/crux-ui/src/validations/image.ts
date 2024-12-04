@@ -1,8 +1,8 @@
 import { ContainerConfigData } from '@app/models'
 import yup from './yup'
 import { ErrorWithPath, getValidationError } from './common'
+import { createContainerConfigSchema } from './container'
 import { Translate } from 'next-translate'
-import { createConfigSchema } from './container'
 
 export type ContainerConfigValidationErrors = Record<string, yup.ValidationError>
 
@@ -23,7 +23,7 @@ export const getContainerConfigFieldErrors = (
   imageLabels: Record<string, string>,
   t: Translate,
 ): ContainerConfigValidationErrors =>
-  getConfigFieldErrorsForSchema(createConfigSchema('image', imageLabels), newConfig, t)
+  getConfigFieldErrorsForSchema(createContainerConfigSchema(imageLabels), newConfig, t)
 
 export const jsonErrorOf = (fieldErrors: ContainerConfigValidationErrors) => {
   const entries = Object.entries(fieldErrors)

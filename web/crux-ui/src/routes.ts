@@ -699,8 +699,6 @@ class ConfigBundleRoutes {
   list = (options?: ListRouteOptions) => appendAnchorWhenDeclared(this.root, ANCHOR_NEW, options?.new)
 
   details = (id: string) => `${this.root}/${id}`
-
-  detailsSocket = (id: string) => this.details(id)
 }
 
 export class PackageApi {

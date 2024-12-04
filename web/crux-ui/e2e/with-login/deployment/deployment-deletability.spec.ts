@@ -4,20 +4,20 @@ import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import { deployWithDagent } from '../../utils/node-helper'
 import { addImageToVersion, createImage, createProject, createVersion } from '../../utils/projects'
 import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
-import { WS_TYPE_PATCH_IMAGE } from '@app/models'
+import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 
 test('In progress deployment should be not deletable', async ({ page }) => {
   const projectName = 'project-delete-test-1'
 
   const projectId = await createProject(page, projectName, 'versioned')
   const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
-  const imageId = await createImage(page, projectId, versionId, 'nginx')
+  const imageConfigId = await createImage(page, projectId, versionId, 'nginx')
 
   const sock = waitSocketRef(page)
-  await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+  await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
   await page.waitForSelector('h2:text-is("Image")')
   const ws = await sock
-  const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+  const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
   const editorButton = await page.waitForSelector('button:has-text("JSON")')
   await editorButton.click()
@@ -38,7 +38,7 @@ test('In progress deployment should be not deletable', async ({ page }) => {
       useParentConfig: false,
     },
   ]
-  const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE)
+  const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG)
   await jsonContainer.fill(JSON.stringify(configObject))
   await wsSent
 

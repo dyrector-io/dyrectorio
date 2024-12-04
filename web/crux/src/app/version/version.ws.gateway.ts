@@ -36,13 +36,15 @@ import {
   ImageDeletedMessage,
   ImageMessage,
   ImageTagMessage,
-  ImagesAddedMessage,
   OrderImagesMessage,
+  WS_TYPE_ADD_IMAGES,
+  WS_TYPE_DELETE_IMAGE,
+  WS_TYPE_GET_IMAGE,
   WS_TYPE_IMAGE,
-  WS_TYPE_IMAGES_ADDED,
   WS_TYPE_IMAGES_WERE_REORDERED,
   WS_TYPE_IMAGE_DELETED,
   WS_TYPE_IMAGE_TAG_UPDATED,
+  WS_TYPE_ORDER_IMAGES,
   WS_TYPE_SET_IMAGE_TAG,
 } from './version.message'
 import VersionService from './version.service'
@@ -114,7 +116,7 @@ export default class VersionWebSocketGateway {
   }
 
   @AuditLogLevel('disabled')
-  @SubscribeMessage('get-image')
+  @SubscribeMessage(WS_TYPE_GET_IMAGE)
   async getImage(@SocketMessage() message: GetImageMessage): Promise<WsMessage<ImageMessage>> {
     const data = await this.imageService.getImageDetails(message.id)
 
@@ -124,27 +126,17 @@ export default class VersionWebSocketGateway {
     } as WsMessage<ImageMessage>
   }
 
-  @SubscribeMessage('add-images')
+  @SubscribeMessage(WS_TYPE_ADD_IMAGES)
   async addImages(
     @TeamSlug() teamSlug: string,
     @VersionId() versionId: string,
     @SocketMessage() message: AddImagesMessage,
     @IdentityFromSocket() identity: Identity,
-    @SocketSubscription() subscription: WsSubscription,
   ): Promise<void> {
-    const images = await this.imageService.addImagesToVersion(teamSlug, versionId, message.registryImages, identity)
-
-    const res: WsMessage<ImagesAddedMessage> = {
-      type: WS_TYPE_IMAGES_ADDED,
-      data: {
-        images,
-      },
-    }
-
-    subscription.sendToAll(res)
+    await this.imageService.addImagesToVersion(teamSlug, versionId, message.registryImages, identity)
   }
 
-  @SubscribeMessage('delete-image')
+  @SubscribeMessage(WS_TYPE_DELETE_IMAGE)
   async deleteImage(
     @SocketMessage() message: DeleteImageMessage,
     @SocketSubscription() subscription: WsSubscription,
@@ -189,7 +181,7 @@ export default class VersionWebSocketGateway {
     }
   }
 
-  @SubscribeMessage('order-images')
+  @SubscribeMessage(WS_TYPE_ORDER_IMAGES)
   async orderImages(
     @SocketClient() client: WsClient,
     @SocketMessage() message: OrderImagesMessage,

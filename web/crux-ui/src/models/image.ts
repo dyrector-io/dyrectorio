@@ -78,4 +78,13 @@ export type ImageMessage = VersionImage
 
 export const imageNameOf = (image: VersionImage): string => imageName(image.name, image.tag)
 
-export const containerNameOfImage = (image: VersionImage) => image.config.name ?? image.name
+export const registryImageNameToContainerName = (name: string) => {
+  if (name.includes('/')) {
+    return name.split('/').pop()
+  }
+
+  return name
+}
+
+export const containerNameOfImage = (image: VersionImage) =>
+  image.config.name ?? registryImageNameToContainerName(image.name)

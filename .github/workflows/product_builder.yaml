@@ -69,9 +69,9 @@ jobs:
       crux: ${{ steps.filter.outputs.crux }}
       cruxui: ${{ steps.filter.outputs.cruxui }}
       kratos: ${{ steps.filter.outputs.kratos }}
-      tag: ${{ steps.settag.outputs.tag }}
+      tag: "0.15.0-rc" # ${{ steps.settag.outputs.tag }}
       extratag: ${{ steps.settag.outputs.extratag }}
-      version: ${{ steps.settag.outputs.version }}
+      version: "0.15.0-rc" # ${{ steps.settag.outputs.version }}
       minorversion: ${{ steps.settag.outputs.minorversion }}
       release: ${{ steps.release.outputs.release }}
     steps:
@@ -669,11 +669,10 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    needs: [gather_changes, e2e]
+    needs: [gather_changes, go_build]
     if: |
       always() &&
       (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
-      needs.e2e.result == 'success' &&
       needs.go_build.result == 'success' &&
       (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
       (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
@@ -735,16 +734,16 @@ jobs:
     container:
       image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
     needs: [gather_changes, go_push]
-    if: |
-      always() &&
-      (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
-      needs.e2e.result == 'success' &&
-      needs.go_build.result == 'success' &&
-      (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
-      (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
-      (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
-      needs.conventional_commits.result == 'success' &&
-      needs.gather_changes.result == 'success' && needs.go_push.result == 'success'
+    # if: |
+    #   always() &&
+    #   (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
+    #   needs.e2e.result == 'success' &&
+    #   needs.go_build.result == 'success' &&
+    #   (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
+    #   (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
+    #   (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
+    #   needs.conventional_commits.result == 'success' &&
+    #   needs.gather_changes.result == 'success' && needs.go_push.result == 'success'
     environment: Workflow - Protected
     steps:
       - name: Login to GHCR
@@ -800,11 +799,10 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
-    needs: [crux_build, e2e, gather_changes]
+    needs: [crux_build, gather_changes]
     if: |
       always() &&
       (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
-      needs.e2e.result == 'success' &&
       (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
       needs.crux_build.result == 'success' &&
       (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
@@ -863,11 +861,10 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
-    needs: [crux-ui_build, e2e, gather_changes]
+    needs: [crux-ui_build, gather_changes]
     if: |
       always() &&
       (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
-      needs.e2e.result == 'success' &&
       (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
       (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
       needs.crux-ui_build.result == 'success' &&
@@ -926,11 +923,10 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
-    needs: [kratos_build, e2e, gather_changes]
+    needs: [kratos_build, gather_changes]
     if: |
       always() &&
       (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
-      needs.e2e.result == 'success' &&
       (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
       (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
       (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&

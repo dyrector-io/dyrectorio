@@ -1,5 +1,5 @@
+import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 import { expect, Page } from '@playwright/test'
-import { test } from '../../utils/test.fixture'
 import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import {
   wsPatchMatchCustomHeader,
@@ -17,36 +17,31 @@ import {
   wsPatchMatchServiceLabel,
 } from 'e2e/utils/websocket-match'
 import { createImage, createProject, createVersion } from '../../utils/projects'
+import { test } from '../../utils/test.fixture'
 import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
-import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 
 const setup = async (
   page: Page,
   projectName: string,
   versionName: string,
   imageName: string,
-): Promise<{ projectId: string; versionId: string; imageId: string }> => {
+): Promise<{ imageConfigId: string }> => {
   const projectId = await createProject(page, projectName, 'versioned')
   const versionId = await createVersion(page, projectId, versionName, 'Incremental')
-  const imageId = await createImage(page, projectId, versionId, imageName)
+  const imageConfigId = await createImage(page, projectId, versionId, imageName)
 
-  return { projectId, versionId, imageId }
+  return { imageConfigId }
 }
 
 test.describe('Image kubernetes config from JSON', () => {
   test('Deployment strategy should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(
-      page,
-      'deployment-strategy-json',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'deployment-strategy-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const strategy = 'rolling'
 
@@ -57,7 +52,7 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.deploymentStrategy = strategy
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentStrategy(strategy))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchDeploymentStrategy(strategy))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -67,18 +62,13 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Custom headers should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(
-      page,
-      'custom-headers-json',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'custom-headers-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const header = 'test-header'
 
@@ -89,7 +79,7 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.customHeaders = [header]
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchCustomHeader(header))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchCustomHeader(header))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -102,18 +92,13 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Proxy headers should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(
-      page,
-      'proxy-headers-json',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'proxy-headers-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
     await jsonEditorButton.click()
@@ -122,7 +107,7 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.proxyHeaders = true
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchProxyHeader(true))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchProxyHeader(true))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -132,18 +117,13 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Load balancer should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(
-      page,
-      'load-balancer-json',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'load-balancer-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const key = 'balancer-key'
     const value = 'balancer-value'
@@ -155,11 +135,11 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.useLoadBalancer = true
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchLoadBalancer(true))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchLoadBalancer(true))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
     json.extraLBAnnotations = { [key]: value }
-    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchLBAnnotations(key, value))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchLBAnnotations(key, value))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -177,13 +157,13 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Health check config should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'health-check-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'health-check-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const port = 12560
     const liveness = 'test/liveness/'
@@ -200,7 +180,7 @@ test.describe('Image kubernetes config from JSON', () => {
     const wsSent = wsPatchSent(
       ws,
       wsRoute,
-      WS_TYPE_PATCH_IMAGE,
+      WS_TYPE_PATCH_CONFIG,
       wsPatchMatchHealthCheck(port, liveness, readiness, startup),
     )
     await jsonEditor.fill(JSON.stringify(json))
@@ -216,18 +196,13 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Resource config should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(
-      page,
-      'resource-config-json',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'resource-config-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const cpuLimits = '50'
     const cpuRequests = '25'
@@ -247,7 +222,7 @@ test.describe('Image kubernetes config from JSON', () => {
     const wsSent = wsPatchSent(
       ws,
       wsRoute,
-      WS_TYPE_PATCH_IMAGE,
+      WS_TYPE_PATCH_CONFIG,
       wsPatchMatchResourceConfig(cpuLimits, cpuRequests, memoryLimits, memoryRequests),
     )
     await jsonEditor.fill(JSON.stringify(json))
@@ -266,13 +241,13 @@ test.describe('Image kubernetes config from JSON', () => {
     page.locator(`div.max-h-128 > div:nth-child(2):near(label:has-text("${category}"))`)
 
   test('Labels should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'labels-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'labels-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const key = 'label-key'
     const value = 'label-value'
@@ -283,15 +258,15 @@ test.describe('Image kubernetes config from JSON', () => {
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentLabel(key, value))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchDeploymentLabel(key, value))
     json.labels = { deployment: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchServiceLabel(key, value))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchServiceLabel(key, value))
     json.labels = { deployment: { [key]: value }, service: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchIngressLabel(key, value))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchIngressLabel(key, value))
     json.labels = { deployment: { [key]: value }, service: { [key]: value }, ingress: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
@@ -310,13 +285,13 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Annotations should be saved', async ({ page }) => {
-    const { projectId, versionId, imageId } = await setup(page, 'annotations-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'annotations-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const key = 'annotation-key'
     const value = 'annotation-value'
@@ -327,15 +302,15 @@ test.describe('Image kubernetes config from JSON', () => {
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
 
-    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchDeploymentAnnotations(key, value))
+    let wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchDeploymentAnnotations(key, value))
     json.annotations = { deployment: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchServiceAnnotations(key, value))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchServiceAnnotations(key, value))
     json.annotations = { deployment: { [key]: value }, service: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
-    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_IMAGE, wsPatchMatchIngressAnnotations(key, value))
+    wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchIngressAnnotations(key, value))
     json.annotations = { deployment: { [key]: value }, service: { [key]: value }, ingress: { [key]: value } }
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent

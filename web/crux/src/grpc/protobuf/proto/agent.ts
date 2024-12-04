@@ -328,7 +328,6 @@ export interface CommonContainerConfig_SecretsEntry {
 
 export interface DeployWorkloadRequest {
   id: string
-  containerName: string
   /** ContainerConfigs */
   common?: CommonContainerConfig | undefined
   dagent?: DagentContainerConfig | undefined
@@ -1336,14 +1335,13 @@ export const CommonContainerConfig_SecretsEntry = {
 }
 
 function createBaseDeployWorkloadRequest(): DeployWorkloadRequest {
-  return { id: '', containerName: '', imageName: '', tag: '' }
+  return { id: '', imageName: '', tag: '' }
 }
 
 export const DeployWorkloadRequest = {
   fromJSON(object: any): DeployWorkloadRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      containerName: isSet(object.containerName) ? String(object.containerName) : '',
       common: isSet(object.common) ? CommonContainerConfig.fromJSON(object.common) : undefined,
       dagent: isSet(object.dagent) ? DagentContainerConfig.fromJSON(object.dagent) : undefined,
       crane: isSet(object.crane) ? CraneContainerConfig.fromJSON(object.crane) : undefined,
@@ -1357,7 +1355,6 @@ export const DeployWorkloadRequest = {
   toJSON(message: DeployWorkloadRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.containerName !== undefined && (obj.containerName = message.containerName)
     message.common !== undefined &&
       (obj.common = message.common ? CommonContainerConfig.toJSON(message.common) : undefined)
     message.dagent !== undefined &&
