@@ -429,7 +429,12 @@ const expectedContainerStateRule = yup
   .optional()
   .label('container:dagent.expectedState')
 
-const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: UniqueKeyValue) => {
+type KeyValueLike = {
+  key: string
+  value: string
+}
+
+const validateLabelRule = (rule: EnvironmentRule, field: string, env: KeyValueLike) => {
   const { key, value } = env
 
   try {
@@ -444,10 +449,10 @@ const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: Uniq
         yup.string().validateSync(value)
         break
       default:
-        return new yup.ValidationError('errors:yup.mixed.default', rule.type, `environment[${index}]`)
+        return new yup.ValidationError('errors:yup.mixed.default', rule.type, field)
     }
   } catch (fieldError) {
-    const err = new yup.ValidationError(fieldError.message, key, `environment[${index}]`)
+    const err = new yup.ValidationError(fieldError.message, key, field)
     err.params = {
       ...fieldError.params,
       path: key,
@@ -458,45 +463,43 @@ const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: Uniq
   return null
 }
 
-const testEnvironment = (imageLabels: Record<string, string>) => (arr: UniqueKeyValue[]) => {
-  if (!imageLabels || !arr) {
-    return true
+const testRules = (rules: [string, EnvironmentRule][], arr: UniqueKeyValue[], fieldName: string) => {
+  if (rules.length == 0) {
+    return null
   }
 
-  const rules = parseDyrectorioEnvRules(imageLabels)
-
-  const requiredKeys = Object.entries(rules)
-    .filter(([, rule]) => rule.required)
-    .map(([key]) => key)
+  const requiredKeys = rules.map(([key]) => key)
   const foundKeys = arr.map(it => it.key)
 
   const missingKey = requiredKeys.find(it => !foundKeys.includes(it))
   if (missingKey) {
-    const err = new yup.ValidationError('errors:yup.mixed.required', missingKey, 'environment')
+    const err = new yup.ValidationError('errors:yup.mixed.required', missingKey, fieldName)
     err.params = {
       path: missingKey,
     }
     return err
   }
 
-  const fieldErrors = arr
+  const ruleMap = new Map(rules)
+
+  const envErrors = arr
     .map((it, index) => {
       const { key } = it
-      const rule = rules[key]
+      const rule = ruleMap[key]
       if (!rule) {
         return null
       }
 
-      return validateEnvironmentRule(rule, index, it)
+      return validateLabelRule(rule, `${fieldName}[${index}]`, it)
     })
     .filter(it => !!it)
 
-  if (fieldErrors.length > 0) {
-    const err = new yup.ValidationError(fieldErrors, missingKey, 'environment')
+  if (envErrors.length > 0) {
+    const err = new yup.ValidationError(envErrors, null, fieldName)
     return err
   }
 
-  return true
+  return null
 }
 
 const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
@@ -523,30 +526,49 @@ const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
     capabilities: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.capabilities'),
     storage: storageRule,
 
-    // dagent:
-    logConfig: logConfigRule,
-    restartPolicy: restartPolicyRule,
-    networkMode: networkModeRule,
-    networks: uniqueKeysOnlySchema.default(null).nullable().optional().label('container:dagent.networks'),
-    dockerLabels: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:dagent.dockerLabels'),
-    expectedState: expectedContainerStateRule,
+      // dagent:
+      logConfig: logConfigRule,
+      restartPolicy: restartPolicyRule,
+      networkMode: networkModeRule,
+      networks: uniqueKeysOnlySchema.default(null).nullable().optional().label('container:dagent.networks'),
+      dockerLabels: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:dagent.dockerLabels'),
+      expectedState: expectedContainerStateRule,
 
-    // crane
-    deploymentStrategy: deploymentStrategyRule,
-    customHeaders: uniqueKeysOnlySchema.default(null).nullable().optional().label('container:crane.customHeaders'),
-    proxyHeaders: yup.boolean().default(null).nullable().optional().label('container:crane.proxyHeaders'),
-    useLoadBalancer: yup.boolean().default(null).nullable().optional().label('container:crane.useLoadBalancer'),
-    extraLBAnnotations: uniqueKeyValuesSchema
-      .default(null)
-      .nullable()
-      .optional()
-      .label('container:crane.extraLBAnnotations'),
-    healthCheckConfig: healthCheckConfigRule,
-    resourceConfig: resourceConfigRule,
-    labels: markerRule.label('container:crane.labels'),
-    annotations: markerRule.label('container:crane.annotations'),
-    metrics: metricsRule,
-  })
+      // crane
+      deploymentStrategy: deploymentStrategyRule,
+      customHeaders: uniqueKeysOnlySchema.default(null).nullable().optional().label('container:crane.customHeaders'),
+      proxyHeaders: yup.boolean().default(null).nullable().optional().label('container:crane.proxyHeaders'),
+      useLoadBalancer: yup.boolean().default(null).nullable().optional().label('container:crane.useLoadBalancer'),
+      extraLBAnnotations: uniqueKeyValuesSchema
+        .default(null)
+        .nullable()
+        .optional()
+        .label('container:crane.extraLBAnnotations'),
+      healthCheckConfig: healthCheckConfigRule,
+      resourceConfig: resourceConfigRule,
+      labels: markerRule.label('container:crane.labels'),
+      annotations: markerRule.label('container:crane.annotations'),
+      metrics: metricsRule,
+    })
+    .test('labelRules', 'Instance must match their image label rules.', instance => {
+      debugger
+      const rules = parseDyrectorioEnvRules(imageLabels)
+      if (!rules) {
+        return null
+      }
+
+      const requiredRules = Object.entries(rules).filter(([, rule]) => rule.required)
+
+      const envRules = requiredRules.filter(([_, rule]) => !rule.secret)
+      const secretRules = requiredRules.filter(([_, rule]) => rule.secret)
+
+      const envError = testRules(envRules, instance.environment as UniqueKeyValue[], 'environment')
+      if (envError) {
+        return envError
+      }
+
+      return testRules(secretRules, instance.secrets as UniqueKeyValue[], 'secret')
+    })
 
 export const createContainerConfigSchema = (imageLabels: Record<string, string>) =>
   createContainerConfigBaseSchema(imageLabels).shape({
