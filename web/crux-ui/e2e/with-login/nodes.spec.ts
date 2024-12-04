@@ -235,7 +235,12 @@ test('Stopping the underlying container of a log stream should not affect the co
     TEAM_ROUTES.node.containerLog(nodeId, {
       name: containerName,
     }),
+    {
+      waitUntil: 'domcontentloaded',
+    },
   )
+
+  await page.waitForSelector(`h4:text-is("Log of ${containerName}")`)
 
   await stopContainer(containerName)
 

@@ -110,7 +110,7 @@ test('Can create from deployments page', async ({ page }) => {
   await page.locator('button:has-text("Add")').click()
   await expect(page.locator('h4:has-text("Add")')).toBeVisible()
 
-  await page.locator(`button:has-text("${DAGENT_NODE}")`).click()
+  await page.locator(`button:has-text("${DAGENT_NODE}")`).first().click()
   await page.locator(`button:has-text("${projectName}")`).click()
   await page.locator(`button:has-text("${versionName}")`).click()
   await fillDeploymentPrefix(page, projectName.toLowerCase())

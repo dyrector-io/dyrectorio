@@ -1,4 +1,4 @@
-import { PaginationWithDateQuery } from './common'
+import { DeploymentStatus, PaginationQuery, PaginationWithDateQuery } from './common'
 import { Container, ContainerCommand, ContainerIdentifier } from './container'
 
 export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
@@ -100,6 +100,11 @@ export type NodeAuditLogList = {
 
 export type NodeContainerInspection = {
   inspection: string
+}
+
+export type NodeDeploymentQuery = PaginationQuery & {
+  filter?: string
+  status?: DeploymentStatus
 }
 
 // ws

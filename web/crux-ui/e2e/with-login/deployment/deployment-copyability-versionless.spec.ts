@@ -41,7 +41,7 @@ test.describe('Versionless Project', () => {
     const copyButton = await page.locator(`[alt="Copy"]:right-of(:has-text("${projectName}"))`).first()
     await copyButton.click()
 
-    await page.locator(`button:has-text("${nodeName}")`).click()
+    await page.locator(`button:has-text("${nodeName}")`).first().click()
     await fillDeploymentPrefix(page, prefix)
     await page.locator('button:has-text("Copy")').click()
 
@@ -96,7 +96,7 @@ test.describe('Versionless Project', () => {
     const copyButton = page.locator('button:has-text("Copy")')
     await copyButton.click()
 
-    await page.locator(`button:has-text("${nodeName}")`).click()
+    await page.locator(`button:has-text("${nodeName}")`).first().click()
     await fillDeploymentPrefix(page, `${prefix}-new-prefix`)
 
     const currentUrl = page.url()
