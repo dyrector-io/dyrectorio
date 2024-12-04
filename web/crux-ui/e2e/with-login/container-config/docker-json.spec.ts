@@ -17,24 +17,24 @@ const setup = async (
   projectName: string,
   versionName: string,
   imageName: string,
-): Promise<{ projectId: string; versionId: string; imageId: string }> => {
+): Promise<{ imageConfigId: string }> => {
   const projectId = await createProject(page, projectName, 'versioned')
   const versionId = await createVersion(page, projectId, versionName, 'Incremental')
   const imageConfigId = await createImage(page, projectId, versionId, imageName)
 
-  return { projectId, versionId, imageConfigId: imageConfigId }
+  return { imageConfigId }
 }
 
 test.describe.configure({ mode: 'parallel' })
 
 test.describe('Image docker config from JSON', () => {
   test('Network mode should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'networkmode-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'networkmode-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const mode = 'host'
 
@@ -57,12 +57,12 @@ test.describe('Image docker config from JSON', () => {
   })
 
   test('Docker labels should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'dockerlabel-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'dockerlabel-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const key = 'docker-key'
     const value = 'docker-value'
@@ -89,17 +89,12 @@ test.describe('Image docker config from JSON', () => {
   })
 
   test('Restart policy should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'restartpolicy-json',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'restartpolicy-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
     await jsonEditorButton.click()
@@ -120,12 +115,12 @@ test.describe('Image docker config from JSON', () => {
   })
 
   test('Log config should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'logconfig-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'logconfig-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const type = 'json-file'
     const key = 'logger-key'
@@ -151,12 +146,12 @@ test.describe('Image docker config from JSON', () => {
   })
 
   test('Networks should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'networks-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'networks-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Networks")').click()
 

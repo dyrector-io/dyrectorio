@@ -1,5 +1,5 @@
+import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 import { expect, Page } from '@playwright/test'
-import { test } from '../../utils/test.fixture'
 import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import { createStorage } from 'e2e/utils/storages'
 import {
@@ -20,33 +20,33 @@ import {
   wsPatchMatchVolume,
 } from 'e2e/utils/websocket-match'
 import { createImage, createProject, createVersion } from '../../utils/projects'
+import { test } from '../../utils/test.fixture'
 import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
-import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 
 const setup = async (
   page: Page,
   projectName: string,
   versionName: string,
   imageName: string,
-): Promise<{ projectId: string; versionId: string; imageId: string }> => {
+): Promise<{ imageConfigId: string }> => {
   const projectId = await createProject(page, projectName, 'versioned')
   const versionId = await createVersion(page, projectId, versionName, 'Incremental')
   const imageConfigId = await createImage(page, projectId, versionId, imageName)
 
-  return { projectId, versionId, imageConfigId }
+  return { imageConfigId }
 }
 
 test.describe.configure({ mode: 'parallel' })
 
 test.describe('Image common config from editor', () => {
   test('Container name should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'name-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'name-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const name = 'new-container-name'
 
@@ -60,13 +60,13 @@ test.describe('Image common config from editor', () => {
   })
 
   test('Expose strategy should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'expose-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'expose-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchExpose('exposeWithTls'))
     await page.getByRole('button', { name: 'HTTPS', exact: true }).click()
@@ -78,13 +78,13 @@ test.describe('Image common config from editor', () => {
   })
 
   test('User should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'user-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'user-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const user = 23
 
@@ -98,13 +98,13 @@ test.describe('Image common config from editor', () => {
   })
 
   test('TTY should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'tty-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'tty-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("TTY")').click()
 
@@ -118,13 +118,13 @@ test.describe('Image common config from editor', () => {
   })
 
   test('Port should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'port-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'port-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Ports")').click()
 
@@ -148,13 +148,13 @@ test.describe('Image common config from editor', () => {
   })
 
   test('Port ranges should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'port-range-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'port-range-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Port ranges")').click()
 
@@ -191,13 +191,13 @@ test.describe('Image common config from editor', () => {
   })
 
   test('Secrets should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'secrets-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'secrets-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Secrets")').click()
 
@@ -217,13 +217,13 @@ test.describe('Image common config from editor', () => {
   })
 
   test('Commands should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'commands-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'commands-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Commands")').click()
 
@@ -240,13 +240,13 @@ test.describe('Image common config from editor', () => {
   })
 
   test('Arguments should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'arguments-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'arguments-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Arguments")').click()
 
@@ -263,12 +263,12 @@ test.describe('Image common config from editor', () => {
   })
 
   test('Routing should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'routing-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'routing-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Ports")').click()
 
@@ -314,17 +314,12 @@ test.describe('Image common config from editor', () => {
   })
 
   test('Environment should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'environment-editor',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'environment-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Environment")').click()
 
@@ -343,17 +338,12 @@ test.describe('Image common config from editor', () => {
   })
 
   test('Config container should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'config-container-editor',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'config-container-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Config container")').click()
     const confDiv = page.locator('div.grid:has(label:has-text("CONFIG CONTAINER"))')
@@ -378,17 +368,12 @@ test.describe('Image common config from editor', () => {
   })
 
   test('Init containers should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'init-container-editor',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'init-container-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const name = 'container-name'
     const image = 'image'
@@ -436,12 +421,12 @@ test.describe('Image common config from editor', () => {
   })
 
   test('Volume should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'volume-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'volume-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Volume")').click()
 
@@ -470,7 +455,7 @@ test.describe('Image common config from editor', () => {
   })
 
   test('Storage should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'storage-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'storage-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const storageName = 'image-editor-storage'
     const storageId = await createStorage(page, storageName, 'storage.com', '1234', '12345')
@@ -479,7 +464,7 @@ test.describe('Image common config from editor', () => {
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Volume")').click()
 

@@ -1,5 +1,5 @@
+import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 import { expect, Page } from '@playwright/test'
-import { test } from '../../utils/test.fixture'
 import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import {
   wsPatchMatchCustomHeader,
@@ -17,36 +17,31 @@ import {
   wsPatchMatchServiceLabel,
 } from 'e2e/utils/websocket-match'
 import { createImage, createProject, createVersion } from '../../utils/projects'
+import { test } from '../../utils/test.fixture'
 import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
-import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 
 const setup = async (
   page: Page,
   projectName: string,
   versionName: string,
   imageName: string,
-): Promise<{ projectId: string; versionId: string; imageId: string }> => {
+): Promise<{ imageConfigId: string }> => {
   const projectId = await createProject(page, projectName, 'versioned')
   const versionId = await createVersion(page, projectId, versionName, 'Incremental')
   const imageConfigId = await createImage(page, projectId, versionId, imageName)
 
-  return { projectId, versionId, imageConfigId: imageConfigId }
+  return { imageConfigId }
 }
 
 test.describe('Image kubernetes config from JSON', () => {
   test('Deployment strategy should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'deployment-strategy-json',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'deployment-strategy-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const strategy = 'rolling'
 
@@ -67,18 +62,13 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Custom headers should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'custom-headers-json',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'custom-headers-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const header = 'test-header'
 
@@ -102,18 +92,13 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Proxy headers should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'proxy-headers-json',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'proxy-headers-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
     await jsonEditorButton.click()
@@ -132,18 +117,13 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Load balancer should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'load-balancer-json',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'load-balancer-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const key = 'balancer-key'
     const value = 'balancer-value'
@@ -177,13 +157,13 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Health check config should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'health-check-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'health-check-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const port = 12560
     const liveness = 'test/liveness/'
@@ -216,18 +196,13 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Resource config should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'resource-config-json',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'resource-config-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const cpuLimits = '50'
     const cpuRequests = '25'
@@ -266,13 +241,13 @@ test.describe('Image kubernetes config from JSON', () => {
     page.locator(`div.max-h-128 > div:nth-child(2):near(label:has-text("${category}"))`)
 
   test('Labels should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'labels-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'labels-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const key = 'label-key'
     const value = 'label-value'
@@ -310,13 +285,13 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   test('Annotations should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'annotations-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'annotations-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const key = 'annotation-key'
     const value = 'annotation-value'
