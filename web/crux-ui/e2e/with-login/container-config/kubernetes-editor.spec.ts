@@ -25,28 +25,23 @@ const setup = async (
   projectName: string,
   versionName: string,
   imageName: string,
-): Promise<{ projectId: string; versionId: string; imageId: string }> => {
+): Promise<{ imageConfigId: string }> => {
   const projectId = await createProject(page, projectName, 'versioned')
   const versionId = await createVersion(page, projectId, versionName, 'Incremental')
   const imageConfigId = await createImage(page, projectId, versionId, imageName)
 
-  return { projectId, versionId, imageConfigId: imageConfigId }
+  return { imageConfigId }
 }
 
 test.describe('Image kubernetes config from editor', () => {
   test('Deployment strategy should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'deployment-strategy-editor',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'deployment-strategy-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const strategy = 'rolling'
 
@@ -60,18 +55,13 @@ test.describe('Image kubernetes config from editor', () => {
   })
 
   test('Custom headers should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'custom-headers-editor',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'custom-headers-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Custom headers")').click()
 
@@ -90,18 +80,13 @@ test.describe('Image kubernetes config from editor', () => {
   })
 
   test('Proxy headers should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'proxy-headers-editor',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'proxy-headers-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Proxy headers")').click()
 
@@ -115,18 +100,13 @@ test.describe('Image kubernetes config from editor', () => {
   })
 
   test('Load balancer should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'load-balancer-editor',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'load-balancer-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Use load balancer")').click()
 
@@ -159,18 +139,13 @@ test.describe('Image kubernetes config from editor', () => {
   })
 
   test('Health check config should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'health-check-editor',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'health-check-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Health check config")').click()
 
@@ -202,17 +177,12 @@ test.describe('Image kubernetes config from editor', () => {
   })
 
   test('Resource config should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'resource-config-editor',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'resource-config-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Resource config")').click()
 
@@ -247,13 +217,13 @@ test.describe('Image kubernetes config from editor', () => {
     page.locator(`div.max-h-128 > div:nth-child(2):near(label:has-text("${category}"))`)
 
   test('Labels should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'labels-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'labels-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.getByRole('button', { name: 'Labels', exact: true }).click()
 
@@ -288,18 +258,13 @@ test.describe('Image kubernetes config from editor', () => {
   })
 
   test('Annotations should be saved', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(
-      page,
-      'annotations-editor',
-      '1.0.0',
-      NGINX_TEST_IMAGE_WITH_TAG,
-    )
+    const { imageConfigId } = await setup(page, 'annotations-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.getByRole('button', { name: 'Annotations', exact: true }).click()
 

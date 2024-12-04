@@ -119,13 +119,13 @@ const wsPatchMatchPorts = (internalPort: string, externalPort?: string) => (payl
 
 test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the config field', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'port-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'port-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Ports")').click()
 
@@ -152,13 +152,13 @@ test.describe('Image configurations', () => {
   })
 
   test('Port should be saved after adding it from the json editor', async ({ page }) => {
-    const { projectId, versionId, imageConfigId } = await setup(page, 'port-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+    const { imageConfigId } = await setup(page, 'port-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
     await jsonEditorButton.click()

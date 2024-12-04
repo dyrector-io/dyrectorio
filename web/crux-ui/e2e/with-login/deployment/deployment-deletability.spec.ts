@@ -17,7 +17,7 @@ test('In progress deployment should be not deletable', async ({ page }) => {
   await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
   await page.waitForSelector('h2:text-is("Image")')
   const ws = await sock
-  const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(versionId)
+  const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
   const editorButton = await page.waitForSelector('button:has-text("JSON")')
   await editorButton.click()
