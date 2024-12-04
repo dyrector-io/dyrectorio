@@ -5,7 +5,7 @@ on:
     workflows:
       - 'product_builder'
     branches:
-      - 'develop'
+      - 'feat/release-candidate'
     types:
       - completed
 permissions:
