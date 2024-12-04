@@ -14,6 +14,7 @@ export const updatePipelineSchema = yup.object().shape({
       yup.object().shape({
         organization: yup.string().required().label('organization'),
         project: yup.string().required().label('common:project'),
+        branch: yup.string().optional().nullable().label('common:branch'),
       }),
   }),
   trigger: yup.object().shape({

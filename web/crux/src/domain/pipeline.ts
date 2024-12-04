@@ -27,6 +27,7 @@ export type AzureRepository = {
   organization: string
   project: string
   projectId: string
+  branch?: string
 }
 
 export type AzureTrigger = {
@@ -58,8 +59,17 @@ export type AzureDevOpsVariable = {
   value: string
 }
 
+export type AzureDevOpsRespositoryParameters = {
+  refName: string
+}
+
+export type AzureDevOpsResources = {
+  repositories?: Record<string, AzureDevOpsRespositoryParameters>
+}
+
 export type AzureDevOpsPipelineTrigger = {
   variables: Record<string, AzureDevOpsVariable>
+  resources?: AzureDevOpsResources
 }
 
 export type AzureDevOpsPipelineTriggerError = {
