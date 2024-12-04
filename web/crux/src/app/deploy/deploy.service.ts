@@ -998,7 +998,7 @@ export default class DeployService {
         status: DeploymentStatusEnum.preparing,
         createdBy: identity.id,
         version: { connect: { id: copiedDeployment.versionId } },
-        node: { connect: { id: request.nodeId }  },
+        node: { connect: { id: request.nodeId } },
         config: !copiedDeployment.config
           ? undefined
           : {

@@ -1,8 +1,7 @@
-import { ProjectType, WS_TYPE_PATCH_RECEIVED } from '@app/models'
+import { ProjectType } from '@app/models'
 import { expect, Page } from '@playwright/test'
 import { createConfigBundle } from 'e2e/utils/config-bundle'
 import { deploy } from 'e2e/utils/node-helper'
-import { waitSocketReceived, waitSocketRef } from 'e2e/utils/websocket'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from '../../utils/common'
 import { createNode } from '../../utils/nodes'
 import {
