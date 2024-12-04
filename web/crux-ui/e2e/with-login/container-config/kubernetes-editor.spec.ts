@@ -46,6 +46,7 @@ test.describe('Image kubernetes config from editor', () => {
     const strategy = 'rolling'
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchDeploymentStrategy(strategy))
+    await page.locator('button:has-text("Deployment strategy")').click()
     await page.locator(`button:has-text("${strategy}")`).click()
     await wsSent
 

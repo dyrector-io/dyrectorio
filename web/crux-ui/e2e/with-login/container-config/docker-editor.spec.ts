@@ -37,6 +37,7 @@ test.describe('Image docker config from editor', () => {
     const mode = 'host'
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchNetworkMode(mode))
+    await page.locator('button:has-text("Network mode")').click()
     await page.locator(`div.grid:has(label:has-text("NETWORK MODE")) button:has-text("${mode}")`).click()
     await wsSent
 
