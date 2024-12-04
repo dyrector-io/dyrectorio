@@ -318,7 +318,7 @@ export default class ImageService {
       }, {}) ?? {}
 
     const mergedEnv = Object.entries(rules)
-      .filter(([_, rule]) => !rule.secret)
+      .filter(([, rule]) => !rule.secret)
       .reduce((map, it) => {
         const [key, rule] = it
 
@@ -345,7 +345,7 @@ export default class ImageService {
       }, {}) ?? {}
 
     const mergedSecrets = Object.entries(rules)
-      .filter(([_, rule]) => rule.secret)
+      .filter(([, rule]) => rule.secret)
       .reduce((map, it) => {
         const [key, rule] = it
 

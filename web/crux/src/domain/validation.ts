@@ -398,14 +398,14 @@ const validateLabelRule = (rule: EnvironmentRule, field: string, env: KeyValueLi
 }
 
 const testRules = (rules: [string, EnvironmentRule][], arr: UniqueKeyValue[], fieldName: string) => {
-  if (rules.length == 0) {
+  if (rules.length === 0) {
     return null
   }
 
   const requiredKeys = rules.map(([key]) => key)
   const foundKeys = arr.map(it => it.key)
 
-  if (requiredKeys.length > 0 && (!arr || arr.length == 0)) {
+  if (requiredKeys.length > 0 && (!arr || arr.length === 0)) {
     return new yup.ValidationError('errors:yup.mixed.required', fieldName, fieldName)
   }
 
@@ -472,8 +472,8 @@ export const createStartDeploymentSchema = (instanceValidation: Record<string, I
 
             const requiredRules = Object.entries(validation.environmentRules).filter(([, rule]) => rule.required)
 
-            const envRules = requiredRules.filter(([_, rule]) => !rule.secret)
-            const secretRules = requiredRules.filter(([_, rule]) => rule.secret)
+            const envRules = requiredRules.filter(([, rule]) => !rule.secret)
+            const secretRules = requiredRules.filter(([, rule]) => rule.secret)
 
             const envError = testRules(envRules, it.config.environment as UniqueKeyValue[], 'environment')
             if (envError) {

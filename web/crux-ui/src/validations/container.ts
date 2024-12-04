@@ -464,7 +464,7 @@ const validateLabelRule = (rule: EnvironmentRule, field: string, env: KeyValueLi
 }
 
 const testRules = (rules: [string, EnvironmentRule][], arr: UniqueKeyValue[], fieldName: string) => {
-  if (rules.length == 0) {
+  if (rules.length === 0) {
     return null
   }
 
@@ -503,28 +503,30 @@ const testRules = (rules: [string, EnvironmentRule][], arr: UniqueKeyValue[], fi
 }
 
 const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
-  yup.object().shape({
-    name: matchContainerName(yup.string().nullable().optional().label('container:common.containerName')),
-    environment: uniqueKeyValuesSchema
-      .default(null)
-      .nullable()
-      .optional()
-      .label('container:common.environment')
-      .test('ruleValidation', 'errors:yup.mixed.required', testEnvironment(imageLabels)),
-    routing: routingRule,
-    expose: exposeRule,
-    user: yup.number().default(null).min(UID_MIN).max(UID_MAX).nullable().optional().label('container:common.user'),
-    workingDirectory: yup.string().default(null).nullable().optional().label('container:common.workingDirectory'),
-    tty: yup.boolean().default(null).nullable().optional().label('container:common.tty'),
-    configContainer: configContainerRule,
-    ports: portConfigRule,
-    portRanges: portRangeConfigRule,
-    volumes: volumeConfigRule,
-    commands: shellCommandSchema.default(null).nullable().optional(),
-    args: shellCommandSchema.default(null).nullable().optional(),
-    initContainers: initContainerRule,
-    capabilities: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.capabilities'),
-    storage: storageRule,
+  yup
+    .object()
+    .shape({
+      name: matchContainerName(yup.string().nullable().optional().label('container:common.containerName')),
+      environment: uniqueKeyValuesSchema
+        .default(null)
+        .nullable()
+        .optional()
+        .label('container:common.environment')
+        .test('ruleValidation', 'errors:yup.mixed.required', testEnvironment(imageLabels)),
+      routing: routingRule,
+      expose: exposeRule,
+      user: yup.number().default(null).min(UID_MIN).max(UID_MAX).nullable().optional().label('container:common.user'),
+      workingDirectory: yup.string().default(null).nullable().optional().label('container:common.workingDirectory'),
+      tty: yup.boolean().default(null).nullable().optional().label('container:common.tty'),
+      configContainer: configContainerRule,
+      ports: portConfigRule,
+      portRanges: portRangeConfigRule,
+      volumes: volumeConfigRule,
+      commands: shellCommandSchema.default(null).nullable().optional(),
+      args: shellCommandSchema.default(null).nullable().optional(),
+      initContainers: initContainerRule,
+      capabilities: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.capabilities'),
+      storage: storageRule,
 
       // dagent:
       logConfig: logConfigRule,
@@ -551,7 +553,6 @@ const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
       metrics: metricsRule,
     })
     .test('labelRules', 'Instance must match their image label rules.', instance => {
-      debugger
       const rules = parseDyrectorioEnvRules(imageLabels)
       if (!rules) {
         return null
