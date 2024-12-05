@@ -89,6 +89,8 @@ test('Deleting a deployment should refresh deployment list', async ({ page }) =>
   await page.goto(TEAM_ROUTES.deployment.list())
   await page.waitForSelector('h2:text-is("Deployments")')
 
+  await page.getByPlaceholder('Search').fill(projectName)
+
   await deleteRefreshDeployment()
   await expect(page.locator(`.p-2:has-text('pw-${projectName}')`)).toHaveCount(1)
   await deleteRefreshDeployment()

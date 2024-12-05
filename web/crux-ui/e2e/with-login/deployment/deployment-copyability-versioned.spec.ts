@@ -99,6 +99,8 @@ test.describe('Versioned Project', () => {
     await page.goto(TEAM_ROUTES.deployment.list())
     await page.waitForSelector('h2:text-is("Deployments")')
 
+    await page.getByPlaceholder('Search').fill(prefix)
+
     const copyButton = await page.locator(`[alt="Copy"]:right-of(:has-text("${projectName}"))`).first()
     await copyButton.click()
 
