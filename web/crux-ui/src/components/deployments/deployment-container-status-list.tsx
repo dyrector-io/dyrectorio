@@ -13,6 +13,7 @@ import {
   containerPrefixNameOf,
   ContainersStateListMessage,
   DeploymentRoot,
+  nameOfInstance,
   WatchContainerStatusMessage,
   WS_TYPE_CONTAINERS_STATE_LIST,
   WS_TYPE_WATCH_CONTAINERS_STATE,
@@ -26,7 +27,7 @@ export type ContainerProgress = {
   progress: number
 }
 
-interface DeploymentContainerStatusListProps {
+type DeploymentContainerStatusListProps = {
   className?: string
   deployment: DeploymentRoot
   progress: Record<string, ContainerProgress>
@@ -49,7 +50,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       configId: it.config.id,
       id: {
         prefix: deployment.prefix,
-        name: it.config.name ?? it.image.config.name,
+        name: nameOfInstance(it),
       },
       createdAt: null,
       state: null,
@@ -93,9 +94,9 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     })
   }
 
-  sock.on(WS_TYPE_CONTAINERS_STATE_LIST, (message: ContainersStateListMessage) =>
-    setContainers(it => merge(it, message.containers)),
-  )
+  sock.on(WS_TYPE_CONTAINERS_STATE_LIST, (message: ContainersStateListMessage) => {
+    setContainers(it => merge(it, message.containers))
+  })
 
   const formatContainerTime = (container: Container) => {
     if (!container.createdAt) {

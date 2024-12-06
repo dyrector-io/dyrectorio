@@ -188,7 +188,7 @@ test.describe('Deleting default version', () => {
     const settingsButton = await page.waitForSelector(`[src="/concrete_container_config.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
 
-    await page.waitForSelector(`h2:has-text("Container")`)
+    await page.waitForSelector(`h2:has-text("Instance config")`)
     const wsRoute = TEAM_ROUTES.deployment.detailsSocket(defaultDeploymentId)
 
     const internal = '1000'
