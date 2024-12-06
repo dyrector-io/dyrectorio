@@ -39,6 +39,7 @@ test.describe('Versionless Project', () => {
     await page.waitForSelector('h2:text-is("Deployments")')
 
     await page.getByPlaceholder('Search').fill(prefix)
+    await expect(page.locator('table.w-full >> tbody >> tr')).toHaveCount(1)
 
     const copyButton = await page.locator(`[alt="Copy"]:right-of(:has-text("${projectName}"))`).first()
     await copyButton.click()
