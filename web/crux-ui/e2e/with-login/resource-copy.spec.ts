@@ -57,7 +57,7 @@ test.describe('Deleting default version', () => {
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
     await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(defaultVersionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const internal = '1000'
     const external = '2000'
@@ -228,7 +228,7 @@ test.describe('Deleting default version', () => {
     )
     await newVersionDeploymentSettingsButton.click()
 
-    await page.waitForSelector(`h2:has-text("Container")`)
+    await page.waitForSelector(`h2:has-text("Instance config")`)
 
     const internalInput = page.locator('input[placeholder="Internal"]')
     const externalInput = page.locator('input[placeholder="External"]')
@@ -286,8 +286,8 @@ test.describe("Deleting copied deployment's parent", () => {
 
     const settingsButton = await page.waitForSelector(`[src="/concrete_container_config.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
-    await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**/instances/**`)
-    await page.waitForSelector('h2:text-is("Container")')
+    await page.waitForURL(`/**/container-configurations/**`)
+    await page.waitForSelector('h2:text-is("Instance config")')
 
     const wsRoute = TEAM_ROUTES.deployment.detailsSocket(parentDeploymentId)
 
@@ -333,7 +333,7 @@ test.describe("Deleting copied deployment's parent", () => {
     )
     await newDeploymentSettingsButton.click()
 
-    await page.waitForSelector(`h2:has-text("Container")`)
+    await page.waitForSelector(`h2:has-text("Instance config")`)
 
     const internalInput = page.locator('input[placeholder="Internal"]')
     const externalInput = page.locator('input[placeholder="External"]')
