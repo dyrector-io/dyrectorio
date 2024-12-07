@@ -14,9 +14,11 @@ import { RegistryJwtStrategy } from './registry.jwt.strategy'
 import RegistryMapper from './registry.mapper'
 import RegistryService from './registry.service'
 import RegistryWebSocketGateway from './registry.ws.gateway'
+import { CacheModule } from '@nestjs/cache-manager'
+import V2ManifestClient from './v2-manifest-client.service'
 
 @Module({
-  imports: [HttpModule, TeamModule, AuditLoggerModule, ...CruxJwtModuleImports],
+  imports: [HttpModule, TeamModule, AuditLoggerModule, CacheModule.register(), ...CruxJwtModuleImports],
   exports: [RegistryMapper, RegistryService],
   controllers: [RegistryHttpController],
   providers: [
@@ -30,6 +32,7 @@ import RegistryWebSocketGateway from './registry.ws.gateway'
     RegistryWebSocketGateway,
     RegistryClientProvider,
     RegistryJwtStrategy,
+    V2ManifestClient,
   ],
 })
 export default class RegistryModule {}
