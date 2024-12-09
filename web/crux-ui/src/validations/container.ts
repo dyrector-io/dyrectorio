@@ -470,7 +470,7 @@ const testRules = (
   fieldName: string,
 ) => {
   if (rules.length === 0) {
-    return null
+    return true
   }
 
   const requiredKeys = rules.map(([key]) => key)
@@ -504,13 +504,13 @@ const testRules = (
     return err
   }
 
-  return null
+  return true
 }
 
 const testEnvironmentRules = (imageLabels: Record<string, string>) => (envs: UniqueKeyValue[]) => {
   const rules = parseDyrectorioEnvRules(imageLabels)
   if (!rules) {
-    return null
+    return true
   }
 
   const requiredRules = Object.entries(rules).filter(([, rule]) => rule.required)
@@ -522,7 +522,7 @@ const testEnvironmentRules = (imageLabels: Record<string, string>) => (envs: Uni
 const testSecretRules = (imageLabels: Record<string, string>) => (secrets: UniqueSecretKeyValue[]) => {
   const rules = parseDyrectorioEnvRules(imageLabels)
   if (!rules) {
-    return null
+    return true
   }
 
   const requiredRules = Object.entries(rules).filter(([, rule]) => rule.required)
