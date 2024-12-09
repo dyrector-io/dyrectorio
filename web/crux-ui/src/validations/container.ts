@@ -18,6 +18,7 @@ import {
   Metrics,
   UniqueKeyValue,
   VolumeType,
+  UniqueSecretKeyValue,
 } from '@app/models'
 import * as yup from 'yup'
 import { matchNoLeadingOrTrailingWhitespaces, matchNoWhitespace } from './common'
@@ -463,7 +464,11 @@ const validateLabelRule = (rule: EnvironmentRule, field: string, env: KeyValueLi
   return null
 }
 
-const testRules = (rules: [string, EnvironmentRule][], arr: UniqueKeyValue[], fieldName: string) => {
+const testRules = (
+  rules: [string, EnvironmentRule][],
+  arr: (UniqueKeyValue | UniqueSecretKeyValue)[],
+  fieldName: string,
+) => {
   if (rules.length === 0) {
     return null
   }
@@ -502,69 +507,82 @@ const testRules = (rules: [string, EnvironmentRule][], arr: UniqueKeyValue[], fi
   return null
 }
 
+const testEnvironmentRules = (imageLabels: Record<string, string>) => (envs: UniqueKeyValue[]) => {
+  const rules = parseDyrectorioEnvRules(imageLabels)
+  if (!rules) {
+    return null
+  }
+
+  const requiredRules = Object.entries(rules).filter(([, rule]) => rule.required)
+  const envRules = requiredRules.filter(([_, rule]) => !rule.secret)
+
+  return testRules(envRules, envs, 'environment')
+}
+
+const testSecretRules = (imageLabels: Record<string, string>) => (secrets: UniqueSecretKeyValue[]) => {
+  const rules = parseDyrectorioEnvRules(imageLabels)
+  if (!rules) {
+    return null
+  }
+
+  const requiredRules = Object.entries(rules).filter(([, rule]) => rule.required)
+  const secretRules = requiredRules.filter(([_, rule]) => rule.secret)
+
+  return testRules(secretRules, secrets, 'secret')
+}
+
 const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
-  yup
-    .object()
-    .shape({
-      name: matchContainerName(yup.string().nullable().optional().label('container:common.containerName')),
-      environment: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.environment'),
-      routing: routingRule,
-      expose: exposeRule,
-      user: yup.number().default(null).min(UID_MIN).max(UID_MAX).nullable().optional().label('container:common.user'),
-      workingDirectory: yup.string().default(null).nullable().optional().label('container:common.workingDirectory'),
-      tty: yup.boolean().default(null).nullable().optional().label('container:common.tty'),
-      configContainer: configContainerRule,
-      ports: portConfigRule,
-      portRanges: portRangeConfigRule,
-      volumes: volumeConfigRule,
-      commands: shellCommandSchema.default(null).nullable().optional(),
-      args: shellCommandSchema.default(null).nullable().optional(),
-      initContainers: initContainerRule,
-      capabilities: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.capabilities'),
-      storage: storageRule,
+  yup.object().shape({
+    name: matchContainerName(yup.string().nullable().optional().label('container:common.containerName')),
+    environment: uniqueKeyValuesSchema
+      .default(null)
+      .nullable()
+      .optional()
+      .label('container:common.environment')
+      .test(
+        'labelRules',
+        'Environment variables must match their image label rules.',
+        testEnvironmentRules(imageLabels),
+      ),
+    routing: routingRule,
+    expose: exposeRule,
+    user: yup.number().default(null).min(UID_MIN).max(UID_MAX).nullable().optional().label('container:common.user'),
+    workingDirectory: yup.string().default(null).nullable().optional().label('container:common.workingDirectory'),
+    tty: yup.boolean().default(null).nullable().optional().label('container:common.tty'),
+    configContainer: configContainerRule,
+    ports: portConfigRule,
+    portRanges: portRangeConfigRule,
+    volumes: volumeConfigRule,
+    commands: shellCommandSchema.default(null).nullable().optional(),
+    args: shellCommandSchema.default(null).nullable().optional(),
+    initContainers: initContainerRule,
+    capabilities: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.capabilities'),
+    storage: storageRule,
 
-      // dagent:
-      logConfig: logConfigRule,
-      restartPolicy: restartPolicyRule,
-      networkMode: networkModeRule,
-      networks: uniqueKeysOnlySchema.default(null).nullable().optional().label('container:dagent.networks'),
-      dockerLabels: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:dagent.dockerLabels'),
-      expectedState: expectedContainerStateRule,
+    // dagent:
+    logConfig: logConfigRule,
+    restartPolicy: restartPolicyRule,
+    networkMode: networkModeRule,
+    networks: uniqueKeysOnlySchema.default(null).nullable().optional().label('container:dagent.networks'),
+    dockerLabels: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:dagent.dockerLabels'),
+    expectedState: expectedContainerStateRule,
 
-      // crane
-      deploymentStrategy: deploymentStrategyRule,
-      customHeaders: uniqueKeysOnlySchema.default(null).nullable().optional().label('container:crane.customHeaders'),
-      proxyHeaders: yup.boolean().default(null).nullable().optional().label('container:crane.proxyHeaders'),
-      useLoadBalancer: yup.boolean().default(null).nullable().optional().label('container:crane.useLoadBalancer'),
-      extraLBAnnotations: uniqueKeyValuesSchema
-        .default(null)
-        .nullable()
-        .optional()
-        .label('container:crane.extraLBAnnotations'),
-      healthCheckConfig: healthCheckConfigRule,
-      resourceConfig: resourceConfigRule,
-      labels: markerRule.label('container:crane.labels'),
-      annotations: markerRule.label('container:crane.annotations'),
-      metrics: metricsRule,
-    })
-    .test('labelRules', 'Instance must match their image label rules.', instance => {
-      const rules = parseDyrectorioEnvRules(imageLabels)
-      if (!rules) {
-        return null
-      }
-
-      const requiredRules = Object.entries(rules).filter(([, rule]) => rule.required)
-
-      const envRules = requiredRules.filter(([_, rule]) => !rule.secret)
-      const secretRules = requiredRules.filter(([_, rule]) => rule.secret)
-
-      const envError = testRules(envRules, instance.environment as UniqueKeyValue[], 'environment')
-      if (envError) {
-        return envError
-      }
-
-      return testRules(secretRules, instance.secrets as UniqueKeyValue[], 'secret')
-    })
+    // crane
+    deploymentStrategy: deploymentStrategyRule,
+    customHeaders: uniqueKeysOnlySchema.default(null).nullable().optional().label('container:crane.customHeaders'),
+    proxyHeaders: yup.boolean().default(null).nullable().optional().label('container:crane.proxyHeaders'),
+    useLoadBalancer: yup.boolean().default(null).nullable().optional().label('container:crane.useLoadBalancer'),
+    extraLBAnnotations: uniqueKeyValuesSchema
+      .default(null)
+      .nullable()
+      .optional()
+      .label('container:crane.extraLBAnnotations'),
+    healthCheckConfig: healthCheckConfigRule,
+    resourceConfig: resourceConfigRule,
+    labels: markerRule.label('container:crane.labels'),
+    annotations: markerRule.label('container:crane.annotations'),
+    metrics: metricsRule,
+  })
 
 export const createContainerConfigSchema = (imageLabels: Record<string, string>) =>
   createContainerConfigBaseSchema(imageLabels).shape({
@@ -573,5 +591,10 @@ export const createContainerConfigSchema = (imageLabels: Record<string, string>)
 
 export const createConcreteContainerConfigSchema = (imageLabels: Record<string, string>) =>
   createContainerConfigBaseSchema(imageLabels).shape({
-    secrets: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.secrets'),
+    secrets: uniqueKeyValuesSchema
+      .default(null)
+      .nullable()
+      .optional()
+      .label('container:common.secrets')
+      .test('secretRules', 'Secrets must match their image label rules.', testSecretRules(imageLabels)),
   })
