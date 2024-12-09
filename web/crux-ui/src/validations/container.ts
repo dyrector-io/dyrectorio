@@ -18,6 +18,7 @@ import {
   Metrics,
   UniqueKeyValue,
   VolumeType,
+  UniqueSecretKeyValue,
 } from '@app/models'
 import * as yup from 'yup'
 import { matchNoLeadingOrTrailingWhitespaces, matchNoWhitespace } from './common'
@@ -429,7 +430,12 @@ const expectedContainerStateRule = yup
   .optional()
   .label('container:dagent.expectedState')
 
-const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: UniqueKeyValue) => {
+type KeyValueLike = {
+  key: string
+  value: string
+}
+
+const validateLabelRule = (rule: EnvironmentRule, field: string, env: KeyValueLike) => {
   const { key, value } = env
 
   try {
@@ -444,10 +450,10 @@ const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: Uniq
         yup.string().validateSync(value)
         break
       default:
-        return new yup.ValidationError('errors:yup.mixed.default', rule.type, `environment[${index}]`)
+        return new yup.ValidationError('errors:yup.mixed.default', rule.type, field)
     }
   } catch (fieldError) {
-    const err = new yup.ValidationError(fieldError.message, key, `environment[${index}]`)
+    const err = new yup.ValidationError(fieldError.message, key, field)
     err.params = {
       ...fieldError.params,
       path: key,
@@ -458,45 +464,71 @@ const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: Uniq
   return null
 }
 
-const testEnvironment = (imageLabels: Record<string, string>) => (arr: UniqueKeyValue[]) => {
-  if (!imageLabels || !arr) {
-    return true
+const testRules = (
+  rules: [string, EnvironmentRule][],
+  arr: (UniqueKeyValue | UniqueSecretKeyValue)[],
+  fieldName: string,
+) => {
+  if (rules.length === 0) {
+    return null
   }
 
-  const rules = parseDyrectorioEnvRules(imageLabels)
-
-  const requiredKeys = Object.entries(rules)
-    .filter(([, rule]) => rule.required)
-    .map(([key]) => key)
+  const requiredKeys = rules.map(([key]) => key)
   const foundKeys = arr.map(it => it.key)
 
   const missingKey = requiredKeys.find(it => !foundKeys.includes(it))
   if (missingKey) {
-    const err = new yup.ValidationError('errors:yup.mixed.required', missingKey, 'environment')
+    const err = new yup.ValidationError('errors:yup.mixed.required', missingKey, fieldName)
     err.params = {
       path: missingKey,
     }
     return err
   }
 
-  const fieldErrors = arr
+  const ruleMap = new Map(rules)
+
+  const envErrors = arr
     .map((it, index) => {
       const { key } = it
-      const rule = rules[key]
+      const rule = ruleMap[key]
       if (!rule) {
         return null
       }
 
-      return validateEnvironmentRule(rule, index, it)
+      return validateLabelRule(rule, `${fieldName}[${index}]`, it)
     })
     .filter(it => !!it)
 
-  if (fieldErrors.length > 0) {
-    const err = new yup.ValidationError(fieldErrors, missingKey, 'environment')
+  if (envErrors.length > 0) {
+    const err = new yup.ValidationError(envErrors, null, fieldName)
     return err
   }
 
-  return true
+  return null
+}
+
+const testEnvironmentRules = (imageLabels: Record<string, string>) => (envs: UniqueKeyValue[]) => {
+  const rules = parseDyrectorioEnvRules(imageLabels)
+  if (!rules) {
+    return null
+  }
+
+  const requiredRules = Object.entries(rules).filter(([, rule]) => rule.required)
+  const envRules = requiredRules.filter(([_, rule]) => !rule.secret)
+
+  return testRules(envRules, envs, 'environment')
+}
+
+const testSecretRules = (imageLabels: Record<string, string>) => (secrets: UniqueSecretKeyValue[]) => {
+  const rules = parseDyrectorioEnvRules(imageLabels)
+  if (!rules) {
+    return null
+  }
+
+  const requiredRules = Object.entries(rules).filter(([, rule]) => rule.required)
+  const secretRules = requiredRules.filter(([_, rule]) => rule.secret)
+
+  return testRules(secretRules, secrets, 'secret')
 }
 
 const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
@@ -507,7 +539,11 @@ const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
       .nullable()
       .optional()
       .label('container:common.environment')
-      .test('ruleValidation', 'errors:yup.mixed.required', testEnvironment(imageLabels)),
+      .test(
+        'labelRules',
+        'Environment variables must match their image label rules.',
+        testEnvironmentRules(imageLabels),
+      ),
     routing: routingRule,
     expose: exposeRule,
     user: yup.number().default(null).min(UID_MIN).max(UID_MAX).nullable().optional().label('container:common.user'),
@@ -555,5 +591,10 @@ export const createContainerConfigSchema = (imageLabels: Record<string, string>)
 
 export const createConcreteContainerConfigSchema = (imageLabels: Record<string, string>) =>
   createContainerConfigBaseSchema(imageLabels).shape({
-    secrets: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.secrets'),
+    secrets: uniqueKeyValuesSchema
+      .default(null)
+      .nullable()
+      .optional()
+      .label('container:common.secrets')
+      .test('secretRules', 'Secrets must match their image label rules.', testSecretRules(imageLabels)),
   })

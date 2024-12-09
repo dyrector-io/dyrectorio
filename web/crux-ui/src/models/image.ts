@@ -6,6 +6,7 @@ export type EnvironmentValueType = (typeof ENVIRONMENT_VALUE_TYPES)[number]
 
 export type EnvironmentRule = {
   type: EnvironmentValueType
+  secret: boolean
   required?: boolean
   default?: string
 }
