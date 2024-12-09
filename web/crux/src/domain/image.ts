@@ -1,6 +1,8 @@
 import { ContainerConfig, Image, Registry } from '@prisma/client'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 
+export const DYO_ENV_LABEL_PREFIX = 'org.dyrectorio.env'
+
 export const ENVIRONMENT_VALUE_TYPES = ['string', 'boolean', 'int'] as const
 export type EnvironmentValueType = (typeof ENVIRONMENT_VALUE_TYPES)[number]
 
@@ -38,11 +40,11 @@ export const parseDyrectorioEnvRules = (labels: Record<string, string>): Record<
   }
 
   return Object.entries(labels).reduce((prev, [key, value]) => {
-    if (!key.startsWith('org.dyrectorio.env')) {
+    if (!key.startsWith(DYO_ENV_LABEL_PREFIX)) {
       return prev
     }
 
-    const env = key.substring('org.dyrectorio.env.'.length)
+    const env = key.substring(`${DYO_ENV_LABEL_PREFIX}.`.length)
     const params = value.split(',')
 
     const rule: EnvironmentRule = {
