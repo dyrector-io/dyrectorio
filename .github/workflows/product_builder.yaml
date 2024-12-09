@@ -526,7 +526,7 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    needs: [gather_changes, go_build]
+    needs: [gather_changes, go_build, crux_build, crux-ui_build, kratos_build]
     if: |
       always() &&
       needs.go_build.result == 'success' &&
@@ -588,7 +588,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
-    needs: [crux_build, gather_changes]
+    needs: [gather_changes, go_build, crux_build, crux-ui_build, kratos_build]
     if: |
       always() &&
       (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
@@ -649,7 +649,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
-    needs: [crux-ui_build, gather_changes]
+    needs: [gather_changes, go_build, crux_build, crux-ui_build, kratos_build]
     if: |
       always() &&
       (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
@@ -710,7 +710,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
-    needs: [kratos_build, gather_changes]
+    needs: [gather_changes, go_build, crux_build, crux-ui_build, kratos_build]
     if: |
       always() &&
       (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
