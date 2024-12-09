@@ -27,7 +27,7 @@ const setup = async (
 
 test.describe('Versionless Project', () => {
   test('deployment should not be copiable to the same node with the same prefix', async ({ page }) => {
-    const nodeName = 'versionless-copiability-same-node-same-prefix'
+    const nodeName = 'vc-same-node-prefix'
     const projectName = nodeName
     const prefix = projectName
 

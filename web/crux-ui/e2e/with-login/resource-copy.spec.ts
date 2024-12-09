@@ -165,7 +165,7 @@ test.describe('Deleting default version', () => {
 
   test('should not affect the instance config of the deployment of a new version', async ({ page }) => {
     const projectName = 'delete-default-check-instance-config'
-    const prefix = projectName
+    const prefix = 'ddc-istance-conf'
 
     const projectId = await createProject(page, projectName, 'versioned')
     const defaultVersionName = 'default-version'
@@ -265,7 +265,7 @@ test.describe("Deleting copied deployment's parent", () => {
   })
 
   test('should not affect the instance config of the child deployment', async ({ page }) => {
-    const projectName = 'delete-parent-deploy-instance-config'
+    const projectName = 'dpd-instance-config'
     const prefix = projectName
 
     const projectId = await createProject(page, projectName, 'versioned')
