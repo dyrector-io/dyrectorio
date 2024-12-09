@@ -765,3 +765,15 @@ jobs:
           cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.tag }} )
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+  deploy:
+    runs-on: ubuntu-22.04
+    needs: [go_push, crux_push, crux-ui_push, kratos_push]
+    environment: Workflow - Protected
+    steps:
+      - name: Execute dedicated Sunilium instance webhook
+        run: |
+          if curl -s -X POST --fail --head 'Authorization: Bearer ${{secrets.SUN_DYO_WEBHOOK_TOKEN}}' ${{secrets.SUN_DYO_WEBHOOK_API_URL}}; then
+            echo "Deployment successful."
+          else
+            exit 1
+          fi
