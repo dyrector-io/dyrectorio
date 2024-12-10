@@ -75,6 +75,7 @@ export type NodeGenerateScript = {
   rootPath?: string
   scriptType: NodeInstallScriptType
   dagentTraefik?: NodeInstallTraefik
+  workloadName?: string
 }
 
 export type NodeDeleteContainer = {

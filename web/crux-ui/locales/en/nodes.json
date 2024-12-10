@@ -62,6 +62,13 @@
   "traefikExplanation": "Traefik is a reverse proxy which lets users deploy services to subdomains as well as use HTTPS.",
   "in-progress": "In progress",
 
+  "workloadName": "Workload name",
+  "optionalWorkloadName": {
+    "dagent": "Optional, leave empty for 'dagent'",
+    "crane": "Optional, leave empty for 'crane'"
+  },
+  "workloadNameExplanation": "If you want to run multiple agents on the same node you can enter a different name for each agent.",
+
   "start": "Start",
   "stop": "Stop",
   "restart": "Restart",

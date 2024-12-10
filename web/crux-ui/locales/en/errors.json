@@ -46,7 +46,8 @@
       "trim": "{{path}} must be a trimmed string",
       "lowercase": "{{path}} must be a lowercase string",
       "uppercase": "{{path}} must be a upper case string",
-      "notContainWhitespaces": "{{path}} must not contain whitespaces"
+      "notContainWhitespaces": "{{path}} must not contain whitespaces",
+      "containerName": "{{path}} must not contain whitespaces and special characters"
     },
     "number": {
       "min": "{{path}} must be greater than or equal to {{min}}",

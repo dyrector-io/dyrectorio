@@ -7,6 +7,7 @@ RUN apk add gettext
 COPY . /usr/bin/app/kratos
 
 RUN mkdir -p /etc/config/kratos && chmod a+x /usr/bin/app/kratos/entrypoint.sh && \
+    chmod a+x /usr/bin/app/kratos/oidc-setup.sh && \
     chown -R 10000:10000 /etc/config/kratos && \
     chmod -R 700 /etc/config/kratos
 

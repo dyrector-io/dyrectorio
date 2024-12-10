@@ -161,6 +161,10 @@ export class NodeGenerateScriptDto {
   @ValidateNested()
   @IsOptional()
   dagentTraefik?: DagentTraefikOptionsDto
+
+  @IsString()
+  @IsOptional()
+  workloadName?: string
 }
 
 export type ContainerOperationDto = 'start' | 'stop' | 'restart'
