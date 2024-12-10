@@ -423,7 +423,7 @@ const testRules = (rules: [string, EnvironmentRule][], arr: UniqueKeyValue[], fi
   const envErrors = arr
     .map((it, index) => {
       const { key } = it
-      const rule = ruleMap[key]
+      const rule = ruleMap.get(key)
       if (!rule) {
         return null
       }
