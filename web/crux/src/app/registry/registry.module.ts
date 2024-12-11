@@ -1,4 +1,5 @@
 import { HttpModule } from '@nestjs/axios'
+import { CacheModule } from '@nestjs/cache-manager'
 import { Module } from '@nestjs/common'
 import NotificationTemplateBuilder from 'src/builders/notification.template.builder'
 import { CruxJwtModuleImports } from 'src/config/jwt.config'
@@ -14,8 +15,6 @@ import { RegistryJwtStrategy } from './registry.jwt.strategy'
 import RegistryMapper from './registry.mapper'
 import RegistryService from './registry.service'
 import RegistryWebSocketGateway from './registry.ws.gateway'
-import { CacheModule } from '@nestjs/cache-manager'
-import V2ManifestClient from './v2-manifest-client.service'
 
 @Module({
   imports: [HttpModule, TeamModule, AuditLoggerModule, CacheModule.register(), ...CruxJwtModuleImports],
@@ -32,7 +31,6 @@ import V2ManifestClient from './v2-manifest-client.service'
     RegistryWebSocketGateway,
     RegistryClientProvider,
     RegistryJwtStrategy,
-    V2ManifestClient,
   ],
 })
 export default class RegistryModule {}

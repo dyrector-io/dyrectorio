@@ -1,17 +1,18 @@
+import { Cache } from 'cache-manager'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
-import { RegistryImageTags } from '../registry.message'
+import { RegistryImageTag, RegistryImageTags } from '../registry.message'
 import HubApiClient, { DOCKER_HUB_REGISTRY_URL } from './hub-api-client'
 import { RegistryApiClient } from './registry-api-client'
-import { registryCredentialsToBasicAuth } from './v2-api-client'
-import V2Labels from './v2-labels'
+import V2HttpApiClient from './v2-http-api-client'
+import { registryCredentialsToBasicAuth } from './v2-registry-api-client'
 
 export default class PrivateHubApiClient extends HubApiClient implements RegistryApiClient {
   private jwt: string = null
 
   private labelsAuth: RequestInit = null
 
-  constructor(url: string, prefix: string) {
-    super(`https://${url}`, prefix)
+  constructor(url: string, prefix: string, cache: Cache | null) {
+    super(`https://${url}`, prefix, cache)
   }
 
   async login(user: string, token: string): Promise<void> {
@@ -59,9 +60,25 @@ export default class PrivateHubApiClient extends HubApiClient implements Registr
   async tags(image: string): Promise<RegistryImageTags> {
     const tags = await super.fetchTags(image)
 
+    const tagsWithInfoPromise = tags.map(async it => {
+      const info = await this.tagInfo(image, it)
+
+      return {
+        tag: it,
+        info,
+      }
+    })
+    const tagsWithInfo = (await Promise.all(tagsWithInfoPromise)).reduce(
+      (map, it) => {
+        map[it.tag] = it.info
+        return map
+      },
+      {} as Record<string, RegistryImageTag>,
+    )
+
     return {
-      tags,
       name: image,
+      tags: tagsWithInfo,
     }
   }
 
@@ -86,9 +103,22 @@ export default class PrivateHubApiClient extends HubApiClient implements Registr
     })
   }
 
-  async labels(image: string, tag: string): Promise<Record<string, string>> {
-    const labelClient = new V2Labels(DOCKER_HUB_REGISTRY_URL, null, null, null, this.labelsAuth)
+  protected createApiClient(): V2HttpApiClient {
+    return new V2HttpApiClient(
+      {
+        baseUrl: DOCKER_HUB_REGISTRY_URL,
+        imageNamePrefix: this.prefix,
+        tokenInit: this.labelsAuth,
+      },
+      this.cache,
+    )
+  }
 
-    return labelClient.fetchLabels(this.prefix ? `${this.prefix}/${image}` : image, tag)
+  async labels(image: string, tag: string): Promise<Record<string, string>> {
+    return this.createApiClient().fetchLabels(image, tag)
+  }
+
+  async tagInfo(image: string, tag: string): Promise<RegistryImageTag> {
+    return this.createApiClient().fetchTagInfo(image, tag)
   }
 }

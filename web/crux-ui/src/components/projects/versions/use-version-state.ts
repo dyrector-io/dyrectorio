@@ -37,6 +37,7 @@ import {
   WS_TYPE_PATCH_RECEIVED,
   WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS,
   WS_TYPE_REGISTRY_IMAGE_TAGS,
+  RegistryImageTag,
 } from '@app/models'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
@@ -126,9 +127,15 @@ const refreshImageTags = (registriesSock: WebSocketClientEndpoint, images: Versi
   })
 }
 
-export const selectTagsOfImage = (state: VerionState, image: VersionImage): string[] => {
+export const selectTagsOfImage = (state: VerionState, image: VersionImage): Record<string, RegistryImageTag> => {
   const regImgTags = state.tags[imageTagKey(image.registry.id, image.name)]
-  return regImgTags ? regImgTags.tags : image.tag ? [image.tag] : []
+  return regImgTags
+    ? regImgTags.tags
+    : image.tag
+    ? {
+        [image.tag]: null,
+      }
+    : {}
 }
 
 export const useVersionState = (options: VersionStateOptions): [VerionState, VersionActions] => {

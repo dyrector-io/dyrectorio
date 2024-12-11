@@ -1,5 +1,5 @@
 import { CruxBadRequestException } from 'src/exception/crux-exception'
-import { RegistryImageTags } from '../registry.message'
+import { RegistryImageTag, RegistryImageTags } from '../registry.message'
 import { RegistryApiClient } from './registry-api-client'
 
 class UncheckedApiClient implements RegistryApiClient {
@@ -13,6 +13,10 @@ class UncheckedApiClient implements RegistryApiClient {
 
   async labels(): Promise<Record<string, string>> {
     return {}
+  }
+
+  async tagInfo(image: string, tag: string): Promise<RegistryImageTag> {
+    return null
   }
 }
 
