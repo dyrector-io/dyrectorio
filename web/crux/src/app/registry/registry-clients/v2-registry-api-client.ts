@@ -2,7 +2,7 @@ import { Cache } from 'cache-manager'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { getRegistryApiException } from 'src/exception/registry-exception'
 import { RegistryImageTag, RegistryImageTags } from '../registry.message'
-import { RegistryApiClient } from './registry-api-client'
+import { fetchInfoForTags, RegistryApiClient } from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
 
 export type RegistryV2ApiClientOptions = {
@@ -78,26 +78,11 @@ class RegistryV2ApiClient implements RegistryApiClient {
 
     const json = (await res.json()) as TagsList[]
     const tags = json.flatMap(it => it.tags)
-
-    const tagsWithInfoPromise = tags.map(async it => {
-      const info = await this.tagInfo(image, it)
-
-      return {
-        tag: it,
-        info,
-      }
-    })
-    const tagsWithInfo = (await Promise.all(tagsWithInfoPromise)).reduce(
-      (map, it) => {
-        map[it.tag] = it.info
-        return map
-      },
-      {} as Record<string, RegistryImageTag>,
-    )
+    const tagInfo = await fetchInfoForTags(image, tags, this)
 
     return {
       name: image,
-      tags: tagsWithInfo,
+      tags: tagInfo,
     }
   }
 

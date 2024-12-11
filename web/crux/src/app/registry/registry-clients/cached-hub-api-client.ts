@@ -37,17 +37,12 @@ export default class CachedPublicHubApiClient extends HubApiClient implements Re
       this.hubCache.upsert(image, tags)
     }
 
-    const tagsWithInfoPromise = tags.map(async it => {
-      const info = await this.tagInfo(image, it)
-
-      return {
-        tag: it,
-        info,
-      }
-    })
-    const tagsWithInfo = (await Promise.all(tagsWithInfoPromise)).reduce(
+    // NOTE(@robot9706): Docker ratelimits us so skip tag info for now
+    const tagsWithInfo = tags.reduce(
       (map, it) => {
-        map[it.tag] = it.info
+        map[it] = {
+          created: null,
+        }
         return map
       },
       {} as Record<string, RegistryImageTag>,

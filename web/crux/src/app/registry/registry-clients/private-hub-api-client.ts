@@ -60,17 +60,12 @@ export default class PrivateHubApiClient extends HubApiClient implements Registr
   async tags(image: string): Promise<RegistryImageTags> {
     const tags = await super.fetchTags(image)
 
-    const tagsWithInfoPromise = tags.map(async it => {
-      const info = await this.tagInfo(image, it)
-
-      return {
-        tag: it,
-        info,
-      }
-    })
-    const tagsWithInfo = (await Promise.all(tagsWithInfoPromise)).reduce(
+    // NOTE(@robot9706): Docker ratelimits us so skip tag info for now
+    const tagsWithInfo = tags.reduce(
       (map, it) => {
-        map[it.tag] = it.info
+        map[it] = {
+          created: null,
+        }
         return map
       },
       {} as Record<string, RegistryImageTag>,
@@ -112,13 +107,5 @@ export default class PrivateHubApiClient extends HubApiClient implements Registr
       },
       this.cache,
     )
-  }
-
-  async labels(image: string, tag: string): Promise<Record<string, string>> {
-    return this.createApiClient().fetchLabels(image, tag)
-  }
-
-  async tagInfo(image: string, tag: string): Promise<RegistryImageTag> {
-    return this.createApiClient().fetchTagInfo(image, tag)
   }
 }

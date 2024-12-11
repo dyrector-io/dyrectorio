@@ -93,10 +93,16 @@ export default abstract class HubApiClient {
   }
 
   async labels(image: string, tag: string): Promise<Record<string, string>> {
-    return this.createApiClient().fetchLabels(image, tag)
+    // NOTE(@robot9706): Docker ratelimits us so skip this for now
+    // return this.createApiClient().fetchLabels(image, tag)
+    return {}
   }
 
   async tagInfo(image: string, tag: string): Promise<RegistryImageTag> {
-    return this.createApiClient().fetchTagInfo(image, tag)
+    // NOTE(@robot9706): Docker ratelimits us so skip this for now
+    // return this.createApiClient().fetchTagInfo(image, tag)
+    return {
+      created: null,
+    }
   }
 }
