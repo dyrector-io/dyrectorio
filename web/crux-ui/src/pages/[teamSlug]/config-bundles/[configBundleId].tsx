@@ -87,6 +87,11 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
     }
   }
 
+  const onConfigBundleEdited = (bundle: ConfigBundleDetails) => {
+    setConfigBundle(bundle)
+    setEditing(false)
+  }
+
   const pageLink: BreadcrumbLink = {
     name: t('common:configBundles'),
     url: routes.configBundle.list(),
@@ -115,7 +120,7 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
         />
       </PageHeading>
       {editing ? (
-        <EditConfigBundleCard submit={submit} configBundle={configBundle} onConfigBundleEdited={setConfigBundle} />
+        <EditConfigBundleCard submit={submit} configBundle={configBundle} onConfigBundleEdited={onConfigBundleEdited} />
       ) : (
         <ConfigBundleCard configBundle={detailsToConfigBundle(configBundle)} />
       )}
