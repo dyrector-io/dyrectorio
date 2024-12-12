@@ -263,7 +263,7 @@ export default class V2HttpApiClient {
     }
 
     const result = await this.fetchV2<T>(endpoint, init)
-    this.cache.set(cacheKey, result, 0)
+    await this.cache.set(cacheKey, result, 0)
     this.logger.debug(`Stored to cache ${cacheKey}`)
 
     return result
@@ -274,7 +274,7 @@ export default class V2HttpApiClient {
     manifest: ManifestBaseResponse,
     depth: number,
   ): Promise<Record<string, string>> {
-    if (!manifest.mediaType && manifest.schemaVersion == 1) {
+    if (!manifest.mediaType && manifest.schemaVersion === 1) {
       // NOTE(@robot9706): V1 manifests have 'v1Compatibility' history fields which have everything we need
       const lastHistory = manifest.history[0]
       const configBlob = JSON.parse(lastHistory.v1Compatibility) as ConfigBlobResponse
@@ -333,7 +333,7 @@ export default class V2HttpApiClient {
     manifest: ManifestBaseResponse,
     depth: number,
   ): Promise<ConfigBlobResponse | null> {
-    if (!manifest.mediaType && manifest.schemaVersion == 1) {
+    if (!manifest.mediaType && manifest.schemaVersion === 1) {
       // NOTE(@robot9706): V1 manifests have 'v1Compatibility' history fields which have everything we need
       const lastHistory = manifest.history[0]
       const configBlob = JSON.parse(lastHistory.v1Compatibility) as ConfigBlobResponse
@@ -400,7 +400,7 @@ export default class V2HttpApiClient {
         return null
       }
 
-      if (manifest.schemaVersion == 1) {
+      if (manifest.schemaVersion === 1) {
         return manifest
       }
     }

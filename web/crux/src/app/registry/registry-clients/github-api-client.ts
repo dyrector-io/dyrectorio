@@ -3,7 +3,7 @@ import { getRegistryApiException } from 'src/exception/registry-exception'
 import { REGISTRY_GITHUB_URL } from 'src/shared/const'
 import { GithubNamespace } from '../registry.dto'
 import { RegistryImageTag, RegistryImageTags } from '../registry.message'
-import { fetchInfoForTags, RegistryApiClient } from './registry-api-client'
+import { RegistryApiClient, fetchInfoForTags } from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
 import RegistryV2ApiClient, {
   RegistryV2ApiClientOptions,

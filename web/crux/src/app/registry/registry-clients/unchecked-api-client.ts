@@ -15,7 +15,7 @@ class UncheckedApiClient implements RegistryApiClient {
     return {}
   }
 
-  async tagInfo(image: string, tag: string): Promise<RegistryImageTag> {
+  async tagInfo(): Promise<RegistryImageTag> {
     return null
   }
 }

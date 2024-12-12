@@ -1,5 +1,4 @@
 import clsx from 'clsx'
-import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 
 export const SORT_MODES = ['alphabetic', 'date'] as const
@@ -31,13 +30,11 @@ const TagSortToggle = (props: TagSortToggleProps) => {
   const { className, state, onStateChange } = props
   const { mode, dir } = state
 
-  const { t } = useTranslation('common')
-
   const onToggleMode = (newMode: SortModesEnum) => {
     if (mode === newMode) {
       onStateChange({
         mode,
-        dir: dir == 1 ? -1 : 1,
+        dir: dir === 1 ? -1 : 1,
       })
     } else {
       onStateChange({
