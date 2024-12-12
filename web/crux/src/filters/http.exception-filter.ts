@@ -9,6 +9,11 @@ export default class HttpExceptionFilter extends CruxExceptionFilter {
   }
 
   protected handleHttpException(exception: HttpException, host: ArgumentsHost) {
+    if (!exception) {
+      this.logger.warn('The exception was null. Skipped.')
+      return
+    }
+
     const contextType = host.getType()
     if (contextType === 'http') {
       const ctx = host.switchToHttp()

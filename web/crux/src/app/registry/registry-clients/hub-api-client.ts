@@ -1,5 +1,7 @@
+import { Cache } from 'cache-manager'
 import { getRegistryApiException } from 'src/exception/registry-exception'
-import V2Labels from './v2-labels'
+import { RegistryImageTag } from '../registry.message'
+import V2HttpApiClient from './v2-http-api-client'
 
 type HubApiPaginatedResponse = {
   count: number
@@ -16,6 +18,7 @@ export default abstract class HubApiClient {
   constructor(
     protected readonly url: string,
     protected readonly prefix: string,
+    protected readonly cache: Cache | null,
   ) {}
 
   protected async fetchCatalog(): Promise<string[]> {
@@ -79,9 +82,27 @@ export default abstract class HubApiClient {
     return result
   }
 
-  async labels(image: string, tag: string): Promise<Record<string, string>> {
-    const labelClient = new V2Labels(DOCKER_HUB_REGISTRY_URL)
+  protected createApiClient(): V2HttpApiClient {
+    return new V2HttpApiClient(
+      {
+        baseUrl: DOCKER_HUB_REGISTRY_URL,
+        imageNamePrefix: this.prefix,
+      },
+      this.cache,
+    )
+  }
 
-    return labelClient.fetchLabels(this.prefix ? `${this.prefix}/${image}` : image, tag)
+  async labels(image: string, tag: string): Promise<Record<string, string>> {
+    // NOTE(@robot9706): Docker ratelimits us so skip this for now
+    // return this.createApiClient().fetchLabels(image, tag)
+    return {}
+  }
+
+  async tagInfo(image: string, tag: string): Promise<RegistryImageTag> {
+    // NOTE(@robot9706): Docker ratelimits us so skip this for now
+    // return this.createApiClient().fetchTagInfo(image, tag)
+    return {
+      created: null,
+    }
   }
 }

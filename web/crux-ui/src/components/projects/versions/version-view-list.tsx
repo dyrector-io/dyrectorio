@@ -50,6 +50,8 @@ const VersionViewList = (props: VersionViewListProps) => {
     actions.fetchImageTags(it)
   }
 
+  const imageTags = tagsModalTarget ? selectTagsOfImage(state, tagsModalTarget) : null
+
   return (
     <>
       <DyoCard className="relative mt-4">
@@ -144,6 +146,7 @@ const VersionViewList = (props: VersionViewListProps) => {
           qaLabel={QA_MODAL_LABEL_IMAGE_TAGS}
         >
           <EditImageTags
+            loadingTags={tagsModalTarget.registry.type === 'unchecked' ? false : imageTags == null}
             selected={tagsModalTarget?.tag ?? ''}
             tags={tagsModalTarget.registry.type === 'unchecked' ? null : selectTagsOfImage(state, tagsModalTarget)}
             onTagSelected={it => actions.selectTagForImage(tagsModalTarget, it)}

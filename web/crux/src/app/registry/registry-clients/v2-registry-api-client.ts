@@ -1,8 +1,9 @@
+import { Cache } from 'cache-manager'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { getRegistryApiException } from 'src/exception/registry-exception'
-import { RegistryImageTags } from '../registry.message'
-import { RegistryApiClient } from './registry-api-client'
-import V2Labels from './v2-labels'
+import { RegistryImageTag, RegistryImageTags } from '../registry.message'
+import { fetchInfoForTags, RegistryApiClient } from './registry-api-client'
+import V2HttpApiClient from './v2-http-api-client'
 
 export type RegistryV2ApiClientOptions = {
   imageNamePrefix?: string
@@ -12,6 +13,11 @@ export type RegistryV2ApiClientOptions = {
 
 export const registryCredentialsToBasicAuth = (options: RegistryV2ApiClientOptions) =>
   `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`
+
+type TagsList = {
+  name: string
+  tags: string[]
+}
 
 class RegistryV2ApiClient implements RegistryApiClient {
   private headers: HeadersInit
@@ -24,6 +30,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
 
   constructor(
     private url: string,
+    private readonly cache: Cache | null,
     options?: RegistryV2ApiClientOptions,
   ) {
     if (options?.username) {
@@ -69,19 +76,36 @@ class RegistryV2ApiClient implements RegistryApiClient {
       throw getRegistryApiException(res, 'Tags request')
     }
 
-    const json = (await res.json()) as RegistryImageTags[]
+    const json = (await res.json()) as TagsList[]
+    const tags = json.flatMap(it => it.tags)
+    const tagInfo = await fetchInfoForTags(image, tags, this)
+
     return {
       name: image,
-      tags: json.flatMap(it => it.tags),
+      tags: tagInfo,
     }
   }
 
-  async labels(image: string, tag: string): Promise<Record<string, string>> {
-    const labelClient = new V2Labels(`${this.url}`, this.imageNamePrefix, {
-      headers: this.headers,
-    })
+  private createApiClient(): V2HttpApiClient {
+    return new V2HttpApiClient(
+      {
+        baseUrl: this.url,
+        imageNamePrefix: this.imageNamePrefix,
+        requestInit: {
+          headers: this.headers,
+        },
+        tryV1Manifest: true, // NOTE(@robot9706): Enable V1 manifest fetch if possible as it reduces API calls
+      },
+      this.cache,
+    )
+  }
 
-    return labelClient.fetchLabels(image, tag)
+  async labels(image: string, tag: string): Promise<Record<string, string>> {
+    return this.createApiClient().fetchLabels(image, tag)
+  }
+
+  async tagInfo(image: string, tag: string): Promise<RegistryImageTag> {
+    return this.createApiClient().fetchTagInfo(image, tag)
   }
 
   private async fetch(endpoint: string, init?: RequestInit): Promise<Response> {
