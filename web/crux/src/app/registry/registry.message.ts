@@ -19,9 +19,13 @@ export type RegistryImages = {
 
 export type FetchImageTagsMessage = RegistryImages
 
+export type RegistryImageTag = {
+  created: string
+}
+
 export type RegistryImageTags = {
   name: string
-  tags: string[]
+  tags: Record<string, RegistryImageTag>
 }
 
 export type RegistryImageTagsMessage = {

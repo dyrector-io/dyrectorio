@@ -117,7 +117,7 @@ export default class RegistryAuthValidationGuard implements CanActivate {
 
     const creds = await this.getCredentialsForRegistry(registryId, req)
 
-    const hubClient = new PrivateHubApiClient(REGISTRY_HUB_URL, req.imageNamePrefix)
+    const hubClient = new PrivateHubApiClient(REGISTRY_HUB_URL, req.imageNamePrefix, null)
     return from(hubClient.login(creds.username, creds.password)).pipe(
       map(() => true),
       catchError(err => {

@@ -1,4 +1,5 @@
 import { HttpModule } from '@nestjs/axios'
+import { CacheModule } from '@nestjs/cache-manager'
 import { Module } from '@nestjs/common'
 import NotificationTemplateBuilder from 'src/builders/notification.template.builder'
 import { CruxJwtModuleImports } from 'src/config/jwt.config'
@@ -16,7 +17,7 @@ import RegistryService from './registry.service'
 import RegistryWebSocketGateway from './registry.ws.gateway'
 
 @Module({
-  imports: [HttpModule, TeamModule, AuditLoggerModule, ...CruxJwtModuleImports],
+  imports: [HttpModule, TeamModule, AuditLoggerModule, CacheModule.register(), ...CruxJwtModuleImports],
   exports: [RegistryMapper, RegistryService],
   controllers: [RegistryHttpController],
   providers: [

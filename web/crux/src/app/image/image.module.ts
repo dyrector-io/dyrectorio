@@ -1,3 +1,4 @@
+import { CacheModule } from '@nestjs/cache-manager'
 import { forwardRef, Module } from '@nestjs/common'
 import EncryptionService from 'src/services/encryption.service'
 import KratosService from 'src/services/kratos.service'
@@ -14,7 +15,7 @@ import ImageMapper from './image.mapper'
 import ImageService from './image.service'
 
 @Module({
-  imports: [RegistryModule, EditorModule, forwardRef(() => ContainerModule), AuditLoggerModule],
+  imports: [RegistryModule, EditorModule, forwardRef(() => ContainerModule), AuditLoggerModule, CacheModule.register()],
   exports: [ImageService, ImageMapper],
   providers: [
     PrismaService,

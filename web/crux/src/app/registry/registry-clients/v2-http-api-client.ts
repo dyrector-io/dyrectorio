@@ -1,6 +1,8 @@
 import { Logger } from '@nestjs/common'
+import { Cache } from 'cache-manager'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import { USER_AGENT_CRUX } from 'src/shared/const'
+import { RegistryImageTag } from '../registry.message'
 
 type V2Error = {
   code: string
@@ -12,9 +14,14 @@ type BaseResponse = {
   errors?: V2Error[]
 }
 
+type ManifestHistory = {
+  v1Compatibility: string // string of ConfigBlobResponse
+}
+
 type ManifestBaseResponse = BaseResponse & {
   schemaVersion: number
-  mediaType: string
+  mediaType: string // v2
+  history: ManifestHistory[] // v1
 }
 
 type ManifestResponse = ManifestBaseResponse & {
@@ -30,10 +37,11 @@ type ManifestIndexResponse = ManifestBaseResponse & {
   }[]
 }
 
-type BlobResponse = BaseResponse & {
+type ConfigBlobResponse = BaseResponse & {
   config: {
     Labels: Record<string, string>
   }
+  created: string
 }
 
 type TokenResponse = {
@@ -45,6 +53,15 @@ type FetchResponse<T> = {
   data: T
 }
 
+export type V2Options = {
+  baseUrl: string
+  imageNamePrefix?: string
+  requestInit?: RequestInit
+  manifestMime?: string
+  tokenInit?: RequestInit
+  tryV1Manifest?: boolean
+}
+
 const ERROR_UNAUTHORIZED = 'UNAUTHORIZED'
 const ERROR_DENIED = 'DENINED'
 const ERROR_MANIFEST_UNKNOWN = 'MANIFEST_UNKNOWN'
@@ -53,27 +70,39 @@ const HEADER_WWW_AUTHENTICATE = 'www-authenticate'
 
 const MEDIA_TYPE_INDEX = 'application/vnd.oci.image.index.v1+json'
 const MEDIA_TYPE_MANIFEST = 'application/vnd.oci.image.manifest.v1+json'
+const MEDIA_TYPE_DISTRIBUTION_MANIFEST_V1 = 'application/vnd.docker.distribution.manifest.v1+json'
 const MEDIA_TYPE_DISTRIBUTION_MANIFEST_V2 = 'application/vnd.docker.distribution.manifest.v2+json'
 
 const MANIFEST_MAX_DEPTH = 5
 
-export default class V2Labels {
-  private readonly logger = new Logger(V2Labels.name)
+export default class V2HttpApiClient {
+  private readonly logger = new Logger(V2HttpApiClient.name)
+
+  private readonly baseUrl: string
+
+  private readonly imageNamePrefix?: string
+
+  private readonly tokenInit?: RequestInit
 
   private token?: string
 
-  private manifestMimeType: string
+  private manifestMimeType?: string
 
   private requestInit: RequestInit
 
+  private tryV1Manifest: boolean
+
   constructor(
-    private readonly baseUrl: string,
-    private readonly imageNamePrefix?: string,
-    requestInit?: RequestInit,
-    manifestMime?: string,
-    private readonly tokenInit?: RequestInit,
+    options: V2Options,
+    private readonly cache: Cache | null,
   ) {
-    this.requestInit = requestInit ?? {}
+    this.baseUrl = options.baseUrl
+    this.imageNamePrefix = options.imageNamePrefix
+    this.tokenInit = options.tokenInit
+    this.manifestMimeType = options.manifestMime
+    this.tryV1Manifest = options.tryV1Manifest ?? false
+
+    this.requestInit = options.requestInit ?? {}
     this.requestInit = {
       ...this.requestInit,
       headers: {
@@ -83,8 +112,6 @@ export default class V2Labels {
     }
 
     this.token = null
-
-    this.manifestMimeType = manifestMime ?? MEDIA_TYPE_DISTRIBUTION_MANIFEST_V2
   }
 
   private getHeaders(): RequestInit {
@@ -220,15 +247,48 @@ export default class V2Labels {
     return result.data
   }
 
+  private async fetchV2Cache<T extends BaseResponse>(
+    cacheKey: string,
+    endpoint: string,
+    init?: RequestInit,
+  ): Promise<T> {
+    if (!this.cache) {
+      return this.fetchV2<T>(endpoint, init)
+    }
+
+    const cached = await this.cache.get<T>(cacheKey)
+    if (cached) {
+      this.logger.debug(`Cached ${cacheKey}`)
+      return cached
+    }
+
+    const result = await this.fetchV2<T>(endpoint, init)
+    this.cache.set(cacheKey, result, 0)
+    this.logger.debug(`Stored to cache ${cacheKey}`)
+
+    return result
+  }
+
   private async fetchLabelsByManifest(
     image: string,
     manifest: ManifestBaseResponse,
     depth: number,
   ): Promise<Record<string, string>> {
+    if (!manifest.mediaType && manifest.schemaVersion == 1) {
+      // NOTE(@robot9706): V1 manifests have 'v1Compatibility' history fields which have everything we need
+      const lastHistory = manifest.history[0]
+      const configBlob = JSON.parse(lastHistory.v1Compatibility) as ConfigBlobResponse
+
+      return configBlob.config.Labels
+    }
+
     if (manifest.mediaType === MEDIA_TYPE_MANIFEST || manifest.mediaType === MEDIA_TYPE_DISTRIBUTION_MANIFEST_V2) {
       const labelManifest = manifest as ManifestResponse
 
-      const configManifest = await this.fetchV2<BlobResponse>(`${image}/blobs/${labelManifest.config.digest}`)
+      const configManifest = await this.fetchV2Cache<ConfigBlobResponse>(
+        `manifest-${labelManifest.config.digest}`,
+        `${image}/blobs/${labelManifest.config.digest}`,
+      )
 
       return configManifest.config.Labels
     }
@@ -241,11 +301,15 @@ export default class V2Labels {
       const indexManifest = manifest as ManifestIndexResponse
 
       const subManifestPromises = indexManifest.manifests.map(async it => {
-        const subManifest = await this.fetchV2<ManifestBaseResponse>(`${image}/manifests/${it.digest}`, {
-          headers: {
-            Accept: it.mediaType,
+        const subManifest = await this.fetchV2Cache<ManifestBaseResponse>(
+          `manifest-${it.digest}`,
+          `${image}/manifests/${it.digest}`,
+          {
+            headers: {
+              Accept: it.mediaType,
+            },
           },
-        })
+        )
 
         return this.fetchLabelsByManifest(image, subManifest, depth + 1)
       })
@@ -264,21 +328,113 @@ export default class V2Labels {
     throw new Error(`Unknown manifest type: ${manifest.mediaType}`)
   }
 
-  async fetchLabels(image: string, tag: string): Promise<Record<string, string>> {
+  private async fetchConfigBlobByManifest(
+    image: string,
+    manifest: ManifestBaseResponse,
+    depth: number,
+  ): Promise<ConfigBlobResponse | null> {
+    if (!manifest.mediaType && manifest.schemaVersion == 1) {
+      // NOTE(@robot9706): V1 manifests have 'v1Compatibility' history fields which have everything we need
+      const lastHistory = manifest.history[0]
+      const configBlob = JSON.parse(lastHistory.v1Compatibility) as ConfigBlobResponse
+
+      return configBlob
+    }
+
+    if (manifest.mediaType === MEDIA_TYPE_MANIFEST || manifest.mediaType === MEDIA_TYPE_DISTRIBUTION_MANIFEST_V2) {
+      const labelManifest = manifest as ManifestResponse
+
+      return this.fetchV2Cache<ConfigBlobResponse>(
+        `manifest-${labelManifest.config.digest}`,
+        `${image}/blobs/${labelManifest.config.digest}`,
+      )
+    }
+
+    if (manifest.mediaType === MEDIA_TYPE_INDEX) {
+      if (depth > MANIFEST_MAX_DEPTH) {
+        return null
+      }
+
+      const indexManifest = manifest as ManifestIndexResponse
+      if (indexManifest.manifests.length <= 0) {
+        return null
+      }
+
+      // TODO(@robot9706): Decide which manifest to use
+      const subManifestMeta = indexManifest.manifests[0]
+
+      const subManifest = await this.fetchV2Cache<ManifestBaseResponse>(
+        `manifest-${subManifestMeta.digest}`,
+        `${image}/manifests/${subManifestMeta.digest}`,
+        {
+          headers: {
+            Accept: subManifestMeta.mediaType,
+          },
+        },
+      )
+
+      return this.fetchConfigBlobByManifest(image, subManifest, depth + 1)
+    }
+
+    throw new Error(`Unknown manifest type: ${manifest.mediaType}`)
+  }
+
+  private async fetchTagManifest(image: string, tag: string): Promise<ManifestBaseResponse> {
     if (this.imageNamePrefix) {
       image = `${this.imageNamePrefix}/${image}`
     }
 
-    const manifest = await this.fetchV2<ManifestBaseResponse>(`${image}/manifests/${tag ?? 'latest'}`, {
-      headers: {
-        Accept: this.manifestMimeType,
-      },
-    })
+    if (!this.manifestMimeType && this.tryV1Manifest) {
+      // NOTE(@robot9706): If the manifest mime type is not defined, try v1 first if we are allowed to do so
+      const manifest = await this.fetchV2Cache<ManifestBaseResponse>(
+        `image-${image}/${tag ?? 'latest'}`,
+        `${image}/manifests/${tag ?? 'latest'}`,
+        {
+          headers: {
+            Accept: MEDIA_TYPE_DISTRIBUTION_MANIFEST_V1,
+          },
+        },
+      )
 
-    if (!manifest) {
+      if (!manifest) {
+        return null
+      }
+
+      if (manifest.schemaVersion == 1) {
+        return manifest
+      }
+    }
+
+    return this.fetchV2Cache<ManifestBaseResponse>(
+      `image-${image}/${tag ?? 'latest'}`,
+      `${image}/manifests/${tag ?? 'latest'}`,
+      {
+        headers: {
+          Accept: this.manifestMimeType ?? MEDIA_TYPE_DISTRIBUTION_MANIFEST_V2,
+        },
+      },
+    )
+  }
+
+  async fetchLabels(image: string, tag: string): Promise<Record<string, string>> {
+    const tagManifest = await this.fetchTagManifest(image, tag)
+    if (!tagManifest) {
       return {}
     }
 
-    return this.fetchLabelsByManifest(image, manifest, 0)
+    return this.fetchLabelsByManifest(image, tagManifest, 0)
+  }
+
+  async fetchTagInfo(image: string, tag: string): Promise<RegistryImageTag> {
+    const tagManifest = await this.fetchTagManifest(image, tag)
+    if (!tagManifest) {
+      return null
+    }
+
+    const configBlob = await this.fetchConfigBlobByManifest(image, tagManifest, 0)
+
+    return {
+      created: configBlob.created,
+    }
   }
 }
