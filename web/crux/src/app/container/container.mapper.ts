@@ -141,7 +141,7 @@ export default class ContainerMapper {
     if ('storage' in patch) {
       result = {
         ...result,
-        storageSet: true,
+        storageSet: !!patch.storage?.storageId,
         storageId: patch.storage?.storageId ?? null,
         storageConfig: patch.storage?.storageId
           ? {
