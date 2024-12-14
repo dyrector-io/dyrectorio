@@ -1,12 +1,17 @@
 import { UniqueKeyValue } from './container'
 
-const applyTemplate = (template: string, inputValue: string, templateValue: string): string =>
-  inputValue.replace(new RegExp(`{{\\s*${template}\\s*}}`), templateValue)
+const applyTemplate = (template: string, inputValue: any, templateValue: string): any => {
+  if (typeof inputValue !== 'string') {
+    return inputValue
+  }
+
+  return inputValue.replace(new RegExp(`{{\\s*${template}\\s*}}`), templateValue)
+}
 
 const applyTemplatesOnInput = (input: UniqueKeyValue, templates: Record<string, string>) => {
   Object.entries(templates).forEach(entry => {
     const [template, templateValue] = entry
-    if (!templateValue) {
+    if (!templateValue || !input.value) {
       return
     }
 
