@@ -28,6 +28,7 @@ import {
   instanceConfigOf,
   mergePrefixNeighborSecrets,
 } from 'src/domain/start-deployment'
+import { applyStringTemplate, applyUniqueKeyValueTemplate } from 'src/domain/template'
 import { DeploymentTokenPayload, tokenSignOptionsFor } from 'src/domain/token'
 import { collectChildVersionIds, collectParentVersionIds, toPrismaJson } from 'src/domain/utils'
 import { copyDeployment } from 'src/domain/version-increase'
@@ -69,6 +70,10 @@ import {
   WS_TYPE_INSTANCES_ADDED,
   WS_TYPE_INSTANCE_DELETED,
 } from './deploy.message'
+
+type InstanceConfigTemplate = {
+  versionName?: string
+}
 
 @Injectable()
 export default class DeployService {
@@ -512,6 +517,10 @@ export default class DeployService {
       })
     }
 
+    const templateParams: InstanceConfigTemplate = {
+      versionName: deployment.version.name,
+    }
+
     const invalidSecrets: InvalidSecrets[] = []
 
     // deployment config
@@ -530,6 +539,8 @@ export default class DeployService {
     const instanceConfigs: Map<string, ConcreteContainerConfigData> = new Map(
       deployment.instances.map(instance => {
         const instanceConfig = instanceConfigOf(deployment, deploymentConfig, instance)
+
+        this.applyInstanceConfigTemplate(instanceConfig, templateParams)
 
         return [instance.id, instanceConfig]
       }),
@@ -1244,5 +1255,20 @@ export default class DeployService {
     })
 
     return versions.flatMap(it => it.deployments)
+  }
+
+  private applyInstanceConfigTemplate(config: ConcreteContainerConfigData, template: InstanceConfigTemplate) {
+    if (config.environment) {
+      applyUniqueKeyValueTemplate(config.environment, template)
+    }
+
+    if (config.storageSet && config.storageConfig) {
+      config.storageConfig.bucket = config.storageConfig.bucket
+        ? applyStringTemplate(config.storageConfig.bucket, template)
+        : null
+      config.storageConfig.path = config.storageConfig.path
+        ? applyStringTemplate(config.storageConfig.path, template)
+        : null
+    }
   }
 }

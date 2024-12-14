@@ -422,13 +422,15 @@ const ContainerConfigPage = (props: ContainerConfigPageProps) => {
       </PageHeading>
 
       <DyoCard className="p-4">
-        <div className="flex mb-4 justify-between items-start">
+        <div className="flex mb-1 justify-between items-start">
           <DyoHeading element="h4" className="text-xl text-bright">
             {getName()}
           </DyoHeading>
 
           {getViewStateButtons()}
         </div>
+
+        <DyoMessage className="text-xs mt-2 mb-4" message={t('templateTips')} messageType="info" />
 
         {viewState === 'editor' && <ContainerConfigFilters onChange={setFilters} filters={filters} />}
       </DyoCard>

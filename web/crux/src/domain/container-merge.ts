@@ -37,18 +37,7 @@ const mergeBoolean = (strong: boolean, weak: boolean): boolean => {
 
 type StorageProperties = Pick<ContainerConfigData, 'storageSet' | 'storageId' | 'storageConfig'>
 const mergeStorage = (strong: StorageProperties, weak: StorageProperties): StorageProperties => {
-  const set = mergeBoolean(strong.storageSet, weak.storageSet)
-  if (!set) {
-    // neither of them are set
-
-    return {
-      storageSet: false,
-      storageId: null,
-      storageConfig: null,
-    }
-  }
-
-  if (typeof strong.storageSet === 'boolean') {
+  if (strong.storageSet) {
     // strong is set
 
     return {
@@ -58,10 +47,21 @@ const mergeStorage = (strong: StorageProperties, weak: StorageProperties): Stora
     }
   }
 
+  if (weak.storageSet) {
+    // weak is set
+
+    return {
+      storageSet: true,
+      storageId: weak.storageId,
+      storageConfig: weak.storageConfig,
+    }
+  }
+
+  // neither of them are set
   return {
-    storageSet: true,
-    storageId: weak.storageId,
-    storageConfig: weak.storageConfig,
+    storageSet: false,
+    storageId: null,
+    storageConfig: null,
   }
 }
 

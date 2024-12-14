@@ -4,6 +4,7 @@
   "json": "JSON",
 
   "sensitiveKey": "Sensitive config data should be stored as secrets",
+  "templateTips": "Available templates in environments and storage: {{versionName}}",
 
   "base": {
     "all": "All",
