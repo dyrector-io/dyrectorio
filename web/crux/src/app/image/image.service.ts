@@ -1,21 +1,18 @@
 import { Injectable } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Identity } from '@ory/kratos-client'
-import { Prisma } from '@prisma/client'
-import { UniqueKeyValue, UniqueSecretKey } from 'src/domain/container'
 import { IMAGE_EVENT_ADD, IMAGE_EVENT_DELETE, ImageDeletedEvent, ImagesAddedEvent } from 'src/domain/domain-events'
-import { EnvironmentRule, parseDyrectorioEnvRules } from 'src/domain/image'
 import PrismaService from 'src/services/prisma.service'
-import { v4 as uuid } from 'uuid'
 import ContainerConfigService from '../container/container-config.service'
-import RegistryClientProvider from '../registry/registry-client.provider'
-import TeamRepository from '../team/team.repository'
 import { AddImagesDto, ImageDetailsDto, PatchImageDto } from './image.dto'
 import ImageMapper from './image.mapper'
 
+// TODO(@robot9706): Fix labels & config bundles conflicting
+/*
 type LabelMap = Record<string, string>
 type ImageLabelMap = Record<string, LabelMap>
 type RegistryLabelMap = Record<string, ImageLabelMap>
+*/
 
 @Injectable()
 export default class ImageService {
@@ -24,8 +21,6 @@ export default class ImageService {
     private readonly mapper: ImageMapper,
     private readonly containerConfigService: ContainerConfigService,
     private readonly events: EventEmitter2,
-    private readonly teamRepository: TeamRepository,
-    private readonly registryClients: RegistryClientProvider,
   ) {}
 
   async getImagesByVersionId(versionId: string): Promise<ImageDetailsDto[]> {
@@ -56,11 +51,14 @@ export default class ImageService {
   }
 
   async addImagesToVersion(
-    teamSlug: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _teamSlug: string,
     versionId: string,
     request: AddImagesDto[],
     identity: Identity,
   ): Promise<ImageDetailsDto[]> {
+    // TODO(@robot9706): Fix labels & config bundles conflicting
+    /*
     const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
     const labelLookupPromises = request.map(async it => {
@@ -93,6 +91,7 @@ export default class ImageService {
       }, {} as ImageLabelMap)
       return map
     }, {} as RegistryLabelMap)
+    */
 
     const images = await this.prisma.$transaction(async prisma => {
       const lastImageOrder = await this.prisma.image.findFirst({
@@ -138,6 +137,8 @@ export default class ImageService {
       return await Promise.all(imgs)
     })
 
+    // TODO(@robot9706): Fix labels & config bundles conflicting
+    /*
     await this.prisma.$transaction(prisma =>
       Promise.all(
         images.map(it => {
@@ -181,6 +182,7 @@ export default class ImageService {
         }),
       ),
     )
+    */
 
     const dtos = images.map(it => this.mapper.toDetailsDto(it))
 
@@ -193,7 +195,8 @@ export default class ImageService {
     return dtos
   }
 
-  async patchImage(teamSlug: string, imageId: string, request: PatchImageDto, identity: Identity): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async patchImage(_teamSlug: string, imageId: string, request: PatchImageDto, identity: Identity): Promise<void> {
     const currentConfig = await this.prisma.containerConfig.findFirstOrThrow({
       where: {
         image: {
@@ -212,6 +215,8 @@ export default class ImageService {
       )
     }
 
+    // TODO(@robot9706): Fix labels & config bundles conflicting
+    /*
     let labels: Record<string, string>
     let configUpdate: Prisma.ContainerConfigUpdateOneRequiredWithoutImageNestedInput = null
     if (request.tag) {
@@ -243,6 +248,7 @@ export default class ImageService {
         },
       }
     }
+    */
 
     await this.prisma.image.update({
       where: {
@@ -253,10 +259,11 @@ export default class ImageService {
         registry: true,
       },
       data: {
-        labels: labels ?? undefined,
+        // TODO(@robot9706): Fix labels & config bundles conflicting
+        // labels: labels ?? undefined,
+        // config: configUpdate ?? undefined,
         tag: request.tag ?? undefined,
         updatedBy: identity.id,
-        config: configUpdate ?? undefined,
       },
     })
   }
@@ -307,6 +314,8 @@ export default class ImageService {
     return [imageName, imageTag]
   }
 
+  // TODO(@robot9706): Fix labels & config bundles conflicting
+  /*
   private static mergeEnvironmentsRules(
     environment: UniqueKeyValue[],
     rules: Record<string, EnvironmentRule>,
@@ -361,4 +370,5 @@ export default class ImageService {
 
     return Object.values(mergedSecrets)
   }
+  */
 }

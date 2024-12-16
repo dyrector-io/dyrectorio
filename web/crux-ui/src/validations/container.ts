@@ -14,15 +14,11 @@ import {
   ContainerNetworkMode,
   ContainerPort,
   ContainerRestartPolicyType,
-  EnvironmentRule,
   Metrics,
-  UniqueKeyValue,
   VolumeType,
-  UniqueSecretKeyValue,
 } from '@app/models'
 import * as yup from 'yup'
 import { matchNoLeadingOrTrailingWhitespaces, matchNoWhitespace } from './common'
-import { parseDyrectorioEnvRules } from './labels'
 
 // Official regex from Docker daemon
 export const CONTAINER_NAME_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9_.-]+$/g
@@ -430,6 +426,8 @@ const expectedContainerStateRule = yup
   .optional()
   .label('container:dagent.expectedState')
 
+// TODO(@robot9706): Fix labels & config bundles conflicting
+/*
 type KeyValueLike = {
   key: string
   value: string
@@ -544,20 +542,21 @@ const testSecretRules =
 
     return true
   }
+*/
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
   yup.object().shape({
     name: matchContainerName(yup.string().nullable().optional().label('container:common.containerName')),
-    environment: uniqueKeyValuesSchema
-      .default(null)
-      .nullable()
-      .optional()
-      .label('container:common.environment')
-      .test(
+    environment: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.environment'),
+    // TODO(@robot9706): Fix labels & config bundles conflicting
+    /*
+    .test(
         'labelRules',
         'Environment variables must match their image label rules.',
         testEnvironmentRules(imageLabels),
       ),
+    */
     routing: routingRule,
     expose: exposeRule,
     user: yup.number().default(null).min(UID_MIN).max(UID_MAX).nullable().optional().label('container:common.user'),
@@ -605,10 +604,7 @@ export const createContainerConfigSchema = (imageLabels: Record<string, string>)
 
 export const createConcreteContainerConfigSchema = (imageLabels: Record<string, string>) =>
   createContainerConfigBaseSchema(imageLabels).shape({
-    secrets: uniqueKeyValuesSchema
-      .default(null)
-      .nullable()
-      .optional()
-      .label('container:common.secrets')
-      .test('secretRules', 'Secrets must match their image label rules.', testSecretRules(imageLabels)),
+    secrets: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.secrets'),
+    // TODO(@robot9706): Fix labels & config bundles conflicting
+    // .test('secretRules', 'Secrets must match their image label rules.', testSecretRules(imageLabels)),
   })
