@@ -164,11 +164,7 @@ export default class V2HttpApiClient {
       tokenScope,
     )}`
 
-    this.logger.debug(`Fetching token from '${tokenUrl}'`)
-
     const tokenResponse = await fetch(tokenUrl, tokenInit)
-
-    this.logger.debug(`Got token response for '${tokenUrl}' - ${tokenResponse.status}`)
 
     if (tokenResponse.status !== 200) {
       this.logger.error('V2 token fetch failed', tokenResponse.status, await tokenResponse.text())
@@ -187,8 +183,6 @@ export default class V2HttpApiClient {
     const doFetch = async (): Promise<FetchResponse<T>> => {
       const fullUrl = `${this.baseUrl.startsWith('http') ? this.baseUrl : `https://${this.baseUrl}`}/v2/${endpoint}`
 
-      this.logger.debug(`Fetching '${fullUrl}'`)
-
       const baseHeaders = this.getHeaders()
 
       const res = await fetch(fullUrl, {
@@ -206,8 +200,6 @@ export default class V2HttpApiClient {
 
         const errors = data.errors.map(it => `${it.code} (${it.message})`).reduce((curr, it) => `${curr}, ${it}`)
         this.logger.warn(errors)
-      } else {
-        this.logger.debug(`Got response '${fullUrl}' - ${res.status}`)
       }
 
       return {
@@ -265,13 +257,11 @@ export default class V2HttpApiClient {
 
     const cached = await this.cache.get<T>(cacheKey)
     if (cached) {
-      this.logger.debug(`Cached ${cacheKey}`)
       return cached
     }
 
     const result = await this.fetchV2<T>(endpoint, init)
     await this.cache.set(cacheKey, result, 0)
-    this.logger.debug(`Stored to cache ${cacheKey}`)
 
     return result
   }
