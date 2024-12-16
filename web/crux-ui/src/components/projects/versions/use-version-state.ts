@@ -104,6 +104,7 @@ export interface VersionStateOptions {
   projectId: string
   version: VersionDetails
   initialSection: VersionSectionsState
+  fetchTagInfo?: boolean
   setSaveState?: (saveState: WebSocketSaveState) => void
 }
 
@@ -180,11 +181,18 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
   const editor = useEditorState(versionSock)
 
   const registriesSock = useWebSocket(routes.registry.socket(), {
-    onOpen: () =>
+    onOpen: () => {
+      // TODO(@robot9706): Not sure why we fetch all the tags here,
+      // it is super slow with our 8+ images / version, where each image has 200+ tags, so disable it
+      if (options.fetchTagInfo === false) {
+        return
+      }
+
       refreshImageTags(
         registriesSock,
         version.images.filter(it => it.registry.type !== 'unchecked'),
-      ),
+      )
+    },
   })
 
   registriesSock.on(WS_TYPE_REGISTRY_IMAGE_TAGS, (message: RegistryImageTagsMessage) => {

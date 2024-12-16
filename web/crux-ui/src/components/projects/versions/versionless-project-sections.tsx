@@ -20,6 +20,7 @@ const VersionlessProjectSections = (props: VersionlessProjectSectionsProps) => {
     version,
     projectId: project.id,
     initialSection,
+    fetchTagInfo: false,
     setSaveState,
   })
 

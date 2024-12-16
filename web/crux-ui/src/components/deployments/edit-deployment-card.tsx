@@ -55,7 +55,9 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
     t,
     onSubmit: async (values, { setFieldError }) => {
       const body: UpdateDeployment = {
-        ...values,
+        note: values.note,
+        prefix: values.prefix,
+        protected: values.protected,
         configBundles: values.configBundles.map(it => it.id),
       }
 
