@@ -52,8 +52,8 @@ const ImageTagSelectList = (props: ImageTagSelectListProps) => {
         return items.sort((a, b) => b[0].localeCompare(a[0]) * sortState.dir)
       case 'date':
         return items.sort((a, b) => {
-          const aDate = Date.parse(a[1].created)
-          const bDate = Date.parse(b[1].created)
+          const aDate = a[1] == null ? 0 : Date.parse(a[1].created)
+          const bDate = b[1] == null ? 0 : Date.parse(b[1].created)
 
           return Math.sign(bDate - aDate) * sortState.dir
         })

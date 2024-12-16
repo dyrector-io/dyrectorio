@@ -201,7 +201,14 @@ export default class V2HttpApiClient {
       })
       const data = (await res.json()) as T
 
-      this.logger.debug(`Got response '${fullUrl}' - ${res.status}`)
+      if (res.status !== 200) {
+        this.logger.warn(`Got response '${fullUrl}' - ${res.status}`)
+
+        const errors = data.errors.map(it => `${it.code} (${it.message})`).reduce((curr, it) => `${curr}, ${it}`)
+        this.logger.warn(errors)
+      } else {
+        this.logger.debug(`Got response '${fullUrl}' - ${res.status}`)
+      }
 
       return {
         res,
