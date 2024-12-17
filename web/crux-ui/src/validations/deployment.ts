@@ -9,11 +9,16 @@ export const prefixRule = yup
   .required()
   .label('common:prefix')
 
-export const updateDeploymentSchema = yup.object().shape({
+const baseDeploymentSchema = yup.object().shape({
   note: yup.string().optional().nullable().label('common:note'),
   prefix: prefixRule,
-  protected: yup.bool().required(),
 })
+
+export const updateDeploymentSchema = baseDeploymentSchema.concat(
+  yup.object().shape({
+    protected: yup.bool().required(),
+  }),
+)
 
 export const createDeploymentSchema = updateDeploymentSchema.concat(
   yup.object().shape({
@@ -21,7 +26,11 @@ export const createDeploymentSchema = updateDeploymentSchema.concat(
   }),
 )
 
-export const copyDeploymentSchema = createDeploymentSchema
+export const copyDeploymentSchema = baseDeploymentSchema.concat(
+  yup.object().shape({
+    nodeId: yup.mixed().nullable().required().label('common:node'),
+  }),
+)
 
 export const createDeploymentTokenSchema = yup.object().shape({
   name: nameRule,
